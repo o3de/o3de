@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <ActorAsset.h>
 #include <AtomActorInstance.h>
@@ -311,7 +306,8 @@ namespace AZ
             Data::Asset<RPI::ModelAsset> modelAsset = actor->GetMeshAsset();
             if (!modelAsset.IsReady())
             {
-                AZ_Error("CreateSkinnedMeshInputFromActor", false, "Attempting to create skinned mesh input buffers for an actor that doesn't have a loaded model.");
+                AZ_Warning("CreateSkinnedMeshInputFromActor", false, "Check if the actor has a mesh added. Right click the source file in the asset browser, click edit settings, "
+                    "and navigate to the Meshes tab. Add a mesh if it's missing.");
                 return nullptr;
             }
 

@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 // Description : CViewportTitleDlg implementation file
 
@@ -45,6 +40,7 @@
 
 #include <AzCore/std/algorithm.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include "ui_ViewportTitleDlg.h"
@@ -57,13 +53,16 @@ inline namespace Helpers
 {
     void ToggleHelpers()
     {
-        GetIEditor()->GetDisplaySettings()->DisplayHelpers(!GetIEditor()->GetDisplaySettings()->IsDisplayHelpers());
+        const bool newValue = !GetIEditor()->GetDisplaySettings()->IsDisplayHelpers();
+        GetIEditor()->GetDisplaySettings()->DisplayHelpers(newValue);
         GetIEditor()->Notify(eNotify_OnDisplayRenderUpdate);
 
-        if (GetIEditor()->GetDisplaySettings()->IsDisplayHelpers() == false)
+        if (newValue == false)
         {
             GetIEditor()->GetObjectManager()->SendEvent(EVENT_HIDE_HELPER);
         }
+        AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
+            &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnDrawHelpersChanged, newValue);
     }
 
     bool IsHelpersShown()
@@ -126,6 +125,7 @@ CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
     SetupCameraDropdownMenu();
     SetupResolutionDropdownMenu();
     SetupViewportInformationMenu();
+    SetupHelpersButton();
     SetupOverflowMenu();
 
     Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequest, gSettings.bMuteAudio ? m_oMuteAudioRequest : m_oUnmuteAudioRequest);
@@ -162,6 +162,7 @@ void CViewportTitleDlg::SetupCameraDropdownMenu()
     m_cameraSpeed = new QComboBox(cameraMenu);
     m_cameraSpeed->setEditable(true);
     m_cameraSpeed->setValidator(new QDoubleValidator(m_minSpeed, m_maxSpeed, m_numDecimals, m_cameraSpeed));
+    m_cameraSpeed->installEventFilter(this);
 
     QHBoxLayout* cameraSpeedLayout = new QHBoxLayout;
     cameraSpeedLayout->addWidget(cameraSpeedLabel);
@@ -207,15 +208,16 @@ void CViewportTitleDlg::SetupViewportInformationMenu()
 
 }
 
+void CViewportTitleDlg::SetupHelpersButton()
+{
+    connect(m_ui->m_helpers, &QToolButton::clicked, this, &CViewportTitleDlg::OnToggleHelpers);
+    m_ui->m_helpers->setChecked(Helpers::IsHelpersShown());
+}
+
 void CViewportTitleDlg::SetupOverflowMenu()
 {
     // Setup the overflow menu
     QMenu* overFlowMenu = new QMenu(this);
-    m_debugHelpersAction = new QAction("Debug Helpers", overFlowMenu);
-    m_debugHelpersAction->setCheckable(true);
-    m_debugHelpersAction->setChecked(Helpers::IsHelpersShown());
-    connect(m_debugHelpersAction, &QAction::triggered, this, &CViewportTitleDlg::OnToggleHelpers);
-    overFlowMenu->addAction(m_debugHelpersAction);
 
     m_audioMuteAction = new QAction("Mute Audio", overFlowMenu);
     connect(m_audioMuteAction, &QAction::triggered, this, &CViewportTitleDlg::OnBnClickedMuteAudio);
@@ -329,7 +331,7 @@ void CViewportTitleDlg::OnMaximize()
 void CViewportTitleDlg::OnToggleHelpers()
 {
     Helpers::ToggleHelpers();
-    m_debugHelpersAction->setChecked(Helpers::IsHelpersShown());
+    m_ui->m_helpers->setChecked(Helpers::IsHelpersShown());
 }
 
 void CViewportTitleDlg::SetNoViewportInfo()
@@ -755,7 +757,7 @@ void CViewportTitleDlg::OnEditorNotifyEvent(EEditorNotifyEvent event)
     switch (event)
     {
     case eNotify_OnDisplayRenderUpdate:
-        m_debugHelpersAction->setChecked(Helpers::IsHelpersShown());
+        m_ui->m_helpers->setChecked(Helpers::IsHelpersShown());
         break;
     case eNotify_OnBeginGameMode:
     case eNotify_OnEndGameMode:
@@ -787,7 +789,7 @@ void CViewportTitleDlg::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_
 
 void CViewportTitleDlg::LoadCustomPresets(const QString& section, const QString& keyName, QStringList& outCustompresets)
 {
-    QSettings settings("Amazon", "O3DE"); // Temporary solution until we have the global Settings class.
+    QSettings settings("O3DE", "O3DE"); // Temporary solution until we have the global Settings class.
     settings.beginGroup(section);
     outCustompresets = settings.value(keyName).toStringList();
     settings.endGroup();
@@ -795,7 +797,7 @@ void CViewportTitleDlg::LoadCustomPresets(const QString& section, const QString&
 
 void CViewportTitleDlg::SaveCustomPresets(const QString& section, const QString& keyName, const QStringList& custompresets)
 {
-    QSettings settings("Amazon", "O3DE"); // Temporary solution until we have the global Settings class.
+    QSettings settings("O3DE", "O3DE"); // Temporary solution until we have the global Settings class.
     settings.beginGroup(section);
     settings.setValue(keyName, custompresets);
     settings.endGroup();
@@ -813,6 +815,21 @@ void CViewportTitleDlg::UpdateCustomPresets(const QString& text, QStringList& cu
 
 bool CViewportTitleDlg::eventFilter(QObject* object, QEvent* event)
 {
+    if (object == m_cameraSpeed)
+    {
+        if (event->type() == QEvent::FocusIn)
+        {
+            QTimer::singleShot(
+                0, this,
+                [this]
+                {
+                    m_cameraSpeed->lineEdit()->selectAll();
+                });
+        }
+
+        return m_cameraSpeed->eventFilter(object, event);
+    }
+
     bool consumeEvent = false;
 
     // These events are forwarded from the toolbar that took ownership of our widgets

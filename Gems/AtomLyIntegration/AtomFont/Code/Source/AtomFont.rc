@@ -81,10 +81,10 @@ BEGIN
     BEGIN
         BLOCK "000904b0"
         BEGIN
-            VALUE "CompanyName", "Amazon.com, Inc."
+            VALUE "CompanyName", "Open 3D Foundation"
             VALUE "FileVersion", "1, 0, 0, 1"
-            VALUE "LegalCopyright", "Portions of this file Copyright (c) Amazon.com, Inc. or its affiliates. All Rights Reserved. Original file Copyright (c) Crytek GMBH. Used under license by Amazon.com, Inc. and its affiliates."
-            VALUE "ProductName", "Lumberyard"
+            VALUE "LegalCopyright", "Copyright (c) Contributors to the Open 3D Engine Project."
+            VALUE "ProductName", "O3DE"
             VALUE "ProductVersion", "1, 0, 0, 1"
         END
     END

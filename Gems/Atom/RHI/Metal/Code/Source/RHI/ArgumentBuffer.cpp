@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "Atom_RHI_Metal_precompiled.h"
 
 #include <Atom/RHI.Reflect/SamplerState.h>
@@ -35,7 +30,6 @@ namespace AZ
             {
                 m_device = device;
                 m_srgLayout = srgLayout;
-                m_srgPool = srgPool;
                                                 
                 m_constantBufferSize = srgLayout->GetConstantDataSize();
                 if (m_constantBufferSize)
@@ -93,9 +87,6 @@ namespace AZ
                     
                     //Attach the constant buffer
                     AttachConstantBuffer();
-                    
-                    m_samplerCache = [[NSCache alloc]init];
-                    [m_samplerCache setName:@"SamplerCache"];
                 }
             }
         }
@@ -211,8 +202,8 @@ namespace AZ
                 }
                 else
                 {
-                    RHI::Ptr<Memory> nullMtlBufferMemPtr = m_device->GetNullDescriptorManager().GetNullImage(shaderInputImage.m_type).GetMemory();
-                    mtlTextures[imageArrayLen] = nullMtlBufferMemPtr->GetGpuAddress<id<MTLTexture>>();
+                    RHI::Ptr<Memory> nullMtlImagePtr = m_device->GetNullDescriptorManager().GetNullImage(shaderInputImage.m_type).GetMemory();
+                    mtlTextures[imageArrayLen] = nullMtlImagePtr->GetGpuAddress<id<MTLTexture>>();
                 }
                 imageArrayLen++;
             }
@@ -343,17 +334,25 @@ namespace AZ
             if(m_argumentBuffer.IsValid())
             {
                 m_device->GetArgumentBufferAllocator().DeAllocate(m_argumentBuffer);
+            }            
+#else
+            if(m_argumentBuffer.IsValid())
+            {
+                m_device->QueueForRelease(m_argumentBuffer);
+            }
+            
+            if(m_constantBuffer.IsValid())
+            {
+                m_device->QueueForRelease(m_constantBuffer);
             }
 #endif
+
             m_argumentBuffer = {};
             m_constantBuffer = {};
             
-            [m_samplerCache removeAllObjects];
-            [m_samplerCache release];
-            m_samplerCache = nil;
-            
             [m_argumentEncoder release];
             m_argumentEncoder = nil;
+             
             Base::Shutdown();
         }
         
@@ -374,23 +373,22 @@ namespace AZ
     
         id<MTLSamplerState> ArgumentBuffer::GetMtlSampler(MTLSamplerDescriptor* samplerDesc)
         {
-            id<MTLSamplerState> mtlSamplerState = [m_samplerCache objectForKey:samplerDesc];
+            const NSCache* samplerCache = m_device->GetSamplerCache();
+            id<MTLSamplerState> mtlSamplerState = [samplerCache objectForKey:samplerDesc];
             if(mtlSamplerState == nil)
             {
                 mtlSamplerState = [m_device->GetMtlDevice() newSamplerStateWithDescriptor:samplerDesc];
-                [m_samplerCache setObject:mtlSamplerState forKey:samplerDesc];
+                [samplerCache setObject:mtlSamplerState forKey:samplerDesc];
             }
             
             return mtlSamplerState;
         }
     
-        void ArgumentBuffer::AddUntrackedResourcesToEncoder(id<MTLCommandEncoder> commandEncoder, const ShaderResourceGroupVisibility& srgResourcesVisInfo) const
+        void ArgumentBuffer::CollectUntrackedResources(id<MTLCommandEncoder> commandEncoder,
+                                                            const ShaderResourceGroupVisibility& srgResourcesVisInfo,
+                                                            ComputeResourcesToMakeResidentMap& resourcesToMakeResidentCompute,
+                                                            GraphicsResourcesToMakeResidentMap& resourcesToMakeResidentGraphics) const
         {
-            //Map to cache all the resources based on the usage as we can batch all the resources for a given usage
-            ComputeResourcesToMakeResidentMap resourcesToMakeResidentCompute;
-            //Map to cache all the resources based on the usage and shader stage as we can batch all the resources for a given usage/shader usage
-            GraphicsResourcesToMakeResidentMap resourcesToMakeResidentGraphics;
-            
             //Cache the constant buffer associated with a srg
             if (m_constantBufferSize)
             {
@@ -400,15 +398,13 @@ namespace AZ
                     id<MTLResource> mtlconstantBufferResource = m_constantBuffer.GetGpuAddress<id<MTLResource>>();
                     if(RHI::CheckBitsAny(srgResourcesVisInfo.m_constantDataStageMask, RHI::ShaderStageMask::Compute))
                     {
-                        uint16_t arrayIndex = resourcesToMakeResidentCompute[MTLResourceUsageRead].m_resourceArrayLen++;
-                        resourcesToMakeResidentCompute[MTLResourceUsageRead].m_resourceArray[arrayIndex] = mtlconstantBufferResource;
+                        resourcesToMakeResidentCompute[MTLResourceUsageRead].emplace(mtlconstantBufferResource);
                     }
                     else
                     {
                         MTLRenderStages mtlRenderStages = GetRenderStages(srgResourcesVisInfo.m_constantDataStageMask);
-                        AZStd::pair <MTLResourceUsage,MTLRenderStages> key = AZStd::make_pair(MTLResourceUsageRead, mtlRenderStages);
-                        uint16_t arrayIndex = resourcesToMakeResidentGraphics[key].m_resourceArrayLen++;
-                        resourcesToMakeResidentGraphics[key].m_resourceArray[arrayIndex] = mtlconstantBufferResource;
+                        AZStd::pair <MTLResourceUsage,MTLRenderStages> key = AZStd::make_pair(MTLResourceUsageRead, mtlRenderStages);                        
+                        resourcesToMakeResidentGraphics[key].emplace(mtlconstantBufferResource);
                     }
                 }
             }
@@ -435,23 +431,6 @@ namespace AZ
                         CollectResourcesForGraphics(commandEncoder, visMaskIt->second, it.second, resourcesToMakeResidentGraphics);
                     }
                 }
-            }
-            
-            //Call UseResource on all resources for Compute stage
-            for (const auto& key : resourcesToMakeResidentCompute)
-            {
-                [static_cast<id<MTLComputeCommandEncoder>>(commandEncoder) useResources: key.second.m_resourceArray.data()
-                                                                                  count: key.second.m_resourceArrayLen
-                                                                                  usage: key.first];
-            }
-            
-            //Call UseResource on all resources for Vertex and Fragment stages
-            for (const auto& key : resourcesToMakeResidentGraphics)
-            {
-                [static_cast<id<MTLRenderCommandEncoder>>(commandEncoder) useResources: key.second.m_resourceArray.data()
-                                                                                 count: key.second.m_resourceArrayLen
-                                                                                 usage: key.first.first
-                                                                                stages: key.first.second];
             }
         }
 
@@ -480,9 +459,9 @@ namespace AZ
                         AZ_Assert(false, "Undefined Resource type");
                     }
                 }
-                uint16_t arrayIndex = resourcesToMakeResidentMap[resourceUsage].m_resourceArrayLen++;
+                
                 id<MTLResource> mtlResourceToBind = resourceBindingData.m_resourcPtr->GetGpuAddress<id<MTLResource>>();
-                resourcesToMakeResidentMap[resourceUsage].m_resourceArray[arrayIndex] = mtlResourceToBind;
+                resourcesToMakeResidentMap[resourceUsage].emplace(mtlResourceToBind);
             }
         }
 
@@ -516,9 +495,8 @@ namespace AZ
                 }
                 
                 AZStd::pair <MTLResourceUsage, MTLRenderStages> key = AZStd::make_pair(resourceUsage, mtlRenderStages);
-                uint16_t arrayIndex = resourcesToMakeResidentMap[key].m_resourceArrayLen++;
                 id<MTLResource> mtlResourceToBind = resourceBindingData.m_resourcPtr->GetGpuAddress<id<MTLResource>>();
-                resourcesToMakeResidentMap[key].m_resourceArray[arrayIndex] = mtlResourceToBind;
+                resourcesToMakeResidentMap[key].emplace(mtlResourceToBind);
             }
         }
     }

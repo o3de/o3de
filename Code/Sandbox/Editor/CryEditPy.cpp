@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #include "EditorDefs.h"
 
@@ -32,6 +27,10 @@
 #include "GameEngine.h"
 #include "UndoConfigSpec.h"
 #include "ViewManager.h"
+
+// Atom
+#include <Atom/RPI.Public/ViewportContextBus.h>
+#include <Atom/RPI.Public/ViewportContext.h>
 
 //////////////////////////////////////////////////////////////////////////
 namespace
@@ -229,33 +228,49 @@ namespace
 
     AZ::Vector3 PyGetCurrentViewPosition()
     {
-        Vec3 pos = GetIEditor()->GetSystem()->GetViewCamera().GetPosition();
-        return AZ::Vector3(pos.x, pos.y, pos.z);
+        auto viewportContextRequests = AZ::RPI::ViewportContextRequests::Get();
+        if (viewportContextRequests)
+        {
+            AZ::RPI::ViewportContextPtr viewportContext = viewportContextRequests->GetDefaultViewportContext();
+            AZ::Transform transform = viewportContext->GetCameraTransform();
+            return transform.GetTranslation();
+        }
+        return AZ::Vector3();
     }
 
     AZ::Vector3 PyGetCurrentViewRotation()
     {
-        Ang3 ang = RAD2DEG(Ang3::GetAnglesXYZ(Matrix33(GetIEditor()->GetSystem()->GetViewCamera().GetMatrix())));
-        return AZ::Vector3(ang.x, ang.y, ang.z);
+        auto viewportContextRequests = AZ::RPI::ViewportContextRequests::Get();
+        if (viewportContextRequests)
+        {
+            AZ::RPI::ViewportContextPtr viewportContext = viewportContextRequests->GetDefaultViewportContext();
+            AZ::Transform transform = viewportContext->GetCameraTransform();
+            return transform.GetRotation().GetEulerDegrees();
+        }
+        return AZ::Vector3();
     }
 
     void PySetCurrentViewPosition(float x, float y, float z)
     {
-        AzToolsFramework::IEditorCameraController* editorCameraController = AZ::Interface<AzToolsFramework::IEditorCameraController>::Get();
-        AZ_Error("editor", editorCameraController, "IEditorCameraController is not registered.");
-        if (editorCameraController)
+        auto viewportContextRequests = AZ::RPI::ViewportContextRequests::Get();
+        if (viewportContextRequests)
         {
-            editorCameraController->SetCurrentViewPosition(AZ::Vector3{ x, y, z });
+            AZ::RPI::ViewportContextPtr viewportContext = viewportContextRequests->GetDefaultViewportContext();
+            AZ::Transform transform = viewportContext->GetCameraTransform();
+            transform.SetTranslation(x, y, z);
+            viewportContextRequests->GetDefaultViewportContext()->SetCameraTransform(transform);
         }
     }
 
     void PySetCurrentViewRotation(float x, float y, float z)
     {
-        AzToolsFramework::IEditorCameraController* editorCameraController = AZ::Interface<AzToolsFramework::IEditorCameraController>::Get();
-        AZ_Error("editor", editorCameraController, "IEditorCameraController is not registered.");
-        if (editorCameraController)
+        auto viewportContextRequests = AZ::RPI::ViewportContextRequests::Get();
+        if (viewportContextRequests)
         {
-            editorCameraController->SetCurrentViewRotation(AZ::Vector3{ x, y, z });
+            AZ::RPI::ViewportContextPtr viewportContext = viewportContextRequests->GetDefaultViewportContext();
+            AZ::Transform transform = viewportContext->GetCameraTransform();
+            transform.SetRotation(AZ::Quaternion::CreateFromEulerAnglesDegrees(AZ::Vector3(x, y, z)));
+            viewportContextRequests->GetDefaultViewportContext()->SetCameraTransform(transform);
         }
     }
 }

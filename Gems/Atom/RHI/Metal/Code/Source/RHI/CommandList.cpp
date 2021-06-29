@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #include "Atom_RHI_Metal_precompiled.h"
@@ -85,6 +80,7 @@ namespace AZ
                               destinationOffset:descriptor.m_destinationOffset
                                            size:descriptor.m_size];
                     
+                    Platform::SynchronizeBufferOnGPU(blitEncoder, destinationBuffer->GetMemoryView().GetGpuAddress<id<MTLBuffer>>());
                     break;
                 }
                 case RHI::CopyItemType::Image:
@@ -114,6 +110,8 @@ namespace AZ
                                        destinationSlice: descriptor.m_destinationSubresource.m_arraySlice
                                        destinationLevel: descriptor.m_destinationSubresource.m_mipSlice
                                       destinationOrigin: destinationOrigin];
+                    
+                    Platform::SynchronizeTextureOnGPU(blitEncoder, destinationImage->GetMemoryView().GetGpuAddress<id<MTLTexture>>());
                     break;
                 }
                 case RHI::CopyItemType::BufferToImage:
@@ -266,6 +264,11 @@ namespace AZ
             mtlVertexArgBufferOffsets.fill(0);
             mtlFragmentOrComputeArgBufferOffsets.fill(0);
             
+            //Map to cache all the resources based on the usage as we can batch all the resources for a given usage
+            ArgumentBuffer::ComputeResourcesToMakeResidentMap resourcesToMakeResidentCompute;
+            //Map to cache all the resources based on the usage and shader stage as we can batch all the resources for a given usage/shader usage
+            ArgumentBuffer::GraphicsResourcesToMakeResidentMap resourcesToMakeResidentGraphics;
+            
             for (uint32_t slot = 0; slot < RHI::Limits::Pipeline::ShaderResourceGroupCountMax; ++slot)
             {
                 const ShaderResourceGroup* shaderResourceGroup = bindings.m_srgsBySlot[slot];
@@ -291,7 +294,6 @@ namespace AZ
                         //For graphics and compute shader stages, cache all the argument buffers, offsets and track the min/max indices
                         if(m_commandEncoderType == CommandEncoderType::Render)
                         {
-                            id<MTLRenderCommandEncoder> renderEncoder = GetEncoder<id<MTLRenderCommandEncoder>>();
                             uint8_t numBitsSet = RHI::CountBitsSet(static_cast<uint64_t>(srgVisInfo));
                             if( numBitsSet > 1 || srgVisInfo == RHI::ShaderStageMask::Vertex)
                             {
@@ -334,11 +336,11 @@ namespace AZ
                         //format compatible with the appropriate metal function.
                         if(m_commandEncoderType == CommandEncoderType::Render)
                         {
-                            shaderResourceGroup->AddUntrackedResourcesToEncoder(m_encoder, srgResourcesVisInfo);
+                            shaderResourceGroup->CollectUntrackedResources(m_encoder, srgResourcesVisInfo, resourcesToMakeResidentCompute, resourcesToMakeResidentGraphics);
                         }
                         else if(m_commandEncoderType == CommandEncoderType::Compute)
                         {
-                            shaderResourceGroup->AddUntrackedResourcesToEncoder(m_encoder, srgResourcesVisInfo);
+                            shaderResourceGroup->CollectUntrackedResources(m_encoder, srgResourcesVisInfo, resourcesToMakeResidentCompute, resourcesToMakeResidentGraphics);
                         }
                     }
                 }
@@ -366,6 +368,32 @@ namespace AZ
                                     bufferFragmentOrComputeRegisterIdMax,
                                     mtlFragmentOrComputeArgBuffers,
                                     mtlFragmentOrComputeArgBufferOffsets);
+            }
+            
+            id<MTLRenderCommandEncoder> renderEncoder = GetEncoder<id<MTLRenderCommandEncoder>>();
+            id<MTLComputeCommandEncoder> computeEncoder = GetEncoder<id<MTLComputeCommandEncoder>>();
+            
+            //Call UseResource on all resources for Compute stage
+            for (const auto& key : resourcesToMakeResidentCompute)
+            {
+                AZStd::vector<id <MTLResource>> resourcesToProcessVec(key.second.begin(), key.second.end());
+                
+                [computeEncoder useResources: &resourcesToProcessVec[0]
+                                       count: resourcesToProcessVec.size()
+                                       usage: key.first];
+                 
+            }
+            
+            //Call UseResource on all resources for Vertex and Fragment stages
+            for (const auto& key : resourcesToMakeResidentGraphics)
+            {
+                
+                AZStd::vector<id <MTLResource>> resourcesToProcessVec(key.second.begin(), key.second.end());
+                
+                [renderEncoder useResources: &resourcesToProcessVec[0]
+                                      count: resourcesToProcessVec.size()
+                                      usage: key.first.first
+                                     stages: key.first.second];
             }
             
             return true;

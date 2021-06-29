@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -2177,7 +2172,10 @@ namespace ScriptCanvas
             {
                 for (auto& latent : nodeableParse.second->m_latents)
                 {
-                    roots.push_back(AZStd::const_pointer_cast<ExecutionTree>(latent.second));
+                    if (latent.second)
+                    {
+                        roots.push_back(AZStd::const_pointer_cast<ExecutionTree>(latent.second));
+                    }
                 }
             }
 
@@ -2185,23 +2183,35 @@ namespace ScriptCanvas
             {
                 for (auto& event : eventHandlerParse.second->m_events)
                 {
-                    roots.push_back(AZStd::const_pointer_cast<ExecutionTree>(event.second));
+                    if (event.second)
+                    {
+                        roots.push_back(AZStd::const_pointer_cast<ExecutionTree>(event.second));
+                    }
                 }
             }
 
             for (auto& eventHandlerParse : m_eventHandlingByNode)
             {
-                roots.push_back(AZStd::const_pointer_cast<ExecutionTree>(eventHandlerParse.second->m_eventHandlerFunction));
+                if (eventHandlerParse.second->m_eventHandlerFunction)
+                {
+                    roots.push_back(AZStd::const_pointer_cast<ExecutionTree>(eventHandlerParse.second->m_eventHandlerFunction));
+                }
             }
 
             for (auto variableWriteHandling : m_variableWriteHandlingBySlot)
             {
-                roots.push_back(AZStd::const_pointer_cast<ExecutionTree>(variableWriteHandling.second->m_function));
+                if (variableWriteHandling.second->m_function)
+                {
+                    roots.push_back(AZStd::const_pointer_cast<ExecutionTree>(variableWriteHandling.second->m_function));
+                }
             }
 
             for (auto function : m_functions)
             {
-                roots.push_back(AZStd::const_pointer_cast<ExecutionTree>(function));
+                if (function)
+                {
+                    roots.push_back(AZStd::const_pointer_cast<ExecutionTree>(function));
+                }
             }
 
             return roots;
@@ -3762,6 +3772,12 @@ namespace ScriptCanvas
 
                 nextParse = onReset;
                 nextSlot = onceResetSlot;
+            }
+
+            if (!nextSlot)
+            {
+                AddError(ID.m_node->GetEntityId(), once, "Once node missing next slot, likely needs replacement");
+                return;
             }
 
             ParseExecutionTreeBody(nextParse, *nextSlot);

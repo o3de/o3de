@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #pragma once
 
@@ -230,8 +225,6 @@ struct SSystemCVars
 
     int sys_FilesystemCaseSensitivity;
 
-    int sys_deferAudioUpdateOptim;
-
     AZ::IO::ArchiveVars archiveVars;
 
 #if defined(WIN32)
@@ -310,8 +303,6 @@ public:
     virtual bool UpdatePreTickBus(int updateFlags = 0, int nPauseMode = 0);
     virtual bool UpdatePostTickBus(int updateFlags = 0, int nPauseMode = 0);
     virtual bool UpdateLoadtime();
-    virtual void DoWorkDuringOcclusionChecks();
-    virtual bool NeedDoWorkDuringOcclusionChecks() { return m_bNeedDoWorkDuringOcclusionChecks; }
 
     ////////////////////////////////////////////////////////////////////////
     // CrySystemRequestBus interface implementation
@@ -436,7 +427,6 @@ private:
     bool InitFileSystem();
     bool InitFileSystem_LoadEngineFolders(const SSystemInitParams& initParams);
     bool InitAudioSystem(const SSystemInitParams& initParams);
-    bool InitShine(const SSystemInitParams& initParams);
 
     //@}
 
@@ -743,7 +733,6 @@ protected: // -------------------------------------------------------------
     typedef std::list<SErrorMessage> TErrorMessages;
     TErrorMessages m_ErrorMessages;
     bool m_bHasRenderedErrorMessage;
-    bool m_bNeedDoWorkDuringOcclusionChecks;
 
     ESystemEvent m_eRuntimeState;
     bool m_bIsAsserting;

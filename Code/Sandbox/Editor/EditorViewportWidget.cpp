@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 // Description : implementation filefov
 
@@ -457,8 +452,19 @@ void EditorViewportWidget::Update()
         return;
     }
 
-    m_updatingCameraPosition = true;
-    if (!ed_useNewCameraSystem)
+    if (m_updateCameraPositionNextTick)
+    {
+        auto cameraState = m_renderViewport->GetCameraState();
+        AZ::Matrix3x4 matrix;
+        matrix.SetBasisAndTranslation(cameraState.m_side, cameraState.m_forward, cameraState.m_up, cameraState.m_position);
+        auto m = AZMatrix3x4ToLYMatrix3x4(matrix);
+
+        SetViewTM(m);
+        SetFOV(cameraState.m_fovOrZoom);
+        m_Camera.SetZRange(cameraState.m_nearClip, cameraState.m_farClip);
+        m_updateCameraPositionNextTick = false;
+    }
+    else if (!ed_useNewCameraSystem)
     {
         m_renderViewport->GetViewportContext()->SetCameraTransform(LYTransformToAZTransform(m_Camera.GetMatrix()));
     }
@@ -477,8 +483,6 @@ void EditorViewportWidget::Update()
         );
         m_renderViewport->GetViewportContext()->SetCameraProjectionMatrix(clipMatrix);
     }
-    m_updatingCameraPosition = false;
-
 
     // Don't wait for changes to update the focused viewport.
     if (CheckRespondToInput())
@@ -514,18 +518,28 @@ void EditorViewportWidget::Update()
             // Disable rendering to avoid recursion into Update()
             PushDisableRendering();
 
+
+            //get debug display interface for the viewport
+            AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
+            AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, GetViewportId());
+            AZ_Assert(debugDisplayBus, "Invalid DebugDisplayRequestBus.");
+
+            AzFramework::DebugDisplayRequests* debugDisplay =
+                AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
+
+
             // draw debug visualizations
-            if (m_debugDisplay)
+            if (debugDisplay)
             {
-                const AZ::u32 prevState = m_debugDisplay->GetState();
-                m_debugDisplay->SetState(
+                const AZ::u32 prevState = debugDisplay->GetState();
+                debugDisplay->SetState(
                     e_Mode3D | e_AlphaBlended | e_FillModeSolid | e_CullModeBack | e_DepthWriteOn | e_DepthTestOn);
 
                 AzFramework::EntityDebugDisplayEventBus::Broadcast(
                     &AzFramework::EntityDebugDisplayEvents::DisplayEntityViewport,
-                    AzFramework::ViewportInfo{ GetViewportId() }, *m_debugDisplay);
+                    AzFramework::ViewportInfo{ GetViewportId() }, *debugDisplay);
 
-                m_debugDisplay->SetState(prevState);
+                debugDisplay->SetState(prevState);
             }
 
             QtViewport::Update();
@@ -2834,7 +2848,7 @@ void EditorViewportWidget::RestoreViewportAfterGameMode()
     if (restoreOnExitGameModePopupDisabledRegValue.isNull())
     {
         // No, ask them now
-        QMessageBox messageBox(QMessageBox::Question, "Lumberyard", text, QMessageBox::StandardButtons(QMessageBox::No | QMessageBox::Yes), this);
+        QMessageBox messageBox(QMessageBox::Question, "O3DE", text, QMessageBox::StandardButtons(QMessageBox::No | QMessageBox::Yes), this);
         messageBox.setDefaultButton(QMessageBox::Yes);
 
         QCheckBox* checkBox = new QCheckBox(QStringLiteral("Do not show this message again"));
@@ -2889,22 +2903,8 @@ void EditorViewportWidget::UpdateScene()
 
 void EditorViewportWidget::UpdateCameraFromViewportContext()
 {
-    // If we're not updating because the cry camera position changed, we should make sure our position gets copied back to the Cry Camera
-    if (m_updatingCameraPosition)
-    {
-        return;
-    }
-
-    auto cameraState = m_renderViewport->GetCameraState();
-    AZ::Matrix3x4 matrix;
-    matrix.SetBasisAndTranslation(cameraState.m_side, cameraState.m_forward, cameraState.m_up, cameraState.m_position);
-    auto m = AZMatrix3x4ToLYMatrix3x4(matrix);
-
-    m_updatingCameraPosition = true;
-    SetViewTM(m);
-    SetFOV(cameraState.m_fovOrZoom);
-    m_Camera.SetZRange(cameraState.m_nearClip, cameraState.m_farClip);
-    m_updatingCameraPosition = false;
+   // Queue a sync for the next tick, to ensure the latest version of the viewport context transform is used
+    m_updateCameraPositionNextTick = true;
 }
 
 void EditorViewportWidget::SetAsActiveViewport()

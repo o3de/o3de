@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
@@ -98,6 +93,20 @@ namespace AZ
                 }
             }
 
+            aiMatrix4x4 CalculateWorldTransform(const aiNode* currentNode)
+            {
+                aiMatrix4x4 transform = {};
+                const aiNode* iteratingNode = currentNode;
+                
+                while (iteratingNode)
+                {
+                    transform = iteratingNode->mTransformation * transform;
+                    iteratingNode = iteratingNode->mParent;
+                }
+
+                return transform;
+            }
+
             Events::ProcessingResult AssImpBoneImporter::ImportBone(AssImpNodeEncounteredContext& context)
             {
                 AZ_TraceContext("Importer", "Bone");
@@ -111,12 +120,7 @@ namespace AZ
                 }
 
                 bool isBone = false;
-
-                if (NodeParentIsOfType(context.m_scene.GetGraph(), context.m_currentGraphPosition, DataTypes::IBoneData::TYPEINFO_Uuid()))
-                {
-                    isBone = true;
-                }
-                else
+                
                 {
                     AZStd::unordered_map<AZStd::string, const aiNode*> mainBoneList;
                     AZStd::unordered_map<AZStd::string, const aiBone*> boneLookup;
@@ -170,15 +174,8 @@ namespace AZ
                 {
                     createdBoneData = AZStd::make_shared<SceneData::GraphData::RootBoneData>();
                 }
-
-                aiMatrix4x4 transform = currentNode->mTransformation;
-                const aiNode* parent = currentNode->mParent;
                 
-                while (parent)
-                {
-                    transform = parent->mTransformation * transform;
-                    parent = parent->mParent;
-                }
+                aiMatrix4x4 transform = CalculateWorldTransform(currentNode);
                 
                 SceneAPI::DataTypes::MatrixType globalTransform = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(transform);
 

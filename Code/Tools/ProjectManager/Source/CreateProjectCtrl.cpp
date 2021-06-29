@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -77,6 +72,7 @@ namespace O3DE::ProjectManager
         return ProjectManagerScreen::CreateProject;
     }
 
+    // Called when pressing "Create New Project"
     void CreateProjectCtrl::NotifyCurrentScreen()
     {
         ScreenWidget* currentScreen = reinterpret_cast<ScreenWidget*>(m_stack->currentWidget());
@@ -84,6 +80,11 @@ namespace O3DE::ProjectManager
         {
             currentScreen->NotifyCurrentScreen();
         }
+
+        // Gather the gems from the project template. When we will have multiple project templates, we need to re-gather them
+        // on changing the template and let the user know that any further changes on top of the template will be lost.
+        QString projectTemplatePath = m_newProjectSettingsScreen->GetProjectTemplatePath();
+        m_gemCatalogScreen->ReinitForProject(projectTemplatePath + "/Template", /*isNewProject=*/true);
     }
 
     void CreateProjectCtrl::HandleBackButton()
@@ -151,9 +152,6 @@ namespace O3DE::ProjectManager
             {
                 m_stack->setCurrentIndex(m_stack->currentIndex() + 1);
 
-                QString projectTemplatePath = m_newProjectSettingsScreen->GetProjectTemplatePath();
-                m_gemCatalogScreen->ReinitForProject(projectTemplatePath + "/Template", /*isNewProject=*/true);
-
                 Update();
             }
             else
@@ -203,7 +201,11 @@ namespace O3DE::ProjectManager
                 PythonBindingsInterface::Get()->AddProject(projectInfo.m_path);
 
 #ifdef TEMPLATE_GEM_CONFIGURATION_ENABLED
-                m_gemCatalogScreen->EnableDisableGemsForProject(projectInfo.m_path);
+                if (!m_gemCatalogScreen->EnableDisableGemsForProject(projectInfo.m_path))
+                {
+                    QMessageBox::critical(this, tr("Failed to configure gems"), tr("Failed to configure gems for template."));
+                    return;
+                }
 #endif // TEMPLATE_GEM_CONFIGURATION_ENABLED
 
                 projectInfo.m_needsBuild = true;

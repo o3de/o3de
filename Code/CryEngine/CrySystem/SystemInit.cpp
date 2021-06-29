@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #include "CrySystem_precompiled.h"
 #include "System.h"
@@ -857,16 +852,6 @@ bool CSystem::InitVTuneProfiler()
     return true;
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-bool CSystem::InitShine([[maybe_unused]] const SSystemInitParams& initParams)
-{
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
-
-    EBUS_EVENT(UiSystemBus, InitializeSystem);
-
-    return true;
-}
-
 //////////////////////////////////////////////////////////////////////////
 void CSystem::InitLocalization()
 {
@@ -1555,20 +1540,6 @@ AZ_POP_DISABLE_WARNING
         }
         m_Time.ResetTimer();
 
-        //////////////////////////////////////////////////////////////////////////
-        // UI. Should be after input and hardware mouse
-        //////////////////////////////////////////////////////////////////////////
-        if (!m_bDedicatedServer)
-        {
-            AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "UI system initialization");
-            INDENT_LOG_DURING_SCOPE();
-            if (!InitShine(startupParams))
-            {
-                return false;
-            }
-        }
-
-        InlineInitializationProcessing("CSystem::Init InitShine");
         // CONSOLE
         //////////////////////////////////////////////////////////////////////////
         if (!InitConsole())
@@ -1850,11 +1821,6 @@ void CSystem::CreateSystemVars()
     REGISTER_CVAR2("sys_FilesystemCaseSensitivity", &g_cvars.sys_FilesystemCaseSensitivity, fileSystemCaseSensitivityDefault, VF_NULL,
         "0 - CryPak lowercases all input file names\n"
         "1 - CryPak preserves file name casing\n"
-        "Default is 1");
-
-    REGISTER_CVAR2("sys_deferAudioUpdateOptim", &g_cvars.sys_deferAudioUpdateOptim, 1, VF_NULL,
-        "0 - disable optimisation\n"
-        "1 - enable optimisation\n"
         "Default is 1");
 
     m_sysNoUpdate = REGISTER_INT("sys_noupdate", 0, VF_CHEAT,

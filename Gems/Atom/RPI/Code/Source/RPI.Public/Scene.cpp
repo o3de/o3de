@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RHI/CpuProfiler.h>
 
@@ -404,6 +399,7 @@ namespace AZ
 
             {
                 AZ_PROFILE_SCOPE(Debug::ProfileCategory::AzRender, "WaitForSimulationCompletion");
+                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "WaitForSimulationCompletion");
                 WaitAndCleanCompletionJob(m_simulationCompletion);
             }
 
@@ -420,12 +416,15 @@ namespace AZ
 
             // Get active pipelines which need to be rendered and notify them frame started
             AZStd::vector<RenderPipelinePtr> activePipelines;
-            for (auto& pipeline : m_pipelines)
             {
-                if (pipeline->NeedsRender())
+                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "OnStartFrame");
+                for (auto& pipeline : m_pipelines)
                 {
-                    activePipelines.push_back(pipeline);
-                    pipeline->OnStartFrame(tickInfo);
+                    if (pipeline->NeedsRender())
+                    {
+                        activePipelines.push_back(pipeline);
+                        pipeline->OnStartFrame(tickInfo);
+                    }
                 }
             }
 
@@ -444,7 +443,7 @@ namespace AZ
             
 
             {
-                AZ_PROFILE_SCOPE(Debug::ProfileCategory::AzRender, "Setup Views");
+                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "Setup Views");
 
                 // Collect persistent views from all pipelines to be rendered
                 AZStd::map<ViewPtr, RHI::DrawListMask> persistentViews; 
@@ -490,7 +489,6 @@ namespace AZ
                 {
                     const auto renderLambda = [this, &fp]()
                     {
-                        AZ_PROFILE_SCOPE_DYNAMIC(Debug::ProfileCategory::AzRender, "renderJob - fp:%s", fp->RTTI_GetTypeName());
                         fp->Render(m_renderPacket);
                     };
 
@@ -526,12 +524,14 @@ namespace AZ
                 // Add dynamic draw data for all the views
                 if (m_dynamicDrawSystem)
                 {
+                    AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "DynamicDraw SubmitDrawData");
                     m_dynamicDrawSystem->SubmitDrawData(this, m_renderPacket.m_views);
                 }
             }
 
             {
                 AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "FinalizeDrawLists");
+                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "FinalizeDrawLists");
                 if (jobPolicy == RHI::JobPolicy::Serial)
                 {
                     for (auto& view : m_renderPacket.m_views)
@@ -542,7 +542,6 @@ namespace AZ
                 else
                 {
                     AZ::JobCompletion* finalizeDrawListsCompletion = aznew AZ::JobCompletion();
-                    AZ_PROFILE_EVENT_BEGIN(Debug::ProfileCategory::AzRender, "StartFinalizeDrawListsJobs");
                     for (auto& view : m_renderPacket.m_views)
                     {
                         const auto finalizeDrawListsLambda = [view]()
@@ -559,11 +558,15 @@ namespace AZ
                 }
             }
 
-            SceneNotificationBus::Event(GetId(), &SceneNotification::OnEndPrepareRender);
+            {
+                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "Scene OnEndPrepareRender");
+                SceneNotificationBus::Event(GetId(), &SceneNotification::OnEndPrepareRender);
+            }
         }
 
         void Scene::OnFrameEnd()
         {
+            AZ_ATOM_PROFILE_FUNCTION("RPI", "Scene: OnFrameEnd");
             for (auto& pipeline : m_pipelines)
             {
                 if (pipeline->NeedsRender())
@@ -702,6 +705,7 @@ namespace AZ
 
         void Scene::RebuildPipelineStatesLookup()
         {
+            AZ_ATOM_PROFILE_FUNCTION("RPI", "Scene: RebuildPipelineStatesLookup");
             m_pipelineStatesLookup.clear();
 
             AZStd::queue<ParentPass*> parents;

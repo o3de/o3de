@@ -1,0 +1,312 @@
+{
+    "ContainerEntity": {
+        "Id": "ContainerEntity",
+        "Name": "Chicken_Actor",
+        "Components": {
+            "Component_[10420060158469409859]": {
+                "$type": "EditorVisibilityComponent",
+                "Id": 10420060158469409859
+            },
+            "Component_[10713261435043694267]": {
+                "$type": "EditorOnlyEntityComponent",
+                "Id": 10713261435043694267
+            },
+            "Component_[11088054817315996737]": {
+                "$type": "EditorLockComponent",
+                "Id": 11088054817315996737
+            },
+            "Component_[14341334118593165562]": {
+                "$type": "EditorInspectorComponent",
+                "Id": 14341334118593165562
+            },
+            "Component_[15143425594853321191]": {
+                "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                "Id": 15143425594853321191,
+                "Parent Entity": "",
+                "Cached World Transform Parent": ""
+            },
+            "Component_[15383315993246423867]": {
+                "$type": "EditorPrefabComponent",
+                "Id": 15383315993246423867
+            },
+            "Component_[16499127605624407101]": {
+                "$type": "EditorEntitySortComponent",
+                "Id": 16499127605624407101
+            },
+            "Component_[16697571480493454144]": {
+                "$type": "SelectionComponent",
+                "Id": 16697571480493454144
+            },
+            "Component_[415761541071751882]": {
+                "$type": "EditorPendingCompositionComponent",
+                "Id": 415761541071751882
+            },
+            "Component_[7972775450040391034]": {
+                "$type": "EditorDisabledCompositionComponent",
+                "Id": 7972775450040391034
+            },
+            "Component_[9910169802741330341]": {
+                "$type": "EditorEntityIconComponent",
+                "Id": 9910169802741330341
+            }
+        },
+        "IsDependencyReady": true
+    },
+    "Entities": {
+        "Entity_[48421054243702]": {
+            "Id": "Entity_[48421054243702]",
+            "Name": "Chicken_Actor",
+            "Components": {
+                "Component_[10024659544266822060]": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 10024659544266822060,
+                    "ComponentOrderEntryArray": [
+                        {
+                            "ComponentId": 3250661421529612274
+                        },
+                        {
+                            "ComponentId": 4381463095952282089,
+                            "SortIndex": 1
+                        },
+                        {
+                            "ComponentId": 13550968986158933154,
+                            "SortIndex": 2
+                        },
+                        {
+                            "ComponentId": 11536283465461048726,
+                            "SortIndex": 3
+                        },
+                        {
+                            "ComponentId": 7689190671460963527,
+                            "SortIndex": 4
+                        }
+                    ]
+                },
+                "Component_[11465635386953249015]": {
+                    "$type": "EditorLockComponent",
+                    "Id": 11465635386953249015
+                },
+                "Component_[11536283465461048726]": {
+                    "$type": "EditorSimpleMotionComponent",
+                    "Id": 11536283465461048726,
+                    "Configuration": {
+                        "MotionAsset": {
+                            "assetId": {
+                                "guid": "{37045429-A151-5646-97CF-BE931A35C0FC}",
+                                "subId": 2264735902
+                            },
+                            "assetHint": "objects/cloth/chicken/motions/chickenidle.motion"
+                        },
+                        "Loop": true
+                    }
+                },
+                "Component_[13550968986158933154]": {
+                    "$type": "EditorMaterialComponent",
+                    "Id": 13550968986158933154,
+                    "Controller": {
+                        "Configuration": {
+                            "materials": [
+                                {
+                                    "Key": {
+                                        "materialAssetId": {
+                                            "guid": "{3E4C6A29-92A4-523E-8739-F3E64957569E}",
+                                            "subId": 668669130
+                                        }
+                                    },
+                                    "Value": {
+                                        "MaterialAsset": {
+                                            "assetId": {
+                                                "guid": "{FB34D8F7-E8CA-542D-92A3-F0E04F3A3EC3}"
+                                            },
+                                            "assetHint": "objects/cloth/chicken/actor/chicken_chicken_body_mat.azmaterial"
+                                        }
+                                    }
+                                },
+                                {
+                                    "Key": {
+                                        "materialAssetId": {
+                                            "guid": "{3E4C6A29-92A4-523E-8739-F3E64957569E}",
+                                            "subId": 1541321207
+                                        }
+                                    },
+                                    "Value": {
+                                        "MaterialAsset": {
+                                            "assetId": {
+                                                "guid": "{6114C408-26EE-51DC-8733-A07800BF4991}"
+                                            },
+                                            "assetHint": "objects/cloth/chicken/actor/chicken_chicken_eye_mat.azmaterial"
+                                        }
+                                    }
+                                },
+                                {
+                                    "Key": {
+                                        "materialAssetId": {
+                                            "guid": "{3E4C6A29-92A4-523E-8739-F3E64957569E}",
+                                            "subId": 2608524672
+                                        }
+                                    },
+                                    "Value": {
+                                        "MaterialAsset": {
+                                            "assetId": {
+                                                "guid": "{80F92051-203E-52CE-B4D6-E3AED21795C9}"
+                                            },
+                                            "assetHint": "objects/cloth/chicken/actor/chicken_mohawkmat.azmaterial"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "materialSlots": [
+                        {
+                            "id": {
+                                "materialAssetId": {
+                                    "guid": "{3E4C6A29-92A4-523E-8739-F3E64957569E}",
+                                    "subId": 668669130
+                                }
+                            },
+                            "materialAsset": {
+                                "assetId": {
+                                    "guid": "{FB34D8F7-E8CA-542D-92A3-F0E04F3A3EC3}"
+                                },
+                                "assetHint": "objects/cloth/chicken/actor/chicken_chicken_body_mat.azmaterial"
+                            }
+                        },
+                        {
+                            "id": {
+                                "materialAssetId": {
+                                    "guid": "{3E4C6A29-92A4-523E-8739-F3E64957569E}",
+                                    "subId": 1541321207
+                                }
+                            },
+                            "materialAsset": {
+                                "assetId": {
+                                    "guid": "{6114C408-26EE-51DC-8733-A07800BF4991}"
+                                },
+                                "assetHint": "objects/cloth/chicken/actor/chicken_chicken_eye_mat.azmaterial"
+                            }
+                        },
+                        {
+                            "id": {
+                                "materialAssetId": {
+                                    "guid": "{3E4C6A29-92A4-523E-8739-F3E64957569E}",
+                                    "subId": 2608524672
+                                }
+                            },
+                            "materialAsset": {
+                                "assetId": {
+                                    "guid": "{80F92051-203E-52CE-B4D6-E3AED21795C9}"
+                                },
+                                "assetHint": "objects/cloth/chicken/actor/chicken_mohawkmat.azmaterial"
+                            }
+                        }
+                    ],
+                    "materialSlotsByLod": [
+                        [
+                            {
+                                "id": {
+                                    "lodIndex": 0,
+                                    "materialAssetId": {
+                                        "guid": "{3E4C6A29-92A4-523E-8739-F3E64957569E}",
+                                        "subId": 668669130
+                                    }
+                                }
+                            },
+                            {
+                                "id": {
+                                    "lodIndex": 0,
+                                    "materialAssetId": {
+                                        "guid": "{3E4C6A29-92A4-523E-8739-F3E64957569E}",
+                                        "subId": 1541321207
+                                    }
+                                }
+                            },
+                            {
+                                "id": {
+                                    "lodIndex": 0,
+                                    "materialAssetId": {
+                                        "guid": "{3E4C6A29-92A4-523E-8739-F3E64957569E}",
+                                        "subId": 2608524672
+                                    }
+                                }
+                            }
+                        ]
+                    ]
+                },
+                "Component_[14277098884859902099]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 14277098884859902099
+                },
+                "Component_[2153976993809262425]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 2153976993809262425
+                },
+                "Component_[3250661421529612274]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 3250661421529612274,
+                    "Parent Entity": "ContainerEntity",
+                    "Cached World Transform": {
+                        "Translation": [
+                            -8.559586524963379,
+                            -1.2393379211425782,
+                            0.043556928634643558
+                        ],
+                        "Rotation": [
+                            0.0,
+                            0.0,
+                            1.0,
+                            0.0
+                        ]
+                    },
+                    "Cached World Transform Parent": "ContainerEntity"
+                },
+                "Component_[363579226643870873]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 363579226643870873
+                },
+                "Component_[4381463095952282089]": {
+                    "$type": "EditorActorComponent",
+                    "Id": 4381463095952282089,
+                    "ActorAsset": {
+                        "assetId": {
+                            "guid": "{3E4C6A29-92A4-523E-8739-F3E64957569E}",
+                            "subId": 166954688
+                        },
+                        "loadBehavior": "QueueLoad",
+                        "assetHint": "objects/cloth/chicken/actor/chicken.actor"
+                    },
+                    "MaterialPerLOD": [
+                        {}
+                    ],
+                    "AttachmentTarget": ""
+                },
+                "Component_[4892122740022910835]": {
+                    "$type": "SelectionComponent",
+                    "Id": 4892122740022910835
+                },
+                "Component_[5646397145899865599]": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 5646397145899865599
+                },
+                "Component_[6526021153484129377]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 6526021153484129377
+                },
+                "Component_[7689190671460963527]": {
+                    "$type": "EditorClothComponent",
+                    "Id": 7689190671460963527,
+                    "Configuration": {
+                        "Mesh Node": "chicken_mohawk",
+                        "Mass": 4.0,
+                        "Remove Static Triangles": false
+                    }
+                },
+                "Component_[7705494469103394865]": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 7705494469103394865
+                }
+            },
+            "IsDependencyReady": true
+        }
+    }
+}

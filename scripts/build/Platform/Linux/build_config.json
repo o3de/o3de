@@ -24,7 +24,7 @@
     "COMMAND": "python_linux.sh",
     "PARAMETERS": {
       "SCRIPT_PATH": "scripts/build/ci_build_metrics.py",
-      "SCRIPT_PARAMETERS": "--platform Linux --jobname '${JOB_NAME}' --jobnumber '${BUILD_NUMBER}' --jobnode '${NODE_NAME}' --changelist '${CHANGE_ID}'"
+      "SCRIPT_PARAMETERS": "--platform=Linux --repository=${REPOSITORY_NAME} --jobname=${JOB_NAME} --jobnumber=${BUILD_NUMBER} --jobnode=${NODE_LABEL} --changelist=${CHANGE_ID}"
     }
   },
   "debug": {
@@ -83,7 +83,7 @@
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all",
-      "CTEST_OPTIONS": "-E (Gem::EMotionFX.Editor.Tests|Gem::AWSClientAuth.Tests|Gem::AWSCore.Editor.Tests) -LE SUITE_sandbox -L FRAMEWORK_googletest"
+      "CTEST_OPTIONS": "-E Gem::EMotionFX.Editor.Tests -LE SUITE_sandbox -L FRAMEWORK_googletest"
     }
   },
   "test_profile_nounity": {
@@ -95,7 +95,7 @@
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=FALSE -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all",
-      "CTEST_OPTIONS": "-E (Gem::EMotionFX.Editor.Tests|Gem::AWSClientAuth.Tests|Gem::AWSCore.Editor.Tests) -LE SUITE_sandbox -L FRAMEWORK_googletest"
+      "CTEST_OPTIONS": "-E Gem::EMotionFX.Editor.Tests -LE SUITE_sandbox -L FRAMEWORK_googletest"
     }
   },
   "asset_profile": {
