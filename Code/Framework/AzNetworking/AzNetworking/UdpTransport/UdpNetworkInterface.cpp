@@ -193,6 +193,13 @@ namespace AzNetworking
                 continue;
             }
 
+            const ConnectionState connectionState = connection->GetConnectionState();
+            if (connectionState == ConnectionState::Disconnecting || connectionState == ConnectionState::Disconnected)
+            {
+                // Skip packets from disconnected connections
+                continue;
+            }
+
             int32_t decodedPacketSize = 0;
             m_decryptBuffer.Resize(m_decryptBuffer.GetCapacity());
             const uint8_t* decodedPacketData = connection->GetDtlsEndpoint().DecodePacket(*connection, packet.m_buffer, packet.m_receivedBytes, m_decryptBuffer.GetBuffer(), decodedPacketSize);

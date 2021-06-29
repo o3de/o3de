@@ -282,15 +282,6 @@ namespace Multiplayer
     {
         //RewindableObjectState::ClearRewoundEntities();
 
-        // Keystone has refactored these API's, rewrite required
-        //AZ::SliceComponent* rootSlice = nullptr;
-        //{
-        //    AzFramework::EntityContextId gameContextId = AzFramework::EntityContextId::CreateNull();
-        //    AzFramework::GameEntityContextRequestBus::BroadcastResult(gameContextId, &AzFramework::GameEntityContextRequests::GetGameEntityContextId);
-        //    AzFramework::EntityContextRequestBus::BroadcastResult(rootSlice, &AzFramework::EntityContextRequests::GetRootSlice);
-        //    AZ_Assert(rootSlice != nullptr, "Root slice returned was NULL");
-        //}
-
         AZStd::vector<NetEntityId> removeList;
         removeList.swap(m_removeList);
         for (NetEntityId entityId : removeList)
@@ -304,13 +295,9 @@ namespace Multiplayer
                 AZ_Assert(netBindComponent != nullptr, "NetBindComponent not found on networked entity");
                 netBindComponent->StopEntity();
 
-                // Delete Entity, method depends on how it was loaded
-                // Try slice removal first, then force delete
-                //AZ::Entity* rawEntity = removeEntity.GetEntity();
-                //if (!rootSlice->RemoveEntity(rawEntity))
-                //{
-                //    delete rawEntity;
-                //}
+                AzFramework::GameEntityContextRequestBus::Broadcast(
+                    &AzFramework::GameEntityContextRequestBus::Events::DestroyGameEntity, netBindComponent->GetEntityId());
+
             }
 
             m_networkEntityTracker.erase(entityId);
