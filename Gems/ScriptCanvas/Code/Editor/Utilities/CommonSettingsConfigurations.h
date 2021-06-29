@@ -7,7 +7,7 @@
 #pragma once
 
 // IMPORTANT: This is NOT the permanent location for these values.
-#define SCRIPTCANVASEDITOR_AZ_QCOREAPPLICATION_SETTINGS_ORGANIZATION_NAME  "Amazon"
+#define SCRIPTCANVASEDITOR_AZ_QCOREAPPLICATION_SETTINGS_ORGANIZATION_NAME  "O3DE"
 #define SCRIPTCANVASEDITOR_NAME_SHORT   "ScriptCanvasEditor"
 
 namespace ScriptCanvasEditor

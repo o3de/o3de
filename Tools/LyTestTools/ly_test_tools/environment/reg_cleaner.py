@@ -11,7 +11,7 @@ import winreg
 
 import ly_test_tools.environment.process_utils as process_utils
 
-CONST_LY_REG = r'SOFTWARE\Amazon\Lumberyard'
+CONST_LY_REG = r'SOFTWARE\O3DE\O3DE'
 AUTOMATION_EXCEPTION_LIST = [
     os.path.join(CONST_LY_REG, r"Identity"),
     os.path.join(CONST_LY_REG, r"Settings\DXInstalled"),

@@ -252,8 +252,8 @@ namespace Editor
         setWindowIcon(QIcon(":/Application/res/o3de_editor.ico"));
 
         // set the default key store for our preferences:
-        setOrganizationName("Amazon");
-        setOrganizationDomain("amazon.com");
+        setOrganizationName("O3DE");
+        setOrganizationDomain("o3de.org");
         setApplicationName("O3DE Editor");
 
         connect(m_idleTimer, &QTimer::timeout, this, &EditorQtApplication::maybeProcessIdle);
