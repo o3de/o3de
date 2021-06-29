@@ -67,8 +67,7 @@ __pragma(comment(lib, "Winmm.lib"))
 const char g_szGroupCore[] = "CryEngine";
 const char* g_szModuleGroups[][2] = {
     {"Editor.exe", g_szGroupCore},
-    {"CrySystem.dll", g_szGroupCore},
-    {"CryFont.dll", g_szGroupCore},
+    {"CrySystem.dll", g_szGroupCore}
 };
 
 //////////////////////////////////////////////////////////////////////////
