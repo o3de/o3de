@@ -1,24 +1,12 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <title>Helpers Icon</title>
-    <defs>
-        <circle id="path-1" cx="8" cy="8" r="8"></circle>
-        <path d="M8.59736328,10.1821289 L8.59736328,9.79394531 C8.59736328,9.07617188 8.86835937,8.71728516 9.84248047,8.15332031 C10.8751953,7.54541016 11.4098633,6.77636719 11.4098633,5.67041016 C11.4098633,4.00048828 10.0255859,2.8359375 7.93085937,2.8359375 C5.68232422,2.8359375 4.40791016,4.09570312 4.37128906,5.89746094 L6.35615234,5.89746094 C6.40009766,5.06982422 6.95673828,4.53515625 7.79902344,4.53515625 C8.63398437,4.53515625 9.190625,5.04052734 9.190625,5.73632812 C9.190625,6.43212891 8.90498047,6.79101562 7.96015625,7.35498047 C6.94941406,7.94824219 6.54658203,8.60742188 6.64179687,9.75732422 L6.65644531,10.1821289 L8.59736328,10.1821289 Z M7.70380859,13.7124023 C8.52412109,13.7124023 9.02949219,13.2436523 9.02949219,12.4892578 C9.02949219,11.7275391 8.52412109,11.2587891 7.70380859,11.2587891 C6.88349609,11.2587891 6.37080078,11.7275391 6.37080078,12.4892578 C6.37080078,13.2436523 6.88349609,13.7124023 7.70380859,13.7124023 Z" id="path-3"></path>
-    </defs>
-    <g id="Symbols" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-        <g id="2nd-ToolBar-v2-(Perspective)-3" transform="translate(-1161.000000, -7.000000)">
-            <g id="2nd-ToolBar-buttons-on-right" transform="translate(1076.000000, 5.000000)">
-                <g id="Helpers-Icon" transform="translate(85.000000, 2.000000)">
-                    <mask id="mask-2" fill="white">
-                        <use xlink:href="#path-1"></use>
-                    </mask>
-                    <use id="Oval" fill="#FFFFFF" xlink:href="#path-1"></use>
-                    <g id="?" fill-rule="nonzero" mask="url(#mask-2)">
-                        <use fill="#909090" xlink:href="#path-3"></use>
-                        <use fill="#3F3F3F" xlink:href="#path-3"></use>
-                    </g>
-                </g>
-            </g>
-        </g>
-    </g>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 25.3.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill-rule:evenodd;clip-rule:evenodd;fill:#FFFFFF;}
+</style>
+<path class="st0" d="M8,5.511C6.626,5.511,5.511,6.626,5.511,8S6.626,10.489,8,10.489S10.489,9.374,10.489,8S9.374,5.511,8,5.511z
+	 M8,9.694C7.064,9.694,6.306,8.936,6.306,8S7.064,6.306,8,6.306S9.694,7.064,9.694,8S8.936,9.694,8,9.694z"/>
+<path class="st0" d="M8,0C3.582,0,0,3.582,0,8s3.582,8,8,8s8-3.582,8-8S12.418,0,8,0z M8,12.463c-4,0-7.242-2.915-7.242-4.463
+	S4,3.537,8,3.537c4,0,7.242,2.915,7.242,4.463S12,12.463,8,12.463z"/>
 </svg>
