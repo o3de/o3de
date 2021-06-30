@@ -697,10 +697,6 @@ namespace ScriptCanvas
                 {
                     slot.SetDisplayType(displayTypeIter->second);
                 }
-                else
-                {
-                    ClearDisplayType(dynamicGroup);
-                }
             }
             else if (slot.HasDisplayType())
             {
@@ -3121,18 +3117,6 @@ namespace ScriptCanvas
     {
         return false;
     }
-
-    Data::Type Node::GetNodeDataType()
-    {
-        return m_nodeDataType;
-    }
-
-    void Node::SetNodeDataType(Data::Type dataType)
-    {
-        m_nodeDataType = dataType;
-    }
-
-
 
     AZStd::vector<const Slot*> Node::GetEventSlots() const
     {

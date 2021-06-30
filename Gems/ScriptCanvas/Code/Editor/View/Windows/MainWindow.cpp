@@ -161,6 +161,7 @@
 
 #include <Editor/QtMetaTypes.h>
 #include <GraphCanvas/Components/SceneBus.h>
+#include <Include/ScriptCanvas/Libraries/Math/MathExpression.h>
 
 
 namespace ScriptCanvasEditor
@@ -1152,15 +1153,14 @@ namespace ScriptCanvasEditor
         {
             
             m_slotTypeSelector = new SlotTypeSelectorWidget(GetActiveScriptCanvasId(), this); // Recreate the widget every time because of https://bugreports.qt.io/browse/QTBUG-76509
-
-            /*if (selections.empty()) {
-                m_slotTypeSelector->PopulateVariablePalette(m_variablePaletteTypes);
+            if (azrtti_istypeof<const ScriptCanvas::Nodes::Math::MathExpression*>(slot->GetNode()))
+            {
+                m_slotTypeSelector->PopulateVariablePalette(m_variablePaletteTypes,true);
             }
             else
             {
-                m_slotTypeSelector->PopulateVariablePalette(selections);
-            }*/
-            m_slotTypeSelector->PopulateVariablePalette(m_variablePaletteTypes);
+                m_slotTypeSelector->PopulateVariablePalette(m_variablePaletteTypes);
+            }
 
             // Only set the slot name if the user has already configured this slot, so if they are creating
             // for the first time they will see the placeholder text instead

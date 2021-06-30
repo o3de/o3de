@@ -89,7 +89,7 @@ namespace ScriptCanvasEditor
         m_containerWizard->SetActiveScriptCanvasId(scriptCanvasId);
     }
 
-    void VariablePaletteTableView::PopulateVariablePalette(const AZStd::unordered_set< AZ::Uuid >& objectTypes, bool customSelection)
+    void VariablePaletteTableView::PopulateVariablePalette(const AZStd::unordered_set< AZ::Uuid >& objectTypes, bool isMathExpressionNode)
     {
         clearSelection();
         m_model->ClearTypes();
@@ -98,7 +98,7 @@ namespace ScriptCanvasEditor
 
         auto dataRegistry = ScriptCanvas::GetDataRegistry();        
 
-        if (!customSelection)
+        if (!isMathExpressionNode)
         {
             for (const auto& dataTraitsPair : dataRegistry->m_typeIdTraitMap)
             {
@@ -119,37 +119,38 @@ namespace ScriptCanvasEditor
                 m_containerWizard->RegisterType(typeId);
                 variableTypes.insert(typeId);
             }
-        }
 
-        AZStd::intrusive_ptr<EditorSettings::ScriptCanvasEditorSettings> settings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC("ScriptCanvasPreviewSettings", 0x1c5a2965), AZ::UserSettings::CT_LOCAL);
+            AZStd::intrusive_ptr<EditorSettings::ScriptCanvasEditorSettings> settings =
+            AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(
+            AZ_CRC("ScriptCanvasPreviewSettings", 0x1c5a2965), AZ::UserSettings::CT_LOCAL);
 
-        for (const AZ::Uuid& objectId : objectTypes)
-        {
-            ScriptCanvas::Data::Type type = dataRegistry->m_typeIdTraitMap[ScriptCanvas::Data::eType::BehaviorContextObject].m_dataTraits.GetSCType(objectId);
-            if (!type.IsValid())
+            for (const AZ::Uuid& objectId : objectTypes)
             {
-                continue;
+                ScriptCanvas::Data::Type type =
+                    dataRegistry->m_typeIdTraitMap[ScriptCanvas::Data::eType::BehaviorContextObject].m_dataTraits.GetSCType(objectId);
+                if (!type.IsValid() || !dataRegistry->m_creatableTypes.contains(type))
+                {
+                    continue;
+                }
+
+                // For now, we need to register all of the objectId's with the container wizard
+                // in order to properly populate the list of valid container configurations.
+                m_containerWizard->RegisterType(objectId);
+
+                // Sanitize containers so we only put in information about the generic container type
+                if (AZ::Utils::IsContainerType(objectId))
+                {
+                    variableTypes.insert(AZ::Utils::GetGenericContainerType(objectId));
+                }
+                else
+                {
+                    variableTypes.insert(objectId);
+                }
             }
 
-            // For now, we need to register all of the objectId's with the container wizard
-            // in order to properly populate the list of valid container configurations.
-            m_containerWizard->RegisterType(objectId);
-
-            // Sanitize containers so we only put in information about the generic container type
-            if (AZ::Utils::IsContainerType(objectId))
-            {
-                variableTypes.insert(AZ::Utils::GetGenericContainerType(objectId));
-            }
-            else
-            {
-                variableTypes.insert(objectId);
-            }
-        }
-
-        // Since we gated containers to make them genrealized buckets, we now need to go through
-        // and register in the custom defined types for each of the container types that we created.
-        if (!customSelection)
-        {
+            // Since we gated containers to make them genrealized buckets, we now need to go through
+            // and register in the custom defined types for each of the container types that we created.
+            
             for (const AZ::Uuid& pinnedTypeId : settings->m_pinnedDataTypes)
             {
                 if (variableTypes.find(pinnedTypeId) == variableTypes.end())
@@ -157,6 +158,11 @@ namespace ScriptCanvasEditor
                     variableTypes.insert(pinnedTypeId);
                 }
             }
+            
+        }
+        else
+        {
+            variableTypes = {ToAZType(ScriptCanvas::Data::Type::Number()), ToAZType(ScriptCanvas::Data::Type::Vector3())};
         }
 
         m_model->PopulateVariablePalette(variableTypes);

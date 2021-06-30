@@ -732,8 +732,18 @@ namespace ScriptCanvasEditor
                             auto displayType = ScriptCanvas::Data::FromAZType(selectedSlotSetup.m_type);
                             if (displayType.IsValid())
                             {
-                                slot->SetDisplayType(displayType);
-                                node->SetNodeDataType(displayType);
+                                ScriptCanvas::Node* node = slot->GetNode();
+                                AZ::Crc32 dynamicGroup = AZ_CRC("ExpressionDisplayGroup", 0x770de38e);
+                               
+
+                                if (dynamicGroup != AZ::Crc32())
+                                {
+                                    node->SetDisplayType(dynamicGroup, displayType);
+                                }
+                                else
+                                {
+                                    slot->SetDisplayType(displayType);
+                                }
                             }
 
                             if (!selectedSlotSetup.m_name.empty())

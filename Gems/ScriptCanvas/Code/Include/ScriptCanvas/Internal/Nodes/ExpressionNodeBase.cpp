@@ -272,7 +272,7 @@ namespace ScriptCanvas
                 return true;
             }
 
-            void ExpressionNodeBase::fixDynamicGroupDataType(const SlotId& slotId, Data::Type displayType)
+            void ExpressionNodeBase::FixDynamicGroupDataType(const SlotId& slotId, Data::Type displayType)
             {
                 Slot* slot = GetSlot(slotId);
                 if (slot && (!slot->IsDynamicSlot() || slot->HasDisplayType()))
@@ -391,82 +391,48 @@ namespace ScriptCanvas
                     {
                         const AZStd::vector<AZ::Uuid>& supportedTypes = m_expressionTree.GetSupportedTypes(variableName);
 
-                        if (supportedTypes.empty())
-                        {
-                            // Just bypass any slots that have no valid types for now. We can sort it out later.
-                            continue;
-                        }
-
                         auto mappingIter = variableSlotMapping.find(variableName);
 
                         bool isNewSlot = (mappingIter == variableSlotMapping.end());
 
                         SlotId slotId;
 
-                        // If we have a single data type. Create a typed data slot.
-                        if (supportedTypes.size() == 1)
+                        DynamicDataSlotConfiguration dynamicSlotConfiguration;
+
+                        //configure stuff such as displayGroup
+                        ConfigureSlot(variableName, dynamicSlotConfiguration);
+
+                        dynamicSlotConfiguration.m_dynamicDataType = DynamicDataType::Any;
+
+                        AZStd::vector< ScriptCanvas::Data::Type > dataTypes;
+                        dataTypes.reserve(supportedTypes.size());
+
+                        for (const auto& supportedType : supportedTypes)
                         {
-                            ScriptCanvas::Data::Type dataType = Data::FromAZType(supportedTypes.front());
-
-                            if (dataType.IsValid())
-                            {
-                                DataSlotConfiguration dataSlotConfiguration(dataType);
-
-                                ConfigureSlot(variableName, dataSlotConfiguration);
-
-                                if (mappingIter != variableSlotMapping.end())
-                                {
-                                    dataSlotConfiguration.m_slotId = mappingIter->second.m_previousId;                                    
-
-                                    if (dataType != mappingIter->second.m_displayType && mappingIter->second.m_displayType.IsValid())
-                                    {
-                                        AZ_Error("ScriptCanvas", false, "Variable supported type changed. Need to invalidate all connections. Currently unsupported.");
-                                    }
-
-                                    dataSlotConfiguration.ConfigureDatum(AZStd::move(mappingIter->second.m_defaultValue));
-                                }
-
-                                slotId = InsertSlot(slotOrder, dataSlotConfiguration, isNewSlot);
-                            }
+                            dataTypes.emplace_back(ScriptCanvas::Data::FromAZType(supportedType));
                         }
-                        // Otherwise if we can support multiple types make a dynamic slot.
-                        else
+
+                        dynamicSlotConfiguration.m_contractDescs = AZStd::vector<ScriptCanvas::ContractDescriptor>
                         {
-                            DynamicDataSlotConfiguration dynamicSlotConfiguration;
+                            // Restricted Type Contract
+                            { [dataTypes]() { return aznew ScriptCanvas::RestrictedTypeContract(dataTypes); } }
+                        };
 
-                            //configure stuff such as displayGroup
-                            ConfigureSlot(variableName, dynamicSlotConfiguration);
-
-                            dynamicSlotConfiguration.m_dynamicDataType = DynamicDataType::Any;
-
-                            AZStd::vector< ScriptCanvas::Data::Type > dataTypes;
-                            dataTypes.reserve(supportedTypes.size());
-
-                            for (const auto& supportedType : supportedTypes)
-                            {
-                                dataTypes.emplace_back(ScriptCanvas::Data::FromAZType(supportedType));
-                            }
-
-                            dynamicSlotConfiguration.m_contractDescs = AZStd::vector<ScriptCanvas::ContractDescriptor>
-                            {
-                                // Restricted Type Contract
-                                { [dataTypes]() { return aznew ScriptCanvas::RestrictedTypeContract(dataTypes); } }
-                            };
-
-                            if (mappingIter != variableSlotMapping.end())
-                            {
-                                dynamicSlotConfiguration.m_slotId = mappingIter->second.m_previousId;
-                                dynamicSlotConfiguration.m_displayType = mappingIter->second.m_displayType;
-                            }
-
-                            slotId = InsertSlot(slotOrder, dynamicSlotConfiguration, isNewSlot);
+                        if (mappingIter != variableSlotMapping.end())
+                        {
+                            dynamicSlotConfiguration.m_slotId = mappingIter->second.m_previousId;
+                            dynamicSlotConfiguration.m_displayType = mappingIter->second.m_displayType;
                         }
+
+                        dynamicSlotConfiguration.m_dynamicGroup = GetDisplayGroupId();
+                        slotId = InsertSlot(slotOrder, dynamicSlotConfiguration, isNewSlot);
 
                         Slot* slot = GetSlot(slotId);
 
                         //see if the slot's displaygroup already have assigned displaytype
                         Node* node = slot->GetNode();
-                        Data::Type nodeDataType = node->GetNodeDataType();
+                        AZ::Crc32 displayGroupVal = AZ_CRC("ExpressionDisplayGroup", 0x770de38e);
+                        Data::Type nodeDataType = node->GetDisplayType(displayGroupVal);
                         if (nodeDataType != Data::Type::Invalid())
                         {
                             //use the displayGroup's type. Make sure to not let HandleExpressionNodeExtension to open up
