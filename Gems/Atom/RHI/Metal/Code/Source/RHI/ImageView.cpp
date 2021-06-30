@@ -57,10 +57,11 @@ namespace AZ
                 levelRange.length != mtlTexture.mipmapLevelCount ||
                 sliceRange.length != textureLength)
             {
-                //Protection against creating a view with aninvalid format
+                //Protection against creating a view with an invalid format
+                //If view format is invalid use the base texture's format
                 if(textureViewFormat == MTLPixelFormatInvalid)
                 {
-                    AZ_Assert(false,"View foormat is invalid");
+                    AZ_Assert(false,"View format is invalid");
                     textureViewFormat = textureFormat;
                 }
 

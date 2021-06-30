@@ -180,10 +180,10 @@ namespace AZ
                             
                             if(!m_isWritingToSwapChainScope)
                             {
-                                //Cubemap/cubemaparray and 3d textures have restrictions placed on them by the driver when creating a new texture view.
-                                //Hence we cant get a view with subresource range of the original texture. As a result in order to write into
-                                //specific slice or depth plane we specify it here. It also means that we cant write into these texturee types
-                                //via a compute shader
+                                //Cubemap/cubemaparray and 3d textures have restrictions placed on them by the
+                                //drivers when creating a new texture view. Hence we cant get a view with subresource range
+                                //of the original texture. As a result in order to write into specific slice or depth plane
+                                //we specify it here. It also means that we cant write into these texturee types via a compute shader
                                 const RHI::ImageViewDescriptor& imgViewDescriptor = imageView->GetDescriptor();
                                 if(renderTargetTexture.textureType == MTLTextureTypeCube || renderTargetTexture.textureType == MTLTextureTypeCubeArray)
                                 {
