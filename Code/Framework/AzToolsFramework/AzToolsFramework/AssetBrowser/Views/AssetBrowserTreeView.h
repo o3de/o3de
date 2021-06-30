@@ -95,6 +95,9 @@ namespace AzToolsFramework
             void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected) override;
             void rowsAboutToBeRemoved(const QModelIndex& parent, int start, int end) override;
 
+        protected:
+            QModelIndexList selectedIndexes() const override;
+
         private:
             QPointer<AssetBrowserModel> m_assetBrowserModel = nullptr;
             QPointer<AssetBrowserFilterModel> m_assetBrowserSortFilterProxyModel = nullptr;

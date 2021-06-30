@@ -200,10 +200,8 @@ namespace PhysX
 
         void Collider::Disconnect()
         {
-            if (AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusIsConnected())
-            {
-                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusDisconnect();
-            }
+            m_debugDisplayDataChangedEvent.Disconnect();
+            AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::EntitySelectionEvents::Bus::Handler::BusDisconnect();
             AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
             m_displayCallback = nullptr;
