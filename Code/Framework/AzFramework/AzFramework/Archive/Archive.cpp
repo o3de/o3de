@@ -6,8 +6,6 @@
  */
 
 
-// Description : Implementation of the Crytek package files management
-
 
 #include <AzCore/base.h>
 

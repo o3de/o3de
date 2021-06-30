@@ -1027,7 +1027,7 @@ struct ISystem
     virtual void SetUIDrawEnabled(bool enabled) = 0;
 
     // Summary:
-    //   Get the index of the currently running Crytek application. (0 = first instance, 1 = second instance, etc)
+    //   Get the index of the currently running O3DE application. (0 = first instance, 1 = second instance, etc)
     virtual int GetApplicationInstance() = 0;
 
     // Summary:
