@@ -202,6 +202,7 @@ def create_volume(ec2_client, availability_zone, snapshot_hint, repository_name,
     parameters = dict(
         AvailabilityZone = availability_zone,
         VolumeType=disk_type,
+        Encrypted=True,
         TagSpecifications= [{
             'ResourceType': 'volume',
             'Tags': [
