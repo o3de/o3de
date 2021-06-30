@@ -128,7 +128,7 @@ public:
     void SaveAutoBackup();
     void SaveAutoRemind();
     void ExportToGame(bool bNoMsgBox = true);
-    //! \param sTitleStr overwrites the default title - "Sandbox Editor 3 (tm)"
+    //! \param sTitleStr overwrites the default title of the Editor
     void SetEditorWindowTitle(QString sTitleStr = QString(), QString sPreTitleStr = QString(), QString sPostTitleStr = QString());
     RecentFileList* GetRecentFileList();
     virtual void AddToRecentFileList(const QString& lpszPathName);

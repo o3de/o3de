@@ -1602,7 +1602,7 @@ BOOL CCryEditApp::InitInstance()
     QDir engineRoot = QString::fromUtf8(engineRootPath.c_str(), aznumeric_cast<int>(engineRootPath.Native().size()));
     AzQtComponents::StyleManager::addSearchPaths(
         QStringLiteral("style"),
-        engineRoot.filePath(QStringLiteral("Code/Sandbox/Editor/Style")),
+        engineRoot.filePath(QStringLiteral("Code/Editor/Style")),
         QStringLiteral(":/Assets/Editor/Style"),
         engineRootPath);
     AzQtComponents::StyleManager::setStyleSheet(mainWindow, QStringLiteral("style:Editor.qss"));

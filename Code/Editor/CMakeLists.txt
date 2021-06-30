@@ -9,6 +9,8 @@ if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
     return()
 endif()
 
+add_subdirectory(Plugins)
+
 ly_add_target(
     NAME EditorCore SHARED
     NAMESPACE Legacy
