@@ -10,6 +10,7 @@
 #include <Atom/RHI.Reflect/Base.h>
 
 #include <AzCore/Memory/OSAllocator.h>
+#include <AzCore/std/containers/map.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/shared_mutex.h>
 #include <AzCore/std/smart_ptr/intrusive_refcount.h>
