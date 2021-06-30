@@ -51,7 +51,7 @@ void CEditorPreferencesPage_Files::Reflect(AZ::SerializeContext& serialize)
         ->Field("Files", &CEditorPreferencesPage_Files::m_files)
         ->Field("Editors", &CEditorPreferencesPage_Files::m_editors)
         ->Field("AutoBackup", &CEditorPreferencesPage_Files::m_autoBackup)
-        ->Field("Asset Browser Search", &CEditorPreferencesPage_Files::m_assetBrowserSearch);
+        ->Field("AssetBrowserSearch", &CEditorPreferencesPage_Files::m_assetBrowserSearch);
 
 
     AZ::EditContext* editContext = serialize.GetEditContext();
