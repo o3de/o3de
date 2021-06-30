@@ -28,47 +28,62 @@ function(ly_copy source_file target_directory)
     
     get_filename_component(target_filename "${source_file}" NAME)
     
-    # If source_file is a Framework and target_directory is a bundle
-    if("${source_file}" MATCHES "\\.[Ff]ramework[^\\.]" AND "${target_directory}" MATCHES "\\.app/Contents/MacOS")
+    # If target_directory is a bundle
+    if("${target_directory}" MATCHES "\\.app/Contents/MacOS")
 
-        if(NOT @LY_BUILD_FIXUP_BUNDLE@)
+        if("${source_file}" MATCHES "\\.[Ff]ramework[^\\.]")
+
+            if(NOT @LY_BUILD_FIXUP_BUNDLE@)
+                return()
+            endif()
+
+            # fixup origin to copy the whole Framework folder and change destination to Contents/Frameworks
+            string(REGEX REPLACE "(.*\\.[Ff]ramework).*" "\\1" source_file "${source_file}")
+            get_filename_component(source_file_folder "${source_file}" DIRECTORY)
+            
+            set(local_plugin_dirs ${plugin_dirs})
+            list(APPEND local_plugin_dirs "${source_file_folder}")
+            set(plugin_dirs ${local_plugin_dirs} PARENT_SCOPE)
             return()
-        endif()
 
-        # fixup origin to copy the whole Framework folder and change destination to Contents/Frameworks
-        string(REGEX REPLACE "(.*\\.[Ff]ramework).*" "\\1" source_file "${source_file}")
-        get_filename_component(source_file_folder "${source_file}" DIRECTORY)
+        elseif("${source_file}" MATCHES "qt/plugins")
+
+            if(NOT @LY_BUILD_FIXUP_BUNDLE@)
+                return()
+            endif()
+
+            # fixup the destination so it ends up in Contents/Plugins
+            string(REGEX REPLACE "(.*\\.app/Contents)/MacOS" "\\1/plugins" target_directory "${target_directory}")
+
+            set(local_plugin_dirs ${plugin_dirs})
+            list(APPEND local_plugin_dirs "${target_directory}")
+            set(plugin_dirs ${local_plugin_dirs} PARENT_SCOPE)
+            set(local_plugin_libs ${plugin_libs})
+            list(APPEND local_plugin_libs "${target_directory}/${target_filename}")
+            set(plugin_libs ${local_plugin_libs} PARENT_SCOPE)
+
+        elseif("${source_file}" MATCHES "qt/translations")
+
+            return() # skip, is this used?
         
-        set(local_plugin_dirs ${plugin_dirs})
-        list(APPEND local_plugin_dirs "${source_file_folder}")
-        set(plugin_dirs ${local_plugin_dirs} PARENT_SCOPE)
-        return()
+        elseif("${source_file}" MATCHES ".dylib")
+            
+            set(local_plugin_dirs ${plugin_dirs})
+            list(APPEND local_plugin_dirs "${target_directory}")
+            set(plugin_dirs ${local_plugin_dirs} PARENT_SCOPE)
 
-    elseif("${source_file}" MATCHES "qt/plugins" AND "${target_directory}" MATCHES "\\.app/Contents/MacOS")
-
-        if(NOT @LY_BUILD_FIXUP_BUNDLE@)
-            return()
         endif()
-
-        # fixup the destination so it ends up in Contents/Plugins
-        string(REGEX REPLACE "(.*\\.app/Contents)/MacOS" "\\1/plugins" target_directory "${target_directory}")
-
-        set(local_plugin_dirs ${plugin_dirs})
-        list(APPEND local_plugin_dirs "${target_directory}")
-        set(plugin_dirs ${local_plugin_dirs} PARENT_SCOPE)
-        set(local_plugin_libs ${plugin_libs})
-        list(APPEND local_plugin_libs "${target_directory}/${target_filename}")
-        set(plugin_libs ${local_plugin_libs} PARENT_SCOPE)
-
-    elseif("${source_file}" MATCHES "qt/translations" AND "${target_directory}" MATCHES "\\.app/Contents/MacOS")
-
-        return() # skip, is this used?
     
-    elseif("${source_file}" MATCHES ".dylib")
+    else()
         
-        set(local_plugin_dirs ${plugin_dirs})
-        list(APPEND local_plugin_dirs "${target_directory}")
-        set(plugin_dirs ${local_plugin_dirs} PARENT_SCOPE)
+        # target is not a bundle
+        if("${source_file}" MATCHES "\\.[Ff]ramework[^\\.]")
+
+            # fixup origin to copy the whole Framework folder
+            string(REGEX REPLACE "(.*\\.[Ff]ramework).*" "\\1" source_file "${source_file}")
+            get_filename_component(source_file_folder "${source_file}" DIRECTORY)
+        
+        endif()
 
     endif()
 
