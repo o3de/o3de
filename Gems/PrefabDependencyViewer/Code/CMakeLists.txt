@@ -10,6 +10,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME PrefabDependencyViewer.Editor.Static STATIC
         NAMESPACE Gem
+        AUTOMOC
         FILES_CMAKE
             prefabdependencyviewer_editor_files.cmake
         INCLUDE_DIRECTORIES
@@ -22,6 +23,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzToolsFramework
             PRIVATE
                 Legacy::Editor.Headers
+                Gem::GraphCanvasWidgets
     )
 
     ly_add_target(
@@ -45,6 +47,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     # Tool and Builder type targets when this gem is enabled.  If you don't want it
     # active in Tools or Builders by default, delete one of both of the following lines:
     ly_create_alias(NAME PrefabDependencyViewer.Tools    NAMESPACE Gem TARGETS Gem::PrefabDependencyViewer.Editor)
+    ly_create_alias(NAME PrefabDependencyViewer.Builders NAMESPACE Gem TARGETS Gem::PrefabDependencyViewer.Editor)
 endif()
 
 ################################################################################
