@@ -7,14 +7,6 @@
 
 
 #pragma once
-////////////////////////////////////////////////////////////////////////////
-//
-//  Crytek Engine Source File.
-//  Copyright (C), Crytek Studios, 2001-2012.
-// -------------------------------------------------------------------------
-//  Description: The plugin manager, central point for loading/unloading plugins
-//
-////////////////////////////////////////////////////////////////////////////
 #ifndef CRYINCLUDE_EDITOR_PLUGINMANAGER_H
 #define CRYINCLUDE_EDITOR_PLUGINMANAGER_H
 

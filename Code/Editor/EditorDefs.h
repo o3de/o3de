@@ -7,15 +7,6 @@
 
 
 #pragma once
-////////////////////////////////////////////////////////////////////////////
-//
-//  Crytek Engine Source File.
-//  Copyright (C), Crytek Studios
-// -------------------------------------------------------------------------
-//  Created:     13/2/2003 by Timur.
-//  Description: Main header included by every file in Editor.
-//
-////////////////////////////////////////////////////////////////////////////
 #ifndef CRYINCLUDE_EDITOR_EDITORDEFS_H
 #define CRYINCLUDE_EDITOR_EDITORDEFS_H
 

@@ -35,6 +35,7 @@ namespace AZ
             void OpenMaterialEditor() const;
             void SetDefaultAsset();
             void Clear();
+            void ClearOverrides();
             void OpenMaterialExporter();
             void OpenMaterialInspector();
             void OpenUvNameMapInspector();

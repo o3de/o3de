@@ -32,9 +32,9 @@ Setup will install [WixBundleName] on your computer. Click install to continue, 
     <String Id="ModifyCloseButton">&amp;Close</String>
 
     <!-- action progress page -->
-    <String Id="ProgressHeader">Installing @CPACK_PACKAGE_FULL_NAME@...</String>
-    <String Id="ProgressLabel">Processing:</String>
-    <String Id="OverallProgressPackageText">Initializing...</String>
+    <String Id="ProgressHeader">Processing @CPACK_PACKAGE_FULL_NAME@...</String>
+    <String Id="CacheProgressLabel">Caching Progress</String>
+    <String Id="ExecuteProgressLabel">Execution Progress</String>
     <String Id="ProgressCancelButton">&amp;Cancel</String>
 
     <!-- final page (success state) -->
