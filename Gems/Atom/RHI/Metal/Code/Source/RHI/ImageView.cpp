@@ -38,13 +38,13 @@ namespace AZ
             
             id<MTLTexture>  textureView = nil;
             bool isViewFormatDifferent = false;
-            //Check if we the viewformat differs from the base texture view
+            //Check if we the viewformat differs from the base texture format
             if(textureViewFormat != MTLPixelFormatInvalid)
             {
                 isViewFormatDifferent = textureViewFormat!=textureFormat;
             }
                        
-            //Since divide the array length of a cubemap by NumCubeMapSlices when creating the base texture
+            //Since we divide the array length of a cubemap by NumCubeMapSlices when creating the base texture
             //we have to do reverse of that here
             uint32_t textureLength = mtlTexture.arrayLength;
             if(imgDesc.m_isCubemap)
@@ -52,12 +52,12 @@ namespace AZ
                 textureLength = textureLength * RHI::ImageDescriptor::NumCubeMapSlices;
             }
             
-            //Create a new view if the format, mip range or slice range changed
+            //Create a new view if the format, mip range or slice range has changed
             if( isViewFormatDifferent ||
                 levelRange.length != mtlTexture.mipmapLevelCount ||
                 sliceRange.length != textureLength)
             {
-                //Protection against creating a view with invalid format
+                //Protection against creating a view with aninvalid format
                 if(textureViewFormat == MTLPixelFormatInvalid)
                 {
                     AZ_Assert(false,"View foormat is invalid");
