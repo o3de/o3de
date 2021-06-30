@@ -133,6 +133,10 @@ namespace ScriptCanvas
                     }
                 }
 
+                // Translation to C++ (executed via BehaviorContext calls) has been demonstrated in the past and is partially in progress.
+                // These calls allow for users to execute multiple translations from the same abstract code model.
+                // More work is required to complete all the latest features of the ACM, and do integrate output files into the build.
+                // 
                 //                 if (targetFlags & (TargetFlags::Cpp | TargetFlags::Hpp))
                 //                 {
                 //                     auto outcomeCPP = TranslationCPP::ToCPlusPlus(*model.get(), rawSave);
