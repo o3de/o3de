@@ -32,6 +32,7 @@ set_target_properties(${project_name}.GameLauncher PROPERTIES
     MACOSX_BUNDLE_INFO_PLIST ${ly_game_resource_folder}/Info.plist
     RESOURCE ${ly_game_resource_folder}/Images.xcassets
     XCODE_ATTRIBUTE_ASSETCATALOG_COMPILER_APPICON_NAME ${project_name}AppIcon
+    XCODE_ATTRIBUTE_ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME LaunchImage
 )
 
 set(layout_tool_dir ${LY_ROOT_FOLDER}/cmake/Tools)

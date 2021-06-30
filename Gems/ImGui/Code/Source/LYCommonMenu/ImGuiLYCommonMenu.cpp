@@ -155,7 +155,7 @@ namespace ImGui
             ImGui::SetCursorPosX(40.f);
 
             // Main Open 3D Engine menu
-            if (ImGui::BeginMenu("Open 3D Engine"))
+            if (ImGui::BeginMenu("O3DE"))
             {
                 // Asset Explorer
                 if (ImGui::MenuItem("Asset Explorer"))

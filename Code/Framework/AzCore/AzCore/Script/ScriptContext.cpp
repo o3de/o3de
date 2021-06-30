@@ -5596,7 +5596,7 @@ LUA_API const Node* lua_getDummyNode()
             // Debugging
             void Error(ScriptContext::ErrorType error, bool doStackTrace, const char* format, va_list mark)
             {
-                // max size due to requirements of \CryEngine\CrySystem\Log.h MAX_TEMP_LENGTH_SIZE(2048) minus room for the time stamp (128)
+                // max size due to requirements of \Legacy\CrySystem\Log.h MAX_TEMP_LENGTH_SIZE(2048) minus room for the time stamp (128)
                 // otherwise if the script passes in a string larger, their script will cause an assert 
                 char message[4096 - 128];
                 azvsnprintf(message, AZ_ARRAY_SIZE(message), format, mark);

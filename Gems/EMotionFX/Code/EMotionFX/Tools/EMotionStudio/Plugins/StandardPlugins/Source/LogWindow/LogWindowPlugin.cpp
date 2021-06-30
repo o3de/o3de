@@ -59,7 +59,7 @@ namespace EMStudio
     // get the creator name
     const char* LogWindowPlugin::GetCreatorName() const
     {
-        return "Amazon";
+        return "O3DE";
     }
 
 

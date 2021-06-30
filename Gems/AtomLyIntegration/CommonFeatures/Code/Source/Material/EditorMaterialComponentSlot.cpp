@@ -172,6 +172,11 @@ namespace AZ
         void EditorMaterialComponentSlot::Clear()
         {
             m_materialAsset = {};
+            ClearOverrides();
+        }
+
+        void EditorMaterialComponentSlot::ClearOverrides()
+        {
             m_propertyOverrides = {};
             m_matModUvOverrides = {};
             OnMaterialChanged();
@@ -284,7 +289,7 @@ namespace AZ
 
             menu.addSeparator();
 
-            action = menu.addAction("Clear Material Instance Overrides", [this]() { m_propertyOverrides = {}; m_matModUvOverrides = {}; });
+            action = menu.addAction("Clear Material Instance Overrides", [this]() { ClearOverrides(); });
             action->setEnabled(!m_propertyOverrides.empty() || !m_matModUvOverrides.empty());
 
             menu.exec(QCursor::pos());

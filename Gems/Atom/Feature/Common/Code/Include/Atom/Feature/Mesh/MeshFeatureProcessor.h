@@ -69,6 +69,7 @@ namespace AZ
             void UpdateCullBounds(const TransformServiceFeatureProcessor* transformService);
             void UpdateObjectSrg();
             bool MaterialRequiresForwardPassIblSpecular(Data::Instance<RPI::Material> material) const;
+            void SetVisible(bool isVisible);
 
             using DrawPacketList = AZStd::vector<RPI::MeshDrawPacket>;
 

@@ -18,6 +18,7 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/IO/IStreamer.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
+#include <AzCore/Console/IConsole.h>
 
 // AzFramework
 #include <AzFramework/Asset/AssetSystemBus.h>
@@ -401,6 +402,7 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
 
     sip.bEditor = true;
     sip.bDedicatedServer = false;
+    AZ::Interface<AZ::IConsole>::Get()->PerformCommand("sv_isDedicated false");
     sip.bPreview = bPreviewMode;
     sip.bTestMode = bTestMode;
     sip.hInstance = nullptr;

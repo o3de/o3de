@@ -5,8 +5,8 @@
 #
 #
 
-add_subdirectory(CryEngine)
 add_subdirectory(Framework)
 add_subdirectory(LauncherUnified)
+add_subdirectory(Legacy)
 add_subdirectory(Sandbox)
 add_subdirectory(Tools)

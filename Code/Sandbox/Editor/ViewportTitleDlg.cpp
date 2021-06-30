@@ -789,7 +789,7 @@ void CViewportTitleDlg::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_
 
 void CViewportTitleDlg::LoadCustomPresets(const QString& section, const QString& keyName, QStringList& outCustompresets)
 {
-    QSettings settings("Amazon", "O3DE"); // Temporary solution until we have the global Settings class.
+    QSettings settings("O3DE", "O3DE"); // Temporary solution until we have the global Settings class.
     settings.beginGroup(section);
     outCustompresets = settings.value(keyName).toStringList();
     settings.endGroup();
@@ -797,7 +797,7 @@ void CViewportTitleDlg::LoadCustomPresets(const QString& section, const QString&
 
 void CViewportTitleDlg::SaveCustomPresets(const QString& section, const QString& keyName, const QStringList& custompresets)
 {
-    QSettings settings("Amazon", "O3DE"); // Temporary solution until we have the global Settings class.
+    QSettings settings("O3DE", "O3DE"); // Temporary solution until we have the global Settings class.
     settings.beginGroup(section);
     settings.setValue(keyName, custompresets);
     settings.endGroup();
