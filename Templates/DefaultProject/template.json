@@ -248,8 +248,8 @@
             "isOptional": false
         },
         {
-            "file": "Resources/CryEngineLogoLauncher.bmp",
-            "origin": "Resources/CryEngineLogoLauncher.bmp",
+            "file": "Resources/LegacyLogoLauncher.bmp",
+            "origin": "Resources/LegacyLogoLauncher.bmp",
             "isTemplated": false,
             "isOptional": false
         },

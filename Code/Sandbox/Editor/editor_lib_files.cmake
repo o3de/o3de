@@ -229,7 +229,7 @@ set(FILES
     res/warning16x16.ico
     res/water.bmp
     res/work_in_progress_icon.ico
-    res/CryEngineLogo.bmp
+    res/LegacyLogo.bmp
     res/MannFileManagerImageList.bmp
     res/infobar/CameraCollision-default.svg
     res/infobar/GotoLocation-default.svg

@@ -26,7 +26,7 @@
         },
         "cmake/**": "#include",
         "Code": {
-            "CryEngine/**": "#include",
+            "Legacy/**": "#include",
             "Framework/**": "#include",
             "LauncherUnified/**": "#include",
             "Sandbox/**": "#include",

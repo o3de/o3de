@@ -20,11 +20,6 @@ namespace AZ
         //!
         //! See "StatisticalProfilerProxy.h" for more explanations on the meaning of Statistical Profiling.
         //!
-        //! See sample UnitTest code in "dev\Code\Framework\Tests\StatisticalProfiler.cpp" which is part of the "FrameworkTests"
-        //! project. Also, "dev\Code\CryEngine\Cry3DEngine\TerrainProfiler.h,.cpp"
-        //! and "dev\Code\CryEngine\RenderDll\Common\RendElements\TerrainUtils\Debug\TerrainProfiler.h,.cpp"
-        //! are good examples.
-        //!
         //! The StatisticalProfiler was made as a template to accommodate for several performance needs...
         //! If all the code that is being profiled is single threaded and you want to identify
         //! each statistic by its string name, then the default StatisticalProfiler<> works for you.
