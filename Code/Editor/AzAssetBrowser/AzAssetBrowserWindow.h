@@ -72,7 +72,8 @@ private:
     QMenu* m_viewSwitchMenu = nullptr;
     QAction* m_standardAssetBrowserMode = nullptr;
     QAction* m_searchViewAssetBrowserMode = nullptr;
-    AzToolsFramework::AssetBrowser::AssetBrowserDisplayState m_assetBrowserDisplayState;
+    AzToolsFramework::AssetBrowser::AssetBrowserDisplayState m_assetBrowserDisplayState =
+        AzToolsFramework::AssetBrowser::AssetBrowserDisplayState::SearchViewMode;
     
     void UpdatePreview() const;
 
