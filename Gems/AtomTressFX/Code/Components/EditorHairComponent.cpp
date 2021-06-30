@@ -11,8 +11,8 @@
 */
 
 #include <AzCore/RTTI/BehaviorContext.h>
-
 #include <Components/EditorHairComponent.h>
+#include <Rendering/HairRenderObject.h>
 
 namespace AZ
 {
@@ -86,12 +86,51 @@ namespace AZ
             void EditorHairComponent::Activate()
             {
                 BaseClass::Activate();
+                AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(GetEntityId());
+            }
+
+            void EditorHairComponent::Deactivate()
+            {
+                BaseClass::Deactivate();
+                AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
             }
 
             u32 EditorHairComponent::OnConfigurationChanged()
             {
                 m_controller.OnHairConfigChanged();
                 return Edit::PropertyRefreshLevels::AttributesAndValues;
+            }
+
+            void EditorHairComponent::DisplayEntityViewport(
+                [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
+            {
+                // Only render debug information when selected.
+                if (!IsSelected())
+                {
+                    return;
+                }
+
+                // Only render debug information after render object got created.
+                if (!m_controller.m_renderObject)
+                {
+                    return;
+                }
+
+                float x = 40.0;
+                float y = 20.0f; 
+                float size = 1.00f;
+                bool center = false;
+
+                AZStd::string debugString = AZStd::string::format(
+                    "Hair component stats:\n"
+                    "    Total number of hairs: %zu\n"
+                    "    Total number of guide hairs: %zu\n"
+                    "    Amount of follow hair per guide hair: %zu\n",
+                    m_controller.m_renderObject->GetNumTotalHairStrands(),
+                    m_controller.m_renderObject->GetNumGuideHairs(),
+                    m_controller.m_renderObject->GetNumFollowHairsPerGuideHair());
+
+                debugDisplay.Draw2dTextLabel(x, y, size, debugString.c_str(), center);
             }
         } // namespace Hair
     } // namespace Render
