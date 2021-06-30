@@ -92,6 +92,8 @@ namespace ScriptCanvas
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(reflectContext))
         {
             behaviorContext->Class<ExecutionState>()
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::List)
+                ->Attribute(AZ::ScriptCanvasAttributes::VariableCreationForbidden, AZ::AttributeIsValid::IfPresent)
                 ->Method("GetEntityId", &ExecutionState::GetEntityId)
                 ->Method("GetScriptCanvasId", &ExecutionState::GetScriptCanvasId)
                 ->Method("ToString", &ExecutionState::ToString)
