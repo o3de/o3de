@@ -25,6 +25,7 @@
 
 #include <QSysInfo>
 #include <QMessageBox>
+#include <QCheckBox>
 
 
 namespace AWSCore
@@ -170,7 +171,7 @@ namespace AWSCore
         switch (ret)
         {
         case QMessageBox::Save:
-            m_settingsRegistry->Set(AWSAttributionEnabledKey, msgBox->checkBox());
+            m_settingsRegistry->Set(AWSAttributionEnabledKey, msgBox->checkBox()->checkState() == Qt::Checked);
             break;
         case QMessageBox::Cancel:
         default:
