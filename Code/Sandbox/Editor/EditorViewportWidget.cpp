@@ -462,7 +462,6 @@ void EditorViewportWidget::Update()
         SetViewTM(m);
         SetFOV(cameraState.m_fovOrZoom);
         m_Camera.SetZRange(cameraState.m_nearClip, cameraState.m_farClip);
-        m_updateCameraPositionNextTick = false;
     }
     else if (!ed_useNewCameraSystem)
     {
@@ -483,6 +482,8 @@ void EditorViewportWidget::Update()
         );
         m_renderViewport->GetViewportContext()->SetCameraProjectionMatrix(clipMatrix);
     }
+    // Reset the camera update flag now that we're finished updating our viewport context
+    m_updateCameraPositionNextTick = false;
 
     // Don't wait for changes to update the focused viewport.
     if (CheckRespondToInput())
