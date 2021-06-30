@@ -41,7 +41,7 @@ QDoubleSpinBox:hover
 QSpinBox:focus,
 QDoubleSpinBox:focus
 {
-    border-color: #00A1C9;
+    border-color: #94D2FF;
     background-color: #FFFFFF;
 }
 
