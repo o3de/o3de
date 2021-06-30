@@ -103,18 +103,20 @@ namespace AzFramework
     using InputEvent = AZStd::variant<AZStd::monostate, HorizontalMotionEvent, VerticalMotionEvent, ScrollEvent, DiscreteInputEvent>;
 
     //! Base class for all camera behaviors.
-    //! The core interface consists of HandleEvents to receive and process incoming input events to begin, update and end a behavior,
-    //! and StepCamera, to update the current camera position and orientation to the next camera position and orientation that frame.
+    //! The core interface consists of:
+    //!    HandleEvents, used to receive and process incoming input events to begin, update and end a behavior.
+    //!    StepCamera, to update the current camera transform (position and orientation).
     class CameraInput
     {
     public:
         //! The state of activation the camera input is currently in.
+        //! State changes of Activation: Idle -> Beginning -> Active -> Ending -> Idle
         enum class Activation
         {
-            Idle, //!< Camera input is not currently active.
-            Beginning, //!< Camera input is just beginning.
-            Active, //!< Camera input is currently active and running.
-            Ending //!< Camera input is ending and will return to idle.
+            Idle, //!< Camera input is not currently active (initial state and transitioned to from Ending).
+            Beginning, //!< Camera input is just beginning (transitioned to from Idle).
+            Active, //!< Camera input is currently active and running (transitioned to from Beginning).
+            Ending //!< Camera input is ending and will return to idle (transitioned to from Active).
         };
 
         virtual ~CameraInput() = default;
