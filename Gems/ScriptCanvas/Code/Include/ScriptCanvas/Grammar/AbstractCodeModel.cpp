@@ -2258,12 +2258,16 @@ namespace ScriptCanvas
                 m_variableScopeMeaning = VariableScopeMeaning_LegacyFunctions::ValueInitialization;
             }
 #endif
+            // The Order Matters: begin
+
+            // add all data to the ACM for easy look up in input/output processing for ACM nodes
             AddAllVariablesPreParse();
             if (!IsErrorFree())
             {
                 return;
             }
 
+            // parse basic editor nodes as they may add implicit variables
             for (auto& nodeEntity : m_source.m_graphData->m_nodes)
             {
                 if (nodeEntity)
@@ -2296,18 +2300,27 @@ namespace ScriptCanvas
                 return;
             }
 
+            // parse the implicit variables added by ebus handling syntax sugar
             ParseAutoConnectedEBusHandlerVariables();
+            // all possible data is available, now parse execution, starting with "main", currently keyed to RuntimeComponent::Activate
             Parse(m_startNodes);
-
+            // parse any function introduced by nodes other than On Graph Start/"main"
             for (auto node : m_possibleExecutionRoots)
             {
                 ParseExecutionTreeRoots(*node);
             }
-
+            // parse functions introduced by variable change events
             ParseVariableHandling();
+            // parse all user function and function object signatures
             ParseUserFunctionTopology();
-            ParseConstructionInputVariables();
+            // culls unused variables, and determine whether the the graph defines an object or static functionality
             ParseExecutionCharacteristics();
+            // now that variables have been culled, determined what data needs to be initialized by an external source
+            ParseConstructionInputVariables();
+            // now that externally initialized data has been identified, associate local, static initializers with individual functions
+            ParseFunctionLocalStaticUseage();
+
+            // The Order Matters: end
 
             // from here on, nothing more needs to happen during simple parsing
             // for example, in the editor, to get validation on syntax based effects for the view
@@ -2315,7 +2328,10 @@ namespace ScriptCanvas
 
             if (IsErrorFree())
             {
+                // the graph could have used several user graphs which required construction, and maybe multiple instances of the same user asset
+                // this will create indices for those nodes to be able to pass in the proper entry in the construction argument tree at translation and runtime
                 ParseDependenciesAssetIndicies();
+                // protect all names against keyword collision and language naming violations
                 ConvertNamesToIdentifiers();
 
                 if (m_source.m_addDebugInfo)
@@ -4189,6 +4205,32 @@ namespace ScriptCanvas
             ParseExecutionLoop(execution);
         }
 
+        void AbstractCodeModel::ParseFunctionLocalStaticUseage()
+        {
+            for (auto execution : ModAllExecutionRoots())
+            {
+                if (auto localVariables = GetLocalVariables(execution))
+                {
+                    for (auto variable : *localVariables)
+                    {
+                        if (const AZStd::pair<VariableConstPtr, AZStd::string>* pair = FindStaticVariable(variable))
+                        {
+                            auto& localStatics = ModStaticVariablesNames(execution);
+                            auto iter = AZStd::find_if
+                                ( localStatics.begin()
+                                , localStatics.end()
+                                , [&](const auto& candidate) { return candidate.first == variable; });
+
+                            if (iter == localStatics.end())
+                            {
+                                localStatics.push_back(*pair);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         void AbstractCodeModel::ParseImplicitVariables(const Node& node)
         {
             if (IsCycle(node))
@@ -5232,27 +5274,8 @@ namespace ScriptCanvas
             TraverseTree(execution, listener);
             const auto& usage = listener.GetUsedVariables();
             const bool usesOnlyLocalVariables = usage.memberVariables.empty() && usage.implicitMemberVariables.empty();
-
             m_variableUse.localVariables.insert(usage.localVariables.begin(), usage.localVariables.end());
             m_variableUse.memberVariables.insert(usage.memberVariables.begin(), usage.memberVariables.end());
-
-            for (auto variable : m_variableUse.localVariables)
-            {
-                if (const AZStd::pair<VariableConstPtr, AZStd::string>* pair = FindStaticVariable(variable))
-                {
-                    auto& localStatics = ModStaticVariablesNames(execution);
-                    auto iter = AZStd::find_if
-                    (localStatics.begin()
-                        , localStatics.end()
-                        , [&](const auto& candidate) { return candidate.first == variable; });
-
-                    if (iter == localStatics.end())
-                    {
-                        localStatics.push_back(*pair);
-                    }
-                }
-            }
-
             m_variableUseByExecution.emplace(execution, listener.MoveUsedVariables());
             return (!usage.usesExternallyInitializedVariables) && usesOnlyLocalVariables && listener.IsPure();
         }

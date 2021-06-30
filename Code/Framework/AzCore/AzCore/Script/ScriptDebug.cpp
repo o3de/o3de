@@ -24,7 +24,6 @@ namespace AZ
         //=========================================================================
         AZStd::string ExtractUserMessage(const ScriptDataContext& dc)
         {
-            AZStd::string userMessage = "Condition failed";
             const int argCount = dc.GetNumArguments();
             if (argCount > 0 && dc.IsString(argCount - 1))
             {
@@ -33,12 +32,12 @@ namespace AZ
                 {
                     if (value)
                     {
-                        userMessage = value;
+                        return value;
                     }
                 }
             }
 
-            return userMessage;
+            return "ExtractUserMessage from print/Debug.Log/Warn/Error/Assert failed. Consider wrapping your argument in tostring().";
         }
 
         //=========================================================================

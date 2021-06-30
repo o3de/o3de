@@ -366,6 +366,8 @@ namespace ScriptCanvas
 
             void ParseExecutionWhileLoop(ExecutionTreePtr execution);
 
+            void ParseFunctionLocalStaticUseage();
+
             void ParseImplicitVariables(const Node& node);
 
             void ParseInputData(ExecutionTreePtr execution);

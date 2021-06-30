@@ -88,7 +88,7 @@ namespace AZ
         {
             rapidjson::Value typeValue;
             result.Combine(StoreTypeId(typeValue, inputAnyPtr->type(), context));
-            outputValue.AddMember("$type", AZStd::move(typeValue), context.GetJsonAllocator());
+            outputValue.AddMember(rapidjson::StringRef(JsonSerialization::TypeIdFieldIdentifier), AZStd::move(typeValue), context.GetJsonAllocator());
         }
         
         result.Combine(ContinueStoringToJsonObjectField(outputValue, "value", AZStd::any_cast<void>(inputAnyPtr), AZStd::any_cast<void>(defaultAnyPtr), inputAnyPtr->type(), context));

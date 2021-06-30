@@ -622,5 +622,4 @@ set(SKIP_UNITY_BUILD_INCLUSION_FILES
     Include/ScriptCanvas/Libraries/Core/FunctionCallNode.h
     Include/ScriptCanvas/Libraries/Core/FunctionCallNodeIsOutOfDate.h
     Include/ScriptCanvas/Libraries/Core/FunctionCallNodeIsOutOfDate.cpp
-
 )
