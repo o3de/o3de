@@ -5,7 +5,7 @@
 #
 #
 
-add_subdirectory(FbxSceneBuilder)
+add_subdirectory(SceneBuilder)
 add_subdirectory(SceneCore)
 add_subdirectory(SceneData)
 add_subdirectory(SceneUI)
