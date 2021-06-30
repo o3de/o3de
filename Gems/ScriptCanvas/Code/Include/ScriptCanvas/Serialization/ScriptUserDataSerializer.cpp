@@ -33,7 +33,7 @@ namespace AZ
         auto typeIdMember = inputValue.FindMember(JsonSerialization::TypeIdFieldIdentifier);
         if (typeIdMember == inputValue.MemberEnd())
         {
-            return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Catastrophic, AZStd::string::format("ScriptUserDataSerializer::Load failed to load the %s member", JsonSerialization::TypeIdFieldIdentifier).c_str());
+            return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Catastrophic, AZStd::string::format("ScriptUserDataSerializer::Load failed to load the %s member", JsonSerialization::TypeIdFieldIdentifier));
         }
 
         result.Combine(LoadTypeId(typeId, typeIdMember->value, context));
@@ -86,13 +86,11 @@ namespace AZ
         outputValue.SetObject();
 
         {
-            auto azTypeString = inputAnyPtr->type().ToString<AZStd::string>();
             rapidjson::Value typeValue;
-            typeValue.SetString(azTypeString.begin(), azTypeString.length(), context.GetJsonAllocator());
             result.Combine(StoreTypeId(typeValue, inputAnyPtr->type(), context));
             outputValue.AddMember("$type", AZStd::move(typeValue), context.GetJsonAllocator());
         }
-
+        
         result.Combine(ContinueStoringToJsonObjectField(outputValue, "value", AZStd::any_cast<void>(inputAnyPtr), AZStd::any_cast<void>(defaultAnyPtr), inputAnyPtr->type(), context));
 
         return context.Report(result, result.GetProcessing() != JSR::Processing::Halted
