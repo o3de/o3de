@@ -20,6 +20,7 @@
 #include <QProgressBar>
 #include <QDir>
 #include <QFileInfo>
+#include <QDesktopServices>
 
 namespace O3DE::ProjectManager
 {
@@ -40,8 +41,52 @@ namespace O3DE::ProjectManager
         m_overlayLabel->setVisible(false);
         vLayout->addWidget(m_overlayLabel);
 
+        m_warningIcon = new QLabel(this);
+        m_warningIcon->setPixmap(QIcon(":/Warning.svg").pixmap(20, 20));
+        m_warningIcon->setAlignment(Qt::AlignTop);
+        m_warningIcon->setVisible(false);
+
+        m_warningText = new QLabel("", this);
+        m_warningText->setObjectName("projectWarningOverlay");
+        m_warningText->setWordWrap(true);
+        m_warningText->setAlignment(Qt::AlignLeft);
+        m_warningText->setVisible(false);
+        connect(
+            m_warningText, &QLabel::linkActivated,
+            [this](const QString& link)
+            {
+                OnLinkActivated(link);
+            });
+
         m_buildButton = new QPushButton(tr("Build Project"), this);
         m_buildButton->setVisible(false);
+
+        m_buildOverlayLayout = new QVBoxLayout();
+        m_buildOverlayLayout->addSpacing(10);
+
+        QHBoxLayout* horizontalMessageLayout = new QHBoxLayout();
+
+        horizontalMessageLayout->addSpacing(10);
+        horizontalMessageLayout->addWidget(this->GetWarningIcon());
+        horizontalMessageLayout->addSpacing(10);
+        horizontalMessageLayout->addWidget(this->GetWarningLabel());
+        QSpacerItem* textSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding);
+        horizontalMessageLayout->addSpacerItem(textSpacer);
+
+        m_buildOverlayLayout->addLayout(horizontalMessageLayout);
+
+        QSpacerItem* buttonSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding);
+        m_buildOverlayLayout->addSpacerItem(buttonSpacer);
+
+        QHBoxLayout* horizontalButtonLayout = new QHBoxLayout();
+        horizontalButtonLayout->addSpacing(34);
+        horizontalButtonLayout->addWidget(m_buildButton);
+        horizontalButtonLayout->addSpacing(34);
+
+        m_buildOverlayLayout->addLayout(horizontalButtonLayout);
+        m_buildOverlayLayout->addSpacing(16);
+
+        vLayout->addItem(m_buildOverlayLayout);
 
         m_progressBar = new QProgressBar(this);
         m_progressBar->setObjectName("labelButtonProgressBar");
@@ -57,15 +102,23 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void LabelButton::SetEnabled(bool enabled)
+    void LabelButton::SetEnabled(bool enabled, bool toggleOverlayLabel)
     {
         m_enabled = enabled;
-        m_overlayLabel->setVisible(!enabled);
+        if (toggleOverlayLabel)
+        {
+            m_overlayLabel->setVisible(!enabled);
+        }
     }
 
     void LabelButton::SetOverlayText(const QString& text)
     {
         m_overlayLabel->setText(text);
+    }
+
+    void LabelButton::SetLogUrl(const QUrl& url)
+    {
+        m_logUrl = url;
     }
 
     QLabel* LabelButton::GetOverlayLabel()
@@ -81,6 +134,21 @@ namespace O3DE::ProjectManager
     QPushButton* LabelButton::GetBuildButton()
     {
         return m_buildButton;
+    }
+
+    QLabel* LabelButton::GetWarningLabel()
+    {
+        return m_warningText;
+    }
+
+    QLabel* LabelButton::GetWarningIcon()
+    {
+        return m_warningIcon;
+    }
+
+    void LabelButton::OnLinkActivated(const QString& /*link*/)
+    {
+        QDesktopServices::openUrl(m_logUrl);
     }
 
     ProjectButton::ProjectButton(const ProjectInfo& projectInfo, QWidget* parent, bool processing)
@@ -175,11 +243,30 @@ namespace O3DE::ProjectManager
 
     void ProjectButton::ShowBuildButton(bool show)
     {
-        QSpacerItem* buttonSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding);
-
-        m_projectImageLabel->layout()->addItem(buttonSpacer);
-        m_projectImageLabel->layout()->addWidget(m_projectImageLabel->GetBuildButton());
+        m_projectImageLabel->GetWarningLabel()->setText(tr("Building project required."));
         m_projectImageLabel->GetBuildButton()->setVisible(show);
+        m_projectImageLabel->GetWarningIcon()->setVisible(show);
+        m_projectImageLabel->GetWarningLabel()->setVisible(show);
+        m_projectImageLabel->SetEnabled(!show, false);
+    }
+
+    void ProjectButton::ShowBuildFailed(bool show, const QUrl& logUrl)
+    {
+        if (!logUrl.isEmpty())
+        {
+            m_projectImageLabel->GetWarningLabel()->setText(tr("Failed to build. Click to <a href=\"logs\">view logs</a>."));
+        }
+        else
+        {
+            m_projectImageLabel->GetWarningLabel()->setText(tr("Project failed to build."));
+        }
+        
+        m_projectImageLabel->GetWarningLabel()->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
+        m_projectImageLabel->GetBuildButton()->setVisible(show);
+        m_projectImageLabel->GetWarningIcon()->setVisible(show);
+        m_projectImageLabel->GetWarningLabel()->setVisible(show);
+        m_projectImageLabel->SetLogUrl(logUrl);
+        m_projectImageLabel->SetEnabled(!show, false);
     }
 
     void ProjectButton::SetButtonOverlayText(const QString& text)

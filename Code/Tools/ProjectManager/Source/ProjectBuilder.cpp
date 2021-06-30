@@ -232,10 +232,18 @@ namespace O3DE::ProjectManager
                     // Open application assigned to this file type
                     QDesktopServices::openUrl(QUrl("file:///" + m_worker->LogFilePath()));
                 }
+
+                m_projectInfo.m_buildFailed = true;
+                m_projectInfo.m_logUrl = QUrl("file:///" + m_worker->LogFilePath());
+                emit NotifyBuildProject(m_projectInfo);
             }
             else
             {
                 QMessageBox::critical(m_parent, tr("Project Failed to Build!"), result);
+
+                m_projectInfo.m_buildFailed = true;
+                m_projectInfo.m_logUrl = QUrl();
+                emit NotifyBuildProject(m_projectInfo);
             }
         }
 

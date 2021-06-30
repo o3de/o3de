@@ -197,9 +197,18 @@ namespace O3DE::ProjectManager
                     {
                         ProjectButton* projectButtonWidget = CreateProjectButton(project, flowLayout);
 
-                        if (RequiresBuildProjectIterator(project.m_path) != m_requiresBuild.end())
+                        auto buildProjectIterator = RequiresBuildProjectIterator(project.m_path);
+                        if (buildProjectIterator != m_requiresBuild.end())
                         {
-                            projectButtonWidget->ShowBuildButton(true);
+                            if (buildProjectIterator->m_buildFailed)
+                            {
+                                projectButtonWidget->ShowBuildFailed(true, buildProjectIterator->m_logUrl);
+                            }
+                            else
+                            {
+                                projectButtonWidget->ShowBuildButton(true);
+                            }
+                            
                         }
                     }
                 }
@@ -414,7 +423,7 @@ namespace O3DE::ProjectManager
 
     void ProjectsScreen::SuggestBuildProject(const ProjectInfo& projectInfo)
     {
-        if (projectInfo.m_needsBuild)
+        if (projectInfo.m_needsBuild || projectInfo.m_buildFailed)
         {
             if (RequiresBuildProjectIterator(projectInfo.m_path) == m_requiresBuild.end())
             {
@@ -496,6 +505,7 @@ namespace O3DE::ProjectManager
                 m_currentBuilder = new ProjectBuilderController(projectInfo, nullptr, this);
                 ResetProjectsContent();
                 connect(m_currentBuilder, &ProjectBuilderController::Done, this, &ProjectsScreen::ProjectBuildDone);
+                connect(m_currentBuilder, &ProjectBuilderController::NotifyBuildProject, this, &ProjectsScreen::SuggestBuildProject);
 
                 m_currentBuilder->Start();
             }

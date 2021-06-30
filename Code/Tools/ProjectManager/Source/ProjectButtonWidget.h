@@ -11,6 +11,8 @@
 #include <ProjectInfo.h>
 
 #include <QLabel>
+#include <QUrl>
+#include <QVBoxLayout>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QPixmap)
@@ -29,23 +31,34 @@ namespace O3DE::ProjectManager
         explicit LabelButton(QWidget* parent = nullptr);
         ~LabelButton() = default;
 
-        void SetEnabled(bool enabled);
+        void SetEnabled(bool enabled, bool toggleOverlayLabel = true);
         void SetOverlayText(const QString& text);
+        void SetLogUrl(const QUrl& url);
 
         QLabel* GetOverlayLabel();
         QProgressBar* GetProgressBar();
         QPushButton* GetBuildButton();
+        QLabel* GetWarningLabel();
+        QLabel* GetWarningIcon();
+        QLayout* GetBuildOverlayLayout();
 
     signals:
         void triggered();
 
     public slots:
         void mousePressEvent(QMouseEvent* event) override;
+        
 
     private:
+        void OnLinkActivated(const QString& link);
+
+        QVBoxLayout* m_buildOverlayLayout;
         QLabel* m_overlayLabel;
         QProgressBar* m_progressBar;
         QPushButton* m_buildButton;
+        QLabel* m_warningText;
+        QLabel* m_warningIcon;
+        QUrl m_logUrl;
         bool m_enabled = true;
     };
 
@@ -60,6 +73,7 @@ namespace O3DE::ProjectManager
 
         void SetLaunchButtonEnabled(bool enabled);
         void ShowBuildButton(bool show);
+        void ShowBuildFailed(bool show, const QUrl& logUrl);
         void SetButtonOverlayText(const QString& text);
         void SetProgressBarValue(int progress);
 
@@ -79,5 +93,6 @@ namespace O3DE::ProjectManager
         ProjectInfo m_projectInfo;
         LabelButton* m_projectImageLabel;
         QFrame* m_projectFooter;
+        QLayout* m_requiresBuildLayout;
     };
 } // namespace O3DE::ProjectManager
