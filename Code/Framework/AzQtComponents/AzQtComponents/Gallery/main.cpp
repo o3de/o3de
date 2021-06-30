@@ -129,8 +129,8 @@ int main(int argc, char **argv)
 {
     ComponentApplicationWrapper componentApplicationWrapper;
 
-    QApplication::setOrganizationName("Amazon");
-    QApplication::setOrganizationDomain("amazon.com");
+    QApplication::setOrganizationName("O3DE");
+    QApplication::setOrganizationDomain("o3de.org");
     QApplication::setApplicationName("O3DEWidgetGallery");
 
     QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));

@@ -1,0 +1,222 @@
+{
+    "ContainerEntity": {
+        "Id": "ContainerEntity",
+        "Name": "cloth_blinds",
+        "Components": {
+            "Component_[10182366347512475253]": {
+                "$type": "EditorPrefabComponent",
+                "Id": 10182366347512475253
+            },
+            "Component_[12917798267488243668]": {
+                "$type": "EditorPendingCompositionComponent",
+                "Id": 12917798267488243668
+            },
+            "Component_[3261249813163778338]": {
+                "$type": "EditorOnlyEntityComponent",
+                "Id": 3261249813163778338
+            },
+            "Component_[3837204912784440039]": {
+                "$type": "EditorDisabledCompositionComponent",
+                "Id": 3837204912784440039
+            },
+            "Component_[4272963378099646759]": {
+                "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                "Id": 4272963378099646759,
+                "Parent Entity": "",
+                "Cached World Transform Parent": ""
+            },
+            "Component_[4848458548047175816]": {
+                "$type": "EditorVisibilityComponent",
+                "Id": 4848458548047175816
+            },
+            "Component_[5787060997243919943]": {
+                "$type": "EditorInspectorComponent",
+                "Id": 5787060997243919943
+            },
+            "Component_[7804170251266531779]": {
+                "$type": "EditorLockComponent",
+                "Id": 7804170251266531779
+            },
+            "Component_[7874177159288365422]": {
+                "$type": "EditorEntitySortComponent",
+                "Id": 7874177159288365422
+            },
+            "Component_[8018146290632383969]": {
+                "$type": "EditorEntityIconComponent",
+                "Id": 8018146290632383969
+            },
+            "Component_[8452360690590857075]": {
+                "$type": "SelectionComponent",
+                "Id": 8452360690590857075
+            }
+        }
+    },
+    "Entities": {
+        "Entity_[303275374852564]": {
+            "Id": "Entity_[303275374852564]",
+            "Name": "cloth_blinds",
+            "Components": {
+                "Component_[10147744244398276652]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 10147744244398276652
+                },
+                "Component_[11309989511197311871]": {
+                    "$type": "EditorClothComponent",
+                    "Id": 11309989511197311871,
+                    "Configuration": {
+                        "Mesh Node": "pPlane1",
+                        "Damping": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "Linear Drag": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "Angular Drag": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "Wind Velocity": [
+                            10.0,
+                            0.0,
+                            0.0
+                        ],
+                        "Air Drag Coefficient": 0.5,
+                        "Air Lift Coefficient": 0.5,
+                        "Update Normals of Static Particles": true
+                    }
+                },
+                "Component_[12850019035302463297]": {
+                    "$type": "EditorLockComponent",
+                    "Id": 12850019035302463297
+                },
+                "Component_[15214644042360665965]": {
+                    "$type": "AZ::Render::EditorMeshComponent",
+                    "Id": 15214644042360665965,
+                    "Controller": {
+                        "Configuration": {
+                            "ModelAsset": {
+                                "assetId": {
+                                    "guid": "{C3078003-51DA-5D8E-B311-38C426480DD2}",
+                                    "subId": 283342727
+                                },
+                                "assetHint": "objects/cloth/environment/cloth_blinds.azmodel"
+                            }
+                        }
+                    }
+                },
+                "Component_[17205613619475042888]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 17205613619475042888
+                },
+                "Component_[17262624475618211748]": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 17262624475618211748
+                },
+                "Component_[3930083736215151625]": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 3930083736215151625,
+                    "ComponentOrderEntryArray": [
+                        {
+                            "ComponentId": 4795695323030511838
+                        },
+                        {
+                            "ComponentId": 11309989511197311871,
+                            "SortIndex": 1
+                        },
+                        {
+                            "ComponentId": 15214644042360665965,
+                            "SortIndex": 2
+                        },
+                        {
+                            "ComponentId": 9206497685981025331,
+                            "SortIndex": 3
+                        }
+                    ]
+                },
+                "Component_[4446664869832380031]": {
+                    "$type": "SelectionComponent",
+                    "Id": 4446664869832380031
+                },
+                "Component_[4795695323030511838]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 4795695323030511838,
+                    "Parent Entity": "ContainerEntity",
+                    "Cached World Transform Parent": "ContainerEntity"
+                },
+                "Component_[5800800590637221800]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 5800800590637221800
+                },
+                "Component_[6953593560040071775]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 6953593560040071775
+                },
+                "Component_[7074022732104182988]": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 7074022732104182988
+                },
+                "Component_[9206497685981025331]": {
+                    "$type": "EditorMaterialComponent",
+                    "Id": 9206497685981025331,
+                    "Controller": {
+                        "Configuration": {
+                            "materials": [
+                                {
+                                    "Key": {
+                                        "materialAssetId": {
+                                            "guid": "{C3078003-51DA-5D8E-B311-38C426480DD2}",
+                                            "subId": 902256226
+                                        }
+                                    },
+                                    "Value": {
+                                        "MaterialAsset": {
+                                            "assetId": {
+                                                "guid": "{6BFA7C7C-AF9F-5B12-8B30-6B6ECE9BAB9E}"
+                                            },
+                                            "assetHint": "objects/cloth/environment/cloth_blinds.azmaterial"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "materialSlots": [
+                        {
+                            "id": {
+                                "materialAssetId": {
+                                    "guid": "{C3078003-51DA-5D8E-B311-38C426480DD2}",
+                                    "subId": 902256226
+                                }
+                            },
+                            "materialAsset": {
+                                "assetId": {
+                                    "guid": "{6BFA7C7C-AF9F-5B12-8B30-6B6ECE9BAB9E}"
+                                },
+                                "assetHint": "objects/cloth/environment/cloth_blinds.azmaterial"
+                            }
+                        }
+                    ],
+                    "materialSlotsByLod": [
+                        [
+                            {
+                                "id": {
+                                    "lodIndex": 0,
+                                    "materialAssetId": {
+                                        "guid": "{C3078003-51DA-5D8E-B311-38C426480DD2}",
+                                        "subId": 902256226
+                                    }
+                                }
+                            }
+                        ]
+                    ]
+                }
+            },
+            "IsDependencyReady": true
+        }
+    }
+}

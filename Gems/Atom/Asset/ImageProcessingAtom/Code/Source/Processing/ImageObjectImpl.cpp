@@ -350,7 +350,7 @@ namespace ImageProcessingAtom
         if (bOk && alphaImage && !hasSplitFlag)
         {
             //4 bytes extension tag, 4 bytes attached alpha tag, then 4 bytes of chunk size
-            fileSaveStream.Write(sizeof(FOURCC_CExt), &FOURCC_CExt); // marker for the start of Crytek Extended data
+            fileSaveStream.Write(sizeof(FOURCC_CExt), &FOURCC_CExt); // marker for the start of O3DE Extended data
             fileSaveStream.Write(sizeof(FOURCC_AttC), &FOURCC_AttC); // Attached Channel chunk
 
             uint32_t size = 0;
@@ -368,7 +368,7 @@ namespace ImageProcessingAtom
             fileSaveStream.Write(sizeBytes, &size);
             fileSaveStream.Seek(endPos, AZ::IO::GenericStream::ST_SEEK_BEGIN);
 
-            // marker for the end of Crytek Extended data
+            // marker for the end of O3DE Extended data
             fileSaveStream.Write(sizeof(FOURCC_CEnd), &FOURCC_CEnd);
         }
 

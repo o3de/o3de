@@ -22,7 +22,7 @@ namespace Camera
     public:
         ~Rotate() override = default;
         AZ_RTTI(Rotate, "{EE06111E-75E8-47F0-B243-5A5308A5F605}", ICameraTransformBehavior)
-        AZ_CLASS_ALLOCATOR(Rotate, AZ::SystemAllocator, 0); ///< Use AZ::SystemAllocator, otherwise a CryEngine allocator will be used. This will cause the Asset Processor to crash when this object is deleted, because of the wrong uninitialisation order
+        AZ_CLASS_ALLOCATOR(Rotate, AZ::SystemAllocator, 0);
         static void Reflect(AZ::ReflectContext* reflection);
 
         //////////////////////////////////////////////////////////////////////////
