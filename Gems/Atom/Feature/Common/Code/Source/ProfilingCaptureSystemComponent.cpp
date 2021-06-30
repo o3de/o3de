@@ -134,7 +134,7 @@ namespace AZ
             static void Reflect(AZ::ReflectContext* context);
 
             CpuProfilingStatisticsSerializer() = default;
-            CpuProfilingStatisticsSerializer(RHI::CpuProfiler::TimeRegionMap& timeRegionMap);
+            CpuProfilingStatisticsSerializer(const RHI::CpuProfiler::TimeRegionMap& timeRegionMap);
 
             AZStd::vector<CpuProfilingStatisticsSerializerEntry> m_cpuProfilingStatisticsSerializerEntries;
         };
@@ -251,12 +251,12 @@ namespace AZ
 
         // --- CpuProfilingStatisticsSerializer ---
 
-        CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializer(RHI::CpuProfiler::TimeRegionMap& timeRegionMap)
+        CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializer(const RHI::CpuProfiler::TimeRegionMap& timeRegionMap)
         {
             // Create serializable entries
-            for (auto& treadEntry : timeRegionMap)
+            for (auto& threadEntry : timeRegionMap)
             {
-                for (auto& cachedRegionEntry : treadEntry.second)
+                for (auto& cachedRegionEntry : threadEntry.second)
                 {
                     m_cpuProfilingStatisticsSerializerEntries.insert(
                         m_cpuProfilingStatisticsSerializerEntries.end(),
@@ -468,7 +468,7 @@ namespace AZ
                 serializationSettings.m_keepDefaults = true;
 
                 // Get time Cpu profiled time regions
-                RHI::CpuProfiler::TimeRegionMap timeRegionMap = RHI::CpuProfiler::Get()->GetTimeRegionMap();
+                const RHI::CpuProfiler::TimeRegionMap& timeRegionMap = RHI::CpuProfiler::Get()->GetTimeRegionMap();
 
                 CpuProfilingStatisticsSerializer serializer(timeRegionMap);
                 const auto saveResult = JsonSerializationUtils::SaveObjectToFile(&serializer,

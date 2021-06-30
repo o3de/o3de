@@ -31,11 +31,12 @@ namespace AZ
                 const AZStd::string threadIdText = AZStd::string::format("Thread: %zu", static_cast<size_t>(threadId));
                 ImGui::Text(threadIdText.c_str());
             }
-            inline float TicksToMs(AZStd::sys_time_t duration)
+            inline float TicksToMs(AZStd::sys_time_t ticks)
             {
-                // Note: converting to microseconds integer before converting to milliseconds float 
+                // Note: converting to microseconds integer before converting to milliseconds float
                 const AZStd::sys_time_t ticksPerSecond = AZStd::GetTimeTicksPerSecond();
-                return static_cast<float>((duration * 1000) / (ticksPerSecond / 1000)) / 1000.0f;
+                AZ_Assert(ticksPerSecond >= 1000, "Error in converting ticks to ms, expected ticksPerSecond >= 1000");
+                return static_cast<float>((ticks * 1000) / (ticksPerSecond / 1000)) / 1000.0f;
             }
         }
 
@@ -232,7 +233,7 @@ namespace AZ
             m_groupRegionMap.clear();
 
             // Get the latest TimeRegionMap
-            const RHI::CpuProfiler::TimeRegionMap& timeRegionMap = RHI::CpuProfiler::Get()->GetTimeRegionMapRef();
+            const RHI::CpuProfiler::TimeRegionMap& timeRegionMap = RHI::CpuProfiler::Get()->GetTimeRegionMap();
 
             // Iterate through all the cached regions from all threads, and add the entries to this map
             for (auto& threadEntry : timeRegionMap)
@@ -244,10 +245,8 @@ namespace AZ
                     {
                         const AZStd::string& groupName = cachedRegion.m_groupRegionName->m_groupName;
 
-                        RegionEntryMap& groupRegionEntry = m_groupRegionMap[groupName];
-                        AZStd::vector<ThreadRegionEntry>& regionArray = groupRegionEntry[regionName];
-                        regionArray.push_back({ threadEntry.first, cachedRegion.m_startTick, cachedRegion.m_endTick });
-
+                        m_groupRegionMap[groupName][regionName].push_back(
+                            { threadEntry.first, cachedRegion.m_startTick, cachedRegion.m_endTick });
                     }
                 }
             }

@@ -136,12 +136,7 @@ namespace AZ
             }
         }
 
-        CpuProfiler::TimeRegionMap CpuProfilerImpl::GetTimeRegionMap() const 
-        {
-            return m_timeRegionMap;
-        }
-
-        const CpuProfiler::TimeRegionMap& CpuProfilerImpl::GetTimeRegionMapRef() const 
+        const CpuProfiler::TimeRegionMap& CpuProfilerImpl::GetTimeRegionMap() const 
         {
             return m_timeRegionMap;
         }

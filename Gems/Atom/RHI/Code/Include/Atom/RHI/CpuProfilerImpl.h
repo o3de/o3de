@@ -103,8 +103,7 @@ namespace AZ
             //! CpuProfiler overrides...
             void BeginTimeRegion(TimeRegion& timeRegion) final;
             void EndTimeRegion() final;
-            TimeRegionMap GetTimeRegionMap() const final;
-            const TimeRegionMap& GetTimeRegionMapRef() const final;
+            const TimeRegionMap& GetTimeRegionMap() const final;
             void SetProfilerEnabled(bool enabled) final;
             bool IsProfilerEnabled() const final;
 

@@ -79,8 +79,7 @@ namespace AZ
             virtual void EndTimeRegion() = 0;
 
             //! Get the last frame's TimeRegionMap
-            virtual TimeRegionMap GetTimeRegionMap() const  = 0;
-            virtual const TimeRegionMap& GetTimeRegionMapRef() const = 0;
+            virtual const TimeRegionMap& GetTimeRegionMap() const = 0;
 
             //! Enable/Disable the CpuProfiler
             virtual void SetProfilerEnabled(bool enabled) = 0;
