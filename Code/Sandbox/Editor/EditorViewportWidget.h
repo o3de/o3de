@@ -579,7 +579,7 @@ private:
     AZStd::unique_ptr<AZ::ViewportHelpers::EditorEntityNotifications> m_editorEntityNotifications;
     AtomToolsFramework::RenderViewportWidget* m_renderViewport = nullptr;
 
-    bool m_updatingCameraPosition = false;
+    bool m_updateCameraPositionNextTick = false;
     AZ::RPI::ViewportContext::MatrixChangedEvent::Handler m_cameraViewMatrixChangeHandler;
     AZ::RPI::ViewportContext::MatrixChangedEvent::Handler m_cameraProjectionMatrixChangeHandler;
     AzFramework::DebugDisplayRequests* m_debugDisplay = nullptr;

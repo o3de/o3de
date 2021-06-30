@@ -352,8 +352,6 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
         AZ::Debug::Trace::Instance().Init();
     }
 
-    m_bNeedDoWorkDuringOcclusionChecks = false;
-
     m_eRuntimeState = ESYSTEM_EVENT_LEVEL_UNLOAD;
 
     m_bHasRenderedErrorMessage = false;
@@ -948,15 +946,11 @@ bool CSystem::UpdatePostTickBus(int updateFlags, int /*nPauseMode*/)
     }
 
     //////////////////////////////////////////////////////////////////////
-    //update sound system part 2
-    if (!g_cvars.sys_deferAudioUpdateOptim && !m_bNoUpdate)
+    // Update sound system
+    if (!m_bNoUpdate)
     {
         FRAME_PROFILER("SysUpdate:UpdateAudioSystems", this, PROFILE_SYSTEM);
         UpdateAudioSystems();
-    }
-    else
-    {
-        m_bNeedDoWorkDuringOcclusionChecks = true;
     }
 
     //Now update frame statistics
@@ -1002,15 +996,6 @@ bool CSystem::UpdatePostTickBus(int updateFlags, int /*nPauseMode*/)
 bool CSystem::UpdateLoadtime()
 {
     return !IsQuitting();
-}
-
-void CSystem::DoWorkDuringOcclusionChecks()
-{
-    if (g_cvars.sys_deferAudioUpdateOptim && !m_bNoUpdate)
-    {
-        UpdateAudioSystems();
-        m_bNeedDoWorkDuringOcclusionChecks = false;
-    }
 }
 
 void CSystem::UpdateAudioSystems()

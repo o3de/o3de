@@ -60,7 +60,6 @@ typedef uint32 vtx_idx;
 #endif
 
 
-// see http://wiki/bin/view/CryEngine/TerrainTexCompression for more details on this
 // 0=off, 1=on
 #define TERRAIN_USE_CIE_COLORSPACE 0
 

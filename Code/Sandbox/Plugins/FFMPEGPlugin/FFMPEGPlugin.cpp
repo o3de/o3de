@@ -76,7 +76,7 @@ QString CFFMPEGPlugin::GetFFMPEGExectablePath()
     // see what can be found!
     QString ffmpegExectablePath;
 
-    QSettings settings("Amazon", "Lumberyard");
+    QSettings settings("O3DE", "O3DE");
     settings.beginGroup("Settings");
     ffmpegExectablePath = settings.value("FFMPEG_PLUGIN").toString();
 

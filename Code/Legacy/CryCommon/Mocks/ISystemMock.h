@@ -26,10 +26,6 @@ public:
         bool(int, int));
     MOCK_METHOD0(UpdateLoadtime,
         bool());
-    MOCK_METHOD0(DoWorkDuringOcclusionChecks,
-        void());
-    MOCK_METHOD0(NeedDoWorkDuringOcclusionChecks,
-        bool());
     MOCK_METHOD0(RenderStatistics,
         void());
     MOCK_METHOD0(GetUserName,

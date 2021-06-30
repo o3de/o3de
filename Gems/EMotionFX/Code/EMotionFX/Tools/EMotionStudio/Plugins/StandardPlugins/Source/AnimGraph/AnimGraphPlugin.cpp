@@ -307,7 +307,7 @@ namespace EMStudio
     // get the creator name
     const char* AnimGraphPlugin::GetCreatorName() const
     {
-        return "Amazon";
+        return "O3DE";
     }
 
 

@@ -102,4 +102,4 @@ class TestWindowsWorkspaceManager(object):
         windows_workspace_manager = ly_test_tools._internal.managers.platforms.windows.WindowsWorkspaceManager()
         windows_workspace_manager.clear_settings()
 
-        mock_clear_keys.assert_called_with(exception_list=r"SOFTWARE\Amazon\Lumberyard\Identity")
+        mock_clear_keys.assert_called_with(exception_list=r"SOFTWARE\O3DE\O3DE\Identity")
