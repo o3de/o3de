@@ -13,6 +13,8 @@
 #pragma once
 
 #include <AzToolsFramework/ToolsComponents/EditorComponentAdapter.h>
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
+
 #include <Components/HairComponent.h>
 #include <Components/HairComponentConfig.h>
 #include <Components/HairComponentController.h>
@@ -29,6 +31,7 @@ namespace AZ
 
             class EditorHairComponent final
                 : public AzToolsFramework::Components::EditorComponentAdapter<HairComponentController, HairComponent, HairComponentConfig>
+                , private AzFramework::EntityDebugDisplayEventBus::Handler
             {
             public:
 
@@ -41,7 +44,11 @@ namespace AZ
                 EditorHairComponent(const HairComponentConfig& config);
 
                 void Activate() override;
+                void Deactivate() override;
 
+                // AzFramework::DebugDisplayRequestBus::Handler interface
+                void DisplayEntityViewport(
+                    const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay) override;
             private:
 
                 //! EditorRenderComponentAdapter overrides...

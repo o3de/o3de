@@ -247,7 +247,10 @@ namespace AZ
                 int GetNumVerticesPerStrand() const { return m_NumVerticesPerStrand; }
                 int GetCPULocalShapeIterations() const { return  m_CPULocalShapeIterations; }
                 int GetNumFollowHairsPerGuideHair() const { return m_NumFollowHairsPerGuideHair; }
-
+                int GetNumGuideHairs() const
+                {
+                    return GetNumTotalHairStrands() / (GetNumFollowHairsPerGuideHair() + 1);
+                }
                 //! This method is mainly a wrapper around BindRenderSrgResources to keep the
                 //! connection in code to the TressFX method.
                 //! Bind Render Srg (m_hairRenderSrg) resources. No resources data update should be doe here
