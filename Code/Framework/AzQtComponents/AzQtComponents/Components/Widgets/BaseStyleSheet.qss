@@ -53,7 +53,7 @@ QMainWindow:separator
 
 QMainWindow::separator:hover
 {
-    background-color: #00A1C9;
+    background-color: #1E70EB;
 }
 
 QMainWindow,
@@ -107,7 +107,7 @@ QPlainTextEdit:focus
 {
     margin: 1px;
     border-width: 1px;
-    border-color: #00A1C9;
+    border-color: #94D2FF;
     background-color: #FFFFFF;
 }
 

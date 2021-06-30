@@ -19,5 +19,5 @@ QSplitter::handle:vertical {
 
 QSplitter::handle:hover
 {
-    background-color: #00A1C9;
+    background-color: #1E70EB;
 }
