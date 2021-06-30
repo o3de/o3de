@@ -149,22 +149,11 @@ namespace AZ
             // load cubemap
             Data::Asset<RPI::StreamingImageAsset>& cubeMapAsset =
                 m_configuration.m_useBakedCubemap ? m_configuration.m_bakedCubeMapAsset : m_configuration.m_authoredCubeMapAsset;
-            Data::AssetBus::MultiHandler::BusConnect(cubeMapAsset.GetId());
-
-            const AZStd::string& relativePath =
-                m_configuration.m_useBakedCubemap ? m_configuration.m_bakedCubeMapRelativePath : m_configuration.m_authoredCubeMapAsset.GetHint();
 
             if (cubeMapAsset.GetId().IsValid())
             {
-                if (cubeMapAsset.IsReady())
-                {
-                    Data::Instance<RPI::Image> image = RPI::StreamingImage::FindOrCreate(cubeMapAsset);
-                    m_featureProcessor->SetProbeCubeMap(m_handle, image, relativePath);
-                }
-                else
-                {
-                    cubeMapAsset.QueueLoad();
-                }
+                cubeMapAsset.QueueLoad();
+                Data::AssetBus::MultiHandler::BusConnect(cubeMapAsset.GetId());
             }
         }
 
@@ -201,6 +190,18 @@ namespace AZ
             m_featureProcessor->SetProbeCubeMap(m_handle, image, relativePath);
         }
 
+        void ReflectionProbeComponentController::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
+        {
+            if (m_configuration.m_useBakedCubemap)
+            {
+                m_configuration.m_bakedCubeMapAsset = asset;
+            }
+            else
+            {
+                m_configuration.m_authoredCubeMapAsset = asset;
+            }
+        }
+
         void ReflectionProbeComponentController::SetConfiguration(const ReflectionProbeComponentConfig& config)
         {
             m_configuration = config;
@@ -216,11 +217,8 @@ namespace AZ
             Data::Asset<RPI::StreamingImageAsset>& cubeMapAsset =
                 m_configuration.m_useBakedCubemap ? m_configuration.m_bakedCubeMapAsset : m_configuration.m_authoredCubeMapAsset;
 
-            const AZStd::string& relativePath =
-                m_configuration.m_useBakedCubemap ? m_configuration.m_bakedCubeMapRelativePath : m_configuration.m_authoredCubeMapAsset.GetHint();
-
-            Data::Instance<RPI::Image> image = RPI::StreamingImage::FindOrCreate(cubeMapAsset);
-            m_featureProcessor->SetProbeCubeMap(m_handle, image, relativePath);
+            // this will invoke OnAssetReady()
+            Data::AssetBus::MultiHandler::BusConnect(cubeMapAsset.GetId());
         }
 
         void ReflectionProbeComponentController::OnTransformChanged([[maybe_unused]] const AZ::Transform& local, const AZ::Transform& world)
