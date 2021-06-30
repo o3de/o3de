@@ -160,7 +160,7 @@ namespace EMotionFX
                 }
             }
 
-            // Default to the first mesh group until we get a way to choose it via the FBX settings (ATOM-13590).
+            // Default to the first mesh group until we get a way to choose it via the scene settings (ATOM-13590).
             AZStd::optional<AZ::Data::AssetId> meshAssetId = AZStd::nullopt;
             AZ_Error("EMotionFX", atomModelAssets.size() <= 1, "Ambigious mesh for actor asset. More than one mesh group found. Defaulting to the first one.");
             if (!atomModelAssets.empty())

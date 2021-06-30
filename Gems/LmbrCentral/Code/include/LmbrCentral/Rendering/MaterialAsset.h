@@ -28,8 +28,8 @@ namespace LmbrCentral
     };
 
     /*!
-    * FBX Material asset type configuration.
-    * Reflect as: AzFramework::SimpleAssetReference<FbxMaterialAsset>
+    * Source scene file Material asset type configuration.
+    * Reflect as: AzFramework::SimpleAssetReference<DccMaterialAsset>
     */
     class DccMaterialAsset
     {
