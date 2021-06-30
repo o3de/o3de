@@ -113,6 +113,7 @@ namespace AZ
 
             // Data::AssetBus overrides ...
             void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
+            void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
 
             // TransformNotificationBus overrides ...
             void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
