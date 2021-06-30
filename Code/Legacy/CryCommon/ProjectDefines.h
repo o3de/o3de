@@ -129,7 +129,7 @@ typedef uint32 vtx_idx;
 
 
 
-//This feature allows automatic crash submission to JIRA, but does not work outside of CryTek
+//This feature allows automatic crash submission to JIRA, but does not work outside of O3DE
 //Note: This #define will be commented out during code export
 #define ENABLE_CRASH_HANDLER
 
