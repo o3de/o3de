@@ -89,17 +89,17 @@ namespace AzToolsFramework
         int AssetBrowserTableModel::BuildTableModelMap(
             const QAbstractItemModel* model, const QModelIndex& parent /*= QModelIndex()*/, int row /*= 0*/)
         {
-            static int cont = 0;
+            static int displayedItemsCounter = 0;
             int rows = model ? model->rowCount(parent) : 0;
 
             if (parent == QModelIndex())
             {
-                cont = 0;
+                displayedItemsCounter = 0;
             }
 
             for (int i = 0; i < rows; ++i)
             {
-                if (cont < m_numberOfItemsDisplayed)
+                if (displayedItemsCounter < m_numberOfItemsDisplayed)
                 {
                     QModelIndex index = model->index(i, 0, parent);
                     AssetBrowserEntry* entry = GetAssetEntry(m_filterModel->mapToSource(index));
@@ -112,18 +112,15 @@ namespace AzToolsFramework
 
                         Q_EMIT dataChanged(index, index);
                         ++row;
-                        ++cont;
+                        ++displayedItemsCounter;
                     }
 
-                    if (model->hasChildren(index) && cont < 10)
+                    if (model->hasChildren(index))
                     {
                         row = BuildTableModelMap(model, index, row);
                     }
                 }
-                else
-                {
                     break;
-                }
             }
             return row;
         }

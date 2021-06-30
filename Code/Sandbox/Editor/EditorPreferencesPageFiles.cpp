@@ -42,10 +42,9 @@ void CEditorPreferencesPage_Files::Reflect(AZ::SerializeContext& serialize)
         ->Field("MaxCount", &AutoBackup::m_maxCount)
         ->Field("RemindTime", &AutoBackup::m_remindTime);
 
-    serialize
-        .Class<AssetBrowserSearch>()
+    serialize.Class<AssetBrowserSearch>()
         ->Version(1)
-        ->Field("Max number of items displayed", &AssetBrowserSearch::m_numOfItemsShown);
+        ->Field("Max number of items displayed", &AssetBrowserSearch::m_maxNumberOfItemsShownInSearch);
 
     serialize.Class<CEditorPreferencesPage_Files>()
         ->Version(1)
@@ -86,10 +85,10 @@ void CEditorPreferencesPage_Files::Reflect(AZ::SerializeContext& serialize)
             ->DataElement(AZ::Edit::UIHandlers::SpinBox, &AutoBackup::m_remindTime, "Remind Time", "Auto Remind Every (Minutes)");
 
         editContext->Class<AssetBrowserSearch>("Asset Browser Search View", "Asset Browser Search View")
-            ->DataElement(AZ::Edit::UIHandlers::SpinBox, &AssetBrowserSearch::m_numOfItemsShown, "Maximum number of displayed items",
+            ->DataElement(AZ::Edit::UIHandlers::SpinBox, &AssetBrowserSearch::m_maxNumberOfItemsShownInSearch, "Maximum number of displayed items",
                 "Maximum number of displayed items displayed in the Search View")
-            ->Attribute(AZ::Edit::Attributes::Min, 100)
-            ->Attribute(AZ::Edit::Attributes::Max, 1000);
+            ->Attribute(AZ::Edit::Attributes::Min, 50)
+            ->Attribute(AZ::Edit::Attributes::Max, 5000);
 
         editContext->Class<CEditorPreferencesPage_Files>("File Preferences", "Class for handling File Preferences")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
@@ -137,7 +136,7 @@ void CEditorPreferencesPage_Files::OnApply()
     gSettings.autoBackupMaxCount = m_autoBackup.m_maxCount;
     gSettings.autoRemindTime = m_autoBackup.m_remindTime;
 
-    gSettings.numberOfItemsShownInSearch = m_assetBrowserSearch.m_numOfItemsShown;
+    gSettings.maxNumberOfItemsShownInSearch = m_assetBrowserSearch.m_maxNumberOfItemsShownInSearch;
 }
 
 void CEditorPreferencesPage_Files::InitializeSettings()
@@ -163,5 +162,5 @@ void CEditorPreferencesPage_Files::InitializeSettings()
     m_autoBackup.m_maxCount = gSettings.autoBackupMaxCount;
     m_autoBackup.m_remindTime = gSettings.autoRemindTime;
 
-    m_assetBrowserSearch.m_numOfItemsShown = gSettings.numberOfItemsShownInSearch;
+    m_assetBrowserSearch.m_maxNumberOfItemsShownInSearch = gSettings.maxNumberOfItemsShownInSearch;
 }

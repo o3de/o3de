@@ -382,7 +382,7 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     // Asset Browser Search View.
     //////////////////////////////////////////////////////////////////////////
     //! Current maximum number of items that can be displayed in the AssetBrowser Search View.
-    int numberOfItemsShownInSearch;
+    int maxNumberOfItemsShownInSearch;
     //////////////////////////////////////////////////////////////////////////
 
 

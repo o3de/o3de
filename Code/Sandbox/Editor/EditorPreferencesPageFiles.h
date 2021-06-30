@@ -72,7 +72,7 @@ private:
     {
         AZ_TYPE_INFO(AssetBrowserSearch, "{9FBFCD24-9452-49DF-99F4-2711443CEAAE}")
 
-        int m_numOfItemsShown;
+        int m_maxNumberOfItemsShownInSearch;
     };
 
     Files m_files;
