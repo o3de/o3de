@@ -171,13 +171,11 @@ void AzAssetBrowserWindow::OnInitViewToggleButton()
     m_ui->m_toggleDisplayViewBtn->setPopupMode(QToolButton::InstantPopup);
 
     connect(m_viewSwitchMenu, &QMenu::aboutToShow, this, &AzAssetBrowserWindow::UpdateDisplayInfo);
-
-    m_ui->m_toggleDisplayViewBtn->setProperty("class", "big");
 }
 
 void AzAssetBrowserWindow::CreateSwitchViewMenu()
 {
-    if (m_viewSwitchMenu == nullptr)
+    if (m_viewSwitchMenu != nullptr)
     {
         return;
     }
