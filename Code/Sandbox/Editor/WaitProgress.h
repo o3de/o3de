@@ -8,12 +8,6 @@
 
 #pragma once
 ////////////////////////////////////////////////////////////////////////////
-//
-//  Crytek Engine Source File.
-//  Copyright (C), Crytek Studios, 2002-2012.
-// -------------------------------------------------------------------------
-//  File name:   waitprogress.h
-//  Created:     10/5/2002 by Timur.
 //  Description: CWaitProgress class adds information about lengthy process
 //      Usage:
 //

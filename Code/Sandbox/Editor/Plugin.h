@@ -7,15 +7,6 @@
 
 
 #pragma once
-////////////////////////////////////////////////////////////////////////////
-//
-//  Crytek Engine Source File.
-//  Copyright (C), Crytek Studios, 2001-2012
-// -------------------------------------------------------------------------
-//  Created:     15/1/2003 by Timur.
-//  Description: Plugin architecture supporting classes
-//
-////////////////////////////////////////////////////////////////////////////
 #ifndef CRYINCLUDE_EDITOR_PLUGIN_H
 #define CRYINCLUDE_EDITOR_PLUGIN_H
 #include "Include/IEditorClassFactory.h"

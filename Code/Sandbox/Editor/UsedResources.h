@@ -7,17 +7,6 @@
 
 
 #pragma once
-////////////////////////////////////////////////////////////////////////////
-//
-//  Crytek Engine Source File.
-//  Copyright (C), Crytek Studios, 2001-2012
-// -------------------------------------------------------------------------
-//  File name:   UsedResources.h
-//  Created:     28/11/2003 by Timur.
-//  Description: Class to gather used resources
-//
-////////////////////////////////////////////////////////////////////////////
-
 //! Class passed to resource gathering functions
 #ifndef CRYINCLUDE_EDITOR_USEDRESOURCES_H
 #define CRYINCLUDE_EDITOR_USEDRESOURCES_H
