@@ -1,0 +1,13 @@
+{
+    "gem_name": "PythonCoverage",
+    "display_name": "PythonCoverage",
+    "summary": "A tool for generating gem coverage for Python tests.",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "PythonCoverage"
+    ],
+    "icon_path": "preview.png",
+    "restricted_name": "gems"
+}

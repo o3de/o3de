@@ -3119,7 +3119,7 @@ bool EditorViewportWidget::ShouldPreviewFullscreen() const
     // Check 'ed_previewGameInFullscreen_once'
     if (ed_previewGameInFullscreen_once)
     {
-        ed_previewGameInFullscreen_once = true;
+        ed_previewGameInFullscreen_once = false;
         return true;
     }
     else

@@ -185,10 +185,11 @@ namespace AzToolsFramework
 
         void AssetBrowserTreeView::rowsAboutToBeRemoved(const QModelIndex& parent, int start, int end)
         {
-            // if selected entry is being removed, clear selection so not to select (and attempt to preview) other entries potentially marked for deletion
-            if (selectionModel() && selectionModel()->selectedIndexes().size() == 1)
+            // if selected entry is being removed, clear selection so not to select (and attempt to preview) other entries potentially
+            // marked for deletion
+            if (selectionModel() && selectedIndexes().size() == 1)
             {
-                QModelIndex selectedIndex = selectionModel()->selectedIndexes().first();
+                QModelIndex selectedIndex = selectedIndexes().first();
                 QModelIndex parentSelectedIndex = selectedIndex.parent();
                 if (parentSelectedIndex == parent && selectedIndex.row() >= start && selectedIndex.row() <= end)
                 {
@@ -196,6 +197,14 @@ namespace AzToolsFramework
                 }
             }
             QTreeView::rowsAboutToBeRemoved(parent, start, end);
+        }
+
+        // Item data for hidden columns normally isn't copied by Qt during drag-and-drop (see QTBUG-30242).
+        // However, for the AssetBrowser, the hidden columns should get copied. By overriding selectedIndexes() to
+        // include all selected indices, not just the visible ones, we can get the behavior we're looking for.
+        QModelIndexList AssetBrowserTreeView::selectedIndexes() const
+        {
+            return selectionModel()->selectedIndexes();
         }
 
         void AssetBrowserTreeView::SetThumbnailContext(const char* thumbnailContext) const
