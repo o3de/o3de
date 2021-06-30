@@ -113,6 +113,12 @@ namespace Multiplayer
             {
                 console->PerformCommand("disconnect");
             }
+
+            AZ::Interface<INetworkEntityManager>::Get()->ClearAllEntities();
+
+            // Rebuild the library to clear temporary in-memory spawnable assets
+            AZ::Interface<INetworkSpawnableLibrary>::Get()->BuildSpawnablesList();
+
             break;
         }
     }
@@ -235,7 +241,5 @@ namespace Multiplayer
 
     void MultiplayerEditorSystemComponent::OnGameEntitiesReset()
     {
-        // Rebuild the library to clear temporary in-memory spawnable assets
-        AZ::Interface<INetworkSpawnableLibrary>::Get()->BuildSpawnablesList();
     }
 }
