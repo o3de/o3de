@@ -143,8 +143,6 @@ private:
     // Registered Tool Names
     TToolNamesMap m_toolNames;
     TToolNamesMap m_toolVersions;
-
-    //static B4BugCrytekExtension s_b4BugCrytekExtension;
 };
 
 #endif // CRYINCLUDE_EDITOR_SETTINGSMANAGER_H
