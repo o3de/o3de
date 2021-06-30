@@ -36,18 +36,18 @@ def init_project_json_data(request):
 
 @pytest.mark.usefixtures('init_project_json_data')
 class TestEditProjectProperties:
-    @pytest.mark.parametrize("project_path, project_name, project_origin, project_display,\
+    @pytest.mark.parametrize("project_path, project_name, project_new_name, project_origin, project_display,\
                             project_summary, project_icon, add_tags, delete_tags,\
                             replace_tags, expected_result", [
         pytest.param(pathlib.PurePath('E:/TestProject'),
-        'test', 'editing by pytest', 'Unit Test', 'pyTest project', 'pytest.bmp', 'A B C',
+        'test', 'test', 'editing by pytest', 'Unit Test', 'pyTest project', 'pytest.bmp', 'A B C',
         'B', 'D E F', 0),
         pytest.param('',
-        'test', 'editing by pytest', 'Unit Test', 'pyTest project', 'pytest.bmp', 'A B C',
+        'test', 'test', 'editing by pytest', 'Unit Test', 'pyTest project', 'pytest.bmp', 'A B C',
         'B', 'D E F', 1)
         ]
     )
-    def test_edit_project_properties(self, project_path, project_name, project_origin, project_display,
+    def test_edit_project_properties(self, project_path, project_name, project_new_name, project_origin, project_display,
                                     project_summary, project_icon, add_tags, delete_tags,
                                     replace_tags, expected_result):
 
@@ -62,7 +62,7 @@ class TestEditProjectProperties:
 
         with patch('o3de.manifest.get_project_json_data', side_effect=get_project_json_data) as get_project_json_data_patch, \
                 patch('o3de.manifest.save_o3de_manifest', side_effect=save_o3de_manifest) as save_o3de_manifest_patch:
-            result = project_properties.edit_project_props(project_path, project_name, project_origin,
+            result = project_properties.edit_project_props(project_path, project_name, project_new_name, project_origin,
                                                             project_display, project_summary, project_icon,
                                                             add_tags, delete_tags, replace_tags)
             assert result == expected_result
