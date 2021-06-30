@@ -62,7 +62,7 @@ namespace Blast
         }
         else
         {
-            // in this case we'll want to extract the physics meshes from the fbx.
+            // in this case we'll want to extract the physics meshes from the scene file.
             // We don't necessarily have access to the mesh data though, so if we want to support this,
             // we'll need to come up with a way to associate with the mesh data
             // See BlastAssetModel in the SDK sample for how to create that data

@@ -36,7 +36,7 @@ namespace EMotionFX
         return aznew UniformMotionData();
     }
 
-    const char* UniformMotionData::GetFbxSettingsName() const
+    const char* UniformMotionData::GetSceneSettingsName() const
     {
         return "Evenly Spaced Keyframes (faster, mostly larger)";
     }

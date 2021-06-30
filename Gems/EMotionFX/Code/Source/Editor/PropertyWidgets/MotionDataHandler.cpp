@@ -76,7 +76,7 @@ namespace EMotionFX
         const MotionDataFactory& factory = GetEMotionFX().GetMotionManager()->GetMotionDataFactory();
         for (size_t i = 0; i < factory.GetNumRegistered(); ++i)
         {
-            GUI->addItem(factory.GetRegistered(i)->GetFbxSettingsName());
+            GUI->addItem(factory.GetRegistered(i)->GetSceneSettingsName());
             m_typeIds.emplace_back(factory.GetRegistered(i)->RTTI_GetType());
         }
 

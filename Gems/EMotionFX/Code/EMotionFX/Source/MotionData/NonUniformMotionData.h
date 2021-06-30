@@ -52,7 +52,7 @@ namespace EMotionFX
         bool Save(MCore::Stream* stream, const SaveSettings& saveSettings) const override;
         size_t CalcStreamSaveSizeInBytes(const SaveSettings& saveSettings) const override;
         AZ::u32 GetStreamSaveVersion() const override;
-        const char* GetFbxSettingsName() const override;
+        const char* GetSceneSettingsName() const override;
 
         Transform SampleJointTransform(const SampleSettings& settings, AZ::u32 jointSkeletonIndex) const override;
         void SamplePose(const SampleSettings& settings, Pose* outputPose) const override;
