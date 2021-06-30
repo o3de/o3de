@@ -75,7 +75,7 @@
    <item>
      <widget class="QToolButton" name="m_debugInformationMenu">
        <property name="toolTip">
-         <string>Debug information settings</string>
+         <string>Debug information</string>
        </property>
        <property name="icon">
          <iconset>
@@ -105,7 +105,7 @@
    <item>
      <widget class="QToolButton" name="m_resolutionMenu">
        <property name="toolTip">
-         <string>Viewport resolution settings</string>
+         <string>Viewport resolution</string>
        </property>
        <property name="icon">
          <iconset>
