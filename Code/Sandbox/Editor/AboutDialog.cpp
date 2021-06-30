@@ -42,7 +42,7 @@ CAboutDialog::CAboutDialog(QString versionText, QString richTextCopyrightNotice,
     m_ui->m_transparentAgreement->setObjectName("link");
 
     setStyleSheet( "CAboutDialog > QLabel#copyrightNotice { color: #AAAAAA; font-size: 9px; }\
-                    CAboutDialog > QLabel#link { text-decoration: underline; color: #00A1C9; }");
+                    CAboutDialog > QLabel#link { text-decoration: underline; color: #1E70EB; }");
 
     // Prepare background image
     QImage backgroundImage(QStringLiteral(":/StartupLogoDialog/splashscreen_background_gradient.jpg"));

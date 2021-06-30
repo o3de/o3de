@@ -49,7 +49,7 @@ namespace AzQtComponents
         config.borderWidth = 1;
         config.borderColor = QStringLiteral("#dddddd");
         config.focusBorderWidth = 1;
-        config.focusBorderColor = QStringLiteral("#00a1c9");
+        config.focusBorderColor = QStringLiteral("#94D2FF");
         config.focusFillColor = QStringLiteral("#10ffffff");
         config.headerFillColor = QStringLiteral("#2d2d2d");
 
