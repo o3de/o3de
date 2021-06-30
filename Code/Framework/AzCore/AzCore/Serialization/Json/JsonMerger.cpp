@@ -403,7 +403,12 @@ namespace AZ
         {
             if (!parentValue->EraseMember(tokens[path.GetTokenCount() - 1].name))
             {
-                return settings.m_reporting(R"(The "remove" operation failed to remove member from object.)",
+                rapidjson::StringBuffer pathString;
+                path.Stringify(pathString);
+                return settings.m_reporting(
+                    AZStd::string::format(
+                        R"(The "remove" operation failed to remove member '%s' from object at path '%s'.)",
+                        tokens[path.GetTokenCount() - 1].name, pathString.GetString()),
                     ResultCode(Tasks::Merge, Outcomes::Invalid), element);
             }
         }
