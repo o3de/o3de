@@ -10,21 +10,48 @@
  *
  */
 
-#include <PrefabDependencyViewerWidget.h>
-#include <QLabel>
-#include <QBoxLayout>
 #include <AzCore/Interface/Interface.h>
+#include <Core/Core.h>
+#include <PrefabDependencyViewerWidget.h>
+#include <QBoxLayout>
+#include <QLabel>
 
 namespace PrefabDependencyViewer
 {
-    PrefabDependencyViewerWidget::PrefabDependencyViewerWidget(QWidget* pParent, Qt::WindowFlags flags)
-        : QWidget(pParent, flags)
+    GraphCanvas::GraphCanvasTreeItem* PrefabDependencyViewerConfig::CreateNodePaletteRoot()
     {
-        // displayText();
-        AZ::Interface<PrefabDependencyViewerInterface>::Register(this);
+        const GraphCanvas::EditorId& editorId = PREFAB_DEPENDENCY_VIEWER_EDITOR_ID;
+        GraphCanvas::NodePaletteTreeItem* rootItem = aznew GraphCanvas::NodePaletteTreeItem("Root", editorId);
+
+        return rootItem;
     }
 
-    void PrefabDependencyViewerWidget::displayText()
+    /** Returns a bare minimum configuration to configure GraphCanvas UI
+    for the purpose of visualizing the Prefab hierarchy. */
+    PrefabDependencyViewerConfig* GetDefaultConfig()
+    {
+        // Make sure no memory leak happens here
+        PrefabDependencyViewerConfig* config = new PrefabDependencyViewerConfig();
+        config->m_editorId = PREFAB_DEPENDENCY_VIEWER_EDITOR_ID;
+        config->m_baseStyleSheet = "PrefabDependencyViewer/StyleSheet/graphcanvas_style.json";
+
+        return config;
+    }
+
+    PrefabDependencyViewerWidget::PrefabDependencyViewerWidget(QWidget* pParent)
+        : GraphCanvas::AssetEditorMainWindow(GetDefaultConfig(), pParent) {}
+
+    void PrefabDependencyViewerWidget::SetupUI() {
+        GraphCanvas::AssetEditorMainWindow::SetupUI();
+        delete m_nodePalette;
+        m_nodePalette = nullptr;
+    }
+
+    void PrefabDependencyViewerWidget::OnEditorOpened(GraphCanvas::EditorDockWidget* dockWidget)
+    {
+        GraphCanvas::AssetEditorMainWindow::OnEditorOpened(dockWidget);
+    }
+        /* void PrefabDependencyViewerWidget::displayText()
     {
         
         setStyleSheet("QWidget{ background-color : rgba( 160, 160, 160, 255); border-radius : 7px;  }");
@@ -67,11 +94,13 @@ namespace PrefabDependencyViewer
         layout->addWidget(label);
         layout->addWidget(label2);
         setLayout(layout);
-        */
+        ///
     }
-
-    PrefabDependencyViewerWidget::~PrefabDependencyViewerWidget()
-    {
-        AZ::Interface<PrefabDependencyViewerInterface>::Unregister(this);
-    }
+*/
+    PrefabDependencyViewerWidget::~PrefabDependencyViewerWidget() {}
 }
+
+// Qt best practice for Q_OBJECT macro issues. File available at compile time.
+#include <moc_PrefabDependencyViewerWidget.cpp>
+
+

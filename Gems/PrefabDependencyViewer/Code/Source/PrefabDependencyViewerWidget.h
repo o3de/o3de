@@ -11,25 +11,45 @@
  */
 
 #pragma once
-#include <PrefabDependencyViewerInterface.h>
+
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
+#include <GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.h>
+#include <GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasEditorDockWidget.h>
+#include <GraphCanvas/Widgets/NodePalette/NodePaletteDockWidget.h>
 #include <QWidget>
+#include <PrefabDependencyViewerInterface.h>
 
 namespace PrefabDependencyViewer
 {
-    class PrefabDependencyViewerWidget :
-        public QWidget,
-        public PrefabDependencyViewerInterface
+    struct PrefabDependencyViewerConfig
+        : GraphCanvas::AssetEditorWindowConfig
     {
-        // Q_OBJECT;
-
-	public:
-       explicit PrefabDependencyViewerWidget(QWidget* pParent = NULL, Qt::WindowFlags flags = Qt::WindowFlags());
-       virtual ~PrefabDependencyViewerWidget();
-
-	   void displayText();
-       virtual void displayTree(AzToolsFramework::Prefab::Instance& prefab) override;
-       virtual void displayTree(AzToolsFramework::Prefab::PrefabDom& prefab) override;
+        /** Return an empty NodePalette tree */
+        GraphCanvas::GraphCanvasTreeItem* CreateNodePaletteRoot() override;
     };
 
+    class PrefabDependencyViewerWidget 
+        : public GraphCanvas::AssetEditorMainWindow
+    {
+        Q_OBJECT;
+	public:
+       explicit PrefabDependencyViewerWidget(QWidget* pParent = NULL);
+       virtual ~PrefabDependencyViewerWidget();
+
+       /** Sets up the GraphCanvas UI without the Node Palette. */
+       virtual void SetupUI();
+
+    protected:
+       /** Overriding RefreshMenu in order to remove the
+       unnecessary menu bar on the top. As a bonus, this
+       also removes the ability to revive NodePalette from the UI. */
+       virtual void RefreshMenu() override {}
+       virtual void OnEditorOpened(GraphCanvas::EditorDockWidget* dockWidget) override;
+        /* void displayText();
+       virtual void displayTree(AzToolsFramework::Prefab::Instance& prefab) override;
+       virtual void displayTree(AzToolsFramework::Prefab::PrefabDom& prefab) override;
+       */
+    };
 }; // namespace AzToolsFramework
+
+
