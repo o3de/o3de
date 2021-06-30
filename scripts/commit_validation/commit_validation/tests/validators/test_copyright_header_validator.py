@@ -1,5 +1,5 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
 # SPDX-License-Identifier: Apache-2.0 OR MIT#
 #
@@ -13,12 +13,12 @@ from commit_validation.validators.copyright_header_validator import CopyrightHea
 
 class CopyrightHeaderValidatorTests(unittest.TestCase):
     @patch('builtins.open', mock_open(read_data='This file does contain\n'
-                                                'Copyright (c) Contributors to the Open 3D Engine Project, so it should pass\n'))
+                                                'Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution., so it should pass\n'))
     def test_fileWithCopyrightHeader_passes(self):
         commit = MockCommit(files=['/someCppFile.cpp'])
         files = [
             'This file does contain\n'
-            'Copyright (c) Contributors to the Open 3D Engine Project, so it should pass\n',
+            'Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution., so it should pass\n',
 
             'This file does contain\n'
             'Copyright(c) Contributors to the Open 3D Engine Project, so it should pass\n'
