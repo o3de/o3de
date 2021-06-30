@@ -21,6 +21,7 @@ ly_add_target(
             AZ::AzFramework
         PUBLIC
             Gem::AWSCore
+            3rdParty::AWSNativeSDK::Core
 )
 
 ly_add_target( 
