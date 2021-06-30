@@ -169,7 +169,7 @@ namespace O3DE::ProjectManager
             return;
         }
 
-        // There are a lot of steps when building so estimate around 800 more steps (80 * 10) remaining
+        // There are a lot of steps when building so estimate around 800 more steps ((100 - 20) * 10) remaining
         m_progressEstimate = 200;
         while (m_buildProjectProcess->waitForReadyRead(MaxBuildTimeMSecs))
         {
@@ -181,6 +181,7 @@ namespace O3DE::ProjectManager
 
             if (QThread::currentThread()->isInterruptionRequested())
             {
+                // QProcess is unable to kill its child processes so we need to ask the operating system to do that for us
                 QProcess killBuildProcess;
                 killBuildProcess.setProcessChannelMode(QProcess::MergedChannels);
                 killBuildProcess.start(
@@ -194,8 +195,8 @@ namespace O3DE::ProjectManager
                         "/f",
                         "/t"
                     });
-                killBuildProcess.waitForStarted();
                 killBuildProcess.waitForFinished();
+
                 logStream << "Killing Project Build.";
                 logStream << killBuildProcess.readAllStandardOutput();
                 m_buildProjectProcess->kill();
@@ -219,6 +220,7 @@ namespace O3DE::ProjectManager
     QString ProjectBuilderWorker::LogFilePath() const
     {
         QDir logFilePath(m_projectInfo.m_path);
+        // Make directories if they aren't on disk
         if (!logFilePath.cd(ProjectBuildPathPostfix))
         {
             logFilePath.mkpath(ProjectBuildPathPostfix);

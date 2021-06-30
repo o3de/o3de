@@ -64,7 +64,7 @@ namespace O3DE::ProjectManager
         void SetProjectButtonAction(const QString& text, F lambda)
         {
             QPushButton* projectActionButton = m_projectImageLabel->GetActionButton();
-            if (!m_buttonConnection)
+            if (!m_actionButtonConnection)
             {
                 QSpacerItem* buttonSpacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
                 m_projectImageLabel->layout()->addItem(buttonSpacer);
@@ -73,11 +73,11 @@ namespace O3DE::ProjectManager
             }
             else
             {
-                disconnect(m_buttonConnection);
+                disconnect(m_actionButtonConnection);
             }
 
             projectActionButton->setText(text);
-            m_buttonConnection = connect(projectActionButton, &QPushButton::clicked, lambda);
+            m_actionButtonConnection = connect(projectActionButton, &QPushButton::clicked, lambda);
         }
 
         void SetProjectBuildButtonAction();
@@ -105,6 +105,6 @@ namespace O3DE::ProjectManager
         LabelButton* m_projectImageLabel;
         QFrame* m_projectFooter;
 
-        QMetaObject::Connection m_buttonConnection;
+        QMetaObject::Connection m_actionButtonConnection;
     };
 } // namespace O3DE::ProjectManager
