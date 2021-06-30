@@ -1,12 +1,7 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 import boto3
@@ -184,10 +179,11 @@ def list_cloudformation_stack_resources(stack_name, region=None) -> List[BasicRe
                 # iterate through page iterator to fetch all resources
                 resource: Dict[str, any]
                 for resource in page["StackResourceSummaries"]:
-                    resource_type_and_name.append(BasicResourceAttributesBuilder()
-                                                  .build_type(resource["ResourceType"])
-                                                  .build_name_id(resource["PhysicalResourceId"])
-                                                  .build())
+                    if "ResourceType" in resource.keys() and "PhysicalResourceId" in resource.keys():
+                        resource_type_and_name.append(BasicResourceAttributesBuilder()
+                                                      .build_type(resource["ResourceType"])
+                                                      .build_name_id(resource["PhysicalResourceId"])
+                                                      .build())
             if iterator.resume_token is None:
                 # when resume token is none, it means there is no more resources left
                 break

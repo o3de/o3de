@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AtomActorInstance.h>
 #include <AtomActor.h>
@@ -248,6 +243,18 @@ namespace AZ
             }
 
             return SkinningMethod::LinearSkinning;
+        }
+
+        void AtomActorInstance::SetIsVisible(bool isVisible)
+        {
+            if (IsVisible() != isVisible)
+            {
+                RenderActorInstance::SetIsVisible(isVisible);
+                if (m_meshFeatureProcessor && m_meshHandle)
+                {
+                    m_meshFeatureProcessor->SetVisible(*m_meshHandle, isVisible);
+                }
+            }
         }
 
         AtomActor* AtomActorInstance::GetRenderActor() const
@@ -672,9 +679,14 @@ namespace AZ
             AZ_Error("ActorComponentController", meshFeatureProcessor, "Unable to find a MeshFeatureProcessorInterface on the entityId.");
             if (meshFeatureProcessor)
             {
-                // Last boolean parameter indicates if motion vector is enabled
+                MeshHandleDescriptor meshDescriptor;
+                meshDescriptor.m_modelAsset = m_skinnedMeshInstance->m_model->GetModelAsset();
+
+                // [GFX TODO][ATOM-13067] Enable raytracing on skinned meshes
+                meshDescriptor.m_isRayTracingEnabled = false;
+
                 m_meshHandle = AZStd::make_shared<MeshFeatureProcessorInterface::MeshHandle>(
-                    m_meshFeatureProcessor->AcquireMesh(m_skinnedMeshInstance->m_model->GetModelAsset(), materials, /*skinnedMeshWithMotion=*/true));
+                    m_meshFeatureProcessor->AcquireMesh(meshDescriptor, materials));
             }
 
             // If render proxies already exist, they will be auto-freed
