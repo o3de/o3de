@@ -284,6 +284,16 @@ namespace AzFramework
         m_idleCameraInputs.clear();
     }
 
+    bool Cameras::Exclusive() const
+    {
+        return AZStd::any_of(
+            m_activeCameraInputs.begin(), m_activeCameraInputs.end(),
+            [](const auto& cameraInput)
+            {
+                return cameraInput->Exclusive();
+            });
+    }
+
     RotateCameraInput::RotateCameraInput(const InputChannelId rotateChannelId)
         : m_rotateChannelId(rotateChannelId)
     {
@@ -361,7 +371,7 @@ namespace AzFramework
         };
 
         nextCamera.m_yaw = clampRotation(nextCamera.m_yaw);
-        // clamp pitch to be +-90 degrees
+        // clamp pitch to be +/-90 degrees
         nextCamera.m_pitch = AZ::GetClamp(nextCamera.m_pitch, -AZ::Constants::HalfPi, AZ::Constants::HalfPi);
 
         return nextCamera;
@@ -428,7 +438,7 @@ namespace AzFramework
         return nextCamera;
     }
 
-    TranslateCameraInput::TranslationType TranslateCameraInput::translationFromKey(InputChannelId channelId)
+    TranslateCameraInput::TranslationType TranslateCameraInput::TranslationFromKey(InputChannelId channelId)
     {
         if (channelId == CameraTranslateForwardId)
         {
@@ -484,7 +494,7 @@ namespace AzFramework
         {
             if (input->m_state == InputChannel::State::Began)
             {
-                m_translation |= translationFromKey(input->m_channelId);
+                m_translation |= TranslationFromKey(input->m_channelId);
                 if (m_translation != TranslationType::Nil)
                 {
                     BeginActivation();
@@ -498,7 +508,7 @@ namespace AzFramework
             // ensure we don't process end events in the idle state
             else if (input->m_state == InputChannel::State::Ended && !Idle())
             {
-                m_translation &= ~(translationFromKey(input->m_channelId));
+                m_translation &= ~(TranslationFromKey(input->m_channelId));
                 if (m_translation == TranslationType::Nil)
                 {
                     EndActivation();
