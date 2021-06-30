@@ -27,6 +27,7 @@ namespace SandboxEditor
     class OrbitCameraControls
     : public AZ::EBusTraits
     {
+    public:
         //////////////////////////////////////////////////////////////////////////
         // EBusTraits overrides
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
@@ -34,9 +35,9 @@ namespace SandboxEditor
         using BusIdType = AzFramework::ViewportId;
         //////////////////////////////////////////////////////////////////////////
 
-        virtual void SetOrbitDistance(float orbitDistance) {;}
-    }
-    using OrbitCameraControlsBus = AZ::Ebus<OrbitCameraControls>;
+        virtual void SetOrbitDistance(float orbitDistance [[maybe_unused]]) {;}
+    };
+    using OrbitCameraControlsBus = AZ::EBus<OrbitCameraControls>;
 
     class LegacyViewportCameraControllerInstance;
     using LegacyViewportCameraController = AzFramework::MultiViewportController<LegacyViewportCameraControllerInstance>;

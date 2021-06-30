@@ -2368,7 +2368,7 @@ void EditorViewportWidget::CenterOnAABB(const AABB& aabb)
     m_orbitDistance = fabs(m_orbitDistance);
 
     SetViewTM(newTM);
-    SandboxEditor::OrbitCameraControlsBus::Events::Event(GetViewportId(), &SandboxEditor::OrbitCameraControlsBus::Events::SetOrbitDistance, m_orbitDistance);
+    SandboxEditor::OrbitCameraControlsBus::Event(GetViewportId(), &SandboxEditor::OrbitCameraControlsBus::Events::SetOrbitDistance, m_orbitDistance);
 }
 
 void EditorViewportWidget::CenterOnSliceInstance()
