@@ -187,6 +187,13 @@ namespace AzNetworking
                 connection->Disconnect(disconnectReason, TerminationEndpoint::Local);
                 continue;
             }
+            
+            const ConnectionState connectionState = connection->GetConnectionState();
+            if (connectionState == ConnectionState::Disconnecting || connectionState == ConnectionState::Disconnected)
+            {
+                // Skip packets from disconnected connections
+                continue;
+            }
 
             int32_t decodedPacketSize = 0;
             m_decryptBuffer.Resize(m_decryptBuffer.GetCapacity());

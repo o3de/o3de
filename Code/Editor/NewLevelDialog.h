@@ -7,20 +7,6 @@
 
 
 #pragma once
-////////////////////////////////////////////////////////////////////////////
-//
-//  Crytek Engine Source File.
-//  Copyright (C), Crytek Studios, 2002.
-// -------------------------------------------------------------------------
-//  File name:   newleveldialog.h
-//  Version:     v1.00
-//  Created:     24/7/2002 by Timur.
-//  Compilers:   Visual Studio.NET
-//  Description:
-// -------------------------------------------------------------------------
-//  History:
-//
-////////////////////////////////////////////////////////////////////////////
 #ifndef CRYINCLUDE_EDITOR_NEWLEVELDIALOG_H
 #define CRYINCLUDE_EDITOR_NEWLEVELDIALOG_H
 

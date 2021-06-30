@@ -90,10 +90,10 @@ void CConsoleHelpGen::StartPage(FILE* f, const char* szPageName, const char* szP
     {
         fprintf(f, "<HTML><HEAD><TITLE>%s</TITLE><META HTTP-EQUIV=\"Content-Type\" CONTENT=\"text/html; charset=iso-8859-1\">", szPageName);
         fprintf(f, "<META NAME=\"DESCRIPTION\" CONTENT=\"%s\">", szPageDescription);
-        fprintf(f, "<META NAME=\"author\" content=\"Crytek\">");
-        fprintf(f, "<META NAME=\"copyright\" CONTENT=\"Crytek\">");
-        fprintf(f, "<META NAME=\"KEYWORDS\" CONTENT=\"CryEngine,Crytek\">");
-        fprintf(f, "<META NAME=\"distribution\" CONTENT=\"Crytek\">");
+        fprintf(f, "<META NAME=\"author\" content=\"Contributors to the Open 3D Engine Project\">");
+        fprintf(f, "<META NAME=\"copyright\" CONTENT=\"Contributors to the Open 3D Engine Project\">");
+        fprintf(f, "<META NAME=\"KEYWORDS\" CONTENT=\"O3DE\">");
+        fprintf(f, "<META NAME=\"distribution\" CONTENT=\"Contributors to the Open 3D Engine Project\">");
         fprintf(f, "<META NAME=\"revisit-after\" CONTENT=\"10 days\">");
         fprintf(f, "<META NAME=\"robots\" CONTENT=\"INDEX, NOFOLLOW\">");
         fprintf(f, "</HEAD><BODY bgcolor=#ffffff leftmargin=0 topmargin=0 alink=#0000ff link=#0000ff vlink=#0000ff text=#000000>");
