@@ -209,7 +209,7 @@ namespace DatumHelpers
             }
             else if (typeID == azrtti_typeid<AZ::Vector2>())
             {
-                target = BehaviorContextObject::Create<AZ::Vector2>(AZ::Vector2(static_cast<float>(sourceVector.GetX()), static_cast<float>(sourceVector.GetY())), behaviorClass);
+                target = BehaviorContextObject::Create<AZ::Vector2>(AZ::Vector2((sourceVector.GetX()), (sourceVector.GetY())), behaviorClass);
             }
             else if (typeID == azrtti_typeid<AZ::Vector4>())
             {
@@ -264,7 +264,7 @@ namespace DatumHelpers
             }
             else if (typeID == azrtti_typeid<AZ::Vector2>())
             {
-                target = BehaviorContextObject::Create<AZ::Vector2>(AZ::Vector2(static_cast<float>(sourceVector.GetX()), static_cast<float>(sourceVector.GetY())), behaviorClass);
+                target = BehaviorContextObject::Create<AZ::Vector2>(AZ::Vector2((sourceVector.GetX()), (sourceVector.GetY())), behaviorClass);
             }
             else if (typeID == azrtti_typeid<AZ::Vector4>())
             {
@@ -2478,7 +2478,7 @@ namespace ScriptCanvas
 
     AZStd::string Datum::ToStringColor(const Data::ColorType& c) const
     {
-        return AZStd::string::format("(r=%.7f,g=%.7f,b=%.7f,a=%.7f)", static_cast<float>(c.GetR()), static_cast<float>(c.GetG()), static_cast<float>(c.GetB()), static_cast<float>(c.GetA()));
+        return AZStd::string::format("(r=%.7f,g=%.7f,b=%.7f,a=%.7f)", (c.GetR()), (c.GetG()), (c.GetB()), (c.GetA()));
     }
 
     bool Datum::ToStringBehaviorClassObject(Data::StringType& stringOut) const
@@ -2555,9 +2555,9 @@ namespace ScriptCanvas
         AZ::Vector3 eulerRotation = AZ::ConvertTransformToEulerDegrees(AZ::Transform::CreateFromQuaternion(source));
         return AZStd::string::format
         ("(Pitch: %5.2f, Roll: %5.2f, Yaw: %5.2f)"
-            , static_cast<float>(eulerRotation.GetX())
-            , static_cast<float>(eulerRotation.GetY())
-            , static_cast<float>(eulerRotation.GetZ()));
+            , (eulerRotation.GetX())
+            , (eulerRotation.GetY())
+            , (eulerRotation.GetZ()));
     }
 
     AZStd::string Datum::ToStringTransform(const Data::TransformType& source) const
@@ -2570,8 +2570,8 @@ namespace ScriptCanvas
         ("(Position: X: %f, Y: %f, Z: %f,"
             " Rotation: X: %f, Y: %f, Z: %f,"
             " Scale: %f)"
-            , static_cast<float>(pos.GetX()), static_cast<float>(pos.GetY()), static_cast<float>(pos.GetZ())
-            , static_cast<float>(rotation.GetX()), static_cast<float>(rotation.GetY()), static_cast<float>(rotation.GetZ())
+            , (pos.GetX()), (pos.GetY()), (pos.GetZ())
+            , (rotation.GetX()), (rotation.GetY()), (rotation.GetZ())
             , scale);
     }
 
@@ -2587,19 +2587,19 @@ namespace ScriptCanvas
     {
         return AZStd::string::format
         ("(X: %f, Y: %f, Z: %f)"
-            , static_cast<float>(source.GetX())
-            , static_cast<float>(source.GetY())
-            , static_cast<float>(source.GetZ()));
+            , (source.GetX())
+            , (source.GetY())
+            , (source.GetZ()));
     }
 
     AZStd::string Datum::ToStringVector4(const AZ::Vector4& source) const
     {
         return AZStd::string::format
         ("(X: %f, Y: %f, Z: %f, W: %f)"
-            , static_cast<float>(source.GetX())
-            , static_cast<float>(source.GetY())
-            , static_cast<float>(source.GetZ())
-            , static_cast<float>(source.GetW()));
+            , (source.GetX())
+            , (source.GetY())
+            , (source.GetZ())
+            , (source.GetW()));
     }
 
     AZ::Outcome<void, AZStd::string> Datum::CallBehaviorContextMethod(const AZ::BehaviorMethod* method, AZ::BehaviorValueParameter* params, unsigned int numExpectedArgs)

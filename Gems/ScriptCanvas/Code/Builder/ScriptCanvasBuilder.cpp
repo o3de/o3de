@@ -200,7 +200,11 @@ namespace ScriptCanvasBuilder
         for (size_t index = 0; index != buildOverrides.m_variables.size(); ++index)
         {
             auto& variable = buildOverrides.m_variables[index];
-            auto iter = AZStd::find_if(buildOverrides.m_overrides.begin(), buildOverrides.m_overrides.end(), [&variable](auto& candidate) { return candidate.GetVariableId() == variable.GetVariableId(); });
+            auto iter = AZStd::find_if
+                ( buildOverrides.m_overrides.begin()
+                , buildOverrides.m_overrides.end()
+                , [&variable](auto& candidate) { return candidate.GetVariableId() == variable.GetVariableId(); });
+
             if (iter != buildOverrides.m_overrides.end())
             {
                 if (iter->GetDatum())
@@ -265,7 +269,7 @@ namespace ScriptCanvasBuilder
         }
 
         AzToolsFramework::AssetSystemRequestBus::BroadcastResult
-        (resultFound
+            ( resultFound
             , &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourceUUID
             , editorAssetId.m_guid
             , assetInfo

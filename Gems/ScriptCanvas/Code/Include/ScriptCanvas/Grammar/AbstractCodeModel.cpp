@@ -1226,8 +1226,8 @@ namespace ScriptCanvas
                 (nodeling->GetEntityId()
                     , nullptr
                     , AZStd::string::format
-                    ("%s is the name of multiple In Nodelings in a subgraph,\n"
-                        "this will result in a difficult or impossible to use Function Node when used in another graph", displayName.data()));
+                        ( "%s is the name of multiple In Nodelings in a subgraph,\n"
+                        "this will result in a difficult or impossible to use Function Node when used in another graph", displayName.c_str()));
                 return;
             }
             else
@@ -1355,8 +1355,8 @@ namespace ScriptCanvas
             if (ExecutionContainsCycles(node, outSlot))
             {
                 AddError(nullptr, aznew Internal::ParseError(node.GetEntityId(), AZStd::string::format
-                ("Execution cycle detected (see connections to %s-%s. Use a looping node like While or For"
-                    , node.GetDebugName().data(), outSlot.GetName().data()).data()));
+                    ( "Execution cycle detected (see connections to %s-%s. Use a looping node like While or For"
+                    , node.GetDebugName().c_str(), outSlot.GetName().c_str()).c_str()));
 
                 return true;
             }

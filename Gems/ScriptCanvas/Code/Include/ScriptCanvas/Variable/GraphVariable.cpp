@@ -102,6 +102,9 @@ namespace ScriptCanvas
                 classElement.RemoveElementByName(AZ_CRC_CE("Scope"));
                 classElement.AddElementWithData<VariableFlags::InitialValueSource>(context, "InitialValueSource", VariableFlags::InitialValueSource::Component);
             }
+
+            classElement.RemoveElementByName(AZ_CRC("ExposeAsInput", 0x0f7879f0));
+            classElement.RemoveElementByName(AZ_CRC("Exposure", 0x398f29cd));
         }
         else
             if (classElement.GetVersion() < 3)

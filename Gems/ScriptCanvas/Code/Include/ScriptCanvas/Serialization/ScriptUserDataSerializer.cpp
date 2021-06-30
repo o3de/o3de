@@ -5,10 +5,9 @@
  *
  */
 
-#include "ScriptUserDataSerializer.h"
-
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
+#include <ScriptCanvas/Serialization/ScriptUserDataSerializer.h>
 
 using namespace ScriptCanvas;
 
@@ -31,10 +30,10 @@ namespace AZ
         JsonSerializationResult::ResultCode result(JSR::Tasks::ReadField);
         AZ::Uuid typeId = AZ::Uuid::CreateNull();
 
-        auto typeIdMember = inputValue.FindMember("$type");
+        auto typeIdMember = inputValue.FindMember(JsonSerialization::TypeIdFieldIdentifier);
         if (typeIdMember == inputValue.MemberEnd())
         {
-            return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Catastrophic, "ScriptUserDataSerializer::Load failed to load the $type member");
+            return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Catastrophic, AZStd::string::format("ScriptUserDataSerializer::Load failed to load the %s member", JsonSerialization::TypeIdFieldIdentifier).c_str());
         }
 
         result.Combine(LoadTypeId(typeId, typeIdMember->value, context));
@@ -46,13 +45,13 @@ namespace AZ
         outputVariable->value = context.GetSerializeContext()->CreateAny(typeId);
         if (outputVariable->value.empty() || outputVariable->value.type() != typeId)
         {
-            return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Catastrophic, "ScriptUserDataSerializer::Load failed to load a value matched the reported AZ TypeId. The C++ declaration may have been deleted or changed.");
+            return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Unknown, "ScriptUserDataSerializer::Load failed to load a value matched the reported AZ TypeId. The C++ declaration may have been deleted or changed.");
         }
 
         result.Combine(ContinueLoadingFromJsonObjectField(AZStd::any_cast<void>(&outputVariable->value), typeId, inputValue, "value", context));
         return context.Report(result, result.GetProcessing() != JSR::Processing::Halted
-            ? "ScriptUserDataSerializer Store finished loading RuntimeVariable"
-            : "ScriptUserDataSerializer Store failed to load RuntimeVariable");
+            ? "ScriptUserDataSerializer Load finished loading RuntimeVariable"
+            : "ScriptUserDataSerializer Load failed to load RuntimeVariable");
     }
 
     JsonSerializationResult::Result ScriptUserDataSerializer::Store
@@ -91,7 +90,7 @@ namespace AZ
             rapidjson::Value typeValue;
             typeValue.SetString(azTypeString.begin(), azTypeString.length(), context.GetJsonAllocator());
             result.Combine(StoreTypeId(typeValue, inputAnyPtr->type(), context));
-            outputValue.AddMember("$type", typeValue, context.GetJsonAllocator());
+            outputValue.AddMember("$type", AZStd::move(typeValue), context.GetJsonAllocator());
         }
 
         result.Combine(ContinueStoringToJsonObjectField(outputValue, "value", AZStd::any_cast<void>(inputAnyPtr), AZStd::any_cast<void>(defaultAnyPtr), inputAnyPtr->type(), context));

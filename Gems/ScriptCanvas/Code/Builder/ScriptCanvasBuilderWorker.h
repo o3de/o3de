@@ -55,6 +55,8 @@ namespace ScriptCanvasBuilder
         DependencyArguments,
         DependencyRequirementsData,
         AddAssetDependencySearch,
+        PrefabIntegration,
+        CorrectGraphVariableVersion,
         // add new entries above
         Current,
     };

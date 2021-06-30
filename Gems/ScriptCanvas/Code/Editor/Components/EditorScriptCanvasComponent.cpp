@@ -31,6 +31,18 @@
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/PerformanceStatisticsBus.h>
 
+
+namespace EditorScriptCanvasComponentCpp
+{
+    enum Version
+    {
+        PrefabIntegration = 10,
+
+        // add description above
+        Current
+    };
+}
+
 namespace ScriptCanvasEditor
 {
     static bool EditorScriptCanvasComponentVersionConverter(AZ::SerializeContext& serializeContext, AZ::SerializeContext::DataElementNode& rootElement)
@@ -73,6 +85,63 @@ namespace ScriptCanvasEditor
             rootElement.RemoveElementByName(AZ_CRC("m_variableEntityIdMap", 0xdc6c75a8));
         }
 
+        if (rootElement.GetVersion() <= EditorScriptCanvasComponentCpp::Version::PrefabIntegration)
+        {
+            auto variableDataElementIndex = rootElement.FindElement(AZ_CRC_CE("m_variableData"));
+            if (variableDataElementIndex == -1)
+            {
+                AZ_Error("ScriptCanvas", false, "EditorScriptCanvasComponent conversion failed: 'm_variableData' index was missing");
+                return false;
+            }
+
+            auto& variableDataElement = rootElement.GetSubElement(variableDataElementIndex);
+
+            ScriptCanvas::EditableVariableData editableData;
+            if (!variableDataElement.GetData(editableData))
+            {
+                AZ_Error("ScriptCanvas", false, "EditorScriptCanvasComponent conversion failed: could not retrieve old 'm_variableData'");
+                return false;
+            }
+
+            auto scriptCanvasAssetHolderElementIndex = rootElement.FindElement(AZ_CRC_CE("m_assetHolder"));
+            if (scriptCanvasAssetHolderElementIndex == -1)
+            {
+                AZ_Error("ScriptCanvas", false, "EditorScriptCanvasComponent conversion failed: 'm_assetHolder' index was missing");
+                return false;
+            }
+
+            auto& scriptCanvasAssetHolderElement = rootElement.GetSubElement(scriptCanvasAssetHolderElementIndex);
+
+            ScriptCanvasAssetHolder assetHolder;
+            if (!scriptCanvasAssetHolderElement.GetData(assetHolder))
+            {
+                AZ_Error("ScriptCanvas", false, "EditorScriptCanvasComponent conversion failed: could not retrieve old 'm_assetHolder'");
+                return false;
+            }
+
+            rootElement.RemoveElement(variableDataElementIndex);
+
+            if (!rootElement.AddElementWithData(serializeContext, "runtimeDataIsValid", true))
+            {
+                AZ_Error("ScriptCanvas", false, "EditorScriptCanvasComponent conversion failed: failed to add 'runtimeDataIsValid'");
+                return false;
+            }
+
+            ScriptCanvasBuilder::BuildVariableOverrides overrides;
+            overrides.m_source = AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>(assetHolder.GetAssetId(), assetHolder.GetAssetType(), assetHolder.GetAssetHint());;
+
+            for (auto& variable : editableData.GetVariables())
+            {
+                overrides.m_overrides.push_back(variable.m_graphVariable);
+            }
+
+            if (!rootElement.AddElementWithData(serializeContext, "runtimeDataOverrides", overrides))
+            {
+                AZ_Error("ScriptCanvas", false, "EditorScriptCanvasComponent conversion failed: failed to add 'runtimeDataOverrides'");
+                return false;
+            }
+        }
+
         return true;
     }
 
@@ -82,7 +151,7 @@ namespace ScriptCanvasEditor
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorScriptCanvasComponent, EditorComponentBase>()
-                ->Version(10, &EditorScriptCanvasComponentVersionConverter)
+                ->Version(EditorScriptCanvasComponentCpp::Version::Current, &EditorScriptCanvasComponentVersionConverter)
                 ->Field("m_name", &EditorScriptCanvasComponent::m_name)
                 ->Field("m_assetHolder", &EditorScriptCanvasComponent::m_scriptCanvasAssetHolder)
                 ->Field("runtimeDataIsValid", &EditorScriptCanvasComponent::m_runtimeDataIsValid)
@@ -213,18 +282,7 @@ namespace ScriptCanvasEditor
         if (fileAssetId.IsValid())
         {
             AssetTrackerNotificationBus::Handler::BusConnect(fileAssetId);
-
-            ScriptCanvasMemoryAsset::pointer memoryAsset;
-            AssetTrackerRequestBus::BroadcastResult(memoryAsset, &AssetTrackerRequests::GetAsset, fileAssetId);
-
-            if (memoryAsset && memoryAsset->GetAsset().GetStatus() == AZ::Data::AssetData::AssetStatus::Ready)
-            {
-                OnScriptCanvasAssetReady(memoryAsset);
-            }
-            else
-            {
-                AssetTrackerRequestBus::Broadcast(&AssetTrackerRequests::Load, m_scriptCanvasAssetHolder.GetAssetId(), m_scriptCanvasAssetHolder.GetAssetType(), nullptr);
-            }
+            AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree_NewContent);
         }
     }
 
@@ -251,7 +309,7 @@ namespace ScriptCanvasEditor
         auto assetTreeOutcome = LoadEditorAssetTree(m_scriptCanvasAssetHolder.GetAssetId(), m_scriptCanvasAssetHolder.GetAssetHint());
         if (!assetTreeOutcome.IsSuccess())
         {
-            AZ_Warning("ScriptCanvas", false, AZStd::string::format("EditorScriptCanvasComponent::BuildGameEntityData failed: %s", assetTreeOutcome.GetError().c_str()).c_str());
+            AZ_Warning("ScriptCanvas", false, "EditorScriptCanvasComponent::BuildGameEntityData failed: %s", assetTreeOutcome.GetError().c_str());
             return;
         }
 
@@ -260,7 +318,7 @@ namespace ScriptCanvasEditor
         auto parseOutcome = ParseEditorAssetTree(editorAssetTree);
         if (!parseOutcome.IsSuccess())
         {
-            AZ_Warning("ScriptCanvas", false, AZStd::string::format("EditorScriptCanvasComponent::BuildGameEntityData failed: %s", parseOutcome.GetError().c_str()).c_str());
+            AZ_Warning("ScriptCanvas", false, "EditorScriptCanvasComponent::BuildGameEntityData failed: %s", parseOutcome.GetError().c_str());
             return;
         }
 
