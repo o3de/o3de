@@ -70,7 +70,15 @@ namespace AzToolsFramework
                 "Failed to find an owning instance for the entity with id %llu.", static_cast<AZ::u64>(entityId));
             Instance& instance = instanceReference->get();
             m_templateId = instance.GetTemplateId();
-            m_entityAlias = (instance.GetEntityAlias(entityId)).value();
+            auto aliasReference = instance.GetEntityAlias(entityId);
+            if (!aliasReference.has_value())
+            {
+                AZ_Error(
+                    "Prefab", aliasReference.has_value(), "Failed to find the entity alias for entity %s.", entityId.ToString().c_str());
+                return;
+            }
+
+            m_entityAlias = aliasReference.value();
 
             //generate undo/redo patches
             m_instanceToTemplateInterface->GeneratePatch(m_redoPatch, initialState, endState);
