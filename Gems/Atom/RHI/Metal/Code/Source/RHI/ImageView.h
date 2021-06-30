@@ -53,7 +53,6 @@ namespace AZ
             //Internally it may create a new MTLTexture object that reinterprets the original MTLTexture object from Image
             MemoryView m_memoryView;
             
-            RHI::ImageViewDescriptor m_descriptor;
             MTLPixelFormat m_format;
             RHI::ImageSubresourceRange m_imageSubresourceRange;
         };

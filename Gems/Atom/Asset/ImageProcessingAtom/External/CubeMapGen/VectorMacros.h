@@ -15,7 +15,7 @@
 //--------------------------------------------------------------------------------------
 //  (C) 2001-2005 ATI Research, Inc.  All rights reserved.
 //--------------------------------------------------------------------------------------
-// modifications by Crytek GmbH
+// Modified from original
 
 //disable warning about doubles being converted down to float
 #pragma warning (disable : 4244 )

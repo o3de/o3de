@@ -104,6 +104,7 @@ namespace AZ::Render
             m_shadowData.Release(id.GetIndex());
         }
 
+        m_filterParameterNeedsUpdate = true;
         m_shadowmapPassNeedsUpdate = true;
     }
 

@@ -7,20 +7,6 @@
 
 
 #pragma once
-////////////////////////////////////////////////////////////////////////////
-//
-//  Crytek Engine Source File.
-//  Copyright (C), Crytek Studios, 2002.
-// -------------------------------------------------------------------------
-//  File name:   settings.h
-//  Version:     v1.00
-//  Created:     14/1/2003 by Timur.
-//  Compilers:   Visual Studio.NET
-//  Description: General editor settings.
-// -------------------------------------------------------------------------
-//  History:
-//
-////////////////////////////////////////////////////////////////////////////
 #ifndef CRYINCLUDE_EDITOR_SETTINGS_H
 #define CRYINCLUDE_EDITOR_SETTINGS_H
 #include "SettingsManager.h"

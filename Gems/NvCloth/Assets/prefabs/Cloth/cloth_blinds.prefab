@@ -3,101 +3,166 @@
         "Id": "ContainerEntity",
         "Name": "cloth_blinds",
         "Components": {
-            "Component_[11710159740232621436]": {
-                "$type": "EditorDisabledCompositionComponent",
-                "Id": 11710159740232621436
-            },
-            "Component_[12700834211830506265]": {
-                "$type": "EditorInspectorComponent",
-                "Id": 12700834211830506265
-            },
-            "Component_[1332207344633534847]": {
+            "Component_[10182366347512475253]": {
                 "$type": "EditorPrefabComponent",
-                "Id": 1332207344633534847
+                "Id": 10182366347512475253
             },
-            "Component_[15674607824372989481]": {
-                "$type": "SelectionComponent",
-                "Id": 15674607824372989481
-            },
-            "Component_[17830258131678226250]": {
+            "Component_[12917798267488243668]": {
                 "$type": "EditorPendingCompositionComponent",
-                "Id": 17830258131678226250
+                "Id": 12917798267488243668
             },
-            "Component_[2739137831523757464]": {
+            "Component_[3261249813163778338]": {
                 "$type": "EditorOnlyEntityComponent",
-                "Id": 2739137831523757464
+                "Id": 3261249813163778338
             },
-            "Component_[6200331447094468978]": {
-                "$type": "EditorEntityIconComponent",
-                "Id": 6200331447094468978
+            "Component_[3837204912784440039]": {
+                "$type": "EditorDisabledCompositionComponent",
+                "Id": 3837204912784440039
             },
-            "Component_[6469357969320867250]": {
-                "$type": "EditorLockComponent",
-                "Id": 6469357969320867250
-            },
-            "Component_[7557343481632459660]": {
-                "$type": "EditorVisibilityComponent",
-                "Id": 7557343481632459660
-            },
-            "Component_[8407841941984260302]": {
+            "Component_[4272963378099646759]": {
                 "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
-                "Id": 8407841941984260302,
+                "Id": 4272963378099646759,
                 "Parent Entity": "",
                 "Cached World Transform Parent": ""
             },
-            "Component_[8679209570517497730]": {
+            "Component_[4848458548047175816]": {
+                "$type": "EditorVisibilityComponent",
+                "Id": 4848458548047175816
+            },
+            "Component_[5787060997243919943]": {
+                "$type": "EditorInspectorComponent",
+                "Id": 5787060997243919943
+            },
+            "Component_[7804170251266531779]": {
+                "$type": "EditorLockComponent",
+                "Id": 7804170251266531779
+            },
+            "Component_[7874177159288365422]": {
                 "$type": "EditorEntitySortComponent",
-                "Id": 8679209570517497730
+                "Id": 7874177159288365422
+            },
+            "Component_[8018146290632383969]": {
+                "$type": "EditorEntityIconComponent",
+                "Id": 8018146290632383969
+            },
+            "Component_[8452360690590857075]": {
+                "$type": "SelectionComponent",
+                "Id": 8452360690590857075
             }
-        },
-        "IsDependencyReady": true
+        }
     },
     "Entities": {
-        "Entity_[2310285353846]": {
-            "Id": "Entity_[2310285353846]",
+        "Entity_[303275374852564]": {
+            "Id": "Entity_[303275374852564]",
             "Name": "cloth_blinds",
             "Components": {
-                "Component_[11484820910614012211]": {
+                "Component_[10147744244398276652]": {
                     "$type": "EditorOnlyEntityComponent",
-                    "Id": 11484820910614012211
+                    "Id": 10147744244398276652
                 },
-                "Component_[12758934717931799496]": {
-                    "$type": "EditorEntitySortComponent",
-                    "Id": 12758934717931799496
-                },
-                "Component_[14636776520633084007]": {
+                "Component_[11309989511197311871]": {
                     "$type": "EditorClothComponent",
-                    "Id": 14636776520633084007,
+                    "Id": 11309989511197311871,
                     "Configuration": {
                         "Mesh Node": "pPlane1",
-                        "Update Normals of Static Particles": true,
-                        "Wind Velocity": [
+                        "Damping": [
                             0.0,
-                            10.0,
+                            0.0,
                             0.0
                         ],
-                        "Stiffness Frequency": 1.0
+                        "Linear Drag": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "Angular Drag": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "Wind Velocity": [
+                            10.0,
+                            0.0,
+                            0.0
+                        ],
+                        "Air Drag Coefficient": 0.5,
+                        "Air Lift Coefficient": 0.5,
+                        "Update Normals of Static Particles": true
                     }
                 },
-                "Component_[15643606068434059364]": {
+                "Component_[12850019035302463297]": {
                     "$type": "EditorLockComponent",
-                    "Id": 15643606068434059364
+                    "Id": 12850019035302463297
                 },
-                "Component_[1802437050375983597]": {
+                "Component_[15214644042360665965]": {
+                    "$type": "AZ::Render::EditorMeshComponent",
+                    "Id": 15214644042360665965,
+                    "Controller": {
+                        "Configuration": {
+                            "ModelAsset": {
+                                "assetId": {
+                                    "guid": "{C3078003-51DA-5D8E-B311-38C426480DD2}",
+                                    "subId": 283342727
+                                },
+                                "assetHint": "objects/cloth/environment/cloth_blinds.azmodel"
+                            }
+                        }
+                    }
+                },
+                "Component_[17205613619475042888]": {
                     "$type": "EditorEntityIconComponent",
-                    "Id": 1802437050375983597
+                    "Id": 17205613619475042888
                 },
-                "Component_[2246969288668584020]": {
+                "Component_[17262624475618211748]": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 17262624475618211748
+                },
+                "Component_[3930083736215151625]": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 3930083736215151625,
+                    "ComponentOrderEntryArray": [
+                        {
+                            "ComponentId": 4795695323030511838
+                        },
+                        {
+                            "ComponentId": 11309989511197311871,
+                            "SortIndex": 1
+                        },
+                        {
+                            "ComponentId": 15214644042360665965,
+                            "SortIndex": 2
+                        },
+                        {
+                            "ComponentId": 9206497685981025331,
+                            "SortIndex": 3
+                        }
+                    ]
+                },
+                "Component_[4446664869832380031]": {
+                    "$type": "SelectionComponent",
+                    "Id": 4446664869832380031
+                },
+                "Component_[4795695323030511838]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 4795695323030511838,
+                    "Parent Entity": "ContainerEntity",
+                    "Cached World Transform Parent": "ContainerEntity"
+                },
+                "Component_[5800800590637221800]": {
                     "$type": "EditorDisabledCompositionComponent",
-                    "Id": 2246969288668584020
+                    "Id": 5800800590637221800
                 },
-                "Component_[3349689287441689089]": {
+                "Component_[6953593560040071775]": {
                     "$type": "EditorPendingCompositionComponent",
-                    "Id": 3349689287441689089
+                    "Id": 6953593560040071775
                 },
-                "Component_[4761242843736319995]": {
+                "Component_[7074022732104182988]": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 7074022732104182988
+                },
+                "Component_[9206497685981025331]": {
                     "$type": "EditorMaterialComponent",
-                    "Id": 4761242843736319995,
+                    "Id": 9206497685981025331,
                     "Controller": {
                         "Configuration": {
                             "materials": [
@@ -149,70 +214,6 @@
                             }
                         ]
                     ]
-                },
-                "Component_[7102112177384882498]": {
-                    "$type": "EditorInspectorComponent",
-                    "Id": 7102112177384882498,
-                    "ComponentOrderEntryArray": [
-                        {
-                            "ComponentId": 8287798504585048292
-                        },
-                        {
-                            "ComponentId": 7500992507704969518,
-                            "SortIndex": 1
-                        },
-                        {
-                            "ComponentId": 4761242843736319995,
-                            "SortIndex": 2
-                        },
-                        {
-                            "ComponentId": 14636776520633084007,
-                            "SortIndex": 3
-                        }
-                    ]
-                },
-                "Component_[7262445215578128559]": {
-                    "$type": "EditorVisibilityComponent",
-                    "Id": 7262445215578128559
-                },
-                "Component_[7500992507704969518]": {
-                    "$type": "AZ::Render::EditorMeshComponent",
-                    "Id": 7500992507704969518,
-                    "Controller": {
-                        "Configuration": {
-                            "ModelAsset": {
-                                "assetId": {
-                                    "guid": "{C3078003-51DA-5D8E-B311-38C426480DD2}",
-                                    "subId": 283342727
-                                },
-                                "assetHint": "objects/cloth/environment/cloth_blinds.azmodel"
-                            }
-                        }
-                    }
-                },
-                "Component_[8287798504585048292]": {
-                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
-                    "Id": 8287798504585048292,
-                    "Parent Entity": "ContainerEntity",
-                    "Cached World Transform": {
-                        "Translation": [
-                            -5.723679542541504,
-                            -2.6300342082977297,
-                            1.938896894454956
-                        ]
-                    },
-                    "Cached World Transform Parent": "ContainerEntity",
-                    "Transform Data": {
-                        "Translate": [
-                            -6.210474491119385,
-                            0.0,
-                            2.0854623317718508
-                        ]
-                    }
-                },
-                "Component_[9830203766948851058]": {
-                    "$type": "SelectionComponent",
-                    "Id": 9830203766948851058
                 }
             },
             "IsDependencyReady": true
