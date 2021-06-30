@@ -14,9 +14,8 @@ namespace O3DE::ProjectManager
     GemListView::GemListView(QAbstractItemModel* model, QItemSelectionModel* selectionModel, QWidget* parent)
         : QListView(parent)
     {
+        setObjectName("GemCatalogListView");
         setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
-
-        setStyleSheet("background-color: #333333;");
 
         setModel(model);
         setSelectionModel(selectionModel);
