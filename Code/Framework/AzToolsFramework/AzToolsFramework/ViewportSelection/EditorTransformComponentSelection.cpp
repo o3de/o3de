@@ -2049,7 +2049,7 @@ namespace AzToolsFramework
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
-        // note: see Code/Sandbox/Editor/Resource.h for ID_EDIT_<action> ids
+        // note: see Code/Editor/Resource.h for ID_EDIT_<action> ids
 
         const auto lockUnlock = [this](const bool lock)
         {

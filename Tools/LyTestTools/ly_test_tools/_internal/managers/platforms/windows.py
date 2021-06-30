@@ -98,4 +98,4 @@ class WindowsWorkspaceManager(AbstractWorkspaceManager):
     def clear_settings(self):
         logger.debug("Build::setup_clear_registry")
         if sys.platform == "win32":
-            ly_test_tools.environment.reg_cleaner.clean_ly_keys(exception_list=r"SOFTWARE\Amazon\Lumberyard\Identity")
+            ly_test_tools.environment.reg_cleaner.clean_ly_keys(exception_list=r"SOFTWARE\O3DE\O3DE\Identity")
