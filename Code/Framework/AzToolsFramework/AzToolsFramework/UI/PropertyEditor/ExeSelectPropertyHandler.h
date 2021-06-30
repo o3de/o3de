@@ -54,11 +54,7 @@ namespace AzToolsFramework
         ExeSelectPropertyHandler();
 
         AZ::u32 GetHandlerName(void) const override;
-        // Need to unregister ourselves
-        bool AutoDelete() const override
-        {
-            return false;
-        }
+        bool AutoDelete() const override;
 
         QWidget* CreateGUI(QWidget* pParent) override;
         void WriteGUIValuesIntoProperty(

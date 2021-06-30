@@ -95,6 +95,11 @@ namespace AzToolsFramework
         return AZ::Edit::UIHandlers::ExeSelectBrowseEdit;
     }
 
+    bool ExeSelectPropertyHandler::AutoDelete() const
+    {
+        return true;
+    }
+
     QWidget* ExeSelectPropertyHandler::CreateGUI(QWidget* pParent)
     {
         ExeSelectPropertyCtrl* ctrl = aznew ExeSelectPropertyCtrl(pParent);
