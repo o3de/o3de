@@ -95,7 +95,7 @@ namespace AZ
                         skinnedSubMesh.m_vertexCount = aznumeric_cast<uint32_t>(subMeshVertexCount);
                         lodVertexCount += aznumeric_cast<uint32_t>(subMeshVertexCount);
 
-                        // The default material id used by a sub-mesh is the guid of the source .fbx plus the subId which is a unique material ID from the scene API
+                        // The default material id used by a sub-mesh is the guid of the source scene file plus the subId which is a unique material ID from the scene API
                         AZ::u32 subId = modelMesh.GetMaterialAsset().GetId().m_subId;
                         AZ::Data::AssetId materialId{ actorAssetId.m_guid, subId };
 

@@ -35,7 +35,7 @@ namespace EMotionFX
         return aznew NonUniformMotionData();
     }
 
-    const char* NonUniformMotionData::GetFbxSettingsName() const
+    const char* NonUniformMotionData::GetSceneSettingsName() const
     {
         return "Reduced Keyframes (slower, mostly smaller)";
     }
