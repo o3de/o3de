@@ -1360,7 +1360,8 @@ void SandboxIntegrationManager::SetShowCircularDependencyError(const bool& showC
 //////////////////////////////////////////////////////////////////////////
 void SandboxIntegrationManager::LaunchLuaEditor(const char* files)
 {
-    CCryEditApp::instance()->OpenLUAEditor(files);
+    //modified to open vscode
+    CCryEditApp::instance()->OpenVSCode(files);
 }
 
 bool SandboxIntegrationManager::IsLevelDocumentOpen()
