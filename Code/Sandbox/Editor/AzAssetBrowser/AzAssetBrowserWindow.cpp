@@ -70,7 +70,6 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     , m_ui(new Ui::AzAssetBrowserWindowClass())
     , m_filterModel(new AzToolsFramework::AssetBrowser::AssetBrowserFilterModel(parent))
     , m_tableModel(new AzToolsFramework::AssetBrowser::AssetBrowserTableModel(parent))
-    , m_assetBrowserDisplayState(AzToolsFramework::AssetBrowser::AssetBrowserDisplayState::SearchViewMode)
 {
     m_ui->setupUi(this);
     m_ui->m_searchWidget->Setup(true, true);
@@ -180,20 +179,22 @@ void AzAssetBrowserWindow::CreateSwitchViewMenu()
 {
     if (m_viewSwitchMenu == nullptr)
     {
-        m_viewSwitchMenu = new QMenu("Asset Browser Mode Selection", this);
-
-        m_standardAssetBrowserMode = new QAction(tr("Standard Mode"), this);
-        m_standardAssetBrowserMode->setCheckable(true);
-        connect(m_standardAssetBrowserMode, &QAction::triggered, this, &AzAssetBrowserWindow::SetStandardAssetBrowserMode);
-        m_viewSwitchMenu->addAction(m_standardAssetBrowserMode);
-
-        m_searchViewAssetBrowserMode = new QAction(tr("Search View Mode"), this);
-        m_searchViewAssetBrowserMode->setCheckable(true);
-        connect(m_searchViewAssetBrowserMode, &QAction::triggered, this, &AzAssetBrowserWindow::SetSearchViewAssetBrowserMode);
-        m_viewSwitchMenu->addAction(m_searchViewAssetBrowserMode);
-
-        UpdateDisplayInfo();
+        return;
     }
+
+    m_viewSwitchMenu = new QMenu("Asset Browser Mode Selection", this);
+
+    m_standardAssetBrowserMode = new QAction(tr("Standard Mode"), this);
+    m_standardAssetBrowserMode->setCheckable(true);
+    connect(m_standardAssetBrowserMode, &QAction::triggered, this, &AzAssetBrowserWindow::SetStandardAssetBrowserMode);
+    m_viewSwitchMenu->addAction(m_standardAssetBrowserMode);
+
+    m_searchViewAssetBrowserMode = new QAction(tr("Search View Mode"), this);
+    m_searchViewAssetBrowserMode->setCheckable(true);
+    connect(m_searchViewAssetBrowserMode, &QAction::triggered, this, &AzAssetBrowserWindow::SetSearchViewAssetBrowserMode);
+    m_viewSwitchMenu->addAction(m_searchViewAssetBrowserMode);
+
+    UpdateDisplayInfo();
 }
 
 void AzAssetBrowserWindow::UpdateDisplayInfo()
