@@ -29,6 +29,7 @@ namespace AZ
             const static AZ::Crc32 Deprecated = AZ_CRC("Deprecated", 0xfe49a138); ///< Marks a reflected class, method, EBus or property as deprecated. 
             const static AZ::Crc32 DisallowBroadcast = AZ_CRC("DisallowBroadcast", 0x389b0ac7); ///< Marks a reflected EBus as not allowing Broadcasts, only Events.
             const static AZ::Crc32 ClassConstantValue = AZ_CRC_CE("ClassConstantValue"); ///< Indicates the property is backed by a constant value
+            const static AZ::Crc32 UseClassIndexAllowNil = AZ_CRC_CE("UseClassIndexAllowNil"); ///< Use the Class__IndexAllowNil method, which will not report an error on accessing undeclared values (allows for nil)
 
             //! Attribute which stores BehaviorAzEventDescription structure which contains
             //! the script name of an AZ::Event and the name of it's parameter arguments
