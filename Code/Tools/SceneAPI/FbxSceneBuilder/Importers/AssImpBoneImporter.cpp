@@ -63,11 +63,11 @@ namespace AZ
                     }
                 }
 
-                for (unsigned meshIndex = 0; meshIndex < scene->mNumMeshes; ++meshIndex)
+                for (unsigned int meshIndex = 0; meshIndex < scene->mNumMeshes; ++meshIndex)
                 {
                     const aiMesh* mesh = scene->mMeshes[meshIndex];
 
-                    for (unsigned boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
+                    for (unsigned int boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
                     {
                         const aiBone* bone = mesh->mBones[boneIndex];
 
