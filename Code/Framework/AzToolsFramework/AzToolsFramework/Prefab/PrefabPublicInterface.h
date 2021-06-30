@@ -79,8 +79,9 @@ namespace AzToolsFramework
              * 
              * @param entityId The entity to patch.
              * @param parentUndoBatch The undo batch the undo nodes should be parented to.
+             * @return Returns Success if the node was generated correctly, or an error message otherwise.
              */
-            virtual void GenerateUndoNodesForEntityChangeAndUpdateCache(
+            virtual PrefabOperationResult GenerateUndoNodesForEntityChangeAndUpdateCache(
                 AZ::EntityId entityId, UndoSystem::URSequencePoint* parentUndoBatch) = 0;
             
             /**

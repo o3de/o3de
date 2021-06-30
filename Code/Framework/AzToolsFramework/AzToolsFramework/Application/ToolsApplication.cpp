@@ -1589,7 +1589,15 @@ namespace AzToolsFramework
                 // Multiple changes to the same entity are just split between different undo nodes.
                 for (AZ::EntityId entityId : m_dirtyEntities)
                 {
-                    prefabPublicInterface->GenerateUndoNodesForEntityChangeAndUpdateCache(entityId, m_currentBatchUndo);
+                    auto outcome = prefabPublicInterface->GenerateUndoNodesForEntityChangeAndUpdateCache(entityId, m_currentBatchUndo);
+
+                    if (!outcome.IsSuccess())
+                    {
+                        QWidget* activeWindow = QApplication::activeWindow();
+
+                        QMessageBox::warning(
+                            activeWindow, QString("Error"), QString(outcome.GetError().c_str()), QMessageBox::Ok, QMessageBox::Ok);
+                    }
                 }
             }
         }
