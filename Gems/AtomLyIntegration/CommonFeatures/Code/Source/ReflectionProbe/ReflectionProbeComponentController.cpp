@@ -127,9 +127,21 @@ namespace AZ
             // set the visualization sphere option
             m_featureProcessor->ShowProbeVisualization(m_handle, m_configuration.m_showVisualization);
 
-            // update the outer extents from the box shape
-            // if the user already resized the box shape on this entity it will inherit those extents
-            UpdateOuterExtents();
+            // if this is a new ReflectionProbe entity and the box shape has not been changed (i.e., it's still unit sized)
+            // then set the shape to the default extents
+            AZ::Vector3 boxDimensions = m_boxShapeInterface->GetBoxDimensions();
+            if (m_configuration.m_entityId == EntityId::InvalidEntityId && boxDimensions == AZ::Vector3(1.0f))
+            {
+                AZ::Vector3 extents(m_configuration.m_outerWidth, m_configuration.m_outerLength, m_configuration.m_outerHeight);
+
+                // resize the box shape, this will invoke OnShapeChanged
+                m_boxShapeInterface->SetBoxDimensions(extents);
+            }
+            else
+            {
+                // update the outer extents from the box shape
+                UpdateOuterExtents();
+            }
 
             // set the inner extents
             m_featureProcessor->SetProbeInnerExtents(m_handle, AZ::Vector3(m_configuration.m_innerWidth, m_configuration.m_innerLength, m_configuration.m_innerHeight));
