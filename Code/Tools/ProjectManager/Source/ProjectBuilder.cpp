@@ -176,18 +176,30 @@ namespace O3DE::ProjectManager
             logStream << m_buildProjectProcess->readAllStandardOutput();
             logStream.flush();
 
-            UpdateProgress(qMin(++m_progressEstimate / 10, 100));
+            // Show 1% progress for every 10 steps completed
+            UpdateProgress(qMin(++m_progressEstimate / 10, 99));
 
             if (QThread::currentThread()->isInterruptionRequested())
             {
-                logFile.close();
-                char ctrlC = 0x03;
-                m_buildProjectProcess->write(&ctrlC);
-                m_buildProjectProcess->waitForBytesWritten();
+                QProcess killBuildProcess;
+                killBuildProcess.setProcessChannelMode(QProcess::MergedChannels);
+                killBuildProcess.start(
+                    "cmd.exe",
+                    QStringList
+                    {
+                        "/C",
+                        "taskkill",
+                        "/pid",
+                        QString::number(m_buildProjectProcess->processId()),
+                        "/f",
+                        "/t"
+                    });
+                killBuildProcess.waitForStarted();
+                killBuildProcess.waitForFinished();
+                logStream << "Killing Project Build.";
+                logStream << killBuildProcess.readAllStandardOutput();
                 m_buildProjectProcess->kill();
-                QThread::sleep(20);
-                logStream << m_buildProjectProcess->readAllStandardOutput();
-                logStream.flush();
+                logFile.close();
                 emit Done(tr("Build Cancelled."));
                 return;
             }
