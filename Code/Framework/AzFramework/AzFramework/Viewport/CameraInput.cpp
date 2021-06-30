@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -284,6 +279,16 @@ namespace AzFramework
         m_idleCameraInputs.clear();
     }
 
+    bool Cameras::Exclusive() const
+    {
+        return AZStd::any_of(
+            m_activeCameraInputs.begin(), m_activeCameraInputs.end(),
+            [](const auto& cameraInput)
+            {
+                return cameraInput->Exclusive();
+            });
+    }
+
     RotateCameraInput::RotateCameraInput(const InputChannelId rotateChannelId)
         : m_rotateChannelId(rotateChannelId)
     {
@@ -361,7 +366,7 @@ namespace AzFramework
         };
 
         nextCamera.m_yaw = clampRotation(nextCamera.m_yaw);
-        // clamp pitch to be +-90 degrees
+        // clamp pitch to be +/-90 degrees
         nextCamera.m_pitch = AZ::GetClamp(nextCamera.m_pitch, -AZ::Constants::HalfPi, AZ::Constants::HalfPi);
 
         return nextCamera;
@@ -428,7 +433,7 @@ namespace AzFramework
         return nextCamera;
     }
 
-    TranslateCameraInput::TranslationType TranslateCameraInput::translationFromKey(InputChannelId channelId)
+    TranslateCameraInput::TranslationType TranslateCameraInput::TranslationFromKey(InputChannelId channelId)
     {
         if (channelId == CameraTranslateForwardId)
         {
@@ -484,7 +489,7 @@ namespace AzFramework
         {
             if (input->m_state == InputChannel::State::Began)
             {
-                m_translation |= translationFromKey(input->m_channelId);
+                m_translation |= TranslationFromKey(input->m_channelId);
                 if (m_translation != TranslationType::Nil)
                 {
                     BeginActivation();
@@ -498,7 +503,7 @@ namespace AzFramework
             // ensure we don't process end events in the idle state
             else if (input->m_state == InputChannel::State::Ended && !Idle())
             {
-                m_translation &= ~(translationFromKey(input->m_channelId));
+                m_translation &= ~(TranslationFromKey(input->m_channelId));
                 if (m_translation == TranslationType::Nil)
                 {
                     EndActivation();

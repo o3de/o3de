@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 # Switch to enable/disable test impact analysis (and related build targets)
@@ -18,14 +14,20 @@ option(LY_TEST_IMPACT_INSTRUMENTATION_BIN "Path to test impact framework instrum
 # Name of test impact framework console static library target
 set(LY_TEST_IMPACT_CONSOLE_STATIC_TARGET "TestImpact.Frontend.Console.Static")
 
+# Name of test impact framework python coverage gem target
+set(LY_TEST_IMPACT_PYTHON_COVERAGE_STATIC_TARGET "PythonCoverage.Editor.Static")
+
 # Name of test impact framework console target
 set(LY_TEST_IMPACT_CONSOLE_TARGET "TestImpact.Frontend.Console")
 
-# Directory for non-persistent test impact data trashed with each generation of build system
+# Directory for test impact artifacts and data
 set(LY_TEST_IMPACT_WORKING_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestImpactFramework")
 
-# Directory for temporary files generated at runtime
+# Directory for artifacts generated at runtime
 set(LY_TEST_IMPACT_TEMP_DIR "${LY_TEST_IMPACT_WORKING_DIR}/Temp")
+
+# Directory for files that persist between runtime runs
+set(LY_TEST_IMPACT_PERSISTENT_DIR "${LY_TEST_IMPACT_WORKING_DIR}/Persistent")
 
 # Directory for static artifacts produced as part of the build system generation process
 set(LY_TEST_IMPACT_ARTIFACT_DIR "${LY_TEST_IMPACT_WORKING_DIR}/Artifact")
@@ -36,8 +38,17 @@ set(LY_TEST_IMPACT_SOURCE_TARGET_MAPPING_DIR "${LY_TEST_IMPACT_ARTIFACT_DIR}/Map
 # Directory for build target dependency/depender graphs
 set(LY_TEST_IMPACT_TARGET_DEPENDENCY_DIR "${LY_TEST_IMPACT_ARTIFACT_DIR}/Dependency")
 
-# Master test enumeration file for all test types
+# Main test enumeration file for all test types
 set(LY_TEST_IMPACT_TEST_TYPE_FILE "${LY_TEST_IMPACT_ARTIFACT_DIR}/TestType/All.tests")
+
+# Main gem target file for all shared library gems
+set(LY_TEST_IMPACT_GEM_TARGET_FILE "${LY_TEST_IMPACT_ARTIFACT_DIR}/BuildType/All.gems")
+
+# Path to the config file for each build configuration
+set(LY_TEST_IMPACT_CONFIG_FILE_PATH "${LY_TEST_IMPACT_PERSISTENT_DIR}/tiaf.$<CONFIG>.json")
+
+# Preprocessor directive for the config file path
+set(LY_TEST_IMPACT_CONFIG_FILE_PATH_DEFINITION "LY_TEST_IMPACT_DEFAULT_CONFIG_FILE=\"${LY_TEST_IMPACT_CONFIG_FILE_PATH}\"")
 
 #! ly_test_impact_rebase_file_to_repo_root: rebases the relative and/or absolute path to be relative to repo root directory and places the resulting path in quotes.
 #
@@ -212,7 +223,7 @@ function(ly_test_impact_extract_python_test_params COMPOSITE_TEST COMPOSITE_SUIT
     set(${TEST_SUITES} ${test_suites} PARENT_SCOPE)
 endfunction()
 
-#! ly_test_impact_write_test_enumeration_file: exports the master test lists to file.
+#! ly_test_impact_write_test_enumeration_file: exports the main test list to file.
 # 
 # \arg:TEST_ENUMERATION_TEMPLATE_FILE path to test enumeration template file
 function(ly_test_impact_write_test_enumeration_file TEST_ENUMERATION_TEMPLATE_FILE)
@@ -262,6 +273,33 @@ function(ly_test_impact_write_test_enumeration_file TEST_ENUMERATION_TEMPLATE_FI
     configure_file(${TEST_ENUMERATION_TEMPLATE_FILE} ${LY_TEST_IMPACT_TEST_TYPE_FILE})
 endfunction()
 
+#! ly_test_impact_write_gem_target_enumeration_file: exports the main gem target list to file.
+#
+# \arg:GEM_TARGET_TEMPLATE_FILE path to source to gem target template file
+function(ly_test_impact_write_gem_target_enumeration_file GEM_TARGET_TEMPLATE_FILE)
+    get_property(LY_ALL_TARGETS GLOBAL PROPERTY LY_ALL_TARGETS)
+
+    set(enumerated_gem_targets "")
+    # Walk the build targets
+    foreach(aliased_target ${LY_ALL_TARGETS})
+
+        unset(target)
+        ly_de_alias_target(${aliased_target} target)
+
+        get_target_property(gem_module ${target} GEM_MODULE)
+        get_target_property(target_type ${target} TYPE)
+        if("${gem_module}" STREQUAL "TRUE")
+            if("${target_type}" STREQUAL "SHARED_LIBRARY" OR "${target_type}" STREQUAL "MODULE_LIBRARY")
+                list(APPEND enumerated_gem_targets "      \"${target}\"")
+            endif()
+        endif()
+    endforeach()
+    string (REPLACE ";" ",\n" enumerated_gem_targets "${enumerated_gem_targets}")
+     # Write out source to target mapping file
+     set(mapping_path "${LY_TEST_IMPACT_GEM_TARGET_FILE}")
+     configure_file(${GEM_TARGET_TEMPLATE_FILE} ${mapping_path})
+endfunction()
+
 #! ly_test_impact_export_source_target_mappings: exports the static source to target mappings to file.
 #
 # \arg:MAPPING_TEMPLATE_FILE path to source to target template file
@@ -273,6 +311,7 @@ function(ly_test_impact_export_source_target_mappings MAPPING_TEMPLATE_FILE)
 
         unset(target)
         ly_de_alias_target(${aliased_target} target)
+
         message(TRACE "Exporting static source file mappings for ${target}")
         
         # Target name and path relative to root
@@ -333,9 +372,8 @@ endfunction()
 #! ly_test_impact_write_config_file: writes out the test impact framework config file using the data derived from the build generation process.
 # 
 # \arg:CONFIG_TEMPLATE_FILE path to the runtime configuration template file
-# \arg:PERSISTENT_DATA_DIR path to the test impact framework persistent data directory
 # \arg:BIN_DIR path to repo binary output directory
-function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE PERSISTENT_DATA_DIR BIN_DIR)
+function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE BIN_DIR)
     # Platform this config file is being generated for
     set(platform ${PAL_PLATFORM_NAME})
 
@@ -366,16 +404,19 @@ function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE PERSISTENT_DATA_D
     set(temp_dir "${LY_TEST_IMPACT_TEMP_DIR}")
 
     # Active persistent data dir
-    set(active_dir "${PERSISTENT_DATA_DIR}/active")
+    set(active_dir "${LY_TEST_IMPACT_PERSISTENT_DIR}/active")
 
     # Historic persistent data dir
-    set(historic_dir "${PERSISTENT_DATA_DIR}/historic")
+    set(historic_dir "${LY_TEST_IMPACT_PERSISTENT_DIR}/historic")
 
     # Source to target mappings dir
     set(source_target_mapping_dir "${LY_TEST_IMPACT_SOURCE_TARGET_MAPPING_DIR}")
     
     # Test type artifact file
     set(test_target_type_file "${LY_TEST_IMPACT_TEST_TYPE_FILE}")
+
+    # Gem target file
+    set(gem_target_file "${LY_TEST_IMPACT_GEM_TARGET_FILE}")
     
     # Build dependency artifact dir
     set(target_dependency_dir "${LY_TEST_IMPACT_TARGET_DEPENDENCY_DIR}")
@@ -389,12 +430,10 @@ function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE PERSISTENT_DATA_D
     
     # Write out entire config contents to a file in the build directory of the test impact framework console target
     file(GENERATE
-        OUTPUT "${PERSISTENT_DATA_DIR}/$<TARGET_FILE_BASE_NAME:${LY_TEST_IMPACT_CONSOLE_TARGET}>.$<CONFIG>.json" 
+        OUTPUT "${LY_TEST_IMPACT_CONFIG_FILE_PATH}" 
         CONTENT ${config_file}
     )
 
-    # Set the above config file as the default config file to use for the test impact framework console target
-    target_compile_definitions(${LY_TEST_IMPACT_CONSOLE_STATIC_TARGET} PUBLIC "LY_TEST_IMPACT_DEFAULT_CONFIG_FILE=\"${PERSISTENT_DATA_DIR}/$<TARGET_FILE_BASE_NAME:${LY_TEST_IMPACT_CONSOLE_TARGET}>.$<CONFIG>.json\"")
     message(DEBUG "Test impact framework post steps complete")
 endfunction()
 
@@ -404,13 +443,11 @@ function(ly_test_impact_post_step)
         return()
     endif()
 
-    # Directory per build config for persistent test impact data (to be checked in)
-    set(persistent_data_dir "${LY_TEST_IMPACT_WORKING_DIR}/persistent")
     # Directory for binaries built for this profile
     set(bin_dir "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>")
 
     # Erase any existing non-persistent data to avoid getting test impact framework out of sync with current repo state
-    file(REMOVE_RECURSE "${LY_TEST_IMPACT_WORKING_DIR}")
+    file(REMOVE_RECURSE "${LY_TEST_IMPACT_TEMP_DIR}")
 
     # Export the soruce to target mapping files
     ly_test_impact_export_source_target_mappings(
@@ -422,10 +459,14 @@ function(ly_test_impact_post_step)
         "cmake/TestImpactFramework/EnumeratedTests.in"
     )
 
+    # Export the enumerated gems
+    ly_test_impact_write_gem_target_enumeration_file(
+        "cmake/TestImpactFramework/EnumeratedGemTargets.in"
+    )
+
     # Write out the configuration file
     ly_test_impact_write_config_file(
         "cmake/TestImpactFramework/ConsoleFrontendConfig.in"
-        ${persistent_data_dir}
         ${bin_dir}
     )
     
