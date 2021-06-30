@@ -6,7 +6,7 @@
  */
 
 #include <AzCore/Math/Vector3.h>
-#include <SceneAPI/FbxSceneBuilder/FbxSceneSystem.h>
+#include <SceneAPI/SceneBuilder/SceneSystem.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneAPI/SDKWrapper/AssImpSceneWrapper.h>
 #include <SceneAPI/SDKWrapper/AssImpTypeConverter.h>
@@ -17,7 +17,7 @@ namespace AZ
 {
     namespace SceneAPI
     {
-        FbxSceneSystem::FbxSceneSystem() :
+        SceneSystem::SceneSystem() :
             m_unitSizeInMeters(1.0f),
             m_originalUnitSizeInMeters(1.0f),
             m_adjustTransform(nullptr),
@@ -25,15 +25,15 @@ namespace AZ
         {
         }
 
-        void FbxSceneSystem::Set(const SDKScene::SceneWrapperBase* fbxScene)
+        void SceneSystem::Set(const SDKScene::SceneWrapperBase* scene)
         {
             // Get unit conversion factor to meter.
-            if (!azrtti_istypeof<AssImpSDKWrapper::AssImpSceneWrapper>(fbxScene))
+            if (!azrtti_istypeof<AssImpSDKWrapper::AssImpSceneWrapper>(scene))
             {
                 return;
             }
 
-            const AssImpSDKWrapper::AssImpSceneWrapper* assImpScene = azrtti_cast<const AssImpSDKWrapper::AssImpSceneWrapper*>(fbxScene);
+            const AssImpSDKWrapper::AssImpSceneWrapper* assImpScene = azrtti_cast<const AssImpSDKWrapper::AssImpSceneWrapper*>(scene);
 
             // If either meta data piece is not available, the default of 1 will be used.
             assImpScene->GetAssImpScene()->mMetaData->Get("UnitScaleFactor", m_unitSizeInMeters);
@@ -111,7 +111,7 @@ namespace AZ
             }
         }
 
-        void FbxSceneSystem::SwapVec3ForUpAxis(Vector3& swapVector) const
+        void SceneSystem::SwapVec3ForUpAxis(Vector3& swapVector) const
         {
             if (m_adjustTransform)
             {
@@ -119,7 +119,7 @@ namespace AZ
             }
         }
 
-        void FbxSceneSystem::SwapTransformForUpAxis(DataTypes::MatrixType& inOutTransform) const
+        void SceneSystem::SwapTransformForUpAxis(DataTypes::MatrixType& inOutTransform) const
         {
             if (m_adjustTransform)
             {
@@ -127,19 +127,19 @@ namespace AZ
             }
         }
 
-        void FbxSceneSystem::ConvertUnit(Vector3& scaleVector) const
+        void SceneSystem::ConvertUnit(Vector3& scaleVector) const
         {
             scaleVector *= m_unitSizeInMeters;
         }
 
-        void FbxSceneSystem::ConvertUnit(DataTypes::MatrixType& inOutTransform) const
+        void SceneSystem::ConvertUnit(DataTypes::MatrixType& inOutTransform) const
         {
             Vector3 translation = inOutTransform.GetTranslation();
             translation *= m_unitSizeInMeters;
             inOutTransform.SetTranslation(translation);
         }
 
-        void FbxSceneSystem::ConvertBoneUnit(DataTypes::MatrixType& inOutTransform) const
+        void SceneSystem::ConvertBoneUnit(DataTypes::MatrixType& inOutTransform) const
         {
 
 

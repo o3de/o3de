@@ -8,7 +8,7 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzTest/AzTest.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/Utilities/RenamedNodesMap.h>
+#include <SceneAPI/SceneBuilder/Importers/Utilities/RenamedNodesMap.h>
 #include <SceneAPI/SceneCore/Containers/SceneGraph.h>
 #include <SceneAPI/SceneCore/DataTypes/IGraphObject.h>
 #include <SceneAPI/SceneData/GraphData/MeshData.h>
@@ -17,7 +17,7 @@ namespace AZ
 {
     namespace SceneAPI
     {
-        namespace FbxSceneBuilder
+        namespace SceneBuilder
         {
             TEST(RenamedNodesMapTests, SanitizeNodeName_ValidNameProvided_ReturnsFalseAndNameUnchanged)
             {
@@ -79,6 +79,6 @@ namespace AZ
                 EXPECT_TRUE(result);
                 EXPECT_STREQ("Child_2", name.c_str());
             }
-        } // namespace FbxSceneBuilder
+        } // namespace SceneBuilder
     } // namespace SceneAPI
 } // namespace AZ

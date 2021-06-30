@@ -9,7 +9,7 @@
 
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/string/string.h>
-#include <SceneAPI/FbxSceneBuilder/ImportContexts/ImportContexts.h>
+#include <SceneAPI/SceneBuilder/ImportContexts/ImportContexts.h>
 #include <SceneAPI/SceneCore/Containers/SceneGraph.h>
 
 namespace AZ
@@ -22,8 +22,8 @@ namespace AZ
     
     namespace SceneAPI
     {
-        class FbxSceneSystem;
-        namespace FbxSceneBuilder
+        class SceneSystem;
+        namespace SceneBuilder
         {
             class RenamedNodesMap;
 
@@ -36,12 +36,12 @@ namespace AZ
                 AZ_RTTI(AssImpImportContext, "{B1076AFF-991B-423C-8D3E-D5C9230434AB}");
 
                 AssImpImportContext(const AssImpSDKWrapper::AssImpSceneWrapper& sourceScene,
-                    const FbxSceneSystem& sourceSceneSystem,
+                    const SceneSystem& sourceSceneSystem,
                     AssImpSDKWrapper::AssImpNodeWrapper& sourceNode);
 
                 const AssImpSDKWrapper::AssImpSceneWrapper& m_sourceScene;
                 AssImpSDKWrapper::AssImpNodeWrapper& m_sourceNode;
-                const FbxSceneSystem& m_sourceSceneSystem; // Needed for unit and axis conversion
+                const SceneSystem& m_sourceSceneSystem; // Needed for unit and axis conversion
             };
 
             //  AssImpNodeEncounteredContext
@@ -56,14 +56,14 @@ namespace AZ
                 AssImpNodeEncounteredContext(Containers::Scene& scene,
                     Containers::SceneGraph::NodeIndex currentGraphPosition,
                     const AssImpSDKWrapper::AssImpSceneWrapper& sourceScene,
-                    const FbxSceneSystem& sourceSceneSystem,
+                    const SceneSystem& sourceSceneSystem,
                     RenamedNodesMap& nodeNameMap,
                     AssImpSDKWrapper::AssImpNodeWrapper& sourceNode);
 
                 AssImpNodeEncounteredContext(Events::ImportEventContext& parent,
                     Containers::SceneGraph::NodeIndex currentGraphPosition,
                     const AssImpSDKWrapper::AssImpSceneWrapper& sourceScene,
-                    const FbxSceneSystem& sourceSceneSystem,
+                    const SceneSystem& sourceSceneSystem,
                     RenamedNodesMap& nodeNameMap,
                     AssImpSDKWrapper::AssImpNodeWrapper& sourceNode);
             };
@@ -85,7 +85,7 @@ namespace AZ
                 AssImpSceneDataPopulatedContext(Containers::Scene& scene,
                     Containers::SceneGraph::NodeIndex currentGraphPosition,
                     const AssImpSDKWrapper::AssImpSceneWrapper& sourceScene,
-                    const FbxSceneSystem& sourceSceneSystem,
+                    const SceneSystem& sourceSceneSystem,
                     RenamedNodesMap& nodeNameMap,
                     AssImpSDKWrapper::AssImpNodeWrapper& sourceNode,
                     const AZStd::shared_ptr<DataTypes::IGraphObject>& nodeData,
@@ -106,7 +106,7 @@ namespace AZ
                 AssImpSceneNodeAppendedContext(Containers::Scene& scene,
                     Containers::SceneGraph::NodeIndex currentGraphPosition,
                     const AssImpSDKWrapper::AssImpSceneWrapper& sourceScene,
-                    const FbxSceneSystem& sourceSceneSystem,
+                    const SceneSystem& sourceSceneSystem,
                     RenamedNodesMap& nodeNameMap,
                     AssImpSDKWrapper::AssImpNodeWrapper& sourceNode);
             };
@@ -170,13 +170,13 @@ namespace AZ
                 AssImpFinalizeSceneContext(
                     Containers::Scene& scene,
                     const AssImpSDKWrapper::AssImpSceneWrapper& sourceScene,
-                    const FbxSceneSystem& sourceSceneSystem,
+                    const SceneSystem& sourceSceneSystem,
                     RenamedNodesMap& nodeNameMap);
 
                 const AssImpSDKWrapper::AssImpSceneWrapper& m_sourceScene;
-                const FbxSceneSystem& m_sourceSceneSystem; // Needed for unit and axis conversion
+                const SceneSystem& m_sourceSceneSystem; // Needed for unit and axis conversion
             };
-        } // namespace FbxSceneBuilder
+        } // namespace SceneBuilder
     } // namespace SceneAPI
 } // namespace AZ
 

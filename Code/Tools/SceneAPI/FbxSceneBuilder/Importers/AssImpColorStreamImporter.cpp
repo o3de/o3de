@@ -9,9 +9,9 @@
 #include <AzCore/std/numeric.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/AssImpColorStreamImporter.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/ImporterUtilities.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/Utilities/AssImpMeshImporterUtilities.h>
+#include <SceneAPI/SceneBuilder/Importers/AssImpColorStreamImporter.h>
+#include <SceneAPI/SceneBuilder/Importers/ImporterUtilities.h>
+#include <SceneAPI/SceneBuilder/Importers/Utilities/AssImpMeshImporterUtilities.h>
 #include <SceneAPI/SDKWrapper/AssImpNodeWrapper.h>
 #include <SceneAPI/SDKWrapper/AssImpSceneWrapper.h>
 #include <SceneAPI/SDKWrapper/AssImpTypeConverter.h>
@@ -26,7 +26,7 @@ namespace AZ
 {
     namespace SceneAPI
     {
-        namespace FbxSceneBuilder
+        namespace SceneBuilder
         {
             const char* AssImpColorStreamImporter::m_defaultNodeName = "Col";
 
@@ -126,6 +126,6 @@ namespace AZ
                 return combinedVertexColorResults.GetResult();
             }
 
-        } // namespace FbxSceneBuilder
+        } // namespace SceneBuilder
     } // namespace SceneAPI
 } // namespace AZ

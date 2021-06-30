@@ -4,27 +4,27 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <SceneAPI/FbxSceneBuilder/Importers/AssImpTransformImporter.h>
+#include <SceneAPI/SceneBuilder/Importers/AssImpTransformImporter.h>
 
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
-#include <SceneAPI/FbxSceneBuilder/FbxSceneSystem.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/ImporterUtilities.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/Utilities/RenamedNodesMap.h>
+#include <SceneAPI/SceneBuilder/SceneSystem.h>
+#include <SceneAPI/SceneBuilder/Importers/ImporterUtilities.h>
+#include <SceneAPI/SceneBuilder/Importers/Utilities/RenamedNodesMap.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneAPI/SceneData/GraphData/TransformData.h>
 #include <SceneAPI/SDKWrapper/AssImpTypeConverter.h>
 #include <SceneAPI/SDKWrapper/AssImpNodeWrapper.h>
 #include <SceneAPI/SDKWrapper/AssImpSceneWrapper.h>
 #include <assimp/scene.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/AssImpImporterUtilities.h>
+#include <SceneAPI/SceneBuilder/Importers/AssImpImporterUtilities.h>
 
 namespace AZ
 {
     namespace SceneAPI
     {
-        namespace FbxSceneBuilder
+        namespace SceneBuilder
         {
             const char* AssImpTransformImporter::s_transformNodeName = "transform";
 
@@ -175,6 +175,6 @@ namespace AZ
 
                 return Events::ProcessingResult::Ignored;
             }
-        } // namespace FbxSceneBuilder
+        } // namespace SceneBuilder
     } // namespace SceneAPI
 } // namespace AZ

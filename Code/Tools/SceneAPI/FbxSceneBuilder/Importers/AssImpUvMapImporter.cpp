@@ -11,10 +11,10 @@
 #include <AzCore/std/numeric.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
-#include <SceneAPI/FbxSceneBuilder/ImportContexts/AssImpImportContexts.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/AssImpUvMapImporter.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/ImporterUtilities.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/Utilities/AssImpMeshImporterUtilities.h>
+#include <SceneAPI/SceneBuilder/ImportContexts/AssImpImportContexts.h>
+#include <SceneAPI/SceneBuilder/Importers/AssImpUvMapImporter.h>
+#include <SceneAPI/SceneBuilder/Importers/ImporterUtilities.h>
+#include <SceneAPI/SceneBuilder/Importers/Utilities/AssImpMeshImporterUtilities.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneAPI/SceneData/GraphData/MeshData.h>
 #include <SceneAPI/SceneData/GraphData/MeshVertexUVData.h>
@@ -28,7 +28,7 @@ namespace AZ
 {
     namespace SceneAPI
     {
-        namespace FbxSceneBuilder
+        namespace SceneBuilder
         {
             const char* AssImpUvMapImporter::m_defaultNodeName = "UV";
 
@@ -141,7 +141,7 @@ namespace AZ
                             {
                                 AZ::Vector2 vertexUV(
                                     mesh->mTextureCoords[texCoordIndex][v].x,
-                                    // The engine's V coordinate is reverse of how it's stored in the FBX file.
+                                    // The engine's V coordinate is reverse of how it's coming in from the SDK.
                                     1.0f - mesh->mTextureCoords[texCoordIndex][v].y);
                                 uvMap->AppendUV(vertexUV);
                             }
@@ -175,6 +175,6 @@ namespace AZ
                 return combinedUvMapResults.GetResult();
             }
 
-        } // namespace FbxSceneBuilder
+        } // namespace SceneBuilder
     } // namespace SceneAPI
 } // namespace AZ

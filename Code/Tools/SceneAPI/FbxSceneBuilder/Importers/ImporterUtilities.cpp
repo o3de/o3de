@@ -7,8 +7,8 @@
 
 #include <AzCore/Math/Transform.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
-#include <SceneAPI/FbxSceneBuilder/ImportContexts/AssImpImportContexts.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/ImporterUtilities.h>
+#include <SceneAPI/SceneBuilder/ImportContexts/AssImpImportContexts.h>
+#include <SceneAPI/SceneBuilder/Importers/ImporterUtilities.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Containers/Views/PairIterator.h>
 #include <SceneAPI/SceneCore/Containers/Views/SceneGraphDownwardsIterator.h>
@@ -25,7 +25,7 @@ namespace AZ
 {
     namespace SceneAPI
     {
-        namespace FbxSceneBuilder
+        namespace SceneBuilder
         {
             static const float g_sceneUtilityEqualityEpsilon = 0.001f;
 
@@ -429,6 +429,6 @@ namespace AZ
 
                 return true;
             }
-        } // namespace FbxSceneBuilder
+        } // namespace SceneBuilder
     } // namespace SceneAPI
 } // namespace AZ

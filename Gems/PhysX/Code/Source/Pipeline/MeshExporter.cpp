@@ -144,10 +144,10 @@ namespace PhysX
 
         namespace Utils
         {
-            // Utility function doing look-up in fbxMaterialNames and inserting the name if it's not found
+            // Utility function doing look-up in sourceSceneMaterialNames and inserting the name if it's not found
             AZ::u16 InsertMaterialIndexByName(const AZStd::string& materialName, AssetMaterialsData& materials)
             {
-                AZStd::vector<AZStd::string>& fbxMaterialNames = materials.m_fbxMaterialNames;
+                AZStd::vector<AZStd::string>& sourceSceneMaterialNames = materials.m_sourceSceneMaterialNames;
                 AZStd::unordered_map<AZStd::string, size_t>& materialIndexByName = materials.m_materialIndexByName;
 
                 // Check if we have this material in the list
@@ -159,9 +159,9 @@ namespace PhysX
                 }
 
                 // Add it to the list otherwise
-                fbxMaterialNames.push_back(materialName);
+                sourceSceneMaterialNames.push_back(materialName);
 
-                AZ::u16 newIndex = fbxMaterialNames.size() - 1;
+                AZ::u16 newIndex = sourceSceneMaterialNames.size() - 1;
                 materialIndexByName[materialName] = newIndex;
 
                 return newIndex;
@@ -284,8 +284,8 @@ namespace PhysX
 
                     AZStd::string_view nodeName = sceneGraph.GetNodeName(nodeIndex).GetName();
 
-                    const AZStd::vector<AZStd::string> localFbxMaterialsList = GenerateLocalNodeMaterialMap(sceneGraph, nodeIndex);
-                    if (localFbxMaterialsList.empty())
+                    const AZStd::vector<AZStd::string> localSourceSceneMaterialsList = GenerateLocalNodeMaterialMap(sceneGraph, nodeIndex);
+                    if (localSourceSceneMaterialsList.empty())
                     {
                         AZ_TracePrintf(
                             AZ::SceneAPI::Utilities::WarningWindow,
@@ -304,26 +304,26 @@ namespace PhysX
                     for (AZ::u32 faceIndex = 0; faceIndex < faceCount; ++faceIndex)
                     {
                         AZStd::string materialName = DefaultMaterialName;
-                        if (!localFbxMaterialsList.empty())
+                        if (!localSourceSceneMaterialsList.empty())
                         {
                             const int materialId = nodeMesh->GetFaceMaterialId(faceIndex);
-                            if (materialId >= localFbxMaterialsList.size())
+                            if (materialId >= localSourceSceneMaterialsList.size())
                             {
                                 AZ_TracePrintf(AZ::SceneAPI::Utilities::ErrorWindow,
-                                    "materialId %d for face %d is out of bound for localFbxMaterialsList (size %d).",
-                                    materialId, faceIndex, localFbxMaterialsList.size());
+                                    "materialId %d for face %d is out of bound for localSourceSceneMaterialsList (size %d).",
+                                    materialId, faceIndex, localSourceSceneMaterialsList.size());
 
                                 return AZStd::nullopt;
                             }
 
-                            materialName = localFbxMaterialsList[materialId];
+                            materialName = localSourceSceneMaterialsList[materialId];
 
                             // Keep using the first material when it has to be limited to one.
                             if (limitToOneMaterial &&
-                                assetMaterialData.m_fbxMaterialNames.size() == 1 &&
-                                assetMaterialData.m_fbxMaterialNames[0] != materialName)
+                                assetMaterialData.m_sourceSceneMaterialNames.size() == 1 &&
+                                assetMaterialData.m_sourceSceneMaterialNames[0] != materialName)
                             {
-                                materialName = assetMaterialData.m_fbxMaterialNames[0];
+                                materialName = assetMaterialData.m_sourceSceneMaterialNames[0];
                             }
                         }
 
@@ -504,7 +504,7 @@ namespace PhysX
             // because this exporter runs when the source scene is being processed, which
             // could have a different content from when the mesh group info was
             // entered in Scene Settings Editor.
-            if (!Utils::UpdateAssetPhysicsMaterials(assetMaterialsData.m_fbxMaterialNames, assetData.m_materialNames, assetData.m_physicsMaterialNames))
+            if (!Utils::UpdateAssetPhysicsMaterials(assetMaterialsData.m_sourceSceneMaterialNames, assetData.m_materialNames, assetData.m_physicsMaterialNames))
             {
                 return SceneEvents::ProcessingResult::Failure;
             }

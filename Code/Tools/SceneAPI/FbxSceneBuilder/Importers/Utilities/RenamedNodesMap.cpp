@@ -9,14 +9,14 @@
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/Utilities/RenamedNodesMap.h>
+#include <SceneAPI/SceneBuilder/Importers/Utilities/RenamedNodesMap.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 
 namespace AZ
 {
     namespace SceneAPI
     {
-        namespace FbxSceneBuilder
+        namespace SceneBuilder
         {
             bool RenamedNodesMap::SanitizeNodeName(AZStd::string& name, const Containers::SceneGraph& graph,
                 Containers::SceneGraph::NodeIndex parentNode, const char* defaultName)
@@ -94,7 +94,7 @@ namespace AZ
                 {
                     AZ_TraceContext("New node name", name);
                     
-                    // Only register if the name is updated, otherwise the name in the fbx node can be returned.
+                    // Only register if the name is updated, otherwise the name in the source scene's node can be returned.
                     auto entry = m_idToName.find(node.GetUniqueId());
                     if (entry == m_idToName.end())
                     {
@@ -153,6 +153,6 @@ namespace AZ
                     return node.GetName();
                 }
             }
-        } // namespace FbxSceneBuilder
+        } // namespace SceneBuilder
     } // namespace SceneAPI
 } // namespace AZ

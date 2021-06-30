@@ -5,14 +5,14 @@
  *
  */
 
-#include <SceneAPI/FbxSceneBuilder/ImportContexts/ImportContexts.h>
+#include <SceneAPI/SceneBuilder/ImportContexts/ImportContexts.h>
 #include <SceneAPI/SceneCore/Events/ImportEventContext.h>
 
 namespace AZ
 {
     namespace SceneAPI
     {
-        namespace FbxSceneBuilder
+        namespace SceneBuilder
         {
             ImportContext::ImportContext(Containers::Scene& scene,
                 Containers::SceneGraph::NodeIndex currentGraphPosition,
@@ -103,5 +103,5 @@ namespace AZ
             {
             }
         } // namespace SceneAPI
-    } // namespace FbxSceneBuilder
+    } // namespace SceneBuilder
 } // namespace AZ

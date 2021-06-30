@@ -5,7 +5,7 @@
  *
  */
 
-#include <SceneAPI/FbxSceneBuilder/ImportContexts/AssImpImportContexts.h>
+#include <SceneAPI/SceneBuilder/ImportContexts/AssImpImportContexts.h>
 #include <SceneAPI/SDKWrapper/AssImpNodeWrapper.h>
 #include <SceneAPI/SceneCore/Events/ImportEventContext.h>
 
@@ -13,10 +13,10 @@ namespace AZ
 {
     namespace SceneAPI
     {
-        namespace FbxSceneBuilder
+        namespace SceneBuilder
         {
             AssImpImportContext::AssImpImportContext(const AssImpSDKWrapper::AssImpSceneWrapper& sourceScene,
-                const FbxSceneSystem& sourceSceneSystem,
+                const SceneSystem& sourceSceneSystem,
                 AssImpSDKWrapper::AssImpNodeWrapper& sourceNode)
                 : m_sourceScene(sourceScene)
                 , m_sourceSceneSystem(sourceSceneSystem)
@@ -27,7 +27,7 @@ namespace AZ
             AssImpNodeEncounteredContext::AssImpNodeEncounteredContext(Containers::Scene& scene,
                 Containers::SceneGraph::NodeIndex currentGraphPosition,
                 const AssImpSDKWrapper::AssImpSceneWrapper& sourceScene,
-                const FbxSceneSystem& sourceSceneSystem,
+                const SceneSystem& sourceSceneSystem,
                 RenamedNodesMap& nodeNameMap,
                 AssImpSDKWrapper::AssImpNodeWrapper& sourceNode)
                 : AssImpImportContext(sourceScene, sourceSceneSystem, sourceNode)
@@ -39,7 +39,7 @@ namespace AZ
                 Events::ImportEventContext& parent,
                 Containers::SceneGraph::NodeIndex currentGraphPosition,
                 const AssImpSDKWrapper::AssImpSceneWrapper& sourceScene,
-                const FbxSceneSystem& sourceSceneSystem,
+                const SceneSystem& sourceSceneSystem,
                 RenamedNodesMap& nodeNameMap,
                 AssImpSDKWrapper::AssImpNodeWrapper& sourceNode)
                 : AssImpImportContext(sourceScene, sourceSceneSystem, sourceNode)
@@ -57,7 +57,7 @@ namespace AZ
             AssImpSceneDataPopulatedContext::AssImpSceneDataPopulatedContext(Containers::Scene& scene,
                 Containers::SceneGraph::NodeIndex currentGraphPosition,
                 const AssImpSDKWrapper::AssImpSceneWrapper& sourceScene,
-                const FbxSceneSystem& sourceSceneSystem,
+                const SceneSystem& sourceSceneSystem,
                 RenamedNodesMap& nodeNameMap,
                 AssImpSDKWrapper::AssImpNodeWrapper& sourceNode,
                 const AZStd::shared_ptr<DataTypes::IGraphObject>& nodeData, const AZStd::string& dataName)
@@ -76,7 +76,7 @@ namespace AZ
             AssImpSceneNodeAppendedContext::AssImpSceneNodeAppendedContext(Containers::Scene& scene,
                 Containers::SceneGraph::NodeIndex currentGraphPosition,
                 const AssImpSDKWrapper::AssImpSceneWrapper& sourceScene,
-                const FbxSceneSystem& sourceSceneSystem,
+                const SceneSystem& sourceSceneSystem,
                 RenamedNodesMap& nodeNameMap, AssImpSDKWrapper::AssImpNodeWrapper& sourceNode)
                 : AssImpImportContext(sourceScene, sourceSceneSystem, sourceNode)
                 , SceneNodeAppendedContextBase(scene, currentGraphPosition, nodeNameMap)
@@ -111,7 +111,7 @@ namespace AZ
 
             AssImpFinalizeSceneContext::AssImpFinalizeSceneContext(Containers::Scene& scene,
                 const AssImpSDKWrapper::AssImpSceneWrapper& sourceScene,
-                const FbxSceneSystem& sourceSceneSystem,
+                const SceneSystem& sourceSceneSystem,
                 RenamedNodesMap& nodeNameMap)
                 : FinalizeSceneContextBase(scene, nodeNameMap)
                 , m_sourceScene(sourceScene)
@@ -120,5 +120,5 @@ namespace AZ
             }
 
         } // namespace SceneAPI
-    } // namespace FbxSceneBuilder
+    } // namespace SceneBuilder
 } // namespace AZ

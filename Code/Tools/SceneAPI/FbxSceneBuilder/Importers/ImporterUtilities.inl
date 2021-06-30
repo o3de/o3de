@@ -5,7 +5,7 @@
  *
  */
 
-#include <SceneAPI/FbxSceneBuilder/Importers/ImporterUtilities.h>
+#include <SceneAPI/SceneBuilder/Importers/ImporterUtilities.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/DataTypes/IGraphObject.h>
 
@@ -13,7 +13,7 @@ namespace AZ
 {
     namespace SceneAPI
     {
-        namespace FbxSceneBuilder
+        namespace SceneBuilder
         {
             bool NodeIsOfType(const CoreSceneGraph& sceneGraph, CoreGraphNodeIndex nodeIndex, const AZ::Uuid& uuid)
             {
@@ -63,6 +63,6 @@ namespace AZ
 
                 return true;
             }
-        } // namespace FbxSceneBuilder
+        } // namespace SceneBuilder
     } // namespace SceneAPI
 } // namespace AZ

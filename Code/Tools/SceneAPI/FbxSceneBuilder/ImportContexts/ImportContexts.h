@@ -33,7 +33,7 @@ namespace AZ
             class ImportEventContext;
         }
 
-        namespace FbxSceneBuilder
+        namespace SceneBuilder
         {
             class RenamedNodesMap;
 
@@ -173,7 +173,7 @@ namespace AZ
 
                 FinalizeSceneContextBase(Containers::Scene& scene, RenamedNodesMap& nodeNameMap);
             };
-        } // namespace FbxSceneBuilder
+        } // namespace SceneBuilder
     } // namespace SceneAPI
 } // namespace AZ
 

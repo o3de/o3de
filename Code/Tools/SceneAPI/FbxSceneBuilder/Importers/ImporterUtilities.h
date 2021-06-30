@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <SceneAPI/FbxSceneBuilder/ImportContexts/ImportContexts.h>
+#include <SceneAPI/SceneBuilder/ImportContexts/ImportContexts.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Containers/SceneGraph.h>
 #include <SceneAPI/SceneCore/DataTypes/MatrixType.h>
@@ -19,9 +19,9 @@ namespace AZ
 
     namespace SceneAPI
     {
-        namespace FbxSceneBuilder
+        namespace SceneBuilder
         {
-            struct FbxImportContext;
+            struct SceneImportContext;
 
             using CoreScene = Containers::Scene;
             using CoreSceneGraph = Containers::SceneGraph;
@@ -41,8 +41,8 @@ namespace AZ
             bool IsGraphDataEqual(const AZStd::shared_ptr<const DataTypes::IGraphObject>& lhs,
                 const AZStd::shared_ptr<const DataTypes::IGraphObject>& rhs);
 
-        } // namespace FbxSceneBuilder
+        } // namespace SceneBuilder
     } // namespace SceneAPI
 } // namespace AZ
 
-#include <SceneAPI/FbxSceneBuilder/Importers/ImporterUtilities.inl>
+#include <SceneAPI/SceneBuilder/Importers/ImporterUtilities.inl>

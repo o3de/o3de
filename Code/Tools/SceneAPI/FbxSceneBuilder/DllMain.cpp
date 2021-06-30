@@ -11,27 +11,27 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Module/Environment.h>
-#include <SceneAPI/FbxSceneBuilder/FbxImportRequestHandler.h>
+#include <SceneAPI/SceneBuilder/SceneImportRequestHandler.h>
 
-#include <SceneAPI/FbxSceneBuilder/FbxImporter.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/AssImpBitangentStreamImporter.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/AssImpColorStreamImporter.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/AssImpMaterialImporter.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/AssImpMeshImporter.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/AssImpTangentStreamImporter.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/AssImpTransformImporter.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/AssImpUvMapImporter.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/AssImpSkinImporter.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/AssImpSkinWeightsImporter.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/AssImpBoneImporter.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/AssImpAnimationImporter.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/AssImpBlendShapeImporter.h>
+#include <SceneAPI/SceneBuilder/SceneImporter.h>
+#include <SceneAPI/SceneBuilder/Importers/AssImpBitangentStreamImporter.h>
+#include <SceneAPI/SceneBuilder/Importers/AssImpColorStreamImporter.h>
+#include <SceneAPI/SceneBuilder/Importers/AssImpMaterialImporter.h>
+#include <SceneAPI/SceneBuilder/Importers/AssImpMeshImporter.h>
+#include <SceneAPI/SceneBuilder/Importers/AssImpTangentStreamImporter.h>
+#include <SceneAPI/SceneBuilder/Importers/AssImpTransformImporter.h>
+#include <SceneAPI/SceneBuilder/Importers/AssImpUvMapImporter.h>
+#include <SceneAPI/SceneBuilder/Importers/AssImpSkinImporter.h>
+#include <SceneAPI/SceneBuilder/Importers/AssImpSkinWeightsImporter.h>
+#include <SceneAPI/SceneBuilder/Importers/AssImpBoneImporter.h>
+#include <SceneAPI/SceneBuilder/Importers/AssImpAnimationImporter.h>
+#include <SceneAPI/SceneBuilder/Importers/AssImpBlendShapeImporter.h>
 
 namespace AZ
 {
     namespace SceneAPI
     {
-        namespace FbxSceneBuilder
+        namespace SceneBuilder
         {
             static AZStd::vector<AZ::ComponentDescriptor*> g_componentDescriptors;
 
@@ -40,13 +40,13 @@ namespace AZ
                 // Descriptor registration is done in Reflect instead of Initialize because the ResourceCompilerScene initializes the libraries before
                 // there's an application.
                 using namespace AZ::SceneAPI;
-                using namespace AZ::SceneAPI::FbxSceneBuilder;
+                using namespace AZ::SceneAPI::SceneBuilder;
 
                 if (g_componentDescriptors.empty())
                 {
                     // Global importer and behavior
-                    g_componentDescriptors.push_back(FbxSceneBuilder::FbxImporter::CreateDescriptor());
-                    g_componentDescriptors.push_back(FbxSceneImporter::FbxImportRequestHandler::CreateDescriptor());
+                    g_componentDescriptors.push_back(SceneBuilder::SceneImporter::CreateDescriptor());
+                    g_componentDescriptors.push_back(SceneImporter::SceneImportRequestHandler::CreateDescriptor());
 
                     // Node and attribute importers
                     g_componentDescriptors.push_back(AssImpBitangentStreamImporter::CreateDescriptor());
@@ -94,7 +94,7 @@ namespace AZ
                     g_componentDescriptors.shrink_to_fit();
                 }
             }
-        } // namespace FbxSceneBuilder
+        } // namespace SceneBuilder
     } // namespace SceneAPI
 } // namespace AZ
 
@@ -104,15 +104,15 @@ extern "C" AZ_DLL_EXPORT void InitializeDynamicModule(void* env)
 }
 extern "C" AZ_DLL_EXPORT void Reflect(AZ::SerializeContext* context)
 {
-    AZ::SceneAPI::FbxSceneBuilder::Reflect(context);
+    AZ::SceneAPI::SceneBuilder::Reflect(context);
 }
 extern "C" AZ_DLL_EXPORT void ReflectBehavior(AZ::BehaviorContext* context)
 {
-    AZ::SceneAPI::FbxSceneBuilder::ReflectBehavior(context);
+    AZ::SceneAPI::SceneBuilder::ReflectBehavior(context);
 }
 extern "C" AZ_DLL_EXPORT void UninitializeDynamicModule()
 {
-    AZ::SceneAPI::FbxSceneBuilder::Uninitialize();
+    AZ::SceneAPI::SceneBuilder::Uninitialize();
     AZ::Environment::Detach();
 }
 

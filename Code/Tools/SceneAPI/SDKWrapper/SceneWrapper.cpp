@@ -12,15 +12,8 @@ namespace AZ
    {
       const char* SceneWrapperBase::s_defaultSceneName = "myScene";
 
-      SceneWrapperBase::SceneWrapperBase(fbxsdk::FbxScene* fbxScene)
-          :m_fbxScene(fbxScene)
-          , m_assImpScene(nullptr)
-      {
-      }
-
       SceneWrapperBase::SceneWrapperBase(aiScene* aiScene)
-          :m_fbxScene(nullptr)
-          , m_assImpScene(aiScene)
+          : m_assImpScene(aiScene)
       {
       }
 
@@ -45,11 +38,6 @@ namespace AZ
 
       void SceneWrapperBase::Clear()
       {
-      }
-
-      fbxsdk::FbxScene* SceneWrapperBase::GetFbxScene() const
-      {
-          return m_fbxScene;
       }
 
       const aiScene* SceneWrapperBase::GetAssImpScene() const

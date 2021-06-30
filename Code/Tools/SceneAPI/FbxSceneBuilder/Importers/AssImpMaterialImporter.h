@@ -7,14 +7,14 @@
 
 #pragma once
 
-#include <SceneAPI/FbxSceneBuilder/ImportContexts/AssImpImportContexts.h>
+#include <SceneAPI/SceneBuilder/ImportContexts/AssImpImportContexts.h>
 #include <SceneAPI/SceneCore/Components/LoadingComponent.h>
 
 namespace AZ
 {
     namespace SceneAPI
     {
-        namespace FbxSceneBuilder
+        namespace SceneBuilder
         {
             class AssImpMaterialImporter
                 : public SceneCore::LoadingComponent
@@ -32,6 +32,6 @@ namespace AZ
             private:
                 AZStd::string ResolveTexturePath(const AZStd::string& sceneFilePath, const AZStd::string& textureFilePath) const;
             };
-        } // namespace FbxSceneBuilder
+        } // namespace SceneBuilder
     } // namespace SceneAPI
 } // namespace AZ

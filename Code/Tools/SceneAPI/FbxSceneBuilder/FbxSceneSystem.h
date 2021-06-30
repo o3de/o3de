@@ -8,7 +8,7 @@
  */
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <SceneAPI/FbxSceneBuilder/FbxSceneBuilderConfiguration.h>
+#include <SceneAPI/SceneBuilder/SceneBuilderConfiguration.h>
 #include <SceneAPI/SceneCore/DataTypes/MatrixType.h>
 
 namespace AZ
@@ -22,10 +22,10 @@ namespace AZ
 
     namespace SceneAPI
     {
-        class FBX_SCENE_BUILDER_API FbxSceneSystem
+        class SCENE_BUILDER_API SceneSystem
         {
         public:
-            FbxSceneSystem();
+            SceneSystem();
 
             void Set(const SDKScene::SceneWrapperBase* sceneWrapper);
             void SwapVec3ForUpAxis(Vector3& swapVector) const;
@@ -34,11 +34,11 @@ namespace AZ
             void ConvertUnit(DataTypes::MatrixType& inOutTransform) const;
             void ConvertBoneUnit(DataTypes::MatrixType& inOutTransform) const;
 
-            //! Get effect unit size in meters of this Fbx Scene, internally FBX saves it in the following manner
+            //! Get effect unit size in meters of this scene, internally FBX saves it in the following manner
             //! GlobalSettings:  {
             //!     P : "UnitScaleFactor", "double", "Number", "", 2.54
             float GetUnitSizeInMeters() const { return m_unitSizeInMeters; }
-            //! Get original unit size in meters of this Fbx Scene, internally FBX saves it in the following manner
+            //! Get original unit size in meters of this scene, internally FBX saves it in the following manner
             //! GlobalSettings:  {
             //!     P : "OriginalUnitScaleFactor", "double", "Number", "", 2.54
             float GetOriginalUnitSizeInMeters() const { return m_originalUnitSizeInMeters; }

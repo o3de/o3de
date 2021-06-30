@@ -6,13 +6,13 @@
 #
 
 set(FILES
-    FbxSceneBuilderConfiguration.h
-    FbxImportRequestHandler.h
-    FbxImportRequestHandler.cpp
-    FbxImporter.h
-    FbxImporter.cpp
-    FbxSceneSystem.h
-    FbxSceneSystem.cpp
+    SceneBuilderConfiguration.h
+    SceneImportRequestHandler.h
+    SceneImportRequestHandler.cpp
+    SceneImporter.h
+    SceneImporter.cpp
+    SceneSystem.h
+    SceneSystem.cpp
     ImportContexts/ImportContexts.h
     ImportContexts/ImportContexts.cpp
     ImportContexts/AssImpImportContexts.h

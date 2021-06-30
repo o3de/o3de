@@ -11,7 +11,7 @@
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/StringFunc/StringFunc.h>
-#include <SceneAPI/FbxSceneBuilder/FbxImportRequestHandler.h>
+#include <SceneAPI/SceneBuilder/SceneImportRequestHandler.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Events/CallProcessorBus.h>
 #include <SceneAPI/SceneCore/Events/ImportEventContext.h>
@@ -20,7 +20,7 @@ namespace AZ
 {
     namespace SceneAPI
     {
-        namespace FbxSceneImporter
+        namespace SceneImporter
         {
             void SceneImporterSettings::Reflect(AZ::ReflectContext* context)
             {
@@ -32,7 +32,7 @@ namespace AZ
                 }
             }
 
-            void FbxImportRequestHandler::Activate()
+            void SceneImportRequestHandler::Activate()
             {
                 if (auto* settingsRegistry = AZ::SettingsRegistry::Get())
                 {
@@ -42,19 +42,19 @@ namespace AZ
                 BusConnect();
             }
 
-            void FbxImportRequestHandler::Deactivate()
+            void SceneImportRequestHandler::Deactivate()
             {
                 BusDisconnect();
             }
 
-            void FbxImportRequestHandler::Reflect(ReflectContext* context)
+            void SceneImportRequestHandler::Reflect(ReflectContext* context)
             {
                 SceneImporterSettings::Reflect(context);
 
                 SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
                 if (serializeContext)
                 {
-                    serializeContext->Class<FbxImportRequestHandler, AZ::Component>()->Version(1)->Attribute(
+                    serializeContext->Class<SceneImportRequestHandler, AZ::Component>()->Version(1)->Attribute(
                         AZ::Edit::Attributes::SystemComponentTags,
                         AZStd::vector<AZ::Crc32>(
                             {AssetBuilderSDK::ComponentTags::AssetBuilder,
@@ -63,12 +63,13 @@ namespace AZ
                 }
             }
 
-            void FbxImportRequestHandler::GetSupportedFileExtensions(AZStd::unordered_set<AZStd::string>& extensions)
+            void SceneImportRequestHandler::GetSupportedFileExtensions(AZStd::unordered_set<AZStd::string>& extensions)
             {
                 extensions.insert(m_settings.m_supportedFileTypeExtensions.begin(), m_settings.m_supportedFileTypeExtensions.end());
             }
 
-            Events::LoadingResult FbxImportRequestHandler::LoadAsset(Containers::Scene& scene, const AZStd::string& path, const Uuid& guid, [[maybe_unused]] RequestingApplication requester)
+            Events::LoadingResult SceneImportRequestHandler::LoadAsset(
+                Containers::Scene& scene, const AZStd::string& path, const Uuid& guid, [[maybe_unused]] RequestingApplication requester)
             {
                 AZStd::string extension;
                 StringFunc::Path::GetExtension(path.c_str(), extension);
@@ -97,7 +98,7 @@ namespace AZ
                 }
             }
 
-            void FbxImportRequestHandler::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
+            void SceneImportRequestHandler::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
             {
                 provided.emplace_back(AZ_CRC_CE("AssetImportRequestHandler"));
             }

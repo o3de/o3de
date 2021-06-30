@@ -7,6 +7,6 @@
 
 set(FILES
     Tests/TestsMain.cpp
-    Tests/Importers/FbxImporterUtilitiesTests.cpp
+    Tests/Importers/SceneImporterUtilitiesTests.cpp
     Tests/Importers/Utilities/RenamedNodesMapTests.cpp
 )

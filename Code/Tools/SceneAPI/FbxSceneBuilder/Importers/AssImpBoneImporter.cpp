@@ -9,10 +9,10 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
-#include <SceneAPI/FbxSceneBuilder/FbxSceneSystem.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/AssImpBoneImporter.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/AssImpImporterUtilities.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/ImporterUtilities.h>
+#include <SceneAPI/SceneBuilder/SceneSystem.h>
+#include <SceneAPI/SceneBuilder/Importers/AssImpBoneImporter.h>
+#include <SceneAPI/SceneBuilder/Importers/AssImpImporterUtilities.h>
+#include <SceneAPI/SceneBuilder/Importers/ImporterUtilities.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneData/GraphData/BoneData.h>
 #include <SceneAPI/SceneData/GraphData/RootBoneData.h>
@@ -24,7 +24,7 @@ namespace AZ
 {
     namespace SceneAPI
     {
-        namespace FbxSceneBuilder
+        namespace SceneBuilder
         {
             AssImpBoneImporter::AssImpBoneImporter()
             {
@@ -188,6 +188,6 @@ namespace AZ
 
                 return Events::ProcessingResult::Success;
             }
-        } // namespace FbxSceneBuilder
+        } // namespace SceneBuilder
     } // namespace SceneAPI
 } // namespace AZ

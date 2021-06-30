@@ -39,7 +39,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::SceneCore
                 AZ::SceneData
                 AZ::AzFramework
-                AZ::FbxSceneBuilder
+                AZ::SceneBuilder
                 AZ::AssetBuilderSDK
     )
 

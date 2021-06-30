@@ -12,11 +12,11 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
-#include <SceneAPI/FbxSceneBuilder/FbxSceneSystem.h>
-#include <SceneAPI/FbxSceneBuilder/ImportContexts/AssImpImportContexts.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/AssImpAnimationImporter.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/AssImpImporterUtilities.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/Utilities/RenamedNodesMap.h>
+#include <SceneAPI/SceneBuilder/SceneSystem.h>
+#include <SceneAPI/SceneBuilder/ImportContexts/AssImpImportContexts.h>
+#include <SceneAPI/SceneBuilder/Importers/AssImpAnimationImporter.h>
+#include <SceneAPI/SceneBuilder/Importers/AssImpImporterUtilities.h>
+#include <SceneAPI/SceneBuilder/Importers/Utilities/RenamedNodesMap.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneData/GraphData/AnimationData.h>
 #include <SceneAPI/SDKWrapper/AssImpNodeWrapper.h>
@@ -26,7 +26,7 @@ namespace AZ
 {
     namespace SceneAPI
     {
-        namespace FbxSceneBuilder
+        namespace SceneBuilder
         {
             const char* AssImpAnimationImporter::s_animationNodeName = "animation";
 
@@ -670,6 +670,6 @@ namespace AZ
                 return Events::ProcessingResult::Success;
             }
 
-        } // namespace FbxSceneBuilder
+        } // namespace SceneBuilder
     } // namespace SceneAPI
 } // namespace AZ

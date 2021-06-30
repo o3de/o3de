@@ -15,14 +15,9 @@
 
 namespace AZ
 {
-    namespace FbxSDKWrapper
-    {
-        class FbxNodeWrapper;
-    }
-
     namespace SceneAPI
     {
-        namespace FbxSceneBuilder
+        namespace SceneBuilder
         {
             class RenamedNodesMap
             {
@@ -60,6 +55,6 @@ namespace AZ
 
                 AZStd::unordered_map<u64, AZStd::string> m_idToName;
             };
-        } // namespace FbxSceneBuilder
+        } // namespace SceneBuilder
     } // namespace SceneAPI
 } // namespace AZ

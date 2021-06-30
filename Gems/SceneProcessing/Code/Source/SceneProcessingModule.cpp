@@ -33,7 +33,7 @@ namespace AZ
             {
                 LoadSceneModule(s_sceneCoreModule, "SceneCore");
                 LoadSceneModule(s_sceneDataModule, "SceneData");
-                LoadSceneModule(s_fbxSceneBuilderModule, "FbxSceneBuilder");
+                LoadSceneModule(s_sceneBuilderModule, "SceneBuilder");
 
                 m_descriptors.insert(m_descriptors.end(),
                 {
@@ -59,7 +59,7 @@ namespace AZ
 
             ~SceneProcessingModule()
             {
-                UnloadModule(s_fbxSceneBuilderModule);
+                UnloadModule(s_sceneBuilderModule);
                 UnloadModule(s_sceneDataModule);
                 UnloadModule(s_sceneCoreModule);
             }

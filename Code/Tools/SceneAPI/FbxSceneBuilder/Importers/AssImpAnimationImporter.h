@@ -8,7 +8,7 @@
 #pragma once
 
 #include <SceneAPI/SceneCore/Components/LoadingComponent.h>
-#include <SceneAPI/FbxSceneBuilder/ImportContexts/AssImpImportContexts.h>
+#include <SceneAPI/SceneBuilder/ImportContexts/AssImpImportContexts.h>
 
 struct aiAnimation;
 struct aiMesh;
@@ -18,7 +18,7 @@ namespace AZ
 {
     namespace SceneAPI
     {
-        namespace FbxSceneBuilder
+        namespace SceneBuilder
         {
             class AssImpAnimationImporter
                 : public SceneCore::LoadingComponent
@@ -43,6 +43,6 @@ namespace AZ
             protected:
                 static const char* s_animationNodeName;
             };
-        } // namespace FbxSceneBuilder
+        } // namespace SceneBuilder
     } // namespace SceneAPI
 } // namespace AZ

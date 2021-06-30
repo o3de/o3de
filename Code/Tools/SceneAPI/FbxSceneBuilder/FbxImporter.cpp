@@ -14,11 +14,11 @@
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
-#include <SceneAPI/FbxSceneBuilder/FbxImporter.h>
-#include <SceneAPI/FbxSceneBuilder/ImportContexts/AssImpImportContexts.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/AssImpMaterialImporter.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/ImporterUtilities.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/Utilities/RenamedNodesMap.h>
+#include <SceneAPI/SceneBuilder/SceneImporter.h>
+#include <SceneAPI/SceneBuilder/ImportContexts/AssImpImportContexts.h>
+#include <SceneAPI/SceneBuilder/Importers/AssImpMaterialImporter.h>
+#include <SceneAPI/SceneBuilder/Importers/ImporterUtilities.h>
+#include <SceneAPI/SceneBuilder/Importers/Utilities/RenamedNodesMap.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneAPI/SceneData/GraphData/TransformData.h>
@@ -29,7 +29,7 @@ namespace AZ
 {
     namespace SceneAPI
     {
-        namespace FbxSceneBuilder
+        namespace SceneBuilder
         {
             struct QueueNode
             {
@@ -44,23 +44,23 @@ namespace AZ
                 }
             };
 
-            FbxImporter::FbxImporter()
-                : m_sceneSystem(new FbxSceneSystem())
+            SceneImporter::SceneImporter()
+                : m_sceneSystem(new SceneSystem())
             {
                 m_sceneWrapper = AZStd::make_unique<AssImpSDKWrapper::AssImpSceneWrapper>();
-                BindToCall(&FbxImporter::ImportProcessing);
+                BindToCall(&SceneImporter::ImportProcessing);
             }
 
-            void FbxImporter::Reflect(ReflectContext* context)
+            void SceneImporter::Reflect(ReflectContext* context)
             {
                 SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
                 if (serializeContext)
                 {
-                    serializeContext->Class<FbxImporter, SceneCore::LoadingComponent>()->Version(2); // SPEC-5776
+                    serializeContext->Class<SceneImporter, SceneCore::LoadingComponent>()->Version(2); // SPEC-5776
                 }
             }
 
-            Events::ProcessingResult FbxImporter::ImportProcessing(Events::ImportEventContext& context)
+            Events::ProcessingResult SceneImporter::ImportProcessing(Events::ImportEventContext& context)
             {
                 m_sceneWrapper->Clear();
 
@@ -77,7 +77,7 @@ namespace AZ
                     return Events::ProcessingResult::Failure;
                 }
 
-                convertFunc = AZStd::bind(&FbxImporter::ConvertFbxScene, this, AZStd::placeholders::_1);
+                convertFunc = AZStd::bind(&SceneImporter::ConvertScene, this, AZStd::placeholders::_1);
                 
                 if (convertFunc(context.GetScene()))
                 {
@@ -89,10 +89,10 @@ namespace AZ
                 }
             }
 
-            bool FbxImporter::ConvertFbxScene(Containers::Scene& scene) const
+            bool SceneImporter::ConvertScene(Containers::Scene& scene) const
             {
-                std::shared_ptr<SDKNode::NodeWrapper> fbxRoot = m_sceneWrapper->GetRootNode();
-                if (!fbxRoot)
+                std::shared_ptr<SDKNode::NodeWrapper> sceneRoot = m_sceneWrapper->GetRootNode();
+                if (!sceneRoot)
                 {
                     return false;
                 }
@@ -123,13 +123,13 @@ namespace AZ
                     break;
                 }
 
-                AZStd::queue<FbxSceneBuilder::QueueNode> nodes;
-                nodes.emplace(AZStd::move(fbxRoot), scene.GetGraph().GetRoot());
+                AZStd::queue<SceneBuilder::QueueNode> nodes;
+                nodes.emplace(AZStd::move(sceneRoot), scene.GetGraph().GetRoot());
                 RenamedNodesMap nodeNameMap;
 
                 while (!nodes.empty())
                 {
-                    FbxSceneBuilder::QueueNode& node = nodes.front();
+                    SceneBuilder::QueueNode& node = nodes.front();
                     AZ_Assert(node.m_node, "Empty asset importer node queued");
                     if (!nodeNameMap.RegisterNode(node.m_node, scene.GetGraph(), node.m_parent))
                     {
@@ -240,12 +240,12 @@ namespace AZ
                 return true;
             }
 
-            void FbxImporter::SanitizeNodeName(AZStd::string& nodeName) const
+            void SceneImporter::SanitizeNodeName(AZStd::string& nodeName) const
             {
                 // Replace % with something else so it is safe for use in printfs.
                 AZStd::replace(nodeName.begin(), nodeName.end(), '%', '_');
             }
 
-        } // namespace FbxSceneBuilder
+        } // namespace SceneBuilder
     } // namespace SceneAPI
 } // namespace AZ

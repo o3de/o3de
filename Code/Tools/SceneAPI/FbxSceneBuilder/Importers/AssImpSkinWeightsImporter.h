@@ -9,17 +9,12 @@
 
 #include <assimp/scene.h>
 #include <AzCore/std/containers/vector.h>
-#include <SceneAPI/FbxSceneBuilder/ImportContexts/AssImpImportContexts.h>
+#include <SceneAPI/SceneBuilder/ImportContexts/AssImpImportContexts.h>
 #include <SceneAPI/SceneCore/Components/LoadingComponent.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/ISkinWeightData.h>
 
 namespace AZ
 {
-    namespace FbxSDKWrapper
-    {
-        class FbxMeshWrapper;
-    }
-
     namespace SceneData
     {
         namespace GraphData
@@ -35,7 +30,7 @@ namespace AZ
             class PostImportEventContext;
         }
 
-        namespace FbxSceneBuilder
+        namespace SceneBuilder
         {
             class AssImpSkinWeightsImporter
                 : public SceneCore::LoadingComponent
@@ -68,6 +63,6 @@ namespace AZ
 
                 static const AZStd::string s_skinWeightName;
             };
-        } // namespace FbxSceneBuilder
+        } // namespace SceneBuilder
     } // namespace SceneAPI
 } // namespace AZ

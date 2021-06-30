@@ -12,7 +12,7 @@
 #include <SceneAPI/SceneCore/Components/LoadingComponent.h>
 #include <SceneAPI/SceneCore/Containers/SceneGraph.h>
 #include <SceneAPI/SceneCore/Events/ImportEventContext.h>
-#include <SceneAPI/FbxSceneBuilder/FbxSceneSystem.h>
+#include <SceneAPI/SceneBuilder/SceneSystem.h>
 #include <SceneAPI/SDKWrapper/SceneWrapper.h>
 
 namespace AZ
@@ -24,28 +24,28 @@ namespace AZ
             class Scene;
         }
 
-        namespace FbxSceneBuilder
+        namespace SceneBuilder
         {
-            class FbxImporter
+            class SceneImporter
                 : public SceneCore::LoadingComponent
             {
             public:
-                AZ_COMPONENT(FbxImporter, "{D5EE21B6-8B73-45BF-B711-31346E0BEDB3}", SceneCore::LoadingComponent);
+                AZ_COMPONENT(SceneImporter, "{D5EE21B6-8B73-45BF-B711-31346E0BEDB3}", SceneCore::LoadingComponent);
 
-                FbxImporter();
-                ~FbxImporter() override = default;
+                SceneImporter();
+                ~SceneImporter() override = default;
 
                 static void Reflect(ReflectContext* context);
 
                 Events::ProcessingResult ImportProcessing(Events::ImportEventContext& context);
 
             protected:
-                bool ConvertFbxScene(Containers::Scene& scene) const;
+                bool ConvertScene(Containers::Scene& scene) const;
                 void SanitizeNodeName(AZStd::string& nodeName) const;
 
                 AZStd::unique_ptr<SDKScene::SceneWrapperBase> m_sceneWrapper;
-                AZStd::shared_ptr<FbxSceneSystem> m_sceneSystem;
+                AZStd::shared_ptr<SceneSystem> m_sceneSystem;
             };
-        } // namespace FbxSceneBuilder
+        } // namespace SceneBuilder
     } // namespace SceneAPI
 } // namespace AZ

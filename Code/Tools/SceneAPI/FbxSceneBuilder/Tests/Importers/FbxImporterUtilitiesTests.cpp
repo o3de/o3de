@@ -8,7 +8,7 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzTest/AzTest.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/ImporterUtilities.h>
+#include <SceneAPI/SceneBuilder/Importers/ImporterUtilities.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/DataTypes/IGraphObject.h>
 #include <SceneAPI/SceneData/GraphData/MeshData.h>
@@ -18,9 +18,9 @@ namespace AZ
 {
     namespace SceneAPI
     {
-        namespace FbxSceneBuilder
+        namespace SceneBuilder
         {
-            TEST(FbxImporterUtilityTests, AreSceneGraphsEqual_EmptySceneGraphs_ReturnsTrue)
+            TEST(SceneImporterUtilityTests, AreSceneGraphsEqual_EmptySceneGraphs_ReturnsTrue)
             {
                 Containers::SceneGraph lhsGraph;
                 Containers::SceneGraph rhsGraph;
@@ -31,7 +31,7 @@ namespace AZ
                 EXPECT_TRUE(sceneGraphsEqual);
             }
 
-            TEST(FbxImporterUtilityTests, AreSceneGraphsEqual_SameNameSingleNodeBothNull_ReturnsTrue)
+            TEST(SceneImporterUtilityTests, AreSceneGraphsEqual_SameNameSingleNodeBothNull_ReturnsTrue)
             {
                 Containers::SceneGraph lhsGraph;
                 lhsGraph.AddChild(lhsGraph.GetRoot(), "testChild");
@@ -44,7 +44,7 @@ namespace AZ
                 EXPECT_TRUE(sceneGraphsEqual);
             }
 
-            TEST(FbxImporterUtilityTests, AreSceneGraphsEqual_SameNameSingleNodeSameType_ReturnsTrue)
+            TEST(SceneImporterUtilityTests, AreSceneGraphsEqual_SameNameSingleNodeSameType_ReturnsTrue)
             {
                 Containers::SceneGraph lhsGraph;
                 AZStd::shared_ptr<DataTypes::IGraphObject> lhsData = AZStd::make_shared<SceneData::GraphData::MeshData>();
@@ -59,7 +59,7 @@ namespace AZ
                 EXPECT_TRUE(sceneGraphsEqual);
             }
 
-            TEST(FbxImporterUtilityTests, AreSceneGraphsEqual_SameNameSingleNodeOneNull_ReturnsFalse)
+            TEST(SceneImporterUtilityTests, AreSceneGraphsEqual_SameNameSingleNodeOneNull_ReturnsFalse)
             {
                 Containers::SceneGraph lhsGraph;
                 AZStd::shared_ptr<DataTypes::IGraphObject> lhsData = AZStd::make_shared<SceneData::GraphData::MeshData>();
@@ -73,7 +73,7 @@ namespace AZ
                 EXPECT_FALSE(sceneGraphsEqual);
             }
 
-            TEST(FbxImporterUtilityTests, AreSceneGraphsEqual_SameNameSingleNodeDifferentTypes_ReturnsFalse)
+            TEST(SceneImporterUtilityTests, AreSceneGraphsEqual_SameNameSingleNodeDifferentTypes_ReturnsFalse)
             {
                 Containers::SceneGraph lhsGraph;
                 AZStd::shared_ptr<DataTypes::IGraphObject> lhsData = AZStd::make_shared<SceneData::GraphData::MeshData>();
@@ -88,7 +88,7 @@ namespace AZ
                 EXPECT_FALSE(sceneGraphsEqual);
             }
 
-            TEST(FbxImporterUtilityTests, AreSceneGraphsEqual_SameNameOneEmptyOneSingleNode_ReturnsFalse)
+            TEST(SceneImporterUtilityTests, AreSceneGraphsEqual_SameNameOneEmptyOneSingleNode_ReturnsFalse)
             {
                 Containers::SceneGraph lhsGraph;
                 AZStd::shared_ptr<DataTypes::IGraphObject> lhsData = AZStd::make_shared<SceneData::GraphData::MeshData>();
@@ -101,7 +101,7 @@ namespace AZ
                 EXPECT_FALSE(sceneGraphsEqual);
             }
 
-            TEST(FbxImpoterUtilityTests, AreSceneGraphsEqual_DifferentNamesSingleNodeBothNull_ReturnsFalse)
+            TEST(SceneImpoterUtilityTests, AreSceneGraphsEqual_DifferentNamesSingleNodeBothNull_ReturnsFalse)
             {
                 Containers::SceneGraph lhsGraph;
                 lhsGraph.AddChild(lhsGraph.GetRoot(), "testChild");
@@ -114,7 +114,7 @@ namespace AZ
                 EXPECT_FALSE(sceneGraphsEqual);
             }
 
-            TEST(FbxImporterUtilityTests, AreSceneGraphsEqual_SecondGraphExtraChild_ReturnsFalse)
+            TEST(SceneImporterUtilityTests, AreSceneGraphsEqual_SecondGraphExtraChild_ReturnsFalse)
             {
                 Containers::SceneGraph lhsGraph;
                 lhsGraph.AddChild(lhsGraph.GetRoot(), "testChild");
@@ -127,6 +127,6 @@ namespace AZ
 
                 EXPECT_FALSE(sceneGraphsEqual);
             }
-        } // namespace FbxSceneBuilder
+        } // namespace SceneBuilder
     } // namespace SceneAPI
 } // namespace AZ

@@ -15,7 +15,7 @@ struct aiScene;
 struct aiString;
 
 
-namespace AZ::SceneAPI::FbxSceneBuilder
+namespace AZ::SceneAPI::SceneBuilder
 {
     inline constexpr char PivotNodeMarker[] = "_$AssimpFbx$_";
 

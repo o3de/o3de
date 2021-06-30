@@ -5,7 +5,7 @@
  *
  */
 
-#include <SceneAPI/FbxSceneBuilder/Importers/AssImpImporterUtilities.h>
+#include <SceneAPI/SceneBuilder/Importers/AssImpImporterUtilities.h>
 
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/StringFunc/StringFunc.h>
@@ -16,7 +16,7 @@ namespace AZ
 {
     namespace SceneAPI
     {
-        namespace FbxSceneBuilder
+        namespace SceneBuilder
         {
             bool IsSkinnedMesh(const aiNode& node, const aiScene& scene)
             {
@@ -84,6 +84,6 @@ namespace AZ
 
                 return combinedTransform;
             }
-        } // namespace FbxSceneBuilder
+        } // namespace SceneBuilder
     } // namespace SceneAPI
 } // namespace AZ

@@ -5,16 +5,16 @@
  *
  */
 
-#include <SceneAPI/FbxSceneBuilder/Importers/AssImpMaterialImporter.h>
+#include <SceneAPI/SceneBuilder/Importers/AssImpMaterialImporter.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/ImporterUtilities.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/Utilities/AssImpMeshImporterUtilities.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/Utilities/RenamedNodesMap.h>
+#include <SceneAPI/SceneBuilder/Importers/ImporterUtilities.h>
+#include <SceneAPI/SceneBuilder/Importers/Utilities/AssImpMeshImporterUtilities.h>
+#include <SceneAPI/SceneBuilder/Importers/Utilities/RenamedNodesMap.h>
 #include <SceneAPI/SDKWrapper/AssImpNodeWrapper.h>
 #include <SceneAPI/SDKWrapper/AssImpSceneWrapper.h>
 #include <SceneAPI/SDKWrapper/AssImpMaterialWrapper.h>
@@ -27,7 +27,7 @@ namespace AZ
 {
     namespace SceneAPI
     {
-        namespace FbxSceneBuilder
+        namespace SceneBuilder
         {
             AssImpMaterialImporter::AssImpMaterialImporter()
             {
@@ -164,7 +164,7 @@ namespace AZ
 
                     if (materialResult != Events::ProcessingResult::Failure)
                     {
-                        materialResult = SceneAPI::FbxSceneBuilder::AddAttributeDataNodeWithContexts(dataPopulated);
+                        materialResult = SceneAPI::SceneBuilder::AddAttributeDataNodeWithContexts(dataPopulated);
                     }
 
                     combinedMaterialImportResults += materialResult;
@@ -186,7 +186,7 @@ namespace AZ
                 AZ::StringFunc::Path::StripFullName(cleanedUpSceneFilePath);
                 AZ::StringFunc::Path::Join(cleanedUpSceneFilePath.c_str(), textureFilePath.c_str(), texturePathRelativeToScene);
 
-                // If the texture did start with marker to change directories upward, then it's relative to the FBX file,
+                // If the texture did start with marker to change directories upward, then it's relative to the scene file,
                 // and that path needs to be resolved. It can't be resolved later. This was handled internally by FBX SDK,
                 // but is not handled by AssImp.
                 if (textureFilePath.starts_with(".."))
@@ -196,7 +196,7 @@ namespace AZ
                 }
 
                 // The engine only supports relative paths to scan folders.
-                // FBX files may have paths to textures, relative to the FBX file. Check for those, first.
+                // Scene files may have paths to textures, relative to the scene file. Check for those, first.
                 if (AZ::IO::FileIOBase::GetInstance()->Exists(texturePathRelativeToScene.c_str()))
                 {
                     return texturePathRelativeToScene;
@@ -205,6 +205,6 @@ namespace AZ
 
                 return textureFilePath;
             }
-        } // namespace FbxSceneBuilder
+        } // namespace SceneBuilder
     } // namespace SceneAPI
 } // namespace AZ

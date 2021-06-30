@@ -10,11 +10,11 @@
 #include <AzCore/PlatformDef.h>
 
 #if defined(AZ_MONOLITHIC_BUILD)
-    #define FBX_SCENE_BUILDER_API
+    #define SCENE_BUILDER_API
 #else
-    #ifdef FBX_SCENE_BUILDER_EXPORTS
-        #define FBX_SCENE_BUILDER_API AZ_DLL_EXPORT
+    #ifdef SCENE_BUILDER_EXPORTS
+        #define SCENE_BUILDER_API AZ_DLL_EXPORT
     #else
-        #define FBX_SCENE_BUILDER_API AZ_DLL_IMPORT
+        #define SCENE_BUILDER_API AZ_DLL_IMPORT
     #endif
 #endif // AZ_MONOLITHIC_BUILD

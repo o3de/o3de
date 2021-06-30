@@ -10,14 +10,14 @@ if (NOT PAL_TRAIT_BUILD_HOST_TOOLS)
 endif()
 
 ly_add_target(
-    NAME FbxSceneBuilder.Static STATIC
+    NAME SceneBuilder.Static STATIC
     NAMESPACE AZ
     FILES_CMAKE
-        fbxscenebuilder_files.cmake
+        scenebuilder_files.cmake
         Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     COMPILE_DEFINITIONS
         PRIVATE
-            FBX_SCENE_BUILDER_EXPORTS
+            SCENE_BUILDER_EXPORTS
     INCLUDE_DIRECTORIES
         PUBLIC
             ../..
@@ -33,40 +33,40 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME FbxSceneBuilder MODULE
+    NAME SceneBuilder MODULE
     NAMESPACE AZ
     FILES_CMAKE
-        fbxscenebuilder_shared_files.cmake
+        scenebuilder_shared_files.cmake
     COMPILE_DEFINITIONS
         PRIVATE
-            FBX_SCENE_BUILDER_EXPORTS
+            SCENE_BUILDER_EXPORTS
     INCLUDE_DIRECTORIES
         PUBLIC
             ../..
     BUILD_DEPENDENCIES
         PUBLIC
-            AZ::FbxSceneBuilder.Static
+            AZ::SceneBuilder.Static
         PRIVATE
             AZ::AzCore
 )
 
-ly_add_dependencies(AssetBuilder AZ::FbxSceneBuilder)
+ly_add_dependencies(AssetBuilder AZ::SceneBuilder)
 
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
-        NAME FbxSceneBuilder.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAME SceneBuilder.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE AZ
         FILES_CMAKE
-            fbxscenebuilder_testing_files.cmake
+            scenebuilder_testing_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
                 Tests
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzTest
-                AZ::FbxSceneBuilder
+                AZ::SceneBuilder
     )
     ly_add_googletest(
-        NAME AZ::FbxSceneBuilder.Tests
+        NAME AZ::SceneBuilder.Tests
     )
 endif()

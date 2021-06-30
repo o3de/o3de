@@ -14,11 +14,6 @@ struct aiScene;
 
 namespace AZ
 {
-    namespace FbxSDKWrapper
-    {
-        class FbxMeshWrapper;
-    }
-
     namespace SceneData
     {
         namespace GraphData
@@ -35,11 +30,11 @@ namespace AZ
             class IGraphObject;
         }
         struct AssImpSceneNodeAppendedContext;
-        class FbxSceneSystem;
+        class SceneSystem;
 
-        namespace FbxSceneBuilder
+        namespace SceneBuilder
         {
-            bool BuildSceneMeshFromAssImpMesh(const aiNode* currentNode, const aiScene* scene, const FbxSceneSystem& sceneSystem, AZStd::vector<AZStd::shared_ptr<DataTypes::IGraphObject>>& meshes,
+            bool BuildSceneMeshFromAssImpMesh(const aiNode* currentNode, const aiScene* scene, const SceneSystem& sceneSystem, AZStd::vector<AZStd::shared_ptr<DataTypes::IGraphObject>>& meshes,
                 const AZStd::function<AZStd::shared_ptr<SceneData::GraphData::MeshData>()>& makeMeshFunc);
 
             typedef AZ::Outcome<const SceneData::GraphData::MeshData* const, Events::ProcessingResult> GetMeshDataFromParentResult;

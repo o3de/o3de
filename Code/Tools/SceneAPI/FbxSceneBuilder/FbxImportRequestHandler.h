@@ -14,7 +14,7 @@ namespace AZ
 {
     namespace SceneAPI
     {
-        namespace FbxSceneImporter
+        namespace SceneImporter
         {
             struct SceneImporterSettings
             {
@@ -25,14 +25,14 @@ namespace AZ
                 AZStd::unordered_set<AZStd::string> m_supportedFileTypeExtensions;
             };
 
-            class FbxImportRequestHandler
+            class SceneImportRequestHandler
                 : public AZ::Component
                 , public Events::AssetImportRequestBus::Handler
             {
             public:
-                AZ_COMPONENT(FbxImportRequestHandler, "{9F4B189C-0A96-4F44-A5F0-E087FF1561F8}");
+                AZ_COMPONENT(SceneImportRequestHandler, "{9F4B189C-0A96-4F44-A5F0-E087FF1561F8}");
 
-                ~FbxImportRequestHandler() override = default;
+                ~SceneImportRequestHandler() override = default;
 
                 void Activate() override;
                 void Deactivate() override;
@@ -50,6 +50,6 @@ namespace AZ
 
                 static constexpr const char* SettingsFilename = "AssetImporterSettings.json";
             };
-        } // namespace FbxSceneImporter
+        } // namespace SceneImporter
     } // namespace SceneAPI
 } // namespace AZ

@@ -10,13 +10,7 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/Math/Vector3.h>
 
-namespace fbxsdk
-{
-    class FbxSurfaceMaterial;
-}
-
 struct aiMaterial;
-
 
 namespace AZ
 {
@@ -39,11 +33,9 @@ namespace AZ
                 BaseColor
             };
 
-            MaterialWrapper(fbxsdk::FbxSurfaceMaterial* fbxMaterial);
             MaterialWrapper(aiMaterial* assImpmaterial);
             virtual ~MaterialWrapper();
 
-            fbxsdk::FbxSurfaceMaterial* GetFbxMaterial();
             aiMaterial* GetAssImpMaterial();
 
             virtual AZStd::string GetName() const;
@@ -56,7 +48,6 @@ namespace AZ
             virtual float GetShininess() const;
 
         protected:
-            fbxsdk::FbxSurfaceMaterial* m_fbxMaterial = nullptr;
             aiMaterial* m_assImpMaterial = nullptr;
         };
     } // namespace SDKMaterial
