@@ -44,7 +44,6 @@ namespace AZ
 
             AZStd::string m_shaderAssetFileName;
             AZStd::vector<AZStd::string> m_platformIdentifiers;
-            AZStd::vector<AZStd::string> m_srgAssetFileNames;
             AZStd::vector<AZStd::unique_ptr<RootShaderVariantAssetSourceData>> m_rootShaderVariantAssets;
         };
     } // namespace RPI

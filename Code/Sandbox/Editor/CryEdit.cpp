@@ -48,6 +48,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzCore/Console/IConsole.h>
 
 // AzFramework
 #include <AzFramework/Components/CameraBus.h>
@@ -350,6 +351,8 @@ CCryEditDoc* CCryDocManager::OpenDocumentFile(LPCTSTR lpszFileName, BOOL bAddToM
     for (int i = idStart; i <= idEnd; ++i) \
         ON_COMMAND(i, method);
 
+AZ_CVAR_EXTERNED(bool, ed_previewGameInFullscreen_once);
+
 void CCryEditApp::RegisterActionHandlers()
 {
     ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
@@ -366,6 +369,10 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_EDIT_FETCH, OnEditFetch)
     ON_COMMAND(ID_FILE_EXPORTTOGAMENOSURFACETEXTURE, OnFileExportToGameNoSurfaceTexture)
     ON_COMMAND(ID_VIEW_SWITCHTOGAME, OnViewSwitchToGame)
+    MainWindow::instance()->GetActionManager()->RegisterActionHandler(ID_VIEW_SWITCHTOGAME_FULLSCREEN, [this]() {
+        ed_previewGameInFullscreen_once = true;
+        OnViewSwitchToGame();
+    });
     ON_COMMAND(ID_MOVE_OBJECT, OnMoveObject)
     ON_COMMAND(ID_RENAME_OBJ, OnRenameObj)
     ON_COMMAND(ID_EDITMODE_MOVE, OnEditmodeMove)
@@ -389,8 +396,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_SWITCH_PHYSICS, OnSwitchPhysics)
     ON_COMMAND(ID_GAME_SYNCPLAYER, OnSyncPlayer)
     ON_COMMAND(ID_RESOURCES_REDUCEWORKINGSET, OnResourcesReduceworkingset)
-
-    ON_COMMAND(ID_WIREFRAME, OnWireframe)
 
     ON_COMMAND(ID_VIEW_CONFIGURELAYOUT, OnViewConfigureLayout)
 
@@ -431,9 +436,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_VIEW_CYCLE2DVIEWPORT, OnViewCycle2dviewport)
 #endif
     ON_COMMAND(ID_DISPLAY_GOTOPOSITION, OnDisplayGotoPosition)
-    ON_COMMAND(ID_CHANGEMOVESPEED_INCREASE, OnChangemovespeedIncrease)
-    ON_COMMAND(ID_CHANGEMOVESPEED_DECREASE, OnChangemovespeedDecrease)
-    ON_COMMAND(ID_CHANGEMOVESPEED_CHANGESTEP, OnChangemovespeedChangestep)
     ON_COMMAND(ID_FILE_SAVELEVELRESOURCES, OnFileSavelevelresources)
     ON_COMMAND(ID_CLEAR_REGISTRY, OnClearRegistryData)
     ON_COMMAND(ID_VALIDATELEVEL, OnValidatelevel)
@@ -530,6 +532,7 @@ public:
     QString m_appRoot;
     QString m_logFile;
     QString m_pythonArgs;
+    QString m_pythontTestCase;
     QString m_execFile;
     QString m_execLineCmd;
 
@@ -576,6 +579,7 @@ public:
         const std::vector<std::pair<CommandLineStringOption, QString&> > stringOptions = {
             {{"logfile", "File name of the log file to write out to.", "logfile"}, m_logFile},
             {{"runpythonargs", "Command-line argument string to pass to the python script if --runpython or --runpythontest was used.", "runpythonargs"}, m_pythonArgs},
+            {{"pythontestcase", "Test case name of python test script if --runpythontest was used.", "pythontestcase"}, m_pythontTestCase},
             {{"exec", "cfg file to run on startup, used for systems like automation", "exec"}, m_execFile},
             {{"rhi", "Command-line argument to force which rhi to use", "dummyString"}, dummyString },
             {{"rhi-device-validation", "Command-line argument to configure rhi validation", "dummyString"}, dummyString },
@@ -1514,7 +1518,13 @@ void CCryEditApp::RunInitPythonScript(CEditCommandLineInfo& cmdInfo)
             std::transform(tokens.begin(), tokens.end(), std::back_inserter(pythonArgs), [](auto& tokenData) { return tokenData.c_str(); });
             if (cmdInfo.m_bRunPythonTestScript)
             {
-                EditorPythonRunnerRequestBus::Broadcast(&EditorPythonRunnerRequestBus::Events::ExecuteByFilenameAsTest, cmdInfo.m_strFileName.toUtf8().constData(), pythonArgs);
+                AZStd::string pythonTestCase;
+                if (!cmdInfo.m_pythontTestCase.isEmpty())
+                {
+                    pythonTestCase = cmdInfo.m_pythontTestCase.toUtf8().constData();
+                }
+
+                EditorPythonRunnerRequestBus::Broadcast(&EditorPythonRunnerRequestBus::Events::ExecuteByFilenameAsTest, cmdInfo.m_strFileName.toUtf8().constData(), pythonTestCase, pythonArgs);
 
                 // Close the editor gracefully as the test has completed
                 GetIEditor()->GetDocument()->SetModifiedFlag(false);
@@ -3434,31 +3444,6 @@ void CCryEditApp::OnResourcesReduceworkingset()
 #endif
 }
 
-void CCryEditApp::OnWireframe()
-{
-    int             nWireframe(R_SOLID_MODE);
-    ICVar*      r_wireframe(gEnv->pConsole->GetCVar("r_wireframe"));
-
-    if (r_wireframe)
-    {
-        nWireframe = r_wireframe->GetIVal();
-    }
-
-    if (nWireframe != R_WIREFRAME_MODE)
-    {
-        nWireframe = R_WIREFRAME_MODE;
-    }
-    else
-    {
-        nWireframe = R_SOLID_MODE;
-    }
-
-    if (r_wireframe)
-    {
-        r_wireframe->Set(nWireframe);
-    }
-}
-
 void CCryEditApp::OnUpdateWireframe(QAction* action)
 {
     Q_ASSERT(action->isCheckable());
@@ -3670,40 +3655,8 @@ void CCryEditApp::OnViewCycle2dviewport()
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnDisplayGotoPosition()
 {
-    CGotoPositionDlg dlg;
-    dlg.exec();
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnChangemovespeedIncrease()
-{
-    gSettings.cameraMoveSpeed += m_moveSpeedStep;
-    if (gSettings.cameraMoveSpeed < 0.01f)
-    {
-        gSettings.cameraMoveSpeed = 0.01f;
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnChangemovespeedDecrease()
-{
-    gSettings.cameraMoveSpeed -= m_moveSpeedStep;
-    if (gSettings.cameraMoveSpeed < 0.01f)
-    {
-        gSettings.cameraMoveSpeed = 0.01f;
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnChangemovespeedChangestep()
-{
-    bool ok = false;
-    int fractionalDigitCount = 5;
-    float step = aznumeric_caster(QInputDialog::getDouble(AzToolsFramework::GetActiveWindow(), QObject::tr("Change Move Increase/Decrease Step"), QStringLiteral(""), m_moveSpeedStep, std::numeric_limits<float>::lowest(), std::numeric_limits<float>::max(), fractionalDigitCount, &ok));
-    if (ok)
-    {
-        m_moveSpeedStep = step;
-    }
+    GotoPositionDialog dialog;
+    dialog.exec();
 }
 
 //////////////////////////////////////////////////////////////////////////

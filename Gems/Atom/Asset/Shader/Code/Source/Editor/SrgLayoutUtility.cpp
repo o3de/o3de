@@ -104,6 +104,7 @@ namespace AZ
                 {
                     RHI::Ptr<RHI::ShaderResourceGroupLayout> newSrgLayout = RHI::ShaderResourceGroupLayout::Create();
                     newSrgLayout->SetName(AZ::Name{srgData.m_name.c_str()});
+                    newSrgLayout->SetUniqueId(srgData.m_containingFileName);
                     newSrgLayout->SetBindingSlot(srgData.m_bindingSlot.m_index);
 
                     // Samplers

@@ -127,13 +127,10 @@ namespace AZ
             }
 
             // Register streaming image controller instance database.
-            // Note, third party gems may add new handlers to this InstanceDatabase as well, to handle custom implementations.
-
             {
-                Data::InstanceDatabase<StreamingImageController>::Create(azrtti_typeid<StreamingImageControllerAsset>());
-
-                Data::InstanceDatabase<StreamingImageController>::Instance().AddHandler(
-                    azrtti_typeid<DefaultStreamingImageControllerAsset>(), &DefaultStreamingImageController::CreateInternal);
+                Data::InstanceHandler<StreamingImageController> handler;
+                handler.m_createFunction = DefaultStreamingImageController::CreateInternal;
+                Data::InstanceDatabase<StreamingImageController>::Create(azrtti_typeid<StreamingImageControllerAsset>(), handler);
             }
 
             m_defaultStreamingImageControllerAsset = 

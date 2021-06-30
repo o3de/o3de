@@ -84,9 +84,6 @@
 #define ID_EXPORT_INDOORS                          32915
 #define ID_VIEW_CYCLE2DVIEWPORT                    32916
 #define ID_SNAPANGLE                               32917
-#define ID_CHANGEMOVESPEED_INCREASE                32928
-#define ID_CHANGEMOVESPEED_DECREASE                32929
-#define ID_CHANGEMOVESPEED_CHANGESTEP              32930
 #define ID_PHYSICS_GETPHYSICSSTATE                 32937
 #define ID_PHYSICS_RESETPHYSICSSTATE               32938
 #define ID_GAME_SYNCPLAYER                         32941
@@ -109,6 +106,7 @@
 #define ID_EDIT_FETCH                              33465
 #define ID_FILE_EXPORTTOGAMENOSURFACETEXTURE       33473
 #define ID_VIEW_SWITCHTOGAME                       33477
+#define ID_VIEW_SWITCHTOGAME_FULLSCREEN            33478
 #define ID_EDIT_DELETE                             33480
 #define ID_MOVE_OBJECT                             33481
 #define ID_RENAME_OBJ                              33483

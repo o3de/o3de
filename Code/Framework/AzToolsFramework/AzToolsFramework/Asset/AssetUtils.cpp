@@ -225,7 +225,7 @@ namespace AzToolsFramework::AssetUtils
             AZStd::vector<AzFramework::GemInfo> gemInfoList;
             if (!AzFramework::GetGemsInfo(gemInfoList, *settingsRegistry))
             {
-                AZ_Error("AzToolsFramework::AssetUtils", false, "Failed to read gems from project folder(%s).\n", projectPath);
+                AZ_Error("AzToolsFramework::AssetUtils", false, "Failed to read gems from project folder(%.*s).\n", AZ_STRING_ARG(projectPath));
                 return {};
             }
 

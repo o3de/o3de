@@ -50,11 +50,11 @@ namespace AZ
             AZ::MakePerspectiveFovMatrixRH(viewToClipMatrix, AZ::Constants::HalfPi, 1, 0.1f, 1000.f, true);
             SetViewToClipMatrix(viewToClipMatrix);
 
-            Data::Asset<ShaderResourceGroupAsset> viewSrgAsset = RPISystemInterface::Get()->GetViewSrgAsset();
+            Data::Asset<ShaderAsset> viewSrgShaderAsset = RPISystemInterface::Get()->GetCommonShaderAssetForSrgs();
 
-            if (viewSrgAsset.IsReady())
+            if (viewSrgShaderAsset.IsReady())
             {
-                m_shaderResourceGroup = ShaderResourceGroup::Create(viewSrgAsset);
+                m_shaderResourceGroup = ShaderResourceGroup::Create(viewSrgShaderAsset, RPISystemInterface::Get()->GetViewSrgLayout()->GetName());
             }
 #if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
             m_maskedOcclusionCulling = MaskedOcclusionCulling::Create();

@@ -55,7 +55,7 @@ namespace AZ
             desc.m_bufferSrgName = "m_pointLights";
             desc.m_elementCountSrgName = "m_pointLightCount";
             desc.m_elementSize = sizeof(PointLightData);
-            desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgAsset()->GetLayout();
+            desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
             m_shadowFeatureProcessor = GetParentScene()->GetFeatureProcessor<ProjectedShadowFeatureProcessor>();
 
             m_lightBufferHandler = GpuBufferHandler(desc);

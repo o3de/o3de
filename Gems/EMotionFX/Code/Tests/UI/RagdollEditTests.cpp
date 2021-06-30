@@ -5,6 +5,7 @@
  *
  */
 
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
 #include <QtTest>
@@ -22,6 +23,7 @@
 
 #include <Editor/ReselectingTreeView.h>
 #include <Tests/D6JointLimitConfiguration.h>
+#include <Tests/Mocks/PhysicsSystem.h>
 
 namespace EMotionFX
 {
@@ -30,12 +32,37 @@ namespace EMotionFX
       public:
         void SetUp() override
         {
+            using ::testing::_;
+
             SetupQtAndFixtureBase();
 
             AZ::SerializeContext* serializeContext = nullptr;
             AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
             D6JointLimitConfiguration::Reflect(serializeContext);
+
+            EXPECT_CALL(m_jointHelpers, GetSupportedJointTypeIds)
+                .WillRepeatedly(testing::Return(AZStd::vector<AZ::TypeId>{ azrtti_typeid<D6JointLimitConfiguration>() }));
+
+            EXPECT_CALL(m_jointHelpers, GetSupportedJointTypeId(_))
+                .WillRepeatedly(
+                    [](AzPhysics::JointType jointType) -> AZStd::optional<const AZ::TypeId>
+                    {
+                        if (jointType == AzPhysics::JointType::D6Joint)
+                        {
+                            return azrtti_typeid<D6JointLimitConfiguration>();
+                        }
+                        return AZStd::nullopt;
+                    });
+
+            EXPECT_CALL(m_jointHelpers, ComputeInitialJointLimitConfiguration(_, _, _, _, _))
+                .WillRepeatedly(
+                    []([[maybe_unused]] const AZ::TypeId& jointLimitTypeId, [[maybe_unused]] const AZ::Quaternion& parentWorldRotation,
+                       [[maybe_unused]] const AZ::Quaternion& childWorldRotation, [[maybe_unused]] const AZ::Vector3& axis,
+                       [[maybe_unused]] const AZStd::vector<AZ::Quaternion>& exampleLocalRotations)
+                    {
+                        return AZStd::make_unique<D6JointLimitConfiguration>();
+                    });
 
             SetupPluginWindows();
         }
@@ -68,6 +95,7 @@ namespace EMotionFX
         QModelIndexList m_indexList;
         ReselectingTreeView* m_treeView;
         EMotionFX::SkeletonOutlinerPlugin* m_skeletonOutliner;
+        Physics::MockJointHelpersInterface m_jointHelpers;
     };
 
 

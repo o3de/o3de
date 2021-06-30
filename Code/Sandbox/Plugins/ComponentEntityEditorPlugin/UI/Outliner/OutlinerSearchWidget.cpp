@@ -32,21 +32,31 @@ namespace AzQtComponents
     {
     }
 
-    bool OutlinerSearchTypeSelector::filterItemOut(int unfilteredDataIndex, bool itemMatchesFilter, bool categoryMatchesFilter)
+    bool OutlinerSearchTypeSelector::filterItemOut(const QModelIndex& sourceIndex, bool filteredByBase)
     {
-        bool unfilteredIndexInvalid = (unfilteredDataIndex >= static_cast<int>(OutlinerSearchWidget::GlobalSearchCriteria::FirstRealFilter));
-        return SearchTypeSelector::filterItemOut(unfilteredDataIndex, itemMatchesFilter, categoryMatchesFilter) && unfilteredIndexInvalid;
+        auto* currItem = m_model->itemFromIndex(sourceIndex);
+        if (currItem != nullptr)
+        {
+            int unfilteredIndex = getUnfilteredDataIndex(currItem);
+            if (unfilteredIndex >= 0 && unfilteredIndex < aznumeric_cast<int>(OutlinerSearchWidget::GlobalSearchCriteria::FirstRealFilter))
+            {
+                // never filter out the categories before FirstRealFilter (unlocked/locked, visible/hidden, etc.)
+                return false;
+            }
+        }
+        // no special case, return the result of the base filter
+        return filteredByBase;
     }
 
     void OutlinerSearchTypeSelector::initItem(QStandardItem* item, const SearchTypeFilter& filter, int unfilteredDataIndex)
     {
-        if (filter.displayName != "--------")
+        SearchTypeSelector::initItem(item, filter, unfilteredDataIndex);
+        if (filter.displayName == "--------")
         {
-            item->setCheckable(true);
-            item->setCheckState(filter.enabled ? Qt::Checked : Qt::Unchecked);
+            item->setCheckable(false);
         }
 
-        if (unfilteredDataIndex < static_cast<int>(OutlinerSearchWidget::GlobalSearchCriteria::FirstRealFilter))
+        if (unfilteredDataIndex >= 0 && unfilteredDataIndex < static_cast<int>(OutlinerSearchWidget::GlobalSearchCriteria::FirstRealFilter))
         {
             item->setIcon(OutlinerIcons::GetInstance().GetIcon(unfilteredDataIndex));
         }

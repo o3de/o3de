@@ -290,7 +290,7 @@ namespace PhysX
                         AZ_TracePrintf(
                             AZ::SceneAPI::Utilities::WarningWindow,
                             "Node '%.*s' does not have any material assigned to it. Material '%s' will be used.",
-                            nodeName.size(), nodeName, DefaultMaterialName
+                            AZ_STRING_ARG(nodeName), DefaultMaterialName
                         );
                     }
 

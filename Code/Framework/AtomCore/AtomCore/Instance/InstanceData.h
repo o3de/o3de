@@ -71,7 +71,7 @@ namespace AZ
             template <typename Type>
             friend struct AZStd::IntrusivePtrCountPolicy;
 
-            template <typename Type>
+            template<typename Type>
             friend class InstanceDatabase;
 
             // Pointer to the InstanceDatabase that owns this instance. Will be null if the InstanceData object

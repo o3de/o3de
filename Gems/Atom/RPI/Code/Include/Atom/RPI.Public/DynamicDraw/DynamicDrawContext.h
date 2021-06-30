@@ -223,7 +223,7 @@ namespace AZ
             Data::Instance<ShaderResourceGroup> m_srgPerContext;
             RHI::ShaderResourceGroup* m_srgGroups[1]; // array for draw item's srg groups
             uint32_t m_perVertexDataSize = 0;
-            Data::Asset<ShaderResourceGroupAsset> m_drawSrgAsset;
+            RHI::Ptr<RHI::ShaderResourceGroupLayout> m_drawSrgLayout;
             bool m_hasShaderVariantKeyFallbackEntry = false;
 
             // Draw variations allowed in this DynamicDrawContext

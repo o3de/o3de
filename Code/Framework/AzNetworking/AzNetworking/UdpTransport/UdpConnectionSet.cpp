@@ -106,6 +106,24 @@ namespace AzNetworking
         return aznumeric_cast<uint32_t>(m_connectionIdMap.size());
     }
 
+    uint32_t UdpConnectionSet::GetActiveConnectionCount() const
+    {
+        uint32_t activeConnections = 0;
+        for (auto iter = m_connectionIdMap.begin(); iter != m_connectionIdMap.end(); ++iter)
+        {
+            if (iter->second.get())
+            {
+                ConnectionState state = iter->second.get()->GetConnectionState();
+                if (state == ConnectionState::Connected || state == ConnectionState::Connecting)
+                {
+                    ++activeConnections;
+                }
+            }
+        }
+
+        return activeConnections;
+    }
+
     UdpConnection* UdpConnectionSet::GetConnection(const IpAddress& address) const
     {
         RemoteAddressMap::const_iterator lookup = m_remoteAddressMap.find(address);

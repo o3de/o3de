@@ -63,7 +63,7 @@ CNewLevelDialog::CNewLevelDialog(QWidget* pParent /*=NULL*/)
 
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     setWindowTitle(tr("New Level"));
-    setMaximumSize(QSize(430, 180));
+    setMaximumSize(QSize(320, 180));
     adjustSize();
 
     m_bIsResize = false;

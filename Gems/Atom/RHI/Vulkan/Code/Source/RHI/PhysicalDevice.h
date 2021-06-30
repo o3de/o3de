@@ -30,7 +30,29 @@ namespace AZ
             NullDescriptor,
             SeparateDepthStencil,
             DescriptorIndexing,
+            BufferDeviceAddress,
             Count // Must be last
+        };
+
+        enum class OptionalDeviceExtension : uint32_t
+        {
+            SampleLocation = 0,
+            ConditionalRendering,
+            MemoryBudget,
+            DepthClipEnable,
+            ConservativeRasterization,
+            DrawIndirectCount,
+            RelaxedBlockLayout,
+            Robustness2,
+            ShaderFloat16Int8,
+            AccelerationStructure,
+            RayTracingPipeline,
+            BufferDeviceAddress,
+            DeferredHostOperations,
+            DescriptorIndexing,
+            Spirv14,
+            ShaderFloatControls,
+            Count
         };
 
         class PhysicalDevice final
@@ -46,6 +68,7 @@ namespace AZ
             const VkPhysicalDevice& GetNativePhysicalDevice() const;
             const VkPhysicalDeviceMemoryProperties& GetMemoryProperties() const;
             bool IsFeatureSupported(DeviceFeature feature) const;
+            bool IsOptionalDeviceExtensionSupported(OptionalDeviceExtension optionalDeviceExtension) const;
             const VkPhysicalDeviceLimits& GetDeviceLimits() const;
             const VkPhysicalDeviceFeatures& GetPhysicalDeviceFeatures() const;
             const VkPhysicalDeviceProperties& GetPhysicalDeviceProperties() const;
@@ -54,6 +77,7 @@ namespace AZ
             const VkPhysicalDeviceRobustness2FeaturesEXT& GetPhysicalDeviceRobutness2Features() const;
             const VkPhysicalDeviceShaderFloat16Int8FeaturesKHR& GetPhysicalDeviceFloat16Int8Features() const;
             const VkPhysicalDeviceDescriptorIndexingFeaturesEXT& GetPhysicalDeviceDescriptorIndexingFeatures() const;
+            const VkPhysicalDeviceBufferDeviceAddressFeaturesEXT& GetPhysicalDeviceBufferDeviceAddressFeatures() const;
             const VkPhysicalDeviceVulkan12Features& GetPhysicalDeviceVulkan12Features() const;
             const VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR& GetPhysicalDeviceSeparateDepthStencilFeatures() const;
             const VkPhysicalDeviceAccelerationStructurePropertiesKHR& GetPhysicalDeviceAccelerationStructureProperties() const;
@@ -63,6 +87,8 @@ namespace AZ
             StringList GetDeviceExtensionNames(const char* layerName = nullptr) const;
             bool IsFormatSupported(RHI::Format format, VkImageTiling tiling, VkFormatFeatureFlags features) const;
             void LoadSupportedFeatures();
+            //! Filter optional extensions based on what the physics device support.
+            RawStringList FilterSupportedOptionalExtensions();
             void CompileMemoryStatistics(RHI::MemoryStatisticsBuilder& builder) const;
 
         private:
@@ -77,6 +103,7 @@ namespace AZ
             VkPhysicalDevice m_vkPhysicalDevice = VK_NULL_HANDLE;
             VkPhysicalDeviceMemoryProperties m_memoryProperty{};
 
+            AZStd::bitset<static_cast<uint32_t>(OptionalDeviceExtension::Count)> m_optionalExtensions;
             AZStd::bitset<static_cast<uint32_t>(DeviceFeature::Count)> m_features;
             VkPhysicalDeviceFeatures m_deviceFeatures{};
             VkPhysicalDeviceProperties m_deviceProperties{};
@@ -85,6 +112,7 @@ namespace AZ
             VkPhysicalDeviceRobustness2FeaturesEXT m_robutness2Features{};
             VkPhysicalDeviceShaderFloat16Int8FeaturesKHR m_float16Int8Features{};
             VkPhysicalDeviceDescriptorIndexingFeaturesEXT m_descriptorIndexingFeatures{};
+            VkPhysicalDeviceBufferDeviceAddressFeaturesEXT m_bufferDeviceAddressFeatures{};
             VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR m_separateDepthStencilFeatures{};
             VkPhysicalDeviceAccelerationStructurePropertiesKHR m_accelerationStructureProperties{};
             VkPhysicalDeviceRayTracingPipelinePropertiesKHR m_rayTracingPipelineProperties{};

@@ -63,6 +63,7 @@ namespace AzToolsFramework
             enum class Column
             {
                 Name,
+                Path,
                 SourceID,
                 Fingerprint,
                 Guid,
@@ -130,6 +131,7 @@ namespace AzToolsFramework
         protected:
             AZStd::string m_name;
             QString m_displayName;
+            QString m_displayPath;
             AZStd::string m_relativePath;
             AZStd::string m_fullPath;
             AZStd::vector<AssetBrowserEntry*> m_children;

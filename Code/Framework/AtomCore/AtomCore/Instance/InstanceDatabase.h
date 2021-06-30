@@ -41,14 +41,22 @@ namespace AZ
              */
             using CreateFunction = AZStd::function<Instance<Type>(AssetData*)>;
 
+            using CreateFunctionWithParam = AZStd::function<Instance<Type>(AssetData*, const AZStd::any* param)>;
+
             /**
              * Deletion takes an asset as input and transfers ownership to the method.
              */
             using DeleteFunction = AZStd::function<void(Type*)>;
 
-            /// [Required] The function to use when creating an instance.
-            ///  The system will assert if no creation function is provided.
-            CreateFunction m_createFunction;
+            /// A function to use when creating an instance.
+            ///  The system will assert if both  @m_createFunction and @m_createFunctionWithParam
+            ///  creation functions are invalid.
+            CreateFunction m_createFunction = nullptr;
+
+            /// A function with an additional custom param to use when creating an instance.
+            ///  The system will assert if both  @m_createFunction and @m_createFunctionWithParam
+            ///  creation functions are invalid.
+            CreateFunctionWithParam m_createFunctionWithParam = nullptr;
 
             /// [Optional] The function to use when deleting an instance.
             DeleteFunction m_deleteFunction = [](Type* t) { delete t; };
@@ -151,27 +159,13 @@ namespace AZ
              * Use this function when creating an InstanceDatabase that will handle concrete classes of @ref Type.
              * \param assetType  - All instances will be based on subclasses of this asset type.
              * \param handler    - An InstanceHandler that creates instances of @ref assetType assets.
+             * \param checkAssetIds - If true, it will be validated that "instance->m_assetId == asset.GetId()"
              */
-            static void Create(const AssetType& assetType, const InstanceHandler<Type>& handler);
-
-            /**
-             * Create the InstanceDatabase with no handlers. Individual handlers must be added using @ref AddHandler().
-             * Use this function when creating an InstanceDatabase that will handle subclasses of @ref Type.
-             * \param assetType - All instances will be based on subclasses of this asset type.
-             */
-            static void Create(const AssetType& assetType);
+            static void Create(const AssetType& assetType, const InstanceHandler<Type>& handler, bool checkAssetIds = true);
 
             static void Destroy();
             static bool IsReady();
             static InstanceDatabase& Instance();
-
-            /**
-             * Add an InstanceHandler that will create instances for assets of type @ref assetType.
-             */
-            void AddHandler(const AssetType& assetType, const InstanceHandler<Type>& handler);
-            void AddHandler(const AssetType& assetType, typename InstanceHandler<Type>::CreateFunction createFunction);
-
-            void RemoveHandler(const AssetType& assetType);
 
             /**
              * Attempts to find an instance associated with the provided id. If the instance exists, it
@@ -200,18 +194,20 @@ namespace AZ
              *      when acquiring an instance.
              * @return Returns a smart pointer to the instance, which was either found or created.
              */
-            Data::Instance<Type> FindOrCreate(const InstanceId& id, const Asset<AssetData>& asset);
+            Data::Instance<Type> FindOrCreate(const InstanceId& id, const Asset<AssetData>& asset, const AZStd::any* param = nullptr);
 
             //! Calls the above FindOrCreate using an InstanceId created from the asset
-            Data::Instance<Type> FindOrCreate(const Asset<AssetData>& asset);
+            Data::Instance<Type> FindOrCreate(const Asset<AssetData>& asset, const AZStd::any* param = nullptr);
 
             //! Calls FindOrCreate using a random InstanceId
-            Data::Instance<Type> Create(const Asset<AssetData>& asset);
+            Data::Instance<Type> Create(const Asset<AssetData>& asset, const AZStd::any* param = nullptr);
 
         private:
             InstanceDatabase(const AssetType& assetType);
             ~InstanceDatabase();
 
+            bool m_checkAssetIds = true;
+            //useAssetTypeAsKeyForHandlers;
             static const char* GetEnvironmentName();
 
             // Utility function called by InstanceData to remove the instance from the database.
@@ -219,11 +215,7 @@ namespace AZ
 
             void ValidateSameAsset(InstanceData* instance, const Data::Asset<AssetData>& asset) const;
 
-            // Performs a thread-safe search for the InstanceHandler for a given asset type.
-            bool FindHandler(const AssetType& assetType, InstanceHandler<Type>& handlerOut);
-
-            mutable AZStd::shared_mutex m_handlersMutex;
-            AZStd::unordered_map<AssetType, InstanceHandler<Type>> m_handlers;
+            InstanceHandler<Type> m_instanceHandler;
 
             // m_database uses a recursive_mutex instead of a shared_mutex because it's possible to recursively
             // create or destroy instances on the same thread while in the midst of creating or destroying an instance.
@@ -236,10 +228,11 @@ namespace AZ
             static EnvironmentVariable<InstanceDatabase*> ms_instance;
         };
 
-        template <typename Type>
-        EnvironmentVariable<InstanceDatabase<Type>*> InstanceDatabase<Type>::ms_instance = nullptr;
+        template<typename Type>
+        EnvironmentVariable<InstanceDatabase<Type>*>
+            InstanceDatabase<Type>::ms_instance = nullptr;
 
-        template <typename Type>
+        template<typename Type>
         InstanceDatabase<Type>::~InstanceDatabase()
         {
 #ifdef AZ_DEBUG_BUILD
@@ -256,52 +249,7 @@ namespace AZ
                 "AZ::Data::%s still has active references.", Type::GetDatabaseName());
         }
 
-        template <typename Type>
-        void InstanceDatabase<Type>::AddHandler(const AssetType& assetType, const InstanceHandler<Type>& handler)
-        {
-            AZ_Assert(handler.m_createFunction, "You are required to provide a create function to InstanceDatabase.");
-
-            AZStd::unique_lock<AZStd::shared_mutex> lock(m_handlersMutex);
-            auto result = m_handlers.emplace(assetType, handler);
-            AZ_Assert(result.second, "An InstanceHandler already exists for this AssetType");
-        }
-
-        template <typename Type>
-        void InstanceDatabase<Type>::AddHandler(const AssetType& assetType, typename InstanceHandler<Type>::CreateFunction createFunction)
-        {
-            InstanceHandler<Type> instanceHandler;
-            instanceHandler.m_createFunction = createFunction;
-
-            AddHandler(assetType, instanceHandler);
-        }
-
-        template <typename Type>
-        void InstanceDatabase<Type>::RemoveHandler(const AssetType& assetType)
-        {
-            AZStd::unique_lock<AZStd::shared_mutex> lock(m_handlersMutex);
-            m_handlers.erase(assetType);
-        }
-
-        template <typename Type>
-        bool InstanceDatabase<Type>::FindHandler(const AssetType& assetType, InstanceHandler<Type>& handlerOut)
-        {
-            AZStd::shared_lock<AZStd::shared_mutex> lock(m_handlersMutex);
-
-            auto handlerIter = m_handlers.find(assetType);
-            if (handlerIter != m_handlers.end())
-            {
-                // Since the handler is just a couple pointers, we copy the handler so we can
-                // release the lock right away.
-                handlerOut = handlerIter->second;
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        template <typename Type>
+        template<typename Type>
         Data::Instance<Type> InstanceDatabase<Type>::Find(const InstanceId& id) const
         {
             AZStd::scoped_lock<AZStd::recursive_mutex> lock(m_databaseMutex);
@@ -313,8 +261,9 @@ namespace AZ
             return nullptr;
         }
 
-        template <typename Type>
-        Data::Instance<Type> InstanceDatabase<Type>::FindOrCreate(const InstanceId& id, const Asset<AssetData>& asset)
+        template<typename Type>
+        Data::Instance<Type> InstanceDatabase<Type>::FindOrCreate(
+            const InstanceId& id, const Asset<AssetData>& asset, const AZStd::any* param)
         {
             if (!id.IsValid())
             {
@@ -353,24 +302,6 @@ namespace AZ
                 }
             }
 
-            if (!azrtti_istypeof(m_baseAssetType, assetLocal.Get()))
-            {
-                InstanceHandler<Type> instanceHandler;
-
-                // If a handler was incorrectly registered for an unrelated asset type, this is the 
-                // first chance we have to discover that fact, because up until now all we had was two
-                // TypeIds.
-                if (FindHandler(assetLocal.GetType(), instanceHandler))
-                {
-                    AZ_Assert(false, "An InstanceHandler was added for asset type %s which is not a subclass of the base asset type %s.",
-                        assetLocal.GetType().ToString<AZStd::string>().data(),
-                        m_baseAssetType.ToString<AZStd::string>().data()
-                    );
-
-                    return nullptr;
-                }
-            }
-
             // Take a lock to guard the insertion.  Note that this will not guard against recursive insertions on the same thread.
             AZStd::scoped_lock<AZStd::recursive_mutex> lock(m_databaseMutex);
 
@@ -385,48 +316,46 @@ namespace AZ
             }
 
             // Emplace a new instance and return it.
-            InstanceHandler<Type> instanceHandler;
-            if (FindHandler(assetLocal.GetType(), instanceHandler))
+            // It's possible for the m_createFunction call to recursively trigger another FindOrCreate call, so be aware that
+            // the contents of m_database may change within this call.
+            Data::Instance<Type> instance = nullptr;
+            if (!param)
             {
-                // It's possible for the m_createFunction call to recursively trigger another FindOrCreate call, so be aware that
-                // the contents of m_database may change within this call.
-                Data::Instance<Type> instance = instanceHandler.m_createFunction(assetLocal.Get());
-                if (instance)
-                {
-                    AZ_Assert(m_database.find(id) == m_database.end(),
-                        "Instance creation for asset id %s resulted in a recursive creation of that asset, which was unexpected. "
-                        "This asset might be erroneously referencing itself as a dependent asset.", id.ToString<AZStd::string>().c_str());
-
-                    instance->m_id = id;
-                    instance->m_parentDatabase = this;
-                    instance->m_assetId = assetLocal.GetId();
-                    instance->m_assetType = assetLocal.GetType();
-                    m_database.emplace(id, instance.get());
-                }
-                return AZStd::move(instance);
+                instance = m_instanceHandler.m_createFunction(assetLocal.Get());
             }
             else
             {
-                AZ_Warning(
-                    "InstanceDatabase", false,
-                    "No InstanceHandler found for asset type %s", assetLocal.GetType().ToString<AZStd::string>().data());
-                return nullptr;
+                instance = m_instanceHandler.m_createFunctionWithParam(assetLocal.Get(), param);
             }
+
+            if (instance)
+            {
+                AZ_Assert(m_database.find(id) == m_database.end(),
+                    "Instance creation for asset id %s resulted in a recursive creation of that asset, which was unexpected. "
+                    "This asset might be erroneously referencing itself as a dependent asset.", id.ToString<AZStd::string>().c_str());
+
+                instance->m_id = id;
+                instance->m_parentDatabase = this;
+                instance->m_assetId = assetLocal.GetId();
+                instance->m_assetType = assetLocal.GetType();
+                m_database.emplace(id, instance.get());
+            }
+            return AZStd::move(instance);
         }
 
-        template <typename Type>
-        Data::Instance<Type> InstanceDatabase<Type>::FindOrCreate(const Asset<AssetData>& asset)
+        template<typename Type>
+        Data::Instance<Type> InstanceDatabase<Type>::FindOrCreate(const Asset<AssetData>& asset, const AZStd::any* param)
         {
-            return FindOrCreate(Data::InstanceId::CreateFromAssetId(asset.GetId()), asset);
+            return FindOrCreate(Data::InstanceId::CreateFromAssetId(asset.GetId()), asset, param);
         }
 
-        template <typename Type>
-        Data::Instance<Type> InstanceDatabase<Type>::Create(const Asset<AssetData>& asset)
+        template<typename Type>
+        Data::Instance<Type> InstanceDatabase<Type>::Create(const Asset<AssetData>& asset, const AZStd::any* param)
         {
-            return FindOrCreate(Data::InstanceId::CreateRandom(), asset);
+            return FindOrCreate(Data::InstanceId::CreateRandom(), asset, param);
         }
 
-        template <typename Type>
+        template<typename Type>
         void InstanceDatabase<Type>::ReleaseInstance(InstanceData* instance, const InstanceId& instanceId)
         {
             AZStd::scoped_lock<AZStd::recursive_mutex> lock(m_databaseMutex);
@@ -442,22 +371,13 @@ namespace AZ
                 instance->m_useCount.compare_exchange_strong(expectedRefCount, -1))
             {
                 m_database.erase(instance->GetId());
-
-                InstanceHandler<Type> instanceHandler;
-                if (FindHandler(instance->GetAssetType(), instanceHandler))
-                {
-                    instanceHandler.m_deleteFunction(static_cast<Type*>(instance));
-                }
-                else
-                {
-                    AZ_Assert(false,
-                        "Cannot delete Instance. No InstanceHandler found for asset type %s", instance->GetAssetType().ToString<AZStd::string>().data());
-                }
+                m_instanceHandler.m_deleteFunction(static_cast<Type*>(instance));
             }
         }
 
-        template <typename Type>
-        void InstanceDatabase<Type>::ValidateSameAsset(InstanceData* instance, const Data::Asset<AssetData>& asset) const
+        template<typename Type>
+        void InstanceDatabase<Type>::ValidateSameAsset(
+            InstanceData* instance, const Data::Asset<AssetData>& asset) const
         {
             /**
              * The following validation layer is disabled in release, but is designed to catch a couple related edge cases
@@ -471,46 +391,47 @@ namespace AZ
              */
 
         #if defined (AZ_DEBUG_BUILD)
-            AZ_Error("InstanceDatabase", instance->m_assetId == asset.GetId(),
-                "InstanceDatabase::FindOrCreate found the requested instance, but a different asset was used to create it. "
-                "Instances of a specific id should be acquired using the same asset. Either make sure the instance id "
-                "is actually unique, or that you are using the same asset each time for that particular id.");
+            if (m_checkAssetIds)
+            {
+                AZ_Error(
+                    "InstanceDatabase", (instance->m_assetId == asset.GetId()),
+                    "InstanceDatabase::FindOrCreate found the requested instance, but a different asset was used to create it. "
+                    "Instances of a specific id should be acquired using the same asset. Either make sure the instance id "
+                    "is actually unique, or that you are using the same asset each time for that particular id.");
+            }
         #else
             AZ_UNUSED(instance);
             AZ_UNUSED(asset);
         #endif
         }
 
-        template <typename Type>
+        template<typename Type>
         InstanceDatabase<Type>::InstanceDatabase(const AssetType& assetType) 
             : m_baseAssetType(assetType)
         {
         }
 
-        template <typename Type>
-        void InstanceDatabase<Type>::Create(const AssetType& assetType)
+        template<typename Type>
+        void InstanceDatabase<Type>::Create(const AssetType& assetType, const InstanceHandler<Type>& handler, bool checkAssetIds)
         {
             AZ_Assert(!ms_instance || !ms_instance.Get(), "InstanceDatabase already created!");
 
             if (!ms_instance)
             {
-                ms_instance = Environment::CreateVariable<InstanceDatabase*>(GetEnvironmentName());
+                ms_instance = Environment::CreateVariable<InstanceDatabase<Type>*>(GetEnvironmentName());
             }
 
             if (!ms_instance.Get())
             {
                 ms_instance.Set(aznew InstanceDatabase<Type>(assetType));
             }
+
+            AZ_Assert(handler.m_createFunction || handler.m_createFunctionWithParam, "At least one create function must be valid");
+            ms_instance.Get()->m_instanceHandler = handler;
+            ms_instance.Get()->m_checkAssetIds = checkAssetIds;
         }
 
-        template <typename Type>
-        void InstanceDatabase<Type>::Create(const AssetType& assetType, const InstanceHandler<Type>& handler)
-        {
-            Create(assetType);
-            Instance().AddHandler(assetType, handler);
-        }
-
-        template <typename Type>
+        template<typename Type>
         void InstanceDatabase<Type>::Destroy()
         {
             AZ_Assert(ms_instance, "InstanceDatabase not created!");
@@ -518,7 +439,7 @@ namespace AZ
             *ms_instance = nullptr;
         }
 
-        template <typename Type>
+        template<typename Type>
         bool InstanceDatabase<Type>::IsReady()
         {
             if (!ms_instance)
@@ -529,7 +450,7 @@ namespace AZ
             return ms_instance && *ms_instance;
         }
 
-        template <typename Type>
+        template<typename Type>
         InstanceDatabase<Type>& InstanceDatabase<Type>::Instance()
         {
             if (!ms_instance)
@@ -541,10 +462,12 @@ namespace AZ
             return *(*ms_instance);
         }
 
-        template <typename Type>
+        template<typename Type>
         const char* InstanceDatabase<Type>::GetEnvironmentName()
         {
-            static_assert(HasInstanceDatabaseName<Type>::value, "All classes used as instances in an InstanceDatabase need to define AZ_INSTANCE_DATA in the class.");
+            static_assert(
+                HasInstanceDatabaseName<Type>::value,
+                "All classes used as instances in an InstanceDatabase need to define AZ_INSTANCE_DATA in the class.");
             return Type::GetDatabaseName();
         }
     }

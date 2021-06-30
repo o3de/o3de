@@ -157,6 +157,12 @@ namespace AzNetworking
         return connection->WasPacketAcked(packetId);
     }
 
+    bool TcpNetworkInterface::StopListening()
+    {
+        m_port = 0;
+        return m_listenThread.StopListening(*this);
+    }
+
     bool TcpNetworkInterface::Disconnect(ConnectionId connectionId, DisconnectReason reason)
     {
         IConnection* connection = m_connectionSet.GetConnection(connectionId);

@@ -41,6 +41,7 @@ namespace Multiplayer
         AzNetworking::ByteBuffer<2048> m_userData;
     };
 
+    using ClientDisconnectedEvent = AZ::Event<>;
     using ConnectionAcquiredEvent = AZ::Event<MultiplayerAgentDatum>;
     using SessionInitEvent = AZ::Event<AzNetworking::INetworkInterface*>;
     using SessionShutdownEvent = AZ::Event<AzNetworking::INetworkInterface*>;
@@ -76,8 +77,28 @@ namespace Multiplayer
         //! @param state The state of this connection
         virtual void InitializeMultiplayer(MultiplayerAgentType state) = 0;
 
+        //! Starts hosting a server
+        //! @param port The port to listen for connection on
+        //! @param isDedicated Whether the server is dedicated or client hosted
+        //! @return if the application successfully started hosting
+        virtual bool StartHosting(uint16_t port, bool isDedicated = true) = 0;
+
+        //! Connects to the specified IP as a Client
+        //! @param remoteAddress The domain or IP to connect to
+        //! @param port The port to connect to
+        //! @result if a connection was successfully created
+        virtual bool Connect(AZStd::string remoteAddress, uint16_t port) = 0;
+
+        // Disconnects all multiplayer connections, stops listening on the server and invokes handlers appropriate to network context
+        //! @param reason The reason for terminating connections
+        virtual void Terminate(AzNetworking::DisconnectReason reason) = 0;
+
+        //! Adds a ClientDisconnectedEvent Handler which is invoked on the client when a disconnection occurs
+        //! @param handler The ClientDisconnectedEvent Handler to add
+        virtual void AddClientDisconnectedHandler(ClientDisconnectedEvent::Handler& handler) = 0;
+
         //! Adds a ConnectionAcquiredEvent Handler which is invoked when a new endpoint connects to the session.
-        //! @param handler The SessionInitEvent Handler to add
+        //! @param handler The ConnectionAcquiredEvent Handler to add
         virtual void AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler) = 0;
 
         //! Adds a SessionInitEvent Handler which is invoked when a new network session starts.

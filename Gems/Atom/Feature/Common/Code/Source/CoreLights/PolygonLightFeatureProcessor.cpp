@@ -49,7 +49,7 @@ namespace AZ::Render
         desc.m_bufferSrgName = "m_polygonLights";
         desc.m_elementCountSrgName = "m_polygonLightCount";
         desc.m_elementSize = sizeof(PolygonLightData);
-        desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgAsset()->GetLayout();
+        desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
 
         m_lightBufferHandler = GpuBufferHandler(desc);
 
@@ -58,7 +58,7 @@ namespace AZ::Render
         desc.m_bufferSrgName = "m_polygonLightPoints";
         desc.m_elementCountSrgName = "";
         desc.m_elementSize = 16; // While only a 12 byte float3 is needed for positions, using 16 bytes since that's the minimal alignment.
-        desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgAsset()->GetLayout();
+        desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
 
         m_lightPolygonPointBufferHandler = GpuBufferHandler(desc);
 

@@ -11,17 +11,19 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/algorithm.h>
 
+#include <Atom/RPI.Reflect/Shader/ShaderCommonTypes.h>
 #include <Atom/RHI.Reflect/ShaderStageFunction.h>
+#include <Atom/RHI.Reflect/Limits.h>
 
 namespace AZ
 {
     namespace RPI
     {
         uint32_t ShaderVariantAsset::MakeAssetProductSubId(
-            uint32_t rhiApiUniqueIndex, ShaderVariantStableId variantStableId, uint32_t subProductType)
+            uint32_t rhiApiUniqueIndex, uint32_t supervariantIndex, ShaderVariantStableId variantStableId, uint32_t subProductType)
         {
             static constexpr uint32_t SubProductTypeBitPosition = 17;
-            static constexpr uint32_t SubProductTypeNumBits = RhiIndexBitPosition - SubProductTypeBitPosition;
+            static constexpr uint32_t SubProductTypeNumBits = SupervariantIndexBitPosition - SubProductTypeBitPosition;
             static constexpr uint32_t SubProductTypeMaxValue = (1 << SubProductTypeNumBits) - 1;
 
             static constexpr uint32_t StableIdBitPosition = 0;
@@ -32,11 +34,12 @@ namespace AZ
 
             // The 2 Most significant bits encode the the RHI::API unique index.
             AZ_Assert(rhiApiUniqueIndex <= RhiIndexMaxValue, "Invalid rhiApiUniqueIndex [%u]", rhiApiUniqueIndex);
+            AZ_Assert(supervariantIndex <= SupervariantIndexMaxValue, "Invalid supervariantIndex [%u]", supervariantIndex);
             AZ_Assert(subProductType <= SubProductTypeMaxValue, "Invalid subProductType [%u]", subProductType);
             AZ_Assert(variantStableId.GetIndex() <= StableIdMaxValue, "Invalid variantStableId [%u]", variantStableId.GetIndex());
 
             const uint32_t assetProductSubId = (rhiApiUniqueIndex << RhiIndexBitPosition) |
-                (subProductType << SubProductTypeBitPosition) |
+                (supervariantIndex << SupervariantIndexBitPosition) | (subProductType << SubProductTypeBitPosition) |
                 (variantStableId.GetIndex() << StableIdBitPosition);
             return assetProductSubId;
         }
@@ -46,42 +49,24 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<ShaderVariantAsset, AZ::Data::AssetData>()
-                    ->Version(3)
+                    ->Version(1)
                     ->Field("StableId", &ShaderVariantAsset::m_stableId)
                     ->Field("ShaderVariantId", &ShaderVariantAsset::m_shaderVariantId)
                     ->Field("IsFullyBaked", &ShaderVariantAsset::m_isFullyBaked)
-                    ->Field("InputContract", &ShaderVariantAsset::m_inputContract)
-                    ->Field("OutputContract", &ShaderVariantAsset::m_outputContract)
-                    ->Field("RenderStates", &ShaderVariantAsset::m_renderStates)
                     ->Field("FunctionsByStage", &ShaderVariantAsset::m_functionsByStage)
-                    ->Field("shaderAssetBuildTimestamp", &ShaderVariantAsset::m_shaderAssetBuildTimestamp)
+                    ->Field("BuildTimestamp", &ShaderVariantAsset::m_buildTimestamp)
                     ;
             }
         }
 
-        AZStd::sys_time_t ShaderVariantAsset::GetShaderAssetBuildTimestamp() const
+        AZStd::sys_time_t ShaderVariantAsset::GetBuildTimestamp() const
         {
-            return m_shaderAssetBuildTimestamp;
+            return m_buildTimestamp;
         }
 
         const RHI::ShaderStageFunction* ShaderVariantAsset::GetShaderStageFunction(RHI::ShaderStage shaderStage) const
         {
             return m_functionsByStage[static_cast<size_t>(shaderStage)].get();
-        }
-
-        const ShaderInputContract& ShaderVariantAsset::GetInputContract() const
-        {
-            return m_inputContract;
-        }
-
-        const ShaderOutputContract& ShaderVariantAsset::GetOutputContract() const
-        {
-            return m_outputContract;
-        }
-
-        const RHI::RenderStates& ShaderVariantAsset::GetRenderStates() const
-        {
-            return m_renderStates;
         }
 
         bool ShaderVariantAsset::IsFullyBaked() const

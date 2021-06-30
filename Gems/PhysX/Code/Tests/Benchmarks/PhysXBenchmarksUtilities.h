@@ -19,6 +19,7 @@
 namespace AzPhysics
 {
     class Scene;
+    struct RigidBody;
 }
 
 namespace PhysX::Benchmarks

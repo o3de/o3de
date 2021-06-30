@@ -110,6 +110,10 @@ namespace AzNetworking
 
     bool UdpConnection::Disconnect(DisconnectReason reason, TerminationEndpoint endpoint)
     {
+        if (m_state == ConnectionState::Disconnected)
+        {
+            return true;
+        }
         if (m_state == ConnectionState::Disconnecting)
         {
             AZStd::string reasonString = ToString(reason);

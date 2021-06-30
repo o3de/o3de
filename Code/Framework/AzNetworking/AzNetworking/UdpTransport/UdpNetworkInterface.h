@@ -101,6 +101,7 @@ namespace AzNetworking
         bool SendReliablePacket(ConnectionId connectionId, const IPacket& packet) override;
         PacketId SendUnreliablePacket(ConnectionId connectionId, const IPacket& packet) override;
         bool WasPacketAcked(ConnectionId connectionId, PacketId packetId) override;
+        bool StopListening() override;
         bool Disconnect(ConnectionId connectionId, DisconnectReason reason) override;
         //! @}
 

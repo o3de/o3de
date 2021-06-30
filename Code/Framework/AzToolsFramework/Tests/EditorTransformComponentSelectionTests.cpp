@@ -8,30 +8,30 @@
 #include <AzCore/Math/ToString.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/UnitTest/TestTypes.h>
-#include <AzFramework/Entity/EntityContext.h>
 #include <AzFramework/Components/TransformComponent.h>
+#include <AzFramework/Entity/EntityContext.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
+#include <AzManipulatorTestFramework/AzManipulatorTestFramework.h>
+#include <AzManipulatorTestFramework/AzManipulatorTestFrameworkTestHelpers.h>
+#include <AzManipulatorTestFramework/AzManipulatorTestFrameworkUtils.h>
+#include <AzManipulatorTestFramework/ImmediateModeActionDispatcher.h>
+#include <AzManipulatorTestFramework/IndirectManipulatorViewportInteraction.h>
+#include <AzManipulatorTestFramework/ViewportInteraction.h>
+#include <AzQtComponents/Components/GlobalEventFilter.h>
 #include <AzTest/AzTest.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/Entity/EditorEntityActionComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityModel.h>
-#include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityComponent.h>
+#include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorDefaultSelection.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelection.h>
 #include <AzToolsFramework/ViewportSelection/EditorVisibleEntityDataCache.h>
-#include <AzManipulatorTestFramework/AzManipulatorTestFramework.h>
-#include <AzManipulatorTestFramework/AzManipulatorTestFrameworkUtils.h>
-#include <AzManipulatorTestFramework/AzManipulatorTestFrameworkTestHelpers.h>
-#include <AzManipulatorTestFramework/ImmediateModeActionDispatcher.h>
-#include <AzManipulatorTestFramework/IndirectManipulatorViewportInteraction.h>
-#include <AzManipulatorTestFramework/ViewportInteraction.h>
-#include <AzQtComponents/Components/GlobalEventFilter.h>
 
 using namespace AzToolsFramework;
 
@@ -41,12 +41,11 @@ namespace AZ
     {
         return os << entityId.ToString().c_str();
     }
-}
+} // namespace AZ
 
 namespace UnitTest
 {
-    class EditorEntityVisibilityCacheFixture
-        : public ToolsApplicationFixture
+    class EditorEntityVisibilityCacheFixture : public ToolsApplicationFixture
     {
     public:
         void CreateLayerAndEntityHierarchy()
@@ -111,8 +110,7 @@ namespace UnitTest
     }
 
     // Fixture to support testing EditorTransformComponentSelection functionality on an Entity selection.
-    class EditorTransformComponentSelectionFixture
-        : public ToolsApplicationFixture
+    class EditorTransformComponentSelectionFixture : public ToolsApplicationFixture
     {
     public:
         void SetUpEditorFixtureImpl() override
@@ -133,13 +131,11 @@ namespace UnitTest
         EntityIdList m_entityIds;
     };
 
-    void EditorTransformComponentSelectionFixture::ArrangeIndividualRotatedEntitySelection(
-        const AZ::Quaternion& orientation)
+    void EditorTransformComponentSelectionFixture::ArrangeIndividualRotatedEntitySelection(const AZ::Quaternion& orientation)
     {
         for (auto entityId : m_entityIds)
         {
-            AZ::TransformBus::Event(
-                entityId, &AZ::TransformBus::Events::SetLocalRotationQuaternion, orientation);
+            AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetLocalRotationQuaternion, orientation);
         }
     }
 
@@ -147,40 +143,32 @@ namespace UnitTest
     {
         AZStd::optional<AZ::Transform> manipulatorTransform;
         EditorTransformComponentSelectionRequestBus::EventResult(
-            manipulatorTransform, GetEntityContextId(),
-            &EditorTransformComponentSelectionRequests::GetManipulatorTransform);
+            manipulatorTransform, GetEntityContextId(), &EditorTransformComponentSelectionRequests::GetManipulatorTransform);
         return manipulatorTransform;
     }
 
-    void EditorTransformComponentSelectionFixture::RefreshManipulators(
-        EditorTransformComponentSelectionRequests::RefreshType refreshType)
+    void EditorTransformComponentSelectionFixture::RefreshManipulators(EditorTransformComponentSelectionRequests::RefreshType refreshType)
     {
         EditorTransformComponentSelectionRequestBus::Event(
             GetEntityContextId(), &EditorTransformComponentSelectionRequests::RefreshManipulators, refreshType);
     }
 
-    void EditorTransformComponentSelectionFixture::SetTransformMode(
-        EditorTransformComponentSelectionRequests::Mode transformMode)
+    void EditorTransformComponentSelectionFixture::SetTransformMode(EditorTransformComponentSelectionRequests::Mode transformMode)
     {
         EditorTransformComponentSelectionRequestBus::Event(
-            GetEntityContextId(), &EditorTransformComponentSelectionRequests::SetTransformMode,
-            transformMode);
+            GetEntityContextId(), &EditorTransformComponentSelectionRequests::SetTransformMode, transformMode);
     }
 
-    void EditorTransformComponentSelectionFixture::OverrideManipulatorOrientation(
-        const AZ::Quaternion& orientation)
+    void EditorTransformComponentSelectionFixture::OverrideManipulatorOrientation(const AZ::Quaternion& orientation)
     {
         EditorTransformComponentSelectionRequestBus::Event(
-            GetEntityContextId(), &EditorTransformComponentSelectionRequests::OverrideManipulatorOrientation,
-            orientation);
+            GetEntityContextId(), &EditorTransformComponentSelectionRequests::OverrideManipulatorOrientation, orientation);
     }
 
-    void EditorTransformComponentSelectionFixture::OverrideManipulatorTranslation(
-        const AZ::Vector3& translation)
+    void EditorTransformComponentSelectionFixture::OverrideManipulatorTranslation(const AZ::Vector3& translation)
     {
         EditorTransformComponentSelectionRequestBus::Event(
-            GetEntityContextId(), &EditorTransformComponentSelectionRequests::OverrideManipulatorTranslation,
-            translation);
+            GetEntityContextId(), &EditorTransformComponentSelectionRequests::OverrideManipulatorTranslation, translation);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -197,8 +185,7 @@ namespace UnitTest
 
         SetTransformMode(EditorTransformComponentSelectionRequests::Mode::Rotation);
 
-        const AZ::Transform manipulatorTransformBefore =
-            GetManipulatorTransform().value_or(AZ::Transform::CreateIdentity());
+        const AZ::Transform manipulatorTransformBefore = GetManipulatorTransform().value_or(AZ::Transform::CreateIdentity());
 
         // check preconditions - manipulator transform matches parent/world transform (identity)
         EXPECT_THAT(manipulatorTransformBefore.GetBasisY(), IsClose(AZ::Vector3::CreateAxisY()));
@@ -213,8 +200,7 @@ namespace UnitTest
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Then
-        const AZ::Transform manipulatorTransformAfter =
-            GetManipulatorTransform().value_or(AZ::Transform::CreateIdentity());
+        const AZ::Transform manipulatorTransformAfter = GetManipulatorTransform().value_or(AZ::Transform::CreateIdentity());
 
         // check postconditions - manipulator transform matches parent/world transform (identity)
         EXPECT_THAT(manipulatorTransformAfter.GetBasisY(), IsClose(AZ::Vector3::CreateAxisY()));
@@ -224,8 +210,7 @@ namespace UnitTest
         {
             // create invalid starting orientation to guarantee correct data is coming from GetLocalRotationQuaternion
             AZ::Quaternion entityOrientation = AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisX(), 90.0f);
-            AZ::TransformBus::EventResult(
-                entityOrientation, entityId, &AZ::TransformBus::Events::GetLocalRotationQuaternion);
+            AZ::TransformBus::EventResult(entityOrientation, entityId, &AZ::TransformBus::Events::GetLocalRotationQuaternion);
 
             // manipulator orientation matches entity orientation
             EXPECT_THAT(entityOrientation, IsClose(manipulatorTransformAfter.GetRotation()));
@@ -247,8 +232,7 @@ namespace UnitTest
 
         SetTransformMode(EditorTransformComponentSelectionRequests::Mode::Rotation);
 
-        const AZ::Transform manipulatorTransformBefore =
-            GetManipulatorTransform().value_or(AZ::Transform::CreateIdentity());
+        const AZ::Transform manipulatorTransformBefore = GetManipulatorTransform().value_or(AZ::Transform::CreateIdentity());
 
         // check preconditions - manipulator transform matches manipulator orientation override (not entity transform)
         EXPECT_THAT(manipulatorTransformBefore.GetBasisX(), IsClose(AZ::Vector3::CreateAxisY()));
@@ -263,8 +247,7 @@ namespace UnitTest
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Then
-        const AZ::Transform manipulatorTransformAfter =
-            GetManipulatorTransform().value_or(AZ::Transform::CreateIdentity());
+        const AZ::Transform manipulatorTransformAfter = GetManipulatorTransform().value_or(AZ::Transform::CreateIdentity());
 
         // check postconditions - manipulator transform matches parent/world space (manipulator override was cleared)
         EXPECT_THAT(manipulatorTransformAfter.GetBasisY(), IsClose(AZ::Vector3::CreateAxisY()));
@@ -273,8 +256,7 @@ namespace UnitTest
         for (auto entityId : m_entityIds)
         {
             AZ::Quaternion entityOrientation;
-            AZ::TransformBus::EventResult(
-                entityOrientation, entityId, &AZ::TransformBus::Events::GetLocalRotationQuaternion);
+            AZ::TransformBus::EventResult(entityOrientation, entityId, &AZ::TransformBus::Events::GetLocalRotationQuaternion);
 
             // entity transform matches initial (entity transform was not reset, only manipulator was)
             EXPECT_THAT(entityOrientation, IsClose(initialEntityOrientation));
@@ -296,16 +278,13 @@ namespace UnitTest
         AZ::EntityId parentId = CreateDefaultEditorEntity("Parent", &parent);
         AZ::EntityId childId = CreateDefaultEditorEntity("Child", &child);
 
-        AZ::TransformBus::Event(
-            childId, &AZ::TransformInterface::SetParent, parentId);
-        AZ::TransformBus::Event(
-            parentId, &AZ::TransformInterface::SetParent, grandParentId);
+        AZ::TransformBus::Event(childId, &AZ::TransformInterface::SetParent, parentId);
+        AZ::TransformBus::Event(parentId, &AZ::TransformInterface::SetParent, grandParentId);
 
         UnitTest::SliceAssets sliceAssets;
         const auto sliceAssetId = UnitTest::SaveAsSlice({ grandParent }, GetApplication(), sliceAssets);
 
-        EntityList instantiatedEntities =
-            UnitTest::InstantiateSlice(sliceAssetId, sliceAssets);
+        EntityList instantiatedEntities = UnitTest::InstantiateSlice(sliceAssetId, sliceAssets);
 
         const AZ::EntityId entityIdToMove = instantiatedEntities.back()->GetId();
         EditorEntityComponentChangeDetector editorEntityChangeDetector(entityIdToMove);
@@ -316,8 +295,7 @@ namespace UnitTest
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // When
         EditorTransformComponentSelectionRequestBus::Event(
-            GetEntityContextId(),
-            &EditorTransformComponentSelectionRequests::CopyOrientationToSelectedEntitiesIndividual,
+            GetEntityContextId(), &EditorTransformComponentSelectionRequests::CopyOrientationToSelectedEntitiesIndividual,
             AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisX(), AZ::DegToRad(90.0f)));
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -357,10 +335,9 @@ namespace UnitTest
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Then
         AzToolsFramework::EntityIdList selectedEntities;
-        ToolsApplicationRequestBus::BroadcastResult(
-            selectedEntities, &ToolsApplicationRequestBus::Events::GetSelectedEntities);
+        ToolsApplicationRequestBus::BroadcastResult(selectedEntities, &ToolsApplicationRequestBus::Events::GetSelectedEntities);
 
-        AzToolsFramework::EntityIdList expectedSelectedEntities = {entity4, entity5, entity6};
+        AzToolsFramework::EntityIdList expectedSelectedEntities = { entity4, entity5, entity6 };
 
         EXPECT_THAT(selectedEntities, UnorderedElementsAreArray(expectedSelectedEntities));
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -391,10 +368,9 @@ namespace UnitTest
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Then
         AzToolsFramework::EntityIdList selectedEntities;
-        ToolsApplicationRequestBus::BroadcastResult(
-            selectedEntities, &ToolsApplicationRequestBus::Events::GetSelectedEntities);
+        ToolsApplicationRequestBus::BroadcastResult(selectedEntities, &ToolsApplicationRequestBus::Events::GetSelectedEntities);
 
-        AzToolsFramework::EntityIdList expectedSelectedEntities = {m_entity1, entity2, entity3, entity4};
+        AzToolsFramework::EntityIdList expectedSelectedEntities = { m_entity1, entity2, entity3, entity4 };
 
         EXPECT_THAT(selectedEntities, UnorderedElementsAreArray(expectedSelectedEntities));
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -411,11 +387,9 @@ namespace UnitTest
         const auto finalTransformWorld = AZ::Transform::CreateTranslation(AZ::Vector3(10.0f, 10.0f, 0.0f));
 
         // calculate the position in screen space of the initial position of the entity
-        const auto initialPositionScreen =
-            AzFramework::WorldToScreen(initialTransformWorld.GetTranslation(), m_cameraState);
+        const auto initialPositionScreen = AzFramework::WorldToScreen(initialTransformWorld.GetTranslation(), m_cameraState);
         // calculate the position in screen space of the final position of the entity
-        const auto finalPositionScreen =
-            AzFramework::WorldToScreen(finalTransformWorld.GetTranslation(), m_cameraState);
+        const auto finalPositionScreen = AzFramework::WorldToScreen(finalTransformWorld.GetTranslation(), m_cameraState);
 
         // select the entity (this will cause the manipulators to appear in EditorTransformComponentSelection)
         AzToolsFramework::SelectEntity(m_entity1);
@@ -484,10 +458,10 @@ namespace UnitTest
     }
 
     // simple widget to listen for a mouse wheel event and then forward it on to the ViewportSelectionRequestBus
-    class WheelEventWidget
-        : public QWidget
+    class WheelEventWidget : public QWidget
     {
         using MouseInteractionResult = AzToolsFramework::ViewportInteraction::MouseInteractionResult;
+
     public:
         WheelEventWidget(QWidget* parent = nullptr)
             : QWidget(parent)
@@ -522,8 +496,7 @@ namespace UnitTest
         {
             EditorTransformComponentSelectionRequests::Mode transformMode;
             EditorTransformComponentSelectionRequestBus::EventResult(
-                transformMode, GetEntityContextId(),
-                &EditorTransformComponentSelectionRequestBus::Events::GetTransformMode);
+                transformMode, GetEntityContextId(), &EditorTransformComponentSelectionRequestBus::Events::GetTransformMode);
             return transformMode;
         };
 
@@ -551,6 +524,56 @@ namespace UnitTest
         EXPECT_THAT(wheelEventWidget.m_mouseInteractionResult, Eq(vi::MouseInteractionResult::Viewport));
     }
 
+    TEST_F(EditorTransformComponentSelectionFixture, EntityPositionsCanBeSnappedToGrid)
+    {
+        using ::testing::Pointwise;
+
+        m_entityIds.push_back(CreateDefaultEditorEntity("Entity2"));
+        m_entityIds.push_back(CreateDefaultEditorEntity("Entity3"));
+
+        const AZStd::vector<AZ::Vector3> initialUnsnappedPositions = { AZ::Vector3(1.2f, 3.5f, 6.7f), AZ::Vector3(13.2f, 15.6f, 11.4f),
+                                                                       AZ::Vector3(4.2f, 103.2f, 16.6f) };
+        AZ::TransformBus::Event(m_entityIds[0], &AZ::TransformBus::Events::SetWorldTranslation, initialUnsnappedPositions[0]);
+        AZ::TransformBus::Event(m_entityIds[1], &AZ::TransformBus::Events::SetWorldTranslation, initialUnsnappedPositions[1]);
+        AZ::TransformBus::Event(m_entityIds[2], &AZ::TransformBus::Events::SetWorldTranslation, initialUnsnappedPositions[2]);
+
+        AzToolsFramework::SelectEntities(m_entityIds);
+
+        EditorTransformComponentSelectionRequestBus::Event(
+            GetEntityContextId(), &EditorTransformComponentSelectionRequestBus::Events::SnapSelectedEntitiesToWorldGrid, 2.0f);
+
+        AZStd::vector<AZ::Vector3> entityPositionsAfterSnap;
+        AZStd::transform(
+            m_entityIds.cbegin(), m_entityIds.cend(), AZStd::back_inserter(entityPositionsAfterSnap),
+            [](const AZ::EntityId& entityId)
+            {
+                return GetWorldTranslation(entityId);
+            });
+
+        const AZStd::vector<AZ::Vector3> expectedSnappedPositions = { AZ::Vector3(2.0f, 4.0f, 6.0f), AZ::Vector3(14.0f, 16.0f, 12.0f),
+                                                                      AZ::Vector3(4.0f, 104.0f, 16.0f) };
+        EXPECT_THAT(entityPositionsAfterSnap, Pointwise(ContainerIsClose(), expectedSnappedPositions));
+    }
+
+    TEST_F(EditorTransformComponentSelectionFixture, ManipulatorStaysAlignedToEntityTranslationAfterSnap)
+    {
+        const auto initialUnsnappedPosition = AZ::Vector3(1.2f, 3.5f, 6.7f);
+        AZ::TransformBus::Event(m_entityIds[0], &AZ::TransformBus::Events::SetWorldTranslation, initialUnsnappedPosition);
+
+        AzToolsFramework::SelectEntities(m_entityIds);
+
+        EditorTransformComponentSelectionRequestBus::Event(
+            GetEntityContextId(), &EditorTransformComponentSelectionRequestBus::Events::SnapSelectedEntitiesToWorldGrid, 1.0f);
+
+        const auto entityPositionAfterSnap = GetWorldTranslation(m_entity1);
+        const AZ::Vector3 manipulatorPositionAfterSnap =
+            GetManipulatorTransform().value_or(AZ::Transform::CreateIdentity()).GetTranslation();
+
+        const auto expectedSnappedPosition = AZ::Vector3(1.0f, 4.0f, 7.0f);
+        EXPECT_THAT(entityPositionAfterSnap, IsClose(expectedSnappedPosition));
+        EXPECT_THAT(expectedSnappedPosition, IsClose(manipulatorPositionAfterSnap));
+    }
+
     // struct to contain input reference frame and expected orientation outcome based on
     // the reference frame, selection and entity hierarchy
     struct ReferenceFrameWithOrientation
@@ -573,19 +596,20 @@ namespace UnitTest
 
     class EditorTransformComponentSelectionSingleEntityPivotFixture
         : public EditorTransformComponentSelectionFixture
-        , public ::testing::WithParamInterface<ReferenceFrameWithOrientation> {};
+        , public ::testing::WithParamInterface<ReferenceFrameWithOrientation>
+    {
+    };
 
     TEST_P(EditorTransformComponentSelectionSingleEntityPivotFixture, PivotOrientationMatchesReferenceFrameSingleEntity)
     {
-        using ETCS::PivotOrientationResult;
         using ETCS::CalculatePivotOrientation;
+        using ETCS::PivotOrientationResult;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Given
         AZ::TransformBus::Event(
             m_entityIds[0], &AZ::TransformBus::Events::SetWorldTM,
-            AZ::Transform::CreateFromQuaternionAndTranslation(
-                ChildExpectedPivotLocalOrientationInWorldSpace, AZ::Vector3::CreateZero()));
+            AZ::Transform::CreateFromQuaternionAndTranslation(ChildExpectedPivotLocalOrientationInWorldSpace, AZ::Vector3::CreateZero()));
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -606,20 +630,20 @@ namespace UnitTest
         All,
         EditorTransformComponentSelectionSingleEntityPivotFixture,
         testing::Values(
-            ReferenceFrameWithOrientation{ReferenceFrame::Local, ChildExpectedPivotLocalOrientationInWorldSpace},
-            ReferenceFrameWithOrientation{ReferenceFrame::Parent, AZ::Quaternion::CreateIdentity()},
-            ReferenceFrameWithOrientation{ReferenceFrame::World, AZ::Quaternion::CreateIdentity()}));
+            ReferenceFrameWithOrientation{ ReferenceFrame::Local, ChildExpectedPivotLocalOrientationInWorldSpace },
+            ReferenceFrameWithOrientation{ ReferenceFrame::Parent, AZ::Quaternion::CreateIdentity() },
+            ReferenceFrameWithOrientation{ ReferenceFrame::World, AZ::Quaternion::CreateIdentity() }));
 
     class EditorTransformComponentSelectionSingleEntityWithParentPivotFixture
         : public EditorTransformComponentSelectionFixture
-        , public ::testing::WithParamInterface<ReferenceFrameWithOrientation> {};
-
-    TEST_P(
-        EditorTransformComponentSelectionSingleEntityWithParentPivotFixture,
-        PivotOrientationMatchesReferenceFrameEntityWithParent)
+        , public ::testing::WithParamInterface<ReferenceFrameWithOrientation>
     {
-        using ETCS::PivotOrientationResult;
+    };
+
+    TEST_P(EditorTransformComponentSelectionSingleEntityWithParentPivotFixture, PivotOrientationMatchesReferenceFrameEntityWithParent)
+    {
         using ETCS::CalculatePivotOrientation;
+        using ETCS::PivotOrientationResult;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Given
@@ -628,8 +652,7 @@ namespace UnitTest
 
         AZ::TransformBus::Event(
             parentEntityId, &AZ::TransformBus::Events::SetWorldTM,
-            AZ::Transform::CreateFromQuaternionAndTranslation(
-                ParentExpectedPivotLocalOrientationInWorldSpace, AZ::Vector3::CreateZero()));
+            AZ::Transform::CreateFromQuaternionAndTranslation(ParentExpectedPivotLocalOrientationInWorldSpace, AZ::Vector3::CreateZero()));
 
         AZ::TransformBus::Event(
             m_entityIds[0], &AZ::TransformBus::Events::SetWorldTM,
@@ -656,20 +679,20 @@ namespace UnitTest
         All,
         EditorTransformComponentSelectionSingleEntityWithParentPivotFixture,
         testing::Values(
-            ReferenceFrameWithOrientation{ReferenceFrame::Local, ChildExpectedPivotLocalOrientationInWorldSpace},
-            ReferenceFrameWithOrientation{ReferenceFrame::Parent, ParentExpectedPivotLocalOrientationInWorldSpace},
-            ReferenceFrameWithOrientation{ReferenceFrame::World, AZ::Quaternion::CreateIdentity()}));
+            ReferenceFrameWithOrientation{ ReferenceFrame::Local, ChildExpectedPivotLocalOrientationInWorldSpace },
+            ReferenceFrameWithOrientation{ ReferenceFrame::Parent, ParentExpectedPivotLocalOrientationInWorldSpace },
+            ReferenceFrameWithOrientation{ ReferenceFrame::World, AZ::Quaternion::CreateIdentity() }));
 
     class EditorTransformComponentSelectionMultipleEntitiesPivotFixture
         : public EditorTransformComponentSelectionFixture
-        , public ::testing::WithParamInterface<ReferenceFrameWithOrientation> {};
-
-    TEST_P(
-        EditorTransformComponentSelectionMultipleEntitiesPivotFixture,
-        PivotOrientationMatchesReferenceFrameMultipleEntities)
+        , public ::testing::WithParamInterface<ReferenceFrameWithOrientation>
     {
-        using ETCS::PivotOrientationResult;
+    };
+
+    TEST_P(EditorTransformComponentSelectionMultipleEntitiesPivotFixture, PivotOrientationMatchesReferenceFrameMultipleEntities)
+    {
         using ETCS::CalculatePivotOrientationForEntityIds;
+        using ETCS::PivotOrientationResult;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Given
@@ -678,23 +701,18 @@ namespace UnitTest
 
         // setup entities in arbitrary triangle arrangement
         AZ::TransformBus::Event(
-            m_entityIds[0], &AZ::TransformBus::Events::SetWorldTM,
-            AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisX(-10.0f)));
+            m_entityIds[0], &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisX(-10.0f)));
 
         AZ::TransformBus::Event(
-            m_entityIds[1], &AZ::TransformBus::Events::SetWorldTM,
-            AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisX(10.0f)));
+            m_entityIds[1], &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisX(10.0f)));
 
         AZ::TransformBus::Event(
-            m_entityIds[2], &AZ::TransformBus::Events::SetWorldTM,
-            AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisY(10.0f)));
+            m_entityIds[2], &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisY(10.0f)));
 
         // note: EntityIdManipulatorLookup{} is unused during this test
-        EntityIdManipulatorLookups lookups {
-            {m_entityIds[0], EntityIdManipulatorLookup{}},
-            {m_entityIds[1], EntityIdManipulatorLookup{}},
-            {m_entityIds[2], EntityIdManipulatorLookup{}}
-        };
+        EntityIdManipulatorLookups lookups{ { m_entityIds[0], EntityIdManipulatorLookup{} },
+                                            { m_entityIds[1], EntityIdManipulatorLookup{} },
+                                            { m_entityIds[2], EntityIdManipulatorLookup{} } };
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -723,14 +741,16 @@ namespace UnitTest
 
     class EditorTransformComponentSelectionMultipleEntitiesWithSameParentPivotFixture
         : public EditorTransformComponentSelectionFixture
-        , public ::testing::WithParamInterface<ReferenceFrameWithOrientation> {};
+        , public ::testing::WithParamInterface<ReferenceFrameWithOrientation>
+    {
+    };
 
     TEST_P(
         EditorTransformComponentSelectionMultipleEntitiesWithSameParentPivotFixture,
         PivotOrientationMatchesReferenceFrameMultipleEntitiesSameParent)
     {
-        using ETCS::PivotOrientationResult;
         using ETCS::CalculatePivotOrientationForEntityIds;
+        using ETCS::PivotOrientationResult;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Given
@@ -743,22 +763,18 @@ namespace UnitTest
                 ParentExpectedPivotLocalOrientationInWorldSpace, AZ::Vector3::CreateAxisZ(-5.0f)));
 
         AZ::TransformBus::Event(
-            m_entityIds[1], &AZ::TransformBus::Events::SetWorldTM,
-            AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisX(10.0f)));
+            m_entityIds[1], &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisX(10.0f)));
 
         AZ::TransformBus::Event(
-            m_entityIds[2], &AZ::TransformBus::Events::SetWorldTM,
-            AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisY(10.0f)));
+            m_entityIds[2], &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisY(10.0f)));
 
         AZ::TransformBus::Event(m_entityIds[1], &AZ::TransformBus::Events::SetParent, m_entityIds[0]);
         AZ::TransformBus::Event(m_entityIds[2], &AZ::TransformBus::Events::SetParent, m_entityIds[0]);
 
         // note: EntityIdManipulatorLookup{} is unused during this test
         // only select second two entities that are children of m_entityIds[0]
-        EntityIdManipulatorLookups lookups{
-            {m_entityIds[1], EntityIdManipulatorLookup{}},
-            {m_entityIds[2], EntityIdManipulatorLookup{}}
-        };
+        EntityIdManipulatorLookups lookups{ { m_entityIds[1], EntityIdManipulatorLookup{} },
+                                            { m_entityIds[2], EntityIdManipulatorLookup{} } };
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -787,14 +803,16 @@ namespace UnitTest
 
     class EditorTransformComponentSelectionMultipleEntitiesWithDifferentParentPivotFixture
         : public EditorTransformComponentSelectionFixture
-        , public ::testing::WithParamInterface<ReferenceFrameWithOrientation> {};
+        , public ::testing::WithParamInterface<ReferenceFrameWithOrientation>
+    {
+    };
 
     TEST_P(
         EditorTransformComponentSelectionMultipleEntitiesWithDifferentParentPivotFixture,
         PivotOrientationMatchesReferenceFrameMultipleEntitiesDifferentParent)
     {
-        using ETCS::PivotOrientationResult;
         using ETCS::CalculatePivotOrientationForEntityIds;
+        using ETCS::PivotOrientationResult;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Given
@@ -808,22 +826,18 @@ namespace UnitTest
                 ParentExpectedPivotLocalOrientationInWorldSpace, AZ::Vector3::CreateAxisZ(-5.0f)));
 
         AZ::TransformBus::Event(
-            m_entityIds[1], &AZ::TransformBus::Events::SetWorldTM,
-            AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisX(10.0f)));
+            m_entityIds[1], &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisX(10.0f)));
 
         AZ::TransformBus::Event(
-            m_entityIds[2], &AZ::TransformBus::Events::SetWorldTM,
-            AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisY(10.0f)));
+            m_entityIds[2], &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisY(10.0f)));
 
         AZ::TransformBus::Event(m_entityIds[1], &AZ::TransformBus::Events::SetParent, m_entityIds[0]);
         AZ::TransformBus::Event(m_entityIds[2], &AZ::TransformBus::Events::SetParent, m_entityIds[3]);
 
         // note: EntityIdManipulatorLookup{} is unused during this test
         // only select second two entities that are children of different m_entities
-        EntityIdManipulatorLookups lookups{
-            {m_entityIds[1], EntityIdManipulatorLookup{}},
-            {m_entityIds[2], EntityIdManipulatorLookup{}}
-        };
+        EntityIdManipulatorLookups lookups{ { m_entityIds[1], EntityIdManipulatorLookup{} },
+                                            { m_entityIds[2], EntityIdManipulatorLookup{} } };
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -851,30 +865,29 @@ namespace UnitTest
 
     class EditorTransformComponentSelectionSingleEntityPivotAndOverrideFixture
         : public EditorTransformComponentSelectionFixture
-        , public ::testing::WithParamInterface<ReferenceFrameWithOrientation> {};
+        , public ::testing::WithParamInterface<ReferenceFrameWithOrientation>
+    {
+    };
 
     TEST_P(
         EditorTransformComponentSelectionSingleEntityPivotAndOverrideFixture,
         PivotOrientationMatchesReferenceFrameSingleEntityOptionalOverride)
     {
-        using ETCS::PivotOrientationResult;
         using ETCS::CalculateSelectionPivotOrientation;
+        using ETCS::PivotOrientationResult;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Given
         AZ::TransformBus::Event(
             m_entityIds[0], &AZ::TransformBus::Events::SetWorldTM,
-            AZ::Transform::CreateFromQuaternionAndTranslation(
-                ChildExpectedPivotLocalOrientationInWorldSpace, AZ::Vector3::CreateZero()));
+            AZ::Transform::CreateFromQuaternionAndTranslation(ChildExpectedPivotLocalOrientationInWorldSpace, AZ::Vector3::CreateZero()));
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // When
         const ReferenceFrameWithOrientation referenceFrameWithOrientation = GetParam();
 
-        EntityIdManipulatorLookups lookups{
-            {m_entityIds[0], EntityIdManipulatorLookup{}}
-        };
+        EntityIdManipulatorLookups lookups{ { m_entityIds[0], EntityIdManipulatorLookup{} } };
 
         // set override frame (orientation only)
         OptionalFrame optionalFrame;
@@ -902,14 +915,16 @@ namespace UnitTest
 
     class EditorTransformComponentSelectionMultipleEntitiesPivotAndOverrideFixture
         : public EditorTransformComponentSelectionFixture
-        , public ::testing::WithParamInterface<ReferenceFrameWithOrientation> {};
+        , public ::testing::WithParamInterface<ReferenceFrameWithOrientation>
+    {
+    };
 
     TEST_P(
         EditorTransformComponentSelectionMultipleEntitiesPivotAndOverrideFixture,
         PivotOrientationMatchesReferenceFrameMultipleEntitiesOptionalOverride)
     {
-        using ETCS::PivotOrientationResult;
         using ETCS::CalculateSelectionPivotOrientation;
+        using ETCS::PivotOrientationResult;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Given
@@ -917,23 +932,18 @@ namespace UnitTest
         m_entityIds.push_back(CreateDefaultEditorEntity("Entity3"));
 
         AZ::TransformBus::Event(
-            m_entityIds[0], &AZ::TransformBus::Events::SetWorldTM,
-            AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisX(-10.0f)));
+            m_entityIds[0], &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisX(-10.0f)));
 
         AZ::TransformBus::Event(
-            m_entityIds[1], &AZ::TransformBus::Events::SetWorldTM,
-            AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisX(10.0f)));
+            m_entityIds[1], &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisX(10.0f)));
 
         AZ::TransformBus::Event(
-            m_entityIds[2], &AZ::TransformBus::Events::SetWorldTM,
-            AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisY(10.0f)));
+            m_entityIds[2], &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisY(10.0f)));
 
         // note: EntityIdManipulatorLookup{} is unused during this test
-        EntityIdManipulatorLookups lookups{
-            {m_entityIds[0], EntityIdManipulatorLookup{}},
-            {m_entityIds[1], EntityIdManipulatorLookup{}},
-            {m_entityIds[2], EntityIdManipulatorLookup{}}
-        };
+        EntityIdManipulatorLookups lookups{ { m_entityIds[0], EntityIdManipulatorLookup{} },
+                                            { m_entityIds[1], EntityIdManipulatorLookup{} },
+                                            { m_entityIds[2], EntityIdManipulatorLookup{} } };
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -964,14 +974,16 @@ namespace UnitTest
 
     class EditorTransformComponentSelectionMultipleEntitiesPivotAndNoOverrideFixture
         : public EditorTransformComponentSelectionFixture
-        , public ::testing::WithParamInterface<ReferenceFrameWithOrientation> {};
+        , public ::testing::WithParamInterface<ReferenceFrameWithOrientation>
+    {
+    };
 
     TEST_P(
         EditorTransformComponentSelectionMultipleEntitiesPivotAndNoOverrideFixture,
         PivotOrientationMatchesReferenceFrameMultipleEntitiesNoOptionalOverride)
     {
-        using ETCS::PivotOrientationResult;
         using ETCS::CalculateSelectionPivotOrientation;
+        using ETCS::PivotOrientationResult;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Given
@@ -979,23 +991,18 @@ namespace UnitTest
         m_entityIds.push_back(CreateDefaultEditorEntity("Entity3"));
 
         AZ::TransformBus::Event(
-            m_entityIds[0], &AZ::TransformBus::Events::SetWorldTM,
-            AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisX(-10.0f)));
+            m_entityIds[0], &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisX(-10.0f)));
 
         AZ::TransformBus::Event(
-            m_entityIds[1], &AZ::TransformBus::Events::SetWorldTM,
-            AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisX(10.0f)));
+            m_entityIds[1], &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisX(10.0f)));
 
         AZ::TransformBus::Event(
-            m_entityIds[2], &AZ::TransformBus::Events::SetWorldTM,
-            AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisY(10.0f)));
+            m_entityIds[2], &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisY(10.0f)));
 
         // note: EntityIdManipulatorLookup{} is unused during this test
-        EntityIdManipulatorLookups lookups{
-            {m_entityIds[0], EntityIdManipulatorLookup{}},
-            {m_entityIds[1], EntityIdManipulatorLookup{}},
-            {m_entityIds[2], EntityIdManipulatorLookup{}}
-        };
+        EntityIdManipulatorLookups lookups{ { m_entityIds[0], EntityIdManipulatorLookup{} },
+                                            { m_entityIds[1], EntityIdManipulatorLookup{} },
+                                            { m_entityIds[2], EntityIdManipulatorLookup{} } };
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1024,14 +1031,16 @@ namespace UnitTest
 
     class EditorTransformComponentSelectionMultipleEntitiesSameParentPivotAndNoOverrideFixture
         : public EditorTransformComponentSelectionFixture
-        , public ::testing::WithParamInterface<ReferenceFrameWithOrientation> {};
+        , public ::testing::WithParamInterface<ReferenceFrameWithOrientation>
+    {
+    };
 
     TEST_P(
         EditorTransformComponentSelectionMultipleEntitiesSameParentPivotAndNoOverrideFixture,
         PivotOrientationMatchesReferenceFrameMultipleEntitiesSameParentNoOptionalOverride)
     {
-        using ETCS::PivotOrientationResult;
         using ETCS::CalculateSelectionPivotOrientation;
+        using ETCS::PivotOrientationResult;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Given
@@ -1044,21 +1053,17 @@ namespace UnitTest
                 ParentExpectedPivotLocalOrientationInWorldSpace, AZ::Vector3::CreateAxisZ(-5.0f)));
 
         AZ::TransformBus::Event(
-            m_entityIds[1], &AZ::TransformBus::Events::SetWorldTM,
-            AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisX(10.0f)));
+            m_entityIds[1], &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisX(10.0f)));
 
         AZ::TransformBus::Event(
-            m_entityIds[2], &AZ::TransformBus::Events::SetWorldTM,
-            AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisY(10.0f)));
+            m_entityIds[2], &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisY(10.0f)));
 
         AZ::TransformBus::Event(m_entityIds[1], &AZ::TransformBus::Events::SetParent, m_entityIds[0]);
         AZ::TransformBus::Event(m_entityIds[2], &AZ::TransformBus::Events::SetParent, m_entityIds[0]);
 
         // note: EntityIdManipulatorLookup{} is unused during this test
-        EntityIdManipulatorLookups lookups{
-            {m_entityIds[1], EntityIdManipulatorLookup{}},
-            {m_entityIds[2], EntityIdManipulatorLookup{}}
-        };
+        EntityIdManipulatorLookups lookups{ { m_entityIds[1], EntityIdManipulatorLookup{} },
+                                            { m_entityIds[2], EntityIdManipulatorLookup{} } };
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1206,13 +1211,13 @@ namespace UnitTest
         AZ::TransformBus::Event(f, &AZ::TransformBus::Events::SetParent, secondLayerId);
 
         // Layer1
-          // A
-          // B
-          // C
-          // Layer2
-            // D
-            // E
-            // F
+        // A
+        // B
+        // C
+        // Layer2
+        // D
+        // E
+        // F
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1302,13 +1307,13 @@ namespace UnitTest
         AZ::TransformBus::Event(f, &AZ::TransformBus::Events::SetParent, secondLayerId);
 
         // Layer1
-          // A
-          // B
-          // C
-          // Layer2
-            // D
-            // E
-            // F
+        // A
+        // B
+        // C
+        // Layer2
+        // D
+        // E
+        // F
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1400,8 +1405,7 @@ namespace UnitTest
         EXPECT_TRUE(!IsEntityVisible(m_layerId));
 
         bool flagSetVisible = false;
-        EditorVisibilityRequestBus::EventResult(
-            flagSetVisible, m_layerId, &EditorVisibilityRequestBus::Events::GetVisibilityFlag);
+        EditorVisibilityRequestBus::EventResult(flagSetVisible, m_layerId, &EditorVisibilityRequestBus::Events::GetVisibilityFlag);
 
         // even though a layer is set to not be visible, this is recorded by SetLayerChildrenVisibility
         // and AreLayerChildrenVisible - the visibility flag will not be modified and remains true
@@ -1409,12 +1413,12 @@ namespace UnitTest
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
     }
 
-    class EditorEntityInfoRequestActivateTestComponent
-        : public AzToolsFramework::Components::EditorComponentBase
+    class EditorEntityInfoRequestActivateTestComponent : public AzToolsFramework::Components::EditorComponentBase
     {
     public:
         AZ_EDITOR_COMPONENT(
-            EditorEntityInfoRequestActivateTestComponent, "{849DA1FC-6A0C-4CB8-A0BB-D90DEE7FF7F7}",
+            EditorEntityInfoRequestActivateTestComponent,
+            "{849DA1FC-6A0C-4CB8-A0BB-D90DEE7FF7F7}",
             AzToolsFramework::Components::EditorComponentBase);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -1423,13 +1427,13 @@ namespace UnitTest
         void Activate() override
         {
             // ensure we can successfully read IsVisible and IsLocked (bus will be connected to in entity Init)
-            EditorEntityInfoRequestBus::EventResult(
-                m_visible, GetEntityId(), &EditorEntityInfoRequestBus::Events::IsVisible);
-            EditorEntityInfoRequestBus::EventResult(
-                m_locked, GetEntityId(), &EditorEntityInfoRequestBus::Events::IsLocked);
+            EditorEntityInfoRequestBus::EventResult(m_visible, GetEntityId(), &EditorEntityInfoRequestBus::Events::IsVisible);
+            EditorEntityInfoRequestBus::EventResult(m_locked, GetEntityId(), &EditorEntityInfoRequestBus::Events::IsLocked);
         }
 
-        void Deactivate() override {}
+        void Deactivate() override
+        {
+        }
 
         bool m_visible = false;
         bool m_locked = true;
@@ -1439,14 +1443,11 @@ namespace UnitTest
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<EditorEntityInfoRequestActivateTestComponent>()
-                ->Version(0)
-                ;
+            serializeContext->Class<EditorEntityInfoRequestActivateTestComponent>()->Version(0);
         }
     }
 
-    class EditorEntityModelEntityInfoRequestFixture
-        : public ToolsApplicationFixture
+    class EditorEntityModelEntityInfoRequestFixture : public ToolsApplicationFixture
     {
     public:
         void SetUpEditorFixtureImpl() override
@@ -1467,8 +1468,7 @@ namespace UnitTest
 
         // This is necessary to prevent a warning in the undo system.
         AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
-            &AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity,
-            entity->GetId());
+            &AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity, entity->GetId());
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1501,8 +1501,7 @@ namespace UnitTest
 
         // This is necessary to prevent a warning in the undo system.
         AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
-            &AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity,
-            entity->GetId());
+            &AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity, entity->GetId());
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////

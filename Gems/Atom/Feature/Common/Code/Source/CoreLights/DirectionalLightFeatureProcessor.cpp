@@ -142,7 +142,7 @@ namespace AZ
 
         void DirectionalLightFeatureProcessor::Activate()
         {
-            const RHI::ShaderResourceGroupLayout* sceneSrgLayout = RPI::RPISystemInterface::Get()->GetSceneSrgAsset()->GetLayout();
+            const RHI::ShaderResourceGroupLayout* sceneSrgLayout = RPI::RPISystemInterface::Get()->GetSceneSrgLayout().get();
 
             GpuBufferHandler::Descriptor desc;
 
@@ -783,7 +783,7 @@ namespace AZ
                 }
             };
 
-            const RHI::ShaderResourceGroupLayout* viewSrgLayout = RPI::RPISystemInterface::Get()->GetViewSrgAsset()->GetLayout();
+            const RHI::ShaderResourceGroupLayout* viewSrgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
             const IndexedDataVector<DirectionalLightShadowData> lastShadowData = m_shadowData[nullptr];
             IndexedDataVector<EsmShadowmapsPass::FilterParameter> lastEsmParameter = m_esmParameterData[nullptr];
             while (lastEsmParameter.GetDataCount() < Shadow::MaxNumberOfCascades)

@@ -392,7 +392,8 @@ void {{ ClassName }}::Signal{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.jo
                         }
 
                         controller->{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(paramNames) }});
-                    })
+                    }, { { { "Source", "The Source containing the {{ ClassName }}Controller" }{% for paramName in paramNames %}, {"{{ paramName }}"}{% endfor %}}})
+                ->Attribute(AZ::Script::Attributes::ToolTip, "{{Property.attrib['Description']}}")
 {%    endif %}
 {% endcall %}
 {% endmacro %}

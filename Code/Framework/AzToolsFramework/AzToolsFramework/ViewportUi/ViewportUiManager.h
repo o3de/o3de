@@ -31,6 +31,7 @@ namespace AzToolsFramework::ViewportUi
         void SetClusterActiveButton(ClusterId clusterId, ButtonId buttonId) override;
         void SetSwitcherActiveButton(SwitcherId switcherId, ButtonId buttonId) override;
         void SetClusterButtonLocked(ClusterId clusterId, ButtonId buttonId, bool isLocked) override;
+        void SetClusterButtonTooltip(ClusterId clusterId, ButtonId buttonId, const AZStd::string& tooltip) override;
         const ButtonId CreateClusterButton(ClusterId clusterId, const AZStd::string& icon) override;
         const ButtonId CreateSwitcherButton(
             SwitcherId switcherId, const AZStd::string& icon, const AZStd::string& name = AZStd::string()) override;

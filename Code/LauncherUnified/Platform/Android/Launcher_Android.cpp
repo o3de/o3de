@@ -428,3 +428,5 @@ void android_main(android_app* appState)
         MAIN_EXIT_FAILURE(appState, GetReturnCodeString(status));
     }
 }
+
+void CVar_OnViewportPosition([[maybe_unused]] const AZ::Vector2& value) {}

@@ -808,6 +808,8 @@ set(FILES
     EditorViewportWidget.h
     EditorViewportSettings.cpp
     EditorViewportSettings.h
+    EditorViewportCamera.cpp
+    EditorViewportCamera.h
     ViewportManipulatorController.cpp
     ViewportManipulatorController.h
     LegacyViewportCameraController.cpp

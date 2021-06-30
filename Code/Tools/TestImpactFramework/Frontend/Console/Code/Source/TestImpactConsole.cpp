@@ -5,8 +5,20 @@
  *
  */
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
-{
-    return 0;
-}
+#include <TestImpactFramework/TestImpactConsoleMain.h>
 
+#include <AzCore/Memory/OSAllocator.h>
+#include <AzCore/Memory/SystemAllocator.h>
+
+int main(int argc, char** argv)
+{
+    AZ::AllocatorInstance<AZ::OSAllocator>::Create();
+    AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
+    
+    TestImpact::Console::ReturnCode returnCode = TestImpact::Console::Main(argc, argv);
+
+    AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
+    AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
+
+    return static_cast<int>(returnCode);
+}

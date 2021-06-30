@@ -48,7 +48,7 @@ namespace AZ
             desc.m_bufferSrgName = "m_simplePointLights";
             desc.m_elementCountSrgName = "m_simplePointLightCount";
             desc.m_elementSize = sizeof(SimplePointLightData);
-            desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgAsset()->GetLayout();
+            desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
 
             m_lightBufferHandler = GpuBufferHandler(desc);
         }

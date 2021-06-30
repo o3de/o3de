@@ -301,6 +301,8 @@ void CLevelSystem::ScanFolder(const char* subfolder, bool modFolder)
 
     AZStd::unordered_set<AZStd::string> pakList;
 
+    const bool allowFileSystem = true;
+    const uint32_t skipPakFiles = 1;
     AZ::IO::ArchiveFileIterator handle = pPak->FindFirst(search.c_str(), AZ::IO::IArchive::eFileSearchType_AllowOnDiskOnly);
 
     if (handle)

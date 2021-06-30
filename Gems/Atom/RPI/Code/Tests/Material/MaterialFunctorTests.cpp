@@ -9,6 +9,7 @@
 #include <Common/RPITestFixture.h>
 #include <Common/JsonTestUtils.h>
 #include <Common/ErrorMessageFinder.h>
+#include <Common/ShaderAssetTestUtils.h>
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAssetCreator.h>
@@ -140,7 +141,7 @@ namespace UnitTest
         // structures that we can pass to the functors below, especially the shader with shader options.
         MaterialTypeAssetCreator materialTypeCreator;
         materialTypeCreator.Begin(Uuid::CreateRandom());
-        materialTypeCreator.AddShader(CreateTestShaderAsset(Uuid::CreateRandom(), CreateCommonTestMaterialSrgAsset(), shaderOptions));
+        materialTypeCreator.AddShader(CreateTestShaderAsset(Uuid::CreateRandom(), CreateCommonTestMaterialSrgLayout(), shaderOptions));
         // We claim ownership of options A and B, but not C. So C is a globally accessible option, not owned by the material.
         materialTypeCreator.ClaimShaderOptionOwnership(Name{"o_optionA"});
         materialTypeCreator.ClaimShaderOptionOwnership(Name{"o_optionB"});

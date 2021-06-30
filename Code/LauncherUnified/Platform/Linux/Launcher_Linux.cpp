@@ -108,3 +108,5 @@ int main(int argc, char** argv)
 
     return static_cast<int>(status);
 }
+
+void CVar_OnViewportPosition([[maybe_unused]] const AZ::Vector2& value) {}

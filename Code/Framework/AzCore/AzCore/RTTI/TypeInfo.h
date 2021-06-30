@@ -145,8 +145,13 @@ namespace AZ
     // also needs to be an overload for every version because they all represent overloads for different non-types.
     namespace AzGenericTypeInfo
     {
-        template<typename...>
-        constexpr bool false_v = false;
+        /// Needs to match declared parameter type.
+        template <template <typename...> class> constexpr bool false_v1 = false;
+        template <template <AZStd::size_t...> class> constexpr bool false_v2 = false;
+        template <template <typename, AZStd::size_t> class> constexpr bool false_v3 = false;
+        template <template <typename, typename, AZStd::size_t> class> constexpr bool false_v4 = false;
+        template <template <typename, typename, typename, AZStd::size_t> class> constexpr bool false_v5 = false;
+        template <template <typename, AZStd::size_t, typename> class> constexpr bool false_v6 = false;
 
         template<typename T>
         inline const AZ::TypeId& Uuid()
@@ -157,7 +162,7 @@ namespace AZ
         template<template<typename...> class T>
         inline const AZ::TypeId& Uuid()
         {
-            static_assert(false_v<T>, "Missing specialization for this template. Make sure it's registered for type info support.");
+            static_assert(false_v1<T>, "Missing specialization for this template. Make sure it's registered for type info support.");
             static const AZ::TypeId s_uuid = AZ::TypeId::CreateNull();
             return s_uuid;
         }
@@ -165,7 +170,7 @@ namespace AZ
         template<template<AZStd::size_t...> class T>
         inline const AZ::TypeId& Uuid()
         {
-            static_assert(false_v<T>, "Missing specialization for this template. Make sure it's registered for type info support.");
+            static_assert(false_v2<T>, "Missing specialization for this template. Make sure it's registered for type info support.");
             static const AZ::TypeId s_uuid = AZ::TypeId::CreateNull();
             return s_uuid;
         }
@@ -173,7 +178,7 @@ namespace AZ
         template<template<typename, AZStd::size_t> class T>
         inline const AZ::TypeId& Uuid()
         {
-            static_assert(false_v<T>, "Missing specialization for this template. Make sure it's registered for type info support.");
+            static_assert(false_v3<T>, "Missing specialization for this template. Make sure it's registered for type info support.");
             static const AZ::TypeId s_uuid = AZ::TypeId::CreateNull();
             return s_uuid;
         }
@@ -181,7 +186,7 @@ namespace AZ
         template<template<typename, typename, AZStd::size_t> class T>
         inline const AZ::TypeId& Uuid()
         {
-            static_assert(false_v<T>, "Missing specialization for this template. Make sure it's registered for type info support.");
+            static_assert(false_v4<T>, "Missing specialization for this template. Make sure it's registered for type info support.");
             static const AZ::TypeId s_uuid = AZ::TypeId::CreateNull();
             return s_uuid;
         }
@@ -189,7 +194,7 @@ namespace AZ
         template<template<typename, typename, typename, AZStd::size_t> class T>
         inline const AZ::TypeId& Uuid()
         {
-            static_assert(false_v<T>, "Missing specialization for this template. Make sure it's registered for type info support.");
+            static_assert(false_v5<T>, "Missing specialization for this template. Make sure it's registered for type info support.");
             static const AZ::TypeId s_uuid = AZ::TypeId::CreateNull();
             return s_uuid;
         }
@@ -197,7 +202,7 @@ namespace AZ
         template<template<typename, AZStd::size_t, typename> class T>
         inline const AZ::TypeId& Uuid()
         {
-            static_assert(false_v<T>, "Missing specialization for this template. Make sure it's registered for type info support.");
+            static_assert(false_v6<T>, "Missing specialization for this template. Make sure it's registered for type info support.");
             static const AZ::TypeId s_uuid = AZ::TypeId::CreateNull();
             return s_uuid;
         }

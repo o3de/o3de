@@ -46,7 +46,7 @@ namespace AZ
 
             if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
-                behaviorContext->Class<OutputDeviceTransformType>()
+                behaviorContext->Class<OutputDeviceTransformType>("OutputDeviceTransformType")
                     ->Enum<OutputDeviceTransformType::OutputDeviceTransformType_48Nits>("OutputDeviceTransformType_48Nits")
                     ->Attribute(AZ::Script::Attributes::Module, "atom")
                     ->Enum<OutputDeviceTransformType::OutputDeviceTransformType_1000Nits>("OutputDeviceTransformType_100Nits")
@@ -67,6 +67,16 @@ namespace AZ
                     ->Method("LoadPreset", &AcesParameterOverrides::LoadPreset)
                     ->Property("overrideDefaults", BehaviorValueProperty(&AcesParameterOverrides::m_overrideDefaults))
                     ->Property("preset", BehaviorValueProperty(&AcesParameterOverrides::m_preset))
+                    ->Enum<aznumeric_cast<int>(OutputDeviceTransformType::NumOutputDeviceTransformTypes)>(
+                        "OutputDeviceTransformType_NumOutputDeviceTransformTypes")
+                    ->Enum<aznumeric_cast<int>(OutputDeviceTransformType::OutputDeviceTransformType_48Nits)>(
+                        "OutputDeviceTransformType_48Nits")
+                    ->Enum<aznumeric_cast<int>(OutputDeviceTransformType::OutputDeviceTransformType_1000Nits)>(
+                        "OutputDeviceTransformType_1000Nits")
+                    ->Enum<aznumeric_cast<int>(OutputDeviceTransformType::OutputDeviceTransformType_2000Nits)>(
+                        "OutputDeviceTransformType_2000Nits")
+                    ->Enum<aznumeric_cast<int>(OutputDeviceTransformType::OutputDeviceTransformType_4000Nits)>(
+                        "OutputDeviceTransformType_4000Nits")
                     ->Property("alterSurround", BehaviorValueProperty(&AcesParameterOverrides::m_alterSurround))
                     ->Property("applyDesaturation", BehaviorValueProperty(&AcesParameterOverrides::m_applyDesaturation))
                     ->Property("applyCATD60toD65", BehaviorValueProperty(&AcesParameterOverrides::m_applyCATD60toD65))

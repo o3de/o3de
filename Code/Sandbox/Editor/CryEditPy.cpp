@@ -27,6 +27,7 @@
 #include "GameEngine.h"
 #include "UndoConfigSpec.h"
 #include "ViewManager.h"
+#include "EditorViewportCamera.h"
 
 //////////////////////////////////////////////////////////////////////////
 namespace
@@ -236,25 +237,14 @@ namespace
 
     void PySetCurrentViewPosition(float x, float y, float z)
     {
-        AzToolsFramework::IEditorCameraController* editorCameraController = AZ::Interface<AzToolsFramework::IEditorCameraController>::Get();
-        AZ_Error("editor", editorCameraController, "IEditorCameraController is not registered.");
-        if (editorCameraController)
-        {
-            editorCameraController->SetCurrentViewPosition(AZ::Vector3{ x, y, z });
-        }
+        SandboxEditor::SetDefaultViewportCameraPosition(AZ::Vector3(x, y, z));
     }
 
-    void PySetCurrentViewRotation(float x, float y, float z)
+    void PySetCurrentViewRotation(float x, [[maybe_unused]] float y, float z)
     {
-        AzToolsFramework::IEditorCameraController* editorCameraController = AZ::Interface<AzToolsFramework::IEditorCameraController>::Get();
-        AZ_Error("editor", editorCameraController, "IEditorCameraController is not registered.");
-        if (editorCameraController)
-        {
-            editorCameraController->SetCurrentViewRotation(AZ::Vector3{ x, y, z });
-        }
+        SandboxEditor::SetDefaultViewportCameraRotation(AZ::DegToRad(x), AZ::DegToRad(z));
     }
 }
-
 
 namespace
 {
@@ -483,9 +473,9 @@ namespace AzToolsFramework
 
             addLegacyGeneral(behaviorContext->Method("load_all_plugins", ::Command_LoadPlugins, nullptr, "Loads all available plugins."));
             addLegacyGeneral(behaviorContext->Method("get_current_view_position", PyGetCurrentViewPosition, nullptr, "Returns the position of the current view as a Vec3."));
-            addLegacyGeneral(behaviorContext->Method("get_current_view_rotation", PyGetCurrentViewRotation, nullptr, "Returns the rotation of the current view as a Vec3 of Euler angles."));
+            addLegacyGeneral(behaviorContext->Method("get_current_view_rotation", PyGetCurrentViewRotation, nullptr, "Returns the rotation of the current view as a Vec3 of Euler angles in degrees."));
             addLegacyGeneral(behaviorContext->Method("set_current_view_position", PySetCurrentViewPosition, nullptr, "Sets the position of the current view as given x, y, z coordinates."));
-            addLegacyGeneral(behaviorContext->Method("set_current_view_rotation", PySetCurrentViewRotation, nullptr, "Sets the rotation of the current view as given x, y, z Euler angles."));
+            addLegacyGeneral(behaviorContext->Method("set_current_view_rotation", PySetCurrentViewRotation, nullptr, "Sets the rotation of the current view as given x, y, z Euler angles in degrees."));
 
             addLegacyGeneral(behaviorContext->Method("export_to_engine", CCryEditApp::Command_ExportToEngine, nullptr, "Exports the current level to the engine."));
             addLegacyGeneral(behaviorContext->Method("set_config_spec", PySetConfigSpec, nullptr, "Sets the system config spec and platform."));
