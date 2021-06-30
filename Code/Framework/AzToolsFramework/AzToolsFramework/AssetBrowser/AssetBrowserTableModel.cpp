@@ -120,7 +120,10 @@ namespace AzToolsFramework
                         row = BuildTableModelMap(model, index, row);
                     }
                 }
+                else
+                {
                     break;
+                }
             }
             return row;
         }
