@@ -70,6 +70,9 @@
       },
       "test_target_meta": {
         "file": "${test_target_type_file}"
+      },
+      "gem_target": {
+        "file": "${gem_target_file}"
       }
     }
   },
@@ -87,122 +90,6 @@
      
     ],
     "shard": [
-      {
-        "policy": "fixture_contiguous",
-        "target": "AzCore.Tests"
-      },
-      {
-        "policy": "fixture_contiguous",
-        "target": "AzToolsFramework.Tests"
-      },
-      {
-        "policy": "test_interleaved",
-        "target": "Framework.Tests"
-      },
-      {
-        "policy": "test_interleaved",
-        "target": "LmbrCentral.Editor.Tests"
-      },
-      {
-        "policy": "test_interleaved",
-        "target": "EditorLib.Tests"
-      },
-      {
-        "policy": "test_interleaved",
-        "target": "PhysX.Tests"
-      },
-      {
-        "policy": "test_interleaved",
-        "target": "ImageProcessing.Tests"
-      },
-      {
-        "policy": "test_interleaved",
-        "target": "Atom_RPI.Tests"
-      },
-      {
-        "policy": "test_interleaved",
-        "target": "Atom_RHI.Tests"
-      },
-      {
-        "policy": "test_interleaved",
-        "target": "AzManipulatorFramework.Tests"
-      },
-      {
-        "policy": "test_interleaved",
-        "target": "WhiteBox.Editor.Tests"
-      },
-      {
-        "policy": "test_interleaved",
-        "target": "ImageProcessing.Tests"
-      },
-      {
-        "policy": "test_interleaved",
-        "target": "AzManipulatorTestFramework.Tests"
-      },
-      {
-        "policy": "test_interleaved",
-        "target": "AtomCore.Tests"
-      },
-      {
-        "policy": "test_interleaved",
-        "target": "ImageProcessingAtom.Editor.Tests"
-      },
-      {
-        "policy": "test_interleaved",
-        "target": "EditorPythonBindings.Tests"
-      },
-      {
-        "policy": "test_interleaved",
-        "target": "Atom_Utils.Tests"
-      },
-      {
-        "policy": "test_interleaved",
-        "target": "AudioEngineWwise.Editor.Tests"
-      },
-      {
-        "policy": "test_interleaved",
-        "target": "Multiplayer.Tests"
-      },
-      {
-        "policy": "test_interleaved",
-        "target": "LmbrCentral.Tests"
-      },
-      {
-        "policy": "fixture_contiguous",
-        "target": "LyMetricsShared.Tests"
-      },
-      {
-        "policy": "test_interleaved",
-        "target": "PhysX.Editor.Tests"
-      },
-      {
-        "policy": "test_interleaved",
-        "target": "ComponentEntityEditorPlugin.Tests"
-      },
-      {
-        "policy": "test_interleaved",
-        "target": "DeltaCataloger.Tests"
-      },
-      {
-        "policy": "test_interleaved",
-        "target": "GradientSignal.Tests"
-      },
-      {
-        "policy": "test_interleaved",
-        "target": "LyShine.Tests"
-      },
-      {
-        "policy": "test_interleaved",
-        "target": "EMotionFX.Editor.Tests"
-      },
-      {
-        "policy": "test_interleaved",
-        "target": "EMotionFX.Tests"
-      },
-      {
-        "policy": "test_interleaved",
-        "target": "CrySystem.Tests"
-      }
     ]
   }
 }
