@@ -8,8 +8,6 @@
 #include <AssetBrowser/AssetBrowserTableModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 
-#pragma optimize("", off)
-
 namespace AzToolsFramework
 {
     namespace AssetBrowser
@@ -162,4 +160,3 @@ namespace AzToolsFramework
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 #include "AssetBrowser/moc_AssetBrowserTableModel.cpp"
-#pragma optimize("", on)
