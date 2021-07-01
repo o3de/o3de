@@ -22,6 +22,8 @@ namespace O3DE::ProjectManager
         explicit FormFolderBrowseEditWidget(const QString& labelText, const QString& valueText = "", QWidget* parent = nullptr);
         ~FormFolderBrowseEditWidget() = default;
 
+        void setText(const QString& text) override;
+
     protected:
         void HandleBrowseButton() override;
     };
