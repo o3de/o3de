@@ -33,7 +33,7 @@ namespace AZ
         auto typeIdMember = inputValue.FindMember(JsonSerialization::TypeIdFieldIdentifier);
         if (typeIdMember == inputValue.MemberEnd())
         {
-            return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Catastrophic, AZStd::string::format("ScriptUserDataSerializer::Load failed to load the %s member", JsonSerialization::TypeIdFieldIdentifier));
+            return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Missing, AZStd::string::format("ScriptUserDataSerializer::Load failed to load the %s member", JsonSerialization::TypeIdFieldIdentifier));
         }
 
         result.Combine(LoadTypeId(typeId, typeIdMember->value, context));
