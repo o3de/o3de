@@ -95,7 +95,7 @@ namespace AzFramework
          * prevent the editor from crashing when prefabs are enabled. This will be removed soon. Please use 'DestroyGameEntity' if your
          * intention is to destroy a game entity in slice mode.
          * 
-         * \param id The ID of the entity to destroy.
+         * @param id The ID of the entity to destroy.
          */
         virtual void DestroyGameEntityOnlyInSliceMode(const AZ::EntityId& /*id*/) = 0;
 
@@ -112,7 +112,7 @@ namespace AzFramework
          * solution to prevent the editor from crashing when prefabs are enabled. This will be removed soon. Please use 
          * 'DestroyGameEntityAndDescendants' if your intention is to destroy a game entity and its descendants in slice mode.
          *
-         * \param id The ID of the entity to destroy.
+         * @param id The ID of the entity to destroy.
          */
         virtual void DestroyGameEntityAndDescendantsOnlyInSliceMode(const AZ::EntityId& /*id*/) = 0;
 
