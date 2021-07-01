@@ -107,7 +107,6 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME Multiplayer.Builders GEM_MODULE
         NAMESPACE Gem
-        OUTPUT_NAME Gem.Multiplayer.Builders
         FILES_CMAKE
             multiplayer_tools_files.cmake
         INCLUDE_DIRECTORIES
