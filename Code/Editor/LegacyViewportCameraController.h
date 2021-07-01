@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <AzCore/EBus/EBus.h>
 #include <AzFramework/Viewport/ViewportId.h>
 #include <AzFramework/Viewport/MultiViewportController.h>
 #include <AzCore/Math/Vector3.h>
@@ -23,18 +24,37 @@ namespace AzFramework
 
 namespace SandboxEditor
 {
+    class OrbitCameraControls
+    : public AZ::EBusTraits
+    {
+    public:
+        //////////////////////////////////////////////////////////////////////////
+        // EBusTraits overrides
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        using BusIdType = AzFramework::ViewportId;
+        //////////////////////////////////////////////////////////////////////////
+
+        virtual void SetOrbitDistance(float orbitDistance [[maybe_unused]]) {;}
+    };
+    using OrbitCameraControlsBus = AZ::EBus<OrbitCameraControls>;
+
     class LegacyViewportCameraControllerInstance;
     using LegacyViewportCameraController = AzFramework::MultiViewportController<LegacyViewportCameraControllerInstance>;
 
     class LegacyViewportCameraControllerInstance final
         : public AzFramework::MultiViewportControllerInstanceInterface<LegacyViewportCameraController>
+        , public OrbitCameraControlsBus::Handler
     {
     public:
         LegacyViewportCameraControllerInstance(AzFramework::ViewportId viewport, LegacyViewportCameraController* controller);
+        ~LegacyViewportCameraControllerInstance();
 
         bool HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event) override;
         void ResetInputChannels() override;
         void UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event) override;
+
+        void SetOrbitDistance(float orbitDistance) override;
 
     private:
         bool JustAltHeld() const;
