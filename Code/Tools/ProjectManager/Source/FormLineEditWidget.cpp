@@ -123,4 +123,14 @@ namespace O3DE::ProjectManager
             child->style()->polish(child);
         }
     }
+
+    void FormLineEditWidget::setText(const QString& text)
+    {
+        m_lineEdit->setText(text);
+    }
+
+    void FormLineEditWidget::mousePressEvent([[maybe_unused]] QMouseEvent* event)
+    {
+        m_lineEdit->setFocus();
+    }
 } // namespace O3DE::ProjectManager
