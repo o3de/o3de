@@ -523,7 +523,7 @@ namespace ScriptCanvasEditor
         // Creation Actions
         {
             m_createScriptCanvas = new QToolButton();
-            m_createScriptCanvas->setIcon(QIcon(ScriptCanvas::AssetDescription::GetIconPath<ScriptCanvasAsset>()));
+            m_createScriptCanvas->setIcon(QIcon(":/ScriptCanvasEditorResources/Resources/create_graph.png"));
             m_createScriptCanvas->setToolTip("Creates a new Script Canvas Graph");
 
             QObject::connect(m_createScriptCanvas, &QToolButton::clicked, this, &MainWindow::OnFileNew);
