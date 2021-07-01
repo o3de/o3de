@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "AssetMemoryAnalyzer_precompiled.h"
 
 #include "AssetMemoryAnalyzer.h"
@@ -81,12 +76,12 @@ namespace AssetMemoryAnalyzer
         using AssetTree = AZ::Debug::AssetTree<Data::AssetData>;
         using AssetTreeNode = typename AssetTree::NodeType;
         using AllocationTable = AZ::Debug::AllocationTable<Data::AllocationData>;
-        using MasterCodePoints = AZStd::unordered_set<Data::CodePoint, AZStd::hash<Data::CodePoint>, AZStd::equal_to<Data::CodePoint>, AZ::Debug::AZStdAssetTrackingAllocator>;
+        using CodePoints = AZStd::unordered_set<Data::CodePoint, AZStd::hash<Data::CodePoint>, AZStd::equal_to<Data::CodePoint>, AZ::Debug::AZStdAssetTrackingAllocator>;
         using mutex_type = AZStd::mutex;
         using lock_type = AZStd::lock_guard<mutex_type>;
 
         mutex_type m_mutex;
-        MasterCodePoints m_masterCodePoints;
+        CodePoints m_codePoints;
         AssetTree m_assetTree;
         AllocationTable m_allocationTable;
         AZ::Debug::AssetTracking m_assetTracking;
@@ -195,7 +190,7 @@ namespace AssetMemoryAnalyzer
         {
             // Store a record for this allocation, at this code-point
             lock_type lock(m_mutex);
-            auto insertResult = m_masterCodePoints.emplace(Data::CodePoint{ fileName ? fileName : "<unknown>", lineNum, category });
+            auto insertResult = m_codePoints.emplace(Data::CodePoint{ fileName ? fileName : "<unknown>", lineNum, category });
             Data::CodePoint* cp = &*insertResult.first;
             m_allocationTable.Get().emplace(address, AllocationTable::RecordType{ activeAsset, (uint32_t)byteSize, Data::AllocationData{ cp, categoryInfo } });
             static_cast<typename AssetTree::NodeType*>(activeAsset)->m_data.m_totalAllocations[(int)category]++;

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -16,6 +11,7 @@
 #include <Atom/Feature/CoreLights/PointLightFeatureProcessorInterface.h>
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
 #include <CoreLights/IndexedDataVector.h>
+#include <Shadows/ProjectedShadowFeatureProcessor.h>
 
 namespace AZ
 {
@@ -24,15 +20,6 @@ namespace AZ
 
     namespace Render
     {
-
-        struct PointLightData
-        {
-            AZStd::array<float, 3> m_position = { { 0.0f, 0.0f, 0.0f } };
-            float m_invAttenuationRadiusSquared = 0.0f; // Inverse of the distance at which this light no longer has an effect, squared. Also used for falloff calculations.
-            AZStd::array<float, 3> m_rgbIntensity = { { 0.0f, 0.0f, 0.0f } };
-            float m_bulbRadius = 0.0f; // Radius of spherical light in meters.
-        };
-
         class PointLightFeatureProcessor final
             : public PointLightFeatureProcessorInterface
         {
@@ -58,18 +45,35 @@ namespace AZ
             void SetPosition(LightHandle handle, const AZ::Vector3& lightPosition) override;
             void SetAttenuationRadius(LightHandle handle, float attenuationRadius) override;
             void SetBulbRadius(LightHandle handle, float bulbRadius) override;
+            void SetShadowsEnabled(LightHandle handle, bool enabled) override;
+            void SetShadowmapMaxResolution(LightHandle handle, ShadowmapSize shadowmapSize) override;
+            void SetShadowFilterMethod(LightHandle handle, ShadowFilterMethod method) override;
+            void SetSofteningBoundaryWidthAngle(LightHandle handle, float boundaryWidthRadians) override;
+            void SetPredictionSampleCount(LightHandle handle, uint16_t count) override;
+            void SetFilteringSampleCount(LightHandle handle, uint16_t count) override;
+            void SetPcfMethod(LightHandle handle, PcfMethod method) override;
+            void SetEsmExponent(LightHandle handle, float esmExponent) override;
+            void SetPointData(LightHandle handle, const PointLightData& data) override;
 
             const Data::Instance<RPI::Buffer>  GetLightBuffer() const;
             uint32_t GetLightCount()const;
 
         private:
             PointLightFeatureProcessor(const PointLightFeatureProcessor&) = delete;
+            using ShadowId = ProjectedShadowFeatureProcessor::ShadowId;
 
             static constexpr const char* FeatureProcessorName = "PointLightFeatureProcessor";
+            void UpdateShadow(LightHandle handle);
+            // Convenience function for forwarding requests to the ProjectedShadowFeatureProcessor
+            template<typename Functor, typename ParamType>
+            void SetShadowSetting(LightHandle handle, Functor&&, ParamType&& param);
+            ProjectedShadowFeatureProcessor* m_shadowFeatureProcessor = nullptr;
 
             IndexedDataVector<PointLightData> m_pointLightData;
             GpuBufferHandler m_lightBufferHandler;
             bool m_deviceBufferNeedsUpdate = false;
+
+            AZStd::array<AZ::Transform, PointLightData::NumShadowFaces> m_pointShadowTransforms;
         };
     } // namespace Render
 } // namespace AZ

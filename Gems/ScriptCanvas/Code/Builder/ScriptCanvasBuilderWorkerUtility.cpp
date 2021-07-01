@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright(c) Amazon.com, Inc.or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-*or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-*WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "precompiled.h"
 
@@ -681,6 +676,19 @@ namespace ScriptCanvasBuilder
         }
 
         AssetBuilderSDK::JobProduct jobProduct;
+
+        // Scan our runtime input for any asset references
+        // Store them as product dependencies
+        AssetBuilderSDK::OutputObject(&runtimeData.m_input,
+            azrtti_typeid<decltype(runtimeData.m_input)>(),
+            input.runtimeScriptCanvasOutputPath,
+            azrtti_typeid<ScriptCanvas::RuntimeAsset>(),
+            AZ_CRC("RuntimeData", 0x163310ae), jobProduct);
+
+        // Output Object marks dependencies as handled.
+        // We still have more to evaluate
+        jobProduct.m_dependenciesHandled = false;
+
         jobProduct.m_dependencies.push_back({ runtimeData.m_script.GetId(), {} });
 
         for (const auto& assetDependency : runtimeData.m_requiredAssets)
@@ -713,9 +721,6 @@ namespace ScriptCanvasBuilder
         }
 
         jobProduct.m_dependenciesHandled = true;
-        jobProduct.m_productFileName = input.runtimeScriptCanvasOutputPath;
-        jobProduct.m_productAssetType = azrtti_typeid<ScriptCanvas::RuntimeAsset>();
-        jobProduct.m_productSubID = AZ_CRC("RuntimeData", 0x163310ae);
         input.response->m_outputProducts.push_back(AZStd::move(jobProduct));
         return AZ::Success();
     }

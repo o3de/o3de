@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/Slice/SliceMetadataInfoComponent.h>
 #include <AzCore/Slice/SliceBus.h>
@@ -1740,7 +1735,10 @@ namespace AZ
                     if (!iter->IsInstantiated())
                     {
                         #if defined(AZ_ENABLE_TRACING)
-                        Data::Asset<SliceAsset> thisAsset = Data::AssetManager::Instance().FindAsset(GetMyAsset()->GetId(), AZ::Data::AssetLoadBehavior::Default);
+                        Data::Asset<SliceAsset> thisAsset = GetMyAsset()
+                            ? Data::Asset<SliceAsset>(Data::AssetManager::Instance().FindAsset(
+                                  GetMyAsset()->GetId(), AZ::Data::AssetLoadBehavior::Default))
+                            : Data::Asset<SliceAsset>();
                         AZ_Warning("Slice", false, "Removing %d instances of slice asset %s from parent asset %s due to failed instantiation. " 
                             "Saving parent asset will result in loss of slice data.", 
                             iter->GetInstances().size(),

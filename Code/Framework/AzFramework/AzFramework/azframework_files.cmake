@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 set(FILES
@@ -103,6 +99,9 @@ set(FILES
     Viewport/CameraState.cpp
     Viewport/CameraInput.h
     Viewport/CameraInput.cpp
+    Viewport/ClickDetector.h
+    Viewport/ClickDetector.cpp
+    Viewport/CursorState.h
     Viewport/DisplayContextRequestBus.h
     Entity/BehaviorEntity.cpp
     Entity/BehaviorEntity.h
@@ -161,26 +160,6 @@ set(FILES
     Metrics/MetricsPlainTextNameRegistration.h
     Network/AssetProcessorConnection.cpp
     Network/AssetProcessorConnection.h
-    Network/DynamicSerializableFieldMarshaler.h
-    Network/EntityIdMarshaler.h
-    Network/InterestManagerComponent.h
-    Network/InterestManagerComponent.cpp
-    Network/NetBindable.h
-    Network/NetBindable.cpp
-    Network/NetBindingEventsBus.h
-    Network/NetBindingHandlerBus.h
-    Network/NetBindingSystemBus.h
-    Network/NetBindingComponent.h
-    Network/NetBindingComponent.cpp
-    Network/NetBindingComponentChunk.h
-    Network/NetBindingComponentChunk.cpp
-    Network/NetBindingSystemImpl.h
-    Network/NetBindingSystemImpl.cpp
-    Network/NetBindingSystemComponent.h
-    Network/NetBindingSystemComponent.cpp
-    Network/NetworkContext.h
-    Network/NetworkContext.cpp
-    Network/NetSystemBus.h
     Network/SocketConnection.cpp
     Network/SocketConnection.h
     Logging/LogFile.cpp
@@ -203,12 +182,14 @@ set(FILES
     Script/ScriptDebugAgentBus.h
     Script/ScriptDebugMsgReflection.cpp
     Script/ScriptDebugMsgReflection.h
-    Script/ScriptMarshal.h
-    Script/ScriptMarshal.cpp
-    Script/ScriptNetBindings.h
-    Script/ScriptNetBindings.cpp
     Script/ScriptRemoteDebugging.cpp
     Script/ScriptRemoteDebugging.h
+    Session/ISessionHandlingRequests.h
+    Session/ISessionRequests.cpp
+    Session/ISessionRequests.h
+    Session/SessionConfig.cpp
+    Session/SessionConfig.h
+    Session/SessionNotifications.h
     StreamingInstall/StreamingInstall.h
     StreamingInstall/StreamingInstall.cpp
     StreamingInstall/StreamingInstallRequests.h
@@ -219,6 +200,8 @@ set(FILES
     Physics/Collision/CollisionLayers.cpp
     Physics/Collision/CollisionGroups.h
     Physics/Collision/CollisionGroups.cpp
+    Physics/Common/PhysicsJoint.h
+    Physics/Common/PhysicsJoint.cpp
     Physics/Common/PhysicsSceneQueries.h
     Physics/Common/PhysicsSceneQueries.cpp
     Physics/Common/PhysicsEvents.h
@@ -230,6 +213,8 @@ set(FILES
     Physics/Common/PhysicsSimulatedBodyEvents.cpp
     Physics/Common/PhysicsTypes.h
     Physics/Components/SimulatedBodyComponentBus.h
+    Physics/Configuration/JointConfiguration.h
+    Physics/Configuration/JointConfiguration.cpp
     Physics/Configuration/CollisionConfiguration.h
     Physics/Configuration/CollisionConfiguration.cpp
     Physics/Configuration/RigidBodyConfiguration.h
@@ -274,11 +259,10 @@ set(FILES
     Physics/Ragdoll.h
     Physics/Utils.h
     Physics/Utils.cpp
-    Physics/Joint.h
-    Physics/Joint.cpp
     Physics/ClassConverters.cpp
     Physics/ClassConverters.h
     Physics/MaterialBus.h
+    Physics/WindBus.h
     Process/ProcessCommunicator.cpp
     Process/ProcessCommunicator.h
     Process/ProcessWatcher.cpp
@@ -316,6 +300,7 @@ set(FILES
     Spawnable/SpawnableSystemComponent.cpp
     Terrain/TerrainDataRequestBus.h
     Terrain/TerrainDataRequestBus.cpp
+    Thermal/ThermalInfo.h
     Platform/PlatformDefaults.h
     Windowing/WindowBus.h
     Windowing/NativeWindow.cpp

@@ -1,38 +1,64 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <ProjectManagerWindow.h>
+#include <ScreenDefs.h>
+#include <ProjectInfo.h>
 
 #include <QWidget>
+#include <QStyleOption>
+#include <QPainter>
 #endif
 
 namespace O3DE::ProjectManager
 {
     class ScreenWidget
-        : public QWidget
+        : public QFrame
     {
+        Q_OBJECT
+
     public:
-        explicit ScreenWidget(ProjectManagerWindow* window)
-            : QWidget(window->GetScreenStack())
-            , m_projectManagerWindow(window)
+        explicit ScreenWidget(QWidget* parent = nullptr)
+            : QFrame(parent)
         {
         }
+        ~ScreenWidget() = default;
 
-    protected:
-        virtual void ConnectSlotsAndSignals() {}
+        virtual ProjectManagerScreen GetScreenEnum()
+        {
+            return ProjectManagerScreen::Empty;
+        }
+        virtual bool IsReadyForNextScreen()
+        {
+            return true;
+        }
+        virtual bool IsTab()
+        {
+            return false;
+        }
+        virtual QString GetTabText()
+        {
+            return tr("Missing");
+        }
 
-        ProjectManagerWindow* m_projectManagerWindow;
+        //! Notify this screen it is the current screen 
+        virtual void NotifyCurrentScreen()
+        {
+
+        }
+
+    signals:
+        void ChangeScreenRequest(ProjectManagerScreen screen);
+        void GotoPreviousScreenRequest();
+        void ResetScreenRequest(ProjectManagerScreen screen);
+        void NotifyCurrentProject(const QString& projectPath);
+        void NotifyBuildProject(const ProjectInfo& projectInfo);
+
     };
 
 } // namespace O3DE::ProjectManager

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <RHI/CommandListBase.h>
@@ -271,6 +266,12 @@ namespace AZ
             ShaderResourceBindings& bindings = GetShaderResourceBindingsByPipelineType(pipelineType);
 
             const PipelineState* pipelineState = static_cast<const PipelineState*>(item.m_pipelineState);
+            if(!pipelineState)
+            {
+                AZ_Assert(false, "Pipeline state not provided");
+                return false;
+            }
+            
             bool updatePipelineState = m_state.m_pipelineState != pipelineState;
             // The pipeline state gets set first.
             if (updatePipelineState)
@@ -415,7 +416,7 @@ namespace AZ
 
                         // this assert typically happens when a shader needs a particular Srg (e.g., the ViewSrg) but the code did not bind it,
                         // check the pass code in this callstack to determine why it was not bound
-                        AZ_Assert(false, "ShaderResourceGroup in slot '%d' is null at DrawItem submit time. This is not valid and means the shader is expecting an Srg that is not currently bound in the pipeline. Current bindings: %s",
+                        AZ_Assert(false, "ShaderResourceGroup in slot '%d' is null at DrawItem submit time. This is not valid and means the shader is expecting an Srg that isF not currently bound in the pipeline. Current bindings: %s",
                             srgSlot,
                             slotSrgString.c_str());
 

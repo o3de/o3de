@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -83,23 +78,41 @@ namespace AZ
             AZStd::string    m_azslFileName;         //!< Name for the source .azsl file
         };
 
-        struct AzslCodeTopData
-        {
-            SrgDataContainer m_srgData;
-            AzslFunctions    m_functions;
-            StructContainer  m_structs;
-            RootConstantData m_rootConstantData;
-        };
 
+        //! DEPRECATED [ATOM-15472]
+        //! This class is used to collect all the json files produced by the compilation
+        //! of an AZSL file as objects.
         struct AzslData
         {
             AzslData(const AZStd::shared_ptr<ShaderFiles>& a_sources) : m_sources(a_sources) { }
 
             AZStd::shared_ptr<ShaderFiles> m_sources;
             AZStd::string    m_preprocessedFullPath; // Full path to a preprocessed version of the original AZSL file
-            AZStd::string    m_shaderCodePrefix;     // AssetProcessor generated shader code which is added to the 
-                                                     // AZSLc emitted code prior to invoking the native shader compiler
-            AzslCodeTopData  m_topData;
+            AZStd::string m_shaderCodePrefix; // AssetProcessor generated shader code which is added to the
+                                              // AZSLc emitted code prior to invoking the native shader compiler
+
+            SrgDataContainer m_srgData;
+            AzslFunctions m_functions;
+            StructContainer m_structs;
+            RootConstantData m_rootConstantData;
+        };
+
+        //! This class is used to collect all the json files produced by the compilation
+        //! of an AZSL file as objects.
+        struct AzslData2
+        {
+            AzslData2(const AZStd::shared_ptr<ShaderFiles>& a_sources)
+                : m_sources(a_sources)
+            {
+            }
+
+            AZStd::shared_ptr<ShaderFiles> m_sources;
+            AZStd::string m_preprocessedFullPath; // Full path to a preprocessed version of the original AZSL file
+
+            SrgDataContainer m_srgData;
+            AzslFunctions m_functions;
+            StructContainer m_structs;
+            RootConstantData m_rootConstantData;
         };
     } // ShaderBuilder
 } // AZ

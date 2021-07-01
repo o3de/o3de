@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #include "EditorDefs.h"
 
@@ -53,11 +48,13 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzCore/Console/IConsole.h>
 
 // AzFramework
 #include <AzFramework/Components/CameraBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
+#include <AzFramework/ProjectManager/ProjectManager.h>
 
 // AzToolsFramework
 #include <AzToolsFramework/Component/EditorComponentAPIBus.h>
@@ -69,6 +66,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/PythonTerminal/ScriptHelpDialog.h>
 
 // AzQtComponents
@@ -85,7 +83,6 @@ AZ_POP_DISABLE_WARNING
 // Editor
 #include "Settings.h"
 
-#include "Include/IBackgroundScheduleManager.h"
 #include "GameExporter.h"
 #include "GameResourcesExporter.h"
 
@@ -95,7 +92,6 @@ AZ_POP_DISABLE_WARNING
 #include "Core/QtEditorApplication.h"
 #include "StringDlg.h"
 #include "NewLevelDialog.h"
-#include "GridSettingsDialog.h"
 #include "LayoutConfigDialog.h"
 #include "ViewManager.h"
 #include "FileTypeUtils.h"
@@ -116,7 +112,6 @@ AZ_POP_DISABLE_WARNING
 #include "LevelInfo.h"
 #include "EditorPreferencesDialog.h"
 #include "GraphicsSettingsDialog.h"
-#include "FeedbackDialog/FeedbackDialog.h"
 #include "AnimationContext.h"
 
 #include "GotoPositionDlg.h"
@@ -132,7 +127,6 @@ AZ_POP_DISABLE_WARNING
 
 #include "Util/AutoDirectoryRestoreFileDialog.h"
 #include "Util/EditorAutoLevelLoadTest.h"
-#include "Util/Ruler.h"
 #include "Util/IndexedFiles.h"
 #include "AboutDialog.h"
 #include <AzToolsFramework/PythonTerminal/ScriptHelpDialog.h>
@@ -282,6 +276,8 @@ BOOL CCryDocManager::DoPromptFileName(QString& fileName, [[maybe_unused]] UINT n
     [[maybe_unused]] DWORD lFlags, BOOL bOpenFileDialog, [[maybe_unused]] CDocTemplate* pTemplate)
 {
     CLevelFileDialog levelFileDialog(bOpenFileDialog);
+    levelFileDialog.show();
+    levelFileDialog.adjustSize();
 
     if (levelFileDialog.exec() == QDialog::Accepted)
     {
@@ -355,26 +351,28 @@ CCryEditDoc* CCryDocManager::OpenDocumentFile(LPCTSTR lpszFileName, BOOL bAddToM
     for (int i = idStart; i <= idEnd; ++i) \
         ON_COMMAND(i, method);
 
+AZ_CVAR_EXTERNED(bool, ed_previewGameInFullscreen_once);
+
 void CCryEditApp::RegisterActionHandlers()
 {
     ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
     ON_COMMAND(ID_APP_SHOW_WELCOME, OnAppShowWelcomeScreen)
-    ON_COMMAND(ID_DOCUMENTATION_GETTINGSTARTEDGUIDE, OnDocumentationGettingStartedGuide)
     ON_COMMAND(ID_DOCUMENTATION_TUTORIALS, OnDocumentationTutorials)
-    ON_COMMAND(ID_DOCUMENTATION_GLOSSARY, OnDocumentationGlossary)
     ON_COMMAND(ID_DOCUMENTATION_O3DE, OnDocumentationO3DE)
     ON_COMMAND(ID_DOCUMENTATION_GAMELIFT, OnDocumentationGamelift)
     ON_COMMAND(ID_DOCUMENTATION_RELEASENOTES, OnDocumentationReleaseNotes)
     ON_COMMAND(ID_DOCUMENTATION_GAMEDEVBLOG, OnDocumentationGameDevBlog)
-    ON_COMMAND(ID_DOCUMENTATION_TWITCHCHANNEL, OnDocumentationTwitchChannel)
     ON_COMMAND(ID_DOCUMENTATION_FORUMS, OnDocumentationForums)
     ON_COMMAND(ID_DOCUMENTATION_AWSSUPPORT, OnDocumentationAWSSupport)
-    ON_COMMAND(ID_DOCUMENTATION_FEEDBACK, OnDocumentationFeedback)
     ON_COMMAND(ID_FILE_EXPORT_SELECTEDOBJECTS, OnExportSelectedObjects)
     ON_COMMAND(ID_EDIT_HOLD, OnEditHold)
     ON_COMMAND(ID_EDIT_FETCH, OnEditFetch)
     ON_COMMAND(ID_FILE_EXPORTTOGAMENOSURFACETEXTURE, OnFileExportToGameNoSurfaceTexture)
     ON_COMMAND(ID_VIEW_SWITCHTOGAME, OnViewSwitchToGame)
+    MainWindow::instance()->GetActionManager()->RegisterActionHandler(ID_VIEW_SWITCHTOGAME_FULLSCREEN, [this]() {
+        ed_previewGameInFullscreen_once = true;
+        OnViewSwitchToGame();
+    });
     ON_COMMAND(ID_MOVE_OBJECT, OnMoveObject)
     ON_COMMAND(ID_RENAME_OBJ, OnRenameObj)
     ON_COMMAND(ID_EDITMODE_MOVE, OnEditmodeMove)
@@ -390,7 +388,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_PREFERENCES, OnPreferences)
     ON_COMMAND(ID_REDO, OnRedo)
     ON_COMMAND(ID_TOOLBAR_WIDGET_REDO, OnRedo)
-    ON_COMMAND(ID_RELOAD_TEXTURES, OnReloadTextures)
     ON_COMMAND(ID_FILE_OPEN_LEVEL, OnOpenLevel)
 #ifdef ENABLE_SLICE_EDITOR
     ON_COMMAND(ID_FILE_NEW_SLICE, OnCreateSlice)
@@ -400,11 +397,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_GAME_SYNCPLAYER, OnSyncPlayer)
     ON_COMMAND(ID_RESOURCES_REDUCEWORKINGSET, OnResourcesReduceworkingset)
 
-    ON_COMMAND(ID_SNAP_TO_GRID, OnSnap)
-
-    ON_COMMAND(ID_WIREFRAME, OnWireframe)
-
-    ON_COMMAND(ID_VIEW_GRIDSETTINGS, OnViewGridsettings)
     ON_COMMAND(ID_VIEW_CONFIGURELAYOUT, OnViewConfigureLayout)
 
     ON_COMMAND(IDC_SELECTION, OnDummyCommand)
@@ -444,10 +436,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_VIEW_CYCLE2DVIEWPORT, OnViewCycle2dviewport)
 #endif
     ON_COMMAND(ID_DISPLAY_GOTOPOSITION, OnDisplayGotoPosition)
-    ON_COMMAND(ID_SNAPANGLE, OnSnapangle)
-    ON_COMMAND(ID_CHANGEMOVESPEED_INCREASE, OnChangemovespeedIncrease)
-    ON_COMMAND(ID_CHANGEMOVESPEED_DECREASE, OnChangemovespeedDecrease)
-    ON_COMMAND(ID_CHANGEMOVESPEED_CHANGESTEP, OnChangemovespeedChangestep)
     ON_COMMAND(ID_FILE_SAVELEVELRESOURCES, OnFileSavelevelresources)
     ON_COMMAND(ID_CLEAR_REGISTRY, OnClearRegistryData)
     ON_COMMAND(ID_VALIDATELEVEL, OnValidatelevel)
@@ -484,6 +472,11 @@ void CCryEditApp::RegisterActionHandlers()
 
     ON_COMMAND(ID_FILE_SAVE_LEVEL, OnFileSave)
     ON_COMMAND(ID_FILE_EXPORTOCCLUSIONMESH, OnFileExportOcclusionMesh)
+
+    // Project Manager 
+    ON_COMMAND(ID_FILE_PROJECT_MANAGER_SETTINGS, OnOpenProjectManagerSettings)
+    ON_COMMAND(ID_FILE_PROJECT_MANAGER_NEW, OnOpenProjectManagerNew)
+    ON_COMMAND(ID_FILE_PROJECT_MANAGER_OPEN, OnOpenProjectManager)
 }
 
 CCryEditApp* CCryEditApp::s_currentInstance = nullptr;
@@ -527,12 +520,6 @@ public:
     bool m_bExportTexture = false;
 
     bool m_bMatEditMode = false;
-    bool m_bPrecacheShaders = false;
-    bool m_bPrecacheShadersLevels = false;
-    bool m_bPrecacheShaderList = false;
-    bool m_bStatsShaders = false;
-    bool m_bStatsShaderList = false;
-    bool m_bMergeShaders = false;
 
     bool m_bConsoleMode = false;
     bool m_bNullRenderer = false;
@@ -545,6 +532,7 @@ public:
     QString m_appRoot;
     QString m_logFile;
     QString m_pythonArgs;
+    QString m_pythontTestCase;
     QString m_execFile;
     QString m_execLineCmd;
 
@@ -562,10 +550,9 @@ public:
     {
         bool dummy;
         QCommandLineParser parser;
-        QString appRootOverride;
         parser.addHelpOption();
         parser.setSingleDashWordOptionMode(QCommandLineParser::ParseAsLongOptions);
-        parser.setApplicationDescription(QObject::tr("Open 3D Engine"));
+        parser.setApplicationDescription(QObject::tr("O3DE Editor"));
         // nsDocumentRevisionDebugMode is an argument that the macOS system passed into an App bundle that is being debugged.
         // Need to include it here so that Qt argument parser does not error out.
         bool nsDocumentRevisionsDebugMode = false;
@@ -574,12 +561,6 @@ public:
             { "exportTexture", m_bExportTexture },
             { "test", m_bTest },
             { "auto_level_load", m_bAutoLoadLevel },
-            { "PrecacheShaders", m_bPrecacheShaders },
-            { "PrecacheShadersLevels", m_bPrecacheShadersLevels },
-            { "PrecacheShaderList", m_bPrecacheShaderList },
-            { "StatsShaders", m_bStatsShaders },
-            { "StatsShaderList", m_bStatsShaderList },
-            { "MergeShaders", m_bMergeShaders },
             { "MatEdit", m_bMatEditMode },
             { "BatchMode", m_bConsoleMode },
             { "NullRenderer", m_bNullRenderer },
@@ -598,6 +579,7 @@ public:
         const std::vector<std::pair<CommandLineStringOption, QString&> > stringOptions = {
             {{"logfile", "File name of the log file to write out to.", "logfile"}, m_logFile},
             {{"runpythonargs", "Command-line argument string to pass to the python script if --runpython or --runpythontest was used.", "runpythonargs"}, m_pythonArgs},
+            {{"pythontestcase", "Test case name of python test script if --runpythontest was used.", "pythontestcase"}, m_pythontTestCase},
             {{"exec", "cfg file to run on startup, used for systems like automation", "exec"}, m_execFile},
             {{"rhi", "Command-line argument to force which rhi to use", "dummyString"}, dummyString },
             {{"rhi-device-validation", "Command-line argument to configure rhi validation", "dummyString"}, dummyString },
@@ -654,7 +636,7 @@ public:
             option.second = parser.value(option.first.valueName);
         }
 
-        m_bExport = m_bExport | m_bExportTexture;
+        m_bExport = m_bExport || m_bExportTexture;
 
         const QStringList positionalArgs = parser.positionalArguments();
 
@@ -944,9 +926,9 @@ QString FormatRichTextCopyrightNotice()
 {
     // copyright symbol is HTML Entity = &#xA9;
     QString copyrightHtmlSymbol = "&#xA9;";
-    QString copyrightString = QObject::tr("Open 3D Engine and related materials Copyright %1 %2 Amazon Web Services, Inc., its affiliates or licensors.<br>By accessing or using these materials, you agree to the terms of the AWS Customer Agreement.");
+    QString copyrightString = QObject::tr("Copyright %1 Contributors to the Open 3D Engine Project");
 
-    return copyrightString.arg(copyrightHtmlSymbol).arg(O3DE_COPYRIGHT_YEAR);
+    return copyrightString.arg(copyrightHtmlSymbol);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1024,26 +1006,12 @@ void CCryEditApp::OutputStartupMessage(QString str)
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::InitFromCommandLine(CEditCommandLineInfo& cmdInfo)
 {
-    //! Setup flags from command line
-    if (cmdInfo.m_bPrecacheShaders || cmdInfo.m_bPrecacheShadersLevels || cmdInfo.m_bMergeShaders
-        || cmdInfo.m_bPrecacheShaderList || cmdInfo.m_bStatsShaderList || cmdInfo.m_bStatsShaders)
-    {
-        m_bPreviewMode = true;
-        m_bConsoleMode = true;
-        m_bTestMode = true;
-    }
     m_bConsoleMode |= cmdInfo.m_bConsoleMode;
     inEditorBatchMode = AZ::Environment::CreateVariable<bool>("InEditorBatchMode", m_bConsoleMode);
 
     m_bTestMode |= cmdInfo.m_bTest;
 
     m_bSkipWelcomeScreenDialog = cmdInfo.m_bSkipWelcomeScreenDialog || !cmdInfo.m_execFile.isEmpty() || !cmdInfo.m_execLineCmd.isEmpty() || cmdInfo.m_bAutotestMode;
-    m_bPrecacheShaderList = cmdInfo.m_bPrecacheShaderList;
-    m_bStatsShaderList = cmdInfo.m_bStatsShaderList;
-    m_bStatsShaders = cmdInfo.m_bStatsShaders;
-    m_bPrecacheShaders = cmdInfo.m_bPrecacheShaders;
-    m_bPrecacheShadersLevels = cmdInfo.m_bPrecacheShadersLevels;
-    m_bMergeShaders = cmdInfo.m_bMergeShaders;
     m_bExportMode = cmdInfo.m_bExport;
     m_bRunPythonTestScript = cmdInfo.m_bRunPythonTestScript;
     m_bRunPythonScript = cmdInfo.m_bRunPythonScript || cmdInfo.m_bRunPythonTestScript;
@@ -1079,11 +1047,9 @@ void CCryEditApp::InitFromCommandLine(CEditCommandLineInfo& cmdInfo)
 /////////////////////////////////////////////////////////////////////////////
 AZ::Outcome<void, AZStd::string> CCryEditApp::InitGameSystem(HWND hwndForInputSystem)
 {
-    bool bShaderCacheGen = m_bPrecacheShaderList | m_bPrecacheShaders | m_bPrecacheShadersLevels;
-
     CGameEngine* pGameEngine = new CGameEngine;
 
-    AZ::Outcome<void, AZStd::string> initOutcome = pGameEngine->Init(m_bPreviewMode, m_bTestMode, bShaderCacheGen, qApp->arguments().join(" ").toUtf8().data(), g_pInitializeUIInfo, hwndForInputSystem);
+    AZ::Outcome<void, AZStd::string> initOutcome = pGameEngine->Init(m_bPreviewMode, m_bTestMode, qApp->arguments().join(" ").toUtf8().data(), g_pInitializeUIInfo, hwndForInputSystem);
     if (!initOutcome.IsSuccess())
     {
         return initOutcome;
@@ -1124,8 +1090,7 @@ BOOL CCryEditApp::CheckIfAlreadyRunning()
         }
     }
 
-    // Shader pre-caching may start multiple editor copies
-    if (!FirstInstance(bForceNewInstance) && !m_bPrecacheShaderList)
+    if (!FirstInstance(bForceNewInstance))
     {
         return false;
     }
@@ -1347,37 +1312,6 @@ void CCryEditApp::InitLevel(const CEditCommandLineInfo& cmdInfo)
 /////////////////////////////////////////////////////////////////////////////
 BOOL CCryEditApp::InitConsole()
 {
-    if (m_bPrecacheShaderList)
-    {
-        GetIEditor()->GetSystem()->GetIConsole()->ExecuteString("r_PrecacheShaderList");
-        return false;
-    }
-    else if (m_bStatsShaderList)
-    {
-        GetIEditor()->GetSystem()->GetIConsole()->ExecuteString("r_StatsShaderList");
-        return false;
-    }
-    else if (m_bStatsShaders)
-    {
-        GetIEditor()->GetSystem()->GetIConsole()->ExecuteString("r_StatsShaders");
-        return false;
-    }
-    else if (m_bPrecacheShaders)
-    {
-        GetIEditor()->GetSystem()->GetIConsole()->ExecuteString("r_PrecacheShaders");
-        return false;
-    }
-    else if (m_bPrecacheShadersLevels)
-    {
-        GetIEditor()->GetSystem()->GetIConsole()->ExecuteString("r_PrecacheShadersLevels");
-        return false;
-    }
-    else if (m_bMergeShaders)
-    {
-        GetIEditor()->GetSystem()->GetIConsole()->ExecuteString("r_MergeShaders");
-        return false;
-    }
-
     // Execute command from cmdline -exec_line if applicable
     if (!m_execLineCmd.isEmpty())
     {
@@ -1584,7 +1518,13 @@ void CCryEditApp::RunInitPythonScript(CEditCommandLineInfo& cmdInfo)
             std::transform(tokens.begin(), tokens.end(), std::back_inserter(pythonArgs), [](auto& tokenData) { return tokenData.c_str(); });
             if (cmdInfo.m_bRunPythonTestScript)
             {
-                EditorPythonRunnerRequestBus::Broadcast(&EditorPythonRunnerRequestBus::Events::ExecuteByFilenameAsTest, cmdInfo.m_strFileName.toUtf8().constData(), pythonArgs);
+                AZStd::string pythonTestCase;
+                if (!cmdInfo.m_pythontTestCase.isEmpty())
+                {
+                    pythonTestCase = cmdInfo.m_pythontTestCase.toUtf8().constData();
+                }
+
+                EditorPythonRunnerRequestBus::Broadcast(&EditorPythonRunnerRequestBus::Events::ExecuteByFilenameAsTest, cmdInfo.m_strFileName.toUtf8().constData(), pythonTestCase, pythonArgs);
 
                 // Close the editor gracefully as the test has completed
                 GetIEditor()->GetDocument()->SetModifiedFlag(false);
@@ -1786,7 +1726,7 @@ BOOL CCryEditApp::InitInstance()
         }
     }
 
-    SetEditorWindowTitle();
+    SetEditorWindowTitle(0, AZ::Utils::GetProjectName().c_str(), 0);
     if (!GetIEditor()->IsInMatEditMode())
     {
         m_pEditor->InitFinished();
@@ -1908,7 +1848,7 @@ void CCryEditApp::LoadFile(QString fileName)
 
     if (MainWindow::instance() || m_pConsoleDialog)
     {
-        SetEditorWindowTitle(0, 0, GetIEditor()->GetGameEngine()->GetLevelName());
+        SetEditorWindowTitle(0, AZ::Utils::GetProjectName().c_str(), GetIEditor()->GetGameEngine()->GetLevelName());
     }
 
     GetIEditor()->SetModifiedFlag(false);
@@ -2076,40 +2016,33 @@ void CCryEditApp::OnUpdateShowWelcomeScreen(QAction* action)
         && !m_savingLevel);
 }
 
-// App command to open online documentation page
-void CCryEditApp::OnDocumentationGettingStartedGuide()
-{
-    QString webLink = tr("https://docs.aws.amazon.com/lumberyard/latest/gettingstartedguide");
-    QDesktopServices::openUrl(QUrl(webLink));
-}
-
 void CCryEditApp::OnDocumentationTutorials()
 {
-    QString webLink = tr("https://www.youtube.com/amazonlumberyardtutorials");
+    QString webLink = tr("https://o3deorg.netlify.app/docs/learning-guide/");
     QDesktopServices::openUrl(QUrl(webLink));
 }
 
 void CCryEditApp::OnDocumentationGlossary()
 {
-    QString webLink = tr("https://docs.aws.amazon.com/lumberyard/userguide/glossary");
+    QString webLink = tr("https://docs.o3de.org/docs/user-guide/appendix/glossary/");
     QDesktopServices::openUrl(QUrl(webLink));
 }
 
 void CCryEditApp::OnDocumentationO3DE()
 {
-    QString webLink = tr("https://docs.aws.amazon.com/lumberyard/userguide");
+    QString webLink = tr("https://o3deorg.netlify.app/docs/");
     QDesktopServices::openUrl(QUrl(webLink));
 }
 
 void CCryEditApp::OnDocumentationGamelift()
 {
-    QString webLink = tr("https://docs.aws.amazon.com/gamelift/developerguide");
+    QString webLink = tr("https://docs.aws.amazon.com/gamelift/");
     QDesktopServices::openUrl(QUrl(webLink));
 }
 
 void CCryEditApp::OnDocumentationReleaseNotes()
 {
-    QString webLink = tr("https://docs.aws.amazon.com/lumberyard/releasenotes");
+    QString webLink = tr("https://o3deorg.netlify.app/docs/release-notes/");
     QDesktopServices::openUrl(QUrl(webLink));
 }
 
@@ -2119,15 +2052,9 @@ void CCryEditApp::OnDocumentationGameDevBlog()
     QDesktopServices::openUrl(QUrl(webLink));
 }
 
-void CCryEditApp::OnDocumentationTwitchChannel()
-{
-    QString webLink = tr("http://twitch.tv/amazongamedev");
-    QDesktopServices::openUrl(QUrl(webLink));
-}
-
 void CCryEditApp::OnDocumentationForums()
 {
-    QString webLink = tr("https://gamedev.amazon.com/forums");
+    QString webLink = tr("https://o3deorg.netlify.app/community/");
     QDesktopServices::openUrl(QUrl(webLink));
 }
 
@@ -2135,12 +2062,6 @@ void CCryEditApp::OnDocumentationAWSSupport()
 {
     QString webLink = tr("https://aws.amazon.com/contact-us");
     QDesktopServices::openUrl(QUrl(webLink));
-}
-
-void CCryEditApp::OnDocumentationFeedback()
-{
-    FeedbackDialog dialog;
-    dialog.exec();
 }
 
 bool CCryEditApp::FixDanglingSharedMemory(const QString& sharedMemName) const
@@ -2338,6 +2259,14 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
         return 0;
     }
 
+    // Ensure we don't get called re-entrantly
+    // This can occur when a nested Qt event loop fires (e.g. by way of a modal dialog calling exec)
+    if (m_idleProcessingRunning)
+    {
+        return 0;
+    }
+    QScopedValueRollback<bool> guard(m_idleProcessingRunning, true);
+
     ////////////////////////////////////////////////////////////////////////
     // Call the update function of the engine
     ////////////////////////////////////////////////////////////////////////
@@ -2381,23 +2310,7 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
     #endif
     }
 
-    // process the work schedule - regardless if the app is active or not
-    GetIEditor()->GetBackgroundScheduleManager()->Update();
-
-    // if there are active schedules keep updating the application
-    if (GetIEditor()->GetBackgroundScheduleManager()->GetNumSchedules() > 0)
-    {
-        bActive = true;
-    }
-
     m_bPrevActive = bActive;
-
-    AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
-    static AZStd::chrono::system_clock::time_point lastUpdate = now;
-
-    AZStd::chrono::duration<float> delta = now - lastUpdate;
-
-    lastUpdate = now;
 
     // Don't tick application if we're doing idle processing during an assert.
     const bool isErrorWindowVisible = (gEnv && gEnv->pSystem->IsAssertDialogVisible());
@@ -2410,15 +2323,11 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
     }
     else if (bActive || (bBackgroundUpdate && !bIsAppWindow))
     {
-        if (GetIEditor()->IsInGameMode())
-        {
-            // Update Game
-            GetIEditor()->GetGameEngine()->Update();
-        }
-        else
-        {
-            GetIEditor()->GetGameEngine()->Update();
+        // Update Game
+        GetIEditor()->GetGameEngine()->Update();
 
+        if (!GetIEditor()->IsInGameMode())
+        {
             if (m_pEditor)
             {
                 m_pEditor->Update();
@@ -2431,15 +2340,13 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
             {
                 pEditor->GetSystem()->DoWorkDuringOcclusionChecks();
             }
+        }
 
-            // Since the rendering is done based on the eNotify_OnIdleUpdate, we should trigger a TickSystem as well.
-            // To ensure that there's a system tick for every render done in Idle
-            AZ::ComponentApplication* componentApplication = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(componentApplication, &AZ::ComponentApplicationRequests::GetApplication);
-            if (componentApplication)
-            {
-                componentApplication->TickSystem();
-            }
+        AZ::ComponentApplication* componentApplication = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(componentApplication, &AZ::ComponentApplicationRequests::GetApplication);
+        if (componentApplication)
+        {
+            componentApplication->TickSystem();
         }
     }
     else if (GetIEditor()->GetSystem() && GetIEditor()->GetSystem()->GetILog())
@@ -2930,13 +2837,33 @@ void CCryEditApp::OnPreferences()
     */
 }
 
-void CCryEditApp::OnReloadTextures()
+void CCryEditApp::OnOpenProjectManagerSettings()
 {
-    QWaitCursor wait;
-    CLogFile::WriteLine("Reloading Static objects textures and shaders.");
-    GetIEditor()->GetObjectManager()->SendEvent(EVENT_RELOAD_TEXTURES);
-    GetIEditor()->GetRenderer()->EF_ReloadTextures();
+    OpenProjectManager("UpdateProject");
 }
+
+void CCryEditApp::OnOpenProjectManagerNew()
+{
+    OpenProjectManager("CreateProject");
+}
+
+void CCryEditApp::OnOpenProjectManager()
+{
+    OpenProjectManager("Projects");
+}
+
+void CCryEditApp::OpenProjectManager(const AZStd::string& screen)
+{
+    // provide the current project path for in case we want to update the project
+    AZ::IO::FixedMaxPathString projectPath = AZ::Utils::GetProjectPath();
+    const AZStd::string commandLineOptions = AZStd::string::format(" --screen %s --project-path %s", screen.c_str(), projectPath.c_str());
+    bool launchSuccess = AzFramework::ProjectManager::LaunchProjectManager(commandLineOptions);
+    if (!launchSuccess)
+    {
+        QMessageBox::critical(AzToolsFramework::GetActiveWindow(), QObject::tr("Failed to launch O3DE Project Manager"), QObject::tr("Failed to find or start the O3dE Project Manager"));
+    }
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnUndo()
@@ -3190,6 +3117,15 @@ CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& levelNam
     GetIEditor()->GetDocument()->SetPathName(fullyQualifiedLevelName);
     GetIEditor()->GetGameEngine()->SetLevelPath(levelPath);
 
+    if (usePrefabSystemForLevels)
+    {
+        auto* service = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+        if (service)
+        {
+            service->CreateNewLevelPrefab(fullyQualifiedLevelName.toUtf8().constData(), DefaultLevelTemplateName);
+        }
+    }
+
     if (GetIEditor()->GetDocument()->Save())
     {
         if (!usePrefabSystemForLevels)
@@ -3388,6 +3324,8 @@ void CCryEditApp::OnCreateSlice()
 void CCryEditApp::OnOpenLevel()
 {
     CLevelFileDialog levelFileDialog(true);
+    levelFileDialog.show();
+    levelFileDialog.adjustSize();
 
     if (levelFileDialog.exec() == QDialog::Accepted)
     {
@@ -3493,39 +3431,6 @@ void CCryEditApp::OnResourcesReduceworkingset()
 #endif
 }
 
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnSnap()
-{
-    // Switch current snap to grid state.
-    bool bGridEnabled = gSettings.pGrid->IsEnabled();
-    gSettings.pGrid->Enable(!bGridEnabled);
-}
-
-void CCryEditApp::OnWireframe()
-{
-    int             nWireframe(R_SOLID_MODE);
-    ICVar*      r_wireframe(gEnv->pConsole->GetCVar("r_wireframe"));
-
-    if (r_wireframe)
-    {
-        nWireframe = r_wireframe->GetIVal();
-    }
-
-    if (nWireframe != R_WIREFRAME_MODE)
-    {
-        nWireframe = R_WIREFRAME_MODE;
-    }
-    else
-    {
-        nWireframe = R_SOLID_MODE;
-    }
-
-    if (r_wireframe)
-    {
-        r_wireframe->Set(nWireframe);
-    }
-}
-
 void CCryEditApp::OnUpdateWireframe(QAction* action)
 {
     Q_ASSERT(action->isCheckable());
@@ -3538,14 +3443,6 @@ void CCryEditApp::OnUpdateWireframe(QAction* action)
     }
 
     action->setChecked(nWireframe == R_WIREFRAME_MODE);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnViewGridsettings()
-{
-    CGridSettingsDialog dlg;
-    dlg.exec();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -3745,53 +3642,8 @@ void CCryEditApp::OnViewCycle2dviewport()
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnDisplayGotoPosition()
 {
-    CGotoPositionDlg dlg;
-    dlg.exec();
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnSnapangle()
-{
-    gSettings.pGrid->EnableAngleSnap(!gSettings.pGrid->IsAngleSnapEnabled());
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnUpdateSnapangle(QAction* action)
-{
-    Q_ASSERT(action->isCheckable());
-    action->setChecked(gSettings.pGrid->IsAngleSnapEnabled());
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnChangemovespeedIncrease()
-{
-    gSettings.cameraMoveSpeed += m_moveSpeedStep;
-    if (gSettings.cameraMoveSpeed < 0.01f)
-    {
-        gSettings.cameraMoveSpeed = 0.01f;
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnChangemovespeedDecrease()
-{
-    gSettings.cameraMoveSpeed -= m_moveSpeedStep;
-    if (gSettings.cameraMoveSpeed < 0.01f)
-    {
-        gSettings.cameraMoveSpeed = 0.01f;
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnChangemovespeedChangestep()
-{
-    bool ok = false;
-    int fractionalDigitCount = 5;
-    float step = aznumeric_caster(QInputDialog::getDouble(AzToolsFramework::GetActiveWindow(), QObject::tr("Change Move Increase/Decrease Step"), QStringLiteral(""), m_moveSpeedStep, std::numeric_limits<float>::lowest(), std::numeric_limits<float>::max(), fractionalDigitCount, &ok));
-    if (ok)
-    {
-        m_moveSpeedStep = step;
-    }
+    GotoPositionDialog dialog;
+    dialog.exec();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -4116,22 +3968,14 @@ void CCryEditApp::SetEditorWindowTitle(QString sTitleStr, QString sPreTitleStr, 
 {
     if (MainWindow::instance() || m_pConsoleDialog)
     {
-        QString platform = "";
-
-#ifdef WIN64
-        platform = "[x64]";
-#else
-        platform = "[x86]";
-#endif //WIN64
-
         if (sTitleStr.isEmpty())
         {
-            sTitleStr = QObject::tr("Open 3D Engine Editor Beta %1 - Build %2").arg(platform).arg(LY_BUILD);
+            sTitleStr = QObject::tr("O3DE Editor [Developer Preview]");
         }
 
         if (!sPreTitleStr.isEmpty())
         {
-            sTitleStr.insert(0, sPreTitleStr);
+            sTitleStr.insert(sTitleStr.length(), QStringLiteral(" - %1").arg(sPreTitleStr));
         }
 
         if (!sPostTitleStr.isEmpty())
@@ -4424,6 +4268,18 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
     // open a scope to contain the AZToolsApp instance;
     {
         EditorInternal::EditorToolsApplication AZToolsApp(&argc, &argv);
+
+        {
+            CEditCommandLineInfo cmdInfo;
+            if (!cmdInfo.m_bAutotestMode && !cmdInfo.m_bConsoleMode && !cmdInfo.m_bExport && !cmdInfo.m_bExportTexture &&
+                !cmdInfo.m_bNullRenderer && !cmdInfo.m_bMatEditMode && !cmdInfo.m_bTest)
+            {
+                if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI != nullptr)
+                {
+                    nativeUI->SetMode(AZ::NativeUI::Mode::ENABLED);
+                }
+            }
+        }
 
         // The settings registry has been created by the AZ::ComponentApplication constructor at this point
         AZ::SettingsRegistryInterface& registry = *AZ::SettingsRegistry::Get();

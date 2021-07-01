@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #include "EditorDefs.h"
 
@@ -270,21 +265,6 @@ namespace Path
         str += "Mods\\";
         str += g_currentModName;
         return str;
-    }
-
-    //! Set the current mod NAME for editing purposes.  After doing this the above functions will take this into account
-    //! name only, please!
-    void SetModName(const char* input)
-    {
-        if (
-            (!input) ||
-            ((gEnv) && (gEnv->pSystem) && (!gEnv->pSystem->IsMODValid(input))) // we can only validate
-            )
-        {
-            AZ_Warning("PathUtil", false, "Invalid mod name supplied to SetModName: %s - ignored.", input ? input : "(NULL)");
-            return;
-        }
-        g_currentModName = input;
     }
 
     //! Get the root folder (in source control or other writable assets) where you should save root data.

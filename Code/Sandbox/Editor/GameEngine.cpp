@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #include "EditorDefs.h"
 
@@ -38,7 +33,6 @@
 
 // CryCommon
 #include <CryCommon/INavigationSystem.h>
-#include <CryCommon/IDeferredCollisionEvent.h>
 #include <CryCommon/LyShine/ILyShine.h>
 #include <CryCommon/MainThreadRenderRequestBus.h>
 
@@ -46,7 +40,6 @@
 #include "CryEdit.h"
 
 #include "ViewManager.h"
-#include "Util/Ruler.h"
 #include "AnimationContext.h"
 #include "UndoViewPosition.h"
 #include "UndoViewRotation.h"
@@ -269,14 +262,12 @@ AZ_POP_DISABLE_WARNING
     m_levelExtension = EditorUtils::LevelFile::GetDefaultFileExtension();
     m_playerViewTM.SetIdentity();
     GetIEditor()->RegisterNotifyListener(this);
-    AZ::Interface<IEditorCameraController>::Register(this);
 }
 
 AZ_PUSH_DISABLE_WARNING(4273, "-Wunknown-warning-option")
 CGameEngine::~CGameEngine()
 {
 AZ_POP_DISABLE_WARNING
-    AZ::Interface<IEditorCameraController>::Unregister(this);
     GetIEditor()->UnregisterNotifyListener(this);
     m_pISystem->GetIMovieSystem()->SetCallback(NULL);
 
@@ -351,42 +342,9 @@ static void CmdGotoEditor(IConsoleCmdArgs* pArgs)
     }
 }
 
-void CGameEngine::SetCurrentViewPosition(const AZ::Vector3& position)
-{
-    CViewport* pRenderViewport = GetIEditor()->GetViewManager()->GetGameViewport();
-    if (pRenderViewport)
-    {
-        CUndo undo("Set Current View Position");
-        if (CUndo::IsRecording())
-        {
-            CUndo::Record(new CUndoViewPosition());
-        }
-        Matrix34 tm = pRenderViewport->GetViewTM();
-        tm.SetTranslation(Vec3(position.GetX(), position.GetY(), position.GetZ()));
-        pRenderViewport->SetViewTM(tm);
-    }
-}
-
-void CGameEngine::SetCurrentViewRotation(const AZ::Vector3& rotation)
-{
-    CViewport* pRenderViewport = GetIEditor()->GetViewManager()->GetGameViewport();
-    if (pRenderViewport)
-    {
-        CUndo undo("Set Current View Rotation");
-        if (CUndo::IsRecording())
-        {
-            CUndo::Record(new CUndoViewRotation());
-        }
-        Matrix34 tm = pRenderViewport->GetViewTM();
-        tm.SetRotationXYZ(Ang3(DEG2RAD(rotation.GetX()), DEG2RAD(rotation.GetY()), DEG2RAD(rotation.GetZ())), tm.GetTranslation());
-        pRenderViewport->SetViewTM(tm);
-    }
-}
-
 AZ::Outcome<void, AZStd::string> CGameEngine::Init(
     bool bPreviewMode,
     bool bTestMode,
-    bool bShaderCacheGen,
     const char* sInCmdLine,
     IInitializeUIInfo* logo,
     HWND hwndForInputSystem)
@@ -423,12 +381,10 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
 #else
     sip.hWnd = hwndForInputSystem;
 #endif
-    sip.hWndForInputSystem = hwndForInputSystem;
 
     sip.pLogCallback = &m_logFile;
     sip.sLogFileName = "@log@/Editor.log";
     sip.pUserCallback = m_pSystemUserCallback;
-    sip.pValidator = GetIEditor()->GetErrorReport(); // Assign validator from Editor.
 
     if (sInCmdLine)
     {
@@ -444,10 +400,6 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
         m_modalWindowDismisser = AZStd::make_unique<ModalWindowDismisser>();
     }
 
-    if (bShaderCacheGen)
-    {
-        sip.bSkipFont = true;
-    }
     AssetProcessConnectionStatus apConnectionStatus;
 
     m_pISystem = pfnCreateSystemInterface(sip);
@@ -510,7 +462,6 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
 
 bool CGameEngine::InitGame(const char*)
 {
-    // in editor we do it later, bExecuteCommandLine was set to false
     m_pISystem->ExecuteCommandLine();
 
     return true;
@@ -615,16 +566,8 @@ void CGameEngine::SwitchToInGame()
     
     GetIEditor()->Notify(eNotify_OnBeginGameMode);
 
-    m_pISystem->SetThreadState(ESubsys_Physics, false);
-
     m_pISystem->GetIMovieSystem()->EnablePhysicsEvents(true);
     m_bInGameMode = true;
-
-    CRuler* pRuler = GetIEditor()->GetRuler();
-    if (pRuler)
-    {
-        pRuler->SetActive(false);
-    }
 
     gEnv->pSystem->GetViewCamera().SetMatrix(m_playerViewTM);
 
@@ -645,6 +588,8 @@ void CGameEngine::SwitchToInGame()
                                                     &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
                                                     AzFramework::SystemCursorState::ConstrainedAndHidden);
     }
+
+    Log("Entered game mode");
 }
 
 void CGameEngine::SwitchToInEditor()
@@ -658,8 +603,6 @@ void CGameEngine::SwitchToInEditor()
         m_pISystem->GetIMovieSystem()->GetPlayingSequence(i)->Deactivate();
     }
     m_pISystem->GetIMovieSystem()->Reset(false, false);
-
-    m_pISystem->SetThreadState(ESubsys_Physics, false);
 
     CViewport* pGameViewport = GetIEditor()->GetViewManager()->GetGameViewport();
 
@@ -701,6 +644,8 @@ void CGameEngine::SwitchToInEditor()
     AzFramework::InputSystemCursorRequestBus::Event(AzFramework::InputDeviceMouse::Id,
                                                     &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
                                                     AzFramework::SystemCursorState::UnconstrainedAndVisible);
+
+    Log("Exited game mode");
 }
 
 void CGameEngine::HandleQuitRequest(IConsoleCmdArgs* /*args*/)
@@ -792,12 +737,6 @@ void CGameEngine::SetSimulationMode(bool enabled, bool bOnlyPhysics)
 
     if (enabled)
     {
-        CRuler* pRuler = GetIEditor()->GetRuler();
-        if (pRuler)
-        {
-            pRuler->SetActive(false);
-        }
-
         GetIEditor()->Notify(eNotify_OnBeginSimulationMode);
     }
     else
@@ -809,8 +748,6 @@ void CGameEngine::SetSimulationMode(bool enabled, bool bOnlyPhysics)
 
     // Enables engine to know about simulation mode.
     gEnv->SetIsEditorSimulationMode(enabled);
-
-    m_pISystem->SetThreadState(ESubsys_Physics, false);
 
     if (m_bSimulationMode)
     {
@@ -922,22 +859,6 @@ void CGameEngine::Update()
         // [marco] check current sound and vis areas for music etc.
         // but if in game mode, 'cos is already done in the above call to game->update()
         unsigned int updateFlags = ESYSUPDATE_EDITOR;
-
-        CRuler* pRuler = GetIEditor()->GetRuler();
-        const bool bRulerNeedsUpdate = (pRuler && pRuler->HasQueuedPaths());
-
-        if (!m_bSimulationMode)
-        {
-            updateFlags |= ESYSUPDATE_IGNORE_PHYSICS;
-        }
-
-        bool bUpdateAIPhysics = GetSimulationMode();
-
-        if (bUpdateAIPhysics)
-        {
-            updateFlags |= ESYSUPDATE_EDITOR_AI_PHYSICS;
-        }
-
         GetIEditor()->GetAnimation()->Update();
         GetIEditor()->GetSystem()->UpdatePreTickBus(updateFlags);
         componentApplication->Tick(gEnv->pTimer->GetFrameTime(ITimer::ETIMER_GAME));

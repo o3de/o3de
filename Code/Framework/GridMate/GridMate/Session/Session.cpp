@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <GridMate/Session/Session.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/parallel/lock.h>
@@ -960,7 +955,7 @@ GridSession::AddMember(GridMember* member)
             replica->AttachReplicaChunk(member);
         }
 
-        m_replicaMgr->AddMaster(replica);
+        m_replicaMgr->AddPrimary(replica);
         member->m_isHost.Set(member->IsLocal());
     }
 
@@ -1583,7 +1578,7 @@ GridSession::OnStateCreate(HSM& sm, const HSM::Event& e)
             // Bind session replica
             Replica* stateReplica = Replica::CreateReplica("SessionStateInfo");
             stateReplica->AttachReplicaChunk(m_state);
-            m_replicaMgr->AddMaster(stateReplica);
+            m_replicaMgr->AddPrimary(stateReplica);
 
             // Bind member replica
             bool isAdded = AddMember(m_myMember);
@@ -2005,7 +2000,7 @@ GridMember::OnReplicaActivate(const ReplicaContext& rc)
     {
         // if this member is me... add my state to the system.
         AZ_Assert(m_session->GetMyMember() == this, "The only local member should be myMember too!");
-        rc.m_rm->AddMaster(m_clientState->GetReplica());
+        rc.m_rm->AddPrimary(m_clientState->GetReplica());
 
         // Both member and client state are valid! send member joined message
         EBUS_DBG_EVENT(Debug::SessionDrillerBus, OnMemberJoined, m_session, this);
@@ -2052,7 +2047,7 @@ GridMember::OnReplicaChangeOwnership(const ReplicaContext& rc)
 {
     (void)rc;
     AZ_Assert(m_session->IsMigratingHost(), "This function can be called only during host migration!");
-    if (IsMaster())
+    if (IsPrimary())
     {
         // Host owns the members, if I became the owner means I am the HOST!
         if (m_session->m_myMember == this)
@@ -2084,7 +2079,7 @@ GridMember::OnKick(AZ::u8 reason, const RpcContext& rc)
             m_session->Leave(false);
         }
 
-        return true; // this is called only on the master
+        return true; // this is called only on the primary
     }
     return false;
 }
@@ -2320,8 +2315,8 @@ void
 GridMemberStateReplica::OnReplicaDeactivate(const ReplicaContext& rc)
 {
     (void)rc;
-    // for master (this is our state) we always keep it. So don't do anything.
-    if (IsMaster())
+    // for primary (this is our state) we always keep it. So don't do anything.
+    if (IsPrimary())
     {
         return;
     }

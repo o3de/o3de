@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #include "UiCanvasEditor_precompiled.h"
 //#include "CustomizeKeyboardPage.h"
@@ -21,34 +16,6 @@
 //////////////////////////////////////////////////////////////////////////
 void HeapCheck::Check([[maybe_unused]] const char* file, [[maybe_unused]] int line)
 {
-#ifdef _DEBUG
-    AZ_Assert(CryMemory::IsHeapValid(), "Invalid heap");
-#endif
-
-    /*
-   int heapstatus = _heapchk();
-   switch( heapstatus )
-   {
-   case _HEAPOK:
-      break;
-   case _HEAPEMPTY:
-      break;
-   case _HEAPBADBEGIN:
-            {
-                CString str;
-                str.Format( "Bad Start of Heap, at file %s line:%d",file,line );
-                MessageBox( NULL,str,"Heap Check",MB_OK );
-            }
-      break;
-   case _HEAPBADNODE:
-            {
-                CString str;
-                str.Format( "Bad Node in Heap, at file %s line:%d",file,line );
-                MessageBox( NULL,str,"Heap Check",MB_OK );
-            }
-      break;
-   }
-     */
 }
 
 #include <QCursor>

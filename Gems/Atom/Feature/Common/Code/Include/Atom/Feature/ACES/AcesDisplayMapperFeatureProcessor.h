@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -60,6 +55,12 @@ namespace AZ
             : public DisplayMapperFeatureProcessorInterface
         {
         public:
+            enum OutputDeviceTransformFlags
+            {
+                AlterSurround = 0x1, // Apply gamma adjustment to compensate for dim surround
+                ApplyDesaturation = 0x2, // Apply desaturation to compensate for luminance difference
+                ApplyCATD60toD65 = 0x4, // Apply Color appearance transform (CAT) from ACES white point to assumed observer adapted white point
+            };
 
             AZ_RTTI(AZ::Render::AcesDisplayMapperFeatureProcessor, "{995C2B93-8B08-4313-89B0-02394F90F1B8}", AZ::Render::DisplayMapperFeatureProcessorInterface);
 
@@ -91,12 +92,6 @@ namespace AZ
             AcesDisplayMapperFeatureProcessor(const AcesDisplayMapperFeatureProcessor&) = delete;
             static void ApplyLdrOdtParameters(DisplayMapperParameters* pOutParameters);
             static void ApplyHdrOdtParameters(DisplayMapperParameters* pOutParameters, const OutputDeviceTransformType& odtType);
-
-            enum OutputDeviceTransformFlags {
-                AlterSurround = 0x1,        // Apply gamma adjustment to compensate for dim surround
-                ApplyDesaturation = 0x2,    // Apply desaturation to compensate for luminance difference
-                ApplyCATD60toD65 = 0x4,     // Apply Color appearance transform (CAT) from ACES white point to assumed observer adapted white point
-            };
 
             enum OutputDeviceTransformMode {
                 Srgb = 0,

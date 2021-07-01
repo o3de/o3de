@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <Atom/RPI.Reflect/Image/Image.h>
@@ -49,6 +44,21 @@ public:
     // width of the border (but the texture can have alpha at edges to make it thinner).
     void DrawElementRectOutline(Draw2dHelper& draw2d, AZ::EntityId entityId, AZ::Color color);
 
+    // Set whether to apply high resolution dpi scaling to the icon size
+    void SetApplyDpiScaleFactorToSize(bool apply) { m_applyDpiScaleFactorToSize = apply; }
+
+    // Get whether to apply high resolution dpi scaling to the icon size
+    bool GetApplyDpiScaleFactorToSize() { return m_applyDpiScaleFactorToSize; }
+
+    // Set scale factor
+    static void SetDpiScaleFactor(float scale) { m_dpiScaleFactor = scale; }
+
+    // Get scale factor
+    static float GetDpiScaleFactor() { return m_dpiScaleFactor; }
+
 private:
     AZ::Data::Instance<AZ::RPI::Image> m_image;
+    bool m_applyDpiScaleFactorToSize = true;
+
+    static float m_dpiScaleFactor;
 };

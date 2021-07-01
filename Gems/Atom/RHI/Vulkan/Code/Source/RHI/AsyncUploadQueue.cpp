@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "Atom_RHI_Vulkan_precompiled.h"
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI.Reflect/PlatformLimitsDescriptor.h>
@@ -214,7 +209,7 @@ namespace AZ
                     const uint32_t stagingRowPitch = RHI::AlignUp(subresourceLayout.m_bytesPerRow, bufferOffsetAlign);
                     const uint32_t stagingSlicePitch = subresourceLayout.m_rowCount * stagingRowPitch;
                     const uint32_t rowsPerSplit = static_cast<uint32_t>(m_descriptor.m_stagingSizeInBytes) / stagingRowPitch;
-                    const uint32_t compressedTexelBlockSizeHeight = subresourceLayout.m_size.m_height / subresourceLayout.m_rowCount;
+                    const uint32_t compressedTexelBlockSizeHeight = subresourceLayout.m_blockElementHeight;
 
                     // ImageHeight must be bigger than or equal to the Image's row count. Images with a RowCount that is less than the ImageHeight indicates a block compression.
                     // Images with a RowCount which is higher than the ImageHeight indicates a planar image, which is not supported for streaming images.
@@ -333,7 +328,7 @@ namespace AZ
                                     const uint32_t endRow = AZStd::min(startRow + rowsPerSplit, subresourceLayout.m_rowCount);
 
                                     // Calculate the blocksize for BC formatted images; the copy command works in texels.
-                                    const uint32_t heightToCopy = (endRow - startRow) * compressedTexelBlockSizeHeight;
+                                    uint32_t heightToCopy = (endRow - startRow) * compressedTexelBlockSizeHeight;
 
                                     // Copy subresource data to staging memory.
                                     {
@@ -348,6 +343,14 @@ namespace AZ
                                         framePacket->m_stagingBuffer->GetBufferMemoryView()->Unmap(RHI::HostMemoryAccess::Write);
                                     }
 
+                                    //Clamp heightToCopy to match subresourceLayout.m_size.m_height as it is possible to go over
+                                    //if subresourceLayout.m_size.m_height is not perfectly divisible by compressedTexelBlockSizeHeight
+                                    if(destHeight+heightToCopy > subresourceLayout.m_size.m_height)
+                                    {
+                                        uint32_t HeightDiff = (destHeight + heightToCopy) - subresourceLayout.m_size.m_height;
+                                        heightToCopy -= HeightDiff;
+                                    }
+                                    
                                     // Add copy command to copy image subresource from staging memory to image GPU resource.
                                     copyDescriptor.m_destinationOrigin.m_top = destHeight;
                                     copyDescriptor.m_sourceSize.m_height = heightToCopy;

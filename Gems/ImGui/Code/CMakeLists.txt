@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 set(config_base_defines $<IF:$<CONFIG:release>,IMGUI_DISABLED,IMGUI_ENABLED>)
@@ -53,6 +49,8 @@ ly_add_target(
         PUBLIC
             Gem::ImGui.imguilib
             Legacy::CryCommon
+    RUNTIME_DEPENDENCIES
+        Gem::ImGui.imguilib
 )
 
 ly_add_target(
@@ -70,6 +68,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PUBLIC
             Gem::ImGui.ImGuiLYUtils
+        PRIVATE
             Gem::LmbrCentral
 )
 
@@ -90,13 +89,15 @@ ly_add_target(
         Gem::LmbrCentral
 )
 
+# Load the above "Gem::ImGui" module in Clients and Servers:
+ly_create_alias(NAME ImGui.Clients NAMESPACE Gem TARGETS Gem::ImGui)
+ly_create_alias(NAME ImGui.Servers NAMESPACE Gem TARGETS Gem::ImGui)
+
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME ImGui.Editor GEM_MODULE
 
         NAMESPACE Gem
-        AUTOMOC
-        AUTOUIC
         FILES_CMAKE
             imgui_editor_files.cmake
         COMPILE_DEFINITIONS
@@ -112,10 +113,12 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PRIVATE
                 Gem::ImGui.Static
-                3rdParty::Qt::Widgets
-                AZ::AzToolsFramework
-                Legacy::Editor.Headers
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral.Editor
     )
+
+    # Load the above "Gem::ImGui.Editor" module in only tools and builders.
+    ly_create_alias(NAME ImGui.Builders NAMESPACE Gem TARGETS Gem::ImGui.Editor)
+    ly_create_alias(NAME ImGui.Tools    NAMESPACE Gem TARGETS Gem::ImGui.Editor)
+
 endif()

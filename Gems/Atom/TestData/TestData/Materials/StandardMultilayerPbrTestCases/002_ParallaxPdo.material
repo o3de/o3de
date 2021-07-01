@@ -4,6 +4,10 @@
     "parentMaterial": "",
     "propertyLayoutVersion": 3,
     "properties": {
+        "blend": {
+            "enableLayer2": true,
+            "enableLayer3": true
+        },
         "layer1_baseColor": {
             "textureMap": "TestData/Textures/cc0/bark1_col.jpg"
         },
@@ -11,7 +15,6 @@
             "textureMap": "TestData/Textures/cc0/bark1_norm.jpg"
         },
         "layer1_parallax": {
-            "enable": true,
             "factor": 0.03999999910593033,
             "textureMap": "TestData/Textures/cc0/bark1_disp.jpg"
         },
@@ -28,8 +31,8 @@
             "textureMap": "TestData/Textures/cc0/Rock030_2K_Normal.jpg"
         },
         "layer2_parallax": {
-            "enable": true,
             "factor": 0.05299999937415123,
+            "offset": -0.024000000208616258,
             "textureMap": "TestData/Textures/cc0/Rock030_2K_Displacement.jpg"
         },
         "layer2_roughness": {
@@ -45,8 +48,8 @@
             "textureMap": "TestData/Textures/cc0/Concrete019_1K_Color.jpg"
         },
         "parallax": {
-            "enable": true,
-            "pdo": true
+            "pdo": true,
+            "quality": "Medium"
         }
     }
 }

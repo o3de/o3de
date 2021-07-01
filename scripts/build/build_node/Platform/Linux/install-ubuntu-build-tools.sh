@@ -1,13 +1,9 @@
 #!/bin/bash
 
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # This script must be run as root
 if [[ $EUID -ne 0 ]]
@@ -26,7 +22,7 @@ then
     exit 1
 fi
 
-UBUNTU_DISTRO="`lsb_release -c | awk '{print $2}'`"
+UBUNTU_DISTRO="$(lsb_release -c | awk '{print $2}')"
 if [ "$UBUNTU_DISTRO" == "bionic" ]
 then
     echo "Setup for Ubuntu 18.04 LTS ($UBUNTU_DISTRO)"
@@ -53,7 +49,7 @@ fi
 # will install it from the bionic distro manually into focal. This is needed since Ubuntu 20.04 supports
 # python 3.8 out of the box, but we are using 3.7
 #
-LIBFFI6_COUNT=`apt list --installed 2>/dev/null | grep libffi6 | wc -l`
+LIBFFI6_COUNT=$(apt list --installed 2>/dev/null | grep libffi6 | wc -l)
 if [ "$UBUNTU_DISTRO" == "focal" ] && [ $LIBFFI6_COUNT -eq 0 ]
 then
     echo "Installing libffi for Ubuntu 20.04"
@@ -90,7 +86,7 @@ fi
 # Add the kitware repository for cmake if necessary
 #
 
-KITWARE_REPO_COUNT=`cat /etc/apt/sources.list | grep ^deb | grep https://apt.kitware.com/ubuntu/ | wc -l`
+KITWARE_REPO_COUNT=$(cat /etc/apt/sources.list | grep ^deb | grep https://apt.kitware.com/ubuntu/ | wc -l)
 
 if [ $KITWARE_REPO_COUNT -eq 0 ]
 then
@@ -121,33 +117,34 @@ PACKAGE_FILE_LIST=package-list.ubuntu-$UBUNTU_DISTRO.txt
 echo Reading package list $PACKAGE_FILE_LIST
 
 # Read each line (strip out comment tags)
-for LINE in `cat $PACKAGE_FILE_LIST | sed 's/#.*$//g'`
+for PREPROC_LINE in $(cat $PACKAGE_FILE_LIST | sed 's/#.*$//g')
 do
-    PACKAGE=`echo $LINE | awk -F / '{print $1}'`
+    LINE=$(echo $PREPROC_LINE | tr -d '\r\n')
+    PACKAGE=$(echo $LINE | awk -F / '{$1=$1;print $1}')
     if [ "$PACKAGE" != "" ]  # Skip blank lines
     then
-        PACKAGE_VER=`echo $LINE | awk -F / '{print $2}'`
+        PACKAGE_VER=$(echo $LINE | awk -F / '{$2=$2;print $2}')
         if [ "$PACKAGE_VER" == "" ]
         then
             # Process non-versioned packages
-            INSTALLED_COUNT=`apt list --installed 2>/dev/null | grep ^$PACKAGE/ | wc -l`
+            INSTALLED_COUNT=$(apt list --installed 2>/dev/null | grep ^$PACKAGE/ | wc -l)
             if [ $INSTALLED_COUNT -eq 0 ]
             then
                 echo Installing $PACKAGE
                 apt-get install $PACKAGE -y
             else
-                INSTALLED_VERSION=`apt list --installed 2>/dev/null | grep ^$PACKAGE/ | awk '{print $2}'`
+                INSTALLED_VERSION=$(apt list --installed 2>/dev/null | grep ^$PACKAGE/ | awk '{print $2}')
                 echo $PACKAGE already installed \(version $INSTALLED_VERSION\)
             fi
         else
             # Process versioned packages
-            INSTALLED_COUNT=`apt list --installed 2>/dev/null | grep ^$PACKAGE/ | wc -l`
+            INSTALLED_COUNT=$(apt list --installed 2>/dev/null | grep ^$PACKAGE/ | wc -l)
             if [ $INSTALLED_COUNT -eq 0 ]
             then
                 echo Installing $PACKAGE \( $PACKAGE_VER \)
                 apt-get install $PACKAGE=$PACKAGE_VER -y
             else
-                INSTALLED_VERSION=`apt list --installed 2>/dev/null | grep ^$PACKAGE/ | awk '{print $2}'`
+                INSTALLED_VERSION=$(apt list --installed 2>/dev/null | grep ^$PACKAGE/ | awk '{print $2}')
                 if [ "$INSTALLED_VERSION" != "$PACKAGE_VER" ]
                 then
                     echo $PACKAGE already installed but with the wrong version. Purging the package

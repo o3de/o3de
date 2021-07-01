@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -85,10 +80,10 @@ namespace LmbrCentral
         AZStd::vector<AZStd::string> GetBundleList(const char* bundlePath, const char* bundleExtension) const;
 
         //! Bundles which are split across archives (Usually due to size constraints) have the dependent bundles listed in the manifest
-        //! of the master bundle.  This method manages opening the dependent bundles.
+        //! of the main bundle.  This method manages opening the dependent bundles.
         void OpenDependentBundles(const char* bundleName, AZStd::shared_ptr<AzFramework::AssetBundleManifest> bundleManifest);
         //! Bundles which are split across archives (Usually due to size constraints) have the dependent bundles listed in the manifest
-        //! of the master bundle.  This method manages closing the dependent bundles.
+        //! of the main bundle.  This method manages closing the dependent bundles.
         void CloseDependentBundles(const char* bundleName, AZStd::shared_ptr<AzFramework::AssetBundleManifest> bundleManifest);
 
         size_t GetOpenedBundleCount() const override;

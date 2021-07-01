@@ -1,0 +1,22 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#include <QDialog>
+
+namespace MaterialEditor
+{
+    class SettingsDialog
+        : public QDialog
+    {
+        Q_OBJECT
+    public:
+        SettingsDialog(QWidget* parent = nullptr);
+        ~SettingsDialog() = default;
+    };
+} // namespace MaterialEditor

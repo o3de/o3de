@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "Tests.h"
 
 #include <GridMate/Memory.h>
@@ -687,7 +682,7 @@ namespace ReplicaBehavior {
                 AZ_TEST_ASSERT(chunk->Data1.IsDefaultValue());
                 AZ_TEST_ASSERT(chunk->Data2.IsDefaultValue());
 
-                m_replicaIdDefault = m_sessions[sHost].GetReplicaMgr().AddMaster(replica);
+                m_replicaIdDefault = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
             }
         }
 
@@ -725,7 +720,7 @@ namespace ReplicaBehavior {
                     AZ_TEST_ASSERT(!chunk->Data1.IsDefaultValue());
                     AZ_TEST_ASSERT(!chunk->Data2.IsDefaultValue());
 
-                    m_replicaIdModified = m_sessions[sHost].GetReplicaMgr().AddMaster(replica);
+                    m_replicaIdModified = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
                 }
                 break;
             }
@@ -816,7 +811,7 @@ namespace ReplicaBehavior {
             LargeChunkWithDefaults* chunk = CreateAndAttachReplicaChunk<LargeChunkWithDefaults>(replica);
             AZ_TEST_ASSERT(chunk);
 
-            m_replicaId = m_sessions[sHost].GetReplicaMgr().AddMaster(replica);
+            m_replicaId = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
         }
 
         ~Integ_ReplicaDefaultDataSetDriller()
@@ -923,13 +918,13 @@ namespace ReplicaBehavior {
             ChunkWithBools* chunk1 = CreateAndAttachReplicaChunk<ChunkWithBools>(replica1);
             AZ_TEST_ASSERT(chunk1);
 
-            m_replicaBoolsId = m_sessions[sHost].GetReplicaMgr().AddMaster(replica1);
+            m_replicaBoolsId = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica1);
 
             ReplicaPtr replica2 = Replica::CreateReplica(nullptr);
             ChunkWithShortInts* chunk2 = CreateAndAttachReplicaChunk<ChunkWithShortInts>(replica2);
             AZ_TEST_ASSERT(chunk2);
 
-            m_replicaU8Id = m_sessions[sHost].GetReplicaMgr().AddMaster(replica2);
+            m_replicaU8Id = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica2);
         }
 
         ~Integ_Replica_ComparePackingBoolsVsU8()
@@ -1058,7 +1053,7 @@ namespace ReplicaBehavior {
             auto chunk = CreateAndAttachReplicaChunk<CustomMarshalerTestChunk>(replica);
             AZ_TEST_ASSERT(chunk);
 
-            m_replicaId = m_sessions[sHost].GetReplicaMgr().AddMaster(replica);
+            m_replicaId = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
         }
 
         ~Integ_CheckDataSetStreamIsntWrittenMoreThanNecessary()
@@ -1155,7 +1150,7 @@ namespace ReplicaBehavior {
             auto chunk = CreateAndAttachReplicaChunk<CustomMarshalerTestChunk>(replica);
             AZ_TEST_ASSERT(chunk);
 
-            m_replicaId = m_sessions[sHost].GetReplicaMgr().AddMaster(replica);
+            m_replicaId = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
         }
 
         ~Integ_CheckDataSetStreamIsntWrittenMoreThanNecessaryOnceDirty()
@@ -1249,7 +1244,7 @@ namespace ReplicaBehavior {
             ForcingDirtyTestChunk* chunk = CreateAndAttachReplicaChunk<ForcingDirtyTestChunk>(replica);
             AZ_TEST_ASSERT(chunk);
 
-            m_replicaId = m_sessions[sHost].GetReplicaMgr().AddMaster(replica);
+            m_replicaId = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
         }
 
         ~Integ_CheckReplicaIsntSentWithNoChanges()
@@ -1360,7 +1355,7 @@ namespace ReplicaBehavior {
             auto chunk = CreateAndAttachReplicaChunk<EntityLikeScriptReplicaChunk>(replica);
             AZ_TEST_ASSERT(chunk);
 
-            m_replicaId = m_sessions[sHost].GetReplicaMgr().AddMaster(replica);
+            m_replicaId = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
         }
 
         ~Integ_CheckEntityScriptReplicaIsntSentWithNoChanges()

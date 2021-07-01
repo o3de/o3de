@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -52,6 +47,7 @@
 #include <AzToolsFramework/UI/PropertyEditor/PropertyManagerComponent.h>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiSystemComponent.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerComponent.h>
+#include <AzToolsFramework/Thumbnails/ThumbnailerNullComponent.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserComponent.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemComponent.h>
 
@@ -91,6 +87,7 @@ namespace AzToolsFramework
             AzToolsFramework::AssetBundleComponent::CreateDescriptor(),
             AzToolsFramework::SliceDependencyBrowserComponent::CreateDescriptor(),
             AzToolsFramework::Thumbnailer::ThumbnailerComponent::CreateDescriptor(),
+            AzToolsFramework::Thumbnailer::ThumbnailerNullComponent::CreateDescriptor(),
             AzToolsFramework::AssetBrowser::AssetBrowserComponent::CreateDescriptor(),
             AzToolsFramework::EditorInteractionSystemComponent::CreateDescriptor(),
             AzToolsFramework::Components::EditorComponentAPIComponent::CreateDescriptor(),

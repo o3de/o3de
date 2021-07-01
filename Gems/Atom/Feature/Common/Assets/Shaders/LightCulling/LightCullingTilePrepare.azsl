@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 /*
     This compute shader analyzes the depth buffer and for each tile, find the min / max depths.  
@@ -150,7 +145,7 @@ uint ComputeTransparentBitMask(float2 minmaxZ)
         return 0;
     }
     
-    float2 minmaxZ_transparent = Depth_to_Z(minmaxDepth_transparent, PassSrg::m_constantData.m_unprojectZ);
+    float2 minmaxZ_transparent = DepthBufferToViewSpace(minmaxDepth_transparent, PassSrg::m_constantData.m_unprojectZ);
 
     float2 minmaxUnit_transparent = RemapZToUnit(minmaxZ_transparent, minmaxZ);
     
@@ -181,7 +176,7 @@ void WriteTileLightDataToMainMemory(uint groupIndex, uint3 groupID, float2 minma
         
         // Note that Nvidia Light Culling framework has some additional code to better calculate this ratio
         // See cb_perFrame.fRangeThreshold in their framework. This code might be something we want to port over.
-        // https://jira.agscollab.com/browse/ATOM-5554
+        // ATOM-5554
         float ratio = tileZ / 1.0f;         
         float logMaxBins = clamp(log2(ratio), 0.0, LOG_MAX_BINS);
         uint ulogMaxBins = uint(logMaxBins + 0.5);
@@ -295,7 +290,7 @@ void MainCS(
         float2 minmaxDepth_opaque = ComputeDepthMinMaxFrom2Samples(opaqueDepthSamples);
         minmaxDepth_both = ExpandMinMax(minmaxDepth_opaque, minmaxDepth_transparent);
         UpdateMinMaxFromAllThreads(minmaxDepth_both, minmaxDepth_transparent, isPixelOnScreen);
-        minmaxDepth_both = Depth_to_Z(minmaxDepth_both, PassSrg::m_constantData.m_unprojectZ);
+        minmaxDepth_both = DepthBufferToViewSpace(minmaxDepth_both, PassSrg::m_constantData.m_unprojectZ);
 
         // if zNear == zFar we want to map z == zNear to 0-bit, so we have to keep zNear without modifications
         minmaxDepth_both.y = IncrementULP(minmaxDepth_both.y);
@@ -313,7 +308,7 @@ void MainCS(
         float2 minmaxDepth_opaque = ComputeDepthMinMaxFrom4Samples(opaqueDepthSamples);
         minmaxDepth_both = ExpandMinMax(minmaxDepth_opaque, minmaxDepth_transparent);
         UpdateMinMaxFromAllThreads(minmaxDepth_both, minmaxDepth_transparent, isPixelOnScreen);
-        minmaxDepth_both = Depth_to_Z(minmaxDepth_both, PassSrg::m_constantData.m_unprojectZ);
+        minmaxDepth_both = DepthBufferToViewSpace(minmaxDepth_both, PassSrg::m_constantData.m_unprojectZ);
 
         // if zNear == zFar we want to map z == zNear to 0-bit, so we have to keep zNear without modifications
         minmaxDepth_both.y = IncrementULP(minmaxDepth_both.y);

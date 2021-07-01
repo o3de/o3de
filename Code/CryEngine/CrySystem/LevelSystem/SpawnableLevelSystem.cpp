@@ -1,21 +1,14 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "CrySystem_precompiled.h"
 #include "SpawnableLevelSystem.h"
 #include <IAudioSystem.h>
 #include "IMovieSystem.h"
-#include <IResourceManager.h>
-#include "IDeferredCollisionEvent.h"
 
 #include <LoadScreenBus.h>
 
@@ -38,8 +31,8 @@ namespace LegacyLevelSystem
     //------------------------------------------------------------------------
     static void LoadLevel(const AZ::ConsoleCommandContainer& arguments)
     {
-        AZ_Error("SpawnableLevelSystem", arguments.empty(), "LoadLevel requires a level file name to be provided.");
-        AZ_Error("SpawnableLevelSystem", arguments.size() > 1, "LoadLevel requires a single level file name to be provided.");
+        AZ_Error("SpawnableLevelSystem", !arguments.empty(), "LoadLevel requires a level file name to be provided.");
+        AZ_Error("SpawnableLevelSystem", arguments.size() == 1, "LoadLevel requires a single level file name to be provided.");
 
         if (!arguments.empty() && gEnv->pSystem && gEnv->pSystem->GetILevelSystem() && !gEnv->IsEditor())
         {
@@ -248,8 +241,6 @@ namespace LegacyLevelSystem
 
             auto pPak = gEnv->pCryPak;
 
-            m_pSystem->SetThreadState(ESubsys_Physics, false);
-
             ICVar* pSpamDelay = gEnv->pConsole->GetCVar("log_SpamDelay");
             float spamDelay = 0.0f;
             if (pSpamDelay)
@@ -344,8 +335,6 @@ namespace LegacyLevelSystem
 
         gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_PRECACHE_START, 0, 0);
 
-        m_pSystem->SetThreadState(ESubsys_Physics, true);
-
         return true;
     }
 
@@ -422,11 +411,6 @@ namespace LegacyLevelSystem
     void SpawnableLevelSystem::OnLoadingError(const char* levelName, const char* error)
     {
         AZ_Error("LevelSystem", false, "Error loading level '%s': %s\n", levelName, error);
-
-        if (gEnv->pRenderer)
-        {
-            gEnv->pRenderer->SetTexturePrecaching(false);
-        }
 
         for (auto& listener : m_listeners)
         {
@@ -541,32 +525,6 @@ namespace LegacyLevelSystem
 
         CTimeValue tBegin = gEnv->pTimer->GetAsyncTime();
 
-        // AM: Flush render thread (Flush is not exposed - using EndFrame())
-        // We are about to delete resources that could be in use
-        if (gEnv->pRenderer)
-        {
-            gEnv->pRenderer->EndFrame();
-
-            bool isLoadScreenPlaying = false;
-    #if AZ_LOADSCREENCOMPONENT_ENABLED
-            LoadScreenBus::BroadcastResult(isLoadScreenPlaying, &LoadScreenBus::Events::IsPlaying);
-    #endif // if AZ_LOADSCREENCOMPONENT_ENABLED
-
-            // force a black screen as last render command.
-            // if load screen is playing do not call this draw as it may lead to a crash due to UI loading code getting
-            // pumped while loading the shaders for this draw.
-            if (!isLoadScreenPlaying)
-            {
-                gEnv->pRenderer->BeginFrame();
-                gEnv->pRenderer->SetState(GS_BLSRC_SRCALPHA | GS_BLDST_ONEMINUSSRCALPHA | GS_NODEPTHTEST);
-                gEnv->pRenderer->Draw2dImage(0, 0, 800, 600, -1, 0.0f, 0.0f, 1.0f, 1.0f, 0.f, 0.0f, 0.0f, 0.0f, 1.0, 0.f);
-                gEnv->pRenderer->EndFrame();
-            }
-
-            // flush any outstanding texture requests
-            gEnv->pRenderer->FlushPendingTextureTasks();
-        }
-
         // Clear level entities and prefab instances.
         EBUS_EVENT(AzFramework::GameEntityContextRequestBus, ResetGameContext);
 
@@ -602,33 +560,9 @@ namespace LegacyLevelSystem
 
         m_lastLevelName.clear();
 
-        GetISystem()->GetIResourceManager()->UnloadLevel();
-
         // Force Lua garbage collection (may no longer be needed now the legacy renderer has been removed).
         // Normally the GC step is triggered at the end of this method (by the ESYSTEM_EVENT_LEVEL_POST_UNLOAD event).
         EBUS_EVENT(AZ::ScriptSystemRequestBus, GarbageCollect);
-
-        // Force to clean render resources left after deleting all objects and materials.
-        IRenderer* pRenderer = gEnv->pRenderer;
-        if (pRenderer)
-        {
-            pRenderer->FlushRTCommands(true, true, true);
-
-            CryComment("Deleting Render meshes, render resources and flush texture streaming");
-            // This may also release some of the materials.
-            int flags = FRR_DELETED_MESHES | FRR_FLUSH_TEXTURESTREAMING | FRR_OBJECTS | FRR_RENDERELEMENTS | FRR_RP_BUFFERS | FRR_POST_EFFECTS;
-
-            // Always keep the system resources around in the editor.
-            // If a level load fails for any reason, then do not unload the system resources, otherwise we will not have any system resources to
-            // continue rendering the console and debug output text.
-            if (!gEnv->IsEditor() && !GetLevelLoadFailed())
-            {
-                flags |= FRR_SYSTEM_RESOURCES;
-            }
-
-            pRenderer->FreeResources(flags);
-            CryComment("done");
-        }
 
         // Perform level unload procedures for the LyShine UI system
         if (gEnv && gEnv->pLyShine)

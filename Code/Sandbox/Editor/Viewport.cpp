@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #include "EditorDefs.h"
 
@@ -30,7 +25,6 @@
 #include "Include/HitContext.h"
 #include "Objects/ObjectManager.h"
 #include "Util/3DConnexionDriver.h"
-#include "Util/Ruler.h"
 #include "PluginManager.h"
 #include "Include/IRenderListener.h"
 #include "GameEngine.h"
@@ -1183,12 +1177,12 @@ float QtViewport::GetZoomFactor() const
 //////////////////////////////////////////////////////////////////////////
 Vec3 QtViewport::SnapToGrid(const Vec3& vec)
 {
-    return m_viewManager->GetGrid()->Snap(vec, m_fGridZoom);
+    return vec;
 }
 
 float QtViewport::GetGridStep() const
 {
-    return m_viewManager->GetGrid()->scale * m_viewManager->GetGrid()->size;
+    return 0.0f;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1414,17 +1408,7 @@ bool QtViewport::MouseCallback(EMouseEvent event, const QPoint& point, Qt::Keybo
         break;
     }
 
-    //////////////////////////////////////////////////////////////////////////
-    // Asks Ruler to handle mouse callback.
-    CRuler* pRuler = GetIEditor()->GetRuler();
     QPoint tempPoint(point.x(), point.y());
-    if (pRuler)
-    {
-        if (pRuler->MouseCallback(this, event, tempPoint, flags))
-        {
-            return true;
-        }
-    }
 
     //////////////////////////////////////////////////////////////////////////
     // Handle viewport manipulators.

@@ -1,12 +1,7 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 
 Generic fixtures bundled with LyTestTools
 These fixtures will be available to the end user without requiring to import any file.
@@ -29,7 +24,7 @@ import ly_test_tools.environment.file_system
 import ly_test_tools.launchers.launcher_helper
 import ly_test_tools.launchers.platforms.base
 import ly_test_tools.environment.watchdog
-from ly_test_tools import ALL_PLATFORM_OPTIONS, HOST_OS_PLATFORM
+from ly_test_tools import ALL_PLATFORM_OPTIONS, HOST_OS_PLATFORM, HOST_OS_DEDICATED_SERVER, HOST_OS_GENERIC_EXECUTABLE
 
 logger = logging.getLogger(__name__)
 
@@ -260,7 +255,7 @@ def dedicated_launcher(request, workspace, crash_log_watchdog):
     return _dedicated_launcher(
         request=request,
         workspace=workspace,
-        launcher_platform=get_fixture_argument(request, 'launcher_platform', HOST_OS_PLATFORM),
+        launcher_platform=get_fixture_argument(request, 'launcher_platform', HOST_OS_DEDICATED_SERVER),
         level=get_fixture_argument(request, 'level', ''))
 
 
@@ -280,6 +275,21 @@ def _dedicated_launcher(request, workspace, launcher_platform, level=""):
     request.addfinalizer(teardown)
 
     return launcher
+
+
+@pytest.fixture(scope="function")
+def generic_launcher(workspace, request, crash_log_watchdog):
+    # type: (...) -> ly_test_tools.launchers.platforms.base.Launcher
+    return _generic_launcher(
+        workspace=workspace,
+        launcher_platform=get_fixture_argument(request, 'launcher_platform', HOST_OS_GENERIC_EXECUTABLE),
+        exe_file_name=get_fixture_argument(request, 'exe_file_name', ''))
+
+
+def _generic_launcher(workspace, launcher_platform, exe_file_name):
+    """Separate implementation to call directly during unit tests"""
+    return ly_test_tools.launchers.launcher_helper.create_generic_launcher(workspace, launcher_platform, exe_file_name)
+
 
 @pytest.fixture
 def automatic_process_killer(request):

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <ReflectionProbe/ReflectionProbeComponentController.h>
 #include <ReflectionProbe/ReflectionProbeComponentConstants.h>
@@ -46,6 +41,7 @@ namespace AZ
                     ->Field("InnerLength", &ReflectionProbeComponentConfig::m_innerLength)
                     ->Field("InnerWidth", &ReflectionProbeComponentConfig::m_innerWidth)
                     ->Field("UseBakedCubemap", &ReflectionProbeComponentConfig::m_useBakedCubemap)
+                    ->Field("BakedCubemapQualityLevel", &ReflectionProbeComponentConfig::m_bakedCubeMapQualityLevel)
                     ->Field("BakedCubeMapRelativePath", &ReflectionProbeComponentConfig::m_bakedCubeMapRelativePath)
                     ->Field("BakedCubeMapAsset", &ReflectionProbeComponentConfig::m_bakedCubeMapAsset)
                     ->Field("AuthoredCubeMapAsset", &ReflectionProbeComponentConfig::m_authoredCubeMapAsset)
@@ -80,6 +76,7 @@ namespace AZ
         void ReflectionProbeComponentController::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
             incompatible.push_back(AZ_CRC("ReflectionProbeService", 0xa5b919ce));
+            incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
 
         void ReflectionProbeComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -253,8 +250,7 @@ namespace AZ
             m_configuration.m_outerLength = dimensions.GetY();
             m_configuration.m_outerHeight = dimensions.GetZ();
 
-            AzFramework::EntityBoundsUnionRequestBus::Broadcast(
-                &AzFramework::EntityBoundsUnionRequestBus::Events::RefreshEntityLocalBoundsUnion, m_entityId);
+            AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(m_entityId);
 
             // clamp the inner extents to the outer extents
             m_configuration.m_innerWidth = AZStd::min(m_configuration.m_innerWidth, m_configuration.m_outerWidth);

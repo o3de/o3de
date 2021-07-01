@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RHI/CpuProfiler.h>
 
@@ -42,11 +37,11 @@ namespace AZ
                 scene->EnableFeatureProcessor(FeatureProcessorId{ fpId });
             }
 
-            Data::Asset<ShaderResourceGroupAsset> sceneSrgAsset = RPISystemInterface::Get()->GetSceneSrgAsset();
-
-            if (sceneSrgAsset.IsReady())
+            auto sceneSrgLayout = RPISystemInterface::Get()->GetSceneSrgLayout();
+            if (sceneSrgLayout)
             {
-                scene->m_srg = ShaderResourceGroup::Create(sceneSrgAsset);
+                auto shaderAsset = RPISystemInterface::Get()->GetCommonShaderAssetForSrgs();
+                scene->m_srg = ShaderResourceGroup::Create(shaderAsset, sceneSrgLayout->GetName());
             }
             
             return ScenePtr(scene);
@@ -99,7 +94,6 @@ namespace AZ
         {
             WaitAndCleanCompletionJob(m_simulationCompletion);
             SceneRequestBus::Handler::BusDisconnect();
-            DisableAllFeatureProcessors();
 
             // Remove all the render pipelines. Need to process queued changes with pass system before and after remove render pipelines
             AZ::RPI::PassSystemInterface::Get()->ProcessQueuedChanges();
@@ -110,6 +104,8 @@ namespace AZ
             }
             m_pipelines.clear();
             AZ::RPI::PassSystemInterface::Get()->ProcessQueuedChanges();
+
+            Deactivate();
 
             delete m_cullingScene;
         }
@@ -138,8 +134,11 @@ namespace AZ
 
         void Scene::Deactivate()
         {
-            AZ_Assert(m_activated, "Not activated");
-
+            if (!m_activated)
+            {
+                return;
+            }
+            
             for (auto& fp : m_featureProcessors)
             {
                 fp->Deactivate();
@@ -240,7 +239,6 @@ namespace AZ
                 fp->Deactivate();
             }
             m_featureProcessors.clear();
-            m_pipelineStatesLookup.clear();
         }
         
         FeatureProcessor* Scene::GetFeatureProcessor(const FeatureProcessorId& featureProcessorId) const
@@ -286,9 +284,10 @@ namespace AZ
             }
 
             pipeline->OnAddedToScene(this);
+            PassSystemInterface::Get()->ProcessQueuedChanges();
+            pipeline->BuildPipelineViews();
 
             // Force to update the lookup table since adding render pipeline would effect any pipeline states created before pass system tick
-            AZ::RPI::PassSystemInterface::Get()->ProcessQueuedChanges();
             RebuildPipelineStatesLookup();
 
             AZ_Assert(!m_id.IsNull(), "RPI::Scene needs to have a valid uuid.");
@@ -400,6 +399,7 @@ namespace AZ
 
             {
                 AZ_PROFILE_SCOPE(Debug::ProfileCategory::AzRender, "WaitForSimulationCompletion");
+                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "WaitForSimulationCompletion");
                 WaitAndCleanCompletionJob(m_simulationCompletion);
             }
 
@@ -416,12 +416,15 @@ namespace AZ
 
             // Get active pipelines which need to be rendered and notify them frame started
             AZStd::vector<RenderPipelinePtr> activePipelines;
-            for (auto& pipeline : m_pipelines)
             {
-                if (pipeline->NeedsRender())
+                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "OnStartFrame");
+                for (auto& pipeline : m_pipelines)
                 {
-                    activePipelines.push_back(pipeline);
-                    pipeline->OnStartFrame(tickInfo);
+                    if (pipeline->NeedsRender())
+                    {
+                        activePipelines.push_back(pipeline);
+                        pipeline->OnStartFrame(tickInfo);
+                    }
                 }
             }
 
@@ -440,7 +443,7 @@ namespace AZ
             
 
             {
-                AZ_PROFILE_SCOPE(Debug::ProfileCategory::AzRender, "Setup Views");
+                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "Setup Views");
 
                 // Collect persistent views from all pipelines to be rendered
                 AZStd::map<ViewPtr, RHI::DrawListMask> persistentViews; 
@@ -486,7 +489,6 @@ namespace AZ
                 {
                     const auto renderLambda = [this, &fp]()
                     {
-                        AZ_PROFILE_SCOPE_DYNAMIC(Debug::ProfileCategory::AzRender, "renderJob - fp:%s", fp->RTTI_GetTypeName());
                         fp->Render(m_renderPacket);
                     };
 
@@ -522,12 +524,14 @@ namespace AZ
                 // Add dynamic draw data for all the views
                 if (m_dynamicDrawSystem)
                 {
+                    AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "DynamicDraw SubmitDrawData");
                     m_dynamicDrawSystem->SubmitDrawData(this, m_renderPacket.m_views);
                 }
             }
 
             {
                 AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "FinalizeDrawLists");
+                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "FinalizeDrawLists");
                 if (jobPolicy == RHI::JobPolicy::Serial)
                 {
                     for (auto& view : m_renderPacket.m_views)
@@ -538,7 +542,6 @@ namespace AZ
                 else
                 {
                     AZ::JobCompletion* finalizeDrawListsCompletion = aznew AZ::JobCompletion();
-                    AZ_PROFILE_EVENT_BEGIN(Debug::ProfileCategory::AzRender, "StartFinalizeDrawListsJobs");
                     for (auto& view : m_renderPacket.m_views)
                     {
                         const auto finalizeDrawListsLambda = [view]()
@@ -555,11 +558,15 @@ namespace AZ
                 }
             }
 
-            SceneNotificationBus::Event(GetId(), &SceneNotification::OnEndPrepareRender);
+            {
+                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "Scene OnEndPrepareRender");
+                SceneNotificationBus::Event(GetId(), &SceneNotification::OnEndPrepareRender);
+            }
         }
 
         void Scene::OnFrameEnd()
         {
+            AZ_ATOM_PROFILE_FUNCTION("RPI", "Scene: OnFrameEnd");
             for (auto& pipeline : m_pipelines)
             {
                 if (pipeline->NeedsRender())
@@ -698,6 +705,7 @@ namespace AZ
 
         void Scene::RebuildPipelineStatesLookup()
         {
+            AZ_ATOM_PROFILE_FUNCTION("RPI", "Scene: RebuildPipelineStatesLookup");
             m_pipelineStatesLookup.clear();
 
             AZStd::queue<ParentPass*> parents;

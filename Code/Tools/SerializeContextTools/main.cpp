@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -16,6 +11,7 @@
 #include <Application.h>
 #include <Converter.h>
 #include <Dumper.h>
+#include <SliceConverter.h>
 
 
 void PrintHelp()
@@ -23,6 +19,8 @@ void PrintHelp()
     AZ_Printf("Help", "Serialize Context Tool\n");
     AZ_Printf("Help", "  <action> [-config] <action arguments>*\n");
     AZ_Printf("Help", "  [opt] -config=<path>: optional path to application's config file. Default is 'config/editor.xml'.\n");
+    AZ_Printf("Help", "  [opt] -specializations=<prefix>: <comma or semicolon>-separated list of optional Registry project\n");
+    AZ_Printf("Help", "         specializations, such as 'editor' or 'game' or 'editor;test'.  Default is none. \n");
     AZ_Printf("Help", "\n");
     AZ_Printf("Help", "  'help': Print this help\n");
     AZ_Printf("Help", "    example: 'help'\n");
@@ -72,6 +70,14 @@ void PrintHelp()
     AZ_Printf("Help", R"(           On Windows the <prefix> should be in quotes, as \"/\" is treated as command option prefix)" "\n");
     AZ_Printf("Help", R"(    [opt] -verbose: Report additional details during the conversion process.)" "\n");
     AZ_Printf("Help", R"(    example: 'convert-ini --files=AssetProcessorPlatformConfig.ini;bootstrap.cfg --ext=setreg)" "\n");
+    AZ_Printf("Help", "  'convert-slice': Converts ObjectStream-based slice files or legacy levels to a JSON-based prefab.\n");
+    AZ_Printf("Help", "    [arg] -files=<path>: <comma or semicolon>-separated list of files to convert. Supports wildcards.\n");
+    AZ_Printf("Help", "    [opt] -dryrun: Processes as normal, but doesn't write files.\n");
+    AZ_Printf("Help", "    [opt] -keepdefaults: Fields are written if a default value was found.\n");
+    AZ_Printf("Help", "    [opt] -verbose: Report additional details during the conversion process.\n");
+    AZ_Printf("Help", "    example: 'convert-slice -files=*.slice -specializations=editor\n");
+    AZ_Printf("Help", "    example: 'convert-slice -files=Levels/TestLevel/TestLevel.ly -specializations=editor\n");
+    AZ_Printf("Help", "\n");
 }
 
 int main(int argc, char** argv)
@@ -81,11 +87,7 @@ int main(int argc, char** argv)
     bool result = false;
     Application application(argc, argv);
     AZ::ComponentApplication::StartupParameters startupParameters;
-    startupParameters.m_loadDynamicModules = false;
-    application.Create({}, startupParameters);
-    // Load the DynamicModules after the Application starts to prevent Gem System Components
-    // from activating
-    application.LoadDynamicModules();
+    application.Start({}, startupParameters);
 
     const AZ::CommandLine* commandLine = application.GetAzCommandLine();
     if (commandLine->GetNumMiscValues() < 1)
@@ -115,6 +117,11 @@ int main(int argc, char** argv)
         else if (AZ::StringFunc::Equal("convert-ini", action.c_str()))
         {
             result = Converter::ConvertConfigFile(application);
+        }
+        else if (AZ::StringFunc::Equal("convert-slice", action.c_str()))
+        {
+            SliceConverter sliceConverter;
+            result = sliceConverter.ConvertSliceFiles(application);
         }
         else
         {

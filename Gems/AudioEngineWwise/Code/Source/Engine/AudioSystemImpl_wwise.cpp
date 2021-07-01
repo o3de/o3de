@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #include <AzCore/PlatformIncl.h>
 #include <AudioSystemImpl_wwise.h>
@@ -66,12 +61,18 @@ namespace Audio
     {
         void* Malloc(AkMemPoolId memId, size_t size)
         {
-            return AZ::AllocatorInstance<AudioImplAllocator>::Get().Allocate(size, 0, 0, MemoryManagerCategories[memId & AkMemID_MASK]);
+            size_t memCategory = memId & AkMemID_MASK;
+            AZ_Assert(memCategory < AkMemID_NUM, "Wwise::MemHooks::Malloc - Bad AkMemPoolId passed: %zu", memCategory);
+            return AZ::AllocatorInstance<AudioImplAllocator>::Get().Allocate(size, 0, 0,
+                (memCategory < AkMemID_NUM) ? MemoryManagerCategories[memCategory] : nullptr);
         }
 
         void* Malign(AkMemPoolId memId, size_t size, AkUInt32 alignment)
         {
-            return AZ::AllocatorInstance<AudioImplAllocator>::Get().Allocate(size, alignment, 0, MemoryManagerCategories[memId & AkMemID_MASK]);
+            size_t memCategory = memId & AkMemID_MASK;
+            AZ_Assert(memCategory < AkMemID_NUM, "WWise::MemHooks::Malign - Bad AkMemPoolId passed: %zu", memCategory);
+            return AZ::AllocatorInstance<AudioImplAllocator>::Get().Allocate(size, alignment, 0,
+                (memCategory < AkMemID_NUM) ? MemoryManagerCategories[memCategory] : nullptr);
         }
 
         void* Realloc([[maybe_unused]] AkMemPoolId memId, void* address, size_t size)
@@ -79,12 +80,12 @@ namespace Audio
             return AZ::AllocatorInstance<AudioImplAllocator>::Get().ReAllocate(address, size, 0);
         }
 
-        void Free([[maybe_unused]] AkMemPoolId memId, void* address)
+        void* ReallocAligned([[maybe_unused]] AkMemPoolId memId, void* address, size_t size, AkUInt32 alignment)
         {
-            AZ::AllocatorInstance<AudioImplAllocator>::Get().DeAllocate(address);
+            return AZ::AllocatorInstance<AudioImplAllocator>::Get().ReAllocate(address, size, alignment);
         }
 
-        void Falign([[maybe_unused]] AkMemPoolId memId, void* address)
+        void Free([[maybe_unused]] AkMemPoolId memId, void* address)
         {
             AZ::AllocatorInstance<AudioImplAllocator>::Get().DeAllocate(address);
         }
@@ -427,8 +428,8 @@ namespace Audio
         akMemSettings.pfMalloc = Wwise::MemHooks::Malloc;
         akMemSettings.pfMalign = Wwise::MemHooks::Malign;
         akMemSettings.pfRealloc = Wwise::MemHooks::Realloc;
+        akMemSettings.pfReallocAligned = Wwise::MemHooks::ReallocAligned;
         akMemSettings.pfFree = Wwise::MemHooks::Free;
-        akMemSettings.pfFalign = Wwise::MemHooks::Falign;
         akMemSettings.pfTotalReservedMemorySize = Wwise::MemHooks::TotalReservedMemorySize;
         akMemSettings.pfSizeOfMemory = Wwise::MemHooks::SizeOfMemory;
         akMemSettings.uMemAllocationSizeLimit = Wwise::Cvars::s_PrimaryMemorySize << 10;
@@ -1390,12 +1391,12 @@ namespace Audio
                 else
                 {
                     implFileEntryData->nAKBankID = AK_INVALID_BANK_ID;
-                    g_audioImplLogger_wwise.Log(eALT_ERROR, "Failed to load file %s\n", fileEntryInfo->sFileName);
+                    g_audioImplLogger_wwise.Log(eALT_ERROR, "Wwise failed to load bank '%s'\n", fileEntryInfo->sFileName);
                 }
             }
             else
             {
-                g_audioImplLogger_wwise.Log(eALT_ERROR, "Invalid AudioFileEntryData passed to the Wwise implementation of RegisterInMemoryFile");
+                g_audioImplLogger_wwise.Log(eALT_ERROR, "Invalid AudioFileEntryData passed to RegisterInMemoryFile");
             }
         }
 
@@ -1421,12 +1422,12 @@ namespace Audio
                 }
                 else
                 {
-                    g_audioImplLogger_wwise.Log(eALT_ERROR, "Wwise Failed to unregister in memory file %s\n", fileEntryInfo->sFileName);
+                    g_audioImplLogger_wwise.Log(eALT_ERROR, "Wwise failed to unload bank '%s'\n", fileEntryInfo->sFileName);
                 }
             }
             else
             {
-                g_audioImplLogger_wwise.Log(eALT_ERROR, "Invalid AudioFileEntryData passed to the Wwise implementation of UnregisterInMemoryFile");
+                g_audioImplLogger_wwise.Log(eALT_ERROR, "Invalid AudioFileEntryData passed to UnregisterInMemoryFile");
             }
         }
 
@@ -1757,16 +1758,9 @@ namespace Audio
         memoryInfo.nPrimaryPoolSize = AZ::AllocatorInstance<Audio::AudioImplAllocator>::Get().Capacity();
         memoryInfo.nPrimaryPoolUsedSize = memoryInfo.nPrimaryPoolSize - AZ::AllocatorInstance<Audio::AudioImplAllocator>::Get().GetUnAllocatedMemory();
         memoryInfo.nPrimaryPoolAllocations = 0;
-
-    #if AZ_TRAIT_AUDIOENGINEWWISE_PROVIDE_IMPL_SECONDARY_POOL
-        memoryInfo.nSecondaryPoolSize = g_audioImplMemoryPoolSecondary_wwise.MemSize();
-        memoryInfo.nSecondaryPoolUsedSize = memoryInfo.nSecondaryPoolSize - g_audioImplMemoryPoolSecondary_wwise.MemFree();
-        memoryInfo.nSecondaryPoolAllocations = g_audioImplMemoryPoolSecondary_wwise.FragmentCount();
-    #else
         memoryInfo.nSecondaryPoolSize = 0;
         memoryInfo.nSecondaryPoolUsedSize = 0;
         memoryInfo.nSecondaryPoolAllocations = 0;
-    #endif // AZ_TRAIT_AUDIOENGINEWWISE_PROVIDE_IMPL_SECONDARY_POOL
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,19 +1,16 @@
 /*
-* All or portions of this file Copyright(c) Amazon.com, Inc.or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution(the "License").All use of this software is governed by the License,
-*or, if provided, by the license below or the license accompanying this file.Do not
-* remove or modify any license notices.This file is distributed on an "AS IS" BASIS,
-*WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManager.h>
+
+#include <AzFramework/Asset/AssetSystemBus.h>
 
 namespace AZ
 {
@@ -48,6 +45,12 @@ namespace AZ
             //! @return a null asset if the asset could not be found or loaded.
             template<typename AssetDataT>
             Data::Asset<AssetDataT> LoadAssetById(Data::AssetId assetId, TraceLevel reporting = TraceLevel::Warning);
+            
+            //! Loads a critial asset using a file path (both source and product path should be same), on the current thread.
+            //! If the asset wasn't compiled, wait until the asset is compiled.
+            //! @return a null asset if the asset could not be compiled or loaded.
+            template<typename AssetDataT>
+            Data::Asset<AssetDataT> LoadCriticalAsset(const AZStd::string& assetFilePath, TraceLevel reporting = TraceLevel::Error);
 
             template<typename AssetDataT>
             bool LoadBlocking(AZ::Data::Asset<AssetDataT>& asset, TraceLevel reporting = TraceLevel::Warning);
@@ -89,7 +92,7 @@ namespace AZ
                         assetId, AZ::Data::AssetLoadBehavior::PreLoad);
                     asset.BlockUntilLoadComplete();
 
-                    if (!asset.Get())
+                    if (!asset.IsReady())
                     {
                         AssetUtilsInternal::ReportIssue(reporting, AZStd::string::format("Could not load '%s'", productPath).c_str());
                         return {};
@@ -117,13 +120,34 @@ namespace AZ
                     );
                     asset.BlockUntilLoadComplete();
 
-                if (!asset.Get())
+                if (!asset.IsReady())
                 {
                     AssetUtilsInternal::ReportIssue(reporting, AZStd::string::format("Could not load '%s'", assetId.ToString<AZStd::string>().c_str()).c_str());
                     return {};
                 }
 
                 return asset;
+            }
+
+            template<typename AssetDataT>
+            Data::Asset<AssetDataT> LoadCriticalAsset(const AZStd::string& assetFilePath, TraceLevel reporting)
+            {
+                bool apConnected = false;
+                AzFramework::AssetSystemRequestBus::BroadcastResult(
+                    apConnected, &AzFramework::AssetSystemRequestBus::Events::ConnectedWithAssetProcessor);
+                if (apConnected)
+                {
+                    AzFramework::AssetSystem::AssetStatus status = AzFramework::AssetSystem::AssetStatus_Unknown;
+                    AzFramework::AssetSystemRequestBus::BroadcastResult(
+                        status, &AzFramework::AssetSystemRequestBus::Events::CompileAssetSync, assetFilePath);
+                    if (status != AzFramework::AssetSystem::AssetStatus_Compiled)
+                    {
+                        AssetUtilsInternal::ReportIssue(reporting, AZStd::string::format("Could not compile asset '%s'", assetFilePath.c_str()).c_str());
+                        return {};
+                    }
+                }
+
+                return LoadAssetByProductPath<AssetDataT>(assetFilePath.c_str(), reporting);
             }
 
             template<typename AssetDataT>

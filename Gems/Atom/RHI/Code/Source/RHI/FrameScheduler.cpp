@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/FrameScheduler.h>
@@ -27,6 +22,7 @@
 #include <Atom/RHI/ShaderResourceGroupPool.h>
 #include <Atom/RHI/TransientAttachmentPool.h>
 #include <Atom/RHI/ResourcePoolDatabase.h>
+#include <Atom/RHI/RayTracingShaderTable.h>
 
 #include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Jobs/Algorithms.h>
@@ -180,7 +176,10 @@ namespace AZ
 
             m_compileRequest = compileRequest;
 
-            FrameEventBus::Broadcast(&FrameEventBus::Events::OnFrameCompile);
+            {
+                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "FrameScheduler: Compile: OnFrameCompile");
+                FrameEventBus::Broadcast(&FrameEventBus::Events::OnFrameCompile);
+            }
 
             FrameGraphCompileRequest frameGraphCompileRequest;
             frameGraphCompileRequest.m_frameGraph = m_frameGraph.get();
@@ -192,7 +191,10 @@ namespace AZ
             const MessageOutcome outcome = m_frameGraphCompiler->Compile(frameGraphCompileRequest);
             if (outcome.IsSuccess())
             {
-                FrameEventBus::Broadcast(&FrameEventBus::Events::OnFrameCompileEnd, *m_frameGraph);
+                {
+                    AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "FrameScheduler: Compile: OnFrameCompileEnd");
+                    FrameEventBus::Broadcast(&FrameEventBus::Events::OnFrameCompileEnd, *m_frameGraph);
+                }
 
                 FrameGraphLogger::Log(*m_frameGraph, compileRequest.m_logVerbosity);
 
@@ -204,6 +206,9 @@ namespace AZ
 
                 // Compile all invalidated shader resource groups.
                 CompileShaderResourceGroups();
+
+                // Build RayTracingShaderTables
+                BuildRayTracingShaderTables();
             }
             return outcome;
         }
@@ -314,6 +319,25 @@ namespace AZ
             }
         }
 
+        void FrameScheduler::BuildRayTracingShaderTables()
+        {
+            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameScheduler: BuildRayTracingShaderTables");
+
+            for (auto rayTracingShaderTable : m_rayTracingShaderTablesToBuild)
+            {
+                rayTracingShaderTable->Validate();
+
+                [[maybe_unused]] ResultCode resultCode = rayTracingShaderTable->BuildInternal();
+                AZ_Assert(resultCode == ResultCode::Success, "RayTracingShaderTable build failed");
+
+                rayTracingShaderTable->m_isQueuedForBuild = false;
+            }
+
+            // clear the list now that all RayTracingShaderTables have been built for this frame
+            m_rayTracingShaderTablesToBuild.clear();
+        }
+
         ResultCode FrameScheduler::BeginFrame()
         {
             AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
@@ -377,7 +401,11 @@ namespace AZ
 
             m_scopeProducers.clear();
             m_scopeProducerLookup.clear();
-            FrameEventBus::Event(m_device, &FrameEventBus::Events::OnFrameEnd);
+
+            {
+                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "FrameScheduler: EndFrame: OnFrameEnd");
+                FrameEventBus::Event(m_device, &FrameEventBus::Events::OnFrameEnd);
+            }
 
             const AZStd::sys_time_t timeNowTicks = AZStd::GetTimeNowTicks();
             m_cpuTimingStatistics.m_frameToFrameTime = timeNowTicks - m_lastFrameEndTime;
@@ -527,6 +555,11 @@ namespace AZ
         const TransientAttachmentPoolDescriptor* FrameScheduler::GetTransientAttachmentPoolDescriptor() const
         {
             return m_transientAttachmentPool ? &m_transientAttachmentPool->GetDescriptor() : nullptr;
+        }
+
+        void FrameScheduler::QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable)
+        {
+            m_rayTracingShaderTablesToBuild.push_back(rayTracingShaderTable);
         }
     }
 }

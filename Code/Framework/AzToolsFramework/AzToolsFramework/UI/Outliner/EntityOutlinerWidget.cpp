@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerWidget.hxx>
 
@@ -26,6 +21,7 @@
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
+#include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
@@ -172,7 +168,7 @@ namespace AzToolsFramework
 
         const int autoExpandDelayMilliseconds = 2500;
         m_gui->m_objectTree->setSelectionMode(QAbstractItemView::ExtendedSelection);
-        m_gui->m_objectTree->setEditTriggers(QAbstractItemView::EditKeyPressed);
+        SetDefaultTreeViewEditTriggers();
         m_gui->m_objectTree->setAutoExpandDelay(autoExpandDelayMilliseconds);
         m_gui->m_objectTree->setDragEnabled(true);
         m_gui->m_objectTree->setDropIndicatorShown(true);
@@ -544,8 +540,7 @@ namespace AzToolsFramework
         QMenu* contextMenu = new QMenu(this);
 
         // Populate global context menu.
-        EBUS_EVENT(EditorEvents::Bus,
-            PopulateEditorGlobalContextMenu,
+        AzToolsFramework::EditorContextMenuBus::Broadcast(&AzToolsFramework::EditorContextMenuEvents::PopulateEditorGlobalContextMenu,
             contextMenu,
             AZ::Vector2::CreateZero(),
             EditorEvents::eECMF_HIDE_ENTITY_CREATION | EditorEvents::eECMF_USE_VIEWPORT_CENTER);
@@ -850,6 +845,11 @@ namespace AzToolsFramework
         addAction(m_actionGoToEntitiesInViewport);
     }
 
+    void EntityOutlinerWidget::SetDefaultTreeViewEditTriggers()
+    {
+        m_gui->m_objectTree->setEditTriggers(QAbstractItemView::SelectedClicked | QAbstractItemView::EditKeyPressed);
+    }
+
     void EntityOutlinerWidget::OnEntityPickModeStarted()
     {
         m_gui->m_objectTree->setDragEnabled(false);
@@ -862,7 +862,7 @@ namespace AzToolsFramework
     {
         m_gui->m_objectTree->setDragEnabled(true);
         m_gui->m_objectTree->setSelectionMode(QAbstractItemView::ExtendedSelection);
-        m_gui->m_objectTree->setEditTriggers(QAbstractItemView::SelectedClicked | QAbstractItemView::DoubleClicked | QAbstractItemView::EditKeyPressed);
+        SetDefaultTreeViewEditTriggers();
         m_inObjectPickMode = false;
     }
 

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #ifndef AZ_SCRIPT_COMPONENT_H
 #define AZ_SCRIPT_COMPONENT_H
 
@@ -19,8 +14,6 @@
 #include <AzCore/Math/Crc.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
-
-#include <AzFramework/Network/NetBindable.h>
 
 namespace AZ
 {
@@ -37,8 +30,6 @@ namespace AzToolsFramework
 
 namespace AzFramework
 {
-    class ScriptNetBindingTable;    
-
     struct ScriptCompileRequest;
 
     using WriteFunction = AZStd::function< AZ::Outcome<void, AZStd::string>(const ScriptCompileRequest&, AZ::IO::GenericStream& in, AZ::IO::GenericStream& out) >;
@@ -92,15 +83,13 @@ namespace AzFramework
     class ScriptComponent
         : public AZ::Component
         , private AZ::Data::AssetBus::Handler
-        , public AzFramework::NetBindable
     {
         friend class AzToolsFramework::Components::ScriptEditorComponent;        
 
     public:
-        static const char* NetRPCFieldName;
         static const char* DefaultFieldName;
 
-        AZ_COMPONENT(AzFramework::ScriptComponent, "{8D1BC97E-C55D-4D34-A460-E63C57CD0D4B}", NetBindable);        
+        AZ_COMPONENT(AzFramework::ScriptComponent, "{8D1BC97E-C55D-4D34-A460-E63C57CD0D4B}", AZ::Component);
 
         /// \red ComponentDescriptor::Reflect
         static void Reflect(AZ::ReflectContext* reflection);        
@@ -116,7 +105,6 @@ namespace AzFramework
 
         // Methods used for unit tests
         AZ::ScriptProperty* GetScriptProperty(const char* propertyName);
-        const AZ::ScriptProperty* GetNetworkedScriptProperty(const char* propertyName) const;
 
     protected:
         ScriptComponent(const ScriptComponent&) = delete;
@@ -133,13 +121,6 @@ namespace AzFramework
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         //////////////////////////////////////////////////////////////////////////
 
-        //////////////////////////////////////////////////////////////////////////
-        // NetBindable
-        GridMate::ReplicaChunkPtr GetNetworkBinding() override;
-        void SetNetworkBinding(GridMate::ReplicaChunkPtr chunk) override;
-        void UnbindFromNetwork() override;
-        //////////////////////////////////////////////////////////////////////////
-
         /// Load script (unless already by other instances) and creates the script instance into the VM
         void LoadScript();
         /// Removes the script instance and unloads the script (unless needed by other instances)
@@ -152,8 +133,6 @@ namespace AzFramework
         void CreateEntityTable();
         void DestroyEntityTable();
 
-        void CreateNetworkBindingTable(int baseStackIndex, int entityStackIndex);
-
         void CreatePropertyGroup(const ScriptPropertyGroup& group, int propertyGroupTableIndex, int parentIndex, int metatableIndex, bool isRoot);
 
         AZ::ScriptContext*               m_context;              ///< Context in which the script will be running
@@ -161,7 +140,6 @@ namespace AzFramework
         AZ::Data::Asset<AZ::ScriptAsset>    m_script;               ///< Reference to the script asset used for this component.
         int                                 m_table;                ///< Cached table index
         ScriptPropertyGroup                 m_properties;           ///< List with all properties that were tweaked in the editor and should override values in the m_sourceScriptName class inside m_script.
-        ScriptNetBindingTable*              m_netBindingTable;      ///< Table that will hold our networked script values, and manage callbacks
     };        
 }   // namespace AZ
 

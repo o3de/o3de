@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "LyShine_precompiled.h"
 #include "UiImageComponent.h"
 
@@ -34,9 +29,8 @@
 #include <LyShine/IRenderGraph.h>
 
 #include "UiSerialize.h"
-#include "Sprite.h"
 #include "UiLayoutHelpers.h"
-
+#include "Sprite.h"
 #include "RenderGraph.h"
 
 namespace
@@ -281,6 +275,20 @@ namespace
         14, 15, 21, 21, 20, 14,     // center quad
     };
 
+    AZ::Data::Instance<AZ::RPI::Image> GetSpriteImage(ISprite* sprite)
+    {
+        AZ::Data::Instance<AZ::RPI::Image> image;
+        if (sprite)
+        {
+            CSprite* cSprite = dynamic_cast<CSprite*>(sprite); // LYSHINE_ATOM_TODO - find a different solution from downcasting
+            if (cSprite)
+            {
+                image = cSprite->GetImage();
+            }
+        }
+
+        return image;
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -471,20 +479,12 @@ void UiImageComponent::Render(LyShine::IRenderGraph* renderGraph)
 
         renderGraph->AddPrimitive(&m_cachedPrimitive, texture, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, m_blendMode);
 #else
-        AZ::Data::Instance<AZ::RPI::Image> image;
-        if (sprite)
-        {
-            CSprite* cSprite = static_cast<CSprite*>(sprite); // LYSHINE_ATOM_TODO - find a different solution from downcasting
-            if (cSprite)
-            {
-                image = cSprite->GetImage();
-            }
-        }
+        AZ::Data::Instance<AZ::RPI::Image> image = GetSpriteImage(sprite);
         bool isClampTextureMode = m_imageType == ImageType::Tiled ? false : true;
         bool isTextureSRGB = IsSpriteTypeRenderTarget() && m_isRenderTargetSRGB;
         bool isTexturePremultipliedAlpha = false; // we are not rendering from a render target with alpha in it
 
-        LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting
+        LyShine::RenderGraph* lyRenderGraph = dynamic_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting
         if (lyRenderGraph)
         {
             lyRenderGraph->AddPrimitiveAtom(&m_cachedPrimitive, image, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, m_blendMode);
@@ -880,8 +880,7 @@ float UiImageComponent::GetTargetWidth(float /*maxWidth*/)
 {
     float targetWidth = 0.0f;
 
-    ITexture* texture = (m_sprite) ? m_sprite->GetTexture() : nullptr;
-    if (texture)
+    if (m_sprite)
     {
         switch (m_imageType)
         {
@@ -915,8 +914,7 @@ float UiImageComponent::GetTargetHeight(float /*maxHeight*/)
 {
     float targetHeight = 0.0f;
 
-    ITexture* texture = (m_sprite) ? m_sprite->GetTexture() : nullptr;
-    if (texture)
+    if (m_sprite)
     {
         switch (m_imageType)
         {
@@ -1037,8 +1035,7 @@ void UiImageComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
             editInfo->DataElement("Sprite", &UiImageComponent::m_spritePathname, "Sprite path", "The sprite path. Can be overridden by another component such as an interactable.")
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsSpriteTypeAsset)
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorSpritePathnameChange)
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorSpritePathnameChange);
             editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageComponent::m_spriteSheetCellIndex, "Index", "Sprite-sheet index. Defines which cell in a sprite-sheet is displayed.")
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsSpriteTypeSpriteSheet)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnIndexChange)
@@ -2364,7 +2361,8 @@ void UiImageComponent::SnapOffsetsToFixedImage()
     }
 
     // if the image has no texture it will not use Fixed rendering so do nothing
-    if (!m_sprite || !m_sprite->GetTexture())
+    AZ::Data::Instance<AZ::RPI::Image> image = GetSpriteImage(m_sprite);
+    if (!image)
     {
         return;
     }

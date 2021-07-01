@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #pragma once
 // The aim of IResourceSelectorHost is to unify resource selection dialogs in a one
@@ -27,16 +22,6 @@
 //     return previousValue;
 //   }
 //   REGISTER_RESOURCE_SELECTOR("Sound", SoundFileSelector, "Icons/sound_16x16.png")
-//
-// To expose it to serialization:
-//
-//   #include "Serialization/Decorators/Resources.h"
-//   template<class TString>
-//   ResourceSelector<TString> SoundName(TString& s) { return ResourceSelector<TString>(s, "Sound"); }
-//
-// To use in serialization:
-//
-//   ar(Serialization::SoundName(soundString), "soundString", "Sound String");
 //
 // Here is how it can be invoked directly:
 //
@@ -56,19 +41,7 @@
 //
 //   QString SoundFileSelector(const SResourceSelectorContext& x, const QString& previousValue,
 //                             SoundFileList* list) // your context argument
-//
-// And provide this value through serialization context:
-//
-// struct SourceFileList
-// {
-//   void Serialize(IArchive& ar)
-//   {
-//     Serialization::SContext<SourceFileList> context(ar, this);
-//     ...
-//   }
-// }
 
-#include <Serialization/TypeID.h>
 #include <QString>
 
 class QWidget;
@@ -82,7 +55,6 @@ struct SResourceSelectorContext
 
     unsigned int entityId;
     void* contextObject;
-    Serialization::TypeID contextObjectType;
 
     SResourceSelectorContext()
         : parentWidget(0)
@@ -107,7 +79,6 @@ struct IResourceSelectorHost
     virtual ~IResourceSelectorHost() = default;
     virtual QString SelectResource(const SResourceSelectorContext& context, const QString& previousValue) = 0;
     virtual const char* ResourceIconPath(const char* typeName) const = 0;
-    virtual Serialization::TypeID ResourceContextType(const char* typeName) const = 0;
 
     virtual void RegisterResourceSelector(const SStaticResourceSelectorEntry* entry) = 0;
 
@@ -128,7 +99,6 @@ struct SStaticResourceSelectorEntry
     TResourceSelectionFunction function;
     TResourceSelectionFunctionWithContext functionWithContext;
     const char* iconPath;
-    Serialization::TypeID contextType;
 
     static SStaticResourceSelectorEntry*& GetFirst() { static SStaticResourceSelectorEntry* first; return first; }
     SStaticResourceSelectorEntry* next;
@@ -150,7 +120,6 @@ struct SStaticResourceSelectorEntry
         , functionWithContext(TResourceSelectionFunctionWithContext(function))
         , iconPath(icon)
     {
-        contextType = Serialization::TypeID::get<T>();
         next = GetFirst();
         GetFirst() = this;
     }

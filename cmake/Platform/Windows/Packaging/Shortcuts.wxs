@@ -1,0 +1,78 @@
+<?xml version='1.0' encoding='windows-1252'?>
+
+<?include "cpack_variables.wxi"?>
+
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+    <Fragment>
+
+        <DirectoryRef Id="TARGETDIR">
+            <Directory Id="ProgramMenuFolder">
+                <Directory Id="ApplicationProgramsFolder" Name="$(var.CPACK_PACKAGE_NAME) [Developer Preview]">
+                    <Directory Id="VersionedApplicationProgramsFolder" Name="$(var.CPACK_PACKAGE_VERSION)"/>
+                </Directory>
+            </Directory>
+            <Directory Id="DesktopFolder" SourceName="Desktop"/>
+        </DirectoryRef>
+
+        <!-- the WorkingDirectory attribute for shortcuts uses directory refs -->
+        <DirectoryRef Id="INSTALL_ROOT">
+            <Directory Id="root.bin" Name="bin">
+                <Directory Id="root.bin.Windows" Name="Windows">
+                    <Directory Id="root.bin.Windows.profile" Name="profile" />
+                </Directory>
+            </Directory>
+        </DirectoryRef>
+
+        <DirectoryRef Id="DesktopFolder">
+            <Component Id="DesktopShortcuts" Guid="{2600B54A-65FB-4507-A7CD-3CE4817C7173}">
+
+                <Shortcut Id="DesktopShortcut_Launcher"
+                    Target="[root.bin.Windows.profile]o3de.exe"
+                    WorkingDirectory="root.bin.Windows.profile"
+                    Name="$(var.CPACK_PACKAGE_NAME) $(var.CPACK_PACKAGE_VERSION)" />
+
+                <RemoveFolder Id="DesktopFolder" On="uninstall"/>
+
+                <RegistryValue
+                    Root="HKCU"
+                    Key="Software\$(var.CPACK_PACKAGE_VENDOR)\$(var.CPACK_PACKAGE_NAME)"
+                    Name="installed"
+                    Type="integer"
+                    Value="1"
+                    KeyPath="yes"/>
+            </Component>
+        </DirectoryRef>
+
+        <DirectoryRef Id="VersionedApplicationProgramsFolder">
+            <Component Id="StartMenuShortcuts" Guid="{E6447F0F-A46E-4A72-83D8-600707B590E8}">
+
+                <Shortcut Id="StartMenuShortcut_Editor"
+                    Target="[root.bin.Windows.profile]Editor.exe"
+                    WorkingDirectory="root.bin.Windows.profile"
+                    Name="$(var.CPACK_PACKAGE_NAME) Editor" />
+
+                <Shortcut Id="StartMenuShortcut_MaterialEditor"
+                    Target="[root.bin.Windows.profile]MaterialEditor.exe"
+                    WorkingDirectory="root.bin.Windows.profile"
+                    Name="$(var.CPACK_PACKAGE_NAME) Material Editor" />
+
+                <Shortcut Id="StartMenuShortcut_ProjectManager"
+                    Target="[root.bin.Windows.profile]o3de.exe"
+                    WorkingDirectory="root.bin.Windows.profile"
+                    Name="$(var.CPACK_PACKAGE_NAME) Project Manager" />
+
+                <RemoveFolder Id="RemoveVersionedApplicationProgramsFolder" Directory='VersionedApplicationProgramsFolder' On="uninstall"/>
+                <RemoveFolder Id="RemoveApplicationProgramsFolder" Directory="ApplicationProgramsFolder" On="uninstall"/>
+
+                <RegistryValue
+                    Root="HKCU"
+                    Key="Software\$(var.CPACK_PACKAGE_VENDOR)\$(var.CPACK_PACKAGE_NAME)"
+                    Name="installed"
+                    Type="integer"
+                    Value="1"
+                    KeyPath="yes"/>
+            </Component>
+        </DirectoryRef>
+
+    </Fragment>
+</Wix>

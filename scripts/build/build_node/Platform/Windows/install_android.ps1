@@ -1,12 +1,7 @@
 <#
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 #>
 
 choco install -y android-sdk
@@ -28,8 +23,8 @@ Start-Process -FilePath $sdkmanager -ArgumentList $build_tools -NoNewWindow -Wai
 Write-Host "Installing Gradle and Ninja"
 Import-Module C:\ProgramData\chocolatey\helpers\chocolateyInstaller.psm1 #Grade needs a custom installer due to being hardcoded to C:\Programdata in Chocolatey
 $packageName = 'gradle'
-$version = '5.6.4'
-$checksum = 'ABC10BCEDB58806E8654210F96031DB541BCD2D6FC3161E81CB0572D6A15E821'
+$version = '7.0'
+$checksum = '81003F83B0056D20EEDF48CDDD4F52A9813163D4BA185BCF8ABD34B8EEEA4CBD'
 $url = "https://services.gradle.org/distributions/gradle-$version-all.zip"
 $installDir = "C:\Gradle"
 
@@ -38,6 +33,6 @@ Install-ChocolateyZipPackage $packageName $url $installDir -Checksum $checksum -
 $gradle_home = Join-Path $installDir "$packageName-$version"
 $gradle_bat = Join-Path $gradle_home 'bin/gradle.bat'
 
-Install-ChocolateyEnvironmentVariable "GRADLE_HOME" $gradle_home 'Machine'
+Install-ChocolateyEnvironmentVariable "GRADLE_BUILD_HOME" $gradle_home 'Machine'
 
 choco install -y ninja --version=1.10.0 --package-parameters="/installDir:C:\Ninja"

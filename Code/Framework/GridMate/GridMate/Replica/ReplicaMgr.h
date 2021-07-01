@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #ifndef GM_REPLICAMGR_H
 #define GM_REPLICAMGR_H
 
@@ -190,7 +185,7 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     struct ReplicaMgrDesc
     {
-        // Single-master roles that replica managers can have
+        // Single-primary roles that replica managers can have
         enum Roles
         {
             Role_SyncHost = 1 << 0,
@@ -421,13 +416,13 @@ namespace GridMate
         size_t ReleaseIdBlock(PeerId requestor);
 
         void _Unmarshal(ReadBuffer& rb, ReplicaPeer* from);
-        void RegisterReplica(const ReplicaPtr& pReplica, bool isMaster, ReplicaContext& rc);
+        void RegisterReplica(const ReplicaPtr& pReplica, bool isPrimary, ReplicaContext& rc);
         void UnregisterReplica(const ReplicaPtr& replica, const ReplicaContext& rc);
         void RemoveReplicaFromDownstream(const ReplicaPtr& replica, const ReplicaContext& rc);
         void MigrateReplica(ReplicaPtr replica, PeerId newOwnerId);
         void AnnounceReplicaMigrated(ReplicaId replicaId, PeerId newOwnerId);
         void OnReplicaMigrated(ReplicaPtr replica, bool isOwner, const ReplicaContext& rc);
-        void ChangeReplicaOwnership(ReplicaPtr replica, const ReplicaContext& rc, bool isMaster);
+        void ChangeReplicaOwnership(ReplicaPtr replica, const ReplicaContext& rc, bool isPrimary);
         void AckUpstreamSuspended(ReplicaId replicaId, PeerId sendTo, AZ::u32 requestTime);
         void OnAckUpstreamSuspended(ReplicaId replicaId, PeerId from, AZ::u32 requestTime);
         void AckDownstream(ReplicaId replicaId, PeerId sendTo, AZ::u32 requestTime);
@@ -595,7 +590,7 @@ namespace GridMate
          * Replicas
          */
         virtual ReplicaPtr FindReplica(ReplicaId replicaId);
-        ReplicaId AddMaster(const ReplicaPtr& pMaster);
+        ReplicaId AddPrimary(const ReplicaPtr& pPrimary);
 
         /*
         * Tasks

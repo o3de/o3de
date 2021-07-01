@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #include "EditorDefs.h"
 
@@ -828,7 +823,7 @@ void CTrackViewSequence::SyncSelectedTracksToBase()
                     const Vec3 scale = pAnimNode->GetScale();
 
                     AZ::Transform transform = AZ::Transform::CreateIdentity();
-                    transform.SetScale(LYVec3ToAZVec3(scale));
+                    transform.SetUniformScale(LYVec3ToAZVec3(scale).GetMaxElement());
                     transform.SetRotation(LYQuaternionToAZQuaternion(rotation));
                     transform.SetTranslation(LYVec3ToAZVec3(position));
 
@@ -870,7 +865,7 @@ void CTrackViewSequence::SyncSelectedTracksFromBase()
 
                 pAnimNode->SetPos(AZVec3ToLYVec3(transform.GetTranslation()));
                 pAnimNode->SetRotation(AZQuaternionToLYQuaternion(transform.GetRotation()));
-                pAnimNode->SetScale(AZVec3ToLYVec3(transform.GetScale()));
+                pAnimNode->SetScale(AZVec3ToLYVec3(AZ::Vector3(transform.GetUniformScale())));
 
                 bNothingWasSynced = false;
             }

@@ -8,7 +8,8 @@
             "Name": "IBLSpecular",
             "Description": "The input cubemap generates an IBL specular output cubemap.",
             "FileMasks": [
-                "_iblspecularcm"
+                "_iblspecularcm",
+                "_iblspecularcm256"
             ],
             "SourceColor": "Linear",
             "DestColor": "Linear",
@@ -30,11 +31,12 @@
             }
         },
         "PlatformsPresets": {
-            "es3": {
+            "android": {
                 "UUID": "{908DA68C-97FB-4C4A-97BC-5A55F30F14FA}",
                 "Name": "IBLSpecular",
                 "FileMasks": [
-                    "_iblspecularcm"
+                    "_iblspecularcm",
+                    "_iblspecularcm256"
                 ],
                 "SourceColor": "Linear",
                 "DestColor": "Linear",
@@ -59,7 +61,8 @@
                 "UUID": "{908DA68C-97FB-4C4A-97BC-5A55F30F14FA}",
                 "Name": "IBLSpecular",
                 "FileMasks": [
-                    "_iblspecularcm"
+                    "_iblspecularcm",
+                    "_iblspecularcm256"
                 ],
                 "SourceColor": "Linear",
                 "DestColor": "Linear",
@@ -80,11 +83,12 @@
                     "MipGenType": "Box"
                 }
             },
-            "osx_gl": {
+            "mac": {
                 "UUID": "{908DA68C-97FB-4C4A-97BC-5A55F30F14FA}",
                 "Name": "IBLSpecular",
                 "FileMasks": [
-                    "_iblspecularcm"
+                    "_iblspecularcm",
+                    "_iblspecularcm256"
                 ],
                 "SourceColor": "Linear",
                 "DestColor": "Linear",
@@ -109,7 +113,8 @@
                 "UUID": "{908DA68C-97FB-4C4A-97BC-5A55F30F14FA}",
                 "Name": "IBLSpecular",
                 "FileMasks": [
-                    "_iblspecularcm"
+                    "_iblspecularcm",
+                    "_iblspecularcm256"
                 ],
                 "SourceColor": "Linear",
                 "DestColor": "Linear",

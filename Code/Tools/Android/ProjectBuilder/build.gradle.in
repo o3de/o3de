@@ -15,14 +15,14 @@ android {
 ${SIGNING_CONFIGS}
     compileSdkVersion sdkVer
     buildToolsVersion buildToolsVer
-
+    ndkVersion ndkPlatformVer
 	lintOptions {
         abortOnError false
         checkReleaseBuilds false
     }
 
     defaultConfig {
-        minSdkVersion ndkPlatformVer
+        minSdkVersion minSdkVer
         targetSdkVersion sdkVer
 ${NATIVE_CMAKE_SECTION_DEFAULT_CONFIG}
     }

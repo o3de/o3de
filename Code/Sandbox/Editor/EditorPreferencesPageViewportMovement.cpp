@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "EditorDefs.h"
 
 #include "EditorPreferencesPageViewportMovement.h"
@@ -17,7 +12,7 @@
 
 // Editor
 #include "Settings.h"
-
+#include "EditorViewportSettings.h"
 
 void CEditorPreferencesPage_ViewportMovement::Reflect(AZ::SerializeContext& serialize)
 {
@@ -72,20 +67,45 @@ QIcon& CEditorPreferencesPage_ViewportMovement::GetIcon()
 
 void CEditorPreferencesPage_ViewportMovement::OnApply()
 {
-    gSettings.cameraMoveSpeed = m_cameraMovementSettings.m_moveSpeed;
-    gSettings.cameraRotateSpeed = m_cameraMovementSettings.m_rotateSpeed;
-    gSettings.cameraFastMoveSpeed = m_cameraMovementSettings.m_fastMoveSpeed;
-    gSettings.wheelZoomSpeed = m_cameraMovementSettings.m_wheelZoomSpeed;
-    gSettings.invertYRotation = m_cameraMovementSettings.m_invertYRotation;
-    gSettings.invertPan = m_cameraMovementSettings.m_invertPan;
+    if (SandboxEditor::UsingNewCameraSystem())
+    {
+        SandboxEditor::SetCameraTranslateSpeed(m_cameraMovementSettings.m_moveSpeed);
+        SandboxEditor::SetCameraRotateSpeed(m_cameraMovementSettings.m_rotateSpeed);
+        SandboxEditor::SetCameraBoostMultiplier(m_cameraMovementSettings.m_fastMoveSpeed);
+        SandboxEditor::SetCameraScrollSpeed(m_cameraMovementSettings.m_wheelZoomSpeed);
+        SandboxEditor::SetCameraOrbitYawRotationInverted(m_cameraMovementSettings.m_invertYRotation);
+        SandboxEditor::SetCameraPanInvertedX(m_cameraMovementSettings.m_invertPan);
+        SandboxEditor::SetCameraPanInvertedY(m_cameraMovementSettings.m_invertPan);
+    }
+    else
+    {
+        gSettings.cameraMoveSpeed = m_cameraMovementSettings.m_moveSpeed;
+        gSettings.cameraRotateSpeed = m_cameraMovementSettings.m_rotateSpeed;
+        gSettings.cameraFastMoveSpeed = m_cameraMovementSettings.m_fastMoveSpeed;
+        gSettings.wheelZoomSpeed = m_cameraMovementSettings.m_wheelZoomSpeed;
+        gSettings.invertYRotation = m_cameraMovementSettings.m_invertYRotation;
+        gSettings.invertPan = m_cameraMovementSettings.m_invertPan;
+    }
 }
 
 void CEditorPreferencesPage_ViewportMovement::InitializeSettings()
 {
-    m_cameraMovementSettings.m_moveSpeed = gSettings.cameraMoveSpeed;
-    m_cameraMovementSettings.m_rotateSpeed = gSettings.cameraRotateSpeed;
-    m_cameraMovementSettings.m_fastMoveSpeed = gSettings.cameraFastMoveSpeed;
-    m_cameraMovementSettings.m_wheelZoomSpeed = gSettings.wheelZoomSpeed;
-    m_cameraMovementSettings.m_invertYRotation = gSettings.invertYRotation;
-    m_cameraMovementSettings.m_invertPan = gSettings.invertPan;
+    if (SandboxEditor::UsingNewCameraSystem())
+    {
+        m_cameraMovementSettings.m_moveSpeed = SandboxEditor::CameraTranslateSpeed();
+        m_cameraMovementSettings.m_rotateSpeed = SandboxEditor::CameraRotateSpeed();
+        m_cameraMovementSettings.m_fastMoveSpeed = SandboxEditor::CameraBoostMultiplier();
+        m_cameraMovementSettings.m_wheelZoomSpeed = SandboxEditor::CameraScrollSpeed();
+        m_cameraMovementSettings.m_invertYRotation = SandboxEditor::CameraOrbitYawRotationInverted();
+        m_cameraMovementSettings.m_invertPan = SandboxEditor::CameraPanInvertedX() && SandboxEditor::CameraPanInvertedY();
+    }
+    else
+    {
+        m_cameraMovementSettings.m_moveSpeed = gSettings.cameraMoveSpeed;
+        m_cameraMovementSettings.m_rotateSpeed = gSettings.cameraRotateSpeed;
+        m_cameraMovementSettings.m_fastMoveSpeed = gSettings.cameraFastMoveSpeed;
+        m_cameraMovementSettings.m_wheelZoomSpeed = gSettings.wheelZoomSpeed;
+        m_cameraMovementSettings.m_invertYRotation = gSettings.invertYRotation;
+        m_cameraMovementSettings.m_invertPan = gSettings.invertPan;
+    }
 }

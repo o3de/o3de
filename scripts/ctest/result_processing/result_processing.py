@@ -1,12 +1,7 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 
 Helper functions for test result xml merging and processing.
 """
@@ -118,8 +113,10 @@ def _merge_xml_results(xml_results_path, prefix, merged_xml_name, parent_element
     def _aggregate_attributes(nodes):
         for node in nodes:
             for attribute in attributes_to_aggregate:
-                value = node.attrib[attribute.name]
-                temp_dict[attribute.name] += attribute.func(value)
+                if attribute.name in node.attrib:
+                    temp_dict[attribute.name] += attribute.func(node.attrib[attribute.name])
+                else:
+                    print("Failed to find key {} in {}, continuing...".format(attribute.name, node.tag))
 
     base_tree = xet.parse(xml_files[0])
     base_tree_root = base_tree.getroot()

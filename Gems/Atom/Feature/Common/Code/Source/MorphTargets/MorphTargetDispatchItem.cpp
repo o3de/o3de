@@ -1,17 +1,12 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <MorphTargets/MorphTargetDispatchItem.h>
-#include <MorphTargets/MorphTargetComputePass.h>
+#include <SkinnedMesh/SkinnedMeshFeatureProcessor.h>
 
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
@@ -30,7 +25,7 @@ namespace AZ
         MorphTargetDispatchItem::MorphTargetDispatchItem(
             const AZStd::intrusive_ptr<MorphTargetInputBuffers> inputBuffers,
             const MorphTargetMetaData& morphTargetMetaData,
-            RPI::Ptr<MorphTargetComputePass> morphTargetComputePass,
+            SkinnedMeshFeatureProcessor* skinnedMeshFeatureProcessor,
             MorphTargetInstanceMetaData morphInstanceMetaData,
             float morphDeltaIntegerEncoding)
             : m_inputBuffers(inputBuffers)
@@ -38,7 +33,7 @@ namespace AZ
             , m_morphInstanceMetaData(morphInstanceMetaData)
             , m_accumulatedDeltaIntegerEncoding(morphDeltaIntegerEncoding)
         {
-            m_morphTargetShader = morphTargetComputePass->GetShader();
+            m_morphTargetShader = skinnedMeshFeatureProcessor->GetMorphTargetShader();
             RPI::ShaderReloadNotificationBus::Handler::BusConnect(m_morphTargetShader->GetAssetId());
         }
 
@@ -103,19 +98,14 @@ namespace AZ
 
         bool MorphTargetDispatchItem::InitPerInstanceSRG()
         {
-            auto perInstanceSrgAsset = m_morphTargetShader->FindShaderResourceGroupAsset(AZ::Name{ "MorphTargetInstanceSrg" });
-            if (!perInstanceSrgAsset.GetId().IsValid())
+            auto perInstanceSrgLayout = m_morphTargetShader->FindShaderResourceGroupLayout(AZ::Name{ "MorphTargetInstanceSrg" });
+            if (!perInstanceSrgLayout)
             {
-                AZ_Error("MorphTargetDispatchItem", false, "Failed to get shader resource group asset");
-                return false;
-            }
-            else if (!perInstanceSrgAsset.IsReady())
-            {
-                AZ_Error("MorphTargetDispatchItem", false, "Shader resource group asset is not loaded");
+                AZ_Error("MorphTargetDispatchItem", false, "Failed to get shader resource group layout");
                 return false;
             }
 
-            m_instanceSrg = RPI::ShaderResourceGroup::Create(perInstanceSrgAsset);
+            m_instanceSrg = RPI::ShaderResourceGroup::Create(m_morphTargetShader->GetAsset(), m_morphTargetShader->GetSupervariantIndex(), perInstanceSrgLayout->GetName());
             if (!m_instanceSrg)
             {
                 AZ_Error("MorphTargetDispatchItem", false, "Failed to create shader resource group for morph target");
@@ -199,7 +189,7 @@ namespace AZ
             }
         }
 
-        void MorphTargetDispatchItem::OnShaderAssetReinitialized([[maybe_unused]] const Data::Asset<AZ::RPI::ShaderAsset>& shaderAsset)
+        void MorphTargetDispatchItem::OnShaderAssetReinitialized([[maybe_unused]] const Data::Asset<RPI::ShaderAsset>& shaderAsset)
         {
             if (!Init())
             {
@@ -207,7 +197,7 @@ namespace AZ
             }
         }
 
-        void MorphTargetDispatchItem::OnShaderVariantReinitialized([[maybe_unused]] const RPI::Shader& shader, [[maybe_unused]] const RPI::ShaderVariantId& shaderVariantId, [[maybe_unused]] RPI::ShaderVariantStableId shaderVariantStableId)
+        void MorphTargetDispatchItem::OnShaderVariantReinitialized(const RPI::ShaderVariant&)
         {
             if (!Init())
             {

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -57,21 +52,39 @@ namespace AtomToolsFramework
             const AZStd::string& groupDescription,
             QWidget* groupWidget) override;
 
+        void SetGroupVisible(const AZStd::string& groupNameId, bool visible) override;
+        bool IsGroupVisible(const AZStd::string& groupNameId) const override;
+        bool IsGroupHidden(const AZStd::string& groupNameId) const override;
+
         void RefreshGroup(const AZStd::string& groupNameId) override;
         void RebuildGroup(const AZStd::string& groupNameId) override;
 
         void RefreshAll() override;
         void RebuildAll() override;
 
+        void ExpandGroup(const AZStd::string& groupNameId) override;
+        void CollapseGroup(const AZStd::string& groupNameId) override;
+        bool IsGroupExpanded(const AZStd::string& groupNameId) const override;
+
         void ExpandAll() override;
         void CollapseAll() override;
 
-    private:
-        void OnHeaderClicked(QMouseEvent* event, InspectorGroupHeaderWidget* groupHeader, QWidget* groupWidget);
+    protected:
+        virtual bool ShouldGroupAutoExpanded(const AZStd::string& groupNameId) const;
+        virtual void OnGroupExpanded(const AZStd::string& groupNameId);
+        virtual void OnGroupCollapsed(const AZStd::string& groupNameId);
+        virtual void OnHeaderClicked(const AZStd::string& groupNameId, QMouseEvent* event);
 
+    private:
         QVBoxLayout* m_layout = nullptr;
         QScopedPointer<Ui::InspectorWidget> m_ui;
-        AZStd::vector<InspectorGroupHeaderWidget*> m_headers;
-        AZStd::vector<QWidget*> m_groups;
+
+        struct GroupWidgetPair
+        {
+            InspectorGroupHeaderWidget* m_header;
+            QWidget* m_panel;
+        };
+
+        AZStd::unordered_map<AZStd::string, GroupWidgetPair> m_groups;
     };
 } // namespace AtomToolsFramework

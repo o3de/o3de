@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -20,6 +15,7 @@
 #include <AtomToolsFramework/Inspector/InspectorWidget.h>
 
 #include <Atom/Document/MaterialDocumentNotificationBus.h>
+#include <Atom/Window/MaterialEditorWindowSettings.h>
 #endif
 
 namespace MaterialEditor
@@ -41,8 +37,17 @@ namespace MaterialEditor
         // AtomToolsFramework::InspectorRequestBus::Handler overrides...
         void Reset() override;
 
+    protected:
+        bool ShouldGroupAutoExpanded(const AZStd::string& groupNameId) const override;
+        void OnGroupExpanded(const AZStd::string& groupNameId) override;
+        void OnGroupCollapsed(const AZStd::string& groupNameId) override;
+
     private:
-        void AddDetailsGroup();
+        AZ::Crc32 GetGroupSaveStateKey(const AZStd::string& groupNameId) const;
+        bool CompareInstanceNodeProperties(
+            const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target) const;
+
+        void AddOverviewGroup();
         void AddUvNamesGroup();
         void AddPropertiesGroup();
 
@@ -50,6 +55,7 @@ namespace MaterialEditor
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
         void OnDocumentPropertyValueModified(const AZ::Uuid& documentId, const AtomToolsFramework::DynamicProperty& property) override;
         void OnDocumentPropertyConfigModified(const AZ::Uuid& documentId, const AtomToolsFramework::DynamicProperty& property) override;
+        void OnDocumentPropertyGroupVisibilityChanged(const AZ::Uuid& documentId, const AZ::Name& groupId, bool visible) override;
 
         // AzToolsFramework::IPropertyEditorNotify overrides...
         void BeforePropertyModified(AzToolsFramework::InstanceDataNode* pNode) override;
@@ -64,6 +70,8 @@ namespace MaterialEditor
         const AtomToolsFramework::DynamicProperty* m_activeProperty = nullptr;
 
         AZ::Uuid m_documentId = AZ::Uuid::CreateNull();
+        AZStd::string m_documentPath;
         AZStd::unordered_map<AZStd::string, AtomToolsFramework::DynamicPropertyGroup> m_groups;
+        AZStd::intrusive_ptr<MaterialEditorWindowSettings> m_windowSettings;
     };
 } // namespace MaterialEditor

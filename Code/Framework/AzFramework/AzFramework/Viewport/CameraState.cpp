@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "CameraState.h"
 
@@ -74,7 +69,6 @@ namespace AzFramework
 
     void SetCameraClippingVolumeFromPerspectiveFovMatrixRH(CameraState& cameraState, const AZ::Matrix4x4& clipFromView)
     {
-        const float m11 = clipFromView(1, 1);
         const float m22 = clipFromView(2, 2);
         const float m23 = clipFromView(2, 3);
         cameraState.m_nearClip = m23 / m22;
@@ -84,7 +78,12 @@ namespace AzFramework
         {
             AZStd::swap(cameraState.m_nearClip, cameraState.m_farClip);
         }
-        cameraState.m_fovOrZoom = 2 * (AZ::Constants::HalfPi - atanf(m11));
+        cameraState.m_fovOrZoom = RetrieveFov(clipFromView);
+    }
+
+    float RetrieveFov(const AZ::Matrix4x4& clipFromView)
+    {
+        return 2.0f * (AZ::Constants::HalfPi - AZStd::atan(clipFromView(1, 1)));
     }
 
     void CameraState::Reflect(AZ::SerializeContext& serializeContext)

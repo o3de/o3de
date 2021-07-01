@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #include "EditorDefs.h"
 
@@ -2239,7 +2234,8 @@ uint32 CFileUtil::GetAttributes(const char* filename, bool bUseSourceControl /*=
 bool CFileUtil::CompareFiles(const QString& strFilePath1, const QString& strFilePath2)
 {
     // Get the size of both files.  If either fails we say they are different (most likely one doesn't exist)
-    uint64 size1, size2;
+    uint64 size1 = 0;
+    uint64 size2 = 0;
     if (!GetDiskFileSize(strFilePath1.toUtf8().data(), size1) || !GetDiskFileSize(strFilePath2.toUtf8().data(), size2))
     {
         return false;

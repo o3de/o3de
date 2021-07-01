@@ -1,35 +1,10 @@
 {
     "gem_name": "Atom_RHI_Metal",
-    "Dependencies": [
-        {
-            "Uuid": "fb7f322c8bdb42228d9e155c954f98bd",
-            "VersionConstraints": [
-                "~>0.1.0"
-            ],
-            "_comment": "Atom RHI"
-        }
+    "display_name": "Atom RHI Metal",
+    "summary": "",
+    "canonical_tags": [
+        "Gem"
     ],
-    "GemFormatVersion": 4,
-    "Uuid": "5f27cdc951e64fe0be9d823dc7acbc28",
-    "Name": "Atom_RHI_Metal",
-    "DisplayName": "Atom RHI.Metal",
-    "Version": "0.1.0",
-    "Summary": "The Metal backend for the Atom Render Hardware Interface",
-    "Tags": ["Atom", "RHI", "Metal"],
-    "LinkType": "Dynamic",
-    "IconPath": "preview.png",
-    "Modules": [
-        {
-            "Name": "Private",
-            "Type": "GameModule"
-        },
-        {
-            "Name": "Reflect",
-            "Type": "StaticLib"
-        },
-        {
-            "Name": "Builders",
-            "Type": "EditorModule"
-        }
+    "user_tags": [
     ]
 }

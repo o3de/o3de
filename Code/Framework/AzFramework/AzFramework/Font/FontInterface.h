@@ -1,20 +1,16 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Color.h>
+#include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzFramework/Viewport/ViewportId.h>
 
@@ -40,17 +36,22 @@ namespace AzFramework
     //! Standard parameters for drawing text on screen
     struct TextDrawParameters
     {
-        ViewportId m_drawViewportId = InvalidViewportId; //! Viewport to draw into
-        AZ::Vector3 m_position; //! world space position for 3d draws, screen space x,y,depth for 2d.
-        AZ::Color   m_color = AZ::Colors::White; //! Color to draw the text
-        AZ::Vector2 m_scale = AZ::Vector2(1.0f); //! font scale
-        TextHorizontalAlignment m_hAlign = TextHorizontalAlignment::Left; //! Horizontal text alignment
-        TextVerticalAlignment m_vAlign = TextVerticalAlignment::Top; //! Vertical text alignment
-        bool m_monospace = false; //! disable character proportional spacing
-        bool m_depthTest = false; //! Test character against the depth buffer
-        bool m_virtual800x600ScreenSize = true; //! Text placement and size are scaled relative to a virtual 800x600 resolution
-        bool m_scaleWithWindow = false; //! Font gets bigger as the window gets bigger
-        bool m_multiline = true; //! text respects ascii newline characters
+        ViewportId m_drawViewportId = InvalidViewportId; //!< Viewport to draw into
+        AZ::Vector3 m_position; //!< world space position for 3d draws, screen space x,y,depth for 2d.
+        AZ::Color m_color = AZ::Colors::White; //!< Color to draw the text
+        unsigned int m_effectIndex = 0; //!< effect index to apply
+        AZ::Vector2 m_scale = AZ::Vector2(1.0f); //!< font scale
+        float m_textSizeFactor = 12.0f; //!< font size in pixels
+        float m_lineSpacing = 1.0f; //!< Spacing between new lines, as a percentage of m_scale.
+        TextHorizontalAlignment m_hAlign = TextHorizontalAlignment::Left; //!< Horizontal text alignment
+        TextVerticalAlignment m_vAlign = TextVerticalAlignment::Top; //!< Vertical text alignment
+        bool m_useTransform = false; //!< Use specified transform
+        AZ::Matrix3x4 m_transform = AZ::Matrix3x4::Identity(); //!< Transform to apply to text quads
+        bool m_monospace = false; //!< disable character proportional spacing
+        bool m_depthTest = false; //!< Test character against the depth buffer
+        bool m_virtual800x600ScreenSize = false; //!< Text placement and size are scaled relative to a virtual 800x600 resolution
+        bool m_scaleWithWindow = false; //!< Font gets bigger as the window gets bigger
+        bool m_multiline = true; //!< text respects ascii newline characters
     };
 
     class FontDrawInterface
@@ -63,10 +64,13 @@ namespace AzFramework
 
         virtual void DrawScreenAlignedText2d(
             const TextDrawParameters& params,
-            const AZStd::string_view& string) = 0;
+            AZStd::string_view text) = 0;
         virtual void DrawScreenAlignedText3d(
             const TextDrawParameters& params,
-            const AZStd::string_view& string) = 0;
+            AZStd::string_view text) = 0;
+        virtual AZ::Vector2 GetTextSize(
+            const TextDrawParameters& params,
+            AZStd::string_view text) = 0;
     };
 
     class FontQueryInterface

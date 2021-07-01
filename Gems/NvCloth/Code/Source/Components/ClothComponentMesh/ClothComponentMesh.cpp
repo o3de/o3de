@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -15,6 +10,7 @@
 #include <AzCore/Math/PackedVector3.h>
 
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
+#include <Atom/RHI/RHIUtils.h>
 
 #include <NvCloth/IClothSystem.h>
 #include <NvCloth/IFabricCooker.h>
@@ -35,6 +31,9 @@ namespace NvCloth
 {
     AZ_CVAR(float, cloth_DistanceToTeleport, 0.5f, nullptr, AZ::ConsoleFunctorFlags::Null,
         "The amount of meters the entity has to move in a frame to consider it a teleport for cloth.");
+
+    AZ_CVAR(float, cloth_SecondsToDelaySimulationOnActorSpawned, 0.25f, nullptr, AZ::ConsoleFunctorFlags::Null,
+        "The amount of time in seconds the cloth simulation will be delayed to avoid sudden impulses when actors are spawned.");
 
     // Helper class to map an RPI buffer from a buffer asset view.
     template<typename T>
@@ -187,10 +186,10 @@ namespace NvCloth
         m_actorClothSkinning = ActorClothSkinning::Create(
             m_entityId,
             m_meshNodeInfo,
-            m_meshClothInfo.m_particles.size(),
+            m_meshClothInfo.m_particles,
             m_cloth->GetParticles().size(),
             m_meshRemappedVertices);
-        m_numberOfClothSkinningUpdates = 0;
+        m_timeClothSkinningUpdates = 0.0f;
 
         m_clothConstraints = ClothConstraints::Create(
             m_meshClothInfo.m_motionConstraints,
@@ -248,7 +247,7 @@ namespace NvCloth
 
     void ClothComponentMesh::OnPreSimulation(
         [[maybe_unused]] ClothId clothId,
-        [[maybe_unused]] float deltaTime)
+        float deltaTime)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
 
@@ -256,7 +255,7 @@ namespace NvCloth
 
         if (m_actorClothSkinning)
         {
-            UpdateSimulationSkinning();
+            UpdateSimulationSkinning(deltaTime);
 
             UpdateSimulationConstraints();
         }
@@ -338,7 +337,7 @@ namespace NvCloth
         }
     }
 
-    void ClothComponentMesh::UpdateSimulationSkinning()
+    void ClothComponentMesh::UpdateSimulationSkinning(float deltaTime)
     {
         if (m_actorClothSkinning)
         {
@@ -349,22 +348,21 @@ namespace NvCloth
             // Since component activation order is not trivial, the actor's pose might not be updated
             // immediately. Because of this cloth will receive a sudden impulse when changing from
             // T pose to animated pose. To avoid this undesired effect we will override cloth simulation during
-            // a short amount of frames.
-            const AZ::u32 numberOfTicksToDoFullSkinning = 10;
-            m_numberOfClothSkinningUpdates++;
+            // a short amount of time.
+            m_timeClothSkinningUpdates += deltaTime;
 
             // While the actor is not visible the skinned joints are not updated. Then when
             // it becomes visible the jump to the new skinned positions causes a sudden
             // impulse to cloth simulation. To avoid this undesired effect we will override cloth simulation during
-            // a short amount of frames.
+            // a short amount of time.
             m_actorClothSkinning->UpdateActorVisibility();
             if (!m_actorClothSkinning->WasActorVisible() &&
                 m_actorClothSkinning->IsActorVisible())
             {
-                m_numberOfClothSkinningUpdates = 0;
+                m_timeClothSkinningUpdates = 0.0f;
             }
 
-            if (m_numberOfClothSkinningUpdates <= numberOfTicksToDoFullSkinning)
+            if (m_timeClothSkinningUpdates <= cloth_SecondsToDelaySimulationOnActorSpawned)
             {
                 // Update skinning for all particles and apply it to cloth 
                 AZStd::vector<SimParticleFormat> particles = m_cloth->GetParticles();
@@ -406,7 +404,7 @@ namespace NvCloth
 
         auto& renderData = GetRenderData();
 
-        if (m_config.m_removeStaticTriangles && m_actorClothSkinning)
+        if (m_actorClothSkinning)
         {
             // Apply skinning to the non-simulated part of the mesh.
             m_actorClothSkinning->ApplySkinningOnNonSimulatedVertices(m_meshClothInfo, renderData);
@@ -427,7 +425,15 @@ namespace NvCloth
             if (remappedIndex >= 0)
             {
                 renderData.m_particles[index] = particles[remappedIndex];
-                renderData.m_normals[index] = normals[remappedIndex];
+
+                // For static particles only use the updated normal when indicated in the configuration.
+                const bool useSimulatedClothParticleNormal =
+                    m_meshClothInfo.m_particles[index].GetW() != 0.0f ||
+                    m_config.m_updateNormalsOfStaticParticles;
+                if (useSimulatedClothParticleNormal)
+                {
+                    renderData.m_normals[index] = normals[remappedIndex];
+                }
             }
         }
 
@@ -542,7 +548,7 @@ namespace NvCloth
 
             if (!destVerticesBuffer)
             {
-                AZ_Error("ClothComponentMesh", false,
+                AZ_Error("ClothComponentMesh", AZ::RHI::IsNullRenderer(),
                     "Invalid vertex position buffer obtained from the render mesh to be modified.");
                 continue;
             }

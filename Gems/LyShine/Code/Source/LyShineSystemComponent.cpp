@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "LyShine_precompiled.h"
 
@@ -55,26 +50,6 @@
 #include "UiDynamicLayoutComponent.h"
 #include "UiDynamicScrollBoxComponent.h"
 #include "UiNavigationSettings.h"
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-struct CSystemEventListener_UI
-    : public ISystemEventListener
-{
-public:
-    virtual void OnSystemEvent(ESystemEvent event, [[maybe_unused]] UINT_PTR wparam, [[maybe_unused]] UINT_PTR lparam)
-    {
-        switch (event)
-        {
-        case ESYSTEM_EVENT_LEVEL_POST_UNLOAD:
-        {
-            STLALLOCATOR_CLEANUP;
-            break;
-        }
-        }
-    }
-};
-static CSystemEventListener_UI g_system_event_listener_ui;
-
 
 namespace LyShine
 {
@@ -177,6 +152,7 @@ namespace LyShine
         UiSystemBus::Handler::BusConnect();
         UiSystemToolsBus::Handler::BusConnect();
         UiFrameworkBus::Handler::BusConnect();
+        CrySystemEventBus::Handler::BusConnect();
 
         // register all the component types internal to the LyShine module
         // These are registered in the order we want them to appear in the Add Component menu
@@ -221,19 +197,9 @@ namespace LyShine
         UiSystemToolsBus::Handler::BusDisconnect();
         UiFrameworkBus::Handler::BusDisconnect();
         LyShineRequestBus::Handler::BusDisconnect();
+        CrySystemEventBus::Handler::BusDisconnect();
 
         LyShineAllocatorScope::DeactivateAllocators();
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    void LyShineSystemComponent::InitializeSystem()
-    {
-        // Not sure if this is still required
-        gEnv->pSystem->GetISystemEventDispatcher()->RegisterListener(&g_system_event_listener_ui);
-
-        m_pLyShine = new CLyShine(gEnv->pSystem);
-        gEnv->pLyShine = m_pLyShine;
-        BroadcastCursorImagePathname();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -395,6 +361,27 @@ namespace LyShine
                 }
             }
         }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    void LyShineSystemComponent::OnCrySystemInitialized([[maybe_unused]] ISystem& system, [[maybe_unused]] const SSystemInitParams& startupParams)
+    {
+#if !defined(AZ_MONOLITHIC_BUILD)
+        // When module is linked dynamically, we must set our gEnv pointer.
+        // When module is linked statically, we'll share the application's gEnv pointer.
+        gEnv = system.GetGlobalEnvironment();
+#endif
+        m_pLyShine = new CLyShine(gEnv->pSystem);
+        gEnv->pLyShine = m_pLyShine;
+
+        BroadcastCursorImagePathname();
+    }
+
+    void LyShineSystemComponent::OnCrySystemShutdown([[maybe_unused]] ISystem& system)
+    {
+        gEnv->pLyShine = nullptr;
+        delete m_pLyShine;
+        m_pLyShine = nullptr;       
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

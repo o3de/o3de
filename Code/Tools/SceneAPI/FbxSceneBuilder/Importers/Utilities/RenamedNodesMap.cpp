@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/std/algorithm.h>
@@ -27,6 +22,7 @@ namespace AZ
                 Containers::SceneGraph::NodeIndex parentNode, const char* defaultName)
             {
                 AZ_TraceContext("Node name", name);
+                const AZStd::string originalNodeName(name);
 
                 bool isNameUpdated = false;
                 // Nodes can't have an empty name, except of the root, otherwise nodes can't be referenced.
@@ -56,7 +52,7 @@ namespace AZ
                 // can't reference the same parent in that case. This is to make sure the node can be quickly found as
                 // the full path will be unique. To fix any issues, an index is appended.
                 size_t index = 1;
-                size_t offset = name.length();
+                const size_t offset = name.length();
                 while (graph.Find(parentNode, name).IsValid())
                 {
                     // Remove the previously tried extension.
@@ -71,7 +67,8 @@ namespace AZ
                 if (isNameUpdated)
                 {
                     AZ_TraceContext("New node name", name);
-                    AZ_TracePrintf(Utilities::WarningWindow, "The name of the node was invalid or conflicting and was updated.");
+                    AZ_TracePrintf(Utilities::WarningWindow, "The name of the node '%s' was invalid or conflicting and was updated to '%s'.",
+                        originalNodeName.c_str(), name.c_str());
                 }
 
                 return isNameUpdated;

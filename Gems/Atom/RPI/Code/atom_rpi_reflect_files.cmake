@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 set(FILES
@@ -55,6 +51,7 @@ set(FILES
     Include/Atom/RPI.Reflect/Material/MaterialAsset.h
     Include/Atom/RPI.Reflect/Material/MaterialAssetCreatorCommon.h
     Include/Atom/RPI.Reflect/Material/MaterialAssetCreator.h
+    Include/Atom/RPI.Reflect/Material/MaterialDynamicMetadata.h
     Include/Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h
     Include/Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h
     Include/Atom/RPI.Reflect/Material/MaterialPropertyValue.h
@@ -75,6 +72,7 @@ set(FILES
     Include/Atom/RPI.Reflect/Pass/PassTemplate.h
     Include/Atom/RPI.Reflect/Pass/RasterPassData.h
     Include/Atom/RPI.Reflect/Pass/RenderPassData.h
+    Include/Atom/RPI.Reflect/Shader/ShaderCommonTypes.h
     Include/Atom/RPI.Reflect/Shader/ShaderAsset.h
     Include/Atom/RPI.Reflect/Shader/ShaderAssetCreator.h
     Include/Atom/RPI.Reflect/Shader/ShaderInputContract.h
@@ -82,8 +80,6 @@ set(FILES
     Include/Atom/RPI.Reflect/Shader/ShaderOptionGroupLayout.h
     Include/Atom/RPI.Reflect/Shader/ShaderOutputContract.h
     Include/Atom/RPI.Reflect/Shader/ShaderOptionTypes.h
-    Include/Atom/RPI.Reflect/Shader/ShaderResourceGroupAsset.h
-    Include/Atom/RPI.Reflect/Shader/ShaderResourceGroupAssetCreator.h
     Include/Atom/RPI.Reflect/Shader/ShaderVariantKey.h
     Include/Atom/RPI.Reflect/Shader/ShaderVariantTreeAsset.h
     Include/Atom/RPI.Reflect/Shader/ShaderVariantAsset.h
@@ -135,6 +131,7 @@ set(FILES
     Source/RPI.Reflect/Material/MaterialAssetCreatorCommon.cpp
     Source/RPI.Reflect/Material/MaterialAssetCreator.cpp
     Source/RPI.Reflect/Material/LuaMaterialFunctor.cpp
+    Source/RPI.Reflect/Material/MaterialDynamicMetadata.cpp
     Source/RPI.Reflect/Material/MaterialPropertyDescriptor.cpp
     Source/RPI.Reflect/Material/MaterialPropertiesLayout.cpp
     Source/RPI.Reflect/Material/MaterialTypeAsset.cpp
@@ -145,14 +142,13 @@ set(FILES
     Source/RPI.Reflect/Pass/PassAttachmentReflect.cpp
     Source/RPI.Reflect/Pass/PassRequest.cpp
     Source/RPI.Reflect/Pass/PassTemplate.cpp
+    Source/RPI.Reflect/Shader/ShaderStageType.cpp
     Source/RPI.Reflect/Shader/ShaderAsset.cpp
     Source/RPI.Reflect/Shader/ShaderAssetCreator.cpp
     Source/RPI.Reflect/Shader/ShaderInputContract.cpp
     Source/RPI.Reflect/Shader/ShaderOptionGroup.cpp
     Source/RPI.Reflect/Shader/ShaderOptionGroupLayout.cpp
     Source/RPI.Reflect/Shader/ShaderOutputContract.cpp
-    Source/RPI.Reflect/Shader/ShaderResourceGroupAsset.cpp
-    Source/RPI.Reflect/Shader/ShaderResourceGroupAssetCreator.cpp
     Source/RPI.Reflect/Shader/ShaderVariantKey.cpp
     Source/RPI.Reflect/Shader/ShaderVariantTreeAsset.cpp
     Source/RPI.Reflect/Shader/ShaderVariantAsset.cpp

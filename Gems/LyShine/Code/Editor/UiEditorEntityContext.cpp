@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "UiCanvasEditor_precompiled.h"
 
@@ -943,7 +938,7 @@ void UiEditorEntityContext::InitializeEntities(const AzFramework::EntityList& en
 
             // Because we automatically add the EditorOnlyEntityComponent if it doesn't exist, we can encounter a situation
             // where an entity has duplicate EditorOnlyEntityComponents if an old canvas is resaved and an old slice it uses
-            // is also resaved. See https://jira.agscollab.com/browse/LY-90580
+            // is also resaved. See LY-90580
             // In the main editor this is handled by disabling the duplicate components, but the UI Editor doesn't use that
             // method (the world editor allows the user to manually add incompatible components and then disable and enable
             // them in the entity, the UI Editor still works how the world editor used to - it doesn't allow users to add

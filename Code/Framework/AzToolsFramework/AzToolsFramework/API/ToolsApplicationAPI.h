@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #ifndef AZTOOLSFRAMEWORK_TOOLSAPPLICATIONAPI_H
 #define AZTOOLSFRAMEWORK_TOOLSAPPLICATIONAPI_H
@@ -238,6 +233,11 @@ namespace AzToolsFramework
         * \return 1 if target EntityId was removed successfully, otherwise 0
         */
         virtual int RemoveDirtyEntity(AZ::EntityId target) = 0;
+
+        /*!
+         * Clears the dirty entity set.
+         */
+        virtual void ClearDirtyEntities() = 0;
 
         /*!
          * \return true if an undo/redo operation is in progress.
@@ -761,16 +761,6 @@ namespace AzToolsFramework
         /// If the view pane was not registered with the ViewPaneOptions.isDeletable set to true, the view pane will be hidden instead.
         virtual void CloseViewPane(const char* /*paneName*/) {}
 
-        /// Request generation of all level cubemaps.
-        virtual void GenerateAllCubemaps() {}
-
-        /// Regenerate cubemap for a particular entity.
-        /// \param entityId ID of the entity that the cubemap is for
-        /// \param cubemapOutputPath path to a image file to generate
-        /// \param hideEntity Indicates whether the entity should be hidden during cubemap generation. Controls whether the entity's current cubemap output is baked into the new cubemap.
-        virtual void GenerateCubemapForEntity(AZ::EntityId /*entityId*/, AZStd::string* /*cubemapOutputPath*/, bool /*hideEntity*/) {}
-        virtual void GenerateCubemapWithIDForEntity(AZ::EntityId /*entityId*/, AZ::Uuid /*cubemapId*/, AZStd::string* /*cubemapOutputPath*/, bool /*hideEntity*/, bool /*hasCubemapId*/) {}
-
         //! Spawn asset browser for the appropriate asset types.
         virtual void BrowseForAssets(AssetBrowser::AssetSelectionModel& /*selection*/) = 0;
 
@@ -920,9 +910,6 @@ namespace AzToolsFramework
             eECMF_HIDE_ENTITY_CREATION = 0x1,
             eECMF_USE_VIEWPORT_CENTER = 0x2,
         };
-
-        /// Populate global edit-time context menu.
-        virtual void PopulateEditorGlobalContextMenu(QMenu * /*menu*/, const AZ::Vector2& /*point*/, int /*flags*/) {}
 
         /// Populate slice portion of edit-time context menu
         virtual void PopulateEditorGlobalContextMenu_SliceSection(QMenu * /*menu*/, const AZ::Vector2& /*point*/, int /*flags*/) {}

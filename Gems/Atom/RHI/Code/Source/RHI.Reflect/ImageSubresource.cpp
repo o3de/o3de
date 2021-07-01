@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <Atom/RHI.Reflect/ImageSubresource.h>
 #include <Atom/RHI.Reflect/ImageDescriptor.h>
 #include <Atom/RHI.Reflect/ImageViewDescriptor.h>
@@ -102,11 +97,13 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<ImageSubresourceLayout>()
-                    ->Version(0)
+                    ->Version(1)
                     ->Field("m_size", &ImageSubresourceLayout::m_size)
                     ->Field("m_rowCount", &ImageSubresourceLayout::m_rowCount)
                     ->Field("m_bytesPerRow", &ImageSubresourceLayout::m_bytesPerRow)
                     ->Field("m_bytesPerImage", &ImageSubresourceLayout::m_bytesPerImage)
+                    ->Field("m_blockElementWidth", &ImageSubresourceLayout::m_blockElementWidth)
+                    ->Field("m_blockElementHeight", &ImageSubresourceLayout::m_blockElementHeight)
                     ;
             }
         }
@@ -115,11 +112,15 @@ namespace AZ
             Size size, 
             uint32_t rowCount,
             uint32_t bytesPerRow,
-            uint32_t bytesPerImage)
+            uint32_t bytesPerImage,
+            uint32_t blockElementWidth,
+            uint32_t blockElementHeight)
             : m_size{size}
             , m_rowCount{rowCount}
             , m_bytesPerRow{bytesPerRow}
             , m_bytesPerImage{bytesPerImage}
+            , m_blockElementWidth{blockElementWidth}
+            , m_blockElementHeight{blockElementHeight}
         {}
 
         ImageSubresourceLayoutPlaced::ImageSubresourceLayoutPlaced(const ImageSubresourceLayout& subresourceLayout, size_t offset)
@@ -296,8 +297,22 @@ namespace AZ
                 numBlocks = 4;
                 break;
 
+            case RHI::Format::EAC_R11_UNORM:
+            case RHI::Format::EAC_R11_SNORM:
+                isBlockCompressed = true;
+                bytesPerElement = 8;
+                numBlocks = 4;
+                break;
+
+            case RHI::Format::EAC_RG11_UNORM:
+            case RHI::Format::EAC_RG11_SNORM:
+                isBlockCompressed = true;
+                bytesPerElement = 16;
+                numBlocks = 4;
+                break;
+
             default:
-                AZ_Assert(false, "Unimplemented esoteric format.");
+                AZ_Assert(false, "Unimplemented esoteric format %i.", static_cast<int>(imageFormat));
             }
 
             if (isBlockCompressed)
@@ -316,6 +331,8 @@ namespace AZ
                 subresourceLayout.m_rowCount = numBlocksHigh;
                 subresourceLayout.m_size.m_width = imageSize.m_width;
                 subresourceLayout.m_size.m_height = imageSize.m_height;
+                subresourceLayout.m_blockElementWidth = numBlocks;
+                subresourceLayout.m_blockElementHeight = numBlocks;
             }
             else if (isPacked)
             {

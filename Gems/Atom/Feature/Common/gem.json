@@ -1,43 +1,10 @@
 {
     "gem_name": "Atom_Feature_Common",
-    "Dependencies": [
-        {
-            "Uuid": "a218db9eb2114477b46600fea4441a6c",
-            "VersionConstraints": [
-                "~>0.1.0"
-            ],
-            "_comment": "Atom RPI"
-        }
+    "display_name": "Atom Feature Common",
+    "summary": "",
+    "canonical_tags": [
+        "Gem"
     ],
-    "GemFormatVersion": 4,
-    "Uuid": "b58e5eed0901428ca78544b04dbd61bd",
-    "Name": "Atom_Feature_Common",
-    "DisplayName": "Atom.Feature.Common",
-    "Version": "0.1.0",
-    "LinkType": "Dynamic",
-    "Summary": "Provides commonly used render features.",
-    "Tags": [ "Atom", "Feature", "Common" ],
-    "IconPath": "preview.png",
-    "Modules": [
-        {
-            "Type": "GameModule"
-        },
-        {
-            "Name": "Builders",
-            "Type": "EditorModule"
-        },
-        {
-            "Name": "Public",
-            "Type": "StaticLib"
-        },
-        {
-            "Name": "Editor",
-            "Type": "EditorModule",
-            "Extends": "GameModule"
-        },
-        {
-            "Name": "StaticLibrary",
-            "Type": "StaticLib"
-        }
+    "user_tags": [
     ]
 }

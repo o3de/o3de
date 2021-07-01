@@ -1,13 +1,9 @@
 #!/bin/bash
 
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # This script must be run as root
 if [[ $EUID -ne 0 ]]
@@ -26,7 +22,7 @@ then
     exit 1
 fi
 
-UBUNTU_DISTRO="`lsb_release -c | awk '{print $2}'`"
+UBUNTU_DISTRO="$(lsb_release -c | awk '{print $2}')"
 if [ "$UBUNTU_DISTRO" == "bionic" ]
 then
     echo "Setup for Ubuntu 18.04 LTS ($UBUNTU_DISTRO)"
@@ -49,14 +45,14 @@ then
     apt-get update
     apt-get install git -y
 else
-    GIT_VERSION=`git --version | awk '{print $3}'`
+    GIT_VERSION=$(git --version | awk '{print $3}')
     echo Git $GIT_VERSION already Installed. Skipping Git installation
 fi
 
 #
 # Setup Git-LFS if needed
 #
-GIT_LFS_PACKAGE_COUNT=`apt list --installed 2>/dev/null | grep git-lfs/ | wc -l`
+GIT_LFS_PACKAGE_COUNT=$(apt list --installed 2>/dev/null | grep git-lfs/ | wc -l)
 if [ $GIT_LFS_PACKAGE_COUNT -eq 0 ]
 then
     echo Setting up Git-LFS
@@ -87,7 +83,7 @@ then
     dpkg -i $GCM_PACKAGE_NAME
     popd
 else
-    GCM_VERSION=`git-credential-manager-core --version`
+    GCM_VERSION=$(git-credential-manager-core --version)
     echo Git Credential Manager \(GCM\) version $GCM_VERSION already installed. Skipping GCM installation
 fi
 

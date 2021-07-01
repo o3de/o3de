@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <ImageProcessing_precompiled.h>
 
@@ -19,6 +14,7 @@
 #include <Processing/ImageFlags.h>
 
 #include <Atom/RHI.Reflect/Format.h>
+#include <Atom/RHI.Reflect/ImageSubresource.h>
 
 #include <Atom/RPI.Reflect/Image/StreamingImageAssetCreator.h>
 #include <Atom/RPI.Reflect/Image/ImageMipChainAssetCreator.h>
@@ -238,14 +234,9 @@ namespace ImageProcessingAtom
             uint8_t* mipBuffer;
             uint32_t pitch;
             m_imageObject->GetImagePointer(mip, mipBuffer, pitch);
-            uint32_t mipBufferSize = m_imageObject->GetMipBufSize(mip);
-
-            RHI::ImageSubresourceLayout layout;
-            layout.m_bytesPerImage = mipBufferSize / arraySize;
-            layout.m_rowCount = layout.m_bytesPerImage / pitch;
-            layout.m_size = RHI::Size(m_imageObject->GetWidth(mip), m_imageObject->GetHeight(mip) / arraySize, 1);
-            layout.m_bytesPerRow = pitch;
-
+            RHI::Format format = Utils::PixelFormatToRHIFormat(m_imageObject->GetPixelFormat(), m_imageObject->HasImageFlags(EIF_SRGBRead));
+            
+            RHI::ImageSubresourceLayout layout = RHI::GetImageSubresourceLayout(RHI::Size(m_imageObject->GetWidth(mip), m_imageObject->GetHeight(mip) / arraySize, 1), format);
             builder.BeginMip(layout);
 
             for (uint32_t arrayIndex = 0; arrayIndex < arraySize; ++arrayIndex)

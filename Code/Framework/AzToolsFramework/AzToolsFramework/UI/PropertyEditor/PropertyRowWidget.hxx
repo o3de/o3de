@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -44,6 +39,7 @@ namespace AzToolsFramework
         Q_PROPERTY(bool hasChildRows READ HasChildRows);
         Q_PROPERTY(bool isTopLevel READ IsTopLevel);
         Q_PROPERTY(int getLevel READ GetLevel);
+        Q_PROPERTY(bool canBeReordered READ CanBeReordered);
         Q_PROPERTY(bool appendDefaultLabelToName READ GetAppendDefaultLabelToName WRITE AppendDefaultLabelToName)
     public:
         AZ_CLASS_ALLOCATOR(PropertyRowWidget, AZ::SystemAllocator, 0)
@@ -126,6 +122,7 @@ namespace AzToolsFramework
         void SetSelectionEnabled(bool selectionEnabled);
         void SetSelected(bool selected);
         bool eventFilter(QObject *watched, QEvent *event) override;
+        void paintEvent(QPaintEvent*) override;
 
         /// Apply tooltip to widget and some of its children.
         void SetDescription(const QString& text);
@@ -146,6 +143,9 @@ namespace AzToolsFramework
         QLabel* GetNameLabel() { return m_nameLabel; }
         void SetIndentSize(int w);
         void SetAsCustom(bool custom) { m_custom = custom; }
+
+        bool CanChildrenBeReordered() const;
+        bool CanBeReordered() const;
     protected:
         int CalculateLabelWidth() const;
 

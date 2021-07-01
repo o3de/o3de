@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #ifndef CRYINCLUDE_EDITOR_IEDITOR_H
 #define CRYINCLUDE_EDITOR_IEDITOR_H
@@ -66,7 +61,6 @@ class CDialog;
 #if defined(AZ_PLATFORM_WINDOWS)
 class C3DConnexionDriver;
 #endif
-class CRuler;
 class CSettingsManager;
 struct IExportManager;
 class CDisplaySettings;
@@ -425,7 +419,6 @@ struct IEditor
     virtual void DeleteThis() = 0;
     //! Access to Editor ISystem interface.
     virtual ISystem* GetSystem() = 0;
-    virtual IRenderer* GetRenderer() = 0;
     //! Access to class factory.
     virtual IEditorClassFactory* GetClassFactory() = 0;
     //! Access to commands manager.
@@ -552,7 +545,6 @@ struct IEditor
     virtual class CViewManager* GetViewManager() = 0;
     virtual class CViewport* GetActiveView() = 0;
     virtual void SetActiveView(CViewport* viewport) = 0;
-    virtual struct IBackgroundTaskManager* GetBackgroundTaskManager() = 0;
     virtual struct IEditorFileMonitor* GetFileMonitor() = 0;
 
     // These are needed for Qt integration:
@@ -589,8 +581,6 @@ struct IEditor
     virtual void    SetSelectedRegion(const AABB& box) = 0;
     //! Get currently selected region.
     virtual void    GetSelectedRegion(AABB& box) = 0;
-    //! Get current ruler
-    virtual CRuler* GetRuler() = 0;
 
     virtual void SetOperationMode(EOperationMode mode) = 0;
     virtual EOperationMode GetOperationMode() = 0;
@@ -635,7 +625,6 @@ struct IEditor
     //! Returns true if selection is made and false if selection is canceled.
     virtual bool SelectColor(QColor& color, QWidget* parent = 0) = 0;
     //! Get shader enumerator.
-    virtual class CShaderEnum* GetShaderEnum() = 0;
     virtual class CUndoManager* GetUndoManager() = 0;
     //! Begin operation requiring undo
     //! Undo manager enters holding state.
@@ -725,7 +714,6 @@ struct IEditor
     virtual ESystemConfigPlatform GetEditorConfigPlatform() const = 0;
     virtual void ReloadTemplates() = 0;
     virtual IResourceSelectorHost* GetResourceSelectorHost() = 0;
-    virtual struct IBackgroundScheduleManager* GetBackgroundScheduleManager() = 0;
     virtual void ShowStatusText(bool bEnable) = 0;
 
     // Provides a way to extend the context menu of an object. The function gets called every time the menu is opened.

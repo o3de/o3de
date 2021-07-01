@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #pragma once
 
@@ -79,7 +74,6 @@
 #define ID_EDIT_HIDE                               32898
 #define ID_EDIT_UNHIDEALL                          32899
 #define ID_RELOAD_TERRAIN                          32902
-#define ID_VIEW_GRIDSETTINGS                       32904
 #define ID_VIEW_CONFIGURELAYOUT                    32906
 #define ID_TOOLS_LOGMEMORYUSAGE                    32908
 #define ID_TERRAIN_EXPORTBLOCK                     32909
@@ -90,16 +84,12 @@
 #define ID_EXPORT_INDOORS                          32915
 #define ID_VIEW_CYCLE2DVIEWPORT                    32916
 #define ID_SNAPANGLE                               32917
-#define ID_CHANGEMOVESPEED_INCREASE                32928
-#define ID_CHANGEMOVESPEED_DECREASE                32929
-#define ID_CHANGEMOVESPEED_CHANGESTEP              32930
 #define ID_PHYSICS_GETPHYSICSSTATE                 32937
 #define ID_PHYSICS_RESETPHYSICSSTATE               32938
 #define ID_GAME_SYNCPLAYER                         32941
 #define ID_FILE_SAVELEVELRESOURCES                 32942
 #define ID_VALIDATELEVEL                           32943
 #define ID_TERRAIN_RESIZE                          32944
-#define ID_RELOAD_TEXTURES                         32952
 #define ID_TERRAIN_COLLISION                       32960
 #define ID_TOOL_FIRST                              32972
 #define ID_EDIT_UNFREEZE                           32973
@@ -116,6 +106,7 @@
 #define ID_EDIT_FETCH                              33465
 #define ID_FILE_EXPORTTOGAMENOSURFACETEXTURE       33473
 #define ID_VIEW_SWITCHTOGAME                       33477
+#define ID_VIEW_SWITCHTOGAME_FULLSCREEN            33478
 #define ID_EDIT_DELETE                             33480
 #define ID_MOVE_OBJECT                             33481
 #define ID_RENAME_OBJ                              33483
@@ -315,6 +306,9 @@
 #define ID_CREATE_LEVEL_FG_MODULE_FROM_SELECTION                    35077
 #define ID_GRAPHVIEW_ADD_BLACK_BOX                                  35078
 #define ID_GRAPHVIEW_UNGROUP                                        35079
+#define ID_FILE_PROJECT_MANAGER_NEW                                 35080
+#define ID_FILE_PROJECT_MANAGER_OPEN                                35081
+#define ID_FILE_PROJECT_MANAGER_SETTINGS                            35082
 #define ID_TV_TRACKS_TOOLBAR_BASE                                   35083               // range between ID_TV_TRACKS_TOOLBAR_BASE to ID_TV_TRACKS_TOOLBAR_LAST reserved
 #define ID_TV_TRACKS_TOOLBAR_LAST                                   35183               // for up to 100 "Add Tracks..." dynamically added Track View Track buttons
 #define ID_OPEN_TERRAIN_EDITOR          36007
@@ -368,3 +362,4 @@
 #define ID_TOOLBAR_WIDGET_SPACER_RIGHT       50013
 #define ID_TOOLBAR_WIDGET_PLAYCONSOLE_LABEL  50014
 #define ID_TOOLBAR_WIDGET_LAST               50020
+#define ID_VIEWPORTUI_VISIBLE                50040

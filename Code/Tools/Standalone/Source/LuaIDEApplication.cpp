@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "StandaloneTools_precompiled.h"
 
@@ -22,9 +17,9 @@
 #include <AzFramework/Asset/AssetSystemComponent.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorSelectionAccentSystemComponent.h>
+#include <AzToolsFramework/Thumbnails/ThumbnailerNullComponent.h>
 
 #include <Source/AssetDatabaseLocationListener.h>
-#include <Source/ThumbnailerNullComponent.h>
 #include <Source/LUA/LUAEditorContext.h>
 #include <Source/LUA/LUADebuggerComponent.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyManagerComponent.h>
@@ -55,7 +50,7 @@ namespace LUAEditor
         RegisterComponentDescriptor(AzToolsFramework::Components::PropertyManagerComponent::CreateDescriptor());
         RegisterComponentDescriptor(AzFramework::AssetSystem::AssetSystemComponent::CreateDescriptor());
         RegisterComponentDescriptor(AzToolsFramework::AssetSystem::AssetSystemComponent::CreateDescriptor());
-        RegisterComponentDescriptor(LUAEditor::Thumbnailer::ThumbnailerNullComponent::CreateDescriptor());
+        RegisterComponentDescriptor(AzToolsFramework::Thumbnailer::ThumbnailerNullComponent::CreateDescriptor());
         RegisterComponentDescriptor(AzToolsFramework::AssetBrowser::AssetBrowserComponent::CreateDescriptor());
         RegisterComponentDescriptor(AzToolsFramework::Components::EditorSelectionAccentSystemComponent::CreateDescriptor());
 
@@ -75,7 +70,7 @@ namespace LUAEditor
         EnsureComponentCreated(AzToolsFramework::Components::PropertyManagerComponent::RTTI_Type());
         EnsureComponentCreated(AzFramework::AssetSystem::AssetSystemComponent::RTTI_Type());
         EnsureComponentCreated(AzToolsFramework::AssetSystem::AssetSystemComponent::RTTI_Type());
-        EnsureComponentCreated(LUAEditor::Thumbnailer::ThumbnailerNullComponent::RTTI_Type());
+        EnsureComponentCreated(AzToolsFramework::Thumbnailer::ThumbnailerNullComponent::RTTI_Type());
         EnsureComponentCreated(AzToolsFramework::AssetBrowser::AssetBrowserComponent::RTTI_Type());
         EnsureComponentCreated(AzToolsFramework::Components::EditorSelectionAccentSystemComponent::RTTI_Type());
     }
