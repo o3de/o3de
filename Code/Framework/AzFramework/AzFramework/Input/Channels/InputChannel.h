@@ -218,23 +218,12 @@ namespace AzFramework
         //! \ref AzFramework::InputChannelRequests::ResetState
         void ResetState() override;
 
-        ////////////////////////////////////////////////////////////////////////////////////////////
-        //! Sets whether or not the channel shall broadcast to the InputChannelNotificationBus when
-        //! its internal state is updated.
-        //! This can be disabled to allow for testing or synthetic events that aren't part of the
-        //! input system.
-        void SetUpdateEventsEnabled(bool enabled);
-
     private:
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Variables
         const InputChannelId    m_inputChannelId;   //!< Id of the input channel
         const InputDevice&      m_inputDevice;      //!< Input device that owns the input channel
         State                   m_state;            //!< Current state of the input channel
-
-        //! If true, &InputChannelNotifications::OnInputChannelEvent will be fired when UpdateState
-        //! is called.
-        bool                    m_shouldDispatchEvents = true; 
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
