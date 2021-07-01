@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -53,7 +53,6 @@ namespace AZ
             //Internally it may create a new MTLTexture object that reinterprets the original MTLTexture object from Image
             MemoryView m_memoryView;
             
-            RHI::ImageViewDescriptor m_descriptor;
             MTLPixelFormat m_format;
             RHI::ImageSubresourceRange m_imageSubresourceRange;
         };

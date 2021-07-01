@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -197,7 +197,7 @@ CLocalizedStringsManager::CLocalizedStringsManager(ISystem* pSystem)
 
     REGISTER_CVAR2(c_sys_localization_format, &m_cvarLocalizationFormat, 1, VF_NULL,
         "Usage: sys_localization_format [0..1]\n"
-        "    0: Crytek Legacy Localization (Excel 2003)\n"
+        "    0: O3DE Legacy Localization (Excel 2003)\n"
         "    1: AGS XML\n"
         "Default is 1 (AGS Xml)");
     //Check that someone hasn't added a language ID without a language name

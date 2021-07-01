@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -12,6 +12,7 @@
 #include <Atom/RPI.Public/Scene.h> 
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
 #include <Atom/RHI/DrawPacketBuilder.h>
+#include <Atom/RHI/RHISystemInterface.h>
 #include <AzCore/Console/Console.h>
 
 namespace AZ
@@ -154,6 +155,40 @@ namespace AZ
             auto appendShader = [&](const ShaderCollection::Item& shaderItem)
             {
                 AZ_PROFILE_SCOPE(Debug::ProfileCategory::AzRender, "appendShader()");
+
+                // Skip the shader item without creating the shader instance
+                // if the mesh is not going to be rendered based on the draw tag
+                RHI::RHISystemInterface* rhiSystem = RHI::RHISystemInterface::Get();
+                RHI::DrawListTagRegistry* drawListTagRegistry = rhiSystem->GetDrawListTagRegistry();
+
+                // Use the explicit draw list override if exists.
+                RHI::DrawListTag drawListTag = shaderItem.GetDrawListTagOverride();
+
+                if (drawListTag.IsNull())
+                {
+                    Data::Asset<RPI::ShaderAsset> shaderAsset = shaderItem.GetShaderAsset();
+                    if (!shaderAsset.IsReady())
+                    {
+                        // The shader asset needs to be loaded before we can check the draw tag.
+                        // If it's not loaded yet, the instance database will do a blocking load
+                        // when we create the instance below, so might as well load it now.
+                        shaderAsset.QueueLoad();
+
+                        if (shaderAsset.IsLoading())
+                        {
+                            shaderAsset.BlockUntilLoadComplete();
+                        }
+                    }
+
+                    drawListTag = drawListTagRegistry->FindTag(shaderAsset->GetDrawListName());
+                }
+
+                if (!parentScene.HasOutputForPipelineState(drawListTag))
+                {
+                    // drawListTag not found in this scene, so don't render this item
+                    return false;
+                }
+
                 Data::Instance<Shader> shader = RPI::Shader::FindOrCreate(shaderItem.GetShaderAsset());
                 if (!shader)
                 {
@@ -244,21 +279,7 @@ namespace AZ
                     drawSrg->Compile();
                 }
 
-                // Use the default draw list tag from the shader variant.
-                RHI::DrawListTag drawListTag = shader->GetDrawListTag();
-
-                // Use the explicit draw list override if exist.
-                RHI::DrawListTag runtimeTag = shaderItem.GetDrawListTagOverride();
-                if (!runtimeTag.IsNull())
-                {
-                    drawListTag = runtimeTag;
-                }
-
-                if (!parentScene.ConfigurePipelineState(drawListTag, pipelineStateDescriptor))
-                {
-                    // drawListTag not found in this scene, so don't render this item
-                    return false;
-                }
+                parentScene.ConfigurePipelineState(drawListTag, pipelineStateDescriptor);
 
                 const RHI::PipelineState* pipelineState = shader->AcquirePipelineState(pipelineStateDescriptor);
                 if (!pipelineState)
