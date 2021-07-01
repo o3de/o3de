@@ -257,14 +257,7 @@ function(ly_add_target)
     # IDE organization
     ly_source_groups_from_folders("${ALLFILES}")
     source_group("Generated Files" REGULAR_EXPRESSION "(${CMAKE_BINARY_DIR})") # Any file coming from the output folder
-    file(RELATIVE_PATH project_path ${LY_ROOT_FOLDER} ${CMAKE_CURRENT_SOURCE_DIR})
-    # Visual Studio cannot load a project with a FOLDER that starts with a "../" relative path
-    # Strip away any leading ../ and then add a prefix of ExternalTargets/ as that in this scenario
-    # A relative directory with ../ would be outside of the Lumberyard Engine Root therefore it is external
-    set(ide_path ${project_path})
-    if (${project_path} MATCHES [[^(\.\./)+(.*)]])
-        set(ide_path "${CMAKE_MATCH_2}")
-    endif()
+    ly_get_vs_folder_directory(${CMAKE_CURRENT_SOURCE_DIR} ide_path)
     set_property(TARGET ${project_NAME} PROPERTY FOLDER ${ide_path})
 
 
@@ -638,4 +631,17 @@ function(ly_de_alias_target target_name output_variable_name)
         message(FATAL_ERROR "Empty de_aliased for ${target_name}")
     endif()
     set(${output_variable_name} ${de_aliased_target_name} PARENT_SCOPE)
+endfunction()
+
+function(ly_get_vs_folder_directory absolute_target_source_dir output_source_dir)
+    # Get a relative directory to the LY_ROOT_FOLDER if possible for the Visual Studio solution hierarchy
+    # If a relative path cannot be formed, then retrieve a path with the drive letter stripped from it
+    cmake_path(IS_PREFIX LY_ROOT_FOLDER ${absolute_target_source_dir} is_target_prefix_of_engine_root)
+    if(is_target_prefix_of_engine_root)
+        cmake_path(RELATIVE_PATH absolute_target_source_dir BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE relative_target_source_dir)
+    else()
+        cmake_path(GET absolute_target_source_dir RELATIVE_PART relative_target_source_dir)
+    endif()
+
+    set(${output_source_dir} ${relative_target_source_dir} PARENT_SCOPE)
 endfunction()
