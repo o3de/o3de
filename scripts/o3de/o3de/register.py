@@ -341,7 +341,7 @@ def register_o3de_object_path(json_data: dict,
         try:
             paths_to_remove.append(o3de_object_path.relative_to(save_path.parent))
         except ValueError:
-            pass # It is OK  relative path cannot be formed
+            pass # It is OK relative path cannot be formed
     manifest_data[o3de_object_key] = list(filter(lambda p: pathlib.Path(p) not in paths_to_remove,
                                                            manifest_data.setdefault(o3de_object_key, [])))
 
@@ -424,7 +424,6 @@ def register_project_path(json_data: dict,
         utils.backup_file(project_json_path)
         if not manifest.save_o3de_manifest(project_json_data, project_json_path):
             return 1
-
 
     return 0
 

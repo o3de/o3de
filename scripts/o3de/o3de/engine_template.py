@@ -1729,8 +1729,8 @@ def create_gem(gem_path: pathlib.Path,
 
     if not template_path:
         logger.error(f'Could not find the template path using name {template_name}.\n'
-                     f'Has the template been registered yet. It can be registered via the '
-                     f'"o3de.py register --tp <template-path>" command')
+                     'Has the template been registered yet? It can be registered via the '
+                     '"o3de.py register --tp <template-path>" command')
         return 1
     if not os.path.isdir(template_path):
         logger.error(f'Could not find the template {template_name}=>{template_path}')

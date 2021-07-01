@@ -194,9 +194,9 @@ def load_o3de_manifest(manifest_path: pathlib.Path = None) -> dict:
             return json_data
 
 
-def save_o3de_manifest(json_data: dict, manifest_path: pathlib.Path = None) -> None:
+def save_o3de_manifest(json_data: dict, manifest_path: pathlib.Path = None) -> bool:
     """
-        Save the json dictionary to the supplied manifest file or ~/.o3de/o3de_manifest.json if None
+        Save the json dictionary to the supplied manifest file or ~/.o3de/o3de_manifest.json if manifest_path is None
 
         :param json_data: dictionary to save in json format at the file path
         :param manifest_path: optional path to manifest file to save
@@ -206,8 +206,10 @@ def save_o3de_manifest(json_data: dict, manifest_path: pathlib.Path = None) -> N
     with manifest_path.open('w') as s:
         try:
             s.write(json.dumps(json_data, indent=4) + '\n')
+            return True
         except OSError as e:
             logger.error(f'Manifest json failed to save: {str(e)}')
+            return False
 
 
 # Data query methods
