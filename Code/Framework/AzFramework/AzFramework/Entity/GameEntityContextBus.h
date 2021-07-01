@@ -91,9 +91,9 @@ namespace AzFramework
         virtual void DestroyGameEntity(const AZ::EntityId& /*id*/) = 0;
 
         /**
-         * Destroys an entity only in slice mode (when prefabs are disabled). This request is only added as a stop-gap solution to
-         * prevent the editor from crashing when prefabs are enabled. This will be removed soon. Please use 'DestroyGameEntity' if your
-         * intention is to destroy a game entity in slice mode.
+         * Destroys an entity only in slice mode (when prefabs are disabled). This request is only added as a stop-gap solution
+         * to prevent the editor from crashing when prefabs are enabled and must only be called through the BehaviorContext binding
+         * for 'DestroyGameEntity'. No code should be written to directly call this method. This will be removed soon.
          * 
          * @param id The ID of the entity to destroy.
          */
@@ -109,8 +109,8 @@ namespace AzFramework
 
         /**
          * Destroys an entity and its descendants only in slice mode (when prefabs are disabled). This request is only added as a stop-gap
-         * solution to prevent the editor from crashing when prefabs are enabled. This will be removed soon. Please use 
-         * 'DestroyGameEntityAndDescendants' if your intention is to destroy a game entity and its descendants in slice mode.
+         * solution to prevent the editor from crashing when prefabs are enabled and must only be called through the BehaviorContext
+         * binding for 'DestroyGameEntityAndDescendants'.No code should be written to directly call this method. This will be removed soon.
          *
          * @param id The ID of the entity to destroy.
          */
