@@ -209,6 +209,8 @@ class WinEditor(WinLauncher):
     def __init__(self, build, args):
         super(WinEditor, self).__init__(build, args)
         self.args.append('--regset="/Amazon/Settings/EnableSourceControl=false"')
+        self.args.append('--regset="/Amazon/AWS/Preferences/AWSAttributionConsentShown=true"')
+        self.args.append('--regset="/Amazon/AWS/Preferences/AWSAttributionEnabled=false"')
 
     def binary_path(self):
         """

@@ -8,5 +8,5 @@
 add_subdirectory(Framework)
 add_subdirectory(LauncherUnified)
 add_subdirectory(Legacy)
-add_subdirectory(Sandbox)
+add_subdirectory(Editor)
 add_subdirectory(Tools)

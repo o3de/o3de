@@ -33,7 +33,7 @@ AzQtComponents--Card #contentContainer
 
 AzQtComponents--Card[selected="true"] > #contentContainer
 {
-    border: 1px solid #00A1C9;
+    border: 1px solid #94D2FF;
     border-top: none;
 }
 
@@ -99,7 +99,7 @@ AzQtComponents--CardHeader #Background
 
 AzQtComponents--Card[selected="true"] > AzQtComponents--CardHeader #Background
 {
-    border: 1px solid #00A1C9;
+    border: 1px solid #94D2FF;
     border-bottom: none;
     border-top-left-radius: 2px;
     border-top-right-radius: 2px;
@@ -107,7 +107,7 @@ AzQtComponents--Card[selected="true"] > AzQtComponents--CardHeader #Background
 
 AzQtComponents--Card[selected="true"][expanded="false"] > AzQtComponents--CardHeader #Background
 {
-    border: 1px solid #00A1C9;
+    border: 1px solid #94D2FF;
     border-radius: 2px
 }
 

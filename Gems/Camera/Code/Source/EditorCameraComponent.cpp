@@ -26,8 +26,10 @@ namespace Camera
 
     void EditorCameraComponent::Activate()
     {
-        auto controllerConfig = m_controller.GetConfiguration();
+        // Ensure our Editor Entity ID is up-to-date to sync camera configurations between Edit & Game mode.
+        CameraComponentConfig controllerConfig = m_controller.GetConfiguration();
         controllerConfig.m_editorEntityId = GetEntityId().operator AZ::u64();
+        m_controller.SetConfiguration(controllerConfig);
 
         // Call base class activate, which in turn calls Activate on our controller.
         EditorCameraComponentBase::Activate();
