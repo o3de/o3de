@@ -76,10 +76,9 @@ WelcomeScreenDialog::WelcomeScreenDialog(QWidget* pParent)
     ui->setupUi(this);
 
     // Set the project preview image
-
     QString projectPreviewPath = QDir(AZ::Utils::GetProjectPath().c_str()).filePath("preview.png");
-    QFileInfo doesPreviewExist(projectPreviewPath);
-    if (!doesPreviewExist.exists() || !doesPreviewExist.isFile())
+    QFileInfo projectPreviewPathInfo(projectPreviewPath);
+    if (!projectPreviewPathInfo.exists() || !projectPreviewPathInfo.isFile())
     {
         projectPreviewPath = ":/WelcomeScreenDialog/DefaultProjectImage.png";
     }
