@@ -123,6 +123,7 @@ QPlainTextEdit:focus
 @import "LineEdit.qss";
 @import "Menu.qss";
 @import "MenuBar.qss";
+@import "MessageBox.qss";
 @import "ProgressBar.qss";
 @import "PushButton.qss";
 @import "QDockWidget.qss";

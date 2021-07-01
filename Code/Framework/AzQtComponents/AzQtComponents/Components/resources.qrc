@@ -457,6 +457,7 @@
     <file>Widgets/ComboBoxConfig.ini</file>
     <file>Widgets/Menu.qss</file>
     <file>Widgets/MenuBar.qss</file>
+    <file>Widgets/MessageBox.qss</file>
     <file>Widgets/ProgressBarConfig.ini</file>
     <file>Widgets/ProgressBar.qss</file>
     <file>Widgets/PushButton.qss</file>
