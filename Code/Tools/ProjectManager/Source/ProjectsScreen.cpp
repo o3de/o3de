@@ -483,9 +483,9 @@ namespace O3DE::ProjectManager
         return displayFirstTimeContent;
     }
 
-    void ProjectsScreen::RemoveInvalidProjects()
+    bool ProjectsScreen::RemoveInvalidProjects()
     {
-        PythonBindingsInterface::Get()->RemoveInvalidProjects();
+        return PythonBindingsInterface::Get()->RemoveInvalidProjects();
     }
 
     void ProjectsScreen::StartProjectBuild(const ProjectInfo& projectInfo)

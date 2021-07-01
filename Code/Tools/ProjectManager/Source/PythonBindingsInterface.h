@@ -144,7 +144,7 @@ namespace O3DE::ProjectManager
         /**
          * Removes invalid projects from the manifest
          */
-        virtual void RemoveInvalidProjects() = 0;
+        virtual bool RemoveInvalidProjects() = 0;
 
 
         // Project Templates
