@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -137,9 +132,14 @@ namespace AWSCore
     {
         QMenu* globalDocsMenu = this->addMenu(QObject::tr(AWSAndO3DEGlobalDocsText));
 
-        globalDocsMenu->addAction(AddExternalLinkAction(AWSAndScriptCanvasActionText, AWSAndScriptCanvasUrl, ":/Notifications/link.svg"));
-        globalDocsMenu->addAction(AddExternalLinkAction(AWSAndComponentsActionText, AWSAndComponentsUrl, ":/Notifications/link.svg"));
-        globalDocsMenu->addAction(AddExternalLinkAction(CallAWSResourcesActionText, CallAWSResourcesUrl, ":/Notifications/link.svg"));
+        globalDocsMenu->addAction(
+            AddExternalLinkAction(AWSAndO3DEGettingStartedActionText, AWSAndGettingStartedUrl, ":/Notifications/link.svg"));
+        globalDocsMenu->addAction(
+            AddExternalLinkAction(AWSAndO3DEMappingsFileActionText, AWSAndResourceMappingsUrl, ":/Notifications/link.svg"));
+        globalDocsMenu->addAction(
+            AddExternalLinkAction(AWSAndO3DEResourceToolActionText, AWSAndResourceMappingToolUrl, ":/Notifications/link.svg"));
+        globalDocsMenu->addAction(
+            AddExternalLinkAction(AWSAndO3DEScriptingActionText, AWSAndScriptingUrl, ":/Notifications/link.svg"));
 
         AddSpaceForIcon(globalDocsMenu);
     }
@@ -165,6 +165,8 @@ namespace AWSCore
         subMenu->addAction(AddExternalLinkAction(
             AWSClientAuthGemOverviewActionText, AWSClientAuthGemOverviewUrl, ":/Notifications/link.svg"));
         subMenu->addAction(AddExternalLinkAction(
+            AWSClientAuthGemSetupActionText, AWSClientAuthGemSetupUrl, ":/Notifications/link.svg"));
+        subMenu->addAction(AddExternalLinkAction(
             AWSClientAuthCDKAndResourcesActionText, AWSClientAuthCDKAndResourcesUrl, ":/Notifications/link.svg"));
         subMenu->addAction(AddExternalLinkAction(
             AWSClientAuthScriptCanvasAndLuaActionText, AWSClientAuthScriptCanvasAndLuaUrl, ":/Notifications/link.svg"));
@@ -172,8 +174,6 @@ namespace AWSCore
             AWSClientAuth3rdPartyAuthProviderActionText, AWSClientAuth3rdPartyAuthProviderUrl, ":/Notifications/link.svg"));
         subMenu->addAction(AddExternalLinkAction(
             AWSClientAuthCustomAuthProviderActionText, AWSClientAuthCustomAuthProviderUrl, ":/Notifications/link.svg"));
-        subMenu->addAction(AddExternalLinkAction(
-            AWSClientAuthPlatformSpecificActionText, AWSClientAuthPlatformSpecificUrl, ":/Notifications/link.svg"));
         subMenu->addAction(AddExternalLinkAction(
             AWSClientAuthAPIReferenceActionText, AWSClientAuthAPIReferenceUrl, ":/Notifications/link.svg"));
 

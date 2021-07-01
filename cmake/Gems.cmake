@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 # This file contains utility wrappers for dealing with the Gems system. 
@@ -159,7 +155,13 @@ function(ly_enable_gems)
     # This will be used to re-create the ly_enable_gems call in the generated CMakeLists.txt at the INSTALL step
 
     # Replace the CMake list separator with a space to replicate the space separated TARGETS arguments
-    string(REPLACE ";" " " enable_gems_args "${ly_enable_gems_PROJECT_NAME},${ly_enable_gems_GEMS},${ly_enable_gems_GEM_FILE},${ly_enable_gems_VARIANTS},${ly_enable_gems_TARGETS}")
+    if(NOT ly_enable_gems_PROJECT_NAME STREQUAL "__NOPROJECT__")
+        set(replicated_project_name ${ly_enable_gems_PROJECT_NAME})
+    endif()
+    # The GEM_FILE file is used to populate the GEMS argument via the ENABLED_GEMS variable in the file.
+    # Furthermore the GEM_FILE itself is not copied over to the install layout, so make its argument entry blank and use the list of GEMS
+    # stored in ly_enable_gems_GEMS
+    string(REPLACE ";" " " enable_gems_args "${replicated_project_name},${ly_enable_gems_GEMS},,${ly_enable_gems_VARIANTS},${ly_enable_gems_TARGETS}")
     set_property(DIRECTORY APPEND PROPERTY LY_ENABLE_GEMS_ARGUMENTS "${enable_gems_args}")
 endfunction()
 

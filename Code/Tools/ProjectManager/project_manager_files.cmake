@@ -1,18 +1,15 @@
 #
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 set(FILES
     Source/Application.h
     Source/Application.cpp
+    Source/ProjectManagerDefs.h
     Source/ScreenDefs.h
     Source/ScreenFactory.h
     Source/ScreenFactory.cpp
@@ -25,6 +22,10 @@ set(FILES
     Source/FormLineEditWidget.cpp
     Source/FormBrowseEditWidget.h
     Source/FormBrowseEditWidget.cpp
+    Source/FormFolderBrowseEditWidget.h
+    Source/FormFolderBrowseEditWidget.cpp
+    Source/FormImageBrowseEditWidget.h
+    Source/FormImageBrowseEditWidget.cpp
     Source/PathValidator.h
     Source/PathValidator.cpp
     Source/ProjectManagerWindow.h
@@ -82,6 +83,14 @@ set(FILES
     Source/GemCatalog/GemListHeaderWidget.cpp
     Source/GemCatalog/GemModel.h
     Source/GemCatalog/GemModel.cpp
+    Source/GemCatalog/GemRequirementDialog.h
+    Source/GemCatalog/GemRequirementDialog.cpp
+    Source/GemCatalog/GemRequirementDelegate.h
+    Source/GemCatalog/GemRequirementDelegate.cpp
+    Source/GemCatalog/GemRequirementFilterProxyModel.h
+    Source/GemCatalog/GemRequirementFilterProxyModel.cpp
+    Source/GemCatalog/GemRequirementListView.h
+    Source/GemCatalog/GemRequirementListView.cpp
     Source/GemCatalog/GemSortFilterProxyModel.h
     Source/GemCatalog/GemSortFilterProxyModel.cpp
 )

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TransformBus.h>
@@ -509,7 +504,7 @@ namespace AzToolsFramework
                     copy.CopyFrom(templateReference->get().GetPrefabDom(), copy.GetAllocator(), false);
                     context.AddPrefab(DefaultMainSpawnableName, AZStd::move(copy));
                     m_playInEditorData.m_converter.ProcessPrefab(context);
-                    if (context.HasCompletedSuccessfully())
+                    if (context.HasCompletedSuccessfully() && !context.GetProcessedObjects().empty())
                     {
                         static constexpr size_t NoRootSpawnable = AZStd::numeric_limits<size_t>::max();
                         size_t rootSpawnableIndex = NoRootSpawnable;
@@ -556,6 +551,13 @@ namespace AzToolsFramework
                             m_playInEditorData.m_entities.Reset(m_playInEditorData.m_assets[rootSpawnableIndex]);
                             m_playInEditorData.m_entities.SpawnAllEntities();
                         }
+                        else
+                        {
+                            AZ_Error("Prefab", false,
+                                "Processing of the level prefab failed to produce a root spawnable while entering game mode. "
+                                "Unable to fully enter game mode.");
+                            return;
+                        }
 
                         // This is a workaround until the replacement for GameEntityContext is done
                         AzFramework::GameEntityContextEventBus::Broadcast(
@@ -563,7 +565,9 @@ namespace AzToolsFramework
                     }
                     else
                     {
-                        AZ_Error("Prefab", false, "Failed to convert the prefab into assets.");
+                        AZ_Error("Prefab", false,
+                            "Failed to convert the prefab into assets. "
+                            "Confirm that the 'PlayInEditor' prefab processor stack is capable of producing a useable product asset.");
                         return;
                     }
                 }
@@ -600,6 +604,10 @@ namespace AzToolsFramework
                 (*it)->Activate();
             }
             m_playInEditorData.m_deactivatedEntities.clear();
+
+            AZ_Assert(m_playInEditorData.m_entities.IsSet(),
+                "Invalid Game Mode Entities Container encountered after play-in-editor stopped. "
+                "Confirm that the container was initialized correctly");
 
             m_playInEditorData.m_entities.DespawnAllEntities();
             m_playInEditorData.m_entities.Alert(
