@@ -11,14 +11,14 @@
 #include <ProjectInfo.h>
 
 #include <QLabel>
-#include <QUrl>
-#include <QVBoxLayout>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QPixmap)
 QT_FORWARD_DECLARE_CLASS(QPushButton)
 QT_FORWARD_DECLARE_CLASS(QAction)
 QT_FORWARD_DECLARE_CLASS(QProgressBar)
+QT_FORWARD_DECLARE_CLASS(QLayout)
+QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
 
 namespace O3DE::ProjectManager
 {
@@ -47,10 +47,10 @@ namespace O3DE::ProjectManager
 
     public slots:
         void mousePressEvent(QMouseEvent* event) override;
+        void OnLinkActivated(const QString& link);
         
 
     private:
-        void OnLinkActivated(const QString& link);
 
         QVBoxLayout* m_buildOverlayLayout;
         QLabel* m_overlayLabel;

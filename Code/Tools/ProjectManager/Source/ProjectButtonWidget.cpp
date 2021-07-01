@@ -41,23 +41,6 @@ namespace O3DE::ProjectManager
         m_overlayLabel->setVisible(false);
         vLayout->addWidget(m_overlayLabel);
 
-        m_warningIcon = new QLabel(this);
-        m_warningIcon->setPixmap(QIcon(":/Warning.svg").pixmap(20, 20));
-        m_warningIcon->setAlignment(Qt::AlignTop);
-        m_warningIcon->setVisible(false);
-
-        m_warningText = new QLabel("", this);
-        m_warningText->setObjectName("projectWarningOverlay");
-        m_warningText->setWordWrap(true);
-        m_warningText->setAlignment(Qt::AlignLeft);
-        m_warningText->setVisible(false);
-        connect(
-            m_warningText, &QLabel::linkActivated,
-            [this](const QString& link)
-            {
-                OnLinkActivated(link);
-            });
-
         m_buildButton = new QPushButton(tr("Build Project"), this);
         m_buildButton->setVisible(false);
 
@@ -67,9 +50,22 @@ namespace O3DE::ProjectManager
         QHBoxLayout* horizontalMessageLayout = new QHBoxLayout();
 
         horizontalMessageLayout->addSpacing(10);
-        horizontalMessageLayout->addWidget(this->GetWarningIcon());
+        m_warningIcon = new QLabel(this);
+        m_warningIcon->setPixmap(QIcon(":/Warning.svg").pixmap(20, 20));
+        m_warningIcon->setAlignment(Qt::AlignTop);
+        m_warningIcon->setVisible(false);
+        horizontalMessageLayout->addWidget(m_warningIcon);
+
         horizontalMessageLayout->addSpacing(10);
-        horizontalMessageLayout->addWidget(this->GetWarningLabel());
+
+        m_warningText = new QLabel("", this);
+        m_warningText->setObjectName("projectWarningOverlay");
+        m_warningText->setWordWrap(true);
+        m_warningText->setAlignment(Qt::AlignLeft);
+        m_warningText->setVisible(false);
+        connect(m_warningText, &QLabel::linkActivated, this, &LabelButton::OnLinkActivated);
+        horizontalMessageLayout->addWidget(m_warningText);
+
         QSpacerItem* textSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding);
         horizontalMessageLayout->addSpacerItem(textSpacer);
 
