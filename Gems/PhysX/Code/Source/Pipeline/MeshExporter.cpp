@@ -63,7 +63,7 @@ namespace PhysX
             }
         } pxDefaultErrorCallback;
 
-        // A struct to store the geometry data per FBX node
+        // A struct to store the geometry data per scene node
         struct NodeCollisionGeomExportData
         {
             AZStd::vector<Vec3> m_vertices;
@@ -500,10 +500,10 @@ namespace PhysX
             assetData.m_materialNames = meshGroup.GetMaterialSlots();
             assetData.m_physicsMaterialNames = meshGroup.GetPhysicsMaterials();
 
-            // Updating materials lists from new materials gathered from fbx 
-            // because this exporter runs when the FBX is being processed, which
+            // Updating materials lists from new materials gathered from the source scene file 
+            // because this exporter runs when the source scene is being processed, which
             // could have a different content from when the mesh group info was
-            // entered in FBX Settings Editor.
+            // entered in Scene Settings Editor.
             if (!Utils::UpdateAssetPhysicsMaterials(assetMaterialsData.m_fbxMaterialNames, assetData.m_materialNames, assetData.m_physicsMaterialNames))
             {
                 return SceneEvents::ProcessingResult::Failure;

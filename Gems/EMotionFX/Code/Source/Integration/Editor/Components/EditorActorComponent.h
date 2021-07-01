@@ -161,7 +161,7 @@ namespace EMotionFX
             bool                                m_forceUpdateJointsOOV = false;
             // \todo attachmentTarget node nr
 
-            // Note: LOD work in progress. For now we use one material instead of a list of material, because we don't have the support for LOD with multiple FBXs.
+            // Note: LOD work in progress. For now we use one material instead of a list of material, because we don't have the support for LOD with multiple scene files.
             // We purposely kept a materialList in actorComponent and actorRenderNode for the flexibility in future.
             // At the moment, the materialList stores duplicates of the same material.
             AzFramework::SimpleAssetReference<LmbrCentral::MaterialAsset>   m_materialPerActor;
