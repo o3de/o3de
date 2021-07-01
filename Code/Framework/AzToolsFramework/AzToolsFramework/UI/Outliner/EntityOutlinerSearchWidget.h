@@ -39,8 +39,8 @@ namespace AzToolsFramework
         EntityOutlinerSearchTypeSelector(QWidget* parent = nullptr);
 
     protected:
-        // can be used to override the logic when adding items in RepopulateDataModel
-        bool filterItemOut(int unfilteredDataIndex, bool itemMatchesFilter, bool categoryMatchesFilter) override;
+        // override the logic of accepting filter categories
+        bool filterItemOut(const QModelIndex& sourceIndex, bool filteredByBase) override;
         void initItem(QStandardItem* item, const AzQtComponents::SearchTypeFilter& filter, int unfilteredDataIndex) override;
         int GetNumFixedItems() override;
     };
