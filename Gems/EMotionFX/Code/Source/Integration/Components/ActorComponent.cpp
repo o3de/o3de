@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -477,7 +477,7 @@ namespace EMotionFX
                 if (!m_configuration.m_forceUpdateJointsOOV)
                 {
                     const bool isInCameraFrustum = m_renderActorInstance->IsInCameraFrustum();
-                    m_actorInstance->SetIsVisible(isInCameraFrustum);
+                    m_actorInstance->SetIsVisible(isInCameraFrustum && m_configuration.m_renderCharacter);
                 }
 
                 RenderActorInstance::DebugOptions debugOptions;

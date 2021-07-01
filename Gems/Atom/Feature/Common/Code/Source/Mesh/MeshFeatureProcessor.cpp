@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -398,7 +398,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                meshHandle->m_visible = visible;
+                meshHandle->SetVisible(visible);
             }
         }
 
@@ -1180,6 +1180,12 @@ namespace AZ
             }
 
             return false;
+        }
+
+        void MeshDataInstance::SetVisible(bool isVisible)
+        {
+            m_visible = isVisible;
+            m_cullable.m_isHidden = !isVisible;
         }
     } // namespace Render
 } // namespace AZ

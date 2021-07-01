@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -183,8 +183,8 @@ namespace AzToolsFramework
     // if you want to run headlessly, do not call this function.
     void Framework::Run()
     {
-        pApplication->setOrganizationName("Amazon Games Studios");
-        pApplication->setApplicationName("Editor");
+        pApplication->setOrganizationName("O3DE");
+        pApplication->setApplicationName("O3DE Editor");
 
         bool GUIMode = true;
         EBUS_EVENT_RESULT(GUIMode, LegacyFramework::FrameworkApplicationMessages::Bus, IsRunningInGUIMode);

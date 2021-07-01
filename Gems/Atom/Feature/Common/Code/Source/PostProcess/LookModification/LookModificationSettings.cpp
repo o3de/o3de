@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -40,7 +40,6 @@ namespace AZ
 
         void LookModificationSettings::ApplySettingsTo(LookModificationSettings* target, float alpha) const
         {
-            AZ_UNUSED(alpha);
             AZ_Assert(target != nullptr, "LookModificationSettings::ApplySettingsTo called with nullptr as argument.");
 
             auto lutAssetId = GetColorGradingLut();
@@ -48,20 +47,10 @@ namespace AZ
             {
                 Render::LutBlendItem lutBlend;
                 lutBlend.m_intensity = GetColorGradingLutIntensity();
-                lutBlend.m_overrideStrength = GetColorGradingLutOverride();
+                lutBlend.m_overrideStrength = GetColorGradingLutOverride() * alpha;
                 lutBlend.m_assetId = lutAssetId;
                 target->AddLutBlend(lutBlend);
             }
-
-            // Auto-gen code to blend individual params based on their override value onto target settings
-#define OVERRIDE_TARGET target
-#define OVERRIDE_ALPHA alpha
-
-#include <Atom/Feature/ParamMacros/StartOverrideBlend.inl>
-#include <Atom/Feature/PostProcess/LookModification/LookModificationParams.inl>
-#include <Atom/Feature/ParamMacros/EndParams.inl>
-#undef OVERRIDE_TARGET
-#undef OVERRIDE_ALPHA
         }
 
         void LookModificationSettings::Simulate(float deltaTime)

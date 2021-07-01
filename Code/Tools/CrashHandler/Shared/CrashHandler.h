@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -16,7 +16,7 @@
 namespace CrashHandler
 {
     static const char* defaultCrashFolder = "CrashDB/";
-    static const char* O3DEProductName = "Open 3D Engine";
+    static const char* O3DEProductName = "O3DE";
 
     using CrashHandlerAnnotations = std::map<std::string, std::string>;
     using CrashHandlerArguments = std::vector<std::string>;

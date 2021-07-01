@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -85,7 +85,7 @@ namespace AZ
             else
             {
                 // The module does exist (in 'cwd'), but still needs to be an absolute path for the module to be loaded.
-                AZStd::optional<AZ::IO::FixedMaxPathString> absPathOptional = AZ::Utils::ConvertToAbsolutePath(m_fileName);
+                AZStd::optional<AZ::IO::FixedMaxPathString> absPathOptional = AZ::Utils::ConvertToAbsolutePath(fullFilePath.c_str());
                 if (absPathOptional.has_value())
                 {
                     m_fileName.assign(absPathOptional->c_str(), absPathOptional->size());

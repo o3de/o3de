@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -60,8 +60,10 @@ namespace AZ
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ->Attribute(Edit::Attributes::ReadOnly, &BloomComponentConfig::ArePropertiesReadOnly)
 
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &BloomComponentConfig::m_intensity, "Intensity", "Brightness of bloom")
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &BloomComponentConfig::m_intensity, "Intensity", "Brightness of bloom")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 10000.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 25.0f)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ->Attribute(Edit::Attributes::ReadOnly, &BloomComponentConfig::ArePropertiesReadOnly)
 

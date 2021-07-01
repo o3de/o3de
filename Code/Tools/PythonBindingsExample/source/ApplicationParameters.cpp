@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -59,6 +59,10 @@ PythonBindingsExample.exe --file path/to/file.py --arg one --arg two
             else if (switchItem.m_option.starts_with('i'))
             {
                 m_interactiveMode = true;
+            }
+            else if (switchItem.m_option.starts_with("regset"))
+            {
+                // skip
             }
             else
             {

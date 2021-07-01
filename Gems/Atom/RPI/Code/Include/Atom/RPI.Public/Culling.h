@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -91,8 +91,9 @@ namespace AZ
             };
             LodData m_lodData;
 
-            //! Flag indicating if the object is visible, i.e., was not culled out in the last frame
-            bool m_isVisible = true;
+            //! Flag indicating if the object is hidden, i.e., was specifically marked as
+            //! something that shouldn't be rendered, regardless of its actual position relative to the camera
+            bool m_isHidden = false;
 
             void SetDebugName([[maybe_unused]] const AZ::Name& debugName)
             {

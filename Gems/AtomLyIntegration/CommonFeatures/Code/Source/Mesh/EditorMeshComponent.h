@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -57,6 +57,12 @@ namespace AZ
 
             // MeshComponentNotificationBus overrides ...
             void OnModelReady(const Data::Asset<RPI::ModelAsset>& modelAsset, const Data::Instance<RPI::Model>& model) override;
+
+            // AzToolsFramework::EditorEntityVisibilityNotificationBus::Handler overrides
+            void OnEntityVisibilityChanged(bool visibility) override;
+
+            // AzToolsFramework::Components::EditorComponentAdapter overrides
+            bool ShouldActivateController() const override;
 
             AZ::u32 OnConfigurationChanged() override;
 

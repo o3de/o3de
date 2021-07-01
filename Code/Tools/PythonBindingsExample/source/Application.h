@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -27,6 +27,18 @@ namespace PythonBindingsExample
         bool Run();
         void TearDown();
         bool RunWithParameters(const ApplicationParameters& params);
+
+        inline void GetErrorCount(int& exceptionCount, int& errorCount)
+        {
+            exceptionCount = m_pythonExceptionCount;
+            errorCount = m_pythonErrorCount;
+        }
+
+        inline void ResetErrorCount()
+        {
+            m_pythonExceptionCount = 0;
+            m_pythonErrorCount = 0;
+        }
 
     protected:
         ////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -16,7 +16,7 @@ namespace AzFramework
     {
         AZStd::string GetPersistentName()
         {
-            AZStd::string persistentName = "Open 3D Engine";
+            AZStd::string persistentName = "O3DE";
 
             char procPath[AZ_MAX_PATH_LEN];
             AZ::Utils::GetExecutablePathReturnType ret = AZ::Utils::GetExecutablePath(procPath, AZ_MAX_PATH_LEN);

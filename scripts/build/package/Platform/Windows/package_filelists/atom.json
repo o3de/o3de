@@ -26,10 +26,10 @@
         },
         "cmake/**": "#include",
         "Code": {
-            "CryEngine/**": "#include",
+            "Legacy/**": "#include",
             "Framework/**": "#include",
             "LauncherUnified/**": "#include",
-            "Sandbox/**": "#include",
+            "Editor/**": "#include",
             "Tools": {
                 "Android/**": "#include",
                 "AWSNativeSDKInit/**": "#include",

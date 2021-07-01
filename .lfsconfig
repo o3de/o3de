@@ -1,2 +1,11 @@
 [lfs]
-url=https://dsasbkzux9giw.cloudfront.net/api/v1
+# Default LFS endpoint for this repository
+url=https://d3df09qsjufr6g.cloudfront.net/api/v1
+
+# To use the endpoint with your fork:
+# 1. uncomment the url line below by removing the '#'
+# 2. replace 'owner' with the username or organization that owns the fork
+# 3. have git ignore your local modification of this file by running
+# git update-index --skip-worktree .lfsconfig
+ 
+# url=https://d3df09qsjufr6g.cloudfront.net/api/v1/fork/owner
