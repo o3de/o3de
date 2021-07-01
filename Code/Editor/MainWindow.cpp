@@ -489,11 +489,6 @@ void MainWindow::Initialize()
     ActionOverrideRequestBus::Event(
         GetEntityContextId(), &ActionOverrideRequests::SetupActionOverrideHandler, this);
 
-    // This function only happens after we're pretty sure that the engine has successfully started - so now would be a good time to start ticking the message pumps/etc.
-    AzToolsFramework::Ticker* ticker = new AzToolsFramework::Ticker(this);
-    ticker->Start();
-    connect(ticker, &AzToolsFramework::Ticker::Tick, this, &MainWindow::SystemTick);
-
     AzToolsFramework::EditorEventsBus::Broadcast(&AzToolsFramework::EditorEvents::NotifyMainWindowInitialized, this);
 }
 
