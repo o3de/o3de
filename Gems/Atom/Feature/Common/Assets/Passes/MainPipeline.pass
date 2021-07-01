@@ -234,6 +234,13 @@
                                 "Attachment": "Output"
                             }
                         },
+                        {
+                            "LocalSlot": "RenderTargetInputOnly",
+                            "AttachmentRef": {
+                                "Pass": "OpaquePass",
+                                "Attachment": "Output"
+                            }
+                        },
 
                         // Shadows resources
                         {
@@ -346,8 +353,8 @@
                         {
                             "LocalSlot": "InputOutput",
                             "AttachmentRef": {
-                                "Pass": "OpaquePass",
-                                "Attachment": "Output"
+                                "Pass": "HairParentPass",
+                                "Attachment": "RenderTargetInputOutput"
                             }
                         }
                     ]

@@ -46,8 +46,13 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     //! Originally in TressFXRendering.hlsl this is space 0 
     HairObjectShadeParams           m_hairParams[AMD_TRESSFX_MAX_HAIR_GROUP_RENDER];
 
+    // Used as the base color to blend with the furthest hair strand - it is the first 
+    // in the OIT process.
+    // It can also be used to avoid the HW blend done at the end of the pixel 
+    // shader stage but HW blend might be cheaper than additional PS blend.
+    Texture2D<float4>               m_frameBuffer;  // The merged MSAA output
 
-    // Linera depth is used for getting the screen to world transform
+    // Linear depth is used for getting the screen to world transform
     Texture2D<float>                m_linearDepth;
 
     //------------------------------
@@ -91,12 +96,11 @@ VSOutput FullScreenVS(VSInput input)
 
     float4 posTex = GetVertexPositionAndTexCoords(input.m_vertexID);
 
-    OUT.m_texCoord = float2(posTex.z, posTex.w);
+    OUT.m_texCoord = float2(posTex.z, posTex.w);  
     OUT.m_position = float4(posTex.x, posTex.y, 0.0, 1.0);
 
     return OUT;
 }
-
 
 //////////////////////////////////////////////////////////////
 // Bind data for PPLLResolvePS
@@ -113,7 +117,7 @@ VSOutput FullScreenVS(VSInput input)
 #define STORE_DATA_AT_INDEX( uIndex, uValue) kBuffer[uIndex].y = uValue
 #define STORE_COLOR_AT_INDEX( uIndex, uValue ) kBuffer[uIndex].z = uValue
 
-float4 GatherLinkedList(float2 vfScreenAddress, inout float outDepth )
+float4 GatherLinkedList(float2 vfScreenAddress, float2 screenUV, inout float outDepth )
 {
     uint2 vScreenAddress = uint2(vfScreenAddress);
     uint pointer = FragmentListHead[vScreenAddress];
@@ -147,9 +151,12 @@ float4 GatherLinkedList(float2 vfScreenAddress, inout float outDepth )
         }
     }
 
-//    float4 fcolor = float4(1, 1, 1, 1);     // Blend alpha and inverse alpha 
-    float4 fcolor = float4(1, 1, 1, 0);   // Blend one and inverse alpha
-//    float4 vTmpColor = fcolor;
+//    float4 fcolor = float4(1, 1, 1, 1);   // Blend alpha and inverse alpha 
+//    float4 fcolor = float4(1, 1, 1, 0);   // Blend one and inverse alpha
+    // The base color should be the existing render target pixel color. 
+    // Alpha should be 1 for Alpha blend alpha and 1 if alpha One.  
+    // [To Do] Adi: When using the render target as input, no need to use alpha blending! 
+    float4 fcolor = float4(PassSrg::m_frameBuffer.Sample(PassSrg::LinearSampler, screenUV).xyz, 0);    // Blend one and inverse alpha
 
     // Go through the remaining layers of hair
     [allow_uav_condition]
@@ -199,7 +206,6 @@ float4 GatherLinkedList(float2 vfScreenAddress, inout float outDepth )
 
         uint shadeParamIndex;	// So we know what settings to shade with
         float3 vColor = UnpackUintIntoFloat3Byte(color, shadeParamIndex);
-//        vTmpColor = float4( min(vColor,vTmpColor.xyz), 1.0);
         
         // Shade the bottom hair layers (cheap shading, just uses scalp base color)
         // Just blend in the color for cheap underhairs
@@ -207,20 +213,12 @@ float4 GatherLinkedList(float2 vfScreenAddress, inout float outDepth )
 //        fcolor.w *= (1.f - alpha);                // Blend one and inverse alpha
         fcolor.w = saturate(fcolor.w + alpha);    // Blend alpha and inverse alpha
 
-
-
         pointer = NODE_NEXT(pointer);
     }
 
     // Make sure we are blending the correct number of strands (don't blend more than we have)
     float maxAlpha = 0;
     float minDepth = 1.0;   // furthest fragment in Atom
-
-//    fcolor.xyz = float3(0, 1, 0);
-//    vTmpColor = fcolor;
-//    outDepth = minDepth; 
-//    vTmpColor.w = 0.0;
-//    return vTmpColor;
 
     // Blend the top-most entries
     for (int j = 0; j < KBUFFER_SIZE; j++)
@@ -261,6 +259,10 @@ float4 GatherLinkedList(float2 vfScreenAddress, inout float outDepth )
         fcolor.xyz = fcolor.xyz * (1.f - alpha) + (fragmentColor * alpha) * alpha;
 //        fcolor.w *= (1.f - alpha);
         fcolor.w = saturate(fcolor.w + alpha);    // Blend alpha and inverse alpha
+
+        //====== Bring back only the closest fragment color - debug purpose ======
+//        fcolor.xyz = fragmentColor;
+//        fcolor.w = 1.0;
     }
 
     outDepth = minDepth;    // the last ine standing is the closest
@@ -483,13 +485,11 @@ PSColorDepthOutput PPLLResolvePS(VSOutput input)
 {
     PSColorDepthOutput pixOut;
 
-    float3 tangent;
+//    float3 tangent;
 //    pixOut.m_color = GetClosestFragment(input.m_position.xy, tangent, pixOut.m_depth);
-//    pixOut.m_color.rgb = tangent;
-//    pixOut.m_color = GetClosestFragment(input.m_position.xy, tangent, pixOut.m_depth);
-//    pixOut.m_color = float4(0, pixOut.m_color.w, 0, 0);
 //    pixOut.m_color = CombineFragments(input.m_position.xy, pixOut.m_depth);
-    pixOut.m_color = GatherLinkedList(input.m_position.xy, pixOut.m_depth);
+//    pixOut.m_color = GatherLinkedList(input.m_position.xy, pixOut.m_depth);
+    pixOut.m_color = GatherLinkedList(input.m_position.xy, input.m_texCoord, pixOut.m_depth);
 
     return pixOut;
 }
