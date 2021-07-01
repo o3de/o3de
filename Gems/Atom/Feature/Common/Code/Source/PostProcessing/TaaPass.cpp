@@ -172,9 +172,17 @@ namespace AZ::Render
         // The full path name is needed for the attachment image so it's not deduplicated from accumulation images in different pipelines.
         AZStd::string imageName = RPI::ConcatPassString(GetPathName(), attachment->m_path);
         auto attachmentImage = RPI::AttachmentImage::Create(*pool.get(), imageDesc, Name(imageName), nullptr, &viewDesc);
-        
-        attachment->m_path = attachmentImage->GetAttachmentId();
-        attachment->m_importedResource = attachmentImage;
+
+        if (attachmentImage)
+        {
+            attachment->m_path = attachmentImage->GetAttachmentId();
+            attachment->m_importedResource = attachmentImage;
+        }
+        else
+        {
+            AZ_Error("TaaPass", false, "TaaPass disabled because it is unable to create an attachment image.")
+            this->SetEnabled(false);
+        }
     }
 
     void TaaPass::SetupSubPixelOffsets(uint32_t haltonX, uint32_t haltonY, uint32_t length)
