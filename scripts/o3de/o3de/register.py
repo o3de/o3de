@@ -754,9 +754,6 @@ def _run_register(args: argparse) -> int:
         return repo.refresh_repos()
     elif args.this_engine:
         ret_val = register(engine_path=manifest.get_this_engine_path(), force=args.force)
-        error_code = register_shipped_engine_o3de_objects(force=args.force)
-        if error_code:
-            ret_val = error_code
         return ret_val
     elif args.all_engines_path:
         return register_all_engines_in_folder(args.all_engines_path, args.remove, args.force)
