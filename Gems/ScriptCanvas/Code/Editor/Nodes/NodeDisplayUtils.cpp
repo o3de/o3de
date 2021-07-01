@@ -18,7 +18,6 @@
 #include <GraphCanvas/Components/NodeDescriptors/EBusHandlerEventNodeDescriptorComponent.h>
 #include <GraphCanvas/Components/NodeDescriptors/EBusHandlerNodeDescriptorComponent.h>
 #include <GraphCanvas/Components/NodeDescriptors/EBusSenderNodeDescriptorComponent.h>
-#include <GraphCanvas/Components/NodeDescriptors/EntityRefNodeDescriptorComponent.h>
 #include <GraphCanvas/Components/NodeDescriptors/FunctionNodeDescriptorComponent.h>
 #include <GraphCanvas/Components/NodeDescriptors/GetVariableNodeDescriptorComponent.h>
 #include <GraphCanvas/Components/NodeDescriptors/NodelingDescriptorComponent.h>
@@ -229,57 +228,6 @@ namespace ScriptCanvasEditor::Nodes
         }
 
         return DisplayGeneralScriptCanvasNode(graphCanvasGraphId, node, nodeConfiguration);
-    }
-
-    AZ::EntityId DisplayEntityNode(AZ::EntityId, const ScriptCanvas::Nodes::Entity::EntityRef* entityNode)
-    {
-        AZ::EntityId graphCanvasNodeId;
-
-        AZ::Entity* graphCanvasEntity = nullptr;
-        GraphCanvas::GraphCanvasRequestBus::BroadcastResult(graphCanvasEntity, &GraphCanvas::GraphCanvasRequests::CreateGeneralNode, ".entity");
-        AZ_Assert(graphCanvasEntity, "Unable to create GraphCanvas Bus Node");
-
-        graphCanvasNodeId = graphCanvasEntity->GetId();
-
-        // Add the icon component
-        graphCanvasEntity->CreateComponent<IconComponent>(ScriptCanvas::Nodes::Entity::EntityRef::RTTI_Type());
-        graphCanvasEntity->CreateComponent<EntityRefNodeDescriptorComponent>();
-        graphCanvasEntity->CreateComponent<SlotMappingComponent>(entityNode->GetEntityId());
-        graphCanvasEntity->CreateComponent<SceneMemberMappingComponent>(entityNode->GetEntityId());
-
-        graphCanvasEntity->Init();
-        graphCanvasEntity->Activate();
-
-        // Set the user data on the GraphCanvas node to be the EntityId of the ScriptCanvas node
-        AZStd::any* graphCanvasUserData = nullptr;
-        GraphCanvas::NodeRequestBus::EventResult(graphCanvasUserData, graphCanvasNodeId, &GraphCanvas::NodeRequests::GetUserData);
-        if (graphCanvasUserData)
-        {
-            *graphCanvasUserData = entityNode->GetEntityId();
-        }
-
-        // Create the GraphCanvas slots
-        for (const auto& slot : entityNode->GetSlots())
-        {
-            if (slot.GetDescriptor() == ScriptCanvas::SlotDescriptors::DataOut() && slot.IsVisible())
-            {
-                DisplayScriptCanvasSlot(graphCanvasNodeId, slot);
-            }
-        }
-
-        AZ::Entity* sourceEntity = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(sourceEntity, &AZ::ComponentApplicationRequests::FindEntity, entityNode->GetEntityRef());
-
-        if (sourceEntity)
-        {
-            graphCanvasEntity->SetName(AZStd::string::format("GC-EntityRef(%s)", sourceEntity->GetName().data()));
-        }
-        else
-        {
-            graphCanvasEntity->SetName(AZStd::string::format("GC-EntityRef(%s)", entityNode->GetEntityRef().ToString().c_str()));
-        }
-
-        return graphCanvasNodeId;
     }
 
     static void ConfigureGeneralScriptCanvasEntity(const ScriptCanvas::Node* node, AZ::Entity* graphCanvasEntity, const GraphCanvas::SlotGroup& slotGroup = GraphCanvas::SlotGroups::Invalid)

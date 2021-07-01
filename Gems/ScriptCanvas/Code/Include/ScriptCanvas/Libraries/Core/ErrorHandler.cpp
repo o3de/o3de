@@ -9,7 +9,6 @@
 
 #include <ScriptCanvas/Core/Contracts/ConnectionLimitContract.h>
 #include <ScriptCanvas/Core/Contracts/ContractRTTI.h>
-#include <ScriptCanvas/Core/PureData.h>
 
 namespace ScriptCanvas
 {

@@ -24,7 +24,6 @@
 #include "Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h"
 
 #include <Core/Attributes.h>
-#include <Libraries/Entity/EntityRef.h>
 
 namespace ScriptCanvasEditor
 {

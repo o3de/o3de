@@ -101,7 +101,6 @@ namespace ScriptCanvasTests
         return addVariableOutcome.TakeValue();
     }
 
-    ScriptCanvas::Nodes::Core::BehaviorContextObjectNode* CreateTestObjectNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId, AZ::EntityId& entityOut, const AZ::Uuid& objectTypeID);
     AZ::EntityId CreateClassFunctionNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId, AZStd::string_view className, AZStd::string_view methodName);
     AZStd::string SlotDescriptorToString(ScriptCanvas::SlotDescriptor type);
     void DumpSlots(const ScriptCanvas::Node& node);

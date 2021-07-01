@@ -53,7 +53,6 @@
 #include <Editor/GraphCanvas/Components/NodeDescriptors/ScriptEventReceiverNodeDescriptorComponent.h>
 #include <Editor/GraphCanvas/Components/NodeDescriptors/ScriptEventSenderNodeDescriptorComponent.h>
 #include <Editor/GraphCanvas/Components/NodeDescriptors/EBusSenderNodeDescriptorComponent.h>
-#include <Editor/GraphCanvas/Components/NodeDescriptors/EntityRefNodeDescriptorComponent.h>
 #include <Editor/GraphCanvas/Components/NodeDescriptors/GetVariableNodeDescriptorComponent.h>
 #include <Editor/GraphCanvas/Components/NodeDescriptors/NodeDescriptorComponent.h>
 #include <Editor/GraphCanvas/Components/NodeDescriptors/NodelingDescriptorComponent.h>
@@ -108,7 +107,6 @@ namespace ScriptCanvas
             ScriptCanvasEditor::ScriptEventReceiverNodeDescriptorComponent::CreateDescriptor(),
             ScriptCanvasEditor::ScriptEventSenderNodeDescriptorComponent::CreateDescriptor(),
             ScriptCanvasEditor::EBusSenderNodeDescriptorComponent::CreateDescriptor(),
-            ScriptCanvasEditor::EntityRefNodeDescriptorComponent::CreateDescriptor(),
             ScriptCanvasEditor::VariableNodeDescriptorComponent::CreateDescriptor(),
             ScriptCanvasEditor::GetVariableNodeDescriptorComponent::CreateDescriptor(),
             ScriptCanvasEditor::SetVariableNodeDescriptorComponent::CreateDescriptor(),

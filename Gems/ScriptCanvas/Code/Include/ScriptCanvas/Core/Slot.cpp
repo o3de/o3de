@@ -231,12 +231,6 @@ namespace ScriptCanvas
         // Add the slot type contract by default, It is used for filtering input/output slots and flow/data slots
         m_contracts.emplace_back(AZStd::make_unique<SlotTypeContract>());
 
-        // Every DataIn slot has a contract validating that only 1 connection from any PureData node is allowed
-        if (IsData() && IsInput())
-        {
-            AddContract({ []() { return aznew ExclusivePureDataContract(); } });
-        }
-
         for (const auto& contractDesc : slotConfiguration.m_contractDescs)
         {
             AddContract(contractDesc);

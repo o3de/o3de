@@ -23,7 +23,6 @@
 #include <Editor/Settings.h>
 #include <Editor/Translation/TranslationHelper.h>
 
-#include <ScriptCanvas/Core/PureData.h>
 #include <ScriptCanvas/Data/DataRegistry.h>
 #include <ScriptCanvas/Libraries/Libraries.h>
 #include <ScriptCanvas/Libraries/Core/GetVariable.h>
@@ -342,12 +341,6 @@ namespace
                     continue;
                 }
 
-                // Detect primitive types os we avoid making nodes out of them.
-                // Or anything that is 'pure data' and should be populated through a different mechanism.
-                if (nodeClassData->m_azRtti && nodeClassData->m_azRtti->IsTypeOf<ScriptCanvas::PureData>())
-                {
-                    continue;
-                }
                 // Skip over some of our more dynamic nodes that we want to populate using different means
                 else if (nodeClassData->m_azRtti && nodeClassData->m_azRtti->IsTypeOf<ScriptCanvas::Nodes::Core::GetVariableNode>())
                 {

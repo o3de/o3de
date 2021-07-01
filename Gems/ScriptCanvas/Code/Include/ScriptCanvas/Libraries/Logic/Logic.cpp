@@ -43,7 +43,6 @@ namespace ScriptCanvas
             using namespace ScriptCanvas::Nodes::Logic;
             AddNodeToRegistry<Logic, And>(nodeRegistry);
             AddNodeToRegistry<Logic, Any>(nodeRegistry);
-            AddNodeToRegistry<Logic, Boolean>(nodeRegistry);
             AddNodeToRegistry<Logic, Break>(nodeRegistry);
             AddNodeToRegistry<Logic, Cycle>(nodeRegistry);
             AddNodeToRegistry<Logic, Gate>(nodeRegistry);
@@ -65,7 +64,6 @@ namespace ScriptCanvas
             return AZStd::vector<AZ::ComponentDescriptor*>({
                 ScriptCanvas::Nodes::Logic::And::CreateDescriptor(),
                 ScriptCanvas::Nodes::Logic::Any::CreateDescriptor(),
-                ScriptCanvas::Nodes::Logic::Boolean::CreateDescriptor(),
                 ScriptCanvas::Nodes::Logic::Break::CreateDescriptor(),
                 ScriptCanvas::Nodes::Logic::Cycle::CreateDescriptor(),
                 ScriptCanvas::Nodes::Logic::Gate::CreateDescriptor(),

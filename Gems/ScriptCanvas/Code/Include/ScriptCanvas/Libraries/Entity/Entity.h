@@ -10,9 +10,6 @@
 // This header is only meant to include the nodes and should not contain
 // shared code
 
-#include "Rotate.h"
 #include "RotateMethod.h"
-#include "EntityIDNode.h"
 #include "EntityIDNodes.h"
-#include "EntityRef.h"
 #include "EntityNodes.h"

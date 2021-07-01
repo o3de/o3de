@@ -60,7 +60,6 @@
 #include <ScriptCanvas/Libraries/Core/GetVariable.h>
 #include <ScriptCanvas/Libraries/Core/Method.h>
 #include <ScriptCanvas/Libraries/Core/SetVariable.h>
-#include <ScriptCanvas/Libraries/Entity/EntityRef.h>
 #include <ScriptCanvas/Libraries/Libraries.h>
 #include <ScriptCanvas/Utils/NodeUtils.h>
 #include <ScriptEvents/ScriptEventsAsset.h>

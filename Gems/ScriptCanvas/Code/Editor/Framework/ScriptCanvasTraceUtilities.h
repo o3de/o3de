@@ -20,10 +20,8 @@
 #include <ScriptCanvas/Core/ScriptCanvasBus.h>
 #include <ScriptCanvas/Data/Data.h>
 #include <ScriptCanvas/Libraries/Comparison/Comparison.h>
-#include <ScriptCanvas/Libraries/Core/BehaviorContextObjectNode.h>
 #include <ScriptCanvas/Libraries/Core/BinaryOperator.h>
 #include <ScriptCanvas/Libraries/Core/CoreNodes.h>
-#include <ScriptCanvas/Libraries/Entity/EntityRef.h>
 #include <ScriptCanvas/Libraries/Libraries.h>
 #include <ScriptCanvas/Libraries/Logic/Logic.h>
 #include <ScriptCanvas/Libraries/Math/Math.h>
