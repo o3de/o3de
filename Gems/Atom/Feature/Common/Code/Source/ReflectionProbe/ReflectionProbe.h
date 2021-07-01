@@ -163,6 +163,8 @@ namespace AZ
             RPI::Ptr<RPI::EnvironmentCubeMapPass> m_environmentCubeMapPass = nullptr;
             RPI::RenderPipelineId m_environmentCubeMapPipelineId;
             BuildCubeMapCallback m_callback;
+            RHI::ShaderInputNameIndex m_iblExposureConstantIndex = "m_iblExposure";
+            float m_previousExposure = 0.0f;
             bool m_buildingCubeMap = false;
         };
 
