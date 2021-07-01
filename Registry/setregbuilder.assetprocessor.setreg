@@ -1,0 +1,27 @@
+//
+// Copyright (c) Contributors to the Open 3D Engine Project
+// 
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+//
+//
+//
+
+{
+    "Amazon":
+    {
+        "AssetBuilder":
+        {
+            "SettingsRegistry":
+            {
+                // List of entries that will not be added to the game.*.setreg files by the Settings Registry Builder.
+                // Use json pointers as the format for entries. If the target pointed to is an object or array the 
+                // members or entries will be recursively ignored as well.
+                "Excludes":
+                [
+                    "/Amazon/AzCore/Runtime",
+                    "/Amazon/AzCore/Bootstrap/project_path"
+                ]
+            }
+        }
+    }
+}
