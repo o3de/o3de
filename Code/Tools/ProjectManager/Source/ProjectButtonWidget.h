@@ -9,7 +9,6 @@
 
 #if !defined(Q_MOC_RUN)
 #include <ProjectInfo.h>
-
 #include <QLabel>
 #endif
 
@@ -19,6 +18,7 @@ QT_FORWARD_DECLARE_CLASS(QAction)
 QT_FORWARD_DECLARE_CLASS(QProgressBar)
 QT_FORWARD_DECLARE_CLASS(QLayout)
 QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
+QT_FORWARD_DECLARE_CLASS(QEvent)
 
 namespace O3DE::ProjectManager
 {
@@ -31,12 +31,13 @@ namespace O3DE::ProjectManager
         explicit LabelButton(QWidget* parent = nullptr);
         ~LabelButton() = default;
 
-        void SetEnabled(bool enabled, bool toggleOverlayLabel = true);
+        void SetEnabled(bool enabled);
         void SetOverlayText(const QString& text);
         void SetLogUrl(const QUrl& url);
 
         QLabel* GetOverlayLabel();
         QProgressBar* GetProgressBar();
+        QPushButton* GetOpenEditorButton();
         QPushButton* GetBuildButton();
         QLabel* GetWarningLabel();
         QLabel* GetWarningIcon();
@@ -48,13 +49,13 @@ namespace O3DE::ProjectManager
     public slots:
         void mousePressEvent(QMouseEvent* event) override;
         void OnLinkActivated(const QString& link);
-        
 
     private:
 
         QVBoxLayout* m_buildOverlayLayout;
         QLabel* m_overlayLabel;
         QProgressBar* m_progressBar;
+        QPushButton* m_openEditorButton;
         QPushButton* m_buildButton;
         QLabel* m_warningText;
         QLabel* m_warningIcon;
@@ -89,6 +90,8 @@ namespace O3DE::ProjectManager
         void BaseSetup();
         void ProcessingSetup();
         void ReadySetup();
+        void enterEvent(QEvent* event) override;
+        void leaveEvent(QEvent* event) override;
 
         ProjectInfo m_projectInfo;
         LabelButton* m_projectImageLabel;

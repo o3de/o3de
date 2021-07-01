@@ -11,6 +11,7 @@
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QEvent>
 #include <QResizeEvent>
 #include <QLabel>
 #include <QPushButton>
@@ -40,9 +41,6 @@ namespace O3DE::ProjectManager
         m_overlayLabel->setAlignment(Qt::AlignCenter);
         m_overlayLabel->setVisible(false);
         vLayout->addWidget(m_overlayLabel);
-
-        m_buildButton = new QPushButton(tr("Build Project"), this);
-        m_buildButton->setVisible(false);
 
         m_buildOverlayLayout = new QVBoxLayout();
         m_buildOverlayLayout->addSpacing(10);
@@ -74,8 +72,20 @@ namespace O3DE::ProjectManager
         QSpacerItem* buttonSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding);
         m_buildOverlayLayout->addSpacerItem(buttonSpacer);
 
+        QHBoxLayout* horizontalOpenEditorButtonLayout = new QHBoxLayout();
+        horizontalOpenEditorButtonLayout->addSpacing(34);
+        m_openEditorButton = new QPushButton(tr("Open Editor"), this);
+        m_openEditorButton->setObjectName("openEditorButton");
+        m_openEditorButton->setDefault(true);
+        m_openEditorButton->setVisible(false);
+        horizontalOpenEditorButtonLayout->addWidget(m_openEditorButton);
+        horizontalOpenEditorButtonLayout->addSpacing(34);
+        m_buildOverlayLayout->addLayout(horizontalOpenEditorButtonLayout);
+
         QHBoxLayout* horizontalButtonLayout = new QHBoxLayout();
         horizontalButtonLayout->addSpacing(34);
+        m_buildButton = new QPushButton(tr("Build Project"), this);
+        m_buildButton->setVisible(false);
         horizontalButtonLayout->addWidget(m_buildButton);
         horizontalButtonLayout->addSpacing(34);
 
@@ -98,13 +108,10 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void LabelButton::SetEnabled(bool enabled, bool toggleOverlayLabel)
+    void LabelButton::SetEnabled(bool enabled)
     {
         m_enabled = enabled;
-        if (toggleOverlayLabel)
-        {
-            m_overlayLabel->setVisible(!enabled);
-        }
+        m_overlayLabel->setVisible(!enabled);
     }
 
     void LabelButton::SetOverlayText(const QString& text)
@@ -125,6 +132,11 @@ namespace O3DE::ProjectManager
     QProgressBar* LabelButton::GetProgressBar()
     {
         return m_progressBar;
+    }
+
+    QPushButton* LabelButton::GetOpenEditorButton()
+    {
+        return m_openEditorButton;
     }
 
     QPushButton* LabelButton::GetBuildButton()
@@ -174,7 +186,6 @@ namespace O3DE::ProjectManager
         m_projectImageLabel = new LabelButton(this);
         m_projectImageLabel->setFixedSize(ProjectPreviewImageWidth, ProjectPreviewImageHeight);
         m_projectImageLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
-        connect(m_projectImageLabel, &LabelButton::triggered, [this]() { emit OpenProject(m_projectInfo.m_path); });
         vLayout->addWidget(m_projectImageLabel);
 
         QString projectPreviewPath = QDir(m_projectInfo.m_path).filePath(m_projectInfo.m_iconPath);
@@ -211,6 +222,7 @@ namespace O3DE::ProjectManager
     void ProjectButton::ReadySetup()
     {
         connect(m_projectImageLabel->GetBuildButton(), &QPushButton::clicked, [this](){ emit BuildProject(m_projectInfo); });
+        connect(m_projectImageLabel->GetOpenEditorButton(), &QPushButton::clicked, [this](){ emit OpenProject(m_projectInfo.m_path); });
 
         QMenu* menu = new QMenu(this);
         menu->addAction(tr("Edit Project Settings..."), this, [this]() { emit EditProject(m_projectInfo.m_path); });
@@ -243,7 +255,6 @@ namespace O3DE::ProjectManager
         m_projectImageLabel->GetBuildButton()->setVisible(show);
         m_projectImageLabel->GetWarningIcon()->setVisible(show);
         m_projectImageLabel->GetWarningLabel()->setVisible(show);
-        m_projectImageLabel->SetEnabled(!show, false);
     }
 
     void ProjectButton::ShowBuildFailed(bool show, const QUrl& logUrl)
@@ -262,7 +273,6 @@ namespace O3DE::ProjectManager
         m_projectImageLabel->GetWarningIcon()->setVisible(show);
         m_projectImageLabel->GetWarningLabel()->setVisible(show);
         m_projectImageLabel->SetLogUrl(logUrl);
-        m_projectImageLabel->SetEnabled(!show, false);
     }
 
     void ProjectButton::SetButtonOverlayText(const QString& text)
@@ -273,5 +283,15 @@ namespace O3DE::ProjectManager
     void ProjectButton::SetProgressBarValue(int progress)
     {
         m_projectImageLabel->GetProgressBar()->setValue(progress);
+    }
+
+    void ProjectButton::enterEvent(QEvent* /*event*/)
+    {
+        m_projectImageLabel->GetOpenEditorButton()->setVisible(true);
+    }
+
+    void ProjectButton::leaveEvent(QEvent* /*event*/)
+    {
+        m_projectImageLabel->GetOpenEditorButton()->setVisible(false);
     }
 } // namespace O3DE::ProjectManager
