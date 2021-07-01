@@ -45,7 +45,7 @@ namespace AZ
         outputVariable->value = context.GetSerializeContext()->CreateAny(typeId);
         if (outputVariable->value.empty() || outputVariable->value.type() != typeId)
         {
-            return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Unknown, "ScriptUserDataSerializer::Load failed to load a value matched the reported AZ TypeId. The C++ declaration may have been deleted or changed.");
+            return context.Report(result, "ScriptUserDataSerializer::Load failed to load a value matched the reported AZ TypeId. The C++ declaration may have been deleted or changed.");
         }
 
         result.Combine(ContinueLoadingFromJsonObjectField(AZStd::any_cast<void>(&outputVariable->value), typeId, inputValue, "value", context));
