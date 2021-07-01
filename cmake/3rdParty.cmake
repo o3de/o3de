@@ -13,9 +13,9 @@
 # \arg:output_third_party_path name of variable to set the default project directory into
 # It defaults to the ~/.o3de/3rdParty directory
 function(get_default_third_party_folder output_third_party_path)
-    file(TO_CMAKE_PATH "$ENV{USERPROFILE}" home_directory) # Windows
+    cmake_path(SET home_directory "$ENV{USERPROFILE}") # Windows
     if(NOT EXISTS ${home_directory})
-        file(TO_CMAKE_PATH "$ENV{HOME}" home_directory) # Unix
+        cmake_path(SET home_directory "$ENV{HOME}") # Unix
         if (NOT EXISTS ${home_directory})
             return()
         endif()
@@ -24,7 +24,6 @@ function(get_default_third_party_folder output_third_party_path)
     set(${output_third_party_path} ${home_directory}/.o3de/3rdParty PARENT_SCOPE)
 endfunction()
 
-# Examine the o3de manifest file for the list of restricted directories
 get_default_third_party_folder(o3de_default_third_party_path)
 set(LY_3RDPARTY_PATH "${o3de_default_third_party_path}" CACHE PATH "Path to the 3rdParty folder")
 

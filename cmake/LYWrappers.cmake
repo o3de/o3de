@@ -633,6 +633,23 @@ function(ly_de_alias_target target_name output_variable_name)
     set(${output_variable_name} ${de_aliased_target_name} PARENT_SCOPE)
 endfunction()
 
+#! ly_get_vs_folder_directory: Sets the Visual Studio folder name used for organizing vcxproj
+#  in the IDE
+#
+# Visual Studio cannot load projects that with a ".." relative path or contain a colon ":" as part of its FOLDER
+# Therefore if the .vcxproj is absolute, the drive letter must be removed from the folder name
+#
+# What this method does is first check if the target being added to the Visual Studio solution is within
+# the LY_ROOT_FOLDER(i.e is the LY_ROOT_FOLDER a prefix of the target source directory)
+# If it is a relative path to the target is used as the folder name
+# Otherwise the target directory would either 
+# 1. Be a path outside of the LY_ROOT_FOLDER on the same drive.
+#    In that case forming a relative path would cause it to start with ".." which will not work
+# 2. Be an path outside of the LY_ROOT_FOLDER on a different drive
+#    Here a relative path cannot be formed and therefore the path would start with "<drive>:/Path/To/Project"
+#    Which shows up as unloaded due to containing a colon
+# In this scenario the relative part of the path from the drive letter is used as the FOLDER name
+# to make sure the projects show up in the loaded .sln
 function(ly_get_vs_folder_directory absolute_target_source_dir output_source_dir)
     # Get a relative directory to the LY_ROOT_FOLDER if possible for the Visual Studio solution hierarchy
     # If a relative path cannot be formed, then retrieve a path with the drive letter stripped from it
