@@ -1,5 +1,5 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -13,7 +13,7 @@ from xml.etree import ElementTree
 
 
 __version__ = '0.1.0'
-__copyright__ = 'Copyright (c) Contributors to the Open 3D Engine Project.'
+__copyright__ = 'Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution..'
 
 metadata_file_extension = '.bankdeps'
 metadata_version = '1.0'
