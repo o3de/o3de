@@ -89,6 +89,12 @@ namespace AzFramework
         }
 
     private:
+        //////////////////////////////////////////////////////////////////////////
+        // GameEntityContextRequestBus
+        void DestroyGameEntityOnlyInSliceMode(const AZ::EntityId&) override;
+        void DestroyGameEntityAndDescendantsOnlyInSliceMode(const AZ::EntityId&) override;
+        /////////////////////////////////////////////////////////////////////////
+
         AzFramework::EntityVisibilityBoundsUnionSystem m_entityVisibilityBoundsUnionSystem;
     };
 } // namespace AzFramework
