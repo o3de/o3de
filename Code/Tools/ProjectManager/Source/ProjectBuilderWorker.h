@@ -8,18 +8,22 @@
 
 #if !defined(Q_MOC_RUN)
 #include <ProjectInfo.h>
+#include <AzCore/Outcome/Outcome.h>
 
-#include <QThread>
+#include <QObject>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QProcess)
 
 namespace O3DE::ProjectManager
 {
-    QT_FORWARD_DECLARE_CLASS(ProjectButton)
-
     class ProjectBuilderWorker : public QObject
     {
+        // QProcess::waitForFinished uses -1 to indicate that the process should not timeout
+        static constexpr int MaxBuildTimeMSecs = -1;
+        // Build was cancelled
+        static const QString BuildCancelled;
+
         Q_OBJECT
 
     public:
@@ -33,43 +37,16 @@ namespace O3DE::ProjectManager
 
     signals:
         void UpdateProgress(int progress);
-        void Done(QString result);
+        void Done(QString result = "");
 
     private:
+        AZ::Outcome<void, QString> BuildProjectForPlatform();
+        void QStringToAZTracePrint(const QString& error);
+
         QProcess* m_configProjectProcess = nullptr;
         QProcess* m_buildProjectProcess = nullptr;
         ProjectInfo m_projectInfo;
 
         int m_progressEstimate;
-    };
-
-    class ProjectBuilderController : public QObject
-    {
-        Q_OBJECT
-
-    public:
-        explicit ProjectBuilderController(const ProjectInfo& projectInfo, ProjectButton* projectButton, QWidget* parent = nullptr);
-        ~ProjectBuilderController();
-
-        void SetProjectButton(ProjectButton* projectButton);
-        const ProjectInfo& GetProjectInfo() const;
-
-    public slots:
-        void Start();
-        void UpdateUIProgress(int progress);
-        void HandleResults(const QString& result);
-        void HandleCancel();
-
-    signals:
-        void Done(bool success = true);
-
-    private:
-        ProjectInfo m_projectInfo;
-        ProjectBuilderWorker* m_worker;
-        QThread m_workerThread;
-        ProjectButton* m_projectButton;
-        QWidget* m_parent;
-
-        int m_lastProgress;
     };
 } // namespace O3DE::ProjectManager
