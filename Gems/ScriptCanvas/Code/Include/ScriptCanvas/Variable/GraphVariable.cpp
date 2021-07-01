@@ -124,11 +124,8 @@ namespace ScriptCanvas
 
                     VariableFlags::Scope scope = VariableFlags::Scope::Graph;
 
-                    if ((exposureType & VariableFlags::Deprecated::Exposure::Exp_InOut) == VariableFlags::Deprecated::Exposure::Exp_InOut)
-                    {
-                        scope = VariableFlags::Scope::Graph;
-                    }
-                    else if (exposureType & VariableFlags::Deprecated::Exposure::Exp_Input)
+                    if (((exposureType & VariableFlags::Deprecated::Exposure::Exp_InOut) == VariableFlags::Deprecated::Exposure::Exp_InOut)
+                    || exposureType & VariableFlags::Deprecated::Exposure::Exp_Input)
                     {
                         scope = VariableFlags::Scope::Graph;
                     }

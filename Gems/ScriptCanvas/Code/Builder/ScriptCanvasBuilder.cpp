@@ -277,7 +277,7 @@ namespace ScriptCanvasBuilder
 
         if (!resultFound)
         {
-            return AZ::Failure(AZStd::string::format("LoadEditorAssetTree failed to get engine relative path from %s-%s.", editorAssetId.ToString<AZStd::string>().c_str(), assetHint.data()));
+            return AZ::Failure(AZStd::string::format("LoadEditorAssetTree failed to get engine relative path from %s-%.*s.", editorAssetId.ToString<AZStd::string>().c_str(), assetHint.size(), assetHint.data()));
         }
 
         AZStd::vector<AZ::Data::AssetId> dependentAssets;

@@ -1454,7 +1454,8 @@ namespace ScriptCanvas
                             {
                                 result.m_mostParent = outputSource;
                             }
-                        }                         while (childSequenceIndex);
+                        }
+                        while (childSequenceIndex);
                     }
                 }
 
