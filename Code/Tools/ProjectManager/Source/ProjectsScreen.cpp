@@ -11,7 +11,7 @@
 #include <ProjectButtonWidget.h>
 #include <PythonBindingsInterface.h>
 #include <ProjectUtils.h>
-#include <ProjectBuilder.h>
+#include <ProjectBuilderController.h>
 #include <ScreensCtrl.h>
 
 #include <AzQtComponents/Components/FlowLayout.h>
