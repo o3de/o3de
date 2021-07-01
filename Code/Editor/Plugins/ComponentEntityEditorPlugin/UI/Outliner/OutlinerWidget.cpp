@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -155,7 +155,7 @@ OutlinerWidget::OutlinerWidget(QWidget* pParent, Qt::WindowFlags flags)
         settingsRegistry->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
     }
     QDir rootDir = QString::fromUtf8(engineRootPath.c_str(), aznumeric_cast<int>(engineRootPath.Native().size()));
-    const auto pathOnDisk = rootDir.absoluteFilePath(QStringLiteral("Code/Plugins/ComponentEntityEditorPlugin/UI/Outliner/"));
+    const auto pathOnDisk = rootDir.absoluteFilePath(QStringLiteral("Code/Editor/Plugins/ComponentEntityEditorPlugin/UI/Outliner/"));
     const auto qrcPath = QStringLiteral(":/EntityOutliner/");
 
     // Setting the style sheet using both methods allows faster style iteration speed for
