@@ -59,7 +59,7 @@ namespace PhysX
             //! A struct to store the materials of the mesh nodes selected in a mesh group.
             struct AssetMaterialsData
             {
-                //! Material names coming from FBX.
+                //! Material names coming from the source scene file.
                 AZStd::vector<AZStd::string> m_fbxMaterialNames;
 
                 //! Look-up table for fbxMaterialNames.

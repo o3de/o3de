@@ -15,8 +15,9 @@
 namespace O3DE::ProjectManager
 {
     FormFolderBrowseEditWidget::FormFolderBrowseEditWidget(const QString& labelText, const QString& valueText, QWidget* parent)
-        : FormBrowseEditWidget(labelText, valueText, parent)
+        : FormBrowseEditWidget(labelText, parent)
     {
+        setText(valueText);
     }
 
     void FormFolderBrowseEditWidget::HandleBrowseButton()
@@ -30,8 +31,14 @@ namespace O3DE::ProjectManager
         QString directory = QDir::toNativeSeparators(QFileDialog::getExistingDirectory(this, tr("Browse"), defaultPath));
         if (!directory.isEmpty())
         {
-            m_lineEdit->setText(directory);
+            setText(directory);
         }
 
+    }
+
+    void FormFolderBrowseEditWidget::setText(const QString& text)
+    {
+        QString path = QDir::toNativeSeparators(text);
+        FormBrowseEditWidget::setText(path);
     }
 } // namespace O3DE::ProjectManager

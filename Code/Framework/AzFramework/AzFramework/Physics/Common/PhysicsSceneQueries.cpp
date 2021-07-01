@@ -88,6 +88,19 @@ namespace AzPhysics
                     ;
             }
         }
+
+        if (auto* behaviorContext = azdynamic_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<SceneQueryRequest>("SceneQueryRequest")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Module, "physics")
+                ->Attribute(AZ::Script::Attributes::Category, "PhysX")
+                ->Property("Collision", BehaviorValueProperty(&SceneQueryRequest::m_collisionGroup))
+                // Until enum class support for behavior context is done, expose this as an int
+                ->Property("QueryType", [](const SceneQueryRequest& self) { return static_cast<int>(self.m_queryType); },
+                    [](SceneQueryRequest& self, int newQueryType) { self.m_queryType = SceneQuery::QueryType(newQueryType); })
+                ;
+        }
     }
 
     /*static*/ void RayCastRequest::Reflect(AZ::ReflectContext* context)
@@ -123,10 +136,6 @@ namespace AzPhysics
                 ->Property("Distance", BehaviorValueProperty(&RayCastRequest::m_distance))
                 ->Property("Start", BehaviorValueProperty(&RayCastRequest::m_start))
                 ->Property("Direction", BehaviorValueProperty(&RayCastRequest::m_direction))
-                ->Property("Collision", BehaviorValueProperty(&RayCastRequest::m_collisionGroup))
-                // Until enum class support for behavior context is done, expose this as an int
-                ->Property("QueryType", [](const RayCastRequest& self) { return static_cast<int>(self.m_queryType); },
-                    [](RayCastRequest& self, int newQueryType) { self.m_queryType = SceneQuery::QueryType(newQueryType); })
                 ;
         }
     }

@@ -21,4 +21,9 @@ namespace O3DE::ProjectManager
         connect(browseButton, &QPushButton::pressed, this, &FormBrowseEditWidget::HandleBrowseButton);
         m_frameLayout->addWidget(browseButton); 
     }
+
+    FormBrowseEditWidget::FormBrowseEditWidget(const QString& labelText, QWidget* parent)
+        : FormBrowseEditWidget(labelText, "", parent)
+    {
+    }
 } // namespace O3DE::ProjectManager

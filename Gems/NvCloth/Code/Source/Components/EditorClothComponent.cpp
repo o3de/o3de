@@ -68,7 +68,7 @@ namespace NvCloth
 
                     // Mesh Node
                     ->DataElement(Editor::MeshNodeSelector, &ClothConfiguration::m_meshNode, "Mesh node", 
-                        "List of mesh nodes with cloth simulation data. These are the nodes selected inside Cloth Modifiers in FBX Editor Settings.")
+                        "List of mesh nodes with cloth simulation data. These are the nodes selected inside Cloth Modifiers in Scene Settings.")
                         ->Attribute(AZ::Edit::UIHandlers::EntityId, &ClothConfiguration::GetEntityId)
                         ->Attribute(AZ::Edit::Attributes::StringList, &ClothConfiguration::PopulateMeshNodeList)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
