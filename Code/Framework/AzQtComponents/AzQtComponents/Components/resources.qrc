@@ -393,8 +393,8 @@
     <file>img/line.png</file>
 </qresource>
 <qresource>
-    <file alias="Assets/Editor/Style/EditorStylesheetVariables_Dark.json">../../../../Sandbox/Editor/Style/EditorStylesheetVariables_Dark.json</file>
-    <file alias="Assets/Editor/Style/NewEditorStylesheet.qss">../../../../Sandbox/Editor/Style/NewEditorStylesheet.qss</file>
+    <file alias="Assets/Editor/Style/EditorStylesheetVariables_Dark.json">../../../../Editor/Style/EditorStylesheetVariables_Dark.json</file>
+    <file alias="Assets/Editor/Style/NewEditorStylesheet.qss">../../../../Editor/Style/NewEditorStylesheet.qss</file>
 </qresource>
 <qresource prefix="/Cards">
     <file>img/UI20/Cards/point_hand.png</file>

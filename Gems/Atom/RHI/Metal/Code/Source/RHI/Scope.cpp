@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -180,15 +180,19 @@ namespace AZ
                             
                             if(!m_isWritingToSwapChainScope)
                             {
-                                if(renderTargetTexture.textureType == MTLTextureType3D)
-                                {
-                                    m_renderPassDescriptor.colorAttachments[colorAttachmentIndex].depthPlane = imgViewDescriptor.m_depthSliceMin;
-                                }
-                                else
+                                //Cubemap/cubemaparray and 3d textures have restrictions placed on them by the
+                                //drivers when creating a new texture view. Hence we cant get a view with subresource range
+                                //of the original texture. As a result in order to write into specific slice or depth plane
+                                //we specify it here. It also means that we cant write into these texturee types via a compute shader
+                                const RHI::ImageViewDescriptor& imgViewDescriptor = imageView->GetDescriptor();
+                                if(renderTargetTexture.textureType == MTLTextureTypeCube || renderTargetTexture.textureType == MTLTextureTypeCubeArray)
                                 {
                                     m_renderPassDescriptor.colorAttachments[colorAttachmentIndex].slice = imgViewDescriptor.m_arraySliceMin;
                                 }
-                                m_renderPassDescriptor.colorAttachments[colorAttachmentIndex].level = imgViewDescriptor.m_mipSliceMin;
+                                else if(renderTargetTexture.textureType == MTLTextureType3D)
+                                {
+                                    m_renderPassDescriptor.colorAttachments[colorAttachmentIndex].depthPlane = imgViewDescriptor.m_depthSliceMin;
+                                }
                             }
                             
                             MTLRenderPassColorAttachmentDescriptor* colorAttachment = m_renderPassDescriptor.colorAttachments[colorAttachmentIndex];
@@ -221,8 +225,6 @@ namespace AZ
                             {
                                 m_renderPassDescriptor.stencilAttachment.texture = imageViewMtlTexture;
                             }
-                            
-                            m_renderPassDescriptor.depthAttachment.slice = imgViewDescriptor.m_arraySliceMin;
                             
                             MTLRenderPassDepthAttachmentDescriptor* depthAttachment = m_renderPassDescriptor.depthAttachment;
                             MTLRenderPassStencilAttachmentDescriptor* stencilAttachment = m_renderPassDescriptor.stencilAttachment;

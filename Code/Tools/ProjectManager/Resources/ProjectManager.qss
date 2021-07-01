@@ -463,6 +463,21 @@ QProgressBar::chunk {
     font-weight: 600;
 }
 
+#GemCatalogHeaderLabel {
+    font-size: 12px;
+    color: #FFFFFF;
+}
+
+#GemCatalogHeaderShowCountLabel {
+    font-size: 12px;
+    font: italic;
+    color: #FFFFFF;
+}
+
+#GemCatalogListView {
+    background-color: #333333;
+}
+
 /************** Gem Catalog (Inspector) **************/
 
 #GemCatalogInspector {

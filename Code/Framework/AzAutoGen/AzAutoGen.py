@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright (c) Contributors to the Open 3D Engine Project
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 
@@ -164,7 +164,7 @@ def ProcessTemplateConversion(dataInputSet, dataInputFiles, templateFile, output
             outputExtension = os.path.splitext(outputFile)[1]
             if outputExtension == ".xml" or outputExtension == ".xhtml" or outputExtension == ".xsd":
                 compareFD.write('<?xml version="1.0"?>\n')
-                compareFD.write('<!-- Copyright (c) Contributors to the Open 3D Engine Project.                 -->\n')
+                compareFD.write('<!-- Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution..                 -->\n')
                 compareFD.write('\n')
                 compareFD.write('<!-- SPDX-License-Identifier: Apache-2.0 OR MIT                                -->\n')
                 compareFD.write('\n')
@@ -172,7 +172,7 @@ def ProcessTemplateConversion(dataInputSet, dataInputFiles, templateFile, output
                 compareFD.write('<!-- Template Source {0}; XML Sources {1}-->\n'.format(templateFile, ', '.join(dataInputFiles)))
                 compareFD.write('\n')
             elif outputExtension == ".lua":
-                compareFD.write('-- Copyright (c) Contributors to the Open 3D Engine Project.\n')
+                compareFD.write('-- Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution..\n')
                 compareFD.write('\n')
                 compareFD.write('-- SPDX-License-Identifier: Apache-2.0 OR MIT\n')
                 compareFD.write('\n')
@@ -181,7 +181,7 @@ def ProcessTemplateConversion(dataInputSet, dataInputFiles, templateFile, output
                 compareFD.write('\n')
             elif outputExtension == ".h" or outputExtension == ".hpp" or outputExtension == ".inl" or outputExtension == ".c" or outputExtension == ".cpp":
                 compareFD.write('/*\n')
-                compareFD.write(' * Copyright (c) Contributors to the Open 3D Engine Project.\n')
+                compareFD.write(' * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution..\n')
                 compareFD.write(' *\n')
                 compareFD.write(' * SPDX-License-Identifier: Apache-2.0 OR MIT\n')
                 compareFD.write(' *\n')

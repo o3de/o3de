@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -36,7 +36,7 @@ class CommandBrowserPlugin : public EMStudio::DockWidgetPlugin
         const char* GetCompileDate() const      { return MCORE_DATE; }
         const char* GetName() const             { return "Command Browser"; }
         uint32 GetClassID() const               { return CommandBrowserPlugin::CLASS_ID; }
-        const char* GetCreatorName() const      { return "Amazon"; }
+        const char* GetCreatorName() const      { return "O3DE"; }
         float GetVersion() const                { return 1.0f;  }
         bool IsClosable() const                 { return true;  }
         bool IsFloatable() const                { return true;  }

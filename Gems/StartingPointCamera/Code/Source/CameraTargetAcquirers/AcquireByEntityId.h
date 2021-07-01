@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -28,7 +28,7 @@ namespace Camera
     public:
         ~AcquireByEntityId() override = default;
         AZ_RTTI(AcquireByEntityId, "{14D0D355-1F83-4F46-9DE1-D41D23BDFC3C}", ICameraTargetAcquirer)
-        AZ_CLASS_ALLOCATOR(AcquireByEntityId, AZ::SystemAllocator, 0); ///< Use AZ::SystemAllocator, otherwise a CryEngine allocator will be used. This will cause the Asset Processor to crash when this object is deleted, because of the wrong uninitialisation order
+        AZ_CLASS_ALLOCATOR(AcquireByEntityId, AZ::SystemAllocator, 0);
         static void Reflect(AZ::ReflectContext* reflection);
 
         //////////////////////////////////////////////////////////////////////////
