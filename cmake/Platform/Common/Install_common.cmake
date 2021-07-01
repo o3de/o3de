@@ -525,6 +525,11 @@ function(ly_setup_others)
 
     # Gem Source Assets and configuration files
     # Find all gem directories relative to the CMake Source Dir
+
+    # This first loop is to filter out transient and .gitignore'd folders that should be added to
+    # the install layout from the root directory. Such as <external-subdirectory-root>/Cache.
+    # This is also done to avoid globbing thousands of files in subdirectories that shouldn't
+    # be processed.
     foreach(gem_candidate_dir IN LISTS LY_EXTERNAL_SUBDIRS LY_PROJECTS)
         file(REAL_PATH ${gem_candidate_dir} gem_candidate_dir BASE_DIRECTORY ${LY_ROOT_FOLDER})
         # Don't recurse immediately in order to exclude transient source artifacts
@@ -533,11 +538,14 @@ function(ly_setup_others)
             LIST_DIRECTORIES TRUE
             "${gem_candidate_dir}/*"
         )
-        # Exclude transient artifacts
+        # Exclude transient artifacts that shouldn't be copied to the install layout
         list(FILTER external_subdir_files EXCLUDE REGEX "/([Bb]uild|[Cc]ache|[Uu]ser)$")
         list(APPEND filtered_asset_paths ${external_subdir_files})
     endforeach()
 
+    # At this point the filtered_assets_paths contains the list of all directories and files
+    # that are non-excluded candidates that can be scanned for target directories and files
+    # to copy over to the install layout
     foreach(filtered_asset_path IN LISTS filtered_asset_paths)
         if(IS_DIRECTORY ${filtered_asset_path})
             file(GLOB_RECURSE
@@ -550,6 +558,7 @@ function(ly_setup_others)
             set(gem_dir_paths ${filtered_asset_path} ${recurse_assets_paths})
 
             # Gather directories to copy over
+            # Currently only the Assets, Registry and Config directories are copied over
             list(FILTER gem_dir_paths INCLUDE REGEX "/(Assets|Registry|Config)$")
             list(APPEND gems_assets_dir_path ${gem_dir_paths})
         else()
@@ -557,6 +566,7 @@ function(ly_setup_others)
         endif()
 
         # Gather files to copy over
+        # Currently only the gem.json file is copied over
         list(FILTER gem_file_paths INCLUDE REGEX "/(gem.json)$")
         list(APPEND gems_assets_file_path "${gem_file_paths}")
     endforeach()
