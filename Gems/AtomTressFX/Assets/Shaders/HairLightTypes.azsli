@@ -222,7 +222,7 @@ void ApplySimpleSpotLight(ViewSrg::SimpleSpotLight light, Surface surface, inout
         SetNormal(surface.clearCoat.normal, dirToLight, surface, lightingData);
 
         // Tranmission contribution
-        lightingData.translucentBackLighting += GetHairBackLighting(surface, lightingData, lightIntensity, dirToLight, 0.0);
+        lightingData.translucentBackLighting += GetHairBackLighting(surface, lightingData, lightIntensity, dirToLight, 1.0);
 
         // Diffuse contribution
         lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, dirToLight);
@@ -267,7 +267,7 @@ void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingD
         lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, dirToLight);
 
         // Tranmission contribution
-        lightingData.translucentBackLighting += GetHairBackLighting(surface, lightingData, lightIntensity, dirToLight, 0.0);
+        lightingData.translucentBackLighting += GetHairBackLighting(surface, lightingData, lightIntensity, dirToLight, 1.0);
 
         // Adjust the light direcion for specular based on bulb size
 
