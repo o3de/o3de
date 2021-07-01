@@ -75,6 +75,22 @@ WelcomeScreenDialog::WelcomeScreenDialog(QWidget* pParent)
 {
     ui->setupUi(this);
 
+    // Set the project preview image
+
+    QString projectPreviewPath = QDir(AZ::Utils::GetProjectPath().c_str()).filePath("preview.png");
+    QFileInfo doesPreviewExist(projectPreviewPath);
+    if (!doesPreviewExist.exists() || !doesPreviewExist.isFile())
+    {
+        projectPreviewPath = ":/WelcomeScreenDialog/DefaultProjectImage.png";
+    }
+    ui->activeProjectIcon->setPixmap(
+        QPixmap(projectPreviewPath).scaled(
+            ui->activeProjectIcon->size(),
+            Qt::KeepAspectRatioByExpanding,
+            Qt::SmoothTransformation
+        )
+    );
+
     ui->recentLevelTable->setColumnCount(3);
     ui->recentLevelTable->setMouseTracking(true);
     ui->recentLevelTable->setContextMenuPolicy(Qt::CustomContextMenu);
