@@ -9,6 +9,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <ProjectInfo.h>
+#include <AzCore/std/functional.h>
 
 #include <QLabel>
 #include <QPushButton>
@@ -60,26 +61,7 @@ namespace O3DE::ProjectManager
         explicit ProjectButton(const ProjectInfo& m_projectInfo, QWidget* parent = nullptr, bool processing = false);
         ~ProjectButton() = default;
 
-        template<typename F>
-        void SetProjectButtonAction(const QString& text, F lambda)
-        {
-            QPushButton* projectActionButton = m_projectImageLabel->GetActionButton();
-            if (!m_actionButtonConnection)
-            {
-                QSpacerItem* buttonSpacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
-                m_projectImageLabel->layout()->addItem(buttonSpacer);
-                m_projectImageLabel->layout()->addWidget(projectActionButton);
-                projectActionButton->setVisible(true);
-            }
-            else
-            {
-                disconnect(m_actionButtonConnection);
-            }
-
-            projectActionButton->setText(text);
-            m_actionButtonConnection = connect(projectActionButton, &QPushButton::clicked, lambda);
-        }
-
+        void SetProjectButtonAction(const QString& text, AZStd::function<void()> lambda);
         void SetProjectBuildButtonAction();
 
         void SetLaunchButtonEnabled(bool enabled);

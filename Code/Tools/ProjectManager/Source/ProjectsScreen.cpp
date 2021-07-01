@@ -43,8 +43,6 @@
 #include <QDir>
 #include <QGuiApplication>
 
-//#define DISPLAY_PROJECT_DEV_DATA true 
-
 namespace O3DE::ProjectManager
 {
     ProjectsScreen::ProjectsScreen(QWidget* parent)
@@ -164,15 +162,9 @@ namespace O3DE::ProjectManager
                 projectsScrollArea->setWidget(scrollWidget);
                 projectsScrollArea->setWidgetResizable(true);
 
-#ifndef DISPLAY_PROJECT_DEV_DATA
                 QVector<ProjectInfo> nonProcessingProjects;
-
                 buildProjectPath = QDir::fromNativeSeparators(buildProjectPath);
                 for (auto& project : projectsResult.GetValue())
-#else
-                ProjectInfo& project = projectsResult.GetValue().at(0);
-                for (int i = 0; i < 15; i++)
-#endif
                 {
                     if (projectButton && !*projectButton)
                     {

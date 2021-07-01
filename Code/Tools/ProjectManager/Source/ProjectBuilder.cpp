@@ -26,6 +26,14 @@ namespace O3DE::ProjectManager
 {
     // QProcess::waitForFinished uses -1 to indicate that the process should not timeout
     constexpr int MaxBuildTimeMSecs = -1;
+    // Build was cancelled
+    static const QString BuildCancelled = ProjectBuilderWorker::tr("Build Cancelled.");
+
+
+    void static AZTracePrint(const QString& error)
+    {
+        AZ_TracePrintf("Project Manager", error.toStdString().c_str());
+    }
 
     ProjectBuilderWorker::ProjectBuilderWorker(const ProjectInfo& projectInfo)
         : QObject()
@@ -47,18 +55,20 @@ namespace O3DE::ProjectManager
         // Check if we are trying to cancel task
         if (QThread::currentThread()->isInterruptionRequested())
         {
-            emit Done(tr("Build Cancelled."));
+            AZTracePrint(BuildCancelled);
+            emit Done(BuildCancelled);
             return;
         }
 
-        QFile logFile(LogFilePath());
+        QFile logFile(GetLogFilePath());
         if (!logFile.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate))
         {
-            emit Done(tr("Failed to open log file."));
+            QString error = tr("Failed to open log file.");
+            AZTracePrint(error);
+            emit Done(error);
             return;
         }
 
-        QTextStream logStream(&logFile);
         EngineInfo engineInfo;
 
         AZ::Outcome<EngineInfo> engineInfoResult = PythonBindingsInterface::Get()->GetEngineInfo();
@@ -68,19 +78,23 @@ namespace O3DE::ProjectManager
         }
         else
         {
-            emit Done(tr("Failed to get engine info."));
+            QString error = tr("Failed to get engine info.");
+            AZTracePrint(error);
+            emit Done(error);
             return;
         }
 
+        QTextStream logStream(&logFile);
         if (QThread::currentThread()->isInterruptionRequested())
         {
             logFile.close();
-            emit Done(tr("Build Cancelled."));
+            AZTracePrint(BuildCancelled);
+            emit Done(BuildCancelled);
             return;
         }
 
         // Show some kind of progress with very approximate estimates
-        UpdateProgress(m_progressEstimate = 1);
+        UpdateProgress(++m_progressEstimate);
 
         QProcessEnvironment currentEnvironment(QProcessEnvironment::systemEnvironment());
         // Append cmake path to PATH incase it is missing
@@ -110,7 +124,9 @@ namespace O3DE::ProjectManager
 
         if (!m_configProjectProcess->waitForStarted())
         {
-            emit Done(tr("Configuring project failed to start."));
+            QString error = tr("Configuring project failed to start.");
+            AZTracePrint(error);
+            emit Done(error);
             return;
         }
         bool containsGeneratingDone = false;
@@ -132,18 +148,21 @@ namespace O3DE::ProjectManager
             {
                 logFile.close();
                 m_configProjectProcess->close();
-                emit Done(tr("Build Cancelled."));
+                AZTracePrint(BuildCancelled);
+                emit Done(BuildCancelled);
                 return;
             }
         }
 
         if (m_configProjectProcess->exitCode() != 0 || !containsGeneratingDone)
         {
-            emit Done(tr("Configuring project failed. See log for details."));
+            QString error = tr("Configuring project failed. See log for details.");
+            AZTracePrint(error);
+            emit Done(error);
             return;
         }
 
-        UpdateProgress(m_progressEstimate = 20);
+        UpdateProgress(++m_progressEstimate);
 
         m_buildProjectProcess = new QProcess(this);
         m_buildProjectProcess->setProcessChannelMode(QProcess::MergedChannels);
@@ -165,7 +184,9 @@ namespace O3DE::ProjectManager
 
         if (!m_buildProjectProcess->waitForStarted())
         {
-            emit Done(tr("Building project failed to start."));
+            QString error = tr("Building project failed to start.");
+            AZTracePrint(error);
+            emit Done(error);
             return;
         }
 
@@ -201,14 +222,17 @@ namespace O3DE::ProjectManager
                 logStream << killBuildProcess.readAllStandardOutput();
                 m_buildProjectProcess->kill();
                 logFile.close();
-                emit Done(tr("Build Cancelled."));
+                AZTracePrint(BuildCancelled);
+                emit Done(BuildCancelled);
                 return;
             }
         }
 
         if (m_configProjectProcess->exitCode() != 0)
         {
-            emit Done(tr("Building project failed. See log for details."));
+            QString error = tr("Building project failed. See log for details.");
+            AZTracePrint(error);
+            emit Done(error);
         }
         else
         {
@@ -217,7 +241,7 @@ namespace O3DE::ProjectManager
 #endif
     }
 
-    QString ProjectBuilderWorker::LogFilePath() const
+    QString ProjectBuilderWorker::GetLogFilePath() const
     {
         QDir logFilePath(m_projectInfo.m_path);
         // Make directories if they aren't on disk
@@ -309,7 +333,7 @@ namespace O3DE::ProjectManager
                 if (openLog == QMessageBox::Yes)
                 {
                     // Open application assigned to this file type
-                    QDesktopServices::openUrl(QUrl("file:///" + m_worker->LogFilePath()));
+                    QDesktopServices::openUrl(QUrl("file:///" + m_worker->GetLogFilePath()));
                 }
             }
             else
@@ -318,6 +342,7 @@ namespace O3DE::ProjectManager
             }
 
             emit Done(false);
+            return;
         }
 
         emit Done(true);

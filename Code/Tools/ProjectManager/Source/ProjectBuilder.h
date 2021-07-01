@@ -26,7 +26,7 @@ namespace O3DE::ProjectManager
         explicit ProjectBuilderWorker(const ProjectInfo& projectInfo);
         ~ProjectBuilderWorker() = default;
 
-        QString LogFilePath() const;
+        QString GetLogFilePath() const;
 
     public slots:
         void BuildProject();
@@ -61,7 +61,7 @@ namespace O3DE::ProjectManager
         void HandleCancel();
 
     signals:
-        void Done(bool = true);
+        void Done(bool success = true);
 
     private:
         ProjectInfo m_projectInfo;

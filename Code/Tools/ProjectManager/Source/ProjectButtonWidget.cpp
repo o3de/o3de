@@ -165,6 +165,25 @@ namespace O3DE::ProjectManager
         m_projectFooter->layout()->addWidget(projectMenuButton);
     }
 
+    void ProjectButton::SetProjectButtonAction(const QString& text, AZStd::function<void()> lambda)
+    {
+        QPushButton* projectActionButton = m_projectImageLabel->GetActionButton();
+        if (!m_actionButtonConnection)
+        {
+            QSpacerItem* buttonSpacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+            m_projectImageLabel->layout()->addItem(buttonSpacer);
+            m_projectImageLabel->layout()->addWidget(projectActionButton);
+            projectActionButton->setVisible(true);
+        }
+        else
+        {
+            disconnect(m_actionButtonConnection);
+        }
+
+        projectActionButton->setText(text);
+        m_actionButtonConnection = connect(projectActionButton, &QPushButton::clicked, lambda);
+    }
+
     void ProjectButton::SetProjectBuildButtonAction()
     {
         SetProjectButtonAction(tr("Build Project"), [this]() { emit BuildProject(m_projectInfo); });
