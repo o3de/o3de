@@ -61,7 +61,6 @@ namespace AZ
                 //If view format is invalid use the base texture's format
                 if(textureViewFormat == MTLPixelFormatInvalid)
                 {
-                    AZ_Assert(false,"View format is invalid");
                     textureViewFormat = textureFormat;
                 }
 
