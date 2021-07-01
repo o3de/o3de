@@ -21,11 +21,11 @@ class CopyrightHeaderValidatorTests(unittest.TestCase):
             'Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution., so it should pass\n',
 
             'This file does contain\n'
-            'Copyright(c) Contributors to the Open 3D Engine Project, so it should pass\n'
+            'Copyright(c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution., so it should pass\n'
             'and there\'s no space between "Copyright" and "(c)"',
 
             'This file has a upper-case C between the parenthesis\n'
-            '// Copyright (C) Contributors to the Open 3D Engine Project.',
+            '// Copyright (C) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.',
         ]
         for file in files:
             with patch('builtins.open', mock_open(read_data=file)):
@@ -58,6 +58,14 @@ class CopyrightHeaderValidatorTests(unittest.TestCase):
     @patch('builtins.open', mock_open(read_data='This file does contains legacy header\n'
                                                 'Modifications{0}copyright{0}Amazon.com,{0}Inc.{0}or{0}its affiliates\n'.format(' ')))
     def test_fileWithAmazonModificationCopyrightHeader_passes(self):
+        commit = MockCommit(files=['/someCppFile.cpp'])
+        error_list = []
+        self.assertFalse(CopyrightHeaderValidator().run(commit, error_list))
+        self.assertNotEqual(len(error_list), 0, f"Errors were expected but none were returned.")
+
+    @patch('builtins.open', mock_open(read_data='Copyright (c) Contributors to the Open 3D Engine Project.\n'
+                                                '******************\n'.format(' ')))
+    def test_fileWithStaleO3DECopyrightHeader_fails(self):
         commit = MockCommit(files=['/someCppFile.cpp'])
         error_list = []
         self.assertFalse(CopyrightHeaderValidator().run(commit, error_list))
