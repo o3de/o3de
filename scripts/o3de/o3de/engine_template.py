@@ -17,7 +17,7 @@ import uuid
 import re
 
 
-from o3de import manifest, validation, utils
+from o3de import manifest, register, validation, utils
 
 logger = logging.getLogger()
 logging.basicConfig()
@@ -1654,28 +1654,10 @@ def create_project(project_path: pathlib.Path,
                             d.write('# SPDX-License-Identifier: Apache-2.0 OR MIT\n')
                             d.write('# {END_LICENSE}\n')
 
-    # set the "engine" element of the project.json
-    engine_json_data = manifest.get_engine_json_data(engine_path=manifest.get_this_engine_path())
-    try:
-        engine_name = engine_json_data['engine_name']
-    except KeyError as e:
-        logger.error(f"engine_name for this engine not found in engine.json.")
-        return 1
 
-    project_json_data = manifest.get_project_json_data(project_path=project_path)
-    if not project_json_data:
-        # get_project_json_data already logs an error if the project.json is mising
-        return 1
-
-    project_json_data.update({"engine": engine_name})
-    with open(project_json, 'w') as s:
-        try:
-            s.write(json.dumps(project_json_data, indent=4) + '\n')
-        except OSError as e:
-            logger.error(f'Failed to write project json at {project_path}.')
-            return 1
-
-    return 0
+    # Register the project with the global o3de_manifest.json and set the project.json "engine" field to match the
+    # engine.json "engine_name" field
+    return register.register(project_path=project_path)
 
 
 def create_gem(gem_path: pathlib.Path,
@@ -1745,6 +1727,11 @@ def create_gem(gem_path: pathlib.Path,
     if template_name and not template_path:
         template_path = manifest.get_registered(template_name=template_name)
 
+    if not template_path:
+        logger.error(f'Could not find the template path using name {template_name}.\n'
+                     f'Has the template been registered yet. It can be registered via the '
+                     f'"o3de.py register --tp <template-path>" command')
+        return 1
     if not os.path.isdir(template_path):
         logger.error(f'Could not find the template {template_name}=>{template_path}')
         return 1
