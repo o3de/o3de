@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -147,6 +147,9 @@ namespace AZ
             AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusConnect(GetEntityId());
             AZ::TickBus::Handler::BusConnect();
             AzToolsFramework::EditorEntityInfoNotificationBus::Handler::BusConnect();
+
+            AZ::u64 entityId = (AZ::u64)GetEntityId();
+            m_controller.m_configuration.m_entityId = entityId;
         }
 
         void EditorDiffuseProbeGridComponent::Deactivate()

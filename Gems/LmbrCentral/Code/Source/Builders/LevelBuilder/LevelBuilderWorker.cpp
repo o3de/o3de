@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -34,7 +34,7 @@ namespace LevelBuilder
 
     AZ::u64 readXmlDataLength(AZ::IO::GenericStream* stream, int& charSize)
     {
-        // This code is replicated from readStringLength method found in .\dev\Code\Sandbox\Editor\Util\EditorUtils.h file
+        // This code is replicated from readStringLength method found in .\dev\Code\Editor\Util\EditorUtils.h file
         // such that we do not have any Cry or Qt related dependencies.
         // The basic algorithm is that it reads in an 8 bit int, and if the length is less than 2^8,
         // then that's the length. Next it reads in a 16 bit int, and if the length is less than 2^16,

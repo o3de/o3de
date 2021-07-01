@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -135,7 +135,6 @@ namespace AzQtComponents
 
     SearchTypeSelector::SearchTypeSelector(QWidget* parent /* = nullptr */)
         : QMenu(parent)
-        , m_unfilteredData(nullptr)
     {
         Q_ASSERT(parent != nullptr);
 
@@ -196,7 +195,17 @@ namespace AzQtComponents
         itemLayout->addWidget(m_tree);
 
         m_model = new QStandardItemModel(this);
-        m_tree->setModel(m_model);
+        m_filterModel = new SearchTypeSelectorFilterModel(this);
+        m_filterModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
+        m_filterModel->setRecursiveFilteringEnabled(true);
+        m_filterModel->setSourceModel(m_model);
+
+        // make sure all entries enter the view expanded
+        connect(m_filterModel, &QAbstractItemModel::rowsInserted, this, [this]()
+        {
+            m_tree->expandAll();
+        });
+        m_tree->setModel(m_filterModel);
         m_tree->setHeaderHidden(true);
 
         connect(m_model, &QStandardItemModel::itemChanged, this, [this](QStandardItem* item)
@@ -205,11 +214,6 @@ namespace AzQtComponents
             if (!m_settingUp)
             {
                 int index = item->data().toInt();
-                if (index < m_filteredItemIndices.size())
-                {
-                    index = m_filteredItemIndices[item->data().toInt()];
-                }
-                
                 bool enabled = item->checkState() == Qt::Checked;
                 emit TypeToggled(index, enabled);
             }
@@ -228,169 +232,116 @@ namespace AzQtComponents
         QMenu::showEvent(e);
     }
 
-    void SearchTypeSelector::resetData()
-    {
-        m_estimatedTableHeight = 0;
-        m_estimatedTableWidth = 0;
-
-        m_filteredItemIndices.clear();
-        m_model->clear();
-    }
-
     void SearchTypeSelector::initItem(QStandardItem* item, const SearchTypeFilter& filter, int unfilteredDataIndex)
     {
         Q_UNUSED(filter);
-        Q_UNUSED(unfilteredDataIndex);
 
+        item->setData(unfilteredDataIndex);
+        item->setEditable(false);
         item->setCheckable(true);
         item->setCheckState(filter.enabled ? Qt::Checked : Qt::Unchecked);
     }
 
-    bool SearchTypeSelector::filterItemOut(int unfilteredDataIndex, bool itemMatchesFilter, bool categoryMatchesFilter)
+    int SearchTypeSelector::getUnfilteredDataIndex(QStandardItem* item)
     {
-        Q_UNUSED(unfilteredDataIndex);
-
-        return !itemMatchesFilter && !categoryMatchesFilter;
+        const QVariant itemData = item->data();
+        if (itemData.isValid())
+        {
+            return item->data().toInt();
+        }
+        return -1;
     }
 
-    void SearchTypeSelector::RepopulateDataModel()
+    void SearchTypeSelector::RepopulateDataModel(const SearchTypeFilterList& unfilteredData)
     {
-        resetData();
-
-        if (!m_unfilteredData)
-        {
-            return;
-        }
-
-        bool amFiltering = !m_filterString.isEmpty();
+        m_estimatedTableHeight = 0;
+        m_estimatedTableWidth = 0;
+        m_model->clear();
+        m_filterModel->setNoResultsMessageRow(-1); // reset the index for the "no results" message
 
         QScopedValueRollback<bool> setupGuard(m_settingUp, true);
-        QMap<QString, QStandardItem*> categories;
 
-        QStandardItem* firstCategory = nullptr;
-        QStandardItem* firstItem = nullptr;
-        int numCategories = 0;
-        int numItems = 0;
-        int numItemsAdded = 0;
+        QVector<QString> categoriesInOrder; // categories in originally specified order
+        QMap<QString, QList<QStandardItem*>> categoryToEntryItems; // category name to sub-items that will be added
+        
 
-        for (int unfilteredDataIndex = 0, length = m_unfilteredData->length(); unfilteredDataIndex < length; ++unfilteredDataIndex)
+        const int numItems = unfilteredData.length();
+        for (int unfilteredDataIndex = 0; unfilteredDataIndex < numItems; ++unfilteredDataIndex)
         {
-            const SearchTypeFilter& filter = m_unfilteredData->at(unfilteredDataIndex);
-            bool addItem = true;
+            const SearchTypeFilter& filter = unfilteredData.at(unfilteredDataIndex);
 
-            bool itemMatchesFilter = true;
-            bool categoryMatchesFilter = true;
-
-            if (amFiltering)
-            {
-                itemMatchesFilter = filter.displayName.contains(m_filterString, Qt::CaseSensitivity::CaseInsensitive);
-                categoryMatchesFilter = filter.category.contains(m_filterString, Qt::CaseSensitivity::CaseInsensitive);
-            }
-
-            if (filterItemOut(unfilteredDataIndex, itemMatchesFilter, categoryMatchesFilter))
-            {
-                addItem = false;
-            }
-
-            QStandardItem* categoryItem = nullptr;
-            if (categories.contains(filter.category))
-            {
-                categoryItem = categories[filter.category];
-            }
-            else
-            {
-                if (categoryMatchesFilter || addItem)
-                {
-                    categoryItem = new QStandardItem(filter.category);
-                    categories[filter.category] = categoryItem;
-                    m_model->appendRow(categoryItem);
-                    categoryItem->setEditable(false);
-                    
-                    numCategories++;
-                    if (!firstCategory)
-                    {
-                        firstCategory = firstCategory ? firstCategory : categoryItem;
-                    }
-                }
-            }
-
-            // count the item even if we filter it out, so that the estimated height includes what it could be if the filter changes
-            numItems++;
-
-            if (!addItem)
-            {
-                continue;
-            }
-
-            numItemsAdded++;
-
-            m_filteredItemIndices.append(unfilteredDataIndex);
-
+            // create each item, but don't add them yet, as we don't know if we will be adding to the category items,
+            // or to the model directly
             QStandardItem* item = new QStandardItem(filter.displayName);
-            item->setData(unfilteredDataIndex);
-            item->setEditable(false);
-
             initItem(item, filter, unfilteredDataIndex);
-            
-            if (categoryItem)
+            categoryToEntryItems[filter.category].push_back(item);
+
+            if (categoriesInOrder.indexOf(filter.category) == -1)
             {
-                categoryItem->appendRow(item);
-            }
-            else
-            {
-                m_model->appendRow(item);
+                // need to add these category items as they are first encountered so
+                // that the original category ordering is maintained
+                categoriesInOrder.push_back(filter.category);
             }
 
             int textWidth = fontMetrics().horizontalAdvance(filter.displayName);
             if (textWidth > m_estimatedTableWidth)
             {
-                m_estimatedTableWidth = textWidth;
+                m_estimatedTableWidth = textWidth; 
             }
+        }
 
+        const int numCategories = categoriesInOrder.size();
 
-            if (!firstItem)
+        // If there is only one category and its name is empty, discard it,
+        // and add its children directly to the model as one big column of N rows
+        if (numCategories == 1 && categoriesInOrder[0].isEmpty())
+        {
+            auto& entryItems = categoryToEntryItems.begin().value();
+            m_model->appendColumn(entryItems);
+        }
+        else
+        {
+            for (int categoryIndex = 0; categoryIndex < numCategories; ++categoryIndex)
             {
-                firstItem = item;
+                const QString& currCategory = categoriesInOrder[categoryIndex];
+                QStandardItem* categoryItem = new QStandardItem(currCategory);
+                auto& entryItems = categoryToEntryItems[currCategory];
+
+                categoryItem->appendColumn(entryItems);
+                m_model->appendRow(categoryItem); // add the parent last, so the model just gets one row add per category
             }
         }
 
-        if (numItemsAdded == GetNumFixedItems())
-        {
-            QStandardItem* item = new QStandardItem(QObject::tr("<i>No result found.</i>"));
-            m_model->appendRow(item);
-            item->setEditable(false);
-            ++numItems;
-        }
+        // add a special row that indicates that no categories (other than the fixed ones) match the filter
+        // this row itself will be filtered out when there are other matching categories
+        m_filterModel->setNoResultsMessageRow(m_model->rowCount());
+        QStandardItem* noResultsMessage = new QStandardItem(QObject::tr("<i>No result found.</i>"));
+        noResultsMessage->setEditable(false);
+        m_model->appendRow(new QStandardItem(QObject::tr("<i>No result found.</i>")));
 
-        // If there is only one category and its name is empty, let put everything at root.
-        if (categories.count() == 1 && categories.begin().key().isEmpty())
-        {
-            m_tree->setRootIndex(categories.begin().value()->index());
-
-            numCategories = 0;
-        }
-
-        estimateTableHeight(firstCategory, numCategories, firstItem, numItems);
+        estimateTableHeight(numCategories, numItems);
     }
 
-    void SearchTypeSelector::estimateTableHeight(QStandardItem* firstCategory, int numCategories, QStandardItem* firstItem, int numItems)
+    void SearchTypeSelector::estimateTableHeight(int numCategories, int numItems)
     {
         m_tree->expandAll();
 
         int totalCategoryHeight = 0;
         int totalItemHeight = 0;
 
-        if (firstItem)
+        auto* theModel = m_tree->model();
+        QModelIndex firstIndex(theModel->index(0, 0));
+        QModelIndex firstChild(theModel->index(0, 0, firstIndex));
+
+        if (firstIndex.isValid())
         {
-            QModelIndex index = m_model->indexFromItem(firstItem);
-            int itemHeight = m_tree->fetchRowHeight(index);
+            int itemHeight = m_tree->fetchRowHeight(firstIndex);
             totalItemHeight += (itemHeight * numItems);
         }
 
-        if (firstCategory)
+        if (firstChild.isValid())
         {
-            QModelIndex index = m_model->indexFromItem(firstCategory);
-            int categoryHeight = m_tree->fetchRowHeight(index);
+            int categoryHeight = m_tree->fetchRowHeight(firstChild);
 
             totalCategoryHeight += (categoryHeight * numCategories);
         }
@@ -504,10 +455,7 @@ namespace AzQtComponents
 
     void SearchTypeSelector::Setup(const SearchTypeFilterList& searchTypes)
     {
-        m_unfilteredData = &searchTypes;
-
-        RepopulateDataModel();
-
+        RepopulateDataModel(searchTypes);
         setFixedWidth(m_estimatedTableWidth + FilterWindowWidthPadding);
     }
 
@@ -578,8 +526,75 @@ namespace AzQtComponents
     void SearchTypeSelector::FilterTextChanged(const QString& newFilter)
     {
         m_filterString = newFilter;
+        m_filterModel->setFilterWildcard(m_filterString);
+    }
 
-        RepopulateDataModel();
+    SearchTypeSelectorFilterModel::SearchTypeSelectorFilterModel(SearchTypeSelector* searchTypeSelector)
+        : QSortFilterProxyModel(searchTypeSelector), m_searchTypeSelector(searchTypeSelector)
+    {
+        // use queued connections so that the normal sort/filter operations get a chance to finish the index remapping before we act
+        connect(this, &QAbstractItemModel::rowsInserted, this, &SearchTypeSelectorFilterModel::onRowCountChanged, Qt::QueuedConnection);
+        connect(this, &QAbstractItemModel::rowsRemoved, this, &SearchTypeSelectorFilterModel::onRowCountChanged, Qt::QueuedConnection);
+    }
+
+    void SearchTypeSelectorFilterModel::setNoResultsMessageRow(int row)
+    {
+        m_noResultsRow = row;
+        invalidateFilter();
+    }
+
+
+    void SearchTypeSelectorFilterModel::onRowCountChanged()
+    {
+        // see if we need to hide or show the "no results" message item
+        const int numLeafNodes = getNumLeafNodes();
+
+        // check if we're down to the (never filtered) fixed items, and should show the "no results" message,
+        // or if we were already showing that message, check if we have more than the fixed items plus the message itself
+        const bool hasResultsChanged = (m_showingNoResultsMessage ? numLeafNodes > m_searchTypeSelector->GetNumFixedItems() + 1
+                                                                  : numLeafNodes <= m_searchTypeSelector->GetNumFixedItems());
+
+        if (hasResultsChanged)
+        {
+            m_showingNoResultsMessage = !m_showingNoResultsMessage;
+            QModelIndex noResultsMessageIndex = sourceModel()->index(m_noResultsRow, 0);
+
+            // The no results row is in the source model, so trigger dataChanged to allow us to re-filter it
+            emit sourceModel()->dataChanged(noResultsMessageIndex, noResultsMessageIndex);
+        }
+    }
+
+    bool SearchTypeSelectorFilterModel::filterAcceptsRow(int source_row, const QModelIndex& source_parent) const
+    {
+        // if we're considering the "no results" item, accept it only if we're m_showingNoResultsMessage
+        if (!source_parent.isValid() && source_row == m_noResultsRow)
+        {
+            return m_showingNoResultsMessage;
+        }
+
+        const bool filteredByBase = ! QSortFilterProxyModel::filterAcceptsRow(source_row, source_parent);
+
+        // allow searchTypeSelector to make the final decision whether to filter out this item
+        return !(m_searchTypeSelector->filterItemOut(m_searchTypeSelector->m_model->index(source_row, 0, source_parent), filteredByBase));
+    }
+
+    int SearchTypeSelectorFilterModel::getNumLeafNodes(const QModelIndex& theIndex)
+    {
+        // count the number of leaf nodes descending from this index, not including itself
+        int numLeafNodes = 0;
+        for (int childRow = 0, numChildRows = rowCount(theIndex); childRow < numChildRows; ++childRow)
+        {
+            QModelIndex childIndex = index(childRow, 0, theIndex);
+            if (rowCount(childIndex) == 0)
+            {
+                ++numLeafNodes;
+            }
+            else
+            {
+                numLeafNodes += getNumLeafNodes(childIndex);
+            }
+        }
+        return numLeafNodes;
     }
 
     FilteredSearchWidget::Config FilteredSearchWidget::loadConfig(QSettings& settings)
@@ -929,7 +944,7 @@ namespace AzQtComponents
     {
         {
             QSignalBlocker blocker(this);
-            ConfigHelpers::GroupGuard(&settings, widgetName);
+            ConfigHelpers::GroupGuard guard(&settings, widgetName);
             const auto textFilter = settings.value(g_textFilterKey);
             if (textFilter.isValid())
             {
@@ -953,7 +968,7 @@ namespace AzQtComponents
 
     void FilteredSearchWidget::writeSettings(QSettings& settings, const QString& widgetName)
     {
-        ConfigHelpers::GroupGuard(&settings, widgetName);
+        ConfigHelpers::GroupGuard guard(&settings, widgetName);
         settings.setValue(g_textFilterKey, textFilter());
 
         const int size = m_typeFilters.size();

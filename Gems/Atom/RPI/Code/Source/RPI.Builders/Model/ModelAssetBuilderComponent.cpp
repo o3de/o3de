@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -995,7 +995,7 @@ namespace AZ
                 if (numInfluencesExcess > 0)
                 {
                     AZ_Warning(s_builderName, warnedExcessOfSkinInfluences,
-                        "Mesh %s has more skin influences (%d) than the maximum (%d). Skinning influences won't be normalized. Maximum number of skin influences can be increased with a Skin Modifier in FBX Settings.",
+                        "Mesh %s has more skin influences (%d) than the maximum (%d). Skinning influences won't be normalized. Maximum number of skin influences can be increased with a Skin Modifier in Scene Settings.",
                         sourceMesh.m_name.GetCStr(),
                         m_numSkinJointInfluencesPerVertex + numInfluencesExcess,
                         m_numSkinJointInfluencesPerVertex);
