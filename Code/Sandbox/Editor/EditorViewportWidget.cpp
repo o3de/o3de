@@ -100,7 +100,7 @@
 
 AZ_CVAR(
     bool, ed_visibility_logTiming, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Output the timing of the new IVisibilitySystem query");
-AZ_CVAR(bool, ed_useNewCameraSystem, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Use the new Editor camera system");
+AZ_CVAR(bool, ed_useNewCameraSystem, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Use the new Editor camera system");
 
 namespace SandboxEditor
 {
