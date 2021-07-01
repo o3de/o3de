@@ -3425,7 +3425,7 @@ CCryEditDoc* CCryEditApp::OpenDocumentFile(LPCTSTR lpszFileName)
         if (ActionManager* actionManager = MainWindow::instance()->GetActionManager())
         {
             GetIEditor()->GetUndoManager()->Suspend();
-            actionManager->GetAction(ID_EDIT_SELECTALL)->trigger();
+            actionManager->GetAction(AzToolsFramework::SelectAll)->trigger();
             actionManager->GetAction(ID_GOTO_SELECTED)->trigger();
             GetIEditor()->GetUndoManager()->Resume();
         }

@@ -30,6 +30,9 @@
 // AzFramework
 #include <AzFramework/API/ApplicationAPI.h>
 
+// AzToolsFramework
+#include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
+
 // AzQtComponents
 #include <AzQtComponents/Components/SearchLineEdit.h>
 
@@ -469,33 +472,33 @@ void LevelEditorMenuHandler::PopulateEditMenu(ActionManager::MenuWrapper& editMe
     // editMenu.AddSeparator();
 
     // Duplicate
-    editMenu.AddAction(ID_EDIT_CLONE);
+    editMenu.AddAction(AzToolsFramework::DuplicateSelect);
 
     // Delete
-    editMenu.AddAction(ID_EDIT_DELETE);
+    editMenu.AddAction(AzToolsFramework::DeleteSelect);
 
     editMenu.AddSeparator();
 
     // Select All
-    editMenu.AddAction(ID_EDIT_SELECTALL);
+    editMenu.AddAction(AzToolsFramework::SelectAll);
 
     // Invert Selection
-    editMenu.AddAction(ID_EDIT_INVERTSELECTION);
+    editMenu.AddAction(AzToolsFramework::InvertSelect);
 
     editMenu.AddSeparator();
 
     // New Viewport Interaction Model actions/shortcuts
-    editMenu.AddAction(ID_EDIT_PIVOT);
-    editMenu.AddAction(ID_EDIT_RESET);
-    editMenu.AddAction(ID_EDIT_RESET_MANIPULATOR);
-    editMenu.AddAction(ID_EDIT_RESET_LOCAL);
-    editMenu.AddAction(ID_EDIT_RESET_WORLD);
+    editMenu.AddAction(AzToolsFramework::EditPivot);
+    editMenu.AddAction(AzToolsFramework::EditReset);
+    editMenu.AddAction(AzToolsFramework::EditResetManipulator);
+    editMenu.AddAction(AzToolsFramework::EditResetLocal);
+    editMenu.AddAction(AzToolsFramework::EditResetWorld);
 
     // Hide Selection
-    editMenu.AddAction(ID_EDIT_HIDE);
+    editMenu.AddAction(AzToolsFramework::HideSelection);
 
     // Unhide All
-    editMenu.AddAction(ID_EDIT_UNHIDEALL);
+    editMenu.AddAction(AzToolsFramework::UnhideAll);
 
     /*
      * The following block of code is part of the feature "Isolation Mode" and is temporarily

@@ -440,9 +440,10 @@ ActionManager::ActionWrapper ActionManager::AddAction(int id, const QString& nam
     return ActionWrapper(action, this);
 }
 
-ActionManager::ActionWrapper ActionManager::AddAction(AZ::Crc32 id , const QString& name)
+ActionManager::ActionWrapper ActionManager::AddAction(AZ::Crc32 id, const QString& name)
 {
-    QAction* action = ActionIsWidget(aznumeric_cast<AZ::u32>(id)) ? new WidgetAction(aznumeric_cast<AZ::u32>(id), m_mainWindow, name, this)
+    QAction* action = ActionIsWidget(aznumeric_cast<AZ::u32>(id))
+        ? new WidgetAction(aznumeric_cast<AZ::u32>(id), m_mainWindow, name, this)
         : static_cast<QAction*>(new PatchedAction(name, this)); // static cast to base so ternary compile
     AddAction(id, action);
     return ActionWrapper(action, this);
