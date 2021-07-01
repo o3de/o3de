@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -198,11 +193,13 @@ namespace AzFramework
         AZ::SerializeContext* m_serializeContext{ nullptr };
         //! The priority at which this call will be executed.
         SpawnablePriority m_priority{ SpawnablePriority_Default };
-        //! Entity references are resolved by referring to the last entity spawned from a template entity in the spawnable. If this
-        //! is set to false entities from previous spawn calls are not taken into account. If set to true entity references may be
-        //! resolved to a previously spawned entity. A lookup table has to be constructed when true, which may negatively impact
-        //! performance, especially if a large number of entities are present on a ticket.
-        bool m_referencePreviouslySpawnedEntities{ false };
+        //! Entity references are resolved by referring to the most recent entity spawned from a template entity in the spawnable.
+        //! If the entity referred to hasn't been spawned yet, the reference will be resolved to the first one that *will* be spawned.
+        //! If this flag is set to "true", the id mappings will persist across SpawnEntites calls, and the entity references will resolve
+        //! correctly across them.  
+        //! When "false", the entity id mappings will be reset on this call, so entity references will only work within this call, or
+        //! potentially with any subsequent SpawnEntities call where the flag is true once again.
+        bool m_referencePreviouslySpawnedEntities{ true };
     };
 
     struct DespawnAllEntitiesOptionalArgs final
@@ -321,12 +318,6 @@ namespace AzFramework
         //! @param completionCallback Required callback that will be called as soon as the barrier has been reached.
         //! @param optionalArgs Optional additional arguments, see BarrierOptionalArgs.
         virtual void Barrier(EntitySpawnTicket& ticket, BarrierCallback completionCallback, BarrierOptionalArgs optionalArgs = {}) = 0;
-
-        //! Register a handler for OnSpawned events.
-        virtual void AddOnSpawnedHandler(AZ::Event<AZ::Data::Asset<Spawnable>>::Handler& handler) = 0;
-
-        //! Register a handler for OnDespawned events.
-        virtual void AddOnDespawnedHandler(AZ::Event<AZ::Data::Asset<Spawnable>>::Handler& handler) = 0;
 
     protected:
         [[nodiscard]] virtual AZStd::pair<EntitySpawnTicket::Id, void*> CreateTicket(AZ::Data::Asset<Spawnable>&& spawnable) = 0;

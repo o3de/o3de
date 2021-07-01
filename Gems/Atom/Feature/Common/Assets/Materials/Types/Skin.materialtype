@@ -980,14 +980,9 @@
             "file": "Shaders/Depth/DepthPass.shader",
             "tag": "DepthPass"
         },
-        // [GFX TODO][ATOM-4726] Use an "isSkinnedMesh" external material property and a functor that enables/disables the appropriate motion-vector shader
         {
-            "file": "Shaders/MotionVector/StaticMeshMotionVector.shader",
-            "tag": "StaticMeshMotionVector"
-        },
-        {
-            "file": "Shaders/MotionVector/SkinnedMeshMotionVector.shader",
-            "tag": "SkinnedMeshMotionVector"
+            "file": "Shaders/MotionVector/MeshMotionVector.shader",
+            "tag": "MeshMotionVector"
         }
     ],
     "functors": [

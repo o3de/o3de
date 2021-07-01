@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "assetUtils.h"
 
 #include <AzCore/Component/ComponentApplication.h>
@@ -88,6 +83,10 @@ namespace AssetUtilsInternal
         timer.start();
         do
         {
+            QString normalized = AssetUtilities::NormalizeFilePath(outputFile);
+            AssetProcessor::ProcessingJobInfoBus::Broadcast(
+                &AssetProcessor::ProcessingJobInfoBus::Events::BeginCacheFileUpdate, normalized.toUtf8().constData());
+
             //Removing the old file if it exists
             if (outFile.exists())
             {
@@ -138,11 +137,19 @@ namespace AssetUtilsInternal
                 }
             }
         } while (!timer.hasExpired(waitTimeInSeconds * 1000)); //We will keep retrying until the timer has expired the inputted timeout
+        
+        // once we're done, regardless of success or failure, we 'unlock' those files for further process.
+        // if we failed, also re-trigger them to rebuild (the bool param at the end of the ebus call)
+        QString normalized = AssetUtilities::NormalizeFilePath(outputFile);
+        AssetProcessor::ProcessingJobInfoBus::Broadcast(
+            &AssetProcessor::ProcessingJobInfoBus::Events::EndCacheFileUpdate, normalized.toUtf8().constData(), !operationSucceeded);
 
         if (!operationSucceeded)
         {
             //operation failed for the given timeout
-            AZ_Warning(AssetProcessor::ConsoleChannel, false, "WARNING: Could not copy/move source %s to %s, giving up\n", sourceFile.toUtf8().constData(), outputFile.toUtf8().constData());
+            AZ_Warning(AssetProcessor::ConsoleChannel, false, "WARNING: Could not %s source from %s to %s, giving up\n",
+                isCopy ? "copy" : "move (via rename)",
+                sourceFile.toUtf8().constData(), outputFile.toUtf8().constData());
             return false;
         }
         else if (failureOccurredOnce)
@@ -507,8 +514,13 @@ namespace AssetUtilities
         return QString::fromUtf8(s_projectName.c_str(), aznumeric_cast<int>(s_projectName.size()));
     }
 
-    QString ComputeProjectPath()
+    QString ComputeProjectPath(bool resetCachedProjectPath/*=false*/)
     {
+        if (resetCachedProjectPath)
+        {
+            // Clear any cached value if reset was requested
+            s_projectPath.clear();
+        }
         if (s_projectPath.empty())
         {
             // Check command-line args first

@@ -1,16 +1,12 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Source/ConnectionData/ServerToClientConnectionData.h>
+#include <Multiplayer/IMultiplayer.h>
 
 namespace Multiplayer
 {
@@ -18,6 +14,7 @@ namespace Multiplayer
     AZ_CVAR(uint32_t, sv_ClientMaxRemoteEntitiesPendingCreationCount, AZStd::numeric_limits<uint32_t>::max(), nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Maximum number of entities that we have sent to the client, but have not had a confirmation back from the client");
     AZ_CVAR(uint32_t, sv_ClientMaxRemoteEntitiesPendingCreationCountPostInit, AZStd::numeric_limits<uint32_t>::max(), nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Maximum number of entities that we will send to clients after gameplay has begun");
     AZ_CVAR(AZ::TimeMs, sv_ClientEntityReplicatorPendingRemovalTimeMs, AZ::TimeMs{ 10000 }, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "How long should wait prior to removing an entity for the client through a change in the replication window, entity deletes are still immediate");
+    AZ_CVAR(bool, sv_removeDefaultPlayerSpawnableOnDisconnect, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether to remove player's default spawnable when a player disconnects");
 
     ServerToClientConnectionData::ServerToClientConnectionData
     (
@@ -44,6 +41,11 @@ namespace Multiplayer
 
     ServerToClientConnectionData::~ServerToClientConnectionData()
     {
+        if (sv_removeDefaultPlayerSpawnableOnDisconnect)
+        {
+            AZ::Interface<IMultiplayer>::Get()->GetNetworkEntityManager()->MarkForRemoval(m_controlledEntity);
+        }
+
         m_entityReplicationManager.Clear(false);
         m_controlledEntityRemovedHandler.Disconnect();
     }

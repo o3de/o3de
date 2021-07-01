@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Material/EditorMaterialComponent.h>
 #include <Material/EditorMaterialComponentExporter.h>
@@ -32,7 +27,7 @@ namespace AZ
 {
     namespace Render
     {
-        const char* EditorMaterialComponent::GenerateMaterialsButtonText = "Generate Source Materials...";
+        const char* EditorMaterialComponent::GenerateMaterialsButtonText = "Generate/Manage Source Materials...";
         const char* EditorMaterialComponent::GenerateMaterialsToolTipText = "Generate editable source material files from materials provided by the model.";
 
         const char* EditorMaterialComponent::ResetMaterialsButtonText = "Reset Materials";
@@ -141,7 +136,7 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.png")
                             ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                            ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://docs.aws.amazon.com/lumberyard/latest/userguide/component-material.html")
+                            ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/atom/")
                             ->Attribute(AZ::Edit::Attributes::PrimaryAssetType, AZ::AzTypeInfo<RPI::MaterialAsset>::Uuid())
                         ->DataElement(AZ::Edit::UIHandlers::MultiLineEdit, &EditorMaterialComponent::m_message, "Message", "")
                             ->Attribute(AZ_CRC("PlaceholderText", 0xa23ec278), "Component cannot be edited with multiple entities selected")
@@ -228,10 +223,13 @@ namespace AZ
             action = menu->addAction(GenerateMaterialsButtonText, [this]() { OpenMaterialExporter(); });
             action->setToolTip(GenerateMaterialsToolTipText);
 
+            menu->addSeparator();
+
             action = menu->addAction(ResetMaterialsButtonText, [this]() { ResetMaterialSlots(); });
             action->setToolTip(ResetMaterialsToolTipText);
 
             menu->addSeparator();
+
             action = menu->addAction("Clear Model Materials", [this]() {
                 AzToolsFramework::ScopedUndoBatch undoBatch("Clearing model materials.");
                 SetDirty();

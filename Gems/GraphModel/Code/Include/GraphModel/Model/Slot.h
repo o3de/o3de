@@ -1,17 +1,13 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 // AZ
+#include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 #include <AzCore/std/any.h>
 #include <AzCore/std/hash.h>
 #include <AzCore/std/containers/list.h>
@@ -165,6 +161,32 @@ namespace GraphModel
         ExtendableSlotConfiguration m_extendableSlotConfiguration;
     };
 
+    //! Custom JSON serializer for Slot because we use an AZStd::any for m_value
+    class JsonSlotSerializer
+        : public AZ::BaseJsonSerializer
+    {
+    public:
+        AZ_RTTI(JsonSlotSerializer, "{8AC96D70-7BCD-4D68-8813-269938982D51}", AZ::BaseJsonSerializer);
+        AZ_CLASS_ALLOCATOR(JsonSlotSerializer, AZ::SystemAllocator, 0);
+
+        AZ::JsonSerializationResult::Result Load(
+            void* outputValue, const AZ::Uuid& outputValueTypeId, const rapidjson::Value& inputValue,
+            AZ::JsonDeserializerContext& context) override;
+
+        AZ::JsonSerializationResult::Result Store(
+            rapidjson::Value& outputValue, const void* inputValue, const void* defaultValue, const AZ::Uuid& valueTypeId,
+            AZ::JsonSerializerContext& context) override;
+
+    private:
+        template<typename T>
+        bool LoadAny(
+            AZStd::any& propertyValue, const rapidjson::Value& inputPropertyValue, AZ::JsonDeserializerContext& context,
+            AZ::JsonSerializationResult::ResultCode& result);
+        template<typename T>
+        bool StoreAny(
+            const AZStd::any& propertyValue, rapidjson::Value& outputPropertyValue, AZ::JsonSerializerContext& context,
+            AZ::JsonSerializationResult::ResultCode& result);
+    };
 
     //!!! Start in Graph.h for high level GraphModel documentation !!!
 
@@ -180,6 +202,7 @@ namespace GraphModel
     class Slot : public GraphElement, public AZStd::enable_shared_from_this<Slot>
     {
         friend class Graph; // So the Graph can update the Slot's cache of Connection pointers
+        friend class JsonSlotSerializer; // So we can set the m_value and m_subId directly from the serializer
 
     public:
         AZ_CLASS_ALLOCATOR(Slot, AZ::SystemAllocator, 0);

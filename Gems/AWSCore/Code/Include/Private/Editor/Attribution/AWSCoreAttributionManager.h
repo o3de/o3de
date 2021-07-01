@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -14,13 +9,20 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/vector.h>
 
-#include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <Editor/Attribution/AWSAttributionServiceApi.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
+
+
+namespace AZ
+{
+    class SettingsRegistryInterface;
+}
 
 namespace AWSCore
 {
     //! Manages operational metrics for AWS gems
     class AWSAttributionManager
+        : private AzToolsFramework::EditorEvents::Bus::Handler
     {
     public:
         AWSAttributionManager();
@@ -37,17 +39,22 @@ namespace AWSCore
         virtual void UpdateMetric(AttributionMetric& metric);
         void UpdateLastSend();
         void SetApiEndpointAndRegion(ServiceAPI::AWSAttributionRequestJob::Config* config);
+        virtual void ShowConsentDialog();
 
     private:
         bool ShouldGenerateMetric() const;
-
+        bool CheckAWSCredentialsConfigured();
+        bool CheckConsentShown();
         AZStd::string GetEngineVersion() const;
         AZStd::string GetPlatform() const;
         void GetActiveAWSGems(AZStd::vector<AZStd::string>& gemNames);
 
         void SaveSettingsRegistryFile();
 
-        AZStd::unique_ptr<AZ::SettingsRegistryImpl> m_settingsRegistry;
+        // AzToolsFramework::EditorEvents interface implementation
+        void NotifyMainWindowInitialized(QMainWindow* mainWindow) override;
+
+        AZ::SettingsRegistryInterface* m_settingsRegistry;
     };
 
 } // namespace AWSCore

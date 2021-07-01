@@ -1,15 +1,11 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "RHI/Atom_RHI_DX12_precompiled.h"
+#include <Atom/RHI.Reflect/Bits.h>
 #include <RHI/Conversions.h>
 #include <RHI/Buffer.h>
 #include <RHI/Image.h>
@@ -1268,7 +1264,7 @@ namespace AZ
                 dst.BlendOpAlpha = ConvertBlendOp(src.m_blendAlphaOp);
                 dst.DestBlend = ConvertBlendFactor(src.m_blendDest);
                 dst.DestBlendAlpha = ConvertBlendFactor(src.m_blendAlphaDest);
-                dst.RenderTargetWriteMask = src.m_writeMask;
+                dst.RenderTargetWriteMask = ConvertColorWriteMask(src.m_writeMask);
                 dst.SrcBlend = ConvertBlendFactor(src.m_blendSource);
                 dst.SrcBlendAlpha = ConvertBlendFactor(src.m_blendAlphaSource);
                 dst.LogicOp = D3D12_LOGIC_OP_CLEAR;
@@ -1354,6 +1350,38 @@ namespace AZ
                 D3D12_DEPTH_WRITE_MASK_ALL
             };
             return table[(uint32_t)mask];
+        }
+    
+        uint8_t ConvertColorWriteMask(uint8_t writeMask)
+        {            
+            uint8_t dflags = 0;
+            if(writeMask == 0)
+            {
+                return dflags;
+            }
+            
+            if(RHI::CheckBitsAll(writeMask, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskAll)))
+            {
+                return D3D12_COLOR_WRITE_ENABLE_ALL;
+            }
+            
+            if (RHI::CheckBitsAny(writeMask, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskRed)))
+            {
+                dflags |= D3D12_COLOR_WRITE_ENABLE_RED;
+            }
+            if (RHI::CheckBitsAny(writeMask, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskGreen)))
+            {
+                dflags |= D3D12_COLOR_WRITE_ENABLE_GREEN;
+            }
+            if (RHI::CheckBitsAny(writeMask, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskBlue)))
+            {
+                dflags |= D3D12_COLOR_WRITE_ENABLE_BLUE;
+            }
+            if (RHI::CheckBitsAny(writeMask, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskAlpha)))
+            {
+                dflags |= D3D12_COLOR_WRITE_ENABLE_ALPHA;
+            }
+            return dflags;
         }
 
         D3D12_DEPTH_STENCIL_DESC ConvertDepthStencilState(const RHI::DepthStencilState& depthStencil)

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 #include <CameraFramework/ICameraTransformBehavior.h>
 #include <AzCore/RTTI/RTTI.h>
@@ -35,7 +30,7 @@ namespace Camera
     public:
         ~FollowTargetFromDistance() override = default;
         AZ_RTTI(FollowTargetFromDistance, "{E6BEDB2C-6812-4369-8C0F-C1E72F380E50}", ICameraTransformBehavior)
-        AZ_CLASS_ALLOCATOR(FollowTargetFromDistance, AZ::SystemAllocator, 0); ///< Use AZ::SystemAllocator, otherwise a CryEngine allocator will be used. This will cause the Asset Processor to crash when this object is deleted, because of the wrong uninitialisation order
+        AZ_CLASS_ALLOCATOR(FollowTargetFromDistance, AZ::SystemAllocator, 0);
         static void Reflect(AZ::ReflectContext* reflection);
 
         //////////////////////////////////////////////////////////////////////////

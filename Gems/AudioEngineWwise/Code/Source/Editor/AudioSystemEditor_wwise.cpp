@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #include <AudioSystemEditor_wwise.h>
 
@@ -17,6 +12,7 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/Utils/Utils.h>
 
 #include <ACETypes.h>
 #include <AudioSystemControl_wwise.h>
@@ -26,6 +22,11 @@
 #include <CryFile.h>
 #include <CryPath.h>
 #include <Util/PathUtil.h>
+
+void InitWwiseResources()
+{
+    Q_INIT_RESOURCE(EditorWwise);
+}
 
 namespace AudioControls
 {
@@ -82,6 +83,12 @@ namespace AudioControls
             return Audio::WwiseXmlTags::WwiseStateTag;
         }
         return "";
+    }
+
+    //-------------------------------------------------------------------------------------------//
+    CAudioSystemEditor_wwise::CAudioSystemEditor_wwise()
+    {
+        InitWwiseResources();
     }
 
     //-------------------------------------------------------------------------------------------//
@@ -540,11 +547,10 @@ namespace AudioControls
     }
 
     //-------------------------------------------------------------------------------------------//
-    AZStd::string CAudioSystemEditor_wwise::GetDataPath() const
+    AZ::IO::FixedMaxPath CAudioSystemEditor_wwise::GetDataPath() const
     {
-        AZStd::string path(Path::GetEditingGameDataFolder());
-        AZ::StringFunc::Path::Join(path.c_str(), "sounds/wwise_project/", path);
-        return path;
+        auto projectPath = AZ::IO::FixedMaxPath{ AZ::Utils::GetProjectPath() };
+        return (projectPath / "sounds" / "wwise_project");
     }
 
 } // namespace AudioControls

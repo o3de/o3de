@@ -1,17 +1,12 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <ProjectSettingsScreen.h>
-#include <FormBrowseEditWidget.h>
+#include <FormFolderBrowseEditWidget.h>
 #include <FormLineEditWidget.h>
 #include <PathValidator.h>
 #include <PythonBindingsInterface.h>
@@ -37,7 +32,7 @@ namespace O3DE::ProjectManager
         // if we don't set this in a frame (just use a sub-layout) all the content will align incorrectly horizontally
         QFrame* projectSettingsFrame = new QFrame(this);
         projectSettingsFrame->setObjectName("projectSettings");
-        m_verticalLayout = new QVBoxLayout(this);
+        m_verticalLayout = new QVBoxLayout();
 
         // you cannot remove content margins in qss
         m_verticalLayout->setContentsMargins(0, 0, 0, 0);
@@ -47,7 +42,7 @@ namespace O3DE::ProjectManager
         connect(m_projectName->lineEdit(), &QLineEdit::textChanged, this, &ProjectSettingsScreen::ValidateProjectName);
         m_verticalLayout->addWidget(m_projectName);
 
-        m_projectPath = new FormBrowseEditWidget(tr("Project Location"), "", this);
+        m_projectPath = new FormFolderBrowseEditWidget(tr("Project Location"), "", this);
         m_projectPath->lineEdit()->setReadOnly(true);
         connect(m_projectPath->lineEdit(), &QLineEdit::textChanged, this, &ProjectSettingsScreen::Validate);
         m_verticalLayout->addWidget(m_projectPath);
@@ -83,6 +78,8 @@ namespace O3DE::ProjectManager
     {
         ProjectInfo projectInfo;
         projectInfo.m_projectName = m_projectName->lineEdit()->text();
+        // currently we don't have separate fields for changing the project name and display name 
+        projectInfo.m_displayName = projectInfo.m_projectName;
         projectInfo.m_path = m_projectPath->lineEdit()->text();
         return projectInfo;
     }

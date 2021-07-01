@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/Serialization/Json/JsonSerializer.h>
@@ -488,6 +483,9 @@ namespace AZ
         // tell the caller of this function to write the type id and provide a default object, if requested, for
         // the specific polymorphic instance the pointer is pointing to.
         const AZ::Uuid& actualClassId = rtti.GetActualUuid(object);
+
+        // Note: If it is crashing here, it might be that you're serializing a pointer and forgot to initialize it with nullptr.
+        // Check the elementClassData to identify the causing element.
         const AZ::Uuid& actualDefaultClassId = rtti.GetActualUuid(defaultObject);
 
         if (actualClassId != rtti.GetTypeId())

@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 set(LY_UNITY_BUILD OFF CACHE BOOL "UNITY builds")
@@ -289,8 +285,6 @@ function(ly_add_target)
     foreach(prop IN ITEMS AUTOMOC AUTORCC)
         if(${ly_add_target_${prop}})
             set_property(TARGET ${ly_add_target_NAME} PROPERTY ${prop} ON)
-            # Flag this target as depending on Qt
-            set_property(GLOBAL PROPERTY LY_DETECT_QT_DEPENDENCY_${ly_add_target_NAME} ON)
         endif()
     endforeach()
     if(${ly_add_target_AUTOUIC})
@@ -332,14 +326,6 @@ function(ly_add_target)
             VERBATIM
         )
 
-        detect_qt_dependency(${ly_add_target_NAME} QT_DEPENDENCY)
-        if(QT_DEPENDENCY)
-            if(NOT COMMAND ly_qt_deploy)
-                message(FATAL_ERROR "Could not find function \"ly_qt_deploy\", this function should be defined in cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/Qt_${PAL_PLATFORM_NAME_LOWERCASE}.cmake")
-            endif()
-
-            ly_qt_deploy(TARGET ${ly_add_target_NAME})
-        endif()
     endif()
 
     if(ly_add_target_AUTOGEN_RULES)
@@ -427,60 +413,6 @@ function(ly_delayed_target_link_libraries)
 
     endforeach()
     set_property(GLOBAL PROPERTY LY_DELAYED_LINK_TARGETS)
-
-endfunction()
-
-#! detect_qt_dependency: Determine if a target will link directly to a Qt library
-#
-# qt deployment introspects a shared library or executable for its direct
-# dependencies on Qt libraries. In CMake, this will be true if a target, or any
-# of its link libraries which are static libraries, recursively, links to Qt.
-function(detect_qt_dependency TARGET_NAME OUTPUT_VARIABLE)
-
-    if(TARGET ${TARGET_NAME})
-        get_target_property(alias ${TARGET_NAME} ALIASED_TARGET)
-        if(alias)
-            set(TARGET_NAME ${alias})
-        endif()
-    endif()
-
-    get_property(cached_is_qt_dependency GLOBAL PROPERTY LY_DETECT_QT_DEPENDENCY_${TARGET_NAME})
-    if(cached_is_qt_dependency)
-        set(${OUTPUT_VARIABLE} ${cached_is_qt_dependency} PARENT_SCOPE)
-        return()
-    endif()
-
-    if(${TARGET_NAME} MATCHES "^3rdParty::Qt::.*")
-        set_property(GLOBAL PROPERTY LY_DETECT_QT_DEPENDENCY_${TARGET_NAME} ON)
-        set(${OUTPUT_VARIABLE} ON PARENT_SCOPE)
-        return()
-    endif()
-
-    get_property(delayed_link GLOBAL PROPERTY LY_DELAYED_LINK_${TARGET_NAME})
-    set(exclude_library_types SHARED_LIBRARY MODULE_LIBRARY)
-    foreach(library IN LISTS delayed_link)
-
-        if(TARGET ${library})
-            get_target_property(child_target_type ${library} TYPE)
-
-            # If the dependency to Qt has to go through a shared/module library,
-            # it is not a direct dependency
-            if (child_target_type IN_LIST exclude_library_types)
-                continue()
-            endif()
-        endif()
-
-        detect_qt_dependency(${library} child_depends_on_qt)
-        if(child_depends_on_qt)
-            set_property(GLOBAL PROPERTY LY_DETECT_QT_DEPENDENCY_${TARGET_NAME} ON)
-            set(${OUTPUT_VARIABLE} ON PARENT_SCOPE)
-            return()
-        endif()
-
-    endforeach()
-
-    set_property(GLOBAL PROPERTY LY_DETECT_QT_DEPENDENCY_${TARGET_NAME} OFF)
-    set(${OUTPUT_VARIABLE} OFF PARENT_SCOPE)
 
 endfunction()
 

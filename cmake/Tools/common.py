@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 import configparser
@@ -274,6 +270,8 @@ def verify_tool(override_tool_path, tool_name, tool_filename, argument_name, too
     :return:    Tuple of the resolved tool version and the resolved override tool path if provided
     """
 
+    tool_source = tool_name
+
     try:
         # Use either the provided gradle override or the gradle in the path environment
         if override_tool_path:
@@ -306,17 +304,16 @@ def verify_tool(override_tool_path, tool_name, tool_filename, argument_name, too
             tool_desc = f"{tool_name} path provided in the command line argument '{argument_name}={override_tool_path}' "
         else:
             resolved_override_tool_path = None
-            tool_source = tool_name
             tool_desc = f"installed {tool_name} in the system path"
 
         # Extract the version and verify
         version_output = subprocess.check_output([tool_source, tool_version_argument],
-                                                 shell=True).decode(DEFAULT_TEXT_READ_ENCODING,
-                                                                    ENCODING_ERROR_HANDLINGS)
+                                                 shell=True,
+                                                 stderr=subprocess.PIPE).decode(DEFAULT_TEXT_READ_ENCODING,
+                                                                                ENCODING_ERROR_HANDLINGS)
         version_match = tool_version_regex.search(version_output)
         if not version_match:
             raise RuntimeError()
-
 
         # Since we are doing a compare, strip out any non-numeric and non . character from the version otherwise we will get a TypeError on the LooseVersion comparison
         result_version_str = re.sub(r"[^\.0-9]", "", str(version_match.group(1)).strip())
@@ -331,7 +328,14 @@ def verify_tool(override_tool_path, tool_name, tool_filename, argument_name, too
 
         return result_version, resolved_override_tool_path
 
-    except (CalledProcessError, WindowsError, RuntimeError) as e:
+    except CalledProcessError as e:
+        error_msg = e.output.decode(DEFAULT_TEXT_READ_ENCODING,
+                                    ENCODING_ERROR_HANDLINGS)
+        raise LmbrCmdError(f"{tool_name} cannot be resolved or there was a problem determining its version number. "
+                           f"Either make sure its in the system path environment or a valid path is passed in "
+                           f"through the {argument_name} argument.\n{error_msg}",
+                           ERROR_CODE_ERROR_NOT_SUPPORTED)
+    except (WindowsError, RuntimeError) as e:
         logging.error(f"Call to '{tool_source}' resulted in error: {e}")
         raise LmbrCmdError(f"{tool_name} cannot be resolved or there was a problem determining its version number. "
                            f"Either make sure its in the system path environment or a valid path is passed in "

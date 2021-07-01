@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Math/MathMatrixSerializer.h>
 #include <AzCore/Math/Matrix3x3.h>
@@ -263,7 +258,7 @@ namespace AZ::JsonMathMatrixSerializerInternal
 
     template<typename MatrixType, size_t RowCount, size_t ColumnCount>
     JsonSerializationResult::Result Load(void* outputValue, const Uuid& outputValueTypeId,
-        const rapidjson::Value& inputValue, JsonDeserializerContext& context)
+        const rapidjson::Value& inputValue, JsonDeserializerContext& context, bool isExplicitDefault)
     {
         namespace JSR = JsonSerializationResult; // Used remove name conflicts in AzCore in uber builds.
 
@@ -278,6 +273,12 @@ namespace AZ::JsonMathMatrixSerializerInternal
 
         MatrixType* matrix = reinterpret_cast<MatrixType*>(outputValue);
         AZ_Assert(matrix, "Output value for JsonMatrix%zux%zuSerializer can't be null.", RowCount, ColumnCount);
+
+        if (isExplicitDefault)
+        {
+            *matrix = MatrixType::CreateIdentity();
+            return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::DefaultsUsed, "Matrix value set to identity matrix.");
+        }
 
         switch (inputValue.GetType())
         {
@@ -381,6 +382,16 @@ namespace AZ::JsonMathMatrixSerializerInternal
 
 namespace AZ
 {
+    // BaseJsonMatrixSerializer
+
+    AZ_CLASS_ALLOCATOR_IMPL(BaseJsonMatrixSerializer, SystemAllocator, 0);
+
+    auto BaseJsonMatrixSerializer::GetOperationsFlags() const -> OperationFlags
+    {
+        return OperationFlags::InitializeNewInstance;
+    }
+
+
     // Matrix3x3
 
     AZ_CLASS_ALLOCATOR_IMPL(JsonMatrix3x3Serializer, SystemAllocator, 0);
@@ -389,10 +400,7 @@ namespace AZ
         const rapidjson::Value& inputValue, JsonDeserializerContext& context)
     {
         return JsonMathMatrixSerializerInternal::Load<Matrix3x3, 3, 3>(
-            outputValue,
-            outputValueTypeId,
-            inputValue,
-            context);
+            outputValue, outputValueTypeId, inputValue, context, IsExplicitDefault(inputValue));
     }
 
     JsonSerializationResult::Result JsonMatrix3x3Serializer::Store(rapidjson::Value& outputValue, const void* inputValue,
@@ -401,11 +409,7 @@ namespace AZ
         outputValue.SetObject();
 
         return JsonMathMatrixSerializerInternal::StoreRotationAndScale<Matrix3x3>(
-            outputValue,
-            inputValue,
-            defaultValue,
-            valueTypeId,
-            context);
+            outputValue, inputValue, defaultValue, valueTypeId, context);
     }
 
 
@@ -417,10 +421,7 @@ namespace AZ
         const rapidjson::Value& inputValue, JsonDeserializerContext& context)
     {
         return JsonMathMatrixSerializerInternal::Load<Matrix3x4, 3, 4>(
-            outputValue,
-            outputValueTypeId,
-            inputValue,
-            context);
+            outputValue, outputValueTypeId, inputValue, context, IsExplicitDefault(inputValue));
     }
 
     JsonSerializationResult::Result JsonMatrix3x4Serializer::Store(rapidjson::Value& outputValue, const void* inputValue,
@@ -428,19 +429,11 @@ namespace AZ
     {
         outputValue.SetObject();
 
-        auto result = JsonMathMatrixSerializerInternal::StoreRotationAndScale<Matrix3x4>(
-            outputValue,
-            inputValue,
-            defaultValue,
-            valueTypeId,
-            context);
+        auto result =
+            JsonMathMatrixSerializerInternal::StoreRotationAndScale<Matrix3x4>(outputValue, inputValue, defaultValue, valueTypeId, context);
 
-        auto resultTranslation = JsonMathMatrixSerializerInternal::StoreTranslation<Matrix3x4>(
-            outputValue,
-            inputValue,
-            defaultValue,
-            valueTypeId,
-            context);
+        auto resultTranslation =
+            JsonMathMatrixSerializerInternal::StoreTranslation<Matrix3x4>(outputValue, inputValue, defaultValue, valueTypeId, context);
 
         result.GetResultCode().Combine(resultTranslation);
         return result;
@@ -454,10 +447,7 @@ namespace AZ
         const rapidjson::Value& inputValue, JsonDeserializerContext& context)
     {
         return JsonMathMatrixSerializerInternal::Load<Matrix4x4, 4, 4>(
-            outputValue,
-            outputValueTypeId,
-            inputValue,
-            context);
+            outputValue, outputValueTypeId, inputValue, context, IsExplicitDefault(inputValue));
     }
 
     JsonSerializationResult::Result JsonMatrix4x4Serializer::Store(rapidjson::Value& outputValue, const void* inputValue,
@@ -465,19 +455,11 @@ namespace AZ
     {
         outputValue.SetObject();
 
-        auto result = JsonMathMatrixSerializerInternal::StoreRotationAndScale<Matrix4x4>(
-            outputValue,
-            inputValue,
-            defaultValue,
-            valueTypeId,
-            context);
+        auto result =
+            JsonMathMatrixSerializerInternal::StoreRotationAndScale<Matrix4x4>(outputValue, inputValue, defaultValue, valueTypeId, context);
 
-        auto resultTranslation = JsonMathMatrixSerializerInternal::StoreTranslation<Matrix4x4>(
-            outputValue,
-            inputValue,
-            defaultValue,
-            valueTypeId,
-            context);
+        auto resultTranslation =
+            JsonMathMatrixSerializerInternal::StoreTranslation<Matrix4x4>(outputValue, inputValue, defaultValue, valueTypeId, context);
 
         result.GetResultCode().Combine(resultTranslation);
         return result;

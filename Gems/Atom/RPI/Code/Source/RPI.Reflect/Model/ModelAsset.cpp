@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelKdTree.h>
@@ -77,7 +72,8 @@ namespace AZ
         }
 
         bool ModelAsset::LocalRayIntersectionAgainstModel(
-            const AZ::Vector3& rayStart, const AZ::Vector3& rayDir, float& distanceNormalized, AZ::Vector3& normal) const
+            const AZ::Vector3& rayStart, const AZ::Vector3& rayDir, bool allowBruteForce,
+            float& distanceNormalized, AZ::Vector3& normal) const
         {
             AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
 
@@ -95,7 +91,7 @@ namespace AZ
                     BuildKdTree();
 
                     AZ_WarningOnce("Model", false, "ray intersection against a model that is still creating spatial information");
-                    return false;
+                    return allowBruteForce ? BruteForceRayIntersect(rayStart, rayDir, distanceNormalized, normal) : false;
                 }
                 else
                 {
@@ -315,5 +311,26 @@ namespace AZ
 
             return modelTriangleCount;
         }
-    } //namespace RPI
+
+        bool ModelAssetHandler::HasConflictingProducts(const AZStd::vector<AZ::Data::AssetType>& productAssetTypes) const
+        {
+            size_t modelAssetCount = 0;
+            size_t actorAssetCount = 0;
+            for (const AZ::Data::AssetType& assetType : productAssetTypes)
+            {
+                if (assetType == azrtti_typeid<ModelAsset>())
+                {
+                    modelAssetCount++;
+                }
+                else if (assetType == AZ::Data::AssetType("{F67CC648-EA51-464C-9F5D-4A9CE41A7F86}")) // ActorAsset
+                {
+                    actorAssetCount++;
+                }
+            }
+
+            // When dropping a well-defined character, consisting of a mesh and a skeleton/actor,
+            // do not create an entity with a mesh component.
+            return modelAssetCount == 1 && actorAssetCount == 1;
+        }
+    } // namespace RPI
 } // namespace AZ

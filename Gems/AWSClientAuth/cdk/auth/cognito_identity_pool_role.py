@@ -1,12 +1,7 @@
 """
- All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
- For complete copyright and license terms please see the LICENSE at the root of this
- distribution (the "License"). All use of this software is governed by the License,
- or, if provided, by the license below or the license accompanying this file. Do not
- remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 from aws_cdk import (
@@ -53,14 +48,17 @@ class CognitoIdentityPoolRole:
                                   }
                               }, assume_role_action='sts:AssumeRoleWithWebIdentity'))
 
-        # basic permissions
+        # The above role is created for developers to add custom permissions that they need to provide authorized
+        # clients. Developers should update the policy statements below to add their required permissions.
+        # As an example s3:ListBuckets permissions are provided.
+        # Note: There must be at least one policy statement here.
         stack_statement = iam.PolicyStatement(
             actions=[
                 's3:ListBuckets'
             ],
             effect=iam.Effect.ALLOW,
             resources=[
-                '*'
+                f'arn:aws:s3:::{project_name}/*'
             ],
             sid=name_utils.format_aws_resource_sid(feature_name, project_name, iam.PolicyStatement.__name__)
         )
