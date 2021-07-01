@@ -36,8 +36,8 @@ namespace AzPhysics
 
     void CollisionGroupScriptConstructor(CollisionGroup* thisPtr, AZ::ScriptDataContext& scriptDataContext)
     {
-        int numArgs = scriptDataContext.GetNumArguments();
-        if (numArgs != 1)
+        if (int numArgs = scriptDataContext.GetNumArguments();
+            numArgs != 1)
         {
             scriptDataContext.GetScriptContext()->Error(AZ::ScriptContext::ErrorType::Error, true,
                 "CollisionGroup() accepts only 1 argument, not %d", numArgs);
