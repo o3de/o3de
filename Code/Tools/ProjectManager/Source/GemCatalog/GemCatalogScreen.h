@@ -30,6 +30,8 @@ namespace O3DE::ProjectManager
         void ReinitForProject(const QString& projectPath, bool isNewProject);
         bool EnableDisableGemsForProject(const QString& projectPath);
 
+        GemModel* GetGemModel() const { return m_gemModel; }
+
     private:
         void FillModel(const QString& projectPath, bool isNewProject);
 
