@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -19,11 +19,6 @@ namespace AZ
         //! and aggregating the measured times as running statistics.
         //!
         //! See "StatisticalProfilerProxy.h" for more explanations on the meaning of Statistical Profiling.
-        //!
-        //! See sample UnitTest code in "dev\Code\Framework\Tests\StatisticalProfiler.cpp" which is part of the "FrameworkTests"
-        //! project. Also, "dev\Code\CryEngine\Cry3DEngine\TerrainProfiler.h,.cpp"
-        //! and "dev\Code\CryEngine\RenderDll\Common\RendElements\TerrainUtils\Debug\TerrainProfiler.h,.cpp"
-        //! are good examples.
         //!
         //! The StatisticalProfiler was made as a template to accommodate for several performance needs...
         //! If all the code that is being profiled is single threaded and you want to identify

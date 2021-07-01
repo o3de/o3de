@@ -3,92 +3,157 @@
         "Id": "ContainerEntity",
         "Name": "Chicken_Actor",
         "Components": {
-            "Component_[10420060158469409859]": {
-                "$type": "EditorVisibilityComponent",
-                "Id": 10420060158469409859
+            "Component_[10182366347512475253]": {
+                "$type": "EditorPrefabComponent",
+                "Id": 10182366347512475253
             },
-            "Component_[10713261435043694267]": {
+            "Component_[12917798267488243668]": {
+                "$type": "EditorPendingCompositionComponent",
+                "Id": 12917798267488243668
+            },
+            "Component_[3261249813163778338]": {
                 "$type": "EditorOnlyEntityComponent",
-                "Id": 10713261435043694267
+                "Id": 3261249813163778338
             },
-            "Component_[11088054817315996737]": {
-                "$type": "EditorLockComponent",
-                "Id": 11088054817315996737
+            "Component_[3837204912784440039]": {
+                "$type": "EditorDisabledCompositionComponent",
+                "Id": 3837204912784440039
             },
-            "Component_[14341334118593165562]": {
-                "$type": "EditorInspectorComponent",
-                "Id": 14341334118593165562
-            },
-            "Component_[15143425594853321191]": {
+            "Component_[4272963378099646759]": {
                 "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
-                "Id": 15143425594853321191,
+                "Id": 4272963378099646759,
                 "Parent Entity": "",
                 "Cached World Transform Parent": ""
             },
-            "Component_[15383315993246423867]": {
-                "$type": "EditorPrefabComponent",
-                "Id": 15383315993246423867
+            "Component_[4848458548047175816]": {
+                "$type": "EditorVisibilityComponent",
+                "Id": 4848458548047175816
             },
-            "Component_[16499127605624407101]": {
+            "Component_[5787060997243919943]": {
+                "$type": "EditorInspectorComponent",
+                "Id": 5787060997243919943
+            },
+            "Component_[7804170251266531779]": {
+                "$type": "EditorLockComponent",
+                "Id": 7804170251266531779
+            },
+            "Component_[7874177159288365422]": {
                 "$type": "EditorEntitySortComponent",
-                "Id": 16499127605624407101
+                "Id": 7874177159288365422
             },
-            "Component_[16697571480493454144]": {
-                "$type": "SelectionComponent",
-                "Id": 16697571480493454144
-            },
-            "Component_[415761541071751882]": {
-                "$type": "EditorPendingCompositionComponent",
-                "Id": 415761541071751882
-            },
-            "Component_[7972775450040391034]": {
-                "$type": "EditorDisabledCompositionComponent",
-                "Id": 7972775450040391034
-            },
-            "Component_[9910169802741330341]": {
+            "Component_[8018146290632383969]": {
                 "$type": "EditorEntityIconComponent",
-                "Id": 9910169802741330341
+                "Id": 8018146290632383969
+            },
+            "Component_[8452360690590857075]": {
+                "$type": "SelectionComponent",
+                "Id": 8452360690590857075
             }
-        },
-        "IsDependencyReady": true
+        }
     },
     "Entities": {
-        "Entity_[48421054243702]": {
-            "Id": "Entity_[48421054243702]",
-            "Name": "Chicken_Actor",
+        "Entity_[303447173544404]": {
+            "Id": "Entity_[303447173544404]",
+            "Name": "Chicken Rigidbody",
             "Components": {
-                "Component_[10024659544266822060]": {
+                "Component_[11254527722826929517]": {
+                    "$type": "EditorLockComponent",
+                    "Id": 11254527722826929517
+                },
+                "Component_[11752612383131299817]": {
                     "$type": "EditorInspectorComponent",
-                    "Id": 10024659544266822060,
+                    "Id": 11752612383131299817,
                     "ComponentOrderEntryArray": [
                         {
-                            "ComponentId": 3250661421529612274
-                        },
-                        {
-                            "ComponentId": 4381463095952282089,
-                            "SortIndex": 1
-                        },
-                        {
-                            "ComponentId": 13550968986158933154,
-                            "SortIndex": 2
-                        },
-                        {
-                            "ComponentId": 11536283465461048726,
-                            "SortIndex": 3
-                        },
-                        {
-                            "ComponentId": 7689190671460963527,
-                            "SortIndex": 4
+                            "ComponentId": 12470135924384913029
                         }
                     ]
                 },
-                "Component_[11465635386953249015]": {
-                    "$type": "EditorLockComponent",
-                    "Id": 11465635386953249015
+                "Component_[12004522441155896281]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 12004522441155896281
                 },
-                "Component_[11536283465461048726]": {
+                "Component_[12327847693349375221]": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 12327847693349375221
+                },
+                "Component_[12470135924384913029]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 12470135924384913029,
+                    "Parent Entity": "ContainerEntity",
+                    "Cached World Transform Parent": "ContainerEntity"
+                },
+                "Component_[14919455666821657531]": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 14919455666821657531,
+                    "ChildEntityOrderEntryArray": [
+                        {
+                            "EntityId": "Entity_[303451468511700]"
+                        }
+                    ]
+                },
+                "Component_[16643225638363527013]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 16643225638363527013
+                },
+                "Component_[17083722249682325420]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 17083722249682325420
+                },
+                "Component_[4274252334406790321]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 4274252334406790321
+                },
+                "Component_[786957291078135994]": {
+                    "$type": "SelectionComponent",
+                    "Id": 786957291078135994
+                }
+            },
+            "IsDependencyReady": true
+        },
+        "Entity_[303451468511700]": {
+            "Id": "Entity_[303451468511700]",
+            "Name": "Chicken_Actor",
+            "Components": {
+                "Component_[10153184769011204037]": {
+                    "$type": "SelectionComponent",
+                    "Id": 10153184769011204037
+                },
+                "Component_[12307288056972997582]": {
+                    "$type": "EditorLockComponent",
+                    "Id": 12307288056972997582
+                },
+                "Component_[16388291370935886976]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 16388291370935886976
+                },
+                "Component_[17273633015317842366]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 17273633015317842366
+                },
+                "Component_[18385928157765337756]": {
+                    "$type": "EditorActorComponent",
+                    "Id": 18385928157765337756,
+                    "ActorAsset": {
+                        "assetId": {
+                            "guid": "{3E4C6A29-92A4-523E-8739-F3E64957569E}",
+                            "subId": 166954688
+                        },
+                        "assetHint": "objects/cloth/chicken/actor/chicken.actor"
+                    },
+                    "MaterialPerLOD": [
+                        {
+                            "AssetPath": "objects/cloth/chicken/actor/chicken.mtl"
+                        }
+                    ],
+                    "MaterialPerActor": {
+                        "AssetPath": "objects/cloth/chicken/actor/chicken.mtl"
+                    },
+                    "AttachmentTarget": ""
+                },
+                "Component_[2933618168100824891]": {
                     "$type": "EditorSimpleMotionComponent",
-                    "Id": 11536283465461048726,
+                    "Id": 2933618168100824891,
                     "Configuration": {
                         "MotionAsset": {
                             "assetId": {
@@ -97,12 +162,38 @@
                             },
                             "assetHint": "objects/cloth/chicken/motions/chickenidle.motion"
                         },
-                        "Loop": true
+                        "Loop": true,
+                        "PlaySpeed": 1.2000000476837159
                     }
                 },
-                "Component_[13550968986158933154]": {
+                "Component_[3482722103355682975]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 3482722103355682975
+                },
+                "Component_[4826327274018205895]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 4826327274018205895
+                },
+                "Component_[5939417605550024797]": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 5939417605550024797
+                },
+                "Component_[7236637452394054627]": {
+                    "$type": "EditorClothComponent",
+                    "Id": 7236637452394054627,
+                    "Configuration": {
+                        "Mesh Node": "chicken_mohawk",
+                        "Mass": 4.0,
+                        "Remove Static Triangles": false
+                    }
+                },
+                "Component_[868427789695884987]": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 868427789695884987
+                },
+                "Component_[8777596718122199558]": {
                     "$type": "EditorMaterialComponent",
-                    "Id": 13550968986158933154,
+                    "Id": 8777596718122199558,
                     "Controller": {
                         "Configuration": {
                             "materials": [
@@ -233,77 +324,43 @@
                         ]
                     ]
                 },
-                "Component_[14277098884859902099]": {
-                    "$type": "EditorPendingCompositionComponent",
-                    "Id": 14277098884859902099
-                },
-                "Component_[2153976993809262425]": {
-                    "$type": "EditorDisabledCompositionComponent",
-                    "Id": 2153976993809262425
-                },
-                "Component_[3250661421529612274]": {
+                "Component_[9845606399230319505]": {
                     "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
-                    "Id": 3250661421529612274,
-                    "Parent Entity": "ContainerEntity",
-                    "Cached World Transform": {
-                        "Translation": [
-                            -8.559586524963379,
-                            -1.2393379211425782,
-                            0.043556928634643558
-                        ],
-                        "Rotation": [
+                    "Id": 9845606399230319505,
+                    "Parent Entity": "Entity_[303447173544404]",
+                    "Transform Data": {
+                        "Rotate": [
                             0.0,
                             0.0,
-                            1.0,
-                            0.0
+                            -0.00006830000347690657
                         ]
                     },
-                    "Cached World Transform Parent": "ContainerEntity"
+                    "Cached World Transform Parent": ""
                 },
-                "Component_[363579226643870873]": {
-                    "$type": "EditorEntityIconComponent",
-                    "Id": 363579226643870873
-                },
-                "Component_[4381463095952282089]": {
-                    "$type": "EditorActorComponent",
-                    "Id": 4381463095952282089,
-                    "ActorAsset": {
-                        "assetId": {
-                            "guid": "{3E4C6A29-92A4-523E-8739-F3E64957569E}",
-                            "subId": 166954688
+                "Component_[9979479216337101498]": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 9979479216337101498,
+                    "ComponentOrderEntryArray": [
+                        {
+                            "ComponentId": 9845606399230319505
                         },
-                        "loadBehavior": "QueueLoad",
-                        "assetHint": "objects/cloth/chicken/actor/chicken.actor"
-                    },
-                    "MaterialPerLOD": [
-                        {}
-                    ],
-                    "AttachmentTarget": ""
-                },
-                "Component_[4892122740022910835]": {
-                    "$type": "SelectionComponent",
-                    "Id": 4892122740022910835
-                },
-                "Component_[5646397145899865599]": {
-                    "$type": "EditorVisibilityComponent",
-                    "Id": 5646397145899865599
-                },
-                "Component_[6526021153484129377]": {
-                    "$type": "EditorOnlyEntityComponent",
-                    "Id": 6526021153484129377
-                },
-                "Component_[7689190671460963527]": {
-                    "$type": "EditorClothComponent",
-                    "Id": 7689190671460963527,
-                    "Configuration": {
-                        "Mesh Node": "chicken_mohawk",
-                        "Mass": 4.0,
-                        "Remove Static Triangles": false
-                    }
-                },
-                "Component_[7705494469103394865]": {
-                    "$type": "EditorEntitySortComponent",
-                    "Id": 7705494469103394865
+                        {
+                            "ComponentId": 18385928157765337756,
+                            "SortIndex": 1
+                        },
+                        {
+                            "ComponentId": 2933618168100824891,
+                            "SortIndex": 2
+                        },
+                        {
+                            "ComponentId": 8777596718122199558,
+                            "SortIndex": 3
+                        },
+                        {
+                            "ComponentId": 7236637452394054627,
+                            "SortIndex": 4
+                        }
+                    ]
                 }
             },
             "IsDependencyReady": true
