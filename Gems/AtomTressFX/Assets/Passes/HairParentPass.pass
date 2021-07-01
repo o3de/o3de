@@ -12,6 +12,11 @@
                     "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "RenderTarget"
                 },
+                {
+                    "Name": "RenderTargetInputOnly",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
                 // This is the depth stencil buffer that is to be used by the fill pass
                 // to early reject pixels by depth and in the resolve pass to write the 
                 // the hair depth 
@@ -144,6 +149,7 @@
                         }
                     ]
                 },
+
                 {
                     "Name": "HairPPLLRasterPass",
                     "TemplateName": "HairPPLLRasterPassTemplate",
@@ -181,6 +187,44 @@
                         }
                     ]
                 },
+
+                {
+                    "Name": "RenderTargetCopyPass",
+                    "TemplateName": "FullscreenCopyTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "RenderTargetInputOnly"
+                            }
+                        },
+                        {
+                            "LocalSlot": "Output",
+                            "AttachmentRef": {
+                                "Pass": "This",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ],
+                    "ImageAttachments": [
+                        {
+                            "Name": "Output",
+                            "SizeSource": {
+                                "Source": {
+                                    "Pass": "This",
+                                    "Attachment": "Input"
+                                }
+                            },
+                            "FormatSource": {
+                                "Pass": "This",
+                                "Attachment": "Input"
+                            },
+                            "GenerateFullMipChain": false
+                        }
+                    ]
+                },
+
                 {
                     "Name": "HairPPLLResolvePass",
                     "TemplateName": "HairPPLLResolvePassTemplate",
@@ -192,6 +236,13 @@
                             "AttachmentRef": {
                                 "Pass": "Parent",
                                 "Attachment": "RenderTargetInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "RenderTargetCopy",
+                            "AttachmentRef": {
+                                "Pass": "RenderTargetCopyPass",
+                                "Attachment": "Output"
                             }
                         },
                         {

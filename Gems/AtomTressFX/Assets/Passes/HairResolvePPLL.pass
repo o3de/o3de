@@ -17,6 +17,12 @@
                         "StoreAction": "Store"
                     }
                 },
+                { // Will be used to get the background color for the hair blending
+                    "Name": "RenderTargetCopy",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_frameBuffer"
+                },
                 { // Used to get the transform from screen space to world space.
                     // If DepthLinear is not availbale - connect to another viewport (non MSAA) image.
                     "Name": "DepthLinear",
