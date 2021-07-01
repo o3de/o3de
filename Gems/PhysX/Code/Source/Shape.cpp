@@ -326,6 +326,12 @@ namespace PhysX
 
     AzPhysics::SceneQueryHit Shape::RayCastInternal(const AzPhysics::RayCastRequest& worldSpaceRequest, const physx::PxTransform& pose)
     {
+        if (const bool shouldCollide = worldSpaceRequest.m_collisionGroup.GetMask() & m_collisionLayer.GetMask();
+            !shouldCollide)
+        {
+            return AzPhysics::SceneQueryHit();
+        }
+
         const physx::PxVec3 start = PxMathConvert(worldSpaceRequest.m_start);
         const physx::PxVec3 unitDir = PxMathConvert(worldSpaceRequest.m_direction);
         const physx::PxU32 maxHits = 1;

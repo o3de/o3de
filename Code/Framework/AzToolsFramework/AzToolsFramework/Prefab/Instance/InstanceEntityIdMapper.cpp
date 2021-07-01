@@ -157,7 +157,7 @@ namespace AzToolsFramework
                     "Prefab - EntityIdMapper: Entity with Id %s has no registered owning instance",
                     entityId.ToString().c_str());
 
-                return AZStd::string::format("Entity_%s", entityId.ToString().c_str());
+                return {};
             }
 
             Instance* owningInstance = &(owningInstanceReference->get());

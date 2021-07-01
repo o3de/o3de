@@ -100,7 +100,7 @@ namespace AZ
             {
                 return
                     GetAssetId(key, RPI::MaterialAsset::RTTI_Type()).IsValid() &&
-                    // in case it's a source fbx, it will contain both material and model products
+                    // in case it's a source scene file, it will contain both material and model products
                     // model thumbnails are handled by MeshThumbnail
                     !GetAssetId(key, RPI::ModelAsset::RTTI_Type()).IsValid();
             }
