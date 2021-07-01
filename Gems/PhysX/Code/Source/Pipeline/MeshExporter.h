@@ -60,9 +60,9 @@ namespace PhysX
             struct AssetMaterialsData
             {
                 //! Material names coming from the source scene file.
-                AZStd::vector<AZStd::string> m_fbxMaterialNames;
+                AZStd::vector<AZStd::string> m_sourceSceneMaterialNames;
 
-                //! Look-up table for fbxMaterialNames.
+                //! Look-up table for sourceSceneMaterialNames.
                 AZStd::unordered_map<AZStd::string, size_t> m_materialIndexByName;
 
                 //! Map of mesh nodes to their list of material indices associated to each face.

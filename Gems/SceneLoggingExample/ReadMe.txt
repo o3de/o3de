@@ -2,7 +2,7 @@ The Scene Logging Example demonstrates how to extend the SceneAPI by adding addi
 a collection of libraries that handle loading scene files and converting content to data that the Open 3D Engine and its editor can load. 
 
 The following approach is used:
-    1. The FbxSceneBuilder and SceneData load and convert the scene file (for example, .fbx) into a graph that is stored in memory. 
+    1. The SceneBuilder and SceneData load and convert the scene file (for example, .fbx) into a graph that is stored in memory. 
     2. SceneCore and SceneData are used to create a manifest with instructions about how to export the file. 
     3. SceneData analyzes the manifest and memory graph and creates defaults.
     4. Scene Settings allows updates to the manifest through a UI.

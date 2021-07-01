@@ -11,27 +11,14 @@ namespace AZ
 {
     namespace SDKMaterial
     {
-        MaterialWrapper::MaterialWrapper(fbxsdk::FbxSurfaceMaterial* fbxMaterial)
-            :m_fbxMaterial(fbxMaterial)
-            , m_assImpMaterial(nullptr)
-        {
-        }
-
         MaterialWrapper::MaterialWrapper(aiMaterial* assImpMaterial)
-            :m_fbxMaterial(nullptr)
-            , m_assImpMaterial(assImpMaterial)
+            : m_assImpMaterial(assImpMaterial)
         {
         }
 
         MaterialWrapper::~MaterialWrapper()
         {
-            m_fbxMaterial = nullptr;
             m_assImpMaterial = nullptr;
-        }
-
-        fbxsdk::FbxSurfaceMaterial* MaterialWrapper::GetFbxMaterial()
-        {
-            return m_fbxMaterial;
         }
 
         aiMaterial* MaterialWrapper::GetAssImpMaterial()

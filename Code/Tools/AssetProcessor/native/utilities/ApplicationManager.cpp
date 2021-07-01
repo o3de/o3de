@@ -446,7 +446,7 @@ void ApplicationManager::PopulateApplicationDependencies()
     // any of those should cause AP to drop.
     for (const QString& pathName : { "CrySystem",
                                      "SceneCore", "SceneData",
-                                     "FbxSceneBuilder", "AzQtComponents"
+                                     "SceneBuilder", "AzQtComponents"
                                      })
     {
         QString pathWithPlatformExtension = pathName + QString(AZ_DYNAMIC_LIBRARY_EXTENSION);
