@@ -34,6 +34,8 @@ namespace PhysX
         return AZ::EntityId();
     }
 
+    // this allows EXPECT_TRUE to be exposed to the behavior context and used inside blocks of lua code which
+    // are executed in tests
     void ExpectTrue(bool check)
     {
         EXPECT_TRUE(check);
