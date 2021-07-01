@@ -51,7 +51,7 @@ set(ENABLED_GEMS
 )
 
 # TODO remove conditional add once AWSNativeSDK libs are fixed for Android and Linux Monolithic release.
-set(aws_excluded_platforms Linux Android)
+set(aws_excluded_platforms Android)
 if (NOT (LY_MONOLITHIC_GAME AND ${PAL_PLATFORM_NAME} IN_LIST aws_excluded_platforms))
     list(APPEND ENABLED_GEMS
         AWSCore
