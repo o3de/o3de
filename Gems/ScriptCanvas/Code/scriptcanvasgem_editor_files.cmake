@@ -84,8 +84,6 @@ set(FILES
     Editor/GraphCanvas/Components/NodeDescriptors/EBusHandlerNodeDescriptorComponent.h
     Editor/GraphCanvas/Components/NodeDescriptors/EBusSenderNodeDescriptorComponent.cpp
     Editor/GraphCanvas/Components/NodeDescriptors/EBusSenderNodeDescriptorComponent.h
-    Editor/GraphCanvas/Components/NodeDescriptors/EntityRefNodeDescriptorComponent.cpp
-    Editor/GraphCanvas/Components/NodeDescriptors/EntityRefNodeDescriptorComponent.h
     Editor/GraphCanvas/Components/NodeDescriptors/FunctionNodeDescriptorComponent.cpp
     Editor/GraphCanvas/Components/NodeDescriptors/FunctionNodeDescriptorComponent.h
     Editor/GraphCanvas/Components/NodeDescriptors/FunctionDefinitionNodeDescriptorComponent.h

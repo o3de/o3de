@@ -19,11 +19,9 @@
 #include <ScriptCanvas/Core/Attributes.h>
 #include <ScriptCanvas/Core/Contract.h>
 #include <ScriptCanvas/Core/Contracts/ConnectionLimitContract.h>
-#include <ScriptCanvas/Core/Contracts/ExclusivePureDataContract.h>
 #include <ScriptCanvas/Core/Contracts/DynamicTypeContract.h>
 #include <ScriptCanvas/Core/GraphBus.h>
 #include <ScriptCanvas/Core/NodeableNode.h>
-#include <ScriptCanvas/Core/PureData.h>
 #include <ScriptCanvas/Data/DataRegistry.h>
 #include <ScriptCanvas/Libraries/Core/EBusEventHandler.h>
 #include <ScriptCanvas/Variable/VariableBus.h>
@@ -48,9 +46,7 @@ namespace NodeCpp
 
         // add your named version above
         Current,
-    };
-    
-
+    }; 
 }
 
 namespace ScriptCanvas
@@ -397,7 +393,6 @@ namespace ScriptCanvas
     void Node::Reflect(AZ::ReflectContext* context)
     {
         Slot::Reflect(context);
-        ExclusivePureDataContract::Reflect(context);
         Nodes::NodeableNode::Reflect(context);
 
         // Version Conversion Reflection
@@ -730,26 +725,11 @@ namespace ScriptCanvas
                 // for each output slot...
                 // for each connected node...
                 // remove the ability to default it...
-                // ...and until a more viable solution is available, variable get input in another node must be exclusive   
-
+                
                 EndpointsResolved connections = GetConnectedNodes(inputSlot);
                 if (!connections.empty())
                 {
-                    bool isConnectedToPureData = false;
-
-                    for (auto& nodePtrSlotId : connections)
-                    {
-                        if (azrtti_cast<const PureData*>(nodePtrSlotId.first))
-                        {
-                            isConnectedToPureData = true;
-                            break;
-                        }
-                    }
-
-                    if (!isConnectedToPureData)
-                    {
-                        m_possiblyStaleInput.insert(slotId);
-                    }
+                    m_possiblyStaleInput.insert(slotId);
                 }
             }
         }
@@ -804,9 +784,7 @@ namespace ScriptCanvas
     bool Node::IsTargetInDataFlowPath(const Node* targetNode) const
     {
         AZStd::unordered_set<ID> path;
-        return azrtti_cast<const PureData*>(this)
-            || azrtti_cast<const PureData*>(targetNode)
-            || (targetNode && IsTargetInDataFlowPath(targetNode->GetEntityId(), path));
+        return (targetNode && IsTargetInDataFlowPath(targetNode->GetEntityId(), path));
     }
 
     bool Node::IsTargetInDataFlowPath(const ID& targetNodeId, AZStd::unordered_set<ID>& path) const

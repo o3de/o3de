@@ -12,55 +12,12 @@
 #include <Source/Framework/ScriptCanvasTestNodes.h>
 
 #include <ScriptCanvas/Libraries/Core/Start.h>
-#include <ScriptCanvas/Libraries/Core/BehaviorContextObjectNode.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/std/string/string.h>
 
 using namespace ScriptCanvasTests;
 using namespace ScriptCanvasEditor;
 using namespace TestNodes;
-
-TEST_F(ScriptCanvasTestFixture, BehaviorContextObjectGenericConstructor)
-{
-    using namespace ScriptCanvas;
-    
-    TestBehaviorContextObject::Reflect(m_serializeContext);
-    TestBehaviorContextObject::Reflect(m_behaviorContext);
-
-    
-    AZ::Entity* graphEntity = aznew AZ::Entity("Graph");
-    graphEntity->Init();
-    SystemRequestBus::Broadcast(&SystemRequests::CreateGraphOnEntity, graphEntity);
-    auto graph = graphEntity->FindComponent<ScriptCanvas::Graph>();
-    EXPECT_NE(nullptr, graph);
-
-    const ScriptCanvasId& graphUniqueId = graph->GetScriptCanvasId();
-    
-    //Validates the GenericConstructorOverride attribute is being used to construct types that are normally not initialized in C++
-    AZ::EntityId vector3IdA;
-    ScriptCanvas::Nodes::Core::BehaviorContextObjectNode* vector3NodeA = CreateTestNode<ScriptCanvas::Nodes::Core::BehaviorContextObjectNode>(graphUniqueId, vector3IdA);
-    vector3NodeA->InitializeObject(azrtti_typeid<TestBehaviorContextObject>());
-    
-    ReportErrors(graph);
-
-    if (auto result = vector3NodeA->GetInput_UNIT_TEST<TestBehaviorContextObject>("Set"))
-    {
-        EXPECT_EQ(0, result->GetValue());
-    }
-    else
-    {
-        ADD_FAILURE();
-    }
-
-    delete graphEntity;
-    
-    m_serializeContext->EnableRemoveReflection();
-    m_behaviorContext->EnableRemoveReflection();
-    TestBehaviorContextObject::Reflect(m_serializeContext);
-    TestBehaviorContextObject::Reflect(m_behaviorContext);
-    m_serializeContext->DisableRemoveReflection();
-    m_behaviorContext->DisableRemoveReflection();
-}
 
 // Tests the basic footprint of the ebus node both before and after graph activation to make sure all internal bookeeping is correct.
 TEST_F(ScriptCanvasTestFixture, BehaviorContext_BusHandlerNodeFootPrint)

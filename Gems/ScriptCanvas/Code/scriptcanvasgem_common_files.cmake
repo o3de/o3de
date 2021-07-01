@@ -66,7 +66,6 @@ set(FILES
     Include/ScriptCanvas/Core/MethodConfiguration.cpp
     Include/ScriptCanvas/Core/ModifiableDatumView.cpp
     Include/ScriptCanvas/Core/ModifiableDatumView.h
-    Include/ScriptCanvas/Core/NativeDatumNode.h
     Include/ScriptCanvas/Core/Node.cpp
     Include/ScriptCanvas/Core/Node.h
     Include/ScriptCanvas/Core/Nodeable.cpp
@@ -76,8 +75,6 @@ set(FILES
     Include/ScriptCanvas/Core/NodeableNodeOverloaded.cpp
     Include/ScriptCanvas/Core/NodeableNodeOverloaded.h
     Include/ScriptCanvas/Core/NodeFunctionGeneric.h
-    Include/ScriptCanvas/Core/PureData.cpp
-    Include/ScriptCanvas/Core/PureData.h
     Include/ScriptCanvas/Core/Slot.cpp
     Include/ScriptCanvas/Core/Slot.h
     Include/ScriptCanvas/Core/SlotConfigurationDefaults.h
@@ -131,8 +128,6 @@ set(FILES
     Include/ScriptCanvas/Core/Contracts/DisplayGroupConnectedSlotLimitContract.h
     Include/ScriptCanvas/Core/Contracts/DynamicTypeContract.cpp
     Include/ScriptCanvas/Core/Contracts/DynamicTypeContract.h
-    Include/ScriptCanvas/Core/Contracts/ExclusivePureDataContract.cpp
-    Include/ScriptCanvas/Core/Contracts/ExclusivePureDataContract.h
     Include/ScriptCanvas/Core/Contracts/IsReferenceTypeContract.cpp
     Include/ScriptCanvas/Core/Contracts/IsReferenceTypeContract.h
     Include/ScriptCanvas/Core/Contracts/MathOperatorContract.cpp
@@ -250,8 +245,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/Core/AzEventHandler.cpp
     Include/ScriptCanvas/Libraries/Core/AzEventHandler.h
     Include/ScriptCanvas/Libraries/Core/AzEventHandler.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Core/BehaviorContextObjectNode.cpp
-    Include/ScriptCanvas/Libraries/Core/BehaviorContextObjectNode.h
     Include/ScriptCanvas/Libraries/Core/BinaryOperator.cpp
     Include/ScriptCanvas/Libraries/Core/BinaryOperator.h
     Include/ScriptCanvas/Libraries/Core/CoreNodes.cpp
@@ -314,25 +307,18 @@ set(FILES
     Include/ScriptCanvas/Libraries/Core/Start.cpp
     Include/ScriptCanvas/Libraries/Core/Start.h
     Include/ScriptCanvas/Libraries/Core/Start.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Core/String.h
     Include/ScriptCanvas/Libraries/Core/UnaryOperator.cpp
     Include/ScriptCanvas/Libraries/Core/UnaryOperator.h
     Include/ScriptCanvas/Libraries/Entity/Entity.cpp
     Include/ScriptCanvas/Libraries/Entity/Entity.h
-    Include/ScriptCanvas/Libraries/Entity/EntityIDNode.h
     Include/ScriptCanvas/Libraries/Entity/EntityIDNodes.h
     Include/ScriptCanvas/Libraries/Entity/EntityNodes.h
-    Include/ScriptCanvas/Libraries/Entity/EntityRef.h
-    Include/ScriptCanvas/Libraries/Entity/Rotate.cpp
-    Include/ScriptCanvas/Libraries/Entity/Rotate.h
-    Include/ScriptCanvas/Libraries/Entity/Rotate.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Entity/RotateMethod.cpp
     Include/ScriptCanvas/Libraries/Entity/RotateMethod.h
     Include/ScriptCanvas/Libraries/Logic/And.h
     Include/ScriptCanvas/Libraries/Logic/Any.cpp
     Include/ScriptCanvas/Libraries/Logic/Any.h
     Include/ScriptCanvas/Libraries/Logic/Any.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Logic/Boolean.h
     Include/ScriptCanvas/Libraries/Logic/Break.h
     Include/ScriptCanvas/Libraries/Logic/Break.cpp
     Include/ScriptCanvas/Libraries/Logic/Break.ScriptCanvasGrammar.xml
@@ -373,11 +359,8 @@ set(FILES
     Include/ScriptCanvas/Libraries/Logic/While.cpp
     Include/ScriptCanvas/Libraries/Logic/While.h
     Include/ScriptCanvas/Libraries/Logic/While.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Math/AABBNode.h
     Include/ScriptCanvas/Libraries/Math/AABBNodes.h
-    Include/ScriptCanvas/Libraries/Math/ColorNode.h
     Include/ScriptCanvas/Libraries/Math/ColorNodes.h
-    Include/ScriptCanvas/Libraries/Math/CRCNode.h
     Include/ScriptCanvas/Libraries/Math/CRCNodes.h
     Include/ScriptCanvas/Libraries/Math/Divide.h
     Include/ScriptCanvas/Libraries/Math/Math.cpp
@@ -389,26 +372,15 @@ set(FILES
     Include/ScriptCanvas/Libraries/Math/MathNodeUtilities.h
     Include/ScriptCanvas/Libraries/Math/MathGenerics.h
     Include/ScriptCanvas/Libraries/Math/MathRandom.h
-    Include/ScriptCanvas/Libraries/Math/Matrix3x3Node.h
     Include/ScriptCanvas/Libraries/Math/Matrix3x3Nodes.h
-    Include/ScriptCanvas/Libraries/Math/Matrix4x4Node.h
     Include/ScriptCanvas/Libraries/Math/Matrix4x4Nodes.h
     Include/ScriptCanvas/Libraries/Math/Multiply.h
-    Include/ScriptCanvas/Libraries/Math/Number.h
-    Include/ScriptCanvas/Libraries/Math/OBBNode.h
     Include/ScriptCanvas/Libraries/Math/OBBNodes.h
-    Include/ScriptCanvas/Libraries/Math/PlaneNode.h
     Include/ScriptCanvas/Libraries/Math/PlaneNodes.h
-    Include/ScriptCanvas/Libraries/Math/Random.cpp
-    Include/ScriptCanvas/Libraries/Math/Random.h
-    Include/ScriptCanvas/Libraries/Math/Random.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Math/Rotation.h
     Include/ScriptCanvas/Libraries/Math/RotationNodes.h
     Include/ScriptCanvas/Libraries/Math/Subtract.h
     Include/ScriptCanvas/Libraries/Math/Sum.h
-    Include/ScriptCanvas/Libraries/Math/Transform.h
     Include/ScriptCanvas/Libraries/Math/TransformNodes.h
-    Include/ScriptCanvas/Libraries/Math/Vector.h
     Include/ScriptCanvas/Libraries/Math/Vector2Nodes.h
     Include/ScriptCanvas/Libraries/Math/Vector3Nodes.h
     Include/ScriptCanvas/Libraries/Math/Vector4Nodes.h

@@ -45,7 +45,6 @@ namespace ScriptCanvasEditor::Nodes
     AZ::EntityId DisplayScriptCanvasNode(AZ::EntityId graphCanvasGraphId, const ScriptCanvas::Node* node);
 
     // Core Node
-    AZ::EntityId DisplayEntityNode(AZ::EntityId graphCanvasGraphId, const ScriptCanvas::Nodes::Entity::EntityRef* entityNode);
     AZ::EntityId DisplayEbusEventNode(AZ::EntityId graphCanvasGraphId, const AZStd::string& busName, const AZStd::string& eventName, const ScriptCanvas::EBusEventId& eventId);
     AZ::EntityId DisplayEbusWrapperNode(AZ::EntityId graphCanvasGraphId, const ScriptCanvas::Nodes::Core::EBusEventHandler* busNode);
     AZ::EntityId DisplayGetVariableNode(AZ::EntityId graphCanvasGraphId, const ScriptCanvas::Nodes::Core::GetVariableNode* variableNode);

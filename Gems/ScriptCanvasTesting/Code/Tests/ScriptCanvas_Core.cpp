@@ -407,38 +407,6 @@ TEST_F(ScriptCanvasTestFixture, ValueTypes)
     GTEST_SUCCEED();
 }
 
-
-namespace
-{
-    using namespace ScriptCanvas;
-    using namespace ScriptCanvas::Nodes;
-
-    bool GraphHasVectorWithValue(const ScriptCanvas::Graph& graph, const AZ::Vector3& vector)
-    {
-        for (auto nodeId : graph.GetNodes())
-        {
-            AZ::Entity* entity{};
-            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, nodeId);
-
-            if (entity)
-            {
-                if (auto node = AZ::EntityUtils::FindFirstDerivedComponent<Core::BehaviorContextObjectNode>(entity))
-                {
-                    if (auto candidate = node->GetInput_UNIT_TEST<AZ::Vector3>("Set"))
-                    {
-                        if (*candidate == vector)
-                        {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-
-        return false;
-    }
-}
-
 TEST_F(ScriptCanvasTestFixture, Contracts)
 {    
     using namespace ScriptCanvas;
@@ -666,126 +634,6 @@ TEST_F(ScriptCanvasTestFixture, Contracts)
 //     m_behaviorContext->DisableRemoveReflection();
 // }
 
-TEST_F(ScriptCanvasTestFixture, EntityRefTest)
-{
-    
-
-    using namespace ScriptCanvas;
-    using namespace ScriptCanvas::Nodes;
-
-    // Fake "world" entities
-    AZ::Entity first("First");
-    first.CreateComponent<ScriptCanvasTests::TestComponent>();
-    first.Init();
-    first.Activate();
-
-    AZ::Entity second("Second");
-    second.CreateComponent<ScriptCanvasTests::TestComponent>();
-    second.Init();
-    second.Activate();
-
-    // Script Canvas ScriptCanvas::Graph
-    ScriptCanvas::Graph* graph = nullptr;
-    SystemRequestBus::BroadcastResult(graph, &SystemRequests::MakeGraph);
-    EXPECT_TRUE(graph != nullptr);
-
-    m_entityContext.AddEntity(first.GetId());
-    m_entityContext.AddEntity(second.GetId());
-    m_entityContext.AddEntity(graph->GetEntityId());
-
-    graph->GetEntity()->SetName("ScriptCanvas::Graph Owner Entity");
-
-    graph->GetEntity()->CreateComponent<ScriptCanvasTests::TestComponent>();
-    graph->GetEntity()->Init();
-
-    const ScriptCanvasId& graphUniqueId = graph->GetScriptCanvasId();
-
-    AZ::EntityId startID;
-    CreateTestNode<ScriptCanvas::Nodes::Core::Start>(graphUniqueId, startID);
-
-    // EntityRef node to some specific entity #1
-    AZ::EntityId selfEntityIdNode;
-    auto selfEntityRef = CreateTestNode<ScriptCanvas::Nodes::Entity::EntityRef>(graphUniqueId, selfEntityIdNode);
-    selfEntityRef->SetEntityRef(first.GetId());
-
-    // EntityRef node to some specific entity #2
-    AZ::EntityId otherEntityIdNode;
-    auto otherEntityRef = CreateTestNode<ScriptCanvas::Nodes::Entity::EntityRef>(graphUniqueId, otherEntityIdNode);
-    otherEntityRef->SetEntityRef(second.GetId());
-
-    // Explicitly set an EntityRef node with this graph's entity Id.
-    AZ::EntityId graphEntityIdNode;
-    auto graphEntityRef = CreateTestNode<ScriptCanvas::Nodes::Entity::EntityRef>(graphUniqueId, graphEntityIdNode);
-    graphEntityRef->SetEntityRef(graph->GetEntity()->GetId());
-
-    // First test: directly set an entity Id on the EntityID: 0 slot
-    AZ::EntityId eventAid;
-    ScriptCanvas::Nodes::Core::Method* nodeA = CreateTestNode<ScriptCanvas::Nodes::Core::Method>(graphUniqueId, eventAid);
-    nodeA->InitializeEvent({ {} }, "EntityRefTestEventBus", "TestEvent");
-    if (auto entityId = nodeA->ModInput_UNIT_TEST<AZ::EntityId>("EntityID: 0"))
-    {
-        *entityId = first.GetId();
-    }
-
-    // Second test: Will connect the slot to an EntityRef node
-    AZ::EntityId eventBid;
-    ScriptCanvas::Nodes::Core::Method* nodeB = CreateTestNode<ScriptCanvas::Nodes::Core::Method>(graphUniqueId, eventBid);
-    nodeB->InitializeEvent({ {} }, "EntityRefTestEventBus", "TestEvent");
-
-    // Third test: Set the slot's EntityId: 0 to SelfReferenceId, this should result in the same Id as graph->GetEntityId()
-    AZ::EntityId eventCid;
-    ScriptCanvas::Nodes::Core::Method* nodeC = CreateTestNode<ScriptCanvas::Nodes::Core::Method>(graphUniqueId, eventCid);
-    nodeC->InitializeEvent({ {} }, "EntityRefTestEventBus", "TestEvent");
-    if (auto entityId = nodeC->ModInput_UNIT_TEST<AZ::EntityId>("EntityID: 0"))
-    {
-        *entityId = ScriptCanvas::GraphOwnerId;
-    }
-
-    // True 
-    AZ::EntityId trueNodeId;
-    CreateDataNode<Data::BooleanType>(graphUniqueId, true, trueNodeId);
-
-    // False
-    AZ::EntityId falseNodeId;
-    CreateDataNode<Data::BooleanType>(graphUniqueId, false, falseNodeId);
-
-    // Start            -> TestEvent
-    //                   O EntityId: 0    (not connected, it was set directly on the slot)
-    // EntityRef: first -O EntityId: 1
-    // False            -O Boolean: 2
-    EXPECT_TRUE(Connect(*graph, startID, "Out", eventAid, "In"));
-    EXPECT_TRUE(Connect(*graph, eventAid, "EntityID: 1", selfEntityIdNode, "Get"));
-    EXPECT_TRUE(Connect(*graph, eventAid, "Boolean: 2", falseNodeId, "Get"));
-
-    // Start            -> TestEvent
-    // EntityRef: second -O EntityId: 0 
-    // EntityRef: second -O EntityId: 1
-    // False             -O Boolean: 2
-    EXPECT_TRUE(Connect(*graph, startID, "Out", eventBid, "In"));
-    EXPECT_TRUE(Connect(*graph, eventBid, "EntityID: 0", otherEntityIdNode, "Get"));
-    EXPECT_TRUE(Connect(*graph, eventBid, "EntityID: 1", otherEntityIdNode, "Get"));
-    EXPECT_TRUE(Connect(*graph, eventBid, "Boolean: 2", falseNodeId, "Get"));
-
-    // Start            -> TestEvent
-    //                   -O EntityId: 0  (not connected, slot is set to SelfReferenceId)
-    // graphEntityIdNode -O EntityId: 1
-    // True              -O Boolean: 2
-    EXPECT_TRUE(Connect(*graph, startID, "Out", eventCid, "In"));
-    EXPECT_TRUE(Connect(*graph, eventCid, "EntityID: 1", graphEntityIdNode, "Get"));
-    EXPECT_TRUE(Connect(*graph, eventCid, "Boolean: 2", trueNodeId, "Get"));
-
-    // Execute the graph
-
-    {
-        ScriptCanvasEditor::ScopedOutputSuppression suppressOutput;
-        graph->GetEntity()->Activate();
-    }
-
-    ReportErrors(graph);
-    delete graph->GetEntity();
-
-}
-
 const int k_executionCount = 998;
 
 TEST_F(ScriptCanvasTestFixture, ExecutionLength)
@@ -828,10 +676,11 @@ TEST_F(ScriptCanvasTestFixture, ExecutionLength)
 
 TEST_F(ScriptCanvasTestFixture, While)
 {
-    RunUnitTestGraph("LY_SC_UnitTest_While", ExecutionMode::Interpreted);
+
+    RunUnitTestGraph("LY_SC_UnitTest_While", ScriptCanvas::ExecutionMode::Interpreted);
 }
 
 TEST_F(ScriptCanvasTestFixture, WhileBreak)
 {
-    RunUnitTestGraph("LY_SC_UnitTest_WhileBreak", ExecutionMode::Interpreted);
+    RunUnitTestGraph("LY_SC_UnitTest_WhileBreak", ScriptCanvas::ExecutionMode::Interpreted);
 }

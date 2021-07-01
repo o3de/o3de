@@ -32,16 +32,13 @@ namespace ScriptCanvas
                 
                 SlotId GetLoopSlotId() const override;
                 
-                bool IsFormalLoop() const override;
-
-                
+                bool IsFormalLoop() const override;            
                 
             protected:
                 ConstSlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot& /*executionSlot*/, CombinedSlotType targetSlotType, const Slot* /*executionChildSlot*/) const override
                 {
                     return AZ::Success(GetSlotsByType(targetSlotType));
                 }
-
             };
         }
     }

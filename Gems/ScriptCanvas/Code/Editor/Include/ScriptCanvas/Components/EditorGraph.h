@@ -160,11 +160,7 @@ namespace ScriptCanvasEditor
         bool CreateConnection(const GraphCanvas::ConnectionId& connectionId, const GraphCanvas::Endpoint& sourcePoint, const GraphCanvas::Endpoint& targetPoint) override;
 
         bool IsValidConnection(const GraphCanvas::Endpoint& sourcePoint, const GraphCanvas::Endpoint& targetPoint) const override;
-        GraphCanvas::ConnectionValidationTooltip GetConnectionValidityTooltip(const GraphCanvas::Endpoint& sourcePoint, const GraphCanvas::Endpoint& targetPoint) const override;
-
-        bool IsValidVariableAssignment(const AZ::EntityId& variableId, const GraphCanvas::Endpoint& targetPoint) const override;
-        GraphCanvas::ConnectionValidationTooltip GetVariableAssignmentValidityTooltip(const AZ::EntityId& variableId, const GraphCanvas::Endpoint& targetPoint) const override;
-
+        
         AZStd::string GetDataTypeString(const AZ::Uuid& typeId) override;
 
         void OnRemoveUnusedNodes() override;

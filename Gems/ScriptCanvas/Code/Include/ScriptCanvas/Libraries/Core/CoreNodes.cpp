@@ -103,9 +103,7 @@ namespace ScriptCanvas
             AddNodeToRegistry<Core, ErrorHandler>(nodeRegistry);
             AddNodeToRegistry<Core, Method>(nodeRegistry);
             AddNodeToRegistry<Core, MethodOverloaded>(nodeRegistry);
-            AddNodeToRegistry<Core, BehaviorContextObjectNode>(nodeRegistry);
             AddNodeToRegistry<Core, Start>(nodeRegistry);            
-            AddNodeToRegistry<Core, ScriptCanvas::Nodes::Core::String>(nodeRegistry);
             AddNodeToRegistry<Core, EBusEventHandler>(nodeRegistry);
             AddNodeToRegistry<Core, AzEventHandler>(nodeRegistry);
             AddNodeToRegistry<Core, ExtractProperty>(nodeRegistry);
@@ -128,9 +126,7 @@ namespace ScriptCanvas
                 ScriptCanvas::Nodes::Core::ErrorHandler::CreateDescriptor(),
                 ScriptCanvas::Nodes::Core::Method::CreateDescriptor(),
                 ScriptCanvas::Nodes::Core::MethodOverloaded::CreateDescriptor(),
-                ScriptCanvas::Nodes::Core::BehaviorContextObjectNode::CreateDescriptor(),
                 ScriptCanvas::Nodes::Core::Start::CreateDescriptor(),                
-                ScriptCanvas::Nodes::Core::String::CreateDescriptor(),
                 ScriptCanvas::Nodes::Core::EBusEventHandler::CreateDescriptor(),
                 ScriptCanvas::Nodes::Core::AzEventHandler::CreateDescriptor(),
                 ScriptCanvas::Nodes::Core::ExtractProperty::CreateDescriptor(),

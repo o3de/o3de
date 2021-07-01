@@ -37,20 +37,22 @@ namespace ScriptCanvas
             if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(reflection))
             {
                 using namespace ScriptCanvas::Nodes::Math;
-                SCRIPT_CANVAS_GENERICS_TO_VM(AABBNodes::Registrar, AABB, behaviorContext, AABBNodes::k_categoryName);
-                SCRIPT_CANVAS_GENERICS_TO_VM(CRCNodes::Registrar, CRC, behaviorContext, CRCNodes::k_categoryName);
-                SCRIPT_CANVAS_GENERICS_TO_VM(ColorNodes::Registrar, Color, behaviorContext, ColorNodes::k_categoryName);
+
                 SCRIPT_CANVAS_GENERICS_TO_VM(MathNodes::Registrar, Math, behaviorContext, MathNodes::k_categoryName);
-                SCRIPT_CANVAS_GENERICS_TO_VM(Matrix3x3Nodes::Registrar, Matrix3x3, behaviorContext, Matrix3x3Nodes::k_categoryName);
-                SCRIPT_CANVAS_GENERICS_TO_VM(Matrix4x4Nodes::Registrar, Matrix4x4, behaviorContext, Matrix4x4Nodes::k_categoryName);
-                SCRIPT_CANVAS_GENERICS_TO_VM(OBBNodes::Registrar, OBB, behaviorContext, OBBNodes::k_categoryName);
-                SCRIPT_CANVAS_GENERICS_TO_VM(PlaneNodes::Registrar, Plane, behaviorContext, PlaneNodes::k_categoryName);
-                SCRIPT_CANVAS_GENERICS_TO_VM(QuaternionNodes::Registrar, Quaternion, behaviorContext, QuaternionNodes::k_categoryName);
                 SCRIPT_CANVAS_GENERICS_TO_VM(RandomNodes::Registrar, Random, behaviorContext, RandomNodes::k_categoryName);
-                SCRIPT_CANVAS_GENERICS_TO_VM(TransformNodes::Registrar, Transform, behaviorContext, TransformNodes::k_categoryName);
-                SCRIPT_CANVAS_GENERICS_TO_VM(Vector2Nodes::Registrar, Vector2, behaviorContext, Vector2Nodes::k_categoryName);
-                SCRIPT_CANVAS_GENERICS_TO_VM(Vector3Nodes::Registrar, Vector3, behaviorContext, Vector3Nodes::k_categoryName);
-                SCRIPT_CANVAS_GENERICS_TO_VM(Vector4Nodes::Registrar, Vector4, behaviorContext, Vector4Nodes::k_categoryName);
+
+                SCRIPT_CANVAS_GENERICS_TO_VM_LIBRARY_ONLY(AABBNodes::Registrar, behaviorContext, AABBNodes::k_categoryName);
+                SCRIPT_CANVAS_GENERICS_TO_VM_LIBRARY_ONLY(CRCNodes::Registrar, behaviorContext, CRCNodes::k_categoryName);
+                SCRIPT_CANVAS_GENERICS_TO_VM_LIBRARY_ONLY(ColorNodes::Registrar, behaviorContext, ColorNodes::k_categoryName);
+                SCRIPT_CANVAS_GENERICS_TO_VM_LIBRARY_ONLY(Matrix3x3Nodes::Registrar, behaviorContext, Matrix3x3Nodes::k_categoryName);
+                SCRIPT_CANVAS_GENERICS_TO_VM_LIBRARY_ONLY(Matrix4x4Nodes::Registrar, behaviorContext, Matrix4x4Nodes::k_categoryName);
+                SCRIPT_CANVAS_GENERICS_TO_VM_LIBRARY_ONLY(OBBNodes::Registrar, behaviorContext, OBBNodes::k_categoryName);
+                SCRIPT_CANVAS_GENERICS_TO_VM_LIBRARY_ONLY(PlaneNodes::Registrar, behaviorContext, PlaneNodes::k_categoryName);
+                SCRIPT_CANVAS_GENERICS_TO_VM_LIBRARY_ONLY(QuaternionNodes::Registrar, behaviorContext, QuaternionNodes::k_categoryName);
+                SCRIPT_CANVAS_GENERICS_TO_VM_LIBRARY_ONLY(TransformNodes::Registrar, behaviorContext, TransformNodes::k_categoryName);
+                SCRIPT_CANVAS_GENERICS_TO_VM_LIBRARY_ONLY(Vector2Nodes::Registrar, behaviorContext, Vector2Nodes::k_categoryName);
+                SCRIPT_CANVAS_GENERICS_TO_VM_LIBRARY_ONLY(Vector3Nodes::Registrar, behaviorContext, Vector3Nodes::k_categoryName);
+                SCRIPT_CANVAS_GENERICS_TO_VM_LIBRARY_ONLY(Vector4Nodes::Registrar, behaviorContext, Vector4Nodes::k_categoryName);
             }
 
             Nodes::Internal::ExpressionNodeBase::Reflect(reflection);
@@ -59,25 +61,12 @@ namespace ScriptCanvas
         void Math::InitNodeRegistry(NodeRegistry& nodeRegistry)
         {
             using namespace ScriptCanvas::Nodes::Math;
-            AddNodeToRegistry<Math, AABB>(nodeRegistry);
-            AddNodeToRegistry<Math, CRC>(nodeRegistry);
-            AddNodeToRegistry<Math, Color>(nodeRegistry);
+            
             AddNodeToRegistry<Math, Divide>(nodeRegistry);
-            AddNodeToRegistry<Math, Matrix3x3>(nodeRegistry);
-            AddNodeToRegistry<Math, Matrix4x4>(nodeRegistry);
             AddNodeToRegistry<Math, MathExpression>(nodeRegistry);
             AddNodeToRegistry<Math, Multiply>(nodeRegistry);
-            AddNodeToRegistry<Math, Number>(nodeRegistry);
-            AddNodeToRegistry<Math, OBB>(nodeRegistry);
-            AddNodeToRegistry<Math, Plane>(nodeRegistry);           
-            AddNodeToRegistry<Math, Random>(nodeRegistry);
-            AddNodeToRegistry<Math, Quaternion>(nodeRegistry);
             AddNodeToRegistry<Math, Subtract>(nodeRegistry);
             AddNodeToRegistry<Math, Sum>(nodeRegistry);
-            AddNodeToRegistry<Math, Transform>(nodeRegistry);
-            AddNodeToRegistry<Math, Vector2>(nodeRegistry);
-            AddNodeToRegistry<Math, Vector3>(nodeRegistry);
-            AddNodeToRegistry<Math, Vector4>(nodeRegistry);
 
             AABBNodes::Registrar::AddToRegistry<Math>(nodeRegistry);
             ColorNodes::Registrar::AddToRegistry<Math>(nodeRegistry);
@@ -98,25 +87,11 @@ namespace ScriptCanvas
         AZStd::vector<AZ::ComponentDescriptor*> Math::GetComponentDescriptors()
         {
             AZStd::vector<AZ::ComponentDescriptor*> descriptors = {
-                ScriptCanvas::Nodes::Math::AABB::CreateDescriptor(),
-                ScriptCanvas::Nodes::Math::CRC::CreateDescriptor(),
-                ScriptCanvas::Nodes::Math::Color::CreateDescriptor(),
                 ScriptCanvas::Nodes::Math::Divide::CreateDescriptor(),
-                ScriptCanvas::Nodes::Math::Matrix3x3::CreateDescriptor(),
-                ScriptCanvas::Nodes::Math::Matrix4x4::CreateDescriptor(),
                 ScriptCanvas::Nodes::Math::MathExpression::CreateDescriptor(),
                 ScriptCanvas::Nodes::Math::Multiply::CreateDescriptor(),
-                ScriptCanvas::Nodes::Math::Number::CreateDescriptor(),
-                ScriptCanvas::Nodes::Math::OBB::CreateDescriptor(),
-                ScriptCanvas::Nodes::Math::Plane::CreateDescriptor(),
-                ScriptCanvas::Nodes::Math::Random::CreateDescriptor(),
-                ScriptCanvas::Nodes::Math::Quaternion::CreateDescriptor(),
                 ScriptCanvas::Nodes::Math::Subtract::CreateDescriptor(),
                 ScriptCanvas::Nodes::Math::Sum::CreateDescriptor(),
-                ScriptCanvas::Nodes::Math::Transform::CreateDescriptor(),
-                ScriptCanvas::Nodes::Math::Vector2::CreateDescriptor(),
-                ScriptCanvas::Nodes::Math::Vector3::CreateDescriptor(),
-                ScriptCanvas::Nodes::Math::Vector4::CreateDescriptor(),
             };
 
             AABBNodes::Registrar::AddDescriptors(descriptors);

@@ -10,7 +10,6 @@
 #include <AzCore/std/typetraits/remove_cv.h>
 #include <AzCore/std/typetraits/function_traits.h>
 #include <ScriptCanvas/Core/Node.h>
-#include <ScriptCanvas/Core/PureData.h>
 #include <ScriptCanvas/Core/Datum.h>
 
 namespace ScriptCanvas

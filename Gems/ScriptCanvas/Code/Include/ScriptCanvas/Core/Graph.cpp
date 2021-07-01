@@ -23,7 +23,6 @@
 #include <ScriptCanvas/Core/Datum.h>
 #include <ScriptCanvas/Core/Graph.h>
 #include <ScriptCanvas/Core/Node.h>
-#include <ScriptCanvas/Core/PureData.h>
 #include <ScriptCanvas/Data/BehaviorContextObject.h>
 #include <ScriptCanvas/Grammar/AbstractCodeModel.h>
 
