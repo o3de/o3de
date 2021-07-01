@@ -15,8 +15,8 @@ namespace AZ
 {
     namespace AssImpSDKWrapper
     {
-        AssImpNodeWrapper::AssImpNodeWrapper(aiNode* fbxNode)
-            :SDKNode::NodeWrapper(fbxNode)
+        AssImpNodeWrapper::AssImpNodeWrapper(aiNode* sourceNode)
+            :SDKNode::NodeWrapper(sourceNode)
         {
             AZ_Assert(m_assImpNode, "Asset Importer Node cannot be null");
         }
