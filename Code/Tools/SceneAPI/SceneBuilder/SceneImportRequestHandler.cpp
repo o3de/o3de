@@ -20,88 +20,85 @@ namespace AZ
 {
     namespace SceneAPI
     {
-        namespace SceneImporter
+        void SceneImporterSettings::Reflect(AZ::ReflectContext* context)
         {
-            void SceneImporterSettings::Reflect(AZ::ReflectContext* context)
+            if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext)
             {
-                if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext)
-                {
-                    serializeContext->Class<SceneImporterSettings>()
-                                    ->Version(2)
-                                    ->Field("SupportedFileTypeExtensions", &SceneImporterSettings::m_supportedFileTypeExtensions);
-                }
+                serializeContext->Class<SceneImporterSettings>()
+                                ->Version(2)
+                                ->Field("SupportedFileTypeExtensions", &SceneImporterSettings::m_supportedFileTypeExtensions);
+            }
+        }
+
+        void SceneImportRequestHandler::Activate()
+        {
+            if (auto* settingsRegistry = AZ::SettingsRegistry::Get())
+            {
+                settingsRegistry->GetObject(m_settings, "/O3DE/SceneAPI/AssetImporter");
             }
 
-            void SceneImportRequestHandler::Activate()
+            BusConnect();
+        }
+
+        void SceneImportRequestHandler::Deactivate()
+        {
+            BusDisconnect();
+        }
+
+        void SceneImportRequestHandler::Reflect(ReflectContext* context)
+        {
+            SceneImporterSettings::Reflect(context);
+
+            SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
+            if (serializeContext)
             {
-                if (auto* settingsRegistry = AZ::SettingsRegistry::Get())
-                {
-                    settingsRegistry->GetObject(m_settings, "/O3DE/SceneAPI/AssetImporter");
-                }
-
-                BusConnect();
-            }
-
-            void SceneImportRequestHandler::Deactivate()
-            {
-                BusDisconnect();
-            }
-
-            void SceneImportRequestHandler::Reflect(ReflectContext* context)
-            {
-                SceneImporterSettings::Reflect(context);
-
-                SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
-                if (serializeContext)
-                {
-                    serializeContext->Class<SceneImportRequestHandler, AZ::Component>()->Version(1)->Attribute(
-                        AZ::Edit::Attributes::SystemComponentTags,
-                        AZStd::vector<AZ::Crc32>(
-                            {AssetBuilderSDK::ComponentTags::AssetBuilder,
-                            AssetImportRequest::GetAssetImportRequestComponentTag()}));
+                serializeContext->Class<SceneImportRequestHandler, AZ::Component>()->Version(1)->Attribute(
+                    AZ::Edit::Attributes::SystemComponentTags,
+                    AZStd::vector<AZ::Crc32>(
+                        {AssetBuilderSDK::ComponentTags::AssetBuilder,
+                        AssetImportRequest::GetAssetImportRequestComponentTag()}));
                     
-                }
             }
+        }
 
-            void SceneImportRequestHandler::GetSupportedFileExtensions(AZStd::unordered_set<AZStd::string>& extensions)
-            {
-                extensions.insert(m_settings.m_supportedFileTypeExtensions.begin(), m_settings.m_supportedFileTypeExtensions.end());
-            }
+        void SceneImportRequestHandler::GetSupportedFileExtensions(AZStd::unordered_set<AZStd::string>& extensions)
+        {
+            extensions.insert(m_settings.m_supportedFileTypeExtensions.begin(), m_settings.m_supportedFileTypeExtensions.end());
+        }
 
-            Events::LoadingResult SceneImportRequestHandler::LoadAsset(
-                Containers::Scene& scene, const AZStd::string& path, const Uuid& guid, [[maybe_unused]] RequestingApplication requester)
-            {
-                AZStd::string extension;
-                StringFunc::Path::GetExtension(path.c_str(), extension);
-                AZStd::to_lower(extension.begin(), extension.end());
+        Events::LoadingResult SceneImportRequestHandler::LoadAsset(
+            Containers::Scene& scene, const AZStd::string& path, const Uuid& guid, [[maybe_unused]] RequestingApplication requester)
+        {
+            AZStd::string extension;
+            StringFunc::Path::GetExtension(path.c_str(), extension);
+            AZStd::to_lower(extension.begin(), extension.end());
                 
-                if (!m_settings.m_supportedFileTypeExtensions.contains(extension))
-                {
-                    return Events::LoadingResult::Ignored;
-                }
-
-                scene.SetSource(path, guid);
-
-                // Push contexts
-                Events::ProcessingResultCombiner contextResult;
-                contextResult += Events::Process<Events::PreImportEventContext>(path);
-                contextResult += Events::Process<Events::ImportEventContext>(path, scene);
-                contextResult += Events::Process<Events::PostImportEventContext>(scene);
-
-                if (contextResult.GetResult() == Events::ProcessingResult::Success)
-                {
-                    return Events::LoadingResult::AssetLoaded;
-                }
-                else
-                {
-                    return Events::LoadingResult::AssetFailure;
-                }
-            }
-
-            void SceneImportRequestHandler::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
+            if (!m_settings.m_supportedFileTypeExtensions.contains(extension))
             {
-                provided.emplace_back(AZ_CRC_CE("AssetImportRequestHandler"));
+                return Events::LoadingResult::Ignored;
             }
-        } // namespace Import
+
+            scene.SetSource(path, guid);
+
+            // Push contexts
+            Events::ProcessingResultCombiner contextResult;
+            contextResult += Events::Process<Events::PreImportEventContext>(path);
+            contextResult += Events::Process<Events::ImportEventContext>(path, scene);
+            contextResult += Events::Process<Events::PostImportEventContext>(scene);
+
+            if (contextResult.GetResult() == Events::ProcessingResult::Success)
+            {
+                return Events::LoadingResult::AssetLoaded;
+            }
+            else
+            {
+                return Events::LoadingResult::AssetFailure;
+            }
+        }
+
+        void SceneImportRequestHandler::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
+        {
+            provided.emplace_back(AZ_CRC_CE("AssetImportRequestHandler"));
+        }
     } // namespace SceneAPI
 } // namespace AZ

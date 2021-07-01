@@ -7,14 +7,14 @@
 
 #pragma once
 
-#include <SceneAPI/FbxSceneBuilder/ImportContexts/AssImpImportContexts.h>
+#include <SceneAPI/SceneBuilder/ImportContexts/AssImpImportContexts.h>
 #include <SceneAPI/SceneCore/Components/LoadingComponent.h>
 
 namespace AZ
 {
     namespace SceneAPI
     {
-        namespace FbxSceneBuilder
+        namespace SceneBuilder
         {
             class AssImpBoneImporter
                 : public SceneCore::LoadingComponent
@@ -29,6 +29,6 @@ namespace AZ
                 
                 Events::ProcessingResult ImportBone(AssImpNodeEncounteredContext& context);
             };
-        } // namespace FbxSceneBuilder
+        } // namespace SceneBuilder
     } // namespace SceneAPI
 } // namespace AZ

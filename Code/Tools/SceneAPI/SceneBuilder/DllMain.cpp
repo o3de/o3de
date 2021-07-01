@@ -46,7 +46,7 @@ namespace AZ
                 {
                     // Global importer and behavior
                     g_componentDescriptors.push_back(SceneBuilder::SceneImporter::CreateDescriptor());
-                    g_componentDescriptors.push_back(SceneImporter::SceneImportRequestHandler::CreateDescriptor());
+                    g_componentDescriptors.push_back(SceneImportRequestHandler::CreateDescriptor());
 
                     // Node and attribute importers
                     g_componentDescriptors.push_back(AssImpBitangentStreamImporter::CreateDescriptor());
