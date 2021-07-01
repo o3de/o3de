@@ -38,6 +38,7 @@
 
 #include <Atom/Features/PBR/LightingUtils.azsli>
 #include <Atom/Features/PBR/Microfacet/Brdf.azsli>
+#include <Atom/Features/PBR/BackLighting.azsli>
 //------------------------------------------------------------------------------
 #include <Atom/Features/PBR/Decals.azsli>
 //==============================================================================
@@ -62,6 +63,21 @@ float3 GetSpecularLighting(Surface surface, LightingData lightingData, const flo
     float3 specular = SpecularGGX(lightingData.dirToCamera, dirToLight, surface.normal, surface.specularF0, lightingData.NdotV, surface.roughnessA2, lightingData.multiScatterCompensation);
     specular *= lightIntensity;
     return specular;
+}
+
+float3 GetHairBackLighting(Surface surface, LightingData lightingData, float3 lightIntensity, float3 dirToLight, float shadowRatio)
+{
+    float3 result = float3(0.0, 0.0, 0.0);
+    float thickness = 0.0; 
+    float4 transmissionParams = surface.transmission.transmissionParams;
+
+    // Thin object mode, using thin-film assumption proposed by Jimenez J. et al, 2010, "Real-Time Realistic Skin Translucency"
+    // http://www.iryoku.com/translucency/downloads/Real-Time-Realistic-Skin-Translucency.pdf
+
+    result = shadowRatio ? float3(0.0, 0.0, 0.0) : TransmissionKernel(surface.transmission.thickness * transmissionParams.w, rcp(transmissionParams.xyz)) * 
+        saturate(dot(-surface.normal, dirToLight)) * lightIntensity * shadowRatio;
+
+    return result;
 }
 
 void UpdateLightingParameters(
@@ -205,6 +221,9 @@ void ApplySimpleSpotLight(ViewSrg::SimpleSpotLight light, Surface surface, inout
 
         SetNormal(surface.clearCoat.normal, dirToLight, surface, lightingData);
 
+        // Tranmission contribution
+        lightingData.translucentBackLighting += GetHairBackLighting(surface, lightingData, lightIntensity, dirToLight, 0.0);
+
         // Diffuse contribution
         lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, dirToLight);
 
@@ -248,7 +267,7 @@ void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingD
         lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, dirToLight);
 
         // Tranmission contribution
-        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, lightIntensity, dirToLight, 0.0);
+        lightingData.translucentBackLighting += GetHairBackLighting(surface, lightingData, lightIntensity, dirToLight, 0.0);
 
         // Adjust the light direcion for specular based on bulb size
 
@@ -338,7 +357,7 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
 
         lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight) * currentLitRatio;
         lightingData.specularLighting += GetSpecularLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight) * currentLitRatio;
-        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight, currentBackShadowRatio);
+        lightingData.translucentBackLighting += GetHairBackLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight, currentBackShadowRatio);
     }
 }
 
