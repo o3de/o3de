@@ -192,11 +192,7 @@ namespace AWSMetrics
 
     void AWSMetricsSystemComponent::Init()
     {
-        AZStd::string priorAlias = AZ::IO::FileIOBase::GetInstance()->GetAlias("@devroot@");
-        AZStd::string configFilePath = priorAlias + "\\Gems\\AWSMetrics\\Code\\" + AZ::SettingsRegistryInterface::RegistryFolder + "\\awsMetricsClientConfiguration.setreg";
-        AzFramework::StringFunc::Path::Normalize(configFilePath);
-
-        m_metricsManager->Init(configFilePath);
+        m_metricsManager->Init();
     }
 
     void AWSMetricsSystemComponent::Activate()

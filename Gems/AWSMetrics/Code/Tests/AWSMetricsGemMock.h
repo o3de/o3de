@@ -52,10 +52,14 @@ namespace AWSMetrics
 
             m_settingsRegistry->SetContext(m_serializeContext.get());
             m_settingsRegistry->SetContext(m_registrationContext.get());
+
+            AZ::SettingsRegistry::Register(m_settingsRegistry.get());
         }
 
         void TearDown() override
         {
+            AZ::SettingsRegistry::Unregister(m_settingsRegistry.get());
+
             m_registrationContext->EnableRemoveReflection();
             AZ::JsonSystemComponent::Reflect(m_registrationContext.get());
             m_registrationContext->DisableRemoveReflection();
@@ -130,7 +134,7 @@ namespace AWSMetrics
 
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
         AZStd::unique_ptr<AZ::JsonRegistrationContext> m_registrationContext;
-        AZStd::shared_ptr<AZ::SettingsRegistryImpl> m_settingsRegistry;
+        AZStd::unique_ptr<AZ::SettingsRegistryImpl> m_settingsRegistry;
 
     private:
         AZStd::string GetTestFolderPath()

@@ -17,12 +17,16 @@ namespace AWSMetrics
     class ClientConfiguration
     {
     public:
+        static constexpr const char AWSMetricsMaxQueueSizeInMbKey[] = "/Gems/AWSMetrics/MaxQueueSizeInMb";
+        static constexpr const char AWSMetricsQueueFlushPeriodInSecondsKey[] = "/Gems/AWSMetrics/QueueFlushPeriodInSeconds";
+        static constexpr const char AWSMetricsOfflineRecordingEnabledKey[] = "/Gems/AWSMetrics/OfflineRecording";
+        static constexpr const char AWSMetricsMaxNumRetriesKey[] = "/Gems/AWSMetrics/MaxNumRetries";
+        
         ClientConfiguration();
 
-        //! Reset the client settings based on the provided configuration file.
-        //! @param settingsRegistryPath Full path to the configuration file.
+        //! Initialize the client settings based on the global setting registry.
         //! @return whether the operation is successful
-        bool ResetClientConfiguration(const AZStd::string& settingsRegistryPath);
+        bool InitClientConfiguration();
 
         //! Retrieve the max queue size setting.
         //! @return Max queue size in bytes.

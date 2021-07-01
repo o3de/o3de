@@ -30,9 +30,8 @@ namespace AWSClientAuth
     constexpr char CognitoRefreshTokenAuthParamKey[] = "REFRESH_TOKEN";
     constexpr char CognitoSmsMfaCodeKey[] = "SMS_MFA_CODE";
 
-    bool AWSCognitoAuthenticationProvider::Initialize(AZStd::weak_ptr<AZ::SettingsRegistryInterface> settingsRegistry)
+    bool AWSCognitoAuthenticationProvider::Initialize()
     {
-        AZ_UNUSED(settingsRegistry);
         AWSCore::AWSResourceMappingRequestBus::BroadcastResult(
             m_cognitoAppClientId, &AWSCore::AWSResourceMappingRequests::GetResourceNameId, CognitoAppClientIdResourceMappingKey);
         AZ_Warning("AWSCognitoAuthenticationProvider", !m_cognitoAppClientId.empty(), "Missing Cognito App Client Id from resource mappings. Calls to Cognito will fail.");

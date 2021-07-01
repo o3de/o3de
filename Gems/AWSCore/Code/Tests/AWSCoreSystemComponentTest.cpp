@@ -67,9 +67,12 @@ protected:
         m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
         m_serializeContext->CreateEditContext();
         m_behaviorContext = AZStd::make_unique<AZ::BehaviorContext>();
+
         m_componentDescriptor.reset(AWSCoreSystemComponent::CreateDescriptor());
         m_componentDescriptor->Reflect(m_serializeContext.get());
         m_componentDescriptor->Reflect(m_behaviorContext.get());
+
+        m_settingsRegistry->SetContext(m_serializeContext.get());
 
         m_entity = aznew AZ::Entity();
         m_coreSystemsComponent.reset(m_entity->CreateComponent<AWSCoreSystemComponent>());

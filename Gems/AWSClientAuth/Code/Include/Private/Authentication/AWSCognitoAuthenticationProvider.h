@@ -22,7 +22,7 @@ namespace AWSClientAuth
         virtual ~AWSCognitoAuthenticationProvider() = default;
 
        // AuthenticationProviderInterface overrides
-       bool Initialize(AZStd::weak_ptr<AZ::SettingsRegistryInterface> settingsRegistry) override;
+       bool Initialize() override;
        void PasswordGrantSingleFactorSignInAsync(const AZStd::string& username, const AZStd::string& password) override;
        void PasswordGrantMultiFactorSignInAsync(const AZStd::string& username, const AZStd::string& password) override;
        void PasswordGrantMultiFactorConfirmSignInAsync(const AZStd::string& username, const AZStd::string& confirmationCode) override;

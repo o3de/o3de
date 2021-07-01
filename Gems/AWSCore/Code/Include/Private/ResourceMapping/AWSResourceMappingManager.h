@@ -72,7 +72,7 @@ namespace AWSCore
         AWSResourceMappingManager();
         ~AWSResourceMappingManager() = default;
 
-        void ActivateManager();
+        void ActivateManager(bool reloadConfigFileName = true);
         void DeactivateManager();
 
         // AWSResourceMappingRequestBus interface implementation

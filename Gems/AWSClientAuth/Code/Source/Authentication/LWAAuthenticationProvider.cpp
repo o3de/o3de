@@ -29,9 +29,16 @@ namespace AWSClientAuth
         m_settings.reset();
     }
 
-    bool LWAAuthenticationProvider::Initialize(AZStd::weak_ptr<AZ::SettingsRegistryInterface> settingsRegistry)
+    bool LWAAuthenticationProvider::Initialize()
     {
-        if (!settingsRegistry.lock()->GetObject(m_settings.get(), azrtti_typeid(m_settings.get()), LwaSettingsPath))
+        AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get();
+        if (!settingsRegistry)
+        {
+            AZ_Warning("AWSCognitoAuthenticationProvider", false, "Failed to load the setting registry");
+            return false;
+        }
+
+        if (!settingsRegistry->GetObject(m_settings.get(), azrtti_typeid(m_settings.get()), LwaSettingsPath))
         {
             AZ_Warning("AWSCognitoAuthenticationProvider", false, "Failed to get login with Amazon settings object for path %s", LwaSettingsPath);
             return false;
