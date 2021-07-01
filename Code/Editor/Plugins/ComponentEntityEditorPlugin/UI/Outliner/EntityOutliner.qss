@@ -93,37 +93,37 @@ OutlinerCheckBox#VisibilityMixed::indicator:checked
 OutlinerCheckBox#Visibility::indicator:checked
 , OutlinerCheckBox#VisibilityMixed::indicator:checked
 {
-    image: url(:/visibility_default.svg);
+    image: url(:/Outliner/visibility_default.svg);
 }
 
 OutlinerCheckBox#Visibility::indicator:unchecked
 , OutlinerCheckBox#VisibilityMixed::indicator:unchecked
 {
-    image: url(:/visibility_on.svg);
+    image: url(:/Outliner/visibility_on.svg);
 }
 
 OutlinerCheckBox#VisibilityLayerOverride::indicator:checked
 {
-    image: url(:/visibility_default_transparent.svg);
+    image: url(:/Outliner/visibility_default_transparent.svg);
 }
 
 OutlinerCheckBox#VisibilityLayerOverride::indicator:unchecked
 {
-    image: url(:/visibility_on_transparent.svg);
+    image: url(:/Outliner/visibility_on_transparent.svg);
 }
 
 OutlinerCheckBox#VisibilityHover::indicator:checked
 , OutlinerCheckBox#VisibilityMixedHover::indicator:checked
 , OutlinerCheckBox#VisibilityLayerOverrideHover::indicator:checked
 {
-    image: url(:/visibility_default_hover.svg);
+    image: url(:/Outliner/visibility_default_hover.svg);
 }
 
 OutlinerCheckBox#VisibilityHover::indicator:unchecked
 , OutlinerCheckBox#VisibilityMixedHover::indicator:unchecked
 , OutlinerCheckBox#VisibilityLayerOverrideHover::indicator:unchecked
 {
-    image: url(:/visibility_on_hover.svg);
+    image: url(:/Outliner/visibility_on_hover.svg);
 }
 
 
@@ -132,35 +132,35 @@ OutlinerCheckBox#VisibilityHover::indicator:unchecked
 OutlinerCheckBox#Lock::indicator:checked
 , OutlinerCheckBox#LockMixed::indicator:checked
 {
-    image: url(:/lock_on.svg);
+    image: url(:/Outliner/lock_on.svg);
 }
 
 OutlinerCheckBox#Lock::indicator:unchecked
 , OutlinerCheckBox#LockMixed::indicator:unchecked
 {
-    image: url(:/lock_default.svg);
+    image: url(:/Outliner/lock_default.svg);
 }
 
 OutlinerCheckBox#LockLayerOverride::indicator:checked
 {
-    image: url(:/lock_on_transparent.svg);
+    image: url(:/Outliner/lock_on_transparent.svg);
 }
 
 OutlinerCheckBox#LockLayerOverride::indicator:unchecked
 {
-    image: url(:/lock_default_transparent.svg);
+    image: url(:/Outliner/lock_default_transparent.svg);
 }
 
 OutlinerCheckBox#LockHover::indicator:checked
 , OutlinerCheckBox#LockMixedHover::indicator:checked
 , OutlinerCheckBox#LockLayerOverrideHover::indicator:checked
 {
-    image: url(:/lock_on_hover.svg);
+    image: url(:/Outliner/lock_on_hover.svg);
 }
 
 OutlinerCheckBox#LockHover::indicator:unchecked
 , OutlinerCheckBox#LockMixedHover::indicator:unchecked
 , OutlinerCheckBox#LockLayerOverrideHover::indicator:unchecked
 {
-    image: url(:/lock_default_hover.svg);
+    image: url(:/Outliner/lock_default_hover.svg);
 }
