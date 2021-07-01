@@ -30,29 +30,6 @@
                     "TYPE": "profile_vs2019"
                 }
             ]
-        },
-        "atom":{
-            "PACKAGE_TARGETS":[
-                {
-                    "FILE_LIST": "atom.json",
-                    "FILE_LIST_TYPE": "Windows",
-                    "PACKAGE_NAME": "${PACKAGE_NAME_PATTERN}-windows-atom-${BUILD_NUMBER}.zip"
-                },
-                {
-                    "FILE_LIST": "symbols.json",
-                    "FILE_LIST_TYPE": "All",
-                    "PACKAGE_NAME": "${PACKAGE_NAME_PATTERN}-windows-atom-symbols-${BUILD_NUMBER}.zip"
-                }
-            ],
-            "BOOTSTRAP_CFG_GAME_FOLDER":"AtomSampleViewer;AtomTest",
-            "SKIP_BUILD": 1,
-            "BUILD_TARGETS":[
-                {
-                    "BUILD_CONFIG_FILENAME": "build_config.json",
-                    "PLATFORM": "Windows",
-                    "TYPE": "profile_vs2019_atom"
-                }
-            ]
         }
     }
 }

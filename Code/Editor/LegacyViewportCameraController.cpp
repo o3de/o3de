@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -26,6 +26,12 @@ namespace SandboxEditor
 LegacyViewportCameraControllerInstance::LegacyViewportCameraControllerInstance(AzFramework::ViewportId viewportId, LegacyViewportCameraController* controller)
     : AzFramework::MultiViewportControllerInstanceInterface<LegacyViewportCameraController>(viewportId, controller)
 {
+    OrbitCameraControlsBus::Handler::BusConnect(viewportId);
+}
+
+LegacyViewportCameraControllerInstance::~LegacyViewportCameraControllerInstance()
+{
+    OrbitCameraControlsBus::Handler::BusDisconnect();
 }
 
 bool LegacyViewportCameraControllerInstance::JustAltHeld() const
@@ -58,6 +64,12 @@ bool LegacyViewportCameraControllerInstance::InvertPan() const
 {
     return JustAltHeld();
 }
+
+void LegacyViewportCameraControllerInstance::SetOrbitDistance(float orbitDistance)
+{
+    m_orbitDistance = orbitDistance;
+}
+
 
 AZ::RPI::ViewportContextPtr LegacyViewportCameraControllerInstance::GetViewportContext()
 {

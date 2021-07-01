@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -59,7 +59,7 @@ namespace PhysX
             //! A struct to store the materials of the mesh nodes selected in a mesh group.
             struct AssetMaterialsData
             {
-                //! Material names coming from FBX.
+                //! Material names coming from the source scene file.
                 AZStd::vector<AZStd::string> m_fbxMaterialNames;
 
                 //! Look-up table for fbxMaterialNames.

@@ -14,7 +14,7 @@
 
         <Variable Name="InstallFolder"
             Type="string"
-            Value="[ProgramFiles64Folder]$(var.CPACK_PACKAGE_INSTALL_DIRECTORY)"
+            Value="[WindowsVolume]$(var.CPACK_PACKAGE_INSTALL_DIRECTORY)"
             bal:Overridable="yes"/>
 
         <!-- special variable name that auto maps to a WixStandardBootstrapperApplication attribute of the same name -->

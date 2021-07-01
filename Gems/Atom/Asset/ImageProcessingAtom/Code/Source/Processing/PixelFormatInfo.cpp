@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -202,7 +202,7 @@ namespace ImageProcessingAtom
         // Data in a Float format is floating point data.
         InitPixelFormat(ePixelFormat_R9G9B9E5, PixelFormatInfo(32, 3, false, "0", 1, 1, 1, 1, 32, false, DXGI_FORMAT_R9G9B9E5_SHAREDEXP, FOURCC_DX10, ESampleType::eSampleType_Compressed, "R9G9B9E5", "32-bit RGB pixel format with shared exponent", false, true));
         InitPixelFormat(ePixelFormat_R32G32B32A32F, PixelFormatInfo(128, 4, true, "23", 1, 1, 1, 1, 128, false, DXGI_FORMAT_R32G32B32A32_FLOAT, FOURCC_DX10, ESampleType::eSampleType_Float, "R32G32B32A32F", "four float channels", false, false));
-        InitPixelFormat(ePixelFormat_R32G32F, PixelFormatInfo(64, 2, false, "0", 1, 1, 1, 1, 64, false, DXGI_FORMAT_R32G32_FLOAT, FOURCC_DX10, ESampleType::eSampleType_Float, "R32G32F", "two float channels", false, false)); // FIXME: This should be eTF_R32G32F, but CryTek did not add that enum to ITexture.h yet
+        InitPixelFormat(ePixelFormat_R32G32F, PixelFormatInfo(64, 2, false, "0", 1, 1, 1, 1, 64, false, DXGI_FORMAT_R32G32_FLOAT, FOURCC_DX10, ESampleType::eSampleType_Float, "R32G32F", "two float channels", false, false)); // FIXME: This should be eTF_R32G32F, but that enum is not in ITexture.h yet
         InitPixelFormat(ePixelFormat_R32F, PixelFormatInfo(32, 1, false, "0", 1, 1, 1, 1, 32, false, DXGI_FORMAT_R32_FLOAT, FOURCC_DX10, ESampleType::eSampleType_Float, "R32F", "one float channel", false, false));
         InitPixelFormat(ePixelFormat_R16G16B16A16F, PixelFormatInfo(64, 4, true, "10", 1, 1, 1, 1, 64, false, DXGI_FORMAT_R16G16B16A16_FLOAT, FOURCC_DX10, ESampleType::eSampleType_Half, "R16G16B16A16F", "four half channels", false, false));
         InitPixelFormat(ePixelFormat_R16G16F, PixelFormatInfo(32, 2, false, "0", 1, 1, 1, 1, 32, false, DXGI_FORMAT_R16G16_FLOAT, FOURCC_DX10, ESampleType::eSampleType_Half, "R16G16F", "two half channel", false, false));

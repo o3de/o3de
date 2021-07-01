@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -25,6 +25,7 @@
 
 #include <QSysInfo>
 #include <QMessageBox>
+#include <QCheckBox>
 
 
 namespace AWSCore
@@ -170,7 +171,7 @@ namespace AWSCore
         switch (ret)
         {
         case QMessageBox::Save:
-            m_settingsRegistry->Set(AWSAttributionEnabledKey, msgBox->checkBox());
+            m_settingsRegistry->Set(AWSAttributionEnabledKey, msgBox->checkBox()->checkState() == Qt::Checked);
             break;
         case QMessageBox::Cancel:
         default:

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -61,7 +61,6 @@ namespace AZ
                 //If view format is invalid use the base texture's format
                 if(textureViewFormat == MTLPixelFormatInvalid)
                 {
-                    AZ_Assert(false,"View format is invalid");
                     textureViewFormat = textureFormat;
                 }
 
