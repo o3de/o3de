@@ -8,7 +8,25 @@
 # Do not overcomplicate searching for the 3rdParty path, if it is not easy to find,
 # the user should define it.
 
-set(LY_3RDPARTY_PATH "" CACHE PATH "Path to the 3rdParty folder")
+#! get_default_third_party_folder: Stores the default 3rdParty directory into the supplied output variable
+#
+# \arg:output_third_party_path name of variable to set the default project directory into
+# It defaults to the ~/.o3de/3rdParty directory
+function(get_default_third_party_folder output_third_party_path)
+    file(TO_CMAKE_PATH "$ENV{USERPROFILE}" home_directory) # Windows
+    if(NOT EXISTS ${home_directory})
+        file(TO_CMAKE_PATH "$ENV{HOME}" home_directory) # Unix
+        if (NOT EXISTS ${home_directory})
+            return()
+        endif()
+    endif()
+
+    set(${output_third_party_path} ${home_directory}/.o3de/3rdParty PARENT_SCOPE)
+endfunction()
+
+# Examine the o3de manifest file for the list of restricted directories
+get_default_third_party_folder(o3de_default_third_party_path)
+set(LY_3RDPARTY_PATH "${o3de_default_third_party_path}" CACHE PATH "Path to the 3rdParty folder")
 
 if(LY_3RDPARTY_PATH)
     file(TO_CMAKE_PATH ${LY_3RDPARTY_PATH} LY_3RDPARTY_PATH)
