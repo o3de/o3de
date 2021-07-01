@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -1027,7 +1027,7 @@ struct ISystem
     virtual void SetUIDrawEnabled(bool enabled) = 0;
 
     // Summary:
-    //   Get the index of the currently running Crytek application. (0 = first instance, 1 = second instance, etc)
+    //   Get the index of the currently running O3DE application. (0 = first instance, 1 = second instance, etc)
     virtual int GetApplicationInstance() = 0;
 
     // Summary:

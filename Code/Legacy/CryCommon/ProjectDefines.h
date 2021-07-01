@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -129,7 +129,7 @@ typedef uint32 vtx_idx;
 
 
 
-//This feature allows automatic crash submission to JIRA, but does not work outside of CryTek
+//This feature allows automatic crash submission to JIRA, but does not work outside of O3DE
 //Note: This #define will be commented out during code export
 #define ENABLE_CRASH_HANDLER
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -92,8 +92,7 @@ namespace O3DE::ProjectManager
 
             QLabel* introLabel = new QLabel(this);
             introLabel->setObjectName("introLabel");
-            introLabel->setText(tr("Welcome to O3DE! Start something new by creating a project. Not sure what to create? \nExplore what's "
-                                   "available by downloading our sample project."));
+            introLabel->setText(tr("Welcome to O3DE! Start something new by creating a project."));
             layout->addWidget(introLabel);
 
             QHBoxLayout* buttonLayout = new QHBoxLayout();

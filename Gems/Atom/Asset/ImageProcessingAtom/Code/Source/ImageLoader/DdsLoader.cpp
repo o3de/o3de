@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -414,7 +414,7 @@ namespace ImageProcessingAtom
 
             AZ::u32 marker = 0;
             fileLoadStream.Read(4, &marker);
-            if (marker == FOURCC_CExt) // marker for the start of Crytek Extended data
+            if (marker == FOURCC_CExt) // marker for the start of O3DE Extended data
             {
                 fileLoadStream.Read(4, &marker);
                 if (FOURCC_AttC == marker) // Attached Channel chunk
@@ -426,7 +426,7 @@ namespace ImageProcessingAtom
                     fileLoadStream.Read(4, &marker);
                 }
 
-                if (FOURCC_CEnd == marker) // marker for the end of Crytek Extended data
+                if (FOURCC_CEnd == marker) // marker for the end of O3DE Extended data
                 {
                     fileLoadStream.Read(4, &marker);
                 }

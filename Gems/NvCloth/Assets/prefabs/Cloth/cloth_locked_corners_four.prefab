@@ -3,63 +3,83 @@
         "Id": "ContainerEntity",
         "Name": "cloth_locked_corners_four",
         "Components": {
-            "Component_[13888132130168041992]": {
-                "$type": "EditorEntityIconComponent",
-                "Id": 13888132130168041992
-            },
-            "Component_[14031678566419671406]": {
-                "$type": "EditorVisibilityComponent",
-                "Id": 14031678566419671406
-            },
-            "Component_[15480122384719724795]": {
+            "Component_[10182366347512475253]": {
                 "$type": "EditorPrefabComponent",
-                "Id": 15480122384719724795
+                "Id": 10182366347512475253
             },
-            "Component_[15688442711950741155]": {
-                "$type": "SelectionComponent",
-                "Id": 15688442711950741155
-            },
-            "Component_[17193472612212292109]": {
+            "Component_[12917798267488243668]": {
                 "$type": "EditorPendingCompositionComponent",
-                "Id": 17193472612212292109
+                "Id": 12917798267488243668
             },
-            "Component_[17650154089342371227]": {
+            "Component_[3261249813163778338]": {
                 "$type": "EditorOnlyEntityComponent",
-                "Id": 17650154089342371227
+                "Id": 3261249813163778338
             },
-            "Component_[2597916765647847638]": {
-                "$type": "EditorInspectorComponent",
-                "Id": 2597916765647847638
-            },
-            "Component_[3170182215265959833]": {
-                "$type": "EditorLockComponent",
-                "Id": 3170182215265959833
-            },
-            "Component_[4868760161921280191]": {
+            "Component_[3837204912784440039]": {
                 "$type": "EditorDisabledCompositionComponent",
-                "Id": 4868760161921280191
+                "Id": 3837204912784440039
             },
-            "Component_[5068517972887920186]": {
+            "Component_[4272963378099646759]": {
                 "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
-                "Id": 5068517972887920186,
+                "Id": 4272963378099646759,
                 "Parent Entity": "",
                 "Cached World Transform Parent": ""
             },
-            "Component_[676524230089543870]": {
+            "Component_[4848458548047175816]": {
+                "$type": "EditorVisibilityComponent",
+                "Id": 4848458548047175816
+            },
+            "Component_[5787060997243919943]": {
+                "$type": "EditorInspectorComponent",
+                "Id": 5787060997243919943
+            },
+            "Component_[7804170251266531779]": {
+                "$type": "EditorLockComponent",
+                "Id": 7804170251266531779
+            },
+            "Component_[7874177159288365422]": {
                 "$type": "EditorEntitySortComponent",
-                "Id": 676524230089543870
+                "Id": 7874177159288365422
+            },
+            "Component_[8018146290632383969]": {
+                "$type": "EditorEntityIconComponent",
+                "Id": 8018146290632383969
+            },
+            "Component_[8452360690590857075]": {
+                "$type": "SelectionComponent",
+                "Id": 8452360690590857075
             }
-        },
-        "IsDependencyReady": true
+        }
     },
     "Entities": {
-        "Entity_[18154419708790]": {
-            "Id": "Entity_[18154419708790]",
+        "Entity_[303417108773332]": {
+            "Id": "Entity_[303417108773332]",
             "Name": "cloth_locked_corners_four",
             "Components": {
-                "Component_[10365722294506366933]": {
+                "Component_[10032168678611459233]": {
+                    "$type": "AZ::Render::EditorMeshComponent",
+                    "Id": 10032168678611459233,
+                    "Controller": {
+                        "Configuration": {
+                            "ModelAsset": {
+                                "assetId": {
+                                    "guid": "{89C91D92-7B4E-5EB5-945D-0053111859EE}",
+                                    "subId": 279249006
+                                },
+                                "assetHint": "objects/cloth/environment/cloth_locked_corners_four.azmodel"
+                            }
+                        }
+                    }
+                },
+                "Component_[12766570162661899127]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 12766570162661899127,
+                    "Parent Entity": "ContainerEntity",
+                    "Cached World Transform Parent": "ContainerEntity"
+                },
+                "Component_[12950486357466178058]": {
                     "$type": "EditorMaterialComponent",
-                    "Id": 10365722294506366933,
+                    "Id": 12950486357466178058,
                     "Controller": {
                         "Configuration": {
                             "materials": [
@@ -112,110 +132,91 @@
                         ]
                     ]
                 },
-                "Component_[10859562122285472274]": {
-                    "$type": "EditorDisabledCompositionComponent",
-                    "Id": 10859562122285472274
-                },
-                "Component_[14622083210324204992]": {
-                    "$type": "EditorLockComponent",
-                    "Id": 14622083210324204992
-                },
-                "Component_[15220860273045136531]": {
-                    "$type": "AZ::Render::EditorMeshComponent",
-                    "Id": 15220860273045136531,
-                    "Controller": {
-                        "Configuration": {
-                            "ModelAsset": {
-                                "assetId": {
-                                    "guid": "{89C91D92-7B4E-5EB5-945D-0053111859EE}",
-                                    "subId": 279249006
-                                },
-                                "assetHint": "objects/cloth/environment/cloth_locked_corners_four.azmodel"
-                            }
-                        }
-                    }
-                },
-                "Component_[16425888662708329747]": {
-                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
-                    "Id": 16425888662708329747,
-                    "Parent Entity": "ContainerEntity",
-                    "Cached World Transform": {
-                        "Translation": [
-                            3.0004701614379885,
-                            -4.337822437286377,
-                            3.1882824897766115
-                        ]
-                    },
-                    "Cached World Transform Parent": "ContainerEntity",
-                    "Transform Data": {
-                        "Translate": [
-                            8.040351867675782,
-                            -4.368268966674805,
-                            0.0
-                        ]
-                    }
-                },
-                "Component_[4438658514025011411]": {
+                "Component_[13484816898680823471]": {
                     "$type": "EditorEntitySortComponent",
-                    "Id": 4438658514025011411
+                    "Id": 13484816898680823471
                 },
-                "Component_[5913235105006124431]": {
-                    "$type": "EditorPendingCompositionComponent",
-                    "Id": 5913235105006124431
-                },
-                "Component_[77600265179991959]": {
-                    "$type": "EditorClothComponent",
-                    "Id": 77600265179991959,
-                    "Configuration": {
-                        "Mesh Node": "pPlane1",
-                        "Air Drag Coefficient": 0.5,
-                        "Air Lift Coefficient": 0.5,
-                        "Tether Constraint Stiffness": 0.10000000149011612,
-                        "Solver Frequency": 0.10000000149011612,
-                        "Update Normals of Static Particles": true,
-                        "Wind Velocity": [
-                            0.0,
-                            19.0,
-                            0.0
-                        ]
-                    }
-                },
-                "Component_[7823285819593032424]": {
-                    "$type": "SelectionComponent",
-                    "Id": 7823285819593032424
-                },
-                "Component_[7850007788027860583]": {
-                    "$type": "EditorEntityIconComponent",
-                    "Id": 7850007788027860583
-                },
-                "Component_[8322654623609026271]": {
-                    "$type": "EditorOnlyEntityComponent",
-                    "Id": 8322654623609026271
-                },
-                "Component_[884075377124407467]": {
+                "Component_[1382754615503170687]": {
                     "$type": "EditorInspectorComponent",
-                    "Id": 884075377124407467,
+                    "Id": 1382754615503170687,
                     "ComponentOrderEntryArray": [
                         {
-                            "ComponentId": 16425888662708329747
+                            "ComponentId": 12766570162661899127
                         },
                         {
-                            "ComponentId": 15220860273045136531,
+                            "ComponentId": 15114198178471353754,
                             "SortIndex": 1
                         },
                         {
-                            "ComponentId": 10365722294506366933,
+                            "ComponentId": 10032168678611459233,
                             "SortIndex": 2
                         },
                         {
-                            "ComponentId": 77600265179991959,
+                            "ComponentId": 12950486357466178058,
                             "SortIndex": 3
                         }
                     ]
                 },
-                "Component_[9249713210701101638]": {
+                "Component_[14681412843852848812]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 14681412843852848812
+                },
+                "Component_[15114198178471353754]": {
+                    "$type": "EditorClothComponent",
+                    "Id": 15114198178471353754,
+                    "Configuration": {
+                        "Mesh Node": "pPlane1",
+                        "Stiffness Frequency": 1.0,
+                        "Damping": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "Linear Drag": [
+                            0.10000000149011612,
+                            0.10000000149011612,
+                            0.10000000149011612
+                        ],
+                        "Angular Drag": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "Wind Velocity": [
+                            30.0,
+                            0.0,
+                            0.0
+                        ],
+                        "Air Drag Coefficient": 0.5,
+                        "Air Lift Coefficient": 0.5,
+                        "Tether Constraint Stiffness": 0.10000000149011612,
+                        "Solver Frequency": 0.10000000149011612,
+                        "Update Normals of Static Particles": true
+                    }
+                },
+                "Component_[16053566237817170938]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 16053566237817170938
+                },
+                "Component_[4429394044165993194]": {
+                    "$type": "EditorLockComponent",
+                    "Id": 4429394044165993194
+                },
+                "Component_[5458686923744863438]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 5458686923744863438
+                },
+                "Component_[7652255413353256955]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 7652255413353256955
+                },
+                "Component_[8417657922837077982]": {
                     "$type": "EditorVisibilityComponent",
-                    "Id": 9249713210701101638
+                    "Id": 8417657922837077982
+                },
+                "Component_[944311658362107535]": {
+                    "$type": "SelectionComponent",
+                    "Id": 944311658362107535
                 }
             },
             "IsDependencyReady": true

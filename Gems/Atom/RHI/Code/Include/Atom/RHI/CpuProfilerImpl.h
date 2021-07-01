@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -10,9 +10,12 @@
 #include <Atom/RHI.Reflect/Base.h>
 
 #include <AzCore/Memory/OSAllocator.h>
+#include <AzCore/std/containers/map.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/shared_mutex.h>
 #include <AzCore/std/smart_ptr/intrusive_refcount.h>
+
+#include <Atom/RHI/FrameEventBus.h>
 
 namespace AZ
 {
@@ -70,6 +73,9 @@ namespace AZ
 
             // When the thread is terminated, it will flag itself for deletion
             AZStd::atomic_bool m_deleteFlag = false;
+
+            // Keep track of the regions that have hit the size limit so we don't have to lock to check
+            AZStd::map<AZStd::string, bool> m_hitSizeLimitMap;
         };
 
         //! CpuProfiler will keep track of the registered threads, and
@@ -77,6 +83,7 @@ namespace AZ
         //! cached regions, which are stored on a per thread frequency.
         class CpuProfilerImpl final
             : public CpuProfiler
+            , public FrameEventBus::Handler
         {
             friend class CpuTimingLocalStorage;
 
@@ -92,10 +99,12 @@ namespace AZ
             //! Unregisters the CpuProfilerImpl instance from the interface 
             void Shutdown();
 
+            void OnFrameBegin();
+
             //! CpuProfiler overrides...
             void BeginTimeRegion(TimeRegion& timeRegion) final;
             void EndTimeRegion() final;
-            void FlushTimeRegionMap(TimeRegionMap& timeRegionMap) final;
+            const TimeRegionMap& GetTimeRegionMap() const final;
             void SetProfilerEnabled(bool enabled) final;
             bool IsProfilerEnabled() const final;
 
@@ -104,8 +113,7 @@ namespace AZ
             void RegisterThreadStorage();
 
             // ThreadId -> ThreadTimeRegionMap
-            // When the user requests the cached time regions from the system, it will use this map as an intermediate
-            // storage point to flush each thread's cached regions into this map.
+            // On the start of each frame, this map will be updated with the last frame's profiling data. 
             TimeRegionMap m_timeRegionMap;
 
             // Set of registered threads when created
