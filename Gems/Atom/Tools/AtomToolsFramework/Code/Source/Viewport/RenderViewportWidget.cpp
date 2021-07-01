@@ -38,21 +38,6 @@ namespace AtomToolsFramework
         setUpdatesEnabled(false);
         setFocusPolicy(Qt::FocusPolicy::WheelFocus);
         setMouseTracking(true);
-
-        // Forward input events to our controller list.
-        QObject::connect(&m_inputChannelMapper, &AzToolsFramework::QtEventToAzInputMapper::InputChannelUpdated, this,
-            [this](const AzFramework::InputChannel* inputChannel, QEvent* event)
-        {
-            AzFramework::NativeWindowHandle windowId = reinterpret_cast<AzFramework::NativeWindowHandle>(winId());
-            if (m_controllerList->HandleInputChannelEvent({GetId(), windowId, *inputChannel}))
-            {
-                // If the controller handled the input event, mark the event as accepted so it doesn't continue to propagate.
-                if (event)
-                {
-                    event->setAccepted(true);
-                }
-            }
-        });
     }
 
     bool RenderViewportWidget::InitializeViewportContext(AzFramework::ViewportId id)
@@ -95,6 +80,23 @@ namespace AtomToolsFramework
         AzFramework::InputChannelEventListener::Connect();
         AZ::TickBus::Handler::BusConnect();
         AzFramework::WindowRequestBus::Handler::BusConnect(params.windowHandle);
+
+        m_inputChannelMapper = new AzToolsFramework::QtEventToAzInputMapper(this, id);
+
+        // Forward input events to our controller list.
+        QObject::connect(m_inputChannelMapper, &AzToolsFramework::QtEventToAzInputMapper::InputChannelUpdated, this,
+            [this](const AzFramework::InputChannel* inputChannel, QEvent* event)
+        {
+            AzFramework::NativeWindowHandle windowId = reinterpret_cast<AzFramework::NativeWindowHandle>(winId());
+            if (m_controllerList->HandleInputChannelEvent({GetId(), windowId, *inputChannel}))
+            {
+                // If the controller handled the input event, mark the event as accepted so it doesn't continue to propagate.
+                if (event)
+                {
+                    event->setAccepted(true);
+                }
+            }
+        });
 
         return true;
     }
@@ -172,7 +174,7 @@ namespace AtomToolsFramework
         }
 
         // Only forward channels that aren't covered by our Qt -> AZ event mapper
-        if (m_inputChannelMapper.HandlesInputEvent(inputChannel))
+        if (!m_inputChannelMapper || m_inputChannelMapper->HandlesInputEvent(inputChannel))
         {
             return false;
         }

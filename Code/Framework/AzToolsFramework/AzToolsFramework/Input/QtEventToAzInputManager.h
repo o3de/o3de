@@ -20,9 +20,12 @@
 #include <AzFramework/Input/Channels/InputChannelDigitalWithSharedModifierKeyStates.h>
 #include <AzFramework/Input/Channels/InputChannelDigitalWithSharedPosition2D.h>
 
+#include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
+#include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
+
 #include <QEvent>
 #include <QObject>
-#endif //!defined(Q_MOC_RUN)
+#endif //! defined(Q_MOC_RUN)
 
 class QWidget;
 class QKeyEvent;
@@ -38,7 +41,7 @@ namespace AzToolsFramework
         Q_OBJECT
 
     public:
-        QtEventToAzInputMapper(QWidget* sourceWidget);
+        QtEventToAzInputMapper(QWidget* sourceWidget, int syntheticDeviceId = 0);
         ~QtEventToAzInputMapper() = default;
 
         //! Queries whether a given input channel has a synthetic equivalent mapped
@@ -57,37 +60,71 @@ namespace AzToolsFramework
         void InputChannelUpdated(const AzFramework::InputChannel* channel, QEvent* event);
 
     private:
+        // Gets an input channel of the specified type by ID.
         template<class TInputChannel>
         TInputChannel* GetInputChannel(const AzFramework::InputChannelId& id)
         {
             auto channelIt = m_channels.find(id);
             if (channelIt != m_channels.end())
             {
-                return static_cast<TInputChannel*>(channelIt->second.get());
+                return static_cast<TInputChannel*>(channelIt->second);
             }
             return {};
         }
 
+        // Adds channels from the specified channel container to our input channel ID -> input channel lookup table.
+        // Used for rapid lookup.
+        template <class TContainer>
+        void AddChannels(const TContainer& container)
+        {
+            for (const auto& channelData : container)
+            {
+                // Break const as we're taking these input channels from devices we own.
+                m_channels.emplace(channelData.first, const_cast<AzFramework::InputChannel*>(channelData.second));
+            }
+        }
+
+        // Our synthetic Keyboard device, does no internal keyboard handling and instead listens to this class for updates.
+        class EditorQtKeyboardDevice : public AzFramework::InputDeviceKeyboard
+        {
+        public:
+            EditorQtKeyboardDevice(AzFramework::InputDeviceId id);
+
+            friend class QtEventToAzInputMapper;
+        };
+
+        // Our synthetic Mouse device, does no internal keyboard handling and instead listens to this class for updates.
+        class EditorQtMouseDevice : public AzFramework::InputDeviceMouse
+        {
+        public:
+            EditorQtMouseDevice(AzFramework::InputDeviceId id);
+
+            friend class QtEventToAzInputMapper;
+        };
+
+        // Emits InputChannelUpdated if channel has transitioned in state (i.e. has gone from active to inactive or vice versa).
         void NotifyUpdateChannelIfNotIdle(const AzFramework::InputChannel* channel, QEvent* event);
 
+        // Processes any pending mouse movement events, this allows mouse movement channels to close themselves.
         void ProcessPendingMouseEvents();
 
+        // Handle mouse click events.
         void HandleMouseButtonEvent(QMouseEvent* mouseEvent);
+        // Handle mouse move events.
         void HandleMouseMoveEvent(QMouseEvent* mouseEvent);
+        // Handles key press / release events (or ShortcutOverride events for keys listed in m_highPriorityKeys).
         void HandleKeyEvent(QKeyEvent* keyEvent);
+        // Handles mouse wheel events.
         void HandleWheelEvent(QWheelEvent* wheelEvent);
+        // Handles focus change events.
         void HandleFocusChange(QEvent* event);
 
-        // Mapping from Qt::Keys to InputChannelIds.
-        // Used to populate m_keyMappings.
-        static AZStd::array<AZStd::pair<Qt::Key, AzFramework::InputChannelId>, 91> QtKeyMappings;
-        // Mapping from Qt::MouseButtons to InputChannelIds.
-        // Used to populate m_mouseButtonMappings.
-        static AZStd::array<AZStd::pair<Qt::MouseButton, AzFramework::InputChannelId>, 5> QtMouseButtonMappings;
-        // A set of high priority keys that need to be processed at the ShortcutOverride level instead of the
-        // KeyEvent level. This prevents e.g. the main menu bar from processing a press of the "alt" key when the
-        // viewport consumes the event.
-        static AZStd::array<Qt::Key, 5> HighPriorityKeys;
+        // Populates m_keyMappings.
+        void InitializeKeyMappings();
+        // Populates m_mouseButtonMappings.
+        void InitializeMouseButtonMappings();
+        // Populates m_highPriorityKeys.
+        void InitializeHighPriorityKeys();
 
         // The current keyboard modifier state used by our synthetic key input channels.
         AZStd::shared_ptr<AzFramework::ModifierKeyStates> m_keyboardModifiers;
@@ -97,13 +134,19 @@ namespace AzToolsFramework
         AZStd::unordered_map<Qt::Key, AzFramework::InputChannelId> m_keyMappings;
         // A lookup table for Qt mouse button -> AZ input channel.
         AZStd::unordered_map<Qt::MouseButton, AzFramework::InputChannelId> m_mouseButtonMappings;
-        // Our set of synthetic input channels that can be mapped by MapQtEventToAzInput.
-        // These channels do not broadcast state changes to the actual AZ input devices, as we're bypassing
-        // that system to integrate with Qt to allow coexistence with the platform native implementation.
-        AZStd::unordered_map<AzFramework::InputChannelId, AZStd::unique_ptr<AzFramework::InputChannel>> m_channels;
+        // A set of high priority keys that need to be processed at the ShortcutOverride level instead of the
+        // KeyEvent level. This prevents e.g. the main menu bar from processing a press of the "alt" key when the
+        // viewport consumes the event.
+        AZStd::unordered_set<Qt::Key> m_highPriorityKeys;
+        // A lookup table for AZ input channel ID -> physical input channel on our mouse or keyboard device.
+        AZStd::unordered_map<AzFramework::InputChannelId, AzFramework::InputChannel*> m_channels;
         // The source widget to map events from, used to calculate the relative mouse position within the widget bounds.
         QWidget* m_sourceWidget;
         // Flags when mouse movement channels have been opened and may need to be closed (as there are no movement ended events).
         bool m_mouseChannelsNeedUpdate = false;
+
+        // Our viewport-specific AZ devices. We control their internal input channel states.
+        AZStd::unique_ptr<EditorQtMouseDevice> m_mouseDevice;
+        AZStd::unique_ptr<EditorQtKeyboardDevice> m_keyboardDevice;
     };
 } // namespace AzToolsFramework

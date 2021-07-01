@@ -131,7 +131,6 @@ namespace AtomToolsFramework
 
     private:
         void SendWindowResizeEvent();
-        bool CanInputGrantFocus(const AzFramework::InputChannel& inputChannel) const;
 
         // The underlying ViewportContext, our entry-point to the Atom RPI.
         AZ::RPI::ViewportContextPtr m_viewportContext;
@@ -159,6 +158,6 @@ namespace AtomToolsFramework
         // The viewport settings (e.g. grid snapping, grid size) for this viewport.
         const AzToolsFramework::ViewportInteraction::ViewportSettings* m_viewportSettings = nullptr;
         // Maps our internal Qt events into AzFramework InputChannels for our ViewportControllerList.
-        AzToolsFramework::QtEventToAzInputMapper m_inputChannelMapper = AzToolsFramework::QtEventToAzInputMapper(this);
+        AzToolsFramework::QtEventToAzInputMapper* m_inputChannelMapper = nullptr;
     };
 } //namespace AtomToolsFramework
