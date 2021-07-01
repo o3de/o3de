@@ -45,23 +45,23 @@ namespace AzToolsFramework
     /// @name Reverse URLs.
     /// Used to identify common actions and override them when necessary.
     //@{
-    static const AZ::Crc32 SLockSelection = AZ_CRC_CE("com.o3de.action.editortransform.lockselect");
-    static const AZ::Crc32 SUnlockSelection = AZ_CRC_CE("com.o3de.action.editortransform.unlockselect");
-    static const AZ::Crc32 ShideSelection = AZ_CRC_CE("com.o3de.action.editortransform.hideselect");
-    static const AZ::Crc32 SShowSelection = AZ_CRC_CE("com.o3de.action.editortransform.showselect");
-    static const AZ::Crc32 SUnfreezeAll = AZ_CRC_CE("com.o3de.action.editortransform.unfreezeall");
-    static const AZ::Crc32 SUnhideAll = AZ_CRC_CE("com.o3de.action.editortransform.unhideall");
-    static const AZ::Crc32 SSelectAll = AZ_CRC_CE("com.o3de.action.editortransform.selectall");
-    static const AZ::Crc32 SInvertSelect = AZ_CRC_CE("com.o3de.action.editortransform.invertselect");
-    static const AZ::Crc32 SDuplicateSelect = AZ_CRC_CE("com.o3de.action.editortransform.duplicateselect");
-    static const AZ::Crc32 SDeleteSelect = AZ_CRC_CE("com.o3de.action.editortransform.deleteselect");
-    static const AZ::Crc32 SEditEscaspe = AZ_CRC_CE("com.o3de.action.editortransform.editescape");
-    static const AZ::Crc32 SEditPivot = AZ_CRC_CE("com.o3de.action.editortransform.editpivot");
-    static const AZ::Crc32 SEditReset = AZ_CRC_CE("com.o3de.action.editortransform.editreset");
-    static const AZ::Crc32 SEditResetManipulator = AZ_CRC_CE("com.o3de.action.editortransform.editresetmanipulator");
-    static const AZ::Crc32 SEditResetLocal = AZ_CRC_CE("com.o3de.action.editortransform.editresetlocal");
-    static const AZ::Crc32 SEditResetWorld = AZ_CRC_CE("com.o3de.action.editortransform.editresetworld");
-    static const AZ::Crc32 SViewportUiVisible = AZ_CRC_CE("com.o3de.action.editortransform.viewportuivisible");
+    static const AZ::Crc32 LockSelection = AZ_CRC_CE("com.o3de.action.editortransform.lockselect");
+    static const AZ::Crc32 UnlockSelection = AZ_CRC_CE("com.o3de.action.editortransform.unlockselect");
+    static const AZ::Crc32 hideSelection = AZ_CRC_CE("com.o3de.action.editortransform.hideselect");
+    static const AZ::Crc32 ShowSelection = AZ_CRC_CE("com.o3de.action.editortransform.showselect");
+    static const AZ::Crc32 UnfreezeAll = AZ_CRC_CE("com.o3de.action.editortransform.unfreezeall");
+    static const AZ::Crc32 UnhideAll = AZ_CRC_CE("com.o3de.action.editortransform.unhideall");
+    static const AZ::Crc32 SelectAll = AZ_CRC_CE("com.o3de.action.editortransform.selectall");
+    static const AZ::Crc32 InvertSelect = AZ_CRC_CE("com.o3de.action.editortransform.invertselect");
+    static const AZ::Crc32 DuplicateSelect = AZ_CRC_CE("com.o3de.action.editortransform.duplicateselect");
+    static const AZ::Crc32 DeleteSelect = AZ_CRC_CE("com.o3de.action.editortransform.deleteselect");
+    static const AZ::Crc32 EditEscaspe = AZ_CRC_CE("com.o3de.action.editortransform.editescape");
+    static const AZ::Crc32 EditPivot = AZ_CRC_CE("com.o3de.action.editortransform.editpivot");
+    static const AZ::Crc32 EditReset = AZ_CRC_CE("com.o3de.action.editortransform.editreset");
+    static const AZ::Crc32 EditResetManipulator = AZ_CRC_CE("com.o3de.action.editortransform.editresetmanipulator");
+    static const AZ::Crc32 EditResetLocal = AZ_CRC_CE("com.o3de.action.editortransform.editresetlocal");
+    static const AZ::Crc32 EditResetWorld = AZ_CRC_CE("com.o3de.action.editortransform.editresetworld");
+    static const AZ::Crc32 ViewportUiVisible = AZ_CRC_CE("com.o3de.action.editortransform.viewportuivisible");
     //@}
 
 
@@ -2133,7 +2133,7 @@ namespace AzToolsFramework
         // lock selection
         AddAction(
             m_actions, { QKeySequence(Qt::Key_L) },
-            SLockSelection, s_lockSelectionTitle, s_lockSelectionDesc,
+            LockSelection, s_lockSelectionTitle, s_lockSelectionDesc,
             [lockUnlock]()
             {
                 lockUnlock(true);
@@ -2142,7 +2142,7 @@ namespace AzToolsFramework
         // unlock selection
         AddAction(
             m_actions, { QKeySequence(Qt::CTRL + Qt::Key_L) },
-            SUnlockSelection, s_lockSelectionTitle, s_lockSelectionDesc,
+            UnlockSelection, s_lockSelectionTitle, s_lockSelectionDesc,
             [lockUnlock]()
             {
                 lockUnlock(false);
@@ -2173,7 +2173,7 @@ namespace AzToolsFramework
         // hide selection
         AddAction(
             m_actions, { QKeySequence(Qt::Key_H) },
-            ShideSelection, s_hideSelectionTitle, s_hideSelectionDesc,
+            hideSelection, s_hideSelectionTitle, s_hideSelectionDesc,
             [showHide]()
             {
                 showHide(false);
@@ -2182,7 +2182,7 @@ namespace AzToolsFramework
         // show selection
         AddAction(
             m_actions, { QKeySequence(Qt::CTRL + Qt::Key_H) },
-            SShowSelection, s_hideSelectionTitle, s_hideSelectionDesc,
+            ShowSelection, s_hideSelectionTitle, s_hideSelectionDesc,
             [showHide]()
             {
                 showHide(true);
@@ -2191,7 +2191,7 @@ namespace AzToolsFramework
         // unlock all entities in the level/scene
         AddAction(
             m_actions, { QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_L) },
-            SUnfreezeAll, s_unlockAllTitle, s_unlockAllDesc,
+            UnfreezeAll, s_unlockAllTitle, s_unlockAllDesc,
             []()
             {
                 AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
@@ -2209,7 +2209,7 @@ namespace AzToolsFramework
         // show all entities in the level/scene
         AddAction(
             m_actions, { QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_H) },
-            SUnhideAll, s_showAllTitle, s_showAllDesc,
+            UnhideAll, s_showAllTitle, s_showAllDesc,
             []()
             {
                 AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
@@ -2227,7 +2227,7 @@ namespace AzToolsFramework
         // select all entities in the level/scene
         AddAction(
             m_actions, { QKeySequence(Qt::CTRL + Qt::Key_A) },
-            SSelectAll, s_selectAllTitle, s_selectAllDesc,
+            SelectAll, s_selectAllTitle, s_selectAllDesc,
             [this]()
             {
                 AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
@@ -2268,7 +2268,7 @@ namespace AzToolsFramework
         // invert current selection
         AddAction(
             m_actions, { QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_I) },
-            SInvertSelect, s_invertSelectionTitle, s_invertSelectionDesc,
+            InvertSelect, s_invertSelectionTitle, s_invertSelectionDesc,
             [this]()
             {
                 AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
@@ -2316,7 +2316,7 @@ namespace AzToolsFramework
         // duplicate selection
         AddAction(
             m_actions, { QKeySequence(Qt::CTRL + Qt::Key_D) },
-            SDuplicateSelect, s_duplicateTitle, s_duplicateDesc,
+            DuplicateSelect, s_duplicateTitle, s_duplicateDesc,
             []()
             {
                 AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
@@ -2342,7 +2342,7 @@ namespace AzToolsFramework
         // delete selection
         AddAction(
             m_actions, { QKeySequence(Qt::Key_Delete) },
-            SDeleteSelect, s_deleteTitle, s_deleteDesc,
+            DeleteSelect, s_deleteTitle, s_deleteDesc,
             [this]()
             {
                 AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
@@ -2360,7 +2360,7 @@ namespace AzToolsFramework
 
         AddAction(
             m_actions, { QKeySequence(Qt::Key_Space) },
-            SEditEscaspe, "", "",
+            EditEscaspe, "", "",
             [this]()
             {
                 DeselectEntities();
@@ -2368,7 +2368,7 @@ namespace AzToolsFramework
 
         AddAction(
             m_actions, { QKeySequence(Qt::Key_P) },
-            SEditPivot, s_togglePivotTitleEditMenu, s_togglePivotDesc,
+            EditPivot, s_togglePivotTitleEditMenu, s_togglePivotDesc,
             [this]()
             {
                 ToggleCenterPivotSelection();
@@ -2376,7 +2376,7 @@ namespace AzToolsFramework
 
         AddAction(
             m_actions, { QKeySequence(Qt::Key_R) },
-            SEditReset, s_resetEntityTransformTitle, s_resetEntityTransformDesc,
+            EditReset, s_resetEntityTransformTitle, s_resetEntityTransformDesc,
             [this]()
             {
                 switch (m_mode)
@@ -2395,12 +2395,12 @@ namespace AzToolsFramework
 
         AddAction(
             m_actions, { QKeySequence(Qt::CTRL + Qt::Key_R) },
-            SEditResetManipulator, s_resetManipulatorTitle, s_resetManipulatorDesc,
+            EditResetManipulator, s_resetManipulatorTitle, s_resetManipulatorDesc,
             AZStd::bind(AZStd::mem_fn(&EditorTransformComponentSelection::DelegateClearManipulatorOverride), this));
 
         AddAction(
             m_actions, { QKeySequence(Qt::ALT + Qt::Key_R) },
-            SEditResetLocal, s_resetTransformLocalTitle, s_resetTransformLocalDesc,
+            EditResetLocal, s_resetTransformLocalTitle, s_resetTransformLocalDesc,
             [this]()
             {
                 switch (m_mode)
@@ -2419,7 +2419,7 @@ namespace AzToolsFramework
 
         AddAction(
             m_actions, { QKeySequence(Qt::SHIFT + Qt::Key_R) },
-            SEditResetWorld, s_resetTransformWorldTitle, s_resetTransformWorldDesc,
+            EditResetWorld, s_resetTransformWorldTitle, s_resetTransformWorldDesc,
             [this]()
             {
                 switch (m_mode)
@@ -2441,7 +2441,7 @@ namespace AzToolsFramework
 
         AddAction(
             m_actions, { QKeySequence(Qt::Key_U) },
-            SViewportUiVisible, "Toggle Viewport UI", "Hide/Show Viewport UI",
+            ViewportUiVisible, "Toggle Viewport UI", "Hide/Show Viewport UI",
             [this]()
             {
                 SetAllViewportUiVisible(!m_viewportUiVisible);
