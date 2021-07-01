@@ -35,7 +35,7 @@ QComboBox[HasPopupOpen=true][HasPopupOpen=true]
     border-width: 1px;
     border-style: solid;
     border-radius: 3px;
-    border-color: #00A1C9;
+    border-color: #94D2FF;
 
     background-color: #FFFFFF;
 }

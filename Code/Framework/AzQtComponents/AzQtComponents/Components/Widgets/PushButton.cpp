@@ -442,7 +442,7 @@ PushButton::Config PushButton::defaultConfig()
     config.smallIcon.width = 24;
     config.smallIcon.arrowWidth = 10;
 
-    config.iconButton.activeColor = QColor("#00A1C9");
+    config.iconButton.activeColor = QColor("#94D2FF");
     config.iconButton.disabledColor = QColor("#999999");
     config.iconButton.selectedColor = QColor("#FFFFFF");
 
