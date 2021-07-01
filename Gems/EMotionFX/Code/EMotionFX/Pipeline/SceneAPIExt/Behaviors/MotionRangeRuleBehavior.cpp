@@ -96,7 +96,7 @@ namespace EMotionFX
                             const AZ::u32 frameCount = aznumeric_caster(animation->GetKeyFrameCount());
                             if (motionRangeRule->GetStartFrame() == 0 && motionRangeRule->GetEndFrame() == frameCount - 1)
                             {
-                                // if the startframe/endframe matches the fbx animation length, remove it.
+                                // if the startframe/endframe matches the scene file's animation length, remove it.
                                 rules.RemoveRule(motionRangeRule);
                                 updated = true;
                             }

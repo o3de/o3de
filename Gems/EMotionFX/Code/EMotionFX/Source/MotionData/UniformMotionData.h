@@ -49,7 +49,7 @@ namespace EMotionFX
         size_t CalcStreamSaveSizeInBytes(const SaveSettings& saveSettings) const override;
         AZ::u32 GetStreamSaveVersion() const override;
         bool GetSupportsOptimizeSettings() const override { return false; }
-        const char* GetFbxSettingsName() const override;
+        const char* GetSceneSettingsName() const override;
 
         // Overloaded.
         Transform SampleJointTransform(const SampleSettings& settings, AZ::u32 jointSkeletonIndex) const override;
