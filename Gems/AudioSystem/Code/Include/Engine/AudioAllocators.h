@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -23,8 +18,7 @@ namespace Audio
         : public AZ::SystemAllocator
     {
     public:
-        AZ_CLASS_ALLOCATOR(AudioSystemAllocator, AZ::SystemAllocator, 0)
-        AZ_TYPE_INFO(AudioSystemAllocator, "{AE15F55D-BD65-4666-B18B-9ED81999A85B}")
+        AZ_TYPE_INFO(AudioSystemAllocator, "{AE15F55D-BD65-4666-B18B-9ED81999A85B}");
 
         ///////////////////////////////////////////////////////////////////////////////////////////
         // IAllocator
@@ -35,20 +29,20 @@ namespace Audio
 
         const char* GetDescription() const override
         {
-            return "Generic allocator for use in the Audio System Module.";
+            return "Generic allocator for use in the Audio System module";
         }
         ///////////////////////////////////////////////////////////////////////////////////////////
     };
 
     using AudioSystemStdAllocator = AZ::AZStdAlloc<AZ::SystemAllocator>;
 
+
     ///////////////////////////////////////////////////////////////////////////////////////////////
     class AudioImplAllocator final
         : public AZ::SystemAllocator
     {
     public:
-        AZ_CLASS_ALLOCATOR(AudioImplAllocator, AZ::SystemAllocator, 0)
-        AZ_TYPE_INFO(AudioImplAllocator, "{197D999F-3093-4F9D-A9A0-BA9E2AAA11DC}")
+        AZ_TYPE_INFO(AudioImplAllocator, "{197D999F-3093-4F9D-A9A0-BA9E2AAA11DC}");
 
         ///////////////////////////////////////////////////////////////////////////////////////////
         // IAllocator
@@ -59,12 +53,34 @@ namespace Audio
 
         const char* GetDescription() const override
         {
-            return "Generic allocator for use in the Audio Implementation Module.";
+            return "Generic allocator for use in the Audio Engine Implementation module";
         }
         ///////////////////////////////////////////////////////////////////////////////////////////
     };
 
     using AudioImplStdAllocator = AZ::AZStdAlloc<AZ::SystemAllocator>;
+
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    class AudioBankAllocator final
+        : public AZ::SystemAllocator
+    {
+    public:
+        AZ_TYPE_INFO(AudioBankAllocator, "{19E89718-400F-42F9-92C3-E7F0DC1CCC1F}");
+
+        ///////////////////////////////////////////////////////////////////////////////////////////
+        // IAllocator
+        const char* GetName() const override
+        {
+            return "AudioBankAllocator";
+        }
+
+        const char* GetDescription() const override
+        {
+            return "Generic allocator for use by the Audio File Cache Manager for sound banks";
+        }
+        ///////////////////////////////////////////////////////////////////////////////////////////
+    };
 
 } // namespace Audio
 

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <EMotionFX/Source/Actor.h>
@@ -165,7 +160,7 @@ namespace EMotionFX
                 }
             }
 
-            // Default to the first mesh group until we get a way to choose it via the FBX settings (ATOM-13590).
+            // Default to the first mesh group until we get a way to choose it via the scene settings (ATOM-13590).
             AZStd::optional<AZ::Data::AssetId> meshAssetId = AZStd::nullopt;
             AZ_Error("EMotionFX", atomModelAssets.size() <= 1, "Ambigious mesh for actor asset. More than one mesh group found. Defaulting to the first one.");
             if (!atomModelAssets.empty())

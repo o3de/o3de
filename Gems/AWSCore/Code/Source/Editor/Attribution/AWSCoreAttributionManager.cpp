@@ -1,22 +1,19 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <Editor/Attribution/AWSCoreAttributionMetric.h>
 #include <Editor/Attribution/AWSCoreAttributionManager.h>
+#include <Editor/Attribution/AWSCoreAttributionConsentDialog.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/PlatformId/PlatformId.h>
 #include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/Jobs/JobFunction.h>
@@ -24,52 +21,49 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Module/ModuleManagerBus.h>
 #include <ResourceMapping/AWSResourceMappingUtils.h>
+#include <Credential/AWSCredentialBus.h>
 
+#include <QSysInfo>
+#include <QMessageBox>
+#include <QCheckBox>
 
 
 namespace AWSCore
 {
-    static constexpr const char* EngineVersionJsonKey = "O3DEVersion";
+    constexpr const char* EngineVersionJsonKey = "O3DEVersion";
 
     constexpr char EditorAWSPreferencesFileName[] = "editor_aws_preferences.setreg";
     constexpr char AWSAttributionSettingsPrefixKey[] = "/Amazon/AWS/Preferences";
     constexpr char AWSAttributionEnabledKey[] = "/Amazon/AWS/Preferences/AWSAttributionEnabled";
     constexpr char AWSAttributionDelaySecondsKey[] = "/Amazon/AWS/Preferences/AWSAttributionDelaySeconds";
     constexpr char AWSAttributionLastTimeStampKey[] = "/Amazon/AWS/Preferences/AWSAttributionLastTimeStamp";
-    constexpr char AWSAttributionApiId[] = "xbzx78kvbk";
+    constexpr char AWSAttributionConsentShownKey[] = "/Amazon/AWS/Preferences/AWSAttributionConsentShown";
+    constexpr char AWSAttributionApiId[] = "2zxvvmv8d7";
     constexpr char AWSAttributionChinaApiId[] = "";
     constexpr char AWSAttributionApiStage[] = "prod";
+    const int AWSAttributionDefaultDelayInDays = 7;
 
     AWSAttributionManager::AWSAttributionManager()
     {
-        m_settingsRegistry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
+        m_settingsRegistry = AZ::SettingsRegistry::Get();
+        AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
     }
 
     AWSAttributionManager::~AWSAttributionManager()
     {
-        m_settingsRegistry.reset();
+        AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
+        m_settingsRegistry = nullptr;
     }
 
     void AWSAttributionManager::Init()
     {
-    }
-
-    void AWSAttributionManager::MetricCheck()
-    {
-        if (ShouldGenerateMetric())
+        bool consentShown;
+        // If override is used skip merging the settings file
+        if (m_settingsRegistry->Get(consentShown, AWSAttributionConsentShownKey))
         {
-            // 1. Gather metadata and assemble metric
-            AttributionMetric metric;
-            UpdateMetric(metric);            
-            // 2. Identify region and chose attribution endpoint
-            
-            // 3. Post metric
-            SubmitMetric(metric);
+            return;
         }
-    }
 
-    bool AWSAttributionManager::ShouldGenerateMetric() const
-    {
         AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
         AZ_Assert(fileIO, "File IO is not initialized.");
 
@@ -80,19 +74,46 @@ namespace AWSCore
         if (!fileIO->ResolvePath(editorAWSPreferencesFilePath.c_str(), resolvedPathAWSPreference.data(), resolvedPathAWSPreference.size()))
         {
             AZ_Warning("AWSAttributionManager", false, "Error resolving path %s", resolvedPathAWSPreference.data());
-            return false;
+            return;
         }
 
         if (fileIO->Exists(resolvedPathAWSPreference.data()))
         {
-            m_settingsRegistry->MergeSettingsFile(resolvedPathAWSPreference.data(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "");
+            m_settingsRegistry->MergeSettingsFile(
+                resolvedPathAWSPreference.data(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "");
+        }
+    }
+
+    void AWSAttributionManager::MetricCheck()
+    {
+        if (!CheckAWSCredentialsConfigured())
+        {
+            return;
         }
 
+        if (!CheckConsentShown())
+        {
+            ShowConsentDialog();
+        }
+        
+        if (ShouldGenerateMetric())
+        {
+            // Gather metadata and assemble metric
+            AttributionMetric metric;
+            UpdateMetric(metric);            
+            
+            // Post metric
+            SubmitMetric(metric);
+        }
+    }
+
+    bool AWSAttributionManager::ShouldGenerateMetric() const
+    {   
         bool awsAttributionEnabled = false;
         if (!m_settingsRegistry->Get(awsAttributionEnabled, AWSAttributionEnabledKey))
         {
-            // If not found default to sending the metric.
-            awsAttributionEnabled = true;
+            AZ_Warning("AWSAttributionManager", false, "Key %s should be set by consent window", AWSAttributionEnabledKey);
+            return false;
         }
 
         if (!awsAttributionEnabled)
@@ -104,8 +125,7 @@ namespace AWSCore
         AZ::u64 delayInSeconds = 0;
         if (!m_settingsRegistry->Get(delayInSeconds, AWSAttributionDelaySecondsKey))
         {
-            AZ_Warning("AWSAttributionManager", false, "AWSAttribution delay key not found. Defaulting to delay to day");
-            delayInSeconds = 86400;
+            delayInSeconds = 86400 * AWSAttributionDefaultDelayInDays;
             m_settingsRegistry->Set(AWSAttributionDelaySecondsKey, delayInSeconds);
         }
 
@@ -125,6 +145,50 @@ namespace AWSCore
         }
 
         return false;
+    }
+
+    bool AWSAttributionManager::CheckAWSCredentialsConfigured()
+    {
+        AWSCore::AWSCredentialResult credentialResult;
+        AWSCore::AWSCredentialRequestBus::BroadcastResult(credentialResult, &AWSCore::AWSCredentialRequests::GetCredentialsProvider);
+        if (credentialResult.result)
+        {
+            std::shared_ptr<Aws::Auth::AWSCredentialsProvider> provider = credentialResult.result;
+            auto creds = provider->GetAWSCredentials();
+            if (!creds.IsEmpty())
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    void AWSAttributionManager::ShowConsentDialog()
+    {
+        AWSCoreAttributionConsentDialog* msgBox = aznew AWSCoreAttributionConsentDialog();
+        int ret = msgBox->exec();
+        m_settingsRegistry->Set(AWSAttributionConsentShownKey, true);
+        switch (ret)
+        {
+        case QMessageBox::Save:
+            m_settingsRegistry->Set(AWSAttributionEnabledKey, msgBox->checkBox()->checkState() == Qt::Checked);
+            break;
+        case QMessageBox::Cancel:
+        default:
+            m_settingsRegistry->Set(AWSAttributionEnabledKey, false);
+            break;
+        }
+
+        SaveSettingsRegistryFile();
+        delete msgBox;
+    }
+
+    // Waiting on Editor QT main window to be initialized before showing consent window.
+    // This will have the Editor loading screen in the background when showing consent dialog.
+    void AWSAttributionManager::NotifyMainWindowInitialized(QMainWindow* mainWindow)
+    {
+        AZ_UNUSED(mainWindow);
+        MetricCheck();
     }
 
     void AWSAttributionManager::SaveSettingsRegistryFile()
@@ -202,6 +266,13 @@ namespace AWSCore
             AWSResourceMappingUtils::FormatRESTApiUrl(apiId, config->region.value().c_str(), AWSAttributionApiStage).c_str();
     }
 
+    bool AWSAttributionManager::CheckConsentShown()
+    {
+        bool consentShown = false;
+        m_settingsRegistry->Get(consentShown, AWSAttributionConsentShownKey);
+        return consentShown;
+    }
+
     AZStd::string AWSAttributionManager::GetEngineVersion() const
     {
         AZStd::string engineVersion;
@@ -243,7 +314,8 @@ namespace AWSCore
         metric.SetO3DEVersion(engineVersion);
 
         AZStd::string platform = this->GetPlatform();
-        metric.SetPlatform(platform, "");
+        QString productName = QSysInfo::prettyProductName();
+        metric.SetPlatform(platform, productName.toStdString().c_str());
 
         AZStd::vector<AZStd::string> gemNames;
         GetActiveAWSGems(gemNames);
@@ -256,17 +328,21 @@ namespace AWSCore
     void AWSAttributionManager::SubmitMetric(AttributionMetric& metric)
     {
         AWSCore::ServiceAPI::AWSAttributionRequestJob::Config* config = ServiceAPI::AWSAttributionRequestJob::GetDefaultConfig();
+        // Identify region and chose attribution endpoint
         SetApiEndpointAndRegion(config);
 
         ServiceAPI::AWSAttributionRequestJob* requestJob = ServiceAPI::AWSAttributionRequestJob::Create(
-            [this](ServiceAPI::AWSAttributionRequestJob* successJob)
+            [this]([[maybe_unused]] ServiceAPI::AWSAttributionRequestJob* successJob)
             {
-                AZ_UNUSED(successJob);
-                
                 UpdateLastSend();
                 AZ_Printf("AWSAttributionManager", "AWSAttribution metric submit success");
 
-            }, {}, config);
+            },
+            [this]([[maybe_unused]] ServiceAPI::AWSAttributionRequestJob* failJob)
+            {
+                AZ_Error("AWSAttributionManager", false, "Metrics send error: %s", failJob->error.message.c_str());
+            },
+            config);
 
         requestJob->parameters.metric = metric;
         requestJob->Start();

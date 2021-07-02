@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -163,15 +158,20 @@ namespace AZ
         
         enum class ContinuationFlags
         {
-            None = 0,                //! No extra flags.
-            ResolvePointer = 1 << 0, //! The pointer passed in contains a pointer. The (de)serializer will attempt to resolve to an instance.
-            ReplaceDefault = 1 << 1  //! The default value provided for storing will be replaced with a newly created one.
+            None = 0,                   //! No extra flags.
+            ResolvePointer = 1 << 0,    //! The pointer passed in contains a pointer. The (de)serializer will attempt to resolve to an instance.
+            ReplaceDefault = 1 << 1,    //! The default value provided for storing will be replaced with a newly created one.
+            LoadAsNewInstance = 1 << 2  //! Treats the value as if it's a newly created instance. This may trigger serializers marked with
+                                        //! OperationFlags::InitializeNewInstance. Used for instance by pointers or new instances added to
+                                        //! an array.
         };
 
         enum class OperationFlags
         {
-            None = 0,               //! No flags that control how the custom json serializer is used.
-            ManualDefault = 1 << 0  //! Even if an (explicit) default is found the custom json serializer will still be called.
+            None = 0,                       //! No flags that control how the custom json serializer is used.
+            ManualDefault = 1 << 0,         //! Even if an (explicit) default is found the custom json serializer will still be called.
+            InitializeNewInstance = 1 << 1  //! If set, the custom json serializer will be called with an explicit default if a new
+                                            //! instance of its target type is created.
         };
 
         virtual ~BaseJsonSerializer() = default;

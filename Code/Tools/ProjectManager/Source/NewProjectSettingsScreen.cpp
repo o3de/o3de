@@ -1,19 +1,14 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <NewProjectSettingsScreen.h>
 #include <PythonBindingsInterface.h>
-#include <FormLineEditWidget.h>
 #include <FormBrowseEditWidget.h>
+#include <FormLineEditWidget.h>
 #include <TemplateButtonWidget.h>
 #include <PathValidator.h>
 #include <EngineInfo.h>
@@ -86,8 +81,14 @@ namespace O3DE::ProjectManager
                 {
                     if (button && button->property(k_templateIndexProperty).isValid())
                     {
-                        int projectIndex = button->property(k_templateIndexProperty).toInt();
-                        UpdateTemplateDetails(m_templates.at(projectIndex));
+                        int projectTemplateIndex = button->property(k_templateIndexProperty).toInt();
+                        if (m_selectedTemplateIndex != projectTemplateIndex)
+                        {
+                            const int oldIndex = m_selectedTemplateIndex;
+                            m_selectedTemplateIndex = projectTemplateIndex;
+                            UpdateTemplateDetails(m_templates.at(m_selectedTemplateIndex));
+                            emit OnTemplateSelectionChanged(/*oldIndex=*/oldIndex, /*newIndex=*/m_selectedTemplateIndex);
+                        }
                     }
                 });
 
@@ -120,7 +121,8 @@ namespace O3DE::ProjectManager
                     flowLayout->addWidget(templateButton);
                 }
 
-                m_projectTemplateButtonGroup->buttons().first()->setChecked(true);
+                // Select the first project template (default selection).
+                SelectProjectTemplate(0, /*blockSignals=*/true);
             }
             containerLayout->addWidget(templatesScrollArea);
         }
@@ -164,8 +166,9 @@ namespace O3DE::ProjectManager
 
     QString NewProjectSettingsScreen::GetProjectTemplatePath()
     {
-        const int templateIndex = m_projectTemplateButtonGroup->checkedButton()->property(k_templateIndexProperty).toInt();
-        return m_templates.at(templateIndex).m_path;
+        AZ_Assert(m_selectedTemplateIndex == m_projectTemplateButtonGroup->checkedButton()->property(k_templateIndexProperty).toInt(),
+            "Selected template index not in sync with the currently checked project template button.");
+        return m_templates.at(m_selectedTemplateIndex).m_path;
     }
 
     QFrame* NewProjectSettingsScreen::CreateTemplateDetails(int margin)
@@ -220,5 +223,28 @@ namespace O3DE::ProjectManager
         m_templateDisplayName->setText(templateInfo.m_displayName);
         m_templateSummary->setText(templateInfo.m_summary);
         m_templateIncludedGems->Update(templateInfo.m_includedGems);
+    }
+
+    void NewProjectSettingsScreen::SelectProjectTemplate(int index, bool blockSignals)
+    {
+        const QList<QAbstractButton*> buttons = m_projectTemplateButtonGroup->buttons();
+        if (index >= buttons.size())
+        {
+            return;
+        }
+
+        if (blockSignals)
+        {
+            m_projectTemplateButtonGroup->blockSignals(true);
+        }
+
+        QAbstractButton* button = buttons.at(index);
+        button->setChecked(true);
+        m_selectedTemplateIndex = button->property(k_templateIndexProperty).toInt();
+
+        if (blockSignals)
+        {
+            m_projectTemplateButtonGroup->blockSignals(false);
+        }
     }
 } // namespace O3DE::ProjectManager

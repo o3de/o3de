@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 import argparse
@@ -48,7 +44,7 @@ def verify_gradle(override_gradle_path=None):
 
 
 CMAKE_ARGUMENT_NAME = '--cmake-install-path'
-CMAKE_MIN_VERSION = LooseVersion('3.19.0')
+CMAKE_MIN_VERSION = LooseVersion('3.20.0')
 CMAKE_VERSION_REGEX = re.compile(r'cmake version (\d+.\d+.?\d*)')
 CMAKE_EXECUTABLE = 'cmake'
 
@@ -215,6 +211,11 @@ def main(args):
                         default=None,
                         required=False)
 
+    parser.add_argument('--native-build-path',
+                        help='Custom path to place native build artifacts.',
+                        default=None,
+                        required=False)
+
     # Asset Options
     parser.add_argument(INCLUDE_APK_ASSETS_ARGUMENT_NAME,
                         action='store_true',
@@ -257,6 +258,10 @@ def main(args):
     parser.add_argument('--overwrite-existing',
                         action='store_true',
                         help='Option to overwrite existing scripts in the target build folder if they exist already.')
+
+    parser.add_argument('--enable-unity-build',
+                        action='store_true',
+                        help='Enable unity build')
 
     parsed_args = parser.parse_args(args)
     wrap_parsed_args(parsed_args)
@@ -395,7 +400,9 @@ def main(args):
                                                         asset_type=parsed_args.get_argument(ASSET_TYPE_ARGUMENT_NAME),
                                                         signing_config=signing_config,
                                                         is_test_project=is_test_project,
-                                                        overwrite_existing=parsed_args.overwrite_existing)
+                                                        overwrite_existing=parsed_args.overwrite_existing,
+                                                        unity_build_enabled=parsed_args.enable_unity_build,
+                                                        native_build_path=parsed_args.native_build_path)
     generator.execute()
 
 

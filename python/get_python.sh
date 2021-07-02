@@ -1,13 +1,9 @@
 #!/bin/bash
 
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 SOURCE="${BASH_SOURCE[0]}"
 # While $SOURCE is a symlink, resolve it
@@ -42,31 +38,21 @@ then
     CMAKE_FOLDER_RELATIVE_TO_ROOT=CMake.app/Contents/bin
 else
     PAL=Linux
-    CMAKE_FOLDER_RELATIVE_TO_ROOT=bin    
+    CMAKE_FOLDER_RELATIVE_TO_ROOT=bin
 fi
 
 if ! [ -x "$(command -v cmake)" ]; then
-    # Note that LY_3RDPARTY_PATH is only required here if you have no cmake in your PATH.
     if [ -z ${LY_CMAKE_PATH} ]; then
-        if [ -z ${LY_3RDPARTY_PATH} ]; then 
-            echo "ERROR: Could not find cmake on the PATH and LY_3RDPARTY_PATH is not defined, cannot continue."
-            echo "Please add cmake to your PATH, or define $LY_3RDPARTY_PATH"
-            exit 1        
-        fi
-        LY_CMAKE_PATH=$LY_3RDPARTY_PATH/CMake/3.19.1/$PAL/$CMAKE_FOLDER_RELATIVE_TO_ROOT
-        # if you change the version number, change it also in:
-        # scripts/build/Platform/Mac/env_mac.sh
-        # and
-        # scripts/build/Platform/Linux/env_linux.sh
+        echo "ERROR: Could not find cmake on the PATH and LY_CMAKE_PATH is not defined, cannot continue."
+        echo "Please add cmake to your PATH, or define LY_CMAKE_PATH"
+        exit 1
     fi
-        
+
     export PATH=$LY_CMAKE_PATH:$PATH
     if ! [ -x "$(command -v cmake)" ]; then
-        echo "ERROR: Could not find cmake on the PATH or at the known location: $CMAKE_KNOWN_LOCATION"
+        echo "ERROR: Could not find cmake on the PATH or at the known location: $LY_CMAKE_PATH"
         echo "Please add cmake to the environment PATH or place it at the above known location."
         exit 1
-    else
-        echo "CMake not found on path, but was found in the known 3rd Party location."
     fi
 fi
 

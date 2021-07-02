@@ -1,12 +1,7 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 TOOL_APPLICATION_MAIN_WINDOW_WIDTH: int = 920
@@ -16,6 +11,18 @@ MAIN_PAGE_LAYOUT_MARGIN_LEFTRIGHT: int = 10
 MAIN_PAGE_LAYOUT_MARGIN_TOPBOTTOM: int = 15
 
 INTERACTION_COMPONENT_HEIGHT: int = 25
+
+"""error page related constants"""
+ERROR_PAGE_LAYOUT_MARGIN_LEFTRIGHT: int = 10
+ERROR_PAGE_LAYOUT_MARGIN_TOPBOTTOM: int = 10
+
+ERROR_PAGE_MAIN_WINDOW_WIDTH: int = 600
+ERROR_PAGE_MAIN_WINDOW_HEIGHT: int = 145
+
+ERROR_PAGE_NOTIFICATION_AREA_HEIGHT: int = 100
+ERROR_PAGE_FOOTER_AREA_HEIGHT: int = 45
+
+OK_BUTTON_WIDTH: int = 90
 
 """view edit page related constants"""
 VIEW_EDIT_PAGE_HEADER_AREA_HEIGHT: int = 65

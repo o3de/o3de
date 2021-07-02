@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -14,6 +9,7 @@
 
 #include "Util/WhiteBoxTextureUtil.h"
 #include "WhiteBoxTestFixtures.h"
+#include "Rendering/Atom/WhiteBoxMeshAtomData.h"
 
 #include <AzCore/Casting/lossy_cast.h>
 #include <AzCore/Casting/numeric_cast.h>
@@ -284,5 +280,11 @@ namespace UnitTest
         ::testing::Combine(
             ::testing::ValuesIn(Noise), ::testing::ValuesIn(Source),
             ::testing::Values(Rotation::Identity, Rotation::XZAxis)));
+
+    TEST(WhiteBoxRenderTest, WhiteBoxMeshAtomDataAabbIsInitializedToNull)
+    {
+        WhiteBox::WhiteBoxMeshAtomData atomData(WhiteBox::WhiteBoxFaces{});
+        EXPECT_EQ(atomData.GetAabb(), AZ::Aabb::CreateNull());
+    }
 
 } // namespace UnitTest

@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -62,25 +57,16 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         }
     }
 
-    AZStd::vector<AZ::Entity*> EditorInfoRemover::GetEntitiesFromInstance(AZStd::unique_ptr<Instance>& instance)
+    void EditorInfoRemover::GetEntitiesFromInstance(
+        AZStd::unique_ptr<AzToolsFramework::Prefab::Instance>& instance, EntityList& hierarchyEntities)
     {
-        AZStd::vector<AZ::Entity*> result;
-
-        instance->GetNestedEntities(
-            [&result](const AZStd::unique_ptr<AZ::Entity>& entity)
+        instance->GetAllEntitiesInHierarchy(
+            [&hierarchyEntities](const AZStd::unique_ptr<AZ::Entity>& entity)
             {
-                result.emplace_back(entity.get());
+                hierarchyEntities.emplace_back(entity.get());
                 return true;
             }
         );
-
-        if (instance->HasContainerEntity())
-        {
-            auto containerEntityReference = instance->GetContainerEntity();
-            result.emplace_back(&containerEntityReference->get());
-        }
-
-        return result;
     }
 
     void EditorInfoRemover::SetEditorOnlyEntityHandlerFromCandidates(const EntityList& entities)
@@ -543,7 +529,9 @@ exportComponent, prefabProcessorContext);
         }
 
         // grab all nested entities from the Instance as source entities.
-        EntityList sourceEntities = GetEntitiesFromInstance(instance);
+        EntityList sourceEntities;
+        GetEntitiesFromInstance(instance, sourceEntities);
+
         EntityList exportEntities;
 
         // prepare for validation of component requirements.
@@ -616,7 +604,7 @@ exportComponent, prefabProcessorContext);
         );
 
         // replace entities of instance with exported ones.
-        instance->GetNestedEntities(
+        instance->GetAllEntitiesInHierarchy(
             [&exportEntitiesMap](AZStd::unique_ptr<AZ::Entity>& entity)
             {
                 auto entityId = entity->GetId();
@@ -624,14 +612,6 @@ exportComponent, prefabProcessorContext);
                 return true;
             }
         );
-
-        if (instance->HasContainerEntity())
-        {
-            if (auto found = exportEntitiesMap.find(instance->GetContainerEntityId()); found != exportEntitiesMap.end())
-            {
-                instance->SetContainerEntity(*found->second);
-            }
-        }
 
         // save the final result in the target Prefab DOM.
         PrefabDom filteredPrefab;

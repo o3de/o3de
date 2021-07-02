@@ -1,25 +1,21 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 from typing import List
 from unittest import TestCase
 from unittest.mock import (call, MagicMock, patch)
 
-from manager.view_manager import (ViewManager, ViewManagerConstants)
+from manager.view_manager import (ERROR_PAGE_INDEX, ViewManager, ViewManagerConstants)
 
 
 class TestViewManager(TestCase):
     """
     ViewManager unit test cases
     """
+    _mock_error_page: MagicMock
     _mock_import_resources_page: MagicMock
     _mock_view_edit_page: MagicMock
     _mock_main_window: MagicMock
@@ -28,6 +24,9 @@ class TestViewManager(TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
+        error_page_patcher: patch = patch("manager.view_manager.ErrorPage")
+        cls._mock_error_page = error_page_patcher.start()
+
         import_resources_page_patcher: patch = patch("manager.view_manager.ImportResourcesPage")
         cls._mock_import_resources_page = import_resources_page_patcher.start()
 
@@ -60,6 +59,15 @@ class TestViewManager(TestCase):
     def test_get_instance_raise_exception(self) -> None:
         self.assertRaises(Exception, ViewManager)
 
+    def test_get_error_page_return_expected_page(self) -> None:
+        expected_page: MagicMock = TestViewManager._mock_error_page.return_value
+        mocked_stacked_pages: MagicMock = TestViewManager._mock_stacked_pages.return_value
+        mocked_stacked_pages.widget.return_value = expected_page
+
+        actual_page: MagicMock = TestViewManager._expected_view_manager.get_error_page()
+        mocked_stacked_pages.widget.assert_called_once_with(ERROR_PAGE_INDEX)
+        assert actual_page == expected_page
+
     def test_get_import_resources_page_return_expected_page(self) -> None:
         expected_page: MagicMock = TestViewManager._mock_import_resources_page.return_value
         mocked_stacked_pages: MagicMock = TestViewManager._mock_stacked_pages.return_value
@@ -83,16 +91,32 @@ class TestViewManager(TestCase):
         mocked_import_resources_page: MagicMock = TestViewManager._mock_import_resources_page.return_value
         mocked_view_edit_page: MagicMock = TestViewManager._mock_view_edit_page.return_value
 
-        TestViewManager._expected_view_manager.setup()
+        TestViewManager._expected_view_manager.setup(False)
         mocked_calls: List[call] = [call(mocked_view_edit_page), call(mocked_import_resources_page)]
+        mocked_stacked_pages.addWidget.assert_has_calls(mocked_calls)
+
+    def test_setup_error_page_only(self) -> None:
+        mocked_stacked_pages: MagicMock = TestViewManager._mock_stacked_pages.return_value
+        mocked_error_page: MagicMock = TestViewManager._mock_error_page.return_value
+
+        TestViewManager._expected_view_manager.setup(True)
+        mocked_calls: List[call] = [call(mocked_error_page)]
         mocked_stacked_pages.addWidget.assert_has_calls(mocked_calls)
 
     def test_show_stacked_pages_show_with_expected_index(self) -> None:
         mocked_stacked_pages: MagicMock = TestViewManager._mock_stacked_pages.return_value
         mocked_main_window: MagicMock = TestViewManager._mock_main_window.return_value
 
-        TestViewManager._expected_view_manager.show()
+        TestViewManager._expected_view_manager.show(False)
         mocked_stacked_pages.setCurrentIndex.assert_called_once_with(ViewManagerConstants.VIEW_AND_EDIT_PAGE_INDEX)
+        mocked_main_window.show.assert_called_once()
+
+    def test_show_stacked_pages_show_error_plage(self) -> None:
+        mocked_stacked_pages: MagicMock = TestViewManager._mock_stacked_pages.return_value
+        mocked_main_window: MagicMock = TestViewManager._mock_main_window.return_value
+
+        TestViewManager._expected_view_manager.show(True)
+        mocked_stacked_pages.setCurrentIndex.assert_called_once_with(ERROR_PAGE_INDEX)
         mocked_main_window.show.assert_called_once()
 
     def test_switch_to_view_edit_page_stacked_pages_switch_to_expected_index(self) -> None:

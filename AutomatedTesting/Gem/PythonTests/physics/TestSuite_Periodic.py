@@ -1,12 +1,7 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 
 """
 
@@ -93,11 +88,13 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
+    @fm.file_override('physxsystemconfiguration.setreg','C4044457_Material_RestitutionCombine.setreg_override', 'AutomatedTesting/Registry')
     def test_C4044457_Material_RestitutionCombine(self, request, workspace, editor, launcher_platform):
         from . import C4044457_Material_RestitutionCombine as test_module
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
+    @fm.file_override('physxsystemconfiguration.setreg','C4044456_Material_FrictionCombine.setreg_override', 'AutomatedTesting/Registry')
     def test_C4044456_Material_FrictionCombine(self, request, workspace, editor, launcher_platform):
         from . import C4044456_Material_FrictionCombine as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -194,6 +191,7 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
+    @fm.file_override('physxsystemconfiguration.setreg','C18981526_Material_RestitutionCombinePriority.setreg_override', 'AutomatedTesting/Registry')
     def test_C18981526_Material_RestitutionCombinePriority(self, request, workspace, editor, launcher_platform):
         from . import C18981526_Material_RestitutionCombinePriority as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -229,6 +227,7 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
+    @fm.file_override('physxsystemconfiguration.setreg','C18977601_Material_FrictionCombinePriority.setreg_override', 'AutomatedTesting/Registry')
     def test_C18977601_Material_FrictionCombinePriority(self, request, workspace, editor, launcher_platform):
         from . import C18977601_Material_FrictionCombinePriority as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -250,6 +249,7 @@ class TestAutomation(TestAutomationBase):
     @pytest.mark.xfail(
         reason="This test needs new physics asset with multiple materials to be more stable.")
     @revert_physics_config
+    @fm.file_override('physxsystemconfiguration.setreg','C4044697_Material_PerfaceMaterialValidation.setreg_override', 'AutomatedTesting/Registry')
     def test_C4044697_Material_PerfaceMaterialValidation(self, request, workspace, editor, launcher_platform):
         from . import C4044697_Material_PerfaceMaterialValidation as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -282,6 +282,7 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
+    @fm.file_override('physxsystemconfiguration.setreg','C15556261_PhysXMaterials_CharacterControllerMaterialAssignment.setreg_override', 'AutomatedTesting/Registry')
     def test_C15556261_PhysXMaterials_CharacterControllerMaterialAssignment(self, request, workspace, editor, launcher_platform):
         from . import C15556261_PhysXMaterials_CharacterControllerMaterialAssignment as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -326,6 +327,7 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
+    @fm.file_override('physxsystemconfiguration.setreg','C4044461_Material_Restitution.setreg_override', 'AutomatedTesting/Registry')
     def test_C4044461_Material_Restitution(self, request, workspace, editor, launcher_platform):
         from . import C4044461_Material_Restitution as test_module
         self._run_test(request, workspace, editor, test_module)

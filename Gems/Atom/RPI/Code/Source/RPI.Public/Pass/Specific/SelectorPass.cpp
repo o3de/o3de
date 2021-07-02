@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -44,7 +39,7 @@ namespace AZ
             }
         }
 
-        void SelectorPass::BuildAttachmentsInternal()
+        void SelectorPass::BuildInternal()
         {
             // Update output connections based on m_connections
             // This need to be done after BuildAttachment is finished
@@ -72,7 +67,7 @@ namespace AZ
             m_connections[outputSlotIndex] = inputSlotIndex;
 
             // Queue to rebuild attachment connections
-            QueueForBuildAttachments();
+            QueueForBuildAndInitialization();
         }
 
         void SelectorPass::Connect(const AZ::Name& inputSlot, const AZ::Name& outputSlot)
@@ -113,7 +108,7 @@ namespace AZ
             m_connections[outputIdx] = inputIdx;
 
             // Queue to rebuild attachment connections
-            QueueForBuildAttachments();
+            QueueForBuildAndInitialization();
         }
 
     } // namespace RPI

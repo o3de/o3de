@@ -826,7 +826,7 @@ enum class NetworkProperties
 #}
 {% macro DefineNetworkPropertyBehaviorReflection(Component, ReplicateFrom, ReplicateTo, ClassName) %}
 {% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, ReplicateFrom, ReplicateTo) %}
-{% if (Property.attrib['IsPublic'] | booleanTrue == true) and (Property.attrib['GenerateEventBindings'] | booleanTrue == true) -%}
+{% if (Property.attrib['IsPublic'] | booleanTrue == true) and (Property.attrib['ExposeToScript'] | booleanTrue == true) -%}
     // {{ UpperFirst(Property.attrib['Name']) }}: Replicate from {{ ReplicateFrom }} to {{ ReplicateTo }}
 {%  if Property.attrib['Container'] == 'Vector' or Property.attrib['Container'] == 'Array' %}
     ->Method("Get{{ UpperFirst(Property.attrib['Name']) }}", [](AZ::EntityId id, int32_t index) -> {{ Property.attrib['Type'] }}
@@ -1673,12 +1673,18 @@ namespace {{ Component.attrib['Namespace'] }}
 
     void {{ ComponentBaseName }}::ActivateController(Multiplayer::EntityIsMigrating entityIsMigrating)
     {
-        m_controller.get()->Activate(entityIsMigrating);
+        if (m_controller)
+        {
+            m_controller->Activate(entityIsMigrating);
+        }
     }
 
     void {{ ComponentBaseName }}::DeactivateController(Multiplayer::EntityIsMigrating entityIsMigrating)
     {
-        m_controller.get()->Deactivate(entityIsMigrating);
+        if (m_controller)
+        {
+            m_controller->Deactivate(entityIsMigrating);
+        }
     }
 
     void {{ ComponentBaseName }}::NetworkAttach(Multiplayer::NetBindComponent* netBindComponent, Multiplayer::ReplicationRecord& currentEntityRecord, Multiplayer::ReplicationRecord& predictableEntityRecord)

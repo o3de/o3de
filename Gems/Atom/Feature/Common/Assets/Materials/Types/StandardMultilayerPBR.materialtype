@@ -417,7 +417,7 @@
                 {
                     "id": "pdo",
                     "displayName": "Pixel Depth Offset",
-                    "description": "Whether to enable the pixel depth offset feature.",
+                    "description": "Enable PDO to offset the original pixel depths. This will affect any shaders using depth, for example, when receiving shadows.",
                     "type": "Bool",
                     "defaultValue": false,
                     "connection": {
@@ -2632,14 +2632,9 @@
             "file": "./StandardMultilayerPBR_DepthPass_WithPS.shader",
             "tag": "DepthPass_WithPS"
         },
-        // [GFX TODO][ATOM-4726] Use an "isSkinnedMesh" external material property and a functor that enables/disables the appropriate motion-vector shader
         {
-            "file": "Shaders/MotionVector/StaticMeshMotionVector.shader",
-            "tag": "StaticMeshMotionVector"
-        },
-        {
-            "file": "Shaders/MotionVector/SkinnedMeshMotionVector.shader",
-            "tag": "SkinnedMeshMotionVector"
+            "file": "Shaders/MotionVector/MeshMotionVector.shader",
+            "tag": "MeshMotionVector"
         }    
     ],
     "functors": [
@@ -3103,4 +3098,3 @@
         "UV1": "Unwrapped"
     }
 }
-

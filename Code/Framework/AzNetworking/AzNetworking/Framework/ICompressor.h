@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -23,10 +18,10 @@ namespace AzNetworking
     //! Collection of compression related error codes
     enum class CompressorError
     {
-        Ok,                   ///< No error, operation finished successfully
-        InsufficientBuffer,   ///< Buffer size is insufficient for the operation to complete, increase the size and try again
-        CorruptData,          ///< Malformed or hacked packet, potentially security issue
-        Uninitialized         ///< Compressor or supplied buffers are uninitialized
+        Ok,                   //!< No error, operation finished successfully
+        InsufficientBuffer,   //!< Buffer size is insufficient for the operation to complete, increase the size and try again
+        CorruptData,          //!< Malformed or hacked packet, potentially security issue
+        Uninitialized         //!< Compressor or supplied buffers are uninitialized
     };
 
     //! Unique identifier of a given compressor
@@ -34,6 +29,12 @@ namespace AzNetworking
 
     //! @class ICompressor
     //! @brief Packet data compressor interface.
+    //!
+    //! ICompressor is an abstract compression interface meant for user provided GEMs to implement (such as the [Multiplayer
+    //! Compression Gem](http://o3de.org/docs/user-guide/gems/reference/multiplayer-compression)).
+    //! Compression is supported for both TCP and UDP connections.  Instantiation of a compressor is controlled by the
+    //! `net_UdpCompressor` or `net_TcpCompressor` cvar for their respective protocols.  
+
     class ICompressor
     {
     public:
@@ -87,8 +88,16 @@ namespace AzNetworking
         ) = 0;
     };
 
-    //! Abstract factory to instantiate compressors.
-    //! Used by the network interface to create a compressor
+    //! @class ICompressorFactory
+    //! @brief Abstract factory to instantiate compressors.
+    //!
+    //! ICompressorFactory is an abstract compression interface meant for user provided GEMs to implement. ICompressorFactory
+    //! implementations can be registered to classes implementing INetworking. Registered factories can then be used to create
+    //! ICompressor implementations on demand. The [Multiplayer Compression
+    //! Gem](http://o3de.org/docs/user-guide/gems/reference/multiplayer-compression) is an example of an ICompressorFactory
+    //! for an LZ4 Compressor. In it, MultiplayerCompressionSystemComponent registers its ICompressorFactory with
+    //! NetworkingSystemComponent, which is an implementation of INetworking. Registered factories are keyed by their AZ Name
+    //! which is accessed through the factory's GetFactoryName method.
     class ICompressorFactory
     {
     public:
