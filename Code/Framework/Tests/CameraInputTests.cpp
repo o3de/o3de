@@ -66,7 +66,7 @@ namespace UnitTest
         AZStd::shared_ptr<AzFramework::TranslateCameraInput> m_firstPersonTranslateCamera;
     };
 
-    TEST_F(CameraInputFixture, BeginEndOrbitCameraConsumesCorrectEvents)
+    TEST_F(CameraInputFixture, Begin_and_end_orbit_camera_consumes_correct_events)
     {
         // begin orbit camera
         const bool consumed1 = HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceKeyboard::Key::ModifierAltL,
@@ -86,7 +86,7 @@ namespace UnitTest
         EXPECT_THAT(allConsumed, ElementsAre(true, false, true, false));
     }
 
-    TEST_F(CameraInputFixture, BeginCameraInputNotifiesActivationBeganCallbackForTranslateCamera)
+    TEST_F(CameraInputFixture, Begin_camera_input_notifies_activation_began_callback_for_translate_camera)
     {
         bool activationBegan = false;
         m_firstPersonTranslateCamera->SetActivationBeganFn(
@@ -101,7 +101,7 @@ namespace UnitTest
         EXPECT_TRUE(activationBegan);
     }
 
-    TEST_F(CameraInputFixture, BeginCameraInputNotifiesActivationBeganCallbackAfterDeltaForRotateCamera)
+    TEST_F(CameraInputFixture, Begin_camera_input_notifies_activation_began_callback_after_delta_for_rotate_camera)
     {
         bool activationBegan = false;
         m_firstPersonRotateCamera->SetActivationBeganFn(
@@ -117,7 +117,7 @@ namespace UnitTest
         EXPECT_TRUE(activationBegan);
     }
 
-    TEST_F(CameraInputFixture, BeginCameraInputDoesNotNotifyActivationBeganCallbackWithNoDeltaForRotateCamera)
+    TEST_F(CameraInputFixture, Begin_camera_input_does_not_notify_activation_began_callback_with_no_delta_for_rotate_camera)
     {
         bool activationBegan = false;
         m_firstPersonRotateCamera->SetActivationBeganFn(
@@ -132,7 +132,7 @@ namespace UnitTest
         EXPECT_FALSE(activationBegan);
     }
 
-    TEST_F(CameraInputFixture, EndCameraInputNotifiesActivationEndCallbackAfterDeltaForRotateCamera)
+    TEST_F(CameraInputFixture, End_camera_input_notifies_activation_end_callback_after_delta_for_rotate_camera)
     {
         bool activationEnded = false;
         m_firstPersonRotateCamera->SetActivationEndedFn(
@@ -150,7 +150,7 @@ namespace UnitTest
         EXPECT_TRUE(activationEnded);
     }
 
-    TEST_F(CameraInputFixture, EndCameraInputDoesNotNotifyActivationBeganOrEndCallbackWithNoDeltaForRotateCamera)
+    TEST_F(CameraInputFixture, End_camera_input_does_not_notify_activation_began_or_end_callback_with_no_delta_for_rotate_camera)
     {
         bool activationBegan = false;
         m_firstPersonRotateCamera->SetActivationBeganFn(
@@ -175,7 +175,7 @@ namespace UnitTest
         EXPECT_FALSE(activationEnded);
     }
 
-    TEST_F(CameraInputFixture, EndCameraInputNotifiesActivationBeganOrEndCallbackWithTranslateCamera)
+    TEST_F(CameraInputFixture, End_camera_input_notifies_activation_began_or_end_callback_with_translate_camera)
     {
         bool activationBegan = false;
         m_firstPersonTranslateCamera->SetActivationBeganFn(
@@ -200,7 +200,7 @@ namespace UnitTest
         EXPECT_TRUE(activationEnded);
     }
 
-    TEST_F(CameraInputFixture, EndActivationCalledForCameraInputIfActiveWhenCamerasAreCleared)
+    TEST_F(CameraInputFixture, End_activation_called_for_camera_input_if_active_when_cameras_are_cleared)
     {
         bool activationEnded = false;
         m_firstPersonTranslateCamera->SetActivationEndedFn(
