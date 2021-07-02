@@ -34,7 +34,6 @@
 #include <ScriptCanvas/Libraries/Core/UnaryOperator.h>
 #include <ScriptCanvas/Libraries/Core/BinaryOperator.h>
 #include <ScriptCanvas/Libraries/Core/EBusEventHandler.h>
-#include <ScriptCanvas/Libraries/Core/ErrorHandler.h>
 #include <ScriptCanvas/Libraries/Core/FunctionDefinitionNode.h>
 #include <ScriptCanvas/Libraries/Core/Method.h>
 #include <ScriptCanvas/Libraries/Core/Start.h>
@@ -95,7 +94,6 @@ namespace ScriptCanvas
 
     void Graph::Reflect(AZ::ReflectContext* context)
     {
-        Data::PropertyMetadata::Reflect(context);
         Data::Type::Reflect(context);
         Nodes::UnaryOperator::Reflect(context);
         Nodes::UnaryExpression::Reflect(context);

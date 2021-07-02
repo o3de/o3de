@@ -11,8 +11,6 @@
 // shared code
 
 #include "EBusEventHandler.h"
-#include "Error.h"
-#include "ErrorHandler.h"
 #include "ExtractProperty.h"
 #include "FunctionDefinitionNode.h"
 #include "ForEach.h"

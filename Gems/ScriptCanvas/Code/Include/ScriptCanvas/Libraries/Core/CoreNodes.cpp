@@ -99,8 +99,6 @@ namespace ScriptCanvas
         void Core::InitNodeRegistry(NodeRegistry& nodeRegistry)
         {
             using namespace ScriptCanvas::Nodes::Core;
-            AddNodeToRegistry<Core, Error>(nodeRegistry);
-            AddNodeToRegistry<Core, ErrorHandler>(nodeRegistry);
             AddNodeToRegistry<Core, Method>(nodeRegistry);
             AddNodeToRegistry<Core, MethodOverloaded>(nodeRegistry);
             AddNodeToRegistry<Core, Start>(nodeRegistry);            
@@ -122,8 +120,6 @@ namespace ScriptCanvas
         AZStd::vector<AZ::ComponentDescriptor*> Core::GetComponentDescriptors()
         {
             return AZStd::vector<AZ::ComponentDescriptor*>({
-                ScriptCanvas::Nodes::Core::Error::CreateDescriptor(),
-                ScriptCanvas::Nodes::Core::ErrorHandler::CreateDescriptor(),
                 ScriptCanvas::Nodes::Core::Method::CreateDescriptor(),
                 ScriptCanvas::Nodes::Core::MethodOverloaded::CreateDescriptor(),
                 ScriptCanvas::Nodes::Core::Start::CreateDescriptor(),                

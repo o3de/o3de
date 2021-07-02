@@ -30,10 +30,6 @@ namespace ScriptCanvas::Nodes::Core
     class SetVariableNode;
     class SendScriptEvent;
 }
-namespace ScriptCanvas::Nodes::Entity
-{
-    class EntityRef;
-}
 namespace ScriptEvents
 {
     class Method;

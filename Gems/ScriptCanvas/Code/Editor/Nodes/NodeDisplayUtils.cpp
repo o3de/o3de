@@ -43,8 +43,6 @@
 #include <ScriptCanvas/Libraries/Core/Method.h>
 #include <ScriptCanvas/Libraries/Core/SendScriptEvent.h>
 #include <ScriptCanvas/Libraries/Core/SetVariable.h>
-#include <ScriptCanvas/Libraries/Entity/EntityRef.h>
-
 
 namespace ScriptCanvasEditor::Nodes::SlotDisplayHelper
 {
@@ -1092,10 +1090,6 @@ namespace ScriptCanvasEditor::Nodes
         else if (auto azEventHandlerNode{ azrtti_cast<const ScriptCanvas::Nodes::Core::AzEventHandler*>(node) }; azEventHandlerNode != nullptr)
         {
             graphCanvasNodeId = DisplayAzEventHandlerNode(graphCanvasGraphId, azEventHandlerNode);
-        }
-        else if (azrtti_istypeof<ScriptCanvas::Nodes::Entity::EntityRef>(node))
-        {
-            graphCanvasNodeId = DisplayEntityNode(graphCanvasGraphId, static_cast<const ScriptCanvas::Nodes::Entity::EntityRef*>(node));
         }
         else if (azrtti_istypeof<ScriptCanvas::Nodes::Core::ReceiveScriptEvent>(node))
         {
