@@ -14,7 +14,6 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/base.h>
 #include <AzCore/Settings/SettingsRegistry.h>
-#include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
@@ -161,7 +160,6 @@ namespace AWSAttributionUnitTest
     protected:
         AZStd::shared_ptr<AZ::SerializeContext> m_serializeContext;
         AZStd::unique_ptr<AZ::JsonRegistrationContext> m_registrationContext;
-        AZStd::shared_ptr<AZ::SettingsRegistryImpl> m_settingsRegistry;
         AZStd::unique_ptr<AZ::JobContext> m_jobContext;
         AZStd::unique_ptr<AZ::JobCancelGroup> m_jobCancelGroup;
         AZStd::unique_ptr<AZ::JobManager> m_jobManager;
@@ -186,12 +184,8 @@ namespace AWSAttributionUnitTest
 
             AZ::JsonSystemComponent::Reflect(m_registrationContext.get());
 
-            m_settingsRegistry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
-
             m_settingsRegistry->SetContext(m_serializeContext.get());
             m_settingsRegistry->SetContext(m_registrationContext.get());
-
-            AZ::SettingsRegistry::Register(m_settingsRegistry.get());
 
             AZ::JobManagerDesc jobManagerDesc;
             AZ::JobManagerThreadDesc threadDesc;
@@ -210,9 +204,6 @@ namespace AWSAttributionUnitTest
             m_jobCancelGroup.reset();
             m_jobManager.reset();
 
-            AZ::SettingsRegistry::Unregister(m_settingsRegistry.get());
-
-            m_settingsRegistry.reset();
             m_serializeContext.reset();
             m_registrationContext.reset();
 
