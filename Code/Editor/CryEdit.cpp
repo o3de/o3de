@@ -2334,12 +2334,6 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
             }
 
             GetIEditor()->Notify(eNotify_OnIdleUpdate);
-
-            IEditor* pEditor = GetIEditor();
-            if (!pEditor->GetGameEngine()->IsLevelLoaded() && pEditor->GetSystem()->NeedDoWorkDuringOcclusionChecks())
-            {
-                pEditor->GetSystem()->DoWorkDuringOcclusionChecks();
-            }
         }
 
         AZ::ComponentApplication* componentApplication = nullptr;
