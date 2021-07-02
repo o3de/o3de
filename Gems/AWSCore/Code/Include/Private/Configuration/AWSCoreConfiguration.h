@@ -36,8 +36,8 @@ namespace AWSCore
             "Failed to get resource mapping config file name, return empty value instead.";
         static constexpr const char SettingsRegistryFileLoadFailureErrorMessage[] =
             "Failed to load AWSCore settings registry file.";
-        static constexpr const char SettingsRegistryLoadFailureErrorMessage[] =
-            "Failed to load AWSCore configurations from settings registry.";
+        static constexpr const char GlobalSettingsRegistryLoadFailureErrorMessage[] =
+            "Failed to load AWSCore configurations from global settings registry.";
 
 
         AWSCoreConfiguration();

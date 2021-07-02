@@ -113,7 +113,7 @@ namespace AWSCore
 
         InitAWSApi();
         m_awsCredentialManager->ActivateManager();
-        m_awsResourceMappingManager->ActivateManager(false);
+        m_awsResourceMappingManager->ActivateManager();
 
         AWSCoreRequestBus::Handler::BusConnect();
         AWSCoreNotificationsBus::Broadcast(&AWSCoreNotifications::OnSDKInitialized);

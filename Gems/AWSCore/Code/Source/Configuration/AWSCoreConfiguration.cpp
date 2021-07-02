@@ -92,7 +92,7 @@ namespace AWSCore
         AZ::SettingsRegistryInterface*  settingsRegistry = AZ::SettingsRegistry::Get();
         if (!settingsRegistry)
         {
-            AZ_Warning(AWSCoreConfigurationName, false, SettingsRegistryLoadFailureErrorMessage);
+            AZ_Warning(AWSCoreConfigurationName, false, GlobalSettingsRegistryLoadFailureErrorMessage);
             return;
         }
 
@@ -119,7 +119,7 @@ namespace AWSCore
         AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get();
         if (!settingsRegistry)
         {
-            AZ_Warning(AWSCoreConfigurationName, false, SettingsRegistryLoadFailureErrorMessage);
+            AZ_Warning(AWSCoreConfigurationName, false, GlobalSettingsRegistryLoadFailureErrorMessage);
             return;
         }
 

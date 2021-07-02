@@ -29,9 +29,9 @@ namespace AWSCore
     {
     }
 
-    void AWSResourceMappingManager::ActivateManager(bool reloadConfigFileName)
+    void AWSResourceMappingManager::ActivateManager()
     {
-        ReloadConfigFile(reloadConfigFileName);
+        ReloadConfigFile();
         AWSResourceMappingRequestBus::Handler::BusConnect();
     }
 
