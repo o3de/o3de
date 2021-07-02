@@ -14,7 +14,7 @@
 
 namespace O3DE::ProjectManager
 {
-    const QString ProjectBuilderWorker::BuildCancelled = ProjectBuilderWorker::tr("Build Cancelled.");
+    const QString ProjectBuilderWorker::BuildCancelled = QObject::tr("Build Cancelled.");
 
     ProjectBuilderWorker::ProjectBuilderWorker(const ProjectInfo& projectInfo)
         : QObject()
