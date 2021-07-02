@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -32,6 +27,12 @@ namespace AZ
 
         AZ::Transform* transformInstance = reinterpret_cast<AZ::Transform*>(outputValue);
         AZ_Assert(transformInstance, "Output value for JsonTransformSerializer can't be null.");
+
+        if (IsExplicitDefault(inputValue))
+        {
+            *transformInstance = AZ::Transform::CreateIdentity();
+            return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::DefaultsUsed, "Transform value set to identity.");
+        }
 
         JSR::ResultCode result(JSR::Tasks::ReadField);
 
@@ -72,7 +73,7 @@ namespace AZ
 
         return context.Report(
             result,
-            result.GetProcessing() != JSR::Processing::Halted ? "Succesfully loaded Transform information."
+            result.GetProcessing() != JSR::Processing::Halted ? "Successfully loaded Transform information."
                                                               : "Failed to load Transform information.");
     }
 
@@ -138,6 +139,11 @@ namespace AZ
             result,
             result.GetProcessing() != JSR::Processing::Halted ? "Successfully stored Transform information."
                                                               : "Failed to store Transform information.");
+    }
+
+    auto JsonTransformSerializer::GetOperationsFlags() const -> OperationFlags
+    {
+        return OperationFlags::InitializeNewInstance;
     }
 
 } // namespace AZ

@@ -1,0 +1,11 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "GlobalBuildOptions",
+    "ClassData": {
+        "ShaderCompilerArguments" : {
+            "DefaultMatrixOrder" : "Row",
+            "AzslcAdditionalFreeArguments" : "--strip-unused-srgs"
+        }
+    }
+}

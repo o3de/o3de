@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright(c) Amazon.com, Inc.or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution(the "License").All use of this software is governed by the License,
-*or, if provided, by the license below or the license accompanying this file.Do not
-* remove or modify any license notices.This file is distributed on an "AS IS" BASIS,
-*WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "MaterialBuilder.h"
 #include <Atom/RPI.Edit/Material/MaterialSourceData.h>
@@ -67,16 +62,41 @@ namespace AZ
             BusDisconnect();
         }
 
-        void AddPossibleJobDependencies(const char* jobKey, AZStd::string_view currentFilePath, AZStd::string_view referencedParentPath, AZStd::vector<AssetBuilderSDK::JobDependency>& jobDependencies)
+        //! Adds all relevant dependencies for a referenced source file, considering that the path might be relative to the original file location or a full asset path.
+        //! This will usually include multiple source dependencies and a single job dependency, but will include only source dependencies if the file is not found.
+        //! Note the AssetBuilderSDK::JobDependency::m_platformIdentifier will not be set by this function. The calling code must set this value before passing back
+        //! to the AssetBuilderSDK::CreateJobsResponse.
+        void AddPossibleDependencies(
+            AZStd::string_view currentFilePath, AZStd::string_view referencedParentPath,
+            AZStd::vector<AssetBuilderSDK::SourceFileDependency>& sourceFileDependencies,
+            const char* jobKey, AZStd::vector<AssetBuilderSDK::JobDependency>& jobDependencies)
         {
-            AZStd::vector<AZStd::string> possibleDependencies = AssetUtils::GetPossibleDepenencyPaths(currentFilePath, referencedParentPath);
+            bool dependencyFileFound = false;
+
+            AZStd::vector<AZStd::string> possibleDependencies = RPI::AssetUtils::GetPossibleDepenencyPaths(currentFilePath, referencedParentPath);
             for (auto& file : possibleDependencies)
             {
-                AssetBuilderSDK::JobDependency jobDependency;
-                jobDependency.m_jobKey = jobKey;
-                jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
-                jobDependency.m_sourceFile.m_sourceFileDependencyPath = file;
-                jobDependencies.push_back(jobDependency);
+                AssetBuilderSDK::SourceFileDependency sourceFileDependency;
+                sourceFileDependency.m_sourceFileDependencyPath = file;
+                sourceFileDependencies.push_back(sourceFileDependency);
+
+                // The first path found is the highest priority, and will have a job dependency, as this is the one
+                // the builder will actually use
+                if (!dependencyFileFound)
+                {
+                    AZ::Data::AssetInfo sourceInfo;
+                    AZStd::string watchFolder;
+                    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(dependencyFileFound, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath, file.c_str(), sourceInfo, watchFolder);
+
+                    if (dependencyFileFound)
+                    {
+                        AssetBuilderSDK::JobDependency jobDependency;
+                        jobDependency.m_jobKey = jobKey;
+                        jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
+                        jobDependency.m_sourceFile.m_sourceFileDependencyPath = file;
+                        jobDependencies.push_back(jobDependency);
+                    }
+                }
             }
         }
 
@@ -123,7 +143,7 @@ namespace AZ
             // We'll build up this one JobDescriptor and reuse it to register each of the platforms
             AssetBuilderSDK::JobDescriptor outputJobDescriptor;
             outputJobDescriptor.m_jobKey = JobKey;
-
+            
             // Load the file so we can detect and report dependencies.
             // If the file is a .materialtype, report dependencies on the .shader files.
             // If the file is a .material, report a dependency on the .materialtype and parent .material file
@@ -152,7 +172,9 @@ namespace AZ
 
                     for (auto& shader : materialTypeSourceData.GetValue().m_shaderCollection)
                     {
-                        AddPossibleJobDependencies("Shader Asset", request.m_sourceFile, shader.m_shaderFilePath, outputJobDescriptor.m_jobDependencyList);
+                        AddPossibleDependencies(request.m_sourceFile, shader.m_shaderFilePath,
+                            response.m_sourceFileDependencyList, "Shader Asset",
+                            outputJobDescriptor.m_jobDependencyList);
                     }
 
                     for (auto& functor : materialTypeSourceData.GetValue().m_materialFunctorSourceData)
@@ -161,7 +183,9 @@ namespace AZ
 
                         for (const MaterialFunctorSourceData::AssetDependency& dependency : dependencies)
                         {
-                            AddPossibleJobDependencies(dependency.m_jobKey.c_str(), request.m_sourceFile, dependency.m_sourceFilePath, outputJobDescriptor.m_jobDependencyList);
+                            AddPossibleDependencies(request.m_sourceFile, dependency.m_sourceFilePath,
+                                response.m_sourceFileDependencyList,
+                                dependency.m_jobKey.c_str(), outputJobDescriptor.m_jobDependencyList);
                         }
                     }
                 }
@@ -196,7 +220,9 @@ namespace AZ
 
                     // Register dependency on the parent material source file so we can load it and use it's data to build this variant material.
                     // Note, we don't need a direct dependency on the material type because the parent material will depend on it.
-                    AddPossibleJobDependencies(JobKey, request.m_sourceFile, parentMaterialPath, outputJobDescriptor.m_jobDependencyList);
+                    AddPossibleDependencies(request.m_sourceFile, parentMaterialPath,
+                        response.m_sourceFileDependencyList,
+                        JobKey, outputJobDescriptor.m_jobDependencyList);
                 }
             }
             

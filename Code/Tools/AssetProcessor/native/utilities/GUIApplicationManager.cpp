@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "native/utilities/GUIApplicationManager.h"
 #include "native/connection/connectionManager.h"
 #include "native/utilities/IniConfiguration.h"
@@ -273,10 +268,9 @@ bool GUIApplicationManager::Run()
         trayIconMenu->addAction(quitAction);
 #endif
 
-        m_trayIcon = new QSystemTrayIcon(m_mainWindow);
+        m_trayIcon = new QSystemTrayIcon(QIcon(":/o3de_assetprocessor_taskbar.svg"), m_mainWindow);
         m_trayIcon->setContextMenu(trayIconMenu);
-        m_trayIcon->setToolTip(QObject::tr("Asset Processor"));
-        m_trayIcon->setIcon(QIcon(":/o3de_assetprocessor.png"));
+        m_trayIcon->setToolTip(QObject::tr("O3DE Asset Processor"));
         m_trayIcon->show();
         QObject::connect(m_trayIcon, &QSystemTrayIcon::activated, m_mainWindow, [&, wrapper](QSystemTrayIcon::ActivationReason reason)
             {
@@ -298,8 +292,8 @@ bool GUIApplicationManager::Run()
         if (startHidden)
         {
             m_trayIcon->showMessage(
-                QCoreApplication::translate("Tray Icon", "Open 3D Engine Asset Processor has started"),
-                QCoreApplication::translate("Tray Icon", "The Open 3D Engine Asset Processor monitors raw project assets and converts those assets into runtime-ready data."),
+                QCoreApplication::translate("Tray Icon", "O3DE Asset Processor has started"),
+                QCoreApplication::translate("Tray Icon", "The O3DE Asset Processor monitors raw project assets and converts those assets into runtime-ready data."),
                 QSystemTrayIcon::Information, 3000);
         }
     }
@@ -819,7 +813,7 @@ void GUIApplicationManager::ShowTrayIconErrorMessage(QString msg)
         {
             m_timeWhenLastWarningWasShown = currentTime;
             m_trayIcon->showMessage(
-                QCoreApplication::translate("Tray Icon", "Open 3D Engine Asset Processor"),
+                QCoreApplication::translate("Tray Icon", "O3DE Asset Processor"),
                 QCoreApplication::translate("Tray Icon", msg.toUtf8().data()),
                 QSystemTrayIcon::Critical, 3000);
         }
@@ -831,7 +825,7 @@ void GUIApplicationManager::ShowTrayIconMessage(QString msg)
     if (m_trayIcon && m_mainWindow && !m_mainWindow->isVisible())
     {
         m_trayIcon->showMessage(
-            QCoreApplication::translate("Tray Icon", "Open 3D Engine Asset Processor"),
+            QCoreApplication::translate("Tray Icon", "O3DE Asset Processor"),
             QCoreApplication::translate("Tray Icon", msg.toUtf8().data()),
             QSystemTrayIcon::Information, 3000);
     }

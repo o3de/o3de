@@ -1,5 +1,5 @@
 {
-    "Source": "Levels/PrefabLevel_OpensLevelWithEntities/PrefabLevel_OpensLevelWithEntities.prefab",
+    "Source": "Levels/Prefab/PrefabLevel_OpensLevelWithEntities/PrefabLevel_OpensLevelWithEntities.prefab",
     "ContainerEntity": {
         "Id": "Entity_[403811863694]",
         "Name": "Level",
@@ -15,7 +15,8 @@
             "Component_[13764860261821571747]": {
                 "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
                 "Id": 13764860261821571747,
-                "Parent Entity": ""
+                "Parent Entity": "",
+                "Cached World Transform Parent": ""
             },
             "Component_[15844324401733835865]": {
                 "$type": "EditorEntitySortComponent",

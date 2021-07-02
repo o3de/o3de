@@ -1,0 +1,55 @@
+#
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
+#
+
+set(FILES
+    main.cpp
+    ProjectSettingsTool_precompiled.h
+    DefaultImageValidator.cpp
+    DefaultImageValidator.h
+    FunctorValidator.cpp
+    FunctorValidator.h
+    LastPathBus.h
+    Platforms.h
+    PlatformSettings.h
+    PlatformSettings_Android.cpp
+    PlatformSettings_Android.h
+    PlatformSettings_Base.cpp
+    PlatformSettings_Base.h
+    PlatformSettings_common.h
+    PlatformSettings_Ios.cpp
+    PlatformSettings_Ios.h
+    PlistDictionary.cpp
+    PlistDictionary.h
+    ProjectSettingsContainer.cpp
+    ProjectSettingsContainer.h
+    ProjectSettingsSerialization.cpp
+    ProjectSettingsSerialization.h
+    ProjectSettingsTool.qrc
+    ProjectSettingsToolWidget.ui
+    ProjectSettingsToolWindow.cpp
+    ProjectSettingsToolWindow.h
+    ProjectSettingsValidator.cpp
+    ProjectSettingsValidator.h
+    PropertyFileSelect.cpp
+    PropertyFileSelect.h
+    PropertyFuncValBrowseEdit.cpp
+    PropertyFuncValBrowseEdit.h
+    PropertyFuncValLineEdit.cpp
+    PropertyFuncValLineEdit.h
+    PropertyImagePreview.cpp
+    PropertyImagePreview.h
+    PropertyLinked.cpp
+    PropertyLinked.h
+    Utils.cpp
+    Utils.h
+    ValidationHandler.cpp
+    ValidationHandler.h
+    ValidatorBus.h
+    Validators.cpp
+    Validators.h
+    Validators_impl.h
+)

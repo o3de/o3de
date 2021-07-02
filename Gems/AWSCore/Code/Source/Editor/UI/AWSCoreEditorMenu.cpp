@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -35,6 +30,8 @@
 
 namespace AWSCore
 {
+    static constexpr int IconSize = 16;
+
     AWSCoreEditorMenu::AWSCoreEditorMenu(const QString& text)
         : QMenu(text)
         , m_resourceMappingToolWatcher(nullptr)
@@ -43,6 +40,7 @@ namespace AWSCore
         InitializeResourceMappingToolAction();
         this->addSeparator();
         InitializeAWSFeatureGemActions();
+        AddSpaceForIcon(this);
 
         AWSCoreEditorRequestBus::Handler::BusConnect();
     }
@@ -133,9 +131,16 @@ namespace AWSCore
     {
         QMenu* globalDocsMenu = this->addMenu(QObject::tr(AWSAndO3DEGlobalDocsText));
 
-        globalDocsMenu->addAction(AddExternalLinkAction(AWSAndScriptCanvasActionText, AWSAndScriptCanvasUrl, ":/Notifications/link.svg"));
-        globalDocsMenu->addAction(AddExternalLinkAction(AWSAndComponentsActionText, AWSAndComponentsUrl, ":/Notifications/link.svg"));
-        globalDocsMenu->addAction(AddExternalLinkAction(CallAWSResourcesActionText, CallAWSResourcesUrl, ":/Notifications/link.svg"));
+        globalDocsMenu->addAction(
+            AddExternalLinkAction(AWSAndO3DEGettingStartedActionText, AWSAndGettingStartedUrl, ":/Notifications/link.svg"));
+        globalDocsMenu->addAction(
+            AddExternalLinkAction(AWSAndO3DEMappingsFileActionText, AWSAndResourceMappingsUrl, ":/Notifications/link.svg"));
+        globalDocsMenu->addAction(
+            AddExternalLinkAction(AWSAndO3DEResourceToolActionText, AWSAndResourceMappingToolUrl, ":/Notifications/link.svg"));
+        globalDocsMenu->addAction(
+            AddExternalLinkAction(AWSAndO3DEScriptingActionText, AWSAndScriptingUrl, ":/Notifications/link.svg"));
+
+        AddSpaceForIcon(globalDocsMenu);
     }
 
     void AWSCoreEditorMenu::InitializeAWSFeatureGemActions()
@@ -159,6 +164,8 @@ namespace AWSCore
         subMenu->addAction(AddExternalLinkAction(
             AWSClientAuthGemOverviewActionText, AWSClientAuthGemOverviewUrl, ":/Notifications/link.svg"));
         subMenu->addAction(AddExternalLinkAction(
+            AWSClientAuthGemSetupActionText, AWSClientAuthGemSetupUrl, ":/Notifications/link.svg"));
+        subMenu->addAction(AddExternalLinkAction(
             AWSClientAuthCDKAndResourcesActionText, AWSClientAuthCDKAndResourcesUrl, ":/Notifications/link.svg"));
         subMenu->addAction(AddExternalLinkAction(
             AWSClientAuthScriptCanvasAndLuaActionText, AWSClientAuthScriptCanvasAndLuaUrl, ":/Notifications/link.svg"));
@@ -167,9 +174,9 @@ namespace AWSCore
         subMenu->addAction(AddExternalLinkAction(
             AWSClientAuthCustomAuthProviderActionText, AWSClientAuthCustomAuthProviderUrl, ":/Notifications/link.svg"));
         subMenu->addAction(AddExternalLinkAction(
-            AWSClientAuthPlatformSpecificActionText, AWSClientAuthPlatformSpecificUrl, ":/Notifications/link.svg"));
-        subMenu->addAction(AddExternalLinkAction(
             AWSClientAuthAPIReferenceActionText, AWSClientAuthAPIReferenceUrl, ":/Notifications/link.svg"));
+
+        AddSpaceForIcon(subMenu);
     }
 
     void AWSCoreEditorMenu::SetAWSMetricsEnabled()
@@ -198,6 +205,7 @@ namespace AWSCore
                 QDesktopServices::openUrl(QUrl::fromLocalFile(configFilePath.c_str()));
             });
         subMenu->addAction(settingsAction);
+        AddSpaceForIcon(subMenu);
     }
 
     QMenu* AWSCoreEditorMenu::SetAWSFeatureSubMenu(const AZStd::string& menuText)
@@ -209,11 +217,19 @@ namespace AWSCore
             {
                 QMenu* subMenu = new QMenu(QObject::tr(menuText.c_str()));
                 subMenu->setIcon(QIcon(QString(":/Notifications/checkmark.svg")));
+                subMenu->setProperty("noHover", true);
                 this->insertMenu(*itr, subMenu);
                 this->removeAction(*itr);
                 return subMenu;
             }
         }
         return nullptr;
+    }
+
+    void AWSCoreEditorMenu::AddSpaceForIcon(QMenu* menu)
+    {
+        QSize size = menu->sizeHint();
+        size.setWidth(size.width() + IconSize);
+        menu->setFixedSize(size);
     }
 } // namespace AWSCore

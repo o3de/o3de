@@ -1,12 +1,7 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 from __future__ import annotations
@@ -37,10 +32,13 @@ class ThreadManager(object):
         else:
             raise AssertionError(error_messages.SINGLETON_OBJECT_ERROR_MESSAGE.format("ThreadManager"))
 
-    def setup(self, thread_count: int = 1) -> None:
-        # Based on prototype use case, we just need 1 thread
-        logger.info(f"Setting up thread pool with MaxThreadCount={thread_count} ...")
-        self._thread_pool.setMaxThreadCount(thread_count)
+    def setup(self, setup_error: bool, thread_count: int = 1) -> None:
+        if setup_error:
+            logger.debug("Skip thread pool creation, as there is major setup error.")
+        else:
+            # Based on prototype use case, we just need 1 thread
+            logger.debug(f"Setting up thread pool with MaxThreadCount={thread_count} ...")
+            self._thread_pool.setMaxThreadCount(thread_count)
 
     """Reserves a thread and uses it to run runnable worker, unless this thread will make
     the current thread count exceed max thread count. In that case, runnable is added to a run queue instead."""

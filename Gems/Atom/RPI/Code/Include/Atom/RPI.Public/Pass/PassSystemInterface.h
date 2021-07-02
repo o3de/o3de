@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
@@ -39,6 +34,37 @@ namespace AZ
         class SwapChainPass;
 
         using PassCreator = AZStd::function<Ptr<Pass>(const PassDescriptor& descriptor)>;
+
+        // Enum to track the different execution phases of the Pass System
+        enum class PassSystemState : u32
+        {
+            // Default state, 
+            Unitialized,
+
+            // Initial Pass System setup. Transitions to Idle
+            InitializingPassSystem,
+
+            // Pass System is processing passes queued for Removal. Transitions to Idle
+            RemovingPasses,
+
+            // Pass System is processing passes queued for Build (and their child passes). Transitions to Idle
+            BuildingPasses,
+
+            // Pass System is processing passes queued for Initialization (and their child passes). Transitions to Idle
+            InitializingPasses,
+
+            // Pass System is validating that the Pass hierarchy is in a valid state after Build and Initialization. Transitions to Idle
+            ValidatingPasses,
+
+            // Pass System is idle and can transition to any other state (except FrameEnd)
+            Idle,
+
+            // Pass System is currently rendering a frame. Transitions to FrameEnd
+            Rendering,
+
+            // Pass System is finishing rendering a frame. Transitions to Idle
+            FrameEnd,
+        };
 
         class PassSystemInterface
         {
@@ -76,9 +102,6 @@ namespace AZ
 
             //! Prints the entire pass hierarchy from the root
             virtual void DebugPrintPassHierarchy() = 0;
-
-            //! Returns whether the Pass System is currently in it's build phase
-            virtual bool IsBuilding() const = 0;
 
             //! Returns whether the Pass System is currently hot reloading
             virtual bool IsHotReloading() const = 0;
@@ -157,14 +180,19 @@ namespace AZ
             //! The handler can add new pass templates or load pass template mappings from assets
             virtual void ConnectEvent(OnReadyLoadTemplatesEvent::Handler& handler) = 0;
 
+            virtual PassSystemState GetState() const = 0;
+
         private:
             // These functions are only meant to be used by the Pass class
 
-            // Schedules a pass to have it's BuildAttachments() function called during frame update
-            virtual void QueueForBuildAttachments(Pass* pass) = 0;
+            // Schedules a pass to have it's Build() function called during frame update
+            virtual void QueueForBuild(Pass* pass) = 0;
 
             // Schedules a pass to be deleted during frame update
             virtual void QueueForRemoval(Pass* pass) = 0;
+
+            // Schedules a pass to be initialized during frame update
+            virtual void QueueForInitialization(Pass* pass) = 0;
 
             //! Registers the pass with the pass library. Called in the Pass constructor.
             virtual void RegisterPass(Pass* pass) = 0;

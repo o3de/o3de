@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 # This file is copied during engine registration. Edits to this file will be lost next
 # time a registration happens.
@@ -22,7 +18,7 @@ set(LY_EXTERNAL_SUBDIRS "" CACHE STRING "List of subdirectories to recurse into 
 # Restricted folders(contains an additional restricted.json), etc...
 # \arg:output_external_subdirs name of output variable to store external subdirectories into
 function(read_engine_external_subdirs output_external_subdirs)
-    file(READ ${LY_ROOT_FOLDER}/engine.json engine_json_data)
+    ly_file_read(${LY_ROOT_FOLDER}/engine.json engine_json_data)
     string(JSON external_subdirs_count ERROR_VARIABLE engine_json_error
         LENGTH ${engine_json_data} "external_subdirectories")
     if(engine_json_error)

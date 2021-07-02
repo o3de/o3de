@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "RCcontrollerUnitTests.h"
 #include <AzTest/AzTest.h>
 #include <QCoreApplication>
@@ -545,10 +540,13 @@ void RCcontrollerUnitTests::RunRCControllerTests()
     rcJob.SetCheckExclusiveLock(true);
     rcJob.Start();
 
+
+#if defined(AZ_PLATFORM_WINDOWS)
+    // on windows, opening a file for reading locks it
+    // but on other platforms, this is not the case.
     // we only expect work to begin when we can gain an exclusive lock on this file.
     UNIT_TEST_EXPECT_FALSE(UnitTestUtils::BlockUntil(beginWork, 5000));
 
-#if defined(AZ_PLATFORM_WINDOWS)
     // Once we release the file, it should process normally
     lockFileTest.close();
 #else

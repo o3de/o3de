@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -73,13 +68,15 @@ namespace AZ
             void BusConnectToTags();
 
             const AZStd::unordered_set<AZ::EntityId>& GetCameraEntityList() const;
-
+            bool IsEditorView(const AZ::RPI::ViewPtr view);
             bool HasTags(const AZ::EntityId& entityId, const AZStd::vector<AZStd::string>& tags) const;
 
             // list of entities containing tags set in this component's property.
             AZStd::unordered_set<AZ::EntityId> m_taggedCameraEntities;
             // a list of cameras tracked by this component. This is used if no camera tags are specified.
             AZStd::unordered_set<AZ::EntityId> m_cameraEntities;
+            // a list of camera views in the scene. This is used to test if a view is an editor view.
+            AZStd::unordered_set<AZ::RPI::View*> m_allCameraViews;
 
             PostProcessFeatureProcessorInterface* m_featureProcessorInterface = nullptr;
             PostProcessSettingsInterface* m_postProcessInterface = nullptr;

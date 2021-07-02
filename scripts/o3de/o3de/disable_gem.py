@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 """
 Contains methods for removing a gem from a project
@@ -64,7 +60,7 @@ def disable_gem_in_project(gem_name: str = None,
 
     # if gem name resolve it into a path
     if gem_name and not gem_path:
-        gem_path = manifest.get_registered(gem_name=gem_name)
+        gem_path = manifest.get_registered(gem_name=gem_name, project_path=project_path)
     if not gem_path:
         logger.error(f'Unable to locate gem path from the registered manifest.json files:'
                      f' {str(pathlib.Path.home() / ".o3de/manifest.json")},'
@@ -78,7 +74,7 @@ def disable_gem_in_project(gem_name: str = None,
 
 
     # Read gem.json from the gem path
-    gem_json_data = manifest.get_gem_json_data(gem_path=gem_path)
+    gem_json_data = manifest.get_gem_json_data(gem_path=gem_path, project_path=project_path)
     if not gem_json_data:
         logger.error(f'Could not read gem.json content under {gem_path}.')
         return 1

@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 ly_add_target(
@@ -69,4 +65,22 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
     # tools and builders use the above module.
     ly_create_alias(NAME Camera.Tools NAMESPACE    Gem TARGETS Gem::Camera.Editor)
     ly_create_alias(NAME Camera.Builders NAMESPACE Gem TARGETS Gem::Camera.Editor)
+
+    # The DefaultPrefab contains an EditorCameraComponent which makes this gem required
+    ly_enable_gems(GEMS Camera VARIANTS Tools TARGETS Editor)
+    ly_enable_gems(GEMS Camera VARIANTS Builders TARGETS AssetBuilder AssetProcessor AssetProcessorBatch)
 endif()
+
+
+# Added dependencies to the Client and Server Launchers
+get_property(LY_PROJECTS_TARGET_NAME GLOBAL PROPERTY LY_PROJECTS_TARGET_NAME)
+foreach(project_name IN LISTS LY_PROJECTS_TARGET_NAME)
+    # Add gem as a dependency of the Clients Launcher
+    ly_enable_gems(PROJECT_NAME ${project_name} GEMS Camera VARIANTS Clients
+        TARGETS ${project_name}.GameLauncher)
+    # Add gem as a dependency of the Servers Launcher
+    if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
+        ly_enable_gems(PROJECT_NAME ${project_name} GEMS Camera VARIANTS Servers
+            TARGETS ${project_name}.ServerLauncher)
+    endif()
+endforeach()

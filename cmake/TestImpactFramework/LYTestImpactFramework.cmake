@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 # Switch to enable/disable test impact analysis (and related build targets)
@@ -334,7 +330,7 @@ function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE PERSISTENT_DATA_D
     )
     
     # Substitute config file template with above vars
-    file(READ "${CONFIG_TEMPLATE_FILE}" config_file)
+    ly_file_read("${CONFIG_TEMPLATE_FILE}" config_file)
     string(CONFIGURE ${config_file} config_file)
     
     # Write out entire config contents to a file in the build directory of the test impact framework console target

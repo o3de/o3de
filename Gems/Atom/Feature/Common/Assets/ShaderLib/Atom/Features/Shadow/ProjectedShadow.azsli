@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * move or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
  */
 
 #pragma once
@@ -226,7 +222,7 @@ float ProjectedShadow::GetVisibilityEsm()
     }
 
     const float invAtlasSize = ViewSrg::m_invShadowmapAtlasSize;
-    const Texture2DArray<float> expShadowmap = PassSrg::m_projectedExponentialShadowmap;
+    const Texture2DArray<float> shadowmap = PassSrg::m_projectedExponentialShadowmap;
 
     if (m_shadowPosition.x >= 0 && m_shadowPosition.x * size < size - PixelMargin &&
         m_shadowPosition.y >= 0 && m_shadowPosition.y * size < size - PixelMargin)
@@ -243,10 +239,12 @@ float ProjectedShadow::GetVisibilityEsm()
         const float depth = PerspectiveDepthToLinear(
             m_shadowPosition.z, 
             coefficients);
-        const float expDepthInShadowmap = expShadowmap.Sample(
+        const float occluder = shadowmap.Sample(
             PassSrg::LinearSampler, 
             float3(atlasPosition.xy * invAtlasSize, atlasPosition.z)).r;
-        const float ratio = exp(-EsmExponentialShift * depth) * expDepthInShadowmap;
+
+        const float exponent = -ViewSrg::m_projectedShadows[m_shadowIndex].m_esmExponent * (depth - occluder);
+        const float ratio = exp(exponent);
         // pow() mitigates light bleeding to shadows from near shadow casters.
         return saturate( pow(ratio, 8) );
     }
@@ -265,7 +263,7 @@ float ProjectedShadow::GetVisibilityEsmPcf()
     }
 
     const float invAtlasSize = ViewSrg::m_invShadowmapAtlasSize;
-    const Texture2DArray<float> expShadowmap = PassSrg::m_projectedExponentialShadowmap;
+    const Texture2DArray<float> shadowmap = PassSrg::m_projectedExponentialShadowmap;
 
     if (m_shadowPosition.x >= 0 && m_shadowPosition.x * size < size - PixelMargin &&
         m_shadowPosition.y >= 0 && m_shadowPosition.y * size < size - PixelMargin)
@@ -282,10 +280,12 @@ float ProjectedShadow::GetVisibilityEsmPcf()
         const float depth = PerspectiveDepthToLinear(
             m_shadowPosition.z,
             coefficients);
-        const float expDepthInShadowmap = expShadowmap.Sample(
+        const float occluder = shadowmap.Sample(
             PassSrg::LinearSampler,
             float3(atlasPosition.xy * invAtlasSize, atlasPosition.z)).r;
-        float ratio = exp(-EsmExponentialShift * depth) * expDepthInShadowmap;
+
+        const float exponent = -ViewSrg::m_projectedShadows[m_shadowIndex].m_esmExponent * (depth - occluder);
+        float ratio = exp(exponent);
 
         static const float pcfFallbackThreshold = 1.04;
         if (ratio > pcfFallbackThreshold)

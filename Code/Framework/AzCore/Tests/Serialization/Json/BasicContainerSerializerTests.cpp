@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Serialization/Json/BasicContainerSerializer.h>
 #include <AzCore/std/containers/fixed_vector.h>
@@ -52,6 +47,11 @@ namespace JsonSerializationTests
         AZStd::shared_ptr<Container> CreateFullySetInstance() override
         {
             return AZStd::make_shared<Container>(Container{ 188, 288, 388 });
+        }
+
+        AZStd::shared_ptr<Container> CreateSingleArrayDefaultInstance() override
+        {
+            return AZStd::make_shared<Container>(Container{ 0 });
         }
 
         AZStd::string_view GetJsonForFullySetInstance() override
@@ -120,6 +120,13 @@ namespace JsonSerializationTests
                 &SimplePointerTestDescription::Delete);
         }
 
+        AZStd::shared_ptr<Container> CreateSingleArrayDefaultInstance() override
+        {
+            int* value = reinterpret_cast<int*>(azmalloc(sizeof(int), alignof(int)));
+            *value = 0;
+            return AZStd::shared_ptr<Container>(new Container{ value }, &SimplePointerTestDescription::Delete);
+        }
+
         AZStd::string_view GetJsonForFullySetInstance() override
         {
             return "[188, 288, 388]";
@@ -177,6 +184,13 @@ namespace JsonSerializationTests
 
             auto instance = AZStd::make_shared<Container>();
             *instance = { values[0], values[1], values[2] };
+            return instance;
+        }
+
+        AZStd::shared_ptr<Container> CreateSingleArrayDefaultInstance() override
+        {
+            auto instance = AZStd::make_shared<Container>();
+            *instance = { SimpleClass{} };
             return instance;
         }
 
@@ -301,7 +315,7 @@ namespace JsonSerializationTests
         
         ResultCode result = m_serializer->Store(*m_jsonDocument, &instance, &instance, azrtti_typeid(&instance), *m_jsonSerializationContext);
         EXPECT_EQ(Processing::Completed, result.GetProcessing());
-        EXPECT_EQ(Outcomes::DefaultsUsed, result.GetOutcome());
+        EXPECT_EQ(Outcomes::PartialDefaults, result.GetOutcome());
         Expect_DocStrEq("[{}]");
     }
 
@@ -315,7 +329,7 @@ namespace JsonSerializationTests
 
         ResultCode result = m_serializer->Store(*m_jsonDocument, &instance, nullptr, azrtti_typeid(&instance), *m_jsonSerializationContext);
         EXPECT_EQ(Processing::Completed, result.GetProcessing());
-        EXPECT_EQ(Outcomes::DefaultsUsed, result.GetOutcome());
+        EXPECT_EQ(Outcomes::PartialDefaults, result.GetOutcome());
         Expect_DocStrEq("[{},{}]");
     }
 
@@ -330,7 +344,6 @@ namespace JsonSerializationTests
         ResultCode result = m_serializer->Store(*m_jsonDocument, &instance, nullptr, azrtti_typeid(&instance), *m_jsonSerializationContext);
         EXPECT_EQ(Processing::Completed, result.GetProcessing());
         EXPECT_EQ(Outcomes::PartialDefaults, result.GetOutcome());
-        EXPECT_NE(Outcomes::DefaultsUsed, result.GetOutcome());
         Expect_DocStrEq(R"([{"$type": "SimpleInheritence"},{"$type": "SimpleInheritence"}])");
     }
 
