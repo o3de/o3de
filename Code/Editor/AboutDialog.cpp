@@ -45,7 +45,7 @@ CAboutDialog::CAboutDialog(QString versionText, QString richTextCopyrightNotice,
                     CAboutDialog > QLabel#link { text-decoration: underline; color: #94D2FF; }");
 
     // Prepare background image
-    QImage backgroundImage(QStringLiteral(":/StartupLogoDialog/splashscreen_background_gradient.jpg"));
+    QImage backgroundImage(QStringLiteral(":/StartupLogoDialog/splashscreen_background_developer_preview.jpg"));
     m_backgroundImage = QPixmap::fromImage(backgroundImage.scaled(m_enforcedWidth, m_enforcedHeight, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
 
     // Draw the Open 3D Engine logo from svg
