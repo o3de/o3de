@@ -27,37 +27,14 @@ namespace AzFramework
     AZ_CVAR(float, ed_cameraSystemMaxOrbitDistance, 50.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
 
     AZ_CVAR(
-        AZ::CVarFixedString, ed_cameraSystemTranslateForwardKey, "keyboard_key_alphanumeric_W", nullptr, AZ::ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(
-        AZ::CVarFixedString,
-        ed_cameraSystemTranslateBackwardKey,
-        "keyboard_key_alphanumeric_S",
-        nullptr,
-        AZ::ConsoleFunctorFlags::Null,
-        "");
-    AZ_CVAR(
-        AZ::CVarFixedString, ed_cameraSystemTranslateLeftKey, "keyboard_key_alphanumeric_A", nullptr, AZ::ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(
-        AZ::CVarFixedString, ed_cameraSystemTranslateRightKey, "keyboard_key_alphanumeric_D", nullptr, AZ::ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(AZ::CVarFixedString, ed_cameraSystemTranslateUpKey, "keyboard_key_alphanumeric_E", nullptr, AZ::ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(
-        AZ::CVarFixedString, ed_cameraSystemTranslateDownKey, "keyboard_key_alphanumeric_Q", nullptr, AZ::ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(
         AZ::CVarFixedString, ed_cameraSystemTranslateBoostKey, "keyboard_key_modifier_shift_l", nullptr, AZ::ConsoleFunctorFlags::Null, "");
     AZ_CVAR(AZ::CVarFixedString, ed_cameraSystemOrbitKey, "keyboard_key_modifier_alt_l", nullptr, AZ::ConsoleFunctorFlags::Null, "");
-
     AZ_CVAR(AZ::CVarFixedString, ed_cameraSystemFreeLookButton, "mouse_button_right", nullptr, AZ::ConsoleFunctorFlags::Null, "");
     AZ_CVAR(AZ::CVarFixedString, ed_cameraSystemFreePanButton, "mouse_button_middle", nullptr, AZ::ConsoleFunctorFlags::Null, "");
     AZ_CVAR(AZ::CVarFixedString, ed_cameraSystemOrbitLookButton, "mouse_button_left", nullptr, AZ::ConsoleFunctorFlags::Null, "");
     AZ_CVAR(AZ::CVarFixedString, ed_cameraSystemOrbitDollyButton, "mouse_button_right", nullptr, AZ::ConsoleFunctorFlags::Null, "");
     AZ_CVAR(AZ::CVarFixedString, ed_cameraSystemOrbitPanButton, "mouse_button_middle", nullptr, AZ::ConsoleFunctorFlags::Null, "");
 
-    static InputChannelId CameraTranslateForwardId;
-    static InputChannelId CameraTranslateBackwardId;
-    static InputChannelId CameraTranslateLeftId;
-    static InputChannelId CameraTranslateRightId;
-    static InputChannelId CameraTranslateDownId;
-    static InputChannelId CameraTranslateUpId;
     static InputChannelId CameraTranslateBoostId;
     static InputChannelId CameraOrbitId;
 
@@ -70,18 +47,6 @@ namespace AzFramework
 
     void ReloadCameraKeyBindings()
     {
-        const AZ::CVarFixedString& forward = ed_cameraSystemTranslateForwardKey;
-        CameraTranslateForwardId = InputChannelId(forward.c_str());
-        const AZ::CVarFixedString& backward = ed_cameraSystemTranslateBackwardKey;
-        CameraTranslateBackwardId = InputChannelId(backward.c_str());
-        const AZ::CVarFixedString& left = ed_cameraSystemTranslateLeftKey;
-        CameraTranslateLeftId = InputChannelId(left.c_str());
-        const AZ::CVarFixedString& right = ed_cameraSystemTranslateRightKey;
-        CameraTranslateRightId = InputChannelId(right.c_str());
-        const AZ::CVarFixedString& down = ed_cameraSystemTranslateDownKey;
-        CameraTranslateDownId = InputChannelId(down.c_str());
-        const AZ::CVarFixedString& up = ed_cameraSystemTranslateUpKey;
-        CameraTranslateUpId = InputChannelId(up.c_str());
         const AZ::CVarFixedString& boost = ed_cameraSystemTranslateBoostKey;
         CameraTranslateBoostId = InputChannelId(boost.c_str());
         const AZ::CVarFixedString& orbit = ed_cameraSystemOrbitKey;
@@ -433,34 +398,35 @@ namespace AzFramework
         return nextCamera;
     }
 
-    TranslateCameraInput::TranslationType TranslateCameraInput::TranslationFromKey(InputChannelId channelId)
+    TranslateCameraInput::TranslationType TranslateCameraInput::TranslationFromKey(
+        const InputChannelId& channelId, const TranslateCameraInputChannels& translateCameraInputChannels)
     {
-        if (channelId == CameraTranslateForwardId)
+        if (channelId == translateCameraInputChannels.m_cameraTranslateForwardId)
         {
             return TranslationType::Forward;
         }
 
-        if (channelId == CameraTranslateBackwardId)
+        if (channelId == translateCameraInputChannels.m_cameraTranslateBackwardId)
         {
             return TranslationType::Backward;
         }
 
-        if (channelId == CameraTranslateLeftId)
+        if (channelId == translateCameraInputChannels.m_cameraTranslateLeftId)
         {
             return TranslationType::Left;
         }
 
-        if (channelId == CameraTranslateRightId)
+        if (channelId == translateCameraInputChannels.m_cameraTranslateRightId)
         {
             return TranslationType::Right;
         }
 
-        if (channelId == CameraTranslateDownId)
+        if (channelId == translateCameraInputChannels.m_cameraTranslateDownId)
         {
             return TranslationType::Down;
         }
 
-        if (channelId == CameraTranslateUpId)
+        if (channelId == translateCameraInputChannels.m_cameraTranslateUpId)
         {
             return TranslationType::Up;
         }
@@ -468,8 +434,10 @@ namespace AzFramework
         return TranslationType::Nil;
     }
 
-    TranslateCameraInput::TranslateCameraInput(TranslationAxesFn translationAxesFn)
+    TranslateCameraInput::TranslateCameraInput(
+        TranslationAxesFn translationAxesFn, const TranslateCameraInputChannels& translateCameraInputChannels)
         : m_translationAxesFn(AZStd::move(translationAxesFn))
+        , m_translateCameraInputChannels(translateCameraInputChannels)
     {
         m_translateSpeedFn = []() constexpr
         {
@@ -489,7 +457,7 @@ namespace AzFramework
         {
             if (input->m_state == InputChannel::State::Began)
             {
-                m_translation |= TranslationFromKey(input->m_channelId);
+                m_translation |= TranslationFromKey(input->m_channelId, m_translateCameraInputChannels);
                 if (m_translation != TranslationType::Nil)
                 {
                     BeginActivation();
@@ -503,7 +471,7 @@ namespace AzFramework
             // ensure we don't process end events in the idle state
             else if (input->m_state == InputChannel::State::Ended && !Idle())
             {
-                m_translation &= ~(TranslationFromKey(input->m_channelId));
+                m_translation &= ~(TranslationFromKey(input->m_channelId, m_translateCameraInputChannels));
                 if (m_translation == TranslationType::Nil)
                 {
                     EndActivation();

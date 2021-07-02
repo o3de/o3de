@@ -1,6 +1,6 @@
 /*
  * Copyright (c) Contributors to the Open 3D Engine Project
- * 
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -30,6 +30,12 @@ namespace SandboxEditor
     constexpr AZStd::string_view CameraPanSpeedSetting = "/Amazon/Preferences/Editor/Camera/PanSpeed";
     constexpr AZStd::string_view CameraRotateSmoothnessSetting = "/Amazon/Preferences/Editor/Camera/RotateSmoothness";
     constexpr AZStd::string_view CameraTranslateSmoothnessSetting = "/Amazon/Preferences/Editor/Camera/TranslateSmoothness";
+    constexpr AZStd::string_view CameraTranslateForwardKeySetting = "/Amazon/Preferences/Editor/Camera/CameraTranslateForwardKey";
+    constexpr AZStd::string_view CameraTranslateBackwardKeySetting = "/Amazon/Preferences/Editor/Camera/CameraTranslateBackwardKey";
+    constexpr AZStd::string_view CameraTranslateLeftKeySetting = "/Amazon/Preferences/Editor/Camera/CameraTranslateLeftKey";
+    constexpr AZStd::string_view CameraTranslateRightKeySetting = "/Amazon/Preferences/Editor/Camera/CameraTranslateRightKey";
+    constexpr AZStd::string_view CameraTranslateUpKeySetting = "/Amazon/Preferences/Editor/Camera/CameraTranslateUpKey";
+    constexpr AZStd::string_view CameraTranslateDownKeySetting = "/Amazon/Preferences/Editor/Camera/CameraTranslateUpDownKey";
 
     template<typename T>
     void SetRegistry(const AZStd::string_view setting, T&& value)
@@ -243,5 +249,71 @@ namespace SandboxEditor
     void SetCameraTranslateSmoothness(const float smoothness)
     {
         SetRegistry(CameraTranslateSmoothnessSetting, smoothness);
+    }
+
+    AzFramework::InputChannelId CameraTranslateForwardKey()
+    {
+        return AzFramework::InputChannelId(
+            GetRegistry(CameraTranslateForwardKeySetting, AZStd::string("keyboard_key_alphanumeric_W")).c_str());
+    }
+
+    void SetCameraTranslateForwardKey(AZStd::string_view cameraTranslateForwardKey)
+    {
+        SetRegistry(CameraTranslateForwardKeySetting, cameraTranslateForwardKey);
+    }
+
+    AzFramework::InputChannelId CameraTranslateBackwardKey()
+    {
+        return AzFramework::InputChannelId(
+            GetRegistry(CameraTranslateBackwardKeySetting, AZStd::string("keyboard_key_alphanumeric_S")).c_str());
+    }
+
+    void SetCameraTranslateBackwardKey(AZStd::string_view cameraTranslateBackwardKey)
+    {
+        SetRegistry(CameraTranslateBackwardKeySetting, cameraTranslateBackwardKey);
+    }
+
+    AzFramework::InputChannelId CameraTranslateLeftKey()
+    {
+        return AzFramework::InputChannelId(
+            GetRegistry(CameraTranslateLeftKeySetting, AZStd::string("keyboard_key_alphanumeric_A")).c_str());
+    }
+
+    void SetCameraTranslateLeftKey(AZStd::string_view cameraTranslateLeftKey)
+    {
+        SetRegistry(CameraTranslateLeftKeySetting, cameraTranslateLeftKey);
+    }
+
+    AzFramework::InputChannelId CameraTranslateRightKey()
+    {
+        return AzFramework::InputChannelId(
+            GetRegistry(CameraTranslateRightKeySetting, AZStd::string("keyboard_key_alphanumeric_D")).c_str());
+    }
+
+    void SetCameraTranslateRightKey(AZStd::string_view cameraTranslateRightKey)
+    {
+        SetRegistry(CameraTranslateRightKeySetting, cameraTranslateRightKey);
+    }
+
+    AzFramework::InputChannelId CameraTranslateUpKey()
+    {
+        return AzFramework::InputChannelId(
+            GetRegistry(CameraTranslateUpKeySetting, AZStd::string("keyboard_key_alphanumeric_E")).c_str());
+    }
+
+    void SetCameraTranslateUpKey(AZStd::string_view cameraTranslateUpKey)
+    {
+        SetRegistry(CameraTranslateUpKeySetting, cameraTranslateUpKey);
+    }
+
+    AzFramework::InputChannelId CameraTranslateDownKey()
+    {
+        return AzFramework::InputChannelId(
+            GetRegistry(CameraTranslateDownKeySetting, AZStd::string("keyboard_key_alphanumeric_Q")).c_str());
+    }
+
+    void SetCameraTranslateDownKey(AZStd::string_view cameraTranslateDownKey)
+    {
+        SetRegistry(CameraTranslateDownKeySetting, cameraTranslateDownKey);
     }
 } // namespace SandboxEditor

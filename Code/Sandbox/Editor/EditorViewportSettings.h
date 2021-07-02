@@ -1,6 +1,6 @@
 /*
  * Copyright (c) Contributors to the Open 3D Engine Project
- * 
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -11,6 +11,7 @@
 
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzFramework/Input/Channels/InputChannelId.h>
 
 namespace SandboxEditor
 {
@@ -77,6 +78,24 @@ namespace SandboxEditor
 
     SANDBOX_API float CameraTranslateSmoothness();
     SANDBOX_API void SetCameraTranslateSmoothness(float smoothness);
+
+    SANDBOX_API AzFramework::InputChannelId CameraTranslateForwardKey();
+    SANDBOX_API void SetCameraTranslateForwardKey(AZStd::string_view cameraTranslateForwardKey);
+
+    SANDBOX_API AzFramework::InputChannelId CameraTranslateBackwardKey();
+    SANDBOX_API void SetCameraTranslateBackwardKey(AZStd::string_view cameraTranslateBackwardKey);
+
+    SANDBOX_API AzFramework::InputChannelId CameraTranslateLeftKey();
+    SANDBOX_API void SetCameraTranslateLeftKey(AZStd::string_view cameraTranslateLeftKey);
+
+    SANDBOX_API AzFramework::InputChannelId CameraTranslateRightKey();
+    SANDBOX_API void SetCameraTranslateRightKey(AZStd::string_view cameraTranslateRightKey);
+
+    SANDBOX_API AzFramework::InputChannelId CameraTranslateUpKey();
+    SANDBOX_API void SetCameraTranslateUpKey(AZStd::string_view cameraTranslateUpKey);
+
+    SANDBOX_API AzFramework::InputChannelId CameraTranslateDownKey();
+    SANDBOX_API void SetCameraTranslateDownKey(AZStd::string_view cameraTranslateDownKey);
 
     //! Return if the new editor camera system is enabled or not.
     //! @note This is implemented in EditorViewportWidget.cpp

@@ -373,11 +373,23 @@ namespace AzFramework
         return AZ::Matrix3x3::CreateFromColumns(basisX, basisY, basisZ);
     }
 
+    //! Groups all camera translation inputs.
+    struct TranslateCameraInputChannels
+    {
+        InputChannelId m_cameraTranslateForwardId;
+        InputChannelId m_cameraTranslateBackwardId;
+        InputChannelId m_cameraTranslateLeftId;
+        InputChannelId m_cameraTranslateRightId;
+        InputChannelId m_cameraTranslateDownId;
+        InputChannelId m_cameraTranslateUpId;
+    };
+
     //! A camera input to handle discrete events that can translate the camera (translate in three axes).
     class TranslateCameraInput : public CameraInput
     {
     public:
-        explicit TranslateCameraInput(TranslationAxesFn translationAxesFn);
+        explicit TranslateCameraInput(
+            TranslationAxesFn translationAxesFn, const TranslateCameraInputChannels& translateCameraInputChannels);
 
         // CameraInput overrides ...
         bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
@@ -444,10 +456,12 @@ namespace AzFramework
         }
 
         //! Converts from a generic input channel id to a concrete translation type (based on the user's key mappings).
-        static TranslationType TranslationFromKey(InputChannelId channelId);
+        TranslationType TranslationFromKey(
+            const InputChannelId& channelId, const TranslateCameraInputChannels& translateCameraInputChannels);
 
         TranslationType m_translation = TranslationType::Nil; //!< Types of translation the camera input is under.
         TranslationAxesFn m_translationAxesFn; //!< Builder for translation axes.
+        TranslateCameraInputChannels m_translateCameraInputChannels; //!< Input channel ids that map to internal translation types.
         bool m_boost = false; //!< Is the translation speed currently being multiplied/scaled upwards.
     };
 

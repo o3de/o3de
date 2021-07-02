@@ -1279,7 +1279,16 @@ AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateMod
                 return SandboxEditor::CameraPanInvertedY();
             };
 
-            auto firstPersonTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(AzFramework::LookTranslation);
+            AzFramework::TranslateCameraInputChannels translateCameraInputChannels;
+            translateCameraInputChannels.m_cameraTranslateLeftId = SandboxEditor::CameraTranslateLeftKey();
+            translateCameraInputChannels.m_cameraTranslateRightId = SandboxEditor::CameraTranslateRightKey();
+            translateCameraInputChannels.m_cameraTranslateForwardId = SandboxEditor::CameraTranslateForwardKey();
+            translateCameraInputChannels.m_cameraTranslateBackwardId = SandboxEditor::CameraTranslateBackwardKey();
+            translateCameraInputChannels.m_cameraTranslateUpId = SandboxEditor::CameraTranslateUpKey();
+            translateCameraInputChannels.m_cameraTranslateDownId = SandboxEditor::CameraTranslateDownKey();
+
+            auto firstPersonTranslateCamera =
+                AZStd::make_shared<AzFramework::TranslateCameraInput>(AzFramework::LookTranslation, translateCameraInputChannels);
             firstPersonTranslateCamera->m_translateSpeedFn = []
             {
                 return SandboxEditor::CameraTranslateSpeed();
@@ -1342,7 +1351,8 @@ AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateMod
                 return SandboxEditor::CameraOrbitYawRotationInverted();
             };
 
-            auto orbitTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(AzFramework::OrbitTranslation);
+            auto orbitTranslateCamera =
+                AZStd::make_shared<AzFramework::TranslateCameraInput>(AzFramework::OrbitTranslation, translateCameraInputChannels);
             orbitTranslateCamera->m_translateSpeedFn = []
             {
                 return SandboxEditor::CameraTranslateSpeed();
