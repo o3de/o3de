@@ -16,4 +16,11 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
     bool CreateSpawnable(AzFramework::Spawnable& spawnable, const PrefabDom& prefabDom, AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& referencedAssets);
 
     void SortEntitiesByTransformHierarchy(AzFramework::Spawnable& spawnable);
+
+    template <typename EntityPtr>
+    void SortEntitiesByTransformHierarchy(AZStd::vector<EntityPtr>& entities);
+
+    // Explicit specializations
+    template void SortEntitiesByTransformHierarchy(AZStd::vector<AZ::Entity*>& entities);
+    template void SortEntitiesByTransformHierarchy(AZStd::vector<AZStd::unique_ptr<AZ::Entity>>& entities);
 } // namespace AzToolsFramework::Prefab::SpawnableUtils
