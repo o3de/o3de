@@ -6,6 +6,7 @@
  */
 
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -139,11 +140,10 @@ namespace AWSCore
             return;
         }
 
-        AZStd::string settingsRegistryPath = AZStd::string::format(
-            "%s/%s/%s", m_sourceProjectFolder.c_str(), AZ::SettingsRegistryInterface::RegistryFolder,
-            AWSCoreConfiguration::AWSCoreConfigurationFileName);
-        AzFramework::StringFunc::Path::Normalize(settingsRegistryPath);
-        if (!settingsRegistry->MergeSettingsFile(settingsRegistryPath, AZ::SettingsRegistryInterface::Format::JsonMergePatch, ""))
+        auto settingsRegistryPath = AZ::IO::FixedMaxPath(AZStd::string_view{ m_sourceProjectFolder }) /
+            AZ::SettingsRegistryInterface::RegistryFolder /
+            AWSCoreConfiguration::AWSCoreConfigurationFileName;
+        if (!settingsRegistry->MergeSettingsFile(settingsRegistryPath.c_str(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, ""))
         {
             AZ_Warning(AWSCoreConfigurationName, false, SettingsRegistryFileLoadFailureErrorMessage);
             return;
