@@ -35,17 +35,5 @@ namespace AWSCore
             }
             return "";
         }
-
-        AZStd::string GetResourcePath(const AZStd::string& endpoint)
-        {
-            if (endpoint.find("execute-api") != AZStd::string::npos)
-            {
-                return "prod/metrics";
-            }
-            else
-            {
-                return "metrics";
-            }
-        }
     } // namespace AWSResourceMappingUtils
 } // namespace AWSCore
