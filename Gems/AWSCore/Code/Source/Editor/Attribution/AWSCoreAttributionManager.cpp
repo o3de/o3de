@@ -28,9 +28,6 @@
 #include <QCheckBox>
 
 
-#pragma optimize("", off)
-
-
 namespace AWSCore
 {
     constexpr const char* EngineVersionJsonKey = "O3DEVersion";
