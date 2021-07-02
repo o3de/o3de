@@ -38,9 +38,8 @@ namespace AWSCore
     constexpr char AWSAttributionDelaySecondsKey[] = "/Amazon/AWS/Preferences/AWSAttributionDelaySeconds";
     constexpr char AWSAttributionLastTimeStampKey[] = "/Amazon/AWS/Preferences/AWSAttributionLastTimeStamp";
     constexpr char AWSAttributionConsentShownKey[] = "/Amazon/AWS/Preferences/AWSAttributionConsentShown";
-    constexpr char AWSAttributionApiId[] = "2zxvvmv8d7";
-    constexpr char AWSAttributionChinaApiId[] = "";
-    constexpr char AWSAttributionApiStage[] = "prod";
+    constexpr char AWSAttributionEndpoint[] = "https://o3deattribution.us-east-1.amazonaws.com";
+    constexpr char AWSAttributionChinaEndpoint[] = "";
     const int AWSAttributionDefaultDelayInDays = 7;
 
     AWSAttributionManager::AWSAttributionManager()
@@ -253,17 +252,17 @@ namespace AWSCore
         // Assumption to determine China region is the default profile is set to China region.
         auto profile_name = Aws::Auth::GetConfigProfileName();
         Aws::Client::ClientConfiguration clientConfig(profile_name.c_str());
-        AZStd::string apiId = AWSAttributionApiId;
 
         if (clientConfig.region == Aws::Region::CN_NORTH_1 || clientConfig.region == Aws::Region::CN_NORTHWEST_1)
         {
             config->region = Aws::Region::CN_NORTH_1;
-            apiId = AWSAttributionChinaApiId;
+            config->endpointOverride = AWSAttributionChinaEndpoint;
         }
-
-        config->region = Aws::Region::US_WEST_2;
-        config->endpointOverride =
-            AWSResourceMappingUtils::FormatRESTApiUrl(apiId, config->region.value().c_str(), AWSAttributionApiStage).c_str();
+        else
+        {   
+            config->region = Aws::Region::US_EAST_1;
+            config->endpointOverride = AWSAttributionEndpoint;
+        }
     }
 
     bool AWSAttributionManager::CheckConsentShown()
