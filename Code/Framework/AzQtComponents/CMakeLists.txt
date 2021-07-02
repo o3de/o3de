@@ -1,5 +1,5 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 # 
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
@@ -40,26 +40,8 @@ ly_add_target(
             AZ::AzCore
 )
 
-# DEPRECATED: this target was marked as deprecated in the VS filter
 ly_add_target(
-    NAME AmazonStyle APPLICATION
-    NAMESPACE AZ
-    AUTOMOC
-    AUTOUIC
-    FILES_CMAKE
-        AzQtComponents/azqtcomponents_style_files.cmake
-    INCLUDE_DIRECTORIES
-        PRIVATE
-            .
-            AzQtComponents
-    BUILD_DEPENDENCIES
-        PRIVATE
-            3rdParty::Qt::Widgets
-            AZ::AzQtComponents
-)
-
-ly_add_target(
-    NAME AmazonQtControlGallery APPLICATION
+    NAME O3DEQtControlGallery APPLICATION
     NAMESPACE AZ
     AUTOMOC
     AUTOUIC

@@ -11,6 +11,8 @@
     <Font Id="2" Height="-12" Weight="500" Foreground="000000" Background="FFFFFF">Open Sans</Font>
     <!-- throwaway font for button bar -->
     <Font Id="3" Height="-12" Weight="500" Foreground="EEEEEE" Background="EEEEEE">Open Sans</Font>
+    <!-- special font for install warning title -->
+    <Font Id="4" Height="-14" Weight="500" Foreground="000000">Open Sans</Font>
 
     <!-- top banner -->
     <Image X="28" Y="24" Width="168" Height="64" ImageFile="logo.png" Visible="yes"/>
@@ -34,6 +36,8 @@
         <Text X="42" Y="202" Width="-42" Height="18" FontId="1" DisablePrefix="yes">#(loc.OptionsLocationLabel)</Text>
         <Editbox Name="FolderEditbox" X="42" Y="231" Width="354" Height="21" TabStop="yes" FontId="1" FileSystemAutoComplete="yes" />
         <Button Name="BrowseButton" X="406" Y="230" Width="80" Height="23" TabStop="yes" FontId="1">#(loc.OptionsBrowseButton)</Button>
+        <Text X="42" Y="262" Width="-42" Height="20" FontId="4" DisablePrefix="yes">#(loc.OptionsWarningTitle)</Text>
+        <Text X="42" Y="282" Width="-42" Height="54" FontId="1" DisablePrefix="yes">#(loc.OptionsWarning)</Text>
 
         <Text X="0" Y="426" Width="672" Height="46" FontId="3" HideWhenDisabled="yes" />
         <Button Name="OptionsOkButton" X="-106" Y="-10" Width="80" Height="24" TabStop="yes" FontId="2">#(loc.OptionsOkButton)</Button>
@@ -54,9 +58,13 @@
     <Page Name="Progress">
         <Text X="38" Y="142" Width="-42" Height="34" FontId="0" DisablePrefix="yes">#(loc.ProgressHeader)</Text>
 
-        <Text X="42" Y="202" Width="70" Height="18" FontId="1" DisablePrefix="yes">#(loc.ProgressLabel)</Text>
-        <Text Name="OverallProgressPackageText" X="116" Y="202" Width="-42" Height="18" FontId="2" DisablePrefix="yes">#(loc.OverallProgressPackageText)</Text>
-        <Progressbar Name="OverallCalculatedProgressbar" X="42" Y="230" Width="-90" Height="20" />
+        <Text X="42" Y="202" Width="-45" Height="18" FontId="1" DisablePrefix="yes">#(loc.CacheProgressLabel)</Text>
+        <Progressbar Name="CacheProgressbar" X="42" Y="230" Width="-90" Height="20" />
+        <Text Name="CacheProgressText" X="-45" Y="232" Width="32" Height="18" FontId="2" DisablePrefix="yes"/>
+
+        <Text X="42" Y="262" Width="-45" Height="18" FontId="1" DisablePrefix="yes">#(loc.ExecuteProgressLabel)</Text>
+        <Progressbar Name="ExecuteProgressbar" X="42" Y="290" Width="-90" Height="20" />
+        <Text Name="ExecuteProgressText" X="-45" Y="292" Width="32" Height="18" FontId="2" DisablePrefix="yes"/>
 
         <Text X="0" Y="426" Width="672" Height="46" FontId="3" HideWhenDisabled="yes" />
         <Button Name="ProgressCancelButton" X="-22" Y="-10" Width="80" Height="24" TabStop="yes" FontId="2">#(loc.ProgressCancelButton)</Button>

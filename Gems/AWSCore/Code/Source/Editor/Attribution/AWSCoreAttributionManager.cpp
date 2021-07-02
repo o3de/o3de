@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -13,6 +13,7 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/PlatformId/PlatformId.h>
 #include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/Jobs/JobFunction.h>
@@ -24,6 +25,7 @@
 
 #include <QSysInfo>
 #include <QMessageBox>
+#include <QCheckBox>
 
 
 namespace AWSCore
@@ -35,7 +37,7 @@ namespace AWSCore
     constexpr char AWSAttributionEnabledKey[] = "/Amazon/AWS/Preferences/AWSAttributionEnabled";
     constexpr char AWSAttributionDelaySecondsKey[] = "/Amazon/AWS/Preferences/AWSAttributionDelaySeconds";
     constexpr char AWSAttributionLastTimeStampKey[] = "/Amazon/AWS/Preferences/AWSAttributionLastTimeStamp";
-    constexpr char AWSAttributionConsentShown[] = "/Amazon/AWS/Preferences/AWSAttributionConsentShown";
+    constexpr char AWSAttributionConsentShownKey[] = "/Amazon/AWS/Preferences/AWSAttributionConsentShown";
     constexpr char AWSAttributionApiId[] = "2zxvvmv8d7";
     constexpr char AWSAttributionChinaApiId[] = "";
     constexpr char AWSAttributionApiStage[] = "prod";
@@ -43,18 +45,25 @@ namespace AWSCore
 
     AWSAttributionManager::AWSAttributionManager()
     {
-        m_settingsRegistry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
+        m_settingsRegistry = AZ::SettingsRegistry::Get();
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
     }
 
     AWSAttributionManager::~AWSAttributionManager()
     {
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
-        m_settingsRegistry.reset();
+        m_settingsRegistry = nullptr;
     }
 
     void AWSAttributionManager::Init()
     {
+        bool consentShown;
+        // If override is used skip merging the settings file
+        if (m_settingsRegistry->Get(consentShown, AWSAttributionConsentShownKey))
+        {
+            return;
+        }
+
         AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
         AZ_Assert(fileIO, "File IO is not initialized.");
 
@@ -158,11 +167,11 @@ namespace AWSCore
     {
         AWSCoreAttributionConsentDialog* msgBox = aznew AWSCoreAttributionConsentDialog();
         int ret = msgBox->exec();
-        m_settingsRegistry->Set(AWSAttributionConsentShown, true);
+        m_settingsRegistry->Set(AWSAttributionConsentShownKey, true);
         switch (ret)
         {
         case QMessageBox::Save:
-            m_settingsRegistry->Set(AWSAttributionEnabledKey, msgBox->checkBox());
+            m_settingsRegistry->Set(AWSAttributionEnabledKey, msgBox->checkBox()->checkState() == Qt::Checked);
             break;
         case QMessageBox::Cancel:
         default:
@@ -260,7 +269,7 @@ namespace AWSCore
     bool AWSAttributionManager::CheckConsentShown()
     {
         bool consentShown = false;
-        m_settingsRegistry->Get(consentShown, AWSAttributionConsentShown);
+        m_settingsRegistry->Get(consentShown, AWSAttributionConsentShownKey);
         return consentShown;
     }
 

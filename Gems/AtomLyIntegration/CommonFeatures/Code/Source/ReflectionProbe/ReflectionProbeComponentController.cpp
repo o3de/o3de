@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -127,9 +127,21 @@ namespace AZ
             // set the visualization sphere option
             m_featureProcessor->ShowProbeVisualization(m_handle, m_configuration.m_showVisualization);
 
-            // update the outer extents from the box shape
-            // if the user already resized the box shape on this entity it will inherit those extents
-            UpdateOuterExtents();
+            // if this is a new ReflectionProbe entity and the box shape has not been changed (i.e., it's still unit sized)
+            // then set the shape to the default extents
+            AZ::Vector3 boxDimensions = m_boxShapeInterface->GetBoxDimensions();
+            if (m_configuration.m_entityId == EntityId::InvalidEntityId && boxDimensions == AZ::Vector3(1.0f))
+            {
+                AZ::Vector3 extents(m_configuration.m_outerWidth, m_configuration.m_outerLength, m_configuration.m_outerHeight);
+
+                // resize the box shape, this will invoke OnShapeChanged
+                m_boxShapeInterface->SetBoxDimensions(extents);
+            }
+            else
+            {
+                // update the outer extents from the box shape
+                UpdateOuterExtents();
+            }
 
             // set the inner extents
             m_featureProcessor->SetProbeInnerExtents(m_handle, AZ::Vector3(m_configuration.m_innerWidth, m_configuration.m_innerLength, m_configuration.m_innerHeight));
@@ -137,22 +149,11 @@ namespace AZ
             // load cubemap
             Data::Asset<RPI::StreamingImageAsset>& cubeMapAsset =
                 m_configuration.m_useBakedCubemap ? m_configuration.m_bakedCubeMapAsset : m_configuration.m_authoredCubeMapAsset;
-            Data::AssetBus::MultiHandler::BusConnect(cubeMapAsset.GetId());
-
-            const AZStd::string& relativePath =
-                m_configuration.m_useBakedCubemap ? m_configuration.m_bakedCubeMapRelativePath : m_configuration.m_authoredCubeMapAsset.GetHint();
 
             if (cubeMapAsset.GetId().IsValid())
             {
-                if (cubeMapAsset.IsReady())
-                {
-                    Data::Instance<RPI::Image> image = RPI::StreamingImage::FindOrCreate(cubeMapAsset);
-                    m_featureProcessor->SetProbeCubeMap(m_handle, image, relativePath);
-                }
-                else
-                {
-                    cubeMapAsset.QueueLoad();
-                }
+                cubeMapAsset.QueueLoad();
+                Data::AssetBus::MultiHandler::BusConnect(cubeMapAsset.GetId());
             }
         }
 
@@ -189,6 +190,18 @@ namespace AZ
             m_featureProcessor->SetProbeCubeMap(m_handle, image, relativePath);
         }
 
+        void ReflectionProbeComponentController::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
+        {
+            if (m_configuration.m_useBakedCubemap)
+            {
+                m_configuration.m_bakedCubeMapAsset = asset;
+            }
+            else
+            {
+                m_configuration.m_authoredCubeMapAsset = asset;
+            }
+        }
+
         void ReflectionProbeComponentController::SetConfiguration(const ReflectionProbeComponentConfig& config)
         {
             m_configuration = config;
@@ -201,14 +214,25 @@ namespace AZ
 
         void ReflectionProbeComponentController::UpdateCubeMap()
         {
+            // disconnect the asset bus since we might reconnect with a different asset
+            Data::AssetBus::MultiHandler::BusDisconnect();
+
             Data::Asset<RPI::StreamingImageAsset>& cubeMapAsset =
                 m_configuration.m_useBakedCubemap ? m_configuration.m_bakedCubeMapAsset : m_configuration.m_authoredCubeMapAsset;
 
-            const AZStd::string& relativePath =
-                m_configuration.m_useBakedCubemap ? m_configuration.m_bakedCubeMapRelativePath : m_configuration.m_authoredCubeMapAsset.GetHint();
+            if (cubeMapAsset.GetId().IsValid())
+            {
+                cubeMapAsset.QueueLoad();
 
-            Data::Instance<RPI::Image> image = RPI::StreamingImage::FindOrCreate(cubeMapAsset);
-            m_featureProcessor->SetProbeCubeMap(m_handle, image, relativePath);
+                // this will invoke OnAssetReady()
+                Data::AssetBus::MultiHandler::BusConnect(cubeMapAsset.GetId());
+            }
+            else
+            {
+                // clear the current cubemap
+                Data::Instance<RPI::Image> image = nullptr;
+                m_featureProcessor->SetProbeCubeMap(m_handle, image, {});
+            }
         }
 
         void ReflectionProbeComponentController::OnTransformChanged([[maybe_unused]] const AZ::Transform& local, const AZ::Transform& world)

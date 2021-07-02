@@ -1,6 +1,6 @@
 
 #
-# Copyright (c) Contributors to the Open 3D Engine Project
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 # 
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
@@ -341,7 +341,7 @@ def register_o3de_object_path(json_data: dict,
         try:
             paths_to_remove.append(o3de_object_path.relative_to(save_path.parent))
         except ValueError:
-            pass # It is OK  relative path cannot be formed
+            pass # It is OK relative path cannot be formed
     manifest_data[o3de_object_key] = list(filter(lambda p: pathlib.Path(p) not in paths_to_remove,
                                                            manifest_data.setdefault(o3de_object_key, [])))
 
@@ -424,7 +424,6 @@ def register_project_path(json_data: dict,
         utils.backup_file(project_json_path)
         if not manifest.save_o3de_manifest(project_json_data, project_json_path):
             return 1
-
 
     return 0
 
@@ -754,9 +753,6 @@ def _run_register(args: argparse) -> int:
         return repo.refresh_repos()
     elif args.this_engine:
         ret_val = register(engine_path=manifest.get_this_engine_path(), force=args.force)
-        error_code = register_shipped_engine_o3de_objects(force=args.force)
-        if error_code:
-            ret_val = error_code
         return ret_val
     elif args.all_engines_path:
         return register_all_engines_in_folder(args.all_engines_path, args.remove, args.force)
