@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TransformBus.h>
@@ -159,12 +154,23 @@ namespace AzToolsFramework
 
     void PrefabEditorEntityOwnershipService::GetNonPrefabEntities(EntityList& entities)
     {
-        m_rootInstance->GetEntities(entities, false);
+        m_rootInstance->GetEntities(
+            [&entities](const AZStd::unique_ptr<AZ::Entity>& entity)
+            {
+                entities.emplace_back(entity.get());
+                return true;
+            });
     }
 
     bool PrefabEditorEntityOwnershipService::GetAllEntities(EntityList& entities)
     {
-        m_rootInstance->GetEntities(entities, true);
+        m_rootInstance->GetAllEntitiesInHierarchy(
+            [&entities](const AZStd::unique_ptr<AZ::Entity>& entity)
+            {
+                entities.emplace_back(entity.get());
+                return true;
+            });
+
         return true;
     }
 
@@ -185,13 +191,7 @@ namespace AzToolsFramework
     bool PrefabEditorEntityOwnershipService::LoadFromStream(AZ::IO::GenericStream& stream, AZStd::string_view filename)
     {
         Reset();
-        // Make loading from stream to behave the same in terms of filesize as regular loading of prefabs
-        // This may need to be revisited in the future for supporting higher sizes along with prefab loading
-        if (stream.GetLength() > Prefab::MaxPrefabFileSize)
-        {
-            AZ_Error("Prefab", false, "'%.*s' prefab content is bigger than the max supported size (%f MB)", AZ_STRING_ARG(filename), Prefab::MaxPrefabFileSize / (1024.f * 1024.f));
-            return false;
-        }
+
         const size_t bufSize = stream.GetLength();
         AZStd::unique_ptr<char[]> buf(new char[bufSize]);
         AZ::IO::SizeType bytes = stream.Read(bufSize, buf.get());
@@ -258,13 +258,20 @@ namespace AzToolsFramework
         }
 
         AZStd::string out;
-        if (m_loaderInterface->SaveTemplateToString(m_rootInstance->GetTemplateId(), out))
+
+        if (!m_loaderInterface->SaveTemplateToString(m_rootInstance->GetTemplateId(), out))
         {
-            const size_t bytesToWrite = out.size();
-            const size_t bytesWritten = stream.Write(bytesToWrite, out.data());
-            return bytesWritten == bytesToWrite;
+            return false;
         }
-        return false;
+
+        const size_t bytesToWrite = out.size();
+        const size_t bytesWritten = stream.Write(bytesToWrite, out.data());
+        if(bytesWritten != bytesToWrite)
+        {
+            return false;
+        }
+        m_prefabSystemComponent->SetTemplateDirtyFlag(templateId, false);
+        return true;
     }
 
     void PrefabEditorEntityOwnershipService::CreateNewLevelPrefab(AZStd::string_view filename, const AZStd::string& templateFilename)
@@ -497,7 +504,7 @@ namespace AzToolsFramework
                     copy.CopyFrom(templateReference->get().GetPrefabDom(), copy.GetAllocator(), false);
                     context.AddPrefab(DefaultMainSpawnableName, AZStd::move(copy));
                     m_playInEditorData.m_converter.ProcessPrefab(context);
-                    if (context.HasCompletedSuccessfully())
+                    if (context.HasCompletedSuccessfully() && !context.GetProcessedObjects().empty())
                     {
                         static constexpr size_t NoRootSpawnable = AZStd::numeric_limits<size_t>::max();
                         size_t rootSpawnableIndex = NoRootSpawnable;
@@ -512,8 +519,6 @@ namespace AzToolsFramework
                                 rootSpawnableIndex = m_playInEditorData.m_assets.size();
                             }
 
-                            LoadReferencedAssets(product.GetReferencedAssets());
-
                             AZ::Data::AssetInfo info;
                             info.m_assetId = product.GetAsset().GetId();
                             info.m_assetType = product.GetAssetType();
@@ -522,6 +527,19 @@ namespace AzToolsFramework
                             AZ::Data::AssetCatalogRequestBus::Broadcast(
                                 &AZ::Data::AssetCatalogRequestBus::Events::RegisterAsset, info.m_assetId, info);
                             m_playInEditorData.m_assets.emplace_back(product.ReleaseAsset().release(), AZ::Data::AssetLoadBehavior::Default);
+
+                            // Ensure the product asset is registered with the AssetManager
+                            // Hold on to the returned asset to keep ref count alive until we assign it the latest data
+                            AZ::Data::Asset<AZ::Data::AssetData> asset =
+                                AZ::Data::AssetManager::Instance().FindOrCreateAsset(info.m_assetId, info.m_assetType, AZ::Data::AssetLoadBehavior::Default);
+
+                            // Update the asset registered in the AssetManager with the data of our product from the Prefab Processor
+                            AZ::Data::AssetManager::Instance().AssignAssetData(m_playInEditorData.m_assets.back());
+                        }
+
+                        for (auto& product : context.GetProcessedObjects())
+                        {
+                            LoadReferencedAssets(product.GetReferencedAssets());
                         }
 
                         // make sure that PRE_NOTIFY assets get their notify before we activate, so that we can preserve the order of 
@@ -533,6 +551,13 @@ namespace AzToolsFramework
                             m_playInEditorData.m_entities.Reset(m_playInEditorData.m_assets[rootSpawnableIndex]);
                             m_playInEditorData.m_entities.SpawnAllEntities();
                         }
+                        else
+                        {
+                            AZ_Error("Prefab", false,
+                                "Processing of the level prefab failed to produce a root spawnable while entering game mode. "
+                                "Unable to fully enter game mode.");
+                            return;
+                        }
 
                         // This is a workaround until the replacement for GameEntityContext is done
                         AzFramework::GameEntityContextEventBus::Broadcast(
@@ -540,7 +565,9 @@ namespace AzToolsFramework
                     }
                     else
                     {
-                        AZ_Error("Prefab", false, "Failed to convert the prefab into assets.");
+                        AZ_Error("Prefab", false,
+                            "Failed to convert the prefab into assets. "
+                            "Confirm that the 'PlayInEditor' prefab processor stack is capable of producing a useable product asset.");
                         return;
                     }
                 }
@@ -550,7 +577,7 @@ namespace AzToolsFramework
                     return;
                 }
 
-                m_rootInstance->GetNestedEntities([this](AZStd::unique_ptr<AZ::Entity>& entity)
+                m_rootInstance->GetAllEntitiesInHierarchy([this](AZStd::unique_ptr<AZ::Entity>& entity)
                     {
                         AZ_Assert(entity, "Invalid entity found in root instance while starting play in editor.");
                         if (entity->GetState() == AZ::Entity::State::Active)
@@ -577,6 +604,10 @@ namespace AzToolsFramework
                 (*it)->Activate();
             }
             m_playInEditorData.m_deactivatedEntities.clear();
+
+            AZ_Assert(m_playInEditorData.m_entities.IsSet(),
+                "Invalid Game Mode Entities Container encountered after play-in-editor stopped. "
+                "Confirm that the container was initialized correctly");
 
             m_playInEditorData.m_entities.DespawnAllEntities();
             m_playInEditorData.m_entities.Alert(

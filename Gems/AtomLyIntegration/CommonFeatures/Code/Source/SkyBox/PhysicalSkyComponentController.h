@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -16,6 +11,7 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AtomLyIntegration/CommonFeatures/SkyBox/PhysicalSkyComponentConfig.h>
 #include <AtomLyIntegration/CommonFeatures/SkyBox/PhysicalSkyBus.h>
+#include <Atom/Feature/SkyBox/SkyBoxFogBus.h>
 #include <Atom/Feature/SkyBox/SkyBoxFeatureProcessorInterface.h>
 
 namespace AZ
@@ -25,6 +21,7 @@ namespace AZ
         class PhysicalSkyComponentController final
             : public TransformNotificationBus::Handler
             , public PhysicalSkyRequestBus::Handler
+            , public SkyBoxFogRequestBus::Handler
         {
         public:
             friend class EditorPhysicalSkyComponent;
@@ -63,7 +60,17 @@ namespace AZ
             float GetSunIntensity(PhotometricUnit unit) override;
             float GetSunIntensity() override;
 
-            //! Get Sun azimuth and altitude from entity transfom, without scale
+            // SkyBoxFogRequestBus::Handler overrides ...
+            void SetEnabled(bool enable) override;
+            bool IsEnabled() const override;
+            void SetColor(const AZ::Color& color) override;
+            const AZ::Color& GetColor() const override;
+            void SetTopHeight(float topHeight) override;
+            float GetTopHeight() const override;
+            void SetBottomHeight(float bottomHeight) override;
+            float GetBottomHeight() const override;
+
+            //! Get Sun azimuth and altitude from entity transform, without scale
             SunPosition GetSunTransform(const AZ::Transform& world);
 
             TransformInterface* m_transformInterface = nullptr;

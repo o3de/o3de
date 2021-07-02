@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Math/UuidSerializer.h>
@@ -33,6 +28,11 @@ namespace AZ
             AZStd::regex_constants::icase | AZStd::regex_constants::optimize);
     }
 
+    auto JsonUuidSerializer::GetOperationsFlags() const -> OperationFlags
+    {
+        return OperationFlags::InitializeNewInstance;
+    }
+
     JsonSerializationResult::Result JsonUuidSerializer::Load(void* outputValue, const Uuid& outputValueTypeId,
         const rapidjson::Value& inputValue, JsonDeserializerContext& context)
     {
@@ -53,13 +53,24 @@ namespace AZ
 
         Uuid* valAsUuid = reinterpret_cast<Uuid*>(outputValue);
 
+        if (IsExplicitDefault(inputValue))
+        {
+            *valAsUuid = AZ::Uuid::CreateNull();
+            return MessageResult("Uuid value set to default of null.", JSR::ResultCode(JSR::Tasks::ReadField, JSR::Outcomes::DefaultsUsed));
+        }
+
         switch (inputValue.GetType())
         {
-        case rapidjson::kArrayType: // fallthrough
-        case rapidjson::kObjectType:// fallthrough
-        case rapidjson::kFalseType: // fallthrough
-        case rapidjson::kTrueType:  // fallthrough
-        case rapidjson::kNumberType:// fallthrough
+        case rapidjson::kArrayType:
+            [[fallthrough]];
+        case rapidjson::kObjectType:
+            [[fallthrough]];
+        case rapidjson::kFalseType:
+            [[fallthrough]];
+        case rapidjson::kTrueType:
+            [[fallthrough]];
+        case rapidjson::kNumberType:
+            [[fallthrough]];
         case rapidjson::kNullType:
             return MessageResult("Unsupported type. Uuids can only be read from strings.",
                 JSR::ResultCode(JSR::Tasks::ReadField, JSR::Outcomes::Unsupported));

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <QtConcurrent/QtConcurrent>
@@ -105,7 +100,7 @@ namespace AZ
             {
                 return
                     GetAssetId(key, RPI::MaterialAsset::RTTI_Type()).IsValid() &&
-                    // in case it's a source fbx, it will contain both material and model products
+                    // in case it's a source scene file, it will contain both material and model products
                     // model thumbnails are handled by MeshThumbnail
                     !GetAssetId(key, RPI::ModelAsset::RTTI_Type()).IsValid();
             }

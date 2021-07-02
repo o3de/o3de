@@ -1,12 +1,7 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 from argparse import (ArgumentParser, Namespace)
@@ -73,32 +68,22 @@ if __name__ == "__main__":
     except FileNotFoundError:
         logger.warning("Failed to load style sheet for resource mapping tool")
 
-    logger.info("Initializing boto3 default session ...")
-    try:
-        aws_utils.setup_default_session(arguments.profile)
-    except RuntimeError as error:
-        logger.error(error)
-        environment_utils.cleanup_qt_environment()
-        exit(-1)
-
     logger.info("Initializing configuration manager ...")
     configuration_manager: ConfigurationManager = ConfigurationManager()
-    if not configuration_manager.setup(arguments.config_path):
-        environment_utils.cleanup_qt_environment()
-        exit(-1)
+    configuration_error: bool = not configuration_manager.setup(arguments.profile, arguments.config_path)
 
     logger.info("Initializing thread manager ...")
     thread_manager: ThreadManager = ThreadManager()
-    thread_manager.setup()
+    thread_manager.setup(configuration_error)
 
     logger.info("Initializing view manager ...")
     view_manager: ViewManager = ViewManager()
-    view_manager.setup()
+    view_manager.setup(configuration_error)
 
     logger.info("Initializing controller manager ...")
     controller_manager: ControllerManager = ControllerManager()
-    controller_manager.setup()
+    controller_manager.setup(configuration_error)
     
-    view_manager.show()
+    view_manager.show(configuration_error)
 
     sys.exit(app.exec_())

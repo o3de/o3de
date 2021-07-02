@@ -1,14 +1,10 @@
 # coding:utf-8
 #!/usr/bin/python
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 # -- This line is 75 characters -------------------------------------------
 import sys
@@ -165,12 +161,14 @@ def get_current_project():
     bootstrap_box = None
 
     try:
-        bootstrap_box = Box.from_json(filename=PATH_USER_O3DE_BOOTSTRAP,
+        bootstrap_box = Box.from_json(filename=str(Path(PATH_USER_O3DE_BOOTSTRAP).resolve()),
                                      encoding="utf-8",
                                      errors="strict",
                                      object_pairs_hook=OrderedDict)
-    except FileExistsError as e:
-        _LOGGER.error('File does not exist: {}'.format(PATH_USER_O3DE_BOOTSTRAP))
+    except Exception as e:
+        # this file runs in py2.7 for Maya 2020, FileExistsError is not defined
+        _LOGGER.error('FileExistsError: {}'.format(PATH_USER_O3DE_BOOTSTRAP))
+        _LOGGER.error('exception is: {}'.format(e))
 
     if bootstrap_box:
         # this seems fairly hard coded - what if the data changes?

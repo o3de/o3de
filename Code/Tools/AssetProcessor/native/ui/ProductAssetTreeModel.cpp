@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "ProductAssetTreeModel.h"
 #include "ProductAssetTreeItemData.h"
@@ -16,9 +11,11 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <AzCore/Console/IConsole.h>
 
 namespace AssetProcessor
 {
+    AZ_CVAR_EXTERNED(bool, ap_disableAssetTreeView);
 
     ProductAssetTreeModel::ProductAssetTreeModel(AZStd::shared_ptr<AzToolsFramework::AssetDatabase::AssetDatabaseConnection> sharedDbConnection, QObject *parent) :
         AssetTreeModel(sharedDbConnection, parent)
@@ -31,6 +28,11 @@ namespace AssetProcessor
 
     void ProductAssetTreeModel::ResetModel()
     {
+        if (ap_disableAssetTreeView)
+        {
+            return;
+        }
+
         m_productToTreeItem.clear();
         m_productIdToTreeItem.clear();
         AZStd::string databaseLocation;
@@ -51,6 +53,11 @@ namespace AssetProcessor
 
     void ProductAssetTreeModel::OnProductFileChanged(const AzToolsFramework::AssetDatabase::ProductDatabaseEntry& entry)
     {
+        if (ap_disableAssetTreeView)
+        {
+            return;
+        }
+
         // Model changes need to be run on the main thread.
         AZ::SystemTickBus::QueueFunction([&, entry]()
         {
@@ -112,6 +119,11 @@ namespace AssetProcessor
 
     void ProductAssetTreeModel::OnProductFileRemoved(AZ::s64 productId)
     {
+        if (ap_disableAssetTreeView)
+        {
+            return;
+        }
+
         // UI changes need to be done on the main thread.
         AZ::SystemTickBus::QueueFunction([&, productId]()
         {
@@ -121,6 +133,11 @@ namespace AssetProcessor
 
     void ProductAssetTreeModel::OnProductFilesRemoved(const AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer& products)
     {
+        if (ap_disableAssetTreeView)
+        {
+            return;
+        }
+
         // UI changes need to be done on the main thread.
         AZ::SystemTickBus::QueueFunction([&, products]()
         {
@@ -133,6 +150,11 @@ namespace AssetProcessor
 
     QModelIndex ProductAssetTreeModel::GetIndexForProduct(const AZStd::string& product)
     {
+        if (ap_disableAssetTreeView)
+        {
+            return QModelIndex();
+        }
+
         auto productItem = m_productToTreeItem.find(product);
         if (productItem == m_productToTreeItem.end())
         {

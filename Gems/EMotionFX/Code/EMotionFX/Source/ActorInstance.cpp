@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "EMotionFXConfig.h"
 #include <MCore/Source/IDGenerator.h>
@@ -34,6 +29,7 @@
 #include "NodeGroup.h"
 #include "Recorder.h"
 #include "TransformData.h"
+#include <EMotionFX/Source/ActorInstanceBus.h>
 #include <EMotionFX/Source/DebugDraw.h>
 #include <EMotionFX/Source/RagdollInstance.h>
 
@@ -153,20 +149,14 @@ namespace EMotionFX
         // register it
         GetActorManager().RegisterActorInstance(this);
 
-        // automatically register the actor instance
-        GetEventManager().OnCreateActorInstance(this);
-
         GetActorManager().GetScheduler()->RecursiveInsertActorInstance(this);
+
+        ActorInstanceNotificationBus::Broadcast(&ActorInstanceNotificationBus::Events::OnActorInstanceCreated, this);
     }
 
-    // the destructor
     ActorInstance::~ActorInstance()
     {
-        // trigger the OnDeleteActorInstance event
-        GetEventManager().OnDeleteActorInstance(this);
-
-        // remove it from the recording
-        GetRecorder().RemoveActorInstanceFromRecording(this);
+        ActorInstanceNotificationBus::Broadcast(&ActorInstanceNotificationBus::Events::OnActorInstanceDestroyed, this);
 
         // get rid of the motion system
         if (mMotionSystem)

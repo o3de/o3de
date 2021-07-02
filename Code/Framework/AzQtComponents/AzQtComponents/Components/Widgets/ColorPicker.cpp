@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <AzQtComponents/Components/Widgets/ColorPicker.h>
 
 #include <AzQtComponents/Components/Widgets/GradientSlider.h>
@@ -114,13 +109,13 @@ namespace AzQtComponents
 
         void ReadColorGridConfig(QSettings& settings, const QString& name, ColorPicker::ColorGridConfig& colorGrid)
         {
-            ConfigHelpers::GroupGuard(&settings, name);
+            ConfigHelpers::GroupGuard guard(&settings, name);
             ConfigHelpers::read<QSize>(settings, QStringLiteral("MinimumSize"), colorGrid.minimumSize);
         }
 
         void ReadDialoButtonsConfig(QSettings& settings, const QString& name, ColorPicker::DialogButtonsConfig& dialogButtons)
         {
-            ConfigHelpers::GroupGuard(&settings, name);
+            ConfigHelpers::GroupGuard guard(&settings, name);
             ConfigHelpers::read<int>(settings, QStringLiteral("TopPadding"), dialogButtons.topPadding);
         }
 

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/std/string/string.h>
 #include <GemCatalog/GemModel.h>
@@ -49,6 +44,7 @@ namespace O3DE::ProjectManager
         item->setData(gemInfo.m_binarySizeInKB, RoleBinarySize);
         item->setData(gemInfo.m_features, RoleFeatures);
         item->setData(gemInfo.m_path, RolePath);
+        item->setData(gemInfo.m_requirement, RoleRequirement);
 
         appendRow(item);
 
@@ -183,6 +179,11 @@ namespace O3DE::ProjectManager
         return modelIndex.data(RolePath).toString();
     }
 
+    QString GemModel::GetRequirement(const QModelIndex& modelIndex)
+    {
+        return modelIndex.data(RoleRequirement).toString();
+    }
+
     bool GemModel::IsAdded(const QModelIndex& modelIndex)
     {
         return modelIndex.data(RoleIsAdded).toBool();
@@ -206,6 +207,24 @@ namespace O3DE::ProjectManager
     bool GemModel::NeedsToBeRemoved(const QModelIndex& modelIndex)
     {
         return (modelIndex.data(RoleWasPreviouslyAdded).toBool() && !modelIndex.data(RoleIsAdded).toBool());
+    }
+
+    bool GemModel::HasRequirement(const QModelIndex& modelIndex)
+    {
+        return !modelIndex.data(RoleRequirement).toString().isEmpty();
+    }
+
+    bool GemModel::DoGemsToBeAddedHaveRequirements() const
+    {
+        for (int row = 0; row < rowCount(); ++row)
+        {
+            const QModelIndex modelIndex = index(row, 0);
+            if (NeedsToBeAdded(modelIndex) && HasRequirement(modelIndex))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     QVector<QModelIndex> GemModel::GatherGemsToBeAdded() const
@@ -235,4 +254,19 @@ namespace O3DE::ProjectManager
         }
         return result;
     }
+
+    int GemModel::TotalAddedGems() const
+    {
+        int result = 0;
+        for (int row = 0; row < rowCount(); ++row)
+        {
+            const QModelIndex modelIndex = index(row, 0);
+            if (IsAdded(modelIndex))
+            {
+                ++result;
+            }
+        }
+        return result;
+    }
+
 } // namespace O3DE::ProjectManager

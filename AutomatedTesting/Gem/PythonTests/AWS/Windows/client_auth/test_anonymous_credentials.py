@@ -1,20 +1,17 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 import pytest
 import os
 import logging
 import ly_test_tools.log.log_monitor
 
+# fixture imports
 from AWS.Windows.resource_mappings.resource_mappings import resource_mappings
-from AWS.Windows.cdk.cdk import cdk
-from AWS.common.aws_utils import aws_utils
+from AWS.Windows.cdk.cdk_utils import Cdk
+from AWS.common.aws_utils import AwsUtils
 from assetpipeline.ap_fixtures.asset_processor_fixture import asset_processor as asset_processor
 
 AWS_PROJECT_NAME = 'AWS-AutomationTest'
@@ -35,7 +32,7 @@ logger = logging.getLogger(__name__)
 @pytest.mark.usefixtures('cdk')
 @pytest.mark.parametrize('feature_name', [AWS_CLIENT_AUTH_FEATURE_NAME])
 @pytest.mark.usefixtures('resource_mappings')
-@pytest.mark.parametrize('resource_mappings_filename', ['aws_resource_mappings.json'])
+@pytest.mark.parametrize('resource_mappings_filename', ['default_aws_resource_mappings.json'])
 @pytest.mark.usefixtures('aws_utils')
 @pytest.mark.parametrize('region_name', ['us-west-2'])
 @pytest.mark.parametrize('assume_role_arn', ['arn:aws:iam::645075835648:role/o3de-automation-tests'])
@@ -75,5 +72,5 @@ class TestAWSClientAuthAnonymousCredentials(object):
                 expected_lines=['(Script) - Success anonymous credentials'],
                 unexpected_lines=['(Script) - Fail anonymous credentials'],
                 halt_on_unexpected=True,
-                )
+            )
             assert result, 'Anonymous credentials fetched successfully.'
