@@ -86,7 +86,7 @@ namespace O3DE::ProjectManager
             layout->setAlignment(Qt::AlignTop);
             frame->setLayout(layout);
 
-            QLabel* titleLabel = new QLabel(tr("Ready. Set. Create."), this);
+            QLabel* titleLabel = new QLabel(tr("Ready? Set. Create!"), this);
             titleLabel->setObjectName("titleLabel");
             layout->addWidget(titleLabel);
 
