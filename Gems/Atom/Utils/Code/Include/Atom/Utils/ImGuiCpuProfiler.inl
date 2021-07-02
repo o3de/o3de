@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -9,6 +9,7 @@
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/std/time.h>
+#include <AzCore/std/containers/set.h>
 
 namespace AZ
 {
@@ -29,6 +30,13 @@ namespace AZ
             {
                 const AZStd::string threadIdText = AZStd::string::format("Thread: %zu", static_cast<size_t>(threadId));
                 ImGui::Text(threadIdText.c_str());
+            }
+            inline float TicksToMs(AZStd::sys_time_t ticks)
+            {
+                // Note: converting to microseconds integer before converting to milliseconds float
+                const AZStd::sys_time_t ticksPerSecond = AZStd::GetTimeTicksPerSecond();
+                AZ_Assert(ticksPerSecond >= 1000, "Error in converting ticks to ms, expected ticksPerSecond >= 1000");
+                return static_cast<float>((ticks * 1000) / (ticksPerSecond / 1000)) / 1000.0f;
             }
         }
 
@@ -73,9 +81,7 @@ namespace AZ
 
                 const auto ShowTimeInMs = [ticksPerSecond](AZStd::sys_time_t duration)
                 {
-                    // Note: converting to microseconds integer before converting to milliseconds float
-                    const float timeInMs = static_cast<float>((duration * 1000) / (ticksPerSecond / 1000)) / 1000.0f;
-                    ImGui::Text("%.2f ms", timeInMs);
+                    ImGui::Text("%.2f ms", CpuProfilerImGuiHelper::TicksToMs(duration));
                 };
 
                 const auto ShowRow = [ticksPerSecond, &ShowTimeInMs](const char* regionLabel, AZStd::sys_time_t duration)
@@ -117,19 +123,36 @@ namespace AZ
                     ImGui::NextColumn();
 
                     // Draw the thread count label
-                    const AZStd::string threadLabel = AZStd::string::format("Threads: %u", static_cast<uint32_t>(regions.size()));
+                    AZStd::sys_time_t totalTime = 0;
+                    AZStd::set<AZStd::thread_id> threads;
+                    for (ThreadRegionEntry& entry : regions) // Find the thread count and total execution time for all threads
+                    {
+                        threads.insert(entry.m_threadId);
+                        totalTime += entry.m_endTick - entry.m_startTick;
+                    }
+                    const AZStd::string threadLabel = AZStd::string::format("Threads: %u", static_cast<uint32_t>(threads.size()));
                     ImGui::Text(threadLabel.c_str());
                     DrawRegionHoverMarker(regions);
                     ImGui::NextColumn();
 
-                    // Draw the region time label
-                    ShowTimeInMs(duration);
+                    // Draw the overall invocation count
+                    const AZStd::string invocationLabel = AZStd::string::format("Total calls: %u", static_cast<uint32_t>(regions.size()));
+                    ImGui::Text(invocationLabel.c_str());
+                    DrawRegionHoverMarker(regions);
+                    ImGui::NextColumn();
+
+                    // Draw the time labels (max and then total)
+                    const AZStd::string timeLabel =
+                        AZStd::string::format("%.2f ms max, %.2f ms total",
+                        CpuProfilerImGuiHelper::TicksToMs(duration),
+                        CpuProfilerImGuiHelper::TicksToMs(totalTime));
+                    ImGui::Text(timeLabel.c_str());
                     ImGui::NextColumn();
                 };
 
                 // Set column settings.
                 ImGui::Columns(2, "view", false);
-                ImGui::SetColumnWidth(0, 540.0f);
+                ImGui::SetColumnWidth(0, 660.0f);
                 ImGui::SetColumnWidth(1, 100.0f);
 
                 ShowRow("Frame to Frame Time", cpuTimingStatistics.m_frameToFrameTime);
@@ -152,14 +175,15 @@ namespace AZ
                         // Draw the regions
                         if (ImGui::TreeNodeEx(timeRegionMapEntry.first.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
                         {
-                            ImGui::Columns(3, "view", false);
+                            ImGui::Columns(4, "view", false);
                             ImGui::SetColumnWidth(0, 400.0f);
                             ImGui::SetColumnWidth(1, 100.0f);
-                            ImGui::SetColumnWidth(2, 80.0f);
+                            ImGui::SetColumnWidth(2, 150.0f);
+                            ImGui::SetColumnWidth(3, 240.0f);
 
                             for (auto& reigon : timeRegionMapEntry.second)
                             {
-                                // Calculate the thread with the longest execution time
+                                // Calculate the region with the longest execution time
                                 AZStd::sys_time_t threadExecutionElapsed = 0;
                                 for (ThreadRegionEntry& entry : reigon.second)
                                 {
@@ -209,19 +233,21 @@ namespace AZ
             m_groupRegionMap.clear();
 
             // Get the latest TimeRegionMap
-            RHI::CpuProfiler::TimeRegionMap timeRegionMap;
-            RHI::CpuProfiler::Get()->FlushTimeRegionMap(timeRegionMap);
+            const RHI::CpuProfiler::TimeRegionMap& timeRegionMap = RHI::CpuProfiler::Get()->GetTimeRegionMap();
 
             // Iterate through all the cached regions from all threads, and add the entries to this map
-            for (auto& treadEntry : timeRegionMap)
+            for (auto& threadEntry : timeRegionMap)
             {
-                for (auto& cachedRegionEntry : treadEntry.second)
+                for (auto& cachedRegionEntry : threadEntry.second)
                 {
-                    RegionEntryMap& groupRegionEntry = m_groupRegionMap[cachedRegionEntry.second.m_groupRegionName->m_groupName];
-                    AZStd::vector<ThreadRegionEntry>& regionArray = groupRegionEntry[cachedRegionEntry.second.m_groupRegionName->m_regionName];
-                    RHI::CachedTimeRegion& cachedRegion = cachedRegionEntry.second;
+                    const AZStd::string& regionName = cachedRegionEntry.first;
+                    for (auto& cachedRegion : cachedRegionEntry.second)
+                    {
+                        const AZStd::string& groupName = cachedRegion.m_groupRegionName->m_groupName;
 
-                    regionArray.push_back({ treadEntry.first, cachedRegion.m_startTick, cachedRegion.m_endTick });
+                        m_groupRegionMap[groupName][regionName].push_back(
+                            { threadEntry.first, cachedRegion.m_startTick, cachedRegion.m_endTick });
+                    }
                 }
             }
         }

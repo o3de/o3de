@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -29,7 +29,7 @@ namespace Camera
     public:
         ~AcquireByTag() override = default;
         AZ_RTTI(AcquireByTag, "{E76621A5-E5A8-41B0-AC1D-EC87553181F5}", ICameraTargetAcquirer)
-        AZ_CLASS_ALLOCATOR(AcquireByTag, AZ::SystemAllocator, 0); ///< Use AZ::SystemAllocator, otherwise a CryEngine allocator will be used. This will cause the Asset Processor to crash when this object is deleted, because of the wrong uninitialisation order
+        AZ_CLASS_ALLOCATOR(AcquireByTag, AZ::SystemAllocator, 0);
         static void Reflect(AZ::ReflectContext* reflection);
 
         //////////////////////////////////////////////////////////////////////////
