@@ -316,9 +316,6 @@ namespace ScriptCanvas
 #define SCRIPT_CANVAS_GENERICS_TO_VM(GenericClass, ReflectClass, BehaviorContext, CategoryName)\
     GenericClass::Reflect<ReflectClass>(BehaviorContext, ScriptCanvas::Translation::Context::GetCategoryLibraryName(CategoryName).c_str());
 
-#define SCRIPT_CANVAS_GENERICS_TO_VM_LIBRARY_ONLY(GenericClass, BehaviorContext, CategoryName)\
-    GenericClass::Reflect(BehaviorContext, ScriptCanvas::Translation::Context::GetCategoryLibraryName(CategoryName).c_str());
-
     template<typename... t_Node>
     class RegistrarGeneric
     {
@@ -333,13 +330,6 @@ namespace ScriptCanvas
         {
             auto& nodes = nodeRegistry.m_nodeMap[azrtti_typeid<t_NodeGroup>()];
             SCRIPT_CANVAS_CALL_ON_INDEX_SEQUENCE(nodes.push_back({ azrtti_typeid<t_Node>(), AZ::AzTypeInfo<t_Node>::Name() }));
-        }
-
-        static void Reflect(AZ::BehaviorContext* behaviorContext, const char* libraryName)
-        {
-            auto reflection = behaviorContext->Class<RegistrarGeneric<t_Node...>>(libraryName);
-            reflection->Attribute(AZ::ScriptCanvasAttributes::VariableCreationForbidden, AZ::AttributeIsValid::IfPresent)->Attribute(AZ::ScriptCanvasAttributes::Internal::ImplementedAsNodeGeneric, true);
-            SCRIPT_CANVAS_CALL_ON_INDEX_SEQUENCE(reflection->Method(t_Node::GetNodeFunctionName(), t_Node::GetFunction())->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::List | AZ::Script::Attributes::ExcludeFlags::Documentation));
         }
 
         template<typename t_Library>

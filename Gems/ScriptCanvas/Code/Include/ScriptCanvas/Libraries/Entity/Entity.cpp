@@ -70,7 +70,7 @@ namespace ScriptCanvas
             }
             if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(reflection))
             {
-                SCRIPT_CANVAS_GENERICS_TO_VM_LIBRARY_ONLY(EntityNodes::Registrar, behaviorContext, EntityNodes::k_categoryName);
+                SCRIPT_CANVAS_GENERICS_TO_VM(EntityNodes::Registrar, Entity, behaviorContext, EntityNodes::k_categoryName);
             }
 
             ScriptCanvas::Entity::RotateMethod::Reflect(reflection);

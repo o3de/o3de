@@ -13,6 +13,26 @@
 
 namespace ScriptCanvas
 {
+    namespace Nodes
+    {
+        namespace Math
+        {
+            REFLECT_MATH_LIBRARY_TYPE(AABB, "{AB0C2753-680E-47AD-8277-66B3AC01C659}");
+            REFLECT_MATH_LIBRARY_TYPE(Color, "{6CC7B2F9-F551-4CB8-A713-4149959AE337}");
+            REFLECT_MATH_LIBRARY_TYPE(CRC, "{D8B65A5B-38FF-4B41-9FA4-FCA080D75625}");
+            REFLECT_MATH_LIBRARY_TYPE(Matrix3x3, "{8C5F6959-C2C4-46D9-9FCD-4DC234E7732D}");
+            REFLECT_MATH_LIBRARY_TYPE(Matrix4x4, "{537AB179-E23C-492D-8EF7-53845A2DB163}");
+            REFLECT_MATH_LIBRARY_TYPE(OBB, "{8CBDA3B7-9DCD-4A04-A12C-123C322CA63A}");
+            REFLECT_MATH_LIBRARY_TYPE(Plane, "{F2C799DF-2CC1-4DD8-91DC-18C2D517BAB0}");
+            REFLECT_MATH_LIBRARY_TYPE(Quaternion, "{9BE75E2E-AA07-4767-9BF3-905C289EB38A}");
+            REFLECT_MATH_LIBRARY_TYPE(Random, "{D9DF1385-6C5C-4E41-94CA-8B10E9D8FAAF}");
+            REFLECT_MATH_LIBRARY_TYPE(Transform, "{59E0EF87-352C-4CFB-A810-5B8752BDD1EF}");
+            REFLECT_MATH_LIBRARY_TYPE(Vector2, "{FD1BFADF-BA1F-4AFC-819B-ABA1F22AE6E6}");
+            REFLECT_MATH_LIBRARY_TYPE(Vector3, "{53EA7604-E3AE-4E88-BE0E-66CBC488A7DB}");
+            REFLECT_MATH_LIBRARY_TYPE(Vector4, "{66027D7A-FCD1-4592-93E5-EB4B7F4BD671}");
+        }
+    }
+
     namespace Library
     {
         void Math::Reflect(AZ::ReflectContext* reflection)
@@ -37,22 +57,20 @@ namespace ScriptCanvas
             if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(reflection))
             {
                 using namespace ScriptCanvas::Nodes::Math;
-
+                SCRIPT_CANVAS_GENERICS_TO_VM(AABBNodes::Registrar, AABB, behaviorContext, AABBNodes::k_categoryName);
+                SCRIPT_CANVAS_GENERICS_TO_VM(ColorNodes::Registrar, Color, behaviorContext, ColorNodes::k_categoryName);
+                SCRIPT_CANVAS_GENERICS_TO_VM(CRCNodes::Registrar, CRC, behaviorContext, CRCNodes::k_categoryName);
                 SCRIPT_CANVAS_GENERICS_TO_VM(MathNodes::Registrar, Math, behaviorContext, MathNodes::k_categoryName);
+                SCRIPT_CANVAS_GENERICS_TO_VM(Matrix3x3Nodes::Registrar, Matrix3x3, behaviorContext, Matrix3x3Nodes::k_categoryName);
+                SCRIPT_CANVAS_GENERICS_TO_VM(Matrix4x4Nodes::Registrar, Matrix4x4, behaviorContext, Matrix4x4Nodes::k_categoryName);
+                SCRIPT_CANVAS_GENERICS_TO_VM(OBBNodes::Registrar, OBB, behaviorContext, OBBNodes::k_categoryName);
+                SCRIPT_CANVAS_GENERICS_TO_VM(PlaneNodes::Registrar, Plane, behaviorContext, PlaneNodes::k_categoryName);
+                SCRIPT_CANVAS_GENERICS_TO_VM(QuaternionNodes::Registrar, Quaternion, behaviorContext, QuaternionNodes::k_categoryName);
                 SCRIPT_CANVAS_GENERICS_TO_VM(RandomNodes::Registrar, Random, behaviorContext, RandomNodes::k_categoryName);
-
-                SCRIPT_CANVAS_GENERICS_TO_VM_LIBRARY_ONLY(AABBNodes::Registrar, behaviorContext, AABBNodes::k_categoryName);
-                SCRIPT_CANVAS_GENERICS_TO_VM_LIBRARY_ONLY(CRCNodes::Registrar, behaviorContext, CRCNodes::k_categoryName);
-                SCRIPT_CANVAS_GENERICS_TO_VM_LIBRARY_ONLY(ColorNodes::Registrar, behaviorContext, ColorNodes::k_categoryName);
-                SCRIPT_CANVAS_GENERICS_TO_VM_LIBRARY_ONLY(Matrix3x3Nodes::Registrar, behaviorContext, Matrix3x3Nodes::k_categoryName);
-                SCRIPT_CANVAS_GENERICS_TO_VM_LIBRARY_ONLY(Matrix4x4Nodes::Registrar, behaviorContext, Matrix4x4Nodes::k_categoryName);
-                SCRIPT_CANVAS_GENERICS_TO_VM_LIBRARY_ONLY(OBBNodes::Registrar, behaviorContext, OBBNodes::k_categoryName);
-                SCRIPT_CANVAS_GENERICS_TO_VM_LIBRARY_ONLY(PlaneNodes::Registrar, behaviorContext, PlaneNodes::k_categoryName);
-                SCRIPT_CANVAS_GENERICS_TO_VM_LIBRARY_ONLY(QuaternionNodes::Registrar, behaviorContext, QuaternionNodes::k_categoryName);
-                SCRIPT_CANVAS_GENERICS_TO_VM_LIBRARY_ONLY(TransformNodes::Registrar, behaviorContext, TransformNodes::k_categoryName);
-                SCRIPT_CANVAS_GENERICS_TO_VM_LIBRARY_ONLY(Vector2Nodes::Registrar, behaviorContext, Vector2Nodes::k_categoryName);
-                SCRIPT_CANVAS_GENERICS_TO_VM_LIBRARY_ONLY(Vector3Nodes::Registrar, behaviorContext, Vector3Nodes::k_categoryName);
-                SCRIPT_CANVAS_GENERICS_TO_VM_LIBRARY_ONLY(Vector4Nodes::Registrar, behaviorContext, Vector4Nodes::k_categoryName);
+                SCRIPT_CANVAS_GENERICS_TO_VM(TransformNodes::Registrar, Transform, behaviorContext, TransformNodes::k_categoryName);
+                SCRIPT_CANVAS_GENERICS_TO_VM(Vector2Nodes::Registrar, Vector2, behaviorContext, Vector2Nodes::k_categoryName);
+                SCRIPT_CANVAS_GENERICS_TO_VM(Vector3Nodes::Registrar, Vector3, behaviorContext, Vector3Nodes::k_categoryName);
+                SCRIPT_CANVAS_GENERICS_TO_VM(Vector4Nodes::Registrar, Vector4, behaviorContext, Vector4Nodes::k_categoryName);
             }
 
             Nodes::Internal::ExpressionNodeBase::Reflect(reflection);

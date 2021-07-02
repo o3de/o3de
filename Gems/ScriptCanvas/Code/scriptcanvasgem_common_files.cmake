@@ -258,10 +258,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/Core/ExtractProperty.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Core/EventHandlerTranslationUtility.h
     Include/ScriptCanvas/Libraries/Core/EventHandlerTranslationUtility.cpp
-    Include/ScriptCanvas/Libraries/Core/Error.cpp
-    Include/ScriptCanvas/Libraries/Core/Error.h
-    Include/ScriptCanvas/Libraries/Core/ErrorHandler.cpp
-    Include/ScriptCanvas/Libraries/Core/ErrorHandler.h
     Include/ScriptCanvas/Libraries/Core/ForEach.cpp
     Include/ScriptCanvas/Libraries/Core/ForEach.h
     Include/ScriptCanvas/Libraries/Core/ForEach.ScriptCanvasGrammar.xml

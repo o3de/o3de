@@ -12,6 +12,21 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
 
+#define REFLECT_MATH_LIBRARY_TYPE(MathType, Guid)\
+    struct MathType\
+    {\
+        AZ_TYPE_INFO(MathType, Guid);\
+        static void Reflect(AZ::ReflectContext* reflection)\
+        {\
+            if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection))\
+            {\
+                serializeContext->Class<MathType>()\
+                ->Version(0)\
+                ;\
+            }\
+        }\
+    };
+
 namespace AZ
 {
     class ReflectContext;
