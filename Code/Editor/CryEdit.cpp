@@ -2334,6 +2334,7 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
             }
 
             GetIEditor()->Notify(eNotify_OnIdleUpdate);
+        }
 
         AZ::ComponentApplication* componentApplication = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(componentApplication, &AZ::ComponentApplicationRequests::GetApplication);
