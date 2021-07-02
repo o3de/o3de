@@ -388,10 +388,11 @@ def create_template(source_path: pathlib.Path,
     if not source_path:
         logger.error('Src path cannot be empty.')
         return 1
-    if not os.path.isdir(source_path):
+    if not source_path.is_dir():
         logger.error(f'Src path {source_path} is not a folder.')
         return 1
 
+    source_path = source_path.resolve()
     # source_name is now the last component of the source_path
     if not source_name:
         source_name = os.path.basename(source_path)
@@ -401,11 +402,11 @@ def create_template(source_path: pathlib.Path,
     if not template_path:
         logger.info(f'Template path empty. Using source name {source_name}')
         template_path = source_name
-    if not os.path.isabs(template_path):
+    if not template_path.is_absolute():
         default_templates_folder = manifest.get_registered(default_folder='templates')
-        template_path = default_templates_folder/ template_path
+        template_path = default_templates_folder / template_path
         logger.info(f'Template path not a full path. Using default templates folder {template_path}')
-    if not force and os.path.isdir(template_path):
+    if not force and template_path.is_dir():
         logger.error(f'Template path {template_path} already exists.')
         return 1
 
@@ -415,8 +416,7 @@ def create_template(source_path: pathlib.Path,
     except ValueError:
         pass
     else:
-        logger.error(f'Template output path {template_path} cannot be a subdirectory of the source_path {source_path}:\n'
-                     f'{err}')
+        logger.error(f'Template output path {template_path} cannot be a subdirectory of the source_path {source_path}\n')
         return 1
 
     # template name is now the last component of the template_path
@@ -1200,7 +1200,7 @@ def create_from_template(destination_path: pathlib.Path,
 
     if not destination_name:
         # destination name is now the last component of the destination_path
-        destination_name = os.path.basename(destination_path)
+        destination_name = destination_path.name
 
     # destination name cannot be the same as a restricted platform name
     if destination_name in restricted_platforms:
@@ -2055,7 +2055,7 @@ def _run_create_from_template(args: argparse) -> int:
     return create_from_template(args.destination_path,
                                 args.template_path,
                                 args.template_name,
-                                args.destination_path,
+                                args.destination_name,
                                 args.destination_restricted_path,
                                 args.destination_restricted_name,
                                 args.template_restricted_path,
