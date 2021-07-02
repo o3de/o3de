@@ -69,7 +69,7 @@ namespace AZ
             if (isSelected)
             {
                 // Attenuation radius shape is just a capsule with the same internal height, but a radius of the attenuation radius.
-                float radius = CalculateAttenuationRadius(AreaLightComponentConfig::CutoffIntensity);
+                float radius = GetConfig()->m_attenuationRadius;
 
                 // Add on the caps for the attenuation radius
                 float scale = GetTransform().GetUniformScale();

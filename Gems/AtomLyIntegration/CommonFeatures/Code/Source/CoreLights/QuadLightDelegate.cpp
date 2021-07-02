@@ -65,7 +65,7 @@ namespace AZ
                 debugDisplay.SetColor(color);
 
                 // Draw a quad for the attenuation radius
-                debugDisplay.DrawWireSphere(transform.GetTranslation(), CalculateAttenuationRadius(AreaLightComponentConfig::CutoffIntensity));
+                debugDisplay.DrawWireSphere(transform.GetTranslation(), GetConfig()->m_attenuationRadius);
             }
         }
 
