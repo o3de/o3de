@@ -12,38 +12,34 @@
 #include <AzCore/Serialization/IdUtils.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
-
 #include <AzFramework/Entity/EntityContextBus.h>
 
 #include <ScriptCanvas/Asset/Functions/ScriptCanvasFunctionAsset.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
-
 #include <ScriptCanvas/Core/Connection.h>
 #include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Core/Datum.h>
 #include <ScriptCanvas/Core/Graph.h>
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Data/BehaviorContextObject.h>
-#include <ScriptCanvas/Grammar/AbstractCodeModel.h>
-
-#include <ScriptCanvas/Debugger/ValidationEvents/DataValidation/DataValidationIds.h>
+#include <ScriptCanvas/Data/PropertyTraits.h>
+#include <ScriptCanvas/Debugger/StatusBus.h>
 #include <ScriptCanvas/Debugger/ValidationEvents/DataValidation/DataValidationEvents.h>
-#include <ScriptCanvas/Debugger/ValidationEvents/ExecutionValidation/ExecutionValidationIds.h>
+#include <ScriptCanvas/Debugger/ValidationEvents/DataValidation/DataValidationIds.h>
 #include <ScriptCanvas/Debugger/ValidationEvents/ExecutionValidation/ExecutionValidationEvents.h>
-
-#include <ScriptCanvas/Libraries/Core/UnaryOperator.h>
+#include <ScriptCanvas/Debugger/ValidationEvents/ExecutionValidation/ExecutionValidationIds.h>
+#include <ScriptCanvas/Grammar/AbstractCodeModel.h>
 #include <ScriptCanvas/Libraries/Core/BinaryOperator.h>
 #include <ScriptCanvas/Libraries/Core/EBusEventHandler.h>
 #include <ScriptCanvas/Libraries/Core/FunctionDefinitionNode.h>
 #include <ScriptCanvas/Libraries/Core/Method.h>
-#include <ScriptCanvas/Libraries/Core/Start.h>
-#include <ScriptCanvas/Libraries/Core/SendScriptEvent.h>
 #include <ScriptCanvas/Libraries/Core/ReceiveScriptEvent.h>
 #include <ScriptCanvas/Libraries/Core/ScriptEventBase.h>
-
+#include <ScriptCanvas/Libraries/Core/SendScriptEvent.h>
+#include <ScriptCanvas/Libraries/Core/Start.h>
+#include <ScriptCanvas/Libraries/Core/UnaryOperator.h>
 #include <ScriptCanvas/Profiler/Driller.h>
 #include <ScriptCanvas/Translation/Translation.h>
-#include <ScriptCanvas/Debugger/StatusBus.h>
 #include <ScriptCanvas/Variable/VariableBus.h>
 #include <ScriptCanvas/Variable/VariableData.h>
 
@@ -94,6 +90,7 @@ namespace ScriptCanvas
 
     void Graph::Reflect(AZ::ReflectContext* context)
     {
+        Data::PropertyMetadata::Reflect(context);
         Data::Type::Reflect(context);
         Nodes::UnaryOperator::Reflect(context);
         Nodes::UnaryExpression::Reflect(context);
