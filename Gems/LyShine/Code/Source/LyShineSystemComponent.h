@@ -28,7 +28,6 @@ namespace LyShine
 
     class LyShineSystemComponent
         : public AZ::Component
-        , protected LyShineRequestBus::Handler
         , protected UiSystemBus::Handler
         , protected UiSystemToolsBus::Handler
         , protected LyShineAllocatorScope
