@@ -18,9 +18,6 @@
 
 namespace AzFramework
 {
-    //! Updates camera key bindings that can be overridden with AZ console vars (invoke from console to update).
-    void ReloadCameraKeyBindings();
-
     //! Returns Euler angles (pitch, roll, yaw) for the incoming orientation.
     //! @note Order of rotation is Z, Y, X.
     AZ::Vector3 EulerAngles(const AZ::Matrix3x3& orientation);
@@ -376,12 +373,13 @@ namespace AzFramework
     //! Groups all camera translation inputs.
     struct TranslateCameraInputChannels
     {
-        InputChannelId m_cameraTranslateForwardId;
-        InputChannelId m_cameraTranslateBackwardId;
-        InputChannelId m_cameraTranslateLeftId;
-        InputChannelId m_cameraTranslateRightId;
-        InputChannelId m_cameraTranslateDownId;
-        InputChannelId m_cameraTranslateUpId;
+        InputChannelId m_forwardChannelId;
+        InputChannelId m_backwardChannelId;
+        InputChannelId m_leftChannelId;
+        InputChannelId m_rightChannelId;
+        InputChannelId m_downChannelId;
+        InputChannelId m_upChannelId;
+        InputChannelId m_boostChannelId;
     };
 
     //! A camera input to handle discrete events that can translate the camera (translate in three axes).
@@ -514,6 +512,8 @@ namespace AzFramework
     public:
         using LookAtFn = AZStd::function<AZStd::optional<AZ::Vector3>(const AZ::Vector3& position, const AZ::Vector3& direction)>;
 
+        explicit OrbitCameraInput(const InputChannelId& orbitChannelId);
+
         // CameraInput overrides ...
         bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
@@ -525,6 +525,7 @@ namespace AzFramework
         void SetLookAtFn(const LookAtFn& lookAtFn);
 
     private:
+        InputChannelId m_orbitChannelId; //!< Input channel to begin the orbit camera input.
         LookAtFn m_lookAtFn; //!< The look-at behavior to use for this orbit camera (how is the look-at point calculated/retrieved).
     };
 

@@ -113,15 +113,6 @@ namespace SandboxEditor
 
 EditorViewportWidget* EditorViewportWidget::m_pPrimaryViewport = nullptr;
 
-namespace AzFramework
-{
-    extern InputChannelId CameraFreeLookButton;
-    extern InputChannelId CameraFreePanButton;
-    extern InputChannelId CameraOrbitLookButton;
-    extern InputChannelId CameraOrbitDollyButton;
-    extern InputChannelId CameraOrbitPanButton;
-} // namespace AzFramework
-
 #if AZ_TRAIT_OS_PLATFORM_APPLE
 void StopFixedCursorMode();
 void StartFixedCursorMode(QObject *viewport);
@@ -1225,8 +1216,6 @@ bool EditorViewportWidget::ShowingWorldSpace()
 AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateModularViewportCameraController(
     AzFramework::ViewportId viewportId)
 {
-    AzFramework::ReloadCameraKeyBindings();
-
     auto controller = AZStd::make_shared<AtomToolsFramework::ModularViewportCameraController>();
     controller->SetCameraPropsBuilderCallback(
         [](AzFramework::CameraProps& cameraProps)
@@ -1256,7 +1245,7 @@ AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateMod
                     viewportId, &AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Events::EndCursorCapture);
             };
 
-            auto firstPersonRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::CameraFreeLookButton);
+            auto firstPersonRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(SandboxEditor::CameraFreeLookChannelId());
             firstPersonRotateCamera->m_rotateSpeedFn = []
             {
                 return SandboxEditor::CameraRotateSpeed();
@@ -1265,7 +1254,7 @@ AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateMod
             firstPersonRotateCamera->SetActivationEndedFn(showCursor);
 
             auto firstPersonPanCamera =
-                AZStd::make_shared<AzFramework::PanCameraInput>(AzFramework::CameraFreePanButton, AzFramework::LookPan);
+                AZStd::make_shared<AzFramework::PanCameraInput>(SandboxEditor::CameraFreePanChannelId(), AzFramework::LookPan);
             firstPersonPanCamera->m_panSpeedFn = []
             {
                 return SandboxEditor::CameraPanSpeed();
@@ -1280,12 +1269,13 @@ AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateMod
             };
 
             AzFramework::TranslateCameraInputChannels translateCameraInputChannels;
-            translateCameraInputChannels.m_cameraTranslateLeftId = SandboxEditor::CameraTranslateLeftKey();
-            translateCameraInputChannels.m_cameraTranslateRightId = SandboxEditor::CameraTranslateRightKey();
-            translateCameraInputChannels.m_cameraTranslateForwardId = SandboxEditor::CameraTranslateForwardKey();
-            translateCameraInputChannels.m_cameraTranslateBackwardId = SandboxEditor::CameraTranslateBackwardKey();
-            translateCameraInputChannels.m_cameraTranslateUpId = SandboxEditor::CameraTranslateUpKey();
-            translateCameraInputChannels.m_cameraTranslateDownId = SandboxEditor::CameraTranslateDownKey();
+            translateCameraInputChannels.m_leftChannelId = SandboxEditor::CameraTranslateLeftChannelId();
+            translateCameraInputChannels.m_rightChannelId = SandboxEditor::CameraTranslateRightChannelId();
+            translateCameraInputChannels.m_forwardChannelId = SandboxEditor::CameraTranslateForwardChannelId();
+            translateCameraInputChannels.m_backwardChannelId = SandboxEditor::CameraTranslateBackwardChannelId();
+            translateCameraInputChannels.m_upChannelId = SandboxEditor::CameraTranslateUpChannelId();
+            translateCameraInputChannels.m_downChannelId = SandboxEditor::CameraTranslateDownChannelId();
+            translateCameraInputChannels.m_boostChannelId = SandboxEditor::CameraTranslateBoostChannelId();
 
             auto firstPersonTranslateCamera =
                 AZStd::make_shared<AzFramework::TranslateCameraInput>(AzFramework::LookTranslation, translateCameraInputChannels);
@@ -1304,7 +1294,7 @@ AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateMod
                 return SandboxEditor::CameraScrollSpeed();
             };
 
-            auto orbitCamera = AZStd::make_shared<AzFramework::OrbitCameraInput>();
+            auto orbitCamera = AZStd::make_shared<AzFramework::OrbitCameraInput>(SandboxEditor::CameraOrbitChannelId());
             orbitCamera->SetLookAtFn(
                 [viewportId](const AZ::Vector3& position, const AZ::Vector3& direction) -> AZStd::optional<AZ::Vector3>
                 {
@@ -1341,7 +1331,7 @@ AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateMod
                     return {};
                 });
 
-            auto orbitRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::CameraOrbitLookButton);
+            auto orbitRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(SandboxEditor::CameraOrbitLookChannelId());
             orbitRotateCamera->m_rotateSpeedFn = []
             {
                 return SandboxEditor::CameraRotateSpeed();
@@ -1369,13 +1359,13 @@ AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateMod
             };
 
             auto orbitDollyMoveCamera =
-                AZStd::make_shared<AzFramework::OrbitDollyCursorMoveCameraInput>(AzFramework::CameraOrbitDollyButton);
+                AZStd::make_shared<AzFramework::OrbitDollyCursorMoveCameraInput>(SandboxEditor::CameraOrbitDollyChannelId());
             orbitDollyMoveCamera->m_cursorSpeedFn = []
             {
                 return SandboxEditor::CameraDollyMotionSpeed();
             };
 
-            auto orbitPanCamera = AZStd::make_shared<AzFramework::PanCameraInput>(AzFramework::CameraOrbitPanButton, AzFramework::OrbitPan);
+            auto orbitPanCamera = AZStd::make_shared<AzFramework::PanCameraInput>(SandboxEditor::CameraOrbitPanChannelId(), AzFramework::OrbitPan);
             orbitPanCamera->m_panSpeedFn = []
             {
                 return SandboxEditor::CameraPanSpeed();

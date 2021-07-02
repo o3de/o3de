@@ -26,50 +26,6 @@ namespace AzFramework
     AZ_CVAR(float, ed_cameraSystemMinOrbitDistance, 10.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
     AZ_CVAR(float, ed_cameraSystemMaxOrbitDistance, 50.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
 
-    AZ_CVAR(
-        AZ::CVarFixedString, ed_cameraSystemTranslateBoostKey, "keyboard_key_modifier_shift_l", nullptr, AZ::ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(AZ::CVarFixedString, ed_cameraSystemOrbitKey, "keyboard_key_modifier_alt_l", nullptr, AZ::ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(AZ::CVarFixedString, ed_cameraSystemFreeLookButton, "mouse_button_right", nullptr, AZ::ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(AZ::CVarFixedString, ed_cameraSystemFreePanButton, "mouse_button_middle", nullptr, AZ::ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(AZ::CVarFixedString, ed_cameraSystemOrbitLookButton, "mouse_button_left", nullptr, AZ::ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(AZ::CVarFixedString, ed_cameraSystemOrbitDollyButton, "mouse_button_right", nullptr, AZ::ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(AZ::CVarFixedString, ed_cameraSystemOrbitPanButton, "mouse_button_middle", nullptr, AZ::ConsoleFunctorFlags::Null, "");
-
-    static InputChannelId CameraTranslateBoostId;
-    static InputChannelId CameraOrbitId;
-
-    // externed elsewhere
-    InputChannelId CameraFreeLookButton;
-    InputChannelId CameraFreePanButton;
-    InputChannelId CameraOrbitLookButton;
-    InputChannelId CameraOrbitDollyButton;
-    InputChannelId CameraOrbitPanButton;
-
-    void ReloadCameraKeyBindings()
-    {
-        const AZ::CVarFixedString& boost = ed_cameraSystemTranslateBoostKey;
-        CameraTranslateBoostId = InputChannelId(boost.c_str());
-        const AZ::CVarFixedString& orbit = ed_cameraSystemOrbitKey;
-        CameraOrbitId = InputChannelId(orbit.c_str());
-        const AZ::CVarFixedString& freeLook = ed_cameraSystemFreeLookButton;
-        CameraFreeLookButton = InputChannelId(freeLook.c_str());
-        const AZ::CVarFixedString& freePan = ed_cameraSystemFreePanButton;
-        CameraFreePanButton = InputChannelId(freePan.c_str());
-        const AZ::CVarFixedString& orbitLook = ed_cameraSystemOrbitLookButton;
-        CameraOrbitLookButton = InputChannelId(orbitLook.c_str());
-        const AZ::CVarFixedString& orbitDolly = ed_cameraSystemOrbitDollyButton;
-        CameraOrbitDollyButton = InputChannelId(orbitDolly.c_str());
-        const AZ::CVarFixedString& orbitPan = ed_cameraSystemOrbitPanButton;
-        CameraOrbitPanButton = InputChannelId(orbitPan.c_str());
-    }
-
-    static void ReloadCameraKeyBindingsConsole(const AZ::ConsoleCommandContainer&)
-    {
-        ReloadCameraKeyBindings();
-    }
-
-    AZ_CONSOLEFREEFUNC(ReloadCameraKeyBindingsConsole, AZ::ConsoleFunctorFlags::Null, "Reload keybindings for the modern camera system");
-
     //! return -1.0f if inverted, 1.0f otherwise
     constexpr static float Invert(const bool invert)
     {
@@ -401,32 +357,32 @@ namespace AzFramework
     TranslateCameraInput::TranslationType TranslateCameraInput::TranslationFromKey(
         const InputChannelId& channelId, const TranslateCameraInputChannels& translateCameraInputChannels)
     {
-        if (channelId == translateCameraInputChannels.m_cameraTranslateForwardId)
+        if (channelId == translateCameraInputChannels.m_forwardChannelId)
         {
             return TranslationType::Forward;
         }
 
-        if (channelId == translateCameraInputChannels.m_cameraTranslateBackwardId)
+        if (channelId == translateCameraInputChannels.m_backwardChannelId)
         {
             return TranslationType::Backward;
         }
 
-        if (channelId == translateCameraInputChannels.m_cameraTranslateLeftId)
+        if (channelId == translateCameraInputChannels.m_leftChannelId)
         {
             return TranslationType::Left;
         }
 
-        if (channelId == translateCameraInputChannels.m_cameraTranslateRightId)
+        if (channelId == translateCameraInputChannels.m_rightChannelId)
         {
             return TranslationType::Right;
         }
 
-        if (channelId == translateCameraInputChannels.m_cameraTranslateDownId)
+        if (channelId == translateCameraInputChannels.m_downChannelId)
         {
             return TranslationType::Down;
         }
 
-        if (channelId == translateCameraInputChannels.m_cameraTranslateUpId)
+        if (channelId == translateCameraInputChannels.m_upChannelId)
         {
             return TranslationType::Up;
         }
@@ -463,7 +419,7 @@ namespace AzFramework
                     BeginActivation();
                 }
 
-                if (input->m_channelId == CameraTranslateBoostId)
+                if (input->m_channelId == m_translateCameraInputChannels.m_boostChannelId)
                 {
                     m_boost = true;
                 }
@@ -476,7 +432,7 @@ namespace AzFramework
                 {
                     EndActivation();
                 }
-                if (input->m_channelId == CameraTranslateBoostId)
+                if (input->m_channelId == m_translateCameraInputChannels.m_boostChannelId)
                 {
                     m_boost = false;
                 }
@@ -548,11 +504,16 @@ namespace AzFramework
         m_boost = false;
     }
 
+    OrbitCameraInput::OrbitCameraInput(const InputChannelId& orbitChannelId)
+        : m_orbitChannelId(orbitChannelId)
+    {
+    }
+
     bool OrbitCameraInput::HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, const float scrollDelta)
     {
         if (const auto* input = AZStd::get_if<DiscreteInputEvent>(&event))
         {
-            if (input->m_channelId == CameraOrbitId)
+            if (input->m_channelId == m_orbitChannelId)
             {
                 if (input->m_state == InputChannel::State::Began)
                 {
