@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -485,7 +485,7 @@ namespace EMotionFX
 
             SetMediaRoot("@assets@");
             // \todo Right now we're pointing at the @devassets@ location (source) and working from there, because .actor and .motion (motion) aren't yet processed through
-            // the FBX pipeline. Once they are, we'll need to update various segments of the Tool to always read from the @assets@ cache, but write to the @devassets@ data/metadata.
+            // the scene pipeline. Once they are, we'll need to update various segments of the Tool to always read from the @assets@ cache, but write to the @devassets@ data/metadata.
             EMotionFX::GetEMotionFX().InitAssetFolderPaths();
 
             // Register EMotionFX event handler

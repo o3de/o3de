@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -163,6 +163,8 @@ namespace AZ
             RPI::Ptr<RPI::EnvironmentCubeMapPass> m_environmentCubeMapPass = nullptr;
             RPI::RenderPipelineId m_environmentCubeMapPipelineId;
             BuildCubeMapCallback m_callback;
+            RHI::ShaderInputNameIndex m_iblExposureConstantIndex = "m_iblExposure";
+            float m_previousExposure = 0.0f;
             bool m_buildingCubeMap = false;
         };
 

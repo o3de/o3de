@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -8,13 +8,8 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/string/string.h>
 #include <SceneAPI/SDKWrapper/NodeWrapper.h>
-namespace fbxsdk
-{
-    class FbxScene;
-}
 
 struct aiScene;
-
 
 namespace AZ
 {
@@ -25,7 +20,6 @@ namespace AZ
         public:
             AZ_RTTI(SceneWrapperBase, "{703CD344-2C75-4F30-8CE2-6BDEF2511AFD}");
             SceneWrapperBase() = default;
-            SceneWrapperBase(fbxsdk::FbxScene* fbxScene);
             virtual ~SceneWrapperBase() = default;
             SceneWrapperBase(aiScene* aiScene);
 
@@ -37,10 +31,8 @@ namespace AZ
 
             virtual void Clear();
             
-            virtual fbxsdk::FbxScene* GetFbxScene() const;
             virtual const aiScene* GetAssImpScene() const;
 
-            fbxsdk::FbxScene* m_fbxScene = nullptr;
             const aiScene* m_assImpScene = nullptr;
 
             static const char* s_defaultSceneName;
