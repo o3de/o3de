@@ -1,17 +1,11 @@
 {
     "gem_name": "SliceFavorites",
-    "GemFormatVersion": 4,
-    "Uuid": "1bfc7270d4a1490daac8aa8b072c4489",
-    "Name": "SliceFavorites",
-    "DisplayName": "SliceFavorites",
-    "Version": "0.1.0",
-    "Summary": "Add the ability to favorite a slice to allow easy access and instantiation",
-    "Tags": ["Editor", "Slices"],
-    "IconPath": "preview.png",
-    "Modules": [
-        {
-          "Type": "EditorModule",
-          "Name":  "Editor"
-        }
-    ]
+    "display_name": "SliceFavorites",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Open 3D Engine - o3de.org",
+    "type": "Code",
+    "summary": "Add the ability to favorite a slice to allow easy access and instantiation",
+    "user_tags": ["Editor", "Slices"],
+    "icon_path": "preview.png",
+    "requirements": ""
 }

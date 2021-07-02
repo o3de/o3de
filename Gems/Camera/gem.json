@@ -1,21 +1,12 @@
 {
     "gem_name": "Camera",
-    "GemFormatVersion": 4,
-    "Uuid": "f910686b6725452fbfc4671f95f733c6",
-    "Name": "Camera",
-    "Version": "0.1.0",
-    "DisplayName": "Camera",
-    "Tags": ["Camera"],
-    "Summary": "The Camera Gem includes a basic camera component that defines a frustum for runtime rendering.",
-    "IconPath": "preview.png",
-    "Modules": [
-        {
-            "Type": "GameModule"
-        },
-        {
-            "Name": "Editor",
-            "Type": "EditorModule",
-            "Extends": "GameModule"
-        }
-    ]
+    "display_name": "Camera",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Open 3D Engine - o3de.org",
+    "type": "Code",
+    "summary": "The Camera Gem provides a basic camera component that defines a frustum for runtime rendering.",
+    "canonical_tags": ["Gem"],
+    "user_tags": ["Rendering", "Utility"],
+    "icon_path": "preview.png",
+    "requirements": ""
 }

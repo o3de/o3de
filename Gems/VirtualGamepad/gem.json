@@ -1,16 +1,12 @@
 {
-    "gem_name": "VirtualGampad",
-    "GemFormatVersion": 4,
-    "Uuid": "8aa9a66015804d6d9c809ce306e7d913",
-    "Name": "VirtualGamepad",
-    "DisplayName": "VirtualGamepad",
-    "Version": "0.1.0",
-    "Summary": "Example of a virtual gamepad that can be used by mobile devices with touch screens in place of a physical gamepad.",
-    "Tags": ["Input", "Mobile"],
-    "IconPath": "preview.png",
-    "Modules": [
-        {
-            "Type": "GameModule"
-        }
-    ]
+    "gem_name": "VirtualGamepad",
+    "display_name": "Virtual Gamepad",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Open 3D Engine - o3de.org",
+    "type": "Code",
+    "summary": "The Virtual Gamepad Gem provides controls that emulate a gamepad on touch screen devices.",
+    "canonical_tags": ["Gem"],
+    "user_tags": ["Input", "Gameplay"],
+    "icon_path": "preview.png",
+    "requirements": ""
 }
