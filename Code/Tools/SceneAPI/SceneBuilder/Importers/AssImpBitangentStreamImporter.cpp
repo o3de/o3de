@@ -86,7 +86,7 @@ namespace AZ
                 // AssImp only has one bitangentStream per mesh.
                 bitangentStream->SetBitangentSetIndex(0);
 
-                bitangentStream->SetTangentSpace(AZ::SceneAPI::DataTypes::TangentSpace::FromFbx);
+                bitangentStream->SetTangentSpace(AZ::SceneAPI::DataTypes::TangentSpace::FromSourceScene);
                 bitangentStream->ReserveContainerSpace(vertexCount);
                 for (int sdkMeshIndex = 0; sdkMeshIndex < currentNode->mNumMeshes; ++sdkMeshIndex)
                 {

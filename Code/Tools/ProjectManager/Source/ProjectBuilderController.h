@@ -12,32 +12,12 @@
 #include <QThread>
 #endif
 
+QT_FORWARD_DECLARE_CLASS(QProcess)
+
 namespace O3DE::ProjectManager
 {
     QT_FORWARD_DECLARE_CLASS(ProjectButton)
-
-    class ProjectBuilderWorker : public QObject
-    {
-        Q_OBJECT
-
-    public:
-        explicit ProjectBuilderWorker(const ProjectInfo& projectInfo);
-        ~ProjectBuilderWorker() = default;
-
-        QString LogFilePath() const;
-
-    public slots:
-        void BuildProject();
-
-    signals:
-        void UpdateProgress(int progress);
-        void Done(QString result);
-
-    private:
-        void WriteErrorLog(const QString& log);
-
-        ProjectInfo m_projectInfo;
-    };
+    QT_FORWARD_DECLARE_CLASS(ProjectBuilderWorker)
 
     class ProjectBuilderController : public QObject
     {
@@ -48,15 +28,16 @@ namespace O3DE::ProjectManager
         ~ProjectBuilderController();
 
         void SetProjectButton(ProjectButton* projectButton);
-        QString GetProjectPath() const;
+        const ProjectInfo& GetProjectInfo() const;
 
     public slots:
         void Start();
         void UpdateUIProgress(int progress);
         void HandleResults(const QString& result);
+        void HandleCancel();
 
     signals:
-        void Done();
+        void Done(bool success = true);
 
     private:
         ProjectInfo m_projectInfo;
@@ -64,5 +45,7 @@ namespace O3DE::ProjectManager
         QThread m_workerThread;
         ProjectButton* m_projectButton;
         QWidget* m_parent;
+
+        int m_lastProgress;
     };
 } // namespace O3DE::ProjectManager
