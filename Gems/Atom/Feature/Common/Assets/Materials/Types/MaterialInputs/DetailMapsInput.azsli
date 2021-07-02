@@ -33,7 +33,12 @@ bool m_detail_normal_flipX;                   \
 bool m_detail_normal_flipY;                   \
                                               \
 float3x3 m_detailUvMatrix;                    \
-float3x3 m_detailUvMatrixInverse;
+float4   m_detailUvMatrixPad;                 \
+float3x3 m_detailUvMatrixInverse;             \
+float4   m_detailUvMatrixInversePad;
+
+// [GFX TODO][ATOM-14595] m_detailUvMatrixPad and m_detailUvMatrixInversePad are a workaround for a data stomping bug.
+// Remove them once the bug is fixed.
 
 
 #define COMMON_OPTIONS_DETAIL_MAPS(prefix)   \
