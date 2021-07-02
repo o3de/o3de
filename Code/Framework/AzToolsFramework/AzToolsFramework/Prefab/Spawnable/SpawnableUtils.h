@@ -20,7 +20,4 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
     template <typename EntityPtr>
     void SortEntitiesByTransformHierarchy(AZStd::vector<EntityPtr>& entities);
 
-    // Explicit specializations
-    template void SortEntitiesByTransformHierarchy(AZStd::vector<AZ::Entity*>& entities);
-    template void SortEntitiesByTransformHierarchy(AZStd::vector<AZStd::unique_ptr<AZ::Entity>>& entities);
 } // namespace AzToolsFramework::Prefab::SpawnableUtils

@@ -223,4 +223,7 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
 
     }
 
+    // Explicit specializations of SortEntitiesByTransformHierarchy (have to be in cpp due to clang errors)
+    template void SortEntitiesByTransformHierarchy(AZStd::vector<AZ::Entity*>& entities);
+    template void SortEntitiesByTransformHierarchy(AZStd::vector<AZStd::unique_ptr<AZ::Entity>>& entities);
 } // namespace AzToolsFramework::Prefab::SpawnableUtils
