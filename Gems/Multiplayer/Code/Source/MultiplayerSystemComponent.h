@@ -114,6 +114,8 @@ namespace Multiplayer
         AZ::TimeMs GetCurrentHostTimeMs() const override;
         INetworkTime* GetNetworkTime() override;
         INetworkEntityManager* GetNetworkEntityManager() override;
+        void SetFilterEntityManager(IFilterEntityManager* entityFilter) override;
+        IFilterEntityManager* GetFilterEntityManager() override;
         //! @}
 
         //! Console commands.
@@ -138,6 +140,8 @@ namespace Multiplayer
         NetworkEntityManager m_networkEntityManager;
         NetworkTime m_networkTime;
         MultiplayerAgentType m_agentType = MultiplayerAgentType::Uninitialized;
+        
+        IFilterEntityManager* m_filterEntityManager = nullptr; // non-owning pointer
 
         SessionInitEvent m_initEvent;
         SessionShutdownEvent m_shutdownEvent;
