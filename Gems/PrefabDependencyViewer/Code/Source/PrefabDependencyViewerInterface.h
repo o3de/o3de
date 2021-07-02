@@ -16,14 +16,14 @@
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabDomTypes.h>
 
-namespace PrefabDependencyViewer
+ namespace PrefabDependencyViewer
 {
     class PrefabDependencyViewerInterface
     {
     public:
         AZ_RTTI(PrefabDependencyViewerInterface, "{9F550542-7184-42BE-B33D-CB9BDF88A758}");
 
-        virtual void displayTree(AzToolsFramework::Prefab::Instance& prefab) = 0;
-        virtual void displayTree(AzToolsFramework::Prefab::PrefabDom& prefab) = 0;
+        virtual void DisplayTree(const AzToolsFramework::Prefab::TemplateId& tid) = 0;
     };
 } // namespace AzToolsFramework
+
