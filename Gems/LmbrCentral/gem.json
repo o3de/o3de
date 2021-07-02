@@ -1,14 +1,13 @@
 {
     "gem_name": "LmbrCentral",
-    "GemFormatVersion": 3,
-    "Uuid": "ff06785f7145416b9d46fde39098cb0c",
-    "Name": "LmbrCentral",
-    "DisplayName": "LmbrCentral",
-    "Version": "0.1.0",
-    "LinkType": "Dynamic",
-    "Summary": "Required LmbrCentral Engine Gem.",
-    "Tags": ["Required"],
-    "IconPath": "preview.png",
-    "EditorModule": true,
-    "IsRequired": true
+    "display_name": "O3DE Core (LmbrCentral)",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Open 3D Engine - o3de.org",
+    "type": "Code",
+    "summary": "The O3DE Core (LmbrCentral) Gem provides required code and assets for running Open 3D Engine Editor.",
+    "canonical_tags": ["Gem"],
+    "user_tags": ["Core", "Framework", "Assets"],
+    "icon_path": "preview.png",
+    "requirements": ""
 }
+

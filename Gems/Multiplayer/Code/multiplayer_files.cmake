@@ -21,6 +21,7 @@ set(FILES
     Include/Multiplayer/EntityDomains/IEntityDomain.h
     Include/Multiplayer/NetworkEntity/INetworkEntityManager.h
     Include/Multiplayer/INetworkSpawnableLibrary.h
+    Include/Multiplayer/NetworkEntity/IFilterEntityManager.h
     Include/Multiplayer/NetworkEntity/NetworkEntityRpcMessage.h
     Include/Multiplayer/NetworkEntity/NetworkEntityUpdateMessage.h
     Include/Multiplayer/NetworkEntity/NetworkEntityHandle.h

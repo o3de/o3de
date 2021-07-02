@@ -1,16 +1,12 @@
 {
     "gem_name": "Achievements",
-    "GemFormatVersion": 4,
-    "Uuid": "6f8d953dd4fc4bb6ad34c9118a7b789f",
-    "Name": "Achievements",
-    "DisplayName": "Achievements",
-    "Version": "0.1.0",
-    "Summary": "Platform agnostic interface for retrieving achievement details and unlocking achievements.",
-    "Tags": ["Achievement", "Achievements", "Trophy", "Trophies"],
-    "IconPath": "preview.png",
-    "Modules": [
-        {
-            "Type": "GameModule"
-        }
-    ]
+    "display_name": "Achievements",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Open 3D Engine - o3de.org",
+    "type": "Code",
+    "summary": "The Achievements Gem provides a target platform agnostic interface for retrieving achievement details and unlocking achievements.",
+    "canonical_tags": ["Gem"],
+    "user_tags": ["Gameplay", "Achievements"],
+    "icon_path": "preview.png",
+    "requirements": ""
 }

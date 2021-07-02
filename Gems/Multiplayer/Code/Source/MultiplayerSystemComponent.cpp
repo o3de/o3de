@@ -812,6 +812,16 @@ namespace Multiplayer
         return &m_networkEntityManager;
     }
 
+    void MultiplayerSystemComponent::SetFilterEntityManager(IFilterEntityManager* entityFilter)
+    {
+        m_filterEntityManager = entityFilter;
+    }
+
+    IFilterEntityManager* MultiplayerSystemComponent::GetFilterEntityManager()
+    {
+        return m_filterEntityManager;
+    }
+
     void MultiplayerSystemComponent::DumpStats([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
         const MultiplayerStats& stats = GetStats();
