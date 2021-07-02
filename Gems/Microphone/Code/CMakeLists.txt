@@ -43,17 +43,20 @@ ly_add_target(
         Gem::AudioSystem
 )
 
-ly_add_target(
-    NAME Microphone.Editor ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
-    NAMESPACE Gem
-    FILES_CMAKE
-        microphone_shared_files.cmake
-    BUILD_DEPENDENCIES
-        PRIVATE
-            Gem::Microphone.Static
-    RUNTIME_DEPENDENCIES
-        Gem::AudioSystem.Editor
-)
-
 ly_create_alias(NAME Microphone.Clients  NAMESPACE Gem TARGETS Gem::Microphone)
-ly_create_alias(NAME Microphone.Tools    NAMESPACE Gem TARGETS Gem::Microphone.Editor)
+
+if(PAL_TRAIT_BUILD_HOST_TOOLS)
+    ly_add_target(
+        NAME Microphone.Editor ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+        NAMESPACE Gem
+        FILES_CMAKE
+            microphone_shared_files.cmake
+        BUILD_DEPENDENCIES
+            PRIVATE
+                Gem::Microphone.Static
+        RUNTIME_DEPENDENCIES
+            Gem::AudioSystem.Editor
+    )
+
+    ly_create_alias(NAME Microphone.Tools    NAMESPACE Gem TARGETS Gem::Microphone.Editor)
+endif()
