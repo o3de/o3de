@@ -7,4 +7,5 @@
 
 set(FILES
     Python_mac.cpp
+    ProjectBuilderWorker_mac.cpp
 )
