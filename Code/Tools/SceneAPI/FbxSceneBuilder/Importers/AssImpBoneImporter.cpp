@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -36,60 +36,46 @@ namespace AZ
                 SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
                 if (serializeContext)
                 {
-                    serializeContext->Class<AssImpBoneImporter, SceneCore::LoadingComponent>()->Version(1);
+                    serializeContext->Class<AssImpBoneImporter, SceneCore::LoadingComponent>()->Version(2);
                 }
             }
 
-            void EnumBonesInNode(
-                const aiScene* scene, const aiNode* node, AZStd::unordered_map<AZStd::string, const aiNode*>& mainBoneList,
-                AZStd::unordered_map<AZStd::string, const aiBone*>& boneLookup)
+            void MakeBoneMap(const aiScene* scene, AZStd::unordered_map<AZStd::string, const aiBone*>& boneLookup)
             {
-                /* From AssImp Documentation
-                    a) Create a map or a similar container to store which nodes are necessary for the skeleton. Pre-initialise it for all nodes with a "no".
-                    b) For each bone in the mesh:
-                    b1) Find the corresponding node in the scene's hierarchy by comparing their names.
-                    b2) Mark this node as "yes" in the necessityMap.
-                    b3) Mark all of its parents the same way until you 1) find the mesh's node or 2) the parent of the mesh's node.
-                    c) Recursively iterate over the node hierarchy
-                    c1) If the node is marked as necessary, copy it into the skeleton and check its children
-                    c2) If the node is marked as not necessary, skip it and do not iterate over its children. 
-                 */
+                AZStd::queue<const aiNode*> queue;
+                AZStd::unordered_set<AZStd::string> nodesWithNoMesh;
 
-                for (unsigned meshIndex = 0; meshIndex < node->mNumMeshes; ++meshIndex)
+                queue.push(scene->mRootNode);
+
+                while (!queue.empty())
                 {
-                    const aiMesh* mesh = scene->mMeshes[node->mMeshes[meshIndex]];
+                    const aiNode* currentNode = queue.front();
+                    queue.pop();
 
-                    for (unsigned boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
+                    if (currentNode->mNumMeshes == 0)
+                    {
+                        nodesWithNoMesh.emplace(currentNode->mName.C_Str());
+                    }
+
+                    for (int childIndex = 0; childIndex < currentNode->mNumChildren; ++childIndex)
+                    {
+                        queue.push(currentNode->mChildren[childIndex]);
+                    }
+                }
+
+                for (unsigned int meshIndex = 0; meshIndex < scene->mNumMeshes; ++meshIndex)
+                {
+                    const aiMesh* mesh = scene->mMeshes[meshIndex];
+
+                    for (unsigned int boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
                     {
                         const aiBone* bone = mesh->mBones[boneIndex];
 
-                        const aiNode* boneNode = scene->mRootNode->FindNode(bone->mName);
-                        const aiNode* boneParent = boneNode->mParent;
-
-                        mainBoneList[bone->mName.C_Str()] = boneNode;
-                        boneLookup[bone->mName.C_Str()] = bone;
-
-                        while (boneParent && boneParent != node && boneParent != node->mParent && boneParent != scene->mRootNode)
+                        if (nodesWithNoMesh.contains(bone->mName.C_Str()))
                         {
-                            mainBoneList[boneParent->mName.C_Str()] = boneParent;
-
-                            boneParent = boneParent->mParent;
+                            boneLookup.emplace(bone->mName.C_Str(), bone);
                         }
                     }
-                }
-            }
-
-            void EnumChildren(
-                const aiScene* scene, const aiNode* node, AZStd::unordered_map<AZStd::string, const aiNode*>& mainBoneList,
-                AZStd::unordered_map<AZStd::string, const aiBone*>& boneLookup)
-            {
-                EnumBonesInNode(scene, node, mainBoneList, boneLookup);
-
-                for (unsigned childIndex = 0; childIndex < node->mNumChildren; ++childIndex)
-                {
-                    const aiNode* child = node->mChildren[childIndex];
-                    
-                    EnumChildren(scene, child, mainBoneList, boneLookup);
                 }
             }
 
@@ -122,14 +108,10 @@ namespace AZ
                 bool isBone = false;
                 
                 {
-                    AZStd::unordered_map<AZStd::string, const aiNode*> mainBoneList;
                     AZStd::unordered_map<AZStd::string, const aiBone*> boneLookup;
-                    EnumChildren(scene, scene->mRootNode, mainBoneList, boneLookup);
+                    MakeBoneMap(scene, boneLookup);
 
-                    if (mainBoneList.find(currentNode->mName.C_Str()) != mainBoneList.end())
-                    {
-                        isBone = true;
-                    }
+                    isBone = boneLookup.contains(currentNode->mName.C_Str());
 
                     // If we have an animation, the bones will be listed in there
                     if (!isBone)

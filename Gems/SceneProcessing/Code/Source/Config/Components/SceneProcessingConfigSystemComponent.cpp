@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -42,7 +42,7 @@ namespace AZ
             m_softNames.push_back(aznew NodeSoftNameSetting("^.*_[Pp][Hh][Yy][Ss](_optimized)?$", PatternMatcher::MatchApproach::Regex, "PhysicsMesh", true));
             m_softNames.push_back(aznew NodeSoftNameSetting("_ignore", PatternMatcher::MatchApproach::PostFix, "Ignore", false));
             // If the filename ends with "_anim" this will mark all nodes as "Ignore" unless they're derived from IAnimationData. This will
-            // cause only animations to be exported from the .fbx file even if there's other data available.
+            // cause only animations to be exported from the source scene file even if there's other data available.
             m_softNames.push_back(aznew FileSoftNameSetting("_anim", PatternMatcher::MatchApproach::PostFix, "Ignore", false,
                 { FileSoftNameSetting::GraphType(SceneAPI::DataTypes::IAnimationData::TYPEINFO_Name()) }));
 
@@ -166,7 +166,7 @@ namespace AZ
                             "Soft naming conventions", "Update the naming conventions to suit your project.")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &SceneProcessingConfigSystemComponent::m_UseCustomNormals,
-                            "Use Custom Normals", "When enabled, Open 3D Engine will use the DCC assets custom or tangent space normals. When disabled, the normals will be averaged. This setting can be overridden on individual FBX asset settings.")
+                            "Use Custom Normals", "When enabled, Open 3D Engine will use the DCC assets custom or tangent space normals. When disabled, the normals will be averaged. This setting can be overridden on an individual scene file's asset settings.")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, false);
                 }
             }

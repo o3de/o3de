@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -268,10 +268,9 @@ bool GUIApplicationManager::Run()
         trayIconMenu->addAction(quitAction);
 #endif
 
-        m_trayIcon = new QSystemTrayIcon(m_mainWindow);
+        m_trayIcon = new QSystemTrayIcon(QIcon(":/o3de_assetprocessor_taskbar.svg"), m_mainWindow);
         m_trayIcon->setContextMenu(trayIconMenu);
         m_trayIcon->setToolTip(QObject::tr("O3DE Asset Processor"));
-        m_trayIcon->setIcon(QIcon(":/o3de_assetprocessor.png"));
         m_trayIcon->show();
         QObject::connect(m_trayIcon, &QSystemTrayIcon::activated, m_mainWindow, [&, wrapper](QSystemTrayIcon::ActivationReason reason)
             {

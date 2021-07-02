@@ -17,5 +17,6 @@
         <file>AssetProcessor_arrow_up.svg</file>
         <file>AssetProcessor_refresh.png</file>
         <file>o3de_assetprocessor.png</file>
+        <file>o3de_assetprocessor_taskbar.svg</file>
     </qresource>
 </RCC>

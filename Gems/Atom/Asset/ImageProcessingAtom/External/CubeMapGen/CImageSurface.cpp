@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -12,8 +12,7 @@
 //--------------------------------------------------------------------------------------
 // (C) 2005 ATI Research, Inc., All rights reserved.
 //--------------------------------------------------------------------------------------
-// modifications by Crytek GmbH
-// modifications by Amazon
+// Modified from original
 
 #include <ImageProcessing_precompiled.h>
 

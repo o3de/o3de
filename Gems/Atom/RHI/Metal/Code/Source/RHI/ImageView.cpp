@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -34,20 +34,40 @@ namespace AZ
             
             id<MTLTexture> mtlTexture = image.GetMemoryView().GetGpuAddress<id<MTLTexture>>();
             MTLPixelFormat textureFormat = ConvertPixelFormat(image.GetDescriptor().m_format);
-
+            MTLPixelFormat textureViewFormat = ConvertPixelFormat(viewDescriptor.m_overrideFormat);
+            
             id<MTLTexture>  textureView = nil;
-            if(viewDescriptor.m_overrideFormat != RHI::Format::Unknown)
+            bool isViewFormatDifferent = false;
+            //Check if we the viewformat differs from the base texture format
+            if(textureViewFormat != MTLPixelFormatInvalid)
             {
-                MTLPixelFormat textureViewFormat = ConvertPixelFormat(viewDescriptor.m_overrideFormat);
-                
-                //Create a unique texture if needed
-                if(textureFormat != textureViewFormat)
+                isViewFormatDifferent = textureViewFormat!=textureFormat;
+            }
+                       
+            //Since we divide the array length of a cubemap by NumCubeMapSlices when creating the base texture
+            //we have to do reverse of that here
+            uint32_t textureLength = mtlTexture.arrayLength;
+            if(imgDesc.m_isCubemap)
+            {
+                textureLength = textureLength * RHI::ImageDescriptor::NumCubeMapSlices;
+            }
+            
+            //Create a new view if the format, mip range or slice range has changed
+            if( isViewFormatDifferent ||
+                levelRange.length != mtlTexture.mipmapLevelCount ||
+                sliceRange.length != textureLength)
+            {
+                //Protection against creating a view with an invalid format
+                //If view format is invalid use the base texture's format
+                if(textureViewFormat == MTLPixelFormatInvalid)
                 {
-                    textureView = [mtlTexture newTextureViewWithPixelFormat : textureViewFormat
-                                                                  textureType : mtlTexture.textureType
-                                                                       levels : levelRange
-                                                                       slices : sliceRange];
+                    textureViewFormat = textureFormat;
                 }
+
+                textureView = [mtlTexture newTextureViewWithPixelFormat : textureViewFormat
+                                                            textureType : mtlTexture.textureType
+                                                                 levels : levelRange
+                                                                 slices : sliceRange];
             }
 
             if(!textureView)
@@ -112,20 +132,21 @@ namespace AZ
         {
             const Image& image = static_cast<const Image&>(resourceBase);
             const RHI::ImageDescriptor& imageDesc = image.GetDescriptor();
-            const RHI::ImageViewDescriptor& descriptor = GetDescriptor();
+            const RHI::ImageViewDescriptor& viewDescriptor = GetDescriptor();
             
             RHI::ImageSubresourceRange& range = m_imageSubresourceRange;
-            range.m_mipSliceMin = descriptor.m_mipSliceMin;
-            range.m_mipSliceMax = AZStd::min(descriptor.m_mipSliceMax, static_cast<uint16_t>(imageDesc.m_mipLevels - 1));
-            if (imageDesc.m_dimension == RHI::ImageDimension::Image3D)
+            range.m_mipSliceMin = viewDescriptor.m_mipSliceMin;
+            range.m_mipSliceMax = AZStd::min(viewDescriptor.m_mipSliceMax, static_cast<uint16_t>(imageDesc.m_mipLevels - 1));
+            range.m_arraySliceMin = viewDescriptor.m_arraySliceMin;
+            range.m_arraySliceMax = AZStd::min(viewDescriptor.m_arraySliceMax, static_cast<uint16_t>(imageDesc.m_arraySize - 1));
+
+            //The length value of the sliceRange parameter must be a multiple of 6 if the texture
+            //is of type MTLTextureTypeCube or MTLTextureTypeCubeArray. Hence we cant really make
+            //a subresource view for these types.
+            if(imageDesc.m_isCubemap)
             {
                 range.m_arraySliceMin = 0;
-                range.m_arraySliceMax = 0;
-            }
-            else
-            {
-                range.m_arraySliceMin = descriptor.m_arraySliceMin;
-                range.m_arraySliceMax = AZStd::min(descriptor.m_arraySliceMax, static_cast<uint16_t>(imageDesc.m_arraySize - 1));
+                range.m_arraySliceMax = static_cast<uint16_t>(imageDesc.m_arraySize - 1);
             }
         }
     

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -471,7 +471,7 @@ namespace AzQtComponents
         config.hoverBackgroundColor = QColor("#FFFFFF");
         config.hoverBorderColor = QColor("#222222");
         config.hoverLineWidth = 1;
-        config.focusedBorderColor = QColor("#00A1C9");
+        config.focusedBorderColor = QColor("#94D2FF");
         config.focusedLineWidth = 1;
         config.errorBorderColor = QColor("#E25243");
         config.errorLineWidth = 2;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -215,22 +215,23 @@ namespace O3DE::ProjectManager
                 return false;
             }
 
+            // Check if project path has changed and move it
+            // Move project first to avoid trying to update settings at the new location before it has been moved there
+            if (newProjectSettings.m_path != m_projectInfo.m_path)
+            {
+                if (!ProjectUtils::MoveProject(m_projectInfo.m_path, newProjectSettings.m_path))
+                {
+                    QMessageBox::critical(this, tr("Project move failed"), tr("Failed to move project."));
+                    return false;
+                }
+            }
+
             // Update project if settings changed
             {
                 auto result = PythonBindingsInterface::Get()->UpdateProject(newProjectSettings);
                 if (!result.IsSuccess())
                 {
                     QMessageBox::critical(this, tr("Project update failed"), tr(result.GetError().c_str()));
-                    return false;
-                }
-            }
-
-            // Check if project path has changed and move it
-            if (newProjectSettings.m_path != m_projectInfo.m_path)
-            {
-                if (!ProjectUtils::MoveProject(m_projectInfo.m_path, newProjectSettings.m_path))
-                {
-                    QMessageBox::critical(this, tr("Project move failed"), tr("Failed to move project."));
                     return false;
                 }
             }

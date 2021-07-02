@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -44,7 +44,7 @@ namespace EMStudio
         const char* GetCompileDate() const override         { return MCORE_DATE; }
         const char* GetName() const override                { return "Node Groups"; }
         uint32 GetClassID() const override                  { return NodeGroupsPlugin::CLASS_ID; }
-        const char* GetCreatorName() const override         { return "Amazon"; }
+        const char* GetCreatorName() const override         { return "O3DE"; }
         float GetVersion() const override                   { return 1.0f;  }
         bool GetIsClosable() const override                 { return true;  }
         bool GetIsFloatable() const override                { return true;  }
