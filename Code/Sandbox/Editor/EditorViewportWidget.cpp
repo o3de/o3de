@@ -45,6 +45,7 @@
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 // AtomToolsFramework
 #include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
@@ -1244,11 +1245,24 @@ AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateMod
     controller->SetCameraListBuilderCallback(
         [viewportId](AzFramework::Cameras& cameras)
         {
+            const auto hideCursor = [viewportId]
+            {
+                AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Event(
+                    viewportId, &AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Events::BeginCursorCapture);
+            };
+            const auto showCursor = [viewportId]
+            {
+                AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Event(
+                    viewportId, &AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Events::EndCursorCapture);
+            };
+
             auto firstPersonRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::CameraFreeLookButton);
             firstPersonRotateCamera->m_rotateSpeedFn = []
             {
                 return SandboxEditor::CameraRotateSpeed();
             };
+            firstPersonRotateCamera->SetActivationBeganFn(hideCursor);
+            firstPersonRotateCamera->SetActivationEndedFn(showCursor);
 
             auto firstPersonPanCamera =
                 AZStd::make_shared<AzFramework::PanCameraInput>(AzFramework::CameraFreePanButton, AzFramework::LookPan);
