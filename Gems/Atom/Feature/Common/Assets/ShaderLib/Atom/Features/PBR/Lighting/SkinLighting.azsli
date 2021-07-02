@@ -28,7 +28,7 @@ float3 GetDiffuseLighting(Surface surface, LightingData lightingData, float3 lig
     }
     else
     {
-        diffuse = DiffuseLambertian(surface.albedo, surface.normal, dirToLight);
+        diffuse = DiffuseLambertian(surface.albedo, surface.normal, dirToLight, lightingData.diffuseResponse);
     }
 
     if(o_clearCoat_feature_enabled)

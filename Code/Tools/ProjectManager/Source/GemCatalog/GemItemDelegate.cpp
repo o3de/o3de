@@ -131,6 +131,17 @@ namespace O3DE::ProjectManager
             return false;
         }
 
+        if (event->type() == QEvent::KeyPress)
+        {
+            auto keyEvent = static_cast<const QKeyEvent*>(event);
+            if (keyEvent->key() == Qt::Key_Space)
+            {
+                const bool isAdded = GemModel::IsAdded(modelIndex);
+                GemModel::SetIsAdded(*model, modelIndex, !isAdded);
+                return true;
+            }
+        }
+
         if (event->type() == QEvent::MouseButtonPress)
         {
             QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
