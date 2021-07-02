@@ -53,8 +53,6 @@ namespace O3DE::ProjectManager
         vLayout->setContentsMargins(s_contentMargins, 0, s_contentMargins, 0);
         setLayout(vLayout);
 
-        m_background.load(":/Backgrounds/FirstTimeBackgroundImage.jpg");
-
         m_stack = new QStackedWidget(this);
 
         m_firstTimeContent = CreateFirstTimeContent();
@@ -231,6 +229,8 @@ namespace O3DE::ProjectManager
             m_stack->removeWidget(m_projectsContent);
             m_projectsContent->deleteLater();
         }
+
+        m_background.load(":/Backgrounds/DefaultBackground.jpg");
 
         // Make sure to update builder with latest Project Button
         if (m_currentBuilder)
@@ -459,6 +459,7 @@ namespace O3DE::ProjectManager
     {
         if (ShouldDisplayFirstTimeContent())
         {
+            m_background.load(":/Backgrounds/FtueBackground.jpg");
             m_stack->setCurrentWidget(m_firstTimeContent);
         }
         else
