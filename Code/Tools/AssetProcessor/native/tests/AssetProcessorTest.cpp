@@ -84,7 +84,10 @@ namespace AssetProcessor
             AssetProcessorTest::TearDown();
         }
 
-        void OnError([[maybe_unused]] const AZ::IO::SystemFile* file, const char* fileName, int errorCode) override
+        void OnError(
+            [[maybe_unused]] const AZ::IO::SystemFile* file,
+            [[maybe_unused]] const char* fileName,
+            [[maybe_unused]] int errorCode) override
         {
             AZ_Error("LegacyTestAdapter", false, "File error detected with %s with code %d", fileName, errorCode);
         }

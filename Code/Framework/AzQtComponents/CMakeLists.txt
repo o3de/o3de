@@ -41,7 +41,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME AmazonQtControlGallery APPLICATION
+    NAME O3DEQtControlGallery APPLICATION
     NAMESPACE AZ
     AUTOMOC
     AUTOUIC

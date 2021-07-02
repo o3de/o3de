@@ -48,6 +48,12 @@
 
 #include <AzToolsFramework/UI/Outliner/ui_EntityOutlinerWidget.h>
 
+// This has to live outside of any namespaces due to issues on Linux with calls to Q_INIT_RESOURCE if they are inside a namespace
+void initEntityOutlinerWidgetResources()
+{
+    Q_INIT_RESOURCE(resources);
+}
+
 namespace
 {
     const int queuedChangeDelay = 16; // milliseconds
@@ -143,6 +149,8 @@ namespace AzToolsFramework
         , m_sortContentQueued(false)
         , m_dropOperationInProgress(false)
     {
+        initEntityOutlinerWidgetResources();
+
         m_gui = new Ui::EntityOutlinerWidgetUI();
         m_gui->setupUi(this);
 
