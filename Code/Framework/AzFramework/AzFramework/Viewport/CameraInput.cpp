@@ -747,7 +747,7 @@ namespace AzFramework
                 return button == inputChannelId;
             });
 
-        // Accept active mouse channel updates, inactive movement channels will just have a 0 delta.
+        // accept active mouse channel updates, inactive movement channels will just have a 0 delta
         if (inputChannel.IsActive())
         {
             if (inputChannelId == InputDeviceMouse::Movement::X)
@@ -763,6 +763,7 @@ namespace AzFramework
                 return ScrollEvent{ inputChannel.GetValue() };
             }
         }
+
         if (wasMouseButton || InputDeviceKeyboard::IsKeyboardDevice(inputDeviceId))
         {
             return DiscreteInputEvent{ inputChannelId, inputChannel.GetState() };

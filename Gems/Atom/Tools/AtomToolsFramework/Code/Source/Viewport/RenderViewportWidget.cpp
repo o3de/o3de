@@ -299,6 +299,12 @@ namespace AtomToolsFramework
         }
     }
 
+    void RenderViewportWidget::SetInputProcessingEnabled(bool enabled)
+    {
+        m_inputChannelMapper->SetEnabled(enabled);
+        m_controllerList->SetEnabled(enabled);
+    }
+
     AzFramework::CameraState RenderViewportWidget::GetCameraState()
     {
         AZ::RPI::ViewPtr currentView = m_viewportContext->GetDefaultView();

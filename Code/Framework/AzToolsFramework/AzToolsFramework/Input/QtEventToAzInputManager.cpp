@@ -200,8 +200,24 @@ namespace AzToolsFramework
             deviceId.GetNameCrc32() == AzFramework::InputDeviceKeyboard::Id.GetNameCrc32();
     }
 
+    void QtEventToAzInputMapper::SetEnabled(bool enabled)
+    {
+        m_enabled = enabled;
+        if (!enabled)
+        {
+            // Send an internal focus change event to reset our input state to fresh if we're disabled.
+            HandleFocusChange(nullptr);
+        }
+    }
+
     bool QtEventToAzInputMapper::eventFilter(QObject* object, QEvent* event)
     {
+        // Abort if processing isn't enabled.
+        if (!m_enabled)
+        {
+            return false;
+        }
+
         // Because there's no "end" to mouse movement and wheel events, we reset mouse movement channels that have been opened
         // during the next processed non-mouse event.
         if (m_mouseChannelsNeedUpdate && event->type() != QEvent::Type::MouseMove && event->type() != QEvent::Type::Wheel)
@@ -268,14 +284,14 @@ namespace AzToolsFramework
     {
         auto systemCursorChannel =
             GetInputChannel<AzFramework::InputChannelDeltaWithSharedPosition2D>(AzFramework::InputDeviceMouse::SystemCursorPosition);
-        auto cursorZChannel =
+        auto mouseWheelChannel =
             GetInputChannel<AzFramework::InputChannelDeltaWithSharedPosition2D>(AzFramework::InputDeviceMouse::Movement::Z);
 
         systemCursorChannel->ProcessRawInputEvent(m_cursorPosition->m_normalizedPositionDelta.GetLength());
-        cursorZChannel->ProcessRawInputEvent(0.f);
+        mouseWheelChannel->ProcessRawInputEvent(0.f);
 
         NotifyUpdateChannelIfNotIdle(systemCursorChannel, nullptr);
-        NotifyUpdateChannelIfNotIdle(cursorZChannel, nullptr);
+        NotifyUpdateChannelIfNotIdle(mouseWheelChannel, nullptr);
     }
 
     void QtEventToAzInputMapper::HandleMouseButtonEvent(QMouseEvent* mouseEvent)

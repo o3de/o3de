@@ -44,6 +44,9 @@ namespace AzToolsFramework
         //! \returns true if the channel is handled by MapQtEventToAzInput.
         bool HandlesInputEvent(const AzFramework::InputChannel& channel) const;
 
+        //! Sets whether or not this input mapper should be updating its input channels from Qt events.
+        void SetEnabled(bool enabled);
+
         // QObject overrides...
         bool eventFilter(QObject* object, QEvent* event) override;
 
@@ -64,7 +67,7 @@ namespace AzToolsFramework
             {
                 return static_cast<TInputChannel*>(channelIt->second);
             }
-            return {};
+            return nullptr;
         }
 
         // Adds channels from the specified channel container to our input channel ID -> input channel lookup table.
@@ -139,6 +142,8 @@ namespace AzToolsFramework
         QWidget* m_sourceWidget;
         // Flags when mouse movement channels have been opened and may need to be closed (as there are no movement ended events).
         bool m_mouseChannelsNeedUpdate = false;
+        // Flags whether or not Qt events should currently be processed.
+        bool m_enabled = true;
 
         // Our viewport-specific AZ devices. We control their internal input channel states.
         AZStd::unique_ptr<EditorQtMouseDevice> m_mouseDevice;

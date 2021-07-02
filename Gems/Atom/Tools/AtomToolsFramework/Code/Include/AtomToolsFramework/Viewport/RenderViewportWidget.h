@@ -82,6 +82,12 @@ namespace AtomToolsFramework
         //! Gets the default camera that's been automatically registered to our ViewportContext.
         AZ::RPI::ViewPtr GetDefaultCamera();
         AZ::RPI::ConstViewPtr GetDefaultCamera() const;
+        //! Sets whether or not input processing is enabled for this RenderViewportWidget.
+        //! While input processing is enabled, synthetic input events may appear in OnInputChannelEventFiltered
+        //! due to internal viewport input mapping via QtEventToAzInputMapper, so it may be desirable to disable
+        //! camera controller input processing wholesale to avoid competing input messages.
+        //! Input processing is enabled by default.
+        void SetInputProcessingEnabled(bool enabled);
 
         // AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler ...
         AzFramework::CameraState GetCameraState() override;
