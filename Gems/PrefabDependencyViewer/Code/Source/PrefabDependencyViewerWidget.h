@@ -24,25 +24,31 @@ namespace PrefabDependencyViewer
 
     class PrefabDependencyViewerWidget 
         : public GraphCanvas::AssetEditorMainWindow
+        , public PrefabDependencyViewerInterface
     {
         Q_OBJECT;
 	public:
-       explicit PrefabDependencyViewerWidget(QWidget* pParent = NULL);
-       virtual ~PrefabDependencyViewerWidget();
+        explicit PrefabDependencyViewerWidget(QWidget* pParent = NULL);
+        virtual ~PrefabDependencyViewerWidget();
 
-       /** Sets up the GraphCanvas UI without the Node Palette. */
-       virtual void SetupUI();
+        ////////////////// GraphCanvas::AssetEditorMainWindow overrides //////////////
+        /** Sets up the GraphCanvas UI without the Node Palette. */
+        virtual void SetupUI() override;
+
+        ////////////////// PrefabDependencyViewerWidget overrides ////////////////////
+        virtual void DisplayTree(const AzToolsFramework::Prefab::TemplateId& tid) override;
+
+        void CreateNodeUi(const AzToolsFramework::Prefab::TemplateId& tid);
 
     protected:
-       /** Overriding RefreshMenu in order to remove the
-       unnecessary menu bar on the top. As a bonus, this
-       also removes the ability to revive NodePalette from the UI. */
-       virtual void RefreshMenu() override {}
-       virtual void OnEditorOpened(GraphCanvas::EditorDockWidget* dockWidget) override;
-        /* void displayText();
-       virtual void displayTree(AzToolsFramework::Prefab::Instance& prefab) override;
-       virtual void displayTree(AzToolsFramework::Prefab::PrefabDom& prefab) override;
-       */
+        ////////////////// GraphCanvas::AssetEditorMainWindow overrides //////////////
+        /** Overriding RefreshMenu in order to remove the
+        unnecessary menu bar on the top. As a bonus, this
+        also removes the ability to revive NodePalette from the UI. */
+        virtual void RefreshMenu() override {}
+
+    private:
+        AZ::EntityId m_sceneId;
     };
 }; // namespace AzToolsFramework
 

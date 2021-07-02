@@ -8,6 +8,8 @@
 #include <PrefabDependencyViewerWidget.h>
 #include <QBoxLayout>
 #include <QLabel>
+#include <GraphCanvas/GraphCanvasBus.h>
+#include <GraphCanvas/Components/Nodes/NodeTitleBus.h>
 
 namespace PrefabDependencyViewer
 {
@@ -32,7 +34,10 @@ namespace PrefabDependencyViewer
     }
 
     PrefabDependencyViewerWidget::PrefabDependencyViewerWidget(QWidget* pParent)
-        : GraphCanvas::AssetEditorMainWindow(GetDefaultConfig(), pParent) {}
+        : GraphCanvas::AssetEditorMainWindow(GetDefaultConfig(), pParent)
+    {
+        AZ::Interface<PrefabDependencyViewerInterface>::Register(this);
+    }
 
     void PrefabDependencyViewerWidget::SetupUI() {
         GraphCanvas::AssetEditorMainWindow::SetupUI();
@@ -40,57 +45,35 @@ namespace PrefabDependencyViewer
         m_nodePalette = nullptr;
     }
 
-    void PrefabDependencyViewerWidget::OnEditorOpened(GraphCanvas::EditorDockWidget* dockWidget)
+    void PrefabDependencyViewerWidget::DisplayTree(const AzToolsFramework::Prefab::TemplateId& tid)
     {
-        GraphCanvas::AssetEditorMainWindow::OnEditorOpened(dockWidget);
-    }
-        /* void PrefabDependencyViewerWidget::displayText()
-    {
-        
-        setStyleSheet("QWidget{ background-color : rgba( 160, 160, 160, 255); border-radius : 7px;  }");
-        QLabel* label = new QLabel(this);
-        QHBoxLayout* layout = new QHBoxLayout();
-        label->setText(AZStd::string("Random String").c_str());
-        layout->addWidget(label);
-        setLayout(layout);
+        m_sceneId = CreateNewGraph();
+        CreateNodeUi(tid);
     }
 
-    void PrefabDependencyViewerWidget::displayTree(AzToolsFramework::Prefab::Instance& prefab)
+    void PrefabDependencyViewerWidget::CreateNodeUi([[maybe_unused]]const AzToolsFramework::Prefab::TemplateId& tid)
     {
-        setStyleSheet("QWidget{ background-color : rgba( 160, 160, 160, 255); border-radius : 7px;  }");
-        QLabel* label = new QLabel(this);
-        QLabel* label2 = new QLabel(this);
-        QHBoxLayout* layout = new QHBoxLayout();
+        const char* nodeStyle = "";
+        const AZ::Entity* graphCanvasNode = nullptr;;
 
-        label->setText(prefab.GetAbsoluteInstanceAliasPath().c_str());
-        label2->setText(prefab.GetTemplateSourcePath().c_str());
+        GraphCanvas::GraphCanvasRequestBus::BroadcastResult(
+            graphCanvasNode,
+            &GraphCanvas::GraphCanvasRequests::CreateGeneralNodeAndActivate,
+            nodeStyle);
 
-        layout->addWidget(label);
-        layout->addWidget(label2);
-        setLayout(layout);
+        AZ_Assert(graphCanvasNode, "Unable to create GraphCanvas Node");
+
+        AZ::EntityId nodeUiId = graphCanvasNode->GetId();
+        GraphCanvas::NodeTitleRequestBus::Event(nodeUiId, &GraphCanvas::NodeTitleRequests::SetTitle, "Prefab");
+
+        GraphCanvas::SceneRequestBus::Event(m_sceneId, &GraphCanvas::SceneRequests::AddNode, nodeUiId, AZ::Vector2(5, 5), false);
+        GraphCanvas::SceneMemberUIRequestBus::Event(nodeUiId, &GraphCanvas::SceneMemberUIRequests::SetSelected, true);
+        // AddNodeUiToScene()
     }
 
-    void PrefabDependencyViewerWidget::displayTree([[maybe_unused]]AzToolsFramework::Prefab::PrefabDom& prefab)
-    {
-        displayText();
-        /*AZ_TracePrintf("Hello", "\n");
-        setStyleSheet("QWidget{ background-color : rgba( 160, 160, 160, 255); border-radius : 7px;  }");
-        QLabel* label = new QLabel(this);
-        QLabel* label2 = new QLabel(this);
-        QHBoxLayout* layout = new QHBoxLayout();
-
-        label->setText();
-        
-        // label->setText(prefab["Source"]);
-
-
-        layout->addWidget(label);
-        layout->addWidget(label2);
-        setLayout(layout);
-        ///
+    PrefabDependencyViewerWidget::~PrefabDependencyViewerWidget() {
+        AZ::Interface<PrefabDependencyViewerInterface>::Unregister(this);
     }
-*/
-    PrefabDependencyViewerWidget::~PrefabDependencyViewerWidget() {}
 }
 
 // Qt best practice for Q_OBJECT macro issues. File available at compile time.
