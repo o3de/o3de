@@ -269,10 +269,12 @@ OutlinerWidget::OutlinerWidget(QWidget* pParent, Qt::WindowFlags flags)
     AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusConnect(
             AzToolsFramework::GetEntityContextId());
     AzToolsFramework::EditorEntityInfoNotificationBus::Handler::BusConnect();
+    AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
 }
 
 OutlinerWidget::~OutlinerWidget()
 {
+    AzToolsFramework::EditorWindowRequestBus::Handler::BusDisconnect();
     AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusDisconnect();
     AzToolsFramework::EditorEntityInfoNotificationBus::Handler::BusDisconnect();
     AzToolsFramework::EditorPickModeNotificationBus::Handler::BusDisconnect();
@@ -1321,16 +1323,25 @@ static void SetEntityOutlinerState(Ui::OutlinerWidgetUI* entityOutlinerUi, const
     AzQtComponents::SetWidgetInteractEnabled(entityOutlinerUi->m_searchWidget, on);
 }
 
+void OutlinerWidget::DeactivateUI(bool hide)
+{
+    SetEntityOutlinerState(m_gui, !hide);
+    setEnabled(!hide);
+}
+
+void OutlinerWidget::DeactivateEditorUI(bool deactivate)
+{
+    DeactivateUI(deactivate);
+}
+
 void OutlinerWidget::EnteredComponentMode([[maybe_unused]] const AZStd::vector<AZ::Uuid>& componentModeTypes)
 {
-    SetEntityOutlinerState(m_gui, false);
-    setEnabled(false);
+    DeactivateUI(true);
 }
 
 void OutlinerWidget::LeftComponentMode([[maybe_unused]] const AZStd::vector<AZ::Uuid>& componentModeTypes)
 {
-    setEnabled(true);
-    SetEntityOutlinerState(m_gui, true);
+    DeactivateUI(false);
 }
 
 void OutlinerWidget::OnSliceInstantiated(const AZ::Data::AssetId& /*sliceAssetId*/, AZ::SliceComponent::SliceInstanceAddress& sliceAddress, const AzFramework::SliceInstantiationTicket& /*ticket*/)

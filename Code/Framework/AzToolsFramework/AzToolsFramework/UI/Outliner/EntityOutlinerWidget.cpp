@@ -291,10 +291,12 @@ namespace AzToolsFramework
             GetEntityContextId());
         EditorEntityInfoNotificationBus::Handler::BusConnect();
         Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
+        EditorWindowRequestBus::Handler::BusConnect();
     }
 
     EntityOutlinerWidget::~EntityOutlinerWidget()
     {
+        EditorWindowRequestBus::Handler::BusDisconnect();
         Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
         ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusDisconnect();
         EditorEntityInfoNotificationBus::Handler::BusDisconnect();
@@ -1106,16 +1108,25 @@ namespace AzToolsFramework
         AzQtComponents::SetWidgetInteractEnabled(entityOutlinerUi->m_searchWidget, on);
     }
 
+    void EntityOutlinerWidget::DeactivateUI(bool hide)
+    {
+        SetEntityOutlinerState(m_gui, !hide);
+        setEnabled(!hide);
+    }
+
+    void EntityOutlinerWidget::DeactivateEditorUI(bool deactivate)
+    {
+        DeactivateUI(deactivate);
+    }
+
     void EntityOutlinerWidget::EnteredComponentMode([[maybe_unused]] const AZStd::vector<AZ::Uuid>& componentModeTypes)
     {
-        SetEntityOutlinerState(m_gui, false);
-        setEnabled(false);
+        DeactivateUI(true);
     }
 
     void EntityOutlinerWidget::LeftComponentMode([[maybe_unused]] const AZStd::vector<AZ::Uuid>& componentModeTypes)
     {
-        setEnabled(true);
-        SetEntityOutlinerState(m_gui, true);
+        DeactivateUI(false);
     }
 
     void EntityOutlinerWidget::OnPrefabInstancePropagationBegin()

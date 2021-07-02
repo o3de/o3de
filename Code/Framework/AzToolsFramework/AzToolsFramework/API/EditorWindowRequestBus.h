@@ -30,14 +30,40 @@ namespace AzToolsFramework
 
         //////////////////////////////////////////////////////////////////////////
         // EBusTraits overrides
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
         //////////////////////////////////////////////////////////////////////////
 
         /// Retrieve the main application window.
         virtual QWidget* GetAppMainWindow() { return nullptr; }
+
+        ///Deactivate the Editor UI.
+        virtual void DeactivateEditorUI( [[maybe_unused]] bool deactivate) { }
     };
 
     using EditorWindowRequestBus = AZ::EBus<EditorWindowRequests>;
+
+    /// Helper for EditorWindowRequests to be used as a 
+    /// member instead of inheriting from EBus directly.
+    class EditorWindowRequestBusImpl
+        : public EditorWindowRequestBus::Handler
+    {
+    public:
+        /// Set the function to be called when entering ComponentMode.
+        void SetDeactivateEditorUIFunc(const AZStd::function<void(bool)>& enteredDeactivateEditorUIFunc)
+        {
+            m_deactivateEditorUIFunc = enteredDeactivateEditorUIFunc;
+        }
+
+        private:
+        // EditorWindowRequestBus
+        void DeactivateEditorUI(bool deactivate) override
+        {
+            m_deactivateEditorUIFunc(deactivate);
+        }
+
+        AZStd::function<void(bool)> m_deactivateEditorUIFunc; ///< Function to call when entering ComponentMode.
+    };
+
 } // namespace AzToolsFramework
 
 #endif // AZTOOLSFRAMEWORK_EDITORWINDOWREQUESTBUS_H

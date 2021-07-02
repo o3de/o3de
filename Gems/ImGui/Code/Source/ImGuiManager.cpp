@@ -21,6 +21,7 @@
 #include <AzFramework/Input/Devices/Gamepad/InputDeviceGamepad.h>
 #include <AzFramework/Input/Devices/Touch/InputDeviceTouch.h>
 #include <AzFramework/Input/Devices/VirtualKeyboard/InputDeviceVirtualKeyboard.h>
+#include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <IConsole.h>
 #include <ITimer.h>
 #include <imgui/imgui_internal.h>
@@ -724,6 +725,8 @@ void ImGuiManager::ToggleThroughImGuiVisibleState(int controllerIndex)
     }
 
     m_menuBarStatusChanged = true;
+    AzToolsFramework::EditorWindowRequestBus::Broadcast(
+        &AzToolsFramework::EditorWindowRequests::DeactivateEditorUI, m_clientMenuBarState == DisplayState::Hidden ? false : true);
 }
 
 void ImGuiManager::RenderImGuiBuffers(const ImVec2& scaleRects)

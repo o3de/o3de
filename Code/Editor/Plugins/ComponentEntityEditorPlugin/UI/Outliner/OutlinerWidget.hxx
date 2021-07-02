@@ -13,6 +13,7 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/base.h>
+#include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
@@ -57,6 +58,7 @@ class OutlinerWidget
     , private AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler
     , private AzToolsFramework::EditorEntityInfoNotificationBus::Handler
     , private AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler
+    , private AzToolsFramework::EditorWindowRequestBus::Handler
 {
     Q_OBJECT;
 public:
@@ -106,6 +108,8 @@ private:
     void EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
     void LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
 
+    // EditorWindowRequestBus
+    void DeactivateEditorUI(bool deactivate) override;
     // Build a selection object from the given entities. Entities already in the Widget's selection buffers are ignored.
     template <class EntityIdCollection>
     QItemSelection BuildSelectionFromEntities(const EntityIdCollection& entityIds);
@@ -171,6 +175,7 @@ private:
     AZ::EntityId GetEntityIdFromIndex(const QModelIndex& index) const;
     QModelIndex GetIndexFromEntityId(const AZ::EntityId& entityId) const;
     void ExtractEntityIdsFromSelection(const QItemSelection& selection, AzToolsFramework::EntityIdList& entityIdList) const;
+    void DeactivateUI(bool hide);
 
     // AzToolsFramework::OutlinerModelNotificationBus::Handler
     // Receive notification from the outliner model that we should scroll
