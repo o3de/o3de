@@ -56,7 +56,7 @@ namespace PrefabDependencyViewer
         void Activate() override;
         void Deactivate() override;
 
-        static void ContextMenu_DisplayAssetDependencies(PrefabDom& templateJSON);
+        static void ContextMenu_DisplayAssetDependencies(const TemplateId& tid);
 
         static InstanceEntityMapperInterface* s_prefabEntityMapperInterface;
         static PrefabSystemComponentInterface* s_prefabSystemComponentInterface;

@@ -107,19 +107,19 @@ namespace PrefabDependencyViewer
 
                 Instance& prefabInstance = optionalReference.value().get();
                 const TemplateId& tid = prefabInstance.GetTemplateId();
-                PrefabDom& templateJSON = s_prefabSystemComponentInterface->FindTemplateDom(tid);
+                // PrefabDom& templateJSON = s_prefabSystemComponentInterface->FindTemplateDom(tid);
 
                 QAction* dependencyViewerAction = menu->addAction(QObject::tr("View Dependencies"));
                 QObject::connect(
                     dependencyViewerAction, &QAction::triggered, dependencyViewerAction,
-                    [this, &templateJSON] //, &prefabInstance, selectedEntity]
+                    [this, &tid]
                     {
-                        ContextMenu_DisplayAssetDependencies(templateJSON);
+                        ContextMenu_DisplayAssetDependencies(tid);
                     });
             }
         }
     }
-    void PrefabDependencyViewerEditorSystemComponent::ContextMenu_DisplayAssetDependencies([[maybe_unused]]PrefabDom& templateJSON)
+    void PrefabDependencyViewerEditorSystemComponent::ContextMenu_DisplayAssetDependencies([[maybe_unused]]const TemplateId& tid)
     {
         /* AZ_TracePrintf("Prefab Dependency Viewer", "%s\n", typeid(this).name());
         AZ_TracePrintf("Prefab Dependency Viewer", "%s\n", typeid(prefabInstance).name());
@@ -129,7 +129,7 @@ namespace PrefabDependencyViewer
         AZ_TracePrintf("Prefab Dependency Viewer", "%s\n", typeid(prefabInstance.GetTemplateId()).name());
         */
         AzToolsFramework::OpenViewPane(s_prefabViewerTitle);
-        /*
+        
         PrefabDependencyViewerInterface* window = AZ::Interface<PrefabDependencyViewerInterface>::Get();
 
         if (nullptr == window)
@@ -138,10 +138,8 @@ namespace PrefabDependencyViewer
             return;
         }
 
-        buildTree(templateJSON);
-
-        window->displayTree(templateJSON); // prefabInstance);
-
+        window->DisplayTree(tid); // prefabInstance);
+        /*
          AZStd::vector<AZ::Entity&> entities;
         prefabInstance.GetEntities(
             [&entities](AZStd::unique_ptr<AZ::Entity>& entity)
