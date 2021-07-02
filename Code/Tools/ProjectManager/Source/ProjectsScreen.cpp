@@ -269,21 +269,30 @@ namespace O3DE::ProjectManager
         // we paint the background here because qss does not support background cover scaling
         QPainter painter(this);
 
-        auto winSize = size();
-        auto pixmapRatio = (float)m_background.width() / m_background.height();
-        auto windowRatio = (float)winSize.width() / winSize.height();
+        const QSize winSize = size();
+        const float pixmapRatio = (float)m_background.width() / m_background.height();
+        const float windowRatio = (float)winSize.width() / winSize.height();
 
+        QRect backgroundRect;
         if (pixmapRatio > windowRatio)
         {
-            auto newWidth = (int)(winSize.height() * pixmapRatio);
-            auto offset = (newWidth - winSize.width()) / -2;
-            painter.drawPixmap(offset, 0, newWidth, winSize.height(), m_background);
+            const int newWidth = (int)(winSize.height() * pixmapRatio);
+            const int offset = (newWidth - winSize.width()) / -2;
+            backgroundRect = QRect(offset, 0, newWidth, winSize.height());
         }
         else
         {
-            auto newHeight = (int)(winSize.width() / pixmapRatio);
-            painter.drawPixmap(0, 0, winSize.width(), newHeight, m_background);
+            const int newHeight = (int)(winSize.width() / pixmapRatio);
+            backgroundRect = QRect(0, 0, winSize.width(), newHeight);
         }
+
+        // Draw the background image.
+        painter.drawPixmap(backgroundRect, m_background);
+
+        // Draw a semi-transparent overlay to darken down the colors.
+        painter.setCompositionMode (QPainter::CompositionMode_DestinationIn);
+        const float overlayTransparency = 0.7f;
+        painter.fillRect(backgroundRect, QColor(0, 0, 0, static_cast<int>(255.0f * overlayTransparency)));
     }
 
     void ProjectsScreen::HandleNewProjectButton()
