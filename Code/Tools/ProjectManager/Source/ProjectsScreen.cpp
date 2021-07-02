@@ -193,7 +193,19 @@ namespace O3DE::ProjectManager
                     }
                     else if (RequiresBuildProjectIterator(project.m_path) != m_requiresBuild.end())
                     {
-                        projectButtonWidget->SetProjectBuildButtonAction();
+                        auto buildProjectIterator = RequiresBuildProjectIterator(project.m_path);
+                        if (buildProjectIterator != m_requiresBuild.end())
+                        {
+                            if (buildProjectIterator->m_buildFailed)
+                            {
+                                projectButtonWidget->ShowBuildFailed(true, buildProjectIterator->m_logUrl);
+                            }
+                            else
+                            {
+                                projectButtonWidget->SetProjectBuildButtonAction();
+                            }
+                        }
+                        
                     }
                 }
 
@@ -418,7 +430,7 @@ namespace O3DE::ProjectManager
 
     void ProjectsScreen::SuggestBuildProjectMsg(const ProjectInfo& projectInfo, bool showMessage)
     {
-        if (RequiresBuildProjectIterator(projectInfo.m_path) == m_requiresBuild.end())
+        if (RequiresBuildProjectIterator(projectInfo.m_path) == m_requiresBuild.end() || projectInfo.m_buildFailed)
         {
             m_requiresBuild.append(projectInfo);
         }
@@ -517,6 +529,7 @@ namespace O3DE::ProjectManager
                 m_currentBuilder = new ProjectBuilderController(projectInfo, nullptr, this);
                 ResetProjectsContent();
                 connect(m_currentBuilder, &ProjectBuilderController::Done, this, &ProjectsScreen::ProjectBuildDone);
+                connect(m_currentBuilder, &ProjectBuilderController::NotifyBuildProject, this, &ProjectsScreen::SuggestBuildProject);
 
                 m_currentBuilder->Start();
             }
