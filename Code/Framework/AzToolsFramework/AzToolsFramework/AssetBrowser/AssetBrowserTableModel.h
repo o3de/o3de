@@ -50,7 +50,8 @@ namespace AzToolsFramework
             int BuildTableModelMap(const QAbstractItemModel* model, const QModelIndex& parent = QModelIndex(), int row = 0);
 
         private:
-            int m_numberOfItemsDisplayed;
+            int m_numberOfItemsDisplayed = 0;
+            int m_displayedItemsCounter = 0;
             QPointer<AssetBrowserFilterModel> m_filterModel;
             QMap<int, QModelIndex> m_indexMap;
         };
