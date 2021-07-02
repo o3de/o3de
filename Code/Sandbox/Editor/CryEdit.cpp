@@ -2312,13 +2312,6 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
 
     m_bPrevActive = bActive;
 
-    AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
-    static AZStd::chrono::system_clock::time_point lastUpdate = now;
-
-    AZStd::chrono::duration<float> delta = now - lastUpdate;
-
-    lastUpdate = now;
-
     // Don't tick application if we're doing idle processing during an assert.
     const bool isErrorWindowVisible = (gEnv && gEnv->pSystem->IsAssertDialogVisible());
     if (isErrorWindowVisible)
@@ -2330,15 +2323,11 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
     }
     else if (bActive || (bBackgroundUpdate && !bIsAppWindow))
     {
-        if (GetIEditor()->IsInGameMode())
-        {
-            // Update Game
-            GetIEditor()->GetGameEngine()->Update();
-        }
-        else
-        {
-            GetIEditor()->GetGameEngine()->Update();
+        // Update Game
+        GetIEditor()->GetGameEngine()->Update();
 
+        if (!GetIEditor()->IsInGameMode())
+        {
             if (m_pEditor)
             {
                 m_pEditor->Update();
@@ -2351,15 +2340,13 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
             {
                 pEditor->GetSystem()->DoWorkDuringOcclusionChecks();
             }
+        }
 
-            // Since the rendering is done based on the eNotify_OnIdleUpdate, we should trigger a TickSystem as well.
-            // To ensure that there's a system tick for every render done in Idle
-            AZ::ComponentApplication* componentApplication = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(componentApplication, &AZ::ComponentApplicationRequests::GetApplication);
-            if (componentApplication)
-            {
-                componentApplication->TickSystem();
-            }
+        AZ::ComponentApplication* componentApplication = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(componentApplication, &AZ::ComponentApplicationRequests::GetApplication);
+        if (componentApplication)
+        {
+            componentApplication->TickSystem();
         }
     }
     else if (GetIEditor()->GetSystem() && GetIEditor()->GetSystem()->GetILog())
