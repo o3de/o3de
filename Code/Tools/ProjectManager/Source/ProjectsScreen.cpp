@@ -115,6 +115,8 @@ namespace O3DE::ProjectManager
 
     QFrame* ProjectsScreen::CreateProjectsContent(QString buildProjectPath, ProjectButton** projectButton)
     {
+        RemoveInvalidProjects();
+
         QFrame* frame = new QFrame(this);
         frame->setObjectName("projectsContent");
         {
@@ -493,6 +495,11 @@ namespace O3DE::ProjectManager
         }
 
         return displayFirstTimeContent;
+    }
+
+    bool ProjectsScreen::RemoveInvalidProjects()
+    {
+        return PythonBindingsInterface::Get()->RemoveInvalidProjects();
     }
 
     bool ProjectsScreen::StartProjectBuild(const ProjectInfo& projectInfo)
