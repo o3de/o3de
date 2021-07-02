@@ -5,4 +5,5 @@ set(FILES
     Source/PrefabDependencyViewerWidget.h
     Source/PrefabDependencyViewerWidget.cpp
     Source/Core/Core.h
+    Source/PrefabDependencyViewerInterface.h
 )
