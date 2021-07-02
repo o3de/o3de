@@ -273,7 +273,7 @@ namespace AzFramework
     class RotateCameraInput : public CameraInput
     {
     public:
-        explicit RotateCameraInput(InputChannelId rotateChannelId);
+        explicit RotateCameraInput(const InputChannelId& rotateChannelId);
 
         // CameraInput overrides ...
         bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
@@ -324,7 +324,7 @@ namespace AzFramework
     class PanCameraInput : public CameraInput
     {
     public:
-        PanCameraInput(InputChannelId panChannelId, PanAxesFn panAxesFn);
+        PanCameraInput(const InputChannelId& panChannelId, PanAxesFn panAxesFn);
 
         // CameraInput overrides ...
         bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
@@ -480,7 +480,7 @@ namespace AzFramework
     class OrbitDollyCursorMoveCameraInput : public CameraInput
     {
     public:
-        explicit OrbitDollyCursorMoveCameraInput(InputChannelId dollyChannelId);
+        explicit OrbitDollyCursorMoveCameraInput(const InputChannelId& dollyChannelId);
 
         // CameraInput overrides ...
         bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;

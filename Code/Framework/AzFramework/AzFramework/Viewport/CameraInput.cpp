@@ -210,7 +210,7 @@ namespace AzFramework
             });
     }
 
-    RotateCameraInput::RotateCameraInput(const InputChannelId rotateChannelId)
+    RotateCameraInput::RotateCameraInput(const InputChannelId& rotateChannelId)
         : m_rotateChannelId(rotateChannelId)
     {
         m_rotateSpeedFn = []() constexpr
@@ -293,7 +293,7 @@ namespace AzFramework
         return nextCamera;
     }
 
-    PanCameraInput::PanCameraInput(const InputChannelId panChannelId, PanAxesFn panAxesFn)
+    PanCameraInput::PanCameraInput(const InputChannelId& panChannelId, PanAxesFn panAxesFn)
         : m_panAxesFn(AZStd::move(panAxesFn))
         , m_panChannelId(panChannelId)
     {
@@ -626,7 +626,7 @@ namespace AzFramework
         return nextCamera;
     }
 
-    OrbitDollyCursorMoveCameraInput::OrbitDollyCursorMoveCameraInput(const InputChannelId dollyChannelId)
+    OrbitDollyCursorMoveCameraInput::OrbitDollyCursorMoveCameraInput(const InputChannelId& dollyChannelId)
         : m_dollyChannelId(dollyChannelId)
     {
         m_cursorSpeedFn = []() constexpr

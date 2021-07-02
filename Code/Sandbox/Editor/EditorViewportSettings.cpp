@@ -264,7 +264,7 @@ namespace SandboxEditor
             GetRegistry(CameraTranslateForwardIdSetting, AZStd::string("keyboard_key_alphanumeric_W")).c_str());
     }
 
-    void SetCameraTranslateForwardId(AZStd::string_view cameraTranslateForwardId)
+    void SetCameraTranslateForwardChannelId(AZStd::string_view cameraTranslateForwardId)
     {
         SetRegistry(CameraTranslateForwardIdSetting, cameraTranslateForwardId);
     }
@@ -275,7 +275,7 @@ namespace SandboxEditor
             GetRegistry(CameraTranslateBackwardIdSetting, AZStd::string("keyboard_key_alphanumeric_S")).c_str());
     }
 
-    void SetCameraTranslateBackwardId(AZStd::string_view cameraTranslateBackwardId)
+    void SetCameraTranslateBackwardChannelId(AZStd::string_view cameraTranslateBackwardId)
     {
         SetRegistry(CameraTranslateBackwardIdSetting, cameraTranslateBackwardId);
     }
@@ -285,7 +285,7 @@ namespace SandboxEditor
         return AzFramework::InputChannelId(GetRegistry(CameraTranslateLeftIdSetting, AZStd::string("keyboard_key_alphanumeric_A")).c_str());
     }
 
-    void SetCameraTranslateLeftId(AZStd::string_view cameraTranslateLeftId)
+    void SetCameraTranslateLeftChannelId(AZStd::string_view cameraTranslateLeftId)
     {
         SetRegistry(CameraTranslateLeftIdSetting, cameraTranslateLeftId);
     }
@@ -296,7 +296,7 @@ namespace SandboxEditor
             GetRegistry(CameraTranslateRightIdSetting, AZStd::string("keyboard_key_alphanumeric_D")).c_str());
     }
 
-    void SetCameraTranslateRightId(AZStd::string_view cameraTranslateRightId)
+    void SetCameraTranslateRightChannelId(AZStd::string_view cameraTranslateRightId)
     {
         SetRegistry(CameraTranslateRightIdSetting, cameraTranslateRightId);
     }
@@ -306,7 +306,7 @@ namespace SandboxEditor
         return AzFramework::InputChannelId(GetRegistry(CameraTranslateUpIdSetting, AZStd::string("keyboard_key_alphanumeric_E")).c_str());
     }
 
-    void SetCameraTranslateUpId(AZStd::string_view cameraTranslateUpId)
+    void SetCameraTranslateUpChannelId(AZStd::string_view cameraTranslateUpId)
     {
         SetRegistry(CameraTranslateUpIdSetting, cameraTranslateUpId);
     }
@@ -316,7 +316,7 @@ namespace SandboxEditor
         return AzFramework::InputChannelId(GetRegistry(CameraTranslateDownIdSetting, AZStd::string("keyboard_key_alphanumeric_Q")).c_str());
     }
 
-    void SetCameraTranslateDownId(AZStd::string_view cameraTranslateDownId)
+    void SetCameraTranslateDownChannelId(AZStd::string_view cameraTranslateDownId)
     {
         SetRegistry(CameraTranslateDownIdSetting, cameraTranslateDownId);
     }
@@ -327,7 +327,7 @@ namespace SandboxEditor
             GetRegistry(CameraTranslateBoostIdSetting, AZStd::string("keyboard_key_modifier_shift_l")).c_str());
     }
 
-    void SetCameraTranslateBoostId(AZStd::string_view cameraTranslateBoostId)
+    void SetCameraTranslateBoostChannelId(AZStd::string_view cameraTranslateBoostId)
     {
         SetRegistry(CameraTranslateDownIdSetting, cameraTranslateBoostId);
     }
@@ -337,7 +337,7 @@ namespace SandboxEditor
         return AzFramework::InputChannelId(GetRegistry(CameraOrbitIdSetting, AZStd::string("keyboard_key_modifier_alt_l")).c_str());
     }
 
-    void SetCameraOrbitId(AZStd::string_view cameraOrbitId)
+    void SetCameraOrbitChannelChannelId(AZStd::string_view cameraOrbitId)
     {
         SetRegistry(CameraOrbitIdSetting, cameraOrbitId);
     }
@@ -347,7 +347,7 @@ namespace SandboxEditor
         return AzFramework::InputChannelId(GetRegistry(CameraFreeLookIdSetting, AZStd::string("mouse_button_right")).c_str());
     }
 
-    void SetCameraFreeLookId(AZStd::string_view cameraFreeLookId)
+    void SetCameraFreeLookChannelId(AZStd::string_view cameraFreeLookId)
     {
         SetRegistry(CameraFreeLookIdSetting, cameraFreeLookId);
     }
@@ -357,7 +357,7 @@ namespace SandboxEditor
         return AzFramework::InputChannelId(GetRegistry(CameraFreePanIdSetting, AZStd::string("mouse_button_middle")).c_str());
     }
 
-    void SetCameraFreePanId(AZStd::string_view cameraFreePanId)
+    void SetCameraFreePanChannelId(AZStd::string_view cameraFreePanId)
     {
         SetRegistry(CameraFreePanIdSetting, cameraFreePanId);
     }
@@ -367,7 +367,7 @@ namespace SandboxEditor
         return AzFramework::InputChannelId(GetRegistry(CameraOrbitLookIdSetting, AZStd::string("mouse_button_left")).c_str());
     }
 
-    void SetCameraOrbitLookId(AZStd::string_view cameraOrbitLookId)
+    void SetCameraOrbitLookChannelId(AZStd::string_view cameraOrbitLookId)
     {
         SetRegistry(CameraOrbitLookIdSetting, cameraOrbitLookId);
     }
@@ -377,7 +377,7 @@ namespace SandboxEditor
         return AzFramework::InputChannelId(GetRegistry(CameraOrbitDollyIdSetting, AZStd::string("mouse_button_right")).c_str());
     }
 
-    void SetCameraOrbitDollyId(AZStd::string_view cameraOrbitDollyId)
+    void SetCameraOrbitDollyChannelId(AZStd::string_view cameraOrbitDollyId)
     {
         SetRegistry(CameraOrbitDollyIdSetting, cameraOrbitDollyId);
     }
@@ -387,7 +387,7 @@ namespace SandboxEditor
         return AzFramework::InputChannelId(GetRegistry(CameraOrbitPanIdSetting, AZStd::string("mouse_button_middle")).c_str());
     }
 
-    void SetCameraOrbitPanId(AZStd::string_view cameraOrbitPanId)
+    void SetCameraOrbitPanChannelId(AZStd::string_view cameraOrbitPanId)
     {
         SetRegistry(CameraOrbitPanIdSetting, cameraOrbitPanId);
     }

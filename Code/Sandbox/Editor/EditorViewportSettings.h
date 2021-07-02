@@ -80,43 +80,43 @@ namespace SandboxEditor
     SANDBOX_API void SetCameraTranslateSmoothness(float smoothness);
 
     SANDBOX_API AzFramework::InputChannelId CameraTranslateForwardChannelId();
-    SANDBOX_API void SetCameraTranslateForwardId(AZStd::string_view cameraTranslateForwardId);
+    SANDBOX_API void SetCameraTranslateForwardChannelId(AZStd::string_view cameraTranslateForwardId);
 
     SANDBOX_API AzFramework::InputChannelId CameraTranslateBackwardChannelId();
-    SANDBOX_API void SetCameraTranslateBackwardId(AZStd::string_view cameraTranslateBackwardId);
+    SANDBOX_API void SetCameraTranslateBackwardChannelId(AZStd::string_view cameraTranslateBackwardId);
 
     SANDBOX_API AzFramework::InputChannelId CameraTranslateLeftChannelId();
-    SANDBOX_API void SetCameraTranslateLeftId(AZStd::string_view cameraTranslateLeftId);
+    SANDBOX_API void SetCameraTranslateLeftChannelId(AZStd::string_view cameraTranslateLeftId);
 
     SANDBOX_API AzFramework::InputChannelId CameraTranslateRightChannelId();
-    SANDBOX_API void SetCameraTranslateRightId(AZStd::string_view cameraTranslateRightId);
+    SANDBOX_API void SetCameraTranslateRightChannelId(AZStd::string_view cameraTranslateRightId);
 
     SANDBOX_API AzFramework::InputChannelId CameraTranslateUpChannelId();
-    SANDBOX_API void SetCameraTranslateUpId(AZStd::string_view cameraTranslateUpId);
+    SANDBOX_API void SetCameraTranslateUpChannelId(AZStd::string_view cameraTranslateUpId);
 
     SANDBOX_API AzFramework::InputChannelId CameraTranslateDownChannelId();
-    SANDBOX_API void SetCameraTranslateDownId(AZStd::string_view cameraTranslateDownId);
+    SANDBOX_API void SetCameraTranslateDownChannelId(AZStd::string_view cameraTranslateDownId);
 
     SANDBOX_API AzFramework::InputChannelId CameraTranslateBoostChannelId();
-    SANDBOX_API void SetCameraTranslateBoostId(AZStd::string_view cameraTranslateBoostId);
+    SANDBOX_API void SetCameraTranslateBoostChannelId(AZStd::string_view cameraTranslateBoostId);
 
     SANDBOX_API AzFramework::InputChannelId CameraOrbitChannelId();
-    SANDBOX_API void SetCameraOrbitId(AZStd::string_view cameraOrbitId);
+    SANDBOX_API void SetCameraOrbitChannelChannelId(AZStd::string_view cameraOrbitId);
 
     SANDBOX_API AzFramework::InputChannelId CameraFreeLookChannelId();
-    SANDBOX_API void SetCameraFreeLookId(AZStd::string_view cameraFreeLookId);
+    SANDBOX_API void SetCameraFreeLookChannelId(AZStd::string_view cameraFreeLookId);
 
     SANDBOX_API AzFramework::InputChannelId CameraFreePanChannelId();
-    SANDBOX_API void SetCameraFreePanId(AZStd::string_view cameraFreePanId);
+    SANDBOX_API void SetCameraFreePanChannelId(AZStd::string_view cameraFreePanId);
 
     SANDBOX_API AzFramework::InputChannelId CameraOrbitLookChannelId();
-    SANDBOX_API void SetCameraOrbitLookId(AZStd::string_view cameraOrbitLookId);
+    SANDBOX_API void SetCameraOrbitLookChannelId(AZStd::string_view cameraOrbitLookId);
 
     SANDBOX_API AzFramework::InputChannelId CameraOrbitDollyChannelId();
-    SANDBOX_API void SetCameraOrbitDollyId(AZStd::string_view cameraOrbitDollyId);
+    SANDBOX_API void SetCameraOrbitDollyChannelId(AZStd::string_view cameraOrbitDollyId);
 
     SANDBOX_API AzFramework::InputChannelId CameraOrbitPanChannelId();
-    SANDBOX_API void SetCameraOrbitPanId(AZStd::string_view cameraOrbitPanId);
+    SANDBOX_API void SetCameraOrbitPanChannelId(AZStd::string_view cameraOrbitPanId);
 
     //! Return if the new editor camera system is enabled or not.
     //! @note This is implemented in EditorViewportWidget.cpp
