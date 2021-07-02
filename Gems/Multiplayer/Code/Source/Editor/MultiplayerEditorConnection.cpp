@@ -80,14 +80,17 @@ namespace Multiplayer
                 assetSize = m_byteStream.GetCurPos() - assetSize;
                 AZ::Data::Asset<AZ::Data::AssetData> asset = AZ::Data::Asset<AZ::Data::AssetData>(assetId, assetDatum, AZ::Data::AssetLoadBehavior::NoLoad);
                 asset.SetHint(assetHint);
+
                 AZ::Data::AssetInfo assetInfo;
                 assetInfo.m_assetId = asset.GetId();
                 assetInfo.m_assetType = asset.GetType();
                 assetInfo.m_relativePath = asset.GetHint();
                 assetInfo.m_sizeBytes = assetSize;
+
                 // Register Asset to AssetManager
                 AZ::Data::AssetManager::Instance().AssignAssetData(asset);
                 AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequests::RegisterAsset, asset.GetId(), assetInfo);
+
                 assetData.push_back(asset);
             }
             // Now that we've deserialized, clear the byte stream
@@ -130,6 +133,7 @@ namespace Multiplayer
         {
             // Receiving this packet means Editor sync is done, disconnect
             connection->Disconnect(AzNetworking::DisconnectReason::TerminatedByClient, AzNetworking::TerminationEndpoint::Local);
+
             if (auto console = AZ::Interface<AZ::IConsole>::Get(); console)
             {
                 AZ::CVarFixedString remoteAddress;
