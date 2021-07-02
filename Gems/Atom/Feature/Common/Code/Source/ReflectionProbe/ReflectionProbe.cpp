@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -96,16 +96,29 @@ namespace AZ
 
         void ReflectionProbe::Simulate(uint32_t probeIndex)
         {
-            if (m_buildingCubeMap && m_environmentCubeMapPass->IsFinished())
+            if (m_buildingCubeMap)
             {
-                // all faces of the cubemap have been rendered, invoke the callback
-                m_callback(m_environmentCubeMapPass->GetTextureData(), m_environmentCubeMapPass->GetTextureFormat());
+                Data::Instance<RPI::ShaderResourceGroup> sceneSrg = m_scene->GetShaderResourceGroup();
 
-                // remove the pipeline
-                m_scene->RemoveRenderPipeline(m_environmentCubeMapPipelineId);
-                m_environmentCubeMapPass = nullptr;
+                if (m_environmentCubeMapPass->IsFinished())
+                {
+                    // all faces of the cubemap have been rendered, invoke the callback
+                    m_callback(m_environmentCubeMapPass->GetTextureData(), m_environmentCubeMapPass->GetTextureFormat());
 
-                m_buildingCubeMap = false;
+                    // remove the pipeline
+                    m_scene->RemoveRenderPipeline(m_environmentCubeMapPipelineId);
+                    m_environmentCubeMapPass = nullptr;
+
+                    // restore exposure
+                    sceneSrg->SetConstant(m_iblExposureConstantIndex, m_previousExposure);
+
+                    m_buildingCubeMap = false;
+                }
+                else
+                {
+                    // set exposure to 0.0 while baking the cubemap
+                    sceneSrg->SetConstant(m_iblExposureConstantIndex, 0.0f);
+                }
             }
 
             // track if we need to update culling based on changes to the draw packets or Srg
@@ -282,6 +295,10 @@ namespace AZ
 
             const RPI::Ptr<RPI::ParentPass>& rootPass = environmentCubeMapPipeline->GetRootPass();
             rootPass->AddChild(m_environmentCubeMapPass);
+
+            // store the current IBL exposure value
+            Data::Instance<RPI::ShaderResourceGroup> sceneSrg = m_scene->GetShaderResourceGroup();
+            m_previousExposure = sceneSrg->GetConstant<float>(m_iblExposureConstantIndex);
 
             m_scene->AddRenderPipeline(environmentCubeMapPipeline);
         }

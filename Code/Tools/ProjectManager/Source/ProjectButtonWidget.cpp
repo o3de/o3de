@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -40,8 +40,8 @@ namespace O3DE::ProjectManager
         m_overlayLabel->setVisible(false);
         vLayout->addWidget(m_overlayLabel);
 
-        m_buildButton = new QPushButton(tr("Build Project"), this);
-        m_buildButton->setVisible(false);
+        m_actionButton = new QPushButton(tr("Project Action"), this);
+        m_actionButton->setVisible(false);
 
         m_progressBar = new QProgressBar(this);
         m_progressBar->setObjectName("labelButtonProgressBar");
@@ -78,9 +78,9 @@ namespace O3DE::ProjectManager
         return m_progressBar;
     }
 
-    QPushButton* LabelButton::GetBuildButton()
+    QPushButton* LabelButton::GetActionButton()
     {
-        return m_buildButton;
+        return m_actionButton;
     }
 
     ProjectButton::ProjectButton(const ProjectInfo& projectInfo, QWidget* parent, bool processing)
@@ -135,7 +135,6 @@ namespace O3DE::ProjectManager
 
     void ProjectButton::ProcessingSetup()
     {
-        m_projectImageLabel->GetOverlayLabel()->setAlignment(Qt::AlignHCenter | Qt::AlignBottom);
         m_projectImageLabel->SetEnabled(false);
         m_projectImageLabel->SetOverlayText(tr("Processing...\n\n"));
 
@@ -146,8 +145,6 @@ namespace O3DE::ProjectManager
 
     void ProjectButton::ReadySetup()
     {
-        connect(m_projectImageLabel->GetBuildButton(), &QPushButton::clicked, [this](){ emit BuildProject(m_projectInfo); });
-
         QMenu* menu = new QMenu(this);
         menu->addAction(tr("Edit Project Settings..."), this, [this]() { emit EditProject(m_projectInfo.m_path); });
         menu->addAction(tr("Build"), this, [this]() { emit BuildProject(m_projectInfo); });
@@ -168,18 +165,38 @@ namespace O3DE::ProjectManager
         m_projectFooter->layout()->addWidget(projectMenuButton);
     }
 
+    void ProjectButton::SetProjectButtonAction(const QString& text, AZStd::function<void()> lambda)
+    {
+        QPushButton* projectActionButton = m_projectImageLabel->GetActionButton();
+        if (!m_actionButtonConnection)
+        {
+            QSpacerItem* buttonSpacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+            m_projectImageLabel->layout()->addItem(buttonSpacer);
+            m_projectImageLabel->layout()->addWidget(projectActionButton);
+            projectActionButton->setVisible(true);
+        }
+        else
+        {
+            disconnect(m_actionButtonConnection);
+        }
+
+        projectActionButton->setText(text);
+        m_actionButtonConnection = connect(projectActionButton, &QPushButton::clicked, lambda);
+    }
+
+    void ProjectButton::SetProjectBuildButtonAction()
+    {
+        SetProjectButtonAction(tr("Build Project"), [this]() { emit BuildProject(m_projectInfo); });
+    }
+
+    void ProjectButton::BuildThisProject()
+    {
+        emit BuildProject(m_projectInfo);
+    }
+
     void ProjectButton::SetLaunchButtonEnabled(bool enabled)
     {
         m_projectImageLabel->SetEnabled(enabled);
-    }
-
-    void ProjectButton::ShowBuildButton(bool show)
-    {
-        QSpacerItem* buttonSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding);
-
-        m_projectImageLabel->layout()->addItem(buttonSpacer);
-        m_projectImageLabel->layout()->addWidget(m_projectImageLabel->GetBuildButton());
-        m_projectImageLabel->GetBuildButton()->setVisible(show);
     }
 
     void ProjectButton::SetButtonOverlayText(const QString& text)
@@ -190,5 +207,10 @@ namespace O3DE::ProjectManager
     void ProjectButton::SetProgressBarValue(int progress)
     {
         m_projectImageLabel->GetProgressBar()->setValue(progress);
+    }
+
+    LabelButton* ProjectButton::GetLabelButton()
+    {
+        return m_projectImageLabel;
     }
 } // namespace O3DE::ProjectManager

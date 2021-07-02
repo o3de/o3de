@@ -1,6 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -136,10 +136,7 @@ namespace ScriptCanvas
         {
             if (nodeEntity)
             {
-                if (nodeEntity->GetState() == AZ::Entity::State::Constructed)
-                {
-                    nodeEntity->Init();
-                }
+                ScriptCanvas::ScopedAuxiliaryEntityHandler entityHandler(nodeEntity);
 
                 if (auto* node = AZ::EntityUtils::FindFirstDerivedComponent<Node>(nodeEntity))
                 {
@@ -155,10 +152,7 @@ namespace ScriptCanvas
         {
             if (connectionEntity)
             {
-                if (connectionEntity->GetState() == AZ::Entity::State::Constructed)
-                {
-                    connectionEntity->Init();
-                }
+                ScriptCanvas::ScopedAuxiliaryEntityHandler entityHandler(connectionEntity);
             }
         }
 
@@ -169,7 +163,7 @@ namespace ScriptCanvas
     {
         if (m_isFunctionGraph)
         {
-            return true;    
+            return true;
         }
 
         return false;
@@ -418,7 +412,7 @@ namespace ScriptCanvas
     void Graph::ValidateVariables(ValidationResults& validationResults)
     {
         const VariableData* variableData = GetVariableData();
-        
+
         if (!variableData)
         {
             return;
@@ -440,7 +434,7 @@ namespace ScriptCanvas
                 {
                     errorDescription = AZStd::string::format("Variable %s has an invalid type %s.", GetVariableName(variableId).data(), variableType.GetAZType().ToString<AZStd::string>().c_str());
                 }
-            } 
+            }
             else if (variableType == Data::Type::Invalid())
             {
                 errorDescription = AZStd::string::format("Variable %s has an invalid type.", GetVariableName(variableId).data());
@@ -502,7 +496,7 @@ namespace ScriptCanvas
                     {
                         m_graphData.m_nodes.emplace(nodeEntity);
                         m_nodeMapping[nodeId] = node;
-                        
+
                         node->SetOwningScriptCanvasId(m_scriptCanvasId);
                         node->Configure();
                         GraphNotificationBus::Event(m_scriptCanvasId, &GraphNotifications::OnNodeAdded, nodeId);
@@ -523,16 +517,16 @@ namespace ScriptCanvas
             if (node)
             {
                 auto entry = m_graphData.m_nodes.find(node->GetEntity());
-            if (entry != m_graphData.m_nodes.end())
-            {
-                m_nodeMapping.erase(nodeId);
-                m_graphData.m_nodes.erase(entry);
-                GraphNotificationBus::Event(GetScriptCanvasId(), &GraphNotifications::OnNodeRemoved, nodeId);                
+                if (entry != m_graphData.m_nodes.end())
+                {
+                    m_nodeMapping.erase(nodeId);
+                    m_graphData.m_nodes.erase(entry);
+                    GraphNotificationBus::Event(GetScriptCanvasId(), &GraphNotifications::OnNodeRemoved, nodeId);
 
-                RemoveDependentAsset(nodeId);
-                return true;
+                    RemoveDependentAsset(nodeId);
+                    return true;
+                }
             }
-        }
         }
         return false;
     }
@@ -1036,17 +1030,17 @@ namespace ScriptCanvas
             }
         }
 
-//         for (auto connectionId : removableConnections)
-//         {
-//             DisconnectById(connectionId);
-//         }
+        //         for (auto connectionId : removableConnections)
+        //         {
+        //             DisconnectById(connectionId);
+        //         }
 
         if (!removableConnections.empty())
         {
             // RefreshConnectionValidity(warnOnRemoval);
         }
     }
-  
+
     void Graph::OnEntityActivated(const AZ::EntityId&)
     {
     }
@@ -1075,7 +1069,7 @@ namespace ScriptCanvas
                 AZ::Data::AssetManager::Instance().GetAsset<ScriptEvents::ScriptEventsAsset>(scriptEventNode->GetAssetId(), AZ::Data::AssetLoadBehavior::Default);
             }
         }
-        
+
         m_batchAddingData = false;
         GraphNotificationBus::Event(GetScriptCanvasId(), &GraphNotifications::OnBatchAddComplete);
 

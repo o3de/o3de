@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -753,6 +753,21 @@ namespace O3DE::ProjectManager
                 QString_To_Py_Path(projectPath)
                 );
         });
+    }
+
+    bool PythonBindings::RemoveInvalidProjects()
+    {
+        bool removalResult = false;
+        bool result = ExecuteWithLock(
+            [&]
+            {
+                auto pythonRemovalResult = m_register.attr("remove_invalid_o3de_projects")();
+
+                // Returns an exit code so boolify it then invert result
+                removalResult = !pythonRemovalResult.cast<bool>();
+            });
+
+        return result && removalResult;
     }
 
     AZ::Outcome<void, AZStd::string> PythonBindings::UpdateProject(const ProjectInfo& projectInfo)

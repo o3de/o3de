@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -25,8 +25,8 @@ namespace NvCloth
         {
             widget_t* picker = new widget_t(parent);
 
-            // Set edit button appearance to go to FBX Settings dialog
-            picker->GetEditButton()->setToolTip("Open FBX Settings to setup Cloth Modifiers");
+            // Set edit button appearance to go to Scene Settings dialog
+            picker->GetEditButton()->setToolTip("Open Scene Settings to setup Cloth Modifiers");
             picker->GetEditButton()->setText("");
             picker->GetEditButton()->setEnabled(false);
 
@@ -106,7 +106,7 @@ namespace NvCloth
             AZ::Data::Asset<AZ::Data::AssetData> meshAsset = GetMeshAsset(GUI->GetEntityId());
             if (meshAsset)
             {
-                // Open the asset with the preferred asset editor, which for Mesh and Actor Assets it's FBX Settings.
+                // Open the asset with the preferred asset editor, which for Mesh and Actor Assets it's Scene Settings.
                 bool handled = false;
                 AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Broadcast(
                     &AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotifications::OpenAssetInAssociatedEditor, meshAsset.GetId(), handled);

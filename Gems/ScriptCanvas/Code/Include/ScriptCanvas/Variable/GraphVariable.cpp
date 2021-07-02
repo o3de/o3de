@@ -1,6 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -102,44 +102,44 @@ namespace ScriptCanvas
                 classElement.RemoveElementByName(AZ_CRC_CE("Scope"));
                 classElement.AddElementWithData<VariableFlags::InitialValueSource>(context, "InitialValueSource", VariableFlags::InitialValueSource::Component);
             }
+
+            classElement.RemoveElementByName(AZ_CRC("ExposeAsInput", 0x0f7879f0));
+            classElement.RemoveElementByName(AZ_CRC("Exposure", 0x398f29cd));
         }
         else
-        if (classElement.GetVersion() < 3)
-        {
-            bool exposeAsInputField = false;
-            classElement.GetChildData<bool>(AZ_CRC("ExposeAsInput", 0x0f7879f0), exposeAsInputField);
-
-            if (exposeAsInputField)
+            if (classElement.GetVersion() < 3)
             {
+                bool exposeAsInputField = false;
+                classElement.GetChildData<bool>(AZ_CRC("ExposeAsInput", 0x0f7879f0), exposeAsInputField);
+
+                if (exposeAsInputField)
+                {
+                    classElement.RemoveElementByName(AZ_CRC("Exposure", 0x398f29cd));
+                    classElement.AddElementWithData<VariableFlags::Scope>(context, "Scope", VariableFlags::Scope::Graph);
+                }
+                else
+                {
+                    AZ::u8 exposureType = VariableFlags::Deprecated::Exposure::Exp_Local;
+                    classElement.GetChildData<AZ::u8>(AZ_CRC("Exposure", 0x398f29cd), exposureType);
+
+                    VariableFlags::Scope scope = VariableFlags::Scope::Graph;
+
+                    if (((exposureType & VariableFlags::Deprecated::Exposure::Exp_InOut) == VariableFlags::Deprecated::Exposure::Exp_InOut)
+                    || exposureType & VariableFlags::Deprecated::Exposure::Exp_Input)
+                    {
+                        scope = VariableFlags::Scope::Graph;
+                    }
+                    else if (exposureType & VariableFlags::Deprecated::Exposure::Exp_Output)
+                    {
+                        scope = VariableFlags::Scope::Function;
+                    }
+
+                    classElement.AddElementWithData<VariableFlags::Scope>(context, "Scope", scope);
+                }
+
                 classElement.RemoveElementByName(AZ_CRC("Exposure", 0x398f29cd));
-                classElement.AddElementWithData<VariableFlags::Scope>(context, "Scope", VariableFlags::Scope::Graph);
+                classElement.RemoveElementByName(AZ_CRC("ExposeAsInput", 0x0f7879f0));
             }
-            else
-            {
-                AZ::u8 exposureType = VariableFlags::Deprecated::Exposure::Exp_Local;
-                classElement.GetChildData<AZ::u8>(AZ_CRC("Exposure", 0x398f29cd), exposureType);
-
-                VariableFlags::Scope scope = VariableFlags::Scope::Graph;
-
-                if ((exposureType & VariableFlags::Deprecated::Exposure::Exp_InOut) == VariableFlags::Deprecated::Exposure::Exp_InOut)
-                {
-                    scope = VariableFlags::Scope::Graph;
-                }
-                else if (exposureType & VariableFlags::Deprecated::Exposure::Exp_Input)
-                {
-                    scope = VariableFlags::Scope::Graph;
-                }
-                else if (exposureType & VariableFlags::Deprecated::Exposure::Exp_Output)
-                {
-                    scope = VariableFlags::Scope::Function;
-                }
-
-                classElement.AddElementWithData<VariableFlags::Scope>(context, "Scope", scope);
-            }
-
-            classElement.RemoveElementByName(AZ_CRC("Exposure", 0x398f29cd));
-            classElement.RemoveElementByName(AZ_CRC("ExposeAsInput", 0x0f7879f0));
-        }
 
         return true;
     }
@@ -203,8 +203,8 @@ namespace ScriptCanvas
                 editContext->Class<GraphVariable>("Variable", "Represents a Variable field within a Script Canvas Graph")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &GraphVariable::GetVisibility)
-                    ->Attribute(AZ::Edit::Attributes::ChildNameLabelOverride, &GraphVariable::GetDisplayName)
-                    ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &GraphVariable::GetDisplayName)
+                    ->Attribute(AZ::Edit::Attributes::ChildNameLabelOverride, &GraphVariable::GetVariableName)
+                    ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &GraphVariable::GetVariableName)
                     ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &GraphVariable::GetDescriptionOverride)
 
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &GraphVariable::m_InitialValueSource, "Initial Value Source", "Variables can get their values from within the graph or through component properties.")

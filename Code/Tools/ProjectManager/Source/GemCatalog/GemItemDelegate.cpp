@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -129,6 +129,17 @@ namespace O3DE::ProjectManager
         if (!modelIndex.isValid())
         {
             return false;
+        }
+
+        if (event->type() == QEvent::KeyPress)
+        {
+            auto keyEvent = static_cast<const QKeyEvent*>(event);
+            if (keyEvent->key() == Qt::Key_Space)
+            {
+                const bool isAdded = GemModel::IsAdded(modelIndex);
+                GemModel::SetIsAdded(*model, modelIndex, !isAdded);
+                return true;
+            }
         }
 
         if (event->type() == QEvent::MouseButtonPress)

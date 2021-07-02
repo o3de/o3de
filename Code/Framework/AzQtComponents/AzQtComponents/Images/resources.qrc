@@ -10,11 +10,6 @@
     <qresource prefix="/Level">
         <file alias="level.svg">Level/level.svg</file>
     </qresource>
-    <qresource prefix="/Notifications">
-        <file alias="checkmark.svg">Notifications/checkmark.svg</file>
-        <file alias="download.svg">Notifications/download.svg</file>
-        <file alias="link.svg">Notifications/link.svg</file>
-    </qresource>
     <qresource prefix="/Menu">
         <file alias="resolution.svg">Menu/resolution.svg</file>
         <file alias="debug.svg">Menu/debug.svg</file>
@@ -30,5 +25,27 @@
         <file alias="ui_editor.svg">Menu/ui_editor.svg</file>
         <file alias="menu.svg">Menu/menu.svg</file>
         <file alias="helpers.svg">Menu/helpers.svg</file>
+    </qresource>
+    <qresource prefix="/Notifications">
+        <file alias="checkmark.svg">Notifications/checkmark.svg</file>
+        <file alias="download.svg">Notifications/download.svg</file>
+        <file alias="link.svg">Notifications/link.svg</file>
+    </qresource>
+    <qresource prefix="/Outliner">
+        <file alias="sort_a_to_z.svg">Outliner/sort_a_to_z.svg</file>
+        <file alias="sort_manually.svg">Outliner/sort_manually.svg</file>
+        <file alias="sort_z_to_a.svg">Outliner/sort_z_to_a.svg</file>
+        <file alias="visibility_default.svg">Outliner/visibility_default.svg</file>
+        <file alias="visibility_default_hover.svg">Outliner/visibility_default_hover.svg</file>
+        <file alias="visibility_default_transparent.svg">Outliner/visibility_default_transparent.svg</file>
+        <file alias="visibility_on.svg">Outliner/visibility_on.svg</file>
+        <file alias="visibility_on_hover.svg">Outliner/visibility_on_hover.svg</file>
+        <file alias="visibility_on_transparent.svg">Outliner/visibility_on_transparent.svg</file>
+        <file alias="lock_default.svg">Outliner/lock_default.svg</file>
+        <file alias="lock_default_hover.svg">Outliner/lock_default_hover.svg</file>
+        <file alias="lock_default_transparent.svg">Outliner/lock_default_transparent.svg</file>
+        <file alias="lock_on.svg">Outliner/lock_on.svg</file>
+        <file alias="lock_on_hover.svg">Outliner/lock_on_hover.svg</file>
+        <file alias="lock_on_transparent.svg">Outliner/lock_on_transparent.svg</file>
     </qresource>
 </RCC>
