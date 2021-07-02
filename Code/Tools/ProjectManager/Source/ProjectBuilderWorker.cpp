@@ -64,7 +64,7 @@ namespace O3DE::ProjectManager
         return logFilePath.filePath(ProjectBuildErrorLogName);
     }
 
-    void ProjectBuilderWorker::QStringToAZTracePrint(const QString& error)
+    void ProjectBuilderWorker::QStringToAZTracePrint([[maybe_unused]] const QString& error)
     {
         AZ_TracePrintf("Project Manager", error.toStdString().c_str());
     }
