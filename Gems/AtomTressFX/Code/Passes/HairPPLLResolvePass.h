@@ -59,6 +59,7 @@ namespace AZ
                 }
 
                 //! Override pass behavior methods
+                void InitializeInternal() override;
                 void BuildInternal() override;
                 void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
                 void CompileResources(const RHI::FrameGraphCompileContext& context) override;
