@@ -22,7 +22,7 @@ ly_add_target(
             Source
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::AudioSystem
+            Gem::AudioSystem.Static
         PUBLIC
             3rdParty::libsamplerate
             Legacy::CryCommon
@@ -43,6 +43,17 @@ ly_add_target(
         Gem::AudioSystem
 )
 
+ly_add_target(
+    NAME Microphone.Editor ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAMESPACE Gem
+    FILES_CMAKE
+        microphone_shared_files.cmake
+    BUILD_DEPENDENCIES
+        PRIVATE
+            Gem::Microphone.Static
+    RUNTIME_DEPENDENCIES
+        Gem::AudioSystem.Editor
+)
 # The above "Microphone" target is used by all interactive applications
 ly_create_alias(NAME Microphone.Clients  NAMESPACE Gem TARGETS Gem::Microphone)
-ly_create_alias(NAME Microphone.Tools    NAMESPACE Gem TARGETS Gem::Microphone)
+ly_create_alias(NAME Microphone.Tools    NAMESPACE Gem TARGETS Gem::Microphone.Editor)
