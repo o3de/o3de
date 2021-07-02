@@ -89,9 +89,9 @@ namespace AZ
                 ComputePass::SetupFrameGraphDependencies(frameGraph);
             }
 
-            void HairSkinningComputePass::BuildAttachmentsInternal()
+            void HairSkinningComputePass::BuildInternal()
             {
-                ComputePass::BuildAttachmentsInternal();
+                ComputePass::BuildInternal();
 
                 if (!AcquireFeatureProcessor())
                 {
@@ -262,7 +262,7 @@ namespace AZ
                 BuildShaderAndRenderData();
             }
 
-            void HairSkinningComputePass::OnShaderVariantReinitialized([[maybe_unused]] const AZ::RPI::Shader& shader, [[maybe_unused]] const AZ::RPI::ShaderVariantId& shaderVariantId, [[maybe_unused]] AZ::RPI::ShaderVariantStableId shaderVariantStableId)
+            void HairSkinningComputePass::OnShaderVariantReinitialized([[maybe_unused]] const AZ::RPI::ShaderVariant& shaderVariant)
             {
                 BuildShaderAndRenderData();
             }

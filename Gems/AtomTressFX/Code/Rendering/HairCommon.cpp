@@ -45,19 +45,7 @@ namespace AZ
                 const char* shaderResourceGroupId,
                 const char* moduleName)
             {
-                const Data::Asset<RPI::ShaderResourceGroupAsset> srgAsset = shader->FindShaderResourceGroupAsset(AZ::Name{ shaderResourceGroupId });
-                if (!srgAsset.GetId().IsValid())
-                {
-                    AZ_Error(moduleName, false, "Could not find shader resource group asset '%s'", shaderResourceGroupId);
-                    return nullptr;
-                }
-                else if (!srgAsset.IsReady())
-                {
-                    AZ_Error(moduleName, false, "Shader resource group asset is not loaded");
-                    return nullptr;
-                }
-
-                Data::Instance<RPI::ShaderResourceGroup> srg = RPI::ShaderResourceGroup::Create(srgAsset);
+                Data::Instance<RPI::ShaderResourceGroup> srg = RPI::ShaderResourceGroup::Create(shader->GetAsset(), AZ::Name{ shaderResourceGroupId });
                 if (!srg)
                 {
                     AZ_Error(moduleName, false, "Failed to create shader resource group");

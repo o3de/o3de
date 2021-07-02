@@ -26,7 +26,6 @@
 #include <Atom/RPI.Reflect/Pass/RasterPassData.h>
 #include <Atom/RPI.Reflect/Pass/PassTemplate.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
-#include <Atom/RPI.Reflect/Shader/ShaderResourceGroupAsset.h>
 
 #include <Passes/HairPPLLRasterPass.h>
 #include <Rendering/HairRenderObject.h>
@@ -80,9 +79,9 @@ namespace AZ
                 return true;
             }
 
-            void HairPPLLRasterPass::BuildAttachmentsInternal()
+            void HairPPLLRasterPass::BuildInternal()
             {
-                RasterPass::BuildAttachmentsInternal();
+                RasterPass::BuildInternal();
 
                 if (!AcquireFeatureProcessor())
                 {
@@ -307,7 +306,7 @@ namespace AZ
                 BuildShaderAndRenderData();
             }
 
-            void HairPPLLRasterPass::OnShaderVariantReinitialized([[maybe_unused]] const RPI::Shader& shader, [[maybe_unused]] const RPI::ShaderVariantId& shaderVariantId, [[maybe_unused]] RPI::ShaderVariantStableId shaderVariantStableId)
+            void HairPPLLRasterPass::OnShaderVariantReinitialized([[maybe_unused]] const AZ::RPI::ShaderVariant& shaderVariant)
             {
                 BuildShaderAndRenderData();
             }

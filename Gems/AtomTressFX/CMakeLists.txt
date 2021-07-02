@@ -56,6 +56,9 @@ ly_add_target(
             Gem::AtomTressFX.Static
 )
 
+ly_create_alias(NAME AtomTressFX.Clients NAMESPACE Gem TARGETS Gem::AtomTressFX)
+ly_create_alias(NAME AtomTressFX.Servers NAMESPACE Gem TARGETS Gem::AtomTressFX)
+
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     
     ly_add_target(
@@ -92,5 +95,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PRIVATE
                 Gem::AtomTressFX.Builders.Static
     )
+
+    ly_create_alias(NAME AtomTressFX.Tools   NAMESPACE Gem TARGETS Gem::AtomTressFX Gem::AtomTressFX.Builders)
 
 endif()
