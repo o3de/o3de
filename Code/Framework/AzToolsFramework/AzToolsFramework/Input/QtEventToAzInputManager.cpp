@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -29,8 +24,9 @@ namespace AzToolsFramework
 {
     void QtEventToAzInputMapper::InitializeKeyMappings()
     {
-        // This asumes modifier keys (ctrl/shift/alt) map to the left control/shift/alt keys  as Qt provides no way to disambiguate
-        // in a platform agnostic manner. This could be expanded later with a PAL mapping from native scan codes from QKeyEvents, if needed.
+        // This assumes modifier keys (ctrl/shift/alt) map to the left control/shift/alt keys as Qt provides no way to disambiguate
+        // in a platform agnostic manner. This could be expanded later with a PAL mapping from native scan codes acquired from
+        // QKeyEvents, if needed.
         m_keyMappings = { {
             { Qt::Key_0, AzFramework::InputDeviceKeyboard::Key::Alphanumeric0 },
             { Qt::Key_1, AzFramework::InputDeviceKeyboard::Key::Alphanumeric1 },
@@ -191,6 +187,12 @@ namespace AzToolsFramework
 
     bool QtEventToAzInputMapper::HandlesInputEvent(const AzFramework::InputChannel& channel) const
     {
+        const AzFramework::InputChannelId& channelId = channel.GetInputChannelId();
+        if (channelId == AzFramework::InputDeviceMouse::Movement::X || channelId == AzFramework::InputDeviceMouse::Movement::Y)
+        {
+            return false;
+        }
+
         // We map keyboard and mouse events from Qt, so flag all events coming from those devices
         // as handled by our synthetic event system.
         const AzFramework::InputDeviceId& deviceId = channel.GetInputDevice().GetInputDeviceId();
@@ -266,23 +268,13 @@ namespace AzToolsFramework
     {
         auto systemCursorChannel =
             GetInputChannel<AzFramework::InputChannelDeltaWithSharedPosition2D>(AzFramework::InputDeviceMouse::SystemCursorPosition);
-        auto cursorXChannel =
-            GetInputChannel<AzFramework::InputChannelDeltaWithSharedPosition2D>(AzFramework::InputDeviceMouse::Movement::X);
-        auto cursorYChannel =
-            GetInputChannel<AzFramework::InputChannelDeltaWithSharedPosition2D>(AzFramework::InputDeviceMouse::Movement::Y);
         auto cursorZChannel =
             GetInputChannel<AzFramework::InputChannelDeltaWithSharedPosition2D>(AzFramework::InputDeviceMouse::Movement::Z);
 
         systemCursorChannel->ProcessRawInputEvent(m_cursorPosition->m_normalizedPositionDelta.GetLength());
-        cursorXChannel->ProcessRawInputEvent(
-            m_cursorPosition->m_normalizedPositionDelta.GetX() * aznumeric_cast<float>(m_sourceWidget->width()));
-        cursorYChannel->ProcessRawInputEvent(
-            m_cursorPosition->m_normalizedPositionDelta.GetY() * aznumeric_cast<float>(m_sourceWidget->height()));
         cursorZChannel->ProcessRawInputEvent(0.f);
 
         NotifyUpdateChannelIfNotIdle(systemCursorChannel, nullptr);
-        NotifyUpdateChannelIfNotIdle(cursorXChannel, nullptr);
-        NotifyUpdateChannelIfNotIdle(cursorYChannel, nullptr);
         NotifyUpdateChannelIfNotIdle(cursorZChannel, nullptr);
     }
 
