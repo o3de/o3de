@@ -3695,6 +3695,7 @@ void UiCanvasComponent::CreateRenderTarget()
         return;
     }
 
+#ifdef LYSHINE_ATOM_TODO // [LYN-3359] Support RTT using Atom
     // Create a render target that this canvas will be rendered to.
     // The render target size is the canvas size.
     m_renderTargetHandle = gEnv->pRenderer->CreateRenderTarget(m_renderTargetName.c_str(),
@@ -3716,6 +3717,7 @@ void UiCanvasComponent::CreateRenderTarget()
 
         ISystem::CrySystemNotificationBus::Handler::BusConnect();
     }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3734,7 +3736,7 @@ void UiCanvasComponent::DestroyRenderTarget()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasComponent::RenderCanvasToTexture()
 {
-#ifdef LYSHINE_ATOM_TODO
+#ifdef LYSHINE_ATOM_TODO // [LYN-3359] Support RTT using Atom
     if (m_renderTargetHandle <= 0)
     {
         return;
