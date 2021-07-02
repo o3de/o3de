@@ -1,6 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -104,6 +104,8 @@ namespace AzFramework
     class CameraInput
     {
     public:
+        using ActivateChangeFn = AZStd::function<void()>;
+
         //! The state of activation the camera input is currently in.
         //! State changes of Activation: Idle -> Beginning -> Active -> Ending -> Idle
         enum class Activation
@@ -148,11 +150,28 @@ namespace AzFramework
 
         void ContinueActivation()
         {
+            // continue activation is called after the first step of the camera input,
+            // activation began is called once, the first time before the state is set to active
+            if (m_activation == Activation::Beginning)
+            {
+                if (m_activationBeganFn)
+                {
+                    m_activationBeganFn();
+                }
+            }
+
             m_activation = Activation::Active;
         }
 
         void ClearActivation()
         {
+            // clear activation happens after an end has been requested, activation ended
+            // is then called before the camera input is returned to idle
+            if (m_activationEndedFn)
+            {
+                m_activationEndedFn();
+            }
+
             m_activation = Activation::Idle;
         }
 
@@ -177,6 +196,16 @@ namespace AzFramework
             return false;
         }
 
+        void SetActivationBeganFn(ActivateChangeFn activationBeganFn)
+        {
+            m_activationBeganFn = AZStd::move(activationBeganFn);
+        }
+
+        void SetActivationEndedFn(ActivateChangeFn activationEndedFn)
+        {
+            m_activationEndedFn = AZStd::move(activationEndedFn);
+        }
+
     protected:
         //! Handle any state reset that may be required for the camera input (optional).
         virtual void ResetImpl()
@@ -185,6 +214,8 @@ namespace AzFramework
 
     private:
         Activation m_activation = Activation::Idle; //!< Default all camera inputs to the idle state.
+        AZStd::function<void()> m_activationBeganFn; //!< Called when the camera input successfully makes it to the active state.
+        AZStd::function<void()> m_activationEndedFn; //!< Called when the camera input ends and returns to the idle state.
     };
 
     //! Properties to use to configure behavior across all types of camera.

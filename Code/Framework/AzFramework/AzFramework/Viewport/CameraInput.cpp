@@ -1,6 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -188,7 +188,7 @@ namespace AzFramework
         m_idleCameraInputs.push_back(AZStd::move(cameraInput));
     }
 
-    bool Cameras::HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta)
+    bool Cameras::HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, const float scrollDelta)
     {
         bool handling = false;
         for (auto& cameraInput : m_activeCameraInputs)
@@ -308,7 +308,7 @@ namespace AzFramework
         };
     }
 
-    bool RotateCameraInput::HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, [[maybe_unused]] float scrollDelta)
+    bool RotateCameraInput::HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, [[maybe_unused]] const float scrollDelta)
     {
         const ClickDetector::ClickEvent clickEvent = [&event, this]
         {
@@ -393,7 +393,7 @@ namespace AzFramework
     }
 
     bool PanCameraInput::HandleEvents(
-        const InputEvent& event, [[maybe_unused]] const ScreenVector& cursorDelta, [[maybe_unused]] float scrollDelta)
+        const InputEvent& event, [[maybe_unused]] const ScreenVector& cursorDelta, [[maybe_unused]] const float scrollDelta)
     {
         if (const auto& input = AZStd::get_if<DiscreteInputEvent>(&event))
         {
@@ -580,7 +580,7 @@ namespace AzFramework
         m_boost = false;
     }
 
-    bool OrbitCameraInput::HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta)
+    bool OrbitCameraInput::HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, const float scrollDelta)
     {
         if (const auto* input = AZStd::get_if<DiscreteInputEvent>(&event))
         {
@@ -675,7 +675,7 @@ namespace AzFramework
     }
 
     bool OrbitDollyScrollCameraInput::HandleEvents(
-        const InputEvent& event, [[maybe_unused]] const ScreenVector& cursorDelta, [[maybe_unused]] float scrollDelta)
+        const InputEvent& event, [[maybe_unused]] const ScreenVector& cursorDelta, [[maybe_unused]] const float scrollDelta)
     {
         if (const auto* scroll = AZStd::get_if<ScrollEvent>(&event))
         {
@@ -707,7 +707,7 @@ namespace AzFramework
     }
 
     bool OrbitDollyCursorMoveCameraInput::HandleEvents(
-        const InputEvent& event, [[maybe_unused]] const ScreenVector& cursorDelta, [[maybe_unused]] float scrollDelta)
+        const InputEvent& event, [[maybe_unused]] const ScreenVector& cursorDelta, [[maybe_unused]] const float scrollDelta)
     {
         if (const auto& input = AZStd::get_if<DiscreteInputEvent>(&event))
         {
@@ -747,7 +747,7 @@ namespace AzFramework
     }
 
     bool ScrollTranslationCameraInput::HandleEvents(
-        const InputEvent& event, [[maybe_unused]] const ScreenVector& cursorDelta, [[maybe_unused]] float scrollDelta)
+        const InputEvent& event, [[maybe_unused]] const ScreenVector& cursorDelta, [[maybe_unused]] const float scrollDelta)
     {
         if (const auto* scroll = AZStd::get_if<ScrollEvent>(&event))
         {
