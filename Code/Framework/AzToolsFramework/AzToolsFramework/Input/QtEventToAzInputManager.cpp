@@ -250,7 +250,7 @@ namespace AzToolsFramework
             HandleKeyEvent(keyEvent);
         }
         // Map mouse events to input channels.
-        else if (event->type() == QEvent::Type::MouseButtonPress || event->type() == QEvent::Type::MouseButtonRelease)
+        else if (event->type() == QEvent::Type::MouseButtonPress || event->type() == QEvent::Type::MouseButtonRelease || event->type() == QEvent::Type::MouseButtonDblClick)
         {
             QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
             HandleMouseButtonEvent(mouseEvent);
@@ -304,7 +304,7 @@ namespace AzToolsFramework
 
             if (buttonChannel)
             {
-                if (mouseEvent->type() == QEvent::Type::MouseButtonPress)
+                if (mouseEvent->type() != QEvent::Type::MouseButtonRelease)
                 {
                     buttonChannel->UpdateState(true);
                 }
