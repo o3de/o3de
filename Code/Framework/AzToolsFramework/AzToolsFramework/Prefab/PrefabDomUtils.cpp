@@ -47,7 +47,7 @@ namespace AzToolsFramework
                 return valueIterator->value;
             }
 
-            bool StoreInstanceInPrefabDom(const Instance& instance, PrefabDom& prefabDom)
+            bool StoreInstanceInPrefabDom(const Instance& instance, PrefabDom& prefabDom, StoreInstanceFlags flags)
             {
                 InstanceEntityIdMapper entityIdMapper;
                 entityIdMapper.SetStoringInstance(instance);
@@ -57,6 +57,11 @@ namespace AzToolsFramework
                 AZ::JsonSerializerSettings settings;
                 settings.m_metadata.Add(static_cast<AZ::JsonEntityIdSerializer::JsonEntityIdMapper*>(&entityIdMapper));
                 settings.m_metadata.Add(&entityIdMapper);
+
+                if ((flags & StoreInstanceFlags::DoNotStoreDefaultValues) != StoreInstanceFlags::DoNotStoreDefaultValues)
+                {
+                    settings.m_keepDefaults = true;
+                }
 
                 AZ::JsonSerializationResult::ResultCode result =
                     AZ::JsonSerialization::Store(prefabDom, prefabDom.GetAllocator(), instance, settings);

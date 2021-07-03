@@ -47,6 +47,9 @@ namespace AZ
             const Uuid& valueTypeId, JsonSerializerContext& context);
 
     private:
+        bool IsExplicitDefault(const rapidjson::Value& value);
+
+        const AZStd::string m_zeroUuidString;
         AZStd::regex m_uuidFormat;
     };
 } // namespace AZ

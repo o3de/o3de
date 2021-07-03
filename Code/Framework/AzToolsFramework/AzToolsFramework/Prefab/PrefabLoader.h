@@ -25,6 +25,8 @@ namespace AzToolsFramework
     namespace Prefab
     {
         class PrefabSystemComponentInterface;
+        class Template;
+        using TemplateReference = AZStd::optional<AZStd::reference_wrapper<Template>>;
 
         /**
         * The Prefab Loader helps saving/loading Prefab files.
@@ -106,6 +108,16 @@ namespace AzToolsFramework
             static bool IsValidPrefabPath(AZ::IO::PathView path);
 
         private:
+            /**
+             * Generate a template dom in the proper format to be saved to disk.
+             * @param templateRef The template whose dom we want to generate.
+             * @param[out] output The PrefabDom reference we want to store the result into.
+             * @return True if the Prefab dom was generated correctly, false otherwise.
+             */
+            bool CopyTemplateIntoPrefabFileFormat(
+                TemplateReference templateRef,
+                PrefabDom& output
+            );
 
             /**
              * Load Prefab Template from given file path to memory and return the id of loaded Template.
@@ -140,6 +152,9 @@ namespace AzToolsFramework
                 PrefabDomValue::MemberIterator& instanceIterator,
                 TemplateId targetTemplateId,
                 AZStd::unordered_set<AZ::IO::Path>& progressedFilePathsSet);
+
+            bool SanitizeLoadedTemplate(PrefabDomReference loadedTemplateDom);
+            bool SanitizeSavingTemplate(PrefabDomReference savingTemplateDom);
 
             //! Retrieves Dom content and its path from a template id
             AZStd::optional<AZStd::pair<PrefabDom, AZ::IO::Path>> StoreTemplateIntoFileFormat(TemplateId templateId);

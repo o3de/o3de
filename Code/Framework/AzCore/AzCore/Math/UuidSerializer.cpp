@@ -23,6 +23,7 @@ namespace AZ
     }
 
     JsonUuidSerializer::JsonUuidSerializer()
+        : m_zeroUuidString(AZ::Uuid::CreateNull().ToString<AZStd::string>())
     {
         m_uuidFormat = AZStd::regex(R"(\{[a-f0-9]{8}-?[a-f0-9]{4}-?[a-f0-9]{4}-?[a-f0-9]{4}-?[a-f0-9]{12}\})",
             AZStd::regex_constants::icase | AZStd::regex_constants::optimize);
@@ -128,5 +129,15 @@ namespace AZ
         }
         
         return MessageResult("Default Uuid used.", JSR::ResultCode(JSR::Tasks::WriteValue, JSR::Outcomes::DefaultsUsed));
+    }
+
+    bool JsonUuidSerializer::IsExplicitDefault(const rapidjson::Value& value)
+    {
+        if (value == m_zeroUuidString.c_str())
+        {
+            return true;
+        }
+
+        return BaseJsonSerializer::IsExplicitDefault(value);
     }
 } // namespace AZ
