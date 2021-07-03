@@ -156,7 +156,7 @@ if(@target_file_dir@ MATCHES ".app/Contents/MacOS")
         # other issues that produce signature problems
         if(depends_on_python)
             message(STATUS "Fixing ${bundle_path}/Contents/Frameworks/Python.framework...")
-            list(APPEND fixup_bundle_ignore Python)
+            list(APPEND fixup_bundle_ignore Python python3.7m python3.7)
             file(REMOVE_RECURSE
                 ${bundle_path}/Contents/Frameworks/Python.framework/Versions/Current
                 ${bundle_path}/Contents/Frameworks/Python.framework/Versions/3.7/Headers
