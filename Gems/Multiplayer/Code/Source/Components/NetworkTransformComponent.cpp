@@ -84,7 +84,7 @@ namespace Multiplayer
 
     void NetworkTransformComponent::OnPreRender([[maybe_unused]] float deltaTime, float blendFactor)
     {
-        if (!HasController() || IsNetEntityRoleAutonomous())
+        if (!HasController())
         {
             AZ::Transform blendTransform;
             blendTransform.SetRotation(m_previousTransform.GetRotation().Slerp(m_targetTransform.GetRotation(), blendFactor));
