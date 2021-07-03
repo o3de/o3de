@@ -13,20 +13,13 @@ function(gp_resolve_item_override context item exepath dirs resolved_item_var re
         set(qt_framework_subpath ${CMAKE_MATCH_2})
         string(REGEX REPLACE "(.*)/(Qt[^\\.]+\\.framework)/(.*)" "\\1/\\2/${qt_framework_subpath}" new_resolved_item "${${resolved_item_var}}")
         set(${resolved_item_var} ${new_resolved_item} PARENT_SCOPE)
-    #elseif(${item} STREQUAL "@rpath/Versions/3.7/Python" OR ${item} STREQUAL "@executable_path/../Frameworks/Python.framework/Python")
-    #    set(${resolved_item_var} "@target_file_dir@/../Frameworks/Python.framework/Python" PARENT_SCOPE)
     endif()
 endfunction()
-
-#function(gp_resolved_file_type_override resolved_file type_var)
-#    if(${item} MATCHES "@rpath/Versions/3.7/Python")
-#        set(${type_var} embedded PARENT_SCOPE)
-#    endif()
-#endfunction()
 
 include(BundleUtilities)
 
 cmake_policy(SET CMP0012 NEW) # new policy for the if that evaluates a boolean out of the LY_BUILD_FIXUP_BUNDLE expansion 
+cmake_policy(SET CMP0009 NEW) # do not traverse symlinks on GLOB_RECURSE
 
 set(anything_new FALSE)
 set(plugin_libs)
@@ -63,6 +56,7 @@ function(ly_copy source_file target_directory)
                 string(REGEX REPLACE "(.*\\.app/Contents)/MacOS" "\\1/Frameworks" target_directory "${target_directory}")
                 set(local_plugin_dirs ${plugin_dirs})
                 list(APPEND local_plugin_dirs "${target_directory}/Python.framework")
+                set(target_filename Python.framework)
                 set(plugin_dirs ${local_plugin_dirs} PARENT_SCOPE)
                 set(depends_on_python TRUE PARENT_SCOPE)
             else()
@@ -131,9 +125,7 @@ function(ly_copy source_file target_directory)
                 file(LOCK ${target_directory}/${target_filename}.lock GUARD FUNCTION TIMEOUT 300)
             endif()
             file(COPY "${source_file}" DESTINATION "${target_directory}" FILE_PERMISSIONS @LY_COPY_PERMISSIONS@ FOLLOW_SYMLINK_CHAIN)
-            if(NOT IS_DIRECTORY ${target_directory}/${target_filename})
-                file(TOUCH ${target_directory}/${target_filename})
-            endif()
+            file(TOUCH ${target_directory}/${target_filename})
             set(anything_new TRUE PARENT_SCOPE)
         endif()
     endif()
@@ -163,23 +155,8 @@ if(@target_file_dir@ MATCHES ".app/Contents/MacOS")
         # LYN-4502: Patch python bundle, it contains some windows executables, some files that fixup_bundle doesnt like and has
         # other issues that produce signature problems
         if(depends_on_python)
-            message("Fixing ${bundle_path}/Contents/Frameworks/Python.framework...")
+            message(STATUS "Fixing ${bundle_path}/Contents/Frameworks/Python.framework...")
             list(APPEND fixup_bundle_ignore Python)
-            file(GLOB exe_files 
-                ${bundle_path}/Contents/Frameworks/Python.framework/Versions/3.7/lib/python3.7/distutils/command/*.exe
-                ${bundle_path}/Contents/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/pip/_vendor/distlib/*.exe
-                ${bundle_path}/Contents/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/setuptools/*.exe
-            )
-            foreach(exe_file ${exe_files})
-                file(REMOVE ${exe_file})
-            endforeach()
-            # remove all pycache folders
-            file(GLOB_RECURSE pycache_folders LIST_DIRECTORIES TRUE
-                ${bundle_path}/Contents/Frameworks/Python.framework/**/__pycache__
-            )
-            foreach(pycache_folder ${pycache_folders})
-                file(REMOVE ${pycache_folder})
-            endforeach()
             file(REMOVE_RECURSE
                 ${bundle_path}/Contents/Frameworks/Python.framework/Versions/Current
                 ${bundle_path}/Contents/Frameworks/Python.framework/Versions/3.7/Headers
@@ -190,6 +167,10 @@ if(@target_file_dir@ MATCHES ".app/Contents/MacOS")
                 ${bundle_path}/Contents/Frameworks/Python.framework/Resources
                 ${bundle_path}/Contents/Frameworks/Python.framework/Headers
             )
+            file(GLOB_RECURSE exe_file_list "${bundle_path}/Contents/Frameworks/Python.framework/**/*.exe")
+            if(exe_file_list)
+                file(REMOVE_RECURSE ${exe_file_list})
+            endif()
             execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink include/python3.7m Headers
                 WORKING_DIRECTORY ${bundle_path}/Contents/Frameworks/Python.framework/Versions/3.7
             )
@@ -208,8 +189,6 @@ if(@target_file_dir@ MATCHES ".app/Contents/MacOS")
             file(CHMOD ${bundle_path}/Contents/Frameworks/Python.framework/Versions/Current/Python 
                 PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE 
             )
-            #execute_process(COMMAND ${LY_INSTALL_NAME_TOOL} -add_rpath @executable_path/../Frameworks/Python.framework 
-            #    ${bundle_path}/Contents/Frameworks/Python.framework/Versions/3.7/Resources/Python.app/Contents/MacOS/Python)
         endif()
         list(REMOVE_DUPLICATES plugin_libs)
         list(REMOVE_DUPLICATES plugin_dirs)
@@ -220,6 +199,12 @@ if(@target_file_dir@ MATCHES ".app/Contents/MacOS")
         # fixup bundle ends up removing the rpath of dxc (despite we exclude it)
         if(EXISTS ${bundle_path}/Contents/MacOS/Builders/DirectXShaderCompiler/bin/dxc-3.7)
             execute_process(COMMAND ${LY_INSTALL_NAME_TOOL} -add_rpath @executable_path/../lib ${bundle_path}/Contents/MacOS/Builders/DirectXShaderCompiler/bin/dxc-3.7)
+        endif()
+
+        # misplaced .DS_Store files can cause signing to fail
+        file(GLOB_RECURSE dsstore_file_list "${bundle_path}/**/.DS_Store")
+        if(dsstore_file_list)
+            file(REMOVE_RECURSE ${dsstore_file_list})
         endif()
     endif()
 
