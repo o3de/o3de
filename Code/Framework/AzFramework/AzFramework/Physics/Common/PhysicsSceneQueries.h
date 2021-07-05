@@ -188,7 +188,7 @@ namespace AzPhysics
         AZ::Transform m_start = AZ::Transform::CreateIdentity(); //!< World space start position. Assumes only rotation + translation (no scaling).
         AZ::Vector3 m_direction = AZ::Vector3::CreateZero(); //!< World space direction (Should be normalized)
         AZStd::shared_ptr<Physics::ShapeConfiguration> m_shapeConfiguration; //!< Shape information.
-        SceneQuery::HitFlags m_hitFlags = SceneQuery::HitFlags::Default; //!< Query behavior flags
+        SceneQuery::HitFlags m_hitFlags = SceneQuery::HitFlags::Default | SceneQuery::HitFlags::MTD; //!< Query behavior flags. MTD Is On by default to correctly report objects that are initially in contact with the start pose.
         SceneQuery::FilterCallback m_filterCallback = nullptr; //!< Hit filtering function
         bool m_reportMultipleHits = false; //!< flag to have the cast stop after the first hit or return all hits along the query.
     };
