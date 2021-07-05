@@ -104,14 +104,13 @@ namespace UnitTest
         }
     }
 
-    void TestEditorActions::AddActionViaBusCrc(AZ::Crc32 id, QAction* action)
+    void TestEditorActions::AddActionViaBusCrc(AZ::Crc32 id, QAction* action) 
     {
         AZ_Assert(action, "Attempting to add a null action");
 
         if (action)
         {
-            AZ::u32 new_id = id;
-            action->setData(new_id);
+            action->setData(aznumeric_cast<AZ::u32>(id));
             action->setShortcutContext(Qt::ApplicationShortcut);
             m_defaultWidget.addAction(action);
         }
