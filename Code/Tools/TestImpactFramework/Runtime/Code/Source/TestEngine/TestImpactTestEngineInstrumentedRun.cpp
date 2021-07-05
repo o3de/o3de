@@ -15,7 +15,7 @@ namespace TestImpact
     {
         AZStd::optional<TestRun> ReleaseTestRun(AZStd::optional<AZStd::pair<AZStd::optional<TestRun>, TestCoverage>>& testRunAndCoverage)
         {
-            if (testRunAndCoverage.has_value() && testRunAndCoverage.has_value())
+            if (testRunAndCoverage.has_value() && testRunAndCoverage->first.has_value())
             {
                 return AZStd::move(testRunAndCoverage.value().first);
             }
