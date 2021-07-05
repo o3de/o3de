@@ -150,9 +150,8 @@ namespace AzToolsFramework
 
         /// Allow default actions to be added to the Action Manager via a Bus call.
         virtual void AddActionViaBus(int id, QAction* action) = 0;
-
+        /// Allow default actions to be added to the Action Manager via a Bus call and using the CRC id method.
         virtual void AddActionViaBusCrc(AZ::Crc32 id, QAction* action) = 0;
-
         /// Remove default actions added to the Action Manager via a Bus Call.
         virtual void RemoveActionViaBus(QAction* action) = 0;
         /// Enable all default actions that are active during the normal Editor state.
