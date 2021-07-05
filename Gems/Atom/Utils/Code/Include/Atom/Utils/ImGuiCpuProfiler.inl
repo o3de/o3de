@@ -294,8 +294,8 @@ namespace AZ
 
                     ImGui::Text("Viewport width: %.3f ms", CpuProfilerImGuiHelper::TicksToMs(GetViewportTickWidth()));
                     ImGui::Text("Recording %ld threads", RHI::CpuProfiler::Get()->GetTimeRegionMap().size());
-                    ImGui::Text("%ld profiling events saved", m_savedRegionCount);
-                    ImGui::Text("%ld => %ld", m_viewportStartTick, m_viewportEndTick);
+                    ImGui::Text("%llu profiling events saved", m_savedRegionCount);
+                    ImGui::Text("%lld => %lld", m_viewportStartTick, m_viewportEndTick);
 
                     ImGui::NextColumn();
 
@@ -563,9 +563,9 @@ namespace AZ
 
                 ImGui::BeginTooltip();
                 ImGui::Text("%s::%s", block.m_groupRegionName->m_groupName, block.m_groupRegionName->m_regionName);
-                ImGui::Text("Thread %lld", threadId);
+                ImGui::Text("Thread %zu", static_cast<size_t>(threadId));
                 ImGui::Text("Execution time: %.3f ms", CpuProfilerImGuiHelper::TicksToMs(block.m_endTick - block.m_startTick));
-                ImGui::Text("%ld => %ld", block.m_startTick, block.m_endTick);
+                ImGui::Text("%lld => %lld", block.m_startTick, block.m_endTick);
                 ImGui::EndTooltip();
             }
         }
@@ -622,7 +622,7 @@ namespace AZ
                         stat.m_record = !stat.m_record;
                     }
 
-                    ImGui::Text("Invocations: %ld", stat.m_invocations);
+                    ImGui::Text("Invocations: %llu", stat.m_invocations);
                     ImGui::Text("Average time: %.3f ms", stat.CalcAverageTimeMs());
 
                     ImGui::Separator();
