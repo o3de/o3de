@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -160,7 +160,7 @@ enum class FusibleCommand
 #include "ViewportWidget.h"
 
 // IMPORTANT: This is NOT the permanent location for these values.
-#define AZ_QCOREAPPLICATION_SETTINGS_ORGANIZATION_NAME "Amazon"
+#define AZ_QCOREAPPLICATION_SETTINGS_ORGANIZATION_NAME "O3DE"
 #define AZ_QCOREAPPLICATION_SETTINGS_APPLICATION_NAME "O3DE"
 
 // See: http://en.wikipedia.org/wiki/Internet_media_type#Prefix_x

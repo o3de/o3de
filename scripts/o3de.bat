@@ -1,6 +1,6 @@
 @ECHO OFF
 REM
-REM Copyright (c) Contributors to the Open 3D Engine Project
+REM Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 REM 
 REM SPDX-License-Identifier: Apache-2.0 OR MIT
 REM
@@ -9,7 +9,7 @@ REM
 pushd %~dp0%
 CD %~dp0..
 SET "BASE_PATH=%CD%"
-CD %~dp0
+popd
 SET "PYTHON_DIRECTORY=%BASE_PATH%\python"
 IF EXIST "%PYTHON_DIRECTORY%" GOTO pythonPathAvailable
 GOTO pythonDirNotFound
@@ -25,10 +25,8 @@ GOTO fail
 ECHO Python executable not found: %PYTHON_EXECUTABLE%
 GOTO fail
 :fail
-popd
 EXIT /b 1
 :end
-popd
 EXIT /b %ERRORLEVEL%
 
 

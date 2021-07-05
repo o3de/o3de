@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -326,6 +326,12 @@ namespace PhysX
 
     AzPhysics::SceneQueryHit Shape::RayCastInternal(const AzPhysics::RayCastRequest& worldSpaceRequest, const physx::PxTransform& pose)
     {
+        if (const bool shouldCollide = worldSpaceRequest.m_collisionGroup.GetMask() & m_collisionLayer.GetMask();
+            !shouldCollide)
+        {
+            return AzPhysics::SceneQueryHit();
+        }
+
         const physx::PxVec3 start = PxMathConvert(worldSpaceRequest.m_start);
         const physx::PxVec3 unitDir = PxMathConvert(worldSpaceRequest.m_direction);
         const physx::PxU32 maxHits = 1;

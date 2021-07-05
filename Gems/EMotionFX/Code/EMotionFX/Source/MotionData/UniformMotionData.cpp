@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -36,7 +36,7 @@ namespace EMotionFX
         return aznew UniformMotionData();
     }
 
-    const char* UniformMotionData::GetFbxSettingsName() const
+    const char* UniformMotionData::GetSceneSettingsName() const
     {
         return "Evenly Spaced Keyframes (faster, mostly larger)";
     }

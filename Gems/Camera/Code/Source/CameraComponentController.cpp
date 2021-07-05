@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -101,9 +101,9 @@ namespace Camera
             OnTransformChanged(localTransform, worldTransform);
 
             // Push the Atom camera after we make sure we're up-to-date with our component's transform to ensure the viewport reads the correct state
+            UpdateCamera();
             atomViewportRequests->PushView(contextName, m_atomCamera);
             AZ::RPI::ViewportContextNotificationBus::Handler::BusConnect(contextName);
-            UpdateCamera();
         }
     }
 
