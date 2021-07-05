@@ -30,9 +30,9 @@ namespace TestImpact
 
     //! Runs a batch of test targets to determine the test coverage and passes/failures.
     class InstrumentedTestRunner
-        : public TestJobRunner<InstrumentedTestRunJobData, AZStd::pair<TestRun, TestCoverage>>
+        : public TestJobRunner<InstrumentedTestRunJobData, AZStd::pair<AZStd::optional<TestRun>, TestCoverage>>
     {
-        using JobRunner = TestJobRunner<InstrumentedTestRunJobData, AZStd::pair<TestRun, TestCoverage>>;
+        using JobRunner = TestJobRunner<InstrumentedTestRunJobData, AZStd::pair<AZStd::optional<TestRun>, TestCoverage>>;
 
     public:
         //! Constructs an instrumented test runner with the specified parameters common to all job runs of this runner.
