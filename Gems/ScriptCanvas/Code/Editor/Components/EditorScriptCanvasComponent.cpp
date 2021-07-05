@@ -513,7 +513,7 @@ namespace ScriptCanvasEditor
         if (memoryAsset->GetFileAssetId() == m_scriptCanvasAssetHolder.GetAssetId())
         {
             auto assetData = memoryAsset->GetAsset();
-            AZ::Entity* scriptCanvasEntity = assetData->GetScriptCanvasEntity();
+            [[maybe_unused]] AZ::Entity* scriptCanvasEntity = assetData->GetScriptCanvasEntity();
             AZ_Assert(scriptCanvasEntity, "This graph must have a valid entity");
             BuildGameEntityData();
             AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree_NewContent);
