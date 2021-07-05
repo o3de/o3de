@@ -328,7 +328,7 @@ namespace TestImpact
         try
         {
             const auto sourceCoverageTestsList = CreateSourceCoveringTestFromTestCoverages(jobs);
-            if (!sourceCoverageTestsList.GetNumSources())
+            if (sourceCoverageTestsList.GetNumSources() == 0)
             {
                 return;
             }
