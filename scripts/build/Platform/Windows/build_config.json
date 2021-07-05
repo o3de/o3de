@@ -27,9 +27,7 @@
   },
   "profile_vs2019_pipe": {
     "TAGS": [
-      "default",
-      "nightly-incremental",
-      "nightly-clean"
+      "default"
     ],
     "steps": [
       "profile_vs2019",
@@ -90,7 +88,8 @@
       "OUTPUT_DIRECTORY": "build/windows_vs2019",
       "CONFIGURATION": "profile",
       "SCRIPT_PATH": "scripts/build/TestImpactAnalysis/tiaf_driver.py",
-      "SCRIPT_PARAMETERS": "--testFailurePolicy=continue --suite main --pipeline !PIPELINE_NAME! --destCommit !CHANGE_ID! --config \"!OUTPUT_DIRECTORY!/bin/TestImpactFramework/persistent/tiaf.profile.json\""
+      "SCRIPT_PARAMETERS": 
+      "--config=\"!OUTPUT_DIRECTORY!/bin/TestImpactFramework/persistent/tiaf.profile.json\" --suite=main --testFailurePolicy=continue --destBranch=!CHANGE_TARGET! --pipeline=!PIPELINE_NAME! --destCommit=!CHANGE_ID! --branchesOfTruth=!BUILD_SNAPSHOTS! --pipelinesOfTruth=default"
     }
   },
   "debug_vs2019": {

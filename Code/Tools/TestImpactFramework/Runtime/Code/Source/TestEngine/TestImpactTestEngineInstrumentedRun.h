@@ -17,7 +17,7 @@ namespace TestImpact
         : public TestEngineRegularRun
     {
     public:
-        TestEngineInstrumentedRun(TestEngineJob&& testJob, AZStd::optional<AZStd::pair<TestRun, TestCoverage>>&& testRunAndCoverage);
+        TestEngineInstrumentedRun(TestEngineJob&& testJob, AZStd::optional<AZStd::pair<AZStd::optional<TestRun>, TestCoverage>>&& testRunAndCoverage);
 
         //! Returns the test coverage payload for this job (if any).
         const AZStd::optional<TestCoverage>& GetTestCoverge() const;
