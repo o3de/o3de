@@ -38,7 +38,7 @@ namespace AZ
             void RecordRegion(const AZ::RHI::CachedTimeRegion& region);
 
             bool m_draw;
-            bool m_record;
+            bool m_record = true;
             u64 m_invocations;
             AZStd::sys_time_t m_totalTicks;
         };
@@ -106,6 +106,9 @@ namespace AZ
 
             // Draw the vertical lines separating frames in the timeline
             void DrawFrameBoundaries();
+
+            // Draw the ruler with frame time labels
+            void DrawRuler();
 
             // Converts raw ticks to a pixel value suitable to give to ImDrawList, handles window scrolling
             float ConvertTickToPixelSpace(AZStd::sys_time_t tick) const;

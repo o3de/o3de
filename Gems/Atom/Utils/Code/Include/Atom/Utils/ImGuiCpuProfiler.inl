@@ -13,11 +13,9 @@
 #include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/set.h>
-#include <AzCore/std/containers/stack.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/std/time.h>
 
-#include "../../../Gems/ImGui/External/ImGui/v1.82/imgui/imgui.h"
 
 namespace AZ
 {
@@ -304,6 +302,17 @@ namespace AZ
                     ImGui::TextWrapped(
                         "Hold the right mouse button to move around. Zoom by scrolling the mouse wheel while holding <ctrl>.");
                 }
+
+
+                ImGui::Columns(1, "RulerColumn", true);
+
+                // Ruler
+                if (ImGui::BeginChild("Ruler", { 0, 30 }, true, ImGuiWindowFlags_NoNavFocus))
+                {
+                    DrawRuler();
+                }
+                ImGui::EndChild();
+
 
                 ImGui::Columns(1, "TimelineColumn", true);
 
@@ -640,6 +649,82 @@ namespace AZ
                 const float horizontalPixel = ConvertTickToPixelSpace(*endTickItr);
                 drawList->AddLine({ horizontalPixel, wy }, { horizontalPixel, wy + windowHeight }, red);
                 endTickItr++;
+            }
+        }
+
+        inline void ImGuiCpuProfiler::DrawRuler()
+        {
+            // Use a pair of iterators to go through all saved frame boundaries and draw ruler lines
+            auto lastFrameBoundaryItr = AZStd::lower_bound(m_frameEndTicks.begin(), m_frameEndTicks.end(), m_viewportStartTick);
+            auto nextFrameBoundaryItr = lastFrameBoundaryItr;
+            if (lastFrameBoundaryItr != m_frameEndTicks.begin()) 
+            {
+                lastFrameBoundaryItr--;
+            }
+
+            const auto [wx, wy] = ImGui::GetWindowPos();
+            ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+            while (nextFrameBoundaryItr != m_frameEndTicks.end())
+            {
+                const AZStd::sys_time_t lastFrameBoundaryTick = *lastFrameBoundaryItr;
+                const AZStd::sys_time_t nextFrameBoundaryTick = *nextFrameBoundaryItr;
+                if (lastFrameBoundaryTick > m_viewportEndTick)
+                {
+                    break;
+                }
+
+                const float lastFrameBoundaryPixel = ConvertTickToPixelSpace(lastFrameBoundaryTick);
+                const float nextFrameBoundaryPixel = ConvertTickToPixelSpace(nextFrameBoundaryTick);
+
+                const AZStd::string label =
+                    AZStd::string::format("%.2f ms", CpuProfilerImGuiHelper::TicksToMs(nextFrameBoundaryTick - lastFrameBoundaryTick));
+                const float labelWidth = ImGui::CalcTextSize(label.c_str()).x;
+
+                // The label can fit between the two boundaries, center it and draw
+                if (labelWidth <= nextFrameBoundaryPixel - lastFrameBoundaryPixel) 
+                {
+                    const float offset = (nextFrameBoundaryPixel - lastFrameBoundaryPixel - labelWidth) /2;
+                    const float textBeginPixel = lastFrameBoundaryPixel + offset;
+                    const float textEndPixel = textBeginPixel + labelWidth;
+
+                    // Execution time label
+                    drawList->AddText({ textBeginPixel, wy + ImGui::GetWindowHeight() / 4 }, IM_COL32_WHITE, label.c_str());
+
+                    // Left side
+                    drawList->AddLine(
+                        { lastFrameBoundaryPixel, wy + ImGui::GetWindowHeight() / 2 },
+                        { textBeginPixel - 5, wy + ImGui::GetWindowHeight() / 2},
+                        IM_COL32_WHITE);
+
+                    // Right side
+                    drawList->AddLine(
+                        { textEndPixel, wy + ImGui::GetWindowHeight()/2 },
+                        { nextFrameBoundaryPixel,  wy + ImGui::GetWindowHeight()/2 },
+                        IM_COL32_WHITE);
+                }
+                else // Cannot fit inside, just draw a line between the two boundaries
+                {
+                    drawList->AddLine(
+                        { lastFrameBoundaryPixel, wy + ImGui::GetWindowHeight() / 2 },
+                        { nextFrameBoundaryPixel, wy + ImGui::GetWindowHeight() / 2 },
+                        IM_COL32_WHITE);
+                }
+
+                // Left bound
+                drawList->AddLine(
+                    { lastFrameBoundaryPixel, wy },
+                    { lastFrameBoundaryPixel, wy + ImGui::GetWindowHeight() },
+                    IM_COL32_WHITE);
+
+                // Right bound
+                drawList->AddLine(
+                    { nextFrameBoundaryPixel, wy },
+                    { nextFrameBoundaryPixel, wy + ImGui::GetWindowHeight() },
+                    IM_COL32_WHITE);
+
+                lastFrameBoundaryItr = nextFrameBoundaryItr;
+                nextFrameBoundaryItr++;
             }
         }
 
