@@ -89,7 +89,7 @@ class TestAutomationBase:
         editor_starttime = time.time()
         self.logger.debug("Running automated test")
         testcase_module_filepath = self._get_testcase_module_filepath(testcase_module)
-        pycmd = ["--runpythontest", testcase_module_filepath, "-BatchMode", "-autotest_mode"] + extra_cmdline_args
+        pycmd = ["--runpythontest", testcase_module_filepath, "-BatchMode", "-autotest_mode"]
         if use_null_renderer:
             pycmd += ["-rhi=null"]
         pycmd += extra_cmdline_args
