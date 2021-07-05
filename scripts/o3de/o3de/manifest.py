@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 """
 Contains functions for data from json files such as the o3de_manifests.json, engine.json, project.json, etc...
@@ -198,9 +194,9 @@ def load_o3de_manifest(manifest_path: pathlib.Path = None) -> dict:
             return json_data
 
 
-def save_o3de_manifest(json_data: dict, manifest_path: pathlib.Path = None) -> None:
+def save_o3de_manifest(json_data: dict, manifest_path: pathlib.Path = None) -> bool:
     """
-        Save the json dictionary to the supplied manifest file or ~/.o3de/o3de_manifest.json if None
+        Save the json dictionary to the supplied manifest file or ~/.o3de/o3de_manifest.json if manifest_path is None
 
         :param json_data: dictionary to save in json format at the file path
         :param manifest_path: optional path to manifest file to save
@@ -210,8 +206,10 @@ def save_o3de_manifest(json_data: dict, manifest_path: pathlib.Path = None) -> N
     with manifest_path.open('w') as s:
         try:
             s.write(json.dumps(json_data, indent=4) + '\n')
+            return True
         except OSError as e:
             logger.error(f'Manifest json failed to save: {str(e)}')
+            return False
 
 
 # Data query methods

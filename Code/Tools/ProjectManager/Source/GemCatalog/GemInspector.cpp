@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <GemCatalog/GemInspector.h>
 #include <GemCatalog/GemItemDelegate.h>
@@ -16,6 +11,7 @@
 #include <QLabel>
 #include <QSpacerItem>
 #include <QVBoxLayout>
+#include <QIcon>
 
 namespace O3DE::ProjectManager
 {
@@ -69,6 +65,22 @@ namespace O3DE::ProjectManager
 
         m_directoryLinkLabel->SetUrl(m_model->GetDirectoryLink(modelIndex));
         m_documentationLinkLabel->SetUrl(m_model->GetDocLink(modelIndex));
+
+        if (m_model->HasRequirement(modelIndex))
+        {
+            m_reqirementsIconLabel->show();
+            m_reqirementsTitleLabel->show();
+            m_reqirementsTextLabel->show();
+
+            m_reqirementsTitleLabel->setText("Requirement");
+            m_reqirementsTextLabel->setText(m_model->GetRequirement(modelIndex));
+        }
+        else
+        {
+            m_reqirementsIconLabel->hide();
+            m_reqirementsTitleLabel->hide();
+            m_reqirementsTextLabel->hide();
+        }
 
         // Depending and conflicting gems
         m_dependingGems->Update("Depending Gems", "The following Gems will be automatically enabled with this Gem.", m_model->GetDependingGemNames(modelIndex));
@@ -133,6 +145,28 @@ namespace O3DE::ProjectManager
         m_mainLayout->addWidget(hLine);
 
         m_mainLayout->addSpacing(10);
+
+        // Requirements
+        m_reqirementsTitleLabel = GemInspector::CreateStyledLabel(m_mainLayout, 16, s_headerColor);
+
+        QHBoxLayout* requrementsLayout = new QHBoxLayout();
+        requrementsLayout->setAlignment(Qt::AlignTop);
+        requrementsLayout->setMargin(0);
+        requrementsLayout->setSpacing(0);
+
+        m_reqirementsIconLabel = new QLabel();
+        m_reqirementsIconLabel->setPixmap(QIcon(":/Warning.svg").pixmap(24, 24));
+        requrementsLayout->addWidget(m_reqirementsIconLabel);
+
+        m_reqirementsTextLabel = GemInspector::CreateStyledLabel(requrementsLayout, 10, s_textColor);
+        m_reqirementsTextLabel->setWordWrap(true);
+
+        QSpacerItem* reqirementsSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding);
+        requrementsLayout->addSpacerItem(reqirementsSpacer);
+
+        m_mainLayout->addLayout(requrementsLayout);
+
+        m_mainLayout->addSpacing(20);
 
         // Depending and conflicting gems
         m_dependingGems = new GemsSubWidget();

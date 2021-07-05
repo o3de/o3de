@@ -2,8 +2,8 @@
     "template_name": "MinimalProject",
     "origin": "The primary repo for MinimalProject goes here: i.e. http://www.mydomain.com",
     "license": "What license MinimalProject uses goes here: i.e. https://opensource.org/licenses/MIT",
-    "display_name": "MinimalProject",
-    "summary": "A short description of MinimalProject.",
+    "display_name": "Minimal",
+    "summary": "This will be a good starting point for developers who are looking for building the game with the bare minimum of gems in O3DE, and adding more when needed. ",
     "canonical_tags": [],
     "user_tags": [
         "MinimalProject"
@@ -245,8 +245,8 @@
             "isOptional": false
         },
         {
-            "file": "Resources/CryEngineLogoLauncher.bmp",
-            "origin": "Resources/CryEngineLogoLauncher.bmp",
+            "file": "Resources/LegacyLogoLauncher.bmp",
+            "origin": "Resources/LegacyLogoLauncher.bmp",
             "isTemplated": false,
             "isOptional": false
         },

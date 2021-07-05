@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <AzCore/EBus/Event.h>
@@ -26,6 +21,17 @@ namespace AZ
     {
         class MeshDataInstance;
 
+        //! Settings to apply to a mesh handle when acquiring it for the first time
+        struct MeshHandleDescriptor
+        {
+            using RequiresCloneCallback = AZStd::function<bool(const Data::Asset<RPI::ModelAsset>& modelAsset)>;
+
+            Data::Asset<RPI::ModelAsset> m_modelAsset;
+            bool m_isRayTracingEnabled = true;
+            bool m_useForwardPassIblSpecular = false;
+            RequiresCloneCallback m_requiresCloneCallback = {};
+        };
+
         //! MeshFeatureProcessorInterface provides an interface to acquire and release a MeshHandle from the underlying MeshFeatureProcessor
         class MeshFeatureProcessorInterface
             : public RPI::FeatureProcessor
@@ -35,23 +41,16 @@ namespace AZ
 
             using MeshHandle = StableDynamicArrayHandle<MeshDataInstance>;
             using ModelChangedEvent = Event<const Data::Instance<RPI::Model>>;
-            using RequiresCloneCallback = AZStd::function<bool(const Data::Asset<RPI::ModelAsset>& modelAsset)>;
 
             //! Acquires a model with an optional collection of material assignments.
             //! @param requiresCloneCallback The callback indicates whether cloning is required for a given model asset.
             virtual MeshHandle AcquireMesh(
-                const Data::Asset<RPI::ModelAsset>& modelAsset,
-                const MaterialAssignmentMap& materials = {},
-                bool skinnedMeshWithMotion = false,
-                bool rayTracingEnabled = true,
-                RequiresCloneCallback requiresCloneCallback = {}) = 0;
+                const MeshHandleDescriptor& descriptor,
+                const MaterialAssignmentMap& materials = {}) = 0;
             //! Acquires a model with a single material applied to all its meshes.
             virtual MeshHandle AcquireMesh(
-                const Data::Asset<RPI::ModelAsset>& modelAsset,
-                const Data::Instance<RPI::Material>& material,
-                bool skinnedMeshWithMotion = false,
-                bool rayTracingEnabled = true,
-                RequiresCloneCallback requiresCloneCallback = {}) = 0;
+                const MeshHandleDescriptor& descriptor,
+                const Data::Instance<RPI::Material>& material) = 0;
             //! Releases the mesh handle
             virtual bool ReleaseMesh(MeshHandle& meshHandle) = 0;
             //! Creates a new instance and handle of a mesh using an existing MeshId. Currently, this will reset the new mesh to default materials.

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -84,8 +79,9 @@ namespace AzToolsFramework
              * 
              * @param entityId The entity to patch.
              * @param parentUndoBatch The undo batch the undo nodes should be parented to.
+             * @return Returns Success if the node was generated correctly, or an error message otherwise.
              */
-            virtual void GenerateUndoNodesForEntityChangeAndUpdateCache(
+            virtual PrefabOperationResult GenerateUndoNodesForEntityChangeAndUpdateCache(
                 AZ::EntityId entityId, UndoSystem::URSequencePoint* parentUndoBatch) = 0;
             
             /**

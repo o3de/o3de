@@ -1,31 +1,27 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #include <FileCacheManager.h>
 
 #include <AzCore/IO/IStreamer.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzFramework/Archive/IArchive.h>
 
+#include <AudioAllocators.h>
 #include <AudioInternalInterfaces.h>
 #include <IAudioSystemImplementation.h>
 #include <SoundCVars.h>
 #include <AudioSystem_Traits_Platform.h>
 
 #include <IRenderAuxGeom.h>
-#include <CryPath.h>
 
 namespace Audio
 {
@@ -47,7 +43,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////
     void CFileCacheManager::Initialize()
     {
-        AllocateHeap(static_cast<size_t>(g_audioCVars.m_nFileCacheManagerSize), "AudioFileCacheManager");
+        AllocateHeap(static_cast<size_t>(Audio::CVars::s_FileCacheManagerMemorySize), "AudioFileCacheManager");
 
         AudioFileCacheManagerNotficationBus::Handler::BusConnect();
     }
@@ -75,13 +71,7 @@ namespace Audio
     {
         if (size > 0)
         {
-            // ToDo: Update to use non-legacy memory: LYN-3792
-            /*m_memoryHeap.reset(???);
-
-            if (m_memoryHeap.get())
-            {
-                m_maxByteTotal = size << 10;
-            }*/
+            m_maxByteTotal = size << 10;
         }
     }
 
@@ -541,7 +531,7 @@ namespace Audio
 
             CATLAudioFileEntry* audioFileEntry = fileEntryIter->second;
             AZ_Assert(audioFileEntry, "FileCacheManager - Audio file entry is null!");
-            // AZ_Assert(buffer == audioFileEntry->m_memoryBlock->GetData(), "FileCacheManager - The memory buffer doesn't match the file entry memory block!");  // ToDo: Update to use non-legacy memory: LYN-3792
+            AZ_Assert(buffer == audioFileEntry->m_memoryBlock, "FileCacheManager - The memory buffer doesn't match the file entry memory block!");
             FinishCachingFileInternal(audioFileEntry, numBytesRead, streamer->GetRequestStatus(request));
         }
     }
@@ -568,16 +558,17 @@ namespace Audio
                     audioFileEntry->m_flags.AddFlags(eAFF_CACHED);
                     audioFileEntry->m_flags.ClearFlags(eAFF_LOADING);
 
-                #if !defined(AUDIO_RELEASE)
+#if !defined(AUDIO_RELEASE)
                     audioFileEntry->m_timeCached = AZStd::chrono::system_clock::now();
-                #endif // !AUDIO_RELEASE
+#endif // !AUDIO_RELEASE
 
                     SATLAudioFileEntryInfo fileEntryInfo;
                     fileEntryInfo.nMemoryBlockAlignment = audioFileEntry->m_memoryBlockAlignment;
-                    // fileEntryInfo.pFileData = audioFileEntry->m_memoryBlock->GetData(); // ToDo: Update to use non-legacy memory: LYN-3792
+                    fileEntryInfo.pFileData = audioFileEntry->m_memoryBlock;
                     fileEntryInfo.nSize = audioFileEntry->m_fileSize;
                     fileEntryInfo.pImplData = audioFileEntry->m_implData;
-                    fileEntryInfo.sFileName = PathUtil::GetFile(audioFileEntry->m_filePath.c_str());
+                    AZ::IO::PathView filePath{ audioFileEntry->m_filePath };
+                    fileEntryInfo.sFileName = filePath.Filename().Native().data();
 
                     AudioSystemImplementationRequestBus::Broadcast(&AudioSystemImplementationRequestBus::Events::RegisterInMemoryFile, &fileEntryInfo);
                     success = true;
@@ -649,41 +640,40 @@ namespace Audio
     }
     
     ///////////////////////////////////////////////////////////////////////////////////////////////
-    bool CFileCacheManager::AllocateMemoryBlockInternal([[maybe_unused]]CATLAudioFileEntry* const audioFileEntry)
+    bool CFileCacheManager::AllocateMemoryBlockInternal(CATLAudioFileEntry* const audioFileEntry)
     {
-        // ToDo: Update to use non-legacy memory: LYN-3792
-        return false;
-
-        /*AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
 
         // Must not have valid memory yet.
         AZ_Assert(!audioFileEntry->m_memoryBlock, "FileCacheManager AllocateMemoryBlockInternal - Memory appears to be set already!");
 
-        if (m_memoryHeap)
-        {
-            audioFileEntry->m_memoryBlock.reset(m_memoryHeap->AllocateBlock(audioFileEntry->m_fileSize, audioFileEntry->m_filePath.c_str(), audioFileEntry->m_memoryBlockAlignment));
-        }
+        audioFileEntry->m_memoryBlock = AZ::AllocatorInstance<AudioBankAllocator>::Get().Allocate(
+            audioFileEntry->m_fileSize,
+            audioFileEntry->m_memoryBlockAlignment,
+            0,
+            audioFileEntry->m_filePath.c_str(),
+            __FILE__, __LINE__);
 
         if (!audioFileEntry->m_memoryBlock)
         {
             // Memory block is either full or too fragmented, let's try to throw everything out that can be removed and allocate again.
             TryToUncacheFiles();
 
-            // And try again!
-            if (m_memoryHeap)
-            {
-                audioFileEntry->m_memoryBlock.reset(m_memoryHeap->AllocateBlock(audioFileEntry->m_fileSize, audioFileEntry->m_filePath.c_str(), audioFileEntry->m_memoryBlockAlignment));
-            }
+            // And try again
+            audioFileEntry->m_memoryBlock = AZ::AllocatorInstance<AudioBankAllocator>::Get().Allocate(
+                audioFileEntry->m_fileSize,
+                audioFileEntry->m_memoryBlockAlignment,
+                0,
+                audioFileEntry->m_filePath.c_str(),
+                __FILE__, __LINE__);
         }
 
-        return (audioFileEntry->m_memoryBlock != nullptr);*/
+        return (audioFileEntry->m_memoryBlock != nullptr);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
     void CFileCacheManager::UncacheFile(CATLAudioFileEntry* const audioFileEntry)
     {
-        m_currentByteTotal -= audioFileEntry->m_fileSize;
-
         if (audioFileEntry->m_asyncStreamRequest)
         {
             auto streamer = AZ::Interface<AZ::IO::IStreamer>::Get();
@@ -703,22 +693,36 @@ namespace Audio
             audioFileEntry->m_asyncStreamRequest.reset();
         }
 
-        // ToDo: Update to use non-legacy memory heap: LYN-3792
-        /*if (audioFileEntry->m_memoryBlock && audioFileEntry->m_memoryBlock->GetData())
+        if (audioFileEntry->m_memoryBlock)
         {
             SATLAudioFileEntryInfo fileEntryInfo;
             fileEntryInfo.nMemoryBlockAlignment = audioFileEntry->m_memoryBlockAlignment;
-            fileEntryInfo.pFileData = audioFileEntry->m_memoryBlock->GetData();
+            fileEntryInfo.pFileData = audioFileEntry->m_memoryBlock;
             fileEntryInfo.nSize = audioFileEntry->m_fileSize;
             fileEntryInfo.pImplData = audioFileEntry->m_implData;
-            fileEntryInfo.sFileName = PathUtil::GetFile(audioFileEntry->m_filePath.c_str());
+            AZ::IO::PathView filePath{ audioFileEntry->m_filePath };
+            fileEntryInfo.sFileName = filePath.Filename().Native().data();
 
-            AudioSystemImplementationRequestBus::Broadcast(&AudioSystemImplementationRequestBus::Events::UnregisterInMemoryFile, &fileEntryInfo);
-            g_audioLogger.Log(eALT_COMMENT, "FileCacheManager - File Uncached: '%s'\n", fileEntryInfo.sFileName);
+            EAudioRequestStatus result = eARS_SUCCESS;
+            AudioSystemImplementationRequestBus::BroadcastResult(result, &AudioSystemImplementationRequestBus::Events::UnregisterInMemoryFile, &fileEntryInfo);
+            if (result == eARS_SUCCESS)
+            {
+                g_audioLogger.Log(eALT_COMMENT, "FileCacheManager - File Uncached: '%s'\n", fileEntryInfo.sFileName);
+            }
+            else
+            {
+                g_audioLogger.Log(eALT_COMMENT, "FileCacheManager - Unable to uncache file '%s'\n", fileEntryInfo.sFileName);
+                return;
+            }
         }
 
-        audioFileEntry->m_memoryBlock.reset();*/
+        AZ::AllocatorInstance<AudioBankAllocator>::Get().DeAllocate(
+            audioFileEntry->m_memoryBlock,
+            audioFileEntry->m_fileSize,
+            audioFileEntry->m_memoryBlockAlignment
+        );
         audioFileEntry->m_flags.ClearFlags(eAFF_CACHED | eAFF_REMOVABLE);
+        m_currentByteTotal -= audioFileEntry->m_fileSize;
         AZ_Warning("FileCacheManager", audioFileEntry->m_useCount == 0, "Use-count of file '%s' is non-zero while uncaching it! Use Count: %d", audioFileEntry->m_filePath.c_str(), audioFileEntry->m_useCount);
         audioFileEntry->m_useCount = 0;
 
@@ -750,19 +754,27 @@ namespace Audio
         fileEntryInfo.pFileData = nullptr;
         fileEntryInfo.nMemoryBlockAlignment = 0;
 
-        AZStd::string fileName(PathUtil::GetFile(audioFileEntry->m_filePath.c_str()));
+        AZ::IO::FixedMaxPath filePath{ audioFileEntry->m_filePath };
+        AZStd::string_view fileName{ filePath.Filename().Native() };
         fileEntryInfo.pImplData = audioFileEntry->m_implData;
-        fileEntryInfo.sFileName = fileName.c_str();
+        fileEntryInfo.sFileName = fileName.data();
 
         const char* fileLocation = nullptr;
         AudioSystemImplementationRequestBus::BroadcastResult(fileLocation, &AudioSystemImplementationRequestBus::Events::GetAudioFileLocation, &fileEntryInfo);
-        audioFileEntry->m_filePath = fileLocation;
-        audioFileEntry->m_filePath += fileName.c_str();
+        if (fileLocation && fileLocation[0] != '\0')
+        {
+            audioFileEntry->m_filePath.assign(fileLocation);
+            audioFileEntry->m_filePath.append(fileName.data(), fileName.size());
+        }
+        else
+        {
+            AZ_WarningOnce("FileCacheManager", fileLocation != nullptr, "GetAudioFileLocation returned null when getting a localized file path!  Path will not be changed.");
+        }
         AZStd::to_lower(audioFileEntry->m_filePath.begin(), audioFileEntry->m_filePath.end());
 
         audioFileEntry->m_fileSize = gEnv->pCryPak->FGetSize(audioFileEntry->m_filePath.c_str());
 
-        AZ_Assert(audioFileEntry->m_fileSize > 0, "FileCacheManager UpdateLocalizedFileEntryData - Expected file size to be greater than zero!");
+        AZ_Assert(audioFileEntry->m_fileSize > 0, "FileCacheManager - UpdateLocalizedFileEntryData expected file size to be greater than zero!");
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -779,8 +791,7 @@ namespace Audio
 
         if (!audioFileEntry->m_filePath.empty() && !audioFileEntry->m_flags.AreAnyFlagsActive(eAFF_CACHED | eAFF_LOADING))
         {
-            // ToDo: Update to use non-legacy memory heap: LYN-3792
-            /*if (DoesRequestFitInternal(audioFileEntry->m_fileSize) && AllocateMemoryBlockInternal(audioFileEntry))
+            if (DoesRequestFitInternal(audioFileEntry->m_fileSize) && AllocateMemoryBlockInternal(audioFileEntry))
             {
                 auto streamer = AZ::Interface<AZ::IO::IStreamer>::Get();
                 AZ_Assert(streamer, "FileCacheManager - Streamer should be ready!");
@@ -791,8 +802,8 @@ namespace Audio
                 {
                     AZ::IO::FileRequestPtr request = streamer->Read(
                         audioFileEntry->m_filePath.c_str(),
-                        audioFileEntry->m_memoryBlock->GetData(),
-                        audioFileEntry->m_memoryBlock->GetSize(),
+                        audioFileEntry->m_memoryBlock,
+                        audioFileEntry->m_fileSize,
                         audioFileEntry->m_fileSize,
                         AZ::IO::IStreamerTypes::s_deadlineNow,
                         AZ::IO::IStreamerTypes::s_priorityHigh);
@@ -820,8 +831,8 @@ namespace Audio
                     streamer->Read(
                         audioFileEntry->m_asyncStreamRequest,
                         audioFileEntry->m_filePath.c_str(),
-                        audioFileEntry->m_memoryBlock->GetData(),
-                        audioFileEntry->m_memoryBlock->GetSize(),
+                        audioFileEntry->m_memoryBlock,
+                        audioFileEntry->m_fileSize,
                         audioFileEntry->m_fileSize,
                         AZ::IO::IStreamerTypes::s_noDeadline,
                         AZ::IO::IStreamerTypes::s_priorityHigh);
@@ -846,24 +857,24 @@ namespace Audio
             else
             {
                 // Cannot have a valid memory block!
-                AZ_Assert(!audioFileEntry->m_memoryBlock || !audioFileEntry->m_memoryBlock->GetData(),
-                    "FileCacheManager TryCacheFileCacheEntryInternal - Cannot have a valid memory block after memory allocation failure!");
+                AZ_Assert(audioFileEntry->m_memoryBlock == nullptr,
+                    "FileCacheManager - Memory block should be null after memory allocation failure!");
 
                 // This unfortunately is a total memory allocation fail.
                 audioFileEntry->m_flags.AddFlags(eAFF_MEMALLOCFAIL);
 
                 // The user should be made aware of it.
-                g_audioLogger.Log(eALT_ERROR, "FileCacheManager: Could not cache '%s' - out of memory or fragmented memory!", audioFileEntry->m_filePath.c_str());
-            }*/
+                g_audioLogger.Log(eALT_ERROR, "FileCacheManager - Could not cache '%s' - out of memory or fragmented memory!", audioFileEntry->m_filePath.c_str());
+            }
         }
         else if (audioFileEntry->m_flags.AreAnyFlagsActive(eAFF_CACHED | eAFF_LOADING))
         {
-            g_audioLogger.Log(eALT_COMMENT, "FileCacheManager: Skipping '%s' - it's either already loaded or currently loading!", audioFileEntry->m_filePath.c_str());
+            g_audioLogger.Log(eALT_COMMENT, "FileCacheManager - Skipping '%s' - it's either already loaded or currently loading!", audioFileEntry->m_filePath.c_str());
             success = true;
         }
         else if (audioFileEntry->m_flags.AreAnyFlagsActive(eAFF_NOTFOUND))
         {
-            g_audioLogger.Log(eALT_ERROR, "FileCacheManager: Could not cache '%s' - file was not found at the target location!", audioFileEntry->m_filePath.c_str());
+            g_audioLogger.Log(eALT_WARNING, "FileCacheManager - Could not cache '%s' - file was not found at that location!", audioFileEntry->m_filePath.c_str());
         }
 
         // Increment the used count on manually-loaded files.

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 
 #include "AuxGeomDrawQueue.h"
@@ -569,6 +564,7 @@ namespace AZ
 
         AuxGeomBufferData* AuxGeomDrawQueue::Commit()
         {
+            AZ_ATOM_PROFILE_FUNCTION("AuxGeom", "AuxGeomDrawQueue: Commit");
             // get a mutually exclusive lock and then switch to the next buffer, returning a pointer to the current buffer (before the switch)
 
             // grab the lock
@@ -588,6 +584,7 @@ namespace AZ
 
         void AuxGeomDrawQueue::ClearCurrentBufferData()
         {
+            AZ_ATOM_PROFILE_FUNCTION("AuxGeom", "AuxGeomDrawQueue: ClearCurrentBufferData");
             // no need for mutex here, this function is only called from a function holding a lock
             AuxGeomBufferData& data = m_buffers[m_currentBufferIndex];
 
@@ -652,7 +649,6 @@ namespace AZ
             int32_t viewProjOverrideIndex)
         {
             AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
-            AZ_ATOM_PROFILE_FUNCTION("AuxGeom", "AuxGeomDrawQueue: DrawPrimitiveCommon");
 
             // grab a mutex lock for the rest of this function so that a commit cannot happen during it and
             // other threads can't add geometry during it

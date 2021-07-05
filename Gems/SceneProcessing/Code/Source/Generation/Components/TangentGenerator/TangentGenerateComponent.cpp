@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Generation/Components/TangentGenerator/TangentGenerateComponent.h>
 #include <Generation/Components/TangentGenerator/TangentGenerators/MikkTGenerator.h>
@@ -112,7 +107,7 @@ namespace AZ::SceneGenerationComponents
                 return AZ::SceneAPI::Events::ProcessingResult::Failure;
             }
 
-            // Now that we have the tangents and bitangents, calculate the tangent w values for the ones that we imported from Fbx, as they only have xyz.
+            // Now that we have the tangents and bitangents, calculate the tangent w values for the ones that we imported from the scene file, as they only have xyz.
             UpdateFbxTangentWValues(graph, nodeIndex, mesh);
         }
 
@@ -127,9 +122,9 @@ namespace AZ::SceneGenerationComponents
         size_t uvSetIndex = 0;
         while (uvData)
         {
-            // Get the tangents and bitangents from Fbx.
-            AZ::SceneAPI::DataTypes::IMeshVertexTangentData*    fbxTangentData   = AZ::SceneAPI::SceneData::TangentsRule::FindTangentData(graph, nodeIndex, uvSetIndex, AZ::SceneAPI::DataTypes::TangentSpace::FromFbx);
-            AZ::SceneAPI::DataTypes::IMeshVertexBitangentData*  fbxBitangentData = AZ::SceneAPI::SceneData::TangentsRule::FindBitangentData(graph, nodeIndex, uvSetIndex, AZ::SceneAPI::DataTypes::TangentSpace::FromFbx);
+            // Get the tangents and bitangents from the source scene.
+            AZ::SceneAPI::DataTypes::IMeshVertexTangentData*    fbxTangentData   = AZ::SceneAPI::SceneData::TangentsRule::FindTangentData(graph, nodeIndex, uvSetIndex, AZ::SceneAPI::DataTypes::TangentSpace::FromSourceScene);
+            AZ::SceneAPI::DataTypes::IMeshVertexBitangentData*  fbxBitangentData = AZ::SceneAPI::SceneData::TangentsRule::FindBitangentData(graph, nodeIndex, uvSetIndex, AZ::SceneAPI::DataTypes::TangentSpace::FromSourceScene);
 
             if (fbxTangentData && fbxBitangentData)
             {
@@ -202,9 +197,9 @@ namespace AZ::SceneGenerationComponents
             return true; // No fatal error
         }
 
-        // Check if we had tangents inside the Fbx file.
-        AZ::SceneAPI::DataTypes::IMeshVertexTangentData*    fbxTangentData   = AZ::SceneAPI::SceneData::TangentsRule::FindTangentData(graph, nodeIndex, 0, AZ::SceneAPI::DataTypes::TangentSpace::FromFbx);
-        AZ::SceneAPI::DataTypes::IMeshVertexBitangentData*  fbxBitangentData = AZ::SceneAPI::SceneData::TangentsRule::FindBitangentData(graph, nodeIndex, 0, AZ::SceneAPI::DataTypes::TangentSpace::FromFbx);
+        // Check if we had tangents inside the source scene file.
+        AZ::SceneAPI::DataTypes::IMeshVertexTangentData*    fbxTangentData   = AZ::SceneAPI::SceneData::TangentsRule::FindTangentData(graph, nodeIndex, 0, AZ::SceneAPI::DataTypes::TangentSpace::FromSourceScene);
+        AZ::SceneAPI::DataTypes::IMeshVertexBitangentData*  fbxBitangentData = AZ::SceneAPI::SceneData::TangentsRule::FindBitangentData(graph, nodeIndex, 0, AZ::SceneAPI::DataTypes::TangentSpace::FromSourceScene);
 
         // Check what tangent spaces we need.
         AZStd::vector<AZ::SceneAPI::DataTypes::TangentSpace> requiredSpaces = CollectRequiredTangentSpaces(scene);
@@ -216,8 +211,8 @@ namespace AZ::SceneGenerationComponents
             requiredSpaces.emplace_back(AZ::SceneAPI::DataTypes::TangentSpace::MikkT);
         }
 
-        // If all we need is import from FBX, and we have tangent data from Fbx already, then skip generating.
-        if ((requiredSpaces.size() == 1 && requiredSpaces[0] == AZ::SceneAPI::DataTypes::TangentSpace::FromFbx) && fbxTangentData && fbxBitangentData)
+        // If all we need is import from the source scene, and we have tangent data from the source scene already, then skip generating.
+        if ((requiredSpaces.size() == 1 && requiredSpaces[0] == AZ::SceneAPI::DataTypes::TangentSpace::FromSourceScene) && fbxTangentData && fbxBitangentData)
         {
             return true;
         }
@@ -237,7 +232,7 @@ namespace AZ::SceneGenerationComponents
                 switch (space)
                 {
                 // If we want Fbx tangents, we don't need to do anything for that.
-                case AZ::SceneAPI::DataTypes::TangentSpace::FromFbx:
+                case AZ::SceneAPI::DataTypes::TangentSpace::FromSourceScene:
                 {
                     allSuccess &= true;
                 }

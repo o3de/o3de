@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <GemCatalog/GemItemDelegate.h>
 #include <GemCatalog/GemListHeaderWidget.h>
@@ -36,7 +31,7 @@ namespace O3DE::ProjectManager
         topLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding));
 
         QLabel* showCountLabel = new QLabel();
-        showCountLabel->setStyleSheet("font-size: 12px; font: italic;");
+        showCountLabel->setObjectName("GemCatalogHeaderShowCountLabel");
         topLayout->addWidget(showCountLabel);
         connect(proxyModel, &GemSortFilterProxyModel::OnInvalidated, this, [=]
             {
@@ -62,27 +57,27 @@ namespace O3DE::ProjectManager
         QHBoxLayout* columnHeaderLayout = new QHBoxLayout();
         columnHeaderLayout->setAlignment(Qt::AlignLeft);
 
-        const int gemNameStartX = GemItemDelegate::s_itemMargins.left() + GemItemDelegate::s_contentMargins.left() - 3;
+        const int gemNameStartX = GemItemDelegate::s_itemMargins.left() + GemItemDelegate::s_contentMargins.left() - 1;
         columnHeaderLayout->addSpacing(gemNameStartX);
 
         QLabel* gemNameLabel = new QLabel(tr("Gem Name"));
-        gemNameLabel->setStyleSheet("font-size: 12px;");
+        gemNameLabel->setObjectName("GemCatalogHeaderLabel");
         columnHeaderLayout->addWidget(gemNameLabel);
 
-        columnHeaderLayout->addSpacing(77);
+        columnHeaderLayout->addSpacing(89);
 
         QLabel* gemSummaryLabel = new QLabel(tr("Gem Summary"));
-        gemSummaryLabel->setStyleSheet("font-size: 12px;");
+        gemSummaryLabel->setObjectName("GemCatalogHeaderLabel");
         columnHeaderLayout->addWidget(gemSummaryLabel);
 
         QSpacerItem* horizontalSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
         columnHeaderLayout->addSpacerItem(horizontalSpacer);
 
         QLabel* gemSelectedLabel = new QLabel(tr("Selected"));
-        gemSelectedLabel->setStyleSheet("font-size: 12px;");
+        gemSelectedLabel->setObjectName("GemCatalogHeaderLabel");
         columnHeaderLayout->addWidget(gemSelectedLabel);
 
-        columnHeaderLayout->addSpacing(60);
+        columnHeaderLayout->addSpacing(65);
 
         vLayout->addLayout(columnHeaderLayout);
     }

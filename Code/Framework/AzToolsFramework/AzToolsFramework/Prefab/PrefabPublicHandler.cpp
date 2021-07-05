@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/JSON/stringbuffer.h>
@@ -592,21 +587,21 @@ namespace AzToolsFramework
             return AZ::Success(entityId);
         }
 
-        void PrefabPublicHandler::GenerateUndoNodesForEntityChangeAndUpdateCache(
+        PrefabOperationResult PrefabPublicHandler::GenerateUndoNodesForEntityChangeAndUpdateCache(
             AZ::EntityId entityId, UndoSystem::URSequencePoint* parentUndoBatch)
         {
             // Create Undo node on entities if they belong to an instance
             InstanceOptionalReference owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
             if (!owningInstance.has_value())
             {
-                return;
+                return AZ::Success();
             }
 
             AZ::Entity* entity = GetEntityById(entityId);
             if (!entity)
             {
                 m_prefabUndoCache.PurgeCache(entityId);
-                return;
+                return AZ::Success();
             }
 
             PrefabDom beforeState;
@@ -638,6 +633,41 @@ namespace AzToolsFramework
                         (&beforeOwningInstance->get() != &afterOwningInstance->get()))
                     {
                         isNewParentOwnedByDifferentInstance = true;
+
+                        // Detect loops. Assert if an instance has been reparented in such a way to generate circular dependencies.
+                        AZStd::vector<Instance*> instancesInvolved;
+
+                        if (isInstanceContainerEntity)
+                        {
+                            instancesInvolved.push_back(&owningInstance->get());
+                        }
+                        else
+                        {
+                            // Retrieve all nested instances that are part of the subtree under the current entity.
+                            EntityList entities;
+                            RetrieveAndSortPrefabEntitiesAndInstances({ entity }, beforeOwningInstance->get(), entities, instancesInvolved);
+                        }
+
+                        for (Instance* instance : instancesInvolved)
+                        {
+                            const PrefabDom& templateDom =
+                                m_prefabSystemComponentInterface->FindTemplateDom(instance->GetTemplateId());
+                            AZStd::unordered_set<AZ::IO::Path> templatePaths;
+                            PrefabDomUtils::GetTemplateSourcePaths(templateDom, templatePaths);
+
+                            if (IsCyclicalDependencyFound(afterOwningInstance->get(), templatePaths))
+                            {
+                                // Cancel the operation by restoring the previous parent
+                                AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetParent, beforeParentId);
+                                m_prefabUndoCache.UpdateCache(entityId);
+
+                                // Skip the creation of an undo node
+                                return AZ::Failure(AZStd::string::format(
+                                    "Reparent Prefab operation aborted - Cyclical dependency detected\n(%s depends on %s).",
+                                    instance->GetTemplateSourcePath().Native().c_str(),
+                                    afterOwningInstance->get().GetTemplateSourcePath().Native().c_str()));
+                            }
+                        }
                     }
                 }
 
@@ -678,6 +708,8 @@ namespace AzToolsFramework
             }
 
             m_prefabUndoCache.UpdateCache(entityId);
+
+            return AZ::Success();
         }
 
         void PrefabPublicHandler::Internal_HandleContainerOverride(
