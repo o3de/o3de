@@ -218,6 +218,8 @@
    <header>AzToolsFramework/AssetBrowser/Views/AssetBrowserTableView.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../../Framework/AzQtComponents/AzQtComponents/Components/resources.qrc"/>
+ </resources>
  <connections/>
 </ui>
