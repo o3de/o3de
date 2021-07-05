@@ -177,12 +177,12 @@ void AzAssetBrowserWindow::CreateSwitchViewMenu()
 
     m_viewSwitchMenu = new QMenu("Asset Browser Mode Selection", this);
 
-    m_standardAssetBrowserMode = new QAction(tr("Standard Mode"), this);
+    m_standardAssetBrowserMode = new QAction(tr("Expanded"), this);
     m_standardAssetBrowserMode->setCheckable(true);
     connect(m_standardAssetBrowserMode, &QAction::triggered, this, &AzAssetBrowserWindow::SetStandardAssetBrowserMode);
     m_viewSwitchMenu->addAction(m_standardAssetBrowserMode);
 
-    m_searchViewAssetBrowserMode = new QAction(tr("Search View Mode"), this);
+    m_searchViewAssetBrowserMode = new QAction(tr("Default"), this);
     m_searchViewAssetBrowserMode->setCheckable(true);
     connect(m_searchViewAssetBrowserMode, &QAction::triggered, this, &AzAssetBrowserWindow::SetSearchViewAssetBrowserMode);
     m_viewSwitchMenu->addAction(m_searchViewAssetBrowserMode);
