@@ -212,6 +212,28 @@ def save_o3de_manifest(json_data: dict, manifest_path: pathlib.Path = None) -> b
             return False
 
 
+
+def get_gems_from_subdirectories(external_subdirs: list) -> list:
+    '''
+    Helper Method for scanning a set of external subdirectories for gem.json files
+    '''
+    def is_gem_subdirectory(subdir_files):
+        for name in files:
+            if name == 'gem.json':
+                return True
+        return False
+
+    gem_directories = []
+    # Locate all subfolders with gem.json files within them
+    if external_subdirs:
+        for subdirectory in external_subdirs:
+            for root, dirs, files in os.walk(pathlib.Path(subdirectory).resolve()):
+                if is_gem_subdirectory(files):
+                    gem_directories.append(pathlib.PurePath(root).as_posix())
+
+    return gem_directories
+
+
 # Data query methods
 def get_this_engine() -> dict:
     json_data = load_o3de_manifest()
@@ -230,11 +252,7 @@ def get_projects() -> list:
 
 
 def get_gems() -> list:
-    def is_gem_subdirectory(subdir):
-        return (pathlib.Path(subdir) / 'gem.json').exists()
-
-    external_subdirs = get_external_subdirectories()
-    return list(filter(is_gem_subdirectory, external_subdirs)) if external_subdirs else []
+    return get_gems_from_subdirectories(get_external_subdirectories())
 
 
 def get_external_subdirectories() -> list:
@@ -265,11 +283,7 @@ def get_engine_projects() -> list:
 
 
 def get_engine_gems() -> list:
-    def is_gem_subdirectory(subdir):
-        return (pathlib.Path(subdir) / 'gem.json').exists()
-
-    external_subdirs = get_engine_external_subdirectories()
-    return list(filter(is_gem_subdirectory, external_subdirs)) if external_subdirs else []
+    return get_gems_from_subdirectories(get_engine_external_subdirectories())
 
 
 def get_engine_external_subdirectories() -> list:
@@ -295,11 +309,7 @@ def get_engine_restricted() -> list:
 
 # project.json queries
 def get_project_gems(project_path: pathlib.Path) -> list:
-    def is_gem_subdirectory(subdir):
-        return (pathlib.Path(subdir) / 'gem.json').exists()
-
-    external_subdirs = get_project_external_subdirectories(project_path)
-    return list(filter(is_gem_subdirectory, external_subdirs)) if external_subdirs else []
+    return get_gems_from_subdirectories(get_project_external_subdirectories(project_path))
 
 
 def get_project_external_subdirectories(project_path: pathlib.Path) -> list:

@@ -82,6 +82,12 @@ function ProcessEditor(context)
     context:SetMaterialPropertyVisibility("opacity.factor", mainVisibility)
     context:SetMaterialPropertyVisibility("opacity.doubleSided", mainVisibility)
 
+    if(opacityMode == OpacityMode_Blended or opacityMode == OpacityMode_TintedTransparent) then
+        context:SetMaterialPropertyVisibility("opacity.alphaAffectsSpecular", MaterialPropertyVisibility_Enabled)
+    else
+        context:SetMaterialPropertyVisibility("opacity.alphaAffectsSpecular", MaterialPropertyVisibility_Hidden)
+    end
+
     if(mainVisibility == MaterialPropertyVisibility_Enabled) then
         local alphaSource = context:GetMaterialPropertyValue_enum("opacity.alphaSource")
 

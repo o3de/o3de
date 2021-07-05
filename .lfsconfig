@@ -2,10 +2,14 @@
 # Default LFS endpoint for this repository
 url=https://d3df09qsjufr6g.cloudfront.net/api/v1
 
-# To use the endpoint with your fork:
-# 1. uncomment the url line below by removing the '#'
-# 2. replace 'owner' with the username or organization that owns the fork
-# 3. have git ignore your local modification of this file by running
-# git update-index --skip-worktree .lfsconfig
- 
-# url=https://d3df09qsjufr6g.cloudfront.net/api/v1/fork/owner
+# To use the endpoint with your fork, run the following git command
+# in your local repository (without the '#'), replacing 'owner' with 
+# the username or organization that owns the fork.
+#
+# git config lfs.url "https://d3df09qsjufr6g.cloudfront.net/api/v1/fork/owner"
+#
+# For example, if your fork is https://github.com/octocat/o3de use
+# git config lfs.url "https://d3df09qsjufr6g.cloudfront.net/api/v1/fork/octocat"
+#
+# IMPORTANT: authenticate with your GitHub username and personal access token
+# not your GitHub password 

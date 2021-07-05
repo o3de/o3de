@@ -26,12 +26,13 @@
         <file>o3de.svg</file>
         <file>menu.svg</file>
         <file>menu_hover.svg</file>
-        <file>Backgrounds/FirstTimeBackgroundImage.jpg</file>
         <file>ArrowDownLine.svg</file>
         <file>ArrowUpLine.svg</file>
         <file>CarrotArrowDown.svg</file>
         <file>Summary.svg</file>
         <file>WindowClose.svg</file>
         <file>Warning.svg</file>
+        <file>Backgrounds/DefaultBackground.jpg</file>
+        <file>Backgrounds/FtueBackground.jpg</file>
     </qresource>
 </RCC>

@@ -63,12 +63,7 @@ void MainCS(uint3 dispatchId: SV_DispatchThreadID)
             // So this converts it to "depth" to emphasize the difference
             // within the frustum.
             const float depth = (depthInClip - distanceMin) / (1. - distanceMin);
-
-            // Todo: Expose Esm exponent slider for directional lights
-            // This would remove the exp calculation below, collapsing it into a subtraction in DirectionalLightShadow.azsli
-            // ATOM-15775
-            const float outValue = exp(EsmExponentialShift * depth);
-            PassSrg::m_outputShadowmap[dispatchId].r = outValue;
+            PassSrg::m_outputShadowmap[dispatchId].r = depth;
             break;
         }
         case ShadowmapLightType::Spot:
