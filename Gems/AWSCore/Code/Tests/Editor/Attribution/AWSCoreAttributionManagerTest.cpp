@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -253,7 +253,6 @@ namespace AWSAttributionUnitTest
         manager.MetricCheck();
 
         // THEN
-        m_settingsRegistry->MergeSettingsFile(m_resolvedSettingsPath.data(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "");
         AZ::u64 timeStamp = 0;
         m_settingsRegistry->Get(timeStamp, "/Amazon/AWS/Preferences/AWSAttributionLastTimeStamp");
         ASSERT_TRUE(timeStamp == 0);
@@ -287,7 +286,6 @@ namespace AWSAttributionUnitTest
         manager.MetricCheck();
 
         // THEN
-        m_settingsRegistry->MergeSettingsFile(m_resolvedSettingsPath.data(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "");
         AZ::u64 timeStamp = 0;
         m_settingsRegistry->Get(timeStamp, "/Amazon/AWS/Preferences/AWSAttributionLastTimeStamp");
         ASSERT_TRUE(timeStamp > 0);
@@ -324,7 +322,6 @@ namespace AWSAttributionUnitTest
         manager.MetricCheck();
 
         // THEN
-        m_settingsRegistry->MergeSettingsFile(m_resolvedSettingsPath.data(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "");
         AZ::u64 timeStamp = 0;
         m_settingsRegistry->Get(timeStamp, "/Amazon/AWS/Preferences/AWSAttributionLastTimeStamp");
         ASSERT_TRUE(timeStamp > 0);
@@ -355,15 +352,14 @@ namespace AWSAttributionUnitTest
         AZ::u64 delayInSeconds = AZStd::chrono::duration_cast<AZStd::chrono::seconds>(AZStd::chrono::system_clock::now().time_since_epoch()).count();
         ASSERT_TRUE(m_settingsRegistry->Set("/Amazon/AWS/Preferences/AWSAttributionLastTimeStamp", delayInSeconds));
 
-        EXPECT_CALL(manager, SubmitMetric(testing::_)).Times(1);
-        EXPECT_CALL(m_moduleManagerRequestBusMock, EnumerateModules(testing::_)).Times(1);
+        EXPECT_CALL(manager, SubmitMetric(testing::_)).Times(0);
+        EXPECT_CALL(m_moduleManagerRequestBusMock, EnumerateModules(testing::_)).Times(0);
         EXPECT_CALL(m_credentialRequestBusMock, GetCredentialsProvider()).Times(1);
 
         // WHEN
         manager.MetricCheck();
 
         // THEN
-        m_settingsRegistry->MergeSettingsFile(m_resolvedSettingsPath.data(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "");
         AZ::u64 timeStamp = 0;
         m_settingsRegistry->Get(timeStamp, "/Amazon/AWS/Preferences/AWSAttributionLastTimeStamp");
         ASSERT_TRUE(timeStamp == delayInSeconds);
@@ -396,7 +392,6 @@ namespace AWSAttributionUnitTest
         manager.MetricCheck();
 
         // THEN
-        m_settingsRegistry->MergeSettingsFile(m_resolvedSettingsPath.data(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "");
         AZ::u64 timeStamp = 0;
         m_settingsRegistry->Get(timeStamp, "/Amazon/AWS/Preferences/AWSAttributionLastTimeStamp");
         ASSERT_TRUE(timeStamp == 0);

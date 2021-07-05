@@ -1,17 +1,12 @@
 {
-    "gem_name": "PythonAssetBuilder",
-    "GemFormatVersion": 4,
-    "Uuid": "0a5fda05323649009444bb7c3ee2b9c4",
-    "Name": "PythonAssetBuilder",
-    "DisplayName": "PythonAssetBuilder",
-    "Version": "0.1.0",
-    "Summary": "Runs asset builders written in Python scripts.",
-    "Tags": ["asset"],
-    "IconPath": "preview.png",
-    "Modules": [
-      {
-        "Name": "Editor",
-        "Type": "EditorModule"
-      }
-    ]
+  "gem_name": "PythonAssetBuilder",
+  "display_name": "Python Asset Builder",
+  "license": "Apache-2.0 Or MIT",
+  "origin": "Open 3D Engine - o3de.org",
+  "type": "Code",
+  "summary": "The Python Asset Builder Gem provides functionality to implement custom asset builders in Python for Asset Processor.",
+  "canonical_tags": ["Gem"],
+  "user_tags": ["Scripting", "Assets", "Utility"],
+  "icon_path": "preview.png",
+  "requirements": ""
 }

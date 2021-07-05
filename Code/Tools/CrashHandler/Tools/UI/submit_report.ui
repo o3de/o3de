@@ -158,7 +158,7 @@
   </widget>
  </widget>
  <resources>
-  <include location="../../../../Sandbox/Editor/MainWindow.qrc"/>
+  <include location="../../../../Editor/MainWindow.qrc"/>
  </resources>
  <connections>
   <connection>

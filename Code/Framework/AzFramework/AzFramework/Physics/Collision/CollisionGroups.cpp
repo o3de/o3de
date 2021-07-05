@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -34,6 +34,28 @@ namespace AzPhysics
     const CollisionGroup CollisionGroup::All_NoTouchBend = CollisionGroup::All.GetMask() & ~CollisionLayer::TouchBend.GetMask();
 #endif
 
+    void CollisionGroupScriptConstructor(CollisionGroup* thisPtr, AZ::ScriptDataContext& scriptDataContext)
+    {
+        if (int numArgs = scriptDataContext.GetNumArguments();
+            numArgs != 1)
+        {
+            scriptDataContext.GetScriptContext()->Error(AZ::ScriptContext::ErrorType::Error, true,
+                "CollisionGroup() accepts only 1 argument, not %d", numArgs);
+            return;
+        }
+
+        if (!scriptDataContext.IsString(0))
+        {
+            scriptDataContext.GetScriptContext()->Error(AZ::ScriptContext::ErrorType::Error, true,
+                "Argument to CollisionGroup() should be string");
+            return;
+        }
+
+        AZStd::string groupName;
+        scriptDataContext.ReadArg(0, groupName);
+        *thisPtr = CollisionGroup(groupName);
+    }
+
     void CollisionGroup::Reflect(AZ::ReflectContext* context)
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -50,7 +72,9 @@ namespace AzPhysics
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Module, "physics")
                 ->Attribute(AZ::Script::Attributes::Category, "AzPhysics")
-                ->Constructor<const AZStd::string>()
+                ->Constructor<const AZStd::string&>()
+                ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)
+                ->Attribute(AZ::Script::Attributes::ConstructorOverride, &CollisionGroupScriptConstructor)
                 ;
         }
     }
