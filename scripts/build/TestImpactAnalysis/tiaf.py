@@ -24,33 +24,51 @@ def is_child_path(parent_path, child_path):
     return os.path.commonpath([os.path.abspath(parent_path)]) == os.path.commonpath([os.path.abspath(parent_path), os.path.abspath(child_path)])
 
 class TestImpact:
-    def __init__(self, config_file, pipeline, dst_commit):
-        self.__pipeline = pipeline
+    def __init__(self, config_file, dst_commit, dst_branch, pipeline, branches_of_truth, pipelines_of_truth):
+        # Commit
         self.__dst_commit = dst_commit
+        print(f"Commit: '{self.__dst_commit}'.")
         self.__src_commit = None
         self.__has_src_commit = False
+        # Branch
+        self.__dst_branch = dst_branch
+        print(f"Destination branch: '{self.__dst_branch}'.")
+        self.__branches_of_truth = branches_of_truth
+        print(f"Branches of truth: '{self.__branches_of_truth}'.")
+        if self.__dst_branch in self.__branches_of_truth:
+            self.__is_branch_of_truth = True
+        else:
+            self.__is_branch_of_truth = False
+        print(f"Is branch of truth: '{self.__is_branch_of_truth}'.")
+        # Pipeline
+        self.__pipeline = pipeline
+        print(f"Pipeline: '{self.__pipeline}'.")
+        self.__pipelines_of_truth = pipelines_of_truth
+        print(f"Pipelines of truth: '{self.__pipelines_of_truth}'.")
+        if self.__pipeline in self.__pipelines_of_truth:
+            self.__is_pipeline_of_truth = True
+        else:
+            self.__is_pipeline_of_truth = False
+        print(f"Is pipeline of truth: '{self.__is_pipeline_of_truth}'.")
+        # Config
         self.__parse_config_file(config_file)
-        if self.__use_test_impact_analysis and not self.__is_pipeline_of_truth:
-            self.__generate_change_list()
+        # Sequence
+        if self.__use_test_impact_analysis:
+            if self.__is_pipeline_of_truth and self.__is_branch_of_truth:
+                self.__is_seeding = True
+            else:
+                self.__is_seeding = False
+                self.__generate_change_list()
 
     # Parse the configuration file and retrieve the data needed for launching the test impact analysis runtime
     def __parse_config_file(self, config_file):
         print(f"Attempting to parse configuration file '{config_file}'...")
         with open(config_file, "r") as config_data:
             config = json.load(config_data)
-            # Repository
             self.__repo_dir = config["repo"]["root"]
-            # Jenkins
+            self.__repo = Repo(self.__repo_dir)
+            # TIAF
             self.__use_test_impact_analysis = config["jenkins"]["use_test_impact_analysis"]
-            self.__pipeline_of_truth = config["jenkins"]["pipeline_of_truth"]
-            print(f"Pipeline of truth: '{self.__pipeline_of_truth}'.")
-            print(f"This pipeline: '{self.__pipeline}'.")
-            if self.__pipeline in self.__pipeline_of_truth:
-                self.__is_pipeline_of_truth = True
-            else:
-                self.__is_pipeline_of_truth = False
-            print(f"Is pipeline of truth: '{self.__is_pipeline_of_truth}'.")
-            # TIAF binary
             self.__tiaf_bin = config["repo"]["tiaf_bin"]
             if self.__use_test_impact_analysis and not os.path.isfile(self.__tiaf_bin):
                 raise FileNotFoundError("Could not find tiaf binary")
@@ -147,7 +165,7 @@ class TestImpact:
     # Runs the specified test sequence
     def run(self, suite, test_failure_policy, safe_mode, test_timeout, global_timeout):
         args = []
-        pipeline_of_truth_test_failure_policy = "continue"
+        seed_sequence_test_failure_policy = "continue"
         # Suite
         args.append(f"--suite={suite}")
         print(f"Test suite is set to '{suite}'.")
@@ -160,15 +178,15 @@ class TestImpact:
             print(f"Global sequence timeout is set to {test_timeout} seconds.")
         if self.__use_test_impact_analysis:
             print("Test impact analysis is enabled.")
-            # Pipeline of truth sequence
-            if self.__is_pipeline_of_truth:
+            # Seed sequences
+            if self.__is_seeding:
                 # Sequence type
                 args.append("--sequence=seed")
                 print("Sequence type is set to 'seed'.")
                 # Test failure policy
-                args.append(f"--fpolicy={pipeline_of_truth_test_failure_policy}")
-                print(f"Test failure policy is set to '{pipeline_of_truth_test_failure_policy}'.")
-            # Non pipeline of truth sequence
+                args.append(f"--fpolicy={seed_sequence_test_failure_policy}")
+                print(f"Test failure policy is set to '{seed_sequence_test_failure_policy}'.")
+            # Impact analysis sequences
             else:
                 if self.__has_change_list:
                     # Change list
@@ -198,8 +216,8 @@ class TestImpact:
             # Pipeline of truth sequence
             if self.__is_pipeline_of_truth:
                 # Test failure policy
-                args.append(f"--fpolicy={pipeline_of_truth_test_failure_policy}")
-                print(f"Test failure policy is set to '{pipeline_of_truth_test_failure_policy}'.")
+                args.append(f"--fpolicy={seed_sequence_test_failure_policy}")
+                print(f"Test failure policy is set to '{seed_sequence_test_failure_policy}'.")
             # Non pipeline of truth sequence
             else:
                 # Test failure policy
@@ -209,7 +227,7 @@ class TestImpact:
         print("Args: ", end='')
         print(*args)
         result = subprocess.run([self.__tiaf_bin] + args)
-        # If the sequence completed 9with or without failures) we will update the historical meta-data
+        # If the sequence completed (with or without failures) we will update the historical meta-data
         if result.returncode == 0 or result.returncode == 7:
             print("Test impact analysis runtime returned successfully.")
             if self.__is_pipeline_of_truth:

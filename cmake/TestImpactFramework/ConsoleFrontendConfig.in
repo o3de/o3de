@@ -4,10 +4,6 @@
     "timestamp": "${timestamp}"
   },
   "jenkins": {
-    "branch_of_truth" : [
-      "development",
-      "nightly-clean"
-    ],
     "use_test_impact_analysis": ${use_tiaf}
   },
   "repo": {

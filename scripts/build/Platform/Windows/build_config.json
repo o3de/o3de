@@ -27,13 +27,11 @@
   },
   "profile_vs2019_pipe": {
     "TAGS": [
-      "default",
-      "nightly-incremental",
-      "nightly-clean"
+      "default"
     ],
     "steps": [
       "profile_vs2019",
-      "test_impact_analysis",
+      "test_impact_analysis_profile_vs2019",
       "asset_profile_vs2019",
       "test_cpu_profile_vs2019"
     ]
@@ -82,13 +80,16 @@
       "SCRIPT_PARAMETERS": "--platform 3rdParty --type 3rdParty_all"
     }
   },
-  "test_impact_analysis": {
+  "test_impact_analysis_profile_vs2019": {
     "TAGS": [
     ],
     "COMMAND": "python_windows.cmd",
     "PARAMETERS": {
+      "OUTPUT_DIRECTORY": "build/windows_vs2019",
+      "CONFIGURATION": "profile",
       "SCRIPT_PATH": "scripts/build/TestImpactAnalysis/tiaf_driver.py",
-      "SCRIPT_PARAMETERS": "--testFailurePolicy=continue --suite main --pipeline !PIPELINE_NAME! --destCommit !CHANGE_ID! --config \"build\\windows_vs2019\\bin\\TestImpactFramework\\persistent\\tiaf.profile.json\""
+      "SCRIPT_PARAMETERS": 
+      "--config=\"!OUTPUT_DIRECTORY!/bin/TestImpactFramework/persistent/tiaf.profile.json\" --suite=main --testFailurePolicy=continue --destBranch=!CHANGE_TARGET! --pipeline=!PIPELINE_NAME! --destCommit=!CHANGE_ID! --branchesOfTruth=!BUILD_SNAPSHOTS! --pipelinesOfTruth=default"
     }
   },
   "debug_vs2019": {
@@ -189,7 +190,8 @@
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
       "CTEST_OPTIONS": "-L \"(SUITE_smoke_REQUIRES_gpu|SUITE_main_REQUIRES_gpu)\" -T Test",
       "TEST_METRICS": "True",
-      "TEST_RESULTS": "True"
+      "TEST_RESULTS": "True",
+      "TEST_SCREENSHOTS": "True"
     }
   },
   "asset_profile_vs2019": {
