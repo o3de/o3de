@@ -1,6 +1,6 @@
 /*
  * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -30,6 +30,19 @@ namespace SandboxEditor
     constexpr AZStd::string_view CameraPanSpeedSetting = "/Amazon/Preferences/Editor/Camera/PanSpeed";
     constexpr AZStd::string_view CameraRotateSmoothnessSetting = "/Amazon/Preferences/Editor/Camera/RotateSmoothness";
     constexpr AZStd::string_view CameraTranslateSmoothnessSetting = "/Amazon/Preferences/Editor/Camera/TranslateSmoothness";
+    constexpr AZStd::string_view CameraTranslateForwardIdSetting = "/Amazon/Preferences/Editor/Camera/CameraTranslateForwardId";
+    constexpr AZStd::string_view CameraTranslateBackwardIdSetting = "/Amazon/Preferences/Editor/Camera/CameraTranslateBackwardId";
+    constexpr AZStd::string_view CameraTranslateLeftIdSetting = "/Amazon/Preferences/Editor/Camera/CameraTranslateLeftId";
+    constexpr AZStd::string_view CameraTranslateRightIdSetting = "/Amazon/Preferences/Editor/Camera/CameraTranslateRightId";
+    constexpr AZStd::string_view CameraTranslateUpIdSetting = "/Amazon/Preferences/Editor/Camera/CameraTranslateUpId";
+    constexpr AZStd::string_view CameraTranslateDownIdSetting = "/Amazon/Preferences/Editor/Camera/CameraTranslateUpDownId";
+    constexpr AZStd::string_view CameraTranslateBoostIdSetting = "/Amazon/Preferences/Editor/Camera/TranslateBoostId";
+    constexpr AZStd::string_view CameraOrbitIdSetting = "/Amazon/Preferences/Editor/Camera/OrbitId";
+    constexpr AZStd::string_view CameraFreeLookIdSetting = "/Amazon/Preferences/Editor/Camera/FreeLookId";
+    constexpr AZStd::string_view CameraFreePanIdSetting = "/Amazon/Preferences/Editor/Camera/FreePanId";
+    constexpr AZStd::string_view CameraOrbitLookIdSetting = "/Amazon/Preferences/Editor/Camera/OrbitLookId";
+    constexpr AZStd::string_view CameraOrbitDollyIdSetting = "/Amazon/Preferences/Editor/Camera/OrbitDollyId";
+    constexpr AZStd::string_view CameraOrbitPanIdSetting = "/Amazon/Preferences/Editor/Camera/OrbitPanId";
 
     template<typename T>
     void SetRegistry(const AZStd::string_view setting, T&& value)
@@ -243,5 +256,139 @@ namespace SandboxEditor
     void SetCameraTranslateSmoothness(const float smoothness)
     {
         SetRegistry(CameraTranslateSmoothnessSetting, smoothness);
+    }
+
+    AzFramework::InputChannelId CameraTranslateForwardChannelId()
+    {
+        return AzFramework::InputChannelId(
+            GetRegistry(CameraTranslateForwardIdSetting, AZStd::string("keyboard_key_alphanumeric_W")).c_str());
+    }
+
+    void SetCameraTranslateForwardChannelId(AZStd::string_view cameraTranslateForwardId)
+    {
+        SetRegistry(CameraTranslateForwardIdSetting, cameraTranslateForwardId);
+    }
+
+    AzFramework::InputChannelId CameraTranslateBackwardChannelId()
+    {
+        return AzFramework::InputChannelId(
+            GetRegistry(CameraTranslateBackwardIdSetting, AZStd::string("keyboard_key_alphanumeric_S")).c_str());
+    }
+
+    void SetCameraTranslateBackwardChannelId(AZStd::string_view cameraTranslateBackwardId)
+    {
+        SetRegistry(CameraTranslateBackwardIdSetting, cameraTranslateBackwardId);
+    }
+
+    AzFramework::InputChannelId CameraTranslateLeftChannelId()
+    {
+        return AzFramework::InputChannelId(GetRegistry(CameraTranslateLeftIdSetting, AZStd::string("keyboard_key_alphanumeric_A")).c_str());
+    }
+
+    void SetCameraTranslateLeftChannelId(AZStd::string_view cameraTranslateLeftId)
+    {
+        SetRegistry(CameraTranslateLeftIdSetting, cameraTranslateLeftId);
+    }
+
+    AzFramework::InputChannelId CameraTranslateRightChannelId()
+    {
+        return AzFramework::InputChannelId(
+            GetRegistry(CameraTranslateRightIdSetting, AZStd::string("keyboard_key_alphanumeric_D")).c_str());
+    }
+
+    void SetCameraTranslateRightChannelId(AZStd::string_view cameraTranslateRightId)
+    {
+        SetRegistry(CameraTranslateRightIdSetting, cameraTranslateRightId);
+    }
+
+    AzFramework::InputChannelId CameraTranslateUpChannelId()
+    {
+        return AzFramework::InputChannelId(GetRegistry(CameraTranslateUpIdSetting, AZStd::string("keyboard_key_alphanumeric_E")).c_str());
+    }
+
+    void SetCameraTranslateUpChannelId(AZStd::string_view cameraTranslateUpId)
+    {
+        SetRegistry(CameraTranslateUpIdSetting, cameraTranslateUpId);
+    }
+
+    AzFramework::InputChannelId CameraTranslateDownChannelId()
+    {
+        return AzFramework::InputChannelId(GetRegistry(CameraTranslateDownIdSetting, AZStd::string("keyboard_key_alphanumeric_Q")).c_str());
+    }
+
+    void SetCameraTranslateDownChannelId(AZStd::string_view cameraTranslateDownId)
+    {
+        SetRegistry(CameraTranslateDownIdSetting, cameraTranslateDownId);
+    }
+
+    AzFramework::InputChannelId CameraTranslateBoostChannelId()
+    {
+        return AzFramework::InputChannelId(
+            GetRegistry(CameraTranslateBoostIdSetting, AZStd::string("keyboard_key_modifier_shift_l")).c_str());
+    }
+
+    void SetCameraTranslateBoostChannelId(AZStd::string_view cameraTranslateBoostId)
+    {
+        SetRegistry(CameraTranslateDownIdSetting, cameraTranslateBoostId);
+    }
+
+    AzFramework::InputChannelId CameraOrbitChannelId()
+    {
+        return AzFramework::InputChannelId(GetRegistry(CameraOrbitIdSetting, AZStd::string("keyboard_key_modifier_alt_l")).c_str());
+    }
+
+    void SetCameraOrbitChannelChannelId(AZStd::string_view cameraOrbitId)
+    {
+        SetRegistry(CameraOrbitIdSetting, cameraOrbitId);
+    }
+
+    AzFramework::InputChannelId CameraFreeLookChannelId()
+    {
+        return AzFramework::InputChannelId(GetRegistry(CameraFreeLookIdSetting, AZStd::string("mouse_button_right")).c_str());
+    }
+
+    void SetCameraFreeLookChannelId(AZStd::string_view cameraFreeLookId)
+    {
+        SetRegistry(CameraFreeLookIdSetting, cameraFreeLookId);
+    }
+
+    AzFramework::InputChannelId CameraFreePanChannelId()
+    {
+        return AzFramework::InputChannelId(GetRegistry(CameraFreePanIdSetting, AZStd::string("mouse_button_middle")).c_str());
+    }
+
+    void SetCameraFreePanChannelId(AZStd::string_view cameraFreePanId)
+    {
+        SetRegistry(CameraFreePanIdSetting, cameraFreePanId);
+    }
+
+    AzFramework::InputChannelId CameraOrbitLookChannelId()
+    {
+        return AzFramework::InputChannelId(GetRegistry(CameraOrbitLookIdSetting, AZStd::string("mouse_button_left")).c_str());
+    }
+
+    void SetCameraOrbitLookChannelId(AZStd::string_view cameraOrbitLookId)
+    {
+        SetRegistry(CameraOrbitLookIdSetting, cameraOrbitLookId);
+    }
+
+    AzFramework::InputChannelId CameraOrbitDollyChannelId()
+    {
+        return AzFramework::InputChannelId(GetRegistry(CameraOrbitDollyIdSetting, AZStd::string("mouse_button_right")).c_str());
+    }
+
+    void SetCameraOrbitDollyChannelId(AZStd::string_view cameraOrbitDollyId)
+    {
+        SetRegistry(CameraOrbitDollyIdSetting, cameraOrbitDollyId);
+    }
+
+    AzFramework::InputChannelId CameraOrbitPanChannelId()
+    {
+        return AzFramework::InputChannelId(GetRegistry(CameraOrbitPanIdSetting, AZStd::string("mouse_button_middle")).c_str());
+    }
+
+    void SetCameraOrbitPanChannelId(AZStd::string_view cameraOrbitPanId)
+    {
+        SetRegistry(CameraOrbitPanIdSetting, cameraOrbitPanId);
     }
 } // namespace SandboxEditor
