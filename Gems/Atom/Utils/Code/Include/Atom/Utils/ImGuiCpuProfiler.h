@@ -30,6 +30,19 @@ namespace AZ
             AZStd::sys_time_t m_endTick = 0;
         };
 
+        // Stores data about a region that is agreggated from all collected frames
+        // Data collection can be toggled on and off through m_record. 
+        struct RegionStatistics
+        {
+            float CalcAverageTimeMs() const;
+            void RecordRegion(const AZ::RHI::CachedTimeRegion& region);
+
+            bool m_draw;
+            bool m_record;
+            u64 m_invocations;
+            AZStd::sys_time_t m_totalTicks;
+        };
+
         //! Visual profiler for Cpu statistics.
         //! It uses ImGui as the library for displaying the Attachments and Heaps.
         //! It shows all heaps that are being used by the RHI and how the
@@ -89,7 +102,7 @@ namespace AZ
             void DrawThreadLabel(u64 baseRow, AZStd::thread_id threadId);
 
             // Draws all active function statistics windows
-            void DrawFunctionStatistics();
+            void DrawRegionStatistics();
 
             // Draw the vertical lines separating frames in the timeline
             void DrawFrameBoundaries();
@@ -128,16 +141,17 @@ namespace AZ
             AZStd::map<AZStd::thread_id, AZStd::vector<TimeRegion>> m_savedData;
 
             // Region color cache
-            AZStd::map<const GroupRegionName*, ImU32> m_regionColorMap;
+            AZStd::map<const GroupRegionName*, ImVec4> m_regionColorMap;
 
             static constexpr float RowHeight = 50.0;
 
             // Tracks the frame boundaries
             AZStd::vector<AZStd::sys_time_t> m_frameEndTicks = { INT64_MIN };
 
-            // We might have multiple function statistics windows opened at the same time, so we need to maintain
-            // booleans for each open window so that ImGui can flip the bit when the window's X is pressed.
-            AZStd::map<const GroupRegionName*, bool> m_showFunctionStatisticsMap;
+            // Main data structure for storing function statistics to be shown in the popup windows.
+            // For now we default allocate for all regions on the first render frame and then use RegionStatistics.m_draw to determine
+            // if we should draw the window or not. FIXME this should be changed once RegionStatistics gets heavier. 
+            AZStd::map<const GroupRegionName*, RegionStatistics> m_regionStatisticsMap;
         };
     } // namespace Render
 } // namespace AZ

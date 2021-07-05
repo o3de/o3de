@@ -11,12 +11,13 @@
 #include <Atom/RPI.Public/RPISystemInterface.h>
 
 #include <AzCore/IO/Path/Path_fwd.h>
-#include <AzCore/IO/SystemFile.h> // For AZ_MAX_PATH_LEN
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/stack.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/std/time.h>
+
+#include "../../../Gems/ImGui/External/ImGui/v1.82/imgui/imgui.h"
 
 namespace AZ
 {
@@ -221,8 +222,8 @@ namespace AZ
                 AZStd::to_string(timeString, timeNow);
                 u64 currentTick = AZ::RPI::RPISystemInterface::Get()->GetCurrentTick();
                 AZStd::string frameDataFilePath = AZStd::string::format("@user@/CpuProfiler/%s_%llu.json", timeString.c_str(), currentTick);
-                char resolvedPath[AZ_MAX_PATH_LEN];
-                AZ::IO::FileIOBase::GetInstance()->ResolvePath(frameDataFilePath.c_str(), resolvedPath, AZ_MAX_PATH_LEN);
+                char resolvedPath[AZ::IO::MaxPathLength];
+                AZ::IO::FileIOBase::GetInstance()->ResolvePath(frameDataFilePath.c_str(), resolvedPath, AZ::IO::MaxPathLength);
                 m_lastCapturedFilePath = resolvedPath;
                 AZ::Render::ProfilingCaptureRequestBus::Broadcast(
                     &AZ::Render::ProfilingCaptureRequestBus::Events::CaptureCpuProfilingStatistics, frameDataFilePath);
@@ -364,7 +365,7 @@ namespace AZ
                         baseRow += maxDepth + 1; // Next draw loop should start one row down
                     }
 
-                    DrawFunctionStatistics();
+                    DrawRegionStatistics();
                     DrawFrameBoundaries();
 
                     // Draw an invisible button to capture inputs
@@ -413,6 +414,7 @@ namespace AZ
             }
             ImGui::End();
         }
+
         inline void ImGuiCpuProfiler::CollectFrameData()
         {
             const RHI::CpuProfiler::TimeRegionMap& timeRegionMap = RHI::CpuProfiler::Get()->GetTimeRegionMap();
@@ -436,6 +438,12 @@ namespace AZ
                     for (const TimeRegion& region : regionVec)
                     {
                         newData.push_back(region); // Copies
+
+                        // Update running statistics if we want to record this region's data
+                        if (m_regionStatisticsMap[region.m_groupRegionName].m_record)
+                        {
+                            m_regionStatisticsMap[region.m_groupRegionName].RecordRegion(region);
+                        }
                     }
                 }
 
@@ -538,7 +546,7 @@ namespace AZ
                 if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                 {
                     const GroupRegionName* key = block.m_groupRegionName;
-                    m_showFunctionStatisticsMap[key] = true;
+                    m_regionStatisticsMap[key].m_draw = true;
                 }
 
                 // Hovering outline
@@ -559,15 +567,15 @@ namespace AZ
             const GroupRegionName* key = block.m_groupRegionName;
             if (m_regionColorMap.contains(key)) // Cache hit
             {
-                return m_regionColorMap[key];
+                return ImGui::GetColorU32(m_regionColorMap[key]);
             }
 
             // Cache miss, generate a new random color
             std::mt19937 mt(m_rd());
             std::uniform_real_distribution<float> dis(.1, .9);
-            const ImU32 randomColor = ImGui::GetColorU32({ dis(mt), dis(mt), dis(mt), .8 });
+            const ImVec4 randomColor = { dis(mt), dis(mt), dis(mt), .8 };
             m_regionColorMap.emplace(key, randomColor);
-            return randomColor;
+            return ImGui::GetColorU32(randomColor);
         }
 
         inline void ImGuiCpuProfiler::DrawThreadSeparator(u64 baseRow, u64 maxDepth)
@@ -591,14 +599,26 @@ namespace AZ
             ImGui::GetWindowDrawList()->AddText({ wx + 10, wy + baseRow * RowHeight + 5 }, IM_COL32_WHITE, threadIdText.c_str());
         }
 
-        inline void ImGuiCpuProfiler::DrawFunctionStatistics()
+        inline void ImGuiCpuProfiler::DrawRegionStatistics()
         {
-            for (auto& [groupRegionName, shouldDraw] : m_showFunctionStatisticsMap)
+            for (auto& [groupRegionName, stat] : m_regionStatisticsMap)
             {
-                if (shouldDraw)
+                if (stat.m_draw)
                 {
-                    ImGui::Begin(groupRegionName->m_regionName, &shouldDraw, 0);
-                    ImGui::Text("Function Statistics"); // Placeholder
+                    ImGui::SetNextWindowSize({300, 340}, ImGuiCond_FirstUseEver);
+                    ImGui::Begin(groupRegionName->m_regionName, &stat.m_draw, 0);
+
+                    if (ImGui::Button(stat.m_record ? "Pause" : "Resume"))
+                    {
+                        stat.m_record = !stat.m_record;
+                    }
+
+                    ImGui::Text("Invocations: %ld", stat.m_invocations);
+                    ImGui::Text("Average time: %.3f ms", stat.CalcAverageTimeMs());
+
+                    ImGui::Separator();
+
+                    ImGui::ColorPicker4("Region color", &m_regionColorMap[groupRegionName].x); 
                     ImGui::End();
                 }
             }
@@ -631,8 +651,8 @@ namespace AZ
         inline float ImGuiCpuProfiler::ConvertTickToPixelSpace(AZStd::sys_time_t tick) const
         {
             const float wx = ImGui::GetWindowPos().x;
-            const AZStd::sys_time_t tickSpaceShifted = tick - m_viewportStartTick;
-            const float tickSpaceNormalized = (tickSpaceShifted + wx) / GetViewportTickWidth();
+            const float tickSpaceShifted = aznumeric_cast<float>(tick - m_viewportStartTick); // This will be close to zero, so FP inaccuracy should not be too bad
+            const float tickSpaceNormalized = tickSpaceShifted / GetViewportTickWidth();
             const float pixelSpace = tickSpaceNormalized * ImGui::GetWindowWidth() + wx;
             return pixelSpace;
         }
@@ -650,6 +670,20 @@ namespace AZ
         inline int ImGuiCpuProfiler::GetTickOrder()
         {
             return TICK_DEFAULT;
+        }
+
+        // ----- RegionStatistics implementation ----
+        
+        inline float RegionStatistics::CalcAverageTimeMs() const
+        {
+            const double averageTicks = aznumeric_cast<double>(m_totalTicks) / m_invocations;
+            return CpuProfilerImGuiHelper::TicksToMs(aznumeric_cast<AZStd::sys_time_t>(averageTicks));
+        }
+
+        inline void RegionStatistics::RecordRegion(const AZ::RHI::CachedTimeRegion& region)
+        {
+            m_invocations++;
+            m_totalTicks += region.m_endTick - region.m_startTick;
         }
     } // namespace Render
 } // namespace AZ
