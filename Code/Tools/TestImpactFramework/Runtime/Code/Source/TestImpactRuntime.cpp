@@ -305,17 +305,27 @@ namespace TestImpact
 
     void Runtime::UpdateAndSerializeDynamicDependencyMap(const AZStd::vector<TestEngineInstrumentedRun>& jobs)
     {
-        const auto sourceCoverageTestsList = CreateSourceCoveringTestFromTestCoverages(jobs);
-        if (!sourceCoverageTestsList.GetNumSources())
+        try
         {
-            return;
-        }
+            const auto sourceCoverageTestsList = CreateSourceCoveringTestFromTestCoverages(jobs);
+            if (!sourceCoverageTestsList.GetNumSources())
+            {
+                return;
+            }
 
-        m_dynamicDependencyMap->ReplaceSourceCoverage(sourceCoverageTestsList);
-        const auto sparTIA = m_dynamicDependencyMap->ExportSourceCoverage();
-        const auto sparTIAData = SerializeSourceCoveringTestsList(sparTIA);
-        WriteFileContents<RuntimeException>(sparTIAData, m_sparTIAFile);
-        m_hasImpactAnalysisData = true;
+            m_dynamicDependencyMap->ReplaceSourceCoverage(sourceCoverageTestsList);
+            const auto sparTIA = m_dynamicDependencyMap->ExportSourceCoverage();
+            const auto sparTIAData = SerializeSourceCoveringTestsList(sparTIA);
+            WriteFileContents<RuntimeException>(sparTIAData, m_sparTIAFile);
+            m_hasImpactAnalysisData = true;
+        }
+        catch(const RuntimeException& e)
+        {
+            if (m_integrationFailurePolicy == Policy::IntegrityFailure::Abort)
+            {
+                throw e;
+            }
+        }
     }
 
     TestSequenceResult Runtime::RegularTestSequence(
@@ -445,7 +455,7 @@ namespace TestImpact
         }
     }
 
-    AZStd::pair<TestSequenceResult, TestSequenceResult> Runtime::SafeImpactAnalysisTestSequence(
+    AZStd::pair<TestSequenceResult, TestSequenceResult> Runtime::SafeImpactAnalysisTestSequence(// dynamicDependencyMapPolicy????????????????????????????????????????????????????????????????????????????????????????????
         const ChangeList& changeList,
         Policy::TestPrioritization testPrioritizationPolicy,
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
