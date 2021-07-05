@@ -347,7 +347,7 @@ namespace TestImpact
             }
             else
             {
-                AZ_Error("TestImpact", false, e.what());
+                AZ_Error(LogCallSite, false, e.what());
             }
         }
     }
