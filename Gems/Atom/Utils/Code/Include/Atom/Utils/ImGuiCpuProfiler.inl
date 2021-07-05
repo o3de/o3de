@@ -6,10 +6,17 @@
  */
 
 #include <Atom/Feature/Utils/ProfilingCaptureBus.h>
+#include <Atom/RHI.Reflect/CpuTimingStatistics.h>
+#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
+
 #include <AzCore/IO/Path/Path_fwd.h>
-#include <AzCore/std/time.h>
+#include <AzCore/IO/SystemFile.h> // For AZ_MAX_PATH_LEN
+#include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/set.h>
+#include <AzCore/std/containers/stack.h>
+#include <AzCore/std/sort.h>
+#include <AzCore/std/time.h>
 
 namespace AZ
 {
@@ -38,14 +45,14 @@ namespace AZ
                 AZ_Assert(ticksPerSecond >= 1000, "Error in converting ticks to ms, expected ticksPerSecond >= 1000");
                 return static_cast<float>((ticks * 1000) / (ticksPerSecond / 1000)) / 1000.0f;
             }
-        }
+        } // namespace CpuProfilerImGuiHelper
 
         inline void ImGuiCpuProfiler::Draw(bool& keepDrawing, const AZ::RHI::CpuTimingStatistics& currentCpuTimingStatistics)
         {
             // Cache the value to detect if it was changed by ImGui(user pressed 'x')
             const bool cachedShowCpuProfiler = keepDrawing;
 
-            const ImVec2 windowSize(640.0f, 480.0f);
+            const ImVec2 windowSize(900.0f, 600.0f);
             ImGui::SetNextWindowSize(windowSize, ImGuiCond_Once);
             bool captureToFile = false;
             if (ImGui::Begin("Cpu Profiler", &keepDrawing, ImGuiWindowFlags_None))
@@ -114,9 +121,9 @@ namespace AZ
                     }
                 };
 
-                const auto ShowRegionRow = [ticksPerSecond, &DrawRegionHoverMarker, &ShowTimeInMs](const char* regionLabel,
-                    AZStd::vector<ThreadRegionEntry> regions,
-                    AZStd::sys_time_t duration)
+                const auto ShowRegionRow =
+                    [ticksPerSecond, &DrawRegionHoverMarker,
+                     &ShowTimeInMs](const char* regionLabel, AZStd::vector<ThreadRegionEntry> regions, AZStd::sys_time_t duration)
                 {
                     // Draw the region label
                     ImGui::Text(regionLabel);
@@ -142,13 +149,14 @@ namespace AZ
                     ImGui::NextColumn();
 
                     // Draw the time labels (max and then total)
-                    const AZStd::string timeLabel =
-                        AZStd::string::format("%.2f ms max, %.2f ms total",
-                        CpuProfilerImGuiHelper::TicksToMs(duration),
+                    const AZStd::string timeLabel = AZStd::string::format(
+                        "%.2f ms max, %.2f ms total", CpuProfilerImGuiHelper::TicksToMs(duration),
                         CpuProfilerImGuiHelper::TicksToMs(totalTime));
                     ImGui::Text(timeLabel.c_str());
                     ImGui::NextColumn();
                 };
+
+                ImGui::Checkbox("Enable Visualizer", &m_showVisualizer);
 
                 // Set column settings.
                 ImGui::Columns(2, "view", false);
@@ -213,17 +221,22 @@ namespace AZ
                 AZStd::to_string(timeString, timeNow);
                 u64 currentTick = AZ::RPI::RPISystemInterface::Get()->GetCurrentTick();
                 AZStd::string frameDataFilePath = AZStd::string::format("@user@/CpuProfiler/%s_%llu.json", timeString.c_str(), currentTick);
-                char resolvedPath[AZ::IO::MaxPathLength];
-                AZ::IO::FileIOBase::GetInstance()->ResolvePath(frameDataFilePath.c_str(), resolvedPath, AZ::IO::MaxPathLength);
+                char resolvedPath[AZ_MAX_PATH_LEN];
+                AZ::IO::FileIOBase::GetInstance()->ResolvePath(frameDataFilePath.c_str(), resolvedPath, AZ_MAX_PATH_LEN);
                 m_lastCapturedFilePath = resolvedPath;
-                AZ::Render::ProfilingCaptureRequestBus::Broadcast(&AZ::Render::ProfilingCaptureRequestBus::Events::CaptureCpuProfilingStatistics,
-                    frameDataFilePath);
+                AZ::Render::ProfilingCaptureRequestBus::Broadcast(
+                    &AZ::Render::ProfilingCaptureRequestBus::Events::CaptureCpuProfilingStatistics, frameDataFilePath);
             }
 
             // Toggle if the bool isn't the same as the cached value
             if (cachedShowCpuProfiler != keepDrawing)
             {
                 AZ::RHI::CpuProfiler::Get()->SetProfilerEnabled(keepDrawing);
+            }
+
+            if (m_showVisualizer)
+            {
+                DrawVisualizer(m_showVisualizer, currentCpuTimingStatistics);
             }
         }
 
@@ -251,5 +264,392 @@ namespace AZ
                 }
             }
         }
-    }
-}
+
+        // -- CPU Visualizer --
+        inline void ImGuiCpuProfiler::DrawVisualizer(bool& keepDrawing, const AZ::RHI::CpuTimingStatistics& currentCpuTimingStatistics)
+        {
+            ImGui::SetNextWindowSize({ 900, 600 }, ImGuiCond_Once);
+            if (ImGui::Begin("CPU Visualizer", &keepDrawing, ImGuiWindowFlags_None))
+            {
+                // Get the instrumentation data for the last frame if active
+                if (!m_paused && m_groupRegionMap.size() != 0)
+                {
+                    CollectFrameData(); // Also updates viewport bounds
+
+                    CullFrameData(currentCpuTimingStatistics); // Trim data if necessary
+
+                    if (!TickBus::Handler::BusIsConnected())
+                    {
+                        TickBus::Handler::BusConnect();
+                    }
+                }
+
+                // Options & Statistics
+                if (ImGui::BeginChild("Options and Statistics", { 0, 0 }, true))
+                {
+                    ImGui::Columns(3, "Options", true);
+                    ImGui::Text("Frames To Collect:");
+                    ImGui::SliderInt("", &m_framesToCollect, 10, 100, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_Logarithmic);
+
+                    ImGui::NextColumn();
+
+                    ImGui::Text("Viewport width: %.3f ms", CpuProfilerImGuiHelper::TicksToMs(GetViewportTickWidth()));
+                    ImGui::Text("Recording %ld threads", RHI::CpuProfiler::Get()->GetTimeRegionMap().size());
+                    ImGui::Text("%ld profiling events saved", m_savedRegionCount);
+                    ImGui::Text("%ld => %ld", m_viewportStartTick, m_viewportEndTick);
+
+                    ImGui::NextColumn();
+
+                    ImGui::TextWrapped(
+                        "Hold the right mouse button to move around. Zoom by scrolling the mouse wheel while holding <ctrl>.");
+                }
+
+                ImGui::Columns(1, "TimelineColumn", true);
+
+                // Timeline
+                if (ImGui::BeginChild(
+                        "Timeline", { 0, 0 }, true, ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
+                {
+                    // Find the next frame boundary after the viewport's right bound and draw until that tick
+                    auto nextFrameBoundaryItr = AZStd::lower_bound(m_frameEndTicks.begin(), m_frameEndTicks.end(), m_viewportEndTick);
+                    if (nextFrameBoundaryItr == m_frameEndTicks.end() &&
+                        m_frameEndTicks.size() != 0) // lower_bound returns end() if not found
+                    {
+                        nextFrameBoundaryItr--;
+                    }
+                    const AZStd::sys_time_t nextFrameBoundary = *nextFrameBoundaryItr;
+
+                    // Find the start tick of the leftmost frame, which may be offscreen.
+                    auto startTickItr = AZStd::lower_bound(m_frameEndTicks.begin(), m_frameEndTicks.end(), m_viewportStartTick);
+                    if (startTickItr != m_frameEndTicks.begin())
+                    {
+                        startTickItr--;
+                    }
+
+                    // Main draw loop
+                    u64 baseRow = 0;
+                    for (auto& [currentThreadId, singleThreadData] : m_savedData)
+                    {
+                        // Find the first TimeRegion that we should draw
+                        auto regionItr = AZStd::lower_bound(
+                            singleThreadData.begin(), singleThreadData.end(), *startTickItr,
+                            [](const TimeRegion& wrapper, AZStd::sys_time_t target)
+                            {
+                                return wrapper.m_startTick < target;
+                            });
+
+                        // Draw all of the blocks for a given thread/row
+                        u64 maxDepth = 0;
+                        while (regionItr != singleThreadData.end())
+                        {
+                            const TimeRegion& region = *regionItr;
+
+                            // Early out if we have drawn all the onscreen regions
+                            if (region.m_startTick > nextFrameBoundary)
+                            {
+                                break;
+                            }
+                            u64 targetRow = region.m_stackDepth + baseRow;
+                            maxDepth = AZStd::max(aznumeric_cast<u64>(region.m_stackDepth), maxDepth);
+
+                            DrawBlock(region, targetRow, currentThreadId);
+
+                            regionItr++;
+                        }
+
+                        // Draw UI details
+                        DrawThreadLabel(baseRow, currentThreadId);
+                        DrawThreadSeparator(baseRow, maxDepth);
+
+                        baseRow += maxDepth + 1; // Next draw loop should start one row down
+                    }
+
+                    DrawFunctionStatistics();
+                    DrawFrameBoundaries();
+
+                    // Draw an invisible button to capture inputs
+                    ImGui::InvisibleButton("Timeline Input", { ImGui::GetWindowContentRegionWidth(), baseRow * RowHeight });
+
+                    // Controls
+                    ImGuiIO& io = ImGui::GetIO();
+                    if (ImGui::IsWindowFocused() && ImGui::IsItemHovered())
+                    {
+                        io.WantCaptureMouse = true;
+                        if (ImGui::IsMouseDragging(ImGuiMouseButton_Right)) // Scrolling
+                        {
+                            auto [deltaX, deltaY] = io.MouseDelta;
+                            if (deltaX != 0 || deltaY != 0)
+                            {
+                                // We want to maintain uniformity in scrolling (a click and drag should leave the cursor at the same spot
+                                // relative to the objects on screen)
+                                const float pixelDeltaNormalized = deltaX / ImGui::GetWindowWidth();
+                                auto tickDelta = aznumeric_cast<AZStd::sys_time_t>(-1 * pixelDeltaNormalized * GetViewportTickWidth());
+                                m_viewportStartTick += tickDelta;
+                                m_viewportEndTick += tickDelta;
+
+                                ImGui::SetScrollY(ImGui::GetScrollY() + deltaY * -1);
+                            }
+                        }
+                        else if (io.MouseWheel != 0 && io.KeyCtrl) // Zooming
+                        {
+                            const float mouseVel = io.MouseWheel;
+
+                            const auto newStartTick =
+                                m_viewportStartTick + aznumeric_cast<AZStd::sys_time_t>(0.05 * io.MouseWheel * GetViewportTickWidth());
+
+                            const auto newEndTick =
+                                m_viewportEndTick - aznumeric_cast<AZStd::sys_time_t>(0.05 * io.MouseWheel * GetViewportTickWidth());
+
+                            // Avoid zooming too much, start tick should always be less than end tick
+                            if (newStartTick < newEndTick)
+                            {
+                                m_viewportStartTick = newStartTick;
+                                m_viewportEndTick = newEndTick;
+                            }
+                        }
+                    }
+                }
+                ImGui::EndChild();
+            }
+            ImGui::End();
+        }
+        inline void ImGuiCpuProfiler::CollectFrameData()
+        {
+            const RHI::CpuProfiler::TimeRegionMap& timeRegionMap = RHI::CpuProfiler::Get()->GetTimeRegionMap();
+
+            m_viewportStartTick = INT64_MAX;
+            m_viewportEndTick = INT64_MIN;
+
+            // Iterate through the entire TimeRegionMap and copy the data since it will get deleted on the next frame
+            for (const auto& [threadId, singleThreadRegionMap] : timeRegionMap)
+            {
+                // The profiler can sometime return threads without any profiling events when dropping threads, FIXME
+                if (singleThreadRegionMap.size() == 0)
+                {
+                    continue;
+                }
+
+                // Now focus on just the data for the current thread
+                AZStd::vector<TimeRegion> newData;
+                for (const auto& [regionName, regionVec] : singleThreadRegionMap)
+                {
+                    for (const TimeRegion& region : regionVec)
+                    {
+                        newData.push_back(region); // Copies
+                    }
+                }
+
+                // Sorting by start tick allows us to speed up some other processes (ex. finding the first block to draw)
+                // since we can binary search by start tick.
+                AZStd::sort(
+                    newData.begin(), newData.end(),
+                    [](const TimeRegion& lhs, const TimeRegion& rhs)
+                    {
+                        return lhs.m_startTick < rhs.m_startTick;
+                    });
+
+                // Use the latest frame's data as the new bounds of the viewport
+                m_viewportStartTick = AZStd::min(newData.front().m_startTick, m_viewportStartTick);
+                m_viewportEndTick = AZStd::max(newData.back().m_endTick, m_viewportEndTick);
+
+                m_savedRegionCount += newData.size();
+
+                // Move onto the end of the current thread's saved data, sorted order maintained
+                AZStd::vector<TimeRegion>& savedDataVec = m_savedData[threadId];
+                savedDataVec.insert(
+                    savedDataVec.end(), AZStd::make_move_iterator(newData.begin()), AZStd::make_move_iterator(newData.end()));
+            }
+        }
+
+        inline void ImGuiCpuProfiler::CullFrameData(const AZ::RHI::CpuTimingStatistics& currentCpuTimingStatistics)
+        {
+            const AZStd::sys_time_t frameToFrameTime = currentCpuTimingStatistics.m_frameToFrameTime;
+            const AZStd::sys_time_t deleteBeforeTick = AZStd::GetTimeNowTicks() - frameToFrameTime * m_framesToCollect;
+
+            // Remove old frame boundary data
+            auto firstBoundaryToKeepItr = AZStd::upper_bound(m_frameEndTicks.begin(), m_frameEndTicks.end(), deleteBeforeTick);
+            m_frameEndTicks.erase(m_frameEndTicks.begin(), firstBoundaryToKeepItr);
+
+            // Remove old region data for each thread
+            for (auto& [threadId, savedRegions] : m_savedData)
+            {
+                AZStd::size_t sizeBeforeRemove = savedRegions.size();
+
+                auto firstRegionToKeep = AZStd::lower_bound(
+                    savedRegions.begin(), savedRegions.end(), deleteBeforeTick,
+                    [](const TimeRegion& region, AZStd::sys_time_t target)
+                    {
+                        return region.m_startTick < target;
+                    });
+                savedRegions.erase(savedRegions.begin(), firstRegionToKeep);
+
+                m_savedRegionCount -= sizeBeforeRemove - savedRegions.size();
+            }
+        }
+
+        inline void ImGuiCpuProfiler::DrawBlock(const TimeRegion& block, u64 targetRow, AZStd::thread_id threadId)
+        {
+            float wy = ImGui::GetWindowPos().y - ImGui::GetScrollY();
+
+            ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+            const float startPixel = ConvertTickToPixelSpace(block.m_startTick);
+            const float endPixel = ConvertTickToPixelSpace(block.m_endTick);
+
+            const ImVec2 startPoint = { startPixel, wy + targetRow * RowHeight };
+            const ImVec2 endPoint = { endPixel, wy + targetRow * RowHeight + 40 };
+
+            const ImU32 blockColor = GetBlockColor(block);
+
+            drawList->AddRectFilled(startPoint, endPoint, blockColor, 0);
+
+            // Draw the region name if possible
+            // If the block's current width is too small, we skip drawing the label.
+            const float regionPixelWidth = endPixel - startPixel;
+            const float maxCharWidth = ImGui::CalcTextSize("M").x; // M is usually the largest character in most fonts (see CSS em)
+            if (regionPixelWidth > maxCharWidth) // We can draw at least one character
+            {
+                const AZStd::string label =
+                    AZStd::string::format("%s/ %s", block.m_groupRegionName->m_groupName, block.m_groupRegionName->m_regionName);
+                const float textWidth = ImGui::CalcTextSize(label.c_str()).x;
+
+                if (regionPixelWidth < textWidth) // Not enough space in the block to draw the whole name, draw clipped text.
+                {
+                    // clipRect appears to only clip when a character is fully outside of its bounds which can lead to overflow
+                    // for now subtract the width of a character
+                    const ImVec4 clipRect = { startPoint.x, startPoint.y, endPoint.x - maxCharWidth, endPoint.y };
+                    const float fontSize = ImGui::GetFont()->FontSize;
+
+                    ImGui::GetFont()->RenderText(drawList, fontSize, startPoint, IM_COL32_WHITE, clipRect, label.c_str(), 0);
+                }
+                else // We have enough space to draw the entire label, draw and center text.
+                {
+                    const float remainingWidth = regionPixelWidth - textWidth;
+                    const float offset = remainingWidth * .5;
+
+                    drawList->AddText({ startPoint.x + offset, startPoint.y }, IM_COL32_WHITE, label.c_str());
+                }
+            }
+
+            // Tooltip and block highlighting
+            if (ImGui::IsMouseHoveringRect(startPoint, endPoint) && ImGui::IsWindowHovered())
+            {
+                // Open function statistics map on click
+                if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                {
+                    const GroupRegionName* key = block.m_groupRegionName;
+                    m_showFunctionStatisticsMap[key] = true;
+                }
+
+                // Hovering outline
+                drawList->AddRect(startPoint, endPoint, ImGui::GetColorU32({ 1, 1, 1, 1 }), 0.0, 0, 1.5);
+
+                ImGui::BeginTooltip();
+                ImGui::Text("%s::%s", block.m_groupRegionName->m_groupName, block.m_groupRegionName->m_regionName);
+                ImGui::Text("Thread %lld", threadId);
+                ImGui::Text("Execution time: %.3f ms", CpuProfilerImGuiHelper::TicksToMs(block.m_endTick - block.m_startTick));
+                ImGui::Text("%ld => %ld", block.m_startTick, block.m_endTick);
+                ImGui::EndTooltip();
+            }
+        }
+
+        inline ImU32 ImGuiCpuProfiler::GetBlockColor(const TimeRegion& block)
+        {
+            // Use the GroupRegionName pointer a key into the cache, equal regions will have equal pointers
+            const GroupRegionName* key = block.m_groupRegionName;
+            if (m_regionColorMap.contains(key)) // Cache hit
+            {
+                return m_regionColorMap[key];
+            }
+
+            // Cache miss, generate a new random color
+            std::mt19937 mt(m_rd());
+            std::uniform_real_distribution<float> dis(.1, .9);
+            const ImU32 randomColor = ImGui::GetColorU32({ dis(mt), dis(mt), dis(mt), .8 });
+            m_regionColorMap.emplace(key, randomColor);
+            return randomColor;
+        }
+
+        inline void ImGuiCpuProfiler::DrawThreadSeparator(u64 baseRow, u64 maxDepth)
+        {
+            const ImU32 red = ImGui::GetColorU32({ 1, 0, 0, 1 });
+
+            auto [wx, wy] = ImGui::GetWindowPos();
+            wy -= ImGui::GetScrollY();
+            const float windowWidth = ImGui::GetWindowWidth();
+            const float boundaryY = wy + (baseRow + maxDepth + 1) * RowHeight - 5;
+
+            ImGui::GetWindowDrawList()->AddLine({ wx, boundaryY }, { wx + windowWidth, boundaryY }, red, 2.0f);
+        }
+
+        inline void ImGuiCpuProfiler::DrawThreadLabel(u64 baseRow, AZStd::thread_id threadId)
+        {
+            auto [wx, wy] = ImGui::GetWindowPos();
+            wy -= ImGui::GetScrollY();
+            const AZStd::string threadIdText = AZStd::string::format("Thread %zu", static_cast<size_t>(threadId.m_id));
+
+            ImGui::GetWindowDrawList()->AddText({ wx + 10, wy + baseRow * RowHeight + 5 }, IM_COL32_WHITE, threadIdText.c_str());
+        }
+
+        inline void ImGuiCpuProfiler::DrawFunctionStatistics()
+        {
+            for (auto& [groupRegionName, shouldDraw] : m_showFunctionStatisticsMap)
+            {
+                if (shouldDraw)
+                {
+                    ImGui::Begin(groupRegionName->m_regionName, &shouldDraw, 0);
+                    ImGui::Text("Function Statistics"); // Placeholder
+                    ImGui::End();
+                }
+            }
+        }
+
+        inline void ImGuiCpuProfiler::DrawFrameBoundaries()
+        {
+            ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+            const float wy = ImGui::GetWindowPos().y;
+            const float windowHeight = ImGui::GetWindowHeight();
+            const ImU32 red = ImGui::GetColorU32({ 1, 0, 0, 1 });
+
+            // End ticks are sorted in increasing order, find the first frame bound to draw
+            auto endTickItr = AZStd::lower_bound(m_frameEndTicks.begin(), m_frameEndTicks.end(), m_viewportStartTick);
+
+            while (endTickItr != m_frameEndTicks.end() && *endTickItr < m_viewportEndTick)
+            {
+                const float horizontalPixel = ConvertTickToPixelSpace(*endTickItr);
+                drawList->AddLine({ horizontalPixel, wy }, { horizontalPixel, wy + windowHeight }, red);
+                endTickItr++;
+            }
+        }
+
+        inline AZStd::sys_time_t ImGuiCpuProfiler::GetViewportTickWidth() const
+        {
+            return m_viewportEndTick - m_viewportStartTick;
+        }
+
+        inline float ImGuiCpuProfiler::ConvertTickToPixelSpace(AZStd::sys_time_t tick) const
+        {
+            const float wx = ImGui::GetWindowPos().x;
+            const AZStd::sys_time_t tickSpaceShifted = tick - m_viewportStartTick;
+            const float tickSpaceNormalized = (tickSpaceShifted + wx) / GetViewportTickWidth();
+            const float pixelSpace = tickSpaceNormalized * ImGui::GetWindowWidth() + wx;
+            return pixelSpace;
+        }
+
+        // Tick bus overrides
+        inline void ImGuiCpuProfiler::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] ScriptTimePoint time)
+        {
+            m_frameEndTicks.push_back(AZStd::GetTimeNowTicks());
+
+            if (!m_showVisualizer || m_paused)
+            {
+                TickBus::Handler::BusDisconnect();
+            }
+        }
+        inline int ImGuiCpuProfiler::GetTickOrder()
+        {
+            return TICK_DEFAULT;
+        }
+    } // namespace Render
+} // namespace AZ

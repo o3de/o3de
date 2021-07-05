@@ -7,8 +7,12 @@
 
 #pragma once
 
-#include <Atom/RHI/CpuProfiler.h>
+#include <AzCore/Component/TickBus.h>
+
 #include <Atom/RHI.Reflect/CpuTimingStatistics.h>
+#include <Atom/RHI/CpuProfiler.h>
+
+#include <random>
 
 namespace AZ
 {
@@ -19,7 +23,7 @@ namespace AZ
 
     namespace Render
     {
-        struct ThreadRegionEntry 
+        struct ThreadRegionEntry
         {
             AZStd::thread_id m_threadId;
             AZStd::sys_time_t m_startTick = 0;
@@ -30,12 +34,15 @@ namespace AZ
         //! It uses ImGui as the library for displaying the Attachments and Heaps.
         //! It shows all heaps that are being used by the RHI and how the
         //! resources are allocated in each heap.
-        class ImGuiCpuProfiler
+        class ImGuiCpuProfiler : TickBus::Handler
         {
             // Region Name -> Array of ThreadRegion entries
             using RegionEntryMap = AZStd::map<AZStd::string, AZStd::vector<ThreadRegionEntry>>;
             // Group Name -> RegionEntryMap
             using GroupRegionMap = AZStd::map<AZStd::string, RegionEntryMap>;
+
+            using TimeRegion = AZ::RHI::CachedTimeRegion;
+            using GroupRegionName = AZ::RHI::CachedTimeRegion::GroupRegionName;
 
         public:
             ImGuiCpuProfiler() = default;
@@ -43,6 +50,8 @@ namespace AZ
 
             //! Draws the provided Cpu statistics.
             void Draw(bool& keepDrawing, const AZ::RHI::CpuTimingStatistics& cpuTimingStatistics);
+
+            void DrawVisualizer(bool& keepDrawing, const AZ::RHI::CpuTimingStatistics& currentCpuTimingStatistics);
 
         private:
             // Update the GroupRegionMap with the latest cached time regions
@@ -62,8 +71,75 @@ namespace AZ
             AZ::RHI::CpuTimingStatistics m_cpuTimingStatisticsWhenPause;
 
             AZStd::string m_lastCapturedFilePath;
+
+            // Visualizer methods
+
+            // Get the profiling data from the last frame, only called when the profiler is not paused.
+            void CollectFrameData();
+
+            // Cull old data from internal storage, only called when profiler is not paused.
+            void CullFrameData(const AZ::RHI::CpuTimingStatistics& currentCpuTimingStatistics);
+
+            // Draws a single block onto the timeline
+            void DrawBlock(const TimeRegion& block, u64 targetRow, AZStd::thread_id threadId);
+
+            // Draw horizontal lines between threads in the timeline
+            void DrawThreadSeparator(u64 threadBoundary, u64 maxDepth);
+
+            void DrawThreadLabel(u64 baseRow, AZStd::thread_id threadId);
+
+            // Draws all active function statistics windows
+            void DrawFunctionStatistics();
+
+            // Draw the vertical lines separating frames in the timeline
+            void DrawFrameBoundaries();
+
+            // Converts raw ticks to a pixel value suitable to give to ImDrawList, handles window scrolling
+            float ConvertTickToPixelSpace(AZStd::sys_time_t tick) const;
+
+            AZStd::sys_time_t GetViewportTickWidth() const;
+
+            // Gets the color for a block using the GroupRegionName as a key into the cache
+            // Generates a random ImU32 if the block does not yet have a color
+            ImU32 GetBlockColor(const TimeRegion& block);
+
+            // Tick bus overrides
+            virtual void OnTick(float deltaTime, ScriptTimePoint time);
+            virtual int GetTickOrder();
+
+            // Visualizer state
+
+            bool m_showVisualizer = false;
+
+            int m_framesToCollect = 50;
+
+            // Tally of the number of saved profiling events so far
+            u64 m_savedRegionCount = 0;
+
+            // Viewport tick bounds, these are used to convert tick space -> screen space and cull so we only draw onscreen objects
+            AZStd::sys_time_t m_viewportStartTick;
+            AZStd::sys_time_t m_viewportEndTick;
+
+            // Used for random color generation
+            // Member variable to avoid repeated construction - could be expensive
+            std::random_device m_rd;
+
+            // Fundamental data structure for storing TimeRegions, each individual vector is sorted by start tick
+            AZStd::map<AZStd::thread_id, AZStd::vector<TimeRegion>> m_savedData;
+
+            // Region color cache
+            AZStd::map<const GroupRegionName*, ImU32> m_regionColorMap;
+
+            static constexpr float RowHeight = 50.0;
+
+            // Tracks the frame boundaries
+            AZStd::vector<AZStd::sys_time_t> m_frameEndTicks = { INT64_MIN };
+
+            // We might have multiple function statistics windows opened at the same time, so we need to maintain
+            // booleans for each open window so that ImGui can flip the bit when the window's X is pressed.
+            AZStd::map<const GroupRegionName*, bool> m_showFunctionStatisticsMap;
         };
     } // namespace Render
-}
+} // namespace AZ
 
 #include "ImGuiCpuProfiler.inl"
