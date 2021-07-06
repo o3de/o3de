@@ -3097,17 +3097,10 @@ namespace AzToolsFramework
             // update orientations relative to initial
             for (AZ::EntityId entityId : manipulatorEntityIds.m_entityIds)
             {
-                ScopedUndoBatch::MarkEntityDirty(entityId);
-
-                const auto transformIt = transformsBefore.find(entityId);
-                if (transformIt != transformsBefore.end())
+                if (const auto transformIt = transformsBefore.find(entityId); transformIt != transformsBefore.end())
                 {
-                    AZ::Transform newWorldFromLocal = transformIt->second;
-                    const float scale = newWorldFromLocal.GetUniformScale();
-                    newWorldFromLocal.SetRotation(orientation);
-                    newWorldFromLocal *= AZ::Transform::CreateUniformScale(scale);
-
-                    SetEntityWorldTransform(entityId, newWorldFromLocal);
+                    ScopedUndoBatch::MarkEntityDirty(entityId);
+                    SetEntityLocalRotation(entityId, orientation);
                 }
             }
 
@@ -3733,6 +3726,11 @@ namespace AzToolsFramework
         ETCS::SetEntityLocalRotation(entityId, localRotation, m_transformChangedInternally);
     }
 
+    void EditorTransformComponentSelection::SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Quaternion& localRotation)
+    {
+        ETCS::SetEntityLocalRotation(entityId, localRotation, m_transformChangedInternally);
+    }
+
     void EditorTransformComponentSelection::OnStartPlayInEditor()
     {
         SetAllViewportUiVisible(false);
@@ -3797,6 +3795,12 @@ namespace AzToolsFramework
         {
             ScopeSwitch sw(internal);
             AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetLocalRotation, localRotation);
+        }
+
+        void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Quaternion& localRotation, bool& internal)
+        {
+            ScopeSwitch sw(internal);
+            AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetLocalRotationQuaternion, localRotation);
         }
     } // namespace ETCS
 
