@@ -356,8 +356,9 @@ float DirectionalLightShadow::GetVisibilityFromLightEsm()
         {
             const float distanceWithinCameraView = depthDiff / (1. - distanceMin);
             const float3 coord = float3(shadowCoord.xy, indexOfCascade);
-            const float expDepthInShadowmap = expShadowmap.Sample(PassSrg::LinearSampler, coord).r;
-            const float ratio = exp(-EsmExponentialShift * distanceWithinCameraView) * expDepthInShadowmap;
+            const float occluder = expShadowmap.Sample(PassSrg::LinearSampler, coord).r;                        
+            const float exponent = -EsmExponentialShift * (distanceWithinCameraView - occluder);
+            const float ratio = exp(exponent);
 
             m_debugInfo.m_cascadeIndex = indexOfCascade;
             return saturate(ratio);
@@ -385,8 +386,9 @@ float DirectionalLightShadow::GetVisibilityFromLightEsmPcf()
         {
             const float distanceWithinCameraView = depthDiff / (1. - distanceMin);
             const float3 coord = float3(shadowCoord.xy, indexOfCascade);
-            const float expDepthInShadowmap = expShadowmap.Sample(PassSrg::LinearSampler, coord).r;
-            float ratio = exp(-EsmExponentialShift * distanceWithinCameraView) * expDepthInShadowmap;
+            const float occluder = expShadowmap.Sample(PassSrg::LinearSampler, coord).r;
+            const float exponent = -EsmExponentialShift * (distanceWithinCameraView - occluder);
+            float ratio = exp(exponent);
 
             static const float pcfFallbackThreshold = 1.04;
             if (ratio > pcfFallbackThreshold)

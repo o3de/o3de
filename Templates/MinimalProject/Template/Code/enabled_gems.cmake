@@ -7,7 +7,7 @@
 
 set(ENABLED_GEMS
     ${Name}
-    Atom_AtomBridge
+    Atom
     CameraFramework
     ImGui
 )

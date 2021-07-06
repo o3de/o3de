@@ -108,8 +108,6 @@ set(FILES
     Editor/PivotPresets.h
     Editor/PivotPresetsWidget.cpp
     Editor/PivotPresetsWidget.h
-    Editor/PrefabHelpers.cpp
-    Editor/PrefabHelpers.h
     Editor/PresetButton.cpp
     Editor/PresetButton.h
     Editor/PreviewActionLog.cpp

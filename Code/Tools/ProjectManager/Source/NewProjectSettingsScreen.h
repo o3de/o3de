@@ -19,6 +19,7 @@ QT_FORWARD_DECLARE_CLASS(QFrame)
 namespace O3DE::ProjectManager
 {
     QT_FORWARD_DECLARE_CLASS(TagContainerWidget)
+
     class NewProjectSettingsScreen
         : public ProjectSettingsScreen
     {

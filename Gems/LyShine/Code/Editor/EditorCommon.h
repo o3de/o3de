@@ -112,7 +112,6 @@ enum class FusibleCommand
 #include "FileHelpers.h"
 #include "ComponentHelpers.h"
 #include "HierarchyHelpers.h"
-#include "PrefabHelpers.h"
 #include "UiSliceManager.h"
 #include "SelectionHelpers.h"
 #include "ViewportInteraction.h"
@@ -172,8 +171,6 @@ bool ClipboardContainsOurDataType();
 
 #define UICANVASEDITOR_COORDINATE_SYSTEM_CYCLE_SHORTCUT_KEY_SEQUENCE    QKeySequence(Qt::CTRL + Qt::Key_W)
 #define UICANVASEDITOR_SNAP_TO_GRID_TOGGLE_SHORTCUT_KEY_SEQUENCE        QKeySequence(Qt::Key_G)
-
-#define UICANVASEDITOR_PREFAB_EXTENSION "uiprefab"
 
 #define UICANVASEDITOR_CANVAS_DIRECTORY "UI/Canvases"
 #define UICANVASEDITOR_CANVAS_EXTENSION "uicanvas"
