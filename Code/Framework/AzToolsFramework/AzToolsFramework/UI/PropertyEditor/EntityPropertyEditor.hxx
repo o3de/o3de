@@ -210,7 +210,7 @@ namespace AzToolsFramework
         void GetSelectedEntities(EntityIdList& selectedEntityIds) override;
         void SetNewComponentId(AZ::ComponentId componentId) override;
 
-        // EditorWindowRequestBus
+        // EditorWindowRequestBus overrides
         void SetEditorUiEnabled(bool enable) override;
 
         bool IsEntitySelected(const AZ::EntityId& id) const;

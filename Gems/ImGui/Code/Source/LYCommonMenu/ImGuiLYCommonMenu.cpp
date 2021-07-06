@@ -575,9 +575,10 @@ namespace ImGui
             const int buttonSize{ 40 };
             ImGuiUpdateListenerBus::Broadcast(&IImGuiUpdateListener::OnImGuiMainMenuUpdate);
             ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - labelSize);
-            float sz = ImGui::GetTextLineHeight() + 3;
-            ImVec2 p = ImGui::GetCursorScreenPos();
-            ImGui::GetWindowDrawList()->AddRectFilled(p, ImVec2(p.x + labelSize, p.y + sz), IM_COL32(0, 115, 187, 255));
+            float backgroundHeight = ImGui::GetTextLineHeight() + 3;
+            ImVec2 cursorPos = ImGui::GetCursorScreenPos();
+            ImGui::GetWindowDrawList()->AddRectFilled(
+                cursorPos, ImVec2(cursorPos.x + labelSize, cursorPos.y + backgroundHeight), IM_COL32(0, 115, 187, 255));
             ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - labelSize);
             ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 1);
             ImGui::Text("ImGui:ON");

@@ -728,6 +728,12 @@ void ImGuiManager::ToggleThroughImGuiVisibleState(int controllerIndex)
         &IImGuiManagerNotifications::ImGuiSetEnabled, m_clientMenuBarState == DisplayState::Hidden);
 }
 
+void ImGuiManager::ToggleThroughImGuiVisibleState()
+{
+    ToggleThroughImGuiVisibleState(-1);
+}
+
+
 void ImGuiManager::RenderImGuiBuffers(const ImVec2& scaleRects)
 {
     ImGui::ImGuiContextScope contextScope(m_imguiContext);

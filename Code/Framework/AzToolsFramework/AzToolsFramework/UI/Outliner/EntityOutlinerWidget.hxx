@@ -107,7 +107,7 @@ namespace AzToolsFramework
         void OnPrefabInstancePropagationBegin() override;
         void OnPrefabInstancePropagationEnd() override;
 
-        // EditorWindowRequestBus
+        // EditorWindowRequestBus overrides
         void SetEditorUiEnabled(bool enable) override;
 
         // Build a selection object from the given entities. Entities already in the Widget's selection buffers are ignored.

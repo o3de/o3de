@@ -250,12 +250,12 @@ private:
     QPointer<AzQtComponents::FancyDocking> m_advancedDockManager;
 
     using EditorComponentModeNotificationBusImpl = AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBusImpl;
-    EditorComponentModeNotificationBusImpl m_componentModeNotifications; /**< Helper for EditorComponentModeNotificationBus so
-                                                                          *  QtViewPaneManager does not need to inherit directly from it. */
+    EditorComponentModeNotificationBusImpl m_componentModeNotifications; //!< Helper for EditorComponentModeNotificationBus so
+                                                                         //!< QtViewPaneManager does not need to inherit directly from it. */
 
     using EditorWindowRequestBusImpl = AzToolsFramework::EditorWindowRequestBusImpl;
-    EditorWindowRequestBusImpl m_windowRequest; /**< Helper for EditorWindowRequestBus so
-                                                                          *  QtViewPaneManager does not need to inherit directly from it. */
+    EditorWindowRequestBusImpl m_windowRequest;                         //!< Helper for EditorWindowRequestBus so
+                                                                        //!< QtViewPaneManager does not need to inherit directly from it. */
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };
 

@@ -547,10 +547,10 @@ QtViewPaneManager::QtViewPaneManager(QObject* parent)
         });
     });
 
-    m_windowRequest.SetEnableEditorUIFunc(
+    m_windowRequest.SetEnableEditorUiFunc(
         [this](bool enable)
         {
-            // gray out panels when entering ComponentMode
+            // gray out panels when entering ImGui mode
             SetDefaultActionsEnabled(
                 enable, m_registeredPanes,
                 [](QWidget* widget, bool on)
