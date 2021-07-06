@@ -21,8 +21,10 @@ namespace ScriptCanvas
 
     void RuntimeAssetSystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        ScriptCanvas::RuntimeData::Reflect(context);
-        ScriptCanvas::SubgraphInterfaceData::Reflect(context);
+        RuntimeData::Reflect(context);
+        RuntimeDataOverrides::Reflect(context);
+        SubgraphInterfaceData::Reflect(context);
+
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<RuntimeAssetSystemComponent, AZ::Component>()

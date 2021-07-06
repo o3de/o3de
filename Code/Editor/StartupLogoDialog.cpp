@@ -36,11 +36,11 @@ CStartupLogoDialog::CStartupLogoDialog(QString versionText, QString richTextCopy
  
     s_pLogoWindow = this;
 
-    m_backgroundImage = QPixmap(QStringLiteral(":/StartupLogoDialog/splashscreen_background_gradient.jpg"));
+    m_backgroundImage = QPixmap(QStringLiteral(":/StartupLogoDialog/splashscreen_background_developer_preview.jpg"));
     setFixedSize(QSize(600, 300));
 
     // Prepare background image
-    QImage backgroundImage(QStringLiteral(":/StartupLogoDialog/splashscreen_background_gradient.jpg"));
+    QImage backgroundImage(QStringLiteral(":/StartupLogoDialog/splashscreen_background_developer_preview.jpg"));
     m_backgroundImage = QPixmap::fromImage(backgroundImage.scaled(m_enforcedWidth, m_enforcedHeight, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
 
     // Draw the Open 3D Engine logo from svg

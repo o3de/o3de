@@ -418,8 +418,8 @@ namespace AWSAttributionUnitTest
         manager.SetApiEndpointAndRegion(config);
 
         // THEN
-        ASSERT_TRUE(config->region  == Aws::Region::US_WEST_2);
-        ASSERT_TRUE(config->endpointOverride->find("execute-api.us-west-2.amazonaws.com") != Aws::String::npos);
+        ASSERT_TRUE(config->region  == Aws::Region::US_EAST_1);
+        ASSERT_TRUE(config->endpointOverride->find("o3deattribution.us-east-1.amazonaws.com") != Aws::String::npos);
 
         delete config;
     }

@@ -21,7 +21,6 @@ NewElementToolbarSection::NewElementToolbarSection(QToolBar* parent, bool addSep
             {
                 HierarchyMenu contextMenu(editorWindow->GetHierarchy(),
                     (HierarchyMenu::Show::kNew_EmptyElementAtRoot |
-                     HierarchyMenu::Show::kNew_ElementFromPrefabsAtRoot |
                      HierarchyMenu::Show::kNew_InstantiateSliceAtRoot),
                     false);
 
