@@ -202,10 +202,16 @@ if(@target_file_dir@ MATCHES ".app/Contents/MacOS")
         endif()
 
         # misplaced .DS_Store files can cause signing to fail
-        file(GLOB_RECURSE dsstore_file_list "${bundle_path}/**/.DS_Store")
-        if(dsstore_file_list)
-            file(REMOVE_RECURSE ${dsstore_file_list})
+        # Interrupted signatures can leave cstemp files behind that fail next signature
+        file(GLOB_RECURSE remove_file_list 
+            "${bundle_path}/**/.DS_Store"
+            "${bundle_path/}**/*.cstemp"
+        )
+        if(remove_file_list)
+            file(REMOVE_RECURSE ${remove_file_list})
         endif()
+
+
     endif()
 
 else() # Non-bundle case
