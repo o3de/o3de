@@ -211,7 +211,7 @@ namespace AzToolsFramework
         void SetNewComponentId(AZ::ComponentId componentId) override;
 
         // EditorWindowRequestBus
-        void DeactivateEditorUI(bool deactivate) override;
+        void SetEditorUiEnabled(bool enable) override;
 
         bool IsEntitySelected(const AZ::EntityId& id) const;
         bool IsSingleEntitySelected(const AZ::EntityId& id) const;

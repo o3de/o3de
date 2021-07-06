@@ -58,7 +58,7 @@ namespace ImGui
         void OverrideRenderWindowSize(uint32_t width, uint32_t height) override;
         void RestoreRenderWindowSizeToDefault() override;
         void Render() override;
-        void ToggleThroughImGuiVisibleState() { ToggleThroughImGuiVisibleState( -1 ); }
+        void ToggleThroughImGuiVisibleState() override { ToggleThroughImGuiVisibleState( -1 ); }
         // -- ImGuiManagerBus Interface -------------------------------------------------------------------
 
         // -- AzFramework::InputChannelEventListener and AzFramework::InputTextEventListener Interface ------------

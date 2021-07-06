@@ -70,7 +70,6 @@ ly_add_target(
             Gem::ImGui.ImGuiLYUtils
         PRIVATE
             Gem::LmbrCentral
-            AZ::AzToolsFramework
 )
 
 ly_add_target(

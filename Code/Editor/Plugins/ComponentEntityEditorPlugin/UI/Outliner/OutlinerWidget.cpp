@@ -1323,25 +1323,25 @@ static void SetEntityOutlinerState(Ui::OutlinerWidgetUI* entityOutlinerUi, const
     AzQtComponents::SetWidgetInteractEnabled(entityOutlinerUi->m_searchWidget, on);
 }
 
-void OutlinerWidget::DeactivateUI(bool hide)
+void OutlinerWidget::EnableUi(bool enable)
 {
-    SetEntityOutlinerState(m_gui, !hide);
-    setEnabled(!hide);
+    SetEntityOutlinerState(m_gui, enable);
+    setEnabled(enable);
 }
 
-void OutlinerWidget::DeactivateEditorUI(bool deactivate)
+void OutlinerWidget::SetEditorUiEnabled(bool enable)
 {
-    DeactivateUI(deactivate);
+    EnableUi(enable);
 }
 
 void OutlinerWidget::EnteredComponentMode([[maybe_unused]] const AZStd::vector<AZ::Uuid>& componentModeTypes)
 {
-    DeactivateUI(true);
+    EnableUi(false);
 }
 
 void OutlinerWidget::LeftComponentMode([[maybe_unused]] const AZStd::vector<AZ::Uuid>& componentModeTypes)
 {
-    DeactivateUI(false);
+    EnableUi(true);
 }
 
 void OutlinerWidget::OnSliceInstantiated(const AZ::Data::AssetId& /*sliceAssetId*/, AZ::SliceComponent::SliceInstanceAddress& sliceAddress, const AzFramework::SliceInstantiationTicket& /*ticket*/)

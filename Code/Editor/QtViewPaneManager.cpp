@@ -547,12 +547,12 @@ QtViewPaneManager::QtViewPaneManager(QObject* parent)
         });
     });
 
-    m_windowRequest.SetDeactivateEditorUIFunc(
-        [this](bool deactivate)
+    m_windowRequest.SetEnableEditorUIFunc(
+        [this](bool enable)
         {
             // gray out panels when entering ComponentMode
             SetDefaultActionsEnabled(
-                !deactivate, m_registeredPanes,
+                enable, m_registeredPanes,
                 [](QWidget* widget, bool on)
                 {
                     AzQtComponents::SetWidgetInteractEnabled(widget, on);

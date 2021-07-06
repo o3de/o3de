@@ -41,6 +41,7 @@ AZ_POP_DISABLE_WARNING
 
 // AzToolsFramework
 #include <AzToolsFramework/Application/Ticker.h>
+#include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <AzToolsFramework/API/EditorAnimationSystemRequestBus.h>
 #include <AzToolsFramework/SourceControl/QtSourceControlNotificationHandler.h>
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
@@ -93,6 +94,9 @@ AZ_POP_DISABLE_WARNING
 #include "AssetEditor/AssetEditorWindow.h"
 #include "ActionManager.h"
 
+#include <ImGuiBus.h>
+
+
 using namespace AZ;
 using namespace AzQtComponents;
 using namespace AzToolsFramework;
@@ -127,6 +131,26 @@ public:
 
 private:
     IEditor* m_pEditor;
+};
+
+class ImGuiListener
+    : public ImGui::ImGuiManagerNotificationBus::Handler
+{
+public:
+    ImGuiListener()
+    {
+        ImGui::ImGuiManagerNotificationBus::Handler::BusConnect();
+    }
+
+    ~ImGuiListener()
+    {
+        ImGui::ImGuiManagerNotificationBus::Handler::BusDisconnect();
+    }
+
+    void ImGuiSetEnabled(bool enabled) override
+    {
+        EditorWindowRequestBus::Broadcast(&EditorWindowRequests::SetEditorUiEnabled, enabled);
+    }
 };
 
 namespace
@@ -319,6 +343,7 @@ MainWindow::MainWindow(QWidget* parent)
     m_viewPaneHost->setDockOptions(QMainWindow::GroupedDragging | QMainWindow::AllowNestedDocks | QMainWindow::AllowTabbedDocks);
 
     m_connectionListener = AZStd::make_shared<EngineConnectionListener>();
+    m_imguiListener = AZStd::make_shared<ImGuiListener>();
     QObject::connect(m_connectionLostTimer, &QTimer::timeout, this, &MainWindow::ShowConnectionDisconnectedDialog);
 
     setStatusBar(new MainStatusBar(this));

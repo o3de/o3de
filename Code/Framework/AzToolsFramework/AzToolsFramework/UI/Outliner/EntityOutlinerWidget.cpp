@@ -1108,25 +1108,25 @@ namespace AzToolsFramework
         AzQtComponents::SetWidgetInteractEnabled(entityOutlinerUi->m_searchWidget, on);
     }
 
-    void EntityOutlinerWidget::DeactivateUI(bool hide)
+    void EntityOutlinerWidget::EnableUi(bool enable)
     {
-        SetEntityOutlinerState(m_gui, !hide);
-        setEnabled(!hide);
+        SetEntityOutlinerState(m_gui, enable);
+        setEnabled(enable);
     }
 
-    void EntityOutlinerWidget::DeactivateEditorUI(bool deactivate)
+    void EntityOutlinerWidget::SetEditorUiEnabled(bool enable)
     {
-        DeactivateUI(deactivate);
+        EnableUi(enable);
     }
 
     void EntityOutlinerWidget::EnteredComponentMode([[maybe_unused]] const AZStd::vector<AZ::Uuid>& componentModeTypes)
     {
-        DeactivateUI(true);
+        EnableUi(false);
     }
 
     void EntityOutlinerWidget::LeftComponentMode([[maybe_unused]] const AZStd::vector<AZ::Uuid>& componentModeTypes)
     {
-        DeactivateUI(false);
+        EnableUi(true);
     }
 
     void EntityOutlinerWidget::OnPrefabInstancePropagationBegin()

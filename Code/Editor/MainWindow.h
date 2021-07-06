@@ -42,6 +42,7 @@ class CLayoutViewPane;
 class QtViewport;
 class QtViewPaneManager;
 class EngineConnectionListener;
+class ImGuiListener;
 class ToolbarManager;
 class ToolbarCustomizationDialog;
 class QWidgetAction;
@@ -245,6 +246,7 @@ private:
 
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     AZStd::shared_ptr<EngineConnectionListener> m_connectionListener;
+    AZStd::shared_ptr<ImGuiListener> m_imguiListener;
     QTimer* m_connectionLostTimer;
 
     QPointer<ToolbarCustomizationDialog> m_toolbarCustomizationDialog;

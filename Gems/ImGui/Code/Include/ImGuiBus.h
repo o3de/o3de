@@ -100,6 +100,17 @@ namespace ImGui
     };
     using ImGuiManagerBus = AZ::EBus<IImGuiManager, IImGuiManagerRequests>;
 
+    class IImGuiManagerNotifications : public AZ::EBusTraits
+    {
+    public:
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+        using Bus = AZ::EBus<IImGuiManagerNotifications>;
+
+        virtual void ImGuiSetEnabled( [[maybe_unused]] bool enabled) {}
+    };
+    using ImGuiManagerNotificationBus = AZ::EBus<IImGuiManagerNotifications>;
+
     // Bus for getting notifications from the IMGUI Entity Outliner
     class IImGuiEntityOutlinerNotifcations : public AZ::EBusTraits
     {

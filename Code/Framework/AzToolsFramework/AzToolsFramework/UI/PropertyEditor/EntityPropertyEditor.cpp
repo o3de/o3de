@@ -4963,22 +4963,22 @@ namespace AzToolsFramework
         EnableDisableComponentActions(widget, actions, false);
     }
 
-    void EntityPropertyEditor::DeactivateEditorUI(bool deactivate)
+    void EntityPropertyEditor::SetEditorUiEnabled(bool enable)
     {
-        if (deactivate)
-        {
-            DisableComponentActions(this, m_entityComponentActions);
-        }
-        else
+        if (enable)
         {
             EnableComponentActions(this, m_entityComponentActions);
         }
-        m_disabled = deactivate;
-        SetPropertyEditorState(m_gui, !deactivate);
+        else
+        {
+            DisableComponentActions(this, m_entityComponentActions);
+        }
+        m_disabled = !enable;
+        SetPropertyEditorState(m_gui, enable);
 
         for (auto componentEditor : m_componentEditors)
         {
-            AzQtComponents::SetWidgetInteractEnabled(componentEditor, !deactivate);
+            AzQtComponents::SetWidgetInteractEnabled(componentEditor, enable);
         }
         // record the selected state after entering/leaving component mode
         SaveComponentEditorState();

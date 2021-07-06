@@ -37,7 +37,7 @@ namespace AzToolsFramework
         virtual QWidget* GetAppMainWindow() { return nullptr; }
 
         ///Deactivate the Editor UI.
-        virtual void DeactivateEditorUI( [[maybe_unused]] bool deactivate) { }
+        virtual void SetEditorUiEnabled([[maybe_unused]] bool enable) {}
     };
 
     using EditorWindowRequestBus = AZ::EBus<EditorWindowRequests>;
@@ -49,19 +49,19 @@ namespace AzToolsFramework
     {
     public:
         /// Set the function to be called when entering ComponentMode.
-        void SetDeactivateEditorUIFunc(const AZStd::function<void(bool)>& enteredDeactivateEditorUIFunc)
+        void SetEnableEditorUIFunc(const AZStd::function<void(bool)>& enableEditorUIFunc)
         {
-            m_deactivateEditorUIFunc = enteredDeactivateEditorUIFunc;
+            m_enableEditorUIFunc = enableEditorUIFunc;
         }
 
         private:
         // EditorWindowRequestBus
-        void DeactivateEditorUI(bool deactivate) override
+        void SetEditorUiEnabled(bool enable) override
         {
-            m_deactivateEditorUIFunc(deactivate);
+            m_enableEditorUIFunc(enable);
         }
 
-        AZStd::function<void(bool)> m_deactivateEditorUIFunc; ///< Function to call when entering ComponentMode.
+        AZStd::function<void(bool)> m_enableEditorUIFunc; ///< Function to call when entering ComponentMode.
     };
 
 } // namespace AzToolsFramework
