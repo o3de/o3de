@@ -121,13 +121,6 @@ namespace ScriptCanvas
                 virtual void OnSourceConnected([[maybe_unused]] const SlotId& slotId) {}
                 virtual void OnSourceDisconnected([[maybe_unused]] const SlotId& slotId) {}
 
-                //! Implements the operator's behavior, the vector of Datums represents the list of operands.
-                virtual void Evaluate(const OperatorOperands& operands, Datum& result)
-                {
-                    AZ_UNUSED(operands);
-                    AZ_UNUSED(result);
-                }
-
             private:
                 OperatorConfiguration m_operatorConfiguration;
 
@@ -180,32 +173,6 @@ namespace ScriptCanvas
                     }
                 }
             };
-
-            // Base class for an small helper object that wraps the function to invoke
-            class OperationHelper
-            {
-            public:
-
-                Datum operator()(const AZStd::vector<Datum>& operands, Datum& result)
-                {
-                    AZStd::vector<Datum>::const_iterator operand = operands.begin();
-                    result = *operand;
-                    for (++operand; operand != operands.end(); ++operand)
-                    {
-                        result = Operator(result, *operand);
-                    }
-
-                    return result;
-                }
-
-            protected:
-                virtual Datum Operator(const Datum&, const Datum&) = 0;
-            };
-
-// Helper macro to invoke an operator function for a specialized type
-#define CallOperatorFunction(Operator, DataType, Type) \
-    if (DataType == Data::FromAZType(azrtti_typeid<Type>())) {  Operator<Type> operation; operation(operands, result); }
-
         }
     }
 }

@@ -22,9 +22,7 @@ namespace ScriptCanvas
             class WeightedRandomSequencer
                 : public Node
             {
-
             public:
-
                 SCRIPTCANVAS_NODE(WeightedRandomSequencer);
 
                 static void ReflectDataTypes(AZ::ReflectContext* reflectContext);
@@ -42,11 +40,7 @@ namespace ScriptCanvas
 
                 bool OnValidateNode(ValidationResults& validationResults);
                 
-                void OnInputSignal(const SlotId& slot);
-
-                SlotId HandleExtension(AZ::Crc32 extensionId) override;
-
-                
+                SlotId HandleExtension(AZ::Crc32 extensionId) override;              
 
                 bool CanDeleteSlot(const SlotId& slotId) const override;
 

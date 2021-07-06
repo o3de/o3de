@@ -54,7 +54,6 @@ namespace ScriptCanvas
             
                 AZStd::string GetDisplayGroup() const { return "OutputGroup"; }
 
-                void OnInputSignal(const SlotId& slot) override;                
                 void OnSlotRemoved(const SlotId& slotId) override;
 
             private:

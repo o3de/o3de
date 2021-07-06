@@ -122,8 +122,6 @@ namespace ScriptCanvas
     {
         const auto& scriptCanvasId = GetScriptCanvasId();
         GraphRequestBus::Handler::BusConnect(scriptCanvasId);
-        RuntimeRequestBus::Handler::BusConnect(scriptCanvasId);
-
         ValidationRequestBus::Handler::BusConnect(scriptCanvasId);
 
         for (auto& nodeEntity : m_graphData.m_nodes)
@@ -142,6 +140,7 @@ namespace ScriptCanvas
         }
 
         m_graphData.BuildEndpointMap();
+
         for (auto& connectionEntity : m_graphData.m_connections)
         {
             if (connectionEntity)

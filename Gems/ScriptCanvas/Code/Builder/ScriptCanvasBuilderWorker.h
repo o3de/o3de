@@ -36,8 +36,8 @@ namespace ScriptCanvasEditor
 {
     class Graph;
     class ScriptCanvasAsset;
-    class ScriptCanvasFunctionAsset;
 }
+
 namespace ScriptCanvasBuilder
 {
     constexpr const char* s_scriptCanvasBuilder = "ScriptCanvasBuilder";
@@ -122,8 +122,6 @@ namespace ScriptCanvasBuilder
 
     AZ::Outcome<AZ::Data::Asset<ScriptCanvas::RuntimeAsset>, AZStd::string> CreateRuntimeAsset(const AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>& asset);
 
-    AZ::Outcome<AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset>, AZStd::string> CreateRuntimeFunctionAsset(const AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasFunctionAsset>& asset);
-
     AZ::Outcome<ScriptCanvas::GraphData, AZStd::string> CompileGraphData(AZ::Entity* scriptCanvasEntity);
 
     AZ::Outcome<ScriptCanvas::VariableData, AZStd::string> CompileVariableData(AZ::Entity* scriptCanvasEntity);
@@ -133,8 +131,6 @@ namespace ScriptCanvasBuilder
     int GetBuilderVersion();
 
     AZ::Outcome<AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>, AZStd::string> LoadEditorAsset(AZStd::string_view graphPath, AZ::Data::AssetId assetId, AZ::Data::AssetFilterCB assetFilterCB = {});
-
-    AZ::Outcome<AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasFunctionAsset>, AZStd::string> LoadEditorFunctionAsset(AZStd::string_view graphPath);
 
     AZ::Outcome<ScriptCanvas::Grammar::AbstractCodeModelConstPtr, AZStd::string> ParseGraph(AZ::Entity& buildEntity, AZStd::string_view graphPath);
 

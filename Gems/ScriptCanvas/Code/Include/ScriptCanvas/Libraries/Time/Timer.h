@@ -25,7 +25,6 @@ namespace ScriptCanvas
             //! Deprecated: See TimerNodeableNode
             class Timer 
                 : public Node
-                , AZ::TickBus::Handler
             {
             public:
 
@@ -39,12 +38,7 @@ namespace ScriptCanvas
             protected:
 
                 AZ::ScriptTimePoint m_start;
-
-                void OnInputSignal(const SlotId& slotId) override;
-
                 void OnDeactivate() override;
-                void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
-
             };
         }
     }

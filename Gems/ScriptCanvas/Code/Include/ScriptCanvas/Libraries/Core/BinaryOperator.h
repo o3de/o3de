@@ -31,9 +31,7 @@ namespace ScriptCanvas
             static const char* k_evaluateName;
             static const char* k_outName;
             static const char* k_onTrue;
-            static const char* k_onFalse;
-
-            
+            static const char* k_onFalse;            
 
         protected:
             ConstSlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot& /*executionSlot*/, CombinedSlotType targetSlotType, const Slot* /*executionChildSlot*/) const override
@@ -46,12 +44,6 @@ namespace ScriptCanvas
             static const int k_datumIndexRHS = 1;
 
             void OnInit() override;
-
-            // must be overridden with the binary operations
-            virtual Datum Evaluate(const Datum& lhs, const Datum& rhs);
-
-            // Triggered by the execution signal
-            void OnInputSignal(const SlotId& slot) override;
 
             SlotId GetOutputSlotId() const;
         };
@@ -71,10 +63,6 @@ namespace ScriptCanvas
         protected:
             // adds Number inputs, adds Number output type
             void OnInit() override;
-
-            void OnInputSignal(const SlotId& slot) override;
-
-            
         };
         
         class BooleanExpression
@@ -107,9 +95,7 @@ namespace ScriptCanvas
         protected:
             // initialize boolean expression, adds boolean output type calls 
             void OnInit() override;
-            virtual void InitializeBooleanExpression();
-            void OnInputSignal(const SlotId& slot) override;
-            
+            virtual void InitializeBooleanExpression();            
         };
 
         // accepts any type, checks for type equality, and then value equality or pointer equality
@@ -126,10 +112,8 @@ namespace ScriptCanvas
             void InitializeBooleanExpression() override;
 
         private:
-
             SlotId                   m_firstSlotId;
             SlotId                   m_secondSlotId;
-
             ScriptCanvas::Data::Type m_displayType;
         };
 
@@ -144,8 +128,7 @@ namespace ScriptCanvas
         
         protected:
             // adds number types
-            void InitializeBooleanExpression() override;
-            
+            void InitializeBooleanExpression() override;            
         };
     } 
 } 

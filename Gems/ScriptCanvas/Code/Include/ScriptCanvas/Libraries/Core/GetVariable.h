@@ -64,7 +64,6 @@ namespace ScriptCanvas
 
                 void OnInit() override;
                 void OnPostActivate() override;
-                void OnInputSignal(const SlotId&) override;
 
                 void AddOutputSlot();
                 void RemoveOutputSlot();
@@ -77,8 +76,6 @@ namespace ScriptCanvas
                 // VariableNotificationBus
                 void OnVariableRemoved() override;
                 ////
-
-                AnnotateNodeSignal CreateAnnotationData();
 
                 // Adds/Remove Property Slots from the GetVariable node
                 void AddPropertySlots(const Data::Type& type);

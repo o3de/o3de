@@ -19,7 +19,6 @@
 #include <ScriptCanvas/Debugger/Bus.h>
 #include <ScriptCanvas/Execution/ErrorBus.h>
 #include <ScriptCanvas/Execution/ExecutionContext.h>
-#include <ScriptCanvas/Execution/RuntimeBus.h>
 #include <ScriptCanvas/Debugger/StatusBus.h>
 
 #include <ScriptCanvas/Debugger/ValidationEvents/ValidationEvent.h>
@@ -35,7 +34,6 @@ namespace ScriptCanvas
     class Graph
         : public AZ::Component
         , protected GraphRequestBus::Handler
-        , protected RuntimeRequestBus::Handler
         , protected StatusRequestBus::Handler
         , private AZ::EntityBus::Handler
         , private ValidationRequestBus::Handler
@@ -174,14 +172,12 @@ namespace ScriptCanvas
 
         void RefreshConnectionValidity(bool warnOnRemoval = false);
 
-        //// RuntimeRequestBus::Handler
         AZ::Data::AssetId GetAssetId() const override { return AZ::Data::AssetId(); }
         GraphIdentifier GetGraphIdentifier() const override { return GraphIdentifier(GetAssetId(), 0); }
         AZStd::string GetAssetName() const override { return "";  }
         AZ::EntityId GetRuntimeEntityId() const override { return GetEntity() ? GetEntityId() : AZ::EntityId(); }
 
         VariableId FindAssetVariableIdByRuntimeVariableId(VariableId runtimeId) const override { return runtimeId; }
-        VariableId FindRuntimeVariableIdByAssetVariableId(VariableId assetId) const override { return assetId; }
         AZ::EntityId FindAssetNodeIdByRuntimeNodeId(AZ::EntityId editorNode) const override { return editorNode; }
         AZ::EntityId FindRuntimeNodeIdByAssetNodeId(AZ::EntityId runtimeNode) const override { return runtimeNode; }
         
@@ -190,8 +186,8 @@ namespace ScriptCanvas
         const GraphVariableMapping* GetVariables() const override;
         GraphVariable* FindVariable(AZStd::string_view propName) override;
         GraphVariable* FindVariableById(const VariableId& variableId) override;
-        Data::Type GetVariableType(const VariableId& variableId) const override;
-        AZStd::string_view GetVariableName(const VariableId& variableId) const override;
+        Data::Type GetVariableType(const VariableId& variableId) const;
+        AZStd::string_view GetVariableName(const VariableId& variableId) const;
 
         bool IsGraphObserved() const override;
         void SetIsGraphObserved(bool isObserved) override;

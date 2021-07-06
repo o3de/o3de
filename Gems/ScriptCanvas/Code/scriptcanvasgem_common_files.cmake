@@ -35,7 +35,6 @@ set(FILES
     Include/ScriptCanvas/Core/NodeBus.h
     Include/ScriptCanvas/Core/EBusNodeBus.h
     Include/ScriptCanvas/Core/NodelingBus.h
-    Include/ScriptCanvas/Core/SignalBus.h
     Include/ScriptCanvas/Core/ContractBus.h
     Include/ScriptCanvas/Core/Attributes.h
     Include/ScriptCanvas/Core/Connection.cpp
@@ -169,7 +168,6 @@ set(FILES
     Include/ScriptCanvas/Execution/NativeHostDeclarations.cpp
     Include/ScriptCanvas/Execution/NativeHostDefinitions.h
     Include/ScriptCanvas/Execution/NativeHostDefinitions.cpp
-    Include/ScriptCanvas/Execution/RuntimeBus.h
     Include/ScriptCanvas/Execution/RuntimeComponent.h
     Include/ScriptCanvas/Execution/RuntimeComponent.cpp
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedAPI.h
@@ -199,8 +197,6 @@ set(FILES
     Include/ScriptCanvas/Grammar/DebugMap.cpp
     Include/ScriptCanvas/Grammar/ExecutionTraversalListeners.h
     Include/ScriptCanvas/Grammar/ExecutionTraversalListeners.cpp
-    Include/ScriptCanvas/Grammar/FunctionsLegacySupport.h
-    Include/ScriptCanvas/Grammar/FunctionsLegacySupport.cpp
     Include/ScriptCanvas/Grammar/GrammarContext.h
     Include/ScriptCanvas/Grammar/GrammarContext.cpp
     Include/ScriptCanvas/Grammar/GrammarContextBus.h
@@ -223,7 +219,6 @@ set(FILES
     Include/ScriptCanvas/Execution/NativeHostDeclarations.h
     Include/ScriptCanvas/Execution/NativeHostDefinitions.cpp
     Include/ScriptCanvas/Execution/NativeHostDefinitions.h
-    Include/ScriptCanvas/Execution/RuntimeBus.h
     Include/ScriptCanvas/Execution/RuntimeComponent.cpp
     Include/ScriptCanvas/Execution/RuntimeComponent.h
     Include/ScriptCanvas/Internal/Nodeables/BaseTimer.cpp
@@ -300,7 +295,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/Core/SetVariable.cpp
     Include/ScriptCanvas/Libraries/Core/SetVariable.h
     Include/ScriptCanvas/Libraries/Core/SetVariable.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Core/Start.cpp
     Include/ScriptCanvas/Libraries/Core/Start.h
     Include/ScriptCanvas/Libraries/Core/Start.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Core/UnaryOperator.cpp
@@ -324,7 +318,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/Logic/Gate.cpp
     Include/ScriptCanvas/Libraries/Logic/Gate.h
     Include/ScriptCanvas/Libraries/Logic/Gate.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Logic/Indexer.cpp
     Include/ScriptCanvas/Libraries/Logic/Indexer.h
     Include/ScriptCanvas/Libraries/Logic/Indexer.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Logic/IsNull.cpp
@@ -332,7 +325,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/Logic/IsNull.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Logic/Logic.cpp
     Include/ScriptCanvas/Libraries/Logic/Logic.h
-    Include/ScriptCanvas/Libraries/Logic/Multiplexer.cpp
     Include/ScriptCanvas/Libraries/Logic/Multiplexer.h
     Include/ScriptCanvas/Libraries/Logic/Multiplexer.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Logic/Not.h
@@ -429,7 +421,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/String/Format.cpp
     Include/ScriptCanvas/Libraries/String/Format.h
     Include/ScriptCanvas/Libraries/String/Format.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/String/Print.cpp
     Include/ScriptCanvas/Libraries/String/Print.h
     Include/ScriptCanvas/Libraries/String/Print.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/String/Replace.cpp
@@ -446,10 +437,8 @@ set(FILES
     Include/ScriptCanvas/Libraries/UnitTesting/AddFailure.cpp
     Include/ScriptCanvas/Libraries/UnitTesting/AddFailure.h
     Include/ScriptCanvas/Libraries/UnitTesting/AddFailure.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/UnitTesting/AddSuccess.cpp
     Include/ScriptCanvas/Libraries/UnitTesting/AddSuccess.h
     Include/ScriptCanvas/Libraries/UnitTesting/AddSuccess.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/UnitTesting/Checkpoint.cpp
     Include/ScriptCanvas/Libraries/UnitTesting/Checkpoint.h
     Include/ScriptCanvas/Libraries/UnitTesting/Checkpoint.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/UnitTesting/ExpectEqual.cpp
@@ -476,7 +465,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/UnitTesting/ExpectTrue.cpp
     Include/ScriptCanvas/Libraries/UnitTesting/ExpectTrue.h
     Include/ScriptCanvas/Libraries/UnitTesting/ExpectTrue.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/UnitTesting/MarkComplete.cpp
     Include/ScriptCanvas/Libraries/UnitTesting/MarkComplete.h
     Include/ScriptCanvas/Libraries/UnitTesting/MarkComplete.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/UnitTesting/UnitTestBus.h

@@ -61,11 +61,6 @@ namespace ScriptCanvasEditor
     {
     }
 
-    void ScriptCanvasAssetNode::OnInputSignal(const ScriptCanvas::SlotId&)
-    {
-
-    }
-
     void ScriptCanvasAssetNode::OnInit()
     {
         if (GetAsset().GetId().IsValid())

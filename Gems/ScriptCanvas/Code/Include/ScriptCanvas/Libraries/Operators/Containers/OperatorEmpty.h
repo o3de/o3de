@@ -21,9 +21,7 @@ namespace ScriptCanvas
             class OperatorEmpty : public Node
             {
             public:
-
                 SCRIPTCANVAS_NODE(OperatorEmpty);
-
 
                 void CustomizeReplacementNode(Node* replacementNode, AZStd::unordered_map<SlotId, AZStd::vector<SlotId>>& outSlotIdMap) const override;
 
@@ -31,12 +29,7 @@ namespace ScriptCanvas
 
                 OperatorEmpty() = default;
 
-                // Node...
                 void OnInit() override;
-                ////
-
-                void OnInputSignal(const SlotId& slotId) override;
-
             };
         }
     }

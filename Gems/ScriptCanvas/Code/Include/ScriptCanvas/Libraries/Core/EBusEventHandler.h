@@ -78,9 +78,6 @@ namespace ScriptCanvas
 
                 void OnInit() override;
                 void OnActivate() override;
-                void OnPostActivate() override;
-                void OnDeactivate() override;
-
                 void OnGraphSet() override;
                 
                 void CollectVariableReferences(AZStd::unordered_set< ScriptCanvas::VariableId >& variableIds) const override;
@@ -96,16 +93,10 @@ namespace ScriptCanvas
 
                 void InitializeEvent(int eventIndex);
 
-                bool IsOutOfDate(const VersionData& graphVersion) const override;
-
-                
+                bool IsOutOfDate(const VersionData& graphVersion) const override;             
                 
                 bool CreateHandler(AZStd::string_view ebusName);
-
-                void Connect();
-                
-                void Disconnect();
-                
+                                
                 const EBusEventEntry* FindEventWithSlot(const Slot& slot) const;
 
                 AZ::Outcome<AZStd::string, void> GetFunctionCallName(const Slot* /*slot*/) const override;
@@ -166,16 +157,10 @@ namespace ScriptCanvas
 
                 inline bool IsConfigured() const { return !m_eventMap.empty(); }
                 
-                void OnEvent(const char* eventName, const int eventIndex, AZ::BehaviorValueParameter* result, const int numParameters, AZ::BehaviorValueParameter* parameters);
-
-                void OnInputSignal(const SlotId&) override;
-                void OnInputChanged(const Datum& input, const SlotId& slotID) override;
-
             private:
 
                 EBusEventHandler(const EBusEventHandler&) = delete;
-                static void OnEventGenericHook(void* userData, const char* eventName, int eventIndex, AZ::BehaviorValueParameter* result, int numParameters, AZ::BehaviorValueParameter* parameters);
-
+                
                 EventMap m_eventMap;
                 AZStd::string m_ebusName;
                 ScriptCanvas::EBusBusId m_busId;

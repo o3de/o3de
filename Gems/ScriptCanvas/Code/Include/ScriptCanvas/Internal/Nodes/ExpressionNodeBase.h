@@ -53,10 +53,6 @@ namespace ScriptCanvas
                 void OnInit() override;  
                 void OnPostActivate() override;
                 void ConfigureVisualExtensions() override;
-
-                void OnInputSignal(const SlotId& slotId) override;
-                void OnInputChanged(const Datum& input, const SlotId& slotId) override;
-
                 bool CanDeleteSlot(const SlotId& slotId) const override;
 
                 SlotId HandleExtension(AZ::Crc32 extensionId) override;
@@ -110,7 +106,6 @@ namespace ScriptCanvas
                 bool m_isInError = false;
 
                 AZStd::unordered_map<SlotId, AZStd::string> m_slotToVariableMap;
-                AZStd::unordered_set<SlotId> m_dirtyInputs;
                 AZStd::unordered_map<AZStd::string, SlotId> m_slotsByVariables;
 
                 ExpressionEvaluation::ParsingError m_parseError;

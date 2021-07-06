@@ -74,7 +74,6 @@ namespace ScriptCanvasEditor
         ////
 
     protected:
-        void OnInputSignal(const ScriptCanvas::SlotId&) override;
         // AssetBus::Handler
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         void OnAssetUnloaded(const AZ::Data::AssetId assetId, const AZ::Data::AssetType) override;

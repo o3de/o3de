@@ -31,7 +31,6 @@
 #include <Editor/View/Widgets/ScriptCanvasNodePaletteDockWidget.h>
 #include <Editor/View/Widgets/NodePalette/VariableNodePaletteTreeItemTypes.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
-#include <ScriptCanvas/Execution/RuntimeBus.h>
 #include <ScriptCanvas/Bus/RequestBus.h>
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 
@@ -722,7 +721,7 @@ namespace ScriptCanvasEditor
         ScriptCanvas::GraphVariableManagerNotificationBus::Handler::BusDisconnect();
 
         m_assetType = AZ::Data::AssetType::CreateNull();
-        ScriptCanvas::RuntimeRequestBus::EventResult(m_assetType, scriptCanvasId, &ScriptCanvas::RuntimeRequests::GetAssetType);
+        ScriptCanvas::GraphRequestBus::EventResult(m_assetType, scriptCanvasId, &ScriptCanvas::GraphRequests::GetAssetType);
 
         m_scriptCanvasId = scriptCanvasId;
 

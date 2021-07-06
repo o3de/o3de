@@ -85,8 +85,7 @@ namespace ScriptCanvas
                 // Node
                 void OnSlotDisplayTypeChanged(const SlotId& slotId, const Data::Type& dataType) override final;
                 void OnDynamicGroupDisplayTypeChanged(const AZ::Crc32& dynamicGroup, const Data::Type& dataType) override final;
-                void OnInputSignal(const SlotId& slotId) override;
-                
+               
                 void OnConfigured() override;
                 void OnInit() override;
                 void OnActivate() override;                

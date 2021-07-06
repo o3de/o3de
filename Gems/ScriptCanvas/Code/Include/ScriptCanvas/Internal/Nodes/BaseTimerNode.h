@@ -7,10 +7,7 @@
 
 #pragma once
 
-#include <AzCore/Component/TickBus.h>
-
 #include <ScriptCanvas/Core/Node.h>
-
 #include <Include/ScriptCanvas/Internal/Nodes/BaseTimerNode.generated.h>
 
 namespace ScriptCanvas
@@ -23,8 +20,6 @@ namespace ScriptCanvas
             class BaseTimerNode
                 : public Node
                 , public NodePropertyInterfaceListener
-                , public AZ::TickBus::Handler
-                , public AZ::SystemTickBus::Handler
             {
             public:
 
@@ -44,32 +39,16 @@ namespace ScriptCanvas
                     "Seconds"
                 };
                 
-                virtual ~BaseTimerNode();
-
                 // Node...
                 void OnInit() override;
                 void OnConfigured() override;
-                void OnDeactivate() override;
 
                 void ConfigureVisualExtensions() override;
                 NodePropertyInterface* GetPropertyInterface(AZ::Crc32 propertyId) override;
-                ////
-                
-                // SystemTickBus...
-                void OnSystemTick() override;
-                ////
-                
-                // TickBus...
-                void OnTick(float delta, AZ::ScriptTimePoint timePoint) override;
-                int GetTickOrder() override;
-                ////
-                
+                                                
                 // Method that will handle displaying and viewing of the time slot
                 void AddTimeDataSlot();
                 
-                void StartTimer();
-                void StopTimer();
-
                 AZStd::string GetTimeSlotName() const;
 
             protected:
@@ -83,7 +62,6 @@ namespace ScriptCanvas
                 bool IsActive() const;
                 
                 virtual bool AllowInstantResponse() const;
-                virtual void OnTimeElapsed();
 
                 // Store until versioning is complete
                 virtual const char* GetTimeSlotFormat() const { return "Time (%s)";  }

@@ -8,7 +8,6 @@
 #include <Editor/Assets/ScriptCanvasAssetHelpers.h>
 
 #include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
-#include <ScriptCanvas/Asset/Functions/ScriptCanvasFunctionAsset.h>
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 
 namespace ScriptCanvasEditor

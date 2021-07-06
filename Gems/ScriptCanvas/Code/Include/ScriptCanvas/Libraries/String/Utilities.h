@@ -24,11 +24,7 @@ namespace ScriptCanvas
             {
             public:
                 SCRIPTCANVAS_NODE(StartsWith);
-            protected:
-
-                void OnInputSignal(const SlotId& slotId) override;
-
-            };
+           };
 
             //! Deprecated: see class String's reflection of method "Ends With"
             class EndsWith
@@ -36,10 +32,6 @@ namespace ScriptCanvas
             {
             public:
                 SCRIPTCANVAS_NODE(EndsWith);
-            protected:
-
-                void OnInputSignal(const SlotId& slotId) override;
-
             };
 
             //! Deprecated: see class String's reflection of method "Ends With"
@@ -55,9 +47,6 @@ namespace ScriptCanvas
             protected:
 
                 static const char* k_defaultDelimiter;
-
-                void OnInputSignal(const SlotId& slotId) override;
-
             };
 
             //! Deprecated: see class String's reflection of method "Join"
@@ -73,9 +62,6 @@ namespace ScriptCanvas
             protected:
 
                 static const char* k_defaultSeparator;
-
-                void OnInputSignal(const SlotId& slotId) override;
-
             };
 
         }

@@ -10,8 +10,6 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Component/TickBus.h>
-
-#include <ScriptCanvas/Execution/RuntimeBus.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <ScriptEvents/ScriptEventsAsset.h>
 

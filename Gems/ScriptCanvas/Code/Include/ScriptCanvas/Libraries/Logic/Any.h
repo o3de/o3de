@@ -44,8 +44,6 @@ namespace ScriptCanvas
                 void OnInit() override;
                 void ConfigureVisualExtensions() override;
 
-                void OnInputSignal(const SlotId& slot) override;
-
                 SlotId HandleExtension(AZ::Crc32 extensionId) override;
 
                 bool CanDeleteSlot(const SlotId& slotId) const override;
@@ -54,9 +52,7 @@ namespace ScriptCanvas
                 ////
 
                 /// Translation
-                bool IsNoOp() const override;
-
-                
+                bool IsNoOp() const override;              
 
                 AZ::Outcome<DependencyReport, void> GetDependencies() const override;
                     
@@ -69,9 +65,7 @@ namespace ScriptCanvas
                 AZ::Crc32 GetInputExtensionId() const { return AZ_CRC("Output", 0xccde149e); }
 
             private:
-
                 AZStd::string GenerateInputName(int counter);
-
                 SlotId AddInputSlot();
                 void FixupStateNames();
             };

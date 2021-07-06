@@ -384,15 +384,10 @@ namespace ScriptCanvas
             if (m_variable)
             {
                 VariableNotificationBus::Handler::BusConnect(m_variable->GetGraphScopedId());
-
-                if (IsInput())
-                {
-                    m_node->OnInputChanged((*m_variable->GetDatum()), GetId());
-                }
             }
-            else
+            else if (m_node)
             {
-                SCRIPTCANVAS_REPORT_ERROR((*m_node), "Node (%s) is attempting to execute using an invalid Variable Reference", m_node->GetNodeName().c_str());
+                AZ_Warning("ScriptCanvas", false, "Node (%s) is attempting to initialize an invalid Variable Reference", m_node->GetNodeName().c_str());
             }
         }
     }
@@ -582,11 +577,6 @@ namespace ScriptCanvas
     bool Slot::IsLatent() const
     {
         return m_isLatentSlot;
-    }
-
-    void Slot::OnVariableValueChanged()
-    {
-        m_node->OnInputChanged((*m_variable->GetDatum()), GetId());
     }
 
     void Slot::SetDynamicDataType(DynamicDataType dynamicDataType)

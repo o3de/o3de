@@ -52,12 +52,6 @@ namespace ScriptCanvas
                     nodeConfig.m_type = AZ::Uuid("C1B42FEC-0545-4511-9FAC-11E0387FEDF0");
                     return nodeConfig;
                 }
-                
-            protected:
-                Datum Evaluate(const Datum& lhs, const Datum& rhs) override
-                {
-                    return Datum(*lhs.GetAs<Data::NumberType>() + *rhs.GetAs<Data::NumberType>());
-                }
             };
         }
     }

@@ -487,23 +487,16 @@ namespace ScriptCanvas
 
     void Node::Activate()
     {
-        SignalBus::Handler::BusConnect(GetEntityId());
-
-        SetRuntimeBus(RuntimeRequestBus::FindFirstHandler(m_scriptCanvasId));
-        AZ_Assert(m_runtimeBus, "Invalid m_executionUniqueId given for RuntimeRequestBus");
-
+        m_graphRequestBus = GraphRequestBus::FindFirstHandler(m_scriptCanvasId);
+        AZ_Assert(m_graphRequestBus, "Invalid m_executionUniqueId given for RuntimeRequestBus");
         OnActivate();
-
         MarkDefaultableInput();
     }
 
     void Node::Deactivate()
     {
         OnDeactivate();
-
-        SignalBus::Handler::BusDisconnect();
-
-        SetRuntimeBus(RuntimeRequestBus::FindFirstHandler(m_scriptCanvasId));
+        m_graphRequestBus = GraphRequestBus::FindFirstHandler(m_scriptCanvasId);
     }
 
     void Node::PostActivate()
@@ -737,7 +730,7 @@ namespace ScriptCanvas
 
     bool Node::IsInEventHandlingScope(const ID& possibleEventHandler) const
     {
-        Node* node = m_runtimeBus->FindNode(possibleEventHandler);
+        Node* node = m_graphRequestBus->FindNode(possibleEventHandler);
 
         if (auto eventHandler = azrtti_cast<ScriptCanvas::Nodes::Core::EBusEventHandler*>(node))
         {
@@ -844,7 +837,7 @@ namespace ScriptCanvas
 
     GraphVariable* Node::FindGraphVariable(const VariableId& variableId) const
     {
-        return m_runtimeBus->FindVariableById(variableId);      
+        return m_graphRequestBus->FindVariableById(variableId);      
     }
 
     void Node::OnSlotConvertedToValue(const SlotId& slotId)
@@ -1598,24 +1591,6 @@ namespace ScriptCanvas
         NodeNotificationsBus::Event(GetEntityId(), &NodeNotifications::OnSlotDisplayTypeChanged, slotId, dataType);
     }
 
-    void Node::SignalInput(const SlotId& slotId)
-    {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::ScriptCanvas);
-        SC_EXECUTION_TRACE_SIGNAL_INPUT((*this), (InputSignal(CreateNodeInputSignal(slotId))));
-
-        {
-            AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::ScriptCanvas, "ScriptCanvas::%s::SignalInput", GetNodeName().c_str());
-            OnInputSignal(slotId);
-        }
-
-    }
-
-    void Node::SignalOutput(const SlotId& slotId, ExecuteMode mode)
-    {
-        AZ_UNUSED(slotId);
-        AZ_UNUSED(mode);
-    }
-
     AZ::Outcome<void, AZStd::string> Node::SlotAcceptsType(const SlotId& slotID, const Data::Type& type) const
     {
         if (auto slot = GetSlot(slotID))
@@ -1914,7 +1889,7 @@ namespace ScriptCanvas
             if (slot.GetDescriptor() == slotDescriptor
                 && (allowLatentSlots || !slot.IsLatent()))
             {
-                AZStd::vector<Endpoint> connectedEndpoints = m_runtimeBus->GetConnectedEndpoints(Endpoint{ GetEntityId(), slot.GetId() });
+                AZStd::vector<Endpoint> connectedEndpoints = m_graphRequestBus->GetConnectedEndpoints(Endpoint{ GetEntityId(), slot.GetId() });
                 endpoints.insert(endpoints.end(), connectedEndpoints.begin(), connectedEndpoints.end());
             }
         }
@@ -2339,9 +2314,7 @@ namespace ScriptCanvas
     void Node::SetOwningScriptCanvasId(ScriptCanvasId scriptCanvasId)
     {
         m_scriptCanvasId = scriptCanvasId;
-
-        SetRuntimeBus(RuntimeRequestBus::FindFirstHandler(m_scriptCanvasId));
-
+        m_graphRequestBus = GraphRequestBus::FindFirstHandler(m_scriptCanvasId);
         OnGraphSet();
     }
 
@@ -2426,7 +2399,7 @@ namespace ScriptCanvas
 
     AZ::EntityId Node::GetGraphEntityId() const
     {
-        return m_runtimeBus->GetRuntimeEntityId();
+        return m_graphRequestBus->GetRuntimeEntityId();
     }
 
     NodePtrConstList Node::FindConnectedNodesByDescriptor(const SlotDescriptor& slotDescriptor, bool followLatentConnections) const
@@ -2437,7 +2410,7 @@ namespace ScriptCanvas
 
         for (const auto& endpoint : GetAllEndpointsByDescriptor(slotDescriptor, followLatentConnections))
         {
-            Node* connectedNode = m_runtimeBus->FindNode(endpoint.GetNodeId());
+            Node* connectedNode = m_graphRequestBus->FindNode(endpoint.GetNodeId());
             
             if (connectedNode)
             {
@@ -2456,7 +2429,7 @@ namespace ScriptCanvas
 
         for (const auto& endpoint : GetAllEndpointsByDescriptor(slotDescriptor, followLatentConnections))
         {
-            Node* connectedNode = m_runtimeBus->FindNode(endpoint.GetNodeId());
+            Node* connectedNode = m_graphRequestBus->FindNode(endpoint.GetNodeId());
             
             if (connectedNode)
             {
@@ -2469,7 +2442,7 @@ namespace ScriptCanvas
 
     AZ::Data::AssetId Node::GetGraphAssetId() const
     {
-        return m_runtimeBus->GetAssetId();
+        return m_graphRequestBus->GetAssetId();
     }
 
     AZStd::string Node::GetGraphAssetName() const
@@ -2482,7 +2455,7 @@ namespace ScriptCanvas
 
     GraphIdentifier Node::GetGraphIdentifier() const
     {
-        return m_runtimeBus->GetGraphIdentifier();
+        return m_graphRequestBus->GetGraphIdentifier();
     }
 
     bool Node::IsSanityCheckRequired() const
@@ -2652,7 +2625,7 @@ namespace ScriptCanvas
                 return;
             }
 
-            auto node = m_runtimeBus->FindNode(endpoint.GetNodeId());
+            auto node = m_graphRequestBus->FindNode(endpoint.GetNodeId());
 
             if (node)
             {
@@ -2840,7 +2813,7 @@ namespace ScriptCanvas
     bool Node::IsConnected(const Slot& slot) const
     {
         AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "ScriptCanvas::Node::IsConnected");
-        return slot.IsVariableReference() || m_runtimeBus->IsEndpointConnected(slot.GetEndpoint());
+        return slot.IsVariableReference() || m_graphRequestBus->IsEndpointConnected(slot.GetEndpoint());
     }
 
     bool Node::IsConnected(const SlotId& slotId) const
@@ -2880,7 +2853,7 @@ namespace ScriptCanvas
 
     bool Node::IsActivated() const
     {
-        return m_runtimeBus;
+        return m_graphRequestBus;
     }
     
     EndpointsResolved Node::GetConnectedNodes(const Slot& slot) const
@@ -2889,17 +2862,17 @@ namespace ScriptCanvas
 
         EndpointsResolved connectedNodes;
 
-        auto endpointIters = m_runtimeBus->GetConnectedEndpointIterators(Endpoint{ GetEntityId(), slot.GetId() });
+        auto endpointIters = m_graphRequestBus->GetConnectedEndpointIterators(Endpoint{ GetEntityId(), slot.GetId() });
 
         for (auto endpointIter = endpointIters.first; endpointIter != endpointIters.second; ++endpointIter)
         {
             const Endpoint& endpoint = endpointIter->second;
-            auto node = m_runtimeBus->FindNode(endpoint.GetNodeId());
+            auto node = m_graphRequestBus->FindNode(endpoint.GetNodeId());
 
             if (node == nullptr)
             {                
-                AZStd::string assetName = m_runtimeBus->GetAssetName();
-                AZ::EntityId assetNodeId = m_runtimeBus->FindAssetNodeIdByRuntimeNodeId(endpoint.GetNodeId());
+                AZStd::string assetName = m_graphRequestBus->GetAssetName();
+                AZ::EntityId assetNodeId = m_graphRequestBus->FindAssetNodeIdByRuntimeNodeId(endpoint.GetNodeId());
                 AZ_Warning("Script Canvas", false, "Unable to find node with id (id: %s) in the graph '%s'. Most likely the node was serialized with a type that is no longer reflected",
                     assetNodeId.ToString().data(), assetName.data());
 
@@ -2913,8 +2886,8 @@ namespace ScriptCanvas
             auto endpointSlot = node->GetSlot(endpoint.GetSlotId());
             if (!endpointSlot)
             {
-                AZStd::string assetName = m_runtimeBus->GetAssetName();
-                AZ::EntityId assetNodeId = m_runtimeBus->FindAssetNodeIdByRuntimeNodeId(endpoint.GetNodeId());
+                AZStd::string assetName = m_graphRequestBus->GetAssetName();
+                AZ::EntityId assetNodeId = m_graphRequestBus->FindAssetNodeIdByRuntimeNodeId(endpoint.GetNodeId());
                 AZ_Warning("Script Canvas", false, "Endpoint was missing slot. id (id: %s) in the graph '%s'.",
                     assetNodeId.ToString().data(), assetName.data());
 
@@ -2937,18 +2910,18 @@ namespace ScriptCanvas
 
     void Node::ModConnectedNodes(const Slot& slot, AZStd::vector<AZStd::pair<Node*, const SlotId>>& connectedNodes) const
     {
-        auto endpointIters = m_runtimeBus->GetConnectedEndpointIterators(Endpoint{ GetEntityId(), slot.GetId() });
+        auto endpointIters = m_graphRequestBus->GetConnectedEndpointIterators(Endpoint{ GetEntityId(), slot.GetId() });
 
         for (auto endpointIter = endpointIters.first; endpointIter != endpointIters.second; ++endpointIter)
         {
             const Endpoint& endpoint = endpointIter->second;
 
-            auto node = m_runtimeBus->FindNode(endpoint.GetNodeId());
+            auto node = m_graphRequestBus->FindNode(endpoint.GetNodeId());
 
             if (node == nullptr)
             {
-                AZStd::string assetName = m_runtimeBus->GetAssetName();
-                AZ::EntityId assetNodeId = m_runtimeBus->FindAssetNodeIdByRuntimeNodeId(endpoint.GetNodeId());
+                AZStd::string assetName = m_graphRequestBus->GetAssetName();
+                AZ::EntityId assetNodeId = m_graphRequestBus->FindAssetNodeIdByRuntimeNodeId(endpoint.GetNodeId());
 
                 AZ_Error("Script Canvas", false, "Unable to find node with id (id: %s) in the graph '%s'. Most likely the node was serialized with a type that is no longer reflected",
                     assetNodeId.ToString().data(), assetName.data());
@@ -2961,41 +2934,7 @@ namespace ScriptCanvas
 
     bool Node::HasConnectedNodes(const Slot& slot) const
     {
-        return m_runtimeBus->IsEndpointConnected(Endpoint{ GetEntityId(), slot.GetId() });
-    }
-
-    void Node::OnInputChanged(Node& node, const Datum& input, const SlotId& slotID)
-    {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::ScriptCanvas);
-        node.OnInputChanged(input, slotID);
-    }
-
-    void Node::PushOutput(const Datum& output, const Slot& slot) const
-    {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::ScriptCanvas);
-
-        if (slot.IsVariableReference())
-        {
-            GraphVariable* variable = slot.GetVariable();
-
-            if (variable)
-            {
-                ModifiableDatumView datumView;
-                variable->ConfigureDatumView(datumView);
-
-                datumView.AssignToDatum(output);
-            }
-        }
-        else
-            {
-            auto endpointIters = m_runtimeBus->GetConnectedEndpointIterators(Endpoint{ GetEntityId(), slot.GetId() });
-
-            for (auto endpointIter = endpointIters.first; endpointIter != endpointIters.second; ++endpointIter)
-            {
-                Node* node = m_runtimeBus->FindNode(endpointIter->second.GetNodeId());
-                node->SetInput(output, endpointIter->second.GetSlotId());
-            }
-        }
+        return m_graphRequestBus->IsEndpointConnected(Endpoint{ GetEntityId(), slot.GetId() });
     }
 
     void Node::ForEachConnectedNode(const Slot& slot, AZStd::function<void(Node&, const SlotId&)> callable) const
@@ -3018,9 +2957,8 @@ namespace ScriptCanvas
         FindModifiableDatumView(slotId, datumView);
 
         if (datumView.IsValid())
-            {
+        {
             datumView.AssignToDatum(newInput);
-            OnInputChanged((*datumView.GetDatum()), slotId);
         }
     }
 
@@ -3034,7 +2972,6 @@ namespace ScriptCanvas
         if (datumView.IsValid())
         {
             datumView.AssignToDatum(newInput);
-            OnInputChanged((*datumView.GetDatum()), slotId);
         }
     }
 

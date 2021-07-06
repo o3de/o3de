@@ -131,63 +131,6 @@ namespace ScriptCanvas
                 return isValid;
             }
             
-            void WeightedRandomSequencer::OnInputSignal(const SlotId& slotId)
-            {
-                const SlotId inSlotId = WeightedRandomSequencerProperty::GetInSlotId(this);
-                
-                if (slotId == inSlotId)
-                {
-                    int runningTotal = 0;
-                    
-                    AZStd::vector< WeightedStruct > weightedStructs;
-                    weightedStructs.reserve(m_weightedPairings.size());
-                    
-                    for (const WeightedPairing& weightedPairing : m_weightedPairings)
-                    {
-                        const Datum* datum = FindDatum(weightedPairing.m_weightSlotId);
-                        
-                        if (datum)
-                        {
-                            WeightedStruct weightedStruct;
-                            weightedStruct.m_executionSlotId = weightedPairing.m_executionSlotId;
-                            
-                            if (datum->GetType().IS_A(ScriptCanvas::Data::Type::Number()))
-                            {
-                                int weight = aznumeric_cast<int>((*datum->GetAs<Data::NumberType>()));
-                                
-                                runningTotal += weight;                                
-                                weightedStruct.m_totalWeight = runningTotal;
-                            }
-
-                            weightedStructs.emplace_back(weightedStruct);
-                        }                        
-                    }
-                    
-                    // We have no weights. So just trigger the first execution output
-                    // Weighted pairings is controlled to never be empty.
-                    if (runningTotal == 0)
-                    {          
-                        if (!m_weightedPairings.empty())
-                        {
-                            SignalOutput(m_weightedPairings.front().m_executionSlotId);
-                        }
-                        
-                        return;
-                    }
-                    
-                    int weightedResult = MathNodeUtilities::GetRandomIntegral<int>(1, runningTotal);                    
-                    
-                    for (const WeightedStruct& weightedStruct : weightedStructs)
-                    {
-                        if (weightedResult <= weightedStruct.m_totalWeight)
-                        {
-                            SignalOutput(weightedStruct.m_executionSlotId);
-                            break;
-                        }
-                    }
-                }
-            }
-
             SlotId WeightedRandomSequencer::HandleExtension(AZ::Crc32 extensionId)
             {
                 auto weightedPairing = AddWeightedPair();

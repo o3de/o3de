@@ -87,16 +87,9 @@ namespace ScriptCanvas
 
             private:
 
-                void Connect();
-                void Disconnect(bool queueDisconnect = true);
-                void CompleteDisconnection();
-
                 bool CreateEbus();
                 bool SetupHandler();
 
-                void OnInputSignal(const SlotId& slotId) override;
-                void OnInputChanged(const Datum& input, const SlotId& slotId) override;
-                
                 AZ::BehaviorEBusHandler* m_handler = nullptr;
                 AZ::BehaviorEBus* m_ebus = nullptr;
                 AZStd::recursive_mutex m_mutex; // post-serialization
@@ -104,9 +97,6 @@ namespace ScriptCanvas
                 bool IsConfigured() const { return !m_eventMap.empty(); }
 
                 void InitializeEvent(AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> asset, int eventIndex, SlotIdMapping& populationMapping);
-
-                static void OnEventGenericHook(void* userData, const char* eventName, int eventIndex, AZ::BehaviorValueParameter* result, int numParameters, AZ::BehaviorValueParameter* parameters);
-                void OnEvent(const char* eventName, const int eventIndex, AZ::BehaviorValueParameter* result, const int numParameters, AZ::BehaviorValueParameter* parameters);
 
                 bool IsEventConnected(const Internal::ScriptEventEntry& entry) const;
 

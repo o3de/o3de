@@ -33,9 +33,6 @@ namespace ScriptCanvas
                 // Node...
                 void OnInit() override;
                 ////
-
-                void OnInputSignal(const SlotId& slotId) override;
-
             }; 
         }
     }

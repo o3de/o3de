@@ -71,31 +71,6 @@ namespace ScriptCanvas
                 return AddSlot(executionConfiguration);
             }
 
-            void  TargetedSequencer::OnInputSignal(const SlotId& slot)
-            {
-                if (slot != TargetedSequencerProperty::GetInSlotId(this))
-                {
-                    return;
-                }                
-                
-                int targetIndex = TargetedSequencerProperty::GetIndex(this);
-                
-                if (targetIndex < 0
-                    || targetIndex >= m_numOutputs)
-                {
-                    SCRIPTCANVAS_REPORT_ERROR((*this), "Switch node was given an out of bound index.");
-                    return;
-                }                
-                
-                AZStd::string slotName = GenerateOutputName(targetIndex);
-                SlotId outSlotId = GetSlotId(slotName.c_str());
-
-                if (outSlotId.IsValid())
-                {
-                    SignalOutput(outSlotId);
-                }
-            }
-            
             void TargetedSequencer::OnSlotRemoved([[maybe_unused]] const SlotId& slotId)
             {                
                 FixupStateNames();

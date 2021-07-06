@@ -107,50 +107,6 @@ namespace ScriptCanvas
                 }
             }
 
-            void  Sequencer::OnInputSignal(const SlotId& slot)
-            {
-                m_selectedIndex = SequencerProperty::GetIndex(this);
-                m_order = SequencerProperty::GetOrder(this);
-
-                const SlotId inSlot = SequencerProperty::GetInSlotId(this);
-                const SlotId nextSlot = SequencerProperty::GetNextSlotId(this);
-                
-                if (slot == inSlot)
-                {
-                    m_currentIndex = m_selectedIndex;
-                } 
-                else if (slot == nextSlot)
-                {
-                    int step = m_order == Order::Forward ? 1 : -1;
-
-                    m_outputIsValid = false;
-                    int startIndex = m_currentIndex;
-                    while (!m_outputIsValid)
-                    {
-                        m_currentIndex = (m_currentIndex + step + NUMBER_OF_OUTPUTS) % NUMBER_OF_OUTPUTS;
-                        SlotId outSlotId = GetCurrentSlotId();
-                        Slot* outSlot = GetSlot(outSlotId);
-                        if (outSlot)
-                        {
-                            m_outputIsValid = !GetConnectedNodes(*outSlot).empty();
-                        }
-
-                        //Avoid infinite loop when none of the outputs or only the current output connects to other nodes.
-                        if (m_currentIndex == startIndex)
-                        {
-                            m_outputIsValid = false;
-                            break;
-                        }
-                    }
-                }
-
-                if (m_outputIsValid)
-                {
-                    SlotId outSlotId = GetCurrentSlotId();
-                    SignalOutput(outSlotId);
-                }
-            }
-
             SlotId Sequencer::GetCurrentSlotId() const
             {
                 AZStd::string slotName = "Out" + AZStd::to_string(m_currentIndex);

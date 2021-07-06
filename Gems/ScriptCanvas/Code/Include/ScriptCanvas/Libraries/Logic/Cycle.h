@@ -43,13 +43,9 @@ namespace ScriptCanvas
 
                 ConstSlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* /*executionChildSlot*/) const override;
 
-                
-
             protected:
 
                 AZStd::string GetDisplayGroup() const { return "OutputGroup"; }
-
-                void OnInputSignal(const SlotId& slot) override;
                 void OnSlotRemoved(const SlotId& slotId) override;
 
             private:

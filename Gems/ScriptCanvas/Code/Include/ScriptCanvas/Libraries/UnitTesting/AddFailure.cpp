@@ -15,13 +15,7 @@ namespace ScriptCanvas
     {
         namespace UnitTesting
         {
-            void AddFailure::OnInputSignal([[maybe_unused]] const SlotId& slotId)
-            {
-                const auto report = FindDatum(GetSlotId("Report"))->GetAs<Data::StringType>();
-                ScriptCanvas::UnitTesting::Bus::Event(GetOwningScriptCanvasId(), &ScriptCanvas::UnitTesting::BusTraits::AddFailure, *report);
-
-                SignalOutput(GetSlotId("Out"));
-            }
+            
         }
     }
 }

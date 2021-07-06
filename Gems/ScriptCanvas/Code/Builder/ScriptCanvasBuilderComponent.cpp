@@ -13,10 +13,8 @@
 #include <Builder/ScriptCanvasBuilder.h>
 #include <Builder/ScriptCanvasBuilderComponent.h>
 #include <Builder/ScriptCanvasBuilderWorker.h>
-#include <ScriptCanvas/Asset/Functions/RuntimeFunctionAssetHandler.h>
-#include <ScriptCanvas/Asset/Functions/ScriptCanvasFunctionAsset.h>
+#include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
 #include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
-#include <ScriptCanvas/Assets/Functions/ScriptCanvasFunctionAssetHandler.h>
 #include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
 #include <ScriptCanvas/Utils/BehaviorContextUtils.h>
 
@@ -50,7 +48,6 @@ namespace ScriptCanvasBuilder
     SharedHandlers HandleAssetTypes()
     {
         SharedHandlers handlers;
-        handlers.m_editorFunctionAssetHandler = RegisterHandler<ScriptCanvasEditor::ScriptCanvasFunctionAsset, ScriptCanvasEditor::ScriptCanvasFunctionAssetHandler>("scriptcanvas_fn", false);
         handlers.m_editorAssetHandler = RegisterHandler<ScriptCanvasEditor::ScriptCanvasAsset, ScriptCanvasEditor::ScriptCanvasAssetHandler>("scriptcanvas", false);
         handlers.m_subgraphInterfaceHandler = RegisterHandler<ScriptCanvas::SubgraphInterfaceAsset, ScriptCanvas::SubgraphInterfaceAssetHandler>("scriptcanvas_fn_compiled", true);
         handlers.m_runtimeAssetHandler = RegisterHandler<ScriptCanvas::RuntimeAsset, JobDependencyVerificationHandler>("scriptcanvas_compiled", true);
@@ -123,7 +120,6 @@ namespace ScriptCanvasBuilder
             builderDescriptor.m_productsToKeepOnFailure[s_scriptCanvasProcessJobKey] = { AZ_CRC("SubgraphInterface", 0xdfe6dc72) };
             AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBus::Handler::RegisterBuilderInformation, builderDescriptor);
             ScriptCanvas::Grammar::RequestBus::Handler::BusConnect();
-            AzToolsFramework::ToolsAssetSystemBus::Broadcast(&AzToolsFramework::ToolsAssetSystemRequests::RegisterSourceAssetType, azrtti_typeid<ScriptCanvasEditor::ScriptCanvasFunctionAsset>(), ScriptCanvasEditor::ScriptCanvasFunctionAsset::Description::GetFileFilter<ScriptCanvasEditor::ScriptCanvasFunctionAsset>());
         }
 
         m_sharedHandlers = HandleAssetTypes();

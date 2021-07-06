@@ -2248,17 +2248,6 @@ namespace ScriptCanvas
 
             m_subgraphInterface.SetNamespacePath(m_source.m_namespacePath);
 
-#if defined(FUNCTION_LEGACY_SUPPORT_ENABLED)
-            if (m_source.m_graph->IsFunctionGraph())
-            {
-                m_variableScopeMeaning = VariableScopeMeaning_LegacyFunctions::FunctionPrototype;
-                m_subgraphInterface.MarkAllInputOutputShared();
-            }
-            else
-            {
-                m_variableScopeMeaning = VariableScopeMeaning_LegacyFunctions::ValueInitialization;
-            }
-#endif
             // The Order Matters: begin
 
             // add all data to the ACM for easy look up in input/output processing for ACM nodes
