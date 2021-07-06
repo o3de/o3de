@@ -138,6 +138,7 @@ namespace PrefabDependencyViewer
             return;
         }
 
+        GenerateTree(tid);
         window->DisplayTree(tid); // prefabInstance);
         /*
          AZStd::vector<AZ::Entity&> entities;

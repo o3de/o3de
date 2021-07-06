@@ -16,6 +16,7 @@
 #include <AzToolsFramework/Prefab/PrefabDomTypes.h>
 
 #include <AzCore/Math/Vector2.h>
+#include <Utils.h>
 
 namespace PrefabDependencyViewer
 {
@@ -62,5 +63,15 @@ namespace PrefabDependencyViewer
         static PrefabSystemComponentInterface* s_prefabSystemComponentInterface;
 
         static const char* s_prefabViewerTitle;
+        static void GenerateTree(TemplateId tid)
+        {
+            PrefabDom& prefabDom = s_prefabSystemComponentInterface->FindTemplateDom(tid);
+            auto& nestedInstances = prefabDom["Instances"];
+            for (auto& instance : nestedInstances.GetObject())
+            {
+                AZ_TracePrintf("Utils", "%s\n", instance.name.GetString());
+            }
+            // return Graph();
+        }
     };
 } // namespace PrefabDependencyViewer
