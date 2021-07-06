@@ -20,25 +20,19 @@ namespace AzToolsFramework
         if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Right() &&
             mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down)
         {
-            contextMenu.m_shouldOpen = true;
             contextMenu.m_clickPoint =
                 ViewportInteraction::QPointFromScreenPoint(mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates);
-        }
-
-        // disable shouldOpen if right clicking an moving the mouse
-        if (mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Move)
-        {
-            const QPoint currentScreenCoords =
-                ViewportInteraction::QPointFromScreenPoint(mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates);
-
-            contextMenu.m_shouldOpen = contextMenu.m_shouldOpen && (currentScreenCoords - contextMenu.m_clickPoint).manhattanLength() < 2;
         }
 
         // do show the context menu
         if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Right() &&
             mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Up)
         {
-            if (contextMenu.m_shouldOpen)
+            const QPoint currentScreenCoords =
+                ViewportInteraction::QPointFromScreenPoint(mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates);
+
+            // if the mouse hasn't moved, open the pop-up menu
+            if ((currentScreenCoords - contextMenu.m_clickPoint).manhattanLength() < 2)
             {
                 QWidget* parent = nullptr;
                 ViewportInteraction::MainEditorViewportInteractionRequestBus::EventResult(
