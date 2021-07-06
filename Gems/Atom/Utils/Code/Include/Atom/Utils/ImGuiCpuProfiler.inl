@@ -402,13 +402,18 @@ namespace AZ
                         }
                         else if (io.MouseWheel != 0 && io.KeyCtrl) // Zooming
                         {
+                            // We want zooming to be relative to the mouse's current position
                             const float mouseVel = io.MouseWheel;
+                            const float mouseX = ImGui::GetMousePos().x;
 
-                            const auto newStartTick =
-                                m_viewportStartTick + aznumeric_cast<AZStd::sys_time_t>(0.05 * io.MouseWheel * GetViewportTickWidth());
+                            // Find the normalized position of the cursor relative to the window
+                            const float percentWindow = (mouseX - ImGui::GetWindowPos().x) / ImGui::GetWindowWidth();
 
-                            const auto newEndTick =
-                                m_viewportEndTick - aznumeric_cast<AZStd::sys_time_t>(0.05 * io.MouseWheel * GetViewportTickWidth());
+                            const auto overallTickDelta = aznumeric_cast<AZStd::sys_time_t>(0.05 * io.MouseWheel * GetViewportTickWidth());
+
+                            // Split the overall delta between the two bounds depending on mouse pos
+                            const auto newStartTick = m_viewportStartTick + aznumeric_cast<AZStd::sys_time_t>(percentWindow * overallTickDelta);
+                            const auto newEndTick = m_viewportEndTick - aznumeric_cast<AZStd::sys_time_t>((1-percentWindow) * overallTickDelta);
 
                             // Avoid zooming too much, start tick should always be less than end tick
                             if (newStartTick < newEndTick)
