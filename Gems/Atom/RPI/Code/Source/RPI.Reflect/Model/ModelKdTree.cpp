@@ -86,8 +86,9 @@ namespace AZ
             // further and the split failed
             // Additionally, if too many triangles straddle the split-axis,
             // the triangles are too close and the split failed
+            // [ATOM-15944] - Use a more sophisticated method to terminate KdTree generation
             return indices.size() != outInfo.m_aboveIndices.size() && indices.size() != outInfo.m_belowIndices.size()
-                && static_cast<float>(outInfo.m_aboveIndices.size() + outInfo.m_belowIndices.size()) / static_cast<float>(indices.size()) < s_MaximumSplitAxisStraddlingTriangles;
+                && aznumeric_cast<float>(outInfo.m_aboveIndices.size() + outInfo.m_belowIndices.size()) / aznumeric_cast<float>(indices.size()) < s_MaximumSplitAxisStraddlingTriangles;
         }
 
         bool ModelKdTree::Build(const ModelAsset* model)
