@@ -42,28 +42,6 @@ namespace AzToolsFramework
 {
     AZ_CLASS_ALLOCATOR_IMPL(EditorTransformComponentSelection, AZ::SystemAllocator, 0)
 
-    /// @name Reverse URLs.
-    /// Used to identify common actions and override them when necessary.
-    //@{
-    static const AZ::Crc32 LockSelection = AZ_CRC_CE("com.o3de.action.editortransform.lockselect");
-    static const AZ::Crc32 UnlockSelection = AZ_CRC_CE("com.o3de.action.editortransform.unlockselect");
-    static const AZ::Crc32 hideSelection = AZ_CRC_CE("com.o3de.action.editortransform.hideselect");
-    static const AZ::Crc32 ShowSelection = AZ_CRC_CE("com.o3de.action.editortransform.showselect");
-    static const AZ::Crc32 UnfreezeAll = AZ_CRC_CE("com.o3de.action.editortransform.unfreezeall");
-    static const AZ::Crc32 UnhideAll = AZ_CRC_CE("com.o3de.action.editortransform.unhideall");
-    static const AZ::Crc32 SelectAll = AZ_CRC_CE("com.o3de.action.editortransform.selectall");
-    static const AZ::Crc32 InvertSelect = AZ_CRC_CE("com.o3de.action.editortransform.invertselect");
-    static const AZ::Crc32 DuplicateSelect = AZ_CRC_CE("com.o3de.action.editortransform.duplicateselect");
-    static const AZ::Crc32 DeleteSelect = AZ_CRC_CE("com.o3de.action.editortransform.deleteselect");
-    static const AZ::Crc32 EditEscaspe = AZ_CRC_CE("com.o3de.action.editortransform.editescape");
-    static const AZ::Crc32 EditPivot = AZ_CRC_CE("com.o3de.action.editortransform.editpivot");
-    static const AZ::Crc32 EditReset = AZ_CRC_CE("com.o3de.action.editortransform.editreset");
-    static const AZ::Crc32 EditResetManipulator = AZ_CRC_CE("com.o3de.action.editortransform.editresetmanipulator");
-    static const AZ::Crc32 EditResetLocal = AZ_CRC_CE("com.o3de.action.editortransform.editresetlocal");
-    static const AZ::Crc32 EditResetWorld = AZ_CRC_CE("com.o3de.action.editortransform.editresetworld");
-    static const AZ::Crc32 ViewportUiVisible = AZ_CRC_CE("com.o3de.action.editortransform.viewportuivisible");
-    //@}
-
     AZ_CVAR(
         float,
         cl_viewportGizmoAxisLineWidth,
@@ -2168,7 +2146,7 @@ namespace AzToolsFramework
 
         // hide selection
         AddAction(
-            m_actions, { QKeySequence(Qt::Key_H) }, hideSelection, s_hideSelectionTitle, s_hideSelectionDesc,
+            m_actions, { QKeySequence(Qt::Key_H) }, HideSelection, s_hideSelectionTitle, s_hideSelectionDesc,
             [showHide]()
             {
                 showHide(false);
@@ -2184,7 +2162,7 @@ namespace AzToolsFramework
 
         // unlock all entities in the level/scene
         AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_L) }, UnfreezeAll, s_unlockAllTitle, s_unlockAllDesc,
+            m_actions, { QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_L) }, UnlockAll, s_unlockAllTitle, s_unlockAllDesc,
             []()
             {
                 AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
