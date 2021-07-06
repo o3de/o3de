@@ -41,6 +41,28 @@ namespace AzToolsFramework
 {
     AZ_CLASS_ALLOCATOR_IMPL(EditorTransformComponentSelection, AZ::SystemAllocator, 0)
 
+    /// @name Reverse URLs.
+    /// Used to identify common actions and override them when necessary.
+    //@{
+    static const AZ::Crc32 SLockSelection = AZ_CRC_CE("com.o3de.action.editortransform.lockselect");
+    static const AZ::Crc32 SUnlockSelection = AZ_CRC_CE("com.o3de.action.editortransform.unlockselect");
+    static const AZ::Crc32 ShideSelection = AZ_CRC_CE("com.o3de.action.editortransform.hideselect");
+    static const AZ::Crc32 SShowSelection = AZ_CRC_CE("com.o3de.action.editortransform.showselect");
+    static const AZ::Crc32 SUnfreezeAll = AZ_CRC_CE("com.o3de.action.editortransform.unfreezeall");
+    static const AZ::Crc32 SUnhideAll = AZ_CRC_CE("com.o3de.action.editortransform.unhideall");
+    static const AZ::Crc32 SSelectAll = AZ_CRC_CE("com.o3de.action.editortransform.selectall");
+    static const AZ::Crc32 SInvertSelect = AZ_CRC_CE("com.o3de.action.editortransform.invertselect");
+    static const AZ::Crc32 SDuplicateSelect = AZ_CRC_CE("com.o3de.action.editortransform.duplicateselect");
+    static const AZ::Crc32 SDeleteSelect = AZ_CRC_CE("com.o3de.action.editortransform.deleteselect");
+    static const AZ::Crc32 SEditEscaspe = AZ_CRC_CE("com.o3de.action.editortransform.editescape");
+    static const AZ::Crc32 SEditPivot = AZ_CRC_CE("com.o3de.action.editortransform.editpivot");
+    static const AZ::Crc32 SEditReset = AZ_CRC_CE("com.o3de.action.editortransform.editreset");
+    static const AZ::Crc32 SEditResetManipulator = AZ_CRC_CE("com.o3de.action.editortransform.editresetmanipulator");
+    static const AZ::Crc32 SEditResetLocal = AZ_CRC_CE("com.o3de.action.editortransform.editresetlocal");
+    static const AZ::Crc32 SEditResetWorld = AZ_CRC_CE("com.o3de.action.editortransform.editresetworld");
+    static const AZ::Crc32 SViewportUiVisible = AZ_CRC_CE("com.o3de.action.editortransform.viewportuivisible");
+    //@}
+
     AZ_CVAR(
         float,
         cl_viewportGizmoAxisLineWidth,
@@ -2076,18 +2098,23 @@ namespace AzToolsFramework
         }
     }
 
-     void EditorTransformComponentSelection::RegisterActions()
+    void EditorTransformComponentSelection::RegisterActions()
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+
         // note: see Code/Sandbox/Editor/Resource.h for ID_EDIT_<action> ids
+
         const auto lockUnlock = [this](const bool lock)
         {
             AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+
             ScopedUndoBatch undoBatch(s_lockSelectionUndoRedoDesc);
+
             if (m_entityIdManipulators.m_manipulators)
             {
                 CreateEntityManipulatorDeselectCommand(undoBatch);
             }
+
             // make a copy of selected entity ids
             const auto selectedEntityIds = EntityIdVectorFromContainer(m_selectedEntityIds);
             for (AZ::EntityId entityId : selectedEntityIds)
@@ -2095,38 +2122,37 @@ namespace AzToolsFramework
                 ScopedUndoBatch::MarkEntityDirty(entityId);
                 SetEntityLockState(entityId, lock);
             }
+
             RegenerateManipulators();
         };
 
         // lock selection
-        static const AZ::Crc32 s_lockSelection = AZ_CRC_CE("com.amazon.action.editortransform.lockselect");
         AddAction(
-            m_actions, { QKeySequence(Qt::Key_L) },
-            s_lockSelection, s_lockSelectionTitle,
-            s_lockSelectionDesc,
+            m_actions, { QKeySequence(Qt::Key_L) }, SLockSelection, s_lockSelectionTitle, s_lockSelectionDesc,
             [lockUnlock]()
             {
                 lockUnlock(true);
             });
 
         // unlock selection
-        static const AZ::Crc32 s_unlockSelection = AZ_CRC_CE("com.amazon.action.editortransform.unlockselect");
         AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_L) },
-            s_unlockSelection, s_lockSelectionTitle,
-            s_lockSelectionDesc,
+            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_L) }, SUnlockSelection, s_lockSelectionTitle, s_lockSelectionDesc,
             [lockUnlock]()
             {
                 lockUnlock(false);
             });
+
         const auto showHide = [this](const bool show)
         {
             AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+
             ScopedUndoBatch undoBatch(s_hideSelectionUndoRedoDesc);
+
             if (m_entityIdManipulators.m_manipulators)
             {
                 CreateEntityManipulatorDeselectCommand(undoBatch);
             }
+
             // make a copy of selected entity ids
             const auto selectedEntityIds = EntityIdVectorFromContainer(m_selectedEntityIds);
             for (AZ::EntityId entityId : selectedEntityIds)
@@ -2134,39 +2160,35 @@ namespace AzToolsFramework
                 ScopedUndoBatch::MarkEntityDirty(entityId);
                 SetEntityVisibility(entityId, show);
             }
+
             RegenerateManipulators();
         };
 
         // hide selection
-        static const AZ::Crc32 s_hideSelection = AZ_CRC_CE("com.amazon.action.editortransform.hideselect");
         AddAction(
-            m_actions, { QKeySequence(Qt::Key_H) },
-            s_hideSelection, s_hideSelectionTitle, s_hideSelectionDesc,
+            m_actions, { QKeySequence(Qt::Key_H) }, ShideSelection, s_hideSelectionTitle, s_hideSelectionDesc,
             [showHide]()
             {
                 showHide(false);
             });
 
         // show selection
-        static const AZ::Crc32 s_showSelection = AZ_CRC_CE("com.amazon.action.editortransform.showselect");
         AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_H) },
-            s_showSelection, s_hideSelectionTitle,
-            s_hideSelectionDesc,
+            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_H) }, SShowSelection, s_hideSelectionTitle, s_hideSelectionDesc,
             [showHide]()
             {
                 showHide(true);
             });
 
         // unlock all entities in the level/scene
-        static const AZ::Crc32 s_unfreezeAll = AZ_CRC_CE("com.amazon.action.editortransform.unfreezeall");
         AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_L) },
-            s_unfreezeAll, s_unlockAllTitle, s_unlockAllDesc,
+            m_actions, { QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_L) }, SUnfreezeAll, s_unlockAllTitle, s_unlockAllDesc,
             []()
             {
                 AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+
                 ScopedUndoBatch undoBatch(s_unlockAllUndoRedoDesc);
+
                 EnumerateEditorEntities(
                     [](AZ::EntityId entityId)
                     {
@@ -2176,14 +2198,14 @@ namespace AzToolsFramework
             });
 
         // show all entities in the level/scene
-        static const AZ::Crc32 s_unhideAll = AZ_CRC_CE("com.amazon.action.editortransform.unhideall");
         AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_H) },
-            s_unhideAll, s_showAllTitle, s_showAllDesc,
+            m_actions, { QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_H) }, SUnhideAll, s_showAllTitle, s_showAllDesc,
             []()
             {
                 AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+
                 ScopedUndoBatch undoBatch(s_showAllEntitiesUndoRedoDesc);
+
                 EnumerateEditorEntities(
                     [](AZ::EntityId entityId)
                     {
@@ -2193,23 +2215,26 @@ namespace AzToolsFramework
             });
 
         // select all entities in the level/scene
-        static const AZ::Crc32 s_selectAll = AZ_CRC_CE("com.amazon.action.editortransform.selectall");
         AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_A) },
-            s_selectAll, s_selectAllTitle, s_selectAllDesc,
+            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_A) }, SSelectAll, s_selectAllTitle, s_selectAllDesc,
             [this]()
             {
                 AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+
                 ScopedUndoBatch undoBatch(s_selectAllEntitiesUndoRedoDesc);
+
                 if (m_entityIdManipulators.m_manipulators)
                 {
                     auto manipulatorCommand =
                         AZStd::make_unique<EntityManipulatorCommand>(CreateManipulatorCommandStateFromSelf(), s_manipulatorUndoRedoName);
+
                     // note, nothing will change that the manipulatorCommand needs to keep track
                     // for after so no need to call SetManipulatorAfter
+
                     manipulatorCommand->SetParent(undoBatch.GetUndoBatch());
                     manipulatorCommand.release();
                 }
+
                 EnumerateEditorEntities(
                     [this](AZ::EntityId entityId)
                     {
@@ -2218,33 +2243,38 @@ namespace AzToolsFramework
                             AddEntityToSelection(entityId);
                         }
                     });
+
                 auto nextEntityIds = EntityIdVectorFromContainer(m_selectedEntityIds);
+
                 auto selectionCommand = AZStd::make_unique<SelectionCommand>(nextEntityIds, s_selectAllEntitiesUndoRedoDesc);
                 selectionCommand->SetParent(undoBatch.GetUndoBatch());
                 selectionCommand.release();
+
                 SetSelectedEntities(nextEntityIds);
                 RegenerateManipulators();
             });
 
         // invert current selection
-        static const AZ::Crc32 s_invertSelect = AZ_CRC_CE("com.amazon.action.editortransform.invertselect");
         AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_I) },
-            s_invertSelect, s_invertSelectionTitle,
-            s_invertSelectionDesc,
+            m_actions, { QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_I) }, SInvertSelect, s_invertSelectionTitle, s_invertSelectionDesc,
             [this]()
             {
                 AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+
                 ScopedUndoBatch undoBatch(s_invertSelectionUndoRedoDesc);
+
                 if (m_entityIdManipulators.m_manipulators)
                 {
                     auto manipulatorCommand =
                         AZStd::make_unique<EntityManipulatorCommand>(CreateManipulatorCommandStateFromSelf(), s_manipulatorUndoRedoName);
+
                     // note, nothing will change that the manipulatorCommand needs to keep track
                     // for after so no need to call SetManipulatorAfter
+
                     manipulatorCommand->SetParent(undoBatch.GetUndoBatch());
                     manipulatorCommand.release();
                 }
+
                 EntityIdSet entityIds;
                 EnumerateEditorEntities(
                     [this, &entityIds](AZ::EntityId entityId)
@@ -2258,78 +2288,78 @@ namespace AzToolsFramework
                             }
                         }
                     });
+
                 m_selectedEntityIds = entityIds;
+
                 auto nextEntityIds = EntityIdVectorFromContainer(entityIds);
+
                 auto selectionCommand = AZStd::make_unique<SelectionCommand>(nextEntityIds, s_invertSelectionUndoRedoDesc);
                 selectionCommand->SetParent(undoBatch.GetUndoBatch());
                 selectionCommand.release();
+
                 SetSelectedEntities(nextEntityIds);
                 RegenerateManipulators();
             });
 
         // duplicate selection
-        static const AZ::Crc32 s_duplicateSelect = AZ_CRC_CE("com.amazon.action.editortransform.duplicateselect");
         AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_D) },
-            s_duplicateSelect, s_duplicateTitle, s_duplicateDesc,
+            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_D) }, SDuplicateSelect, s_duplicateTitle, s_duplicateDesc,
             []()
             {
                 AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+
                 // Clear Widget selection - Prevents issues caused by cloning entities while a property in the Reflected Property Editor
                 // is being edited.
                 if (QApplication::focusWidget())
                 {
                     QApplication::focusWidget()->clearFocus();
                 }
+
                 ScopedUndoBatch undoBatch(s_duplicateUndoRedoDesc);
                 auto selectionCommand = AZStd::make_unique<SelectionCommand>(EntityIdList(), s_duplicateUndoRedoDesc);
                 selectionCommand->SetParent(undoBatch.GetUndoBatch());
                 selectionCommand.release();
+
                 bool handled = false;
                 EditorRequestBus::Broadcast(&EditorRequests::CloneSelection, handled);
+
                 // selection update handled in AfterEntitySelectionChanged
             });
 
         // delete selection
-        static const AZ::Crc32 s_deleteSelect = AZ_CRC_CE("com.amazon.action.editortransform.deleteselect");
         AddAction(
-            m_actions, { QKeySequence(Qt::Key_Delete) },
-            s_deleteSelect, s_deleteTitle, s_deleteDesc,
+            m_actions, { QKeySequence(Qt::Key_Delete) }, SDeleteSelect, s_deleteTitle, s_deleteDesc,
             [this]()
             {
                 AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+
                 ScopedUndoBatch undoBatch(s_deleteUndoRedoDesc);
+
                 CreateEntityManipulatorDeselectCommand(undoBatch);
+
                 ToolsApplicationRequestBus::Broadcast(
                     &ToolsApplicationRequests::DeleteEntitiesAndAllDescendants, EntityIdVectorFromContainer(m_selectedEntityIds));
+
                 m_selectedEntityIds.clear();
                 m_pivotOverrideFrame.Reset();
             });
 
-        static const AZ::Crc32 s_editEscaspe = AZ_CRC_CE("com.amazon.action.editortransform.editescape");
         AddAction(
-            m_actions, { QKeySequence(Qt::Key_Space) },
-            s_editEscaspe, "", "",
+            m_actions, { QKeySequence(Qt::Key_Space) }, SEditEscaspe, "", "",
             [this]()
             {
                 DeselectEntities();
             });
 
-        static const AZ::Crc32 s_editPivot = AZ_CRC_CE("com.amazon.action.editortransform.editpivot");
         AddAction(
-            m_actions, { QKeySequence(Qt::Key_P) },
-            s_editPivot, s_togglePivotTitleEditMenu,
-            s_togglePivotDesc,
+            m_actions, { QKeySequence(Qt::Key_P) }, SEditPivot, s_togglePivotTitleEditMenu, s_togglePivotDesc,
             [this]()
             {
                 ToggleCenterPivotSelection();
             });
 
-        static const AZ::Crc32 s_editReset = AZ_CRC_CE("com.amazon.action.editortransform.editreset");
         AddAction(
-            m_actions, { QKeySequence(Qt::Key_R) },
-            s_editReset, s_resetEntityTransformTitle,
-            s_resetEntityTransformDesc,
+            m_actions, { QKeySequence(Qt::Key_R) }, SEditReset, s_resetEntityTransformTitle, s_resetEntityTransformDesc,
             [this]()
             {
                 switch (m_mode)
@@ -2346,18 +2376,12 @@ namespace AzToolsFramework
                 }
             });
 
-        static const AZ::Crc32 s_editResetManipulator = AZ_CRC_CE("com.amazon.action.editortransform.editresetmanipulator");
         AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_R) },
-            s_editResetManipulator,
-            s_resetManipulatorTitle, s_resetManipulatorDesc,
+            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_R) }, SEditResetManipulator, s_resetManipulatorTitle, s_resetManipulatorDesc,
             AZStd::bind(AZStd::mem_fn(&EditorTransformComponentSelection::DelegateClearManipulatorOverride), this));
 
-        static const AZ::Crc32 s_editResetLocal = AZ_CRC_CE("com.amazon.action.editortransform.editresetlocal");
         AddAction(
-            m_actions, { QKeySequence(Qt::ALT + Qt::Key_R) },
-            s_editResetLocal,
-            s_resetTransformLocalTitle, s_resetTransformLocalDesc,
+            m_actions, { QKeySequence(Qt::ALT + Qt::Key_R) }, SEditResetLocal, s_resetTransformLocalTitle, s_resetTransformLocalDesc,
             [this]()
             {
                 switch (m_mode)
@@ -2374,11 +2398,8 @@ namespace AzToolsFramework
                 }
             });
 
-        static const AZ::Crc32 s_editResetWorld = AZ_CRC_CE("com.amazon.action.editortransform.editresetworld");
         AddAction(
-            m_actions, { QKeySequence(Qt::SHIFT + Qt::Key_R) },
-            s_editResetWorld,
-            s_resetTransformWorldTitle, s_resetTransformWorldDesc,
+            m_actions, { QKeySequence(Qt::SHIFT + Qt::Key_R) }, SEditResetWorld, s_resetTransformWorldTitle, s_resetTransformWorldDesc,
             [this]()
             {
                 switch (m_mode)
@@ -2398,15 +2419,13 @@ namespace AzToolsFramework
                 }
             });
 
-        static const AZ::Crc32 s_ViewportUiVisible = AZ_CRC_CE("com.amazon.action.editortransform.viewportuivisible");
         AddAction(
-            m_actions, { QKeySequence(Qt::Key_U) },
-            s_ViewportUiVisible, "Toggle Viewport UI",
-            "Hide/Show Viewport UI",
+            m_actions, { QKeySequence(Qt::Key_U) }, SViewportUiVisible, "Toggle Viewport UI", "Hide/Show Viewport UI",
             [this]()
             {
                 SetAllViewportUiVisible(!m_viewportUiVisible);
             });
+
         EditorMenuRequestBus::Broadcast(&EditorMenuRequests::RestoreEditMenuToDefault);
     }
 
