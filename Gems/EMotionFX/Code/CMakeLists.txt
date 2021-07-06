@@ -111,6 +111,10 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
             PUBLIC
                 EMFX_EMSTUDIOLYEMBEDDED
                 EMOTIONFXANIMATION_EDITOR
+        RUNTIME_DEPENDENCIES
+            AZ::SceneCore
+            AZ::SceneData
+            AZ::SceneUI
     )
 
     ly_add_target(
