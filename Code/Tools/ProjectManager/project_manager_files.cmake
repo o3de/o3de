@@ -39,8 +39,10 @@ set(FILES
     Source/ProjectInfo.cpp
     Source/ProjectUtils.h
     Source/ProjectUtils.cpp
-    Source/ProjectBuilder.h
-    Source/ProjectBuilder.cpp
+    Source/ProjectBuilderWorker.h
+    Source/ProjectBuilderWorker.cpp
+    Source/ProjectBuilderController.h
+    Source/ProjectBuilderController.cpp
     Source/UpdateProjectSettingsScreen.h
     Source/UpdateProjectSettingsScreen.cpp
     Source/NewProjectSettingsScreen.h

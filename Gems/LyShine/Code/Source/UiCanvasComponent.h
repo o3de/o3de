@@ -99,11 +99,6 @@ public: // member functions
     AZ::EntityId FindInteractableToHandleEvent(AZ::Vector2 point) override;
 
     bool SaveToXml(const string& assetIdPathname, const string& sourceAssetPathname) override;
-    bool SaveAsPrefab(const string& pathname, AZ::Entity* entity) override;
-    UiCanvasInterface::ErrorCode CheckElementValidToSaveAsPrefab(AZ::Entity* entity) override;
-    AZ::Entity* LoadFromPrefab(const string& pathname,
-        bool makeUniqueName,
-        AZ::Entity* optionalInsertionPoint) override;
     void FixupCreatedEntities(LyShine::EntityArray topLevelEntities, bool makeUniqueNamesAndIds, AZ::Entity* optionalInsertionPoint) override;
     void AddElement(AZ::Entity* element, AZ::Entity* parent, AZ::Entity* insertBefore) override;
     void ReinitializeElements() override;

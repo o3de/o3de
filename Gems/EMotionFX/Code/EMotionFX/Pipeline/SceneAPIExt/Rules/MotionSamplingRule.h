@@ -30,7 +30,7 @@ namespace EMotionFX
 
                 enum class SampleRateMethod : AZ::u8
                 {
-                    FromFbx = 0,
+                    FromSourceScene = 0,
                     Custom = 1
                 };
 
@@ -71,7 +71,7 @@ namespace EMotionFX
                 AZ::Crc32 GetVisibilityAllowedSizePercentage() const;
                 
                 float m_customSampleRate = 60.0f;
-                SampleRateMethod m_sampleRateMethod = SampleRateMethod::FromFbx;
+                SampleRateMethod m_sampleRateMethod = SampleRateMethod::FromSourceScene;
                 AZ::TypeId m_motionDataType = AZ::TypeId::CreateNull();
                 bool m_keepDuration = true;
 

@@ -49,7 +49,7 @@ namespace AZ
                 SCENE_DATA_API void GetDebugOutput(AZ::SceneAPI::Utilities::DebugOutput& output) const override;
             protected:
                 AZStd::vector<AZ::Vector4>              m_tangents;
-                AZ::SceneAPI::DataTypes::TangentSpace   m_tangentSpace = AZ::SceneAPI::DataTypes::TangentSpace::FromFbx;
+                AZ::SceneAPI::DataTypes::TangentSpace   m_tangentSpace = AZ::SceneAPI::DataTypes::TangentSpace::FromSourceScene;
                 size_t                                  m_setIndex = 0;
             };
 

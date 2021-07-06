@@ -20,7 +20,7 @@ namespace AZ
                 SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
                 if (serializeContext)
                 {
-                    serializeContext->Class<MeshVertexBitangentData>()->Version(1);
+                    serializeContext->Class<MeshVertexBitangentData>()->Version(2);
                 }
 
                 BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context);
@@ -34,7 +34,7 @@ namespace AZ
                         ->Method("GetBitangentSetIndex", &MeshVertexBitangentData::GetBitangentSetIndex)
                         ->Method("GetTangentSpace", &MeshVertexBitangentData::GetTangentSpace)
                         ->Enum<(int)SceneAPI::DataTypes::TangentSpace::EMotionFX>("EMotionFX")
-                        ->Enum<(int)SceneAPI::DataTypes::TangentSpace::FromFbx>("FromFbx")
+                        ->Enum<(int)SceneAPI::DataTypes::TangentSpace::FromSourceScene>("FromSourceScene")
                         ->Enum<(int)SceneAPI::DataTypes::TangentSpace::MikkT>("MikkT");
                 }
             }

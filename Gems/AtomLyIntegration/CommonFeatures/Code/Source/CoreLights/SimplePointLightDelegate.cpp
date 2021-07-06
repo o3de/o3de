@@ -48,9 +48,9 @@ namespace AZ
             if (isSelected)
             {
                 debugDisplay.SetColor(color);
-
+                
                 // Draw a sphere for the attenuation radius
-                debugDisplay.DrawWireSphere(transform.GetTranslation(), CalculateAttenuationRadius(AreaLightComponentConfig::CutoffIntensity));
+                debugDisplay.DrawWireSphere(transform.GetTranslation(), GetConfig()->m_attenuationRadius);
             }
         }
     } // namespace Render
