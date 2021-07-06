@@ -1,6 +1,6 @@
-
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of
+ * this distribution.
  *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -2082,8 +2082,6 @@ namespace AzToolsFramework
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
-        // note: see Code/Sandbox/Editor/Resource.h for ID_EDIT_<action> ids
-
         const auto lockUnlock = [this](const bool lock)
         {
             AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
@@ -2179,7 +2177,7 @@ namespace AzToolsFramework
 
         // show all entities in the level/scene
         AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_H) }, UnhideAll, s_showAllTitle, s_showAllDesc,
+            m_actions, { QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_H) }, ShowAll, s_showAllTitle, s_showAllDesc,
             []()
             {
                 AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);

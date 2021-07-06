@@ -21,7 +21,7 @@ namespace AzToolsFramework
     constexpr inline AZ::Crc32 HideSelection = AZ_CRC_CE("com.o3de.action.editortransform.hideselect");
     constexpr inline AZ::Crc32 ShowSelection = AZ_CRC_CE("com.o3de.action.editortransform.showselect");
     constexpr inline AZ::Crc32 UnlockAll = AZ_CRC_CE("com.o3de.action.editortransform.unlockall");
-    constexpr inline AZ::Crc32 UnhideAll = AZ_CRC_CE("com.o3de.action.editortransform.unhideall");
+    constexpr inline AZ::Crc32 ShowAll = AZ_CRC_CE("com.o3de.action.editortransform.unhideall");
     constexpr inline AZ::Crc32 SelectAll = AZ_CRC_CE("com.o3de.action.editortransform.selectall");
     constexpr inline AZ::Crc32 InvertSelect = AZ_CRC_CE("com.o3de.action.editortransform.invertselect");
     constexpr inline AZ::Crc32 DuplicateSelect = AZ_CRC_CE("com.o3de.action.editortransform.duplicateselect");
