@@ -1,14 +1,13 @@
 /*
  * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "EditorContextMenu.h"
-
-#include "AzToolsFramework/Viewport/ViewportMessages.h"
-#include "Editor/EditorContextMenuBus.h"
+#include <AzToolsFramework/Viewport/EditorContextMenu.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <Editor/EditorContextMenuBus.h>
 
 namespace AzToolsFramework
 {
@@ -43,15 +42,16 @@ namespace AzToolsFramework
                 contextMenu.m_menu->setAttribute(Qt::WA_DeleteOnClose);
                 contextMenu.m_menu->setParent(parent);
 
-                // Populate global context menu.
+                // populate global context menu.
                 const int contextMenuFlag = 0;
-                AzToolsFramework::EditorContextMenuBus::Broadcast(&AzToolsFramework::EditorContextMenuEvents::PopulateEditorGlobalContextMenu, contextMenu.m_menu.data(),
+                AzToolsFramework::EditorContextMenuBus::Broadcast(
+                    &AzToolsFramework::EditorContextMenuEvents::PopulateEditorGlobalContextMenu, contextMenu.m_menu.data(),
                     AzFramework::Vector2FromScreenPoint(mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates),
                     contextMenuFlag);
 
                 if (!contextMenu.m_menu->isEmpty())
                 {
-                    // Use popup instead of exec; this avoids blocking input event processing while the menu dialog is active
+                    // use popup instead of exec; this avoids blocking input event processing while the menu dialog is active
                     contextMenu.m_menu->popup(QCursor::pos());
                 }
             }
