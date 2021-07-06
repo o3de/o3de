@@ -25,16 +25,16 @@
 
 #pragma once
 
-#include <HairUtilities.azsli>
+
 //==============================================================================
 //                    Atom Lighting & Light Types
 //==============================================================================
 // Include options first
 #include <Atom/Features/PBR/LightingOptions.azsli>
 
-// Then include custom surface and lighting data types
+#include <HairSurface.azsli>
+#include <HairUtilities.azsli>
 #include <Atom/Features/PBR/Lighting/LightingData.azsli>
-#include <Atom/Features/PBR/Surfaces/StandardSurface.azsli>
 
 #include <Atom/Features/PBR/LightingUtils.azsli>
 #include <Atom/Features/PBR/Microfacet/Brdf.azsli>
@@ -144,7 +144,7 @@ void ApplySimplePointLight(ViewSrg::SimplePointLight light, Surface surface, ino
         float3 lightIntensity = (light.m_rgbIntensityCandelas / d2) * radiusAttenuation;
 
         float3 dirToLight = normalize(posToLight);
-        SetNormal(surface.clearCoat.normal, dirToLight, surface, lightingData);
+        SetNormal(surface.tangent, dirToLight, surface, lightingData);
 
         // Diffuse contribution
         lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, dirToLight);
@@ -219,7 +219,7 @@ void ApplySimpleSpotLight(ViewSrg::SimpleSpotLight light, Surface surface, inout
             lightIntensity *= penumbraMask;
         }
 
-        SetNormal(surface.clearCoat.normal, dirToLight, surface, lightingData);
+        SetNormal(surface.tangent, dirToLight, surface, lightingData);
 
         // Tranmission contribution
         lightingData.translucentBackLighting += GetHairBackLighting(surface, lightingData, lightIntensity, dirToLight, 1.0);
@@ -261,7 +261,7 @@ void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingD
         float3 lightIntensity = (light.m_rgbIntensityCandelas / d2) * radiusAttenuation;
 
         float3 dirToLight = normalize(posToLight);
-        SetNormal(surface.clearCoat.normal, dirToLight, surface, lightingData);
+        SetNormal(surface.tangent, dirToLight, surface, lightingData);
 
         // Diffuse contribution
         lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, dirToLight);
@@ -308,6 +308,8 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
     float litRatio = 1.0f;
     float backShadowRatio = 0.0f;
 
+    SetNormal(surface.tangent, lightingData.dirToCamera, surface, lightingData);
+
 //    if (o_enableShadows && shadowIndex <  SceneSrg::m_directionalLightCount)
     if (shadowIndex <  SceneSrg::m_directionalLightCount)
     {
@@ -337,8 +339,6 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
         lightDirToReflectionDirLen = min(light.m_angularRadius, lightDirToReflectionDirLen);
         dirToLight += lightDirToReflectionDir * lightDirToReflectionDirLen;
         dirToLight = normalize(dirToLight);
-
-        SetNormal(surface.clearCoat.normal, dirToLight, surface, lightingData);
 
         // [GFX TODO][ATOM-2012] care of multiple directional light
         // Currently shadow check is done only for index == shadowIndex.
@@ -388,7 +388,7 @@ float3 ApplyIblSpecular(Surface surface, LightingData lightingData)
 
 void ApplyIBL(Surface surface, inout LightingData lightingData)
 {
-    SetNormal(surface.clearCoat.normal, lightingData.dirToCamera, surface, lightingData);
+    SetNormal(surface.tangent, lightingData.dirToCamera, surface, lightingData);
 
     float3 iblDiffuse = ApplyIblDiffuse(surface, lightingData);
     float3 iblSpecular = ApplyIblSpecular(surface, lightingData);
