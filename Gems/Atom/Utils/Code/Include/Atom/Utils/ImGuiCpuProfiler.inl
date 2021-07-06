@@ -504,7 +504,7 @@ namespace AZ
             }
         }
 
-        inline void ImGuiCpuProfiler::DrawBlock(const TimeRegion& block, u64 targetRow, AZStd::thread_id threadId)
+        inline void ImGuiCpuProfiler::DrawBlock(const TimeRegion& block, u64 targetRow, [[maybe_unused]] AZStd::thread_id threadId)
         {
             float wy = ImGui::GetWindowPos().y - ImGui::GetScrollY();
 
@@ -563,7 +563,6 @@ namespace AZ
 
                 ImGui::BeginTooltip();
                 ImGui::Text("%s::%s", block.m_groupRegionName->m_groupName, block.m_groupRegionName->m_regionName);
-                ImGui::Text("Thread %zu", static_cast<size_t>(threadId));
                 ImGui::Text("Execution time: %.3f ms", CpuProfilerImGuiHelper::TicksToMs(block.m_endTick - block.m_startTick));
                 ImGui::Text("%lld => %lld", block.m_startTick, block.m_endTick);
                 ImGui::EndTooltip();
