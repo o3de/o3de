@@ -492,7 +492,7 @@ namespace CommandSystem
         commandString = AZStd::string::format("CreateActorInstance -actorID %i -actorInstanceID %i", mOldActorID, actorInstanceID);
         commandGroup.AddCommandString(commandString.c_str());
 
-        commandString = AZStd::string::format("AdjustActorInstance -actorInstanceID %i -pos \"%s\" -rot \"%s\" -scale \"%s\" -lodLevel %d -isVisible \"%s\" -doRender \"%s\"",
+        commandString = AZStd::string::format("AdjustActorInstance -actorInstanceID %i -pos \"%s\" -rot \"%s\" -scale \"%s\" -lodLevel %zu -isVisible \"%s\" -doRender \"%s\"",
             actorInstanceID,
             AZStd::to_string(mOldPosition).c_str(),
             AZStd::to_string(mOldRotation).c_str(),

@@ -268,7 +268,7 @@ namespace EMStudio
             QTableWidgetItem* tableItemName         = new QTableWidgetItem(mTempString.c_str());
             mTempString = attachment->GetIsInfluencedByMultipleJoints() ? "Yes" : "No";
             QTableWidgetItem* tableItemDeformable   = new QTableWidgetItem(mTempString.c_str());
-            mTempString = AZStd::string::format("%i", attachmentInstance->GetNumNodes());
+            mTempString = AZStd::string::format("%zu", attachmentInstance->GetNumNodes());
             QTableWidgetItem* tableItemNumNodes     = new QTableWidgetItem(mTempString.c_str());
             QTableWidgetItem* tableItemNodeName     = new QTableWidgetItem("");
             // set node name if exists

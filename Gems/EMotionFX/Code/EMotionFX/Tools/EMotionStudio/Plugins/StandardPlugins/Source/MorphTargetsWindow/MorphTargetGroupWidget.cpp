@@ -133,7 +133,7 @@ namespace EMStudio
         {
             EMotionFX::MorphTarget* morphTarget = mMorphTargets[i].mMorphTarget;
 
-            command = AZStd::string::format("AdjustMorphTarget -actorInstanceID %i -lodLevel %i -name \"%s\" -manualMode ", mActorInstance->GetID(), mActorInstance->GetLODLevel(), morphTarget->GetName());
+            command = AZStd::string::format("AdjustMorphTarget -actorInstanceID %i -lodLevel %zu -name \"%s\" -manualMode ", mActorInstance->GetID(), mActorInstance->GetLODLevel(), morphTarget->GetName());
             command += AZStd::to_string(value == Qt::Checked);
             commandGroup.AddCommandString(command);
         }
@@ -159,7 +159,7 @@ namespace EMStudio
         {
             EMotionFX::MorphTarget* morphTarget = mMorphTargets[i].mMorphTarget;
 
-            command = AZStd::string::format("AdjustMorphTarget -actorInstanceID %i -lodLevel %i -name \"%s\" -weight %f", mActorInstance->GetID(), mActorInstance->GetLODLevel(), morphTarget->GetName(), morphTarget->CalcZeroInfluenceWeight());
+            command = AZStd::string::format("AdjustMorphTarget -actorInstanceID %i -lodLevel %zu -name \"%s\" -weight %f", mActorInstance->GetID(), mActorInstance->GetLODLevel(), morphTarget->GetName(), morphTarget->CalcZeroInfluenceWeight());
             commandGroup.AddCommandString(command);
         }
 
@@ -179,7 +179,7 @@ namespace EMStudio
         EMotionFX::MorphTarget* morphTarget = mMorphTargets[morphTargetIndex].mMorphTarget;
 
         AZStd::string result;
-        const AZStd::string command = AZStd::string::format("AdjustMorphTarget -actorInstanceID %i -lodLevel %i -name \"%s\" -weight %f -manualMode %s", 
+        const AZStd::string command = AZStd::string::format("AdjustMorphTarget -actorInstanceID %i -lodLevel %zu -name \"%s\" -weight %f -manualMode %s", 
             mActorInstance->GetID(), 
             mActorInstance->GetLODLevel(), 
             morphTarget->GetName(), 
@@ -219,7 +219,7 @@ namespace EMStudio
 
         // execute command
         AZStd::string result;
-        const AZStd::string command = AZStd::string::format("AdjustMorphTarget -actorInstanceID %i -lodLevel %i -name \"%s\" -weight %f", mActorInstance->GetID(), mActorInstance->GetLODLevel(), morphTarget->GetName(), floatSlider->value());
+        const AZStd::string command = AZStd::string::format("AdjustMorphTarget -actorInstanceID %i -lodLevel %zu -name \"%s\" -weight %f", mActorInstance->GetID(), mActorInstance->GetLODLevel(), morphTarget->GetName(), floatSlider->value());
         if (EMStudio::GetCommandManager()->ExecuteCommand(command, result) == false)
         {
             AZ_Error("EMotionFX", false, result.c_str());

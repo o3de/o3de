@@ -409,7 +409,7 @@ namespace EMStudio
 
         commandGroup.AddCommandString("Unselect -motionIndex SELECT_ALL");
 
-        command = AZStd::string::format("Select -motionIndex %d", EMotionFX::GetMotionManager().FindMotionIndexByID(motion->GetID()));
+        command = AZStd::string::format("Select -motionIndex %zu", EMotionFX::GetMotionManager().FindMotionIndexByID(motion->GetID()));
         commandGroup.AddCommandString(command);
 
         EMotionFX::PlayBackInfo* defaultPlayBackInfo = motion->GetDefaultPlayBackInfo();

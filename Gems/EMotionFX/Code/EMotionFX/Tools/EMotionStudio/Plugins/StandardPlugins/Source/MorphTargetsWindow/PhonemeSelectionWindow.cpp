@@ -523,7 +523,7 @@ namespace EMStudio
     // clear the selected phoneme sets
     void PhonemeSelectionWindow::ClearSelectedPhonemeSets()
     {
-        const AZStd::string command = AZStd::string::format("AdjustMorphTarget -actorID %i -lodLevel %i -name \"%s\" -phonemeAction \"clear\"", mActor->GetID(), mLODLevel, mMorphTarget->GetName());
+        const AZStd::string command = AZStd::string::format("AdjustMorphTarget -actorID %i -lodLevel %zu -name \"%s\" -phonemeAction \"clear\"", mActor->GetID(), mLODLevel, mMorphTarget->GetName());
 
         AZStd::string result;
         if (!EMStudio::GetCommandManager()->ExecuteCommand(command, result))

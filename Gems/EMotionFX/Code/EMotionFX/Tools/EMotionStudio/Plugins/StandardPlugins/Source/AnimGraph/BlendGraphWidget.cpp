@@ -1475,10 +1475,10 @@ namespace EMStudio
                     if (animGraphNode->GetCanHaveChildren())
                     {
                         // child nodes
-                        toolTipString += AZStd::string::format("<tr><td><b><nobr>Child Nodes:</nobr></b></td><td>%i</td></tr>", animGraphNode->GetNumChildNodes());
+                        toolTipString += AZStd::string::format("<tr><td><b><nobr>Child Nodes:</nobr></b></td><td>%zu</td></tr>", animGraphNode->GetNumChildNodes());
 
                         // recursive child nodes
-                        toolTipString += AZStd::string::format("<tr><td width=\"140\"><b><nobr>Recursive Child Nodes:</nobr></b></td><td>%i</td></tr>", animGraphNode->RecursiveCalcNumNodes());
+                        toolTipString += AZStd::string::format("<tr><td width=\"140\"><b><nobr>Recursive Child Nodes:</nobr></b></td><td>%zu</td></tr>", animGraphNode->RecursiveCalcNumNodes());
                     }
 
                     // states

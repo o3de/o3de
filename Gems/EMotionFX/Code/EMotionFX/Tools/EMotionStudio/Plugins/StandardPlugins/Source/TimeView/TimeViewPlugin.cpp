@@ -1575,7 +1575,7 @@ namespace EMStudio
 
         // adjust the motion event
         AZStd::string outResult, command;
-        command = AZStd::string::format("AdjustMotionEvent -motionID %i -eventTrackName \"%s\" -eventNr %i -startTime %f -endTime %f", mMotion->GetID(), eventTrack->GetName(), motionEventNr, startTime, endTime);
+        command = AZStd::string::format("AdjustMotionEvent -motionID %i -eventTrackName \"%s\" -eventNr %zu -startTime %f -endTime %f", mMotion->GetID(), eventTrack->GetName(), motionEventNr, startTime, endTime);
         if (EMStudio::GetCommandManager()->ExecuteCommand(command.c_str(), outResult) == false)
         {
             MCore::LogError(outResult.c_str());
