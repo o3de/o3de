@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of
+ * this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -69,7 +70,7 @@ namespace ScriptCanvasEditor
         SlotTypeSelectorWidget(const ScriptCanvas::ScriptCanvasId& scriptCanvasId, QWidget* parent = nullptr);
         ~SlotTypeSelectorWidget();
 
-        void PopulateVariablePalette(const AZStd::unordered_set< AZ::Uuid >& objectTypes);
+        void PopulateVariablePalette(const AZStd::unordered_set<AZ::Uuid>& objectTypes, bool isMathExpressionNode = false);
 
         // AzToolsFramework::EditorEvents::Bus
         void OnEscape() override;

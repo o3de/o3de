@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of
+ * this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -508,6 +509,8 @@ namespace ScriptCanvas
         virtual bool IsEntryPoint() const;
         virtual bool RequiresDynamicSlotOrdering() const;
 
+        bool isDisplayTypeInitialized = false;
+
 
         //! Node internal initialization, for custom init, use OnInit
         void Init() override final;
@@ -709,8 +712,6 @@ namespace ScriptCanvas
         virtual SlotId GetLoopSlotId() const { return {}; }
 
         virtual PropertyFields GetPropertyFields() const;
-
-        virtual Grammar::MultipleFunctionCallFromSingleSlotInfo GetMultipleFunctionCallFromSingleSlotInfo(const Slot& slot) const;
 
         virtual VariableId GetVariableIdRead(const Slot*) const;
 

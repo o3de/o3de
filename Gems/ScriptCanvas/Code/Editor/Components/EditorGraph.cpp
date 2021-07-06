@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of
+ * this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -85,9 +86,9 @@ AZ_POP_DISABLE_WARNING
 #include <ScriptCanvas/Utils/NodeUtils.h>
 #include <ScriptCanvas/Variable/VariableBus.h>
 #include <ScriptCanvas/Libraries/UnitTesting/UnitTestingLibrary.h>
+#include <Include/ScriptCanvas/Libraries/Math/MathExpression.h>
 
-    AZ_CVAR(bool, g_disableDeprecatedNodeUpdates, false, {}, AZ::ConsoleFunctorFlags::Null,
-        "Disables automatic update attempts of deprecated nodes, so that graphs that require and update can be viewed in their original form");
+////
 
 namespace EditorGraphCpp
 {
@@ -508,7 +509,7 @@ namespace ScriptCanvasEditor
         }
     }
 
-    bool Graph::SanityCheckNodeReplacement(ScriptCanvas::Node* oldNode, ScriptCanvas::Node* newNode, ScriptCanvas::NodeUpdateSlotReport& nodeUpdateSlotReport)
+    bool Graph::SanityCheckNodeReplacement(ScriptCanvas::Node* oldNode, ScriptCanvas::Node* newNode, AZStd::unordered_map<ScriptCanvas::SlotId, AZStd::vector<ScriptCanvas::SlotId>>& outSlotIdMap)
     {
         auto findReplacementMatch = [](const ScriptCanvas::Slot* oldSlot, const AZStd::vector<const ScriptCanvas::Slot*>& newSlots)->ScriptCanvas::SlotId
         {
@@ -525,13 +526,13 @@ namespace ScriptCanvasEditor
             return {};
         };
 
+        oldNode->CustomizeReplacementNode(newNode, outSlotIdMap);
+
         if (!newNode)
         {
             AZ_Warning("ScriptCanvas", false, "Replacement node can not be null.");
             return false;
         }
-
-        oldNode->CustomizeReplacementNode(newNode, nodeUpdateSlotReport.m_oldSlotsToNewSlots);
 
         AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>> slotNameMap = oldNode->GetReplacementSlotsMap();
 
@@ -540,19 +541,16 @@ namespace ScriptCanvasEditor
         bool usingDefaults = true;
         size_t defaultMatchesFound = 0;
 
-        auto& oldSlotsToNewSlots = nodeUpdateSlotReport.m_oldSlotsToNewSlots;
-
         for (auto oldSlot : oldSlots)
         {
             const ScriptCanvas::SlotId oldSlotId = oldSlot->GetId();
             const AZStd::string oldSlotName = oldSlot->GetName();
-
-            auto slotIdsIter = oldSlotsToNewSlots.find(oldSlotId);
+            auto slotIdsIter = outSlotIdMap.find(oldSlotId);
             auto slotNamesIter = slotNameMap.find(oldSlotName);
             // For old node slot remapping, we should get:
             // 1. if old slot name is not static, we should find the mapping in user provided slot id map
             // 2. if old slot name is static, we should find the mapping in codegen generated map (case 1 can override case 2)
-            if (slotIdsIter != oldSlotsToNewSlots.end())
+            if (slotIdsIter != outSlotIdMap.end())
             {
                 for (auto newSlotId : slotIdsIter->second)
                 {
@@ -580,10 +578,9 @@ namespace ScriptCanvasEditor
                     if (!newSlotName.empty())
                     {
                         auto newSlot = newNode->GetSlotByName(newSlotName);
-
                         if (!newSlot)
                         {
-                            AZ_Warning("ScriptCanvas", false, "Failed to find slot with name %s in replacement Node (%s).", newSlotName.c_str(), newNode->GetNodeName().c_str());
+                            AZ_Warning("ScriptCanvas", false, "Failed to find slot with name %s in replacement Node(%s).", newSlotName.c_str(), newNode->GetNodeName().c_str());
                             return false;
                         }
                         else if (newSlot && oldSlot->GetType() != newSlot->GetType())
@@ -591,11 +588,10 @@ namespace ScriptCanvasEditor
                             AZ_Warning("ScriptCanvas", false, "Failed to map deprecated Node (%s) Slot (%s) to replacement Node (%s) Slot (%s).", oldNode->GetNodeName().c_str(), oldSlot->GetName().c_str(), newNode->GetNodeName().c_str(), newSlot->GetName().c_str());
                             return false;
                         }
-
                         newSlotIds.push_back(newSlot->GetId());
                     }
                 }
-                oldSlotsToNewSlots.emplace(oldSlot->GetId(), newSlotIds);
+                outSlotIdMap.emplace(oldSlot->GetId(), newSlotIds);
             }
             else if (slotNameMap.empty())
             {
@@ -606,7 +602,7 @@ namespace ScriptCanvasEditor
                 {
                     ++defaultMatchesFound;
                     AZStd::vector<ScriptCanvas::SlotId> slotIds{ newSlotId };
-                    oldSlotsToNewSlots.emplace(oldSlot->GetId(), slotIds);
+                    outSlotIdMap.emplace(oldSlot->GetId(), slotIds);
                 }
             }
             else
@@ -616,7 +612,7 @@ namespace ScriptCanvasEditor
             }
         }
 
-        if (usingDefaults && oldSlotsToNewSlots.size() != oldSlots.size())
+        if (usingDefaults && defaultMatchesFound != oldSlots.size())
         {
             AZ_Warning("ScriptCanvas", false, "Failed to remap deprecated Node(%s) not all old slots were present in the new node.", oldNode->GetNodeName().c_str());
         }
@@ -629,7 +625,8 @@ namespace ScriptCanvasEditor
         // Special-case for the execution nodeling extensions, which are adding input/output data slots.
         // We want to automatically promote them to variables so that the user can refer to them more easily
         auto functionDefintionNode = azrtti_cast<ScriptCanvas::Nodes::Core::FunctionDefinitionNode*>(node);
-        if (functionDefintionNode && graphCanvasSlotId.IsValid())
+
+        if (functionDefintionNode&& graphCanvasSlotId.IsValid())
         {
             GraphCanvas::Endpoint endpoint;
             GraphCanvas::SlotRequestBus::EventResult(endpoint, graphCanvasSlotId, &GraphCanvas::SlotRequests::GetEndpoint);
@@ -691,10 +688,79 @@ namespace ScriptCanvasEditor
         }
     }
 
-    AZ::Outcome<ScriptCanvas::Node*> Graph::ReplaceNodeByConfig
-        ( ScriptCanvas::Node* oldNode
-        , const ScriptCanvas::NodeConfiguration& nodeConfig
-        , ScriptCanvas::NodeUpdateSlotReport& nodeUpdateSlotReport)
+    void Graph::HandleExpressionNodeExtension(ScriptCanvas::Node* node, GraphCanvas::SlotId graphCanvasSlotId, const GraphCanvas::NodeId& nodeId)
+    {
+        auto MathExpressionNode = azrtti_cast<ScriptCanvas::Nodes::Math::MathExpression*>(node);
+        //if dynamicTypeGroup already has slottype, dont trigger slotTypeSelector
+        /*if (node->GetDisplayType(node->GetDisplayGroupId()) {
+
+        }*/
+        if (MathExpressionNode && graphCanvasSlotId.IsValid())
+        {
+            GraphCanvas::Endpoint endpoint;
+            GraphCanvas::SlotRequestBus::EventResult(endpoint, graphCanvasSlotId, &GraphCanvas::SlotRequests::GetEndpoint);
+
+            const ScriptCanvas::Endpoint scEndpoint = ConvertToScriptCanvasEndpoint(endpoint);
+            if (scEndpoint.IsValid())
+            {
+                ScriptCanvas::Slot* slot = FindSlot(scEndpoint);
+
+                if (slot)
+                {
+                    AZ::Vector2 position;
+                    GraphCanvas::GeometryRequestBus::EventResult(position, nodeId, &GraphCanvas::GeometryRequests::GetPosition);
+
+                    // First we need to automatically display the ShowSlotTypeSelector dialog so the user
+                    // can assign a type and name to the slot they are adding
+                    
+                    VariablePaletteRequests::SlotSetup selectedSlotSetup;
+                    bool createSlot = false;
+
+                    AZStd::unordered_set<AZ::Uuid> selections = {ToAZType(ScriptCanvas::Data::Type::Number()), ToAZType(ScriptCanvas::Data::Type::Vector3())};
+                    QPoint scenePoint(aznumeric_cast<int>(position.GetX()), aznumeric_cast<int>(position.GetY()));
+                    VariablePaletteRequestBus::BroadcastResult(
+                        createSlot, &VariablePaletteRequests::ShowSlotTypeSelector, slot, scenePoint, selectedSlotSetup);
+
+                    if (createSlot && !selectedSlotSetup.m_type.IsNull())
+                    {
+                        if (slot)
+                        {
+                            auto displayType = ScriptCanvas::Data::FromAZType(selectedSlotSetup.m_type);
+                            if (displayType.IsValid())
+                            {
+                                ScriptCanvas::Node* node = slot->GetNode();
+                                AZ::Crc32 dynamicGroup = AZ_CRC("ExpressionDisplayGroup", 0x770de38e);
+                               
+
+                                if (dynamicGroup != AZ::Crc32())
+                                {
+                                    node->SetDisplayType(dynamicGroup, displayType);
+                                }
+                                else
+                                {
+                                    slot->SetDisplayType(displayType);
+                                }
+                            }
+
+                            if (!selectedSlotSetup.m_name.empty())
+                            {
+                                slot->Rename(selectedSlotSetup.m_name);
+                            }
+                        }
+
+                        
+                    }
+                    else
+                    {
+                        RemoveSlot(endpoint);
+                    }
+                }
+            }
+        }
+
+    }
+    AZ::Outcome<ScriptCanvas::Node*> Graph::ReplaceNodeByConfig(ScriptCanvas::Node* oldNode, const ScriptCanvas::NodeConfiguration& nodeConfig,
+        ScriptCanvas::ReplacementConnectionMap& remapConnections)
     {
         auto nodeEntity = oldNode->GetEntity();
         if (!nodeEntity)
@@ -734,8 +800,8 @@ namespace ScriptCanvasEditor
         AddNode(newNode->GetEntityId());
         ScriptCanvas::NodeUtils::InitializeNode(newNode, nodeConfig);
 
-        rollbackRequired = !SanityCheckNodeReplacement(oldNode, newNode, nodeUpdateSlotReport);
-        auto& slotIdMap = nodeUpdateSlotReport.m_oldSlotsToNewSlots;
+        AZStd::unordered_map<ScriptCanvas::SlotId, AZStd::vector<ScriptCanvas::SlotId>> slotIdMap;
+        rollbackRequired = !SanityCheckNodeReplacement(oldNode, newNode, slotIdMap);
 
         if (rollbackRequired)
         {
@@ -751,15 +817,25 @@ namespace ScriptCanvasEditor
         else
         {
             nodeEntity->Activate();
-            newNode->SignalReconfigurationBegin();
-            newNode->SetNodeDisabledFlag(oldNode->GetNodeDisabledFlag());
 
+            newNode->SignalReconfigurationBegin();
+
+            newNode->SetNodeDisabledFlag(oldNode->GetNodeDisabledFlag());
             for (auto slotIdIter : slotIdMap)
             {
                 ScriptCanvas::Slot* oldSlot = oldNode->GetSlot(slotIdIter.first);
                 const ScriptCanvas::Endpoint oldEndpoint{ nodeEntity->GetId(), oldSlot->GetId() };
                 if (slotIdIter.second.size() == 0)
                 {
+                    // If remap id is empty, then we should just cache the old slot connection for delete
+                    if (oldSlot->IsInput())
+                    {
+                        ScriptCanvas::VersioningUtils::CreateRemapConnectionsForTargetEndpoint(*this, oldEndpoint, ScriptCanvas::Endpoint(), remapConnections);
+                    }
+                    else
+                    {
+                        ScriptCanvas::VersioningUtils::CreateRemapConnectionsForSourceEndpoint(*this, oldEndpoint, ScriptCanvas::Endpoint(), remapConnections);
+                    }
                     continue;
                 }
 
@@ -801,11 +877,35 @@ namespace ScriptCanvasEditor
 
                         ScriptCanvas::VersioningUtils::CopyOldValueToDataSlot(newSlot, oldSlot->GetVariableReference(), oldSlot->FindDatum());
                     }
+
+                    // if old slot is visible, we need to check its connections for remapping
+                    if (oldSlot->IsVisible())
+                    {
+                        ScriptCanvas::Endpoint newEndpoint;
+                        if (newSlot)
+                        {
+                            newEndpoint = { nodeEntity->GetId(), newSlot->GetId() };
+                        }
+                        else
+                        {
+                            AZ_Warning("ScriptCanvas", false, "Invalid slot! Unable to create new connection for Node (%s).", newNode->GetNodeName().c_str());
+                        }
+
+                        if (oldSlot->IsInput())
+                        {
+                            ScriptCanvas::VersioningUtils::CreateRemapConnectionsForTargetEndpoint(*this, oldEndpoint, newEndpoint, remapConnections);
+                        }
+                        else
+                        {
+                            ScriptCanvas::VersioningUtils::CreateRemapConnectionsForSourceEndpoint(*this, oldEndpoint, newEndpoint, remapConnections);
+                        }
+                    }
                 }
             }
-
             delete oldNode;
+
             newNode->SignalReconfigurationEnd();
+
             return AZ::Success(newNode);
         }
     }
@@ -2434,11 +2534,20 @@ namespace ScriptCanvasEditor
                 }
                 else
                 {
-                    ScriptCanvas::SlotId slotId = canvasNode->HandleExtension(extenderId);
+                        ScriptCanvas::SlotId slotId = canvasNode->HandleExtension(extenderId);
                     if (slotId.IsValid())
                     {
+                        
                         SlotMappingRequestBus::EventResult(graphCanvasSlotId, nodeId, &SlotMappingRequests::MapToGraphCanvasId, slotId);
-                        HandleFunctionDefinitionExtension(canvasNode, graphCanvasSlotId, nodeId);
+                        if (azrtti_cast<ScriptCanvas::Nodes::Core::FunctionDefinitionNode*>(canvasNode))
+                        {
+                            HandleFunctionDefinitionExtension(canvasNode, graphCanvasSlotId, nodeId);
+                        }
+                        else if (azrtti_cast<ScriptCanvas::Nodes::Math::MathExpression*>(canvasNode)&&!canvasNode->isDisplayTypeInitialized)
+                        {
+                            HandleExpressionNodeExtension(canvasNode, graphCanvasSlotId, nodeId);
+                        }
+                        
                     }
                 }
             }
@@ -3603,7 +3712,8 @@ namespace ScriptCanvasEditor
 
         AZStd::unordered_map< AZ::EntityId, AZ::EntityId > scriptCanvasToGraphCanvasMapping;
 
-        bool graphNeedsDirtying = !GetVersion().IsLatest();
+        bool graphNeedsDirtying = false;
+
         {
             QScopedValueRollback<bool> ignoreRequests(m_ignoreSaveRequests, true);
 
@@ -3627,8 +3737,7 @@ namespace ScriptCanvasEditor
             AZStd::unordered_set<AZ::EntityId> deletedNodes;
             AZStd::unordered_set<AZ::EntityId> assetSanitizationSet;
             AZStd::unordered_set<ScriptCanvas::Node*> sanityCheckRequiredNodes;
-
-            ScriptCanvas::GraphUpdateSlotReport graphUpdateSlotReport;
+            ScriptCanvas::ReplacementConnectionMap remapConnections;
 
             for (const AZ::EntityId& scriptCanvasNodeId : nodeList)
             {
@@ -3638,20 +3747,17 @@ namespace ScriptCanvasEditor
 
                 if (scriptCanvasNode)
                 {
-                     if (scriptCanvasNode->IsDeprecated() && !g_disableDeprecatedNodeUpdates)
+                    if (scriptCanvasNode->IsDeprecated())
                     {
                         ScriptCanvas::NodeConfiguration nodeConfig = scriptCanvasNode->GetReplacementNodeConfiguration();
                         if (nodeConfig.IsValid())
                         {
-                            ScriptCanvas::NodeUpdateSlotReport nodeUpdateSlotReport;
-                            auto nodeOutcome = ReplaceNodeByConfig(scriptCanvasNode, nodeConfig, nodeUpdateSlotReport);
-
+                            auto nodeOutcome = ReplaceNodeByConfig(scriptCanvasNode, nodeConfig, remapConnections);
                             if (nodeOutcome.IsSuccess())
                             {
                                 graphNeedsDirtying = true;
                                 scriptCanvasNode = nodeOutcome.GetValue();
                                 m_updateStrings.insert(AZStd::string::format("Replaced node (%s)", scriptCanvasNode->GetNodeName().c_str()));
-                                ScriptCanvas::MergeUpdateSlotReport(scriptCanvasNodeId, graphUpdateSlotReport, nodeUpdateSlotReport);
                             }
                         }
                     }
@@ -3660,6 +3766,7 @@ namespace ScriptCanvasEditor
                     scriptCanvasToGraphCanvasMapping[scriptCanvasNodeId] = graphCanvasNodeId;
 
                     auto saveDataIter2 = m_graphCanvasSaveData.find(scriptCanvasNodeId);
+
                     if (saveDataIter2 != m_graphCanvasSaveData.end())
                     {
                         GraphCanvas::EntitySaveDataRequestBus::Event(graphCanvasNodeId, &GraphCanvas::EntitySaveDataRequests::ReadSaveData, (*saveDataIter2->second));
@@ -3670,7 +3777,7 @@ namespace ScriptCanvasEditor
 
                     GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::AddNode, graphCanvasNodeId, position, false);
 
-                    // If the node is deprecated, we want to stomp whatever style it had saved and apply the deprecated style
+                    // If the node is deprecated, we want to stomp whatever style it had saved and apply the deperecated style
                     if (scriptCanvasNode->IsDeprecated())
                     {
                         GraphCanvas::NodeTitleRequestBus::Event(graphCanvasNodeId, &GraphCanvas::NodeTitleRequests::SetPaletteOverride, "DeprecatedNodeTitlePalette");
@@ -3690,12 +3797,26 @@ namespace ScriptCanvasEditor
                 }
             }
 
-            if (!graphUpdateSlotReport.IsEmpty())
+            // Remap connections step should be done before editor processing connections for graph
+            //
+            // Delete underlying data conenections.
+            for (auto remapConnection : remapConnections)
             {
-                // currently, it is expected that there are no deleted old slots, those need manual correction
-                AZ_Error("ScriptCanvas", graphUpdateSlotReport.m_deletedOldSlots.empty(), "Graph upgrade path: If old slots are deleted, manual upgrading is required");
-                UpdateConnectionStatus(*this, graphUpdateSlotReport);
+                RemoveConnection(remapConnection.first);
             }
+
+            // Recreate connections in a separate pass to avoid triggering display updates for invalid slot ids.
+            for (auto remapConnection : remapConnections)
+            {
+                for (auto newEndpointPair : remapConnection.second)
+                {
+                    if (newEndpointPair.first.IsValid() && newEndpointPair.second.IsValid())
+                    {
+                        ConnectByEndpoint(newEndpointPair.first, newEndpointPair.second);
+                    }
+                }
+            }
+            ////
 
             AZStd::unordered_set<AZ::EntityId> graphCanvasNodesToDelete;
 

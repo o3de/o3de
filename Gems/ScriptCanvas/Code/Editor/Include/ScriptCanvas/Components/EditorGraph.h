@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of
+ * this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -37,7 +38,6 @@
 namespace ScriptCanvas
 {
     struct NodeConfiguration;
-    struct NodeUpdateSlotReport;
 }
 
 namespace ScriptCanvasEditor
@@ -356,9 +356,12 @@ namespace ScriptCanvasEditor
         // Function Definition Node Extension
         void HandleFunctionDefinitionExtension(ScriptCanvas::Node* node, GraphCanvas::SlotId graphCanvasSlotId, const GraphCanvas::NodeId& nodeId);
 
+        // Expression Node Extension
+        void HandleExpressionNodeExtension(ScriptCanvas::Node* node, GraphCanvas::SlotId graphCanvasSlotId, const GraphCanvas::NodeId& nodeId);
+            
         //// Version Update code
-        AZ::Outcome<ScriptCanvas::Node*> ReplaceNodeByConfig(ScriptCanvas::Node*, const ScriptCanvas::NodeConfiguration&, ScriptCanvas::NodeUpdateSlotReport& nodeUpdateSlotReport);
-        bool SanityCheckNodeReplacement(ScriptCanvas::Node*, ScriptCanvas::Node*, ScriptCanvas::NodeUpdateSlotReport& nodeUpdateSlotReport);
+        AZ::Outcome<ScriptCanvas::Node*> ReplaceNodeByConfig(ScriptCanvas::Node*, const ScriptCanvas::NodeConfiguration&, ScriptCanvas::ReplacementConnectionMap&);
+        bool SanityCheckNodeReplacement(ScriptCanvas::Node*, ScriptCanvas::Node*, AZStd::unordered_map<ScriptCanvas::SlotId, AZStd::vector<ScriptCanvas::SlotId>>&);
 
         bool m_allowVersionUpdate = false;
         AZStd::unordered_set< AZ::EntityId > m_queuedConvertingNodes;

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of
+ * this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -67,6 +68,8 @@ namespace ScriptCanvas
                 void OnSlotRemoved(const SlotId& slotId) override;
 
                 bool OnValidateNode(ValidationResults& validationResults) override;
+
+                void FixDynamicGroupDataType(const SlotId& slotId,Data::Type displayType);
                 ////
 
                 void ParseFormat(bool signalError = true);
@@ -78,7 +81,8 @@ namespace ScriptCanvas
 
                 AZ::Crc32 GetExtensionId() const { return AZ_CRC("AddExpressionOperand", 0x5f5fdcab); }
                 AZ::Crc32 GetPropertyId() const { return AZ_CRC("FormatStringProperty", 0x2c587efa); }
-                
+
+                bool displayTypeInitialized = false;
             protected:
             
                 virtual void OnResult(const ExpressionEvaluation::ExpressionResult& result);

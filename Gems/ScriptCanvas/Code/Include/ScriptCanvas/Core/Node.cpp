@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of
+ * this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -691,10 +692,6 @@ namespace ScriptCanvas
                 if (slot.IsTypeMatchFor(displayTypeIter->second))
                 {
                     slot.SetDisplayType(displayTypeIter->second);
-                }
-                else
-                {
-                    ClearDisplayType(dynamicGroup);
                 }
             }
             else if (slot.HasDisplayType())
@@ -3117,7 +3114,6 @@ namespace ScriptCanvas
         return false;
     }
 
-
     AZStd::vector<const Slot*> Node::GetEventSlots() const
     {
         AZStd::vector<const Slot*> slots;
@@ -3572,12 +3568,12 @@ namespace ScriptCanvas
         }
 
         if (targetSlotType == CombinedSlotType::DataOut
-        && executionSlot.GetType() == CombinedSlotType::ExecutionIn
-        && executionInCount > 1)
+            && executionSlot.GetType() == CombinedSlotType::ExecutionIn
+            && executionInCount > 1)
         {
             if (!executionChildSlot || executionChildSlot->GetType() != CombinedSlotType::ExecutionOut)
             {
-                return AZ::Failure(AZStd::string("Data out by ExecutionIn must have child out slot"));
+                return AZ::Failure(AZStd::string("Data out by ExcutionIn must have child out slot"));
             }
         }
 
@@ -3617,11 +3613,6 @@ namespace ScriptCanvas
     }
 
     PropertyFields Node::GetPropertyFields() const
-    {
-        return {};
-    }
-
-    Grammar::MultipleFunctionCallFromSingleSlotInfo Node::GetMultipleFunctionCallFromSingleSlotInfo([[maybe_unused]] const Slot& slot) const
     {
         return {};
     }
