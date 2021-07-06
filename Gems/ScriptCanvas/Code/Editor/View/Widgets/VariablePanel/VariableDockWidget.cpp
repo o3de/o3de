@@ -758,7 +758,7 @@ namespace ScriptCanvasEditor
 
         auto owningGraph = ScriptCanvas::GraphRequestBus::FindFirstHandler(m_scriptCanvasId);
 
-        if (runtimeRequests == nullptr)
+        if (owningGraph == nullptr)
         {
             return;
         }
@@ -769,7 +769,7 @@ namespace ScriptCanvasEditor
 
             if (propertiesComponent)
             {
-                ScriptCanvas::GraphVariable* graphVariable = runtimeRequests->FindVariableById(varId);;
+                ScriptCanvas::GraphVariable* graphVariable = owningGraph->FindVariableById(varId);;
                 propertiesComponent->SetVariable(graphVariable);
 
                 selection.push_back(propertiesComponent->GetEntityId());

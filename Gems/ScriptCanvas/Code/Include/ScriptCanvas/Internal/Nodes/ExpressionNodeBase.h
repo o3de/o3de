@@ -37,8 +37,6 @@ namespace ScriptCanvas
                 AZStd::string GetRawFormat() const;
 
                 const AZStd::unordered_map<AZStd::string, SlotId>& GetSlotsByName() const;
-
-                
                                 
             protected:
 
@@ -76,14 +74,11 @@ namespace ScriptCanvas
                 AZ::Crc32 GetPropertyId() const { return AZ_CRC("FormatStringProperty", 0x2c587efa); }
                 
             protected:
-            
-                virtual void OnResult(const ExpressionEvaluation::ExpressionResult& result);
                 virtual ExpressionEvaluation::ParseOutcome ParseExpression(const AZStd::string& formatString);
 
                 virtual AZStd::string GetExpressionSeparator() const;
 
             private:
-
                 void PushVariable(const AZStd::string& variableName, const Datum& datum);
 
                 // NodePropertyInterface...

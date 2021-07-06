@@ -1053,9 +1053,6 @@ namespace ScriptCanvasEditor
         AZ::SerializeContext* serializeContext = AZ::EntityUtils::GetApplicationSerializeContext();
         AZ::Utils::LoadObjectFromBufferInPlace(byteArray.constData(), static_cast<AZStd::size_t>(byteArray.size()), copiedVariableData, serializeContext);
 
-        bool isRuntimeGraph = false;
-        EditorGraphRequestBus::EventResult(isRuntimeGraph, scriptCanvasId, &EditorGraphRequests::IsRuntimeGraph);
-
         ScriptCanvas::GraphVariableManagerRequests* requests = ScriptCanvas::GraphVariableManagerRequestBus::FindFirstHandler(scriptCanvasId);
 
         if (requests == nullptr)

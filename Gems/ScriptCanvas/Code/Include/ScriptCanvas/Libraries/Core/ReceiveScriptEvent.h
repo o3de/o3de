@@ -42,7 +42,6 @@ namespace ScriptCanvas
                 ~ReceiveScriptEvent() override;
 
                 void OnActivate() override;
-                void OnPostActivate() override;
                 void OnDeactivate() override;
 
                 const AZ::Data::AssetId GetAssetId() const { return m_scriptEventAssetId; }

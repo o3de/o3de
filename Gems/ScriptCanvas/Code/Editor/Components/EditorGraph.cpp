@@ -60,7 +60,6 @@ AZ_POP_DISABLE_WARNING
 #include <Editor/GraphCanvas/PropertyInterfaces/ScriptCanvasEnumComboBoxPropertyDataInterface.h>
 #include <Editor/GraphCanvas/PropertyInterfaces/ScriptCanvasStringPropertyDataInterface.h>
 
-#include <Editor/Nodes/ScriptCanvasAssetNode.h>
 #include <Editor/Translation/TranslationHelper.h>
 #include <Editor/View/Dialogs/SettingsDialog.h>
 #include <Editor/View/Widgets/ScriptCanvasNodePaletteDockWidget.h>
@@ -3125,16 +3124,6 @@ namespace ScriptCanvasEditor
             m_allowVersionUpdate = false;
             AZ::SystemTickBus::Handler::BusConnect();
         }
-    }
-
-    bool Graph::IsRuntimeGraph() const
-    {
-        return GetAssetType() == azrtti_typeid<ScriptCanvas::RuntimeAsset>();
-    }
-
-    bool Graph::IsFunctionGraph() const
-    {
-        return GetAssetType() == azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>();
     }
 
     bool Graph::CanExposeEndpoint(const GraphCanvas::Endpoint& endpoint)

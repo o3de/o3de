@@ -443,11 +443,6 @@ namespace ScriptCanvas
                 });
             }
 
-            void ExpressionNodeBase::OnResult([[maybe_unused]] const ExpressionEvaluation::ExpressionResult& result)
-            {
-                AZ_Assert(false, "Implementing node must override OnResult.");
-            }
-
             ExpressionEvaluation::ParseOutcome ExpressionNodeBase::ParseExpression([[maybe_unused]] const AZStd::string& formatString)
             {
                 AZ_Assert(false , "Implementing node must override OnResult.");

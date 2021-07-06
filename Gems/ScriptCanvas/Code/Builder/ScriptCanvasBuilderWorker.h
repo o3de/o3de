@@ -175,37 +175,4 @@ namespace ScriptCanvasBuilder
         // cached on first time query
         mutable AZStd::string m_fingerprintString;
     };
-
-    class FunctionWorker
-        : public AssetBuilderSDK::AssetBuilderCommandBus::Handler
-    {
-    public:
-        static AZ::Uuid GetUUID();
-
-        FunctionWorker() = default;
-        FunctionWorker(const FunctionWorker&) = delete;
-
-        void Activate(const AssetHandlers& handlers);
-
-        //! Asset Builder Callback Functions
-        void CreateJobs(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response) const;
-
-        const char* GetFingerprintString() const;
-
-        int GetVersionNumber() const;
-
-        void ProcessJob(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const;
-
-        void ShutDown() override {};
-
-    private:
-        AZ::Data::AssetHandler* m_editorAssetHandler = nullptr;
-        AZ::Data::AssetHandler* m_runtimeAssetHandler = nullptr;
-        AZ::Data::AssetHandler* m_subgraphInterfaceHandler = nullptr;
-
-        mutable AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>> m_sourceDependencies;
-
-        // cached on first time query
-        mutable AZStd::string m_fingerprintString;
-    };
 }

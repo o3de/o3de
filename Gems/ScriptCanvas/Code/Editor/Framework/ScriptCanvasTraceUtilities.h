@@ -42,17 +42,6 @@ namespace ScriptCanvasEditor
 {
     class ScriptCanvasAsset;
 
-    struct LoadTestFunctionResult
-    {
-        AZStd::string_view m_graphPath;
-        AZStd::unique_ptr<AZ::Entity> m_entity;
-        ScriptCanvas::RuntimeComponent* m_runtimeComponent = nullptr;
-        bool m_nativeFunctionFound = false;
-        AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasFunctionAsset> m_editorAsset;
-        AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset> m_runtimeAsset;
-        AZ::Data::Asset<AZ::ScriptAsset> m_scriptAsset;
-    };
-
     struct LoadTestGraphResult
     {
         AZStd::string_view m_graphPath;

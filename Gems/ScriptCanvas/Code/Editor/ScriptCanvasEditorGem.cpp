@@ -35,7 +35,6 @@
 #include <Editor/Model/EntityMimeDataHandler.h>
 
 #include <Libraries/Libraries.h>
-#include <Editor/Nodes/EditorLibrary.h>
 
 #include <ScriptCanvas/Components/EditorGraph.h>
 #include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
@@ -118,7 +117,6 @@ namespace ScriptCanvas
 
         auto libraryDescriptors = ScriptCanvasEditor::GetLibraryDescriptors();
         m_descriptors.insert(m_descriptors.end(), libraryDescriptors.begin(), libraryDescriptors.end());
-        ScriptCanvasEditor::Library::Editor::InitNodeRegistry(GetNodeRegistry().Get());
     }
 
     AZ::ComponentTypeList ScriptCanvasModule::GetRequiredSystemComponents() const

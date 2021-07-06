@@ -25,9 +25,8 @@ set(FILES
     Include/ScriptCanvas/Asset/RuntimeAssetHandler.h
     Include/ScriptCanvas/Asset/ScriptCanvasAssetBase.h
     Include/ScriptCanvas/Asset/ScriptCanvasAssetData.h
-    Include/ScriptCanvas/Asset/Functions/ScriptCanvasFunctionAsset.h
-    Include/ScriptCanvas/Asset/Functions/RuntimeFunctionAssetHandler.cpp
-    Include/ScriptCanvas/Asset/Functions/RuntimeFunctionAssetHandler.h
+    Include/ScriptCanvas/Asset/SubgraphInterfaceAssetHandler.cpp
+    Include/ScriptCanvas/Asset/SubgraphInterfaceAssetHandler.h
     Include/ScriptCanvas/Core/ScriptCanvasBus.h
     Include/ScriptCanvas/Core/ExecutionNotificationsBus.cpp
     Include/ScriptCanvas/Core/ExecutionNotificationsBus.h

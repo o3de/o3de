@@ -83,7 +83,7 @@ namespace ScriptCanvas
                 ////
 
                 int m_timeUnits = 0;
-                int m_tickOrder = static_cast<int>(AZ::TICK_DEFAULT);
+                int m_tickOrder = 1000; // from TICK_DEFAULT
                     
                 bool m_isActive = false;
                     

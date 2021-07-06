@@ -100,8 +100,7 @@ namespace ScriptCanvas
 
                 virtual void Operator(Data::eType type, const ArithmeticOperands& operands, Datum& result);
                 virtual void InitializeSlot(const SlotId& slotId, const Data::Type& dataType);
-                virtual void InvokeOperator();
-
+                
                 //////////////////////////////////////////////////////////////////////////
                 // Translation
                 AZ::Outcome<DependencyReport, void> GetDependencies() const override;

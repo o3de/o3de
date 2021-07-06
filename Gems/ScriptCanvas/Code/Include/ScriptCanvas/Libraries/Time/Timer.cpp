@@ -20,11 +20,6 @@ namespace ScriptCanvas
                 , m_seconds(0.f)
                 , m_milliseconds(0.f)
             {}
-
-            void Timer::OnDeactivate()
-            {
-                AZ::TickBus::Handler::BusDisconnect();
-            }
         }
     }
 }

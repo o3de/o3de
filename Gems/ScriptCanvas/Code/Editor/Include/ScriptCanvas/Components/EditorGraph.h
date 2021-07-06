@@ -267,9 +267,6 @@ namespace ScriptCanvasEditor
 
         void QueueVersionUpdate(const AZ::EntityId& graphCanvasNodeId) override;
         
-        bool IsRuntimeGraph() const override;
-        bool IsFunctionGraph() const override;
-
         bool CanExposeEndpoint(const GraphCanvas::Endpoint& endpoint) override;
         
         ScriptCanvas::Endpoint ConvertToScriptCanvasEndpoint(const GraphCanvas::Endpoint& endpoint) const override;

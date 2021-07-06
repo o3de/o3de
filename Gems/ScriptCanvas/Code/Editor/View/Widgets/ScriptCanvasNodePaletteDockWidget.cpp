@@ -223,7 +223,7 @@ namespace ScriptCanvasEditor
 
         void ScriptCanvasRootPaletteTreeItem::SetActiveScriptCanvasId(const ScriptCanvas::ScriptCanvasId& scriptCanvasId)
         {
-            ScriptCanvas::RuntimeRequestBus::EventResult(m_previousAssetId, scriptCanvasId, &ScriptCanvas::GraphRequests::GetAssetId);
+            ScriptCanvas::GraphRequestBus::EventResult(m_previousAssetId, scriptCanvasId, &ScriptCanvas::GraphRequests::GetAssetId);
 
             for (auto functionTreePair : m_globalFunctionTreeItems)
             {

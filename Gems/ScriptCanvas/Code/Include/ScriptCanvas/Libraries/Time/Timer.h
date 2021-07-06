@@ -34,11 +34,6 @@ namespace ScriptCanvas
                 
                 float m_seconds;
                 float m_milliseconds;
-            
-            protected:
-
-                AZ::ScriptTimePoint m_start;
-                void OnDeactivate() override;
             };
         }
     }

@@ -177,11 +177,6 @@ namespace ScriptCanvas
                 m_userData.m_methodDefinition = methodDefinition;
 
                 AZ_Assert(!event.m_parameters.empty(), "No parameters in event!");
-                if (!events[eventIndex].m_function)
-                {
-                    m_handler->InstallGenericHook(events[eventIndex].m_name, &OnEventGenericHook, &m_userData);
-                }
-
                 if (m_eventMap.find(eventId) == m_eventMap.end())
                 {
                     m_eventMap[eventId] = ConfigureEbusEntry(*methodDefinition, event, populationMapping);
@@ -307,12 +302,6 @@ namespace ScriptCanvas
                 eBusEventEntry.m_eventName = event.m_name;
 
                 return eBusEventEntry;
-            }
-
-            void ReceiveScriptEvent::OnEventGenericHook(void* userData, const char* eventName, int eventIndex, AZ::BehaviorValueParameter* result, int numParameters, AZ::BehaviorValueParameter* parameters)
-            {
-                ReceiveScriptEvent::EventHookUserData* eventHookUserData(reinterpret_cast<ReceiveScriptEvent::EventHookUserData*>(userData));
-                eventHookUserData->m_handler->OnEvent(eventName, eventIndex, result, numParameters, parameters);
             }
 
             void ReceiveScriptEvent::SetAutoConnectToGraphOwner(bool enabled)

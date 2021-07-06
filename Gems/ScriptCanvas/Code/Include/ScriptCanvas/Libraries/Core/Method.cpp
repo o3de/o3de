@@ -86,11 +86,6 @@ namespace ScriptCanvas
 
     AZ::Outcome<void, AZStd::string> IsExposable(const AZ::BehaviorMethod& method)
     {
-        if (method.GetNumArguments() > BehaviorContextMethodHelper::MaxCount)
-        {
-            return AZ::Failure(AZStd::string("Too many arguments for a Script Canvas method"));
-        }
-
         for (size_t argIndex(0), sentinel(method.GetNumArguments()); argIndex != sentinel; ++argIndex)
         {
             if (const AZ::BehaviorParameter* argument = method.GetArgument(argIndex))

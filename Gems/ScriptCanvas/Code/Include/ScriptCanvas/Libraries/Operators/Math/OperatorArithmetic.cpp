@@ -207,20 +207,6 @@ namespace ScriptCanvas
                 AZ_UNUSED(dataType);
             }
 
-            void OperatorArithmetic::InvokeOperator()
-            {
-                if (!m_result.GetType().IsValid())
-                {
-                    return;
-                }
-
-                Evaluate(m_applicableInputs, m_result);
-
-                PushOutput(m_result, (*m_resultSlot));
-
-                SignalOutput(m_outSlot);
-            }
-
             SlotId OperatorArithmetic::CreateSlot(AZStd::string_view name, AZStd::string_view toolTip, ConnectionType connectionType)
             {
                 DynamicDataSlotConfiguration slotConfiguration;

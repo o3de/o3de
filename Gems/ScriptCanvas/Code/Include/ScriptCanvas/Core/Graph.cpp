@@ -13,8 +13,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzFramework/Entity/EntityContextBus.h>
-
-#include <ScriptCanvas/Asset/Functions/ScriptCanvasFunctionAsset.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Core/Connection.h>
 #include <ScriptCanvas/Core/Core.h>
