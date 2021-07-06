@@ -1,5 +1,5 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
@@ -117,6 +117,6 @@ def create_ly_keys():
     process_utils.check_call(
         ["reg", "add", target_key, "/v", "RC_EnableSourceControl", "/t", "REG_DWORD", "/d", "0", "/f"])
     # The editor will ignore settings unless EditorSettingsVersion is what it expects
-    # The value it expects is in Code\Sandbox\Editor\Settings.cpp
+    # The value it expects is in Code\Editor\Settings.cpp
     process_utils.check_call(
         ["reg", "add", target_key, "/v", "EditorSettingsVersion", "/t", "REG_DWORD", "/d", "2", "/f"])

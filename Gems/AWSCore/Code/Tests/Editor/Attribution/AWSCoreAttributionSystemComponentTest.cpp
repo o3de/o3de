@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -8,6 +8,8 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/Serialization/Json/JsonSystemComponent.h>
+#include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzTest/AzTest.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
@@ -65,7 +67,8 @@ namespace AWSCoreUnitTest
         MOCK_METHOD0(Deactivate, void());
     };
 
-    class AWSAttributionSystemComponentTest : public AWSCoreFixture
+    class AWSAttributionSystemComponentTest
+        : public AWSCoreFixture
     {
         void SetUp() override
         {
@@ -73,6 +76,7 @@ namespace AWSCoreUnitTest
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
             m_serializeContext->CreateEditContext();
             m_behaviorContext = AZStd::make_unique<AZ::BehaviorContext>();
+            AZ::JsonSystemComponent::Reflect(m_registrationContext.get());
 
             m_awsCoreComponentDescriptor.reset(AWSCoreSystemComponentMock::CreateDescriptor());
             m_awsCoreComponentDescriptor->Reflect(m_serializeContext.get());
@@ -81,6 +85,9 @@ namespace AWSCoreUnitTest
             m_componentDescriptor.reset(AWSAttributionSystemComponent::CreateDescriptor());
             m_componentDescriptor->Reflect(m_serializeContext.get());
             m_componentDescriptor->Reflect(m_behaviorContext.get());
+
+            m_settingsRegistry->SetContext(m_serializeContext.get());
+            m_settingsRegistry->SetContext(m_registrationContext.get());
 
             m_entity = aznew AZ::Entity();
             m_awsCoreSystemComponentMock = aznew testing::NiceMock<AWSCoreSystemComponentMock>();
@@ -101,6 +108,7 @@ namespace AWSCoreUnitTest
             m_awsCoreComponentDescriptor.reset();
             m_componentDescriptor.reset();
             m_behaviorContext.reset();
+            m_registrationContext.reset();
             m_serializeContext.reset();
             AWSCoreFixture::TearDown();
         }
@@ -113,6 +121,7 @@ namespace AWSCoreUnitTest
     private:
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
         AZStd::unique_ptr<AZ::BehaviorContext> m_behaviorContext;
+        AZStd::unique_ptr<AZ::JsonRegistrationContext> m_registrationContext;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_componentDescriptor;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_awsCoreComponentDescriptor;
     };

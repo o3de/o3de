@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -523,7 +523,7 @@ namespace ScriptCanvasEditor
         // Creation Actions
         {
             m_createScriptCanvas = new QToolButton();
-            m_createScriptCanvas->setIcon(QIcon(ScriptCanvas::AssetDescription::GetIconPath<ScriptCanvasAsset>()));
+            m_createScriptCanvas->setIcon(QIcon(":/ScriptCanvasEditorResources/Resources/create_graph.png"));
             m_createScriptCanvas->setToolTip("Creates a new Script Canvas Graph");
 
             QObject::connect(m_createScriptCanvas, &QToolButton::clicked, this, &MainWindow::OnFileNew);

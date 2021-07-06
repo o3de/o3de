@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -46,10 +46,11 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
         }
     }
 
+    template<typename EntityPtr>
     void OrganizeEntitiesForSorting(
-        AzFramework::Spawnable::EntityList& entities,
+        AZStd::vector<EntityPtr>& entities,
         AZStd::unordered_set<AZ::EntityId>& existingEntityIds,
-        AZStd::unordered_map<AZ::EntityId, AzFramework::Spawnable::EntityList>& parentIdToChildren,
+        AZStd::unordered_map<AZ::EntityId, AZStd::vector<EntityPtr>>& parentIdToChildren,
         AZStd::vector<AZ::EntityId>& candidateIds,
         size_t& removedEntitiesCount)
     {
@@ -90,7 +91,7 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
             // entities with no transform component will be treated like entities with no parent.
             AZ::EntityId parentId;
             if (AZ::TransformInterface* transformInterface =
-                AZ::EntityUtils::FindFirstDerivedComponent<AZ::TransformInterface>(entity.get()))
+                AZ::EntityUtils::FindFirstDerivedComponent<AZ::TransformInterface>(&(*entity)))
             {
                 parentId = transformInterface->GetParentId();
                 if (parentId == entityId)
@@ -104,8 +105,7 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
             }
 
             auto& children = parentIdToChildren[parentId];
-            children.emplace_back(nullptr);
-            children.back().swap(entity);
+            children.emplace_back(AZStd::move(entity));
         }
 
         // clear 'entities', we'll refill it in sorted order.
@@ -125,9 +125,10 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
         
     }
 
+    template<typename EntityPtr>
     void TraceParentingLoop(
         const AZ::EntityId& parentFromLoopId,
-        const AZStd::unordered_map<AZ::EntityId, AzFramework::Spawnable::EntityList>& parentIdToChildren)
+        const AZStd::unordered_map<AZ::EntityId, AZStd::vector<EntityPtr>>& parentIdToChildren)
     {
 
         // Find name to use in warning message
@@ -153,16 +154,22 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
             parentFromLoopId.ToString().c_str());
     }
 
+
     void SortEntitiesByTransformHierarchy(AzFramework::Spawnable& spawnable)
     {
-        auto& entities = spawnable.GetEntities();
+        SortEntitiesByTransformHierarchy(spawnable.GetEntities());
+    }
+
+    template<typename EntityPtr>
+    void SortEntitiesByTransformHierarchy(AZStd::vector<EntityPtr>& entities)
+    {
         const size_t originalEntityCount = entities.size();
 
         // IDs of those present in 'entities'. Does not include parent ID if parent not found in 'entities'
         AZStd::unordered_set<AZ::EntityId> existingEntityIds;
 
         // map children by their parent ID (even if parent not found in 'entities')
-        AZStd::unordered_map<AZ::EntityId, AzFramework::Spawnable::EntityList> parentIdToChildren;
+        AZStd::unordered_map<AZ::EntityId, AZStd::vector<EntityPtr>> parentIdToChildren;
 
         // use 'candidateIds' to track the parent IDs we're going to process next.
         AZStd::vector<AZ::EntityId> candidateIds;
@@ -199,8 +206,7 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
                 for (auto& child : foundChildren->second)
                 {
                     candidateIds.push_back(child->GetId());
-                    entities.emplace_back(nullptr);
-                    entities.back().swap(child);
+                    entities.emplace_back(AZStd::move(child));
                 }
 
                 parentIdToChildren.erase(foundChildren);
@@ -217,4 +223,7 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
 
     }
 
+    // Explicit specializations of SortEntitiesByTransformHierarchy (have to be in cpp due to clang errors)
+    template void SortEntitiesByTransformHierarchy(AZStd::vector<AZ::Entity*>& entities);
+    template void SortEntitiesByTransformHierarchy(AZStd::vector<AZStd::unique_ptr<AZ::Entity>>& entities);
 } // namespace AzToolsFramework::Prefab::SpawnableUtils

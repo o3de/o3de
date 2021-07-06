@@ -1,5 +1,5 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
@@ -17,7 +17,7 @@ import uuid
 import re
 
 
-from o3de import manifest, validation, utils
+from o3de import manifest, register, validation, utils
 
 logger = logging.getLogger()
 logging.basicConfig()
@@ -388,10 +388,11 @@ def create_template(source_path: pathlib.Path,
     if not source_path:
         logger.error('Src path cannot be empty.')
         return 1
-    if not os.path.isdir(source_path):
+    if not source_path.is_dir():
         logger.error(f'Src path {source_path} is not a folder.')
         return 1
 
+    source_path = source_path.resolve()
     # source_name is now the last component of the source_path
     if not source_name:
         source_name = os.path.basename(source_path)
@@ -401,11 +402,11 @@ def create_template(source_path: pathlib.Path,
     if not template_path:
         logger.info(f'Template path empty. Using source name {source_name}')
         template_path = source_name
-    if not os.path.isabs(template_path):
+    if not template_path.is_absolute():
         default_templates_folder = manifest.get_registered(default_folder='templates')
-        template_path = default_templates_folder/ template_path
+        template_path = default_templates_folder / template_path
         logger.info(f'Template path not a full path. Using default templates folder {template_path}')
-    if not force and os.path.isdir(template_path):
+    if not force and template_path.is_dir():
         logger.error(f'Template path {template_path} already exists.')
         return 1
 
@@ -415,8 +416,7 @@ def create_template(source_path: pathlib.Path,
     except ValueError:
         pass
     else:
-        logger.error(f'Template output path {template_path} cannot be a subdirectory of the source_path {source_path}:\n'
-                     f'{err}')
+        logger.error(f'Template output path {template_path} cannot be a subdirectory of the source_path {source_path}\n')
         return 1
 
     # template name is now the last component of the template_path
@@ -1200,7 +1200,7 @@ def create_from_template(destination_path: pathlib.Path,
 
     if not destination_name:
         # destination name is now the last component of the destination_path
-        destination_name = os.path.basename(destination_path)
+        destination_name = destination_path.name
 
     # destination name cannot be the same as a restricted platform name
     if destination_name in restricted_platforms:
@@ -1649,33 +1649,15 @@ def create_project(project_path: pathlib.Path,
                     with open(cmakelists_file_name, 'w') as d:
                         if keep_license_text:
                             d.write('# {BEGIN_LICENSE}\n')
-                            d.write('# Copyright (c) Contributors to the Open 3D Engine Project\n')
+                            d.write('# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.\n')
                             d.write('#\n')
                             d.write('# SPDX-License-Identifier: Apache-2.0 OR MIT\n')
                             d.write('# {END_LICENSE}\n')
 
-    # set the "engine" element of the project.json
-    engine_json_data = manifest.get_engine_json_data(engine_path=manifest.get_this_engine_path())
-    try:
-        engine_name = engine_json_data['engine_name']
-    except KeyError as e:
-        logger.error(f"engine_name for this engine not found in engine.json.")
-        return 1
 
-    project_json_data = manifest.get_project_json_data(project_path=project_path)
-    if not project_json_data:
-        # get_project_json_data already logs an error if the project.json is mising
-        return 1
-
-    project_json_data.update({"engine": engine_name})
-    with open(project_json, 'w') as s:
-        try:
-            s.write(json.dumps(project_json_data, indent=4) + '\n')
-        except OSError as e:
-            logger.error(f'Failed to write project json at {project_path}.')
-            return 1
-
-    return 0
+    # Register the project with the global o3de_manifest.json and set the project.json "engine" field to match the
+    # engine.json "engine_name" field
+    return register.register(project_path=project_path)
 
 
 def create_gem(gem_path: pathlib.Path,
@@ -1745,6 +1727,11 @@ def create_gem(gem_path: pathlib.Path,
     if template_name and not template_path:
         template_path = manifest.get_registered(template_name=template_name)
 
+    if not template_path:
+        logger.error(f'Could not find the template path using name {template_name}.\n'
+                     'Has the template been registered yet? It can be registered via the '
+                     '"o3de.py register --tp <template-path>" command')
+        return 1
     if not os.path.isdir(template_path):
         logger.error(f'Could not find the template {template_name}=>{template_path}')
         return 1
@@ -2041,7 +2028,7 @@ def create_gem(gem_path: pathlib.Path,
                         with open(cmakelists_file_name, 'w') as d:
                             if keep_license_text:
                                 d.write('# {BEGIN_LICENSE}\n')
-                                d.write('# Copyright (c) Contributors to the Open 3D Engine Project\n')
+                                d.write('# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.\n')
                                 d.write('#\n')
                                 d.write('# SPDX-License-Identifier: Apache-2.0 OR MIT\n')
                                 d.write('# {END_LICENSE}\n')
@@ -2068,7 +2055,7 @@ def _run_create_from_template(args: argparse) -> int:
     return create_from_template(args.destination_path,
                                 args.template_path,
                                 args.template_name,
-                                args.destination_path,
+                                args.destination_name,
                                 args.destination_restricted_path,
                                 args.destination_restricted_name,
                                 args.template_restricted_path,

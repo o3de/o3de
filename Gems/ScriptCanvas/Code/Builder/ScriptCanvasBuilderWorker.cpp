@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -70,6 +70,7 @@ namespace ScriptCanvasBuilder
                 AZ_Warning(s_scriptCanvasBuilder, false, "CreateJobs for \"%s\" failed because the source file could not be opened.", fullPath.data());
                 return;
             }
+
             AZStd::vector<AZ::u8> fileBuffer(ioStream.GetLength());
             size_t bytesRead = ioStream.Read(fileBuffer.size(), fileBuffer.data());
             if (bytesRead != ioStream.GetLength())
@@ -87,15 +88,15 @@ namespace ScriptCanvasBuilder
         {
             // force load these before processing
             if (filterInfo.m_assetType == azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>()
-            || filterInfo.m_assetType == azrtti_typeid<ScriptEvents::ScriptEventsAsset>())
+                || filterInfo.m_assetType == azrtti_typeid<ScriptEvents::ScriptEventsAsset>())
             {
                 this->m_processEditorAssetDependencies.push_back(filterInfo);
             }
 
             // these trigger re-processing
             if (filterInfo.m_assetType == azrtti_typeid<ScriptCanvasEditor::ScriptCanvasAsset>()
-            || filterInfo.m_assetType == azrtti_typeid<ScriptEvents::ScriptEventsAsset>()
-            || filterInfo.m_assetType == azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>())
+                || filterInfo.m_assetType == azrtti_typeid<ScriptEvents::ScriptEventsAsset>()
+                || filterInfo.m_assetType == azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>())
             {
                 AssetBuilderSDK::SourceFileDependency dependency;
                 dependency.m_sourceFileDependencyUUID = filterInfo.m_assetId.m_guid;
@@ -210,7 +211,7 @@ namespace ScriptCanvasBuilder
         bool pathFound = false;
         AZStd::string relativePath;
         AzToolsFramework::AssetSystemRequestBus::BroadcastResult
-            ( pathFound
+        (pathFound
             , &AzToolsFramework::AssetSystem::AssetSystemRequest::GetRelativeProductPathFromFullSourceOrProductPath
             , request.m_fullPath.c_str(), relativePath);
 

@@ -1,6 +1,0 @@
-<RCC>
-    <qresource prefix="/StartupLogoDialog">
-        <file>o3de_logo.svg</file>
-        <file>splashscreen_background_gradient.jpg</file>
-    </qresource>
-</RCC>

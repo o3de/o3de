@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -109,13 +109,13 @@ namespace AzQtComponents
 
         void ReadColorGridConfig(QSettings& settings, const QString& name, ColorPicker::ColorGridConfig& colorGrid)
         {
-            ConfigHelpers::GroupGuard(&settings, name);
+            ConfigHelpers::GroupGuard guard(&settings, name);
             ConfigHelpers::read<QSize>(settings, QStringLiteral("MinimumSize"), colorGrid.minimumSize);
         }
 
         void ReadDialoButtonsConfig(QSettings& settings, const QString& name, ColorPicker::DialogButtonsConfig& dialogButtons)
         {
-            ConfigHelpers::GroupGuard(&settings, name);
+            ConfigHelpers::GroupGuard guard(&settings, name);
             ConfigHelpers::read<int>(settings, QStringLiteral("TopPadding"), dialogButtons.topPadding);
         }
 

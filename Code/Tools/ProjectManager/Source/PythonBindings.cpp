@@ -1,6 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -23,6 +23,8 @@
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
+#include <QDir>
+
 namespace Platform
 {
     bool InsertPythonLibraryPath(
@@ -42,7 +44,7 @@ namespace Platform
         return false;
     }
 
-    // Implemented in each different platform's PAL implentation files, as it differs per platform.
+    // Implemented in each different platform's PAL implementation files, as it differs per platform.
     AZStd::string GetPythonHomePath(const char* pythonPackage, const char* engineRoot);
 
 } // namespace Platform
@@ -650,6 +652,12 @@ namespace O3DE::ProjectManager
                 gemInfo.m_summary = Py_To_String_Optional(data, "Summary", "");
                 gemInfo.m_version = Py_To_String_Optional(data, "Version", "");
                 gemInfo.m_requirement = Py_To_String_Optional(data, "Requirements", "");
+                gemInfo.m_creator = Py_To_String_Optional(data, "origin", "");
+
+                if (gemInfo.m_creator.contains("Open 3D Engine"))
+                {
+                    gemInfo.m_gemOrigin = GemInfo::GemOrigin::Open3DEEngine;
+                }
 
                 if (data.contains("Tags"))
                 {
@@ -755,6 +763,21 @@ namespace O3DE::ProjectManager
         });
     }
 
+    bool PythonBindings::RemoveInvalidProjects()
+    {
+        bool removalResult = false;
+        bool result = ExecuteWithLock(
+            [&]
+            {
+                auto pythonRemovalResult = m_register.attr("remove_invalid_o3de_projects")();
+
+                // Returns an exit code so boolify it then invert result
+                removalResult = !pythonRemovalResult.cast<bool>();
+            });
+
+        return result && removalResult;
+    }
+
     AZ::Outcome<void, AZStd::string> PythonBindings::UpdateProject(const ProjectInfo& projectInfo)
     {
         bool updateProjectSucceeded = false;
@@ -822,11 +845,19 @@ namespace O3DE::ProjectManager
                         templateInfo.m_canonicalTags.push_back(Py_To_String(tag));
                     }
                 }
-                if (data.contains("included_gems"))
+
+                QString templateProjectPath = QDir(templateInfo.m_path).filePath("Template");
+                auto enabledGemNames = GetEnabledGemNames(templateProjectPath);
+                if (enabledGemNames)
                 {
-                    for (auto gem : data["included_gems"])
+                    for (auto gem : enabledGemNames.GetValue())
                     {
-                        templateInfo.m_includedGems.push_back(Py_To_String(gem));
+                        // Exclude the template ${Name} placeholder for the list of included gems
+                        // That Gem gets created with the project
+                        if (!gem.contains("${Name}"))
+                        {
+                            templateInfo.m_includedGems.push_back(Py_To_String(gem.c_str()));
+                        }
                     }
                 }
             }

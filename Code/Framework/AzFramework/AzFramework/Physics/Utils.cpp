@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -73,21 +73,22 @@ namespace Physics
         {
             if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
-                behaviorContext->EBus<Physics::CharacterRequestBus>("CharacterControllerRequestBus", "Character Controller")
-                    ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::RuntimeOwn)
+                behaviorContext->EBus<CharacterRequestBus>("CharacterControllerRequestBus")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ->Attribute(AZ::Script::Attributes::Module, "physics")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
-                    ->Event("GetBasePosition", &Physics::CharacterRequests::GetBasePosition, "Get Base Position")
-                    ->Event("SetBasePosition", &Physics::CharacterRequests::SetBasePosition, "Set Base Position")
-                    ->Event("GetCenterPosition", &Physics::CharacterRequests::GetCenterPosition, "Get Center Position")
-                    ->Event("GetStepHeight", &Physics::CharacterRequests::GetStepHeight, "Get Step Height")
-                    ->Event("SetStepHeight", &Physics::CharacterRequests::SetStepHeight, "Set Step Height")
-                    ->Event("GetUpDirection", &Physics::CharacterRequests::GetUpDirection, "Get Up Direction")
-                    ->Event("GetSlopeLimitDegrees", &Physics::CharacterRequests::GetSlopeLimitDegrees, "Get Slope Limit (Degrees)")
-                    ->Event("SetSlopeLimitDegrees", &Physics::CharacterRequests::SetSlopeLimitDegrees, "Set Slope Limit (Degrees)")
-                    ->Event("GetMaximumSpeed", &Physics::CharacterRequests::GetMaximumSpeed, "Get Maximum Speed")
-                    ->Event("SetMaximumSpeed", &Physics::CharacterRequests::SetMaximumSpeed, "Set Maximum Speed")
-                    ->Event("GetVelocity", &Physics::CharacterRequests::GetVelocity, "Get Velocity")
-                    ->Event("AddVelocity", &Physics::CharacterRequests::AddVelocity, "Add Velocity")
+                    ->Event("GetBasePosition", &CharacterRequests::GetBasePosition, "Get Base Position")
+                    ->Event("SetBasePosition", &CharacterRequests::SetBasePosition, "Set Base Position")
+                    ->Event("GetCenterPosition", &CharacterRequests::GetCenterPosition, "Get Center Position")
+                    ->Event("GetStepHeight", &CharacterRequests::GetStepHeight, "Get Step Height")
+                    ->Event("SetStepHeight", &CharacterRequests::SetStepHeight, "Set Step Height")
+                    ->Event("GetUpDirection", &CharacterRequests::GetUpDirection, "Get Up Direction")
+                    ->Event("GetSlopeLimitDegrees", &CharacterRequests::GetSlopeLimitDegrees, "Get Slope Limit (Degrees)")
+                    ->Event("SetSlopeLimitDegrees", &CharacterRequests::SetSlopeLimitDegrees, "Set Slope Limit (Degrees)")
+                    ->Event("GetMaximumSpeed", &CharacterRequests::GetMaximumSpeed, "Get Maximum Speed")
+                    ->Event("SetMaximumSpeed", &CharacterRequests::SetMaximumSpeed, "Set Maximum Speed")
+                    ->Event("GetVelocity", &CharacterRequests::GetVelocity, "Get Velocity")
+                    ->Event("AddVelocity", &CharacterRequests::AddVelocity, "Add Velocity")
                     ;
             }
         }

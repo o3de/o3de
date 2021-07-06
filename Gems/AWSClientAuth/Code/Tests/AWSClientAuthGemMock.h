@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -351,12 +351,12 @@ namespace AWSClientAuthUnitTest
 
         AuthenticationProviderMock()
         {
-            ON_CALL(*this, Initialize(testing::_)).WillByDefault(testing::Return(true));
+            ON_CALL(*this, Initialize()).WillByDefault(testing::Return(true));
         }
 
         virtual ~AuthenticationProviderMock() = default;
 
-        MOCK_METHOD1(Initialize, bool(AZStd::weak_ptr<AZ::SettingsRegistryInterface> settingsRegistry));
+        MOCK_METHOD0(Initialize, bool());
         MOCK_METHOD2(PasswordGrantSingleFactorSignInAsync, void(const AZStd::string& username, const AZStd::string& password));
         MOCK_METHOD2(PasswordGrantMultiFactorSignInAsync, void(const AZStd::string& username, const AZStd::string& password));
         MOCK_METHOD2(PasswordGrantMultiFactorConfirmSignInAsync, void(const AZStd::string& username, const AZStd::string& confirmationCode));
@@ -495,6 +495,8 @@ namespace AWSClientAuthUnitTest
             m_settingsRegistry->SetContext(m_serializeContext.get());
             m_settingsRegistry->SetContext(m_registrationContext.get());
 
+            AZ::SettingsRegistry::Register(m_settingsRegistry.get());
+
             AZ::ComponentApplicationBus::Handler::BusConnect();
             AZ::Interface<AZ::ComponentApplicationRequests>::Register(this);
 
@@ -554,6 +556,8 @@ namespace AWSClientAuthUnitTest
                 AZ::Interface<IAWSClientAuthRequests>::Unregister(this);
                 AWSClientAuth::AWSClientAuthRequestBus::Handler::BusDisconnect();
             }
+
+            AZ::SettingsRegistry::Unregister(m_settingsRegistry.get());
 
             m_testFolder.reset();
             m_settingsRegistry.reset();
@@ -660,8 +664,5 @@ namespace AWSClientAuthUnitTest
             m_testFolderCreated = true;
             return path;
         }
-
-    };
-
-    
+    };  
 }

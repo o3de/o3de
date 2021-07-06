@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -446,7 +446,7 @@ void ApplicationManager::PopulateApplicationDependencies()
     // any of those should cause AP to drop.
     for (const QString& pathName : { "CrySystem",
                                      "SceneCore", "SceneData",
-                                     "FbxSceneBuilder", "AzQtComponents"
+                                     "SceneBuilder", "AzQtComponents"
                                      })
     {
         QString pathWithPlatformExtension = pathName + QString(AZ_DYNAMIC_LIBRARY_EXTENSION);
