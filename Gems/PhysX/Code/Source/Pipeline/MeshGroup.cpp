@@ -763,7 +763,7 @@ namespace PhysX
                 return;
             }
 
-            Utils::UpdateAssetPhysicsMaterials(assetMaterialData->m_fbxMaterialNames, m_materialSlots, m_physicsMaterials);
+            Utils::UpdateAssetPhysicsMaterials(assetMaterialData->m_sourceSceneMaterialNames, m_materialSlots, m_physicsMaterials);
         }
 
         AZ::SceneAPI::Containers::RuleContainer& MeshGroup::GetRuleContainer()

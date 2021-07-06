@@ -61,8 +61,8 @@ namespace O3DE::ProjectManager
     {
         switch (origin)
         {
-        case O3DEFoundation:
-            return "Open 3D Foundation";
+        case Open3DEEngine:
+            return "Open 3D Engine";
         case Local:
             return "Local";
         default:

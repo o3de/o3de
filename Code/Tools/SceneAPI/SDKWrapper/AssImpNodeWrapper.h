@@ -18,7 +18,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(AssImpNodeWrapper, "{1043260B-9076-49B7-AD38-EF62E85F7C1D}", SDKNode::NodeWrapper);
-            AssImpNodeWrapper(aiNode* fbxNode);
+            AssImpNodeWrapper(aiNode* sourceNode);
             ~AssImpNodeWrapper() override;
             const char* GetName() const override;
             AZ::u64 GetUniqueId() const override;

@@ -40,26 +40,8 @@ ly_add_target(
             AZ::AzCore
 )
 
-# DEPRECATED: this target was marked as deprecated in the VS filter
 ly_add_target(
-    NAME AmazonStyle APPLICATION
-    NAMESPACE AZ
-    AUTOMOC
-    AUTOUIC
-    FILES_CMAKE
-        AzQtComponents/azqtcomponents_style_files.cmake
-    INCLUDE_DIRECTORIES
-        PRIVATE
-            .
-            AzQtComponents
-    BUILD_DEPENDENCIES
-        PRIVATE
-            3rdParty::Qt::Widgets
-            AZ::AzQtComponents
-)
-
-ly_add_target(
-    NAME AmazonQtControlGallery APPLICATION
+    NAME O3DEQtControlGallery APPLICATION
     NAMESPACE AZ
     AUTOMOC
     AUTOUIC

@@ -31,7 +31,7 @@ namespace AZ
 
             ActivateSceneModule(SceneProcessing::s_sceneCoreModule);
             ActivateSceneModule(SceneProcessing::s_sceneDataModule);
-            ActivateSceneModule(SceneProcessing::s_fbxSceneBuilderModule);
+            ActivateSceneModule(SceneProcessing::s_sceneBuilderModule);
             
             // Defaults in case there's no config setup in the Project Configurator.
             m_softNames.push_back(aznew NodeSoftNameSetting("^.*_[Ll][Oo][Dd]1(_optimized)?$", PatternMatcher::MatchApproach::Regex, "LODMesh1", true));
@@ -65,7 +65,7 @@ namespace AZ
 
         SceneProcessingConfigSystemComponent::~SceneProcessingConfigSystemComponent()
         {
-            DeactivateSceneModule(SceneProcessing::s_fbxSceneBuilderModule);
+            DeactivateSceneModule(SceneProcessing::s_sceneBuilderModule);
             DeactivateSceneModule(SceneProcessing::s_sceneDataModule);
             DeactivateSceneModule(SceneProcessing::s_sceneCoreModule);
         }
@@ -140,7 +140,7 @@ namespace AZ
         {
             ReflectSceneModule(context, SceneProcessing::s_sceneCoreModule);
             ReflectSceneModule(context, SceneProcessing::s_sceneDataModule);
-            ReflectSceneModule(context, SceneProcessing::s_fbxSceneBuilderModule);
+            ReflectSceneModule(context, SceneProcessing::s_sceneBuilderModule);
 
             SoftNameSetting::Reflect(context);
             NodeSoftNameSetting::Reflect(context);
