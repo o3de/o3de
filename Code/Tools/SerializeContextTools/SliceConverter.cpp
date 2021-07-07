@@ -330,6 +330,7 @@ namespace AZ
             prefabPlaceholderEntities.clear();
             for (size_t curEntityIdx = 0; curEntityIdx < sliceEntities.size(); curEntityIdx++)
             {
+                UpdateCachedTransform(*(sliceEntities[curEntityIdx]));
                 sourceInstance->AddEntity(*(sliceEntities[curEntityIdx]), entityAliases[curEntityIdx]);
             }
 
@@ -631,12 +632,14 @@ namespace AZ
                             AZ_Assert(false, "Couldn't find nested instance %s", it->c_str());
                         }
                     }
+                    UpdateCachedTransform(*entity);
                     addingInstance->AddEntity(*entity, mappingStruct.m_entityAlias);
                     addedEntityList.emplace_back(entity, addingInstance);
                 }
                 else
                 {
                     AZ_Assert(false, "Failed to find entity alias.");
+                    UpdateCachedTransform(*entity);
                     nestedInstance->AddEntity(*entity);
                     addedEntityList.emplace_back(entity, nestedInstance.get());
                 }
@@ -778,6 +781,16 @@ namespace AZ
                     transformComponent->SetParent(parentId);
                     transformComponent->UpdateCachedWorldTransform();
                 }
+            }
+        }
+
+        void SliceConverter::UpdateCachedTransform(const AZ::Entity& entity)
+        {
+            AzToolsFramework::Components::TransformComponent* transformComponent =
+                entity.FindComponent<AzToolsFramework::Components::TransformComponent>();
+            if (transformComponent)
+            {
+                transformComponent->UpdateCachedWorldTransform();
             }
         }
 
