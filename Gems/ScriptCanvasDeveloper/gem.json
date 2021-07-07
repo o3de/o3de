@@ -1,30 +1,12 @@
 {
     "gem_name": "ScriptCanvasDeveloperGem",
-    "GemFormatVersion": 3,
-    "Uuid": "f905c05883b94fd6bddc91052c3c5a86",
-    "Name": "ScriptCanvasDeveloperGem",
-    "DisplayName": "Script Canvas Developer Tools",
-    "Version": "0.1.0",
-    "LinkType": "DynamicStatic",
-    "EditorModule": true,
-    "Summary": "The Script Canvas Developer Gem contains a suite of utility features that aids in the development and debugging of Script Canvas systems.",
-    "Tags": ["Scripting", "Editor"],
-    "IconPath": "preview.png",
-    "Dependencies" : [
-        {
-            "Uuid" : "bab8807a1bc646b3909f3cc200ffeedf",
-            "VersionConstraints" : [">=0.1.0"],
-            "_comment" : "ImGui"
-        },
-        {
-            "Uuid" : "869a0d0ec11a45c299917d45c81555e6",
-            "VersionConstraints" : [">=0.1.0"],
-            "_comment" : "ScriptCanvas"
-        },
-        {
-            "Uuid" : "875b6fcbdeea44deaae7984ad9bb6cdc",
-            "VersionConstraints" : [">=0.1.0"],
-            "_comment" : "GraphCanvas"
-        }
-    ]
-}
+    "display_name": "Script Canvas Developer",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Open 3D Engine - o3de.org",
+    "type": "Tool",
+    "summary": "The Script Canvas Developer Gem provides a suite of utility features for the development and debugging of Script Canvas systems.",
+    "canonical_tags": ["Gem"],
+    "user_tags": ["Scripting", "Utility", "Debug"],
+    "icon_path": "preview.png",
+    "requirements": ""
+  }
