@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -69,7 +69,7 @@ namespace AZ
             if (isSelected)
             {
                 // Attenuation radius shape is just a capsule with the same internal height, but a radius of the attenuation radius.
-                float radius = CalculateAttenuationRadius(AreaLightComponentConfig::CutoffIntensity);
+                float radius = GetConfig()->m_attenuationRadius;
 
                 // Add on the caps for the attenuation radius
                 float scale = GetTransform().GetUniformScale();

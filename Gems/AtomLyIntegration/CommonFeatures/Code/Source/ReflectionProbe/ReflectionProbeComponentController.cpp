@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -214,11 +214,25 @@ namespace AZ
 
         void ReflectionProbeComponentController::UpdateCubeMap()
         {
+            // disconnect the asset bus since we might reconnect with a different asset
+            Data::AssetBus::MultiHandler::BusDisconnect();
+
             Data::Asset<RPI::StreamingImageAsset>& cubeMapAsset =
                 m_configuration.m_useBakedCubemap ? m_configuration.m_bakedCubeMapAsset : m_configuration.m_authoredCubeMapAsset;
 
-            // this will invoke OnAssetReady()
-            Data::AssetBus::MultiHandler::BusConnect(cubeMapAsset.GetId());
+            if (cubeMapAsset.GetId().IsValid())
+            {
+                cubeMapAsset.QueueLoad();
+
+                // this will invoke OnAssetReady()
+                Data::AssetBus::MultiHandler::BusConnect(cubeMapAsset.GetId());
+            }
+            else
+            {
+                // clear the current cubemap
+                Data::Instance<RPI::Image> image = nullptr;
+                m_featureProcessor->SetProbeCubeMap(m_handle, image, {});
+            }
         }
 
         void ReflectionProbeComponentController::OnTransformChanged([[maybe_unused]] const AZ::Transform& local, const AZ::Transform& world)

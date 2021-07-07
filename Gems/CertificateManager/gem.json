@@ -1,12 +1,12 @@
 {
     "gem_name": "CertificateManager",
-    "GemFormatVersion": 3,
-    "Uuid": "659CFFFF33B14A10835BAFC6EA623F98",
-    "Name": "CertificateManager",
-    "DisplayName": "Amazon Certificate Manager",
-    "Version": "0.0.1",
-    "LinkType": "Dynamic",
-    "Summary": "The Amazon Certificate Manager Gem provides access to authentication files for secure game connections from S3, files on disk, and other 3rd party sources",
-    "Tags": ["Amazon Certificate Manager","Security","Multiplayer","Networking"],
-    "IconPath": "preview.png"
+    "display_name": "Certificate Manager",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Open 3D Engine - o3de.org",
+    "type": "Code",
+    "summary": "The Certificate Manager Gem provides access to authentication files for secure game connections from Amazon S3, files on disk, and other 3rd party sources.",
+    "canonical_tags": ["Gem"],
+    "user_tags": ["Network", "Framework"],
+    "icon_path": "preview.png",
+    "requirements": ""
 }

@@ -1,21 +1,12 @@
 {
     "gem_name": "CameraFramework",
-    "Dependencies": [
-        {
-            "Uuid": "f910686b6725452fbfc4671f95f733c6", 
-            "VersionConstraints": [
-                "~>0.1"
-            ], 
-            "_comment": "Camera"
-        }
-    ], 
-    "GemFormatVersion": 3,
-    "Uuid": "54f2763fe191432fa681ce4a354eedf5",
-    "Name": "CameraFramework",
-    "Version": "0.1.0",
-    "LinkType": "Dynamic",
-    "DisplayName": "Camera Framework [PREVIEW]",
-    "Tags": ["Camera", "Framework"],
-    "Summary": "The Camera Framework Gem includes the camera rig component which drives an entity through camera behaviors. Behaviors are provided in the Starting Point Camera Gem.",
-    "IconPath": "preview.png"
+    "display_name": "Camera Framework",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Open 3D Engine - o3de.org",
+    "type": "Code",
+    "summary": "The Camera Framework Gem provides a base for implementing more complex camera systems.",
+    "canonical_tags": ["Gem"],
+    "user_tags": ["Rendering", "Framework", "Utility"],
+    "icon_path": "preview.png",
+    "requirements": ""
 }

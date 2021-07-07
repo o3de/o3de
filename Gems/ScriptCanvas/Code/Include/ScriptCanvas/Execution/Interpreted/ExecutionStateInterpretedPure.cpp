@@ -1,6 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -21,7 +21,7 @@ namespace ScriptCanvas
 
     void ExecutionStateInterpretedPure::Execute()
     {}
-    
+
     void ExecutionStateInterpretedPure::Initialize()
     {}
 
@@ -52,8 +52,8 @@ namespace ScriptCanvas
         AZ::Internal::LuaClassToStack(lua, this, azrtti_typeid<ExecutionStateInterpretedPureOnGraphStart>(), AZ::ObjectToLua::ByReference, AZ::AcquisitionOnPush::None);
         // Lua: graph_VM, graph_VM['k_OnGraphStartFunctionName'], userdata<ExecutionState>
         Execution::ActivationInputArray storage;
-        Execution::ActivationData data(*m_component, storage);
-        Execution::ActivationInputRange range = Execution::Context::CreateActivateInputRange(data);
+        Execution::ActivationData data(m_component->GetRuntimeDataOverrides(), storage);
+        Execution::ActivationInputRange range = Execution::Context::CreateActivateInputRange(data, m_component->GetEntityId());
         Execution::PushActivationArgs(lua, range.inputs, range.totalCount);
         // Lua: graph_VM, graph_VM['k_OnGraphStartFunctionName'], userdata<ExecutionState>, args...
         const int result = Execution::InterpretedSafeCall(lua, aznumeric_caster(1 + range.totalCount), 0);
@@ -78,4 +78,4 @@ namespace ScriptCanvas
                 ;
         }
     }
-} 
+}

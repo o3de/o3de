@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -74,6 +74,21 @@ WelcomeScreenDialog::WelcomeScreenDialog(QWidget* pParent)
     , m_pRecentList(nullptr)
 {
     ui->setupUi(this);
+
+    // Set the project preview image
+    QString projectPreviewPath = QDir(AZ::Utils::GetProjectPath().c_str()).filePath("preview.png");
+    QFileInfo projectPreviewPathInfo(projectPreviewPath);
+    if (!projectPreviewPathInfo.exists() || !projectPreviewPathInfo.isFile())
+    {
+        projectPreviewPath = ":/WelcomeScreenDialog/DefaultProjectImage.png";
+    }
+    ui->activeProjectIcon->setPixmap(
+        QPixmap(projectPreviewPath).scaled(
+            ui->activeProjectIcon->size(),
+            Qt::KeepAspectRatioByExpanding,
+            Qt::SmoothTransformation
+        )
+    );
 
     ui->recentLevelTable->setColumnCount(3);
     ui->recentLevelTable->setMouseTracking(true);

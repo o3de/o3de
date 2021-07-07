@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -17,15 +17,15 @@ namespace AzToolsFramework
         DisplayOptionsMenu::DisplayOptionsMenu(QWidget* parent)
             : QMenu(parent)
         {
-            auto sortManually = addAction(QIcon(QStringLiteral(":/sort_manually.svg")), tr("Sort: Manually"));
+            auto sortManually = addAction(QIcon(QStringLiteral(":/Outliner/sort_manually.svg")), tr("Sort: Manually"));
             sortManually->setData(static_cast<int>(DisplaySortMode::Manually));
             sortManually->setCheckable(true);
 
-            auto sortAtoZ = addAction(QIcon(QStringLiteral(":/sort_a_to_z.svg")), tr("Sort: A to Z"));
+            auto sortAtoZ = addAction(QIcon(QStringLiteral(":/Outliner/sort_a_to_z.svg")), tr("Sort: A to Z"));
             sortAtoZ->setData(static_cast<int>(DisplaySortMode::AtoZ));
             sortAtoZ->setCheckable(true);
 
-            auto sortZtoA = addAction(QIcon(QStringLiteral(":/sort_z_to_a.svg")), tr("Sort: Z to A"));
+            auto sortZtoA = addAction(QIcon(QStringLiteral(":/Outliner/sort_z_to_a.svg")), tr("Sort: Z to A"));
             sortZtoA->setData(static_cast<int>(DisplaySortMode::ZtoA));
             sortZtoA->setCheckable(true);
 

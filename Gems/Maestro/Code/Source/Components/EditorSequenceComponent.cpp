@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -205,15 +205,31 @@ namespace Maestro
 
             if (addComponentResult.IsSuccess())
             {
-                // We need to register our Entity and Component Ids with the SequenceAgentComponent so we can communicate over EBuses with it.
-                // We can't do this registration over an EBus because we haven't registered with it yet - do it with pointers? Is this safe?
-                agentComponent = static_cast<Maestro::EditorSequenceAgentComponent*>(addComponentResult.GetValue()[entityToAnimate].m_componentsAdded[0]);
+                if (!addComponentResult.GetValue()[entityToAnimate].m_componentsAdded.empty())
+                {
+                    // We need to register our Entity and Component Ids with the SequenceAgentComponent so we can communicate over EBuses
+                    // with it. We can't do this registration over an EBus because we haven't registered with it yet - do it with pointers?
+                    // Is this safe?
+                    agentComponent = static_cast<Maestro::EditorSequenceAgentComponent*>(
+                        addComponentResult.GetValue()[entityToAnimate].m_componentsAdded[0]);
+                }
+                else
+                {
+                    AZ_Assert(
+                        !addComponentResult.GetValue()[entityToAnimate].m_componentsAdded.empty(),
+                        "Add component result was successful, but the EditorSequenceAgentComponent wasn't added.  "
+                        "This can happen if the entity id isn't found for some reason: entity id = %s",
+                        entityToAnimate.ToString().c_str());
+                }
             }
         }
 
-        AZ_Assert(agentComponent, "EditorSequenceComponent::AddEntityToAnimate unable to create or find sequenceAgentComponent.")
+        AZ_Assert(agentComponent, "EditorSequenceComponent::AddEntityToAnimate unable to create or find sequenceAgentComponent.");
         // Notify the SequenceAgentComponent that we're connected to it - after this call, all communication with the Agent is over an EBus
-        agentComponent->ConnectSequence(GetEntityId());
+        if (agentComponent)
+        {
+            agentComponent->ConnectSequence(GetEntityId());
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////

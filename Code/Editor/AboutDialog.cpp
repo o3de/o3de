@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -42,10 +42,10 @@ CAboutDialog::CAboutDialog(QString versionText, QString richTextCopyrightNotice,
     m_ui->m_transparentAgreement->setObjectName("link");
 
     setStyleSheet( "CAboutDialog > QLabel#copyrightNotice { color: #AAAAAA; font-size: 9px; }\
-                    CAboutDialog > QLabel#link { text-decoration: underline; color: #00A1C9; }");
+                    CAboutDialog > QLabel#link { text-decoration: underline; color: #94D2FF; }");
 
     // Prepare background image
-    QImage backgroundImage(QStringLiteral(":/StartupLogoDialog/splashscreen_background_gradient.jpg"));
+    QImage backgroundImage(QStringLiteral(":/StartupLogoDialog/splashscreen_background_developer_preview.jpg"));
     m_backgroundImage = QPixmap::fromImage(backgroundImage.scaled(m_enforcedWidth, m_enforcedHeight, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
 
     // Draw the Open 3D Engine logo from svg

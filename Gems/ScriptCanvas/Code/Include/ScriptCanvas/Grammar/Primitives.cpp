@@ -1,6 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -99,9 +99,9 @@ namespace ScriptCanvas
             m_inputs.clear();
             m_outputs.clear();
         }
-        
+
         bool FunctionPrototype::IsVoid() const
-        {   
+        {
             return m_outputs.empty();
         }
 
@@ -200,24 +200,23 @@ namespace ScriptCanvas
             baseName.append(suffix);
             return AddVariableName(baseName);
         }
-        
+
         AZ::s32 Scope::AddNameCount(AZStd::string_view name)
         {
             AZ::s32 count = -1;
             ScopePtr ns = shared_from_this();
-            
+
             do
             {
                 auto iter = ns->m_baseNameToCount.find(name);
-                
+
                 if (iter != ns->m_baseNameToCount.end())
                 {
                     // a basename has been found in current or parent scope, get the latest count
                     count = iter->second;
                     break;
                 }
-            } 
-            while ((ns = AZStd::const_pointer_cast<Scope>(ns->m_parent)));
+            }             while ((ns = AZStd::const_pointer_cast<Scope>(ns->m_parent)));
 
             auto iter = m_baseNameToCount.find(name);
             if (iter == m_baseNameToCount.end())
@@ -235,7 +234,7 @@ namespace ScriptCanvas
         const VariableData Source::k_emptyVardata{};
 
         Source::Source
-            ( const Graph& graph
+        (const Graph& graph
             , const AZ::Data::AssetId& id
             , const GraphData& graphData
             , const VariableData& variableData
@@ -277,8 +276,8 @@ namespace ScriptCanvas
                 AzFramework::StringFunc::Path::StripExtension(namespacePath);
 
                 return AZ::Success(Source
-                    ( *request.graph
-                    , request.assetId
+                (*request.graph
+                    , request.scriptAssetId
                     , *graphData
                     , *sourceVariableData
                     , name
@@ -294,23 +293,23 @@ namespace ScriptCanvas
         }
 
         Variable::Variable(Datum&& datum)
-        : m_datum(datum)
+            : m_datum(datum)
         {}
-        
+
         Variable::Variable(const Datum& datum, const AZStd::string& name, TraitsFlags traitsFlags)
             : m_datum(datum)
             , m_name(name)
-            , m_isConst(traitsFlags & TraitsFlags::Const)
-            , m_isMember(traitsFlags & TraitsFlags::Member)
+            , m_isConst(traitsFlags& TraitsFlags::Const)
+            , m_isMember(traitsFlags& TraitsFlags::Member)
         {}
 
         Variable::Variable(Datum&& datum, AZStd::string&& name, TraitsFlags&& traitsFlags)
             : m_datum(datum)
             , m_name(name)
-            , m_isConst(traitsFlags & TraitsFlags::Const)
-            , m_isMember(traitsFlags & TraitsFlags::Member)
+            , m_isConst(traitsFlags& TraitsFlags::Const)
+            , m_isMember(traitsFlags& TraitsFlags::Member)
         {}
-        
+
         void Variable::Reflect(AZ::ReflectContext* reflectContext)
         {
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext))
@@ -339,5 +338,5 @@ namespace ScriptCanvas
             m_variable = nullptr;
             m_connectionVariable = nullptr;
         }
-    } 
-} 
+    }
+}

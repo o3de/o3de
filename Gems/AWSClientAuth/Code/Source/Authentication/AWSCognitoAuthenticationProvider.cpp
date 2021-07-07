@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -30,9 +30,8 @@ namespace AWSClientAuth
     constexpr char CognitoRefreshTokenAuthParamKey[] = "REFRESH_TOKEN";
     constexpr char CognitoSmsMfaCodeKey[] = "SMS_MFA_CODE";
 
-    bool AWSCognitoAuthenticationProvider::Initialize(AZStd::weak_ptr<AZ::SettingsRegistryInterface> settingsRegistry)
+    bool AWSCognitoAuthenticationProvider::Initialize()
     {
-        AZ_UNUSED(settingsRegistry);
         AWSCore::AWSResourceMappingRequestBus::BroadcastResult(
             m_cognitoAppClientId, &AWSCore::AWSResourceMappingRequests::GetResourceNameId, CognitoAppClientIdResourceMappingKey);
         AZ_Warning("AWSCognitoAuthenticationProvider", !m_cognitoAppClientId.empty(), "Missing Cognito App Client Id from resource mappings. Calls to Cognito will fail.");

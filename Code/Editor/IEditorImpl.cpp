@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -22,7 +22,9 @@ AZ_PUSH_DISABLE_WARNING(4251 4355 4996, "-Wunknown-warning-option")
 AZ_POP_DISABLE_WARNING
 
 // AzCore
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/JSON/document.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
 // AzFramework
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
@@ -195,8 +197,15 @@ CEditorImpl::CEditorImpl()
     m_pAssetBrowserRequestHandler = nullptr;
     m_assetEditorRequestsHandler = nullptr;
 
-    AZ::IO::SystemFile::CreateDir("SessionStatus");
-    QFile::setPermissions(m_crashLogFileName, QFileDevice::ReadOther | QFileDevice::WriteOther);
+    if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+    {
+        if (AZ::IO::FixedMaxPath crashLogPath; settingsRegistry->Get(crashLogPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath))
+        {
+            crashLogPath /= m_crashLogFileName;
+            AZ::IO::SystemFile::CreateDir(crashLogPath.ParentPath().FixedMaxPathString().c_str());
+            QFile::setPermissions(crashLogPath.c_str(), QFileDevice::ReadOther | QFileDevice::WriteOther);
+        }
+    }
 }
 
 void CEditorImpl::Initialize()

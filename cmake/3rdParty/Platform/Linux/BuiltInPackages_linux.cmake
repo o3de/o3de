@@ -1,5 +1,5 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 # 
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
@@ -31,7 +31,7 @@ ly_associate_package(PACKAGE_NAME PVRTexTool-4.24.0-rev4-multiplatform          
 ly_associate_package(PACKAGE_NAME AWSGameLiftServerSDK-3.4.1-rev1-linux             TARGETS AWSGameLiftServerSDK        PACKAGE_HASH a8149a95bd100384af6ade97e2b21a56173740d921e6c3da8188cd51554d39af)
 ly_associate_package(PACKAGE_NAME freetype-2.10.4.14-linux                          TARGETS freetype                    PACKAGE_HASH 9ad246873067717962c6b780d28a5ce3cef3321b73c9aea746a039c798f52e93)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-linux                               TARGETS tiff                        PACKAGE_HASH ae92b4d3b189c42ef644abc5cac865d1fb2eb7cb5622ec17e35642b00d1a0a76)
-ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev4-linux                   TARGETS AWSNativeSDK                PACKAGE_HASH b4db38de49d35a5f7500aed7f4aee5ec511dd3b584ee06fe9097885690191a5d)
+ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev5-linux                   TARGETS AWSNativeSDK                PACKAGE_HASH 0101a4052d9fce83a6f5515e00f366e97b308ecb8261ad23a6e4eb4365212ab6)
 ly_associate_package(PACKAGE_NAME Lua-5.3.5-rev5-linux                              TARGETS Lua                         PACKAGE_HASH 1adc812abe3dd0dbb2ca9756f81d8f0e0ba45779ac85bf1d8455b25c531a38b0)
 ly_associate_package(PACKAGE_NAME PhysX-4.1.2.29882248-rev3-linux                   TARGETS PhysX                       PACKAGE_HASH a110249cbef4f266b0002c4ee9a71f59f373040cefbe6b82f1e1510c811edde6)
 ly_associate_package(PACKAGE_NAME etc2comp-9cd0f9cae0-rev1-linux                    TARGETS etc2comp                    PACKAGE_HASH 9283aa5db5bb7fb90a0ddb7a9f3895317c8ebe8044943124bbb3673a41407430)

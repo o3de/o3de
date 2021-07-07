@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -135,7 +135,7 @@ namespace LyShine
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     LyShineSystemComponent::LyShineSystemComponent()
     {
-        m_cursorImagePathname.SetAssetPath("engineassets/textures/cursor_green.tif");
+        m_cursorImagePathname.SetAssetPath("Textures/Cursor_Default.tif");
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

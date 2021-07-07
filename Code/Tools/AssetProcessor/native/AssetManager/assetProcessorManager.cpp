@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -2548,7 +2548,7 @@ namespace AssetProcessor
 
                             jobdetail.m_jobParam[AZ_CRC(AutoFailReasonKey)] = AZStd::string::format(
                                 "Source file ( %s ) contains non ASCII characters.\n"
-                                "Open 3D Engine currently only supports file paths having ASCII characters and therefore asset processor will not be able to process this file.\n"
+                                "O3DE currently only supports file paths having ASCII characters and therefore asset processor will not be able to process this file.\n"
                                 "Please rename the source file to fix this error.\n",
                                 normalizedPath.toUtf8().data());
 
