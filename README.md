@@ -41,10 +41,11 @@ git clone https://github.com/o3de/o3de.git
 
 #### Optional
 
-*   WWise - 2019.2.8.7432 minimum: [https://www.audiokinetic.com/download/](https://www.audiokinetic.com/download/)
-    *   Note: This requires registration and installation of a client to download
-    *   You will also need to set a environment variable: `set LY_WWISE_INSTALL_PATH=<path to WWise version>`
-    *   For example: `set LY_WWISE_INSTALL_PATH="C:\Program Files (x86)\Audiokinetic\Wwise 2019.2.8.7432"`
+*   Wwise - 2021.1.1.7601 minimum: [https://www.audiokinetic.com/download/](https://www.audiokinetic.com/download/)
+    *   Note: This requires registration and installation of a client application to download
+    *   Make sure to select the SDK(C++) component during installation of Wwise
+    *   You will also need to set an environment variable: `set LY_WWISE_INSTALL_PATH=<path to Wwise version>`
+    *   For example: `set LY_WWISE_INSTALL_PATH="C:\Program Files (x86)\Audiokinetic\Wwise 2021.1.1.7601"`
 
 ### Quick Start Build Steps
 
@@ -53,7 +54,7 @@ git clone https://github.com/o3de/o3de.git
 1.  Install the following redistributables to the following:
     - Visual Studio and VC++ redistributable can be installed to any location
     - CMake can be installed to any location, as long as it's available in the system path
-    - (Optional) WWise can be installed anywhere, but you will need to set an environment variable for CMake to detect it:  `set LY_WWISE_INSTALL_PATH=<path to WWise>`
+    - (Optional) Wwise can be installed anywhere, but you will need to set an environment variable for CMake to detect it:  `set LY_WWISE_INSTALL_PATH=<path to Wwise>`
     
 1.  Configure the source into a solution using this command line, replacing <your build path> and <3rdParty cache path> to a path you've created:
     ```
