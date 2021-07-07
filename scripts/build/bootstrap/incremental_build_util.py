@@ -138,7 +138,7 @@ def get_ec2_client(region):
 def get_ec2_instance_id():
     try:
         instance_id = urllib.request.urlopen('http://169.254.169.254/latest/meta-data/instance-id').read()
-        return str(instance_id)
+        return instance_id.decode("utf-8")
     except Exception as e:
         print(e.message)
         error('No EC2 metadata! Check if you are running this script on an EC2 instance.')
@@ -147,7 +147,7 @@ def get_ec2_instance_id():
 def get_availability_zone():
     try:
         availability_zone = urllib.request.urlopen('http://169.254.169.254/latest/meta-data/placement/availability-zone').read()
-        return str(availability_zone)
+        return availability_zone.decode("utf-8")
     except Exception as e:
         print(e.message)
         error('No EC2 metadata! Check if you are running this script on an EC2 instance.')
