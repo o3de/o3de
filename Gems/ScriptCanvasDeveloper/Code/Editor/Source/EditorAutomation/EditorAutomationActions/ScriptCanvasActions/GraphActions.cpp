@@ -140,19 +140,6 @@ namespace ScriptCanvasDeveloper
             {
                 return AZ::Failure<AZStd::string>("Active graph is not the newly created function.");
             }
-            else
-            {
-                ScriptCanvas::ScriptCanvasId scriptCanvasId;
-                ScriptCanvasEditor::GeneralRequestBus::BroadcastResult(scriptCanvasId, &ScriptCanvasEditor::GeneralRequests::GetScriptCanvasId, activeGraphCanvasId);
-
-                bool isFunctionGraph = false;
-                ScriptCanvasEditor::EditorGraphRequestBus::EventResult(isFunctionGraph, scriptCanvasId, &ScriptCanvasEditor::EditorGraphRequests::IsFunctionGraph);
-
-                if (!isFunctionGraph)
-                {
-                    return AZ::Failure<AZStd::string>("Created a new Graph, but graph is not of type Function.");
-                }
-            }
         }
 
         return CompoundAction::GenerateReport();
