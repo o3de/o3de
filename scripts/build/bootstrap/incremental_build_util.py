@@ -247,7 +247,7 @@ def mount_volume(created):
       select disk 1
       online disk
       attribute disk clear readonly
-      """) # assume disk # for now
+      """.encode('utf-8')) # assume disk # for now
 
         if created:
             print('Creating filesystem on new volume')
@@ -256,7 +256,7 @@ def mount_volume(created):
           format quick fs=ntfs
           assign
           active
-          """)
+          """.encode('utf-8'))
 
         f.close()
         
