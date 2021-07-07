@@ -43,6 +43,11 @@ namespace AzToolsFramework
             setSortingEnabled(true);
             setItemDelegate(m_delegate);
             verticalHeader()->hide();
+
+            //Styling the header aligning text to the left and using a bold font.
+            horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
+            horizontalHeader()->setStyleSheet("QHeaderView { font-weight: bold; }");
+
             setContextMenuPolicy(Qt::CustomContextMenu);
 
             setMouseTracking(true);
