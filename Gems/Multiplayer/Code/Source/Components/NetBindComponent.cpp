@@ -364,6 +364,7 @@ namespace Multiplayer
     void NetBindComponent::NotifyLocalChanges()
     {
         m_localNotificationRecord.ResetConsumedBits(); // Make sure our consumed bits are reset so that we can run through the notifications
+        m_localNotificationRecord.SetRemoteNetworkRole(m_netEntityRole); // Make sure our record's role is set so the correct set of signals fire
         NotifyStateDeltaChanges(m_localNotificationRecord);
         m_localNotificationRecord.Clear();
     }

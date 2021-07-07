@@ -548,7 +548,6 @@ namespace Multiplayer
             m_renderBlendFactor = 0.0f;
             m_lastReplicatedHostTimeMs = packet.GetHostTimeMs();
             m_lastReplicatedHostFrameId = packet.GetHostFrameId();
-            m_networkTime.AlterTime(m_lastReplicatedHostFrameId, m_lastReplicatedHostTimeMs, AzNetworking::InvalidConnectionId);
         }
 
         for (AZStd::size_t i = 0; i < packet.GetEntityMessages().size(); ++i)
