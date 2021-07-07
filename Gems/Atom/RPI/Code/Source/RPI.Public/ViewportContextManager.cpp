@@ -74,6 +74,7 @@ namespace AZ
                 };
                 viewportContext->m_name = contextName;
                 viewportData.sizeChangedHandler = ViewportContext::SizeChangedEvent::Handler(onSizeChanged);
+                viewportData.dpiScalingChangedHandler = ViewportContext::ScalarChangedEvent::Handler(onDpiScalingChanged);
                 viewportContext->ConnectSizeChangedHandler(viewportData.sizeChangedHandler);
                 viewportContext->ConnectDpiScalingFactorChangedHandler(viewportData.dpiScalingChangedHandler);
                 ViewPtrStack& associatedViews = GetOrCreateViewStackForContext(contextName);
