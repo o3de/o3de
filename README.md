@@ -85,9 +85,10 @@ If you have the Git credential manager core or other credential helpers installe
 
 #### Optional
 
-*   WWise - 2021.1.1.7601 minimum: [https://www.audiokinetic.com/download/](https://www.audiokinetic.com/download/)
-    *   Note: This requires registration and installation of a client to download
-    *   You will also need to set an environment variable: `set LY_WWISE_INSTALL_PATH=<path to WWise version>`
+*   Wwise - 2021.1.1.7601 minimum: [https://www.audiokinetic.com/download/](https://www.audiokinetic.com/download/)
+    *   Note: This requires registration and installation of a client application to download
+    *   Make sure to select the SDK(C++) component during installation of Wwise
+    *   You will also need to set an environment variable: `set LY_WWISE_INSTALL_PATH=<path to Wwise version>`
     *   For example: `set LY_WWISE_INSTALL_PATH="C:\Program Files (x86)\Audiokinetic\Wwise 2021.1.1.7601"`
 
 ### Quick Start Build Steps
