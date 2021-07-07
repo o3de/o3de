@@ -354,7 +354,7 @@ namespace AZ::Render
             {
                 AZ_Assert(shaderAsset->IsReady(), "Attempting to register the AtomViewportDisplayIconsSystemComponent"
                     " dynamic draw context before the shader asset is loaded. The shader should be loaded first"
-                    " to avoid a blocking asset load and potentail deadlock, since the DynamicDrawContext lambda"
+                    " to avoid a blocking asset load and potential deadlock, since the DynamicDrawContext lambda"
                     " will be executed during scene processing and there may be multiple scenes executing in parallel.");
 
                 Data::Instance<RPI::Shader> shader = RPI::Shader::FindOrCreate(shaderAsset);
