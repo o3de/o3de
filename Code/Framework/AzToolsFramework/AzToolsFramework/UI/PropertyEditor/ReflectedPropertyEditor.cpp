@@ -1028,26 +1028,6 @@ namespace AzToolsFramework
                 pWidget->UpdateIndicator(m_impl->m_indicatorQueryFunction(pWidget->GetNode()));
             }
         }
-
-        for (auto it = m_impl->m_specialGroupWidgets.begin(); it != m_impl->m_specialGroupWidgets.end(); ++it)
-        {
-            PropertyRowWidget* pWidget = it->second;
-
-            QWidget* childWidget = pWidget->GetChildWidget();
-
-            if (pWidget->GetHandler() && childWidget)
-            {
-                pWidget->GetHandler()->ConsumeAttributes_Internal(childWidget, it->first);
-                pWidget->GetHandler()->ReadValuesIntoGUI_Internal(childWidget, it->first);
-                pWidget->OnValuesUpdated();
-            }
-            pWidget->RefreshAttributesFromNode(false);
-
-            if (m_impl->m_indicatorQueryFunction)
-            {
-                pWidget->UpdateIndicator(m_impl->m_indicatorQueryFunction(pWidget->GetNode()));
-            }
-        }
     }
 
     void ReflectedPropertyEditor::InvalidateValues()
