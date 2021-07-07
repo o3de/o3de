@@ -265,12 +265,21 @@ class LogMonitor(object):
             self.unexpected_lines_found = unexpected_lines_found
             self.expected_lines_not_found = expected_lines_not_found
 
+        exception_info = None
+
         # To avoid race conditions, we will check *before reading*
         # If in the mean time the file is closed, we will make sure we read everything by issuing an extra call
         # by returning the previous alive state
         process_runing = self.launcher.is_alive() 
         for line in log:
             line = line[:-1]  # remove /n
-            process_line(line)
+            try:
+                process_line(line)
+            except LogMonitorException as e:
+                if exception_info is not None:
+                    exception_info = e.args
+
+        if exception_info is not None:
+            raise LogMonitorException(*exception_info)
 
         return not process_runing  # Will loop until the process ends
