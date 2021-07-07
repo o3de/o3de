@@ -277,9 +277,9 @@ namespace AZ
 
                     CullFrameData(currentCpuTimingStatistics); // Trim data if necessary
 
-                    if (!TickBus::Handler::BusIsConnected())
+                    if (!SystemTickBus::Handler::BusIsConnected())
                     {
-                        TickBus::Handler::BusConnect();
+                        SystemTickBus::Handler::BusConnect();
                     }
                 }
 
@@ -439,7 +439,7 @@ namespace AZ
             // Iterate through the entire TimeRegionMap and copy the data since it will get deleted on the next frame
             for (const auto& [threadId, singleThreadRegionMap] : timeRegionMap)
             {
-                // The profiler can sometime return threads without any profiling events when dropping threads, FIXME
+                // The profiler can sometime return threads without any profiling events when dropping threads, FIXME(ATOM-15949)
                 if (singleThreadRegionMap.size() == 0)
                 {
                     continue;
@@ -447,6 +447,7 @@ namespace AZ
 
                 // Now focus on just the data for the current thread
                 AZStd::vector<TimeRegion> newData;
+                newData.reserve(singleThreadRegionMap.size()); // Avoids reallocation in the normal case when each region only has one invocation
                 for (const auto& [regionName, regionVec] : singleThreadRegionMap)
                 {
                     for (const TimeRegion& region : regionVec)
@@ -584,9 +585,11 @@ namespace AZ
             }
 
             // Cache miss, generate a new random color
-            std::mt19937 mt(m_rd());
-            std::uniform_real_distribution<float> dis(.1, .9);
-            const ImVec4 randomColor = { dis(mt), dis(mt), dis(mt), .8 };
+            AZ::SimpleLcgRandom rand(aznumeric_cast<u64>(AZStd::GetTimeNowTicks()));
+            const float r = AZStd::clamp(rand.GetRandomFloat(), .1f, .9f);
+            const float g = AZStd::clamp(rand.GetRandomFloat(), .1f, .9f);
+            const float b = AZStd::clamp(rand.GetRandomFloat(), .1f, .9f);
+            const ImVec4 randomColor = {r, g, b, .8};
             m_regionColorMap.emplace(key, randomColor);
             return ImGui::GetColorU32(randomColor);
         }
@@ -746,19 +749,15 @@ namespace AZ
             return pixelSpace;
         }
 
-        // Tick bus overrides
-        inline void ImGuiCpuProfiler::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] ScriptTimePoint time)
+        // System tick bus overrides
+        inline void ImGuiCpuProfiler::OnSystemTick()
         {
             m_frameEndTicks.push_back(AZStd::GetTimeNowTicks());
 
             if (!m_showVisualizer || m_paused)
             {
-                TickBus::Handler::BusDisconnect();
+                SystemTickBus::Handler::BusDisconnect();
             }
-        }
-        inline int ImGuiCpuProfiler::GetTickOrder()
-        {
-            return TICK_DEFAULT;
         }
 
         // ----- RegionStatistics implementation ----- 

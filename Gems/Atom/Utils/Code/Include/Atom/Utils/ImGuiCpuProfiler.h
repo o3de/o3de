@@ -8,11 +8,11 @@
 #pragma once
 
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/Math/Random.h>
 
 #include <Atom/RHI.Reflect/CpuTimingStatistics.h>
 #include <Atom/RHI/CpuProfiler.h>
 
-#include <random>
 
 namespace AZ
 {
@@ -47,7 +47,7 @@ namespace AZ
         //! It uses ImGui as the library for displaying the Attachments and Heaps.
         //! It shows all heaps that are being used by the RHI and how the
         //! resources are allocated in each heap.
-        class ImGuiCpuProfiler : TickBus::Handler
+        class ImGuiCpuProfiler : SystemTickBus::Handler
         {
             // Region Name -> Array of ThreadRegion entries
             using RegionEntryMap = AZStd::map<AZStd::string, AZStd::vector<ThreadRegionEntry>>;
@@ -121,9 +121,8 @@ namespace AZ
             // Generates a random ImU32 if the block does not yet have a color
             ImU32 GetBlockColor(const TimeRegion& block);
 
-            // Tick bus overrides
-            virtual void OnTick(float deltaTime, ScriptTimePoint time);
-            virtual int GetTickOrder();
+            // System tick bus overrides
+            virtual void OnSystemTick();
 
             // Visualizer state
 
@@ -137,10 +136,6 @@ namespace AZ
             // Viewport tick bounds, these are used to convert tick space -> screen space and cull so we only draw onscreen objects
             AZStd::sys_time_t m_viewportStartTick;
             AZStd::sys_time_t m_viewportEndTick;
-
-            // Used for random color generation
-            // Member variable to avoid repeated construction - could be expensive
-            std::random_device m_rd;
 
             // Map to store each thread's TimeRegions, individual vectors are sorted by start tick
             AZStd::unordered_map<AZStd::thread_id, AZStd::vector<TimeRegion>> m_savedData;
