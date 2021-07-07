@@ -160,7 +160,7 @@ namespace ScriptCanvasEditor
 
     struct ScopedOutputSuppression
     {
-        ScopedOutputSuppression([[maybe_unused]] bool suppressState = true)
+        ScopedOutputSuppression(bool suppressState = true)
         {
             AZ::Debug::TraceMessageBus::BroadcastResult(m_oldSuppression, &AZ::Debug::TraceMessageEvents::OnOutput, "", "");
             TraceSuppressionBus::Broadcast(&TraceSuppressionRequests::SuppressAllOutput, suppressState);

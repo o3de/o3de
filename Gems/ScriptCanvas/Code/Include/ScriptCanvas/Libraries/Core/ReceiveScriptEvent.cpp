@@ -93,7 +93,7 @@ namespace ScriptCanvas
                             bool isNewSlot = true;
 
                             const auto busToolTip = AZStd::string::format("%s (Type: %s)", c_busIdTooltip, m_ebus->m_idParam.m_name);
-                            const AZ::TypeId& busId = m_ebus->m_idParam.m_typeId;                            
+                            const AZ::TypeId& busId = m_ebus->m_idParam.m_typeId;
 
                             SlotId addressSlotId;
 
@@ -117,8 +117,8 @@ namespace ScriptCanvas
                             }
                             else
                             {
-                                Data::Type busIdType(AZ::BehaviorContextHelper::IsStringParameter(m_ebus->m_idParam) ? Data::Type::String() : Data::FromAZType(busId));                                
-                                
+                                Data::Type busIdType(AZ::BehaviorContextHelper::IsStringParameter(m_ebus->m_idParam) ? Data::Type::String() : Data::FromAZType(busId));
+
                                 config.ConfigureDatum(AZStd::move(Datum(busIdType, Datum::eOriginality::Original)));
                                 config.m_contractDescs = { { [busIdType]() { return aznew RestrictedTypeContract({ busIdType }); } } };
                             }
@@ -267,7 +267,7 @@ namespace ScriptCanvas
                         SlotId slotId = AddSlot(slotConfiguration, isNewSlot);
 
                         AZ_Error("ScriptCanvas", populationMapping.find(argIdentifier) == populationMapping.end(), "Trying to create the same slot twice. Unable to create sane mapping.");
-                    
+
                         populationMapping[argIdentifier] = slotId;
                         eBusEventEntry.m_parameterSlotIds.push_back(slotId);
                     }
@@ -281,7 +281,7 @@ namespace ScriptCanvas
 
                     slotConfiguration.m_isLatent = true;
                     slotConfiguration.m_name = eventID;
-                    slotConfiguration.SetConnectionType(ConnectionType::Output);                    
+                    slotConfiguration.SetConnectionType(ConnectionType::Output);
                     slotConfiguration.m_addUniqueSlotByNameAndType = true;
 
                     auto remappingIter = m_eventSlotMapping.find(outputSlotId);
@@ -323,7 +323,7 @@ namespace ScriptCanvas
             void ReceiveScriptEvent::OnDeactivate()
             {
                 ScriptEventBase::OnDeactivate();
-            }            
+            }
 
             const Internal::ScriptEventEntry* ReceiveScriptEvent::FindEventWithSlot(const Slot& slot) const
             {
@@ -535,7 +535,7 @@ namespace ScriptCanvas
                 {
                     AZ::BehaviorContext* behaviorContext = nullptr;
                     AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationBus::Events::GetBehaviorContext);
-                    
+
                     const auto& ebusIterator = behaviorContext->m_ebuses.find(m_definition.GetName());
                     if (ebusIterator == behaviorContext->m_ebuses.end())
                     {

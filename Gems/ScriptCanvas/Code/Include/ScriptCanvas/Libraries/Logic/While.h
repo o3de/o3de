@@ -29,11 +29,11 @@ namespace ScriptCanvas
                 AZ::Outcome<DependencyReport, void> GetDependencies() const override;
 
                 SlotId GetLoopFinishSlotId() const override;
-                
+
                 SlotId GetLoopSlotId() const override;
-                
-                bool IsFormalLoop() const override;            
-                
+
+                bool IsFormalLoop() const override;
+
             protected:
                 ConstSlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot& /*executionSlot*/, CombinedSlotType targetSlotType, const Slot* /*executionChildSlot*/) const override
                 {

@@ -21,7 +21,7 @@ namespace ScriptCanvas
         {
             namespace Internal
             {
-                 void ScriptEventEntry::Reflect(AZ::ReflectContext* context)
+                void ScriptEventEntry::Reflect(AZ::ReflectContext* context)
                 {
                     if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
                     {
@@ -154,7 +154,7 @@ namespace ScriptCanvas
                     }
 
                     m_definition = definition;
-                 }
+                }
 
                 void ScriptEventBase::OnDeactivate()
                 {

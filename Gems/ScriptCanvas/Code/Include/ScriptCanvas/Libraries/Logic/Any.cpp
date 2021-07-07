@@ -28,7 +28,7 @@ namespace ScriptCanvas
                 return AZ::Success(DependencyReport{});
             }
 
-            bool Any::IsNoOp() const 
+            bool Any::IsNoOp() const
             {
                 return true;
             }

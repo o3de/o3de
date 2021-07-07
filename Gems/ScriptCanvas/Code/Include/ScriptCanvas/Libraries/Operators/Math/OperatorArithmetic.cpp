@@ -73,7 +73,7 @@ namespace ScriptCanvas
             {
                 // Version conversion for previous elements                
                 for (Slot& currentSlot : ModSlots())
-                {                    
+                {
                     if (currentSlot.IsData())
                     {
                         auto& contracts = currentSlot.GetContracts();
@@ -89,7 +89,7 @@ namespace ScriptCanvas
                                     contract->SetSupportedOperator(OperatorFunction());
                                     contract->SetSupportedNativeTypes(GetSupportedNativeDataTypes());
                                 }
-                            }                            
+                            }
                         }
 
                         if (!currentSlot.IsDynamicSlot())
@@ -110,17 +110,17 @@ namespace ScriptCanvas
             void OperatorArithmetic::OnActivate()
             {
                 if (m_scrapedInputs)
-            {
+                {
                     m_scrapedInputs = false;
                     m_applicableInputs.clear();
 
-                    m_result.ReconfigureDatumTo(AZStd::move(ScriptCanvas::Datum()));                    
+                    m_result.ReconfigureDatumTo(AZStd::move(ScriptCanvas::Datum()));
                 }
             }
 
             void OperatorArithmetic::ConfigureVisualExtensions()
             {
-            {
+                {
                     VisualExtensionSlotConfiguration visualExtensions(VisualExtensionSlotConfiguration::VisualExtensionType::ExtenderSlot);
 
                     visualExtensions.m_name = "Add Operand";
@@ -150,12 +150,12 @@ namespace ScriptCanvas
 
             bool OperatorArithmetic::CanDeleteSlot(const SlotId& slotId) const
             {
-                Slot* slot = GetSlot(slotId);            
+                Slot* slot = GetSlot(slotId);
 
                 if (slot && slot->GetDynamicGroup() == GetArithmeticDynamicTypeGroup())
                 {
                     if (!slot->IsOutput())
-                    {                        
+                    {
                         auto slotList = GetSlotsWithDynamicGroup(GetArithmeticDynamicTypeGroup());
 
                         int inputCount = 0;
@@ -185,14 +185,14 @@ namespace ScriptCanvas
                 }
                 else if (operands.size() == 1)
                 {
-                const Datum* operand = operands.front();
+                    const Datum* operand = operands.front();
                     result = (*operand);
                     return;
                 }
 
                 auto type = result.GetType();
-                    Operator(type.GetType(), operands, result);
-                }
+                Operator(type.GetType(), operands, result);
+            }
 
             void OperatorArithmetic::Operator(Data::eType type, const ArithmeticOperands& operands, Datum& result)
             {

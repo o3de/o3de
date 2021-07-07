@@ -56,7 +56,7 @@ namespace ScriptCanvas
                     AddPropertySlots(dataType);
                 }
             }
-            
+
             Data::Type ExtractProperty::GetSourceSlotDataType() const
             {
                 return m_dataType;
@@ -81,7 +81,7 @@ namespace ScriptCanvas
             {
                 return AZ::Success(DependencyReport::NativeLibrary(Data::GetName(m_dataType)));
             }
-            
+
             PropertyFields ExtractProperty::GetPropertyFields() const
             {
                 PropertyFields propertyFields;

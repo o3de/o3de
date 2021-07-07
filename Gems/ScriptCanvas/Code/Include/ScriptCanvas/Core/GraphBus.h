@@ -54,7 +54,7 @@ namespace ScriptCanvas
         virtual bool FindConnection(AZ::Entity*& connectionEntity, const Endpoint& firstEndpoint, const Endpoint& otherEndpoint) const = 0;
 
         virtual Slot* FindSlot(const Endpoint& endpoint) const = 0;
-        
+
         //! Retrieves the Entity this Graph component is located on
         //! NOTE: There can be multiple Graph components on the same entity so calling FindComponent may not not return this GraphComponent
         virtual AZ::Entity* GetGraphEntity() const = 0;
@@ -62,7 +62,7 @@ namespace ScriptCanvas
         //! Retrieves the Graph Component directly using the BusId
         virtual Graph* GetGraph() = 0;
 
-        virtual bool Connect(const AZ::EntityId& sourceNodeId, const SlotId& sourceSlot, const AZ::EntityId& targetNodeId,const SlotId& targetSlot) = 0;
+        virtual bool Connect(const AZ::EntityId& sourceNodeId, const SlotId& sourceSlot, const AZ::EntityId& targetNodeId, const SlotId& targetSlot) = 0;
         virtual bool Disconnect(const AZ::EntityId& sourceNodeId, const SlotId& sourceSlot, const AZ::EntityId& targetNodeId, const SlotId& targetSlot) = 0;
 
         virtual bool ConnectByEndpoint(const Endpoint& sourceEndpoint, const Endpoint& targetEndpoint) = 0;
@@ -91,7 +91,7 @@ namespace ScriptCanvas
         virtual bool AddItem(AZ::Entity* itemEntity) = 0;
         //! Remove item if it is on the graph
         virtual bool RemoveItem(AZ::Entity* itemEntity) = 0;
-        
+
         //! Retrieves a pointer the GraphData structure stored on the graph
         virtual GraphData* GetGraphData() = 0;
         virtual const GraphData* GetGraphDataConst() const = 0;

@@ -42,7 +42,7 @@ namespace ScriptCanvas
 
             void ConfigureSlots() override;
 
-            SlotId GetOutputSlotId() const;           
+            SlotId GetOutputSlotId() const;
         };
 
         class UnaryExpression : public UnaryOperator
@@ -56,7 +56,7 @@ namespace ScriptCanvas
 
             void ConfigureSlots() override;
 
-            virtual void InitializeUnaryExpression();           
+            virtual void InitializeUnaryExpression();
         };
     }
 }

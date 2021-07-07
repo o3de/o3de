@@ -27,7 +27,7 @@ namespace ScriptCanvas
     AZStd::unordered_map<size_t, const AZ::BehaviorMethod*> GetTupleGetMethods(const AZ::TypeId& typeId)
     {
         AZStd::unordered_map<size_t, const AZ::BehaviorMethod*> tupleGetMethodMap;
-        
+
         AZ::BehaviorContext* behaviorContext{};
         AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationRequests::GetBehaviorContext);
         auto bcClassIterator = behaviorContext->m_typeToClassMap.find(typeId);
@@ -83,4 +83,4 @@ namespace ScriptCanvas
         return AZ::Failure();
     }
 
-} 
+}

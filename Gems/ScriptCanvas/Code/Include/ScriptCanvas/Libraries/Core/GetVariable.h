@@ -58,7 +58,7 @@ namespace ScriptCanvas
                 const Slot* GetVariableOutputSlot() const override;
                 // Translation
                 //////////////////////////////////////////////////////////////////////////
-                
+
 
             protected:
 

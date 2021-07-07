@@ -24,7 +24,7 @@ namespace ScriptCanvas
                 AZ_COMPONENT(Sum, "{6C52B2D1-3526-4855-A217-5106D54F6B90}", ArithmeticExpression);
 
                 static void Reflect(AZ::ReflectContext* reflection)
-                { 
+                {
                     if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection))
                     {
                         serializeContext->Class<Sum, ArithmeticExpression>()

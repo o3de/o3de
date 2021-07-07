@@ -61,13 +61,13 @@ namespace ScriptCanvas
                 PropertyFields GetPropertyFields() const override;
                 // Translation
                 //////////////////////////////////////////////////////////////////////////
-                
+
 
             protected:
 
                 void OnInit() override;
-                void OnPostActivate() override;                
-                
+                void OnPostActivate() override;
+
                 void AddSlots();
                 void RemoveSlots();
                 void AddPropertySlots(const Data::Type& type);

@@ -24,7 +24,7 @@ namespace ScriptCanvas
             {
             public:
                 SCRIPTCANVAS_NODE(StartsWith);
-           };
+            };
 
             //! Deprecated: see class String's reflection of method "Ends With"
             class EndsWith

@@ -24,7 +24,7 @@ namespace ScriptCanvas
         AZ_INLINE std::tuple<NumberType, TransformType> ExtractUniformScale(TransformType source)
         {
             auto scale(source.ExtractUniformScale());
-            return std::make_tuple( scale, source );
+            return std::make_tuple(scale, source);
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_MULTI_RESULTS_NODE(ExtractUniformScale, k_categoryName, "{8DFE5247-0950-4CD1-87E6-0CAAD42F1637}", "returns the uniform scale as a float, and a transform with the scale extracted ", "Source", "Uniform Scale", "Extracted");
 
@@ -114,7 +114,7 @@ namespace ScriptCanvas
             return source.IsFinite();
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(IsFinite, k_categoryName, "{B7D23934-0101-40B9-80E8-3D88C8580B25}", "returns true if every row of source is finite, else false", "Source");
-        
+
         AZ_INLINE BooleanType IsOrthogonal(const TransformType& source, NumberType tolerance)
         {
             return source.IsOrthogonal(aznumeric_cast<float>(tolerance));
@@ -139,7 +139,7 @@ namespace ScriptCanvas
             return source.TransformVector(multiplier);
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(Multiply3x3ByVector3, k_categoryName, "{4F2ABFC6-2E93-4A9D-8639-C7967DB318DB}", "returns Source's 3x3 upper matrix post multiplied by Multiplier", "Source", "Multiplier");
-        
+
         AZ_INLINE TransformType MultiplyByUniformScale(TransformType source, NumberType scale)
         {
             source.MultiplyByUniformScale(scale);
@@ -170,7 +170,7 @@ namespace ScriptCanvas
             return source.GetOrthogonalized();
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(Orthogonalize, k_categoryName, "{2B4140CD-6E22-44D3-BDB5-309E69FE7CC2}", "returns an orthogonal matrix if the Source is almost orthogonal", "Source");
-        
+
         AZ_INLINE TransformType RotationXDegrees(NumberType degrees)
         {
             return TransformType::CreateRotationX(AZ::DegToRad(aznumeric_caster(degrees)));
@@ -194,13 +194,13 @@ namespace ScriptCanvas
             return source.GetUniformScale();
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(ToScale, k_categoryName, "{063C58AD-F567-464D-A432-F298FE3953A6}", "returns the uniform scale of the Source", "Source");
-        
+
         using Registrar = RegistrarGeneric
-            < 
+            <
 #if ENABLE_EXTENDED_MATH_SUPPORT
-            ExtractUniformScaleNode ,
+            ExtractUniformScaleNode,
 #endif
-              FromMatrix3x3AndTranslationNode
+            FromMatrix3x3AndTranslationNode
             , FromMatrix3x3Node
             , FromRotationAndTranslationNode
             , FromRotationNode
@@ -245,8 +245,8 @@ namespace ScriptCanvas
             , TransposedMultiply3x3Node
             , ZeroNode
 #endif
-            >;
+            > ;
 
     }
-} 
+}
 

@@ -33,7 +33,7 @@ namespace ScriptCanvas
             protected:
 
 
-             };
+            };
         }
     }
 }
