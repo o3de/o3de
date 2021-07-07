@@ -19,9 +19,3 @@ QMessageBox QLabel#qt_msgboxex_icon_label
     padding-left: 20px;
     padding-top: 20px;
 }
-
-QMessageBox QDialogButtonBox
-{
-    /* give extra height so that the buttons aren't sticking to the bottom of the window */
-    min-height: 50px;
-}
