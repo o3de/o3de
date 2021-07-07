@@ -6,7 +6,6 @@
  */
 
 #import <UIKit/UIKit.h>
-#include <AzCore/Math/Vector2.h>
 
 int main(int argc, char* argv[])
 {
