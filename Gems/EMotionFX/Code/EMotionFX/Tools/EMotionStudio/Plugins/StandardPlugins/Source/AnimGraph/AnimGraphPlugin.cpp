@@ -147,7 +147,7 @@ namespace EMStudio
                 return DirtyFileManager::FINISHED;
             }
 
-            for (const SaveDirtyFilesCallback::ObjectPointer objPointer : objects)
+            for (const SaveDirtyFilesCallback::ObjectPointer& objPointer : objects)
             {
                 // get the current object pointer and skip directly if the type check fails
                 if (objPointer.mAnimGraph == nullptr)
