@@ -95,7 +95,7 @@ def launch_and_validate_results_launcher(launcher, level, remote_console_instanc
         return port_listening
         
     if null_renderer:
-        launcher.args.extend(["-NullRenderer"])
+        launcher.args.extend(["-rhi=Null"])
 
     # Start the Launcher
     with launcher.start():
