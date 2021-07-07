@@ -89,7 +89,7 @@ def launch_and_validate_results_launcher(launcher, level, remote_console_instanc
         :return: True if port is listening.
         """
         port_listening = False
-        for conn in psutil.net_connections():
+        for conn in process_utils.psutil.net_connections():
             if 'port={}'.format(port) in str(conn):
                 port_listening = True
         return port_listening
@@ -110,8 +110,8 @@ def launch_and_validate_results_launcher(launcher, level, remote_console_instanc
 
         # Load the specified level in the launcher
         send_command_and_expect_response(remote_console_instance,
-                                         f"map {level}",
-                                         "LEVEL_LOAD_COMPLETE", timeout=30)
+                                         f"LoadLevel {level}",
+                                         "LEVEL_LOAD_END", timeout=30)
 
         # Monitor the console for expected lines
         for line in expected_lines:
