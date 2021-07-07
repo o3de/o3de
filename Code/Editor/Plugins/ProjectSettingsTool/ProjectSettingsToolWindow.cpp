@@ -585,31 +585,11 @@ namespace ProjectSettingsTool
                     ShowAllErrorsThenExitIfInvalid();
 
                     m_ui->reconfigureLog->setText("");
-                    int result = QMessageBox::question
-                        (
-                        this,
-                        tr("Reconfigure Project"),
-                        tr("For new settings to be applied the project must be reconfigured. Would you like run configure now?"),
-                        QMessageBox::Yes,
-                        QMessageBox::No
-                        );
+                    QMessageBox::information(this, tr("Project Settings Saved"),
+                        tr("The project may need to be manually reconfigured for the new settings to be applied."));
 
-                    if (QMessageBox::Yes == result)
-                    {
-                        m_ui->reconfigureLog->show();
-                    #if defined(AZ_PLATFORM_WINDOWS)
-                        m_reconfigureProcess.start("cmd.exe", { QString("/C %1").arg("lmbr_waf.bat configure") });
-                    #elif defined(AZ_PLATFORM_MAC) || defined(AZ_PLATFORM_LINUX)
-                        m_reconfigureProcess.start("/bin/sh", { QString("%1").arg("lmbr_waf.sh configure") });
-                    #else
-                        #error "Needs to be implemented"
-                    #endif
-                    }
-                    else
-                    {
-                        m_ui->reloadButton->setEnabled(true);
-                        m_ui->saveButton->setEnabled(true);
-                    }
+                    m_ui->reloadButton->setEnabled(true);
+                    m_ui->saveButton->setEnabled(true);
                 }
                 // Show a message box telling user settings failed to save
                 else
