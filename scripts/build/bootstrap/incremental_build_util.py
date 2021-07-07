@@ -147,7 +147,7 @@ def get_ec2_instance_id():
 def get_availability_zone():
     try:
         availability_zone = urllib.request.urlopen('http://169.254.169.254/latest/meta-data/placement/availability-zone').read()
-        return availability_zone
+        return str(availability_zone)
     except Exception as e:
         print(e.message)
         error('No EC2 metadata! Check if you are running this script on an EC2 instance.')
