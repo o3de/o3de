@@ -142,6 +142,8 @@ namespace AZ
 
         void RayTracingPipelineState::Shutdown()
         {
+            ShutdownInternal();
+            DeviceObject::Shutdown();
         }
     }
 }
