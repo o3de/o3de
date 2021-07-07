@@ -5,9 +5,18 @@
  *
  */
 
+#include <AzCore/Console/IConsole.h>
 #include <AzToolsFramework/Viewport/EditorContextMenu.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <Editor/EditorContextMenuBus.h>
+
+AZ_CVAR(
+    int,
+    ed_contextMenuDisplayThreshold,
+    2,
+    nullptr,
+    AZ::ConsoleFunctorFlags::Null,
+    "The minimum 'Manhattan Distance' the mouse can move before the context menu will no longer trigger");
 
 namespace AzToolsFramework
 {
@@ -31,7 +40,7 @@ namespace AzToolsFramework
                 ViewportInteraction::QPointFromScreenPoint(mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates);
 
             // if the mouse hasn't moved, open the pop-up menu
-            if ((currentScreenCoords - contextMenu.m_clickPoint).manhattanLength() < 2)
+            if ((currentScreenCoords - contextMenu.m_clickPoint).manhattanLength() < ed_contextMenuDisplayThreshold)
             {
                 QWidget* parent = nullptr;
                 ViewportInteraction::MainEditorViewportInteractionRequestBus::EventResult(
