@@ -29,6 +29,7 @@
 
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 
 // Static member definitions
 const AZ::AtomFont::GlyphSize AZ::AtomFont::defaultGlyphSize = AZ::AtomFont::GlyphSize(ICryFont::defaultGlyphSizeX, ICryFont::defaultGlyphSizeY);
@@ -349,30 +350,18 @@ AZ::AtomFont::AtomFont(ISystem* system)
 #endif
     AZ::Interface<AzFramework::FontQueryInterface>::Register(this);
 
-    // register font per viewport dynamic draw context.
+    // Queue a load for the font per viewport dynamic draw context shader, and wait for it to load
     static const char* shaderFilepath = "Shaders/SimpleTextured.azshader";
-    AZ::AtomBridge::PerViewportDynamicDraw::Get()->RegisterDynamicDrawContext(
-        AZ::Name(AZ::AtomFontDynamicDrawContextName),
-        [](RPI::Ptr<RPI::DynamicDrawContext> drawContext)
-        {
-            Data::Instance<RPI::Shader> shader = AZ::RPI::LoadShader(shaderFilepath);
-            AZ::RPI::ShaderOptionList shaderOptions;
-            shaderOptions.push_back(AZ::RPI::ShaderOption(AZ::Name("o_useColorChannels"), AZ::Name("false")));
-            shaderOptions.push_back(AZ::RPI::ShaderOption(AZ::Name("o_clamp"), AZ::Name("true")));
-            drawContext->InitShaderWithVariant(shader, &shaderOptions);
-            drawContext->InitVertexFormat(
-                {
-                    {"POSITION", RHI::Format::R32G32B32_FLOAT},
-                    {"COLOR", RHI::Format::B8G8R8A8_UNORM},
-                    {"TEXCOORD0", RHI::Format::R32G32_FLOAT}
-                });
-            drawContext->EndInit();
-        });
+    Data::Asset<RPI::ShaderAsset> shaderAsset = RPI::AssetUtils::GetAssetByProductPath<RPI::ShaderAsset>(shaderFilepath, RPI::AssetUtils::TraceLevel::Assert);
+    shaderAsset.QueueLoad();
+    Data::AssetBus::Handler::BusConnect(shaderAsset.GetId());
 
 }
 
 AZ::AtomFont::~AtomFont()
 {
+    Data::AssetBus::Handler::BusDisconnect();
+
     AZ::Interface<AzFramework::FontQueryInterface>::Unregister(this);
     m_defaultFontDrawInterface = nullptr;
 
@@ -864,5 +853,36 @@ XmlNodeRef AZ::AtomFont::LoadFontFamilyXml(const char* fontFamilyName, string& o
 
     return root;
 }
+
+void AZ::AtomFont::OnAssetReady(Data::Asset<Data::AssetData> asset)
+{
+    Data::Asset<RPI::ShaderAsset> shaderAsset = asset;
+
+    AZ::AtomBridge::PerViewportDynamicDraw::Get()->RegisterDynamicDrawContext(
+        AZ::Name(AZ::AtomFontDynamicDrawContextName),
+        [shaderAsset](RPI::Ptr<RPI::DynamicDrawContext> drawContext)
+        {
+            AZ_Assert(shaderAsset->IsReady(), "Attempting to register the AtomFont"
+                " dynamic draw context before the shader asset is loaded. The shader should be loaded first"
+                " to avoid a blocking asset load and potential deadlock, since the DynamicDrawContext lambda"
+                " will be executed during scene processing and there may be multiple scenes executing in parallel.");
+
+            Data::Instance<RPI::Shader> shader = RPI::Shader::FindOrCreate(shaderAsset);
+            AZ::RPI::ShaderOptionList shaderOptions;
+            shaderOptions.push_back(AZ::RPI::ShaderOption(AZ::Name("o_useColorChannels"), AZ::Name("false")));
+            shaderOptions.push_back(AZ::RPI::ShaderOption(AZ::Name("o_clamp"), AZ::Name("true")));
+            drawContext->InitShaderWithVariant(shader, &shaderOptions);
+            drawContext->InitVertexFormat(
+                {
+                    {"POSITION", RHI::Format::R32G32B32_FLOAT},
+                    {"COLOR", RHI::Format::B8G8R8A8_UNORM},
+                    {"TEXCOORD0", RHI::Format::R32G32_FLOAT}
+                });
+            drawContext->EndInit();
+        });
+
+    Data::AssetBus::Handler::BusDisconnect();
+}
+
 #endif
 
