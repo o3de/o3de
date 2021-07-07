@@ -3297,7 +3297,12 @@ namespace AzQtComponents
                 continue;
             }
 
-            tabWidget->closeTabs();
+            // Remove the tabs from the tab widget (we don't actually want to close them, which could delete them at this point)
+            int numTabs = tabWidget->count();
+            for (int i = 0; i < numTabs; ++i)
+            {
+                tabWidget->removeTab(0);
+            }
         }
 
         // Restore the floating windows
