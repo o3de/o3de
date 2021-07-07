@@ -111,9 +111,13 @@ float IntegrateEdge(float3 v1, float3 v2)
 float IntegrateEdgeDiffuse(float3 v1, float3 v2)
 {
     float cosTheta = dot(v1, v2);
-    float absCosTheta = abs(cosTheta);
-    float theta_sinTheta = 1.5708 + (-0.879406 + 0.308609 * absCosTheta) * absCosTheta;
-    if (cosTheta < 0.0)
+    float theta_sinTheta = 0.0;
+    if (cosTheta > 0.0)
+    {
+        float absCosTheta = abs(cosTheta);
+        theta_sinTheta = 1.5708 + (-0.879406 + 0.308609 * absCosTheta) * absCosTheta;
+    }
+    else
     {
         theta_sinTheta = PI * rsqrt(1.0 - cosTheta * cosTheta) - theta_sinTheta;
     }
