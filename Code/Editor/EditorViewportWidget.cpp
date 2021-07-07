@@ -102,6 +102,7 @@
 AZ_CVAR(
     bool, ed_visibility_logTiming, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Output the timing of the new IVisibilitySystem query");
 AZ_CVAR(bool, ed_useNewCameraSystem, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Use the new Editor camera system");
+AZ_CVAR(bool, ed_showCursorCameraLook, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Show the cursor when using free look with the new camera system");
 
 namespace SandboxEditor
 {
@@ -1261,8 +1262,13 @@ AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateMod
             {
                 return SandboxEditor::CameraRotateSpeed();
             };
-            firstPersonRotateCamera->SetActivationBeganFn(hideCursor);
-            firstPersonRotateCamera->SetActivationEndedFn(showCursor);
+
+            if (!ed_showCursorCameraLook)
+            {
+                // default behavior is to hide the cursor but this can be disabled (useful for remote desktop)
+                firstPersonRotateCamera->SetActivationBeganFn(hideCursor);
+                firstPersonRotateCamera->SetActivationEndedFn(showCursor);
+            }
 
             auto firstPersonPanCamera =
                 AZStd::make_shared<AzFramework::PanCameraInput>(SandboxEditor::CameraFreePanChannelId(), AzFramework::LookPan);

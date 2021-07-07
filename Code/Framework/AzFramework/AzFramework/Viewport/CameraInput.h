@@ -285,7 +285,8 @@ namespace AzFramework
 
     private:
         InputChannelId m_rotateChannelId; //!< Input channel to begin the rotate camera input.
-        ClickDetector m_clickDetector; //!< Used to determine when a sufficient motion delta has occurred to begin the input.
+        ClickDetector m_clickDetector; //!< Used to determine when a sufficient motion delta has occurred after an initial discrete input
+                                       //!< event has started (press and move event).
     };
 
     //! Axes to use while panning the camera.
@@ -337,6 +338,8 @@ namespace AzFramework
     private:
         PanAxesFn m_panAxesFn; //!< Builder for the particular pan axes (provided in the constructor).
         InputChannelId m_panChannelId; //!< Input channel to begin the pan camera input.
+        ClickDetector m_clickDetector; //!< Used to determine when a sufficient motion delta has occurred after an initial discrete input
+                                       //!< event has started (press and move event).
     };
 
     //! Axes to use while translating the camera.
@@ -489,7 +492,9 @@ namespace AzFramework
         AZStd::function<float()> m_cursorSpeedFn;
 
     private:
-        InputChannelId m_dollyChannelId;
+        InputChannelId m_dollyChannelId; //!< Input channel to begin the dolly cursor camera input.
+        ClickDetector m_clickDetector; //!< Used to determine when a sufficient motion delta has occurred after an initial discrete input
+                                       //!< event has started (press and move event).
     };
 
     //! A camera input to handle discrete scroll events that can scroll (translate) the camera along its forward axis.
