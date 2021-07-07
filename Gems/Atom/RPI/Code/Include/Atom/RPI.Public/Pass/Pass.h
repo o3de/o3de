@@ -225,8 +225,9 @@ namespace AZ
 
             //! Readback an attachment attached to the specified slot name
             //! @param readback The AttachmentReadback object which is used for readback. Its callback function will be called when readback is finished.
-            //! @param attachment The pass attachment to be readback. It need to be one of this pass's attachment
-            //! @param useOutput The flag which is used for choose input or output state for an input/output attachment
+            //! @param slotName The attachment bind to the slot with this slotName is to be readback
+            //! @param useOutput The flag which is used for choosing input or output state for an InputOutput attachment.
+            //!                  The flag would be ignored if the attachment isn't an InputOutput attachment.
             //! Return true if the readback request was successful. User may expect the AttachmentReadback's callback function would be called. 
             bool ReadbackAttachment(AZStd::shared_ptr<AttachmentReadback> readback, const Name& slotName, bool useOutput = true);
 
