@@ -130,6 +130,12 @@ namespace AZ
                 arguments.append(QString("--rhi=%1").arg(apiName.GetCStr()));
             }
 
+            AZStd::string projectPath(AZ::Utils::GetProjectPath().c_str());
+            if (projectPath != "")
+            {
+                arguments.append(QString("--project-path=%1").arg(projectPath.c_str()));
+            }
+
             AtomToolsFramework::LaunchTool("MaterialEditor", ".exe", arguments);
         }
 
