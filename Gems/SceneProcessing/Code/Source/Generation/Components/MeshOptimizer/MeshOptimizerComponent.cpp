@@ -106,7 +106,7 @@ namespace AZ::SceneGenerationComponents
         auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
         {
-            serializeContext->Class<MeshOptimizerComponent, GenerationComponent>()->Version(3);
+            serializeContext->Class<MeshOptimizerComponent, GenerationComponent>()->Version(2);
         }
     }
 
@@ -192,12 +192,17 @@ namespace AZ::SceneGenerationComponents
         const AZStd::vector<AZStd::pair<const IMeshData*, NodeIndex>> meshes = [](const SceneGraph& graph)
         {
             AZStd::vector<AZStd::pair<const IMeshData*, NodeIndex>> meshes;
-            const auto meshNodes = Containers::MakeDerivedFilterView<IMeshData>(graph.GetContentStorage());
-            for (auto it = meshNodes.cbegin(); it != meshNodes.cend(); ++it)
+            for (auto it = graph.GetContentStorage().cbegin(); it != graph.GetContentStorage().cend(); ++it)
             {
+                // Skip anything that isn't a mesh.
+                const auto* mesh = azdynamic_cast<const AZ::SceneAPI::DataTypes::IMeshData*>(it->get());
+                if (!mesh)
+                {
+                    continue;
+                }
+
                 // Get the mesh data and node index and store them in the vector as a pair, so we can iterate over them later.
-                // The sequential calls to GetBaseIterator unwrap the layers of FilterIterators from the MakeDerivedFilterView
-                meshes.emplace_back(&(*it), graph.ConvertToNodeIndex(it.GetBaseIterator().GetBaseIterator().GetBaseIterator()));
+                meshes.emplace_back(mesh, graph.ConvertToNodeIndex(it));
             }
             return meshes;
         }(graph);
@@ -281,12 +286,6 @@ namespace AZ::SceneGenerationComponents
                 const bool hasBlendShapes = HasAnyBlendShapeChild(graph, nodeIndex);
 
                 auto [optimizedMesh, optimizedUVs, optimizedTangents, optimizedBitangents, optimizedVertexColors, optimizedSkinWeights] = OptimizeMesh(mesh, mesh, uvDatas, tangentDatas, bitangentDatas, colorDatas, skinWeightDatas, meshGroup, hasBlendShapes);
-
-                AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "Base mesh: %zu vertices, optimized mesh: %zu vertices, %0.02f%% of the original",
-                    mesh->GetUsedControlPointCount(),
-                    optimizedMesh->GetUsedControlPointCount(),
-                    ((float)optimizedMesh->GetUsedControlPointCount() / (float)mesh->GetUsedControlPointCount()) * 100.0f
-                );
 
                 const NodeIndex optimizedMeshNodeIndex = graph.AddChild(graph.GetNodeParent(nodeIndex), name.c_str(), AZStd::move(optimizedMesh));
 
@@ -434,12 +433,6 @@ namespace AZ::SceneGenerationComponents
         const float weightThreshold = skinRule ? skinRule->GetWeightThreshold() : 0.001f;
         meshBuilder.SetSkinningInfo(ExtractSkinningInfo(meshData, skinWeights, maxWeightsPerVertex, weightThreshold));
 
-        constexpr float positionTolerance = 0.0001f;
-        constexpr float positionToleranceReciprocal = 1.0f / positionTolerance;
-        AZStd::unordered_map<AZ::Vector3, AZ::u32> positionMap{};
-
-        AZ::u32 currentOriginalVertexIndex = 0;
-
         // Add the vertex data to all the layers
         const AZ::u32 faceCount = meshData->GetFaceCount();
         for (AZ::u32 faceIndex = 0; faceIndex < faceCount; ++faceIndex)
@@ -447,33 +440,8 @@ namespace AZ::SceneGenerationComponents
             meshBuilder.BeginPolygon(baseMesh->GetFaceMaterialId(faceIndex));
             for (const AZ::u32 vertexIndex : meshData->GetFaceInfo(faceIndex).vertexIndex)
             {
-                const AZ::u32 orgVertexNumber = [&meshData, &hasBlendShapes, &vertexIndex, &positionMap, &currentOriginalVertexIndex, positionTolerance, positionToleranceReciprocal]() -> AZ::u32
-                {
-                    if (hasBlendShapes)
-                    {
-                        // Don't attempt to weld similar vertices if there's blendshapes
-                        // Welding the vertices here based on position could cause the vertices of a base shape to be
-                        // welded, and the vertices of the blendshape to not be welded, resulting in a vertex count
-                        // mismatch between the two
-                        return meshData->GetUsedPointIndexForControlPoint(meshData->GetControlPointIndex(vertexIndex));
-                    }
-
-                    // Round the vertex position so that a float comparison can be made with entires in the positionMap
-                    // pos = floor( x * 10 + 0.5) * 0.1
-                    const AZ::Vector3 position = AZ::Vector3(
-                        AZ::Simd::Vec3::Floor(
-                            (meshData->GetPosition(vertexIndex) * positionToleranceReciprocal + AZ::Vector3(0.5f)).GetSimdValue()
-                        )
-                    ) * positionTolerance;
-
-                    const auto& [iter, didInsert] = positionMap.try_emplace(position, currentOriginalVertexIndex);
-                    if (didInsert)
-                    {
-                        ++currentOriginalVertexIndex;
-                    }
-                    return iter->second;
-                }();
-
+                const int orgVertexNumber = meshData->GetUsedPointIndexForControlPoint(meshData->GetControlPointIndex(vertexIndex));
+                AZ_Assert(orgVertexNumber >= 0, "Invalid vertex number");
                 orgVtxLayer->SetCurrentVertexValue(orgVertexNumber);
 
                 posLayer->SetCurrentVertexValue(meshData->GetPosition(vertexIndex));
