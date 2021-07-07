@@ -50,6 +50,7 @@ namespace GraphCpp
         MergeScriptAssetDescriptions,
         VariablePanelSymantics,
         AddVersionData,
+        RemoveFunctionGraphMarker,
         // label your version above
         Current
     };
@@ -67,6 +68,11 @@ namespace ScriptCanvas
         if (componentElementNode.GetVersion() < 13)
         {
             componentElementNode.AddElementWithData(context, "m_assetType", azrtti_typeid<RuntimeAsset>());
+        }
+
+        if (componentElementNode.GetVersion() < GraphCpp::GraphVersion::RemoveFunctionGraphMarker)
+        {
+            componentElementNode.RemoveElementByName(AZ_CRC_CE("isFunctionGraph"));
         }
 
         return true;
@@ -99,18 +105,15 @@ namespace ScriptCanvas
         Nodes::ComparisonExpression::Reflect(context);
         Datum::Reflect(context);
         BehaviorContextObjectPtrReflect(context);
-
         GraphData::Reflect(context);
 
-        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
-        if (serializeContext)
+        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<Graph, AZ::Component>()
                 ->Version(GraphCpp::GraphVersion::Current, &GraphComponentVersionConverter)
                 ->Field("m_graphData", &Graph::m_graphData)
                 ->Field("executionMode", &Graph::m_executionMode)
                 ->Field("m_assetType", &Graph::m_assetType)
-                ->Field("isFunctionGraph", &Graph::m_isFunctionGraph)
                 ->Field("versionData", &Graph::m_versionData)
                 ;
         }
@@ -148,21 +151,6 @@ namespace ScriptCanvas
         }
 
         StatusRequestBus::Handler::BusConnect(scriptCanvasId);
-    }
-
-    bool Graph::IsFunctionGraph() const
-    {
-        if (m_isFunctionGraph)
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    void Graph::MarkFunctionGraph()
-    {
-        m_isFunctionGraph = true;
     }
 
     void Graph::MarkVersion()

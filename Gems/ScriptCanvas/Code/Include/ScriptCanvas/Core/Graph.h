@@ -110,9 +110,6 @@ namespace ScriptCanvas
 
         Graph* GetGraph() { return this; }
 
-        bool IsFunctionGraph() const;
-        void MarkFunctionGraph();
-
         GraphData* GetGraphData() override { return &m_graphData; }
         const GraphData* GetGraphDataConst() const override { return &m_graphData; }
         const VariableData* GetVariableDataConst() const { return const_cast<Graph*>(this)->GetVariableData(); }
@@ -204,7 +201,6 @@ namespace ScriptCanvas
         AZ::Data::AssetType m_assetType;
 
     private:
-        bool m_isFunctionGraph = false;
         ScriptCanvasId m_scriptCanvasId;
         ExecutionMode m_executionMode = ExecutionMode::Interpreted;
         VersionData m_versionData;
