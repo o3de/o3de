@@ -41,123 +41,6 @@ struct HairShadeParams
     float m_Ex2;
 };
 
-/*
-// If you change this, you MUST also change TressFXLightParams in TressFXConstantBuffers.h
-#define AMD_TRESSFX_MAX_LIGHTS 10
-
-// These come from GltfCommon (just re-using them)
-#define LightType_Directional 0
-#define LightType_Point 1
-#define LightType_Spot 2
-
-//------------------------------------------------------------------------------
-struct LightParams
-{
-                                // nLightShape (ignored) for volumes and stuff ...
-                                // nLightIndex (not used in Sushi)
-    float   LightIntensity;     // fLightIntensity in Sushi
-    float   LightOuterConeCos;  // vLightConeAngles.x in Sushi
-    float   LightInnerConeCos;  // vLightConeAngles.y in Sushi
-    float   LightRange;         // vLightConeAngles.z in Sushi
-
-    float4  LightPositionWS;    // vLightPosWS in Sushi
-    float4  LightDirWS;         // vLightDirWS in Sushi
-    float4  LightColor;         // vLightColor in Sushi
-
-    float4x4    ShadowProjection;
-    
-    float4      ShadowParams;   // Bias, near, far, range 
-
-                                // vScaleWS (not used)
-    int     LightType;          // vLightParams.x in Sushi
-                                // vLightParams.y is falloff exponent and always 1.f in Sushi
-                                // vLightParams.zw are Diffuse and Spec mask in Sushi and are always 1.f
-                                // vLightOrientation (not used)
-    int     ShadowMapIndex;
-    
-    int     ShadowMapSize;      // Dimension of the shadow slice we are sampling from
-    int     Padding2;
-};
-
-//===========================================================================
-// [To Do] Adi: replace with Atom lighting pass
-//===========================================================================
-[[vk::binding(0, 3)]] cbuffer LightConstants : register(b0, space3)
-{
-    int			NumLights;
-    int			UseDepthApproximation;
-    int			Padding4;
-    int			Padding5;
-    LightParams LightData[AMD_TRESSFX_MAX_LIGHTS];
-};
-
-[[vk::binding(1, 3)]] Texture2D<float> ShadowTexture : register(t1, space3);
-//===========================================================================
-// [To Do] Adi: replace with Atom lighting pass
-//===========================================================================
-
-// https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual/README.md#inner-and-outer-cone-angles
-float SpotAttenuation(float3 pointToLight, float3 spotDirection, float outerConeCos, float innerConeCos)
-{
-    float actualCos = dot(normalize(spotDirection), normalize(-pointToLight));
-    if (actualCos > outerConeCos)
-    {
-        if (actualCos < innerConeCos)
-        {
-            return smoothstep(outerConeCos, innerConeCos, actualCos);
-        }
-        return 1.0;
-    }
-    return 0.0;
-}
-
-// https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual/README.md#range-property
-float RangeAttenuation(float range, float distance)
-{
-    if (range < 0.0)
-    {
-        // negative range means unlimited
-        return 1.0;
-    }
-    return max(lerp(1, 0, distance / range), 0);//max(min(1.0 - pow(distance / range, 4.0), 1.0), 0.0) / pow(distance, 2.0);
-}
-
-//===========================================================================
-// [To Do] Adi: replace with Atom lighting pass
-//===========================================================================
-
-// Reduces light to a direction and intensity (taking attenuation and light strength into account)
-void GetLightParams(float3 WorldPosition, uint lightIndex, inout float3 LightVector, inout float LightIntensity, HairShadeParams params)
-{
-    LightIntensity = LightData[lightIndex].LightIntensity;
-
-    // Spot and Directionals use the light direction directly
-    LightVector = LightData[lightIndex].LightDirWS;
-    if (LightData[lightIndex].LightType == LightType_Directional)
-        return;
-
-    // Normalized light vector and squared distance for radial source calculations
-    float3 vLightVecWS = LightData[lightIndex].LightPositionWS - WorldPosition;
-    float distToLight = length(vLightVecWS);
-
-    // Set the LightVector to actual direction to light
-    LightVector = normalize(vLightVecWS);
-
-    // Calculate radial falloff
-    LightIntensity *= RangeAttenuation(LightData[lightIndex].LightRange, distToLight);
-    
-    // Modulate with spot falloff if needed
-    if (LightData[lightIndex].LightType == LightType_Spot)
-    {
-        // Need to inverse the direction going in (as it's direction to light) as Unreal with negate it again under the hood.
-        LightIntensity *= SpotAttenuation(LightVector, -LightData[lightIndex].LightDirWS, LightData[lightIndex].LightOuterConeCos, LightData[lightIndex].LightInnerConeCos);
-    }
-}
-//===========================================================================
-// [To Do] Adi: replace with Atom lighting pass
-//===========================================================================
-*/
-
 // Returns a float3 which is the scale for diffuse, spec term, and colored spec term.
 //
 // The diffuse term is from Kajiya.
@@ -416,15 +299,13 @@ float3 CalculateLighting(
     Surface surface;
 
     const float specularF0Factor = 0.04f; // set this to 0.04?!
-    const float metallic = 0.05;
 
     surface.position = vPositionWS;
-    surface.normal = vTangent;              // Somewhat redundant - it will be recalculated per light
+    surface.tangent = vTangent;         // Redundant - will be calculated per light
+    surface.normal = float3(0, 0, 0);   // Will fail lights that did not initialize properly. 
     surface.roughnessLinear = 0.51f;
     surface.CalculateRoughnessA();
-    surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
-    surface.clearCoat.InitializeToZero();
-    surface.clearCoat.normal = vTangent;        // Used as the hair tangent per per fragment
+    surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor);
 
     // The trasmission / back lighting does not seem to work!
     surface.transmission.InitializeToZero();    // Assuming thin layer
@@ -461,6 +342,7 @@ float3 CalculateLighting(
 //    lightingData.tileIterator.Init(screenCoords, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
 //    lightingData.tileIterator.Init(screenPositionForLighting, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData); // DOES NOT work!! requires pixels coords
 
+    // The normal assignment will be overriden afterwards per light
     lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
 
     // Remark: all indices were checked out ok with the exception of the bin 
@@ -491,6 +373,8 @@ float3 CalculateLighting(
     ApplyAllSimplePointLights(surface, lightingData);
     ApplyAllSimpleSpotLights(surface, lightingData);
     ApplyAllPointLights(surface, lightingData);
+
+    ApplyAllDiskLights(surface, lightingData);
 
     ApplyIBL(surface, lightingData); 
     //--------------------------
