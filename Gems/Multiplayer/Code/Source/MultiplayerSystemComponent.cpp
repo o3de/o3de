@@ -847,12 +847,10 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::TickVisibleNetworkEntities(float deltaTime, float serverRateSeconds)
     {
-        const float targetAdjustBlend = AZStd::clamp(deltaTime / serverRateSeconds, 0.0f, 1.0f);
-        m_renderBlendFactor += targetAdjustBlend;
-
         // Linear close to the origin, but asymptote at y = 1
-        const float adjustedBlendFactor = 1.0f - (std::pow(0.2f, m_renderBlendFactor));
-        AZLOG(NET_Blending, "Computed blend factor of %f", adjustedBlendFactor);
+        const float targetAdjustBlend = AZStd::clamp(deltaTime / serverRateSeconds, 0.0f, 1.0f);
+        m_renderBlendFactor = 1.0f - (std::pow(0.2f, m_renderBlendFactor + targetAdjustBlend));
+        AZLOG(NET_Blending, "Computed blend factor of %0.2f using a frametime of %0.2f and a serverTickRate of %0.2f", m_renderBlendFactor, deltaTime, serverRateSeconds);
 
         if (Camera::ActiveCameraRequestBus::HasHandlers())
         {
@@ -895,7 +893,7 @@ namespace Multiplayer
 
             for (NetBindComponent* netBindComponent : gatheredEntities)
             {
-                netBindComponent->NotifyPreRender(deltaTime, adjustedBlendFactor);
+                netBindComponent->NotifyPreRender(deltaTime, m_renderBlendFactor);
             }
         }
         else
@@ -907,7 +905,7 @@ namespace Multiplayer
                 NetBindComponent* netBindComponent = entity->FindComponent<NetBindComponent>();
                 if (netBindComponent != nullptr)
                 {
-                    netBindComponent->NotifyPreRender(deltaTime, adjustedBlendFactor);
+                    netBindComponent->NotifyPreRender(deltaTime, m_renderBlendFactor);
                 }
             }
         }

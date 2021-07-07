@@ -507,7 +507,7 @@ case {{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure::{{ Upp
 {% endif %}
             }
 {% else %}
-            Handle{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(rpcParamList) }});
+            Handle{{ UpperFirst(Property.attrib['Name']) }}(invokingConnection, {{ ', '.join(rpcParamList) }});
 {% endif %}
         }
         else if (paramsSerialized)
@@ -712,11 +712,7 @@ void {{ ClassName }}::NotifyChanges{{ AutoComponentMacros.GetNetPropertiesSetNam
 {% macro DefineArchetypePropertyGet(Property, ClassType, ClassName, Prefix = '') %}
 {% if ClassType == '' or Property.attrib['ExportTo'] == ClassType or Property.attrib['ExportTo'] == "Common" %}
 {%     if Property.attrib['Container'] == 'Array' %}
-{% if Property.attrib['IsRewindable']|booleanTrue %}
-const RewindableArray<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>& {{ ClassName }}::Get{{ UpperFirst(Property.attrib['Name']) }}Array() const
-{% else %}
 const AZStd::array<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>& {{ ClassName }}::Get{{ UpperFirst(Property.attrib['Name']) }}Array() const
-{% endif %}
 {
     return {{ Prefix }}m_{{ LowerFirst(Property.attrib['Name']) }};
 }
@@ -727,11 +723,7 @@ const {{ Property.attrib['Type'] }}& {{ ClassName }}::Get{{ UpperFirst(Property.
 }
 
 {%     elif Property.attrib['Container'] == 'Vector' %}
-{% if Property.attrib['IsRewindable']|booleanTrue %}
-const RewindableFixedVector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>& {{ ClassName }}::Get{{ UpperFirst(Property.attrib['Name']) }}Vector() const
-{% else %}
 const AZStd::fixed_vector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>& {{ ClassName }}::Get{{ UpperFirst(Property.attrib['Name']) }}Vector() const
-{% endif %}
 {
     return {{ Prefix }}m_{{ LowerFirst(Property.attrib['Name']) }};
 }
