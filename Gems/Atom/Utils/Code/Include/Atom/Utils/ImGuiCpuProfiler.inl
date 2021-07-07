@@ -761,7 +761,7 @@ namespace AZ
             return TICK_DEFAULT;
         }
 
-        // ----- RegionStatistics implementation ----
+        // ----- RegionStatistics implementation ----- 
         
         inline float RegionStatistics::CalcAverageTimeMs() const
         {
