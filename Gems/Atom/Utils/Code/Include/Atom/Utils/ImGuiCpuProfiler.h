@@ -47,7 +47,8 @@ namespace AZ
         //! It uses ImGui as the library for displaying the Attachments and Heaps.
         //! It shows all heaps that are being used by the RHI and how the
         //! resources are allocated in each heap.
-        class ImGuiCpuProfiler : SystemTickBus::Handler
+        class ImGuiCpuProfiler
+            : SystemTickBus::Handler
         {
             // Region Name -> Array of ThreadRegion entries
             using RegionEntryMap = AZStd::map<AZStd::string, AZStd::vector<ThreadRegionEntry>>;
@@ -68,6 +69,9 @@ namespace AZ
             void DrawVisualizer(bool& keepDrawing, const AZ::RHI::CpuTimingStatistics& currentCpuTimingStatistics);
 
         private:
+            static constexpr float RowHeight = 50.0;
+            static constexpr int DefaultFramesToCollect = 50;
+
             // Update the GroupRegionMap with the latest cached time regions
             void UpdateGroupRegionMap();
 
@@ -122,13 +126,13 @@ namespace AZ
             ImU32 GetBlockColor(const TimeRegion& block);
 
             // System tick bus overrides
-            virtual void OnSystemTick();
+            virtual void OnSystemTick() override;
 
             // Visualizer state
 
             bool m_showVisualizer = false;
 
-            int m_framesToCollect = 50;
+            int m_framesToCollect = DefaultFramesToCollect;
 
             // Tally of the number of saved profiling events so far
             u64 m_savedRegionCount = 0;
@@ -142,8 +146,6 @@ namespace AZ
 
             // Region color cache
             AZStd::unordered_map<const GroupRegionName*, ImVec4> m_regionColorMap;
-
-            static constexpr float RowHeight = 50.0;
 
             // Tracks the frame boundaries
             AZStd::vector<AZStd::sys_time_t> m_frameEndTicks = { INT64_MIN };
