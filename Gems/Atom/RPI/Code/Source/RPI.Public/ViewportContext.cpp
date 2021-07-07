@@ -28,6 +28,10 @@ namespace AZ
                 m_viewportSize,
                 nativeWindow,
                 &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
+            AzFramework::WindowRequestBus::EventResult(
+                m_viewportDpiScaleFactor,
+                nativeWindow,
+                &AzFramework::WindowRequestBus::Events::GetDpiScaleFactor);
             AzFramework::WindowNotificationBus::Handler::BusConnect(nativeWindow);
             AzFramework::ViewportRequestBus::Handler::BusConnect(id);
 
@@ -148,9 +152,19 @@ namespace AZ
             return m_viewportSize;
         }
 
+        float ViewportContext::GetDpiScalingFactor() const
+        {
+            return m_viewportDpiScaleFactor;
+        }
+
         void ViewportContext::ConnectSizeChangedHandler(SizeChangedEvent::Handler& handler)
         {
             handler.Connect(m_sizeChangedEvent);
+        }
+
+        void ViewportContext::ConnectDpiScalingFactorChangedHandler(ScalarChangedEvent::Handler& handler)
+        {
+            handler.Connect(m_dpiScalingFactorChangedEvent);
         }
 
         void ViewportContext::ConnectViewMatrixChangedHandler(MatrixChangedEvent::Handler& handler)
@@ -288,6 +302,12 @@ namespace AZ
                 m_viewportSize.m_height = height;
                 m_sizeChangedEvent.Signal(m_viewportSize);
             }
+        }
+
+        void ViewportContext::OnDpiScaleFactorChanged(float dpiScaleFactor)
+        {
+            m_viewportDpiScaleFactor = dpiScaleFactor;
+            m_dpiScalingFactorChangedEvent.Signal(dpiScaleFactor);
         }
     } // namespace RPI
 } // namespace AZ
