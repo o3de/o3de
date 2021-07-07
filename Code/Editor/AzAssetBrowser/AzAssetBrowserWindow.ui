@@ -54,7 +54,7 @@
         <number>0</number>
        </property>
        <item>
-        <layout class="QVBoxLayout" name="m_headerLayout">
+        <layout class="QHBoxLayout" name="horizontalLayout">
          <item>
           <widget class="AzToolsFramework::AssetBrowser::SearchWidget" name="m_searchWidget" native="true">
            <property name="sizePolicy">
@@ -66,9 +66,9 @@
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="m_viewSwitcherCheckBox">
+          <widget class="QToolButton" name="m_toggleDisplayViewBtn">
            <property name="text">
-            <string>Switch View</string>
+            <string>...</string>
            </property>
           </widget>
          </item>
@@ -218,6 +218,8 @@
    <header>AzToolsFramework/AssetBrowser/Views/AssetBrowserTableView.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../../Framework/AzQtComponents/AzQtComponents/Components/resources.qrc"/>
+ </resources>
  <connections/>
 </ui>
