@@ -1,5 +1,5 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -16,9 +16,7 @@ import ly_test_tools.o3de.asset_processor_utils as asset_processor_utils
 
 from botocore.exceptions import ClientError
 from AWS.Windows.resource_mappings.resource_mappings import resource_mappings
-from AWS.Windows.cdk.cdk_utils import Cdk
-from AWS.common.aws_utils import AwsUtils
-from assetpipeline.ap_fixtures.asset_processor_fixture import asset_processor as asset_processor
+from assetpipeline.ap_fixtures.asset_processor_fixture import asset_processor
 
 AWS_CORE_FEATURE_NAME = 'AWSCore'
 AWS_RESOURCE_MAPPING_FILE_NAME = 'default_aws_resource_mappings.json'
@@ -57,6 +55,8 @@ def setup(launcher: pytest.fixture, cdk: pytest.fixture, resource_mappings: pyte
 @pytest.mark.parametrize('level', ['AWS/Core'])
 @pytest.mark.usefixtures('resource_mappings')
 @pytest.mark.parametrize('resource_mappings_filename', [AWS_RESOURCE_MAPPING_FILE_NAME])
+@pytest.mark.usefixtures('aws_credentials')
+@pytest.mark.parametrize('profile_name', ['AWSAutomationTest'])
 class TestAWSCoreAWSResourceInteraction(object):
     """
     Test class to verify AWSCore can downloading a file from S3.
@@ -80,8 +80,10 @@ class TestAWSCoreAWSResourceInteraction(object):
         launcher.args = ['+LoadLevel', level]
         launcher.args.extend(['-rhi=null'])
 
-        if not os.path.exists('s3download'):
-            os.makedirs('s3download')
+        user_dir = os.path.join(workspace.paths.project(), 'user')
+        download_dir = os.path.join(user_dir, 's3_download')
+        if not os.path.exists(download_dir):
+            os.makedirs(download_dir)
 
         with launcher.start(launch_ap=False):
             result = log_monitor.monitor_log_for_lines(
@@ -90,18 +92,18 @@ class TestAWSCoreAWSResourceInteraction(object):
                                 '(Script) - [S3] Get object success: Object example.txt is downloaded.'],
                 unexpected_lines=['(Script) - [S3] Head object error: No response body.',
                                   '(Script) - [S3] Get object error: Request validation failed, output file directory doesn\'t exist.'],
-                halt_on_unexpected=True,
+                halt_on_unexpected=True
                 )
 
             assert result, "Expected lines weren't found."
 
-        download_dir = os.path.join(os.getcwd(), 's3download/output.txt')
+        download_path = os.path.join(download_dir, 'output.txt')
 
-        file_was_downloaded = os.path.exists(download_dir)
+        file_was_downloaded = os.path.exists(download_path)
         # clean up the file directories.
         if file_was_downloaded:
-            os.remove(download_dir)
-        os.rmdir(os.path.dirname(download_dir))
+            os.remove(download_path)
+        os.rmdir(download_dir)
 
         assert file_was_downloaded, 'The expected file wasn\'t successfully downloaded'
 
@@ -130,7 +132,7 @@ class TestAWSCoreAWSResourceInteraction(object):
                                 '(Script) - [Lambda] Invoke success: {"statusCode": 200, "body": {}}'],
                 unexpected_lines=['(Script) - Request validation failed, output file miss full path.',
                                   '(Script) - '],
-                halt_on_unexpected=True,
+                halt_on_unexpected=True
             )
 
         assert result
@@ -140,8 +142,8 @@ class TestAWSCoreAWSResourceInteraction(object):
                                 launcher: pytest.fixture,
                                 cdk: pytest.fixture,
                                 resource_mappings: pytest.fixture,
-                                workspace,
-                                asset_processor,
+                                workspace: pytest.fixture,
+                                asset_processor: pytest.fixture,
                                 aws_utils: pytest.fixture,
                                 ):
         """
@@ -150,27 +152,25 @@ class TestAWSCoreAWSResourceInteraction(object):
         Verification: The value is output in the logs and verified by the test.
         """
 
-        def write_test_table_data(region: str):
-            session = aws_utils._assume_session.resource('dynamodb', region_name=region)
-            # The value that is populated in the resource mapping config is the full ARN address.
-            # This needs additional parsing to work, hence the split, otherwise it breaks the expected regex.
-            # example input: arn:aws:dynamodb:us-west-2:179802234733:table/AUTOMATEDTESTING-Core-Example-us-west-2-AUTOMATEDTESTINGCoreTable23F94002-UAIYTR5XICW2
-            table_name = resource_mappings.get_resource_name_id("AWSCore.ExampleDynamoTableOutput").split('/')[1]
-            table = session.Table(table_name)
-
+        def write_test_table_data():
+            client = aws_utils.client('dynamodb')
+            table_name = resource_mappings.get_resource_name_id("AWSCore.ExampleDynamoTableOutput")
             try:
-                item = {
-                    'id': 'Item1',
-                    'value': 123,
-                    'timestamp': int(time.time())
-                }
-                table.put_item(Item=item)
-                logger.info(f'Loaded data into table {table.name}')
+                client.put_item(
+                    TableName=table_name,
+                    Item={
+                        'id': {
+                            'S': 'Item1'
+                        }
+                    }
+                )
+                logger.info(f'Loaded data into table {table_name}')
             except ClientError:
-                logger.exception(f'Failed to load data into table {table.name}')
+                logger.exception(f'Failed to load data into table {table_name}')
                 raise
 
         log_monitor = setup(launcher, cdk, resource_mappings, asset_processor)
+        write_test_table_data()
 
         launcher.args = ['+LoadLevel', level]
         launcher.args.extend(['-rhi=null'])
@@ -180,7 +180,7 @@ class TestAWSCoreAWSResourceInteraction(object):
                 expected_lines=['(Script) - [DynamoDB] Results finished'],
                 unexpected_lines=['(Script) - Request validation failed, output file miss full path.',
                                   '(Script) - '],
-                halt_on_unexpected=True,
+                halt_on_unexpected=True
             )
 
         assert result
