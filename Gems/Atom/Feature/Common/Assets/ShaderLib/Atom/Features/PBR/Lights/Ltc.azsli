@@ -91,7 +91,7 @@ float IntegrateEdge(float3 v1, float3 v2)
 
     if (x < 0.0)
     {
-        theta_sinTheta = PI * rsqrt(1.0 - x * x) - theta_sinTheta;
+        theta_sinTheta = PI * rsqrt(saturate(1.0 - x * x)) - theta_sinTheta;
     }
 
     float3 u = cross(v1, v2);
@@ -102,7 +102,7 @@ float IntegrateEdge(float3 v1, float3 v2)
     float theta = acos(cosTheta);
 
     // calculate 1.0 / sin(theta)
-    float invSinTheta = rsqrt(1.0 - cosTheta * cosTheta);
+    float invSinTheta = rsqrt(saturate(1.0 - cosTheta * cosTheta));
 
     return cross(v1, v2).z * ((theta > 0.001) ? theta * invSinTheta : 1.0);
 }
@@ -325,7 +325,7 @@ float IntegrateQuadSpecular(in float3 v[5], in float vertexCount, in bool double
     return sum;
 }
 
-// Evauluate linear transform cosine lighting for a 4 point quad.
+// Evaluate linear transform cosine lighting for a 4 point quad.
 //   normal - The surface normal
 //   dirToView - Normalized direction from the surface to the view
 //   ltcMat - The LTC matrix for specular, or identity for diffuse.
