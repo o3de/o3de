@@ -26,85 +26,6 @@ namespace AzFramework
     AZ_CVAR(float, ed_cameraSystemMinOrbitDistance, 10.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
     AZ_CVAR(float, ed_cameraSystemMaxOrbitDistance, 50.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
 
-    AZ_CVAR(
-        AZ::CVarFixedString, ed_cameraSystemTranslateForwardKey, "keyboard_key_alphanumeric_W", nullptr, AZ::ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(
-        AZ::CVarFixedString,
-        ed_cameraSystemTranslateBackwardKey,
-        "keyboard_key_alphanumeric_S",
-        nullptr,
-        AZ::ConsoleFunctorFlags::Null,
-        "");
-    AZ_CVAR(
-        AZ::CVarFixedString, ed_cameraSystemTranslateLeftKey, "keyboard_key_alphanumeric_A", nullptr, AZ::ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(
-        AZ::CVarFixedString, ed_cameraSystemTranslateRightKey, "keyboard_key_alphanumeric_D", nullptr, AZ::ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(AZ::CVarFixedString, ed_cameraSystemTranslateUpKey, "keyboard_key_alphanumeric_E", nullptr, AZ::ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(
-        AZ::CVarFixedString, ed_cameraSystemTranslateDownKey, "keyboard_key_alphanumeric_Q", nullptr, AZ::ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(
-        AZ::CVarFixedString, ed_cameraSystemTranslateBoostKey, "keyboard_key_modifier_shift_l", nullptr, AZ::ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(AZ::CVarFixedString, ed_cameraSystemOrbitKey, "keyboard_key_modifier_alt_l", nullptr, AZ::ConsoleFunctorFlags::Null, "");
-
-    AZ_CVAR(AZ::CVarFixedString, ed_cameraSystemFreeLookButton, "mouse_button_right", nullptr, AZ::ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(AZ::CVarFixedString, ed_cameraSystemFreePanButton, "mouse_button_middle", nullptr, AZ::ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(AZ::CVarFixedString, ed_cameraSystemOrbitLookButton, "mouse_button_left", nullptr, AZ::ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(AZ::CVarFixedString, ed_cameraSystemOrbitDollyButton, "mouse_button_right", nullptr, AZ::ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(AZ::CVarFixedString, ed_cameraSystemOrbitPanButton, "mouse_button_middle", nullptr, AZ::ConsoleFunctorFlags::Null, "");
-
-    static InputChannelId CameraTranslateForwardId;
-    static InputChannelId CameraTranslateBackwardId;
-    static InputChannelId CameraTranslateLeftId;
-    static InputChannelId CameraTranslateRightId;
-    static InputChannelId CameraTranslateDownId;
-    static InputChannelId CameraTranslateUpId;
-    static InputChannelId CameraTranslateBoostId;
-    static InputChannelId CameraOrbitId;
-
-    // externed elsewhere
-    InputChannelId CameraFreeLookButton;
-    InputChannelId CameraFreePanButton;
-    InputChannelId CameraOrbitLookButton;
-    InputChannelId CameraOrbitDollyButton;
-    InputChannelId CameraOrbitPanButton;
-
-    void ReloadCameraKeyBindings()
-    {
-        const AZ::CVarFixedString& forward = ed_cameraSystemTranslateForwardKey;
-        CameraTranslateForwardId = InputChannelId(forward.c_str());
-        const AZ::CVarFixedString& backward = ed_cameraSystemTranslateBackwardKey;
-        CameraTranslateBackwardId = InputChannelId(backward.c_str());
-        const AZ::CVarFixedString& left = ed_cameraSystemTranslateLeftKey;
-        CameraTranslateLeftId = InputChannelId(left.c_str());
-        const AZ::CVarFixedString& right = ed_cameraSystemTranslateRightKey;
-        CameraTranslateRightId = InputChannelId(right.c_str());
-        const AZ::CVarFixedString& down = ed_cameraSystemTranslateDownKey;
-        CameraTranslateDownId = InputChannelId(down.c_str());
-        const AZ::CVarFixedString& up = ed_cameraSystemTranslateUpKey;
-        CameraTranslateUpId = InputChannelId(up.c_str());
-        const AZ::CVarFixedString& boost = ed_cameraSystemTranslateBoostKey;
-        CameraTranslateBoostId = InputChannelId(boost.c_str());
-        const AZ::CVarFixedString& orbit = ed_cameraSystemOrbitKey;
-        CameraOrbitId = InputChannelId(orbit.c_str());
-        const AZ::CVarFixedString& freeLook = ed_cameraSystemFreeLookButton;
-        CameraFreeLookButton = InputChannelId(freeLook.c_str());
-        const AZ::CVarFixedString& freePan = ed_cameraSystemFreePanButton;
-        CameraFreePanButton = InputChannelId(freePan.c_str());
-        const AZ::CVarFixedString& orbitLook = ed_cameraSystemOrbitLookButton;
-        CameraOrbitLookButton = InputChannelId(orbitLook.c_str());
-        const AZ::CVarFixedString& orbitDolly = ed_cameraSystemOrbitDollyButton;
-        CameraOrbitDollyButton = InputChannelId(orbitDolly.c_str());
-        const AZ::CVarFixedString& orbitPan = ed_cameraSystemOrbitPanButton;
-        CameraOrbitPanButton = InputChannelId(orbitPan.c_str());
-    }
-
-    static void ReloadCameraKeyBindingsConsole(const AZ::ConsoleCommandContainer&)
-    {
-        ReloadCameraKeyBindings();
-    }
-
-    AZ_CONSOLEFREEFUNC(ReloadCameraKeyBindingsConsole, AZ::ConsoleFunctorFlags::Null, "Reload keybindings for the modern camera system");
-
     //! return -1.0f if inverted, 1.0f otherwise
     constexpr static float Invert(const bool invert)
     {
@@ -289,7 +210,7 @@ namespace AzFramework
             });
     }
 
-    RotateCameraInput::RotateCameraInput(const InputChannelId rotateChannelId)
+    RotateCameraInput::RotateCameraInput(const InputChannelId& rotateChannelId)
         : m_rotateChannelId(rotateChannelId)
     {
         m_rotateSpeedFn = []() constexpr
@@ -372,7 +293,7 @@ namespace AzFramework
         return nextCamera;
     }
 
-    PanCameraInput::PanCameraInput(const InputChannelId panChannelId, PanAxesFn panAxesFn)
+    PanCameraInput::PanCameraInput(const InputChannelId& panChannelId, PanAxesFn panAxesFn)
         : m_panAxesFn(AZStd::move(panAxesFn))
         , m_panChannelId(panChannelId)
     {
@@ -433,34 +354,35 @@ namespace AzFramework
         return nextCamera;
     }
 
-    TranslateCameraInput::TranslationType TranslateCameraInput::TranslationFromKey(InputChannelId channelId)
+    TranslateCameraInput::TranslationType TranslateCameraInput::TranslationFromKey(
+        const InputChannelId& channelId, const TranslateCameraInputChannels& translateCameraInputChannels)
     {
-        if (channelId == CameraTranslateForwardId)
+        if (channelId == translateCameraInputChannels.m_forwardChannelId)
         {
             return TranslationType::Forward;
         }
 
-        if (channelId == CameraTranslateBackwardId)
+        if (channelId == translateCameraInputChannels.m_backwardChannelId)
         {
             return TranslationType::Backward;
         }
 
-        if (channelId == CameraTranslateLeftId)
+        if (channelId == translateCameraInputChannels.m_leftChannelId)
         {
             return TranslationType::Left;
         }
 
-        if (channelId == CameraTranslateRightId)
+        if (channelId == translateCameraInputChannels.m_rightChannelId)
         {
             return TranslationType::Right;
         }
 
-        if (channelId == CameraTranslateDownId)
+        if (channelId == translateCameraInputChannels.m_downChannelId)
         {
             return TranslationType::Down;
         }
 
-        if (channelId == CameraTranslateUpId)
+        if (channelId == translateCameraInputChannels.m_upChannelId)
         {
             return TranslationType::Up;
         }
@@ -468,8 +390,10 @@ namespace AzFramework
         return TranslationType::Nil;
     }
 
-    TranslateCameraInput::TranslateCameraInput(TranslationAxesFn translationAxesFn)
+    TranslateCameraInput::TranslateCameraInput(
+        TranslationAxesFn translationAxesFn, const TranslateCameraInputChannels& translateCameraInputChannels)
         : m_translationAxesFn(AZStd::move(translationAxesFn))
+        , m_translateCameraInputChannels(translateCameraInputChannels)
     {
         m_translateSpeedFn = []() constexpr
         {
@@ -489,13 +413,13 @@ namespace AzFramework
         {
             if (input->m_state == InputChannel::State::Began)
             {
-                m_translation |= TranslationFromKey(input->m_channelId);
+                m_translation |= TranslationFromKey(input->m_channelId, m_translateCameraInputChannels);
                 if (m_translation != TranslationType::Nil)
                 {
                     BeginActivation();
                 }
 
-                if (input->m_channelId == CameraTranslateBoostId)
+                if (input->m_channelId == m_translateCameraInputChannels.m_boostChannelId)
                 {
                     m_boost = true;
                 }
@@ -503,12 +427,12 @@ namespace AzFramework
             // ensure we don't process end events in the idle state
             else if (input->m_state == InputChannel::State::Ended && !Idle())
             {
-                m_translation &= ~(TranslationFromKey(input->m_channelId));
+                m_translation &= ~(TranslationFromKey(input->m_channelId, m_translateCameraInputChannels));
                 if (m_translation == TranslationType::Nil)
                 {
                     EndActivation();
                 }
-                if (input->m_channelId == CameraTranslateBoostId)
+                if (input->m_channelId == m_translateCameraInputChannels.m_boostChannelId)
                 {
                     m_boost = false;
                 }
@@ -580,11 +504,16 @@ namespace AzFramework
         m_boost = false;
     }
 
+    OrbitCameraInput::OrbitCameraInput(const InputChannelId& orbitChannelId)
+        : m_orbitChannelId(orbitChannelId)
+    {
+    }
+
     bool OrbitCameraInput::HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, const float scrollDelta)
     {
         if (const auto* input = AZStd::get_if<DiscreteInputEvent>(&event))
         {
-            if (input->m_channelId == CameraOrbitId)
+            if (input->m_channelId == m_orbitChannelId)
             {
                 if (input->m_state == InputChannel::State::Began)
                 {
@@ -697,7 +626,7 @@ namespace AzFramework
         return nextCamera;
     }
 
-    OrbitDollyCursorMoveCameraInput::OrbitDollyCursorMoveCameraInput(const InputChannelId dollyChannelId)
+    OrbitDollyCursorMoveCameraInput::OrbitDollyCursorMoveCameraInput(const InputChannelId& dollyChannelId)
         : m_dollyChannelId(dollyChannelId)
     {
         m_cursorSpeedFn = []() constexpr
