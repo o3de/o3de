@@ -235,6 +235,17 @@ namespace AZ
              */
             ClassBuilder*  ClassElement(Crc32 elementIdCrc, const char* description);
 
+
+             /**
+             * Declare element with attributes that belong to the class SerializeContext::Class, this is a logical structure, you can have one or more ClassElements.
+             * \uiId is the logical element ID (for instance "Group" when you want to group certain elements this class.
+             * then in each DataElement you can attach the appropriate group attribute.
+             * \param memberVariable - reference to the member variable to we can bind to serializations data.
+             */
+            template<class T>
+            ClassBuilder* ClassElement(Crc32 elementIdCrc, const char* description, T memberVariable);
+
+
             /**
              * Declare element with an associated UI handler that does not represent a specific class member variable.
              * \param uiId - name of a UI handler used to display the element
@@ -510,6 +521,54 @@ namespace AZ
             ed.m_elementId = elementIdCrc;
             ed.m_description = description;
             m_editElement = &ed;
+        }
+        return this;
+    }
+
+    //=========================================================================
+    // ClassElement
+    //=========================================================================
+    template<class T>
+    inline EditContext::ClassBuilder* EditContext::ClassBuilder::ClassElement(Crc32 elementIdCrc, const char* description, T memberVariable)
+    {
+        if (IsValid())
+        {
+            using ElementTypeInfo = typename SerializeInternal::ElementInfo<T>;
+            AZ_Assert(
+                m_classData->m_typeId == AzTypeInfo<typename ElementTypeInfo::ClassType>::Uuid(),
+                "Data element (%s) belongs to a different class!", description);
+
+            // Not really portable but works for the supported compilers
+            size_t offset =
+                reinterpret_cast<size_t>(&(reinterpret_cast<typename ElementTypeInfo::ClassType const volatile*>(0)->*memberVariable));
+            // offset = or pass it to the function with offsetof(typename ElementTypeInfo::ClassType,memberVariable);
+
+            SerializeContext::ClassElement* classElement = nullptr;
+            for (size_t i = 0; i < m_classData->m_elements.size(); ++i)
+            {
+                SerializeContext::ClassElement* element = &m_classData->m_elements[i];
+                if (element->m_offset == offset)
+                {
+                    classElement = element;
+                    break;
+                }
+            }
+            // We cannot continue past this point, we must alert the user to fix their serialization config and crash
+            AZ_Assert(
+                classElement,
+                "Class element for editor data element reflection '%s' was NOT found in the serialize context! This member MUST be "
+                "serializable to be editable!",
+                description);
+
+            m_classElement->m_elements.push_back();
+            Edit::ElementData& ed = m_classElement->m_elements.back();
+
+            classElement->m_editData = &ed;
+            m_editElement = &ed;
+            ed.m_elementId = elementIdCrc;
+            ed.m_name = description;
+            ed.m_description = description;
+            ed.m_serializeClassElement = classElement;
         }
         return this;
     }
