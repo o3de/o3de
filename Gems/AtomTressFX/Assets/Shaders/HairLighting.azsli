@@ -374,6 +374,8 @@ float3 CalculateLighting(
     ApplyAllSimpleSpotLights(surface, lightingData);
     ApplyAllPointLights(surface, lightingData);
 
+    ApplyAllDiskLights(surface, lightingData);
+
     ApplyIBL(surface, lightingData); 
     //--------------------------
 
