@@ -65,9 +65,15 @@ namespace AZ
             ConstViewPtr GetDefaultView() const;
 
             //! Gets the current size of the viewport.
+            //! This value is cached and updated on-demand, so may be efficiently queried.
             AzFramework::WindowSize GetViewportSize() const;
 
-            // SceneNotificationBus interface
+            //! Gets the screen DPI scaling factor.
+            //! This value is cached and updated on-demand, so may be efficiently queried.
+            //! \see AzFramework::WindowRequests::GetDpiScaleFactor
+            float GetDpiScalingFactor() const;
+
+            // SceneNotificationBus interface overrides...
             //! Ensures our default view remains set when our scene's render pipelines are modified.
             void OnRenderPipelineAdded(RenderPipelinePtr pipeline) override;
             //! Ensures our default view remains set when our scene's render pipelines are modified.
@@ -75,14 +81,21 @@ namespace AZ
             //! OnBeginPrepareRender is forwarded to our RenderTick notification to allow subscribers to do rendering.
             void OnBeginPrepareRender() override;
 
-            //WindowNotificationBus interface
-            //! Used to fire a notification when our window resizes
+            // WindowNotificationBus interface overrides...
+            //! Used to fire a notification when our window resizes.
             void OnWindowResized(uint32_t width, uint32_t height) override;
+            //! Used to fire a notification when our window DPI changes.
+            void OnDpiScaleFactorChanged(float dpiScaleFactor) override;
 
             using SizeChangedEvent = AZ::Event<AzFramework::WindowSize>;
             //! Notifies consumers when the viewport size has changed.
             //! Alternatively, connect to ViewportContextNotificationsBus and listen to ViewportContextNotifications::OnViewportSizeChanged.
             void ConnectSizeChangedHandler(SizeChangedEvent::Handler& handler);
+
+            using ScalarChangedEvent = AZ::Event<float>;
+            //! Notifies consumers when the viewport DPI scaling ratio has changed.
+            //! Alternatively, connect to ViewportContextNotificationsBus and listen to ViewportContextNotifications::OnViewportDpiScalingChanged.
+            void ConnectDpiScalingFactorChangedHandler(ScalarChangedEvent::Handler& handler);
 
             using MatrixChangedEvent = AZ::Event<const AZ::Matrix4x4&>;
             //! Notifies consumers when the view matrix has changed.
@@ -106,7 +119,7 @@ namespace AZ
             //! Notifies consumers when this ViewportContext is about to be destroyed.
             void ConnectAboutToBeDestroyedHandler(ViewportIdEvent::Handler& handler);
 
-            // ViewportRequestBus interface
+            // ViewportRequestBus interface overrides...
             //! Gets the current camera's view matrix.
             const AZ::Matrix4x4& GetCameraViewMatrix() const override;
             //! Sets the current camera's view matrix.
@@ -130,8 +143,10 @@ namespace AZ
             WindowContextSharedPtr m_windowContext;
             ViewPtr m_defaultView;
             AzFramework::WindowSize m_viewportSize;
+            float m_viewportDpiScaleFactor = 1.0f;
 
             SizeChangedEvent m_sizeChangedEvent;
+            ScalarChangedEvent m_dpiScalingFactorChangedEvent;
             MatrixChangedEvent m_viewMatrixChangedEvent;
             MatrixChangedEvent::Handler m_onViewMatrixChangedHandler;
             MatrixChangedEvent m_projectionMatrixChangedEvent;

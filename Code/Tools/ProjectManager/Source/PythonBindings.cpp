@@ -648,10 +648,10 @@ namespace O3DE::ProjectManager
                 gemInfo.m_name = Py_To_String(data["gem_name"]);
 
                 // optional
-                gemInfo.m_displayName = Py_To_String_Optional(data, "DisplayName", gemInfo.m_name);
-                gemInfo.m_summary = Py_To_String_Optional(data, "Summary", "");
-                gemInfo.m_version = Py_To_String_Optional(data, "Version", "");
-                gemInfo.m_requirement = Py_To_String_Optional(data, "Requirements", "");
+                gemInfo.m_displayName = Py_To_String_Optional(data, "display_name", gemInfo.m_name);
+                gemInfo.m_summary = Py_To_String_Optional(data, "summary", "");
+                gemInfo.m_version = "";
+                gemInfo.m_requirement = Py_To_String_Optional(data, "requirements", "");
                 gemInfo.m_creator = Py_To_String_Optional(data, "origin", "");
 
                 if (gemInfo.m_creator.contains("Open 3D Engine"))
@@ -659,12 +659,26 @@ namespace O3DE::ProjectManager
                     gemInfo.m_gemOrigin = GemInfo::GemOrigin::Open3DEEngine;
                 }
 
-                if (data.contains("Tags"))
+                if (data.contains("user_tags"))
                 {
-                    for (auto tag : data["Tags"])
+                    for (auto tag : data["user_tags"])
                     {
                         gemInfo.m_features.push_back(Py_To_String(tag));
                     }
+                }
+
+                QString gemType = Py_To_String_Optional(data, "type", "");
+                if (gemType == "Asset")
+                {
+                    gemInfo.m_types |= GemInfo::Type::Asset;
+                }
+                if (gemType == "Code")
+                {
+                    gemInfo.m_types |= GemInfo::Type::Code;
+                }
+                if (gemType == "Tool")
+                {
+                    gemInfo.m_types |= GemInfo::Type::Tool;
                 }
             }
             catch ([[maybe_unused]] const std::exception& e)
