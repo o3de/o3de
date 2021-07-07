@@ -33,9 +33,8 @@ namespace AWSMetrics
         ~MetricsManager();
 
         //! Initializing the metrics manager
-        //! @param settingsRegistryPath Path to the settings registry file.
         //! @return Whether the operation is successful.
-        bool Init(const AZStd::string& settingsRegistryPath = "");
+        bool Init();
         //! Start sending metircs to the backend or a local file.
         void StartMetrics();
         //! Stop sending metircs to the backend or a local file.

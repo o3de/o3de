@@ -97,10 +97,21 @@ namespace O3DE::ProjectManager
             {
                 m_templates = templatesResult.GetValue();
 
-                // sort alphabetically by display name because they could be in any order
+                // sort alphabetically by display name (but putting Standard first) because they could be in any order
                 std::sort(m_templates.begin(), m_templates.end(), [](const ProjectTemplateInfo& arg1, const ProjectTemplateInfo& arg2)
                 {
-                    return arg1.m_displayName.toLower() < arg2.m_displayName.toLower();
+                    if (arg1.m_displayName == "Standard")
+                    {
+                        return true;
+                    }
+                    else if (arg2.m_displayName == "Standard")
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        return arg1.m_displayName.toLower() < arg2.m_displayName.toLower();
+                    }
                 });
 
                 for (int index = 0; index < m_templates.size(); ++index)
