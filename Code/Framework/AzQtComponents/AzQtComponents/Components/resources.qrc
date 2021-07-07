@@ -354,17 +354,17 @@
     <file>img/UI20/toolbar/Grid.svg</file>
     <file>img/UI20/toolbar/Lighting.svg</file>
     <file>img/UI20/toolbar/Load.svg</file>
-	<file>img/UI20/toolbar/Local.svg</file>
+    <file>img/UI20/toolbar/Local.svg</file>
     <file>img/UI20/toolbar/Locked.svg</file>
     <file>img/UI20/toolbar/Locked_Status.svg</file>
-	<file>img/UI20/toolbar/LUA.svg</file>
+    <file>img/UI20/toolbar/LUA.svg</file>
     <file>img/UI20/toolbar/Material.svg</file>
     <file>img/UI20/toolbar/Measure.svg</file>
     <file>img/UI20/toolbar/Move.svg</file>
     <file>img/UI20/toolbar/Object_follow_terrain.svg</file>
     <file>img/UI20/toolbar/Object_height.svg</file>
     <file>img/UI20/toolbar/Object_list.svg</file>
-	<file>img/UI20/toolbar/Parent.svg</file>
+    <file>img/UI20/toolbar/Parent.svg</file>
     <file>img/UI20/toolbar/particle.svg</file>
     <file>img/UI20/toolbar/Play.svg</file>
     <file>img/UI20/toolbar/Redo.svg</file>
@@ -383,7 +383,7 @@
     <file>img/UI20/toolbar/undo.svg</file>
     <file>img/UI20/toolbar/Unlocked.svg</file>
     <file>img/UI20/toolbar/Vertex_snapping.svg</file>
-	<file>img/UI20/toolbar/World.svg</file>
+    <file>img/UI20/toolbar/World.svg</file>
     <file>img/UI20/toolbar/X_axis.svg</file>
     <file>img/UI20/toolbar/Y_axis.svg</file>
     <file>img/UI20/toolbar/Z_axis.svg</file>
@@ -457,6 +457,7 @@
     <file>Widgets/ComboBoxConfig.ini</file>
     <file>Widgets/Menu.qss</file>
     <file>Widgets/MenuBar.qss</file>
+    <file>Widgets/MessageBox.qss</file>
     <file>Widgets/ProgressBarConfig.ini</file>
     <file>Widgets/ProgressBar.qss</file>
     <file>Widgets/PushButton.qss</file>
