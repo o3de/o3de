@@ -12,6 +12,8 @@ namespace O3DE::ProjectManager
 {
     inline constexpr static int ProjectPreviewImageWidth = 210;
     inline constexpr static int ProjectPreviewImageHeight = 280;
+    inline constexpr static int ProjectTemplateImageWidth = 92;
+    inline constexpr static int ProjectTemplateOverlayImageWidth = 32;
 
     static const QString ProjectBuildPathPostfix = "build/windows_vs2019";
     static const QString ProjectBuildPathCmakeFiles = "CMakeFiles";

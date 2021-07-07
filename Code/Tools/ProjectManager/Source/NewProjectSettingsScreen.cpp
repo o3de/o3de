@@ -117,7 +117,7 @@ namespace O3DE::ProjectManager
                 for (int index = 0; index < m_templates.size(); ++index)
                 {
                     ProjectTemplateInfo projectTemplate = m_templates.at(index);
-                    QString projectPreviewPath = projectTemplate.m_path + "/Template/preview.png";
+                    QString projectPreviewPath = projectTemplate.m_path + "/preview.png";
                     QFileInfo doesPreviewExist(projectPreviewPath);
                     if (!doesPreviewExist.exists() || !doesPreviewExist.isFile())
                     {

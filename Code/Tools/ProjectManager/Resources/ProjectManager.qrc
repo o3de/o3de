@@ -32,6 +32,8 @@
         <file>Summary.svg</file>
         <file>WindowClose.svg</file>
         <file>Warning.svg</file>
+        <file>Minimal_Template.svg</file>
+        <file>Standard_Template.svg</file>
         <file>Backgrounds/DefaultBackground.jpg</file>
         <file>Backgrounds/FtueBackground.jpg</file>
     </qresource>
