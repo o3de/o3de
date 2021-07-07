@@ -38,10 +38,13 @@
 
 #include <Atom/Features/PBR/LightingUtils.azsli>
 #include <Atom/Features/PBR/Microfacet/Brdf.azsli>
-#include <Atom/Features/PBR/BackLighting.azsli>
+//#include <Atom/Features/PBR/BackLighting.azsli>
 //------------------------------------------------------------------------------
 #include <Atom/Features/PBR/Decals.azsli>
+
+#include <HairLightingEquations.azsli>
 //==============================================================================
+
 //! Simple Lambertian BRDF
 float3 HairDiffuseLambertian(float3 albedo, float3 normal, float3 dirToLight)
 {
@@ -49,6 +52,45 @@ float3 HairDiffuseLambertian(float3 albedo, float3 normal, float3 dirToLight)
     return albedo * NdotL * INV_PI;
 } 
 
+// Then define the Diffuse and Specular lighting functions
+float3 GetDiffuseLighting(Surface surface, LightingData lightingData, float3 lightIntensity, float3 dirToLight)
+{
+    float3 diffuse = float3(0, 0, 0);
+//    if(o_hair_lighting_model == HairLightingModel::GGX)
+//    {
+//        diffuse = DiffuseLambertian(surface.albedo, surface.normal, dirToLight);
+//        diffuse *= lightIntensity;
+//    }
+//    else if(o_hair_lighting_model == HairLightingModel::Marschner)
+    {
+        // For Marschner, all lighting is calculated together in the specular lighting function
+    }
+
+    return diffuse;
+}
+
+float3 GetSpecularLighting(Surface surface, LightingData lightingData, const float3 lightIntensity, const float3 dirToLight)
+{
+    float3 specular = float3(0, 0, 0);
+//    if(o_hair_lighting_model == HairLightingModel::GGX)
+//    {
+//        specular = SpecularGGX(lightingData.dirToCamera, dirToLight, surface.normal, surface.specularF0, lightingData.NdotV, surface.roughnessA2, lightingData.multiScatterCompensation);
+//    }
+//    else if(o_hair_lighting_model == HairLightingModel::Marschner)
+    {
+        specular = HairBSDF(surface, lightingData, dirToLight);
+    }
+
+    specular = float3(0, 1, 0);
+    return (specular * lightIntensity);
+}
+
+float3 GetHairBackLighting(Surface surface, LightingData lightingData, float3 lightIntensity, float3 dirToLight, float shadowRatio)
+{
+    return float3(0.0f, 0.0f, 0.0f);
+}
+
+/*
 // Replacing the generic Diffuse and Specular methods in StandardLighting.azsli 
 // and removing the regular usage of clear coat second lobe energy distribution.
 float3 GetDiffuseLighting(Surface surface, LightingData lightingData, float3 lightIntensity, float3 dirToLight)
@@ -79,7 +121,7 @@ float3 GetHairBackLighting(Surface surface, LightingData lightingData, float3 li
 
     return result;
 }
-
+*/
 void UpdateLightingParameters(
     inout LightingData lightingData, 
     float3 positionWS, float3 normal, float roughnessLinear)
@@ -324,8 +366,10 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
     float litRatio = 1.0f;
     float backShadowRatio = 0.0f;
 
-    SetNormal(surface.tangent, lightingData.dirToCamera, surface, lightingData);
+    SetNormal(surface.tangent, -lightingData.dirToCamera, surface, lightingData);
 
+    // [To Do] Adi: avoid directional shadows for now
+    /*
 //    if (o_enableShadows && shadowIndex <  SceneSrg::m_directionalLightCount)
     if (shadowIndex <  SceneSrg::m_directionalLightCount)
     {
@@ -340,7 +384,7 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
             backShadowRatio = DirectionalLightShadow::GetThickness(shadowIndex, lightingData.shadowCoords);
         }
     }
-
+    */
     // Add the lighting contribution for each directional light
     for (int index = 0; index < SceneSrg::m_directionalLightCount; index++)
     {
@@ -356,8 +400,6 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
         dirToLight += lightDirToReflectionDir * lightDirToReflectionDirLen;
         dirToLight = normalize(dirToLight);
 
-        // [GFX TODO][ATOM-2012] care of multiple directional light
-        // Currently shadow check is done only for index == shadowIndex.
         float currentLitRatio = 1.0f;
         float currentBackShadowRatio = 1.0f;
 //        if (o_enableShadows)
