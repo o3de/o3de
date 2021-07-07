@@ -6,6 +6,7 @@
  */
 
 #include <AWSGameLiftSessionConstants.h>
+#include <Activity/AWSGameLiftActivityUtils.h>
 #include <Activity/AWSGameLiftCreateSessionOnQueueActivity.h>
 
 namespace AWSGameLift
@@ -22,18 +23,11 @@ namespace AWSGameLift
                 request.SetGameSessionName(createSessionOnQueueRequest.m_sessionName.c_str());
             }
             AZStd::string propertiesOutput = "";
-            for (auto iter = createSessionOnQueueRequest.m_sessionProperties.begin();
-                 iter != createSessionOnQueueRequest.m_sessionProperties.end(); iter++)
+            Aws::Vector<Aws::GameLift::Model::GameProperty> properties;
+            AWSGameLiftActivityUtils::GetGameProperties(createSessionOnQueueRequest.m_sessionProperties, properties, propertiesOutput);
+            if (!properties.empty())
             {
-                Aws::GameLift::Model::GameProperty sessionProperty;
-                sessionProperty.SetKey(iter->first.c_str());
-                sessionProperty.SetValue(iter->second.c_str());
-                request.AddGameProperties(sessionProperty);
-                propertiesOutput += AZStd::string::format("{Key=%s,Value=%s},", iter->first.c_str(), iter->second.c_str());
-            }
-            if (!propertiesOutput.empty())
-            {
-                propertiesOutput = propertiesOutput.substr(0, propertiesOutput.size() - 1); // Trim last comma to fit array format
+                request.SetGameProperties(properties);
             }
 
             // Required attributes
