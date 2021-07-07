@@ -114,9 +114,6 @@ namespace ScriptCanvas
             ScriptCanvasEditor::FunctionDefinitionNodeDescriptorComponent::CreateDescriptor(),
             ScriptCanvasEditor::NodelingDescriptorComponent::CreateDescriptor()
             });
-
-        auto libraryDescriptors = ScriptCanvasEditor::GetLibraryDescriptors();
-        m_descriptors.insert(m_descriptors.end(), libraryDescriptors.begin(), libraryDescriptors.end());
     }
 
     AZ::ComponentTypeList ScriptCanvasModule::GetRequiredSystemComponents() const
