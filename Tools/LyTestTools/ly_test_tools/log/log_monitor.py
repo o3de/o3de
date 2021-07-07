@@ -276,7 +276,7 @@ class LogMonitor(object):
             try:
                 process_line(line)
             except LogMonitorException as e:
-                if exception_info is not None:
+                if exception_info is None:
                     exception_info = e.args
 
         if exception_info is not None:
