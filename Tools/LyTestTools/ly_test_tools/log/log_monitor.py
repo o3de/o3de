@@ -133,12 +133,12 @@ class LogMonitor(object):
         except AssertionError:  # Raised by waiter when timeout is reached.
             logger.warning(f"Timeout of '{timeout}' seconds was reached, log lines may not have been found")
             # exception will be raised below by _validate_results with failure analysis
-
-        logger.info("Python log output:\n" + self.py_log)
-        logger.info(
-            "Finished log monitoring for '{}' seconds, validating results.\n"
-            "expected_lines_not_found: {}\n unexpected_lines_found: {}".format(
-                timeout, self.expected_lines_not_found, self.unexpected_lines_found))
+        finally:
+            logger.info("Python log output:\n" + self.py_log)
+            logger.info(
+                "Finished log monitoring for '{}' seconds, validating results.\n"
+                "expected_lines_not_found: {}\n unexpected_lines_found: {}".format(
+                    timeout, self.expected_lines_not_found, self.unexpected_lines_found))
 
         return self._validate_results(self.expected_lines_not_found, self.unexpected_lines_found, expected_lines, unexpected_lines)
 
