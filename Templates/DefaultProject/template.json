@@ -271,8 +271,8 @@
             "isOptional": false
         },
         {
-            "file": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/icon_128 _2x.png",
-            "origin": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/icon_128 _2x.png",
+            "file": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/icon_128_2x.png",
+            "origin": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/icon_128_2x.png",
             "isTemplated": false,
             "isOptional": false
         },
@@ -295,8 +295,8 @@
             "isOptional": false
         },
         {
-            "file": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/icon_256 _2x.png",
-            "origin": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/icon_256 _2x.png",
+            "file": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/icon_256_2x.png",
+            "origin": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/icon_256_2x.png",
             "isTemplated": false,
             "isOptional": false
         },
