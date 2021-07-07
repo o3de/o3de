@@ -37,10 +37,10 @@ namespace AZ
             float CalcAverageTimeMs() const;
             void RecordRegion(const AZ::RHI::CachedTimeRegion& region);
 
-            bool m_draw;
+            bool m_draw = false;
             bool m_record = true;
-            u64 m_invocations;
-            AZStd::sys_time_t m_totalTicks;
+            u64 m_invocations = 0;
+            AZStd::sys_time_t m_totalTicks = 0;
         };
 
         //! Visual profiler for Cpu statistics.
@@ -64,6 +64,7 @@ namespace AZ
             //! Draws the provided Cpu statistics.
             void Draw(bool& keepDrawing, const AZ::RHI::CpuTimingStatistics& cpuTimingStatistics);
 
+            //! Draws the CPU profiling visualizer in a new window. 
             void DrawVisualizer(bool& keepDrawing, const AZ::RHI::CpuTimingStatistics& currentCpuTimingStatistics);
 
         private:
@@ -94,11 +95,12 @@ namespace AZ
             void CullFrameData(const AZ::RHI::CpuTimingStatistics& currentCpuTimingStatistics);
 
             // Draws a single block onto the timeline
-            void DrawBlock(const TimeRegion& block, u64 targetRow, AZStd::thread_id threadId);
+            void DrawBlock(const TimeRegion& block, u64 targetRow);
 
             // Draw horizontal lines between threads in the timeline
             void DrawThreadSeparator(u64 threadBoundary, u64 maxDepth);
 
+            // Draw the "Thread XXXXX" label onto the viewport
             void DrawThreadLabel(u64 baseRow, AZStd::thread_id threadId);
 
             // Draws all active function statistics windows
@@ -140,11 +142,11 @@ namespace AZ
             // Member variable to avoid repeated construction - could be expensive
             std::random_device m_rd;
 
-            // Fundamental data structure for storing TimeRegions, each individual vector is sorted by start tick
-            AZStd::map<AZStd::thread_id, AZStd::vector<TimeRegion>> m_savedData;
+            // Map to store each thread's TimeRegions, individual vectors are sorted by start tick
+            AZStd::unordered_map<AZStd::thread_id, AZStd::vector<TimeRegion>> m_savedData;
 
             // Region color cache
-            AZStd::map<const GroupRegionName*, ImVec4> m_regionColorMap;
+            AZStd::unordered_map<const GroupRegionName*, ImVec4> m_regionColorMap;
 
             static constexpr float RowHeight = 50.0;
 
@@ -153,8 +155,8 @@ namespace AZ
 
             // Main data structure for storing function statistics to be shown in the popup windows.
             // For now we default allocate for all regions on the first render frame and then use RegionStatistics.m_draw to determine
-            // if we should draw the window or not. FIXME this should be changed once RegionStatistics gets heavier. 
-            AZStd::map<const GroupRegionName*, RegionStatistics> m_regionStatisticsMap;
+            // if we should draw the window or not. FIXME(ATOM-15948) this should be changed once RegionStatistics gets heavier. 
+            AZStd::unordered_map<const GroupRegionName*, RegionStatistics> m_regionStatisticsMap;
         };
     } // namespace Render
 } // namespace AZ

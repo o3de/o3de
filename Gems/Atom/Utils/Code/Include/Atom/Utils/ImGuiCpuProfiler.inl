@@ -293,9 +293,9 @@ namespace AZ
                     ImGui::NextColumn();
 
                     ImGui::Text("Viewport width: %.3f ms", CpuProfilerImGuiHelper::TicksToMs(GetViewportTickWidth()));
+                    ImGui::Text("Ticks [%lld , %lld]", m_viewportStartTick, m_viewportEndTick);
                     ImGui::Text("Recording %ld threads", RHI::CpuProfiler::Get()->GetTimeRegionMap().size());
                     ImGui::Text("%llu profiling events saved", m_savedRegionCount);
-                    ImGui::Text("%lld => %lld", m_viewportStartTick, m_viewportEndTick);
 
                     ImGui::NextColumn();
 
@@ -338,7 +338,7 @@ namespace AZ
 
                     // Main draw loop
                     u64 baseRow = 0;
-                    for (auto& [currentThreadId, singleThreadData] : m_savedData)
+                    for (const auto& [currentThreadId, singleThreadData] : m_savedData)
                     {
                         // Find the first TimeRegion that we should draw
                         auto regionItr = AZStd::lower_bound(
@@ -362,7 +362,7 @@ namespace AZ
                             u64 targetRow = region.m_stackDepth + baseRow;
                             maxDepth = AZStd::max(aznumeric_cast<u64>(region.m_stackDepth), maxDepth);
 
-                            DrawBlock(region, targetRow, currentThreadId);
+                            DrawBlock(region, targetRow);
 
                             regionItr++;
                         }
@@ -509,7 +509,7 @@ namespace AZ
             }
         }
 
-        inline void ImGuiCpuProfiler::DrawBlock(const TimeRegion& block, u64 targetRow, [[maybe_unused]] AZStd::thread_id threadId)
+        inline void ImGuiCpuProfiler::DrawBlock(const TimeRegion& block, u64 targetRow)
         {
             float wy = ImGui::GetWindowPos().y - ImGui::GetScrollY();
 
@@ -569,7 +569,7 @@ namespace AZ
                 ImGui::BeginTooltip();
                 ImGui::Text("%s::%s", block.m_groupRegionName->m_groupName, block.m_groupRegionName->m_regionName);
                 ImGui::Text("Execution time: %.3f ms", CpuProfilerImGuiHelper::TicksToMs(block.m_endTick - block.m_startTick));
-                ImGui::Text("%lld => %lld", block.m_startTick, block.m_endTick);
+                ImGui::Text("Ticks %lld => %lld", block.m_startTick, block.m_endTick);
                 ImGui::EndTooltip();
             }
         }
@@ -765,6 +765,10 @@ namespace AZ
         
         inline float RegionStatistics::CalcAverageTimeMs() const
         {
+            if (m_invocations == 0)
+            {
+                return 0.0;
+            }
             const double averageTicks = aznumeric_cast<double>(m_totalTicks) / m_invocations;
             return CpuProfilerImGuiHelper::TicksToMs(aznumeric_cast<AZStd::sys_time_t>(averageTicks));
         }
