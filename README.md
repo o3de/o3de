@@ -55,11 +55,6 @@ git clone https://github.com/o3de/o3de.git
     - CMake can be installed to any location, as long as it's available in the system path
     - (Optional) WWise can be installed anywhere, but you will need to set an environment variable for CMake to detect it:  `set LY_WWISE_INSTALL_PATH=<path to WWise>`
     
-1.  Navigate into the repo folder, then download the python runtime with this command
-    ```
-    python\get_python.bat
-    ```
-
 1.  Configure the source into a solution using this command line, replacing <your build path> and <3rdParty cache path> to a path you've created:
     ```
     cmake -B <your build path> -S <your source path> -G "Visual Studio 16" -DLY_3RDPARTY_PATH=<3rdParty cache path> -DLY_UNITY_BUILD=ON -DLY_PROJECTS=AutomatedTesting 
