@@ -7,7 +7,6 @@
 
 set(FILES
     Tests/InitSceneAPIFixture.h
-    Tests/MeshBuilder/MeshOptimizerComponentTests.cpp
     Tests/MeshBuilder/MeshBuilderTests.cpp
     Tests/MeshBuilder/MeshVerticesTests.cpp
     Tests/MeshBuilder/SkinInfluencesTests.cpp
