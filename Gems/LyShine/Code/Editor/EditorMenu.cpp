@@ -146,19 +146,6 @@ void EditorWindow::AddMenu_File()
 
     menu->addSeparator();
 
-    // "Save as Prefab..." file menu option
-    {
-        HierarchyWidget* widget = GetHierarchy();
-        QAction* action = PrefabHelpers::CreateSavePrefabAction(widget);
-        action->setEnabled(canvasLoaded);
-
-        // This menu option is always available to the user
-        menu->addAction(action);
-        addAction(action); // Also add the action to the window until the shortcut dispatcher can find the menu action
-    }
-
-    menu->addSeparator();
-
     // Close the active canvas
     {
         QAction* action = CreateCloseCanvasAction(GetCanvas());

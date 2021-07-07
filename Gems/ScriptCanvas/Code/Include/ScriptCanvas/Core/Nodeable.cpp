@@ -79,6 +79,7 @@ namespace ScriptCanvas
             behaviorContext->Class<Nodeable>()
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::List)
                 ->Attribute(AZ::ScriptCanvasAttributes::VariableCreationForbidden, AZ::AttributeIsValid::IfPresent)
+                ->Attribute(AZ::Script::Attributes::UseClassIndexAllowNil, AZ::AttributeIsValid::IfPresent)
                 ->Constructor<ExecutionStateWeakPtr>()
                 ->Method("Deactivate", &Nodeable::Deactivate)
                 ->Method("InitializeExecutionState", &Nodeable::InitializeExecutionState)
