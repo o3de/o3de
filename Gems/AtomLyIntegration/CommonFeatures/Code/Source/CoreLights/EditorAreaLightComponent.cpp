@@ -350,11 +350,6 @@ namespace AZ
                 break;
             }
 
-            if (foundIt == supportedPhotometricUnits.end())
-            {
-                m_controller.ConvertToIntensityMode(PhotometricUnit::Lumen);
-            }
-
             return true;
         }
 
