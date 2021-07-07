@@ -1,17 +1,8 @@
 ---
-name: ar_bug_report.md
-about: Create a bug for a an issue found in the Automated Review
-title: ''
-labels: ''
-assignees: ''
-
----
-
----
 name: Automated Review Bug report
 about: Create a report when a failure occurs in main branch
-title: ''
-labels: 'Automated_Review'
+title: 'Automated Review Bug Report'
+labels: 'needs-triage, kind/bug, kind/automation'
 assignees: ''
 
 ---
