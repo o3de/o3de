@@ -45,6 +45,7 @@
 #include <AzToolsFramework/UI/UICore/QTreeViewStateSaver.hxx>
 #include <AzToolsFramework/UI/UICore/QWidgetSavedState.h>
 #include <AzToolsFramework/UI/UICore/ProgressShield.hxx>
+#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 #include <AzToolsFramework/Slice/SliceUtilities.h>
 #include <AzToolsFramework/ToolsComponents/EditorInspectorComponent.h>
 #include <AzToolsFramework/API/ComponentEntityObjectBus.h>
@@ -1589,7 +1590,13 @@ namespace AzToolsFramework
                 // Multiple changes to the same entity are just split between different undo nodes.
                 for (AZ::EntityId entityId : m_dirtyEntities)
                 {
-                    prefabPublicInterface->GenerateUndoNodesForEntityChangeAndUpdateCache(entityId, m_currentBatchUndo);
+                    auto outcome = prefabPublicInterface->GenerateUndoNodesForEntityChangeAndUpdateCache(entityId, m_currentBatchUndo);
+
+                    if (!outcome.IsSuccess())
+                    {
+                        QMessageBox::warning(
+                            AzToolsFramework::GetActiveWindow(), QString("Error"), QString(outcome.GetError().c_str()), QMessageBox::Ok, QMessageBox::Ok);
+                    }
                 }
             }
         }

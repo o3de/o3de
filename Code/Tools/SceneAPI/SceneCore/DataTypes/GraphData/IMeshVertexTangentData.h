@@ -23,9 +23,9 @@ namespace AZ
         {
             enum class TangentSpace
             {
-                FromFbx     = 0,
-                MikkT       = 1,
-                EMotionFX   = 2
+                FromSourceScene = 0,
+                MikkT           = 1,
+                EMotionFX       = 2
             };
 
             enum class BitangentMethod

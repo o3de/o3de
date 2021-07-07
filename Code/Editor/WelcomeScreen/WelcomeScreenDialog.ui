@@ -158,11 +158,8 @@
               <property name="text">
                <string/>
               </property>
-              <property name="pixmap">
-               <pixmap resource="WelcomeScreenDialog.qrc">:/WelcomeScreenDialog/DefaultActiveProject.png</pixmap>
-              </property>
               <property name="alignment">
-               <set>Qt::AlignCenter</set>
+               <set>Qt::AlignHCenter | Qt::AlignVCenter</set>
               </property>
              </widget>
             </item>

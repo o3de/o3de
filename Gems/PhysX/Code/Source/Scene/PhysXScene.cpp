@@ -334,6 +334,8 @@ namespace PhysX
             {
                 const physx::PxTransform pose = PxMathConvert(shapecastRequest->m_start);
                 const physx::PxVec3 dir = PxMathConvert(shapecastRequest->m_direction.GetNormalized());
+                AZ_Warning("PhysXScene", (static_cast<AZ::u16>(shapecastRequest->m_hitFlags & AzPhysics::SceneQuery::HitFlags::MTD) != 0),
+                    "Not having MTD set for shape scene queries may result in incorrect reporting of colliders that are in contact or intersect the initial pose of the sweep.");
                 const physx::PxHitFlags hitFlags = SceneQueryHelpers::GetPxHitFlags(shapecastRequest->m_hitFlags);
 
                 bool status = false;

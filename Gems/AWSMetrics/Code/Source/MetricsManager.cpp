@@ -34,9 +34,9 @@ namespace AWSMetrics
         ShutdownMetrics();
     }
 
-    bool MetricsManager::Init(const AZStd::string& settingsRegistryPath)
+    bool MetricsManager::Init()
     {
-        if (!m_clientConfiguration->ResetClientConfiguration(settingsRegistryPath))
+        if (!m_clientConfiguration->InitClientConfiguration())
         {
             return false;
         }
