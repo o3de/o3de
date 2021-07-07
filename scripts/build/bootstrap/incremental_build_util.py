@@ -318,7 +318,7 @@ def unmount_volume():
         f.write("""
           select disk 1
           offline disk
-          """)
+          """.encode('utf-8'))
         f.close()
         subprocess.call('diskpart /s %s' % f.name)
         os.unlink(f.name)
