@@ -306,8 +306,8 @@ namespace Physics
         
         void SyncSelectionToMaterialLibrary();
         
-        static const AZ::Data::Asset<Physics::MaterialLibraryAsset>& GetMaterialLibrary();
-        static const AZ::Data::AssetId& GetMaterialLibraryId();
+        static AZ::Data::Asset<Physics::MaterialLibraryAsset> GetMaterialLibrary();
+        static AZ::Data::AssetId GetMaterialLibraryId();
 
         bool AreMaterialSlotsReadOnly() const;
 
