@@ -1297,10 +1297,6 @@ namespace AZ
             UpdateReadbackAttachment(params, false);
 
             UpdateConnectedOutputBindings();
-
-            // Clean up m_attachmentReadback regardless if it's used.
-            // The m_attachmentReadback should be consumed in FrameBeginInternal
-            m_attachmentReadback = nullptr;
         }
 
         void Pass::FrameEnd()
