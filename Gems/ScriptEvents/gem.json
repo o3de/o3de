@@ -1,21 +1,12 @@
 {
   "gem_name": "ScriptEvents",
-  "GemFormatVersion": 4,
-  "Uuid": "32d8ba21703e4bbbb08487366e48dd69",
-  "Name": "ScriptEvents",
-  "DisplayName": "Script Events",
-  "Version": "0.1.0",
-  "Summary": "Provides a framework for creating event assets usable from any scripting solution.",
-  "Tags": [ "Script", "Events", "Lua", "Script", "Canvas", "EBus", "Behavior Context" ],
-  "IconPath": "preview.png",
-  "Modules": [
-    {
-      "Type": "GameModule"
-    },
-    {
-      "Name": "Editor",
-      "Type": "EditorModule",
-      "Extends": "GameModule"
-    }
-  ]
+  "display_name": "Script Events",
+  "license": "Apache-2.0 Or MIT",
+  "origin": "Open 3D Engine - o3de.org",
+  "type": "Code",
+  "summary": "The Script Events Gem provides a framework for creating event assets usable from any scripting solution in Open 3D Engine.",
+  "canonical_tags": ["Gem"],
+  "user_tags": ["Scripting", "Framework", "Gameplay"],
+  "icon_path": "preview.png",
+  "requirements": ""
 }

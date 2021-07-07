@@ -1289,6 +1289,10 @@ namespace AzQtComponents
             }
             break;
 
+            case QStyle::SP_MessageBoxInformation:
+                return QIcon(QString::fromUtf8(":/stylesheet/img/UI20/Info.svg"));
+                break;
+
             default:
                 break;
         }
