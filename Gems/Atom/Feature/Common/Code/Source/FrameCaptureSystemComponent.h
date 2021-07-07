@@ -36,9 +36,9 @@ namespace AZ
             bool CaptureScreenshot(const AZStd::string& filePath) override;
             bool CaptureScreenshotForWindow(const AZStd::string& filePath, AzFramework::NativeWindowHandle windowHandle) override;
             bool CaptureScreenshotWithPreview(const AZStd::string& outputFilePath) override;
-            bool CapturePassAttachment(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slotName, const AZStd::string& outputFilePath) override;
+            bool CapturePassAttachment(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slotName, const AZStd::string& outputFilePath, bool useOutput) override;
             bool CapturePassAttachmentWithCallback(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slotName
-                , RPI::AttachmentReadback::CallbackFunction callback) override;
+                , RPI::AttachmentReadback::CallbackFunction callback, bool useOutput) override;
 
         private:
             void CaptureAttachmentCallback(const AZ::RPI::AttachmentReadback::ReadbackResult& readbackResult);

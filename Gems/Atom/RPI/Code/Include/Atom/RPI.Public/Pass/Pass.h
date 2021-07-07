@@ -57,6 +57,7 @@ namespace AZ
         class PassTemplate;
         struct PassRequest;
         struct PassValidationResults;
+        class AttachmentReadback;
 
         using SortedPipelineViewTags = AZStd::set<PipelineViewTag, AZNameSortAscending>;
         using PassesByDrawList = AZStd::map<RHI::DrawListTag, const Pass*>;
@@ -222,6 +223,13 @@ namespace AZ
             //! Enables/Disables PipelineStatistics queries for this pass
             virtual void SetPipelineStatisticsQueryEnabled(bool enable);
 
+            //! Readback an attachment attached to the specified slot name
+            //! @param readback The AttachmentReadback object which is used for readback. Its callback function will be called when readback is finished.
+            //! @param attachment The pass attachment to be readback. It need to be one of this pass's attachment
+            //! @param useOutput The flag which is used for choose input or output state for an input/output attachment
+            //! Return true if the readback request was successful. User may expect the AttachmentReadback's callback function would be called. 
+            bool ReadbackAttachment(AZStd::shared_ptr<AttachmentReadback> readback, const Name& slotName, bool useOutput = true);
+
             //! Returns whether the Timestamp queries is enabled/disabled for this pass
             bool IsTimestampQueryEnabled() const;
 
@@ -265,7 +273,6 @@ namespace AZ
 
             // Update output bindings on this pass that are connected to bindings on other passes
             void UpdateConnectedOutputBindings();
-
 
         protected:
             explicit Pass(const PassDescriptor& descriptor);
@@ -348,6 +355,8 @@ namespace AZ
             // to perform any post-frame cleanup, such as resetting per-frame state.            
             void FrameEnd();
             virtual void FrameEndInternal() { }
+
+            void UpdateReadbackAttachment(FramePrepareParams params, bool beforeAddScopes);
 
 
             // --- Protected Members ---
@@ -442,7 +451,11 @@ namespace AZ
             // Sort type to be used by the default sort implementation. Passes can also provide
             // fully custom sort implementations by overriding the SortDrawList() function.
             RHI::DrawListSortType m_drawListSortType = RHI::DrawListSortType::KeyThenDepth;
-
+            
+            // For read back attachment
+            AZStd::shared_ptr<AttachmentReadback> m_attachmentReadback;
+            // If to read input state or output state for an InputOutput attachment
+            bool m_readbackOutput;
 
         private:
             // Return the Timestamp result of this pass

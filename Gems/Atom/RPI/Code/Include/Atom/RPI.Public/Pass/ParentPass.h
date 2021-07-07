@@ -129,7 +129,7 @@ namespace AZ
             void OnOrphan() override;
 
             // Generates child passes from source PassTemplate
-            void CreatePassesFromTemplate();
+            void CreatePassesFromTemplate();                        
         };
     }   // namespace RPI
 }   // namespace AZ
