@@ -288,7 +288,7 @@ namespace ScriptCanvas
                     VariableRequestBus::EventResult(baseType, GetScopedVariableId(), &VariableRequests::GetType);
 
                     const GraphVariableMapping* variableMap = nullptr;
-                    GraphRequestBus::EventResult(variableMap, *GraphNotificationBus::GetCurrentBusId(), &GraphRequests::GetVariables);
+                    GraphRequestBus::EventResult(variableMap, GetOwningScriptCanvasId(), &GraphRequests::GetVariables);
                                         
                     if (variableMap && baseType.IsValid())
                     {
