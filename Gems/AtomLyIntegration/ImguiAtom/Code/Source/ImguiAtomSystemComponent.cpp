@@ -115,7 +115,7 @@ namespace AZ
 #endif //define(IMGUI_ENABLED)
         }
 
-        void ImguiAtomSystemComponent::OnViewportDpiScalingChanged(float dpiScale)
+        void ImguiAtomSystemComponent::OnViewportDpiScalingChanged([[maybe_unused]] float dpiScale)
         {
 #if defined(IMGUI_ENABLED)
             ImGui::ImGuiManagerBus::Broadcast(&ImGui::ImGuiManagerBus::Events::SetDpiScalingFactor, dpiScale);
