@@ -262,6 +262,7 @@ namespace AZ
             } };
 
             uint32_t optionalExtensionCount = sizeof(optionalExtensions) / sizeof(VK_EXT_SAMPLE_LOCATIONS_EXTENSION_NAME);
+            AZ_UNUSED(optionalExtensionCount); // optionalExtensionCount is only used in asserts.
 
             AZ_Assert(optionalExtensionCount == static_cast<uint32_t>(OptionalDeviceExtension::Count), "The order and size must match the enum OptionalDeviceExtensions.");
 
