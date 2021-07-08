@@ -714,7 +714,7 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
 
         if (m_renderViewport)
         {
-            m_renderViewport->GetControllerList()->SetEnabled(false);
+            m_renderViewport->SetInputProcessingEnabled(false);
         }
     }
     break;
@@ -738,7 +738,7 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
 
         if (m_renderViewport)
         {
-            m_renderViewport->GetControllerList()->SetEnabled(true);
+            m_renderViewport->SetInputProcessingEnabled(true);
         }
         break;
 

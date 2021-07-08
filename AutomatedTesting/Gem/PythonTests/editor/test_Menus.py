@@ -89,7 +89,6 @@ class TestMenus(object):
             "Center on Selection Action triggered",
             "Go to Location Action triggered",
             "Remember Location Action triggered",
-            "Change Move Speed Action triggered",
             "Switch Camera Action triggered",
             "Show/Hide Helpers Action triggered",
             "Refresh Style Action triggered",

@@ -49,7 +49,6 @@ class TestViewMenuOptions(EditorTestHelper):
             ("Viewport", "Center on Selection"),
             ("Viewport", "Go to Location"),
             ("Viewport", "Remember Location"),
-            ("Viewport", "Change Move Speed"),
             ("Viewport", "Switch Camera"),
             ("Viewport", "Show/Hide Helpers"),
             ("Refresh Style",),
