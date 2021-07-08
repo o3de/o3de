@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -44,16 +44,12 @@ namespace ScriptCanvas
                 bool IsOutOfDate(const VersionData& graphVersion) const override;
                 ////
 
-                
+
 
             protected:
-                bool IsPropertySlot(const SlotId& slotId) const;
-
                 void OnInit() override;
 
                 UpdateResult OnUpdateNode() override;
-
-                void OnInputSignal(const SlotId&) override;
 
                 void OnSlotDisplayTypeChanged(const SlotId& slotId, const Data::Type& dataType) override;
 

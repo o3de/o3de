@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -47,7 +47,7 @@ class GoogleAuthenticationProviderTest
                 })");
         m_settingsRegistry->MergeSettingsFile(path, AZ::SettingsRegistryInterface::Format::JsonMergePatch, {});
 
-        m_googleAuthenticationProviderLocalMock.Initialize(m_settingsRegistry);
+        m_googleAuthenticationProviderLocalMock.Initialize();
     }
 
     void TearDown() override
@@ -63,7 +63,7 @@ public:
 TEST_F(GoogleAuthenticationProviderTest, Initialize_Success)
 {
     AWSClientAuthUnitTest::GoogleAuthenticationProviderLocalMock mock;
-    ASSERT_TRUE(mock.Initialize(m_settingsRegistry));
+    ASSERT_TRUE(mock.Initialize());
     ASSERT_EQ(mock.m_settings->m_appClientId, "TestGoogleClientId");
 }
 
@@ -117,14 +117,19 @@ TEST_F(GoogleAuthenticationProviderTest, RefreshTokensAsync_Fail_RequestHttpErro
 
 TEST_F(GoogleAuthenticationProviderTest, Initialize_Fail_EmptyRegistry)
 {
+    AZ::SettingsRegistry::Unregister(m_settingsRegistry.get());
+
     AZStd::shared_ptr<AZ::SettingsRegistryImpl> registry = AZStd::make_shared<AZ::SettingsRegistryImpl>();
     registry->SetContext(m_serializeContext.get());
+    AZ::SettingsRegistry::Register(registry.get());
     
     AWSClientAuthUnitTest::GoogleAuthenticationProviderLocalMock mock;
-    ASSERT_FALSE(mock.Initialize(registry));
+    ASSERT_FALSE(mock.Initialize());
     ASSERT_EQ(mock.m_settings->m_appClientId, "");
+    AZ::SettingsRegistry::Unregister(registry.get());
     registry.reset();
 
     // Restore
-    mock.Initialize(m_settingsRegistry);
+    AZ::SettingsRegistry::Register(m_settingsRegistry.get());
+    mock.Initialize();
 }

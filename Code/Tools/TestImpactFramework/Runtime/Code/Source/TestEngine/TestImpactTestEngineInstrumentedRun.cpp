@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -13,9 +13,9 @@ namespace TestImpact
 {
     namespace
     {
-        AZStd::optional<TestRun> ReleaseTestRun(AZStd::optional<AZStd::pair<TestRun, TestCoverage>>& testRunAndCoverage)
+        AZStd::optional<TestRun> ReleaseTestRun(AZStd::optional<AZStd::pair<AZStd::optional<TestRun>, TestCoverage>>& testRunAndCoverage)
         {
-            if (testRunAndCoverage.has_value())
+            if (testRunAndCoverage.has_value() && testRunAndCoverage->first.has_value())
             {
                 return AZStd::move(testRunAndCoverage.value().first);
             }
@@ -23,7 +23,8 @@ namespace TestImpact
             return AZStd::nullopt;
         }
 
-        AZStd::optional<TestCoverage> ReleaseTestCoverage(AZStd::optional<AZStd::pair<TestRun, TestCoverage>>& testRunAndCoverage)
+        AZStd::optional<TestCoverage> ReleaseTestCoverage(
+            AZStd::optional<AZStd::pair<AZStd::optional<TestRun>, TestCoverage>>& testRunAndCoverage)
         {
             if (testRunAndCoverage.has_value())
             {
@@ -34,7 +35,8 @@ namespace TestImpact
         }
     }
 
-    TestEngineInstrumentedRun::TestEngineInstrumentedRun(TestEngineJob&& testJob, AZStd::optional<AZStd::pair<TestRun, TestCoverage>>&& testRunAndCoverage)
+    TestEngineInstrumentedRun::TestEngineInstrumentedRun(
+        TestEngineJob&& testJob, AZStd::optional<AZStd::pair<AZStd::optional<TestRun>, TestCoverage>>&& testRunAndCoverage)
         : TestEngineRegularRun(AZStd::move(testJob), ReleaseTestRun(testRunAndCoverage))
         , m_testCoverage(ReleaseTestCoverage(testRunAndCoverage))
     {

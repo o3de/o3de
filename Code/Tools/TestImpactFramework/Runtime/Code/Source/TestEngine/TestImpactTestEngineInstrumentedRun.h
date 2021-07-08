@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -17,7 +17,7 @@ namespace TestImpact
         : public TestEngineRegularRun
     {
     public:
-        TestEngineInstrumentedRun(TestEngineJob&& testJob, AZStd::optional<AZStd::pair<TestRun, TestCoverage>>&& testRunAndCoverage);
+        TestEngineInstrumentedRun(TestEngineJob&& testJob, AZStd::optional<AZStd::pair<AZStd::optional<TestRun>, TestCoverage>>&& testRunAndCoverage);
 
         //! Returns the test coverage payload for this job (if any).
         const AZStd::optional<TestCoverage>& GetTestCoverge() const;

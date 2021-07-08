@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -1555,7 +1555,7 @@ void CUiAnimViewDialog::ReadMiscSettings()
 //////////////////////////////////////////////////////////////////////////
 void CUiAnimViewDialog::SaveLayouts()
 {
-    QSettings settings("Amazon", "O3DE");
+    QSettings settings("O3DE", "O3DE");
     settings.beginGroup("UiAnimView");
     QByteArray stateData = this->saveState();
     settings.setValue("layout", stateData);
@@ -1570,7 +1570,7 @@ void CUiAnimViewDialog::SaveLayouts()
 //////////////////////////////////////////////////////////////////////////
 void CUiAnimViewDialog::ReadLayouts()
 {
-    QSettings settings("Amazon", "O3DE");
+    QSettings settings("O3DE", "O3DE");
     settings.beginGroup("UiAnimView");
     if (settings.contains("layout"))
     {

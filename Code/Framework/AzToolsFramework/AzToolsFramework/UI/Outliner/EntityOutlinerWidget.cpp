@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -47,6 +47,12 @@
 #include <QToolButton>
 
 #include <AzToolsFramework/UI/Outliner/ui_EntityOutlinerWidget.h>
+
+// This has to live outside of any namespaces due to issues on Linux with calls to Q_INIT_RESOURCE if they are inside a namespace
+void initEntityOutlinerWidgetResources()
+{
+    Q_INIT_RESOURCE(resources);
+}
 
 namespace
 {
@@ -143,6 +149,8 @@ namespace AzToolsFramework
         , m_sortContentQueued(false)
         , m_dropOperationInProgress(false)
     {
+        initEntityOutlinerWidgetResources();
+
         m_gui = new Ui::EntityOutlinerWidgetUI();
         m_gui->setupUi(this);
 

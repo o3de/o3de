@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -556,11 +556,6 @@ namespace UiSerialize
             serializeContext->Class<CryStringT<char> >()->
                 Serializer(&AZ::Serialize::StaticInstance<CryStringTCharSerializer>::s_instance);
 
-            serializeContext->Class<PrefabFileObject>()
-                ->Version(2, &PrefabFileObject::VersionConverter)
-                ->Field("RootEntity", &PrefabFileObject::m_rootEntityId)
-                ->Field("Entities", &PrefabFileObject::m_entities);
-
             serializeContext->Class<AnimationData>()
                 ->Version(1)
                 ->Field("SerializeString", &AnimationData::m_serializeData);
@@ -605,54 +600,6 @@ namespace UiSerialize
                 ->Event("GetIgnoreDefaultLayoutCells", &UiLayoutBus::Events::GetIgnoreDefaultLayoutCells)
                 ->Event("SetIgnoreDefaultLayoutCells", &UiLayoutBus::Events::SetIgnoreDefaultLayoutCells);
         }
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    bool PrefabFileObject::VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
-    {
-        if (classElement.GetVersion() == 1)
-        {
-            // this is an old UI prefab (prior to UI Slices). We need to move all of the owned child entities into a
-            // separate list and have the references to them be via entity ID
-
-            // Find the m_rootEntity in the PrefabFileObject, in the old format this is an entity,
-            // we will replace it with an entityId
-            int rootEntityIndex = classElement.FindElement(AZ_CRC("RootEntity", 0x3cead042));
-            if (rootEntityIndex == -1)
-            {
-                return false;
-            }
-            AZ::SerializeContext::DataElementNode& rootEntityNode = classElement.GetSubElement(rootEntityIndex);
-
-            // All UI element entities will be copied to this container and then added to the m_childEntities list
-            AZStd::vector<AZ::SerializeContext::DataElementNode> copiedEntities;
-
-            // recursively process the root element and all of its child elements, copying their child entities to the
-            // entities container and replacing them with EntityIds
-            if (!UiElementComponent::MoveEntityAndDescendantsToListAndReplaceWithEntityId(context, rootEntityNode, -1, copiedEntities))
-            {
-                return false;
-            }
-
-            // Create the child entities member (which is a generic vector)
-            using entityVector = AZStd::vector<AZ::Entity*>;
-            AZ::SerializeContext::ClassData* classData = AZ::SerializeGenericTypeInfo<entityVector>::GetGenericInfo()->GetClassData();
-            int entitiesIndex = classElement.AddElement(context, "Entities", *classData);
-            if (entitiesIndex == -1)
-            {
-                return false;
-            }
-            AZ::SerializeContext::DataElementNode& entitiesNode = classElement.GetSubElement(entitiesIndex);
-
-            // now add all of the copied entities to the entities vector node
-            for (AZ::SerializeContext::DataElementNode& entityElement : copiedEntities)
-            {
-                entityElement.SetName("element");   // all elements in the Vector should have this name
-                entitiesNode.AddElement(entityElement);
-            }
-        }
-
-        return true;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

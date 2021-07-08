@@ -1,5 +1,5 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 # 
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
@@ -28,8 +28,7 @@ include(cmake/LySet.cmake)
 # also allowed:
 # "s3://bucketname" (it will use LYPackage_S3Downloader.cmake to download it from a s3 bucket)
 
-# https://d2c171ws20a1rv.cloudfront.net will be the current "production" CDN until formally moved to the public O3DE repo
-set(LY_PACKAGE_SERVER_URLS "https://d2c171ws20a1rv.cloudfront.net" CACHE STRING "Server URLS to fetch packages from")
+set(LY_PACKAGE_SERVER_URLS "https://d3t6xeg4fgfoum.cloudfront.net" CACHE STRING "Server URLS to fetch packages from")
 # Note: if you define the "LY_PACKAGE_SERVER_URLS" environment variable
 # it will be added to this value in the front, so that users can set
 # an env var and use that as an "additional" set of servers beyond the default set.

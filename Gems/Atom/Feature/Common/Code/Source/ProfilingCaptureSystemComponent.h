@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -69,6 +69,7 @@ namespace AZ
             bool CapturePassTimestamp(const AZStd::string& outputFilePath) override;
             bool CapturePassPipelineStatistics(const AZStd::string& outputFilePath) override;
             bool CaptureCpuProfilingStatistics(const AZStd::string& outputFilePath) override;
+            bool CaptureBenchmarkMetadata(const AZStd::string& benchmarkName, const AZStd::string& outputFilePath) override;
 
         private:
             void OnTick(float deltaTime, ScriptTimePoint time) override;
@@ -81,6 +82,7 @@ namespace AZ
             DelayedQueryCaptureHelper m_timestampCapture;
             DelayedQueryCaptureHelper m_pipelineStatisticsCapture;
             DelayedQueryCaptureHelper m_cpuProfilingStatisticsCapture;
+            DelayedQueryCaptureHelper m_benchmarkMetadataCapture;
         };
     }
 }

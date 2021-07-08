@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -33,9 +33,8 @@ namespace AWSMetrics
         ~MetricsManager();
 
         //! Initializing the metrics manager
-        //! @param settingsRegistryPath Path to the settings registry file.
         //! @return Whether the operation is successful.
-        bool Init(const AZStd::string& settingsRegistryPath = "");
+        bool Init();
         //! Start sending metircs to the backend or a local file.
         void StartMetrics();
         //! Stop sending metircs to the backend or a local file.

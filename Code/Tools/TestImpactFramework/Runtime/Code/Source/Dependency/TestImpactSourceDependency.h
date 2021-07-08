@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -43,7 +43,7 @@ namespace TestImpact
 
 namespace AZStd
 {
-    //! Hash function for ParentTarget types for use in maps and sets
+    //! Hash function for ParentTarget types for use in maps and sets.
     template<> struct hash<TestImpact::ParentTarget>
     {
         size_t operator()(const TestImpact::ParentTarget& parentTarget) const noexcept

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -22,6 +22,8 @@ namespace TestImpact
 {
     namespace
     {
+        static const char* const LogCallSite = "TestImpact";
+
         //! Simple helper class for tracking basic timing information.
         class Timer
         {
@@ -149,7 +151,8 @@ namespace TestImpact
         }
         catch ([[maybe_unused]]const Exception& e)
         {
-            AZ_Printf("TestImpactRuntime",
+            AZ_Printf(
+                LogCallSite,
                 AZStd::string::format(
                     "No test impact analysis data found for suite '%s' at %s\n", GetSuiteTypeName(m_suiteFilter).c_str(), m_sparTIAFile.c_str()).c_str());
         }
@@ -202,7 +205,7 @@ namespace TestImpact
         AZStd::vector<const TestTarget*> discardedTestTargets;
 
         // Select and prioritize the test targets pertinent to this change list
-        const auto changeDependencyList = m_dynamicDependencyMap->ApplyAndResoveChangeList(changeList);
+        const auto changeDependencyList = m_dynamicDependencyMap->ApplyAndResoveChangeList(changeList, m_integrationFailurePolicy);
         const auto selectedTestTargets = m_testSelectorAndPrioritizer->SelectTestTargets(changeDependencyList, testPrioritizationPolicy);
 
         // Populate a set with the selected test targets so that we can infer the discarded test target not selected for this change list
@@ -283,8 +286,8 @@ namespace TestImpact
                         job.GetTestCoverge().has_value(),
                         RuntimeException,
                         AZStd::string::format(
-                            "Test target '%s' completed its test run successfully but produced no coverage data",
-                            job.GetTestTarget()->GetName().c_str()));
+                            "Test target '%s' completed its test run successfully but produced no coverage data. Command string: '%s'",
+                            job.GetTestTarget()->GetName().c_str(), job.GetCommandString().c_str()));
                 }
 
                 if (!job.GetTestCoverge().has_value())
@@ -313,7 +316,7 @@ namespace TestImpact
             }
             else
             {
-                AZ_Warning("TestImpact", false, "Ignoring source, source it outside of repo: '%s'", sourcePath.c_str());
+                AZ_Warning(LogCallSite, false, "Ignoring source, source it outside of repo: '%s'", sourcePath.c_str());
             }
         }
 
@@ -322,17 +325,31 @@ namespace TestImpact
 
     void Runtime::UpdateAndSerializeDynamicDependencyMap(const AZStd::vector<TestEngineInstrumentedRun>& jobs)
     {
-        const auto sourceCoverageTestsList = CreateSourceCoveringTestFromTestCoverages(jobs);
-        if (!sourceCoverageTestsList.GetNumSources())
+        try
         {
-            return;
-        }
+            const auto sourceCoverageTestsList = CreateSourceCoveringTestFromTestCoverages(jobs);
+            if (sourceCoverageTestsList.GetNumSources() == 0)
+            {
+                return;
+            }
 
-        m_dynamicDependencyMap->ReplaceSourceCoverage(sourceCoverageTestsList);
-        const auto sparTIA = m_dynamicDependencyMap->ExportSourceCoverage();
-        const auto sparTIAData = SerializeSourceCoveringTestsList(sparTIA);
-        WriteFileContents<RuntimeException>(sparTIAData, m_sparTIAFile);
-        m_hasImpactAnalysisData = true;
+            m_dynamicDependencyMap->ReplaceSourceCoverage(sourceCoverageTestsList);
+            const auto sparTIA = m_dynamicDependencyMap->ExportSourceCoverage();
+            const auto sparTIAData = SerializeSourceCoveringTestsList(sparTIA);
+            WriteFileContents<RuntimeException>(sparTIAData, m_sparTIAFile);
+            m_hasImpactAnalysisData = true;
+        }
+        catch(const RuntimeException& e)
+        {
+            if (m_integrationFailurePolicy == Policy::IntegrityFailure::Abort)
+            {
+                throw e;
+            }
+            else
+            {
+                AZ_Error(LogCallSite, false, e.what());
+            }
+        }
     }
 
     TestSequenceResult Runtime::RegularTestSequence(

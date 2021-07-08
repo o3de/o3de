@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -19,9 +19,9 @@ namespace AWSGameLift
             auto clientRequestHandler = AZ::Interface<AzFramework::ISessionHandlingClientRequests>::Get();
             if (clientRequestHandler)
             {
-                AZ_TracePrintf(AWSGameLiftLeaveSessionActivityName, "Requesting to leave the current session...");
-
+                AZ_TracePrintf(AWSGameLiftLeaveSessionActivityName, "Requesting player to leave the current session ...");
                 clientRequestHandler->RequestPlayerLeaveSession();
+                AZ_TracePrintf(AWSGameLiftLeaveSessionActivityName, "Started disconnect process, and player clean up is in process.");
             }
             else
             {

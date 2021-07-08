@@ -1,6 +1,9 @@
 {
     "gem_name": "PythonCoverage",
     "display_name": "PythonCoverage",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Open 3D Engine - o3de.org",
+    "type": "Tool",
     "summary": "A tool for generating gem coverage for Python tests.",
     "canonical_tags": [
         "Gem"
@@ -9,5 +12,5 @@
         "PythonCoverage"
     ],
     "icon_path": "preview.png",
-    "restricted_name": "gems"
+    "requirements": ""
 }

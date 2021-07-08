@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -9,6 +9,7 @@
 
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
@@ -23,38 +24,44 @@ namespace AWSMetrics
     {
     }
 
-    bool ClientConfiguration::ResetClientConfiguration(const AZStd::string& settingsRegistryPath)
+    bool ClientConfiguration::InitClientConfiguration()
     {
-        AZStd::unique_ptr<AZ::SettingsRegistryInterface> settingsRegistry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
-
-        AZ_Printf("AWSMetrics", "Reset client settings using the confiugration file %s", settingsRegistryPath.c_str());
-        if (!settingsRegistry->MergeSettingsFile(settingsRegistryPath, AZ::SettingsRegistryInterface::Format::JsonMergePatch))
+        AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get();
+        if (!settingsRegistry)
         {
-            AZ_Warning("AWSMetrics", false, "Failed to merge the configuration file");
+            AZ_Warning("AWSMetrics", false, "Failed to load the setting registry");
             return false;
         }
 
-        if (!settingsRegistry->Get(m_maxQueueSizeInMb, "/Amazon/Gems/AWSMetrics/MaxQueueSizeInMb"))
+        if (!settingsRegistry->Get(
+                m_maxQueueSizeInMb,
+                AZStd::string::format("%s%s", AZ::SettingsRegistryMergeUtils::OrganizationRootKey, AWSMetricsMaxQueueSizeInMbKey)))
         {
-            AZ_Warning("AWSMetrics", false, "Failed to read the maximum queue size setting in the configuration file");
+            AZ_Warning("AWSMetrics", false, "Failed to read the maximum queue size setting from the setting registry");
             return false;
         }
 
-        if (!settingsRegistry->Get(m_queueFlushPeriodInSeconds, "/Amazon/Gems/AWSMetrics/QueueFlushPeriodInSeconds"))
+        if (!settingsRegistry->Get(
+                m_queueFlushPeriodInSeconds,
+                AZStd::string::format("%s%s", AZ::SettingsRegistryMergeUtils::OrganizationRootKey, AWSMetricsQueueFlushPeriodInSecondsKey)))
         {
-            AZ_Warning("AWSMetrics", false, "Failed to read the queue flush period setting in the configuration file");
+            AZ_Warning("AWSMetrics", false, "Failed to read the queue flush period setting from the setting registry");
             return false;
         }
 
         bool enableOfflineRecording = false;
-        if (!settingsRegistry->Get(enableOfflineRecording, "/Amazon/Gems/AWSMetrics/OfflineRecording"))
+        if (!settingsRegistry->Get(
+                enableOfflineRecording,
+                AZStd::string::format("%s%s", AZ::SettingsRegistryMergeUtils::OrganizationRootKey, AWSMetricsOfflineRecordingEnabledKey)))
         {
-            AZ_Warning("AWSMetrics", false, "Failed to read the submission target setting in the configuration file");
+            AZ_Warning("AWSMetrics", false, "Failed to read the submission target setting from the setting registry");
             return false;
         }
         m_offlineRecordingEnabled = enableOfflineRecording;
 
-        if (!settingsRegistry->Get(m_maxNumRetries, "/Amazon/Gems/AWSMetrics/MaxNumRetries"))
+        if (!settingsRegistry->Get(
+                m_maxNumRetries,
+                AZStd::string::format("%s%s", AZ::SettingsRegistryMergeUtils::OrganizationRootKey, AWSMetricsMaxNumRetriesKey)))
         {
             AZ_Warning("AWSMetrics", false, "Failed to read the maximum number of retries setting in the configuration file");
             return false;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -54,7 +54,6 @@ namespace ScriptCanvasBuilder
         SharedHandlers m_sharedHandlers;
 
         Worker m_scriptCanvasBuilder;
-        FunctionWorker m_scriptCanvasFunctionBuilder;
         ScriptCanvas::Translation::Context m_translationContext;
         ScriptCanvas::Grammar::Context m_grammarContext;
     };

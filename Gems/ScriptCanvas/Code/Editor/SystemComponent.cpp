@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -46,8 +46,6 @@
 
 #include <AzFramework/IO/FileOperations.h>
 #include <AzCore/Serialization/Utils.h>
-
-#include <ScriptCanvas/Asset/Functions/ScriptCanvasFunctionAsset.h>
 
 namespace ScriptCanvasEditor
 {
@@ -332,12 +330,6 @@ namespace ScriptCanvasEditor
             isScriptCanvasAsset = true;
         }
 
-        ScriptCanvasFunctionDescription scriptCanvasFunctionAssetDescription;
-        if (!isScriptCanvasAsset && AZStd::wildcard_match(AZStd::string::format("*%s", scriptCanvasFunctionAssetDescription.GetExtensionImpl()).c_str(), fullSourceFileName))
-        {
-            isScriptCanvasAsset = true;
-        }
-
         if (isScriptCanvasAsset)
         {
             auto scriptCanvasEditorCallback = [this]([[maybe_unused]] const char* fullSourceFileNameInCall, const AZ::Uuid& sourceUUIDInCall)
@@ -412,7 +404,7 @@ namespace ScriptCanvasEditor
             nullptr,
             [this](const AZ::Data::AssetId, const AZ::Data::AssetInfo& assetInfo) {
 
-                if (assetInfo.m_assetType == azrtti_typeid<ScriptCanvasAsset>() || assetInfo.m_assetType == azrtti_typeid<ScriptCanvasFunctionAsset>())
+                if (assetInfo.m_assetType == azrtti_typeid<ScriptCanvasAsset>())
                 {
                     AddAssetToUpgrade(assetInfo);
                 }
@@ -456,11 +448,7 @@ namespace ScriptCanvasEditor
 
         if (query == m_assetsToConvert.end())
         {
-            if (assetInfo.m_assetType == azrtti_typeid<ScriptCanvasFunctionAsset>())
-            {
-                m_assetsToConvert.push_front(assetInfo);
-            }
-            else if (assetInfo.m_assetType == azrtti_typeid<ScriptCanvasAsset>())
+            if (assetInfo.m_assetType == azrtti_typeid<ScriptCanvasAsset>())
             {
                 m_assetsToConvert.push_back(assetInfo);
             }

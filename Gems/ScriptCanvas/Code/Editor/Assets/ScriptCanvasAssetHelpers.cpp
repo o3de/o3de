@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -8,7 +8,6 @@
 #include <Editor/Assets/ScriptCanvasAssetHelpers.h>
 
 #include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
-#include <ScriptCanvas/Asset/Functions/ScriptCanvasFunctionAsset.h>
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 
 namespace ScriptCanvasEditor
@@ -149,37 +148,13 @@ namespace ScriptCanvasEditor
 
         }
 
-        bool IsValidSourceFile(const AZStd::string& filePath, ScriptCanvas::ScriptCanvasId scriptCanvasId)
+        bool IsValidSourceFile(const AZStd::string& filePath, [[maybe_unused]] ScriptCanvas::ScriptCanvasId scriptCanvasId)
         {
-            bool isValidSourceFile = true;
-
-            if (scriptCanvasId.IsValid())
+            ScriptCanvasAssetDescription assetDescription;
+            return AZ::StringFunc::EndsWith(filePath, assetDescription.GetExtensionImpl(), false);
             {
-                bool isRuntimeGraph = false;
-                EditorGraphRequestBus::EventResult(isRuntimeGraph, scriptCanvasId, &EditorGraphRequests::IsRuntimeGraph);
-
-                if (isRuntimeGraph)
-                {
-                    ScriptCanvasAssetDescription assetDescription;
-
-                    if (!AZ::StringFunc::EndsWith(filePath, assetDescription.GetExtensionImpl(), false))
-                    {
-                        isValidSourceFile = false;
-                    }
-                }
-                // Assume it's a function for now
-                else
-                {
-                    ScriptCanvasEditor::ScriptCanvasFunctionDescription assetDescription;
-
-                    if (!AZ::StringFunc::EndsWith(filePath, assetDescription.GetExtensionImpl(), false))
-                    {
-                        isValidSourceFile = false;
-                    }
-                }
+                return true;
             }
-
-            return isValidSourceFile;
         }
     }
 }

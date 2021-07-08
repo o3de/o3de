@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -30,7 +30,7 @@ namespace ScriptCanvas
 
                     Current
                 };
-                
+
             public:
 
                 SCRIPTCANVAS_NODE(Any);
@@ -44,8 +44,6 @@ namespace ScriptCanvas
                 void OnInit() override;
                 void ConfigureVisualExtensions() override;
 
-                void OnInputSignal(const SlotId& slot) override;
-
                 SlotId HandleExtension(AZ::Crc32 extensionId) override;
 
                 bool CanDeleteSlot(const SlotId& slotId) const override;
@@ -56,10 +54,8 @@ namespace ScriptCanvas
                 /// Translation
                 bool IsNoOp() const override;
 
-                
-
                 AZ::Outcome<DependencyReport, void> GetDependencies() const override;
-                    
+
             protected:
                 ConstSlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot&, CombinedSlotType targetSlotType, const Slot*) const override
                 {
@@ -69,9 +65,7 @@ namespace ScriptCanvas
                 AZ::Crc32 GetInputExtensionId() const { return AZ_CRC("Output", 0xccde149e); }
 
             private:
-
                 AZStd::string GenerateInputName(int counter);
-
                 SlotId AddInputSlot();
                 void FixupStateNames();
             };

@@ -1,83 +1,32 @@
-# Project Spectra Private Preview
+# Open 3D Engine
 
-## Confidentiality; Pre-Release Access  
+Open 3D Engine (O3DE) is an open-source, real-time, multi-platform 3D engine that enables developers and content creators to build AAA games, cinema-quality 3D worlds, and high-fidelity simulations without any fees or commercial obligations.
 
-Welcome to the Project Spectra Private Preview.  This is a confidential pre-release project; your use is subject to the nondisclosure agreement between you (or your organization) and Amazon.  Do not disclose the existence of this project, your participation in it, or any of the  materials provided, to any unauthorized third party.  To request access for a third party, please contact [Royal O'Brien, obriroya@amazon.com](mailto:obriroya@amazon.com).
-
-## Full instructions can be found here: 
-### https://docs.o3de.org/docs/welcome-guide/setup/setup-from-github/ 
-(Note: Contact Royal or [Doug Erickson, dougeric@amazon.com](mailto:dougeric@amazon.com) for access)
-
-## Updates to this readme
-May 14, 2021 
-- Removed instructions for the 3rdParty zip file and downloader URL. This is no longer a requirement. 
-- Updated instructions for dependencies
-- Links to full documentation
-
-April 7-13, 2021
-- Updates to the 3rdParty zip file
-
-March 25, 2021
-- Initial commit for instructions
+## Contribute
+For information about contributing to Open 3D Engine, visit https://o3de.org/docs/contributing/
 
 ## Download and Install
 
-This repository uses Git LFS for storing large binary files.  You will need to create a Github personal access token to authenticate with the LFS service.
+This repository uses Git LFS for storing large binary files.  
 
-To install Git LFS, download the binary here: https://git-lfs.github.com/.
+Verify you have Git LFS installed by running the following command to print the version number.
+```
+git lfs --version 
+```
 
-After installation, you will need to install the necessary git hooks with this command 
+If Git LFS is not installed, download and run the installer from: https://git-lfs.github.com/.
+
+### Install Git LFS hooks 
 ```
 git lfs install
 ```
 
-### Create a Git Personal Access Token
-
-You will need your personal access token credentials to authenticate when you clone the repository and when downloading objects from Git LFS
-
-[Create a personal access token with the 'repo' scope.](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token)
-
-During the clone operation, you will be prompted to enter a password. Your token will be used as the password. You will also be prompted a second time for Git LFS.
-
-### (Recommended) Verify you have a credential manager installed to store your credentials 
-
-Recent versions of Git install a credential manager to store your credentials so you don't have to put in the credentials for every request.
-
-It is highly recommended you check that you have a [credential manager installed and configured](https://github.com/microsoft/Git-Credential-Manager-Core)
-
-For Linux and Mac, use the following commands to store credentials 
-
-Linux: 
-```
-git config --global credential.helper cache
-``` 
-Mac:
-```
-git config --global credential.helper osxkeychain
-```
 
 ### Clone the repository 
 
 ```shell
-> git clone https://github.com/aws-lumberyard/o3de.git
-Cloning into 'o3de'...
-
-# initial prompt for credentials to download the repository code
-# enter your Github username and personal access token
-
-remote: Counting objects: 29619, done.
-Receiving objects: 100% (29619/29619), 40.50 MiB | 881.00 KiB/s, done.
-Resolving deltas: 100% (8829/8829), done.
-Updating files: 100% (27037/27037), done.
-
-# second prompt for credentials when downloading LFS files
-# enter your Github username and personal access token
-
-Filtering content: 100% (3853/3853), 621.43 MiB | 881.00 KiB/s, done.
-
+git clone https://github.com/o3de/o3de.git
 ```
-
-If you have the Git credential manager core or other credential helpers installed, you should not be prompted for your credentials anymore.
 
 ## Building the Engine
 ### Build Requirements and redistributables
@@ -92,33 +41,21 @@ If you have the Git credential manager core or other credential helpers installe
 
 #### Optional
 
-*   WWise - 2019.2.8.7432 minimum: [https://www.audiokinetic.com/download/](https://www.audiokinetic.com/download/)
-    *   Note: This requires registration and installation of a client to download
-    *   You will also need to set a environment variable: `set LY_WWISE_INSTALL_PATH=<path to WWise version>`
-    *   For example: `set LY_WWISE_INSTALL_PATH="C:\Program Files (x86)\Audiokinetic\Wwise 2019.2.8.7432"`
+*   Wwise - 2021.1.1.7601 minimum: [https://www.audiokinetic.com/download/](https://www.audiokinetic.com/download/)
+    *   Note: This requires registration and installation of a client application to download
+    *   Make sure to select the SDK(C++) component during installation of Wwise
+    *   You will also need to set an environment variable: `set LY_WWISE_INSTALL_PATH=<path to Wwise version>`
+    *   For example: `set LY_WWISE_INSTALL_PATH="C:\Program Files (x86)\Audiokinetic\Wwise 2021.1.1.7601"`
 
 ### Quick Start Build Steps
 
 1.  Create a writable folder to cache 3rd Party dependencies. You can also use this to store other redistributable SDKs.
     
-    > For the 0.5 branch - Create an empty text file named `3rdParty.txt` in this folder, to allow a legacy CMake validator to pass
-
 1.  Install the following redistributables to the following:
     - Visual Studio and VC++ redistributable can be installed to any location
     - CMake can be installed to any location, as long as it's available in the system path
-    - WWise can be installed anywhere, but you will need to set an environment variable for CMake to detect it:  `set LY_WWISE_INSTALL_PATH=<path to WWise>`
+    - (Optional) Wwise can be installed anywhere, but you will need to set an environment variable for CMake to detect it:  `set LY_WWISE_INSTALL_PATH=<path to Wwise>`
     
-1.  Navigate into the repo folder, then download the python runtime with this command
-    
-    > For the 0.5 branch - Set this environment variable prior to the `get_python` command below:
-    > ```
-    > set LY_PACKAGE_SERVER_URLS=https://d2c171ws20a1rv.cloudfront.net
-    > ```
-
-    ```
-    python\get_python.bat
-    ```
-
 1.  Configure the source into a solution using this command line, replacing <your build path> and <3rdParty cache path> to a path you've created:
     ```
     cmake -B <your build path> -S <your source path> -G "Visual Studio 16" -DLY_3RDPARTY_PATH=<3rdParty cache path> -DLY_UNITY_BUILD=ON -DLY_PROJECTS=AutomatedTesting 
@@ -146,7 +83,7 @@ If you have the Git credential manager core or other credential helpers installe
     ```
     scripts\o3de.bat register --this-engine
     ```
-1. Setup new projects using the `o3de create-project` command. In the 0.5 branch, the project directory must be a subdirectory in the repo folder.
+1. Setup new projects using the `o3de create-project` command.
     ```
     <Repo path>\scripts\o3de.bat create-project --project-path <your new project path>
     ```
@@ -158,10 +95,6 @@ If you have the Git credential manager core or other credential helpers installe
     ```
     cmake -B <your project build path> -S <your new project source path> -G "Visual Studio 16" -DLY_3RDPARTY_PATH=<3rdParty cache path>
 
-    // For the 0.5 branch, you must build a new Editor for each project:
-    cmake --build <your project build path> --target <New Project Name>.GameLauncher Editor --config profile -- /m
-    
-    // For all other branches, just build the project:
     cmake --build <your project build path> --target <New Project Name>.GameLauncher --config profile -- /m
     ```
   

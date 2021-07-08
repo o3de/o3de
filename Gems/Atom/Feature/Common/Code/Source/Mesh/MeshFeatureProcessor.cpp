@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -8,6 +8,7 @@
 #include <RenderCommon.h>
 
 #include <Atom/RHI/CpuProfiler.h>
+#include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
 #include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 #include <Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessor.h>
@@ -550,7 +551,10 @@ namespace AZ
             }
             else
             {
-                AZ_Error("MeshDataInstance::OnAssetReady", false, "Failed to create model instance for '%s'", asset.GetHint().c_str());
+                //when running with null renderer, the RPI::Model::FindOrCreate(...) is expected to return nullptr, so suppress this error.
+                AZ_Error(
+                    "MeshDataInstance::OnAssetReady", RHI::IsNullRenderer(), "Failed to create model instance for '%s'",
+                    asset.GetHint().c_str());
             }
         }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -168,7 +168,12 @@ namespace ScriptCanvas
     {
         if (nodeId == m_sourceEndpoint.GetNodeId() || nodeId == m_targetEndpoint.GetNodeId())
         {
-            GraphRequestBus::Event(*GraphNotificationBus::GetCurrentBusId(), &GraphRequests::DisconnectById, GetEntityId());
+            Slot* sourceSlot{};
+            NodeRequestBus::EventResult(sourceSlot, m_sourceEndpoint.GetNodeId(), &NodeRequests::GetSlot, m_sourceEndpoint.GetSlotId());
+            if (sourceSlot)
+            {
+                GraphRequestBus::Event(sourceSlot->GetNode()->GetOwningScriptCanvasId(), &GraphRequests::DisconnectById, GetEntityId());
+            }
         }
     }
 }

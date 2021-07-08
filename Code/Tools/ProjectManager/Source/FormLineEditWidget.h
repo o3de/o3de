@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -15,6 +15,7 @@ QT_FORWARD_DECLARE_CLASS(QLineEdit)
 QT_FORWARD_DECLARE_CLASS(QLabel)
 QT_FORWARD_DECLARE_CLASS(QFrame)
 QT_FORWARD_DECLARE_CLASS(QHBoxLayout)
+QT_FORWARD_DECLARE_CLASS(QMouseEvent)
 
 namespace AzQtComponents
 {
@@ -39,6 +40,8 @@ namespace O3DE::ProjectManager
         //! Returns a pointer to the underlying LineEdit.
         QLineEdit* lineEdit() const;
 
+        virtual void setText(const QString& text);
+
     protected:
         QLabel* m_errorLabel = nullptr;
         QFrame* m_frame = nullptr;
@@ -51,6 +54,8 @@ namespace O3DE::ProjectManager
         void onFocusOut();
 
     private:
+        void mousePressEvent(QMouseEvent* event) override;
+
         void refreshStyle();
     };
 } // namespace O3DE::ProjectManager

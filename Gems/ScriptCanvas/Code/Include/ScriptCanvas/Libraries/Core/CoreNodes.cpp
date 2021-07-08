@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -99,13 +99,9 @@ namespace ScriptCanvas
         void Core::InitNodeRegistry(NodeRegistry& nodeRegistry)
         {
             using namespace ScriptCanvas::Nodes::Core;
-            AddNodeToRegistry<Core, Error>(nodeRegistry);
-            AddNodeToRegistry<Core, ErrorHandler>(nodeRegistry);
             AddNodeToRegistry<Core, Method>(nodeRegistry);
             AddNodeToRegistry<Core, MethodOverloaded>(nodeRegistry);
-            AddNodeToRegistry<Core, BehaviorContextObjectNode>(nodeRegistry);
             AddNodeToRegistry<Core, Start>(nodeRegistry);            
-            AddNodeToRegistry<Core, ScriptCanvas::Nodes::Core::String>(nodeRegistry);
             AddNodeToRegistry<Core, EBusEventHandler>(nodeRegistry);
             AddNodeToRegistry<Core, AzEventHandler>(nodeRegistry);
             AddNodeToRegistry<Core, ExtractProperty>(nodeRegistry);
@@ -124,13 +120,9 @@ namespace ScriptCanvas
         AZStd::vector<AZ::ComponentDescriptor*> Core::GetComponentDescriptors()
         {
             return AZStd::vector<AZ::ComponentDescriptor*>({
-                ScriptCanvas::Nodes::Core::Error::CreateDescriptor(),
-                ScriptCanvas::Nodes::Core::ErrorHandler::CreateDescriptor(),
                 ScriptCanvas::Nodes::Core::Method::CreateDescriptor(),
                 ScriptCanvas::Nodes::Core::MethodOverloaded::CreateDescriptor(),
-                ScriptCanvas::Nodes::Core::BehaviorContextObjectNode::CreateDescriptor(),
                 ScriptCanvas::Nodes::Core::Start::CreateDescriptor(),                
-                ScriptCanvas::Nodes::Core::String::CreateDescriptor(),
                 ScriptCanvas::Nodes::Core::EBusEventHandler::CreateDescriptor(),
                 ScriptCanvas::Nodes::Core::AzEventHandler::CreateDescriptor(),
                 ScriptCanvas::Nodes::Core::ExtractProperty::CreateDescriptor(),

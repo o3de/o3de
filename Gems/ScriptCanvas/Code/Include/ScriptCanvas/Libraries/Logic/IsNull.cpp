@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -39,7 +39,7 @@ namespace ScriptCanvas
             {
                 {
                     auto func = []() { return aznew IsReferenceTypeContract(); };
-                    ContractDescriptor descriptor{ AZStd::move(func) };                    
+                    ContractDescriptor descriptor{ AZStd::move(func) };
 
                     DynamicDataSlotConfiguration slotConfiguration;
 
@@ -60,13 +60,6 @@ namespace ScriptCanvas
 
                     AddSlot(slotConfiguration);
                 }
-            }
-
-            void IsNull::OnInputSignal(const SlotId&)
-            {
-                const bool isNull = FindDatum(GetSlotId("Reference"))->Empty();
-                PushOutput(Datum(isNull), *GetSlot(GetSlotId("Is Null")));
-                SignalOutput(isNull ? IsNullProperty::GetTrueSlotId(this) : IsNullProperty::GetFalseSlotId(this));
             }
         }
     }

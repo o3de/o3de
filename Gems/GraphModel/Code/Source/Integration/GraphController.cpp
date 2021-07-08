@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -1186,14 +1186,6 @@ namespace GraphModelIntegration
 
         return dataTypesMatch && !CheckForLoopback(sourceSlot->GetParentNode(), targetSlot->GetParentNode());
     }
-
-
-    bool GraphController::IsValidVariableAssignment([[maybe_unused]] const AZ::EntityId& variableId, [[maybe_unused]] const GraphCanvas::Endpoint& targetPoint) const
-    {
-        AZ_Assert(false, "This Graph Canvas does not support graph variables");
-        return false;
-    }
-    
 
     //! Helper function to create a GraphCanvas::NodePropertyDisplay and a data interface for editing input pin values
     //! \typename  DataInterfaceType  One of the data interface types. Ex: BooleanDataInterface

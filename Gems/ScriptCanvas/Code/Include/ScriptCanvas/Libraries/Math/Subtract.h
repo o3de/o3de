@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -49,12 +49,6 @@ namespace ScriptCanvas
                     ScriptCanvas::NodeConfiguration nodeConfig{};
                     nodeConfig.m_type = AZ::Uuid("D0615D0A-027F-47F6-A02B-E35DAF22F431");
                     return nodeConfig;
-                }
-                
-            protected:
-                Datum Evaluate(const Datum& lhs, const Datum& rhs) override
-                {
-                    return Datum(*lhs.GetAs<Data::NumberType>() - *rhs.GetAs<Data::NumberType>());
                 }
             };
 

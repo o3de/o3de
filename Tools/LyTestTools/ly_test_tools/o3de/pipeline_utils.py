@@ -1,5 +1,5 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
@@ -29,7 +29,7 @@ from ly_test_tools.o3de.ap_log_parser import APLogParser
 logger = logging.getLogger(__name__)
 
 # Asset Processor fast scan system setting key/subkey
-AP_FASTSCAN_KEY = r"Software\Amazon\O3DE Asset Processor\Options"
+AP_FASTSCAN_KEY = r"Software\O3DE\O3DE Asset Processor\Options"
 AP_FASTSCAN_SUBKEY = r"EnableZeroAnalysis"
 
 

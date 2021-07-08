@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -8,6 +8,7 @@
 #include "ProfilingCaptureSystemComponent.h"
 
 #include <Atom/RHI/CpuProfiler.h>
+#include <Atom/RHI/RHIUtils.h>
 
 #include <Atom/RPI.Public/GpuQuery/GpuQueryTypes.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
@@ -33,7 +34,8 @@ namespace AZ
             AZ_EBUS_BEHAVIOR_BINDER(ProfilingCaptureNotificationBusHandler, "{E45E4F37-EC1F-4010-994B-4F80998BEF15}", AZ::SystemAllocator,
                 OnCaptureQueryTimestampFinished,
                 OnCaptureQueryPipelineStatisticsFinished,
-                OnCaptureCpuProfilingStatisticsFinished
+                OnCaptureCpuProfilingStatisticsFinished,
+                OnCaptureBenchmarkMetadataFinished
             );
 
             void OnCaptureQueryTimestampFinished(bool result, const AZStd::string& info) override
@@ -49,6 +51,11 @@ namespace AZ
             void OnCaptureCpuProfilingStatisticsFinished(bool result, const AZStd::string& info) override
             {
                 Call(FN_OnCaptureCpuProfilingStatisticsFinished, result, info);
+            }
+
+            void OnCaptureBenchmarkMetadataFinished(bool result, const AZStd::string& info) override
+            {
+                Call(FN_OnCaptureBenchmarkMetadataFinished, result, info);
             }
 
             static void Reflect(AZ::ReflectContext* context)
@@ -121,7 +128,7 @@ namespace AZ
                 static void Reflect(AZ::ReflectContext* context);
 
                 CpuProfilingStatisticsSerializerEntry() = default;
-                CpuProfilingStatisticsSerializerEntry(const RHI::CachedTimeRegion& cahcedTimeRegion);
+                CpuProfilingStatisticsSerializerEntry(const RHI::CachedTimeRegion& cachedTimeRegion);
 
             private:
                 Name m_groupName;
@@ -134,9 +141,37 @@ namespace AZ
             static void Reflect(AZ::ReflectContext* context);
 
             CpuProfilingStatisticsSerializer() = default;
-            CpuProfilingStatisticsSerializer(RHI::CpuProfiler::TimeRegionMap& timeRegionMap);
+            CpuProfilingStatisticsSerializer(const RHI::CpuProfiler::TimeRegionMap& timeRegionMap);
 
             AZStd::vector<CpuProfilingStatisticsSerializerEntry> m_cpuProfilingStatisticsSerializerEntries;
+        };
+
+        // Intermediate class to serialize benchmark metadata.
+        class BenchmarkMetadataSerializer
+        {
+        public:
+            class GpuEntry
+            {
+            public:
+                AZ_TYPE_INFO(Render::BenchmarkMetadataSerializer::GpuEntry, "{3D5C2DDE-59FB-4E28-9605-D2A083E34505}");
+                static void Reflect(AZ::ReflectContext* context);
+
+                GpuEntry() = default;
+                GpuEntry(const RHI::PhysicalDeviceDescriptor& descriptor);
+
+            private:
+                AZStd::string m_description;
+                uint32_t m_driverVersion;
+            };
+
+            AZ_TYPE_INFO(Render::BenchmarkMetadataSerializer, "{2BC41B6F-528F-4E59-AEDA-3B9D74E323EC}");
+            static void Reflect(AZ::ReflectContext* context);
+
+            BenchmarkMetadataSerializer() = default;
+            BenchmarkMetadataSerializer(const AZStd::string& benchmarkName, const RHI::PhysicalDeviceDescriptor& gpuDescriptor);
+
+            AZStd::string m_benchmarkName;
+            GpuEntry m_gpuEntry;
         };
 
         // --- DelayedQueryCaptureHelper ---
@@ -251,14 +286,17 @@ namespace AZ
 
         // --- CpuProfilingStatisticsSerializer ---
 
-        CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializer(RHI::CpuProfiler::TimeRegionMap& timeRegionMap)
+        CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializer(const RHI::CpuProfiler::TimeRegionMap& timeRegionMap)
         {
             // Create serializable entries
-            for (auto& treadEntry : timeRegionMap)
+            for (auto& threadEntry : timeRegionMap)
             {
-                for (auto& cachedRegionEntry : treadEntry.second)
+                for (auto& cachedRegionEntry : threadEntry.second)
                 {
-                    m_cpuProfilingStatisticsSerializerEntries.emplace_back(cachedRegionEntry.second);
+                    m_cpuProfilingStatisticsSerializerEntries.insert(
+                        m_cpuProfilingStatisticsSerializerEntries.end(),
+                        cachedRegionEntry.second.begin(),
+                        cachedRegionEntry.second.end());
                 }
             }
         }
@@ -309,6 +347,49 @@ namespace AZ
             }
         }
 
+        // --- BenchmarkMetadataSerializer ---
+
+        BenchmarkMetadataSerializer::BenchmarkMetadataSerializer(const AZStd::string& benchmarkName, const RHI::PhysicalDeviceDescriptor& gpuDescriptor)
+        {
+            m_benchmarkName = benchmarkName;
+            m_gpuEntry = GpuEntry(gpuDescriptor);
+        }
+
+        void BenchmarkMetadataSerializer::Reflect(AZ::ReflectContext* context)
+        {
+            if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+            {
+                serializeContext->Class<BenchmarkMetadataSerializer>()
+                    ->Version(1)
+                    ->Field("benchmarkName", &BenchmarkMetadataSerializer::m_benchmarkName)
+                    ->Field("gpuInfo", &BenchmarkMetadataSerializer::m_gpuEntry)
+                    ;
+            }
+
+            GpuEntry::Reflect(context);
+        }
+
+        // --- GpuEntry ---
+
+        BenchmarkMetadataSerializer::GpuEntry::GpuEntry(const RHI::PhysicalDeviceDescriptor& descriptor)
+        {
+            m_description = descriptor.m_description;
+            m_driverVersion = descriptor.m_driverVersion;
+        }
+
+
+        void BenchmarkMetadataSerializer::GpuEntry::Reflect(AZ::ReflectContext* context)
+        {
+            if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+            {
+                serializeContext->Class<GpuEntry>()
+                    ->Version(1)
+                    ->Field("description", &GpuEntry::m_description)
+                    ->Field("driverVersion", &GpuEntry::m_driverVersion)
+                    ;
+            }
+        }
+
         // --- ProfilingCaptureSystemComponent ---
 
         void ProfilingCaptureSystemComponent::Reflect(AZ::ReflectContext* context)
@@ -328,6 +409,7 @@ namespace AZ
                     ->Event("CapturePassTimestamp", &ProfilingCaptureRequestBus::Events::CapturePassTimestamp)
                     ->Event("CapturePassPipelineStatistics", &ProfilingCaptureRequestBus::Events::CapturePassPipelineStatistics)
                     ->Event("CaptureCpuProfilingStatistics", &ProfilingCaptureRequestBus::Events::CaptureCpuProfilingStatistics)
+                    ->Event("CaptureBenchmarkMetadata", &ProfilingCaptureRequestBus::Events::CaptureBenchmarkMetadata)
                     ;
 
                 ProfilingCaptureNotificationBusHandler::Reflect(context);
@@ -336,6 +418,7 @@ namespace AZ
             TimestampSerializer::Reflect(context);
             PipelineStatisticsSerializer::Reflect(context);
             CpuProfilingStatisticsSerializer::Reflect(context);
+            BenchmarkMetadataSerializer::Reflect(context);
         }
 
         void ProfilingCaptureSystemComponent::Activate()
@@ -465,8 +548,7 @@ namespace AZ
                 serializationSettings.m_keepDefaults = true;
 
                 // Get time Cpu profiled time regions
-                RHI::CpuProfiler::TimeRegionMap timeRegionMap;
-                RHI::CpuProfiler::Get()->FlushTimeRegionMap(timeRegionMap);
+                const RHI::CpuProfiler::TimeRegionMap& timeRegionMap = RHI::CpuProfiler::Get()->GetTimeRegionMap();
 
                 CpuProfilingStatisticsSerializer serializer(timeRegionMap);
                 const auto saveResult = JsonSerializationUtils::SaveObjectToFile(&serializer,
@@ -496,6 +578,43 @@ namespace AZ
                     saveResult.IsSuccess(),
                     captureInfo);
 
+            });
+
+            // Start the TickBus.
+            if (captureStarted)
+            {
+                TickBus::Handler::BusConnect();
+            }
+
+            return captureStarted;
+        }
+
+        bool ProfilingCaptureSystemComponent::CaptureBenchmarkMetadata(const AZStd::string& benchmarkName, const AZStd::string& outputFilePath)
+        {
+            const bool captureStarted = m_benchmarkMetadataCapture.StartCapture([this, benchmarkName, outputFilePath]()
+            {
+                JsonSerializerSettings serializationSettings;
+                serializationSettings.m_keepDefaults = true;
+
+                const RHI::PhysicalDeviceDescriptor& gpuDescriptor = RHI::GetRHIDevice()->GetPhysicalDevice().GetDescriptor();
+
+                BenchmarkMetadataSerializer serializer(benchmarkName, gpuDescriptor);
+                const auto saveResult = JsonSerializationUtils::SaveObjectToFile(&serializer,
+                    outputFilePath, (BenchmarkMetadataSerializer*)nullptr, &serializationSettings);
+
+                AZStd::string captureInfo = outputFilePath;
+                if (!saveResult.IsSuccess())
+                {
+                    captureInfo = AZStd::string::format("Failed to save benchmark metadata data to file '%s'. Error: %s",
+                        outputFilePath.c_str(),
+                        saveResult.GetError().c_str());
+                    AZ_Warning("ProfilingCaptureSystemComponent", false, captureInfo.c_str());
+                }
+
+                // Notify listeners that the benchmark metadata capture has finished.
+                ProfilingCaptureNotificationBus::Broadcast(&ProfilingCaptureNotificationBus::Events::OnCaptureBenchmarkMetadataFinished,
+                    saveResult.IsSuccess(),
+                    captureInfo);
             });
 
             // Start the TickBus.
@@ -548,9 +667,10 @@ namespace AZ
             m_timestampCapture.UpdateCapture();
             m_pipelineStatisticsCapture.UpdateCapture();
             m_cpuProfilingStatisticsCapture.UpdateCapture();
+            m_benchmarkMetadataCapture.UpdateCapture();
 
             // Disconnect from the TickBus if all capture states are set to idle.
-            if (m_timestampCapture.IsIdle() && m_pipelineStatisticsCapture.IsIdle() && m_cpuProfilingStatisticsCapture.IsIdle())
+            if (m_timestampCapture.IsIdle() && m_pipelineStatisticsCapture.IsIdle() && m_cpuProfilingStatisticsCapture.IsIdle() && m_benchmarkMetadataCapture.IsIdle())
             {
                 TickBus::Handler::BusDisconnect();
             }
