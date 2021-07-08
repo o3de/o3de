@@ -657,13 +657,20 @@ def register(engine_path: pathlib.Path = None,
 
     return result
 
-def remove_invalid_o3de_projects() -> None:
-    json_data = manifest.load_o3de_manifest()
+def remove_invalid_o3de_projects(manifest_path: pathlib.Path = None) -> int:
+    if not manifest_path:
+        manifest_path = manifest.get_o3de_manifest()
+
+    json_data = manifest.load_o3de_manifest(manifest_path)
+
+    result = 0
 
     for project in json_data['projects']:
         if not validation.valid_o3de_project_json(pathlib.Path(project).resolve() / 'project.json'):
             logger.warn(f"Project path {project} is invalid.")
-            register(project_path=pathlib.Path(project), remove=True)
+            result = register(project_path=pathlib.Path(project), remove=True)
+
+    return result
 
 def remove_invalid_o3de_objects() -> None:
     json_data = manifest.load_o3de_manifest()

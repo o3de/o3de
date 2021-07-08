@@ -62,7 +62,7 @@ namespace O3DE::ProjectManager
         ProjectButton* CreateProjectButton(ProjectInfo& project, QLayout* flowLayout, bool processing = false);
         void ResetProjectsContent();
         bool ShouldDisplayFirstTimeContent();
-        void RemoveInvalidProjects();
+        bool RemoveInvalidProjects();
 
         bool StartProjectBuild(const ProjectInfo& projectInfo);
         QList<ProjectInfo>::iterator RequiresBuildProjectIterator(const QString& projectPath);

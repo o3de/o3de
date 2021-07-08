@@ -497,16 +497,12 @@ namespace O3DE::ProjectManager
         return displayFirstTimeContent;
     }
 
-<<<<<<< HEAD
-    bool ProjectsScreen::StartProjectBuild(const ProjectInfo& projectInfo)
-=======
-    void ProjectsScreen::RemoveInvalidProjects()
+    bool ProjectsScreen::RemoveInvalidProjects()
     {
-        PythonBindingsInterface::Get()->RemoveInvalidProjects();
+        return PythonBindingsInterface::Get()->RemoveInvalidProjects();
     }
 
-    void ProjectsScreen::StartProjectBuild(const ProjectInfo& projectInfo)
->>>>>>> e0c3d15d5 (Remove deleted projects from project manager)
+    bool ProjectsScreen::StartProjectBuild(const ProjectInfo& projectInfo)
     {
         if (ProjectUtils::IsVS2019Installed())
         {

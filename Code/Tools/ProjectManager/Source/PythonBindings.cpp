@@ -755,13 +755,19 @@ namespace O3DE::ProjectManager
         });
     }
 
-    void PythonBindings::RemoveInvalidProjects()
+    bool PythonBindings::RemoveInvalidProjects()
     {
-        ExecuteWithLockErrorHandling(
+        bool removalResult = false;
+        bool result = ExecuteWithLock(
             [&]
             {
-                m_register.attr("remove_invalid_o3de_projects")();
+                auto pythonRemovalResult = m_register.attr("remove_invalid_o3de_projects")();
+
+                // Returns an exit code so boolify it then invert result
+                removalResult = !pythonRemovalResult.cast<bool>();
             });
+
+        return result && removalResult;
     }
 
     AZ::Outcome<void, AZStd::string> PythonBindings::UpdateProject(const ProjectInfo& projectInfo)
