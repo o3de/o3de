@@ -126,6 +126,14 @@ namespace AzTestRunner
                 std::cout << "arg[" << i << "] " << argv[i] << std::endl;
             }
 
+            // Construct a full retry command
+            std::cout << "Full command: " << argv[0] << " " << lib << " " << symbol;
+            for (int i = 1; i < argc; i++)
+            {
+                std::cout << " " << argv[i];
+            }
+            std::cout << std::endl;
+            
             std::cout << "LIB: " << lib << std::endl;
         }
 
