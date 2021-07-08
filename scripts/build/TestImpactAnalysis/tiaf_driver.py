@@ -64,4 +64,3 @@ if __name__ == "__main__":
         # Non-gating will be removed from this script and handled at the job level in SPEC-7413
         print("Exception caught by TIAF driver")
         sys.exit(0)
-        
