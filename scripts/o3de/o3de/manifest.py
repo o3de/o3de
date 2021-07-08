@@ -278,8 +278,10 @@ def get_repos() -> list:
 def get_engine_projects() -> list:
     engine_path = get_this_engine_path()
     engine_object = get_engine_json_data(engine_path=engine_path)
-    return list(map(lambda rel_path: (pathlib.Path(engine_path) / rel_path).as_posix(),
-                      engine_object['projects'])) if 'projects' in engine_object else []
+    if engine_object:
+        return list(map(lambda rel_path: (pathlib.Path(engine_path) / rel_path).as_posix(),
+                          engine_object['projects'])) if 'projects' in engine_object else []
+    return []
 
 
 def get_engine_gems() -> list:
@@ -289,22 +291,28 @@ def get_engine_gems() -> list:
 def get_engine_external_subdirectories() -> list:
     engine_path = get_this_engine_path()
     engine_object = get_engine_json_data(engine_path=engine_path)
-    return list(map(lambda rel_path: (pathlib.Path(engine_path) / rel_path).as_posix(),
-                    engine_object['external_subdirectories'])) if 'external_subdirectories' in engine_object else []
+    if engine_object:
+        return list(map(lambda rel_path: (pathlib.Path(engine_path) / rel_path).as_posix(),
+                        engine_object['external_subdirectories'])) if 'external_subdirectories' in engine_object else []
+    return []
 
 
 def get_engine_templates() -> list:
     engine_path = get_this_engine_path()
     engine_object = get_engine_json_data(engine_path=engine_path)
-    return list(map(lambda rel_path: (pathlib.Path(engine_path) / rel_path).as_posix(),
-                      engine_object['templates']))
+    if engine_object:
+        return list(map(lambda rel_path: (pathlib.Path(engine_path) / rel_path).as_posix(),
+                          engine_object['templates'])) if 'templates' in engine_object else []
+    return []
 
 
 def get_engine_restricted() -> list:
     engine_path = get_this_engine_path()
     engine_object = get_engine_json_data(engine_path=engine_path)
-    return list(map(lambda rel_path: (pathlib.Path(engine_path) / rel_path).as_posix(),
-                    engine_object['restricted'])) if 'restricted' in engine_object else []
+    if engine_object:
+        return list(map(lambda rel_path: (pathlib.Path(engine_path) / rel_path).as_posix(),
+                        engine_object['restricted'])) if 'restricted' in engine_object else []
+    return []
 
 
 # project.json queries
@@ -314,20 +322,26 @@ def get_project_gems(project_path: pathlib.Path) -> list:
 
 def get_project_external_subdirectories(project_path: pathlib.Path) -> list:
     project_object = get_project_json_data(project_path=project_path)
-    return list(map(lambda rel_path: (pathlib.Path(project_path) / rel_path).as_posix(),
-               project_object['external_subdirectories'])) if 'external_subdirectories' in project_object else []
+    if project_object:
+        return list(map(lambda rel_path: (pathlib.Path(project_path) / rel_path).as_posix(),
+                   project_object['external_subdirectories'])) if 'external_subdirectories' in project_object else []
+    return []
 
 
 def get_project_templates(project_path: pathlib.Path) -> list:
     project_object = get_project_json_data(project_path=project_path)
-    return list(map(lambda rel_path: (pathlib.Path(project_path) / rel_path).as_posix(),
-                      project_object['templates']))
+    if project_object:
+        return list(map(lambda rel_path: (pathlib.Path(project_path) / rel_path).as_posix(),
+                          project_object['templates'])) if 'templates' in project_object else []
+    return []
 
 
 def get_project_restricted(project_path: pathlib.Path) -> list:
     project_object = get_project_json_data(project_path=project_path)
-    return list(map(lambda rel_path: (pathlib.Path(project_path) / rel_path).as_posix(),
-                    project_object['restricted'])) if 'restricted' in project_object else []
+    if project_object:
+        return list(map(lambda rel_path: (pathlib.Path(project_path) / rel_path).as_posix(),
+                        project_object['restricted'])) if 'restricted' in project_object else []
+    return []
 
 
 # Combined manifest queries

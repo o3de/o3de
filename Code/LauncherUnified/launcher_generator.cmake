@@ -122,6 +122,8 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
             FOLDER ${project_name}
     )
 
+    # After ensuring that we correctly support DPI scaling, this should be switched to "PerMonitor"
+    set_property(TARGET ${project_name}.GameLauncher APPEND PROPERTY VS_DPI_AWARE "OFF")
     if(LY_DEFAULT_PROJECT_PATH)
         set_property(TARGET ${project_name}.GameLauncher APPEND PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "--project-path=\"${LY_DEFAULT_PROJECT_PATH}\"")
     endif()

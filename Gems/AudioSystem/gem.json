@@ -1,21 +1,12 @@
 {
     "gem_name": "AudioSystem",
-    "GemFormatVersion": 4,
-    "Uuid": "6f63f2b6d07f4b89b4b7c86ebee7feb8",
-    "Name": "AudioSystem",
-    "DisplayName": "Audio System",
-    "Version": "0.1.0",
-    "Summary": "Contains CrySoundSystem, the Audio Translation Layer (ATL), and the Audio Controls Editor",
-    "Tags": ["Audio", "Sound"],
-    "IconPath": "preview.png",
-    "Modules": [
-        {
-            "Type": "GameModule"
-        },
-        {
-            "Name": "Editor",
-            "Type": "EditorModule",
-            "Extends": "GameModule"
-        }
-    ]
+    "display_name": "Audio System",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Open 3D Engine - o3de.org",
+    "type": "Code",
+    "summary": "The Audio System Gem provides the Audio Translation Layer (ATL) and Audio Controls Editor, which add support for audio in Open 3D Engine.",
+    "canonical_tags": ["Gem"],
+    "user_tags": ["Audio", "Utiltity", "Tools"],
+    "icon_path": "preview.png",
+    "requirements": ""
 }

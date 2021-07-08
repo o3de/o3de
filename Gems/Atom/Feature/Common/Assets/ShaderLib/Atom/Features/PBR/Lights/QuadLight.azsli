@@ -111,24 +111,22 @@ void ApplyQuadLight(ViewSrg::QuadLight light, Surface surface, inout LightingDat
         {
             float3 p[4] = {p0, p1, p2, p3};
             
-            // Diffuse
-            float3x3 identityMatrix = float3x3(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0);
-            float diffuse = LtcQuadEvaluate(surface.normal, lightingData.dirToCamera, identityMatrix, p, doubleSided);
-
-            // Specular
             float2 ltcCoords = LtcCoords(dot(surface.normal, lightingData.dirToCamera), surface.roughnessLinear);
             float3x3 ltcMat = LtcMatrix(SceneSrg::m_ltcMatrix, ltcCoords);
-            float3 specular = LtcQuadEvaluate(surface.normal, lightingData.dirToCamera, ltcMat, p, doubleSided);
+            
+            float diffuse = 0.0;
+            float specular = 0.0;
+            LtcQuadEvaluate(surface.normal, lightingData.dirToCamera, ltcMat, p, doubleSided, diffuse, specular);
 
             // Apply BRDF scale terms (BRDF magnitude and Schlick Fresnel)
             float2 schlick = SceneSrg::m_ltcAmplification.Sample(PassSrg::LinearSampler, ltcCoords).xy;
-            specular *= schlick.x + (1.0 - surface.specularF0) * schlick.y;
+            float3 specularRGB = specular * (schlick.x + (1.0 - surface.specularF0) * schlick.y);
 
             // Scale by inverse surface area of hemisphere (1/2pi), attenuation, and light intensity
             float3 intensity = 0.5 * INV_PI * radiusAttenuation * light.m_rgbIntensityNits;
 
             lightingData.diffuseLighting += surface.albedo * diffuse * intensity;
-            lightingData.specularLighting += surface.specularF0 * specular * intensity;
+            lightingData.specularLighting += surface.specularF0 * specularRGB * intensity;
         }
         else
         {

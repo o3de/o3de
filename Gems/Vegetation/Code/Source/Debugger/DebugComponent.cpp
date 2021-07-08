@@ -10,7 +10,10 @@
 #include "AreaSystemComponent.h"
 #include "InstanceSystemComponent.h"
 
+#include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Math/MathUtils.h>
@@ -21,11 +24,6 @@
 #include <Vegetation/Ebuses/AreaDebugBus.h>
 #include <Vegetation/Ebuses/SystemConfigurationBus.h>
 #include <Vegetation/Ebuses/InstanceSystemRequestBus.h>
-
-#include <ISystem.h>
-#include <IConsole.h>
-#include <MathConversion.h>
-#include <IRenderAuxGeom.h>
 
 #include <AzCore/std/sort.h>
 
@@ -112,18 +110,16 @@ void DebugComponent::Activate()
     DebugRequestBus::Handler::BusConnect();
     DebugNotificationBus::Handler::BusConnect();
     DebugNotificationBus::AllowFunctionQueuing(true);
-    AzFramework::DebugDisplayEventBus::Handler::BusConnect();
+    AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(GetEntityId());
     SystemConfigurationRequestBus::Handler::BusConnect();
-    AddConsoleVariables();
 
     VEG_PROFILE_METHOD(DebugSystemDataBus::BroadcastResult(m_debugData, &DebugSystemDataBus::Events::GetDebugData));
 }
 
 void DebugComponent::Deactivate()
 {
-    RemoveConsoleVariables();
     SystemConfigurationRequestBus::Handler::BusDisconnect();
-    AzFramework::DebugDisplayEventBus::Handler::BusDisconnect();
+    AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
     DebugRequestBus::Handler::BusDisconnect();
     DebugNotificationBus::Handler::BusDisconnect();
 
@@ -153,7 +149,7 @@ bool DebugComponent::WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const
     return false;
 }
 
-void DebugComponent::DrawGlobalDebugInfo()
+void DebugComponent::DisplayEntityViewport(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
 {
     // time to collect the report?
     if (AZStd::chrono::microseconds(AZStd::chrono::system_clock::now() - m_lastCollectionTime).count() > m_configuration.m_collectionFrequencyUs)
@@ -173,23 +169,25 @@ void DebugComponent::DrawGlobalDebugInfo()
         m_exportCurrentReport = false;
     }
 
+    if (m_configuration.m_showVisualization)
+    {
+        DrawSectorTimingData(viewportInfo, debugDisplay);
+    }
+
     if (m_configuration.m_showDebugStats)
     {
-        DrawDebugStats();
+        DrawDebugStats(debugDisplay);
     }
 
     if (m_configuration.m_showInstanceVisualization)
     {
-        DrawInstanceDebug();
+        DrawInstanceDebug(debugDisplay);
     }
 }
 
-void DebugComponent::DrawInstanceDebug()
+void DebugComponent::DrawInstanceDebug(AzFramework::DebugDisplayRequests& debugDisplay)
 {
 #if defined(VEG_PROFILE_ENABLED)
-    // ToDo: Re-implement with Atom. LYN-3681
-    /*renderAuxGeom->SetRenderFlags(e_Mode3D | e_FillModeSolid | e_CullModeBack | e_DepthWriteOff | e_DepthTestOn);
-
     AZStd::unordered_map<AreaId, AreaDebugDisplayData> areaDebugDisplayDataMap;
 
     for (const auto& instance : m_activeInstances)
@@ -213,14 +211,85 @@ void DebugComponent::DrawInstanceDebug()
         {
             continue;
         }
- 
-        Vec3 pos(AZVec3ToLYVec3(instanceData.m_position));
-        Vec3 radius(areaDebugDisplayData.m_instanceSize * 0.5f);
-        AABB bounds(pos - radius, pos + radius);
 
-        renderAuxGeom->DrawAABB(bounds, true, ColorB(areaDebugDisplayData.m_instanceColor.ToU32()), eBBD_Faceted);
-    }*/
+        AZ::Vector3 radius(areaDebugDisplayData.m_instanceSize * 0.5f);
+        debugDisplay.SetColor(areaDebugDisplayData.m_instanceColor);
+        debugDisplay.DrawSolidBox(instanceData.m_position - radius, instanceData.m_position + radius);
+    }
 #endif
+}
+
+void DebugComponent::DrawSectorTimingData(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
+{
+    static const AZ::Color s_green = AZ::Color(0.3f, 0.9f, 0.3f, .05f);
+    static const AZ::Color s_yellow = AZ::Color(1.0f, 1.0f, 0.0f, .05f);
+    static const AZ::Color s_red = AZ::Color(1.0f, 0.0f, 0.0f, .05f);
+    static const float boxHeightAboveTerrain = 3.0f;
+
+
+    AreaSystemConfig areaConfig;
+    SystemConfigurationRequestBus::Broadcast(&SystemConfigurationRequestBus::Events::GetSystemConfig, &areaConfig);
+    const auto sectorSizeInMeters = areaConfig.m_sectorSizeInMeters;
+    const AZ::u32 maxTextDisplayDistance = m_configuration.m_maxLabelDisplayDistance;
+    const int maxDisplayCount = m_configuration.m_maxDatapointDisplayCount;
+
+    AZ::Vector3 cameraPos(0.0f);
+    if (auto viewportContextRequests = AZ::RPI::ViewportContextRequests::Get(); viewportContextRequests)
+    {
+        AZ::RPI::ViewportContextPtr viewportContext = viewportContextRequests->GetViewportContextById(viewportInfo.m_viewportId);
+        cameraPos = viewportContext->GetCameraTransform().GetTranslation();
+    }
+    AZ::Vector2 cameraPos2d(cameraPos.GetX(), cameraPos.GetY());
+
+    for (int i = 0; i < maxDisplayCount && i < m_currentSortedTimingList.size(); ++i)
+    {
+        const auto& sectorTiming = m_currentSortedTimingList[i];
+
+        AZ::Vector3 topCorner{ float(sectorTiming.m_id.first), float(sectorTiming.m_id.second), 0.0f };
+        topCorner *= float(sectorSizeInMeters);
+
+        AZ::Vector3 bottomCorner = topCorner +
+            AZ::Vector3(float(sectorSizeInMeters), float(sectorSizeInMeters), sectorTiming.m_worldPosition.GetZ() + boxHeightAboveTerrain);
+
+        auto aabb = AZ::Aabb::CreateFromMinMax(topCorner, bottomCorner);
+        const AZ::Color* color = &s_yellow;
+
+        if (sectorTiming.m_averageTimeUs >= m_configuration.m_maxThresholdUs)
+        {
+            color = &s_red;
+        }
+        else if (sectorTiming.m_averageTimeUs < m_configuration.m_minThresholdUs)
+        {
+            color = &s_green;
+        }
+
+        AZ::Color outlineColor(color->GetR(), color->GetG(), color->GetB(), 1.0f);
+
+        // Box around the entire sector
+        debugDisplay.SetColor(*color);
+        debugDisplay.DrawSolidBox(aabb.GetMin(), aabb.GetMax());
+        debugDisplay.SetColor(outlineColor);
+        debugDisplay.DrawWireBox(aabb.GetMin(), aabb.GetMax());
+
+        // Smaller box inside the sector
+        const AZ::Vector3 innerBoxRadius(0.5f);
+        debugDisplay.SetColor(outlineColor);
+        debugDisplay.DrawSolidBox(sectorTiming.m_worldPosition - innerBoxRadius, sectorTiming.m_worldPosition + innerBoxRadius);
+
+        AZ::Vector2 sectorPos2d(sectorTiming.m_worldPosition.GetX(), sectorTiming.m_worldPosition.GetY());
+        float distanceToCamera = cameraPos2d.GetDistance(sectorPos2d);
+
+        if (distanceToCamera <= maxTextDisplayDistance)
+        {
+            AZStd::string displayString = AZStd::string::format("Sector %d, %d\nTime: %dus\nUpdate Count: %d", sectorTiming.m_id.first,
+                sectorTiming.m_id.second, static_cast<int>(sectorTiming.m_averageTimeUs), sectorTiming.m_updateCount);
+
+            constexpr bool centerText = true;
+            constexpr float fontSize = 1.5f;
+            debugDisplay.SetColor(AZ::Color(1.0f));
+            debugDisplay.DrawTextLabel(sectorTiming.m_worldPosition, fontSize, displayString.c_str(), centerText);
+        }
+    }
 }
 
 void DebugComponent::CopyReportToSortedList()
@@ -885,23 +954,9 @@ void DebugComponent::PrepareNextReport()
     });
 }
 
-void DebugComponent::RemoveConsoleVariables()
+void DebugComponent::DrawDebugStats(AzFramework::DebugDisplayRequests& debugDisplay)
 {
-    ISystem* crySystem = GetISystem();
-    if (crySystem && crySystem->GetIConsole())
-    {
-        IConsole* console = crySystem->GetIConsole();
-        console->RemoveCommand("veg_debugToggleVisualization");
-        console->RemoveCommand("veg_debugDumpReport");
-        console->RemoveCommand("veg_debugRefreshAllAreas");
-        console->RemoveCommand("veg_debugClearAllAreas");
-    }
-}
-
-void DebugComponent::DrawDebugStats()
-{
-    // ToDo: Re-implement with Atom. LYN-3681
-    /*if (!m_debugData)
+    if (!m_debugData)
     {
         return;
     }
@@ -915,52 +970,48 @@ void DebugComponent::DrawDebugStats()
     AZ::u32 destroyTaskCount = 0;
     InstanceSystemStatsRequestBus::BroadcastResult(destroyTaskCount, &InstanceSystemStatsRequestBus::Events::GetDestroyTaskCount);
 
-    renderAuxGeom->Draw2dLabel(4, 16, 1.5f, ColorF(1, 1, 1), false,
-        AZStd::string::format("VegetationSystemStats:\nActive Instances Count: %d\nInstance Register Queue: %d\nInstance Unregister Queue: %d\nThread Queue Count: %d\nThread Processing Count: %d", 
-        instanceCount,
-        createTaskCount,
-        destroyTaskCount,
-        m_debugData->m_areaTaskQueueCount.load(AZStd::memory_order_relaxed),
-        m_debugData->m_areaTaskActiveCount.load(AZStd::memory_order_relaxed)
-        ).c_str());*/
-}
-
-void DebugComponent::AddConsoleVariables()
-{
-    ISystem* crySystem = GetISystem();
-    if (crySystem && crySystem->GetIConsole())
-    {
-        IConsole* console = crySystem->GetIConsole();
-
-        static auto fnCmdToggleDebugger = []([[maybe_unused]] IConsoleCmdArgs* args)
-        {
-            DebugNotificationBus::Broadcast(&DebugNotificationBus::Events::ToggleVisualization);
-        };
-        console->AddCommand("veg_debugToggleVisualization", fnCmdToggleDebugger, VF_NULL, "Toggles visualization of sector timings");
-
-        static auto fnCmdDumpReport = []([[maybe_unused]] IConsoleCmdArgs* args)
-        {
-            DebugNotificationBus::Broadcast(&DebugNotificationBus::Events::ExportCurrentReport);
-        };
-        console->AddCommand("veg_debugDumpReport", fnCmdDumpReport, VF_NULL, "Writes out a vegetation sector report");
-
-        static auto fnRefreshAllAreas = []([[maybe_unused]] IConsoleCmdArgs* args)
-        {
-            AreaSystemRequestBus::Broadcast(&AreaSystemRequestBus::Events::RefreshAllAreas);
-        };
-        console->AddCommand("veg_debugRefreshAllAreas", fnRefreshAllAreas, VF_NULL, "Refresh all vegetation areas in the current view");
-
-        static auto fnClearAllAreas = []([[maybe_unused]] IConsoleCmdArgs* args)
-        {
-            AreaSystemRequestBus::Broadcast(&AreaSystemRequestBus::Events::ClearAllAreas);
-            AreaSystemRequestBus::Broadcast(&AreaSystemRequestBus::Events::RefreshAllAreas);
-        };
-        console->AddCommand("veg_debugClearAllAreas", fnClearAllAreas, VF_NULL, "Clear and refresh all vegetation areas in the current view");
-    }
+    debugDisplay.SetColor(AZ::Color(1.0f));
+    debugDisplay.Draw2dTextLabel(
+        4.0f, 16.0f, 1.5f,
+        AZStd::string::format(
+            "VegetationSystemStats:\nActive Instances Count: %d\nInstance Register Queue: %d\nInstance Unregister Queue: %d\nThread "
+            "Queue Count: %d\nThread Processing Count: %d",
+            instanceCount, createTaskCount, destroyTaskCount, m_debugData->m_areaTaskQueueCount.load(AZStd::memory_order_relaxed),
+            m_debugData->m_areaTaskActiveCount.load(AZStd::memory_order_relaxed))
+            .c_str(),
+        false);
 }
 
 namespace
 {
+    static void veg_debugToggleVisualization([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
+    {
+        DebugNotificationBus::Broadcast(&DebugNotificationBus::Events::ToggleVisualization);
+    }
+    AZ_CONSOLEFREEFUNC(veg_debugToggleVisualization, AZ::ConsoleFunctorFlags::DontReplicate, "Toggles visualization of sector timings");
+
+    static void veg_debugDumpReport([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
+    {
+        DebugNotificationBus::Broadcast(&DebugNotificationBus::Events::ExportCurrentReport);
+    }
+    AZ_CONSOLEFREEFUNC(veg_debugDumpReport, AZ::ConsoleFunctorFlags::DontReplicate, "Writes out a vegetation sector report");
+
+    static void veg_debugRefreshAllAreas([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
+    {
+        AreaSystemRequestBus::Broadcast(&AreaSystemRequestBus::Events::RefreshAllAreas);
+    }
+    AZ_CONSOLEFREEFUNC(
+        veg_debugRefreshAllAreas, AZ::ConsoleFunctorFlags::DontReplicate, "Refresh all vegetation areas in the current view");
+
+    static void veg_debugClearAllAreas([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
+    {
+        AreaSystemRequestBus::Broadcast(&AreaSystemRequestBus::Events::ClearAllAreas);
+        AreaSystemRequestBus::Broadcast(&AreaSystemRequestBus::Events::RefreshAllAreas);
+    }
+    AZ_CONSOLEFREEFUNC(
+        veg_debugClearAllAreas, AZ::ConsoleFunctorFlags::DontReplicate, "Clear and refresh all vegetation areas in the current view");
+
+
     const char* GetSortTypeString(DebugRequests::SortType sortType)
     {
         switch (sortType)
