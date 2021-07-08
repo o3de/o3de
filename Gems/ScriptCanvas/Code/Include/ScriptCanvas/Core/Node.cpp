@@ -2949,45 +2949,6 @@ namespace ScriptCanvas
         }
     }
 
-    void Node::SetInput(const Datum& newInput, const SlotId& slotId)
-    {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::ScriptCanvas);
-
-        ModifiableDatumView datumView;
-        FindModifiableDatumView(slotId, datumView);
-
-        if (datumView.IsValid())
-        {
-            datumView.AssignToDatum(newInput);
-        }
-    }
-
-    void Node::SetInput(Datum&& newInput, const SlotId& slotId)
-    {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::ScriptCanvas);
-
-        ModifiableDatumView datumView;
-        FindModifiableDatumView(slotId, datumView);
-
-        if (datumView.IsValid())
-        {
-            datumView.AssignToDatum(newInput);
-        }
-    }
-
-    void Node::SetInput(Node& node, const SlotId& id, const Datum& input)
-    {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::ScriptCanvas);
-        node.SetInput(input, id);
-    }
-
-    void Node::SetInput(Node& node, const SlotId& id, Datum&& input)
-    {
-        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "ScriptCanvas::Node::SetInput");
-
-        node.SetInput(AZStd::move(input), id);
-    }
-
     AZStd::string Node::GetDebugName() const
     {
         if (GetEntityId().IsValid())

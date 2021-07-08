@@ -841,9 +841,6 @@ namespace ScriptCanvas
 
         void SignalSlotsReordered();
 
-        static void SetInput(Node& node, const SlotId& id, const Datum& input);
-        static void SetInput(Node& node, const SlotId& id, Datum&& input);
-
         // Will ignore any references and return the Datum that the slot represents.
         void ModifyUnderlyingSlotDatum(const SlotId& id, ModifiableDatumView& datumView);
 
@@ -994,9 +991,6 @@ protected:
 
         void SetOwningScriptCanvasId(ScriptCanvasId scriptCanvasId);
         void SetGraphEntityId(AZ::EntityId graphEntityId);
-
-        virtual void SetInput(const Datum& input, const SlotId& id);
-        virtual void SetInput(Datum&& input, const SlotId& id);
 
         bool SlotExists(AZStd::string_view name, const SlotDescriptor& slotDescriptor) const;
 

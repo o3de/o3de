@@ -806,7 +806,7 @@ namespace ScriptCanvas
 
             m_dotLua.Write("(");
 
-            if (execution->IsStart() && execution->IsPure())
+            if (execution == m_model.GetStart() && execution->IsPure())
             {
                 m_dotLua.Write(Grammar::k_executionStateVariableName);
 
@@ -1589,8 +1589,10 @@ namespace ScriptCanvas
                 break;
             }
 
-            // #functions2 pure on graph start nodes with dependencies can only be added to the graph as variables
-//             if (execution->IsStart() && execution->IsPure())
+            // #functions2 pure on graph start nodes with dependencies can only be added to the graph as variables, which is a work-flow we may never want to support
+            // as it effectively duplicates the Component-Entity-System. Technically, if this functionality is desired, one could just add another script component
+            // with the additional graph...
+//             if (execution->IsStartCall() && execution->IsPure())
 //             {
 //                 WriteFunctionCallInputOfChildStart(execution);
 //             }
@@ -1944,7 +1946,7 @@ namespace ScriptCanvas
                 {
                     const auto requirement = ParseConstructionRequirement(variable);
 
-                    if (requirement == Grammar::VariableConstructionRequirement::None || (requirement != Grammar::VariableConstructionRequirement::Static && !execution->IsStart()))
+                    if (requirement == Grammar::VariableConstructionRequirement::None || (requirement != Grammar::VariableConstructionRequirement::Static && !execution->IsStartCall()))
                     {
                         m_dotLua.WriteLineIndented("local %s = %s", variable->m_name.data(), ToValueString(variable->m_datum, m_configuration).data());
                     }

@@ -199,7 +199,7 @@ namespace ScriptCanvas
 
             bool IsPure() const;
 
-            bool IsStart() const;
+            bool IsStartCall() const;
 
             void MarkDebugEmptyStatement();
 
@@ -215,7 +215,7 @@ namespace ScriptCanvas
 
             void MarkRootLatent();
 
-            void MarkStart();
+            void MarkStartCall();
 
             ExecutionChild& ModChild(size_t index);
 
@@ -286,7 +286,7 @@ namespace ScriptCanvas
 
             bool m_isPure = false;
 
-            bool m_isStart = false;
+            bool m_isStartCall = false;
 
             bool m_hasExplicitUserOutCalls = false;
 

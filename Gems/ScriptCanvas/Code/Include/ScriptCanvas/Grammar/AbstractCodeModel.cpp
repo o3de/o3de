@@ -2422,17 +2422,17 @@ namespace ScriptCanvas
 
             ExecutionTreePtr start = OpenScope(nullptr, startNode, nullptr);
             start->SetSymbol(Symbol::FunctionDefinition);
+            m_start = start; // cache the function definition
 
             if (!m_subgraphStartCalls.empty())
             {
-                m_start = start;
-
+                // call OnGraphStart on all the member nodeables first
                 for (auto node : m_subgraphStartCalls)
                 {
                     ExecutionTreePtr childStartCall = CreateChild(start, node, nullptr);
                     childStartCall->SetSymbol(Symbol::FunctionCall);
                     childStartCall->SetName(k_OnGraphStartFunctionName);
-                    childStartCall->MarkStart();
+                    childStartCall->MarkStartCall();
 
                     auto lexicalScopeOutcome = node->GetFunctionCallLexicalScope(nullptr);
 
@@ -2478,11 +2478,13 @@ namespace ScriptCanvas
                 }
             }
 
+            // ExecutionTreePtr start is now either the last child start() call, or the beginning of the function block,
+            // either way, parsing can continue from the ExecutionTreePtr start.
+
             if (!outSlots.empty())
             {
                 start->AddChild({ outSlots[0], {}, nullptr });
-                start->MarkStart();
-
+                
                 ParseExecutionMultipleOutSyntaxSugar(start, outNodes, outSlots);
                 PostParseProcess(start);
                 PostParseErrorDetect(start);
@@ -2490,24 +2492,10 @@ namespace ScriptCanvas
                 if (!IsErrorFree())
                 {
                     start->Clear();
-
-                    if (m_start)
-                    {
-                        m_start->Clear();
-                    }
-
+                    m_start->Clear();
                     AddError(AZ::EntityId{}, nullptr, ScriptCanvas::ParseErrors::StartNodeFailedToParse);
                     return;
                 }
-
-                if (!m_start)
-                {
-                    m_start = start;
-                }
-            }
-            else
-            {
-                // add warning or notification on useless start node?
             }
 
             if (m_start)
@@ -4428,6 +4416,7 @@ namespace ScriptCanvas
                 if (auto eventHandling = GetEBusEventHandling(node))
                 {
                     auto variable = AZStd::make_shared<Variable>();
+                    variable->m_isMember = true;
                     variable->m_datum = Datum(eventHandling->m_handlerName);
                     execution->MarkInputHasThisPointer();
                     execution->AddInput({ nullptr, variable, DebugDataSource::FromInternal() });
