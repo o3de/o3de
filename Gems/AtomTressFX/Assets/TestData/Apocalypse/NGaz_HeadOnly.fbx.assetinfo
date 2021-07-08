@@ -1,0 +1,90 @@
+{
+    "values": [
+        {
+            "$type": "ActorGroup",
+            "name": "NGaz_HeadOnly",
+            "id": "{6E198AF7-97B2-516B-BB05-38D53ED04BC5}",
+            "rules": {
+                "rules": [
+                    {
+                        "$type": "CoordinateSystemRule"
+                    }
+                ]
+            }
+        },
+        {
+            "$type": "{07B356B7-3635-40B5-878A-FAC4EFD5AD86} MeshGroup",
+            "name": "NGaz_HeadOnly",
+            "nodeSelectionList": {
+                "selectedNodes": [
+                    "RootNode",
+                    "RootNode.HeadFinal3",
+                    "RootNode.Neck_01",
+                    "RootNode.HeadFinal3.HeadFinal3_1",
+                    "RootNode.HeadFinal3.HeadFinal3_2",
+                    "RootNode.HeadFinal3.HeadFinal3_3",
+                    "RootNode.Neck_01.transform",
+                    "RootNode.Neck_01.Neck_02",
+                    "RootNode.HeadFinal3.HeadFinal3_1.Col0",
+                    "RootNode.HeadFinal3.HeadFinal3_1.Col1",
+                    "RootNode.HeadFinal3.HeadFinal3_1.SkinWeight_0",
+                    "RootNode.HeadFinal3.HeadFinal3_1.transform",
+                    "RootNode.HeadFinal3.HeadFinal3_1.UV0",
+                    "RootNode.HeadFinal3.HeadFinal3_1.UV1",
+                    "RootNode.HeadFinal3.HeadFinal3_1.NGaztak_XGEN_Start_0001:HeadFrM_Usethis1_lambert",
+                    "RootNode.HeadFinal3.HeadFinal3_1.NGaztak_XGEN_Start_0001:blinn1",
+                    "RootNode.HeadFinal3.HeadFinal3_1.NGaztak_XGEN_Start_0001:Material #31",
+                    "RootNode.HeadFinal3.HeadFinal3_2.Col0",
+                    "RootNode.HeadFinal3.HeadFinal3_2.Col1",
+                    "RootNode.HeadFinal3.HeadFinal3_2.SkinWeight_1",
+                    "RootNode.HeadFinal3.HeadFinal3_2.transform",
+                    "RootNode.HeadFinal3.HeadFinal3_2.UV0",
+                    "RootNode.HeadFinal3.HeadFinal3_2.UV1",
+                    "RootNode.HeadFinal3.HeadFinal3_2.NGaztak_XGEN_Start_0001:HeadFrM_Usethis1_lambert",
+                    "RootNode.HeadFinal3.HeadFinal3_2.NGaztak_XGEN_Start_0001:blinn1",
+                    "RootNode.HeadFinal3.HeadFinal3_2.NGaztak_XGEN_Start_0001:Material #31",
+                    "RootNode.HeadFinal3.HeadFinal3_3.Col0",
+                    "RootNode.HeadFinal3.HeadFinal3_3.Col1",
+                    "RootNode.HeadFinal3.HeadFinal3_3.SkinWeight_2",
+                    "RootNode.HeadFinal3.HeadFinal3_3.transform",
+                    "RootNode.HeadFinal3.HeadFinal3_3.UV0",
+                    "RootNode.HeadFinal3.HeadFinal3_3.UV1",
+                    "RootNode.HeadFinal3.HeadFinal3_3.NGaztak_XGEN_Start_0001:HeadFrM_Usethis1_lambert",
+                    "RootNode.HeadFinal3.HeadFinal3_3.NGaztak_XGEN_Start_0001:blinn1",
+                    "RootNode.HeadFinal3.HeadFinal3_3.NGaztak_XGEN_Start_0001:Material #31",
+                    "RootNode.Neck_01.Neck_02.transform",
+                    "RootNode.Neck_01.Neck_02.Head_01",
+                    "RootNode.Neck_01.Neck_02.Head_01.transform",
+                    "RootNode.Neck_01.Neck_02.Head_01.Head_02",
+                    "RootNode.Neck_01.Neck_02.Head_01.R_Eye_01",
+                    "RootNode.Neck_01.Neck_02.Head_01.L_Eye_01",
+                    "RootNode.Neck_01.Neck_02.Head_01.Head_02.transform",
+                    "RootNode.Neck_01.Neck_02.Head_01.R_Eye_01.transform",
+                    "RootNode.Neck_01.Neck_02.Head_01.R_Eye_01.R_Eye_02",
+                    "RootNode.Neck_01.Neck_02.Head_01.L_Eye_01.transform",
+                    "RootNode.Neck_01.Neck_02.Head_01.L_Eye_01.L_Eye_02",
+                    "RootNode.Neck_01.Neck_02.Head_01.R_Eye_01.R_Eye_02.transform",
+                    "RootNode.Neck_01.Neck_02.Head_01.L_Eye_01.L_Eye_02.transform"
+                ]
+            },
+            "rules": {
+                "rules": [
+                    {
+                        "$type": "SkinRule"
+                    },
+                    {
+                        "$type": "StaticMeshAdvancedRule",
+                        "vertexColorStreamName": "Col0"
+                    },
+                    {
+                        "$type": "MaterialRule"
+                    },
+                    {
+                        "$type": "CoordinateSystemRule"
+                    }
+                ]
+            },
+            "id": "{00BD7550-B77E-5A83-A4C7-07023DF59287}"
+        }
+    ]
+}

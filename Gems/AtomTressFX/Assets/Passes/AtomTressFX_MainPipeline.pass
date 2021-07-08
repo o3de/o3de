@@ -1,0 +1,1112 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "MainPipeline",
+            "PassClass": "ParentPass",
+            "Slots": [
+                {
+                    "Name": "SwapChainOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget"
+                }
+            ],
+            "PassRequests": [
+                {
+                    "Name": "MorphTargetPass",
+                    "TemplateName": "MorphTargetPassTemplate"
+                },
+                {
+                    "Name": "SkinningPass",
+                    "TemplateName": "SkinningPassTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedMeshOutputStream",
+                            "AttachmentRef": {
+                                "Pass": "MorphTargetPass",
+                                "Attachment": "MorphTargetDeltaOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "RayTracingAccelerationStructurePass",
+                    "TemplateName": "RayTracingAccelerationStructurePassTemplate"
+                },
+                {
+                    "Name": "DiffuseProbeGridUpdatePass",
+                    "TemplateName": "DiffuseProbeGridUpdatePassTemplate",
+                    "ExecuteAfter": [
+                        "RayTracingAccelerationStructurePass"
+                    ]
+                },
+                {
+                    "Name": "CascadedShadowmapsPass",
+                    "TemplateName": "CascadedShadowmapsTemplate",
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "DrawListTag": "shadow",
+                        "PipelineViewTag": "DirectionalLightView"
+                    },
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedMeshes",
+                            "AttachmentRef": {
+                                "Pass": "SkinningPass",
+                                "Attachment": "SkinnedMeshOutputStream"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "SpotLightShadowmapsPass",
+                    "TemplateName": "SpotLightShadowmapsTemplate",
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "DrawListTag": "shadow",
+                        "PipelineViewTag": "SpotLightView"
+                    },
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedMeshes",
+                            "AttachmentRef": {
+                                "Pass": "SkinningPass",
+                                "Attachment": "SkinnedMeshOutputStream"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "EsmShadowmapsPassDirectional",
+                    "TemplateName": "EsmShadowmapsTemplate",
+                    "PassData": {
+                        "$type": "EsmShadowmapsPassData",
+                        "LightType": "directional"
+                    },
+                    "Connections": [
+                        {
+                            "LocalSlot": "DepthShadowmaps",
+                            "AttachmentRef": {
+                                "Pass": "CascadedShadowmapsPass",
+                                "Attachment": "Shadowmap"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "EsmShadowmapsPassSpot",
+                    "TemplateName": "EsmShadowmapsTemplate",
+                    "PassData": {
+                        "$type": "EsmShadowmapsPassData",
+                        "LightType": "spot"
+                    },
+                    "Connections": [
+                        {
+                            "LocalSlot": "DepthShadowmaps",
+                            "AttachmentRef": {
+                                "Pass": "SpotLightShadowmapsPass",
+                                "Attachment": "Shadowmap"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "DepthMSAAPass",
+                    "TemplateName": "DepthMSAAPassTemplate",
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "DrawListTag": "depth",
+                        "PipelineViewTag": "MainCamera"
+                    },
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedMeshes",
+                            "AttachmentRef": {
+                                "Pass": "SkinningPass",
+                                "Attachment": "SkinnedMeshOutputStream"
+                            }
+                        }
+                    ]
+                },
+                // The light culling system can do highly accurate culling of transparent objects but it needs
+                // more depth information than the opaque geometry pass can provide
+                // Specifically the minimum and maximum depth of transparent objects
+                {
+                    "Name": "DepthTransparentMinPass",
+                    "TemplateName": "DepthPassTemplate",
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "DrawListTag": "depthTransparentMin",
+                        "PipelineViewTag": "MainCamera"
+                    },
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedMeshes",
+                            "AttachmentRef": {
+                                "Pass": "SkinningPass",
+                                "Attachment": "SkinnedMeshOutputStream"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "DepthTransparentMaxPass",
+                    "TemplateName": "DepthMaxPassTemplate",
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "DrawListTag": "depthTransparentMax",
+                        "PipelineViewTag": "MainCamera"
+                    },
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedMeshes",
+                            "AttachmentRef": {
+                                "Pass": "SkinningPass",
+                                "Attachment": "SkinnedMeshOutputStream"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "LightCullingTilePreparePass",
+                    "TemplateName": "LightCullingTilePrepareMSAATemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Depth",
+                            "AttachmentRef": {
+                                "Pass": "DepthMSAAPass",
+                                "Attachment": "Output"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthTransparentMin",
+                            "AttachmentRef": {
+                                "Pass": "DepthTransparentMinPass",
+                                "Attachment": "Output"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthTransparentMax",
+                            "AttachmentRef": {
+                                "Pass": "DepthTransparentMaxPass",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "LightCullingPass",
+                    "TemplateName": "LightCullingTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "TileLightData",
+                            "AttachmentRef": {
+                                "Pass": "LightCullingTilePreparePass",
+                                "Attachment": "TileLightData"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "LightCullingRemapPass",
+                    "TemplateName": "LightCullingRemapTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "TileLightData",
+                            "AttachmentRef": {
+                                "Pass": "LightCullingTilePreparePass",
+                                "Attachment": "TileLightData"
+                            }
+                        },
+                        {
+                            "LocalSlot": "LightCount",
+                            "AttachmentRef": {
+                                "Pass": "LightCullingPass",
+                                "Attachment": "LightCount"
+                            }
+                        },
+                        {
+                            "LocalSlot": "LightList",
+                            "AttachmentRef": {
+                                "Pass": "LightCullingPass",
+                                "Attachment": "LightList"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "ForwardMSAAPass",
+                    "TemplateName": "ForwardMSAAPassTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "DirectionalLightShadowmap",
+                            "AttachmentRef": {
+                                "Pass": "CascadedShadowmapsPass",
+                                "Attachment": "Shadowmap"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ExponentialShadowmapDirectional",
+                            "AttachmentRef": {
+                                "Pass": "EsmShadowmapsPassDirectional",
+                                "Attachment": "EsmShadowmaps"
+                            }
+                        },
+                        {
+                            "LocalSlot": "SpotLightShadowmap",
+                            "AttachmentRef": {
+                                "Pass": "SpotLightShadowmapsPass",
+                                "Attachment": "Shadowmap"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ExponentialShadowmapSpot",
+                            "AttachmentRef": {
+                                "Pass": "EsmShadowmapsPassSpot",
+                                "Attachment": "EsmShadowmaps"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthStencilInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "DepthMSAAPass",
+                                "Attachment": "Output"
+                            }
+                        },
+                        {
+                            "LocalSlot": "TileLightData",
+                            "AttachmentRef": {
+                                "Pass": "LightCullingRemapPass",
+                                "Attachment": "TileLightData"
+                            }
+                        },
+                        {
+                            "LocalSlot": "LightListRemapped",
+                            "AttachmentRef": {
+                                "Pass": "LightCullingRemapPass",
+                                "Attachment": "LightListRemapped"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "DrawListTag": "forward",
+                        "PipelineViewTag": "MainCamera",
+                        "PassSrgAsset": {
+                            "FilePath": "shaderlib/atom/features/pbr/forwardpasssrg.azsli:PassSrg"
+                        }
+                    }
+                },
+                {
+                    "Name": "DiffuseGlobalIlluminationPass",
+                    "TemplateName": "DiffuseGlobalIlluminationPassTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "DiffuseInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "ForwardMSAAPass",
+                                "Attachment": "DiffuseOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "AlbedoInput",
+                            "AttachmentRef": {
+                                "Pass": "ForwardMSAAPass",
+                                "Attachment": "AlbedoOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "NormalInput",
+                            "AttachmentRef": {
+                                "Pass": "ForwardMSAAPass",
+                                "Attachment": "NormalOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthStencilInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "ForwardMSAAPass",
+                                "Attachment": "DepthStencilInputOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "ReflectionsPass",
+                    "TemplateName": "ReflectionsParentPassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "NormalInput",
+                            "AttachmentRef": {
+                                "Pass": "ForwardMSAAPass",
+                                "Attachment": "NormalOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "SpecularF0Input",
+                            "AttachmentRef": {
+                                "Pass": "ForwardMSAAPass",
+                                "Attachment": "SpecularF0Output"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ClearCoatNormalInput",
+                            "AttachmentRef": {
+                                "Pass": "ForwardMSAAPass",
+                                "Attachment": "ClearCoatNormalOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthStencilInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "ForwardMSAAPass",
+                                "Attachment": "DepthStencilInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "SpecularInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "ForwardMSAAPass",
+                                "Attachment": "SpecularOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "SkyBoxPass",
+                    "TemplateName": "SkyBoxTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "SpecularInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "ReflectionsPass",
+                                "Attachment": "SpecularInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ReflectionInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "ReflectionsPass",
+                                "Attachment": "ReflectionOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "SkyBoxDepth",
+                            "AttachmentRef": {
+                                "Pass": "ReflectionsPass",
+                                "Attachment": "DepthStencilInputOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "ReflectionCompositePass",
+                    "TemplateName": "ReflectionCompositePassTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "ReflectionInput",
+                            "AttachmentRef": {
+                                "Pass": "SkyBoxPass",
+                                "Attachment": "ReflectionInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "SpecularInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "SkyBoxPass",
+                                "Attachment": "SpecularInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthStencilInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "SkyBoxPass",
+                                "Attachment": "SkyBoxDepth"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "FullscreenTrianglePassData",
+                        "ShaderAsset": {
+                            "FilePath": "Shaders/Reflections/ReflectionComposite.shader"
+                        },
+                        "StencilRef": 1,
+                        "PipelineViewTag": "MainCamera"
+                    }
+                },
+                {
+                    "Name": "MSAAResolveDiffusePass",
+                    "TemplateName": "MSAAResolveColorTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "DiffuseGlobalIlluminationPass",
+                                "Attachment": "DiffuseInputOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "MSAAResolveSpecularPass",
+                    "TemplateName": "MSAAResolveColorTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "ReflectionCompositePass",
+                                "Attachment": "SpecularInputOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "MSAAResolveScatterDistancePass",
+                    "TemplateName": "MSAAResolveColorTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "ForwardMSAAPass",
+                                "Attachment": "ScatterDistanceOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "MSAAResolveDepthPass",
+                    "TemplateName": "MSAAResolveDepthTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "ReflectionsPass",
+                                "Attachment": "DepthStencilInputOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "CameraMotionVectorPass",
+                    "TemplateName": "CameraMotionVectorPassTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "MSAAResolveDepthPass",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "PipelineViewTag": "MainCamera"
+                    }
+                },
+                {
+                    "Name": "MeshMotionVectorPass",
+                    "TemplateName": "MeshMotionVectorPassTemplate",
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "DrawListTag": "motion",
+                        "PipelineViewTag": "MainCamera"
+                    },
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedMeshes",
+                            "AttachmentRef": {
+                                "Pass": "SkinningPass",
+                                "Attachment": "SkinnedMeshOutputStream"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "DepthToLinearDepthPass",
+                    "TemplateName": "DepthToLinearTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "MSAAResolveDepthPass",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "SubsurfaceScatteringPass",
+                    "TemplateName": "SubsurfaceScatteringPassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputDiffuse",
+                            "AttachmentRef": {
+                                "Pass": "MSAAResolveDiffusePass",
+                                "Attachment": "Output"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputLinearDepth",
+                            "AttachmentRef": {
+                                "Pass": "DepthToLinearDepthPass",
+                                "Attachment": "Output"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputScatterDistance",
+                            "AttachmentRef": {
+                                "Pass": "MSAAResolveScatterDistancePass",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "ComputePassData",
+                        "ShaderAsset": {
+                            "FilePath": "Shaders/PostProcessing/ScreenSpaceSubsurfaceScatteringCS.shader"
+                        },
+                        "Make Fullscreen Pass": true,
+                        "PipelineViewTag": "MainCamera"
+                    }
+                },
+                {
+                    "Name": "Ssao",
+                    "TemplateName": "SsaoParentTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "LinearDepth",
+                            "AttachmentRef": {
+                                "Pass": "DepthToLinearDepthPass",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "ModulateWithSsao",
+                    "TemplateName": "ModulateTextureTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "Ssao",
+                                "Attachment": "Output"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputOutput",
+                            "AttachmentRef": {
+                                "Pass": "SubsurfaceScatteringPass",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "ComputePassData",
+                        "ShaderAsset": {
+                            "FilePath": "Shaders/PostProcessing/ModulateTexture.shader"
+                        },
+                        "Make Fullscreen Pass": true
+                    }
+                },
+                {
+                    "Name": "DiffuseSpecularMergePass",
+                    "TemplateName": "DiffuseSpecularMergeTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputDiffuse",
+                            "AttachmentRef": {
+                                "Pass": "ModulateWithSsao",
+                                "Attachment": "InputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputSpecular",
+                            "AttachmentRef": {
+                                "Pass": "MSAAResolveSpecularPass",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "TransparentPass",
+                    "TemplateName": "TransparentPassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputOutput",
+                            "AttachmentRef": {
+                                "Pass": "DiffuseSpecularMergePass",
+                                "Attachment": "Output"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DirectionalLightShadowmap",
+                            "AttachmentRef": {
+                                "Pass": "CascadedShadowmapsPass",
+                                "Attachment": "Shadowmap"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ExponentialShadowmapDirectional",
+                            "AttachmentRef": {
+                                "Pass": "EsmShadowmapsPassDirectional",
+                                "Attachment": "EsmShadowmaps"
+                            }
+                        },
+                        {
+                            "LocalSlot": "SpotLightShadowmap",
+                            "AttachmentRef": {
+                                "Pass": "SpotLightShadowmapsPass",
+                                "Attachment": "Shadowmap"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ExponentialShadowmapSpot",
+                            "AttachmentRef": {
+                                "Pass": "EsmShadowmapsPassSpot",
+                                "Attachment": "EsmShadowmaps"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthStencil",
+                            "AttachmentRef": {
+                                "Pass": "MSAAResolveDepthPass",
+                                "Attachment": "Output"
+                            }
+                        },
+                        {
+                            "LocalSlot": "TileLightData",
+                            "AttachmentRef": {
+                                "Pass": "LightCullingRemapPass",
+                                "Attachment": "TileLightData"
+                            }
+                        },
+                        {
+                            "LocalSlot": "LightListRemapped",
+                            "AttachmentRef": {
+                                "Pass": "LightCullingRemapPass",
+                                "Attachment": "LightListRemapped"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "DrawListTag": "transparent",
+                        "DrawListSortType": "KeyThenReverseDepth",
+                        "PipelineViewTag": "MainCamera",
+                        "PassSrgAsset": {
+                            "FilePath": "shaderlib/atom/features/pbr/transparentpasssrg.azsli:PassSrg"
+                        }
+                    }
+                },
+
+                {
+                    "Name": "HairSkinningComputePass",
+                    "TemplateName": "HairSkinningComputePassTemplate",
+                    "Enabled": true
+                },
+                {
+                    "Name": "HairPPLLRasterPass",
+                    "TemplateName": "HairPPLLRasterPassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedHairSharedBuffer",
+                            "AttachmentRef": {
+                                "Pass": "HairSkinningComputePass",
+                                "Attachment": "SkinnedHairSharedBuffer"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "HairPPLLResolvePass",
+                    "TemplateName": "HairPPLLResolvePassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedHairSharedBuffer",
+                            "AttachmentRef": {
+                                "Pass": "HairPPLLRasterPass",
+                                "Attachment": "SkinnedHairSharedBuffer"
+                            }
+                        },
+                        {
+                            "LocalSlot": "PerPixelListHead",
+                            "AttachmentRef": {
+                                "Pass": "HairPPLLRasterPass",
+                                "Attachment": "PerPixelListHead"
+                            }
+                        },
+                        {
+                            "LocalSlot": "PerPixelLinkedList",
+                            "AttachmentRef": {
+                                "Pass": "HairPPLLRasterPass",
+                                "Attachment": "PerPixelLinkedList"
+                            }
+                        }
+                    ]
+                },
+
+                {
+                    "Name": "DeferredFogPass",
+                    "TemplateName": "DeferredFogPassTemplate",
+                    "Enabled": false,
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputLinearDepth",
+                            "AttachmentRef": {
+                                "Pass": "DepthToLinearDepthPass",
+                                "Attachment": "Output"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputDepthStencil",
+                            "AttachmentRef": {
+                                "Pass": "MSAAResolveDepthPass",
+                                "Attachment": "Output"
+                            }
+                        },
+                        {
+                            "LocalSlot": "RenderTargetInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "TransparentPass",
+                                "Attachment": "InputOutput"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "FullscreenTrianglePassData",
+                        "ShaderAsset": {
+                            "FilePath": "Shaders/ScreenSpace/DeferredFog.shader"
+                        },
+                        "PipelineViewTag": "MainCamera"
+                    }
+                },
+                {
+                    "Name": "ReflectionCopyFrameBufferPass",
+                    "TemplateName": "ReflectionCopyFrameBufferPassTemplate",
+                    "Enabled": false,
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "DeferredFogPass",
+                                "Attachment": "RenderTargetInputOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "SMAA1xApplyLinearHDRColorPass",
+                    "TemplateName": "SMAA1xApplyLinearHDRColorTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputColor",
+                            "AttachmentRef": {
+                                "Pass": "DeferredFogPass",
+                                "Attachment": "RenderTargetInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputDepth",
+                            "AttachmentRef": {
+                                "Pass": "MSAAResolveDepthPass",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "DepthOfFieldPass",
+                    "TemplateName": "DepthOfFieldTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "DoFColorInput",
+                            "AttachmentRef": {
+                                "Pass": "SMAA1xApplyLinearHDRColorPass",
+                                "Attachment": "OutputColor"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DoFDepthInput",
+                            "AttachmentRef": {
+                                "Pass": "MSAAResolveDepthPass",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "BloomPass",
+                    "TemplateName": "BloomPassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputOutput",
+                            "AttachmentRef": {
+                                "Pass": "DepthOfFieldPass",
+                                "Attachment": "DoFOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "DownsampleLuminanceMinAvgMax",
+                    "TemplateName": "DownsampleLuminanceMinAvgMaxCS",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "BloomPass",
+                                "Attachment": "InputOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "DownsampleLuminanceMipChain",
+                    "TemplateName": "DownsampleMipChainTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "MipChainInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "DownsampleLuminanceMinAvgMax",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "DownsampleMipChainPassData",
+                        "ShaderAsset": {
+                            "FilePath": "Shaders/PostProcessing/DownsampleMinAvgMaxCS.shader"
+                        }
+                    }
+                },
+                {
+                    "Name": "EyeAdaptationPass",
+                    "TemplateName": "EyeAdaptationTemplate",
+                    "Enabled": false,
+                    "Connections": [
+                        {
+                            "LocalSlot": "SceneLuminanceInput",
+                            "AttachmentRef": {
+                                "Pass": "DownsampleLuminanceMipChain",
+                                "Attachment": "MipChainInputOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "LookModificationTransformPass",
+                    "TemplateName": "LookModificationTransformTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "BloomPass",
+                                "Attachment": "InputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "EyeAdaptationDataInput",
+                            "AttachmentRef": {
+                                "Pass": "EyeAdaptationPass",
+                                "Attachment": "EyeAdaptationDataInputOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "DisplayMapperPass",
+                    "TemplateName": "DisplayMapperTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "LookModificationTransformPass",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "AuxGeomPass",
+                    "TemplateName": "AuxGeomPassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "ColorInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "DisplayMapperPass",
+                                "Attachment": "Output"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "MSAAResolveDepthPass",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "DrawListTag": "auxgeom",
+                        "PipelineViewTag": "MainCamera"
+                    }
+                },
+                {
+                    "Name": "LightCullingHeatmapPass",
+                    "TemplateName": "LightCullingHeatmapTemplate",
+                    "Enabled": false,
+                    "Connections": [
+                        {
+                            "LocalSlot": "ColorInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "AuxGeomPass",
+                                "Attachment": "ColorInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "TileLightData",
+                            "AttachmentRef": {
+                                "Pass": "LightCullingRemapPass",
+                                "Attachment": "TileLightData"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "PipelineViewTag": "MainCamera"
+                    }
+                },
+                {
+                    "Name": "LuminanceHistogramGenerator",
+                    "TemplateName": "LuminanceHistogramGeneratorTemplate",
+                    "Enabled": false,
+                    "Connections": [
+                        {
+                            "LocalSlot": "ColorInput",
+                            "AttachmentRef": {
+                                "Pass": "BloomPass",
+                                "Attachment": "InputOutput"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "PipelineViewTag": "MainCamera"
+                    }
+                },
+                {
+                    "Name": "LuminanceHeatmap",
+                    "TemplateName": "LuminanceHeatmapTemplate",
+                    "Enabled": false,
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputOutput",
+                            "AttachmentRef": {
+                                "Pass": "LightCullingHeatmapPass",
+                                "Attachment": "ColorInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ColorInput",
+                            "AttachmentRef": {
+                                "Pass": "BloomPass",
+                                "Attachment": "InputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "SceneLuminanceInput",
+                            "AttachmentRef": {
+                                "Pass": "DownsampleLuminanceMipChain",
+                                "Attachment": "MipChainInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "Histogram",
+                            "AttachmentRef": {
+                                "Pass": "LuminanceHistogramGenerator",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "PipelineViewTag": "MainCamera"
+                    }
+                },
+                {
+                    "Name": "2DPass",
+                    "TemplateName": "UIPassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputOutput",
+                            "AttachmentRef": {
+                                "Pass": "LuminanceHeatmap",
+                                "Attachment": "InputOutput"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "DrawListTag": "2dpass",
+                        "PipelineViewTag": "MainCamera"
+                    }
+                },
+                {
+                    "Name": "ImGuiPass",
+                    "TemplateName": "ImGuiPassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputOutput",
+                            "AttachmentRef": {
+                                "Pass": "AuxGeomPass",
+                                "Attachment": "ColorInputOutput"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "ImGuiPassData",
+                        "IsDefaultImGui": true
+                    }
+                },
+                {
+                    "Name": "CopyToSwapChain",
+                    "TemplateName": "FullscreenCopyTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "2DPass",
+                                "Attachment": "InputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "Output",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "SwapChainOutput"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

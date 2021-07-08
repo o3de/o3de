@@ -61,6 +61,7 @@ namespace AZ
             LegacyTerrain,
             Terrain,
             Cloth,
+            Hair,
             // Add new major categories here (and add names to the parallel position in ProfileCategoryNames) - these categories are enabled by default
 
             FirstDetailedCategory,
@@ -122,6 +123,7 @@ namespace AZ
             "LegacyTerrain",
             "Terrain",
             "Cloth",
+            "Hair",
 
             "RendererDetailed",
             "3DEngineDetailed",

@@ -205,6 +205,84 @@
                         }
                     ]
                 },
+
+                {
+                    "Name": "HairParentPass",
+                    "TemplateName": "HairParentPassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        // Critical to keep DepthLinear as input - used to set the size of the Head PPLL image buffer.
+                        // If DepthLinear is not availbale - connect to another viewport (non MSAA) image.
+                        {
+                            "LocalSlot": "DepthLinear",
+                            "AttachmentRef": {
+                                "Pass": "DepthPrePass",
+                                "Attachment": "DepthLinear"
+                            }
+                        },
+                        {
+                            "LocalSlot": "Depth",
+                            "AttachmentRef": {
+                                "Pass": "DepthPrePass",
+                                "Attachment": "Depth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "RenderTargetInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "OpaquePass",
+                                "Attachment": "Output"
+                            }
+                        },
+
+                        // Shadows resources
+                        {
+                            "LocalSlot": "DirectionalShadowmap",
+                            "AttachmentRef": {
+                                "Pass": "ShadowPass",
+                                "Attachment": "DirectionalShadowmap"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DirectionalESM",
+                            "AttachmentRef": {
+                                "Pass": "ShadowPass",
+                                "Attachment": "DirectionalESM"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ProjectedShadowmap",
+                            "AttachmentRef": {
+                                "Pass": "ShadowPass",
+                                "Attachment": "ProjectedShadowmap"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ProjectedESM",
+                            "AttachmentRef": {
+                                "Pass": "ShadowPass",
+                                "Attachment": "ProjectedESM"
+                            }
+                        },
+
+                        // Lighting Resources
+                        {
+                            "LocalSlot": "TileLightData",
+                            "AttachmentRef": {
+                                "Pass": "LightCullingPass",
+                                "Attachment": "TileLightData"
+                            }
+                        },
+                        {
+                            "LocalSlot": "LightListRemapped",
+                            "AttachmentRef": {
+                                "Pass": "LightCullingPass",
+                                "Attachment": "LightListRemapped"
+                            }
+                        }
+                    ]
+                },
+
                 {
                     "Name": "TransparentPass",
                     "TemplateName": "TransparentParentTemplate",
@@ -261,7 +339,7 @@
                         {
                             "LocalSlot": "DepthStencil",
                             "AttachmentRef": {
-                                "Pass": "DepthPrePass",
+                                "Pass": "HairParentPass",
                                 "Attachment": "Depth"
                             }
                         },
@@ -289,15 +367,15 @@
                         {
                             "LocalSlot": "InputDepthStencil",
                             "AttachmentRef": {
-                                "Pass": "DepthPrePass",
+                                "Pass": "HairParentPass",
                                 "Attachment": "Depth"
                             }
                         },
                         {
                             "LocalSlot": "RenderTargetInputOutput",
                             "AttachmentRef": {
-                                "Pass": "TransparentPass",
-                                "Attachment": "InputOutput"
+                                "Pass": "HairParentPass",
+                                "Attachment": "RenderTargetInputOutput"
                             }
                         }
                     ],
@@ -337,7 +415,7 @@
                         {
                             "LocalSlot": "Depth",
                             "AttachmentRef": {
-                                "Pass": "DepthPrePass",
+                                "Pass": "HairParentPass",
                                 "Attachment": "Depth"
                             }
                         },
@@ -372,7 +450,7 @@
                         {
                             "LocalSlot": "DepthInputOutput",
                             "AttachmentRef": {
-                                "Pass": "DepthPrePass",
+                                "Pass": "HairParentPass",
                                 "Attachment": "Depth"
                             }
                         }

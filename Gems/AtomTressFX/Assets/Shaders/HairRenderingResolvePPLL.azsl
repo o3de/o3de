@@ -1,0 +1,495 @@
+//---------------------------------------------------------------------------------------
+// Shader code related to per-pixel linked lists.
+//-------------------------------------------------------------------------------------
+//
+// Copyright (c) 2019 Advanced Micro Devices, Inc. All rights reserved.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+//==============================================================================
+#include <Atom/Features/SrgSemantics.azsli>
+#include <HairRenderingSrgs.azsli>
+
+#define AMD_TRESSFX_MAX_HAIR_GROUP_RENDER 16
+
+//!------------------------------ SRG Structure --------------------------------
+//! Per pass SRG the holds the dynamic shared read-write buffer shared 
+//!  across all dispatches and draw calls and used for all the dynamic buffers
+//!  that can change between passes due to the application of skinning, simulation 
+//!  and physics affect and is then read by the rendering shaders.  
+//ShaderResourceGroup PassSrg : SRG_PerPass 
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+{   
+    //! Per Pixel Linked List data used by the render raster pass to generate per pixel  
+    //!  hair OIT data and shade it in the full screen resolve pass.
+    //! Originally used space3 for raster pass linked lists and space0 for the resolve pass.
+    Texture2D<uint>                 m_fragmentListHead;
+    StructuredBuffer<PPLL_STRUCT>   m_linkedListNodes;
+
+    //! Per hair object material array used by the PPLL resolve pass
+    //! Originally in TressFXRendering.hlsl this is space 0 
+    HairObjectShadeParams           m_hairParams[AMD_TRESSFX_MAX_HAIR_GROUP_RENDER];
+
+
+    // Linera depth is used for getting the screen to world transform
+    Texture2D<float>                m_linearDepth;
+
+    //------------------------------
+    //        Lighting Data
+    //------------------------------
+    Sampler LinearSampler
+    {   // Required by LightingData.azsli
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+
+    Texture2DArray<float> m_directionalLightShadowmap;
+    Texture2DArray<float> m_directionalLightExponentialShadowmap;
+    Texture2DArray<float> m_projectedShadowmaps;
+    Texture2DArray<float> m_projectedExponentialShadowmap;
+    Texture2D m_brdfMap;   
+    Texture2D<uint4> m_tileLightData;
+    StructuredBuffer<uint> m_lightListRemapped;
+}
+
+//------------------------------------------------------------------------------
+// Originally defined for the TressFX resolve pass at space0
+#define FragmentListHead    PassSrg::m_fragmentListHead
+#define LinkedListNodes     PassSrg::m_linkedListNodes
+//! The hair objects' material array buffer used by the rendering resolve pass
+#define HairParams          PassSrg::m_hairParams
+//==============================================================================
+
+#include <HairLighting.azsli>
+#include <Atom/Features/PostProcessing/FullscreenVertexInfo.azsli>
+#include <Atom/Features/PostProcessing/FullscreenVertexUtil.azsli>
+
+// Generates a fullscreen triangle from pipeline provided vertex id 
+VSOutput FullScreenVS(VSInput input)
+{
+    VSOutput OUT;
+
+    float4 posTex = GetVertexPositionAndTexCoords(input.m_vertexID);
+
+    OUT.m_texCoord = float2(posTex.z, posTex.w);
+    OUT.m_position = float4(posTex.x, posTex.y, 0.0, 1.0);
+
+    return OUT;
+}
+
+
+//////////////////////////////////////////////////////////////
+// Bind data for PPLLResolvePS
+
+#define NODE_DATA(x) LinkedListNodes[x].data
+#define NODE_NEXT(x) LinkedListNodes[x].uNext
+#define NODE_DEPTH(x) LinkedListNodes[x].depth
+#define NODE_COLOR(x) LinkedListNodes[x].color
+
+#define GET_DEPTH_AT_INDEX(uIndex) kBuffer[uIndex].x
+#define GET_DATA_AT_INDEX(uIndex) kBuffer[uIndex].y
+#define GET_COLOR_AT_INDEX(uIndex) kBuffer[uIndex].z
+#define STORE_DEPTH_AT_INDEX(uIndex, uValue) kBuffer[uIndex].x = uValue
+#define STORE_DATA_AT_INDEX( uIndex, uValue) kBuffer[uIndex].y = uValue
+#define STORE_COLOR_AT_INDEX( uIndex, uValue ) kBuffer[uIndex].z = uValue
+
+float4 GatherLinkedList(float2 vfScreenAddress, inout float outDepth )
+{
+    uint2 vScreenAddress = uint2(vfScreenAddress);
+    uint pointer = FragmentListHead[vScreenAddress];
+
+
+    if (pointer == FRAGMENT_LIST_NULL)  // [To Do] Adibugbug - skip very first hair counter: allows reset to 0
+    {
+        discard;
+    }
+
+    uint4 kBuffer[KBUFFER_SIZE];
+
+    // Init kbuffer to large values
+    [unroll]
+    for (int t = 0; t < KBUFFER_SIZE; ++t)
+    {
+        STORE_DEPTH_AT_INDEX(t, asuint(0.0));
+        STORE_DATA_AT_INDEX(t, 0);
+    }
+
+    // Get first K elements from the top (top to bottom)
+    // And store them in the kbuffer for later
+    for (int p = 0; p < KBUFFER_SIZE; ++p)
+    {
+        if (pointer != FRAGMENT_LIST_NULL)
+        {
+            STORE_DEPTH_AT_INDEX(p, NODE_DEPTH(pointer));
+            STORE_DATA_AT_INDEX(p, NODE_DATA(pointer));
+            STORE_COLOR_AT_INDEX(p, NODE_COLOR(pointer));
+            pointer = NODE_NEXT(pointer);
+        }
+    }
+
+//    float4 fcolor = float4(1, 1, 1, 1);     // Blend alpha and inverse alpha 
+    float4 fcolor = float4(1, 1, 1, 0);   // Blend one and inverse alpha
+//    float4 vTmpColor = fcolor;
+
+    // Go through the remaining layers of hair
+    [allow_uav_condition]
+    for (int iFragment = 0; iFragment < MAX_FRAGMENTS && pointer != FRAGMENT_LIST_NULL ; ++iFragment)
+    {
+        int id = 0;
+        float minDepth = 1.0; 
+
+        // Find the current furthest sample in the KBuffer
+        for (int i = 0; i < KBUFFER_SIZE; i++)
+        {
+            float fDepth = asfloat(GET_DEPTH_AT_INDEX(i));
+            if (minDepth > fDepth)
+            {
+                minDepth = fDepth;
+                id = i;
+            }
+        }
+
+        // Fetch the node data
+        uint data = NODE_DATA(pointer);
+        uint color = NODE_COLOR(pointer);
+        uint nodeDepth = NODE_DEPTH(pointer);
+        float fNodeDepth = asfloat(nodeDepth);
+
+        // If the node in the linked list is nearer than the furthest one in the local array, exchange the node 
+        // in the local array for the one in the linked list.
+        if (minDepth < fNodeDepth)
+        {
+            uint tmp = GET_DEPTH_AT_INDEX(id);
+            STORE_DEPTH_AT_INDEX(id, nodeDepth);
+            fNodeDepth = asfloat(tmp);
+
+            tmp = GET_DATA_AT_INDEX(id);
+            STORE_DATA_AT_INDEX(id, data);
+            data = tmp;
+
+            tmp = GET_COLOR_AT_INDEX(id);
+            STORE_COLOR_AT_INDEX(id, color);
+            color = tmp;
+        }
+
+        // Calculate color contribution from whatever sample we are using
+        float4 vData = UnpackUintIntoFloat4(data);
+        float3 vTangent = vData.xyz;
+        float alpha = vData.w;
+
+        uint shadeParamIndex;	// So we know what settings to shade with
+        float3 vColor = UnpackUintIntoFloat3Byte(color, shadeParamIndex);
+//        vTmpColor = float4( min(vColor,vTmpColor.xyz), 1.0);
+        
+        // Shade the bottom hair layers (cheap shading, just uses scalp base color)
+        // Just blend in the color for cheap underhairs
+        fcolor.xyz = fcolor.xyz * (1.f - alpha) + (vColor * alpha) * alpha;
+//        fcolor.w *= (1.f - alpha);                // Blend one and inverse alpha
+        fcolor.w = saturate(fcolor.w + alpha);    // Blend alpha and inverse alpha
+
+
+
+        pointer = NODE_NEXT(pointer);
+    }
+
+    // Make sure we are blending the correct number of strands (don't blend more than we have)
+    float maxAlpha = 0;
+    float minDepth = 1.0;   // furthest fragment in Atom
+
+//    fcolor.xyz = float3(0, 1, 0);
+//    vTmpColor = fcolor;
+//    outDepth = minDepth; 
+//    vTmpColor.w = 0.0;
+//    return vTmpColor;
+
+    // Blend the top-most entries
+    for (int j = 0; j < KBUFFER_SIZE; j++)
+    {
+        int id = 0;
+        minDepth = 1.0;
+
+        // find the furthest node in the array
+        for (int i = 0; i < KBUFFER_SIZE; i++)
+        {
+            float fDepth = asfloat(GET_DEPTH_AT_INDEX(i));
+            if (minDepth > fDepth)
+            {
+                minDepth = fDepth;
+                id = i;
+            }
+        }
+
+        // take this node out of the next search
+        uint nodeDepth = GET_DEPTH_AT_INDEX(id);
+        uint data = GET_DATA_AT_INDEX(id);
+        uint color = GET_COLOR_AT_INDEX(id);
+
+        // take this node out of the next search
+        STORE_DEPTH_AT_INDEX(id, asuint(1.0));
+
+        // Use high quality shading for the nearest k fragments
+        float fDepth = asfloat(nodeDepth);
+        float4 vData = UnpackUintIntoFloat4(data);
+        float3 vTangent = vData.xyz;
+        float alpha = vData.w;
+        uint shadeParamIndex;	// So we know what settings to shade with
+
+        float3 vColor = UnpackUintIntoFloat3Byte(color, shadeParamIndex);
+        float3 fragmentColor = TressFXShading(vfScreenAddress, fDepth, vTangent, vColor, shadeParamIndex);
+
+        // Blend in the fragment color
+        fcolor.xyz = fcolor.xyz * (1.f - alpha) + (fragmentColor * alpha) * alpha;
+//        fcolor.w *= (1.f - alpha);
+        fcolor.w = saturate(fcolor.w + alpha);    // Blend alpha and inverse alpha
+    }
+
+    outDepth = minDepth;    // the last ine standing is the closest
+
+//    return vTmpColor;
+    return fcolor;
+}
+
+
+#define MAX_FRAGMENTS_PER_PIXEL  1000
+struct IndexArray
+{
+    uint fragmentIndexArray[MAX_FRAGMENTS_PER_PIXEL];
+};
+
+int FillFragmentArray( inout IndexArray indexArray, uint startPtr)
+{
+    uint pointer = startPtr;
+    uint index = 0;
+    for (; (pointer != FRAGMENT_LIST_NULL) && (pointer != 0); pointer = NODE_NEXT(pointer), ++index)
+    {
+        indexArray.fragmentIndexArray[index] = pointer;
+    }
+    return index;
+}
+
+void SortFragmentArray( inout IndexArray indexArray, uint fragmentsAmount )
+{
+    for (uint ind1 = 0; ind1 < fragmentsAmount; ++ind1)
+    {
+        uint index1 = indexArray.fragmentIndexArray[ind1];
+        float depth1 = asfloat(NODE_DEPTH(index1)); // we want this depth to be the largest (closest) in this loop
+        for (uint ind2 = ind1+1 ; ind2 < fragmentsAmount; ++ind2)
+        {
+            uint index2 = indexArray.fragmentIndexArray[ind2];
+            float depth2 = asfloat(NODE_DEPTH(index2));
+            if (depth2 > depth1)
+            {
+                uint tmpIndex = index2;
+                indexArray.fragmentIndexArray[ind2] = index1;
+                indexArray.fragmentIndexArray[ind1] = tmpIndex;
+                depth1 = depth2;
+            }
+        }
+    }    
+}
+
+// Get the base color of the further hair fragments so that we don't do complex
+// shading on insane amount of fragments.
+// This is used as the base color ot blend with by the closer fragments that 
+// are going through the full lighting and shading calculation.
+float4 CalculateBaseColor(in IndexArray indexArray, uint startIndex, uint fragmentsAmount)
+{
+    float4 baseColor = float4(0, 0, 0, 1);
+
+    if (startIndex >= fragmentsAmount)
+    {
+        return baseColor;
+    }
+
+    [allow_uav_condition]
+    for (int iFragment = startIndex; iFragment < fragmentsAmount ; ++iFragment)
+    {
+        // Fetch the node data
+        uint pointer = indexArray.fragmentIndexArray[iFragment];
+        uint data = NODE_DATA(pointer);
+        uint color = NODE_COLOR(pointer);
+        uint nodeDepth = NODE_DEPTH(pointer);
+        float fNodeDepth = asfloat(nodeDepth);
+
+        // Calculate color contribution from whatever sample we are using
+        float4 vData = UnpackUintIntoFloat4(data);
+        float3 vTangent = vData.xyz;
+        float alpha = vData.w;
+
+        uint shadeParamIndex;	// hair object material index
+        float3 vColor = UnpackUintIntoFloat3Byte(color, shadeParamIndex);
+
+        // Shade the bottom hair layers (cheap shading, just uses scalp base color)
+        // Just blend in the color for cheap underhairs
+        baseColor.xyz = baseColor.xyz * (1.f - alpha) + (vColor * alpha) * alpha;
+        baseColor.w *= (1.f - alpha);
+    }
+    return baseColor;
+}
+
+float4 CalculateFrontFregmentShading(
+    float2 vfScreenAddress, float4 baseColor, 
+    in IndexArray indexArray, uint fragmentsToCompute, uint maxFragments )
+{
+    // Blend the closest fragments - first ones in the sorted array
+    float4 finalColor = baseColor;
+    uint count = min(fragmentsToCompute, maxFragments) - 1;
+    for (int j = count; j >= 0 ; --j )
+    {
+        uint pointer = indexArray.fragmentIndexArray[j];
+        uint data = NODE_DATA(pointer);
+        uint color = NODE_COLOR(pointer);
+        uint nodeDepth = NODE_DEPTH(pointer);
+
+        // Use high quality shading for the nearest k fragments
+        float fDepth = asfloat(nodeDepth);
+        float4 vData = UnpackUintIntoFloat4(data);
+        float3 vTangent = vData.xyz;
+        float alpha = vData.w;
+        uint shadeParamIndex;	// So we know what settings to shade with
+        float3 vColor = UnpackUintIntoFloat3Byte(color, shadeParamIndex);
+
+        float3 fragmentColor = TressFXShading(vfScreenAddress, fDepth, vTangent, vColor, shadeParamIndex);
+
+        // Blend in the fragment color
+        finalColor.xyz = finalColor.xyz * (1.f - alpha) + (fragmentColor * alpha) * alpha;
+        finalColor.w *= (1.f - alpha);
+    }
+
+    return finalColor;
+}
+
+float4 CombineFragments(float2 vfScreenAddress, inout float closestDepth )
+{
+    uint2 vScreenAddress = uint2(vfScreenAddress);
+    uint pointer = FragmentListHead[vScreenAddress];
+
+    // Discard any pixel without hair
+    if (pointer == FRAGMENT_LIST_NULL)
+    {
+        discard;
+    }
+
+    // Build indirect indexing table and sort it by depth
+    IndexArray indexArray;
+    uint fragmentsAmount = FillFragmentArray(indexArray, pointer);
+    SortFragmentArray(indexArray, fragmentsAmount);
+
+    // Retrieve the base color of hair fragments that are the furthest away from the 
+    // viewer if the maount of fragments is beyond the amount that we are willing to 
+    // compute full shading on per pixel
+    float4 baseColor = CalculateBaseColor(indexArray, KBUFFER_SIZE, fragmentsAmount);
+
+    // Using the base color we are now running the full lighting loop on the closest
+    // hair fragment in the current pixel.
+    float4 finalColor = CalculateFrontFregmentShading(vfScreenAddress, baseColor, indexArray, KBUFFER_SIZE, fragmentsAmount);
+    closestDepth = asfloat(NODE_DEPTH(indexArray.fragmentIndexArray[0]));
+
+    return finalColor;
+}
+
+float4 GetClosestFragment(float2 vfScreenAddress, inout float3 tangent, inout float closestDepth)
+{
+    uint2 vScreenAddress = uint2(vfScreenAddress);
+    uint pointer = FragmentListHead[vScreenAddress];
+
+    if (pointer == FRAGMENT_LIST_NULL)
+    {
+        discard;
+    }
+
+    /*
+    * This block has proven to be extremely expensive due to the O(n^2) pass
+    * It must be made into a quick sort.
+    * As a comparison:
+    *   O(N) traverse below to find the closest depth -> 4 msec with complex hair
+    *   O(N^2) sort only with picking the closest (no traverse)  -> 56 msec ! ! !
+    //---------------------------------------------------------------
+    // Build indirect indexing table and sort it by depth
+    IndexArray indexArray;
+    uint fragmentsAmount = FillFragmentArray(indexArray, pointer);
+    SortFragmentArray(indexArray, fragmentsAmount);
+    
+    pointer = indexArray.fragmentIndexArray[0];
+    uint curData =  NODE_DATA(pointer);
+    uint curColor = NODE_COLOR(pointer);
+    float maxDepth = asfloat(NODE_DEPTH(pointer));
+    //---------------------------------------------------------------
+    */
+    float4 fcolor = float4(0, 0, 0, 1);
+
+    float maxDepth = 0;
+    uint curColor, curData;
+    for ( ; (pointer!=FRAGMENT_LIST_NULL) ; )
+    {
+        float depth = asfloat(NODE_DEPTH(pointer));
+        if (depth > maxDepth)
+        {
+            maxDepth = depth;
+            curColor = NODE_COLOR(pointer);
+            curData = NODE_DATA(pointer);
+        }
+        pointer = NODE_NEXT(pointer);
+    }
+
+    float curDepth = closestDepth = maxDepth;
+    float4 vData = UnpackUintIntoFloat4(curData);
+    float3 vTangent = vData.xyz;
+    float alpha = vData.w;
+    uint shadeParamIndex;	// the material index
+    float3 vColor = UnpackUintIntoFloat3Byte(curColor, shadeParamIndex);
+    float3 fragmentColor = TressFXShading(vfScreenAddress, curDepth, vTangent, vColor, shadeParamIndex);
+
+    // Blend in the fragment color
+    alpha = 1.0;   // Simplified, otherwise it doesn't match the full pass and is too transparent.
+    fcolor.xyz = fragmentColor * alpha;     // simplified since there is no base layer
+    fcolor.w *= (1.f - alpha);
+   
+    tangent = vTangent;
+
+    return fcolor;
+}
+
+struct PSColorDepthOutput
+{
+    float4 m_color : SV_Target;
+    float m_depth : SV_Depth;
+}; 
+
+// The resolve will combine the base color driven by the further fragments while 
+// the actual shading will be combined on top based on the shaded closest fragments.
+// The closest depth will be returned and written in the depth buffer.
+PSColorDepthOutput PPLLResolvePS(VSOutput input) 
+{
+    PSColorDepthOutput pixOut;
+
+    float3 tangent;
+//    pixOut.m_color = GetClosestFragment(input.m_position.xy, tangent, pixOut.m_depth);
+//    pixOut.m_color.rgb = tangent;
+//    pixOut.m_color = GetClosestFragment(input.m_position.xy, tangent, pixOut.m_depth);
+//    pixOut.m_color = float4(0, pixOut.m_color.w, 0, 0);
+//    pixOut.m_color = CombineFragments(input.m_position.xy, pixOut.m_depth);
+    pixOut.m_color = GatherLinkedList(input.m_position.xy, pixOut.m_depth);
+
+    return pixOut;
+}

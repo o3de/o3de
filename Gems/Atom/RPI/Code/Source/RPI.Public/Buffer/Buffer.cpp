@@ -211,7 +211,7 @@ namespace AZ
             {
                 return;
             }
-               
+            
             m_bufferView = m_rhiBuffer->GetBufferView(m_bufferViewDescriptor);
 
             if(!m_bufferView.get())
@@ -308,6 +308,17 @@ namespace AZ
                 return true;
             }
 
+            return false;
+        }
+
+        bool Buffer::ResetBufferData(uint8_t clearValue, uint64_t clearSizeInBytes, uint64_t bufferByteOffset)
+        {
+            if (void* buf = Map(clearSizeInBytes, bufferByteOffset))
+            {
+                memset(buf, clearValue, clearSizeInBytes);
+                Unmap();
+                return true;
+            }
             return false;
         }
 

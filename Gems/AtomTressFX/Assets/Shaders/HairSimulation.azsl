@@ -1,0 +1,114 @@
+
+//---------------------------------------------------------------------------------------
+// Shader code related to simulating hair strands in compute.
+//-------------------------------------------------------------------------------------
+//
+// Copyright (c) 2019 Advanced Micro Devices, Inc. All rights reserved.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+//--------------------------------------------------------------------------------------
+// File: HairSimulation.azsl
+//
+// Physics simulation of hair using compute shaders
+//--------------------------------------------------------------------------------------
+#include <HairSimulationSRGs.azsli>
+#include <HairSimulationCommon.azsli>
+
+#define USE_MESH_BASED_HAIR_TRANSFORM 0
+
+//------------------------------------------------------------------------------
+//! This method update the hair vertices according to the bone matrices (hence 
+//! 'skin' the hair) without any physics or simulation response. 
+//! Use it for testing of a single pass skinning and data correctness.
+//------------------------------------------------------------------------------
+[numthreads(THREAD_GROUP_SIZE, 1, 1)]
+void SkinHairVerticesOnly(
+    uint GIndex : SV_GroupIndex,
+    uint3 GId : SV_GroupID,
+    uint3 DTid : SV_DispatchThreadID)
+{    
+    return;
+
+    uint globalStrandIndex, localStrandIndex, globalVertexIndex, localVertexIndex, numVerticesInTheStrand, indexForSharedMem, strandType;
+    CalcIndicesInVertexLevelMaster(GIndex, GId.x, globalStrandIndex, localStrandIndex, globalVertexIndex, localVertexIndex, numVerticesInTheStrand, indexForSharedMem, strandType);
+    /*
+    SetSharedPosition( globalVertexIndex, float4( float3(globalVertexIndex, GIndex, GId.x)*0.01,666 )); // Adibugbug: g_HairVertexPositions[globalVertexIndex] = currentPos;
+
+    return;
+    */
+    
+    // Copy data into shared memory
+    float4 initialPos = CM_TO_METERS * g_InitialHairPositions[globalVertexIndex]; // rest position
+    BoneSkinningData skinningData = g_BoneSkinningData[globalStrandIndex];
+    float4 bone_quat;
+
+    ////////////////////////////////////////////////////////////////////////// 
+    // [To Do] Adi: Adibugbug - fixed no transform for testing + 0.01 scale from cm - REMOVE WHEN VERIFIED
+    float4 currentPos = float4(ApplyVertexBoneSkinning(initialPos.xyz, skinningData, bone_quat), 1.0);  // Apply bone skinning to initial position
+//    float4 currentPos = initialPos + float4(0.0, 0, 0.52, 0);// float4(ApplyVertexBoneSkinning(initialPos.xyz, skinningData, bone_quat), 1.0);  // Apply bone skinning to initial position
+    //////////////////////////////////////////////////////////////////////////         
+
+//    UpdateFinalVertexPositions( g_HairVertexPositions[globalVertexIndex], currentPos, globalVertexIndex, localVertexIndex, numVerticesInTheStrand);
+//    SetSharedPosition(globalVertexIndex, currentPos); // Adi: g_HairVertexPositions[globalVertexIndex] = currentPos;
+//    SetSharedPosition( GIndex, float4( float3(GIndex, GId.x, GId.y) * 0.01, 999 )); // Adibugbug: g_HairVertexPositions[globalVertexIndex] = currentPos;
+//    SetSharedPosition( globalVertexIndex, float4( float3(globalVertexIndex, GIndex, GId.x)*0.01 ,666 )); // Adibugbug: g_HairVertexPositions[globalVertexIndex] = currentPos;
+//    SetSharedDynamicPosition(globalVertexIndex, currentPos);
+    UpdateFinalVertexPositions( currentPos, currentPos, globalVertexIndex );
+    
+    // return here to show that the next cxompute pass does work and is the one creating the vertices
+
+    GroupMemoryBarrierWithGroupSync();
+
+    //-------------------
+    // Compute tangent
+    //-------------------
+    // If this is the last vertex in the strand, we can't get tangent from subtracting from the next vertex, need to use last vertex to current
+    sharedPos[indexForSharedMem] = currentPos; // Adi: sharedPos[indexForSharedMem] = g_HairVertexPositions[globalVertexIndex];
+    //     sharedTangent[indexForSharedMem] = g_HairVertexTangents[globalVertexIndex];
+    sharedTangent[indexForSharedMem].xyz = GetSharedTangent(globalVertexIndex);
+    uint numOfStrandsPerThreadGroup = g_NumOfStrandsPerThreadGroup;
+    uint indexForTangent = (localVertexIndex == numVerticesInTheStrand - 1) ? indexForSharedMem - numOfStrandsPerThreadGroup : indexForSharedMem;
+    float3 tangent = sharedPos[indexForTangent + numOfStrandsPerThreadGroup].xyz - sharedPos[indexForTangent].xyz;
+    SetSharedTangent(globalVertexIndex, normalize(tangent) );
+//    g_HairVertexTangents[globalVertexIndex].xyz = normalize(tangent);
+
+    //-------------------
+    // Compute follow hair
+    //-------------------
+    // Adi -  the following barrier might not be required 
+    GroupMemoryBarrierWithGroupSync();
+
+    for ( uint i = 0; i < g_NumFollowHairsPerGuideHair; i++ )
+    {
+        int globalFollowVertexIndex = globalVertexIndex + numVerticesInTheStrand * (i + 1);
+        int globalFollowStrandIndex = globalStrandIndex + i + 1;
+        float factor = g_TipSeparationFactor*((float)localVertexIndex / (float)numVerticesInTheStrand) + 1.0f;
+        float3 followPos = sharedPos[indexForSharedMem].xyz + factor * CM_TO_METERS * g_FollowHairRootOffset[globalFollowStrandIndex].xyz;       
+//        g_HairVertexPositions[globalFollowVertexIndex] = float4(GIndex, GId.x, GId.y, globalFollowVertexIndex ); // Adibugbug: g_HairVertexPositions[globalFollowVertexIndex].xyz = followPos;  
+        SetSharedPosition3(globalFollowVertexIndex, followPos); // Adi: g_HairVertexPositions[globalFollowVertexIndex].xyz = followPos;  
+//        SetSharedPosition(globalFollowVertexIndex, float3(globalFollowVertexIndex, GId.x, GId.y) ); // Adi: g_HairVertexPositions[globalFollowVertexIndex].xyz = followPos;  
+        SetSharedTangent(globalFollowVertexIndex, sharedTangent[indexForSharedMem].xyz );// Adibugbug sharedTangent[indexForSharedMem];
+//        g_HairVertexTangents[globalFollowVertexIndex] = float4(GIndex, GId.x, GId.y, globalFollowVertexIndex);// Adibugbug sharedTangent[indexForSharedMem];
+//        g_HairVertexPositionsPrev[globalFollowVertexIndex] = float4(GIndex, GId.x, GId.y, globalFollowVertexIndex ); // Adibugbug: g_HairVertexPositions[globalFollowVertexIndex].xyz = followPos;  
+//        SetSharedPrevPrevPosition(globalFollowVertexIndex, float4(GIndex, GId.x, GId.y, globalFollowVertexIndex )); // Adibugbug: g_HairVertexPositions[globalFollowVertexIndex].xyz = followPos;  
+    }  
+
+}
