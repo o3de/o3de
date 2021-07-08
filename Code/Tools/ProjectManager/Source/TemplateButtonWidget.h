@@ -9,10 +9,25 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QPushButton>
+#include <QLabel>
 #endif
 
 namespace O3DE::ProjectManager
 {
+    class TemplateImageOverlay
+        : public QLabel
+    {
+        Q_OBJECT // AUTOMOC
+    public:
+        explicit TemplateImageOverlay(const QString& imagePath, QWidget* parent = nullptr);
+        ~TemplateImageOverlay() = default;
+
+        void SetTemplateImageOverlayImage(const QString& overlayImagePath);
+
+    private:
+        QLabel* m_overlayLabel;
+    };
+
     class TemplateButton
         : public QPushButton 
     {
@@ -25,8 +40,7 @@ namespace O3DE::ProjectManager
     protected slots:
         void onToggled();
 
-    private:
-        inline constexpr static int s_templateImageWidth = 92;
-        inline constexpr static int s_templateImageHeight = 122;
+    protected:
+        TemplateImageOverlay* m_imageOverlay = nullptr;
     };
 } // namespace O3DE::ProjectManager
