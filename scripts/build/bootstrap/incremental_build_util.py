@@ -13,8 +13,9 @@ import time
 import subprocess
 import sys
 import tempfile
-import signal
 from contextlib import contextmanager
+import threading
+import _thread
 
 DEFAULT_REGION = 'us-west-2'
 DEFAULT_DISK_SIZE = 300
@@ -94,22 +95,16 @@ def error(message):
 
 @contextmanager
 def timeout(duration, timeout_message):
-    def raise_timeout(signum, frame):
-        raise TimeoutError
-
-    # Register a function to raise a TimeoutError on the signal.
-    signal.signal(signal.SIGALRM, raise_timeout)
-    # Schedule the signal to be sent after duration.
-    signal.alarm(duration)
+    timer = threading.Timer(duration, lambda: _thread.interrupt_main())
+    timer.start()
     try:
         yield
-    except TimeoutError:
+    except KeyboardInterrupt:
         print(timeout_message)
         raise TimeoutError
     finally:
-        # Unregister the signal so it won't be triggered
-        # if the timeout is not reached.
-        signal.signal(signal.SIGALRM, signal.SIG_IGN)
+        # If the action ends in specified time, timer is canceled
+        timer.cancel()
 
 
 def print_drives():
@@ -400,7 +395,7 @@ def mount_ebs(repository_name, project, pipeline, branch, platform, build_type, 
         for attachment in volume.attachments:
             print(f"attachment device: {attachment['Device']}")
             if 'xvdf' in attachment['Device'] and attachment['State'] != 'detached':
-                print('A device is already attached to xvdf. This likely means a previous build failed to detach its ' \
+                print('A device is already attached to xvdf. This likely means a previous build failed to detach its '
                       'build volume. This volume is considered orphaned and will be detached from this instance.')
                 unmount_volume_from_device()
                 detach_volume_from_ec2_instance(volume, ec2_instance_id,
@@ -444,15 +439,13 @@ def mount_ebs(repository_name, project, pipeline, branch, platform, build_type, 
     print(f'Free disk space {free_space_mb}MB')
 
     if free_space_mb < LOW_EBS_DISK_SPACE_LIMIT:
-        print(
-            f'Volume is running below EBS free disk space treshhold {LOW_EBS_DISK_SPACE_LIMIT}MB. Recreating volume and running clean build.')
+        print(f'Volume is running below EBS free disk space treshhold {LOW_EBS_DISK_SPACE_LIMIT}MB. Recreating volume and running clean build.')
         unmount_volume_from_device()
         detach_volume_from_ec2_instance(volume, ec2_instance_id, False)
         delete_volume(ec2_client, volume_id)
         new_disk_size = int(volume.size * 1.25)
         if new_disk_size > MAX_EBS_DISK_SIZE:
-            print(
-                f'Error: EBS disk size reached to the allowed maximum disk size {MAX_EBS_DISK_SIZE}MB, please contact ly-infra@ and ly-build@ to investigate.')
+            print(f'Error: EBS disk size reached to the allowed maximum disk size {MAX_EBS_DISK_SIZE}MB, please contact ly-infra@ and ly-build@ to investigate.')
             exit(1)
         print('Recreating the EBS with disk size {}'.format(new_disk_size))
         volume_id, created = create_volume(ec2_client, ec2_availability_zone, repository_name, project, pipeline,
@@ -514,6 +507,5 @@ def main(action, repository_name, project, pipeline, branch, platform, build_typ
 
 if __name__ == "__main__":
     args = parse_args()
-    ret = main(args.action, args.repository_name, args.project, args.pipeline, args.branch, args.platform,
+    main(args.action, args.repository_name, args.project, args.pipeline, args.branch, args.platform,
                args.build_type, args.disk_size, args.disk_type)
-    sys.exit(ret)
