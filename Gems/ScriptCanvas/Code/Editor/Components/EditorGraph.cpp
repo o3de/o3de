@@ -85,6 +85,7 @@ AZ_POP_DISABLE_WARNING
 #include <ScriptCanvas/Utils/NodeUtils.h>
 #include <ScriptCanvas/Variable/VariableBus.h>
 #include <ScriptCanvas/Libraries/UnitTesting/UnitTestingLibrary.h>
+#include <Include/ScriptCanvas/Libraries/Math/MathExpression.h>
 
     AZ_CVAR(bool, g_disableDeprecatedNodeUpdates, false, {}, AZ::ConsoleFunctorFlags::Null,
         "Disables automatic update attempts of deprecated nodes, so that graphs that require and update can be viewed in their original form");
@@ -690,8 +691,76 @@ namespace ScriptCanvasEditor
             }
         }
     }
+    void Graph::HandleExpressionNodeExtension(
+        ScriptCanvas::Node* node, GraphCanvas::SlotId graphCanvasSlotId, const GraphCanvas::NodeId& nodeId)
+    {
+        auto MathExpressionNode = azrtti_cast<ScriptCanvas::Nodes::Math::MathExpression*>(node);
+        // if dynamicTypeGroup already has slottype, dont trigger slotTypeSelector
+        /*if (node->GetDisplayType(node->GetDisplayGroupId()) {
 
-    AZ::Outcome<ScriptCanvas::Node*> Graph::ReplaceNodeByConfig
+        }*/
+        if (MathExpressionNode && graphCanvasSlotId.IsValid())
+        {
+            GraphCanvas::Endpoint endpoint;
+            GraphCanvas::SlotRequestBus::EventResult(endpoint, graphCanvasSlotId, &GraphCanvas::SlotRequests::GetEndpoint);
+
+            const ScriptCanvas::Endpoint scEndpoint = ConvertToScriptCanvasEndpoint(endpoint);
+            if (scEndpoint.IsValid())
+            {
+                ScriptCanvas::Slot* slot = FindSlot(scEndpoint);
+
+                if (slot)
+                {
+                    AZ::Vector2 position;
+                    GraphCanvas::GeometryRequestBus::EventResult(position, nodeId, &GraphCanvas::GeometryRequests::GetPosition);
+
+                    // First we need to automatically display the ShowSlotTypeSelector dialog so the user
+                    // can assign a type and name to the slot they are adding
+
+                    VariablePaletteRequests::SlotSetup selectedSlotSetup;
+                    bool createSlot = false;
+
+                    AZStd::unordered_set<AZ::Uuid> selections = { ToAZType(ScriptCanvas::Data::Type::Number()),
+                                                                  ToAZType(ScriptCanvas::Data::Type::Vector3()) };
+                    QPoint scenePoint(aznumeric_cast<int>(position.GetX()), aznumeric_cast<int>(position.GetY()));
+                    VariablePaletteRequestBus::BroadcastResult(
+                        createSlot, &VariablePaletteRequests::ShowSlotTypeSelector, slot, scenePoint, selectedSlotSetup);
+
+                    if (createSlot && !selectedSlotSetup.m_type.IsNull())
+                    {
+                        if (slot)
+                        {
+                            auto displayType = ScriptCanvas::Data::FromAZType(selectedSlotSetup.m_type);
+                            if (displayType.IsValid())
+                            {
+                                //ScriptCanvas::Node* node = slot->GetNode();
+                                AZ::Crc32 dynamicGroup = AZ_CRC("ExpressionDisplayGroup", 0x770de38e);
+
+                                if (dynamicGroup != AZ::Crc32())
+                                {
+                                    node->SetDisplayType(dynamicGroup, displayType);
+                                }
+                                else
+                                {
+                                    slot->SetDisplayType(displayType);
+                                }
+                            }
+
+                            if (!selectedSlotSetup.m_name.empty())
+                            {
+                                slot->Rename(selectedSlotSetup.m_name);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        RemoveSlot(endpoint);
+                    }
+                }
+            }
+        }
+    }
+   AZ::Outcome<ScriptCanvas::Node*> Graph::ReplaceNodeByConfig
         ( ScriptCanvas::Node* oldNode
         , const ScriptCanvas::NodeConfiguration& nodeConfig
         , ScriptCanvas::NodeUpdateSlotReport& nodeUpdateSlotReport)
@@ -2434,11 +2503,20 @@ namespace ScriptCanvasEditor
                 }
                 else
                 {
-                    ScriptCanvas::SlotId slotId = canvasNode->HandleExtension(extenderId);
+                        ScriptCanvas::SlotId slotId = canvasNode->HandleExtension(extenderId);
                     if (slotId.IsValid())
                     {
+                        
                         SlotMappingRequestBus::EventResult(graphCanvasSlotId, nodeId, &SlotMappingRequests::MapToGraphCanvasId, slotId);
-                        HandleFunctionDefinitionExtension(canvasNode, graphCanvasSlotId, nodeId);
+                        if (azrtti_cast<ScriptCanvas::Nodes::Core::FunctionDefinitionNode*>(canvasNode))
+                        {
+                            HandleFunctionDefinitionExtension(canvasNode, graphCanvasSlotId, nodeId);
+                        }
+                        else if (azrtti_cast<ScriptCanvas::Nodes::Math::MathExpression*>(canvasNode)&&!canvasNode->isDisplayTypeInitialized)
+                        {
+                            HandleExpressionNodeExtension(canvasNode, graphCanvasSlotId, nodeId);
+                        }
+                        
                     }
                 }
             }
@@ -3638,7 +3716,7 @@ namespace ScriptCanvasEditor
 
                 if (scriptCanvasNode)
                 {
-                     if (scriptCanvasNode->IsDeprecated() && !g_disableDeprecatedNodeUpdates)
+                    if (scriptCanvasNode->IsDeprecated() && !g_disableDeprecatedNodeUpdates)
                     {
                         ScriptCanvas::NodeConfiguration nodeConfig = scriptCanvasNode->GetReplacementNodeConfiguration();
                         if (nodeConfig.IsValid())
@@ -3690,7 +3768,7 @@ namespace ScriptCanvasEditor
                 }
             }
 
-            if (!graphUpdateSlotReport.IsEmpty())
+         if (!graphUpdateSlotReport.IsEmpty())
             {
                 // currently, it is expected that there are no deleted old slots, those need manual correction
                 AZ_Error("ScriptCanvas", graphUpdateSlotReport.m_deletedOldSlots.empty(), "Graph upgrade path: If old slots are deleted, manual upgrading is required");

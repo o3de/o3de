@@ -692,10 +692,6 @@ namespace ScriptCanvas
                 {
                     slot.SetDisplayType(displayTypeIter->second);
                 }
-                else
-                {
-                    ClearDisplayType(dynamicGroup);
-                }
             }
             else if (slot.HasDisplayType())
             {
@@ -3572,8 +3568,8 @@ namespace ScriptCanvas
         }
 
         if (targetSlotType == CombinedSlotType::DataOut
-        && executionSlot.GetType() == CombinedSlotType::ExecutionIn
-        && executionInCount > 1)
+            && executionSlot.GetType() == CombinedSlotType::ExecutionIn
+            && executionInCount > 1)
         {
             if (!executionChildSlot || executionChildSlot->GetType() != CombinedSlotType::ExecutionOut)
             {
@@ -3621,7 +3617,7 @@ namespace ScriptCanvas
         return {};
     }
 
-    Grammar::MultipleFunctionCallFromSingleSlotInfo Node::GetMultipleFunctionCallFromSingleSlotInfo([[maybe_unused]] const Slot& slot) const
+     Grammar::MultipleFunctionCallFromSingleSlotInfo Node::GetMultipleFunctionCallFromSingleSlotInfo([[maybe_unused]] const Slot& slot) const
     {
         return {};
     }
