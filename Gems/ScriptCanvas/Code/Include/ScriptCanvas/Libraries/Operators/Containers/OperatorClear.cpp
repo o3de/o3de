@@ -67,36 +67,6 @@ namespace ScriptCanvas
                 }
                 ////
             }
-
-            void OperatorClear::OnInputSignal(const SlotId& slotId)
-            {
-                const SlotId inSlotId = OperatorBaseProperty::GetInSlotId(this);
-
-                if (slotId != inSlotId)
-                {
-                    return;
-                }
-
-                SlotId sourceSlotId = OperatorClearProperty::GetSourceSlotId(this);
-
-                if (const Datum* containerDatum = FindDatum(sourceSlotId))
-                {
-                    if (Datum::IsValidDatum(containerDatum))
-                    {
-                        AZ::Outcome<Datum, AZStd::string> clearOutcome = BehaviorContextMethodHelper::CallMethodOnDatum(*containerDatum, "Clear");
-                        if (!clearOutcome.IsSuccess())
-                        {
-                            SCRIPTCANVAS_REPORT_ERROR((*this), "Failed to call Clear on container: %s", clearOutcome.GetError().c_str());
-                            return;
-                        }
-
-                        // Push the source container as an output to support chaining
-                        PushOutput(*containerDatum, *OperatorClearProperty::GetContainerSlot(this));
-                    }
-                }
-
-                SignalOutput(GetSlotId("Out"));
-            }
         }
     }
 }

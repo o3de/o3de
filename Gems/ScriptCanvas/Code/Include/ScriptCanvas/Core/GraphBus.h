@@ -11,6 +11,7 @@
 #include "Endpoint.h"
 
 #include <ScriptCanvas/Variable/VariableCore.h>
+#include <ScriptCanvas/Variable/GraphVariable.h>
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/containers/vector.h>
@@ -22,6 +23,8 @@ namespace ScriptCanvas
     struct GraphData;
     class Graph;
     class Slot;
+
+    using EndpointMapConstIterator = AZStd::unordered_multimap<Endpoint, Endpoint>::const_iterator;
 
     //! These are public graph requests
     class GraphRequests : public AZ::EBusTraits
@@ -51,7 +54,7 @@ namespace ScriptCanvas
         virtual bool FindConnection(AZ::Entity*& connectionEntity, const Endpoint& firstEndpoint, const Endpoint& otherEndpoint) const = 0;
 
         virtual Slot* FindSlot(const Endpoint& endpoint) const = 0;
-        
+
         //! Retrieves the Entity this Graph component is located on
         //! NOTE: There can be multiple Graph components on the same entity so calling FindComponent may not not return this GraphComponent
         virtual AZ::Entity* GetGraphEntity() const = 0;
@@ -59,7 +62,7 @@ namespace ScriptCanvas
         //! Retrieves the Graph Component directly using the BusId
         virtual Graph* GetGraph() = 0;
 
-        virtual bool Connect(const AZ::EntityId& sourceNodeId, const SlotId& sourceSlot, const AZ::EntityId& targetNodeId,const SlotId& targetSlot) = 0;
+        virtual bool Connect(const AZ::EntityId& sourceNodeId, const SlotId& sourceSlot, const AZ::EntityId& targetNodeId, const SlotId& targetSlot) = 0;
         virtual bool Disconnect(const AZ::EntityId& sourceNodeId, const SlotId& sourceSlot, const AZ::EntityId& targetNodeId, const SlotId& targetSlot) = 0;
 
         virtual bool ConnectByEndpoint(const Endpoint& sourceEndpoint, const Endpoint& targetEndpoint) = 0;
@@ -88,7 +91,7 @@ namespace ScriptCanvas
         virtual bool AddItem(AZ::Entity* itemEntity) = 0;
         //! Remove item if it is on the graph
         virtual bool RemoveItem(AZ::Entity* itemEntity) = 0;
-        
+
         //! Retrieves a pointer the GraphData structure stored on the graph
         virtual GraphData* GetGraphData() = 0;
         virtual const GraphData* GetGraphDataConst() const = 0;
@@ -104,8 +107,49 @@ namespace ScriptCanvas
 
         virtual void SetIsGraphObserved(bool observed) = 0;
         virtual bool IsGraphObserved() const = 0;
-    };
 
+        virtual VariableId FindAssetVariableIdByRuntimeVariableId(VariableId runtimeId) const = 0;
+
+        virtual AZ::EntityId FindAssetNodeIdByRuntimeNodeId(AZ::EntityId editorNode) const = 0;
+
+        virtual AZ::Data::AssetId GetAssetId() const = 0;
+
+        virtual GraphIdentifier GetGraphIdentifier() const = 0;
+
+        virtual AZStd::string GetAssetName() const = 0;
+
+        //! Looks up the nodeId within the bus handler
+        virtual Node* FindNode(AZ::EntityId nodeId) const = 0;
+
+        virtual AZ::EntityId FindRuntimeNodeIdByAssetNodeId(AZ::EntityId runtimeNode) const = 0;
+
+        //! Returns the entity id of the execution component
+        virtual AZ::EntityId GetRuntimeEntityId() const = 0;
+
+        virtual AZStd::pair< EndpointMapConstIterator, EndpointMapConstIterator > GetConnectedEndpointIterators(const Endpoint& endpoint) const = 0;
+
+        //! Returns whether the given endpoint has any connections
+        virtual bool IsEndpointConnected(const Endpoint& endpoint) const = 0;
+
+        //! Retrieves VariableData structure which manages variable data for the execution component
+        virtual VariableData* GetVariableData() = 0;
+        virtual const VariableData* GetVariableDataConst() const = 0;
+
+        //! Retrieves a map of variable id to variable name and variable datums pair
+        virtual const GraphVariableMapping* GetVariables() const = 0;
+
+        //! Searches for a variable with the specified name
+        //! returns pointer to the first variable with the specified name or nullptr
+        virtual GraphVariable* FindVariable(AZStd::string_view varName) = 0;
+
+        //! Searches for a variable by VariableId
+        //! returns a pair of <variable datum pointer, variable name> with the supplied id
+        //! The variable datum pointer is non-null if the variable has been found
+        virtual GraphVariable* FindVariableById(const VariableId& variableId) = 0;
+
+        virtual AZ::Data::AssetType GetAssetType() const = 0;
+
+    };
     using GraphRequestBus = AZ::EBus<GraphRequests>;
 
     class GraphNotifications : public AZ::EBusTraits

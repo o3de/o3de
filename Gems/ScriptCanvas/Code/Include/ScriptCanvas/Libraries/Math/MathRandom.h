@@ -26,9 +26,9 @@ namespace ScriptCanvas
         AZ_INLINE Data::ColorType RandomColor(Data::ColorType minValue, Data::ColorType maxValue)
         {
             return Data::ColorType(MathNodeUtilities::GetRandomReal<float>(minValue.GetR(), maxValue.GetR()),
-                                    MathNodeUtilities::GetRandomReal<float>(minValue.GetG(), maxValue.GetG()),
-                                    MathNodeUtilities::GetRandomReal<float>(minValue.GetB(), maxValue.GetB()),
-                                    MathNodeUtilities::GetRandomReal<float>(minValue.GetA(), maxValue.GetA()));
+                MathNodeUtilities::GetRandomReal<float>(minValue.GetG(), maxValue.GetG()),
+                MathNodeUtilities::GetRandomReal<float>(minValue.GetB(), maxValue.GetB()),
+                MathNodeUtilities::GetRandomReal<float>(minValue.GetA(), maxValue.GetA()));
         }
 
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_WITH_DEFAULTS(RandomColor, SetRandomColorDefaults, k_categoryName, "{0A984F40-322B-44A6-8753-6D2056A96659}", "Returns a random color [Min, Max]", "Min", "Max");
@@ -81,8 +81,8 @@ namespace ScriptCanvas
         {
             Data::Vector3Type halfDimensions = 0.5f * dimensions;
             Data::Vector3Type point(MathNodeUtilities::GetRandomReal<float>(-halfDimensions.GetX(), halfDimensions.GetX()),
-                                    MathNodeUtilities::GetRandomReal<float>(-halfDimensions.GetY(), halfDimensions.GetY()),
-                                    MathNodeUtilities::GetRandomReal<float>(-halfDimensions.GetZ(), halfDimensions.GetZ()));
+                MathNodeUtilities::GetRandomReal<float>(-halfDimensions.GetY(), halfDimensions.GetY()),
+                MathNodeUtilities::GetRandomReal<float>(-halfDimensions.GetZ(), halfDimensions.GetZ()));
             return point;
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_WITH_DEFAULTS(RandomPointInBox, SetRandomPointInBoxDefaults, k_categoryName, "{6785C5F8-2F87-4AD6-AE15-87FE5E72D142}", "returns a random point in a box", "Dimensions");
@@ -99,8 +99,8 @@ namespace ScriptCanvas
             float theta = MathNodeUtilities::GetRandomReal<float>(0.f, AZ::Constants::TwoPi - std::numeric_limits<float>::epsilon());
 
             Data::Vector3Type point(fRadius * cosf(theta),
-                                    fRadius * sinf(theta),
-                                    0.f);
+                fRadius * sinf(theta),
+                0.f);
             return point;
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_WITH_DEFAULTS(RandomPointOnCircle, SetRandomPointOnCircleDefaults, k_categoryName, "{2F079E35-216D-42B3-AA81-C9823F732893}", "returns a random point on the circumference of a circle", "Radius");
@@ -150,8 +150,8 @@ namespace ScriptCanvas
             float theta = MathNodeUtilities::GetRandomReal<float>(0.f, AZ::Constants::TwoPi - std::numeric_limits<float>::epsilon());
 
             Data::Vector3Type point(r * cosf(theta),
-                                    r * sinf(theta),
-                                    MathNodeUtilities::GetRandomReal<float>(fNegHalfHeight, fHalfHeight));
+                r * sinf(theta),
+                MathNodeUtilities::GetRandomReal<float>(fNegHalfHeight, fHalfHeight));
             return point;
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_WITH_DEFAULTS(RandomPointInCylinder, SetRandomPointInCylinderDefaults, k_categoryName, "{BD81133C-AAC0-44B0-9C9A-D06E780F4CCE}", "returns a random point in a cylinder", "Radius", "Height");
@@ -168,8 +168,8 @@ namespace ScriptCanvas
             float theta = MathNodeUtilities::GetRandomReal<float>(0.f, AZ::Constants::TwoPi - std::numeric_limits<float>::epsilon());
 
             Data::Vector3Type point(r * cosf(theta),
-                                    r * sinf(theta),
-                                    0.f);
+                r * sinf(theta),
+                0.f);
             return point;
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_WITH_DEFAULTS(RandomPointInCircle, SetRandomPointInCircleDefaults, k_categoryName, "{93378981-85DD-42B9-9D2D-826BE68BBE8F}", "returns a random point inside the area of a circle", "Radius");
@@ -234,8 +234,8 @@ namespace ScriptCanvas
         {
             Data::Vector2Type halfDimensions = 0.5f * dimensions;
             Data::Vector3Type point(MathNodeUtilities::GetRandomReal<float>(-halfDimensions.GetX(), halfDimensions.GetX()),
-                                    MathNodeUtilities::GetRandomReal<float>(-halfDimensions.GetY(), halfDimensions.GetY()),
-                                    0.f);
+                MathNodeUtilities::GetRandomReal<float>(-halfDimensions.GetY(), halfDimensions.GetY()),
+                0.f);
             return point;
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_WITH_DEFAULTS(RandomPointInSquare, SetRandomPointInSquareDefaults, k_categoryName, "{B81B4049-CBD2-460E-A4AB-155AB8FFDCB9}", "returns a random point in a square", "Dimensions");
@@ -295,7 +295,7 @@ namespace ScriptCanvas
         {
             float theta = MathNodeUtilities::GetRandomReal<float>(0.f, AZ::Constants::TwoPi - std::numeric_limits<float>::epsilon());
             return Data::Vector2Type(cosf(theta),
-                                        sinf(theta));
+                sinf(theta));
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(RandomUnitVector2, k_categoryName, "{02CE950A-06F8-485D-87E9-77FDE808B160}", "returns a random Vector2 direction");
 
@@ -324,7 +324,7 @@ namespace ScriptCanvas
         AZ_INLINE Data::Vector2Type RandomVector2(Data::Vector2Type minValue, Data::Vector2Type maxValue)
         {
             return Data::Vector2Type(MathNodeUtilities::GetRandomReal<float>(minValue.GetX(), maxValue.GetX()),
-                                        MathNodeUtilities::GetRandomReal<float>(minValue.GetY(), maxValue.GetY()));
+                MathNodeUtilities::GetRandomReal<float>(minValue.GetY(), maxValue.GetY()));
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_WITH_DEFAULTS(RandomVector2, SetRandomVector2Defaults, k_categoryName, "{6F9982F5-D6F6-4568-8A83-D5A35390D425}", "returns a random Vector2", "Min", "Max");
 
@@ -337,8 +337,8 @@ namespace ScriptCanvas
         AZ_INLINE Data::Vector3Type RandomVector3(Data::Vector3Type minValue, Data::Vector3Type maxValue)
         {
             return Data::Vector3Type(MathNodeUtilities::GetRandomReal<float>(minValue.GetX(), maxValue.GetX()),
-                                        MathNodeUtilities::GetRandomReal<float>(minValue.GetY(), maxValue.GetY()),
-                                        MathNodeUtilities::GetRandomReal<float>(minValue.GetZ(), maxValue.GetZ()));
+                MathNodeUtilities::GetRandomReal<float>(minValue.GetY(), maxValue.GetY()),
+                MathNodeUtilities::GetRandomReal<float>(minValue.GetZ(), maxValue.GetZ()));
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_WITH_DEFAULTS(RandomVector3, SetRandomVector3Defaults, k_categoryName, "{FF5526DC-E56D-4101-B7DE-4E7283E31B10}", "returns a random Vector3", "Min", "Max");
 
@@ -351,15 +351,15 @@ namespace ScriptCanvas
         AZ_INLINE Data::Vector4Type RandomVector4(Data::Vector4Type minValue, Data::Vector4Type maxValue)
         {
             return Data::Vector4Type(MathNodeUtilities::GetRandomReal<float>(minValue.GetX(), maxValue.GetX()),
-                                        MathNodeUtilities::GetRandomReal<float>(minValue.GetY(), maxValue.GetY()),
-                                        MathNodeUtilities::GetRandomReal<float>(minValue.GetZ(), maxValue.GetZ()),
-                                        MathNodeUtilities::GetRandomReal<float>(minValue.GetW(), maxValue.GetW()));
+                MathNodeUtilities::GetRandomReal<float>(minValue.GetY(), maxValue.GetY()),
+                MathNodeUtilities::GetRandomReal<float>(minValue.GetZ(), maxValue.GetZ()),
+                MathNodeUtilities::GetRandomReal<float>(minValue.GetW(), maxValue.GetW()));
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_WITH_DEFAULTS(RandomVector4, SetRandomVector4Defaults, k_categoryName, "{76FCA9CF-7BBF-471C-9D4A-67FE8E9C6298}", "returns a random Vector4", "Min", "Max");
 
         AZ_INLINE void SetRandomPointInArcDefaults(Node& node)
         {
-            SetDefaultValuesByIndex<0>::_(node, Data::Vector3Type(0.f,0.f,0.f));
+            SetDefaultValuesByIndex<0>::_(node, Data::Vector3Type(0.f, 0.f, 0.f));
             SetDefaultValuesByIndex<1>::_(node, Data::Vector3Type(1.f, 0.f, 0.f));
             SetDefaultValuesByIndex<2>::_(node, Data::Vector3Type(0.f, 0.f, 1.f));
             SetDefaultValuesByIndex<3>::_(node, Data::NumberType(1.0));
@@ -405,7 +405,7 @@ namespace ScriptCanvas
 
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_WITH_DEFAULTS(RandomPointInWedge, SetRandomPointInWedgeDefaults, k_categoryName, "{F224DA37-240D-4ABB-A97A-3565197B94B4}", "returns a random point in the specified wedge", "Origin", "Direction", "Normal", "Radius", "Height", "Angle");
 
-        using Registrar = RegistrarGeneric<
+        using Registrar = RegistrarGeneric <
             RandomColorNode
             , RandomGrayscaleNode
             , RandomIntegerNode
@@ -427,6 +427,6 @@ namespace ScriptCanvas
             , RandomVector4Node
             , RandomPointInArcNode
             , RandomPointInWedgeNode
-        >;
+        > ;
     }
-} 
+}

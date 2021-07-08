@@ -7,7 +7,6 @@
 
 #include <ScriptCanvas/Core/Graph.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
-#include <ScriptCanvas/Asset/Functions/RuntimeFunctionAssetHandler.h>
 #include <ScriptCanvas/Execution/RuntimeComponent.h>
 
 #include <ScriptCanvas/Core/ScriptCanvasBus.h>
@@ -19,6 +18,7 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
 
+#include <ScriptCanvas/Asset/SubgraphInterfaceAssetHandler.h>
 
 namespace ScriptCanvas
 {

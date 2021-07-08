@@ -46,43 +46,6 @@ namespace ScriptCanvas
                 }
             }
 
-            void OperatorFront::InvokeOperator()
-            {
-                const SlotSet& slotSets = GetSourceSlots();
-
-                if (!slotSets.empty())
-                {
-                    SlotId sourceSlotId = (*slotSets.begin());
-                    const Datum* containerDatum = FindDatum(sourceSlotId);
-
-                    if (Datum::IsValidDatum(containerDatum))
-                    {
-                        const Datum* inputKeyDatum = FindDatum(*m_inputSlots.begin());
-                        AZ::Outcome<Datum, AZStd::string> valueOutcome = BehaviorContextMethodHelper::CallMethodOnDatumUnpackOutcomeSuccess(*containerDatum, "Front", *inputKeyDatum);
-                        if (!valueOutcome.IsSuccess())
-                        {
-                            SCRIPTCANVAS_REPORT_ERROR((*this), "Failed to call Front on container: %s", valueOutcome.GetError().c_str());
-                            return;
-                        }
-
-                        if (Data::IsVectorContainerType(containerDatum->GetType()))
-                        {
-                            PushOutput(valueOutcome.TakeValue(), *GetSlot(*m_outputSlots.begin()));
-                        }
-                    }
-                }
-
-                SignalOutput(GetSlotId("Out"));
-            }
-
-            void OperatorFront::OnInputSignal(const SlotId& slotId)
-            {
-                const SlotId inSlotId = OperatorBaseProperty::GetInSlotId(this);
-                if (slotId == inSlotId)
-                {
-                    InvokeOperator();
-                }
-            }
         }
     }
 }

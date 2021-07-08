@@ -10,7 +10,6 @@
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Core/GraphScopedTypes.h>
 #include <ScriptCanvas/Core/ModifiableDatumView.h>
-#include <ScriptCanvas/Execution/RuntimeBus.h>
 #include <ScriptCanvas/Variable/VariableBus.h>
 
 namespace ScriptCanvas
@@ -412,37 +411,6 @@ namespace ScriptCanvas
         return AZ::Edit::PropertyVisibility::Show;
     }
 
-    AZ::Crc32 GraphVariable::GetScriptInputControlVisibility() const
-    {
-        AZ::Data::AssetType assetType = AZ::Data::AssetType::CreateNull();
-
-        ScriptCanvas::RuntimeRequestBus::EventResult(assetType, m_scriptCanvasId, &ScriptCanvas::RuntimeRequests::GetAssetType);
-
-        if (assetType == azrtti_typeid<ScriptCanvas::RuntimeAsset>())
-        {
-            return m_inputControlVisibility;
-        }
-        else
-        {
-            return AZ::Edit::PropertyVisibility::Hide;
-        }
-    }
-
-    AZ::Crc32 GraphVariable::GetFunctionInputControlVisibility() const
-    {
-        AZ::Data::AssetType assetType = AZ::Data::AssetType::CreateNull();
-        ScriptCanvas::RuntimeRequestBus::EventResult(assetType, m_scriptCanvasId, &ScriptCanvas::RuntimeRequests::GetAssetType);
-
-        if (assetType == azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>())
-        {
-            return AZ::Edit::PropertyVisibility::Show;
-        }
-        else
-        {
-            return AZ::Edit::PropertyVisibility::Hide;
-        }
-    }
-
     AZ::Crc32 GraphVariable::GetVisibility() const
     {
         return m_visibility;
@@ -552,7 +520,7 @@ namespace ScriptCanvas
     bool GraphVariable::IsInFunction() const
     {
         AZ::Data::AssetType assetType = AZ::Data::AssetType::CreateNull();
-        ScriptCanvas::RuntimeRequestBus::EventResult(assetType, m_scriptCanvasId, &ScriptCanvas::RuntimeRequests::GetAssetType);
+        ScriptCanvas::GraphRequestBus::EventResult(assetType, m_scriptCanvasId, &ScriptCanvas::GraphRequests::GetAssetType);
 
         return assetType == azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>();
     }

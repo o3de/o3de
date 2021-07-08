@@ -31,10 +31,10 @@ namespace ScriptCanvas
                 void OnInit() override;
                 void OnConfigured() override;
                 void ConfigureVisualExtensions() override;
-                
+
                 bool CanDeleteSlot(const SlotId& slotId) const;
 
-                SlotId HandleExtension(AZ::Crc32 extensionId);        
+                SlotId HandleExtension(AZ::Crc32 extensionId);
 
                 // Script Canvas Translation...
                 bool IsSwitchStatement() const override { return true; }
@@ -51,17 +51,16 @@ namespace ScriptCanvas
                 //////////////////////////////////////////////////////////////////////////
 
             protected:
-            
+
                 AZStd::string GetDisplayGroup() const { return "OutputGroup"; }
 
-                void OnInputSignal(const SlotId& slot) override;                
                 void OnSlotRemoved(const SlotId& slotId) override;
 
             private:
 
                 AZStd::string GenerateOutputName(int counter);
                 void FixupStateNames();
-                
+
                 int m_numOutputs;
             };
         }

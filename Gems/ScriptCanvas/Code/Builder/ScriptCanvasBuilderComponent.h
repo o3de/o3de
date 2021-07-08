@@ -54,7 +54,6 @@ namespace ScriptCanvasBuilder
         SharedHandlers m_sharedHandlers;
 
         Worker m_scriptCanvasBuilder;
-        FunctionWorker m_scriptCanvasFunctionBuilder;
         ScriptCanvas::Translation::Context m_translationContext;
         ScriptCanvas::Grammar::Context m_grammarContext;
     };

@@ -8,7 +8,6 @@
 #pragma once
 
 #include <Libraries/Core/UnaryOperator.h>
-#include <Libraries/Logic/Boolean.h>
 
 namespace ScriptCanvas
 {
@@ -64,15 +63,7 @@ namespace ScriptCanvas
                 }
                 // Translation
                 //////////////////////////////////////////////////////////////////////////
-
-            protected:
-
-                Datum Evaluate(const Datum& value) override
-                {
-                    const bool* boolValue = value.GetAs<bool>();
-                    return Datum(boolValue && (!(*boolValue)));
-                }
-            }; 
+            };
 
         }
     }

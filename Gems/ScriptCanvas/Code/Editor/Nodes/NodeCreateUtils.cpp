@@ -26,7 +26,6 @@
 #include <ScriptCanvas/Libraries/Core/ReceiveScriptEvent.h>
 #include <ScriptCanvas/Libraries/Core/SendScriptEvent.h>
 #include <ScriptCanvas/Libraries/Core/SetVariable.h>
-#include <ScriptCanvas/Libraries/Entity/EntityRef.h>
 
 namespace ScriptCanvasEditor::Nodes
 {
@@ -130,36 +129,6 @@ namespace ScriptCanvasEditor::Nodes
         }
 
         return AZStd::make_pair(node, nodeIdPair);
-    }
-
-    NodeIdPair CreateEntityNode(const AZ::EntityId& sourceId, const ScriptCanvas::ScriptCanvasId& scriptCanvasId)
-    {
-        AZ_PROFILE_TIMER("ScriptCanvas", __FUNCTION__);
-        NodeIdPair nodeIdPair;
-
-        ScriptCanvas::Node* node = nullptr;
-        AZ::Entity* scriptCanvasEntity{ aznew AZ::Entity };
-        scriptCanvasEntity->Init();
-        nodeIdPair.m_scriptCanvasId = scriptCanvasEntity->GetId();
-        ScriptCanvas::SystemRequestBus::BroadcastResult(node, &ScriptCanvas::SystemRequests::CreateNodeOnEntity, scriptCanvasEntity->GetId(), scriptCanvasId, ScriptCanvas::Nodes::Entity::EntityRef::RTTI_Type());
-
-        auto* entityNode = azrtti_cast<ScriptCanvas::Nodes::Entity::EntityRef*>(node);
-        entityNode->SetEntityRef(sourceId);
-
-        // Set the name
-        AZ::Entity* sourceEntity = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(sourceEntity, &AZ::ComponentApplicationRequests::FindEntity, sourceId);
-        if (sourceEntity)
-        {
-            scriptCanvasEntity->SetName(AZStd::string::format("SC-EntityRef(%s)", sourceEntity->GetName().data()));
-        }
-
-        AZ::EntityId graphCanvasGraphId;
-        EditorGraphRequestBus::EventResult(graphCanvasGraphId, scriptCanvasId, &EditorGraphRequests::GetGraphCanvasGraphId);
-
-        nodeIdPair.m_graphCanvasId = DisplayEntityNode(graphCanvasGraphId, entityNode);
-
-        return nodeIdPair;
     }
 
     NodeIdPair CreateObjectMethodNode(AZStd::string_view className, AZStd::string_view methodName, const ScriptCanvas::ScriptCanvasId& scriptCanvasId, ScriptCanvas::PropertyStatus propertyStatus)

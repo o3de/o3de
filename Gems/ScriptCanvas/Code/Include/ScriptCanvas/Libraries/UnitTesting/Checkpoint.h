@@ -22,9 +22,6 @@ namespace ScriptCanvas
             public:
 
                 SCRIPTCANVAS_NODE(Checkpoint);
-
-                void OnInputSignal(const SlotId& slotId) override;
-
             };
         }
     }
