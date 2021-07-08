@@ -68,6 +68,10 @@ namespace AZ
                 {
                     m_featureProcessor = scene->GetFeatureProcessor<HairFeatureProcessor>();
                 }
+                else
+                {
+                    return false;
+                }
 
                 if (!m_featureProcessor)
                 {
@@ -77,6 +81,14 @@ namespace AZ
                     return false;
                 }
                 return true;
+            }
+
+            void HairPPLLRasterPass::InitializeInternal()
+            {
+                if (GetScene())
+                {
+                    RasterPass::InitializeInternal();
+                }
             }
 
             void HairPPLLRasterPass::BuildInternal()
@@ -139,7 +151,7 @@ namespace AZ
                     // Need to use 'PerPass' naming as currently RasterPass assumes specific naming!
                     // [To Do] - RasterPass should use srg slot index and not name - currently this will
                     //  result in a crash in one of the Atom existing MSAA passes that requires further dive. 
-//                    m_shaderResourceGroup = UtilityClass::CreateShaderResourceGroup(m_shader, "HairPerPassSrg", "Hair Gem");
+                    // m_shaderResourceGroup = UtilityClass::CreateShaderResourceGroup(m_shader, "HairPerPassSrg", "Hair Gem");
                     m_shaderResourceGroup = UtilityClass::CreateShaderResourceGroup(m_shader, "PassSrg", "Hair Gem");
                     if (!m_shaderResourceGroup)
                     {
@@ -161,6 +173,7 @@ namespace AZ
                 }
                 scene->ConfigurePipelineState(drawListTag, pipelineStateDescriptor);
 
+                pipelineStateDescriptor.m_renderAttachmentConfiguration = GetRenderAttachmentConfiguration();
                 pipelineStateDescriptor.m_inputStreamLayout.SetTopology(AZ::RHI::PrimitiveTopology::TriangleList);
                 pipelineStateDescriptor.m_inputStreamLayout.Finalize();
 

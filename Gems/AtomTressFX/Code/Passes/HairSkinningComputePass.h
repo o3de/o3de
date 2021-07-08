@@ -84,6 +84,7 @@ namespace AZ
                 void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
 
                 // Attach here all the pass buffers
+                void InitializeInternal() override;
                 void BuildInternal() override;
                 void FrameBeginInternal(FramePrepareParams params) override;
 

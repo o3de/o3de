@@ -88,6 +88,7 @@ namespace AZ
                 bool BuildDrawPacket(HairRenderObject* hairObject);
 
                 // Pass behavior overrides
+                void InitializeInternal() override;
                 void BuildInternal() override;
                 void FrameBeginInternal(FramePrepareParams params) override;
 

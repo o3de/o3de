@@ -62,6 +62,10 @@ namespace AZ
                 {
                     m_featureProcessor = scene->GetFeatureProcessor<HairFeatureProcessor>();
                 }
+                else
+                {
+                    return false;
+                }
 
                 if (!m_featureProcessor)
                 {
@@ -87,6 +91,14 @@ namespace AZ
             void HairSkinningComputePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
             {
                 ComputePass::SetupFrameGraphDependencies(frameGraph);
+            }
+
+            void HairSkinningComputePass::InitializeInternal()
+            {
+                if (GetScene())
+                {
+                    ComputePass::InitializeInternal();
+                }
             }
 
             void HairSkinningComputePass::BuildInternal()

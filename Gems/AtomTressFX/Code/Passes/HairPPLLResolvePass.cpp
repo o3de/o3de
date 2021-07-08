@@ -44,17 +44,9 @@ namespace AZ
 
             void HairPPLLResolvePass::InitializeInternal()
             {
-                FullscreenTrianglePass::InitializeInternal();
-
-                if (!m_shaderResourceGroup)
+                if (GetScene())
                 {
-                    AZ_Error("Hair Gem", false, "HairPPLLResolvePass: Could not set per pass srg resources: feature processor not ready yet");
-                    return;
-                }
-
-                if (!m_featureProcessor)
-                {
-                    return;
+                    FullscreenTrianglePass::InitializeInternal();
                 }
             }
 
@@ -69,6 +61,10 @@ namespace AZ
                 if (scene)
                 {
                     m_featureProcessor = scene->GetFeatureProcessor<HairFeatureProcessor>();
+                }
+                else
+                {
+                    return false;
                 }
 
                 if (!m_featureProcessor)
