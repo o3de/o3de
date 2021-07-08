@@ -9,7 +9,6 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QPushButton>
-#include <QLabel>
 #endif
 
 namespace O3DE::ProjectManager
