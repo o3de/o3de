@@ -85,11 +85,6 @@ public:
     }
 };
 
-TEST_F(ScriptCanvasTestFixture, VerifySCUnitTestsRun)
-{
-    EXPECT_FALSE(true); // just convincing myself that these unit tests run on jenkins
-}
-
 TEST_F(ScriptCanvasTestFixture, ParseErrorOnKnownNull)
 {
     ExpectParseError("LY_SC_UnitTest_ParseErrorOnKnownNull");
