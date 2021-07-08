@@ -81,6 +81,23 @@ namespace AtomToolsFramework
         AZ::TickBus::Handler::BusConnect();
         AzFramework::WindowRequestBus::Handler::BusConnect(params.windowHandle);
 
+        m_inputChannelMapper = new AzToolsFramework::QtEventToAzInputMapper(this, id);
+
+        // Forward input events to our controller list.
+        QObject::connect(m_inputChannelMapper, &AzToolsFramework::QtEventToAzInputMapper::InputChannelUpdated, this,
+            [this](const AzFramework::InputChannel* inputChannel, QEvent* event)
+        {
+            AzFramework::NativeWindowHandle windowId = reinterpret_cast<AzFramework::NativeWindowHandle>(winId());
+            if (m_controllerList->HandleInputChannelEvent({GetId(), windowId, *inputChannel}))
+            {
+                // If the controller handled the input event, mark the event as accepted so it doesn't continue to propagate.
+                if (event)
+                {
+                    event->setAccepted(true);
+                }
+            }
+        });
+
         return true;
     }
 
@@ -149,86 +166,24 @@ namespace AtomToolsFramework
         return m_defaultCamera;
     }
 
-    static bool IsMouseButtonEvent(const AzFramework::InputChannel& inputChannel)
-    {
-        const auto& mouseButtons = AzFramework::InputDeviceMouse::Button::All;
-        return AZStd::find(mouseButtons.begin(), mouseButtons.end(), inputChannel.GetInputChannelId()) != mouseButtons.end();
-    }
-
-    static bool IsMouseMoveEvent(const AzFramework::InputChannel& inputChannel)
-    {
-        return inputChannel.GetInputChannelId() == AzFramework::InputDeviceMouse::SystemCursorPosition;
-    }
-
-    static bool IsMouseButtonOrWheelEvent(const AzFramework::InputChannel& inputChannel)
-    {
-        return IsMouseButtonEvent(inputChannel) || inputChannel.GetInputChannelId() == AzFramework::InputDeviceMouse::Movement::Z;
-    }
-
-    bool RenderViewportWidget::CanInputGrantFocus(const AzFramework::InputChannel& inputChannel) const
-    {
-        // Only take focus from a mouse event if the cursor is currently within the viewport
-        if (!m_mouseOver)
-        {
-            return false;
-        }
-
-        // Only mouse button down events (clicks) can grant focus
-        if (inputChannel.GetState() != AzFramework::InputChannel::State::Began)
-        {
-            return false;
-        }
-
-        // Only mouse button events can grant focus
-        return IsMouseButtonEvent(inputChannel);
-    }
-
     bool RenderViewportWidget::OnInputChannelEventFiltered(const AzFramework::InputChannel& inputChannel)
     {
-        bool shouldConsumeEvent = true;
-
-        // Grab keyboard focus if we've been clicked on.
-        // Qt normally handles this for us, but we're filtering native events before they get
-        // synthesized into QMouseEvents.
-        if (!hasFocus() && CanInputGrantFocus(inputChannel))
-        {
-            setFocus();
-        }
-
-        // Don't consume new input events if we don't currently have focus.
-        // We do forward Ended events, as they may be relevant to our current state
-        // (e.g. a key gets released after we lose focus, it shouldn't remain "stuck").
         if (!hasFocus())
         {
-            if (inputChannel.GetState() == AzFramework::InputChannel::State::Ended)
-            {
-                // Forward the input ended event to our controllers, but don't prevent other viewports from receiving it.
-                shouldConsumeEvent = false;
-            }
-            else
-            {
-                // Not an event we should listen to, abort.
-                return false;
-            }
+            return false;
         }
 
-        // If we receive a mouse button event from outside of our viewport, ignore it even if we have focus.
-        if (!m_mouseOver
-            && inputChannel.GetState() == AzFramework::InputChannel::State::Began
-            && IsMouseButtonOrWheelEvent(inputChannel))
+        // Only forward channels that aren't covered by our Qt -> AZ event mapper
+        if (!m_inputChannelMapper || m_inputChannelMapper->HandlesInputEvent(inputChannel))
         {
             return false;
         }
 
-        // Don't forward system cursor position updates, we'll do that ourselves for in-window movements once the result of
-        // ViewportCursorScreenPosition is guaranteed to be correct (see mouseMoveEvent).
-        if (IsMouseMoveEvent(inputChannel))
-        {
-            return false;
-        }
+        bool shouldConsumeEvent = true;
 
         AzFramework::NativeWindowHandle windowId = reinterpret_cast<AzFramework::NativeWindowHandle>(winId());
         const bool eventHandled = m_controllerList->HandleInputChannelEvent({GetId(), windowId, inputChannel});
+
         // If our controllers handled the event and it's one we can safely consume (i.e. it's not an Ended event that other viewports might need), consume it.
         return eventHandled && shouldConsumeEvent;
     }
@@ -262,6 +217,7 @@ namespace AtomToolsFramework
         {
             SendWindowResizeEvent();
         }
+
         return QWidget::event(event);
     }
 
@@ -279,23 +235,12 @@ namespace AtomToolsFramework
     {
         m_mousePosition = event->localPos();
 
-        // Now that we've looked a viewport local mouse position,
-        // we can go ahead and broadcast the system cursor input event to the controllers.
-        // This allows any controllers not listening to pure mouse deltas to consistently
-        // look up the mouse position in viewport screen coordinates.
-        const AzFramework::InputDevice* mouseInputDevice = nullptr;
-        if (AzFramework::InputDeviceRequestBus::EventResult(
-                mouseInputDevice, AzFramework::InputDeviceMouse::Id, &AzFramework::InputDeviceRequests::GetInputDevice);
-            mouseInputDevice != nullptr)
-        {
-            const AzFramework::NativeWindowHandle windowId = reinterpret_cast<AzFramework::NativeWindowHandle>(winId());
-            AzFramework::InputChannel syntheticInput(AzFramework::InputDeviceMouse::SystemCursorPosition, *mouseInputDevice);
-            m_controllerList->HandleInputChannelEvent({GetId(), windowId, syntheticInput});
-        }
-
         if (m_capturingCursor && m_lastCursorPosition.has_value())
         {
             AzQtComponents::SetCursorPos(m_lastCursorPosition.value());
+            // Even though we just set the cursor position, there are edge cases such as remote desktop that will leave
+            // the cursor position unchanged. For safety, we re-cache our last cursor position for delta generation.
+            m_lastCursorPosition = QCursor::pos();
         }
         else
         {
@@ -352,6 +297,12 @@ namespace AtomToolsFramework
         {
             m_controllerList->RegisterViewportContext(GetId());
         }
+    }
+
+    void RenderViewportWidget::SetInputProcessingEnabled(bool enabled)
+    {
+        m_inputChannelMapper->SetEnabled(enabled);
+        m_controllerList->SetEnabled(enabled);
     }
 
     AzFramework::CameraState RenderViewportWidget::GetCameraState()
