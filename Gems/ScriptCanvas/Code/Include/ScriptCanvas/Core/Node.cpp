@@ -2335,6 +2335,11 @@ namespace ScriptCanvas
         }
     }
 
+    bool Node::CanAcceptNullInput([[maybe_unused]] const Slot& executionSlot, [[maybe_unused]] const Slot& inputSlot) const
+    {
+        return true;
+    }
+
     void Node::CollectVariableReferences(AZStd::unordered_set< ScriptCanvas::VariableId >& variableIds) const
     {
         for (const Slot& slot : m_slots)

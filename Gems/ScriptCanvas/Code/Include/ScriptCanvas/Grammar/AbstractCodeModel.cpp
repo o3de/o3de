@@ -670,6 +670,28 @@ namespace ScriptCanvas
             return AddVariable(Datum(type), rawName);
         }
 
+        void AbstractCodeModel::CheckForKnownNullDereference(ExecutionTreeConstPtr execution, const ExecutionInput& input, const Slot& inputSlot)
+        {
+            if (Data::IsValueType(inputSlot.GetDataType())
+            || !execution->GetId().m_node
+            || !execution->GetId().m_slot
+            || (input.m_value && !input.m_value->m_datum.Empty()))
+            {
+                return;
+            }
+
+            if (!input.m_value)
+            {
+                AddError(execution->GetId().m_node->GetEntityId(), nullptr, "Internal Error: CheckForKnownNullDereference called with input with no m_value");
+                return;
+            }
+
+            if (!execution->GetId().m_node->CanAcceptNullInput(*execution->GetId().m_slot, inputSlot))
+            {
+                AddError(execution->GetId().m_node->GetEntityId(), nullptr, ParseErrors::NullInputKnown);
+            }
+        }
+
         void AbstractCodeModel::CheckConversion(ConversionByIndex& conversion, VariableConstPtr source, size_t index, const Data::Type& targetType)
         {
             const Data::Type& sourceType = source->m_datum.GetType();
@@ -698,7 +720,7 @@ namespace ScriptCanvas
         }
 
         AZStd::string AbstractCodeModel::CheckUniqueInterfaceNames
-        (AZStd::string_view candidate
+            ( AZStd::string_view candidate
             , AZStd::string_view defaultName
             , AZStd::unordered_set<AZStd::string>& uniqueNames
             , const AZStd::unordered_set<const ScriptCanvas::Nodes::Core::FunctionDefinitionNode*>& nodelingsOut)
@@ -4285,10 +4307,7 @@ namespace ScriptCanvas
 
         void AbstractCodeModel::ParseInputDatum(ExecutionTreePtr execution, const Slot& input)
         {
-            // \todo look for crossed lines in inferred functions, because sometimes, rather than the input
-            // being named of the result of the output that emitted it, it will be the name of the inferred function
-            // parameter ---> make a map of node output to function input names
-            AZ_Assert(execution->GetSymbol() != Symbol::FunctionDefinition, "Function definition input should have been handled already");
+            AZ_Assert(execution->GetSymbol() != Symbol::FunctionDefinition, "Function definition input is not handled in AbstractCodeModel::ParseInputDatum");
 
             auto nodes = execution->GetId().m_node->GetConnectedNodes(input);
             if (nodes.empty())
@@ -4298,17 +4317,6 @@ namespace ScriptCanvas
                     execution->AddInput({ &input, variable, DebugDataSource::FromVariable(input.GetId(), input.GetDataType(), variable->m_sourceVariableId) });
                     CheckConversion(execution->ModConversions(), variable, execution->GetInputCount() - 1, input.GetDataType());
                 }
-                // This concept may never actually be possible
-//                 else if (RequiresCreationFunction(input.GetDataType().GetType()))
-//                 {
-//                     AddError(execution, aznew NotYetImplemented(
-//                         "1: finish input created by name when connected to other nodes" 
-//                         "2: add the name to the scope"
-//                         "3: and check inputs be re-used, common constructors like zero/1, etc"
-//                         "4: read the variable name if it is present instead of creating it"
-//                         "5: check for entity references to self and other member slice variables"
-//                         "6: mark the variable with RequiredCreationFunction()"));
-//                 }
                 else
                 {
                     auto variableDatum = input.FindDatum();
@@ -4345,26 +4353,30 @@ namespace ScriptCanvas
                 }
                 else
                 {
-                    // we don't support this, yet, but visually we could
-                    // we could support both things, technically...auto-generated inputs, and defaults on the non-connected
-                    // execution thread, or whatever makes possible sense
-                    // \todo send enough information to reveal the data path in the editor
-
+                    // This isn't supported visually, yet, but technically, it could be.
+                    // One could connect both latent execution and immediate execution to the same code execution path,
+                    // but only one uses connected output, and the other uses defaults.
+                    // It would require us to change the visualization of the shared path, based on which parent was clicked on in the editor.
                     const auto& targetNode = *execution->GetId().m_node;
                     const auto& targetSlot = input;
 
                     for (auto sourceNodeAndSlot : nodes)
                     {
                         AddError(nullptr, aznew ScopedDataConnectionEvent
-                        (execution->GetNodeId()
+                            ( execution->GetNodeId()
                             , targetNode
                             , targetSlot
                             , *sourceNodeAndSlot.first
                             , *sourceNodeAndSlot.second));
 
                     }
+
+                    return;
                 }
             }
+
+            // Check for known null reads
+            CheckForKnownNullDereference(execution, execution->GetInput(execution->GetInputCount() - 1), input);
         }
 
         bool AbstractCodeModel::ParseInputThisPointer(ExecutionTreePtr execution)

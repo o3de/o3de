@@ -479,7 +479,10 @@ namespace ScriptCanvas
         Node(const Node&); // Needed just for DLL linkage. Does not perform a copy
         Node& operator=(const Node&); // Needed just for DLL linkage. Does not perform a copy        
 
+        virtual bool CanAcceptNullInput(const Slot& executionSlot, const Slot& inputSlot) const;
+
         virtual void CollectVariableReferences(AZStd::unordered_set< ScriptCanvas::VariableId >& variableIds) const;
+
         virtual bool ContainsReferencesToVariables(const AZStd::unordered_set< ScriptCanvas::VariableId >& variableIds) const;        
 
         Graph* GetGraph() const;
