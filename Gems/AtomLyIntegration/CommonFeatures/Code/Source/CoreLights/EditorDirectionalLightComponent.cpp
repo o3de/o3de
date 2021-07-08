@@ -69,7 +69,7 @@ namespace AZ
                             ->Attribute(Edit::Attributes::SoftMin, &DirectionalLightComponentConfig::GetIntensitySoftMin)
                             ->Attribute(Edit::Attributes::SoftMax, &DirectionalLightComponentConfig::GetIntensitySoftMax)
                             ->Attribute(Edit::Attributes::Suffix, &DirectionalLightComponentConfig::GetIntensitySuffix)
-                        ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_angularDiameter, "Angular diameter", "Angular Diameter of the directional light in degrees. The sun is about 0.5.")
+                        ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_angularDiameter, "Angular diameter", "Angular diameter of the directional light in degrees. The sun is about 0.5.")
                             ->Attribute(Edit::Attributes::Min, 0.0f)
                             ->Attribute(Edit::Attributes::Max, 5.0f)
                             ->Attribute(Edit::Attributes::SoftMax, 1.0f)
@@ -78,7 +78,7 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(Edit::UIHandlers::EntityId, &DirectionalLightComponentConfig::m_cameraEntityId, "Camera", "Entity of the camera for cascaded shadowmap view frustum.")
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
-                        ->DataElement(Edit::UIHandlers::Default, &DirectionalLightComponentConfig::m_shadowFarClipDistance, "Shadow far clip", "Shadow sepcific far clip distance.")
+                        ->DataElement(Edit::UIHandlers::Default, &DirectionalLightComponentConfig::m_shadowFarClipDistance, "Shadow far clip", "Shadow specific far clip distance.")
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ->DataElement(Edit::UIHandlers::ComboBox, &DirectionalLightComponentConfig::m_shadowmapSize, "Shadowmap size", "Width/Height of shadowmap")
                             ->EnumAttribute(ShadowmapSize::Size256, " 256")
@@ -94,7 +94,7 @@ namespace AZ
                             "Switch splitting of shadowmap frustum to cascades automatically or not.")
                         ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_shadowmapFrustumSplitSchemeRatio, "Split ratio",
                             "Ratio to lerp between the two types of frustum splitting scheme.\n"
-                            "0 = Uniform scheme which will split the Frustum evenly across all cascades.\n"
+                            "0 = Uniform scheme which will split the frustum evenly across all cascades.\n"
                             "1 = Logarithmic scheme which is designed to split the frustum in a logarithmic fashion "
                             "in order to enable us to produce a more optimal perspective aliasing across the frustum.")
                             ->Attribute(Edit::Attributes::Min, 0.f)
@@ -102,7 +102,7 @@ namespace AZ
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsSplitManual)
                         ->DataElement(Edit::UIHandlers::Vector4, &DirectionalLightComponentConfig::m_cascadeFarDepths, "Far depth cascade",
-                            "Far Depth of each cascade.  The value of the index greater than or equal to cascade count is ignored.")
+                            "Far depth of each cascade.  The value of the index greater than or equal to cascade count is ignored.")
                             ->Attribute(Edit::Attributes::Min, 0.01f)
                             ->Attribute(Edit::Attributes::Max, &DirectionalLightComponentConfig::m_shadowFarClipDistance)
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
@@ -123,8 +123,8 @@ namespace AZ
                         ->DataElement(Edit::UIHandlers::ComboBox, &DirectionalLightComponentConfig::m_shadowFilterMethod, "Shadow filter method",
                             "Filtering method of edge-softening of shadows.\n"
                             "  None: No filtering\n"
-                            "  PCF: Percentage-Closer Filtering\n"
-                            "  ESM: Exponential Shadow Maps\n"
+                            "  PCF: Percentage-closer filtering\n"
+                            "  ESM: Exponential shadow maps\n"
                             "  ESM+PCF: ESM with a PCF fallback\n"
                             "For BehaviorContext (or TrackView), None=0, PCF=1, ESM=2, ESM+PCF=3")
                             ->EnumAttribute(ShadowFilterMethod::None, "None")
@@ -142,14 +142,14 @@ namespace AZ
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsPcfBoundarySearchDisabled)
                         ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_predictionSampleCount, "Prediction sample count",
-                            "Sample Count for prediction of whether the pixel is on the boundary. "
+                            "Sample count for prediction of whether the pixel is on the boundary. "
                             "Specific to PCF and ESM+PCF.")
                             ->Attribute(Edit::Attributes::Min, 4)
                             ->Attribute(Edit::Attributes::Max, 16)
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsPcfBoundarySearchDisabled)
                         ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_filteringSampleCount, "Filtering sample count",
-                            "It is used only when the pixel is predicted as on the boundary. "
+                            "This is used only when the pixel is predicted as on the boundary. "
                             "Specific to PCF and ESM+PCF.")
                             ->Attribute(Edit::Attributes::Min, 4)
                             ->Attribute(Edit::Attributes::Max, 64)
