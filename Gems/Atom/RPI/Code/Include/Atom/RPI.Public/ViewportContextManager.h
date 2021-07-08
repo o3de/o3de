@@ -51,6 +51,7 @@ namespace AZ
             {
                 AZStd::weak_ptr<ViewportContext> context;
                 ViewportContext::SizeChangedEvent::Handler sizeChangedHandler;
+                ViewportContext::ScalarChangedEvent::Handler dpiScalingChangedHandler;
             };
 
             // ViewportContextManager is a singleton owned solely by RPISystem, which is tagged as a friend

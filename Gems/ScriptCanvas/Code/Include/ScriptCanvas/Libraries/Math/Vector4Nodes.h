@@ -74,13 +74,13 @@ namespace ScriptCanvas
             return Vector4Type(aznumeric_cast<float>(x), aznumeric_cast<float>(y), aznumeric_cast<float>(z), aznumeric_cast<float>(w));
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(FromValues, k_categoryName, "{725D79B8-1CB1-4473-8480-4DE584C75540}", "returns a vector from elements", "X", "Y", "Z", "W");
-        
+
         AZ_INLINE Vector4Type FromVector3AndNumber(Vector3Type source, const NumberType w)
         {
             return Vector4Type::CreateFromVector3AndFloat(source, aznumeric_cast<float>(w));
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(FromVector3AndNumber, k_categoryName, "{577E2B26-BEC1-4CC7-B23B-5172ED1BFF6E}", "returns a vector with x,y,z from Source and w from W", "Source", "W");
-                
+
         AZ_INLINE NumberType GetElement(const Vector4Type source, const NumberType index)
         {
             return source.GetElement(AZ::GetClamp(aznumeric_cast<int>(index), 0, 3));
@@ -99,7 +99,7 @@ namespace ScriptCanvas
             return source;
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(Homogenize, k_categoryName, "{9A3FAB19-0442-44A5-8454-12003BA146EE}", "returns a vector with all components divided by the w element", "Source");
-        
+
         AZ_INLINE BooleanType IsClose(const Vector4Type a, const Vector4Type b, NumberType tolerance)
         {
             return a.IsClose(b, aznumeric_cast<float>(tolerance));
@@ -212,8 +212,8 @@ namespace ScriptCanvas
             return lhs - rhs;
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_DEPRECATED(Subtract, k_categoryName, "{A5FA6465-9C39-4A44-BD7C-E8ECF9503E46}", "This node is deprecated, use Subtract (-), it provides contextual type and slots", "A", "B");
-                        
-        using Registrar = RegistrarGeneric<
+
+        using Registrar = RegistrarGeneric <
             AbsoluteNode,
             AddNode,
             DivideByNumberNode,
@@ -260,8 +260,8 @@ namespace ScriptCanvas
 
             ReciprocalNode,
             SubtractNode
-        >;
+        > ;
 
     }
-} 
+}
 

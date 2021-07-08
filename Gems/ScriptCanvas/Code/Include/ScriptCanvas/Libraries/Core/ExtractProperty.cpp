@@ -5,8 +5,6 @@
  *
  */
 #include <ScriptCanvas/Libraries/Core/ExtractProperty.h>
-#include <ScriptCanvas/Libraries/Core/BehaviorContextObjectNode.h>
-
 #include <Libraries/Core/MethodUtility.h>
 
 namespace ScriptCanvas
@@ -58,35 +56,10 @@ namespace ScriptCanvas
                     AddPropertySlots(dataType);
                 }
             }
-            
+
             Data::Type ExtractProperty::GetSourceSlotDataType() const
             {
                 return m_dataType;
-            }
-
-            void ExtractProperty::OnInputSignal(const SlotId& slotID)
-            {
-                if (slotID == GetSlotId(GetInputSlotName()))
-                {
-                    if (auto input = FindDatum(ExtractPropertyProperty::GetSourceSlotId(this)))
-                    {
-                        for(auto&& propertyAccount : m_propertyAccounts)
-                        {
-                            Slot* propertySlot = GetSlot(propertyAccount.m_propertySlotId);
-                            if (propertySlot && propertyAccount.m_getterFunction)
-                            {
-                                auto outputOutcome = propertyAccount.m_getterFunction(*input);
-                                if (!outputOutcome)
-                                {
-                                    SCRIPTCANVAS_REPORT_ERROR((*this), outputOutcome.TakeError().data());
-                                    return;
-                                }
-                                PushOutput(outputOutcome.TakeValue(), *propertySlot);
-                            }
-                        }
-                    }
-                    SignalOutput(GetSlotId(GetOutputSlotName()));
-                }
             }
 
             void ExtractProperty::AddPropertySlots(const Data::Type& type)
@@ -108,7 +81,7 @@ namespace ScriptCanvas
             {
                 return AZ::Success(DependencyReport::NativeLibrary(Data::GetName(m_dataType)));
             }
-            
+
             PropertyFields ExtractProperty::GetPropertyFields() const
             {
                 PropertyFields propertyFields;

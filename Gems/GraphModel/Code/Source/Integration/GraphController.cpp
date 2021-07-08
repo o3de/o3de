@@ -1187,14 +1187,6 @@ namespace GraphModelIntegration
         return dataTypesMatch && !CheckForLoopback(sourceSlot->GetParentNode(), targetSlot->GetParentNode());
     }
 
-
-    bool GraphController::IsValidVariableAssignment([[maybe_unused]] const AZ::EntityId& variableId, [[maybe_unused]] const GraphCanvas::Endpoint& targetPoint) const
-    {
-        AZ_Assert(false, "This Graph Canvas does not support graph variables");
-        return false;
-    }
-    
-
     //! Helper function to create a GraphCanvas::NodePropertyDisplay and a data interface for editing input pin values
     //! \typename  DataInterfaceType  One of the data interface types. Ex: BooleanDataInterface
     //! \typename  CreateDisplayFunctionType  Function pointer type should be filled automatically

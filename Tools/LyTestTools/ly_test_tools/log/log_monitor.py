@@ -133,12 +133,12 @@ class LogMonitor(object):
         except AssertionError:  # Raised by waiter when timeout is reached.
             logger.warning(f"Timeout of '{timeout}' seconds was reached, log lines may not have been found")
             # exception will be raised below by _validate_results with failure analysis
-
-        logger.info("Python log output:\n" + self.py_log)
-        logger.info(
-            "Finished log monitoring for '{}' seconds, validating results.\n"
-            "expected_lines_not_found: {}\n unexpected_lines_found: {}".format(
-                timeout, self.expected_lines_not_found, self.unexpected_lines_found))
+        finally:
+            logger.info("Python log output:\n" + self.py_log)
+            logger.info(
+                "Finished log monitoring for '{}' seconds, validating results.\n"
+                "expected_lines_not_found: {}\n unexpected_lines_found: {}".format(
+                    timeout, self.expected_lines_not_found, self.unexpected_lines_found))
 
         return self._validate_results(self.expected_lines_not_found, self.unexpected_lines_found, expected_lines, unexpected_lines)
 
@@ -265,12 +265,21 @@ class LogMonitor(object):
             self.unexpected_lines_found = unexpected_lines_found
             self.expected_lines_not_found = expected_lines_not_found
 
+        exception_info = None
+
         # To avoid race conditions, we will check *before reading*
         # If in the mean time the file is closed, we will make sure we read everything by issuing an extra call
         # by returning the previous alive state
         process_runing = self.launcher.is_alive() 
         for line in log:
             line = line[:-1]  # remove /n
-            process_line(line)
+            try:
+                process_line(line)
+            except LogMonitorException as e:
+                if exception_info is None:
+                    exception_info = e.args
+
+        if exception_info is not None:
+            raise LogMonitorException(*exception_info)
 
         return not process_runing  # Will loop until the process ends
