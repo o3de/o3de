@@ -1,42 +1,12 @@
 {
     "gem_name": "PhysXSamples",
-     "Dependencies": [
-        {
-            "Uuid": "ed07631f95fb4be1bd10cd37298ec697",
-            "VersionConstraints": [
-                ">=0.1"
-            ],
-            "_comment": "Uses mesh assets from primatives gem"
-        },
-		{
-            "Uuid": "2c227161447b4d77a5b07c093e214fe3",
-            "VersionConstraints": [
-                ">=0.1"
-            ],
-            "_comment": "Uses textures from DevTextures gem"
-        },
-		{
-            "Uuid": "4e08125824434932a0fe3717259caa47",
-            "VersionConstraints": [
-                ">=0.1"
-            ],
-            "_comment": "Requires PhysX"
-        },
-		{
-            "Uuid": "66239f50bf754354b514c850c8b841fb",
-            "VersionConstraints": [
-                ">=0.1"
-            ],
-            "_comment": "Uses debug draw Script Canvas nodes"
-        }
-    ],
-	"GemFormatVersion": 3,
-    "Uuid": "c4a4aadba44241ae9f0141e145def7f7",
-    "Name": "PhysXSamples",
-    "DisplayName": "PhysXSamples",
-    "Version": "0.1.0",
-    "LinkType": "NoCode",
-    "Summary": "Collection of samples that demostrate PhysX features.",
-    "Tags": ["Asset"],
-    "IconPath": "preview.png"
+    "display_name": "PhysX Samples",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Open 3D Engine - o3de.org",
+    "type": "Asset",
+    "summary": "The PhysX Samples Gem provides sample assets and scripts that demonstrate PhysX Gem features in Open 3D Engine.",
+    "canonical_tags": ["Gem"],
+    "user_tags": ["Physics", "Simulation", "Sample"],
+    "icon_path": "preview.png",
+    "requirements": ""
 }
