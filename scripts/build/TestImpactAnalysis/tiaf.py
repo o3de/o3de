@@ -192,6 +192,9 @@ class TestImpact:
                     # Sequence type
                     args.append("--sequence=tianowrite")
                     print("Sequence type is set to 'tianowrite'.")
+                    # Integrity failure policy
+                    args.append("--ipolicy=continue")
+                    print("Integration failure policy is set to 'continue'.")
                     # Safe mode
                     if safe_mode:
                         args.append("--safemode=on")

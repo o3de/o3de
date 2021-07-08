@@ -53,6 +53,7 @@ def parse_args():
     return args
 
 if __name__ == "__main__":
+    args = parse_args()
     try:
         args = parse_args()
         tiaf = TestImpact(args.config, args.dst_commit, args.src_branch, args.dst_branch, args.pipeline, args.seeding_branches, args.seeding_pipelines)
