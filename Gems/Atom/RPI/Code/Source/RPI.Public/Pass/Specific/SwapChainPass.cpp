@@ -146,7 +146,7 @@ namespace AZ
         {
             if (m_swapChainAttachment)
             {
-                m_readbackOutput = true;
+                m_readbackOption = PassAttachmentReadbackOption::Output;
                 m_attachmentReadback = readback;
 
                 AZStd::string readbackName = AZStd::string::format("%s_%s", m_swapChainAttachment->GetAttachmentId().GetCStr(), GetName().GetCStr());

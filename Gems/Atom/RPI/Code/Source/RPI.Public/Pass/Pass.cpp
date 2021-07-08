@@ -37,8 +37,7 @@
 namespace AZ
 {
     namespace RPI
-    {
-
+    {             
         // --- Constructors ---
 
         Pass::Pass(const PassDescriptor& descriptor)
@@ -1433,7 +1432,7 @@ namespace AZ
             m_flags.m_pipelineStatisticsQueryEnabled = enable;
         }
 
-        bool Pass::ReadbackAttachment(AZStd::shared_ptr<AttachmentReadback> readback, const Name& slotName, bool useOutput)
+        bool Pass::ReadbackAttachment(AZStd::shared_ptr<AttachmentReadback> readback, const Name& slotName, PassAttachmentReadbackOption option)
         {
             // Return false if it's already readback
             if (m_attachmentReadback)
@@ -1456,11 +1455,11 @@ namespace AZ
                             bindingIndex, GetName().GetCStr());
                         if (readback->ReadPassAttachment(binding.m_attachment.get(), AZ::Name(readbackName)))
                         {
-                            m_readbackOutput = true;
-                            // The useOutput is only meaningful if the attachment is used for InputOutput.
+                            m_readbackOption = PassAttachmentReadbackOption::Output;
+                            // The m_readbackOption is only meaningful if the attachment is used for InputOutput.
                             if (binding.m_slotType == PassSlotType::InputOutput)
                             {
-                                m_readbackOutput = useOutput;
+                                m_readbackOption = option;
                             }
                             m_attachmentReadback = readback;
                             return true;
@@ -1476,7 +1475,7 @@ namespace AZ
 
         void Pass::UpdateReadbackAttachment(FramePrepareParams params, bool beforeAddScopes)
         {
-            if (beforeAddScopes == !m_readbackOutput && m_attachmentReadback)
+            if (beforeAddScopes == (m_readbackOption == PassAttachmentReadbackOption::Input) && m_attachmentReadback)
             {
                 // Read the attachment for one frame. The reference can be released afterwards
                 m_attachmentReadback->FrameBegin(params);

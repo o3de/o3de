@@ -340,7 +340,7 @@ namespace AZ
         {
             if (m_outputColorAttachment)
             {
-                m_readbackOutput = true;
+                m_readbackOption = PassAttachmentReadbackOption::Output;
                 m_attachmentReadback = readback;
                 AZStd::string readbackName = AZStd::string::format("%s_%s", m_outputColorAttachment->GetAttachmentId().GetCStr(), GetName().GetCStr());
                 return m_attachmentReadback->ReadPassAttachment(m_outputColorAttachment.get(), AZ::Name(readbackName));

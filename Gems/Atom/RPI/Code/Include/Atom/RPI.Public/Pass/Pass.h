@@ -66,7 +66,12 @@ namespace AZ
         const uint32_t PassInputBindingCountMax = 16;
         const uint32_t PassInputOutputBindingCountMax = PassInputBindingCountMax;
         const uint32_t PassOutputBindingCountMax = PassInputBindingCountMax;
-
+                
+        enum class PassAttachmentReadbackOption : uint8_t
+        {
+            Input = 0,
+            Output
+        };
 
         //! Atom's base pass class (every pass class in Atom must derive from this class).
         //! 
@@ -226,10 +231,10 @@ namespace AZ
             //! Readback an attachment attached to the specified slot name
             //! @param readback The AttachmentReadback object which is used for readback. Its callback function will be called when readback is finished.
             //! @param slotName The attachment bind to the slot with this slotName is to be readback
-            //! @param useOutput The flag which is used for choosing input or output state for an InputOutput attachment.
-            //!                  The flag would be ignored if the attachment isn't an InputOutput attachment.
+            //! @param option The option is used for choosing input or output state when readback an InputOutput attachment.
+            //!               It's ignored if the attachment isn't an InputOutput attachment.
             //! Return true if the readback request was successful. User may expect the AttachmentReadback's callback function would be called. 
-            bool ReadbackAttachment(AZStd::shared_ptr<AttachmentReadback> readback, const Name& slotName, bool useOutput = true);
+            bool ReadbackAttachment(AZStd::shared_ptr<AttachmentReadback> readback, const Name& slotName, PassAttachmentReadbackOption option = PassAttachmentReadbackOption::Output);
 
             //! Returns whether the Timestamp queries is enabled/disabled for this pass
             bool IsTimestampQueryEnabled() const;
@@ -359,7 +364,6 @@ namespace AZ
 
             void UpdateReadbackAttachment(FramePrepareParams params, bool beforeAddScopes);
 
-
             // --- Protected Members ---
 
             const Name PassNameThis{"This"};
@@ -455,8 +459,7 @@ namespace AZ
             
             // For read back attachment
             AZStd::shared_ptr<AttachmentReadback> m_attachmentReadback;
-            // If to read input state or output state for an InputOutput attachment
-            bool m_readbackOutput;
+            PassAttachmentReadbackOption m_readbackOption;
 
         private:
             // Return the Timestamp result of this pass

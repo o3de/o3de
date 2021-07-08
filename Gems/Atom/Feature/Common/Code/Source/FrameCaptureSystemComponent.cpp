@@ -343,7 +343,7 @@ namespace AZ
         }
 
         bool FrameCaptureSystemComponent::CapturePassAttachment(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slot,
-            const AZStd::string& outputFilePath, bool useOutput)
+            const AZStd::string& outputFilePath, RPI::PassAttachmentReadbackOption option)
         {
             InitReadback();
 
@@ -377,7 +377,7 @@ namespace AZ
             }
 
             AZ::RPI::Pass* pass = foundPasses[0];
-            if (pass->ReadbackAttachment(m_readback, Name(slot), useOutput))
+            if (pass->ReadbackAttachment(m_readback, Name(slot), option))
             {
                 m_state = State::Pending;
                 m_result = FrameCaptureResult::None;
@@ -385,13 +385,13 @@ namespace AZ
                 return true;
             }
             AZ_Warning("FrameCaptureSystemComponent", false, "Failed to readback the attachment bound to pass [%s] slot [%s]", pass->GetName().GetCStr(), slot.c_str());
-            return true;
+            return false;
         }
 
         bool FrameCaptureSystemComponent::CapturePassAttachmentWithCallback(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slotName
-            , RPI::AttachmentReadback::CallbackFunction callback, bool useOutput)
+            , RPI::AttachmentReadback::CallbackFunction callback, RPI::PassAttachmentReadbackOption option)
         {
-            bool result = CapturePassAttachment(passHierarchy, slotName, "", useOutput);
+            bool result = CapturePassAttachment(passHierarchy, slotName, "", option);
 
             // Append state change to user provided call back
             AZ::RPI::AttachmentReadback::CallbackFunction callbackSetState = [&, callback](const AZ::RPI::AttachmentReadback::ReadbackResult& result)

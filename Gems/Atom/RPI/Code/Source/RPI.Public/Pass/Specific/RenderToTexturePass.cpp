@@ -108,7 +108,7 @@ namespace AZ
         {
             if (m_outputAttachment)
             {
-                m_readbackOutput = true;
+                m_readbackOption = PassAttachmentReadbackOption::Output;
                 m_attachmentReadback = readback;
                 AZStd::string readbackName = AZStd::string::format("%s_%s", m_outputAttachment->GetAttachmentId().GetCStr(), GetName().GetCStr());
                 m_attachmentReadback->ReadPassAttachment(m_outputAttachment.get(), AZ::Name(readbackName));
