@@ -15,8 +15,6 @@ import ly_test_tools.builtin.helpers as helpers
 import ly_test_tools.environment.process_utils as process_utils
 import ly_test_tools.environment.waiter as waiter
 
-pytestmark = pytest.mark.SUITE_smoke
-
 logger = logging.getLogger(__name__)
 
 # Note: For device testing, device ids must exist in ~/ly_test_tools/devices.ini, see README.txt for more info.
@@ -24,31 +22,44 @@ logger = logging.getLogger(__name__)
 
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomatedTestingProject(object):
+
     def test_StartGameLauncher_Sanity(self, project):
+        # Kill processes that may interfere with the test
         process_utils.kill_processes_named(names=process_utils.LY_PROCESS_KILL_LIST, ignore_extensions=True)
 
         try:
+            # Create the Workspace object
             workspace = helpers.create_builtin_workspace(project=project)
 
+            # Create the Launcher object and add args
             launcher = launcher_helper.create_launcher(workspace)
-            launcher.args.extend(['-NullRenderer', '-BatchMode'])
+            launcher.args.extend(['-NullRenderer'])
 
+            # Call the game client executable
             with launcher.start():
+                # Wait for the process to exist
                 waiter.wait_for(lambda: process_utils.process_exists(f"{project}.GameLauncher.exe", ignore_extensions=True))
         finally:
+            # Clean up processes after the test is finished
             process_utils.kill_processes_named(names=process_utils.LY_PROCESS_KILL_LIST, ignore_extensions=True)
 
     @pytest.mark.skipif(not ly_test_tools.WINDOWS, reason="Editor currently only functions on Windows")
     def test_StartEditor_Sanity(self, project):
+        # Kill processes that may interfere with the test
         process_utils.kill_processes_named(names=process_utils.LY_PROCESS_KILL_LIST, ignore_extensions=True)
 
         try:
+            # Create the Workspace object
             workspace = helpers.create_builtin_workspace(project=project)
 
+            # Create the Launcher object and add args
             editor = launcher_helper.create_editor(workspace)
             editor.args.extend(['-NullRenderer', '-autotest_mode'])
 
+            # Call the Editor executable
             with editor.start():
+                # Wait for the process to exist
                 waiter.wait_for(lambda: process_utils.process_exists("Editor", ignore_extensions=True))
         finally:
+            # Clean up processes after the test is finished
             process_utils.kill_processes_named(names=process_utils.LY_PROCESS_KILL_LIST, ignore_extensions=True)
