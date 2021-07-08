@@ -11,40 +11,12 @@
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QPixmap>
-#include <QIcon>
 #include <QAbstractButton>
 #include <QStyle>
 #include <QVariant>
 
 namespace O3DE::ProjectManager
 {
-    TemplateImageOverlay::TemplateImageOverlay(const QString& imagePath, QWidget* parent)
-        : QLabel(parent)
-    {
-        QVBoxLayout* vLayout = new QVBoxLayout();
-        vLayout->setSpacing(0);
-        vLayout->setContentsMargins(0, 0, 0, 0);
-        setLayout(vLayout);
-
-        setObjectName("templateImage");
-        setPixmap(QPixmap(imagePath).scaled(
-            QSize(ProjectTemplateImageWidth, ProjectTemplateImageWidth), Qt::KeepAspectRatio, Qt::SmoothTransformation));
-
-        QVBoxLayout* overlayLayout = new QVBoxLayout();
-
-        m_overlayLabel = new QLabel(this);
-        m_overlayLabel->setAlignment(Qt::AlignCenter);
-        overlayLayout->addWidget(m_overlayLabel);
-
-        vLayout->addLayout(overlayLayout);
-    }
-
-    void TemplateImageOverlay::SetTemplateImageOverlayImage(const QString& overlayImagePath)
-    {
-        m_overlayLabel->setPixmap(QIcon(overlayImagePath).pixmap(ProjectTemplateOverlayImageWidth, ProjectTemplateOverlayImageWidth));
-    }
-
-
     TemplateButton::TemplateButton(const QString& imagePath, const QString& labelText, QWidget* parent)
         : QPushButton(parent)
     {
@@ -57,17 +29,11 @@ namespace O3DE::ProjectManager
         vLayout->setContentsMargins(0, 0, 0, 0);
         setLayout(vLayout);
 
-        m_imageOverlay = new TemplateImageOverlay(imagePath, this);
-        m_imageOverlay->setObjectName("templateImage");
-        if (labelText == "Standard")
-        {
-            m_imageOverlay->SetTemplateImageOverlayImage(":/Standard_Template.svg");
-        }
-        else if (labelText == "Minimal")
-        {
-            m_imageOverlay->SetTemplateImageOverlayImage(":/Minimal_Template.svg");
-        }
-        vLayout->addWidget(m_imageOverlay);
+        QLabel* image = new QLabel(this);
+        image->setObjectName("templateImage");
+        image->setPixmap(QPixmap(imagePath).scaled(
+            QSize(ProjectTemplateImageWidth, ProjectTemplateImageWidth), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        vLayout->addWidget(image);
 
         QLabel* label = new QLabel(labelText, this);
         label->setObjectName("templateLabel");

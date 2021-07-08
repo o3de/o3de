@@ -14,20 +14,6 @@
 
 namespace O3DE::ProjectManager
 {
-    class TemplateImageOverlay
-        : public QLabel
-    {
-        Q_OBJECT // AUTOMOC
-    public:
-        explicit TemplateImageOverlay(const QString& imagePath, QWidget* parent = nullptr);
-        ~TemplateImageOverlay() = default;
-
-        void SetTemplateImageOverlayImage(const QString& overlayImagePath);
-
-    private:
-        QLabel* m_overlayLabel;
-    };
-
     class TemplateButton
         : public QPushButton 
     {
@@ -39,8 +25,5 @@ namespace O3DE::ProjectManager
 
     protected slots:
         void onToggled();
-
-    protected:
-        TemplateImageOverlay* m_imageOverlay = nullptr;
     };
 } // namespace O3DE::ProjectManager
