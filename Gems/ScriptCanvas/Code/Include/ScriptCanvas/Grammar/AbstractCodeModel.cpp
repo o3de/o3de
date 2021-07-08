@@ -32,7 +32,6 @@
 
 #include "AbstractCodeModel.h"
 #include "ExecutionTraversalListeners.h"
-#include "GrammarContextBus.h"
 #include "ParsingUtilities.h"
 #include "Primitives.h"
 

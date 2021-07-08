@@ -101,7 +101,6 @@ set(FILES
     Include/ScriptCanvas/Translation/Translation.cpp
     Include/ScriptCanvas/Translation/TranslationContext.h
     Include/ScriptCanvas/Translation/TranslationContext.cpp
-    Include/ScriptCanvas/Translation/TranslationContextBus.h
     Include/ScriptCanvas/Translation/TranslationResult.h
     Include/ScriptCanvas/Translation/TranslationResult.cpp
     Include/ScriptCanvas/Translation/TranslationUtilities.h
@@ -196,9 +195,6 @@ set(FILES
     Include/ScriptCanvas/Grammar/DebugMap.cpp
     Include/ScriptCanvas/Grammar/ExecutionTraversalListeners.h
     Include/ScriptCanvas/Grammar/ExecutionTraversalListeners.cpp
-    Include/ScriptCanvas/Grammar/GrammarContext.h
-    Include/ScriptCanvas/Grammar/GrammarContext.cpp
-    Include/ScriptCanvas/Grammar/GrammarContextBus.h
     Include/ScriptCanvas/Grammar/ParsingMetaData.h
     Include/ScriptCanvas/Grammar/ParsingMetaData.cpp
     Include/ScriptCanvas/Grammar/ParsingUtilities.h

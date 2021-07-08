@@ -24,8 +24,6 @@
 #include <ScriptCanvas/Grammar/PrimitivesExecution.h>
 
 #include "GraphToLuaUtility.h"
-#include "TranslationContext.h"
-#include "TranslationContextBus.h"
 
 namespace GraphToLuaCpp
 {
@@ -92,9 +90,7 @@ namespace ScriptCanvas
         {
             SystemRequestBus::BroadcastResult(m_systemConfiguration, &SystemRequests::GetSystemComponentConfiguration);
             MarkTranslationStart();
-            RequestBus::BroadcastResult(m_context, &RequestTraits::GetTranslationContext);
-            AZ_Assert(m_context, "Nothing is possible without the context");
-
+            
             m_tableName = GraphToLuaCpp::FileNameToTableName(m_model.GetSource().m_name);
             m_tableName += m_configuration.m_suffix;
 
@@ -138,12 +134,12 @@ namespace ScriptCanvas
 
         const AZStd::string& GraphToLua::FindAbbreviation(AZStd::string_view dependency) const
         {
-            return m_context->FindAbbreviation(dependency);
+            return m_context.FindAbbreviation(dependency);
         }
 
         const AZStd::string& GraphToLua::FindLibrary(AZStd::string_view dependency) const
         {
-            return m_context->FindLibrary(dependency);
+            return m_context.FindLibrary(dependency);
         }
 
         AZStd::string_view GraphToLua::GetOperatorString(Grammar::ExecutionTreeConstPtr execution)

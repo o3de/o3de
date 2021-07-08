@@ -28,8 +28,6 @@
 #include <ScriptCanvas/Debugger/API.h>
 #include <ScriptCanvas/Utils/NodeUtils.h>
 #include <ScriptCanvas/Grammar/Primitives.h>
-#include <ScriptCanvas/Grammar/GrammarContext.h>
-#include <ScriptCanvas/Grammar/GrammarContextBus.h>
 #include <ScriptCanvas/Debugger/ValidationEvents/DataValidation/DataValidationEvents.h>
 
 // Version Conversion includes
