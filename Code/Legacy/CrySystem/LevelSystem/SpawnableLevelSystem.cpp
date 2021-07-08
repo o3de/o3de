@@ -188,7 +188,7 @@ namespace LegacyLevelSystem
         {
             // It's common for users to only provide the level name, but not the full asset path
             // Example: "MyLevel" instead of "Levels/MyLevel/MyLevel.spawnable"
-            if (strstr(levelName, ".spawnable") == nullptr)
+            if (!AZ::IO::PathView(levelName).HasExtension())
             {
                 // Search inside the "Levels" folder for a level spawnable matching levelname
                 const AZStd::string possibleLevelAssetPath = AZStd::string::format("Levels/%s/%s.spawnable", levelName, levelName);
