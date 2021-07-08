@@ -76,6 +76,9 @@ namespace AZ
             // retrieve the side list of probe grids that are using real-time (raytraced) mode
             DiffuseProbeGridVector& GetRealTimeProbeGrids() { return m_realTimeDiffuseProbeGrids; }
 
+            // retrieve the side list of probe grids that are using  real-time (raytraced) mode and visible (on screen)
+            DiffuseProbeGridVector& GetVisibleRealTimeProbeGrids() { return m_visibleRealTimeDiffuseProbeGrids; }
+
         private:
             AZ_DISABLE_COPY_MOVE(DiffuseProbeGridFeatureProcessor);
 
@@ -96,6 +99,8 @@ namespace AZ
             void HandleAssetNotification(Data::Asset<Data::AssetData> asset, DiffuseProbeGridTextureNotificationType notificationType);
 
             // RPI::SceneNotificationBus::Handler overrides
+            void OnBeginPrepareRender() override;
+            void OnEndPrepareRender() override;
             void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;
             void OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline) override;
             void OnRenderPipelineRemoved(RPI::RenderPipeline* pipeline) override;
@@ -109,6 +114,9 @@ namespace AZ
 
             // side list of diffuse probe grids that are in real-time mode (subset of m_diffuseProbeGrids)
             DiffuseProbeGridVector m_realTimeDiffuseProbeGrids;
+
+            // side list of diffuse probe grids that are in real-time mode and visible (subset of m_realTimeDiffuseProbeGrids)
+            DiffuseProbeGridVector m_visibleRealTimeDiffuseProbeGrids;
 
             // position structure for the box vertices
             struct Position

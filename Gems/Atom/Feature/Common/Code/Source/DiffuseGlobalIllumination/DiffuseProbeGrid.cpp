@@ -245,6 +245,23 @@ namespace AZ
                 m_bakedClassificationImage.get();
         }
 
+        void DiffuseProbeGrid::ResetCullingVisibility()
+        {
+            m_cullable.m_isVisible = false;
+        }
+
+        bool DiffuseProbeGrid::GetIsVisible() const
+        {
+            // we need to go through the DiffuseProbeGrid passes at least once in order to initialize
+            // the RenderObjectSrg, which means we need to be visible until the RenderObjectSrg is created
+            if (m_renderObjectSrg == nullptr)
+            {
+                return true;
+            }
+
+            return m_cullable.m_isVisible;
+        }
+
         uint32_t DiffuseProbeGrid::GetTotalProbeCount() const
         {
             return m_probeCountX * m_probeCountY * m_probeCountZ;
