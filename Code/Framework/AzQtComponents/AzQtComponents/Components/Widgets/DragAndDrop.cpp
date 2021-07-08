@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -47,10 +47,10 @@ namespace AzQtComponents
         config.dropIndicator.ballDiameter = 5;
         config.dropIndicator.ballOutlineWidth = 1;
 
-        config.dropIndicator.rectOutlineColor = QColor("#00A1C9");
-        config.dropIndicator.lineSeparatorColor = QColor("#00A1C9");
+        config.dropIndicator.rectOutlineColor = QColor("#94D2FF");
+        config.dropIndicator.lineSeparatorColor = QColor("#94D2FF");
         config.dropIndicator.ballFillColor = QColor("#444444");
-        config.dropIndicator.ballOutlineColor = QColor("#00A1C9");
+        config.dropIndicator.ballOutlineColor = QColor("#94D2FF");
 
         config.dragIndicator.rectBorderRadius = 2;
         config.dragIndicator.rectFillColor = QColor("#888888");

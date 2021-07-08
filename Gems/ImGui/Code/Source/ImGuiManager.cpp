@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -275,6 +275,20 @@ void ImGui::ImGuiManager::RestoreRenderWindowSizeToDefault()
 {
     m_overridingWindowSize = false;
     InitWindowSize();
+}
+
+void ImGui::ImGuiManager::SetDpiScalingFactor(float dpiScalingFactor)
+{
+    ImGuiIO& io = ImGui::GetIO();
+    // Set the global font scale to size our UI to the scaling factor
+    // Note: Currently we use the default, 13px fixed-size IMGUI font, so this can get somewhat blurry
+    io.FontGlobalScale = dpiScalingFactor;
+}
+
+float ImGui::ImGuiManager::GetDpiScalingFactor() const
+{
+    ImGuiIO& io = ImGui::GetIO();
+    return io.FontGlobalScale;
 }
 
 void ImGuiManager::Render()

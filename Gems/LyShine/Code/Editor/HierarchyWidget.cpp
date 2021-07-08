@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -235,9 +235,7 @@ void HierarchyWidget::contextMenuEvent(QContextMenuEvent* ev)
     {
         HierarchyMenu contextMenu(this,
             (HierarchyMenu::Show::kCutCopyPaste |
-             HierarchyMenu::Show::kSavePrefab |
              HierarchyMenu::Show::kNew_EmptyElement |
-             HierarchyMenu::Show::kNew_ElementFromPrefabs |
              HierarchyMenu::Show::kDeleteElement |
              HierarchyMenu::Show::kNewSlice |
              HierarchyMenu::Show::kNew_InstantiateSlice |

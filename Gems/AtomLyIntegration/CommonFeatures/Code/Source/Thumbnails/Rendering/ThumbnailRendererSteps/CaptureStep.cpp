@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -91,6 +91,13 @@ namespace AZ
 
                     RPI::AttachmentReadback::CallbackFunction readbackCallback = [&](const RPI::AttachmentReadback::ReadbackResult& result)
                     {
+                        if (!result.m_dataBuffer)
+                        {
+                            AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Event(
+                                m_context->GetData()->m_thumbnailKeyRendered,
+                                &AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications::ThumbnailFailedToRender);
+                            return;
+                        }
                         uchar* data = result.m_dataBuffer.get()->data();
                         QImage image(
                             data, result.m_imageDescriptor.m_size.m_width, result.m_imageDescriptor.m_size.m_height, QImage::Format_RGBA8888);

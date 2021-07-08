@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -37,7 +37,7 @@ namespace EMotionFX::Pipeline::Rule
         AZStd::unique_ptr<EMotionFX::MotionEventTable> m_motionEventTable;
     };
 
-    class MotionMetaDataRule
+    class MotionMetaDataRule final
         : public ExternalToolRule<AZStd::shared_ptr<MotionMetaData>>
     {
     public:
@@ -46,7 +46,7 @@ namespace EMotionFX::Pipeline::Rule
 
         MotionMetaDataRule();
         MotionMetaDataRule(const AZStd::shared_ptr<MotionMetaData>& data);
-        ~MotionMetaDataRule() final = default;
+        ~MotionMetaDataRule() = default;
 
         const AZStd::shared_ptr<MotionMetaData>& GetData() const override      { return m_data; }
         void SetData(const AZStd::shared_ptr<MotionMetaData>& data) override   { m_data = data; }

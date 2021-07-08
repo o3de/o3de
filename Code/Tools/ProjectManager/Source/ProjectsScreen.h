@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -37,7 +37,7 @@ namespace O3DE::ProjectManager
 
     protected:
         void NotifyCurrentScreen() override;
-        void ProjectBuildDone();
+        void SuggestBuildProjectMsg(const ProjectInfo& projectInfo, bool showMessage);
 
     protected slots:
         void HandleNewProjectButton();
@@ -50,6 +50,9 @@ namespace O3DE::ProjectManager
 
         void SuggestBuildProject(const ProjectInfo& projectInfo);
         void QueueBuildProject(const ProjectInfo& projectInfo);
+        void UnqueueBuildProject(const ProjectInfo& projectInfo);
+
+        void ProjectBuildDone(bool success = true);
 
         void paintEvent(QPaintEvent* event) override;
 
@@ -59,8 +62,9 @@ namespace O3DE::ProjectManager
         ProjectButton* CreateProjectButton(ProjectInfo& project, QLayout* flowLayout, bool processing = false);
         void ResetProjectsContent();
         bool ShouldDisplayFirstTimeContent();
+        bool RemoveInvalidProjects();
 
-        void StartProjectBuild(const ProjectInfo& projectInfo);
+        bool StartProjectBuild(const ProjectInfo& projectInfo);
         QList<ProjectInfo>::iterator RequiresBuildProjectIterator(const QString& projectPath);
         bool BuildQueueContainsProject(const QString& projectPath);
         bool WarnIfInBuildQueue(const QString& projectPath);

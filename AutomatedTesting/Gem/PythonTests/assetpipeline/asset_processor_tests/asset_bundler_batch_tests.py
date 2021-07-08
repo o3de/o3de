@@ -1,5 +1,5 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
@@ -730,6 +730,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
 
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
+    @pytest.mark.SUITE_sandbox
     @pytest.mark.test_case_id("C16877174")
     @pytest.mark.test_case_id("C16877175")
     @pytest.mark.test_case_id("C16877178")

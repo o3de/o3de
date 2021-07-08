@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -105,8 +105,10 @@ namespace AZ
         class ViewportContextNotifications
         {
         public:
-            //! Called when the underlying native window size changes for a given viewport context name.
+            //! Called when the underlying native window size changes for a given viewport context.
             virtual void OnViewportSizeChanged(AzFramework::WindowSize size){AZ_UNUSED(size);}
+            //! Called when the window DPI scaling changes for a given viewport context.
+            virtual void OnViewportDpiScalingChanged(float dpiScale){AZ_UNUSED(dpiScale);}
             //! Called when the active view for a given viewport context name changes.
             virtual void OnViewportDefaultViewChanged(AZ::RPI::ViewPtr view){AZ_UNUSED(view);}
             //! Called when the viewport is to be rendered.

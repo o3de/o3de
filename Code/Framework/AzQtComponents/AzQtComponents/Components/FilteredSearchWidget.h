@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -17,6 +17,8 @@
 #include <QVariant>
 #include <QMenu>
 #include <QTimer>
+#include <QSortFilterProxyModel>
+#include <QStandardItem>
 
 #include <AzCore/std/chrono/chrono.h>
 #endif
@@ -28,9 +30,7 @@ namespace Ui
 
 class FlowLayout;
 class QTreeView;
-class QSortFilterProxyModel;
 class QStandardItemModel;
-class QStandardItem;
 class QSettings;
 class QLineEdit;
 class QToolButton;
@@ -43,6 +43,7 @@ namespace AzQtComponents
 {
     class Style;
     class FilteredSearchItemDelegate;
+    class SearchTypeSelectorFilterModel;
 
     class AZ_QT_COMPONENTS_API FilterCriteriaButton
         : public QFrame
@@ -160,28 +161,27 @@ namespace AzQtComponents
         void FilterTextChanged(const QString& newFilter);
 
     protected:
-        void estimateTableHeight(QStandardItem* firstCategory, int numCategories, QStandardItem* firstItem, int numItems);
-        void resetData();
+        void estimateTableHeight(int numCategories, int numItems);
 
-        // can be used to override the logic when adding items in RepopulateDataModel
-        virtual bool filterItemOut(int index, bool itemMatchesFilter, bool categoryMatchesFilter);
+        // allows child classes to override the logic of accepting filter categories
+        virtual bool filterItemOut(const QModelIndex& sourceIndex, bool filteredByBase) { Q_UNUSED(sourceIndex); return filteredByBase; }
         virtual void initItem(QStandardItem* item, const SearchTypeFilter& filter, int unfilteredDataIndex);
+        int getUnfilteredDataIndex(QStandardItem* item); // get the original filter index from the item itself
 
         // Returns the number of items that always appear in the list, regardless of the filtering.
         virtual int GetNumFixedItems() { return 0; }
 
         void showEvent(QShowEvent* e) override;
 
-        virtual void RepopulateDataModel();
+        void RepopulateDataModel(const SearchTypeFilterList& unfilteredData);
         void maximizeGeometryToFitScreen();
 
         SearchTypeSelectorTreeView* m_tree;
         QStandardItemModel* m_model;
-        const SearchTypeFilterList* m_unfilteredData;
-        AZ_PUSH_DISABLE_WARNING(4127 4251, "-Wunknown-warning-option") // conditional expression is constant, needs to have dll-interface to be used by clients of class 'AzQtComponents::SearchTypeSelector'
-            QVector<int> m_filteredItemIndices;
-        AZ_POP_DISABLE_WARNING
-            QString m_filterString;
+
+        friend class SearchTypeSelectorFilterModel;
+        SearchTypeSelectorFilterModel* m_filterModel;
+        QString m_filterString;
         bool m_settingUp = false;
         int m_fixedWidth = 256;
         QLineEdit* m_searchField = nullptr;
@@ -191,6 +191,26 @@ namespace AzQtComponents
         int m_heightEstimatePadding = 10;
         int m_searchLayoutMargin = 4;
         bool m_lineEditSearchVisible = true;
+    };
+
+    class SearchTypeSelectorFilterModel : public QSortFilterProxyModel
+    {
+        Q_OBJECT
+
+    public:
+        SearchTypeSelectorFilterModel(SearchTypeSelector* searchTypeSelector);
+        void setNoResultsMessageRow(int row); // row of specialized "no results" message in the source model
+
+    protected slots:
+        void onRowCountChanged();
+
+    protected:
+        bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override;
+        int getNumLeafNodes(const QModelIndex& theIndex = QModelIndex()); // gets the number of leaf node descendants of current index. Current index is *not* considered
+
+        SearchTypeSelector* m_searchTypeSelector = nullptr;
+        int m_noResultsRow = -1; // row of specialized "no results" message in the source model
+        bool m_showingNoResultsMessage = false;
     };
 
     class AZ_QT_COMPONENTS_API FilteredSearchWidget

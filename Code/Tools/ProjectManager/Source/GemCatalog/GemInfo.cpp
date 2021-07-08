@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -61,8 +61,8 @@ namespace O3DE::ProjectManager
     {
         switch (origin)
         {
-        case O3DEFoundation:
-            return "Open 3D Foundation";
+        case Open3DEEngine:
+            return "Open 3D Engine";
         case Local:
             return "Local";
         default:

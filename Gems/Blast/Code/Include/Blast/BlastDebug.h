@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -8,7 +8,7 @@
 
 #include <AzCore/Math/Vector3.h>
 #include <IRenderAuxGeom.h>
-#include <Azcore/Math/Color.h>
+#include <AzCore/Math/Color.h>
 
 namespace Blast
 {

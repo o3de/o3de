@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -55,6 +55,8 @@ namespace ScriptCanvasBuilder
         DependencyArguments,
         DependencyRequirementsData,
         AddAssetDependencySearch,
+        PrefabIntegration,
+        CorrectGraphVariableVersion,
         // add new entries above
         Current,
     };
@@ -130,9 +132,11 @@ namespace ScriptCanvasBuilder
 
     int GetBuilderVersion();
 
-    AZ::Outcome<AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>, AZStd::string> LoadEditorAsset(AZStd::string_view graphPath);
+    AZ::Outcome<AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>, AZStd::string> LoadEditorAsset(AZStd::string_view graphPath, AZ::Data::AssetId assetId, AZ::Data::AssetFilterCB assetFilterCB = {});
 
     AZ::Outcome<AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasFunctionAsset>, AZStd::string> LoadEditorFunctionAsset(AZStd::string_view graphPath);
+
+    AZ::Outcome<ScriptCanvas::Grammar::AbstractCodeModelConstPtr, AZStd::string> ParseGraph(AZ::Entity& buildEntity, AZStd::string_view graphPath);
 
     AZ::Outcome<void, AZStd::string> ProcessTranslationJob(ProcessTranslationJobInput& input);
 
@@ -149,7 +153,7 @@ namespace ScriptCanvasBuilder
     {
     public:
         static AZ::Uuid GetUUID();
-               
+
         Worker() = default;
         Worker(const Worker&) = delete;
 
@@ -175,7 +179,7 @@ namespace ScriptCanvasBuilder
         // cached on first time query
         mutable AZStd::string m_fingerprintString;
     };
-    
+
     class FunctionWorker
         : public AssetBuilderSDK::AssetBuilderCommandBus::Handler
     {
@@ -195,7 +199,7 @@ namespace ScriptCanvasBuilder
         int GetVersionNumber() const;
 
         void ProcessJob(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const;
-                
+
         void ShutDown() override {};
 
     private:

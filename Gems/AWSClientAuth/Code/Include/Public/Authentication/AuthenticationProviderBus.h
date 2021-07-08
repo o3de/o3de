@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -19,9 +19,8 @@ namespace AWSClientAuth
 
         //! Parse the settings file for required settings for authentication providers. Instantiate and initialize authentication providers
         //! @param providerNames List of provider names to instantiate and initialize for Authentication.
-        //! @param settingsRegistryPath Path for the settings registry file to use to configure providers.
         //! @return bool True: if all providers initialized successfully. False: If any provider fails initialization.
-        virtual bool Initialize(const AZStd::vector<ProviderNameEnum>& providerNames, const AZStd::string& settingsRegistryPath) = 0;
+        virtual bool Initialize(const AZStd::vector<ProviderNameEnum>& providerNames) = 0;
 
         //! Checks if user is signed in.
         //! If access tokens are available and not expired.

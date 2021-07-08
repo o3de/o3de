@@ -1,6 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -27,34 +27,34 @@ namespace ScriptCanvas
     ExecutionState::ExecutionState(const ExecutionStateConfig& config)
         : m_component(&config.component)
     {}
-    
+
     ExecutionStatePtr ExecutionState::Create(const ExecutionStateConfig& config)
     {
         Grammar::ExecutionStateSelection selection = config.runtimeData.m_input.m_executionSelection;
 
         switch (selection)
         {
-        case Grammar::InterpretedPure:
+        case Grammar::ExecutionStateSelection::InterpretedPure:
             return AZStd::make_shared<ExecutionStateInterpretedPure>(config);
-            
-        case Grammar::InterpretedPureOnGraphStart:
+
+        case Grammar::ExecutionStateSelection::InterpretedPureOnGraphStart:
             return AZStd::make_shared<ExecutionStateInterpretedPureOnGraphStart>(config);
 
-        case Grammar::InterpretedObject:
+        case Grammar::ExecutionStateSelection::InterpretedObject:
             return AZStd::make_shared<ExecutionStateInterpretedPerActivation>(config);
 
-        case Grammar::InterpretedObjectOnGraphStart:
+        case Grammar::ExecutionStateSelection::InterpretedObjectOnGraphStart:
             return AZStd::make_shared<ExecutionStateInterpretedPerActivationOnGraphStart>(config);
-            
+
         default:
             AZ_Assert(false, "Unsupported ScriptCanvas execution selection");
             return nullptr;
         }
     }
-    
+
     AZ::Data::AssetId ExecutionState::GetAssetId() const
     {
-        return m_component->GetAsset().GetId();
+        return m_component->GetRuntimeDataOverrides().m_runtimeAsset.GetId();
     }
 
     AZ::EntityId ExecutionState::GetEntityId() const
@@ -82,9 +82,9 @@ namespace ScriptCanvas
         return m_component->GetScriptCanvasId();
     }
 
-    const VariableData& ExecutionState::GetVariableOverrides() const
+    const RuntimeDataOverrides& ExecutionState::GetRuntimeDataOverrides() const
     {
-        return m_component->GetVariableOverrides();
+        return m_component->GetRuntimeDataOverrides();
     }
 
     void ExecutionState::Reflect(AZ::ReflectContext* reflectContext)
@@ -92,10 +92,12 @@ namespace ScriptCanvas
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(reflectContext))
         {
             behaviorContext->Class<ExecutionState>()
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::List)
+                ->Attribute(AZ::ScriptCanvasAttributes::VariableCreationForbidden, AZ::AttributeIsValid::IfPresent)
                 ->Method("GetEntityId", &ExecutionState::GetEntityId)
                 ->Method("GetScriptCanvasId", &ExecutionState::GetScriptCanvasId)
                 ->Method("ToString", &ExecutionState::ToString)
-                    ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::ToString)
+                ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::ToString)
                 ;
         }
 
@@ -116,7 +118,7 @@ namespace ScriptCanvas
     {
         return shared_from_this();
     }
-    
+
     AZStd::string ExecutionState::ToString() const
     {
         return AZStd::string::format("ExecutionState[%p]", this);
@@ -132,4 +134,4 @@ namespace ScriptCanvas
         return ExecutionStateWeakConstPtr(this);
     }
 
-} 
+}

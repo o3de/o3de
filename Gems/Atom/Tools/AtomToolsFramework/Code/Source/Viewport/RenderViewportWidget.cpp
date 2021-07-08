@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -539,5 +539,10 @@ namespace AtomToolsFramework
     void RenderViewportWidget::ToggleFullScreenState()
     {
         // The RenderViewportWidget does not currently support full screen.
+    }
+
+    float RenderViewportWidget::GetDpiScaleFactor() const
+    {
+        return aznumeric_cast<float>(devicePixelRatioF());
     }
 } //namespace AtomToolsFramework
