@@ -21,7 +21,6 @@ set(FILES
     res/TreeView.bmp
     res/VisualLog_PlayerButtons.bmp
     res/ab_toolbar.bmp
-    res/about_dark.bmp
     res/anim.bmp
     res/animatio.bmp
     res/animations_tree_soundevent.bmp
@@ -137,7 +136,6 @@ set(FILES
     res/litebulb.bmp
     res/lock_sel.bmp
     res/locksele.bmp
-    res/logo.bmp
     res/mainfram.bmp
     res/mann_tagdef_toolbar.bmp
     res/mann_tagdef_tree.bmp
@@ -184,8 +182,6 @@ set(FILES
     res/rename.ico
     res/replace.ico
     res/ribbon_system_button.png
-    res/sandbox_dark.bmp
-    res/sb_welcome_dark.bmp
     res/selectobj.bmp
     res/seq_1_colour_keys.bmp
     res/seq_2_colour_keys.bmp

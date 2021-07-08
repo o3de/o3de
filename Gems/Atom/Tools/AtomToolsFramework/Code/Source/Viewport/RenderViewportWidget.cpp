@@ -540,4 +540,9 @@ namespace AtomToolsFramework
     {
         // The RenderViewportWidget does not currently support full screen.
     }
+
+    float RenderViewportWidget::GetDpiScaleFactor() const
+    {
+        return aznumeric_cast<float>(devicePixelRatioF());
+    }
 } //namespace AtomToolsFramework

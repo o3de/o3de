@@ -1,12 +1,12 @@
 {
     "gem_name": "PrimitiveAssets",
-    "GemFormatVersion": 3,
-    "Uuid": "ed07631f95fb4be1bd10cd37298ec697",
-    "Name": "PrimitiveAssets",
-    "DisplayName": "Primitive Assets",
-    "Version": "1.0.0",
-    "LinkType": "NoCode",
-    "Summary": "Provides simple primitive shape assets useful for quickly building a basic scene.",
-    "Tags": ["Getting Started", "Asset"],
-    "IconPath": "preview.png"
+    "display_name": "Primitive Assets",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Open 3D Engine - o3de.org",
+    "type": "Asset",
+    "summary": "The Primitive Assets Gem provides primitive shape mesh assets with physics enabled.",
+    "canonical_tags": ["Gem"],
+    "user_tags": ["Assets", "Sample", "Debug"],
+    "icon_path": "preview.png",
+    "requirements": ""
 }

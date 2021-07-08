@@ -269,8 +269,8 @@ def PreBuildCommonSteps(Map pipelineConfig, String repositoryName, String projec
         unstash name: 'incremental_build_script'
 
         def pythonCmd = ''
-        if(env.IS_UNIX) pythonCmd = 'sudo -E python -u '
-        else pythonCmd = 'python -u '
+        if(env.IS_UNIX) pythonCmd = 'sudo -E python3 -u '
+        else pythonCmd = 'python3 -u '
 
         if(env.RECREATE_VOLUME?.toBoolean()) {
             palSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action delete --repository_name ${repositoryName} --project ${projectName} --pipeline ${pipeline} --branch ${branchName} --platform ${platform} --build_type ${buildType}", 'Deleting volume', winSlashReplacement=false)
@@ -382,8 +382,8 @@ def PostBuildCommonSteps(String workspace, boolean mount = true) {
 
     if (mount) {
         def pythonCmd = ''
-        if(env.IS_UNIX) pythonCmd = 'sudo -E python -u '
-        else pythonCmd = 'python -u '
+        if(env.IS_UNIX) pythonCmd = 'sudo -E python3 -u '
+        else pythonCmd = 'python3 -u '
 
         try {
             timeout(5) {

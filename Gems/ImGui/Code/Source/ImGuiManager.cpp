@@ -277,6 +277,20 @@ void ImGui::ImGuiManager::RestoreRenderWindowSizeToDefault()
     InitWindowSize();
 }
 
+void ImGui::ImGuiManager::SetDpiScalingFactor(float dpiScalingFactor)
+{
+    ImGuiIO& io = ImGui::GetIO();
+    // Set the global font scale to size our UI to the scaling factor
+    // Note: Currently we use the default, 13px fixed-size IMGUI font, so this can get somewhat blurry
+    io.FontGlobalScale = dpiScalingFactor;
+}
+
+float ImGui::ImGuiManager::GetDpiScalingFactor() const
+{
+    ImGuiIO& io = ImGui::GetIO();
+    return io.FontGlobalScale;
+}
+
 void ImGuiManager::Render()
 {
     if (m_clientMenuBarState == DisplayState::Hidden && m_editorWindowState == DisplayState::Hidden)
