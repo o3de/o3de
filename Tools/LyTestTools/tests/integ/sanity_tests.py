@@ -33,7 +33,7 @@ class TestAutomatedTestingProject(object):
 
             # Create the Launcher object and add args
             launcher = launcher_helper.create_launcher(workspace)
-            launcher.args.extend(['-NullRenderer'])
+            launcher.args.extend(['-rhi=Null'])
 
             # Call the game client executable
             with launcher.start():
@@ -54,7 +54,7 @@ class TestAutomatedTestingProject(object):
 
             # Create the Launcher object and add args
             editor = launcher_helper.create_editor(workspace)
-            editor.args.extend(['-NullRenderer', '-autotest_mode'])
+            editor.args.extend(['-rhi=Null', '-autotest_mode'])
 
             # Call the Editor executable
             with editor.start():
