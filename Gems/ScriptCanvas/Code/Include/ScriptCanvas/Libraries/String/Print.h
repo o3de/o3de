@@ -8,9 +8,7 @@
 #pragma once
 
 #include <ScriptCanvas/Core/Node.h>
-
 #include <ScriptCanvas/Internal/Nodes/StringFormatted.h>
-
 #include <Include/ScriptCanvas/Libraries/String/Print.generated.h>
 
 namespace ScriptCanvas
@@ -23,12 +21,8 @@ namespace ScriptCanvas
             class Print
                 : public Internal::StringFormatted
             {
-            protected:
-
+            public:
                 SCRIPTCANVAS_NODE(Print);
-                
-                void OnInputSignal(const SlotId&) override;
-
             };
         }
     }

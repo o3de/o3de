@@ -70,58 +70,6 @@ namespace ScriptCanvas
                     ConfigureSlots();
                 }
             }
-
-            void OperatorLength::OnInputSignal(const SlotId& slotId)
-            {
-                if (slotId != OperatorLengthProperty::GetInSlotId(this))
-                {
-                    return;
-                }
-
-                Data::Type type = GetDisplayType(AZ::Crc32("SourceGroup"));
-
-                if (!type.IsValid())
-                {
-                    return;
-                }
-
-                Datum result;
-                const Datum* operand = FindDatum(OperatorLengthProperty::GetSourceSlotId(this));
-
-                switch (type.GetType())
-                {
-                case Data::eType::Vector2:
-                {
-                    const AZ::Vector2* vector = operand->GetAs<AZ::Vector2>();
-                    result = Datum(vector->GetLength());
-                }
-                break;
-                case Data::eType::Vector3:
-                {
-                    const AZ::Vector3* vector = operand->GetAs<AZ::Vector3>();
-                    result = Datum(vector->GetLength());
-                }
-                break;
-                case Data::eType::Vector4:
-                {
-                    const AZ::Vector4* vector = operand->GetAs<AZ::Vector4>();
-                    result = Datum(vector->GetLength());
-                }
-                break;
-                case Data::eType::Quaternion:
-                {
-                    const AZ::Quaternion* vector = operand->GetAs<AZ::Quaternion>();
-                    result = Datum(vector->GetLength());
-                }
-                break;
-                default:
-                    AZ_Assert(false, "Length operator not defined for type: %s", Data::ToAZType(type).ToString<AZStd::string>().c_str());
-                    break;
-                }
-
-                PushOutput(result, (*OperatorLengthProperty::GetLengthSlot(this)));
-                SignalOutput(OperatorLengthProperty::GetOutSlotId(this));
-            }
         }
     }
 }

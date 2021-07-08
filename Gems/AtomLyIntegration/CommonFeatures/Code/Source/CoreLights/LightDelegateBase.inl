@@ -134,6 +134,11 @@ namespace AZ
                     // For lights that get their transform from the shape bus, force an OnShapeChanged to update the transform.
                     OnShapeChanged(ShapeChangeReasons::TransformChanged);
                 }
+                else
+                {
+                    // OnShapeChanged() already calls this for delegates with a shape bus
+                    HandleShapeChanged();
+                }
             }
         }
 

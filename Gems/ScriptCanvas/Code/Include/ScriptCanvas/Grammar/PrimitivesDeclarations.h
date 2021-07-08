@@ -19,10 +19,6 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/string/string.h>
 
-#if defined (FUNCTION_LEGACY_SUPPORT_ENABLED)
-#include "FunctionsLegacySupport.h"
-#endif
-
 namespace AZ
 {
     class ReflectContext;

@@ -165,7 +165,7 @@ namespace ScriptCanvas
             return a.GetMin(b);
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(Min, k_categoryName, "{815685B8-B877-4D54-9E11-D0161185B4B9}", "returns the vector (min(A.x, B.x), min(A.y, B.y))", "A", "B");
-        
+
         AZ_INLINE Vector2Type SetX(Vector2Type source, NumberType value)
         {
             source.SetX(aznumeric_caster(value));
@@ -242,7 +242,7 @@ namespace ScriptCanvas
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(ToPerpendicular, k_categoryName, "{CC4DC102-8B50-4828-BA94-0586F34E0D37}", "returns the vector (-Source.y, Source.x), a 90 degree, positive rotation", "Source");
 
-        using Registrar = RegistrarGeneric<
+        using Registrar = RegistrarGeneric <
             AbsoluteNode
             , AddNode
             , AngleNode
@@ -294,8 +294,8 @@ namespace ScriptCanvas
             , SlerpNode
             , SubtractNode
             , ToPerpendicularNode
-        >;
+        > ;
 
     }
-} 
+}
 

@@ -17,6 +17,7 @@ namespace ScriptCanvas
         namespace Core
         {
             //! A node that repeats an execution signal over the specified time
+            //! Deprecated for nodeable version
             class Repeater
                 : public ScriptCanvas::Nodes::Internal::BaseTimerNode
             {
@@ -27,18 +28,11 @@ namespace ScriptCanvas
 
                 void OnInit() override;
 
-                void OnInputSignal(const SlotId& slotId) override;
-                void OnTimeElapsed();
-
                 const char* GetTimeSlotFormat() const override { return "Delay (%s)"; }
-
                 const char* GetBaseTimeSlotName() const override { return "Interval"; }
                 const char* GetBaseTimeSlotToolTip() const override { return "The Interval between repetitions"; }
-                
+
             protected:
-
-                bool AllowInstantResponse() const override { return true; }
-
                 int m_repetionCount;
             };
         }

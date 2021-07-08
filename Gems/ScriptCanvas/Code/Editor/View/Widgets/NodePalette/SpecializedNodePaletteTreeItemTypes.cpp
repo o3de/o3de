@@ -24,51 +24,9 @@
 #include "Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h"
 
 #include <Core/Attributes.h>
-#include <Libraries/Entity/EntityRef.h>
 
 namespace ScriptCanvasEditor
 {
-    /////////////////////////////////
-    // CreateEntityRefNodeMimeEvent
-    /////////////////////////////////
-
-    void CreateEntityRefNodeMimeEvent::Reflect(AZ::ReflectContext* reflectContext)
-    {
-        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext);
-
-        if (serializeContext)
-        {
-            serializeContext->Class<CreateEntityRefNodeMimeEvent, GraphCanvas::GraphCanvasMimeEvent>()
-                ->Version(0)
-                ->Field("EntityId", &CreateEntityRefNodeMimeEvent::m_entityId)
-                ;
-        }
-    }
-
-    CreateEntityRefNodeMimeEvent::CreateEntityRefNodeMimeEvent(const AZ::EntityId& entityId)
-        : m_entityId(entityId)
-    {
-    }
-
-    ScriptCanvasEditor::NodeIdPair CreateEntityRefNodeMimeEvent::CreateNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId) const
-    {
-        return Nodes::CreateEntityNode(m_entityId, scriptCanvasId);
-    }
-
-    /////////////////////////////////
-    // EntityRefNodePaletteTreeItem
-    /////////////////////////////////
-
-    EntityRefNodePaletteTreeItem::EntityRefNodePaletteTreeItem(AZStd::string_view nodeName, [[maybe_unused]] const QString& iconPath)
-        : DraggableNodePaletteTreeItem(nodeName, ScriptCanvasEditor::AssetEditorId)
-    {
-    }
-
-    GraphCanvas::GraphCanvasMimeEvent* EntityRefNodePaletteTreeItem::CreateMimeEvent() const
-    {
-        return aznew CreateEntityRefNodeMimeEvent();
-    }
-
     ///////////////////////////////
     // CreateCommentNodeMimeEvent
     ///////////////////////////////

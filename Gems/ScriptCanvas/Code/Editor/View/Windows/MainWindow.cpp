@@ -150,8 +150,6 @@
 
 #include <ScriptCanvas/Asset/AssetDescription.h>
 #include <ScriptCanvas/Components/EditorScriptCanvasComponent.h>
-#include <ScriptCanvas/Assets/Functions/ScriptCanvasFunctionAssetHandler.h>
-#include <ScriptCanvas/Asset/Functions/ScriptCanvasFunctionAsset.h>
 #include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
 
 #include <Editor/QtMetaTypes.h>
@@ -264,14 +262,7 @@ namespace ScriptCanvasEditor
 
                             if (editorRequests)
                             {
-                                if (editorRequests->IsFunctionGraph())
-                                {
-                                    assetSaveData.m_assetType = azrtti_typeid<ScriptCanvasFunctionAsset>();
-                                }
-                                else
-                                {
-                                    assetSaveData.m_assetType = azrtti_typeid<ScriptCanvasAsset>();
-                                }
+                                assetSaveData.m_assetType = azrtti_typeid<ScriptCanvasAsset>();
                             }
 
                             activeAssets.push_back(assetSaveData);
@@ -1303,8 +1294,7 @@ namespace ScriptCanvasEditor
             return AZ::Failure(AZStd::string("Unknown AssetId"));
         }
 
-        if (assetInfo.m_assetType != azrtti_typeid<ScriptCanvasAsset>() && 
-            assetInfo.m_assetType != azrtti_typeid<ScriptCanvasFunctionAsset>())
+        if (assetInfo.m_assetType != azrtti_typeid<ScriptCanvasAsset>())
         {
             return AZ::Failure(AZStd::string("Invalid AssetId provided, it's not a Script Canvas supported type"));
         }
@@ -3679,10 +3669,6 @@ namespace ScriptCanvasEditor
             if (fileState == Tracker::ScriptCanvasFileState::INVALID || fileState == Tracker::ScriptCanvasFileState::NEW || fileState == Tracker::ScriptCanvasFileState::SOURCE_REMOVED)
             {
                 buttonEnabled = false;
-            }
-            else
-            {
-                EditorGraphRequestBus::EventResult(buttonEnabled, GetActiveScriptCanvasId(), &EditorGraphRequests::IsRuntimeGraph);
             }
 
             m_assignToSelectedEntity->setEnabled(buttonEnabled);

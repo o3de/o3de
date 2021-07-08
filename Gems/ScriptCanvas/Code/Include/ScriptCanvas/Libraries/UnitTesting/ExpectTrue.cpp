@@ -33,16 +33,6 @@ namespace ScriptCanvas
                 }
                 ////
             }
-
-            void ExpectTrue::OnInputSignal([[maybe_unused]] const SlotId& slotId)
-            {
-                const auto value = FindDatum(GetSlotId("Candidate"))->GetAs<Data::BooleanType>();
-                const auto report = FindDatum(GetSlotId("Report"))->GetAs<Data::StringType>();
-
-                ScriptCanvas::UnitTesting::Bus::Event(GetOwningScriptCanvasId(), &ScriptCanvas::UnitTesting::BusTraits::ExpectTrue, *value, *report);
-                
-                SignalOutput(GetSlotId("Out"));
-            }
         }
     }
 }

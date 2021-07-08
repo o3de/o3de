@@ -27,11 +27,11 @@ namespace ScriptCanvas
 
                 SCRIPTCANVAS_NODE(Break);
 
-                Break() = default;                   
+                Break() = default;
 
                 AZ::Outcome<DependencyReport, void> GetDependencies() const override;
 
-                
+
 
             };
         }

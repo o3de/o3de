@@ -80,11 +80,6 @@ namespace ScriptCanvasEditor
             AZ::Data::Asset<ScriptCanvasAsset> newAsset = Clone<ScriptCanvasAsset>();
             memoryAsset.m_inMemoryAsset = newAsset;
         }
-        else if (m_assetType == azrtti_typeid<ScriptCanvasEditor::ScriptCanvasFunctionAsset>())
-        {
-            AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasFunctionAsset> newAsset = Clone<ScriptCanvasEditor::ScriptCanvasFunctionAsset>();
-            memoryAsset.m_inMemoryAsset = newAsset;
-        }
         else
         {
             AZ_Assert(false, "Unsupported Script Canvas Asset Type");
@@ -106,10 +101,6 @@ namespace ScriptCanvasEditor
         if (assetType == azrtti_typeid<ScriptCanvasAsset>())
         {
             asset = assetHandler->CreateAsset(assetId, azrtti_typeid<ScriptCanvasAsset>());
-        }
-        else if (assetType == azrtti_typeid<ScriptCanvasEditor::ScriptCanvasFunctionAsset>())
-        {
-            asset = assetHandler->CreateAsset(assetId, azrtti_typeid<ScriptCanvasEditor::ScriptCanvasFunctionAsset>());
         }
 
         m_inMemoryAsset = AZ::Data::Asset<AssetType>(asset, AZ::Data::AssetLoadBehavior::PreLoad);
@@ -154,8 +145,6 @@ namespace ScriptCanvasEditor
         AZ::Data::AssetStreamInfo streamInfo;
         streamInfo.m_streamFlags = AZ::IO::OpenMode::ModeWrite;
         streamInfo.m_streamName = m_saveAsPath;
-
-        ScriptCanvasEditor::ScriptCanvasDataRequestBus::Event(GetScriptCanvasId(), &ScriptCanvasEditor::ScriptCanvasDataRequests::SetPrettyName, GetTabName().c_str());
 
         if (!streamInfo.IsValid())
         {
@@ -223,10 +212,6 @@ namespace ScriptCanvasEditor
         {
             m_inMemoryAsset = AZ::Data::AssetManager::Instance().GetAsset<ScriptCanvasAsset>(assetId, AZ::Data::AssetLoadBehavior::Default);
         }
-        else if (assetInfo.m_assetType == azrtti_typeid<ScriptCanvasEditor::ScriptCanvasFunctionAsset>())
-        {
-            m_inMemoryAsset = AZ::Data::AssetManager::Instance().GetAsset<ScriptCanvasEditor::ScriptCanvasFunctionAsset>(assetId, AZ::Data::AssetLoadBehavior::Default);
-        }
 
         if (m_inMemoryAsset)
         {
@@ -290,14 +275,7 @@ namespace ScriptCanvasEditor
             return;
         }
 
-        if (m_assetType == azrtti_typeid<ScriptCanvasEditor::ScriptCanvasFunctionAsset>())
-        {
-            editorGraph->MarkFunctionGraph();
-        }
-
         m_scriptCanvasId = editorGraph->GetScriptCanvasId();
-
-        ScriptCanvasEditor::ScriptCanvasDataRequestBus::Event(m_scriptCanvasId, &ScriptCanvasEditor::ScriptCanvasDataRequests::SetPrettyName, GetTabName().c_str());
 
         EditorGraphNotificationBus::Handler::BusDisconnect();
         EditorGraphNotificationBus::Handler::BusConnect(m_scriptCanvasId);
@@ -537,10 +515,6 @@ namespace ScriptCanvasEditor
         if (m_assetType == azrtti_typeid<ScriptCanvasAsset>())
         {
             return CloneAssetData<ScriptCanvasAsset>(newAssetId);
-        }
-        else if (m_assetType == azrtti_typeid<ScriptCanvasEditor::ScriptCanvasFunctionAsset>())
-        {
-            return CloneAssetData<ScriptCanvasEditor::ScriptCanvasFunctionAsset>(newAssetId);
         }
 
         AZ_Assert(false, "The provides asset type is not supported as a valid Script Canvas memory asset");
