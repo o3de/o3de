@@ -113,6 +113,7 @@ namespace EMStudio
             CreateViewOptionEntry(contextMenu, "Line Skeleton", RENDER_LINESKELETON);
             CreateViewOptionEntry(contextMenu, "Solid Skeleton", RENDER_SKELETON);
             CreateViewOptionEntry(contextMenu, "Joint Names", RENDER_NODENAMES);
+            CreateViewOptionEntry(contextMenu, "Selected Joint Names", RENDER_SELECTED_NODENAMES);
             CreateViewOptionEntry(contextMenu, "Joint Orientations", RENDER_NODEORIENTATION);
             CreateViewOptionEntry(contextMenu, "Actor Bind Pose", RENDER_ACTORBINDPOSE);
             contextMenu->addSeparator();
@@ -245,6 +246,7 @@ namespace EMStudio
         SetRenderFlag(RENDER_LINESKELETON, false);
         SetRenderFlag(RENDER_NODEORIENTATION, false);
         SetRenderFlag(RENDER_NODENAMES, false);
+        SetRenderFlag(RENDER_SELECTED_NODENAMES, false);
         SetRenderFlag(RENDER_ACTORBINDPOSE, false);
         SetRenderFlag(RENDER_MOTIONEXTRACTION, false);
 

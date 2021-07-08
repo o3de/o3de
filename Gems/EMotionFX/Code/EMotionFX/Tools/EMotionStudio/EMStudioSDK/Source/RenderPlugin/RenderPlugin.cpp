@@ -1281,6 +1281,16 @@ namespace EMStudio
 
             renderUtil->RenderNodeNames(actorInstance, camera, screenWidth, screenHeight, renderOptions->GetNodeNameColor(), renderOptions->GetSelectedObjectColor(), visibleJointIndices, selectedJointIndices);
         }
+        else if (widget->GetRenderFlag(RenderViewWidget::RENDER_SELECTED_NODENAMES) && !selectedJointIndices.empty())
+        {
+            MCommon::Camera* camera = widget->GetRenderWidget()->GetCamera();
+            const uint32 screenWidth = widget->GetRenderWidget()->GetScreenWidth();
+            const uint32 screenHeight = widget->GetRenderWidget()->GetScreenHeight();
+
+            renderUtil->RenderNodeNames(
+                actorInstance, camera, screenWidth, screenHeight, renderOptions->GetNodeNameColor(),
+                renderOptions->GetSelectedObjectColor(), selectedJointIndices, selectedJointIndices);
+        }
     }
 
 

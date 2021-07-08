@@ -68,7 +68,8 @@ namespace EMStudio
             RENDER_CLOTH_COLLIDERS          = 23,
             RENDER_SIMULATEDOBJECT_COLLIDERS= 24,
             RENDER_SIMULATEJOINTS           = 25,
-            NUM_RENDER_OPTIONS              = 26
+            RENDER_SELECTED_NODENAMES       = 26,
+            NUM_RENDER_OPTIONS              = 27
         };
 
         MCORE_INLINE bool GetRenderFlag(ERenderFlag option)     { return mActions[(uint32)option] ? mActions[(uint32)option]->isChecked() : false; }
