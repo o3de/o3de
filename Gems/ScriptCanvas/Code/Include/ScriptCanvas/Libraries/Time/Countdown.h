@@ -62,7 +62,7 @@ namespace ScriptCanvas
             };
 
             //! Deprecated: see DelayNodeableNode
-            class Countdown 
+            class Countdown
                 : public Node
             {
 

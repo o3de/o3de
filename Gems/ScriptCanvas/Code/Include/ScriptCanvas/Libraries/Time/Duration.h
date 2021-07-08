@@ -23,7 +23,7 @@ namespace ScriptCanvas
         namespace Time
         {
             //! Deprecated: see DurationNodeableNode
-            class Duration 
+            class Duration
                 : public Node
             {
 

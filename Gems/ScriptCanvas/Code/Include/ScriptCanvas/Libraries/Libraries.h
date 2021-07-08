@@ -60,7 +60,7 @@ namespace ScriptCanvas
             virtual ~LibraryDefinition() = default;
 
             static const NodeRegistry::NodeList GetNodes(const AZ::Uuid& libraryType)
-            { 
+            {
                 NodeRegistry& registry = (*GetNodeRegistry());
                 const auto& libraryIterator = registry.m_nodeMap.find(libraryType);
                 if (libraryIterator != registry.m_nodeMap.end())

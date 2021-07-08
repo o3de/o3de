@@ -36,7 +36,7 @@ namespace ScriptCanvas
                 static void Reflect(AZ::ReflectContext* context);
 
                 AZ_TYPE_INFO(EBusEventEntry, "{92A20C1B-A54A-4583-97DB-A894377ACE21}");
-                
+
                 AZStd::string m_eventName;
                 EBusEventId m_eventId;
                 SlotId m_eventSlotId;
@@ -44,7 +44,7 @@ namespace ScriptCanvas
                 AZStd::vector<SlotId> m_parameterSlotIds;
                 int m_numExpectedArguments = {};
                 bool m_resultEvaluated = {};
-                
+
                 bool m_shouldHandleEvent = false;
                 bool m_isHandlingEvent = false;
 
@@ -54,7 +54,7 @@ namespace ScriptCanvas
             };
 
             //! Provides a node that represents an EBus handler
-            class EBusEventHandler 
+            class EBusEventHandler
                 : public Node
                 , public EBusHandlerNodeRequestBus::Handler
             {
@@ -68,7 +68,7 @@ namespace ScriptCanvas
                 using Events = AZStd::vector<EBusEventEntry>;
                 using EventMap = AZStd::map<AZ::Crc32, EBusEventEntry>;
 
-                EBusEventHandler() 
+                EBusEventHandler()
                     : m_autoConnectToGraphOwner(true)
                 {}
 
@@ -79,7 +79,7 @@ namespace ScriptCanvas
                 void OnInit() override;
                 void OnActivate() override;
                 void OnGraphSet() override;
-                
+
                 void CollectVariableReferences(AZStd::unordered_set< ScriptCanvas::VariableId >& variableIds) const override;
                 bool ContainsReferencesToVariables(const AZStd::unordered_set< ScriptCanvas::VariableId >& variableIds) const override;
 
@@ -93,10 +93,10 @@ namespace ScriptCanvas
 
                 void InitializeEvent(int eventIndex);
 
-                bool IsOutOfDate(const VersionData& graphVersion) const override;             
-                
+                bool IsOutOfDate(const VersionData& graphVersion) const override;
+
                 bool CreateHandler(AZStd::string_view ebusName);
-                                
+
                 const EBusEventEntry* FindEventWithSlot(const Slot& slot) const;
 
                 AZ::Outcome<AZStd::string, void> GetFunctionCallName(const Slot* /*slot*/) const override;
@@ -119,7 +119,7 @@ namespace ScriptCanvas
                 AZStd::vector<SlotId> GetNonEventSlotIds() const override;
 
                 AZ::Outcome<DependencyReport, void> GetDependencies() const override;
-                               
+
                 bool IsEventSlotId(const SlotId& slotId) const;
 
                 bool IsEventHandler() const override;
@@ -129,7 +129,7 @@ namespace ScriptCanvas
                 bool IsVariableWriteHandler() const override;
 
                 bool IsValid() const;
-                
+
                 inline bool IsIDRequired() const
                 {
                     return m_ebus && BehaviorContextUtils::GetEBusAddressPolicy(*m_ebus) == AZ::EBusAddressPolicy::ById;
@@ -156,11 +156,11 @@ namespace ScriptCanvas
                 ConstSlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* executionChildSlot) const override;
 
                 inline bool IsConfigured() const { return !m_eventMap.empty(); }
-                
+
             private:
 
                 EBusEventHandler(const EBusEventHandler&) = delete;
-                
+
                 EventMap m_eventMap;
                 AZStd::string m_ebusName;
                 ScriptCanvas::EBusBusId m_busId;

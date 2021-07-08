@@ -66,7 +66,7 @@ namespace ScriptCanvas
                     AZ::SerializeContext::DataElementNode baseNodeElement = operatorBaseClass->GetSubElement(nodeElementIndex);
 
                     classElement.RemoveElementByName(AZ::Crc32("BaseClass1"));
-                    classElement.AddElement(baseNodeElement);                    
+                    classElement.AddElement(baseNodeElement);
                 }
 
                 return true;

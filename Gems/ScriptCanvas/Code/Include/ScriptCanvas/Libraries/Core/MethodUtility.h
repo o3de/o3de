@@ -24,4 +24,4 @@ namespace ScriptCanvas
     AZStd::unordered_map<size_t, const AZ::BehaviorMethod*> GetTupleGetMethods(const AZ::TypeId& typeId);
 
     AZ::Outcome<const AZ::BehaviorMethod*, void> GetTupleGetMethod(const AZ::TypeId& typeID, size_t index);
-} 
+}

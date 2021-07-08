@@ -6,14 +6,3 @@
  */
 
 #include "Format.h"
-
-namespace ScriptCanvas
-{
-    namespace Nodes
-    {
-        namespace String
-        {
-            
-        }
-    }
-}

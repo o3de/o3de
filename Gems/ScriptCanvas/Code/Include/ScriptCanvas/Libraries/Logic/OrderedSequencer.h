@@ -22,7 +22,7 @@ namespace ScriptCanvas
             class OrderedSequencer
                 : public Node
             {
- 
+
             public:
 
                 SCRIPTCANVAS_NODE(OrderedSequencer);
@@ -43,10 +43,10 @@ namespace ScriptCanvas
 
                 void ConfigureVisualExtensions() override;
 
-                
+
 
             protected:
-            
+
                 AZStd::string GetDisplayGroup() const { return "OutputGroup"; }
 
             protected:
@@ -57,11 +57,11 @@ namespace ScriptCanvas
 
                 AZStd::string GenerateOutputName(int counter) const;
                 void FixupStateNames();
-                
+
                 int m_numOutputs;
-                
+
                 AZStd::vector< SlotId > m_orderedOutputSlots;
             };
         }
-    }   
+    }
 }

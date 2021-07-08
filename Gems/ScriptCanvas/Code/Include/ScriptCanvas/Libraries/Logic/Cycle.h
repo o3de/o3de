@@ -54,7 +54,7 @@ namespace ScriptCanvas
                 void FixupStateNames();
 
                 int m_numOutputs;
-                
+
                 size_t m_executionSlot;
 
                 AZStd::vector< SlotId > m_orderedOutputSlots;

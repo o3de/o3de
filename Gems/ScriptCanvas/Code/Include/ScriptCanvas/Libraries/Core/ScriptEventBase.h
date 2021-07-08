@@ -106,7 +106,7 @@ namespace ScriptCanvas
 
                     AZStd::pair<AZ::Data::Asset<ScriptEvents::ScriptEventsAsset>, bool> IsAssetOutOfDate() const;
 
-                    virtual void Initialize(const AZ::Data::AssetId assetId);                 
+                    virtual void Initialize(const AZ::Data::AssetId assetId);
 
                 protected:
 

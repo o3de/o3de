@@ -25,7 +25,7 @@ namespace ScriptCanvas
             SlotId stepId = LerpBetweenProperty::GetStepSlotId(this);
 
             if (stepId.IsValid())
-            {                
+            {
                 for (const SlotId& slotId : { m_startSlotId, m_stopSlotId, m_speedSlotId, stepId })
                 {
                     Slot* slot = GetSlot(slotId);
@@ -54,7 +54,7 @@ namespace ScriptCanvas
         void LerpBetween::OnConfigured()
         {
             SetupInternalSlotReferences();
-        }    
+        }
 
         void LerpBetween::SetupInternalSlotReferences()
         {
@@ -66,7 +66,7 @@ namespace ScriptCanvas
             m_stepSlotId = LerpBetweenProperty::GetStepSlotId(this);
             m_percentSlotId = LerpBetweenProperty::GetPercentSlotId(this);
         }
-                        
+
         bool LerpBetween::IsGroupConnected() const
         {
             bool hasConnections = false;
@@ -78,10 +78,10 @@ namespace ScriptCanvas
                     break;
                 }
             }
-            
+
             return hasConnections;
         }
-        
+
         bool LerpBetween::IsInGroup(const SlotId& slotId) const
         {
             return m_groupedSlotIds.count(slotId) > 0;

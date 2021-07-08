@@ -50,7 +50,7 @@ namespace ScriptCanvas
                         slotConfiguration.m_name = Data::GetName(type);
                         slotConfiguration.m_displayGroup = GetSourceDisplayGroup();
                         slotConfiguration.SetType(type);
-                        slotConfiguration.SetConnectionType(ConnectionType::Input);                        
+                        slotConfiguration.SetConnectionType(ConnectionType::Input);
 
                         m_inputSlots.insert(AddSlot(slotConfiguration));
                     }

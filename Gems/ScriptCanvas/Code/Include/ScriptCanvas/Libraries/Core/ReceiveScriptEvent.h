@@ -54,11 +54,11 @@ namespace ScriptCanvas
                 AZStd::optional<size_t> GetEventIndex(AZStd::string eventName) const override;
                 AZStd::vector<SlotId> GetEventSlotIds() const override;
                 AZStd::vector<SlotId> GetNonEventSlotIds() const override;
-                
+
                 bool IsIDRequired() const;
-                
+
                 bool IsEventSlotId(const SlotId& slotId) const;
-                                
+
                 // NodeVersioning...
                 bool IsOutOfDate(const VersionData& graphVersion) const override;
                 UpdateResult OnUpdateNode() override;
@@ -122,6 +122,6 @@ namespace ScriptCanvas
                 bool m_connected;
 
             };
-        } 
+        }
     }
 }

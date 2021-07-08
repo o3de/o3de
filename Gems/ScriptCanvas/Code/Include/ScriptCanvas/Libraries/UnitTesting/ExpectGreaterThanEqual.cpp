@@ -50,6 +50,6 @@ namespace ScriptCanvas
                 }
                 ////
             }
-        } 
-    } 
-} 
+        }
+    }
+}

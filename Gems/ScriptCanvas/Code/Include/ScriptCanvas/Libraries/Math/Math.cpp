@@ -79,7 +79,7 @@ namespace ScriptCanvas
         void Math::InitNodeRegistry(NodeRegistry& nodeRegistry)
         {
             using namespace ScriptCanvas::Nodes::Math;
-            
+
             AddNodeToRegistry<Math, Divide>(nodeRegistry);
             AddNodeToRegistry<Math, MathExpression>(nodeRegistry);
             AddNodeToRegistry<Math, Multiply>(nodeRegistry);
@@ -101,7 +101,7 @@ namespace ScriptCanvas
             Vector3Nodes::Registrar::AddToRegistry<Math>(nodeRegistry);
             Vector4Nodes::Registrar::AddToRegistry<Math>(nodeRegistry);
         }
-        
+
         AZStd::vector<AZ::ComponentDescriptor*> Math::GetComponentDescriptors()
         {
             AZStd::vector<AZ::ComponentDescriptor*> descriptors = {

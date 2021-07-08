@@ -39,7 +39,7 @@ namespace ScriptCanvas
             {
                 {
                     auto func = []() { return aznew IsReferenceTypeContract(); };
-                    ContractDescriptor descriptor{ AZStd::move(func) };                    
+                    ContractDescriptor descriptor{ AZStd::move(func) };
 
                     DynamicDataSlotConfiguration slotConfiguration;
 

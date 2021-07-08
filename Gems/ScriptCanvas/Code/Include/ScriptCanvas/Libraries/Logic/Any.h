@@ -30,7 +30,7 @@ namespace ScriptCanvas
 
                     Current
                 };
-                
+
             public:
 
                 SCRIPTCANVAS_NODE(Any);
@@ -52,10 +52,10 @@ namespace ScriptCanvas
                 ////
 
                 /// Translation
-                bool IsNoOp() const override;              
+                bool IsNoOp() const override;
 
                 AZ::Outcome<DependencyReport, void> GetDependencies() const override;
-                    
+
             protected:
                 ConstSlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot&, CombinedSlotType targetSlotType, const Slot*) const override
                 {

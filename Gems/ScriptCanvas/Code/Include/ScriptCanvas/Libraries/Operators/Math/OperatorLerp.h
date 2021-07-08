@@ -25,7 +25,7 @@ namespace ScriptCanvas
 #define LERPABLE_TYPES { Data::Type::Number(), Data::Type::Vector2(), Data::Type::Vector3(), Data::Type::Vector4() }
 
         //! Deprecated: see NodeableNodeOverloadedLerp
-        class LerpBetween 
+        class LerpBetween
             : public Node
         {
         public:
@@ -50,21 +50,21 @@ namespace ScriptCanvas
 
             LerpBetween() = default;
             ~LerpBetween() override = default;
-            
+
             void OnInit() override;
             void OnConfigured() override;
-                                    
+
         private:
 
             void SetupInternalSlotReferences();
             bool IsGroupConnected() const;
-            bool IsInGroup(const SlotId& slotId) const;            
-                        
+            bool IsInGroup(const SlotId& slotId) const;
+
             AZStd::unordered_set< SlotId > m_groupedSlotIds;
-        
+
             float m_duration;
             float m_counter;
-            
+
             Datum m_startDatum;
             Datum m_differenceDatum;
         };

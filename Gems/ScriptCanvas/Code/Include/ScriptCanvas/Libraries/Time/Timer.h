@@ -23,7 +23,7 @@ namespace ScriptCanvas
         namespace Time
         {
             //! Deprecated: See TimerNodeableNode
-            class Timer 
+            class Timer
                 : public Node
             {
             public:
@@ -31,7 +31,7 @@ namespace ScriptCanvas
                 SCRIPTCANVAS_NODE(Timer);
 
                 Timer();
-                
+
                 float m_seconds;
                 float m_milliseconds;
             };

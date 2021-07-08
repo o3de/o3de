@@ -20,8 +20,8 @@
 namespace ScriptCanvas::Nodeables::Spawning
 {
     class SpawnNodeable
-        : public ScriptCanvas::Nodeable,
-            public AZ::TickBus::Handler
+        : public ScriptCanvas::Nodeable
+        , public AZ::TickBus::Handler
     {
         SCRIPTCANVAS_NODE(SpawnNodeable);
     public:

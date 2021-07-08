@@ -59,7 +59,7 @@ namespace ScriptCanvas
                 if (slot == nullptr)
                 {
                     // Handle older versions and improperly updated names
-                    for (auto testUnit : { BaseTimerNode::TimeUnits::Seconds, BaseTimerNode::TimeUnits::Ticks})
+                    for (auto testUnit : { BaseTimerNode::TimeUnits::Seconds, BaseTimerNode::TimeUnits::Ticks })
                     {
                         AZStd::string legacyName = BaseTimerNode::s_timeUnitNames[static_cast<int>(testUnit)];
 

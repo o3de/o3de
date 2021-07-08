@@ -62,7 +62,7 @@ namespace ScriptCanvas
                 const AZ::TypeId nodeFunctionGenericMultiReturnTemplateTypeId("{DC5B1799-6C5B-4190-8D90-EF0C2D1BCE4E}");
                 const AZ::TypeId oldEntityIdIsValidFuncSignatureTypeId = azrtti_typeid<bool(*)(AZ::EntityId)>();
                 const AZ::TypeId oldEntityIdIsValidTypeId("{7CEC53AE-E12B-4738-B542-4587B8B95DC2}");
-                
+
                 // Aggregate NodeFunctionGenericMultiReturn<bool(*)(AZ::EntityId), OldIsValidTraits> typeid
                 // NOTE: Aggregation order addition is not commutative and must be in the added last to first: (FirstUuid + ( SecondUuid + (ThirdUuid + ... + (NthUuid))
                 const AZ::TypeId oldIsValidNodeAggregateTypeId = nodeFunctionGenericMultiReturnTemplateTypeId + (oldEntityIdIsValidFuncSignatureTypeId + oldEntityIdIsValidTypeId);

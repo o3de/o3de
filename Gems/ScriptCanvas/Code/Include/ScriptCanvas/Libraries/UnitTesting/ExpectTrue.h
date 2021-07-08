@@ -24,7 +24,7 @@ namespace ScriptCanvas
 
                 SCRIPTCANVAS_NODE(ExpectTrue);
 
-                void OnInit() override;                
+                void OnInit() override;
             };
         }
     }

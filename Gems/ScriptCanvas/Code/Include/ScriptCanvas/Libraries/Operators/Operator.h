@@ -22,7 +22,7 @@ namespace ScriptCanvas
     {
         namespace Operators
         {
-            class OperatorBase 
+            class OperatorBase
                 : public ScriptCanvas::Node
             {
             public:
@@ -41,7 +41,7 @@ namespace ScriptCanvas
                 {
                     SourceType m_sourceType = SourceType::SourceInput;
 
-                    DynamicDataType m_dynamicDataType  = DynamicDataType::Any;
+                    DynamicDataType m_dynamicDataType = DynamicDataType::Any;
 
                     AZStd::string m_name;
                     AZStd::string m_tooltip;
@@ -103,7 +103,7 @@ namespace ScriptCanvas
 
                 virtual void OnInputSlotAdded(const SlotId& inputSlotId) { AZ_UNUSED(inputSlotId); };
                 virtual void OnDataInputSlotConnected([[maybe_unused]] const SlotId& slotId, [[maybe_unused]] const Endpoint& endpoint) {}
-                virtual void OnDataInputSlotDisconnected([[maybe_unused]] const SlotId& slotId, [[maybe_unused]] const Endpoint& endpoint) {}                
+                virtual void OnDataInputSlotDisconnected([[maybe_unused]] const SlotId& slotId, [[maybe_unused]] const Endpoint& endpoint) {}
 
                 AZ::BehaviorMethod* GetOperatorMethod(const char* methodName);
 

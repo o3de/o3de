@@ -130,12 +130,12 @@ namespace ScriptCanvas
             {
                 return IsIDRequired();
             }
-            
+
             bool EBusEventHandler::IsAutoConnected() const
             {
                 return m_autoConnectToGraphOwner;
             }
-            
+
             const Datum* EBusEventHandler::GetHandlerStartAddress() const
             {
                 return FindDatum(GetSlotId(c_busIdName));
@@ -203,7 +203,7 @@ namespace ScriptCanvas
                 {
                     return AZ::Success(entry->m_eventName);
                 }
-                
+
                 return AZ::Failure();
             }
 
@@ -244,7 +244,7 @@ namespace ScriptCanvas
             {
                 return EventHandlerTranslationHelper::GetSlotsInExecutionThreadByType(*this, executionSlot, targetSlotType);
             }
-                
+
             AZStd::vector<SlotId> EBusEventHandler::GetNonEventSlotIds() const
             {
                 AZStd::vector<SlotId> nonEventSlotIds;
@@ -311,7 +311,7 @@ namespace ScriptCanvas
                         return true;
                     }
 
-                    const AZ::BehaviorEBusHandler::BusForwarderEvent& event = m_handler->GetEvents()[eventIndex];                    
+                    const AZ::BehaviorEBusHandler::BusForwarderEvent& event = m_handler->GetEvents()[eventIndex];
 
                     // Compare output type
                     const bool eventHasOutput = !event.m_parameters.empty() && !event.m_parameters.front().m_typeId.IsNull() && event.m_parameters.front().m_typeId != azrtti_typeid<void>();
@@ -451,7 +451,7 @@ namespace ScriptCanvas
                         config.m_name = c_busIdName;
                         config.m_toolTip = busToolTip;
                         config.SetConnectionType(ConnectionType::Input);
-                        
+
                         if (busId == azrtti_typeid<AZ::EntityId>())
                         {
                             config.SetDefaultValue(GraphOwnerId);
@@ -459,7 +459,7 @@ namespace ScriptCanvas
                         else
                         {
                             Data::Type busIdType(AZ::BehaviorContextHelper::IsStringParameter(m_ebus->m_idParam) ? Data::Type::String() : Data::FromAZType(busId));
-                            
+
                             config.ConfigureDatum(AZStd::move(Datum(busIdType, Datum::eOriginality::Original)));
                         }
 
@@ -655,7 +655,7 @@ namespace ScriptCanvas
                     return AZStd::find(m_parameterSlotIds.begin(), m_parameterSlotIds.end(), slotId) != m_parameterSlotIds.end();
                 }
             }
-                        
+
             bool EBusEventEntry::EBusEventEntryVersionConverter(AZ::SerializeContext& serializeContext, AZ::SerializeContext::DataElementNode& rootElement)
             {
                 if (rootElement.GetVersion() == 0)

@@ -208,7 +208,7 @@ namespace ScriptCanvas
                 asset.BlockUntilLoadComplete();
 
                 const ScriptEvents::ScriptEvent& definition = asset.Get()->m_definition;
-                
+
                 // If no name has been serialized, this is a new node, so initialize it to the Script Event's definition values.
                 if (m_busId == ScriptCanvas::EBusBusId())
                 {
@@ -232,7 +232,7 @@ namespace ScriptCanvas
                 }
 
                 NamespacePath emptyNamespacePath;
-    
+
                 ScriptEvents::ScriptEventBus::BroadcastResult(m_scriptEvent, &ScriptEvents::ScriptEventRequests::RegisterScriptEvent, assetId, m_version);
 
                 AZ::BehaviorMethod* method{};
@@ -299,9 +299,9 @@ namespace ScriptCanvas
 
                 ScriptEvents::Method scriptEventMethod;
                 definition.FindMethod(method->m_name, scriptEventMethod);
-                
+
                 size_t argIndex = 0;
-                
+
                 // Address slot (BusId)
                 if (method->HasBusId())
                 {
@@ -397,7 +397,7 @@ namespace ScriptCanvas
                 {
                     return true;
                 }
-                
+
                 RegisterScriptEvent(asset);
 
                 if (asset && asset.IsReady())
@@ -428,7 +428,7 @@ namespace ScriptCanvas
                             {
                                 ConfigureMethod(*method);
                                 InitializeResultSlotId();
-                                
+
                                 return true;
                             }
                         }
@@ -528,7 +528,7 @@ namespace ScriptCanvas
                 if (m_scriptEvent == nullptr)
                 {
                     return false;
-                }                
+                }
 
                 m_ebus = m_scriptEvent->GetBehaviorBus();
 

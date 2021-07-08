@@ -9,13 +9,3 @@
 
 #include "UnitTestBus.h"
 
-namespace ScriptCanvas
-{
-    namespace Nodes
-    {
-        namespace UnitTesting
-        {
-            
-        }
-    }
-}

@@ -29,7 +29,7 @@ namespace ScriptCanvas
 
                 Once();
 
-                AZ::Outcome<DependencyReport, void> GetDependencies() const override;              
+                AZ::Outcome<DependencyReport, void> GetDependencies() const override;
 
             protected:
 

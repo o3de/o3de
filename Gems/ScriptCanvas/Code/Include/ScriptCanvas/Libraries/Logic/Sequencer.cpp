@@ -29,7 +29,7 @@ namespace ScriptCanvas
             {
                 auto inSlot = SequencerProperty::GetInSlot(this);
                 auto nextSlot = SequencerProperty::GetNextSlot(this);
-                
+
                 if (inSlot && inSlot->IsConnected())
                 {
                     // Replace by TargetedSequencer

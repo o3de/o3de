@@ -41,7 +41,7 @@ namespace ScriptCanvas
                         slotConfiguration.m_toolTip = "The value at the specified index";
                         slotConfiguration.m_displayGroup = GetSourceDisplayGroup();
                         slotConfiguration.SetType(type);
-                        slotConfiguration.SetConnectionType(ConnectionType::Output);                        
+                        slotConfiguration.SetConnectionType(ConnectionType::Output);
 
                         m_outputSlots.insert(AddSlot(slotConfiguration));
                     }

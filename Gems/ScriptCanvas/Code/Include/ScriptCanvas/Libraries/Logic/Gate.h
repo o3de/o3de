@@ -32,7 +32,7 @@ namespace ScriptCanvas
 
                 AZ::Outcome<DependencyReport, void> GetDependencies() const override;
 
-                bool IsIfBranch() const override { return true; }                
+                bool IsIfBranch() const override { return true; }
 
             protected:
                 ConstSlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot& /*executionSlot*/, CombinedSlotType targetSlotType, const Slot* /*executionChildSlot*/) const override
