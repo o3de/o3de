@@ -19,6 +19,7 @@
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <Atom/RPI.Reflect/Image/Image.h>
+#include <Atom/RPI.Public/Pass/AttachmentReadback.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Pass/PassLibrary.h>
@@ -36,8 +37,7 @@
 namespace AZ
 {
     namespace RPI
-    {
-
+    {             
         // --- Constructors ---
 
         Pass::Pass(const PassDescriptor& descriptor)
@@ -1285,9 +1285,15 @@ namespace AZ
             CreateTransientAttachments(params.m_frameGraphBuilder->GetAttachmentDatabase());
             ImportAttachments(params.m_frameGraphBuilder->GetAttachmentDatabase());
 
+            // readback attachment with input state
+            UpdateReadbackAttachment(params, true);
+
             // FrameBeginInternal needs to be the last function be called in FrameBegin because its implementation expects 
             // all the attachments are imported to database (for example, ImageAttachmentPreview)
             FrameBeginInternal(params);
+            
+            // readback attachment with output state
+            UpdateReadbackAttachment(params, false);
 
             UpdateConnectedOutputBindings();
         }
@@ -1424,6 +1430,57 @@ namespace AZ
         void Pass::SetPipelineStatisticsQueryEnabled(bool enable)
         {
             m_flags.m_pipelineStatisticsQueryEnabled = enable;
+        }
+
+        bool Pass::ReadbackAttachment(AZStd::shared_ptr<AttachmentReadback> readback, const Name& slotName, PassAttachmentReadbackOption option)
+        {
+            // Return false if it's already readback
+            if (m_attachmentReadback)
+            {
+                AZ_Warning("Pass", false, "ReadbackAttachment: skip readback pass [%s] slot [%s]because there is an another active readback", m_name.GetCStr(), slotName.GetCStr());
+                return false;
+            }
+            uint32_t bindingIndex = 0;
+            for (auto& binding : m_attachmentBindings)
+            {
+                if (slotName == binding.m_name)
+                {
+                    RHI::AttachmentType type = binding.m_attachment->GetAttachmentType();
+                    if (type == RHI::AttachmentType::Buffer || type == RHI::AttachmentType::Image)
+                    {
+                        RHI::AttachmentId attachmentId = binding.m_attachment->GetAttachmentId();
+
+                        // Append slot index and pass name so the read back's name won't be same as the attachment used in other passes.
+                        AZStd::string readbackName = AZStd::string::format("%s_%d_%s", attachmentId.GetCStr(),
+                            bindingIndex, GetName().GetCStr());
+                        if (readback->ReadPassAttachment(binding.m_attachment.get(), AZ::Name(readbackName)))
+                        {
+                            m_readbackOption = PassAttachmentReadbackOption::Output;
+                            // The m_readbackOption is only meaningful if the attachment is used for InputOutput.
+                            if (binding.m_slotType == PassSlotType::InputOutput)
+                            {
+                                m_readbackOption = option;
+                            }
+                            m_attachmentReadback = readback;
+                            return true;
+                        }
+                        return false;
+                    }
+                }
+                bindingIndex++;
+            }
+            AZ_Warning("Pass", false, "ReadbackAttachment: failed to find slot [%s] from pass [%s]", slotName.GetCStr(), m_name.GetCStr());
+            return false;
+        }
+
+        void Pass::UpdateReadbackAttachment(FramePrepareParams params, bool beforeAddScopes)
+        {
+            if (beforeAddScopes == (m_readbackOption == PassAttachmentReadbackOption::Input) && m_attachmentReadback)
+            {
+                // Read the attachment for one frame. The reference can be released afterwards
+                m_attachmentReadback->FrameBegin(params);
+                m_attachmentReadback = nullptr;
+            }
         }
 
         bool Pass::IsTimestampQueryEnabled() const
