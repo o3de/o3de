@@ -724,8 +724,7 @@ void ImGuiManager::ToggleThroughImGuiVisibleState(int controllerIndex)
     }
 
     m_menuBarStatusChanged = true;
-    ImGuiManagerNotificationBus::Broadcast(
-        &IImGuiManagerNotifications::ImGuiSetEnabled, m_clientMenuBarState == DisplayState::Hidden);
+    m_setEnabledEvent.Signal(m_clientMenuBarState == DisplayState::Hidden);
 }
 
 void ImGuiManager::ToggleThroughImGuiVisibleState()

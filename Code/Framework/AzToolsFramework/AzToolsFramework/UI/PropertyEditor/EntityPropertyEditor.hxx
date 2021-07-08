@@ -109,7 +109,7 @@ namespace AzToolsFramework
         , public EditorInspectorComponentNotificationBus::MultiHandler
         , private AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler
         , public AZ::EntitySystemBus::Handler
-        , private EditorWindowRequestBus::Handler
+        , private EditorWindowUIRequestBus::Handler
     {
         Q_OBJECT;
     public:

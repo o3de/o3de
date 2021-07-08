@@ -269,12 +269,12 @@ OutlinerWidget::OutlinerWidget(QWidget* pParent, Qt::WindowFlags flags)
     AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusConnect(
             AzToolsFramework::GetEntityContextId());
     AzToolsFramework::EditorEntityInfoNotificationBus::Handler::BusConnect();
-    AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
+    AzToolsFramework::EditorWindowUIRequestBus::Handler::BusConnect();
 }
 
 OutlinerWidget::~OutlinerWidget()
 {
-    AzToolsFramework::EditorWindowRequestBus::Handler::BusDisconnect();
+    AzToolsFramework::EditorWindowUIRequestBus::Handler::BusDisconnect();
     AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusDisconnect();
     AzToolsFramework::EditorEntityInfoNotificationBus::Handler::BusDisconnect();
     AzToolsFramework::EditorPickModeNotificationBus::Handler::BusDisconnect();

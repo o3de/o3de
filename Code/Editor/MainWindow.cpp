@@ -96,7 +96,6 @@ AZ_POP_DISABLE_WARNING
 
 #include <ImGuiBus.h>
 
-
 using namespace AZ;
 using namespace AzQtComponents;
 using namespace AzToolsFramework;
@@ -131,26 +130,6 @@ public:
 
 private:
     IEditor* m_pEditor;
-};
-
-class ImGuiListener
-    : public ImGui::ImGuiManagerNotificationBus::Handler
-{
-public:
-    ImGuiListener()
-    {
-        ImGui::ImGuiManagerNotificationBus::Handler::BusConnect();
-    }
-
-    ~ImGuiListener()
-    {
-        ImGui::ImGuiManagerNotificationBus::Handler::BusDisconnect();
-    }
-
-    void ImGuiSetEnabled(bool enabled) override
-    {
-        EditorWindowRequestBus::Broadcast(&EditorWindowRequests::SetEditorUiEnabled, enabled);
-    }
 };
 
 namespace
@@ -343,7 +322,6 @@ MainWindow::MainWindow(QWidget* parent)
     m_viewPaneHost->setDockOptions(QMainWindow::GroupedDragging | QMainWindow::AllowNestedDocks | QMainWindow::AllowTabbedDocks);
 
     m_connectionListener = AZStd::make_shared<EngineConnectionListener>();
-    m_imguiListener = AZStd::make_shared<ImGuiListener>();
     QObject::connect(m_connectionLostTimer, &QTimer::timeout, this, &MainWindow::ShowConnectionDisconnectedDialog);
 
     setStatusBar(new MainStatusBar(this));
@@ -513,6 +491,16 @@ void MainWindow::Initialize()
     // setup the ActionOverride (set overrideWidgets parent to be the MainWindow)
     ActionOverrideRequestBus::Event(
         GetEntityContextId(), &ActionOverrideRequests::SetupActionOverrideHandler, this);
+
+    if (auto imGuiManager = AZ::Interface<ImGui::IImGuiManager>::Get())
+    {
+        auto handleImGuiStateChangeFn = [](bool enabled)
+        {
+            EditorWindowUIRequestBus::Broadcast(&EditorWindowUIRequests::SetEditorUiEnabled, enabled);
+        };
+        m_handleImGuiStateChangeHandler = ImGui::IImGuiManager::ImGuiSetEnabledEvent::Handler(handleImGuiStateChangeFn);
+        imGuiManager->ConnectImGuiSetEnabledChangedHander(m_handleImGuiStateChangeHandler);
+    }
 
     AzToolsFramework::EditorEventsBus::Broadcast(&AzToolsFramework::EditorEvents::NotifyMainWindowInitialized, this);
 }

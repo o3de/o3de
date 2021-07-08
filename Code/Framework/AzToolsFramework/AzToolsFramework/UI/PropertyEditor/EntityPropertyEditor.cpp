@@ -376,7 +376,7 @@ namespace AzToolsFramework
         ToolsApplicationEvents::Bus::Handler::BusConnect();
         AZ::EntitySystemBus::Handler::BusConnect();
         EntityPropertyEditorRequestBus::Handler::BusConnect();
-        EditorWindowRequestBus::Handler::BusConnect();
+        EditorWindowUIRequestBus::Handler::BusConnect();
         m_spacer = nullptr;
 
         m_emptyIcon = QIcon();
@@ -422,7 +422,7 @@ namespace AzToolsFramework
     {
         qApp->removeEventFilter(this);
 
-        EditorWindowRequestBus::Handler::BusDisconnect();
+        EditorWindowUIRequestBus::Handler::BusDisconnect();
         EntityPropertyEditorRequestBus::Handler::BusDisconnect();
         ToolsApplicationEvents::Bus::Handler::BusDisconnect();
         AZ::EntitySystemBus::Handler::BusDisconnect();

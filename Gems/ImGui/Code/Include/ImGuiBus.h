@@ -88,6 +88,15 @@ namespace ImGui
         virtual void RestoreRenderWindowSizeToDefault() = 0;
         virtual void ToggleThroughImGuiVisibleState() = 0;
         virtual void Render() = 0;
+
+        using ImGuiSetEnabledEvent = AZ::Event<bool>;
+        ImGuiSetEnabledEvent m_setEnabledEvent;
+
+        // interface
+        void ConnectImGuiSetEnabledChangedHander(ImGuiSetEnabledEvent::Handler& handler)
+        {
+            handler.Connect(m_setEnabledEvent);
+        }
     };
 
     class IImGuiManagerRequests
@@ -112,18 +121,18 @@ namespace ImGui
     using ImGuiManagerNotificationBus = AZ::EBus<IImGuiManagerNotifications>;
 
     // Bus for getting notifications from the IMGUI Entity Outliner
-    class IImGuiEntityOutlinerNotifcations : public AZ::EBusTraits
+    class IImGuiEntityOutlinerNotifications : public AZ::EBusTraits
     {
     public:
-        static const char* GetUniqueName() { return "IImGuiEntityOutlinerNotifcations"; }
+        static const char* GetUniqueName() { return "IImGuiEntityOutlinerNotifications"; }
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
-        using Bus = AZ::EBus<IImGuiEntityOutlinerNotifcations>;
+        using Bus = AZ::EBus<IImGuiEntityOutlinerNotifications>;
 
         // Callback for game code to handle targetting an IMGUI entity
         virtual void OnImGuiEntityOutlinerTarget(AZ::EntityId target) { (void)target;  }
     };
-    typedef AZ::EBus<IImGuiEntityOutlinerNotifcations> ImGuiEntityOutlinerNotifcationBus;
+    typedef AZ::EBus<IImGuiEntityOutlinerNotifications> ImGuiEntityOutlinerNotificationBus;
 
     // a pair of an entity id, and a typeid, used to represent component rtti type info
     typedef AZStd::pair<AZ::EntityId, AZ::TypeId> ImGuiEntComponentId;

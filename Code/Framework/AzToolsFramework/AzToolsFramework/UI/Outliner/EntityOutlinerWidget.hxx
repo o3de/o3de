@@ -59,7 +59,7 @@ namespace AzToolsFramework
         , private EditorEntityInfoNotificationBus::Handler
         , private ComponentModeFramework::EditorComponentModeNotificationBus::Handler
         , private Prefab::PrefabPublicNotificationBus::Handler
-        , private EditorWindowRequestBus::Handler
+        , private EditorWindowUIRequestBus::Handler
     {
         Q_OBJECT;
     public:
@@ -107,7 +107,7 @@ namespace AzToolsFramework
         void OnPrefabInstancePropagationBegin() override;
         void OnPrefabInstancePropagationEnd() override;
 
-        // EditorWindowRequestBus overrides
+        // EditorWindowUIRequestBus overrides
         void SetEditorUiEnabled(bool enable) override;
 
         // Build a selection object from the given entities. Entities already in the Widget's selection buffers are ignored.

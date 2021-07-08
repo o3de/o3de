@@ -58,7 +58,7 @@ class OutlinerWidget
     , private AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler
     , private AzToolsFramework::EditorEntityInfoNotificationBus::Handler
     , private AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler
-    , private AzToolsFramework::EditorWindowRequestBus::Handler
+    , private AzToolsFramework::EditorWindowUIRequestBus::Handler
 {
     Q_OBJECT;
 public:
@@ -108,8 +108,9 @@ private:
     void EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
     void LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
 
-    // EditorWindowRequestBus
+    // EditorWindowUIRequestBus overrides
     void SetEditorUiEnabled(bool enable) override;
+
     // Build a selection object from the given entities. Entities already in the Widget's selection buffers are ignored.
     template <class EntityIdCollection>
     QItemSelection BuildSelectionFromEntities(const EntityIdCollection& entityIds);

@@ -30,24 +30,35 @@ namespace AzToolsFramework
 
         //////////////////////////////////////////////////////////////////////////
         // EBusTraits overrides
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         //////////////////////////////////////////////////////////////////////////
 
         /// Retrieve the main application window.
         virtual QWidget* GetAppMainWindow() { return nullptr; }
+    };
+    using EditorWindowRequestBus = AZ::EBus<EditorWindowRequests>;
+
+    class EditorWindowUIRequests : public AZ::EBusTraits
+    {
+    public:
+        using Bus = AZ::EBus<EditorWindowUIRequests>;
+
+        //////////////////////////////////////////////////////////////////////////
+        // EBusTraits overrides
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+        //////////////////////////////////////////////////////////////////////////
 
         /// Enable/Disable the Editor UI.
         virtual void SetEditorUiEnabled([[maybe_unused]] bool enable) {}
     };
-
-    using EditorWindowRequestBus = AZ::EBus<EditorWindowRequests>;
+    using EditorWindowUIRequestBus = AZ::EBus<EditorWindowUIRequests>;
 
     using EnableUiFunction = AZStd::function<void(bool)>;
 
     /// Helper for EditorWindowRequests to be used as a 
     /// member instead of inheriting from EBus directly.
     class EditorWindowRequestBusImpl
-        : public EditorWindowRequestBus::Handler
+        : public EditorWindowUIRequestBus::Handler
     {
     public:
         /// Set the function to be called when entering ImGui Mode.
@@ -58,7 +69,7 @@ namespace AzToolsFramework
 
         private:
         // EditorWindowRequestBus
-        void SetEditorUiEnabled(bool enable) override
+        void SetEditorUiEnabled( [[maybe_unused]] bool enable) override
         {
             m_enableEditorUiFunc(enable);
         }
