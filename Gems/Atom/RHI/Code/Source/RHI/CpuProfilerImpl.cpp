@@ -229,6 +229,7 @@ namespace AZ
             {
                 m_clearContainers = false;
 
+                m_stackLevel = 0;
                 m_cachedTimeRegionMap.clear();
                 m_timeRegionStack.clear();
                 m_cachedTimeRegions.clear();
