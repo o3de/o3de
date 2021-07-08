@@ -37,7 +37,7 @@ namespace EMotionFX::Pipeline::Rule
         AZStd::unique_ptr<EMotionFX::MotionEventTable> m_motionEventTable;
     };
 
-    class MotionMetaDataRule
+    class MotionMetaDataRule final
         : public ExternalToolRule<AZStd::shared_ptr<MotionMetaData>>
     {
     public:
