@@ -320,7 +320,7 @@ def mount_volume_to_device(created):
 
 
 def attach_volume_to_ec2_instance(volume, volume_id, instance_id, timeout_duration=DEFAULT_TIMEOUT):
-    print('Attaching volume {} to instance {}'.format(volume_id, instance_id))
+    print(f'Attaching volume {volume_id} to instance {instance_id}')
     volume.attach_to_instance(Device='xvdf',
                               InstanceId=instance_id,
                               VolumeId=volume_id)
@@ -447,7 +447,7 @@ def mount_ebs(repository_name, project, pipeline, branch, platform, build_type, 
         if new_disk_size > MAX_EBS_DISK_SIZE:
             print(f'Error: EBS disk size reached to the allowed maximum disk size {MAX_EBS_DISK_SIZE}MB, please contact ly-infra@ and ly-build@ to investigate.')
             exit(1)
-        print('Recreating the EBS with disk size {}'.format(new_disk_size))
+        print(f'Recreating the EBS with disk size {new_disk_size}')
         volume_id, created = create_volume(ec2_client, ec2_availability_zone, repository_name, project, pipeline,
                                            branch, platform, build_type, new_disk_size, disk_type)
         volume = ec2_resource.Volume(volume_id)
