@@ -115,6 +115,8 @@ namespace O3DE::ProjectManager
 
     QFrame* ProjectsScreen::CreateProjectsContent(QString buildProjectPath, ProjectButton** projectButton)
     {
+        RemoveInvalidProjects();
+
         QFrame* frame = new QFrame(this);
         frame->setObjectName("projectsContent");
         {
@@ -495,7 +497,16 @@ namespace O3DE::ProjectManager
         return displayFirstTimeContent;
     }
 
+<<<<<<< HEAD
     bool ProjectsScreen::StartProjectBuild(const ProjectInfo& projectInfo)
+=======
+    void ProjectsScreen::RemoveInvalidProjects()
+    {
+        PythonBindingsInterface::Get()->RemoveInvalidProjects();
+    }
+
+    void ProjectsScreen::StartProjectBuild(const ProjectInfo& projectInfo)
+>>>>>>> e0c3d15d5 (Remove deleted projects from project manager)
     {
         if (ProjectUtils::IsVS2019Installed())
         {

@@ -404,27 +404,28 @@ def register_project_path(json_data: dict,
     if result != 0:
         return result
 
-    # registering a project has the additional step of setting the project.json 'engine' field
-    this_engine_json = manifest.get_engine_json_data(engine_path=manifest.get_this_engine_path())
-    if not this_engine_json:
-        return 1
-    project_json_data = manifest.get_project_json_data(project_path=project_path)
-    if not project_json_data:
-        return 1
-
-    update_project_json = False
-    try:
-        update_project_json = project_json_data['engine'] != this_engine_json['engine_name']
-    except KeyError as e:
-        update_project_json = True
-
-    if update_project_json:
-        project_json_path = project_path / 'project.json'
-        project_json_data['engine'] = this_engine_json['engine_name']
-        utils.backup_file(project_json_path)
-        if not manifest.save_o3de_manifest(project_json_data, project_json_path):
+    if not remove:
+        # registering a project has the additional step of setting the project.json 'engine' field
+        this_engine_json = manifest.get_engine_json_data(engine_path=manifest.get_this_engine_path())
+        if not this_engine_json:
+            return 1
+        project_json_data = manifest.get_project_json_data(project_path=project_path)
+        if not project_json_data:
             return 1
 
+        update_project_json = False
+        try:
+            update_project_json = project_json_data['engine'] != this_engine_json['engine_name']
+        except KeyError as e:
+            update_project_json = True
+
+        if update_project_json:
+            project_json_path = project_path / 'project.json'
+            project_json_data['engine'] = this_engine_json['engine_name']
+            utils.backup_file(project_json_path)
+            if not manifest.save_o3de_manifest(project_json_data, project_json_path):
+                return 1
+            
     return 0
 
 
@@ -656,6 +657,13 @@ def register(engine_path: pathlib.Path = None,
 
     return result
 
+def remove_invalid_o3de_projects() -> None:
+    json_data = manifest.load_o3de_manifest()
+
+    for project in json_data['projects']:
+        if not validation.valid_o3de_project_json(pathlib.Path(project).resolve() / 'project.json'):
+            logger.warn(f"Project path {project} is invalid.")
+            register(project_path=pathlib.Path(project), remove=True)
 
 def remove_invalid_o3de_objects() -> None:
     json_data = manifest.load_o3de_manifest()
@@ -666,10 +674,7 @@ def remove_invalid_o3de_objects() -> None:
             logger.warn(f"Engine path {engine_path} is invalid.")
             register(engine_path=engine_path, remove=True)
 
-    for project in json_data['projects']:
-        if not validation.valid_o3de_project_json(pathlib.Path(project).resolve() / 'project.json'):
-            logger.warn(f"Project path {project} is invalid.")
-            register(project_path=project, remove=True)
+    remove_invalid_o3de_projects()
 
     for gem in json_data['gems']:
         if not validation.valid_o3de_gem_json(pathlib.Path(gem).resolve() / 'gem.json'):

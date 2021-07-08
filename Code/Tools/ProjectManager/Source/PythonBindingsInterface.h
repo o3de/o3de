@@ -141,6 +141,11 @@ namespace O3DE::ProjectManager
          */
         virtual AZ::Outcome<void, AZStd::string> RemoveGemFromProject(const QString& gemPath, const QString& projectPath) = 0;
 
+        /**
+         * Removes invalid projects from the manifest
+         */
+        virtual void RemoveInvalidProjects() = 0;
+
 
         // Project Templates
 
