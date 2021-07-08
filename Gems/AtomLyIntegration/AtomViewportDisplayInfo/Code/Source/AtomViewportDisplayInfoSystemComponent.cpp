@@ -155,9 +155,9 @@ namespace AZ::Render
 
         m_drawParams.m_drawViewportId = viewportContext->GetId();
         auto viewportSize = viewportContext->GetViewportSize();
-        m_drawParams.m_position = AZ::Vector3(viewportSize.m_width, 0.0f, 1.0f) + AZ::Vector3(r_topRightBorderPadding);
+        m_drawParams.m_position = AZ::Vector3(viewportSize.m_width, 0.0f, 1.0f) + AZ::Vector3(r_topRightBorderPadding) * viewportContext->GetDpiScalingFactor();
         m_drawParams.m_color = AZ::Colors::White;
-        m_drawParams.m_scale = AZ::Vector2(0.7f);
+        m_drawParams.m_scale = AZ::Vector2(BaseFontSize * viewportContext->GetDpiScalingFactor());
         m_drawParams.m_hAlign = AzFramework::TextHorizontalAlignment::Right;
         m_drawParams.m_monospace = false;
         m_drawParams.m_depthTest = false;

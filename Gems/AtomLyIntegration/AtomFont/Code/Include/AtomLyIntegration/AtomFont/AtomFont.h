@@ -16,6 +16,7 @@
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/smart_ptr/weak_ptr.h>
 #include <AzCore/std/parallel/shared_mutex.h>
+#include <AzCore/Asset/AssetCommon.h>
 #include <map>
 
 #include <AzFramework/Font/FontInterface.h>
@@ -38,6 +39,7 @@ namespace AZ
     class AtomFont
         : public ICryFont
         , public AzFramework::FontQueryInterface
+        , private Data::AssetBus::Handler
     {
         friend class FFont;
 
@@ -121,6 +123,9 @@ namespace AZ
         //! \param outputDirectory Path to loaded font family (no filename), may need resolving with PathUtil::MakeGamePath.
         //! \param outputFullPath Full path to loaded font family, may need resolving with PathUtil::MakeGamePath.
         XmlNodeRef LoadFontFamilyXml(const char* fontFamilyName, string& outputDirectory, string& outputFullPath);
+
+        // Data::AssetBus::Handler overrides...
+        void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
 
     private:
         AzFramework::ISceneSystem::SceneEvent::Handler m_sceneEventHandler;

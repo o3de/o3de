@@ -86,7 +86,12 @@ namespace ImGui
         virtual void SetImGuiRenderResolution(const ImVec2& res) = 0;
         virtual void OverrideRenderWindowSize(uint32_t width, uint32_t height) = 0;
         virtual void RestoreRenderWindowSizeToDefault() = 0;
+<<<<<<< HEAD
         virtual void ToggleThroughImGuiVisibleState() = 0;
+=======
+        virtual void SetDpiScalingFactor(float dpiScalingFactor) = 0;
+        virtual float GetDpiScalingFactor() const = 0;
+>>>>>>> stabilization/2106
         virtual void Render() = 0;
 
         using ImGuiSetEnabledEvent = AZ::Event<bool>;

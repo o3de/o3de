@@ -1,10 +1,14 @@
 {
     "gem_name": "AtomShader",
     "display_name": "Atom Shader Builder",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Open 3D Engine - o3de.org",
+    "type": "Code",
     "summary": "",
     "canonical_tags": [
         "Gem"
     ],
     "user_tags": [
-    ]
+    ],
+    "requirements": ""
 }
