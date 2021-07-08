@@ -15,9 +15,6 @@
 
 #include <ScriptCanvas/Bus/NodeIdPair.h>
 #include <ScriptCanvas/Bus/RequestBus.h>
-
-#include <ScriptCanvas/Asset/Functions/ScriptCanvasFunctionAsset.h>
-
 #include <Editor/View/Widgets/NodePalette/CreateNodeMimeEvent.h>
 
 #include <ScriptCanvas/GraphCanvas/NodeDescriptorBus.h>

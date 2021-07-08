@@ -43,10 +43,6 @@ namespace ScriptCanvas
                 int m_order;
                 int m_selectedIndex;
 
-            protected:
-
-                void OnInputSignal(const SlotId& slot) override;
-
             private:
                 int m_currentIndex;
                 bool m_outputIsValid;

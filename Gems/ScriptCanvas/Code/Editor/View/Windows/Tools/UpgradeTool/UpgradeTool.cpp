@@ -12,8 +12,6 @@
 
 #include "UpgradeTool.h"
 
-#include <Asset/Functions/ScriptCanvasFunctionAsset.h>
-
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/IO/SystemFile.h>
@@ -283,10 +281,6 @@ namespace ScriptCanvasEditor
                     if (asset.GetType() == azrtti_typeid<ScriptCanvasAsset>())
                     {
                         tmpFilesaved = AZ::Utils::SaveObjectToStream<ScriptCanvas::ScriptCanvasData>(fileStream, AZ::DataStream::ST_XML, &asset.GetAs<ScriptCanvasAsset>()->GetScriptCanvasData());
-                    }
-                    else if (asset.GetType() == azrtti_typeid<ScriptCanvasFunctionAsset>())
-                    {
-                        tmpFilesaved = AZ::Utils::SaveObjectToStream<ScriptCanvas::ScriptCanvasData>(fileStream, AZ::DataStream::ST_XML, &asset.GetAs<ScriptCanvasFunctionAsset>()->GetScriptCanvasData());
                     }
 
                     fileStream.Close();
@@ -707,10 +701,6 @@ namespace ScriptCanvasEditor
         if (asset.GetType() == azrtti_typeid<ScriptCanvasAsset>())
         {
             scriptCanvasEntity = UpgradeGraph<ScriptCanvasAsset>(asset, this);
-        }
-        else if (asset.GetType() == azrtti_typeid<ScriptCanvasFunctionAsset>())
-        {
-            scriptCanvasEntity = UpgradeGraph<ScriptCanvasFunctionAsset>(asset, this);
         }
 
         if (!scriptCanvasEntity)

@@ -60,7 +60,6 @@
 #include <ScriptCanvas/Libraries/Core/GetVariable.h>
 #include <ScriptCanvas/Libraries/Core/Method.h>
 #include <ScriptCanvas/Libraries/Core/SetVariable.h>
-#include <ScriptCanvas/Libraries/Entity/EntityRef.h>
 #include <ScriptCanvas/Libraries/Libraries.h>
 #include <ScriptCanvas/Utils/NodeUtils.h>
 #include <ScriptEvents/ScriptEventsAsset.h>
@@ -224,7 +223,7 @@ namespace ScriptCanvasEditor
 
         void ScriptCanvasRootPaletteTreeItem::SetActiveScriptCanvasId(const ScriptCanvas::ScriptCanvasId& scriptCanvasId)
         {
-            ScriptCanvas::RuntimeRequestBus::EventResult(m_previousAssetId, scriptCanvasId, &ScriptCanvas::RuntimeRequests::GetAssetId);
+            ScriptCanvas::GraphRequestBus::EventResult(m_previousAssetId, scriptCanvasId, &ScriptCanvas::GraphRequests::GetAssetId);
 
             for (auto functionTreePair : m_globalFunctionTreeItems)
             {

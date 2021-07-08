@@ -11,7 +11,6 @@
 #include <Asset/RuntimeAssetSystemComponent.h>
 #include <ScriptCanvas/Core/Graph.h>
 #include <ScriptCanvas/Core/Connection.h>
-#include <ScriptCanvas/Core/PureData.h>
 
 #include <ScriptCanvas/Data/DataRegistry.h>
 #include <ScriptCanvas/Libraries/Libraries.h>
@@ -21,7 +20,6 @@
 #include <ScriptCanvas/Libraries/Libraries.h>
 #include <ScriptCanvas/Libraries/Math/MathNodeUtilities.h>
 #include <ScriptCanvas/Variable/GraphVariableManagerComponent.h>
-#include <ScriptCanvas/Asset/Functions/ScriptCanvasFunctionAsset.h>
 
 namespace ScriptCanvas
 {
@@ -42,8 +40,6 @@ namespace ScriptCanvas
             ScriptCanvas::Node::CreateDescriptor(),
             ScriptCanvas::Debugger::ServiceComponent::CreateDescriptor(),
             ScriptCanvas::Graph::CreateDescriptor(),
-            ScriptCanvasEditor::ScriptCanvasFunctionDataComponent::CreateDescriptor(),
-            ScriptCanvas::PureData::CreateDescriptor(),
             ScriptCanvas::GraphVariableManagerComponent::CreateDescriptor(),
             ScriptCanvas::RuntimeComponent::CreateDescriptor(),
             

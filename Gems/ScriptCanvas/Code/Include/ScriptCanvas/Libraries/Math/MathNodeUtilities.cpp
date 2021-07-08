@@ -58,7 +58,7 @@ namespace ScriptCanvas
             AZ_Assert(randomEngineVar.IsConstructed(), "random engine is not initialized");
             return dis(randomEngineVar->m_randomEngine);
         }
-        
+
         AZ::s64 GetRandom(AZ::s64 lhs, AZ::s64 rhs)
         {
             if (lhs == rhs)
@@ -74,5 +74,5 @@ namespace ScriptCanvas
         }
 
     }
-} 
+}
 

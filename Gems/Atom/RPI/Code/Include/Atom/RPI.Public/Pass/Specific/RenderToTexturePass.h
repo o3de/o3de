@@ -60,9 +60,6 @@ namespace AZ
             // Name of the template used to create the child pass. Needed for Recreate()
             Name m_childTemplateName;
 
-            // For read back output
-            AZStd::shared_ptr<AttachmentReadback> m_readback;
-
             Ptr<PassAttachment> m_outputAttachment;
 
             // saved settings for this pass
