@@ -38,22 +38,6 @@ namespace ScriptCanvas
                 }
             }
 
-            void HeartBeat::OnInputSignal(const SlotId& slotId)
-            {
-                if (slotId == HeartBeatProperty::GetStartSlotId(this))
-                {
-                    StartTimer();
-                }
-                else if (slotId == HeartBeatProperty::GetStopSlotId(this))
-                {
-                    StopTimer();
-                }
-            }
-
-            void HeartBeat::OnTimeElapsed()
-            {
-                SignalOutput(HeartBeatProperty::GetPulseSlotId(this));
-            }
         }
     }
 }

@@ -167,10 +167,6 @@ namespace ScriptCanvas
 
         bool IsLatent() const;
 
-        // VariableNotificationBus
-        void OnVariableValueChanged() override;
-        ////
-
         // Here to allow conversion of the previously untyped any slots into the dynamic type any.
         void SetDynamicDataType(DynamicDataType dynamicDataType);
 

@@ -65,7 +65,7 @@ namespace ScriptCanvas
                 AZ::Crc32 GetArithmeticExtensionId() const { return AZ_CRC("AddnewValueExtension", 0xea20301c); }
                 AZ::Crc32 GetArithmeticDynamicTypeGroup() const { return AZ_CRC("ArithmeticGroup", 0x4271e41f); }
                 AZStd::string GetArithmeticDisplayGroup() const { return "ArithmeticGroup"; }
-                
+
                 virtual AZStd::string_view OperatorFunction() const { return ""; }
                 virtual AZStd::unordered_set< Data::Type > GetSupportedNativeDataTypes() const
                 {
@@ -81,15 +81,14 @@ namespace ScriptCanvas
                         Data::Type::Matrix4x4()
                     };
                 }
-                
+
                 // Node
                 void OnSlotDisplayTypeChanged(const SlotId& slotId, const Data::Type& dataType) override final;
                 void OnDynamicGroupDisplayTypeChanged(const AZ::Crc32& dynamicGroup, const Data::Type& dataType) override final;
-                void OnInputSignal(const SlotId& slotId) override;
-                
+
                 void OnConfigured() override;
                 void OnInit() override;
-                void OnActivate() override;                
+                void OnActivate() override;
                 void ConfigureVisualExtensions() override;
 
                 SlotId HandleExtension(AZ::Crc32 extensionId) override;
@@ -101,7 +100,6 @@ namespace ScriptCanvas
 
                 virtual void Operator(Data::eType type, const ArithmeticOperands& operands, Datum& result);
                 virtual void InitializeSlot(const SlotId& slotId, const Data::Type& dataType);
-                virtual void InvokeOperator();
 
                 //////////////////////////////////////////////////////////////////////////
                 // Translation
@@ -130,7 +128,7 @@ namespace ScriptCanvas
                 Slot* m_resultSlot;
                 SlotId m_outSlot;
             };
-            
+
             //! Deprecated: kept here for version conversion
             class OperatorArithmeticUnary : public OperatorArithmetic
             {

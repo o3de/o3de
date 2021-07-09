@@ -182,6 +182,6 @@ namespace ScriptCanvas
                 Method(const Method&) = delete;
             };
 
-        } 
-    } 
-} 
+        }
+    }
+}

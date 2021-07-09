@@ -114,7 +114,7 @@ namespace AZ
                     Render::FrameCaptureRequestBus::BroadcastResult(
                         startedCapture,
                         &Render::FrameCaptureRequestBus::Events::CapturePassAttachmentWithCallback,
-                        m_context->GetData()->m_passHierarchy, AZStd::string("Output"), readbackCallback);
+                        m_context->GetData()->m_passHierarchy, AZStd::string("Output"), readbackCallback, RPI::PassAttachmentReadbackOption::Output);
                     // Reset the capture flag if the capture request was successful. Otherwise try capture it again next tick.
                     if (startedCapture)
                     {

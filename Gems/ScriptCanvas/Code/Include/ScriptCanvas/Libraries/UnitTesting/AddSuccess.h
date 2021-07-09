@@ -23,9 +23,6 @@ namespace ScriptCanvas
             public:
 
                 SCRIPTCANVAS_NODE(AddSuccess);
-
-                void OnInputSignal(const SlotId& slotId) override;
-
             };
         }
     }
