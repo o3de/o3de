@@ -312,6 +312,9 @@ void FileWatcherUnitTestRunner::StartTest()
     Q_EMIT UnitTestPassed();
 }
 
+// File operations on Linux behave differently on Linux than Windows.
+// The system under test doesn't yet handle Linux's file operations, which surfaced as this test arbitrarily passing and failing.
+// This test is disabled on Linux until the system under test can handle Linux file system behavior correctly.
 #if !AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS && !defined(AZ_PLATFORM_LINUX)
 REGISTER_UNIT_TEST(FileWatcherUnitTestRunner)
 #endif // !AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
