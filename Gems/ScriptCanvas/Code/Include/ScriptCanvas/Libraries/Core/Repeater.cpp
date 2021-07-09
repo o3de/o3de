@@ -59,7 +59,7 @@ namespace ScriptCanvas
                 if (slot == nullptr)
                 {
                     // Handle older versions and improperly updated names
-                    for (auto testUnit : { BaseTimerNode::TimeUnits::Seconds, BaseTimerNode::TimeUnits::Ticks})
+                    for (auto testUnit : { BaseTimerNode::TimeUnits::Seconds, BaseTimerNode::TimeUnits::Ticks })
                     {
                         AZStd::string legacyName = BaseTimerNode::s_timeUnitNames[static_cast<int>(testUnit)];
 
@@ -72,28 +72,6 @@ namespace ScriptCanvas
                             break;
                         }
                     }
-                }
-            }
-
-            void Repeater::OnInputSignal(const SlotId&)
-            {
-                m_repetionCount = aznumeric_cast<int>(RepeaterProperty::GetRepetitions(this));
-
-                if (m_repetionCount > 0)
-                {
-                    StartTimer();
-                }
-            }
-
-            void Repeater::OnTimeElapsed()
-            {
-                m_repetionCount--;
-                SignalOutput(RepeaterProperty::GetActionSlotId(this), ScriptCanvas::ExecuteMode::UntilNodeIsFoundInStack);
-
-                if (m_repetionCount == 0)
-                {
-                    StopTimer();
-                    SignalOutput(RepeaterProperty::GetCompleteSlotId(this));
                 }
             }
         }

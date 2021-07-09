@@ -55,59 +55,6 @@
 
 namespace ScriptCanvasEditor
 {
-    //////////////////////////////
-    // AddSelectedEntitiesAction
-    //////////////////////////////
-
-    AddSelectedEntitiesAction::AddSelectedEntitiesAction(QObject* parent)
-        : GraphCanvas::ContextMenuAction("", parent)
-    {
-    }
-
-    GraphCanvas::ActionGroupId AddSelectedEntitiesAction::GetActionGroupId() const
-    {
-        return AZ_CRC("EntityActionGroup", 0x17e16dfe);
-    }
-
-    void AddSelectedEntitiesAction::RefreshAction(const GraphCanvas::GraphId&, const AZ::EntityId&)
-    {
-        AzToolsFramework::EntityIdList selectedEntities;
-        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(selectedEntities, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
-
-        setEnabled(!selectedEntities.empty());
-
-        if (selectedEntities.size() <= 1)
-        {
-            setText("Reference selected entity");
-        }
-        else
-        {
-            setText("Reference selected entities");
-        }
-    }
-
-    GraphCanvas::ContextMenuAction::SceneReaction AddSelectedEntitiesAction::TriggerAction(const AZ::EntityId& graphCanvasGraphId, const AZ::Vector2& scenePos)
-    {
-        AzToolsFramework::EntityIdList selectedEntities;
-        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(selectedEntities, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
-
-        ScriptCanvas::ScriptCanvasId scriptCanvasId;
-        GeneralRequestBus::BroadcastResult(scriptCanvasId, &GeneralRequests::GetScriptCanvasId, graphCanvasGraphId);
-
-        GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::ClearSelection);
-
-        AZ::Vector2 addPosition = scenePos;
-
-        for (const AZ::EntityId& id : selectedEntities)
-        {
-            NodeIdPair nodePair = Nodes::CreateEntityNode(id, scriptCanvasId);
-            GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::AddNode, nodePair.m_graphCanvasId, addPosition, false);
-            addPosition += AZ::Vector2(20, 20);
-        }
-
-        return GraphCanvas::ContextMenuAction::SceneReaction::PostUndo;
-    }
-
     ////////////////////////////
     // EndpointSelectionAction
     ////////////////////////////
@@ -860,12 +807,6 @@ namespace ScriptCanvasEditor
     {
         const bool inContextMenu = true;
         Widget::ScriptCanvasNodePaletteConfig paletteConfig(paletteModel, assetModel, inContextMenu);
-
-        m_addSelectedEntitiesAction = aznew AddSelectedEntitiesAction(this);
-        
-        AddActionGroup(m_addSelectedEntitiesAction->GetActionGroupId());
-        AddMenuAction(m_addSelectedEntitiesAction);
-
         AddNodePaletteMenuAction(paletteConfig);
     }
 
@@ -905,8 +846,6 @@ namespace ScriptCanvasEditor
         m_graphCanvasConstructGroups.SetCommentsEnabled(false);
         m_nodeGroupPresets.SetEnabled(false);
         m_alignmentActionsGroups.SetEnabled(false);
-
-        m_addSelectedEntitiesAction->setEnabled(false);
     }
 
     //////////////////////////

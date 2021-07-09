@@ -22,7 +22,6 @@
 namespace ScriptCanvasEditor
 {
     class ScriptCanvasAsset;
-    class ScriptCanvasFunctionAsset;
 
     class EditorAssetSystemComponent
         : public AZ::Component
@@ -57,9 +56,7 @@ namespace ScriptCanvasEditor
         //////////////////////////////////////////////////////////////////////////
         // EditorAssetConversionBus::Handler...
         AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset> LoadAsset(AZStd::string_view graphPath) override;
-        AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasFunctionAsset> LoadFunctionAsset(AZStd::string_view graphPath) override;
         AZ::Outcome<AZ::Data::Asset<ScriptCanvas::RuntimeAsset>, AZStd::string> CreateRuntimeAsset(const AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>& editAsset) override;
-        AZ::Outcome<AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset>, AZStd::string> CreateFunctionRuntimeAsset(const AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasFunctionAsset>& editAsset) override;
         AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> CreateLuaAsset(const AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>& editAsset, AZStd::string_view graphPathForRawLuaFile) override;
         //////////////////////////////////////////////////////////////////////////
         

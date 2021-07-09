@@ -110,12 +110,12 @@ namespace ScriptCanvasEditor
             , m_graphCanvasSaveVersion(GraphCanvas::EntitySaveDataContainer::CurrentVersion)
             , m_upgradeSM(this)
         {}
-        
+
         ~Graph() override;
 
         void Activate() override;
         void Deactivate() override;
-        
+
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
             ScriptCanvas::Graph::GetProvidedServices(provided);
@@ -160,10 +160,6 @@ namespace ScriptCanvasEditor
         bool CreateConnection(const GraphCanvas::ConnectionId& connectionId, const GraphCanvas::Endpoint& sourcePoint, const GraphCanvas::Endpoint& targetPoint) override;
 
         bool IsValidConnection(const GraphCanvas::Endpoint& sourcePoint, const GraphCanvas::Endpoint& targetPoint) const override;
-        GraphCanvas::ConnectionValidationTooltip GetConnectionValidityTooltip(const GraphCanvas::Endpoint& sourcePoint, const GraphCanvas::Endpoint& targetPoint) const override;
-
-        bool IsValidVariableAssignment(const AZ::EntityId& variableId, const GraphCanvas::Endpoint& targetPoint) const override;
-        GraphCanvas::ConnectionValidationTooltip GetVariableAssignmentValidityTooltip(const AZ::EntityId& variableId, const GraphCanvas::Endpoint& targetPoint) const override;
 
         AZStd::string GetDataTypeString(const AZ::Uuid& typeId) override;
 
@@ -192,7 +188,7 @@ namespace ScriptCanvasEditor
         GraphCanvas::CanHandleMimeEventOutcome CanHandleValueMimeEvent(const GraphCanvas::Endpoint& endpoint, const QMimeData* mimeData) override;
         bool HandleValueMimeEvent(const GraphCanvas::Endpoint& endpoint, const QMimeData* mimeData) override;
 
-        GraphCanvas::SlotId RequestExtension(const GraphCanvas::NodeId& nodeId, const GraphCanvas::ExtenderId& extenderId, GraphModelRequests::ExtensionRequestReason ) override;
+        GraphCanvas::SlotId RequestExtension(const GraphCanvas::NodeId& nodeId, const GraphCanvas::ExtenderId& extenderId, GraphModelRequests::ExtensionRequestReason) override;
         void ExtensionCancelled(const GraphCanvas::NodeId& nodeId, const GraphCanvas::ExtenderId& extenderId) override;
         void FinalizeExtension(const GraphCanvas::NodeId& nodeId, const GraphCanvas::ExtenderId& extenderId) override;
 
@@ -216,7 +212,7 @@ namespace ScriptCanvasEditor
         void PostCreationEvent() override;
         void OnPasteBegin() override;
         void OnPasteEnd() override;
-        
+
         void OnViewRegistered() override;
         /////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -262,7 +258,7 @@ namespace ScriptCanvasEditor
 
         AZStd::vector<NodeIdPair> GetNodesOfType(const ScriptCanvas::NodeTypeIdentifier&) override;
         AZStd::vector<NodeIdPair> GetVariableNodes(const ScriptCanvas::VariableId&) override;
-        
+
         void RemoveUnusedVariables() override;
 
         bool CanConvertVariableNodeToReference(const GraphCanvas::NodeId& nodeId) override;
@@ -270,12 +266,9 @@ namespace ScriptCanvasEditor
         bool ConvertReferenceToVariableNode(const GraphCanvas::Endpoint& endpoint) override;
 
         void QueueVersionUpdate(const AZ::EntityId& graphCanvasNodeId) override;
-        
-        bool IsRuntimeGraph() const override;
-        bool IsFunctionGraph() const override;
 
         bool CanExposeEndpoint(const GraphCanvas::Endpoint& endpoint) override;
-        
+
         ScriptCanvas::Endpoint ConvertToScriptCanvasEndpoint(const GraphCanvas::Endpoint& endpoint) const override;
         GraphCanvas::Endpoint ConvertToGraphCanvasEndpoint(const ScriptCanvas::Endpoint& endpoint) const override;
         ////
@@ -333,8 +326,8 @@ namespace ScriptCanvasEditor
         Graph(const Graph&) = delete;
 
         void DisplayUpdateToast();
-        
-        AZ::EntityId          ConvertToScriptCanvasNodeId(const GraphCanvas::NodeId& nodeId) const;        
+
+        AZ::EntityId          ConvertToScriptCanvasNodeId(const GraphCanvas::NodeId& nodeId) const;
 
         GraphCanvas::NodePropertyDisplay* CreateDisplayPropertyForSlot(const AZ::EntityId& scriptCanvasNodeId, const ScriptCanvas::SlotId& scriptCanvasSlotId) const;
 
@@ -370,10 +363,10 @@ namespace ScriptCanvasEditor
         AZ::EntityId m_wrapperNodeDropTarget;
 
         VariableComboBoxDataModel m_variableDataModel;
-        
+
         WrappedNodeGroupingMap m_wrappedNodeGroupings;
         AZStd::vector< AZ::EntityId > m_lastGraphCanvasCreationGroup;
-        
+
         AZ::Entity* m_graphCanvasSceneEntity;
 
         GraphCanvas::EntitySaveDataContainer::VersionInformation m_graphCanvasSaveVersion;

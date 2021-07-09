@@ -40,21 +40,6 @@ namespace ScriptCanvas
                         }
                     }
                 }
-
-            protected:
-                Datum Evaluate(const Datum& lhs, const Datum& rhs) override
-                {
-                    ComparisonOutcome result(lhs >  rhs);
-                    if (result.IsSuccess())
-                    {
-                        return Datum(result.GetValue());
-                    }
-                    else
-                    {
-                        SCRIPTCANVAS_REPORT_ERROR((*this), result.GetError().c_str());
-                        return Datum(false);
-                    }
-                }
             };
 
         }

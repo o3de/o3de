@@ -219,6 +219,7 @@ public:
     void SetFullScreenState(bool fullScreenState) override;
     bool CanToggleFullScreenState() const override;
     void ToggleFullScreenState() override;
+    float GetDpiScaleFactor() const override { return 1.0f; };
 
     void ConnectViewportInteractionRequestBus();
     void DisconnectViewportInteractionRequestBus();

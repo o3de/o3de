@@ -11,6 +11,8 @@ set(FILES
     Include/Request/AWSGameLiftJoinSessionRequest.h
     Include/Request/AWSGameLiftSearchSessionsRequest.h
     Include/Request/IAWSGameLiftRequests.h
+    Source/Activity/AWSGameLiftActivityUtils.cpp
+    Source/Activity/AWSGameLiftActivityUtils.h
     Source/Activity/AWSGameLiftCreateSessionActivity.cpp
     Source/Activity/AWSGameLiftCreateSessionActivity.h
     Source/Activity/AWSGameLiftCreateSessionOnQueueActivity.cpp

@@ -504,7 +504,7 @@ namespace Physics
         }
     }
 
-    const AZ::Data::Asset<Physics::MaterialLibraryAsset>& MaterialSelection::GetMaterialLibrary()
+    AZ::Data::Asset<Physics::MaterialLibraryAsset> MaterialSelection::GetMaterialLibrary()
     {
         if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
         {
@@ -516,7 +516,7 @@ namespace Physics
         return s_invalidMaterialLibrary;
     }
 
-    const AZ::Data::AssetId& MaterialSelection::GetMaterialLibraryId()
+    AZ::Data::AssetId MaterialSelection::GetMaterialLibraryId()
     {
         return GetMaterialLibrary().GetId();
     }

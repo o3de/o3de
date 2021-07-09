@@ -10,10 +10,7 @@
 // This header is only meant to include the nodes and should not contain
 // shared code
 
-#include "BehaviorContextObjectNode.h"
 #include "EBusEventHandler.h"
-#include "Error.h"
-#include "ErrorHandler.h"
 #include "ExtractProperty.h"
 #include "FunctionDefinitionNode.h"
 #include "ForEach.h"
@@ -28,4 +25,3 @@
 #include "SendScriptEvent.h"
 #include "SetVariable.h"
 #include "Start.h"
-#include "String.h"

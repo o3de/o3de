@@ -95,47 +95,6 @@ namespace ScriptCanvas
                 }
             }
 
-            void OperatorErase::InvokeOperator()
-            {
-                Slot* inputSlot = GetFirstInputSourceSlot();
-                Slot* outputSlot = GetFirstOutputSourceSlot();
-
-                if (inputSlot && outputSlot)
-                {
-                    SlotId sourceSlotId = inputSlot->GetId();
-                    const Datum* containerDatum = FindDatum(sourceSlotId);
-
-                    if (Datum::IsValidDatum(containerDatum))
-                    {
-                        const Datum* inputKeyDatum = FindDatum(*m_inputSlots.begin());
-                        AZ::Outcome<Datum, AZStd::string> valueOutcome = BehaviorContextMethodHelper::CallMethodOnDatum(*containerDatum, "Erase", *inputKeyDatum);
-
-                        if (valueOutcome.IsSuccess())
-                        {
-                            // Push the source container as an output to support chaining
-                            PushOutput(*containerDatum, (*outputSlot));
-
-                            auto outcomeInnerResult = valueOutcome.GetValue().GetAs< AZ::Outcome<void, void>>();
-                            if (outcomeInnerResult && !outcomeInnerResult->IsSuccess())
-                            {
-                                SignalOutput(GetSlotId("Element Not Found"));
-                                return;
-                            }
-                        }
-                    }
-                }
-
-                SignalOutput(GetSlotId("Out"));
-            }
-
-            void OperatorErase::OnInputSignal(const SlotId& slotId)
-            {
-                const SlotId inSlotId = OperatorBaseProperty::GetInSlotId(this);
-                if (slotId == inSlotId)
-                {
-                    InvokeOperator();
-                }
-            }
         }
     }
 }

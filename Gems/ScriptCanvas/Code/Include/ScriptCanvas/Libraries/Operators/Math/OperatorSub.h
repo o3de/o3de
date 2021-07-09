@@ -17,7 +17,7 @@ namespace ScriptCanvas
         namespace Operators
         {
             //! Node that provides subtraction
-            class OperatorSub: public OperatorArithmetic
+            class OperatorSub : public OperatorArithmetic
             {
             public:
 

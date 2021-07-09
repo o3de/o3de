@@ -22,12 +22,10 @@
 #include <ScriptCanvas/Core/ExecutionNotificationsBus.h>
 #include <ScriptCanvas/Core/GraphBus.h>
 #include <ScriptCanvas/Core/NodeBus.h>
-#include <ScriptCanvas/Core/SignalBus.h>
 #include <ScriptCanvas/Core/Slot.h>
 #include <ScriptCanvas/Debugger/StatusBus.h>
 #include <ScriptCanvas/Execution/ErrorBus.h>
 #include <ScriptCanvas/Execution/ExecutionBus.h>
-#include <ScriptCanvas/Execution/RuntimeBus.h>
 #include <ScriptCanvas/Variable/GraphVariable.h>
 #include <ScriptCanvas/Grammar/Primitives.h>
 #include <ScriptCanvas/Debugger/ValidationEvents/ValidationEvent.h>
@@ -400,7 +398,6 @@ namespace ScriptCanvas
     class Node
         : public AZ::Component
         , public DatumNotificationBus::Handler
-        , private SignalBus::Handler
         , public NodeRequestBus::Handler
         , public EndpointNotificationBus::MultiHandler
     {
@@ -542,7 +539,6 @@ namespace ScriptCanvas
         AZStd::vector<AZStd::pair<const Node*, SlotId>> FindConnectedNodesAndSlotsByDescriptor(const SlotDescriptor& slotType, bool followLatentConnections = false) const;
         
         AZStd::vector<const Slot*> GetSlotsByType(CombinedSlotType slotType) const;
-        AZStd::vector<Endpoint> GetConnectedEndpoints(SlotId outSlot) const;
 
         bool IsConnected(const Slot& slot) const;
         bool IsConnected(const SlotId& slotId) const;
@@ -845,7 +841,6 @@ namespace ScriptCanvas
 
         void SignalSlotsReordered();
 
-        static void OnInputChanged(Node& node, const Datum& input, const SlotId& slotID);
         static void SetInput(Node& node, const SlotId& id, const Datum& input);
         static void SetInput(Node& node, const SlotId& id, Datum&& input);
 
@@ -892,14 +887,12 @@ protected:
         void Configure();
 
     protected:
-
         TransientSlotIdentifier ConstructTransientIdentifier(const Slot& slot) const;
 
         DatumVector GatherDatumsForDescriptor(SlotDescriptor descriptor) const;
 
         SlotDataMap CreateInputMap() const;
         SlotDataMap CreateOutputMap() const;
-
 
         Signal CreateNodeInputSignal(const SlotId& slotId) const;
         Signal CreateNodeOutputSignal(const SlotId& slotId) const;
@@ -954,6 +947,7 @@ protected:
 
         //! This is a used by CodeGen to configure slots just prior to OnInit.
         virtual void ConfigureSlots() {}
+
         //! Entity level initialization, perform any resource allocation here that should be available throughout the node's existence.
         virtual void OnInit() {}
 
@@ -968,13 +962,11 @@ protected:
 
         //! Entity level activation, perform entity lifetime setup here, i.e. connect to EBuses
         virtual void OnActivate() {}
+
         //! Entity level deactivation, perform any entity lifetime release here, i.e disconnect from EBuses
         virtual void OnDeactivate() {}
         
         virtual void OnPostActivate() {}
-        //! Any node that is not pure data will perform its operation assuming that all input has been pushed and is reasonably valid
-        // perform your derived nodes work in OnInputSignal(const SlotId&)
-        virtual void OnInputSignal(const SlotId& /*slot*/) {}
 
         //! Signal sent once the OwningScriptCanvasId is set.
         virtual void OnGraphSet() {}
@@ -1000,24 +992,11 @@ protected:
         void ModConnectedNodes(const Slot& slot, AZStd::vector<AZStd::pair<Node*, const SlotId>>&) const;
         bool HasConnectedNodes(const Slot& slot) const;
 
-        virtual void OnInputChanged(const Datum& /*input*/, const SlotId& /*slotID*/) {}
-
-        //////////////////////////////////////////////////////////////////////////
-        //! The body of the node's execution, implement the node's work here.
-        void PushOutput(const Datum& output, const Slot& slot) const;
         void SetOwningScriptCanvasId(ScriptCanvasId scriptCanvasId);
         void SetGraphEntityId(AZ::EntityId graphEntityId);
 
-        // on activate, simple expressions need to push this data
         virtual void SetInput(const Datum& input, const SlotId& id);
         virtual void SetInput(Datum&& input, const SlotId& id);
-
-        //! Any node that is not pure data will perform its operation assuming that all input has been pushed and is reasonably valid
-        // perform your derived nodes work in OnInputSignal(const SlotId&)
-        void SignalInput(const SlotId& slot) override final;
-
-        //! This must be called manually to send execution out of a specific slot
-        void SignalOutput(const SlotId& slot, ExecuteMode mode = ExecuteMode::Normal) override final;
 
         bool SlotExists(AZStd::string_view name, const SlotDescriptor& slotDescriptor) const;
 
@@ -1026,10 +1005,6 @@ protected:
         bool IsOnPureDataThreadHelper(AZStd::unordered_set<ID>& path) const;
 
         void PopulateNodeType();
-
-        void SetRuntimeBus(RuntimeRequests* runtimeBus) { m_runtimeBus = runtimeBus; }
-        RuntimeRequests* GetRuntimeBus() const { return m_runtimeBus; }
-
 
         GraphScopedNodeId GetScopedNodeId() const { return GraphScopedNodeId(GetOwningScriptCanvasId(), GetEntityId()); }
         
@@ -1070,101 +1045,16 @@ protected:
         AZStd::vector< VisualExtensionSlotConfiguration > m_visualExtensions;
 
         // Cache pointer to the owning Graph
-        RuntimeRequests* m_runtimeBus = nullptr;
+        GraphRequests* m_graphRequestBus = nullptr;
         
         ScriptCanvas::SlotId m_removingSlot;
 
     public:
-        template<typename t_Value>
-        const t_Value* GetInput_UNIT_TEST(AZStd::string_view slotName)
-        {
-            return GetInput_UNIT_TEST<t_Value>(GetSlotId(slotName));
-        }
-
-        template<typename t_Value>
-        t_Value* ModInput_UNIT_TEST(AZStd::string_view slotName)
-        {
-            return ModInput_UNIT_TEST<t_Value>(GetSlotId(slotName));
-        }
-
-        template<typename t_Value>
-        const t_Value* GetInput_UNIT_TEST(const SlotId& slotId)
-        {
-            const Datum* input = FindDatum(slotId);
-            return input ? input->GetAs<t_Value>() : nullptr;
-        }
-
-        template<typename t_Value>
-        t_Value* ModInput_UNIT_TEST(const SlotId& slotId)
-        {
-            auto slotIter = m_slotIdIteratorCache.find(slotId);
-
-            if (slotIter != m_slotIdIteratorCache.end())
-            {
-                Slot* slot = &(*slotIter->second.m_slotIterator);
-
-                if (slot->IsVariableReference())
-                {
-                    AZ_Assert(false, "Variable references are not supported in Unit Test methods.");
-                }
-                else
-                {
-                    return slotIter->second.GetDatumIter()->ModAs<t_Value>();
-                }
-            }
-
-            return nullptr;
-        }
-
-        const Datum* GetInput_UNIT_TEST(AZStd::string_view slotName)
-        {
-            return GetInput_UNIT_TEST(GetSlotId(slotName));
-        }
-
-        const Datum* GetInput_UNIT_TEST(const SlotId& slotId)
-        {
-            return FindDatum(slotId);
-        }
-
-        // initializes the node input to the value passed in, not a pointer to it
-        template<typename t_Value>
-        void SetInput_UNIT_TEST(AZStd::string_view slotName, const t_Value& value)
-        {
-            SetInput_UNIT_TEST<t_Value>(GetSlotId(slotName), value);
-        }
-
-        template<typename t_Value>
-        void SetInput_UNIT_TEST(const SlotId& slotId, const t_Value& value)
-        {
-            SetInput(Datum(value), slotId);
-        }
-
-        void SetInput_UNIT_TEST(AZStd::string_view slotName, const Datum& value)
-        {
-            SetInput_UNIT_TEST(GetSlotId(slotName), value);
-        }
-
-        void SetInput_UNIT_TEST(AZStd::string_view slotName, Datum&& value)
-        {
-            SetInput_UNIT_TEST(GetSlotId(slotName), AZStd::move(value));
-        }
-
-        void SetInput_UNIT_TEST(const SlotId& slotId, Datum&& value)
-        {
-            SetInput(AZStd::move(value), slotId);
-        }
-
         template<typename t_Func, t_Func, typename, size_t>
         friend struct Internal::MultipleOutputHelper;
 
         template<typename ResultType, typename t_Traits, typename>
         friend struct Internal::OutputSlotHelper;
-
-        template<typename ResultType, typename t_Traits, typename>
-        friend struct Internal::PushOutputHelper;
-
-        template<typename ResultType, typename ResultIndexSequence, typename t_Func, t_Func function, typename t_Traits>
-        friend struct Internal::CallHelper;
 
         template<size_t... inputDatumIndices>
         friend struct SetDefaultValuesByIndex;
@@ -1238,104 +1128,6 @@ protected:
             }
         };
 
-        template<typename ResultType, typename t_Traits, typename = AZStd::void_t<>>
-        struct PushOutputHelper
-        {
-            template<size_t... Is>
-            static void PushOutput(Node& node, ResultType&& result, AZStd::index_sequence<Is...>)
-            {
-                // protect against changes to the function that generated the node
-                if (auto slot = node.GetSlotByIndex(t_Traits::s_resultsSlotIndicesStart))
-                {
-                    node.PushOutput(Datum(AZStd::forward<ResultType>(result)), *slot);
-                }
-            }
-        };
-
-        template<typename t_Traits>
-        struct PushOutputHelper<void, t_Traits, void>
-        {
-            template<size_t... Is> static void PushOutput(Node& node, AZStd::ignore_t result, AZStd::index_sequence<Is...>) {}
-        };
-
-        template<typename ResultType, typename t_Traits>
-        struct PushOutputHelper<ResultType, t_Traits, AZStd::enable_if_t<IsTupleLike<ResultType>::value>>
-        {
-            template<size_t t_Index>
-            static void PushOutputFold(Node& node, ResultType&& tupleResult)
-            {
-                // protect against changes to the function that generated the node
-                if (auto slot = node.GetSlotByIndex(t_Traits::s_resultsSlotIndicesStart + t_Index))
-                {
-                    node.PushOutput(Datum(AZStd::get<t_Index>(AZStd::forward<ResultType>(tupleResult))), *slot);
-                }
-            }
-
-            template<size_t... Is>
-            static void PushOutput(Node& node, ResultType&& tupleResult, AZStd::index_sequence<Is...>)
-            {
-                (PushOutputFold<Is>(node, AZStd::forward<ResultType>(tupleResult)), ...);
-            }
-        };
-
-        template<typename ResultType, typename ResultIndexSequence, typename t_Func, t_Func function, typename t_Traits>
-        struct CallHelper
-        {
-            // protect against changes to the function that generated the node
-            template<typename... t_Args, size_t... Indices>
-            static bool IsIndexSafe(Node& node, const AZStd::index_sequence<Indices...>&)
-            {
-                return (true && ... && (node.FindDatumByIndex(Indices) != nullptr && node.FindDatumByIndex(Indices)->GetAs<AZStd::decay_t<t_Args>>() != nullptr));
-            }
-
-            template<typename... t_Args, size_t... ArgIndices>
-            static void Call(Node& node, AZStd::Internal::pack_traits_arg_sequence<t_Args...>, [[maybe_unused]] AZStd::index_sequence<ArgIndices...> sequence)
-            {
-#if !defined(_RELEASE)
-                if (IsIndexSafe<t_Args...>(node, sequence))
-                {
-                    PushOutputHelper<ResultType, t_Traits>::PushOutput(node, AZStd::invoke(function, *node.FindDatumByIndex(ArgIndices)->GetAs<AZStd::decay_t<t_Args>>()...), ResultIndexSequence());
-                }
-                else
-                {
-                    SCRIPTCANVAS_REPORT_ERROR((node), "Generic function Node (%s) could not be executed, due to missing slot for source definition."
-                        "this is likely due to changing the function signature. See serialization log for potential errors & warnings.", node.GetNodeName().c_str());    
-                }
-#else
-                PushOutputHelper<ResultType, t_Traits>::PushOutput(node, AZStd::invoke(function, *node.FindDatumByIndex(ArgIndices)->GetAs<AZStd::decay_t<t_Args>>()...), ResultIndexSequence());
-#endif//!defined(_RELEASE)
-            }
-        };
-
-        template<typename ResultIndexSequence, typename t_Func, t_Func function, typename t_Traits>
-        struct CallHelper<void, ResultIndexSequence, t_Func, function, t_Traits>
-        {
-            // protect against changes to the function that generated the node
-            template<typename... t_Args, size_t... Indices>
-            static bool IsIndexSafe(Node& node, const AZStd::index_sequence<Indices...>&)
-            {
-                return true && (... && (node.FindDatumByIndex(Indices) != nullptr && node.FindDatumByIndex(Indices)->GetAs<AZStd::decay_t<t_Args>>() != nullptr));
-            }
-
-            template<typename... t_Args, size_t... ArgIndices>
-            static void Call(Node& node, AZStd::Internal::pack_traits_arg_sequence<t_Args...>, [[maybe_unused]] AZStd::index_sequence<ArgIndices...> sequence)
-            {
-#if !defined(_RELEASE)
-                if (IsIndexSafe<t_Args...>(node, sequence))
-                {
-                    AZStd::invoke(function, *node.FindDatumByIndex(ArgIndices)->GetAs<AZStd::decay_t<t_Args>>()...);
-                }
-                else
-                {
-                    SCRIPTCANVAS_REPORT_ERROR((node), "Generic function Node (%s) could not be executed, due to missing slot for source definition."
-                        "this is likely due to changing the function signature. See serialization log for potential errors & warnings.", node.GetNodeName().c_str());
-                }
-#else
-                AZStd::invoke(function, *node.FindDatumByIndex(ArgIndices)->GetAs<AZStd::decay_t<t_Args>>()...);
-#endif//!defined(_RELEASE)
-            }
-        };
-
         template<typename t_Func, t_Func function, typename t_Traits, size_t NumOutputs>
         struct MultipleOutputHelper
         {
@@ -1345,11 +1137,6 @@ protected:
             static void Add(Node& node)
             {
                 OutputSlotHelper<ResultType, t_Traits>::AddOutputSlot(node, ResultIndexSequence());
-            }
-
-            static void Call(Node& node)
-            {
-                CallHelper<ResultType, ResultIndexSequence, t_Func, function, t_Traits>::Call(node, typename AZStd::function_traits<t_Func>::arg_sequence{}, AZStd::make_index_sequence<AZStd::function_traits<t_Func>::arity>{});
             }
         };
 
