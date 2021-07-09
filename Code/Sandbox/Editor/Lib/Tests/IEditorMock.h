@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <AzTest/AzTest.h>
@@ -32,7 +27,6 @@ public:
 public:
     MOCK_METHOD0(DeleteThis, void());
     MOCK_METHOD0(GetSystem, ISystem*());
-    MOCK_METHOD0(GetRenderer, IRenderer* ());
     MOCK_METHOD0(GetClassFactory, IEditorClassFactory* ());
     MOCK_METHOD0(GetCommandManager, CEditorCommandManager*());
     MOCK_METHOD0(GetICommandManager, ICommandManager* ());
@@ -103,7 +97,6 @@ public:
     MOCK_METHOD0(GetViewManager, class CViewManager* ());
     MOCK_METHOD0(GetActiveView, class CViewport* ());
     MOCK_METHOD1(SetActiveView, void(CViewport*));
-    MOCK_METHOD0(GetBackgroundTaskManager, struct IBackgroundTaskManager* ());
     MOCK_METHOD0(GetFileMonitor, struct IEditorFileMonitor* ());
     MOCK_METHOD1(RegisterEventLoopHook, void(IEventLoopHook* ));
     MOCK_METHOD1(UnregisterEventLoopHook, void(IEventLoopHook* ));
@@ -117,7 +110,6 @@ public:
     MOCK_METHOD1(SetMarkerPosition, void(const Vec3&));
     MOCK_METHOD1(SetSelectedRegion, void(const AABB& box));
     MOCK_METHOD1(GetSelectedRegion, void(AABB& box));
-    MOCK_METHOD0(GetRuler, CRuler* ());
     MOCK_METHOD1(SetOperationMode, void(EOperationMode ));
     MOCK_METHOD0(GetOperationMode, EOperationMode());
     MOCK_METHOD1(ShowTransformManipulator, ITransformManipulator* (bool));
@@ -140,7 +132,6 @@ public:
     MOCK_METHOD1(OpenWinWidget, QWidget* (WinWidgetId ));
     MOCK_CONST_METHOD0(GetWinWidgetManager, WinWidget::WinWidgetManager* ());
     MOCK_METHOD2(SelectColor, bool(QColor &, QWidget *));
-    MOCK_METHOD0(GetShaderEnum, class CShaderEnum* ());
     MOCK_METHOD0(GetUndoManager, class CUndoManager* ());
     MOCK_METHOD0(BeginUndo, void());
     MOCK_METHOD1(RestoreUndo, void(bool));
@@ -187,7 +178,6 @@ public:
     MOCK_CONST_METHOD0(GetEditorConfigPlatform, ESystemConfigPlatform());
     MOCK_METHOD0(ReloadTemplates, void());
     MOCK_METHOD0(GetResourceSelectorHost, IResourceSelectorHost* ());
-    MOCK_METHOD0(GetBackgroundScheduleManager, struct IBackgroundScheduleManager* ());
     MOCK_METHOD1(ShowStatusText, void(bool ));
     MOCK_METHOD1(RegisterObjectContextMenuExtension, void(TContextMenuExtensionFunc ));
     MOCK_METHOD0(GetEnv, SSystemGlobalEnvironment* ());

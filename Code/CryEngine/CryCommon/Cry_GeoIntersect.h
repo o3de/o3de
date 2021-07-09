@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 // Description : Common intersection-tests
 
@@ -792,7 +787,7 @@ namespace Intersect {
     //--- 0x03 = two intersection, lineseg has ENTRY and EXIT point  --
     //----------------------------------------------------------------------------------
 
-    inline unsigned char Line_Sphere(const Line& line, const Sphere& s, Vec3& i0, Vec3& i1)
+    inline unsigned char Line_Sphere(const Line& line, const ::Sphere& s, Vec3& i0, Vec3& i1)
     {
         Vec3 end = line.pointonline + line.direction;
 
@@ -830,7 +825,7 @@ namespace Intersect {
     //--- 0x03 = two intersection, lineseg has ENTRY and EXIT point  --
     //----------------------------------------------------------------------------------
 
-    inline unsigned char Ray_Sphere(const Ray& ray, const Sphere& s, Vec3& i0, Vec3& i1)
+    inline unsigned char Ray_Sphere(const Ray& ray, const ::Sphere& s, Vec3& i0, Vec3& i1)
     {
         Vec3 end = ray.origin + ray.direction;
         float a = ray.direction | ray.direction;
@@ -863,7 +858,7 @@ namespace Intersect {
         return intersection;
     }
 
-    inline bool Ray_SphereFirst(const Ray& ray, const Sphere& s, Vec3& intPoint)
+    inline bool Ray_SphereFirst(const Ray& ray, const ::Sphere& s, Vec3& intPoint)
     {
         Vec3 p2;
         unsigned char res = Ray_Sphere(ray, s, intPoint, p2);
@@ -886,7 +881,7 @@ namespace Intersect {
     //--- 0x02 = one intersection, lineseg has just an EXIT point but no ENTRY point (ls.start is inside the sphere)  --
     //--- 0x03 = two intersection, lineseg has ENTRY and EXIT point  --
     //----------------------------------------------------------------------------------
-    inline unsigned char Lineseg_Sphere(const Lineseg& ls, const Sphere& s, Vec3& i0, Vec3& i1)
+    inline unsigned char Lineseg_Sphere(const Lineseg& ls, const ::Sphere& s, Vec3& i0, Vec3& i1)
     {
         Vec3 dir = (ls.end - ls.start);
 
@@ -931,7 +926,7 @@ namespace Intersect {
     }
 
 
-    inline bool Lineseg_SphereFirst(const Lineseg& lineseg, const Sphere& s, Vec3& intPoint)
+    inline bool Lineseg_SphereFirst(const Lineseg& lineseg, const ::Sphere& s, Vec3& intPoint)
     {
         Vec3 p2;
         uint8 res = Lineseg_Sphere(lineseg, s, intPoint, p2);

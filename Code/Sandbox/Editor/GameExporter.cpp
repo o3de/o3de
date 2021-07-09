@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #include "EditorDefs.h"
 
@@ -24,7 +19,6 @@
 #include "GameExporter.h"
 #include "GameEngine.h"
 #include "CryEditDoc.h"
-#include "ShaderCache.h"
 #include "UsedResources.h"
 #include "WaitProgress.h"
 #include "Util/CryMemFile.h"
@@ -197,7 +191,6 @@ bool CGameExporter::Export(unsigned int flags, [[maybe_unused]] EEndian eExportE
 
             ExportLevelResourceList(sLevelPath);
             ExportLevelUsedResourceList(sLevelPath);
-            ExportLevelShaderCache(sLevelPath);
 
             //////////////////////////////////////////////////////////////////////////
             // End Exporting Game data.
@@ -295,6 +288,17 @@ void CGameExporter::ExportLevelData(const QString& path, bool /*bExportMission*/
     CCryMemFile fileAction;
     fileAction.Write(xmlDataAction.c_str(), xmlDataAction.length());
     m_levelPak.m_pakFile.UpdateFile(levelDataActionFile.toUtf8().data(), fileAction);
+
+    AZStd::vector<char> entitySaveBuffer;
+    AZ::IO::ByteContainerStream<AZStd::vector<char> > entitySaveStream(&entitySaveBuffer);
+    bool savedEntities = false;
+    EBUS_EVENT_RESULT(savedEntities, AzToolsFramework::EditorEntityContextRequestBus, SaveToStreamForGame, entitySaveStream, AZ::DataStream::ST_BINARY);
+    if (savedEntities)
+    {
+        QString entitiesFile;
+        entitiesFile = QStringLiteral("%1%2.entities_xml").arg(path, "Mission0");
+        m_levelPak.m_pakFile.UpdateFile(entitiesFile.toUtf8().data(), entitySaveBuffer.begin(), entitySaveBuffer.size());
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -366,18 +370,6 @@ void CGameExporter::ExportLevelUsedResourceList(const QString& path)
     QString resFile = Path::Make(path, USED_RESOURCE_LIST_FILE);
 
     m_levelPak.m_pakFile.UpdateFile(resFile.toUtf8().data(), memFile, true);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CGameExporter::ExportLevelShaderCache(const QString& path)
-{
-    QString buf;
-    GetIEditor()->GetDocument()->GetShaderCache()->SaveBuffer(buf);
-    CCryMemFile memFile;
-    memFile.Write(buf.toUtf8().data(), buf.toUtf8().length());
-
-    QString filename = Path::Make(path, SHADER_LIST_FILE);
-    m_levelPak.m_pakFile.UpdateFile(filename.toUtf8().data(), memFile, true);
 }
 
 //////////////////////////////////////////////////////////////////////////

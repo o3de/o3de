@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <AzCore/Script/ScriptContext.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -2048,10 +2043,6 @@ LUA_API const Node* lua_getDummyNode()
 
             return true;
         }
-        else
-        {
-            AZ_Warning("Script", false, "Index %d is not a function!", functionIndex);
-        }
 
         return false;
     }
@@ -2078,7 +2069,6 @@ LUA_API const Node* lua_getDummyNode()
         }
         else
         {
-            AZ_Warning("Script", lua_isnil(m_nativeContext, -1), "Name %s exists but is not a function!", functionName);
             lua_pop(m_nativeContext, 1);
         }
 
@@ -5888,7 +5878,6 @@ LUA_API const Node* lua_getDummyNode()
         else
         {
             lua_pop(m_impl->m_lua, 1);
-            AZ_Warning("Script", false, "%s is not a function!", functionName);
         }
         return false;
     }
@@ -5906,7 +5895,6 @@ LUA_API const Node* lua_getDummyNode()
         else
         {
             lua_pop(m_impl->m_lua, 1);
-            AZ_Warning("Script", false, "CacheIndex %d is not a function!", cachedIndex);
         }
         return false;
     }

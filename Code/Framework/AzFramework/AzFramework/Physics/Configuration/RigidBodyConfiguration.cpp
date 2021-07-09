@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
 
@@ -99,6 +94,11 @@ namespace AzPhysics
                 classElement.RemoveElementByName(AZ_CRC_CE("Property Visibility Flags"));
             }
 
+            if (classElement.GetVersion() <= 4)
+            {
+                classElement.RemoveElementByName(AZ_CRC_CE("Simulated"));
+            }
+
             return true;
         }
     }
@@ -110,7 +110,7 @@ namespace AzPhysics
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<RigidBodyConfiguration, AzPhysics::SimulatedBodyConfiguration>()
-                ->Version(4, &Internal::RigidBodyVersionConverter)
+                ->Version(5, &Internal::RigidBodyVersionConverter)
                 ->Field("Initial linear velocity", &RigidBodyConfiguration::m_initialLinearVelocity)
                 ->Field("Initial angular velocity", &RigidBodyConfiguration::m_initialAngularVelocity)
                 ->Field("Linear damping", &RigidBodyConfiguration::m_linearDamping)
@@ -119,7 +119,6 @@ namespace AzPhysics
                 ->Field("Start Asleep", &RigidBodyConfiguration::m_startAsleep)
                 ->Field("Interpolate Motion", &RigidBodyConfiguration::m_interpolateMotion)
                 ->Field("Gravity Enabled", &RigidBodyConfiguration::m_gravityEnabled)
-                ->Field("Simulated", &RigidBodyConfiguration::m_simulated)
                 ->Field("Kinematic", &RigidBodyConfiguration::m_kinematic)
                 ->Field("CCD Enabled", &RigidBodyConfiguration::m_ccdEnabled)
                 ->Field("Compute Mass", &RigidBodyConfiguration::m_computeMass)

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Math/Transform.h>
@@ -72,7 +67,7 @@ namespace UnitTest
     TEST_F(ViewportUiDisplayTestFixture, RemoveViewportUiElementRemovesElementFromViewportUi)
     {
         ViewportUiDisplay viewportUi(m_parentWidget, m_mockRenderOverlay);
-        viewportUi.AddCluster(m_buttonGroup);
+        viewportUi.AddCluster(m_buttonGroup, AzToolsFramework::ViewportUi::Alignment::TopLeft);
         auto widget = viewportUi.GetViewportUiElement(m_buttonGroup->GetViewportUiElementId());
 
         EXPECT_TRUE(widget.get() != nullptr);
@@ -89,7 +84,7 @@ namespace UnitTest
 
         ViewportUiDisplay viewportUi(m_parentWidget, m_mockRenderOverlay);
         viewportUi.InitializeUiOverlay();
-        viewportUi.AddCluster(m_buttonGroup);
+        viewportUi.AddCluster(m_buttonGroup, AzToolsFramework::ViewportUi::Alignment::TopLeft);
         viewportUi.Update();
         viewportUi.ShowViewportUiElement(m_buttonGroup->GetViewportUiElementId());
 
@@ -102,7 +97,7 @@ namespace UnitTest
 
         ViewportUiDisplay viewportUi(m_parentWidget, m_mockRenderOverlay);
         viewportUi.InitializeUiOverlay();
-        viewportUi.AddCluster(m_buttonGroup);
+        viewportUi.AddCluster(m_buttonGroup, AzToolsFramework::ViewportUi::Alignment::TopLeft);
         viewportUi.HideViewportUiElement(m_buttonGroup->GetViewportUiElementId());
 
         EXPECT_FALSE(viewportUi.IsViewportUiElementVisible(m_buttonGroup->GetViewportUiElementId()));
@@ -112,7 +107,7 @@ namespace UnitTest
     {
         ViewportUiDisplay viewportUi(m_parentWidget, m_mockRenderOverlay);
         viewportUi.InitializeUiOverlay();
-        viewportUi.AddCluster(m_buttonGroup);
+        viewportUi.AddCluster(m_buttonGroup, AzToolsFramework::ViewportUi::Alignment::TopLeft);
 
         viewportUi.Update();
         auto widget = viewportUi.GetViewportUiElement(m_buttonGroup->GetViewportUiElementId());
@@ -129,7 +124,7 @@ namespace UnitTest
 
         auto buttonGroup = AZStd::make_shared<ButtonGroup>();
         buttonGroup->AddButton("");
-        viewportUi.AddCluster(buttonGroup);
+        viewportUi.AddCluster(buttonGroup, AzToolsFramework::ViewportUi::Alignment::TopLeft);
         viewportUi.Update();
 
         EXPECT_TRUE(viewportUi.GetUiMainWindow()->isVisible());

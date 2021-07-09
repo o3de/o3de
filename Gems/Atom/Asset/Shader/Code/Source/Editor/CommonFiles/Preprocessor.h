@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright(c) Amazon.com, Inc.or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution(the "License").All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file.Do not
-* remove or modify any license notices.This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -47,8 +42,12 @@ namespace AZ
             //! folders are relative to the dev folder of the project
             AZStd::vector<AZStd::string> m_projectIncludePaths;
 
-            //! passed as -D macro1[=value1] -D macro2 ...
+            //! Each string is of the type "name[=value]"
+            //! passed as -Dmacro1[=value1] -Dmacro2 ... to MCPP.
             AZStd::vector<AZStd::string> m_predefinedMacros;
+
+            //! Removes all macros from @m_predefinedMacros that appear in @macroNames
+            void RemovePredefinedMacros(const AZStd::vector<AZStd::string>& macroNames);
 
             //! if needed, we may add configurations like
             //!   "keep comments" or "don't predefine non-standard macros"
@@ -59,7 +58,10 @@ namespace AZ
         //! It will populate your option with a default base of include folders given by the Asset Processor scan folders.
         //! This is going to look for a Config/shader_global_build_options.json in one of the scan folders
         //!  (that file can specify additional include files and preprocessor macros).
-        void InitializePreprocessorOptions(PreprocessorOptions& options, const char* builderName);
+        //! @param options: Outout parameter, will contain the preprocessor options.
+        //! @param builderName: Used for debugging.
+        //! @param optionalIncludeFolder: If not null, will be added to the list of include folders for the c-preprocessor in @options.
+        void InitializePreprocessorOptions(PreprocessorOptions& options, const char* builderName, const char* optionalIncludeFolder = nullptr);
 
         /**
         * Runs the preprocessor on the given source file path, and stores results in outputData.

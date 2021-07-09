@@ -1,19 +1,15 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzToolsFramework/Prefab/Instance/TemplateInstanceMapper.h>
 
 #include <AzCore/Interface/Interface.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutorInterface.h>
 
 namespace AzToolsFramework
 {
@@ -71,6 +67,12 @@ namespace AzToolsFramework
 
         bool TemplateInstanceMapper::UnregisterInstance(Instance& instance)
         {
+            // The InstanceUpdateExecutor queries the TemplateInstanceMapper for a list of instances related to a template.
+            // Consequently, if an instance gets unregistered for a template, we need to notify the InstanceUpdateExecutor as well
+            // so that it clears any internal associations that it might have in its queue.
+            AZ_Assert(AZ::Interface<InstanceUpdateExecutorInterface>::Get() != nullptr, "InstanceUpdateExecutor doesn't exist");
+            AZ::Interface<InstanceUpdateExecutorInterface>::Get()->RemoveTemplateInstanceFromQueue(&instance);
+
             auto found = m_templateIdToInstancesMap.find(instance.GetTemplateId());
             return found != m_templateIdToInstancesMap.end() &&
                 found->second.erase(&instance) != 0;

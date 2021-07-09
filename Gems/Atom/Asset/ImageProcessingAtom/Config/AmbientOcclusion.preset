@@ -17,7 +17,7 @@
             "PixelFormat": "BC4"
         },
         "PlatformsPresets": {
-            "es3": {
+            "android": {
                 "UUID": "{02ED0ECE-B198-49D9-85BC-CEBA6C28546C}",
                 "Name": "AmbientOcclusion",
                 "SourceColor": "Linear",
@@ -43,7 +43,7 @@
                 ],
                 "PixelFormat": "EAC_R11"
             },
-            "osx_gl": {
+            "mac": {
                 "UUID": "{02ED0ECE-B198-49D9-85BC-CEBA6C28546C}",
                 "Name": "AmbientOcclusion",
                 "SourceColor": "Linear",

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -23,7 +18,9 @@ namespace AZ
         {
         public:
 
-            void TrackAssetLoad(const FeatureProcessorHandle handle, const AZ::Data::AssetId asset)
+            using MaterialAssetPtr = AZ::Data::Asset<AZ::RPI::MaterialAsset>;
+
+            void TrackAssetLoad(const FeatureProcessorHandle handle, const MaterialAssetPtr asset)
             {
                 if (IsAssetLoading(handle))
                 {
@@ -77,12 +74,12 @@ namespace AZ
             {
                 const auto asset = EraseFromInFlightHandles(handle);
 
-                AZ_Assert(m_inFlightHandlesByAsset.count(asset) > 0, "AsyncLoadTracker in a bad state");
-                auto& handleList = m_inFlightHandlesByAsset[asset];
+                AZ_Assert(m_inFlightHandlesByAsset.count(asset.GetId()) > 0, "AsyncLoadTracker in a bad state");
+                auto& handleList = m_inFlightHandlesByAsset[asset.GetId()];
                 EraseFromVector(handleList, handle);
                 if (handleList.empty())
                 {
-                    m_inFlightHandlesByAsset.erase(asset);
+                    m_inFlightHandlesByAsset.erase(asset.GetId());
                 }
             }
 
@@ -104,14 +101,14 @@ namespace AZ
                 vec.pop_back();
             }
 
-            void Add(const FeatureProcessorHandle handle, const AZ::Data::AssetId asset)
+            void Add(const FeatureProcessorHandle handle, const MaterialAssetPtr asset)
             {
                 AZ_Assert(m_inFlightHandles.count(handle) == 0, "AsyncLoadTracker::Add() - told to add a handle that was already being tracked.");
-                m_inFlightHandlesByAsset[asset].push_back(handle);
+                m_inFlightHandlesByAsset[asset.GetId()].push_back(handle);
                 m_inFlightHandles[handle] = asset;
             }
 
-            AZ::Data::AssetId EraseFromInFlightHandles(const FeatureProcessorHandle handle)
+            MaterialAssetPtr EraseFromInFlightHandles(const FeatureProcessorHandle handle)
             {
                 const auto iter = m_inFlightHandles.find(handle);
                 AZ_Assert(iter != m_inFlightHandles.end(), "Told to remove handle that was not present");
@@ -125,7 +122,7 @@ namespace AZ
 
             // Hash table that tracks the reverse of the m_inFlightHandlesByAsset hash table.
             // i.e. for each object, it stores what asset that it needs.
-            AZStd::unordered_map<FeatureProcessorHandle, AZ::Data::AssetId> m_inFlightHandles;
+            AZStd::unordered_map<FeatureProcessorHandle, MaterialAssetPtr> m_inFlightHandles;
         };
     }
 }

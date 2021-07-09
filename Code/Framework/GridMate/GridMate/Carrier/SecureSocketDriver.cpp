@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/PlatformDef.h>
 #include <AzCore/Casting/numeric_cast.h>
@@ -1486,7 +1481,7 @@ namespace GridMate
 
         // Only support a single cipher suite in OpenSSL that supports:
         //
-        //  ECDHE       Master key exchange using ephemeral elliptic curve diffie-hellman.
+        //  ECDHE       Key exchange using ephemeral elliptic curve diffie-hellman.
         //  RSA         Authentication (public and private key) used to sign ECDHE parameters and can be checked against a CA.
         //  AES256      AES cipher for symmetric key encryption using a 256-bit key.
         //  GCM         Mode of operation for symmetric key encryption.

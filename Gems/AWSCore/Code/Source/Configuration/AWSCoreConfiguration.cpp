@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -56,6 +51,19 @@ namespace AWSCore
             m_sourceProjectFolder.c_str(), AWSCoreResourceMappingConfigFolderName, m_resourceMappingConfigFileName.c_str());
         AzFramework::StringFunc::Path::Normalize(configFilePath);
         return configFilePath;
+    }
+
+    AZStd::string AWSCoreConfiguration::GetResourceMappingConfigFolderPath() const
+    {
+        if (m_sourceProjectFolder.empty())
+        {
+            AZ_Warning(AWSCoreConfigurationName, false, ProjectSourceFolderNotFoundErrorMessage);
+            return "";
+        }
+        AZStd::string configFolderPath = AZStd::string::format(
+            "%s/%s", m_sourceProjectFolder.c_str(), AWSCoreResourceMappingConfigFolderName);
+        AzFramework::StringFunc::Path::Normalize(configFolderPath);
+        return configFolderPath;
     }
 
     void AWSCoreConfiguration::InitConfig()
@@ -123,7 +131,7 @@ namespace AWSCore
         auto profileNamePath = AZStd::string::format("%s%s",
             AZ::SettingsRegistryMergeUtils::OrganizationRootKey, AWSCoreProfileNameKey);
         m_settingsRegistry.Remove(profileNamePath);
-        m_profileName.clear();
+        m_profileName = AWSCoreDefaultProfileName;
 
         auto resourceMappingConfigFileNamePath = AZStd::string::format("%s%s",
             AZ::SettingsRegistryMergeUtils::OrganizationRootKey, AWSCoreResourceMappingConfigFileNameKey);

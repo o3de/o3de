@@ -1,18 +1,14 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates, or
-* a third party where indicated.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <AzCore/RTTI/RTTI.h>
 #include <AzFramework/Physics/Configuration/CollisionConfiguration.h>
+#include <AzFramework/Physics/Material.h>
 
 namespace AZ
 {
@@ -34,7 +30,7 @@ namespace AzPhysics
 
         static constexpr float DefaultFixedTimestep = 0.0166667f; //! Value represents 1/60th or 60 FPS.
 
-        float m_maxTimestep = 1.f / 20.f; //!< Maximum fixed timestep in seconds to run the physics update.
+        float m_maxTimestep = 0.1f; //!< Maximum fixed timestep in seconds to run the physics update (10FPS).
         float m_fixedTimestep = DefaultFixedTimestep; //!< Timestep in seconds to run the physics update. See DefaultFixedTimestep.
 
         AZ::u64 m_raycastBufferSize = 32; //!< Maximum number of hits that will be returned from a raycast.
@@ -44,6 +40,9 @@ namespace AzPhysics
         //! Contains the default global collision layers and groups.
         //! Each Physics Scene uses this as a base and will override as needed.
         CollisionConfiguration m_collisionConfig;
+
+        Physics::DefaultMaterialConfiguration m_defaultMaterialConfiguration; //!< Default material parameters for the project.
+        AZ::Data::Asset<Physics::MaterialLibraryAsset> m_materialLibraryAsset = AZ::Data::AssetLoadBehavior::NoLoad; //!< Material Library exposed by the system component SystemBus API.
 
         //! Controls whether the Physics System will self register to the TickBus and call StartSimulation / FinishSimulation on each Scene.
         //! Disable this to manually control Physics Scene simulation logic.

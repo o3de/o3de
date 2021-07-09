@@ -1,0 +1,59 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+#pragma once
+
+#if !defined(Q_MOC_RUN)
+#include <ScreenDefs.h>
+#include <ProjectInfo.h>
+
+#include <QStackedWidget>
+#include <QStack>
+#endif
+
+QT_FORWARD_DECLARE_CLASS(QTabWidget)
+
+namespace O3DE::ProjectManager
+{
+    class ScreenWidget;
+
+    class ScreensCtrl
+        : public QWidget
+    {
+        Q_OBJECT
+
+    public:
+        explicit ScreensCtrl(QWidget* parent = nullptr);
+        ~ScreensCtrl() = default;
+
+        void BuildScreens(QVector<ProjectManagerScreen> screens);
+        ScreenWidget* FindScreen(ProjectManagerScreen screen);
+        ScreenWidget* GetCurrentScreen();
+
+    signals:
+        void NotifyCurrentProject(const QString& projectPath);
+        void NotifyBuildProject(const ProjectInfo& projectInfo);
+
+    public slots:
+        bool ChangeToScreen(ProjectManagerScreen screen);
+        bool ForceChangeToScreen(ProjectManagerScreen screen, bool addVisit = true);
+        bool GotoPreviousScreen();
+        void ResetScreen(ProjectManagerScreen screen);
+        void ResetAllScreens();
+        void DeleteScreen(ProjectManagerScreen screen);
+        void DeleteAllScreens();
+        void TabChanged(int index);
+
+    private:
+        int GetScreenTabIndex(ProjectManagerScreen screen);
+
+        QStackedWidget* m_screenStack;
+        QHash<ProjectManagerScreen, ScreenWidget*> m_screenMap;
+        QStack<ProjectManagerScreen> m_screenVisitOrder;
+        QTabWidget* m_tabWidget;
+    };
+
+} // namespace O3DE::ProjectManager

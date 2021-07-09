@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <AzCore/std/containers/vector.h>
@@ -97,18 +92,30 @@ namespace AZ
             virtual ~RayTracingShaderTable() = default;
 
             static RHI::Ptr<RHI::RayTracingShaderTable> CreateRHIRayTracingShaderTable();
+            void Init(Device& device, const RayTracingBufferPools& rayTracingBufferPools);
 
-            ResultCode Init(Device& device, const RayTracingShaderTableDescriptor* descriptor, const RayTracingBufferPools& rayTracingBufferPools);
+            //! Queues this RayTracingShaderTable to be built by the FrameScheduler.
+            //! Note that the descriptor must be heap allocated, preferably using make_shared.
+            void Build(const AZStd::shared_ptr<RayTracingShaderTableDescriptor> descriptor);
+
+        protected:
+
+            AZStd::shared_ptr<RayTracingShaderTableDescriptor> m_descriptor;
+            const RayTracingBufferPools* m_bufferPools = nullptr;
 
         private:
 
-            // explicit shutdown is not allowed for this type
-            void Shutdown() override final;
+            friend class FrameScheduler;
+
+            /// Called by the FrameScheduler to validate the state prior to building
+            void Validate();
 
             //////////////////////////////////////////////////////////////////////////
             // Platform API
-            virtual RHI::ResultCode InitInternal(RHI::Device& deviceBase, const RHI::RayTracingShaderTableDescriptor* descriptor, const RayTracingBufferPools& bufferPools) = 0;
+            virtual RHI::ResultCode BuildInternal() = 0;
             //////////////////////////////////////////////////////////////////////////
+
+            bool m_isQueuedForBuild = false;
         };
     }
 }

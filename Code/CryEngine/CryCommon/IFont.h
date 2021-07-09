@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 // Description : CryFont interface.
 
@@ -32,8 +27,6 @@ class ICrySizer;
 struct ICryFont;
 struct IFFont;
 struct FontFamily;
-
-struct IRenderer;
 
 struct SVF_P2F_C4B_T2F_F4B;
 
@@ -101,9 +94,6 @@ struct ICryFont
     virtual void AddCharsToFontTextures(FontFamilyPtr pFontFamily, const char* pChars, int glyphSizeX = defaultGlyphSizeX, int glyphSizeY = defaultGlyphSizeY) = 0;
 
     // Summary:
-    //   Globally sets common font render properties based on the initialized renderer
-    virtual void SetRendererProperties(IRenderer* pRenderer) = 0;
-    // Summary:
     //   Puts the objects used in this module into the sizer interface
     virtual void GetMemoryUsage(ICrySizer* pSizer) const = 0;
     // Summary:
@@ -150,6 +140,7 @@ struct STextDrawContext
     Vec2 m_size;
     Vec2i m_requestSize;
     float m_widthScale;
+    float m_lineSpacing;
 
     float m_clipX;
     float m_clipY;
@@ -180,6 +171,7 @@ struct STextDrawContext
         , m_size(16.0f, 16.0f)
         , m_requestSize(static_cast<int32>(m_size.x), static_cast<int32>(m_size.y))
         , m_widthScale(1.0f)
+        , m_lineSpacing(0.f)
         , m_clipX(0)
         , m_clipY(0)
         , m_clipWidth(0)
@@ -214,11 +206,13 @@ struct STextDrawContext
     void SetTransform(const Matrix34& transform) { m_transform = transform; }
     void SetBaseState(int baseState) { m_baseState = baseState; }
     void SetOverrideViewProjMatrices(bool overrideViewProjMatrices) { m_overrideViewProjMatrices = overrideViewProjMatrices; }
+    void SetLineSpacing(float lineSpacing) { m_lineSpacing = lineSpacing; }
 
     float GetCharWidth() const { return m_size.x; }
     float GetCharHeight() const { return m_size.y; }
     float GetCharWidthScale() const { return m_widthScale; }
     int GetFlags() const { return m_drawTextFlags; }
+    float GetLineSpacing() const { return m_lineSpacing; }
 
     bool IsColorOverridden() const { return m_colorOverride.a != 0; }
 };

@@ -1,15 +1,11 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
+#include <cinttypes>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <MCore/Source/ReflectionSerializer.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
@@ -251,7 +247,7 @@ namespace EMotionFX
             return false;
         }
 
-        Physics::ShapeConfigurationPair newCollider;
+        AzPhysics::ShapeColliderPair newCollider;
 
         // Either in case the contents got specified via a command parameter or in case of redo.
         if (m_contents)
@@ -263,7 +259,7 @@ namespace EMotionFX
         else if (m_colliderType)
         {
             // Create new collider.
-            AZ::Outcome<Physics::ShapeConfigurationPair> colliderOutcome = PhysicsSetup::CreateColliderByType(m_colliderType.value(), outResult);
+            AZ::Outcome<AzPhysics::ShapeColliderPair> colliderOutcome = PhysicsSetup::CreateColliderByType(m_colliderType.value(), outResult);
             if (!colliderOutcome.IsSuccess())
             {
                 return false;
@@ -367,7 +363,7 @@ namespace EMotionFX
             return false;
         }
 
-        const Physics::ShapeConfigurationPair& collider = nodeConfig->m_shapes[m_oldColliderIndex.value()];
+        const AzPhysics::ShapeColliderPair& collider = nodeConfig->m_shapes[m_oldColliderIndex.value()];
         m_contents = MCore::ReflectionSerializer::Serialize(&collider).GetValue();
 
         CommandColliderHelpers::RemoveCollider(m_actorId, m_jointName, m_configType, m_oldColliderIndex.value(), /*commandGroup*/ nullptr, true);
@@ -472,7 +468,7 @@ namespace EMotionFX
         AZ_UNUSED(parameters);
 
         Actor* actor = nullptr;
-        Physics::ShapeConfigurationPair* shapeConfigPair = GetShapeConfigPair(&actor, outResult);
+        AzPhysics::ShapeColliderPair* shapeConfigPair = GetShapeConfigPair(&actor, outResult);
         if (!shapeConfigPair)
         {
             return false;
@@ -524,7 +520,7 @@ namespace EMotionFX
         AZ_UNUSED(parameters);
 
         Actor* actor = nullptr;
-        Physics::ShapeConfigurationPair* shapeConfigPair = GetShapeConfigPair(&actor, outResult);
+        AzPhysics::ShapeColliderPair* shapeConfigPair = GetShapeConfigPair(&actor, outResult);
         if (!shapeConfigPair)
         {
             return false;
@@ -606,7 +602,7 @@ namespace EMotionFX
         return true;
     }
 
-    Physics::ShapeConfigurationPair* CommandAdjustCollider::GetShapeConfigPair(Actor** outActor, AZStd::string& outResult) const
+    AzPhysics::ShapeColliderPair* CommandAdjustCollider::GetShapeConfigPair(Actor** outActor, AZStd::string& outResult) const
     {
         Actor* actor = GetActor(this, outResult);
         if (!actor)
@@ -647,7 +643,7 @@ namespace EMotionFX
             return nullptr;
         }
 
-        Physics::ShapeConfigurationPair& shapeConfigPair = nodeConfig->m_shapes[m_index.value()];
+        AzPhysics::ShapeColliderPair& shapeConfigPair = nodeConfig->m_shapes[m_index.value()];
         return &shapeConfigPair;
     }
 
@@ -717,7 +713,7 @@ namespace EMotionFX
         const size_t shapeCount = nodeConfig->m_shapes.size();
         if (m_colliderIndex >= shapeCount)
         {
-            outResult = AZStd::string::format("Cannot remove collider. The joint '%s' is only holding %zu colliders and the index %zu is out of range.", m_jointName.c_str(), shapeCount, m_colliderIndex);
+            outResult = AZStd::string::format("Cannot remove collider. The joint '%s' is only holding %zu colliders and the index %llu is out of range.", m_jointName.c_str(), shapeCount, m_colliderIndex);
             return false;
         }
 

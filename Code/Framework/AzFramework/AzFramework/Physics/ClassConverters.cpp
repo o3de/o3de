@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzFramework/Physics/ClassConverters.h>
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
@@ -57,7 +52,7 @@ namespace Physics
                     classElement.RemoveElement(shapesIndex);
 
                     // add a new vector in the new format
-                    const int newShapesIndex = classElement.AddElement<ShapeConfigurationList>(context, "shapes");
+                    const int newShapesIndex = classElement.AddElement<AzPhysics::ShapeColliderPairList>(context, "shapes");
                     if (newShapesIndex != -1)
                     {
                         AZ::SerializeContext::DataElementNode& newShapesElement = classElement.GetSubElement(newShapesIndex);
@@ -65,7 +60,9 @@ namespace Physics
                         // convert the old shapes into the new format and add to the vector
                         for (AZ::SerializeContext::DataElementNode shape : shapesCopy)
                         {
-                            const int pairIndex = newShapesElement.AddElementWithData<ShapeConfigurationPair>(context, "element", ShapeConfigurationPair());
+                            const int pairIndex = newShapesElement.AddElementWithData<AzPhysics::ShapeColliderPair>(
+                                context, "element", AzPhysics::ShapeColliderPair());
+
                             AZ::SerializeContext::DataElementNode& pairElement = newShapesElement.GetSubElement(pairIndex);
 
                             ColliderConfiguration colliderConfig;
@@ -131,8 +128,8 @@ namespace Physics
                             AZ::SerializeContext::DataElementNode* baseBaseClass1 = baseClass1->FindSubElement(AZ_CRC("BaseClass1", 0xd4925735));
                             if (baseBaseClass1 && baseBaseClass1->FindSubElementAndGetData<AZStd::string>(AZ_CRC("name", 0x5e237e06), name))
                             {
-                                ShapeConfigurationList shapes;
-                                if (nodeElement.FindSubElementAndGetData<ShapeConfigurationList>(AZ_CRC("shapes", 0x93dba512), shapes))
+                                AzPhysics::ShapeColliderPairList shapes;
+                                if (nodeElement.FindSubElementAndGetData<AzPhysics::ShapeColliderPairList>(AZ_CRC("shapes", 0x93dba512), shapes))
                                 {
                                     CharacterColliderNodeConfiguration newColliderNodeConfig;
                                     newColliderNodeConfig.m_name = name;
@@ -257,9 +254,16 @@ namespace Physics
 
                 if (success)
                 {
-                    success = success && dataElement.RemoveElementByName(AZ_CRC("MaterialId", 0x9360e002));
+                    dataElement.RemoveElementByName(AZ_CRC("MaterialId", 0x9360e002));
+                    success = success && (dataElement.FindElement(AZ_CRC("MaterialId", 0x9360e002)) < 0);
                     success = success && dataElement.AddElementWithData(context, "MaterialIds", AZStd::vector<Physics::MaterialId> { materialId });
                 }
+            }
+
+            if (success && dataElement.GetVersion() <= 2)
+            {
+                dataElement.RemoveElementByName(AZ_CRC_CE("Material"));
+                success = success && (dataElement.FindElement(AZ_CRC_CE("Material")) < 0);
             }
 
             return success;

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 
 #include "Utils.h"
@@ -34,6 +29,7 @@
 #include <AzFramework/Physics/Configuration/SceneConfiguration.h>
 #include <AzFramework/Physics/Configuration/SimulatedBodyConfiguration.h>
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
+#include <AzFramework/Physics/Common/PhysicsJoint.h>
 
 namespace Physics
 {
@@ -118,12 +114,12 @@ namespace Physics
             AzPhysics::TriggerEvent::Reflect(context);
             AzPhysics::SceneConfiguration::Reflect(context);
             MaterialConfiguration::Reflect(context);
+            DefaultMaterialConfiguration::Reflect(context);
             MaterialLibraryAsset::Reflect(context);
-            MaterialLibraryAssetReflectionWrapper::Reflect(context);
-            DefaultMaterialLibraryAssetReflectionWrapper::Reflect(context);
-            JointLimitConfiguration::Reflect(context);
+            MaterialInfoReflectionWrapper::Reflect(context);
             AzPhysics::SimulatedBodyConfiguration::Reflect(context);
             AzPhysics::RigidBodyConfiguration::Reflect(context);
+            AzPhysics::JointConfiguration::Reflect(context);
             RagdollNodeConfiguration::Reflect(context);
             RagdollConfiguration::Reflect(context);
             CharacterColliderNodeConfiguration::Reflect(context);
@@ -131,6 +127,7 @@ namespace Physics
             AnimationConfiguration::Reflect(context);
             CharacterConfiguration::Reflect(context);
             AzPhysics::SimulatedBody::Reflect(context);
+            AzPhysics::Joint::Reflect(context);
             ReflectSimulatedBodyComponentRequestsBus(context);
             CollisionFilteringRequests::Reflect(context);
             AzPhysics::SceneQuery::ReflectSceneQueryObjects(context);

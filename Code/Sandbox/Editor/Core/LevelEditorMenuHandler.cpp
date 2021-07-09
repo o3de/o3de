@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "EditorDefs.h"
 
@@ -421,17 +416,18 @@ QMenu* LevelEditorMenuHandler::CreateFileMenu()
     fileMenu.AddSeparator();
 
     // Project Settings
-    auto projectSettingMenu = fileMenu.AddMenu(tr("Project Settings"));
+    fileMenu.AddAction(ID_FILE_PROJECT_MANAGER_SETTINGS);
 
-    // Project Settings Tool
+    // Platform Settings - Project Settings Tool
     // Shortcut must be set while adding the action otherwise it doesn't work
-    projectSettingMenu.Get()->addAction(
+    fileMenu.Get()->addAction(
         tr(LyViewPane::ProjectSettingsTool),
         []() { QtViewPaneManager::instance()->OpenPane(LyViewPane::ProjectSettingsTool); },
         tr("Ctrl+Shift+P"));
 
-    projectSettingMenu.AddSeparator();
-
+    fileMenu.AddSeparator();
+    fileMenu.AddAction(ID_FILE_PROJECT_MANAGER_NEW);
+    fileMenu.AddAction(ID_FILE_PROJECT_MANAGER_OPEN);
     fileMenu.AddSeparator();
 
     // NEWMENUS: NEEDS IMPLEMENTATION
@@ -472,18 +468,8 @@ void LevelEditorMenuHandler::PopulateEditMenu(ActionManager::MenuWrapper& editMe
     // editMenu->addAction(ID_EDIT_PASTE);
     // editMenu.AddSeparator();
 
-    bool isPrefabSystemEnabled = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
-    bool prefabWipFeaturesEnabled = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
-
-    if (!isPrefabSystemEnabled || (isPrefabSystemEnabled && prefabWipFeaturesEnabled))
-    {
-        // Duplicate
-        editMenu.AddAction(ID_EDIT_CLONE);
-    }
+    // Duplicate
+    editMenu.AddAction(ID_EDIT_CLONE);
 
     // Delete
     editMenu.AddAction(ID_EDIT_DELETE);
@@ -514,7 +500,7 @@ void LevelEditorMenuHandler::PopulateEditMenu(ActionManager::MenuWrapper& editMe
     /*
      * The following block of code is part of the feature "Isolation Mode" and is temporarily
      * disabled for 1.10 release.
-     * Jira: https://jira.agscollab.com/browse/LY-49532
+     * Jira: LY-49532
 
     // Isolate Selected
     QAction* isolateSelectedAction = editMenu->addAction(tr("Isolate Selected"));
@@ -724,13 +710,10 @@ QMenu* LevelEditorMenuHandler::CreateViewMenu()
         {
             return view.IsViewportPane();
         });
+
+    viewportViewsMenuWrapper.AddSeparator();
+
 #endif
-
-    viewportViewsMenuWrapper.AddAction(ID_WIREFRAME);
-    viewportViewsMenuWrapper.AddSeparator();
-
-    viewportViewsMenuWrapper.AddAction(ID_VIEW_GRIDSETTINGS);
-    viewportViewsMenuWrapper.AddSeparator();
 
     if (CViewManager::IsMultiViewportEnabled())
     {
@@ -771,11 +754,6 @@ QMenu* LevelEditorMenuHandler::CreateViewMenu()
 
     viewportViewsMenuWrapper.AddSeparator();
 
-    auto changeMoveSpeedMenu = viewportViewsMenuWrapper.AddMenu(tr("Change Move Speed"));
-    changeMoveSpeedMenu.AddAction(ID_CHANGEMOVESPEED_INCREASE);
-    changeMoveSpeedMenu.AddAction(ID_CHANGEMOVESPEED_DECREASE);
-    changeMoveSpeedMenu.AddAction(ID_CHANGEMOVESPEED_CHANGESTEP);
-
     auto switchCameraMenu = viewportViewsMenuWrapper.AddMenu(tr("Switch Camera"));
     switchCameraMenu.AddAction(ID_SWITCHCAMERA_DEFAULTCAMERA);
     switchCameraMenu.AddAction(ID_SWITCHCAMERA_SEQUENCECAMERA);
@@ -815,7 +793,7 @@ QMenu* LevelEditorMenuHandler::CreateHelpMenu()
             auto text = lineEdit->text();
             if (text.isEmpty())
             {
-                QDesktopServices::openUrl(QUrl("https://aws.amazon.com/documentation/lumberyard/"));
+                QDesktopServices::openUrl(QUrl("https://o3de.org/docs/"));
             }
             else
             {
@@ -824,17 +802,10 @@ QMenu* LevelEditorMenuHandler::CreateHelpMenu()
                 const SFileVersion& productVersion = gEnv->pSystem->GetProductVersion();
                 productVersion.ToString(productVersionString, versionStringSize);
 
-                QUrl docSearchUrl("https://docs.aws.amazon.com/search/doc-search.html");
+                QUrl docSearchUrl("https://o3de.org/docs/");
                 QUrlQuery docSearchQuery;
-                QString o3deProductString = QUrl::toPercentEncoding("Open 3D Engine");
-                // The order of these QueryItems matters. wiki Search URL Formatting
-                docSearchQuery.addQueryItem("searchPath", "documentation-product");
-                docSearchQuery.addQueryItem("searchQuery", text);
-                docSearchQuery.addQueryItem("this_doc_product", o3deProductString);
-                docSearchQuery.addQueryItem("ref", "lye");
-                docSearchQuery.addQueryItem("ev", productVersionString);
+                docSearchQuery.addQueryItem("query", text);
                 docSearchUrl.setQuery(docSearchQuery);
-                docSearchUrl.setFragment(QString("facet_doc_product=%1").arg(o3deProductString));
                 QDesktopServices::openUrl(docSearchUrl);
             }
             lineEdit->clear();
@@ -844,17 +815,11 @@ QMenu* LevelEditorMenuHandler::CreateHelpMenu()
     connect(helpMenu.Get(), &QMenu::aboutToShow, lineEdit, &QLineEdit::clearFocus);
     helpMenu->addAction(lineEditSearchAction);
 
-    // Getting Started
-    helpMenu.AddAction(ID_DOCUMENTATION_GETTINGSTARTEDGUIDE);
-
     // Tutorials
     helpMenu.AddAction(ID_DOCUMENTATION_TUTORIALS);
 
     // Documentation
     auto documentationMenu = helpMenu.AddMenu(tr("Documentation"));
-
-    // Glossary
-    documentationMenu.AddAction(ID_DOCUMENTATION_GLOSSARY);
 
     // Open 3D Engine Documentation
     documentationMenu.AddAction(ID_DOCUMENTATION_O3DE);
@@ -871,9 +836,6 @@ QMenu* LevelEditorMenuHandler::CreateHelpMenu()
     // Game Dev Blog
     gameDevResourceMenu.AddAction(ID_DOCUMENTATION_GAMEDEVBLOG);
 
-    // GameDev Twitch Channel
-    gameDevResourceMenu.AddAction(ID_DOCUMENTATION_TWITCHCHANNEL);
-
     // Forums
     gameDevResourceMenu.AddAction(ID_DOCUMENTATION_FORUMS);
 
@@ -881,12 +843,6 @@ QMenu* LevelEditorMenuHandler::CreateHelpMenu()
     gameDevResourceMenu.AddAction(ID_DOCUMENTATION_AWSSUPPORT);
 
     helpMenu.AddSeparator();
-
-    // Give Us Feedback
-    helpMenu.AddAction(ID_DOCUMENTATION_FEEDBACK);
-
-    // Report a Bug???
-    // auto reportBugMenu = helpMenu.Get()->addAction(tr("Report a Bug"));
 
     // About Open 3D Engine
     helpMenu.AddAction(ID_APP_ABOUT);
@@ -914,6 +870,12 @@ QAction* LevelEditorMenuHandler::CreateViewPaneAction(const QtViewPane* view)
         action = new QAction(menuText, this);
         action->setObjectName(view->m_name);
         action->setCheckable(true);
+
+        if (view->m_options.showOnToolsToolbar)
+        {
+            action->setIcon(QIcon(view->m_options.toolbarIcon));
+        }
+
         m_actionManager->AddAction(view->m_id, action);
 
         if (!view->m_options.shortcut.isEmpty())
@@ -942,6 +904,11 @@ QAction* LevelEditorMenuHandler::CreateViewPaneMenuItem(
     }
 
     menu->addAction(action);
+
+    if (view->m_options.showOnToolsToolbar)
+    {
+        m_mainWindow->GetToolbarManager()->AddButtonToEditToolbar(action);
+    }
 
     return action;
 }
@@ -1293,7 +1260,7 @@ void LevelEditorMenuHandler::AddEditMenuAction(QAction* action)
     }
 }
 
-void LevelEditorMenuHandler::AddMenuAction(AZStd::string_view categoryId, QAction* action)
+void LevelEditorMenuHandler::AddMenuAction(AZStd::string_view categoryId, QAction* action, bool addToToolsToolbar)
 {
     auto menuWrapper = m_actionManager->FindMenu(categoryId.data());
     if (menuWrapper.isNull())
@@ -1302,6 +1269,11 @@ void LevelEditorMenuHandler::AddMenuAction(AZStd::string_view categoryId, QActio
         return;
     }
     menuWrapper.Get()->addAction(action);
+
+    if (addToToolsToolbar)
+    {
+        m_mainWindow->GetToolbarManager()->AddButtonToEditToolbar(action);
+    }
 }
 
 void LevelEditorMenuHandler::RestoreEditMenuToDefault()

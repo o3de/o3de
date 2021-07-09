@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #pragma once
 // RenderViewport.h : header file
@@ -24,6 +19,7 @@
 #include "Objects/DisplayContext.h"
 #include "Undo/Undo.h"
 #include "Util/PredefinedAspectRatios.h"
+#include "EditorViewportSettings.h"
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/std/optional.h>
@@ -64,23 +60,6 @@ namespace AzToolsFramework
 {
     class ManipulatorManager;
 }
-
-class EditorViewportWidget;
-
-//! Viewport settings for the EditorViewportWidget
-struct EditorViewportSettings : public AzToolsFramework::ViewportInteraction::ViewportSettings
-{
-    explicit EditorViewportSettings(const EditorViewportWidget* editorViewportWidget);
-
-    bool GridSnappingEnabled() const override;
-    float GridSize() const override;
-    bool ShowGrid() const override;
-    bool AngleSnappingEnabled() const override;
-    float AngleStep() const override;
-
-private:
-    const EditorViewportWidget* m_editorViewportWidget = nullptr;
-};
 
 // EditorViewportWidget window
 AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
@@ -201,6 +180,7 @@ public:
     void SetViewAndMovementLockFromEntityPerspective(const AZ::EntityId& entityId, bool lockCameraMovement) override;
     AZ::EntityId GetCurrentViewEntityId() override { return m_viewEntityId; }
     bool GetActiveCameraPosition(AZ::Vector3& cameraPos) override;
+    bool GetActiveCameraState(AzFramework::CameraState& cameraState) override;
 
     // AzToolsFramework::EditorEntityContextNotificationBus (handler moved to cpp to resolve link issues in unity builds)
     virtual void OnStartPlayInEditor();
@@ -344,11 +324,6 @@ protected:
 
     void SetViewTM(const Matrix34& tm, bool bMoveOnly);
 
-    virtual float GetCameraMoveSpeed() const;
-    virtual float GetCameraRotateSpeed() const;
-    virtual bool  GetCameraInvertYRotation() const;
-    virtual float GetCameraInvertPan() const;
-
     // Called to render stuff.
     virtual void OnRender();
 
@@ -406,6 +381,11 @@ protected:
     };
     void ResetToViewSourceType(const ViewSourceType& viewSourType);
 
+    bool ShouldPreviewFullscreen() const;
+    void StartFullscreenPreview();
+    void StopFullscreenPreview();
+
+    bool m_inFullscreenPreview = false;
     bool m_bRenderContextCreated = false;
     bool m_bInRotateMode = false;
     bool m_bInMoveMode = false;
@@ -587,6 +567,9 @@ private:
 
     AzFramework::EntityVisibilityQuery m_entityVisibilityQuery;
 
+    SandboxEditor::GridSnappingChangedEvent::Handler m_gridSnappingHandler;
+    AZStd::unique_ptr<SandboxEditor::EditorViewportSettingsCallbacks> m_editorViewportSettingsCallbacks;
+
     QSet<int> m_keyDown;
 
     bool m_freezeViewportInput = false;
@@ -606,8 +589,6 @@ private:
     AzFramework::DebugDisplayRequests* m_debugDisplay = nullptr;
 
     AZ::Name m_defaultViewportContextName;
-
-    EditorViewportSettings m_editorViewportSettings;
 
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 #ifndef ACTIONMANAGER_H
 #define ACTIONMANAGER_H
@@ -169,6 +164,13 @@ public:
             return *this;
         }
 
+        template<typename Fn>
+        ActionWrapper& RegisterUpdateCallback(Fn&& fn)
+        {
+            m_actionManager->RegisterUpdateCallback(m_action->data().toInt(), AZStd::forward<Fn>(fn));
+            return *this;
+        }
+
     private:
         friend ActionManager;
         friend DynamicMenu;
@@ -315,11 +317,17 @@ public:
     void DetachOverride() override;
 
     template<typename T>
-    void RegisterUpdateCallback(int id, T* object, void (T::* method)(QAction*))
+    void RegisterUpdateCallback(int id, T* object, void (T::*method)(QAction*))
     {
         Q_ASSERT(m_actions.contains(id));
-        auto f = std::bind(method, object, m_actions.value(id));
-        m_updateCallbacks[id] = f;
+        m_updateCallbacks[id] = [action = m_actions.value(id), object, method] { AZStd::invoke(method, object, action); };
+    }
+
+    template<typename Fn>
+    void RegisterUpdateCallback(int id, Fn&& fn)
+    {
+        Q_ASSERT(m_actions.contains(id));
+        m_updateCallbacks[id] = [action = m_actions.value(id), fn] { fn(action); };
     }
 
     template<typename T>

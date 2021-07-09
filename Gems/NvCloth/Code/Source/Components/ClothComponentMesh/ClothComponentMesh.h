@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -14,6 +9,7 @@
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/Math/Aabb.h>
 
 #include <AzFramework/Physics/WindBus.h>
 
@@ -84,7 +80,7 @@ namespace NvCloth
 
     private:
         void UpdateSimulationCollisions();
-        void UpdateSimulationSkinning();
+        void UpdateSimulationSkinning(float deltaTime);
         void UpdateSimulationConstraints();
         void UpdateRenderData(const AZStd::vector<SimParticleFormat>& particles);
 
@@ -132,7 +128,7 @@ namespace NvCloth
 
         // Cloth Skinning from the character
         AZStd::unique_ptr<ActorClothSkinning> m_actorClothSkinning;
-        AZ::u32 m_numberOfClothSkinningUpdates = 0;
+        float m_timeClothSkinningUpdates = 0.0f;
 
         // Cloth Constraints
         AZStd::unique_ptr<ClothConstraints> m_clothConstraints;

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Memory/OverrunDetectionAllocator.h>
 #include <AzCore/Memory/OSAllocator.h>
@@ -103,7 +98,7 @@ namespace AZ
                 }
             }
 
-            /// Returns a pointer to the beginning of master vector of SmallAllocationGroups.
+            /// Returns a pointer to the beginning of vector of SmallAllocationGroups.
             SmallAllocationGroup* ArrayHead()
             {
                 return this - m_index;
@@ -169,7 +164,7 @@ namespace AZ
                 return m_marker == MARKER;
             }
 
-            /// Returns the master index of the SmallAllocationGroup containing this allocation
+            /// Returns the index of the SmallAllocationGroup containing this allocation
             uint32_t GetSmallAllocationIndex() const
             {
                 return (uint32_t)(m_data & 0xFFFFFFFF);

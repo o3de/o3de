@@ -77,7 +77,7 @@ namespace AZ
                 // ShaderReloadNotificationBus::Handler overrides...
                 void OnShaderReinitialized(const RPI::Shader& shader) override;
                 void OnShaderAssetReinitialized(const Data::Asset<RPI::ShaderAsset>& shaderAsset) override;
-                void OnShaderVariantReinitialized(const RPI::Shader& shader, const RPI::ShaderVariantId& shaderVariantId, RPI::ShaderVariantStableId shaderVariantStableId) override;
+                void OnShaderVariantReinitialized(const AZ::RPI::ShaderVariant& shaderVariant) override;
 
             private:
                 explicit HairPPLLRasterPass(const RPI::PassDescriptor& descriptor);
@@ -88,7 +88,8 @@ namespace AZ
                 bool BuildDrawPacket(HairRenderObject* hairObject);
 
                 // Pass behavior overrides
-                void BuildAttachmentsInternal() override;
+                void InitializeInternal() override;
+                void BuildInternal() override;
                 void FrameBeginInternal(FramePrepareParams params) override;
 
                 // Scope producer functions...

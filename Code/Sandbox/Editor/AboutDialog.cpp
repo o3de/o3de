@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 
 #include "EditorDefs.h"
@@ -37,7 +32,6 @@ CAboutDialog::CAboutDialog(QString versionText, QString richTextCopyrightNotice,
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
     connect(m_ui->m_transparentAgreement, &QLabel::linkActivated, this, &CAboutDialog::OnCustomerAgreement);
-    connect(m_ui->m_transparentNotice, &QLabel::linkActivated, this, &CAboutDialog::OnPrivacyNotice);
 
     m_ui->m_transparentTrademarks->setText(versionText);
 
@@ -46,7 +40,6 @@ CAboutDialog::CAboutDialog(QString versionText, QString richTextCopyrightNotice,
     m_ui->m_transparentAllRightReserved->setText(richTextCopyrightNotice);
 
     m_ui->m_transparentAgreement->setObjectName("link");
-    m_ui->m_transparentNotice->setObjectName("link");
 
     setStyleSheet( "CAboutDialog > QLabel#copyrightNotice { color: #AAAAAA; font-size: 9px; }\
                     CAboutDialog > QLabel#link { text-decoration: underline; color: #00A1C9; }");
@@ -86,12 +79,7 @@ void CAboutDialog::mouseReleaseEvent(QMouseEvent* event)
 
 void CAboutDialog::OnCustomerAgreement()
 {
-    QDesktopServices::openUrl(QUrl(QStringLiteral("http://aws.amazon.com/agreement/")));
-}
-
-void CAboutDialog::OnPrivacyNotice()
-{
-    QDesktopServices::openUrl(QUrl(QStringLiteral("http://aws.amazon.com/privacy/")));
+    QDesktopServices::openUrl(QUrl(QStringLiteral("https://www.o3debinaries.org/license")));
 }
 
 #include <moc_AboutDialog.cpp>

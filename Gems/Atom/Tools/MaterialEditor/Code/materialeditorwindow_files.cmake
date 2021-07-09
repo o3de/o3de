@@ -1,16 +1,13 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 set(FILES
     Include/Atom/Window/MaterialEditorWindowModule.h
+    Include/Atom/Window/MaterialEditorWindowSettings.h
     Include/Atom/Window/MaterialEditorWindowNotificationBus.h
     Include/Atom/Window/MaterialEditorWindowRequestBus.h
     Include/Atom/Window/MaterialEditorWindowFactoryRequestBus.h
@@ -19,6 +16,7 @@ set(FILES
     Source/Window/MaterialEditorWindow.h
     Source/Window/MaterialEditorWindow.cpp
     Source/Window/MaterialEditorWindowModule.cpp
+    Source/Window/MaterialEditorWindowSettings.cpp
     Source/Window/MaterialBrowserWidget.h
     Source/Window/MaterialBrowserWidget.cpp
     Source/Window/MaterialBrowserWidget.ui
@@ -26,6 +24,10 @@ set(FILES
     Source/Window/MaterialEditor.qss
     Source/Window/MaterialEditorWindowComponent.h
     Source/Window/MaterialEditorWindowComponent.cpp
+    Source/Window/SettingsDialog/SettingsDialog.cpp
+    Source/Window/SettingsDialog/SettingsDialog.h
+    Source/Window/SettingsDialog/SettingsWidget.cpp
+    Source/Window/SettingsDialog/SettingsWidget.h
     Source/Window/CreateMaterialDialog/CreateMaterialDialog.cpp
     Source/Window/CreateMaterialDialog/CreateMaterialDialog.h
     Source/Window/CreateMaterialDialog/CreateMaterialDialog.ui

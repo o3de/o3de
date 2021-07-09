@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -14,21 +9,27 @@
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/Interface/Interface.h>
 
 namespace Multiplayer
 {
     NetworkSpawnableLibrary::NetworkSpawnableLibrary()
     {
+        AZ::Interface<INetworkSpawnableLibrary>::Register(this);
         AzFramework::AssetCatalogEventBus::Handler::BusConnect();
     }
 
     NetworkSpawnableLibrary::~NetworkSpawnableLibrary()
     {
         AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
+        AZ::Interface<INetworkSpawnableLibrary>::Unregister(this);
     }
 
-    void NetworkSpawnableLibrary::BuildPrefabsList()
+    void NetworkSpawnableLibrary::BuildSpawnablesList()
     {
+        m_spawnables.clear();
+        m_spawnablesReverseLookup.clear();
+
         auto enumerateCallback = [this](const AZ::Data::AssetId id, const AZ::Data::AssetInfo& info)
         {
             if (info.m_assetType == AZ::AzTypeInfo<AzFramework::Spawnable>::Uuid())
@@ -50,10 +51,10 @@ namespace Multiplayer
 
     void NetworkSpawnableLibrary::OnCatalogLoaded([[maybe_unused]] const char* catalogFile)
     {
-        BuildPrefabsList();
+        BuildSpawnablesList();
     }
 
-    AZ::Name NetworkSpawnableLibrary::GetPrefabNameFromAssetId(AZ::Data::AssetId assetId)
+    AZ::Name NetworkSpawnableLibrary::GetSpawnableNameFromAssetId(AZ::Data::AssetId assetId)
     {
         if (assetId.IsValid())
         {

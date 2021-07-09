@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/PlatformIncl.h> // This should be the first include to make sure Windows.h is defined with NOMINMAX
 #include <AzCore/IO/SystemFile.h>
@@ -52,8 +47,6 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/IO/RemoteStorageDrive.h>
-#include <AzFramework/Network/NetBindingComponent.h>
-#include <AzFramework/Network/NetBindingSystemComponent.h>
 #include <AzFramework/Physics/Utils.h>
 #include <AzFramework/Render/GameIntersectorComponent.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
@@ -66,7 +59,6 @@
 #include <AzFramework/TargetManagement/TargetManagementComponent.h>
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzFramework/Driller/RemoteDrillerInterface.h>
-#include <AzFramework/Network/NetworkContext.h>
 #include <AzFramework/Metrics/MetricsPlainTextNameRegistration.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
@@ -197,7 +189,6 @@ namespace AzFramework
 
         ApplicationRequests::Bus::Handler::BusConnect();
         AZ::UserSettingsFileLocatorBus::Handler::BusConnect();
-        NetSystemRequestBus::Handler::BusConnect();
     }
 
     Application::~Application()
@@ -207,7 +198,6 @@ namespace AzFramework
             Stop();
         }
 
-        NetSystemRequestBus::Handler::BusDisconnect();
         AZ::UserSettingsFileLocatorBus::Handler::BusDisconnect();
         ApplicationRequests::Bus::Handler::BusDisconnect();
 
@@ -241,8 +231,6 @@ namespace AzFramework
         // Archive classes relies on the FileIOBase DirectInstance to close
         // files properly
         m_directFileIO.reset();
-
-        // The AZ::Console skips destruction and always leaks to allow it to be used in static memory
     }
 
     void Application::Start(const Descriptor& descriptor, const StartupParameters& startupParameters)
@@ -267,7 +255,7 @@ namespace AzFramework
         systemEntity->Activate();
         AZ_Assert(systemEntity->GetState() == AZ::Entity::State::Active, "System Entity failed to activate.");
 
-        m_isStarted = true;
+        m_isStarted = (systemEntity->GetState() == AZ::Entity::State::Active);
     }
 
     void Application::PreModuleLoad()
@@ -284,13 +272,6 @@ namespace AzFramework
             ApplicationLifecycleEvents::Bus::Broadcast(&ApplicationLifecycleEvents::OnApplicationAboutToStop);
 
             m_pimpl.reset();
-
-            /* The following line of code is a temporary fix.
-             * GridMate's ReplicaChunkDescriptor is stored in a global environment variable 'm_globalDescriptorTable'
-             * which does not get cleared when Application shuts down. We need to un-reflect here to clear ReplicaChunkDescriptor
-             * so that ReplicaChunkDescriptor::m_vdt doesn't get flooded when we repeatedly instantiate Application in unit tests.
-             */
-            AZ::ReflectionEnvironment::GetReflectionManager()->RemoveReflectContext<NetworkContext>();
 
             // Free any memory owned by the command line container.
             m_commandLine = CommandLine();
@@ -320,8 +301,6 @@ namespace AzFramework
             azrtti_typeid<AzFramework::AssetCatalogComponent>(),
             azrtti_typeid<AzFramework::CustomAssetTypeComponent>(),
             azrtti_typeid<AzFramework::FileTag::ExcludeFileComponent>(),
-            azrtti_typeid<AzFramework::NetBindingComponent>(),
-            azrtti_typeid<AzFramework::NetBindingSystemComponent>(),
             azrtti_typeid<AzFramework::TransformComponent>(),
             azrtti_typeid<AzFramework::SceneSystemComponent>(),
             azrtti_typeid<AzFramework::AzFrameworkConfigurationSystemComponent>(),
@@ -457,9 +436,6 @@ namespace AzFramework
     void Application::CreateReflectionManager()
     {
         ComponentApplication::CreateReflectionManager();
-
-        // Setup NetworkContext
-        AZ::ReflectionEnvironment::GetReflectionManager()->AddReflectContext<NetworkContext>();
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -477,19 +453,6 @@ namespace AzFramework
             }
         }
         return uuid;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    NetworkContext* Application::GetNetworkContext()
-    {
-        NetworkContext* result = nullptr;
-
-        if (auto reflectionManager = AZ::ReflectionEnvironment::GetReflectionManager())
-        {
-            result = reflectionManager->GetReflectContext<NetworkContext>();
-        }
-
-        return result;
     }
 
     void Application::ResolveEnginePath(AZStd::string& engineRelativePath) const
@@ -711,8 +674,6 @@ namespace AzFramework
         {
             auto fileIoBase = m_archiveFileIO.get();
             // Set up the default file aliases based on the settings registry
-            fileIoBase->SetAlias("@assets@", "");
-            fileIoBase->SetAlias("@root@", GetEngineRoot());
             fileIoBase->SetAlias("@engroot@", GetEngineRoot());
             fileIoBase->SetAlias("@projectroot@", GetEngineRoot());
             fileIoBase->SetAlias("@exefolder@", GetExecutableFolder());
@@ -726,8 +687,8 @@ namespace AzFramework
                 pathAliases.clear();
                 if (m_settingsRegistry->Get(pathAliases.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
                 {
-                    fileIoBase->SetAlias("@projectplatformcache@", pathAliases.c_str());
                     fileIoBase->SetAlias("@assets@", pathAliases.c_str());
+                    fileIoBase->SetAlias("@projectplatformcache@", pathAliases.c_str());
                     fileIoBase->SetAlias("@root@", pathAliases.c_str()); // Deprecated Use @projectplatformcache@
                 }
                 pathAliases.clear();
@@ -745,8 +706,8 @@ namespace AzFramework
                 }
             }
 
-            AZ::IO::FixedMaxPath projectUserPath;
-            if (m_settingsRegistry->Get(projectUserPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath))
+            if (AZ::IO::FixedMaxPath projectUserPath;
+                m_settingsRegistry->Get(projectUserPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath))
             {
                 fileIoBase->SetAlias("@user@", projectUserPath.c_str());
                 AZ::IO::FixedMaxPath projectLogPath = projectUserPath / "log";
@@ -754,6 +715,15 @@ namespace AzFramework
                 fileIoBase->CreatePath(projectLogPath.c_str()); // Create the log directory at this point
 
                 CreateUserCache(projectUserPath, *fileIoBase);
+            }
+            else
+            {
+                AZ::IO::FixedMaxPath fallbackLogPath = GetEngineRoot();
+                fallbackLogPath /= "user";
+                fileIoBase->SetAlias("@user@", fallbackLogPath.c_str());
+                fallbackLogPath /= "log";
+                fileIoBase->SetAlias("@log@", fallbackLogPath.c_str());
+                fileIoBase->CreatePath(fallbackLogPath.c_str());
             }
         }
     }

@@ -1,36 +1,10 @@
 {
     "gem_name": "EMotionFX_Atom",
-    "Dependencies": [
-        {
-            "Uuid": "b58e5eed0901428ca78544b04dbd61bd",
-            "VersionConstraints": [
-                "~>0.1.0"
-            ],
-            "_comment": "Atom Common Features"
-        },
-        {
-            "Uuid": "4e981f3b17394f5d84d674fff0f54f4f",
-            "VersionConstraints": [
-                "~>0.1.0"
-            ],
-            "_comment": "AtomLyIntegration.CommonFeatures"
-        },
-        {
-            "Uuid": "044a63ea67d04479aa5daf62ded9d9ca",
-            "VersionConstraints": [
-                "~>0.1.0"
-            ],
-            "_comment": "EMotionFX"
-        }
+    "display_name": "EMotionFX Atom",
+    "summary": "",
+    "canonical_tags": [
+        "Gem"
     ],
-    "GemFormatVersion": 3,
-    "Uuid": "{4f8a4d073ba34b43be45705f18705f1e}",
-    "Name": "EMotionFX_Atom",
-    "DisplayName": "EMotionFX.Atom",
-    "Version": "0.1.0",
-    "LinkType": "Dynamic",
-    "Summary": "EMotionFX support for Atom. Since some Atom projects will not include EMotionFX, and some projects using EMotionFX will not include Atom, this gem exists to prevent creating a hard dependency in either direction.",
-    "Tags": ["Atom", "EMotionFX", "Actor", "Skinned", "Mesh"],
-    "IconPath": "preview.png",
-    "EditorModule": true
+    "user_tags": [
+    ]
 }

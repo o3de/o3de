@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <Atom/RHI.Reflect/CpuTimingStatistics.h>
@@ -18,6 +13,7 @@
 #include <Atom/RHI/FrameGraphExecuter.h>
 #include <Atom/RHI/FrameGraphCompiler.h>
 #include <Atom/RHI/FrameGraph.h>
+#include <Atom/RHI/RayTracingShaderTable.h>
 #include <Atom/RHI/ScopeProducer.h>
 #include <Atom/RHI/ScopeProducerEmpty.h>
 #include <Atom/RHI/TransientAttachmentPool.h>
@@ -181,6 +177,9 @@ namespace AZ
 
             const TransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const;
 
+            //! Adds a RayTracingShaderTable to be built this frame
+            void QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable);
+
         private:
             const ScopeId m_rootScopeId{"Root"};
 
@@ -190,6 +189,7 @@ namespace AZ
             void PrepareProducers();
             void CompileProducers();
             void CompileShaderResourceGroups();
+            void BuildRayTracingShaderTables();
 
             ScopeProducer* FindScopeProducer(const ScopeId& scopeId);
 
@@ -224,6 +224,9 @@ namespace AZ
             AZStd::unique_ptr<ScopeProducerEmpty> m_rootScopeProducer;
             AZStd::vector<ScopeProducer*> m_scopeProducers;
             AZStd::unordered_map<ScopeId, ScopeProducer*> m_scopeProducerLookup;
+
+            // list of RayTracingShaderTables that should be built this frame
+            AZStd::vector<RHI::Ptr<RayTracingShaderTable>> m_rayTracingShaderTablesToBuild;
         };
     }
 }

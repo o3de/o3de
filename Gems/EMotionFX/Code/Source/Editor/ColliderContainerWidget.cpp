@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -266,7 +261,7 @@ namespace EMotionFX
         connect(this, &AzQtComponents::Card::contextMenuRequested, this, &ColliderWidget::OnCardContextMenu);
     }
 
-    void ColliderWidget::Update(Actor* actor, Node* joint, size_t colliderIndex, PhysicsSetup::ColliderConfigType colliderType, const Physics::ShapeConfigurationPair& collider)
+    void ColliderWidget::Update(Actor* actor, Node* joint, size_t colliderIndex, PhysicsSetup::ColliderConfigType colliderType, const AzPhysics::ShapeColliderPair& collider)
     {
         m_actor = actor;
         m_joint = joint;
@@ -276,7 +271,7 @@ namespace EMotionFX
         if (!collider.first || !collider.second)
         {
             m_editor->ClearInstances(true);
-            m_collider = Physics::ShapeConfigurationPair();
+            m_collider = AzPhysics::ShapeColliderPair();
             return;
         }
 
@@ -520,7 +515,7 @@ namespace EMotionFX
         CommandSystem::GetCommandManager()->RemoveCommandCallback(m_commandCallback, /*delFromMem=*/true);
     }
 
-    void ColliderContainerWidget::Update(Actor* actor, Node* joint, PhysicsSetup::ColliderConfigType colliderType, const Physics::ShapeConfigurationList& colliders, AZ::SerializeContext* serializeContext)
+    void ColliderContainerWidget::Update(Actor* actor, Node* joint, PhysicsSetup::ColliderConfigType colliderType, const AzPhysics::ShapeColliderPairList& colliders, AZ::SerializeContext* serializeContext)
     {
         m_actor = actor;
         m_joint = joint;
@@ -557,7 +552,7 @@ namespace EMotionFX
         for (size_t i = numColliders; i < numAvailableColliderWidgets; ++i)
         {
             m_colliderWidgets[i]->hide();
-            m_colliderWidgets[i]->Update(nullptr, nullptr, MCORE_INVALIDINDEX32, PhysicsSetup::ColliderConfigType::Unknown, Physics::ShapeConfigurationPair());
+            m_colliderWidgets[i]->Update(nullptr, nullptr, MCORE_INVALIDINDEX32, PhysicsSetup::ColliderConfigType::Unknown, AzPhysics::ShapeColliderPair());
         }
     }
 
@@ -571,7 +566,7 @@ namespace EMotionFX
 
     void ColliderContainerWidget::Reset()
     {
-        Update(nullptr, nullptr, PhysicsSetup::ColliderConfigType::Unknown, Physics::ShapeConfigurationList(), nullptr);
+        Update(nullptr, nullptr, PhysicsSetup::ColliderConfigType::Unknown, AzPhysics::ShapeColliderPairList(), nullptr);
     }
 
     void ColliderContainerWidget::contextMenuEvent(QContextMenuEvent* event)
@@ -614,7 +609,7 @@ namespace EMotionFX
         return QWidget::sizeHint() + QSize(0, s_layoutSpacing);
     }
 
-    void ColliderContainerWidget::RenderColliders(const Physics::ShapeConfigurationList& colliders,
+    void ColliderContainerWidget::RenderColliders(const AzPhysics::ShapeColliderPairList& colliders,
         const ActorInstance* actorInstance,
         const Node* node,
         EMStudio::EMStudioPlugin::RenderInfo* renderInfo,
@@ -704,7 +699,7 @@ namespace EMotionFX
                     if (joint)
                     {
                         const bool jointSelected = selectedJointIndices.empty() || selectedJointIndices.find(joint->GetNodeIndex()) != selectedJointIndices.end();
-                        const Physics::ShapeConfigurationList& colliders = nodeConfig.m_shapes;
+                        const AzPhysics::ShapeColliderPairList& colliders = nodeConfig.m_shapes;
                         RenderColliders(colliders, actorInstance, joint, renderInfo, jointSelected ? selectedColor : defaultColor);
                     }
                 }

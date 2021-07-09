@@ -1,12 +1,7 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 
 Unit tests for ly_test_tools.log.log_monitor
 """
@@ -97,6 +92,16 @@ class TestLogMonitor(object):
         expected_line = 'Match'
         under_test = ly_test_tools.log.log_monitor.check_exact_match(line, expected_line)
         assert under_test == expected_line
+
+    @mock.patch('os.path.exists', mock.MagicMock(return_value=True))
+    def test_Monitor_UTF8StringsPresentAndExpected_Success(self):
+        mock_file = io.StringIO('gr\xc3\xb6\xc3\x9feren pr\xc3\xbcfung \xd1\x82\xd0\xb5\xd1\x81\xd1\x82\xd1\x83\xd0\xb2\xd0\xb0\xd0\xbd\xd0\xbd\xd1\x8f\n\xc3\x80\xc3\x88\xc3\x8c\xc3\x92\xc3\x99\n\xc3\x85lpha\xc3\x9fravo\xc3\xa7harlie\n')
+        mock_launcher.is_alive.side_effect = [True, True, True, False]
+
+        with mock.patch('ly_test_tools.log.log_monitor.open', return_value=mock_file, create=True):
+            mock_log_monitor().monitor_log_for_lines(['gr\xc3\xb6\xc3\x9feren pr\xc3\xbcfung \xd1\x82\xd0\xb5\xd1\x81\xd1\x82\xd1\x83\xd0\xb2\xd0\xb0\xd0\xbd\xd0\xbd\xd1\x8f',
+                                                      '\xc3\x80\xc3\x88\xc3\x8c\xc3\x92\xc3\x99',
+                                                      '\xc3\x85lpha\xc3\x9fravo\xc3\xa7harlie'])
 
     @mock.patch('os.path.exists', mock.MagicMock(return_value=True))
     def test_Monitor_AllLinesFound_Success(self):

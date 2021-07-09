@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #include "EditorDefs.h"
 
@@ -157,7 +152,7 @@ static  Quatern Qt_FromMatrix(HMatrix mat)
      * |w| is greater than 1/2, which is as small as a largest component can be.
      * Otherwise, the largest diagonal entry corresponds to the largest of |x|,
      * |y|, or |z|, one of which must be larger than |w|, and at least 1/2. */
-    Quatern qu;
+    Quatern qu = { 0.0f, 0.0f, 0.0f, 1.0f };
     double tr, s;
 
     tr = mat[X][X] + mat[Y][Y] + mat[Z][Z];
@@ -531,7 +526,7 @@ Quatern snuggle(Quatern q, HVect* k)
 #define swap(a, i, j) {a[3] = a[i]; a[i] = a[j]; a[j] = a[3]; }
 #define cycle(a, p)  if (p) {a[3] = a[0]; a[0] = a[1]; a[1] = a[2]; a[2] = a[3]; } \
     else   {a[3] = a[2]; a[2] = a[1]; a[1] = a[0]; a[0] = a[3]; }
-    Quatern p;
+    Quatern p = { 0.0f, 0.0f, 0.0f, 1.0f };
     float ka[4];
     int i, turn = -1;
     ka[X] = k->x;

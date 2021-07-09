@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #ifndef AZCORE_TIMEPOINT_H_
 #define AZCORE_TIMEPOINT_H_
 
@@ -24,9 +19,7 @@ namespace AZ
     AZ_TYPE_INFO_SPECIALIZE(AZStd::chrono::system_clock::time_point, "{5C48FD59-7267-405D-9C06-1EA31379FE82}");
 
 
-    /**
-    * Wrapper that reflects a AZStd::chrono::system_clock::time_point to script.
-    */
+    //! Wrapper that reflects a AZStd::chrono::system_clock::time_point to script.
     class ScriptTimePoint
     {
     public:
@@ -38,33 +31,45 @@ namespace AZ
         explicit ScriptTimePoint(AZStd::chrono::system_clock::time_point timePoint)
             : m_timePoint(timePoint) {}
 
-        AZStd::string ToString() const
-        {
-            return AZStd::string::format("Time %llu", m_timePoint.time_since_epoch().count());
-        }
+        //! Formats the time point in a string formatted as: "Time <seconds since epoch>".
+        AZStd::string ToString() const;
 
-        const AZStd::chrono::system_clock::time_point& Get() { return m_timePoint; }
+        //! Returns the time point.
+        const AZStd::chrono::system_clock::time_point& Get() const;
 
-        // Returns the time point in seconds
-        double GetSeconds() const
-        {
-            typedef AZStd::chrono::duration<double> double_seconds;
-            return AZStd::chrono::duration_cast<double_seconds>(m_timePoint.time_since_epoch()).count();
-        }
+        //! Returns the time point in seconds
+        double GetSeconds() const;
 
-        // Returns the time point in milliseconds
-        double GetMilliseconds() const
-        {
-            typedef AZStd::chrono::duration<double, AZStd::milli> double_ms;
-            return AZStd::chrono::duration_cast<double_ms>(m_timePoint.time_since_epoch()).count();
-        }
+        //! Returns the time point in milliseconds
+        double GetMilliseconds() const;
 
         static void Reflect(ReflectContext* reflection);
 
     protected:
-
         AZStd::chrono::system_clock::time_point m_timePoint;
     };
+
+    inline AZStd::string ScriptTimePoint::ToString() const
+    {
+        return AZStd::string::format("Time %llu", m_timePoint.time_since_epoch().count());
+    }
+
+    inline const AZStd::chrono::system_clock::time_point& ScriptTimePoint::Get() const
+    {
+        return m_timePoint;
+    }
+
+    inline double ScriptTimePoint::GetSeconds() const
+    {
+        typedef AZStd::chrono::duration<double> double_seconds;
+        return AZStd::chrono::duration_cast<double_seconds>(m_timePoint.time_since_epoch()).count();
+    }
+
+    inline double ScriptTimePoint::GetMilliseconds() const
+    {
+        typedef AZStd::chrono::duration<double, AZStd::milli> double_ms;
+        return AZStd::chrono::duration_cast<double_ms>(m_timePoint.time_since_epoch()).count();
+    }
 }
 
 

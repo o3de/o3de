@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "UiCanvasEditor_precompiled.h"
 
 #include "EditorCommon.h"
@@ -167,8 +162,8 @@ ViewportInteraction::ViewportInteraction(EditorWindow* editorWindow)
     : QObject()
     , m_editorWindow(editorWindow)
     , m_activeElementId()
-    , m_anchorWhole(new ViewportIcon("Plugins/UiCanvasEditor/CanvasIcons/Anchor_Whole.tif"))
-    , m_pivotIcon(new ViewportIcon("Plugins/UiCanvasEditor/CanvasIcons/Pivot.tif"))
+    , m_anchorWhole(new ViewportIcon("Editor/Icons/Viewport/Anchor_Whole.tif"))
+    , m_pivotIcon(new ViewportIcon("Editor/Icons/Viewport/Pivot.tif"))
     , m_interactionMode(PersistentGetInteractionMode())
     , m_interactionType(InteractionType::NONE)
     , m_coordinateSystem(PersistentGetCoordinateSystem())
@@ -186,13 +181,13 @@ ViewportInteraction::ViewportInteraction(EditorWindow* editorWindow)
     , m_startAnchors(UiTransform2dInterface::Anchors())
     , m_grabbedAnchors(ViewportHelpers::SelectedAnchors())
     , m_grabbedGizmoParts(ViewportHelpers::GizmoParts())
-    , m_lineTriangleX(new ViewportIcon("Plugins/UiCanvasEditor/CanvasIcons/Transform_Gizmo_Line_Triangle_X.tif"))
-    , m_lineTriangleY(new ViewportIcon("Plugins/UiCanvasEditor/CanvasIcons/Transform_Gizmo_Line_Triangle_Y.tif"))
-    , m_circle(new ViewportIcon("Plugins/UiCanvasEditor/CanvasIcons/Transform_Gizmo_Circle.tif"))
-    , m_lineSquareX(new ViewportIcon("Plugins/UiCanvasEditor/CanvasIcons/Transform_Gizmo_Line_Square_X.tif"))
-    , m_lineSquareY(new ViewportIcon("Plugins/UiCanvasEditor/CanvasIcons/Transform_Gizmo_Line_Square_Y.tif"))
-    , m_centerSquare(new ViewportIcon("Plugins/UiCanvasEditor/CanvasIcons/Transform_Gizmo_Center_Square.tif"))
-    , m_dottedLine(new ViewportIcon("Plugins/UiCanvasEditor/CanvasIcons/DottedLine.tif"))
+    , m_lineTriangleX(new ViewportIcon("Editor/Icons/Viewport/Transform_Gizmo_Line_Triangle_X.tif"))
+    , m_lineTriangleY(new ViewportIcon("Editor/Icons/Viewport/Transform_Gizmo_Line_Triangle_Y.tif"))
+    , m_circle(new ViewportIcon("Editor/Icons/Viewport/Transform_Gizmo_Circle.tif"))
+    , m_lineSquareX(new ViewportIcon("Editor/Icons/Viewport/Transform_Gizmo_Line_Square_X.tif"))
+    , m_lineSquareY(new ViewportIcon("Editor/Icons/Viewport/Transform_Gizmo_Line_Square_Y.tif"))
+    , m_centerSquare(new ViewportIcon("Editor/Icons/Viewport/Transform_Gizmo_Center_Square.tif"))
+    , m_dottedLine(new ViewportIcon("Editor/Icons/Viewport/DottedLine.tif"))
     , m_dragInteraction(nullptr)
     , m_expanderWatcher(new ViewportInteractionExpanderWatcher(this))
 {
@@ -908,8 +903,9 @@ void ViewportInteraction::GetScaleToFitTransformProps(const AZ::Vector2* newCanv
         EBUS_EVENT_ID_RESULT(canvasSize, m_editorWindow->GetCanvas(), UiCanvasBus, GetCanvasSize);
     }
 
-    const int viewportWidth = m_editorWindow->GetViewport()->size().width();
-    const int viewportHeight = m_editorWindow->GetViewport()->size().height();
+    QSize viewportSize = QtHelpers::GetDpiScaledViewportSize(*m_editorWindow->GetViewport());
+    const int viewportWidth = viewportSize.width();
+    const int viewportHeight = viewportSize.height();
 
     // We pad the edges of the viewport to allow the user to easily see the borders of
     // the canvas edges, which is especially helpful if there are anchors sitting on

@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #include "CrySystem_precompiled.h"
 
@@ -28,13 +23,8 @@
 #include <locale.h>
 #include <time.h>
 
-#include "CryZlib.h"
-
 #include <AzCore/std/string/conversions.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-#if !defined(_RELEASE)
-#include "CrySizerImpl.h"
-#endif //#if !defined(_RELEASE)
 
 #define MAX_CELL_COUNT 32
 
@@ -165,52 +155,6 @@ static void TestFormatMessage ([[maybe_unused]] IConsoleCmdArgs* pArgs)
 }
 #endif //#if !defined(_RELEASE)
 
-
-//////////////////////////////////////////////////////////////////////////
-#if !defined(_RELEASE)
-void CLocalizedStringsManager::LocalizationDumpLoadedInfo([[maybe_unused]] IConsoleCmdArgs* pArgs)
-{
-    CLocalizedStringsManager* pLoca = (CLocalizedStringsManager*) gEnv->pSystem->GetLocalizationManager();
-
-    for (TTagFileNames::iterator tagit = pLoca->m_tagFileNames.begin(); tagit != pLoca->m_tagFileNames.end(); ++tagit)
-    {
-        CryLogAlways("Tag %s (%d)", tagit->first.c_str(), tagit->second.id);
-
-        int entries = 0;
-        CrySizerImpl* pSizer = new CrySizerImpl();
-
-        for (tmapFilenames::iterator it = pLoca->m_loadedTables.begin(); it != pLoca->m_loadedTables.end(); it++)
-        {
-            if (tagit->second.id == it->second.nTagID)
-            {
-                CryLogAlways("\t%s", it->first.c_str());
-            }
-
-            if (pLoca->m_pLanguage)
-            {
-                const uint32 numEntries = pLoca->m_pLanguage->m_vLocalizedStrings.size();
-                for (int32 i = numEntries - 1; i >= 0; i--)
-                {
-                    SLocalizedStringEntry* entry = pLoca->m_pLanguage->m_vLocalizedStrings[i];
-                    if (tagit->second.id == entry->nTagID)
-                    {
-                        entries++;
-                        entry->GetMemoryUsage((ICrySizer*) pSizer);
-                    }
-                }
-            }
-        }
-
-        // This line messes up Uncrustify so turn it off: *INDENT-OFF*
-        CryLogAlways("\t\tEntries %d, Approx Size %" PRISIZE_T "Kb", entries, pSizer->GetTotalSize() / 1024);
-        // turn it back on again: *INDENT-ON*
-
-        SAFE_RELEASE(pSizer);
-    }
-}
-
-#endif //#if !defined(_RELEASE)
-
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -249,9 +193,6 @@ CLocalizedStringsManager::CLocalizedStringsManager(ISystem* pSystem)
         "0: No encoding, store as wide strings\n"
         "1: Huffman encode translated text, saves approx 30% with a small runtime performance cost\n"
         "Default is 1.");
-
-
-    REGISTER_COMMAND("LocalizationDumpLoadedInfo", LocalizationDumpLoadedInfo, VF_NULL, "Dump out into about the loaded localization files");
 #endif //#if !defined(_RELEASE)
 
     REGISTER_CVAR2(c_sys_localization_format, &m_cvarLocalizationFormat, 1, VF_NULL,

@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 // Description : DisplayContext definition.
 
@@ -227,7 +222,6 @@ struct SANDBOX_API DisplayContext
 
     void DrawTextLabel(const Vec3& pos, float size, const char* text, const bool bCenter = false, int srcOffsetX = 0, int scrOffsetY = 0);
     void Draw2dTextLabel(float x, float y, float size, const char* text, bool bCenter = false);
-    void DrawTextOn2DBox(const Vec3& pos, const char* text, float textScale, const ColorF& TextColor, const ColorF& TextBackColor);
     void SetLineWidth(float width);
 
     //! Is given bbox visible in this display context.

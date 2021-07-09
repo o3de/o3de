@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "CrySystem_precompiled.h"
 #include "DebugCamera.h"
 #include "ISystem.h"
@@ -137,15 +132,6 @@ void DebugCamera::PostUpdate()
 
     CCamera& camera = gEnv->pSystem->GetViewCamera();
     camera.SetMatrix(Matrix34(m_view, m_position));
-
-    const float FONT_COLOR[4] = { 1.0f, 0.0f, 0.0f, 1.0f };
-    gEnv->pRenderer->Draw2dLabel(0.0f, 700.0f, 1.3f, FONT_COLOR, false,
-        "Debug Camera: pos [ %.3f, %.3f, %.3f ] p/y [ %.1f, %.1f ] dir [ %.3f, %.3f, %.3f ] scl %.2f  inv %d",
-        m_position.x, m_position.y, m_position.z,
-        m_cameraPitch, m_cameraYaw,
-        m_view.GetColumn1().x, m_view.GetColumn1().y, m_view.GetColumn1().z,
-        m_moveScale,
-        m_isYInverted);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

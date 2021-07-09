@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #include <QConnectionsWidget.h>
 
@@ -26,8 +21,6 @@
 #include <QMimeData>
 #include <QMessageBox>
 #include <QMenu>
-#include <Serialization/IArchive.h>
-#include <Serialization/STL.h>
 
 namespace AudioControls
 {
@@ -39,10 +32,6 @@ namespace AudioControls
         , m_control(nullptr)
     {
         setupUi(this);
-
-        m_connectionProperties->setSizeToContent(true);
-        m_connectionPropertiesFrame->setHidden(true);
-        connect(m_connectionProperties, SIGNAL(signalChanged()), this, SLOT(CurrentConnectionModified()));
 
         m_connectionList->viewport()->installEventFilter(this);
         m_connectionList->installEventFilter(this);
@@ -130,17 +119,6 @@ namespace AudioControls
                     controlType = m_control->GetType();
                 }
             }
-        }
-
-        if (connection && connection->HasProperties())
-        {
-            m_connectionProperties->attach(Serialization::SStruct(*connection.get()));
-            m_connectionPropertiesFrame->setHidden(false);
-        }
-        else
-        {
-            m_connectionProperties->detach();
-            m_connectionPropertiesFrame->setHidden(true);
         }
     }
 

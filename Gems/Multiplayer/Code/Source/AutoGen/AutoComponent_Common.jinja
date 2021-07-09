@@ -170,12 +170,12 @@ AZ::Event<{{ Property.attrib['Type'] }}>
 {%     set PropertyName = UpperFirst(Property.attrib['Name']) %}
 {{     ParseRpcParams(Property, paramNames, paramTypes, paramDefines) }}
 {% if IsOverride %}
-void Handle{{ PropertyName }}({{ ', '.join(paramDefines) }}) override {}
+void Handle{{ PropertyName }}(AzNetworking::IConnection* invokingConnection, {{ ', '.join(paramDefines) }}) override {}
 {% else %}
 //! {{ PropertyName }} Handler
 //! {{ Property.attrib['Description'] }}
 //! HandleOn {{ HandleOn }}
-virtual void Handle{{ PropertyName }}({{ ', '.join(paramDefines) }}) = 0;
+virtual void Handle{{ PropertyName }}([[maybe_unused]] AzNetworking::IConnection* invokingConnection, [[maybe_unused]] {{ ', [[maybe_unused]] '.join(paramDefines) }}) {}
 {% endif %}
 {% endmacro %}
 {#
@@ -184,6 +184,69 @@ virtual void Handle{{ PropertyName }}({{ ', '.join(paramDefines) }}) = 0;
 {% macro DeclareRpcHandlers(Component, InvokeFrom, HandleOn, IsOverride) %}
 {% call(Property) ParseRemoteProcedures(Component, InvokeFrom, HandleOn) %}
 {{- DeclareRpcHandler(Property, HandleOn, IsOverride) -}}
+{% endcall %}
+{% endmacro %}
+{#
+
+#}
+{% macro DeclareRpcEventGetter(Property, HandleOn) %}
+{%     set paramNames   = [] %}
+{%     set paramTypes   = [] %}
+{%     set paramDefines = [] %}
+{%     set PropertyName = UpperFirst(Property.attrib['Name']) %}
+{{     ParseRpcParams(Property, paramNames, paramTypes, paramDefines) }}
+AZ::Event<{{ ', '.join(paramTypes) }}>& Get{{ PropertyName }}Event() { return m_{{ PropertyName }}Event; }
+{% endmacro %}
+{#
+
+#}
+{% macro DeclareRpcEventGetters(Component, InvokeFrom, HandleOn) %}
+{% call(Property) ParseRemoteProcedures(Component, InvokeFrom, HandleOn) %}
+{%    if Property.attrib['GenerateEventBindings']|booleanTrue == true %}
+{{- DeclareRpcEventGetter(Property, HandleOn) -}}
+{% endif %}
+{% endcall %}
+{% endmacro %}
+{#
+
+#}
+{% macro DeclareRpcEvent(Property, HandleOn) %}
+{%     set paramNames   = [] %}
+{%     set paramTypes   = [] %}
+{%     set paramDefines = [] %}
+{%     set PropertyName = UpperFirst(Property.attrib['Name']) %}
+{{     ParseRpcParams(Property, paramNames, paramTypes, paramDefines) }}
+AZ::Event<{{ ', '.join(paramTypes) }}> m_{{ PropertyName }}Event;
+{% endmacro %}
+{#
+
+#}
+{% macro DeclareRpcEvents(Component, InvokeFrom, HandleOn) %}
+{% call(Property) ParseRemoteProcedures(Component, InvokeFrom, HandleOn) %}
+{%    if Property.attrib['GenerateEventBindings']|booleanTrue == true %}
+{{- DeclareRpcEvent(Property, HandleOn) -}}
+{% endif %}
+{% endcall %}
+{% endmacro %}
+{#
+
+#}
+{% macro DeclareRpcSignal(Property, HandleOn) %}
+{%     set paramNames   = [] %}
+{%     set paramTypes   = [] %}
+{%     set paramDefines = [] %}
+{%     set PropertyName = UpperFirst(Property.attrib['Name']) %}
+{{     ParseRpcParams(Property, paramNames, paramTypes, paramDefines) }}
+void Signal{{ PropertyName }}({{ ', '.join(paramDefines) }});
+{% endmacro %}
+{#
+
+#}
+{% macro DeclareRpcSignals(Component, InvokeFrom, HandleOn) %}
+{% call(Property) ParseRemoteProcedures(Component, InvokeFrom, HandleOn) %}
+{%    if Property.attrib['GenerateEventBindings']|booleanTrue == true %}
+{{- DeclareRpcSignal(Property, HandleOn) -}}
+{% endif %}
 {% endcall %}
 {% endmacro %}
 {#
@@ -207,13 +270,17 @@ namespace {{ Component.attrib['Namespace'] }}
     public:
         AZ_MULTIPLAYER_COMPONENT({{ Component.attrib['Namespace'] }}::{{ ComponentName }}, s_{{ LowerFirst(ComponentName) }}ConcreteUuid, {{ Component.attrib['Namespace'] }}::{{ ComponentNameBase }});
 
-        static void Reflect([[maybe_unused]] AZ::ReflectContext* context);
+        static void Reflect(AZ::ReflectContext* context);
 
-        void OnInit() override {}
-        void OnActivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating) override {}
-        void OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating) override {}
+        void OnInit() override;
+        void OnActivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
+        void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
 
         {{ DeclareRpcHandlers(Component, 'Authority', 'Client', true)|indent(8) }}
+        {{ DeclareRpcSignals(Component, 'Authority', 'Client')|indent(8) }}
+        {{ DeclareRpcEventGetters(Component, 'Authority', 'Client')|indent(8) }}
+    protected:
+        {{ DeclareRpcEvents(Component, 'Authority', 'Client')|indent(8) }}
     };
 {% endif %}
 
@@ -222,27 +289,43 @@ namespace {{ Component.attrib['Namespace'] }}
         : public {{ ControllerNameBase }}
     {
     public:
-        {{ ControllerName }}({{ ComponentName }}& parent) : {{ ControllerNameBase }}(parent) {}
+        {{ ControllerName }}({{ ComponentName }}& parent);
 
-        void OnActivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating) override {}
-        void OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating) override {}
+        void OnActivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
+        void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
 {% if NetworkInputCount > 0 %}
         //! Common input processing logic for the NetworkInput.
         //! @param input  input structure to process
         //! @param deltaTime amount of time to integrate the provided inputs over
-        void ProcessInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime) override {}
+        void ProcessInput(Multiplayer::NetworkInput& input, float deltaTime) override;
 {%endif %}
         {{ DeclareRpcHandlers(Component, 'Server', 'Authority', true)|indent(8) }}
         {{ DeclareRpcHandlers(Component, 'Client', 'Authority', true)|indent(8) }}
         {{ DeclareRpcHandlers(Component, 'Autonomous', 'Authority', true)|indent(8) }}
         {{ DeclareRpcHandlers(Component, 'Authority', 'Autonomous', true)|indent(8) }}
+        {{ DeclareRpcSignals(Component, 'Server', 'Authority')|indent(8) }}
+        {{ DeclareRpcSignals(Component, 'Client', 'Authority')|indent(8) }}
+        {{ DeclareRpcSignals(Component, 'Autonomous', 'Authority')|indent(8) }}
+        {{ DeclareRpcSignals(Component, 'Authority', 'Autonomous')|indent(8) }}
+        {{ DeclareRpcEventGetters(Component, 'Server', 'Authority')|indent(8) }}
+        {{ DeclareRpcEventGetters(Component, 'Client', 'Authority')|indent(8) }}
+        {{ DeclareRpcEventGetters(Component, 'Autonomous', 'Authority')|indent(8) }}
+        {{ DeclareRpcEventGetters(Component, 'Authority', 'Autonomous')|indent(8) }}
+
+    protected:
+        {{ DeclareRpcEvents(Component, 'Server', 'Authority')|indent(8) }}
+        {{ DeclareRpcEvents(Component, 'Client', 'Authority')|indent(8) }}
+        {{ DeclareRpcEvents(Component, 'Autonomous', 'Authority')|indent(8) }}
+        {{ DeclareRpcEvents(Component, 'Authority', 'Autonomous')|indent(8) }}
     };
 {% endif %}
 }
-{% if ComponentDerived %}
 /// Place in your .cpp
+#include <{{ Component.attrib['OverrideInclude'] }}>
+
 namespace {{ Component.attrib['Namespace'] }}
 {
+{% if ComponentDerived %}
     void {{ ComponentName }}::{{ ComponentName }}::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
@@ -251,9 +334,43 @@ namespace {{ Component.attrib['Namespace'] }}
             serializeContext->Class<{{ ComponentName }}, {{ ComponentNameBase }}>()
                 ->Version(1);
         }
+        {{ ComponentNameBase }}::Reflect(context);
     }
-}
+
+    void {{ ComponentName }}::OnInit()
+    {
+    }
+
+    void {{ ComponentName }}::OnActivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
+    {
+    }
+
+    void {{ ComponentName }}::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
+    {
+    }
+
 {% endif %}
+{% if ControllerDerived %}
+    {{ ControllerName }}::{{ ControllerName }}({{ ComponentName }}& parent)
+        : {{ ControllerNameBase }}(parent)
+    {
+    }
+
+    void {{ ControllerName }}::OnActivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
+    {
+    }
+
+    void {{ ControllerName }}::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
+    {
+    }
+{%     if NetworkInputCount > 0 %}
+
+    void {{ ControllerName }}::ProcessInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime)
+    {
+    }
+{%     endif %}
+{% endif %}
+}
 */
 {% else %}
 // NOTE:

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <PhysX_precompiled.h>
 
@@ -203,10 +198,10 @@ namespace PhysX::Benchmarks
             return AZ::Vector3(x, y, z);
         };
         
-        Physics::BoxShapeConfiguration boxShapeConfiguration = Physics::BoxShapeConfiguration(AZ::Vector3(RigidBodyConstants::RigidBodys::BoxSize));
-        Utils::GenerateColliderFuncPtr colliderGenerator = [&boxShapeConfiguration]([[maybe_unused]] int idx) -> Physics::ShapeConfiguration*
+        auto boxShapeConfiguration = AZStd::make_shared<Physics::BoxShapeConfiguration>(AZ::Vector3(RigidBodyConstants::RigidBodys::BoxSize));
+        Utils::GenerateColliderFuncPtr colliderGenerator = [&boxShapeConfiguration]([[maybe_unused]] int idx)
         {
-            return &boxShapeConfiguration;
+            return boxShapeConfiguration;
         };
         //spawn the rigid bodies
         AzPhysics::SimulatedBodyHandleList rigidBodies = Utils::CreateRigidBodies(numRigidBodies, m_defaultScene,
@@ -233,10 +228,7 @@ namespace PhysX::Benchmarks
         subTickTracker.Stop();
 
         //object clean up
-        for (auto handle : rigidBodies)
-        {
-            m_defaultScene->RemoveSimulatedBody(handle);
-        }
+        m_defaultScene->RemoveSimulatedBodies(rigidBodies);
         rigidBodies.clear();
 
         //sort the frame times and get the P50, P90, P99 percentiles
@@ -278,10 +270,10 @@ namespace PhysX::Benchmarks
         Utils::GenerateMassFuncPtr massGenerator = [&rand]([[maybe_unused]] int idx) -> float {
             return rand.GetRandomFloat() * 25.0f + 5.0f;
         };
-        Physics::BoxShapeConfiguration boxShapeConfiguration = Physics::BoxShapeConfiguration(AZ::Vector3(RigidBodyConstants::RigidBodys::BoxSize));
-        Utils::GenerateColliderFuncPtr colliderGenerator = [&boxShapeConfiguration]([[maybe_unused]] int idx) -> Physics::ShapeConfiguration*
+        auto boxShapeConfiguration = AZStd::make_shared<Physics::BoxShapeConfiguration>(AZ::Vector3(RigidBodyConstants::RigidBodys::BoxSize));
+        Utils::GenerateColliderFuncPtr colliderGenerator = [&boxShapeConfiguration]([[maybe_unused]] int idx)
         {
-            return &boxShapeConfiguration;
+            return boxShapeConfiguration;
         };
         //spawn the rigid bodies
         AzPhysics::SimulatedBodyHandleList rigidBodies = Utils::CreateRigidBodies(numRigidBodies, m_defaultScene,
@@ -310,10 +302,7 @@ namespace PhysX::Benchmarks
 
         //object clean up
         washingMachine.TearDownWashingMachine();
-        for (auto handle : rigidBodies)
-        {
-            m_defaultScene->RemoveSimulatedBody(handle);
-        }
+        m_defaultScene->RemoveSimulatedBodies(rigidBodies);
         rigidBodies.clear();
 
         //sort the frame times and get the P50, P90, P99 percentiles
@@ -414,10 +403,10 @@ namespace PhysX::Benchmarks
         Utils::GenerateEntityIdFuncPtr entityIdGenerator = [&rand](int idx) -> AZ::EntityId {
             return AZ::EntityId(static_cast<AZ::u64>(idx) + RigidBodyConstants::RigidBodys::RigidBodyEntityIdStart);
         };
-        Physics::BoxShapeConfiguration boxShapeConfiguration = Physics::BoxShapeConfiguration(AZ::Vector3(RigidBodyConstants::RigidBodys::BoxSize));
-        Utils::GenerateColliderFuncPtr colliderGenerator = [&boxShapeConfiguration]([[maybe_unused]] int idx) -> Physics::ShapeConfiguration*
+        auto boxShapeConfiguration = AZStd::make_shared<Physics::BoxShapeConfiguration>(AZ::Vector3(RigidBodyConstants::RigidBodys::BoxSize));
+        Utils::GenerateColliderFuncPtr colliderGenerator = [&boxShapeConfiguration]([[maybe_unused]] int idx)
         {
-            return &boxShapeConfiguration;
+            return boxShapeConfiguration;
         };
         //spawn the rigid bodies
         AzPhysics::SimulatedBodyHandleList rigidBodies = Utils::CreateRigidBodies(numRigidBodies, m_defaultScene,
@@ -465,10 +454,7 @@ namespace PhysX::Benchmarks
         //object clean up
         collisionHandlers.clear();
         washingMachine.TearDownWashingMachine();
-        for (auto handle : rigidBodies)
-        {
-            m_defaultScene->RemoveSimulatedBody(handle);
-        }
+        m_defaultScene->RemoveSimulatedBodies(rigidBodies);
         rigidBodies.clear();
 
         //sort the frame times and get the P50, P90, P99 percentiles

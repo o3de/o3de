@@ -1,24 +1,15 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #include "CrySystem_precompiled.h"
 #include "System.h"
 #include <AZCrySystemInitLogSink.h>
 #include "DebugCallStack.h"
-#if defined(AZ_MONOLITHIC_BUILD)
-#include <CryCommon/CryExtension/Impl/ICryFactoryRegistryImpl.h>
-#include <CryCommon/CryExtension/Impl/RegFactoryNode.h>
-#endif
 
 #if defined(AZ_RESTRICTED_PLATFORM)
 #undef AZ_RESTRICTED_SECTION
@@ -67,51 +58,6 @@ AZ_POP_DISABLE_WARNING
 }
 #endif
 
-//////////////////////////////////////////////////////////////////////////
-struct CSystemEventListner_System
-    : public ISystemEventListener
-{
-public:
-    virtual void OnSystemEvent(ESystemEvent event, [[maybe_unused]] UINT_PTR wparam, [[maybe_unused]] UINT_PTR lparam)
-    {
-        switch (event)
-        {
-        case ESYSTEM_EVENT_LEVEL_UNLOAD:
-            gEnv->pSystem->SetThreadState(ESubsys_Physics, false);
-            break;
-
-        case ESYSTEM_EVENT_LEVEL_LOAD_START:
-        case ESYSTEM_EVENT_LEVEL_LOAD_END:
-        {
-            CryCleanup();
-            break;
-        }
-
-        case ESYSTEM_EVENT_LEVEL_POST_UNLOAD:
-        {
-            CryCleanup();
-            STLALLOCATOR_CLEANUP;
-            gEnv->pSystem->SetThreadState(ESubsys_Physics, true);
-            break;
-        }
-        }
-    }
-};
-
-static CSystemEventListner_System g_system_event_listener_system;
-
-static AZ::EnvironmentVariable<IMemoryManager*> s_cryMemoryManager;
-
-
-// Force the CryMemoryManager into the AZ::Environment for exposure to other DLLs
-void ExportCryMemoryManager()
-{
-    IMemoryManager* cryMemoryManager = nullptr;
-    CryGetIMemoryManagerInterface((void**)&cryMemoryManager);
-    AZ_Assert(cryMemoryManager, "Unable to resolve CryMemoryManager");
-    s_cryMemoryManager = AZ::Environment::CreateVariable<IMemoryManager*>("CryIMemoryManagerInterface", cryMemoryManager);
-}
-
 extern "C"
 {
 CRYSYSTEM_API ISystem* CreateSystemInterface(const SSystemInitParams& startupParams)
@@ -123,8 +69,6 @@ CRYSYSTEM_API ISystem* CreateSystemInterface(const SSystemInitParams& startupPar
     // Environment should have been attached via InjectEnvironment
     AZ_Assert(AZ::Environment::IsReady(), "Environment is not attached, must be attached before CreateSystemInterface can be called");
 
-    ExportCryMemoryManager();
-
     pSystem = new CSystem(startupParams.pSharedEnvironment);
     ModuleInitISystem(pSystem, "CrySystem");
 
@@ -132,30 +76,22 @@ CRYSYSTEM_API ISystem* CreateSystemInterface(const SSystemInitParams& startupPar
 #define AZ_RESTRICTED_SECTION DLLMAIN_CPP_SECTION_2
 #include AZ_RESTRICTED_FILE(DllMain_cpp)
 #endif
-#if defined(AZ_MONOLITHIC_BUILD)
-    ICryFactoryRegistryImpl* pCryFactoryImpl = static_cast<ICryFactoryRegistryImpl*>(pSystem->GetCryFactoryRegistry());
-    pCryFactoryImpl->RegisterFactories(g_pHeadToRegFactories);
-#endif // AZ_MONOLITHIC_BUILD
+
        // the earliest point the system exists - w2e tell the callback
     if (startupParams.pUserCallback)
     {
         startupParams.pUserCallback->OnSystemConnect(pSystem);
     }
 
+#if defined(WIN32)
     // Environment Variable to signal we don't want to override our exception handler - our crash report system will set this
     auto envVar = AZ::Environment::FindVariable<bool>("ExceptionHandlerIsSet");
-    bool handlerIsSet = (envVar && *envVar);
-
-    if (!startupParams.bMinimal && !handlerIsSet)     // in minimal mode, we want to crash when we crash!
+    const bool handlerIsSet = (envVar && *envVar);
+    if (!handlerIsSet)
     {
-#if defined(WIN32)
-        // Install exception handler in Release modes.
         ((DebugCallStack*)IDebugCallStack::instance())->installErrorHandler(pSystem);
-#elif defined(AZ_RESTRICTED_PLATFORM)
-#define AZ_RESTRICTED_SECTION DLLMAIN_CPP_SECTION_3
-#include AZ_RESTRICTED_FILE(DllMain_cpp)
-#endif
     }
+#endif
 
     bool retVal = false;
     {
@@ -174,24 +110,7 @@ CRYSYSTEM_API ISystem* CreateSystemInterface(const SSystemInitParams& startupPar
         return 0;
     }
 
-    pSystem->GetISystemEventDispatcher()->RegisterListener(&g_system_event_listener_system);
-
     return pSystem;
 }
-
-CRYSYSTEM_API void WINAPI CryInstallUnhandledExceptionHandler()
-{
-#if defined(AZ_RESTRICTED_PLATFORM)
-#define AZ_RESTRICTED_SECTION DLLMAIN_CPP_SECTION_4
-#include AZ_RESTRICTED_FILE(DllMain_cpp)
-#endif
-}
-
-#if defined(ENABLE_PROFILING_CODE) && !defined(LINUX) && !defined(APPLE)
-CRYSYSTEM_API void CryInstallPostExceptionHandler(void (* PostExceptionHandlerCallback)())
-{
-    return IDebugCallStack::instance()->FileCreationCallback(PostExceptionHandlerCallback);
-}
-#endif
 };
 

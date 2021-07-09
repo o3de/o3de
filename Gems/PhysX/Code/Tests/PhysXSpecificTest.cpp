@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <PhysX_precompiled.h>
 #include "PhysXTestFixtures.h"
@@ -539,14 +534,14 @@ namespace PhysX
     TEST_F(PhysXSpecificTest, RigidBody_CenterOfMassOffsetComputed)
     {
         AZ::Vector3 halfExtents(1.0f, 2.0f, 3.0f);
-        Physics::BoxShapeConfiguration shapeConfig(halfExtents * 2.0f);
-        Physics::ColliderConfiguration colliderConfig;
-        colliderConfig.m_rotation = AZ::Quaternion::CreateRotationX(AZ::Constants::HalfPi);
+        auto shapeConfig = AZStd::make_shared<Physics::BoxShapeConfiguration>(halfExtents * 2.0f);
+        auto colliderConfig = AZStd::make_shared<Physics::ColliderConfiguration>();
+        colliderConfig->m_rotation = AZ::Quaternion::CreateRotationX(AZ::Constants::HalfPi);
 
         AzPhysics::RigidBodyConfiguration rigidBodyConfiguration;
         rigidBodyConfiguration.m_computeCenterOfMass = true;
         rigidBodyConfiguration.m_computeInertiaTensor = true;
-        rigidBodyConfiguration.m_colliderAndShapeData = AZStd::make_pair(&colliderConfig, &shapeConfig);
+        rigidBodyConfiguration.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(colliderConfig, shapeConfig);
         AzPhysics::RigidBody* rigidBody = nullptr;
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
@@ -562,15 +557,15 @@ namespace PhysX
     TEST_F(PhysXSpecificTest, RigidBody_CenterOfMassOffsetSpecified)
     {
         AZ::Vector3 halfExtents(1.0f, 2.0f, 3.0f);
-        Physics::BoxShapeConfiguration shapeConfig(halfExtents * 2.0f);
-        Physics::ColliderConfiguration colliderConfig;
-        colliderConfig.m_rotation = AZ::Quaternion::CreateRotationX(AZ::Constants::HalfPi);
+        auto shapeConfig = AZStd::make_shared<Physics::BoxShapeConfiguration>(halfExtents * 2.0f);
+        auto colliderConfig = AZStd::make_shared<Physics::ColliderConfiguration>();
+        colliderConfig->m_rotation = AZ::Quaternion::CreateRotationX(AZ::Constants::HalfPi);
 
         AzPhysics::RigidBodyConfiguration rigidBodyConfiguration;
         rigidBodyConfiguration.m_computeCenterOfMass = false;
         rigidBodyConfiguration.m_centerOfMassOffset = AZ::Vector3::CreateOne();
         rigidBodyConfiguration.m_computeInertiaTensor = true;
-        rigidBodyConfiguration.m_colliderAndShapeData = AZStd::make_pair(&colliderConfig, &shapeConfig);
+        rigidBodyConfiguration.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(colliderConfig, shapeConfig);
 
         AzPhysics::RigidBody* rigidBody = nullptr;
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
@@ -882,7 +877,6 @@ namespace PhysX
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
             sceneInterface->RemoveSimulatedBody(m_testSceneHandle, rigidBodyHandle);
-            rigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
         }
         rigidBody = nullptr;
     }
@@ -1114,15 +1108,15 @@ namespace PhysX
         auto CreateBoxRigidBody = [this](const AZ::Vector3& position, bool simulatedFlag, bool triggerFlag) -> AzPhysics::RigidBody*
         {
 
-            Physics::ColliderConfiguration colliderConfig;
-            colliderConfig.m_isSimulated = simulatedFlag;
-            colliderConfig.m_isTrigger = triggerFlag;
-            Physics::BoxShapeConfiguration shapeConfig;
+            auto colliderConfig = AZStd::make_shared<Physics::ColliderConfiguration>();
+            colliderConfig->m_isSimulated = simulatedFlag;
+            colliderConfig->m_isTrigger = triggerFlag;
 
             AzPhysics::RigidBodyConfiguration rigidBodyConfig;
             rigidBodyConfig.m_entityId = AZ::EntityId(0); // Set entity ID to avoid warnings in OnTriggerEnter 
             rigidBodyConfig.m_position = position;
-            rigidBodyConfig.m_colliderAndShapeData = AZStd::make_pair(&colliderConfig, &shapeConfig);
+            rigidBodyConfig.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(
+                colliderConfig, AZStd::make_shared<Physics::BoxShapeConfiguration>());
 
             if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
             {

@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -101,7 +96,7 @@ namespace UnitTest
 
     TEST_F(ViewportUiManagerTestFixture, CreateClusterAddsNewClusterAndReturnsId)
     {
-        auto clusterId = m_viewportManagerWrapper.GetViewportManager()->CreateCluster();
+        auto clusterId = m_viewportManagerWrapper.GetViewportManager()->CreateCluster(AzToolsFramework::ViewportUi::Alignment::TopLeft);
         auto clusterEntry = m_viewportManagerWrapper.GetViewportManager()->GetClusterMap().find(clusterId);
 
         EXPECT_TRUE(clusterEntry != m_viewportManagerWrapper.GetViewportManager()->GetClusterMap().end());
@@ -110,7 +105,7 @@ namespace UnitTest
 
     TEST_F(ViewportUiManagerTestFixture, CreateClusterButtonAddsNewButtonAndReturnsId)
     {
-        auto clusterId = m_viewportManagerWrapper.GetViewportManager()->CreateCluster();
+        auto clusterId = m_viewportManagerWrapper.GetViewportManager()->CreateCluster(AzToolsFramework::ViewportUi::Alignment::TopLeft);
         auto buttonId = m_viewportManagerWrapper.GetViewportManager()->CreateClusterButton(clusterId, "");
 
         auto clusterEntry = m_viewportManagerWrapper.GetViewportManager()->GetClusterMap().find(clusterId);
@@ -120,7 +115,7 @@ namespace UnitTest
 
     TEST_F(ViewportUiManagerTestFixture, SetClusterActiveButtonSetsButtonStateToActive)
     {
-        auto clusterId = m_viewportManagerWrapper.GetViewportManager()->CreateCluster();
+        auto clusterId = m_viewportManagerWrapper.GetViewportManager()->CreateCluster(AzToolsFramework::ViewportUi::Alignment::TopLeft);
         auto buttonId = m_viewportManagerWrapper.GetViewportManager()->CreateClusterButton(clusterId, "");
 
         auto clusterEntry = m_viewportManagerWrapper.GetViewportManager()->GetClusterMap().find(clusterId);
@@ -133,7 +128,7 @@ namespace UnitTest
 
     TEST_F(ViewportUiManagerTestFixture, RegisterClusterEventHandlerConnectsHandlerToClusterEvent)
     {
-        auto clusterId = m_viewportManagerWrapper.GetViewportManager()->CreateCluster();
+        auto clusterId = m_viewportManagerWrapper.GetViewportManager()->CreateCluster(AzToolsFramework::ViewportUi::Alignment::TopLeft);
         auto buttonId = m_viewportManagerWrapper.GetViewportManager()->CreateClusterButton(clusterId, "");
 
         // create a handler which will be triggered by the cluster
@@ -159,7 +154,7 @@ namespace UnitTest
 
     TEST_F(ViewportUiManagerTestFixture, RemoveClusterRemovesClusterFromViewportUi)
     {
-        auto clusterId = m_viewportManagerWrapper.GetViewportManager()->CreateCluster();
+        auto clusterId = m_viewportManagerWrapper.GetViewportManager()->CreateCluster(AzToolsFramework::ViewportUi::Alignment::TopLeft);
         m_viewportManagerWrapper.GetViewportManager()->RemoveCluster(clusterId);
 
         auto clusterEntry = m_viewportManagerWrapper.GetViewportManager()->GetClusterMap().find(clusterId);
@@ -171,7 +166,7 @@ namespace UnitTest
     {
         m_viewportManagerWrapper.GetMockRenderOverlay()->setVisible(true);
 
-        auto clusterId = m_viewportManagerWrapper.GetViewportManager()->CreateCluster();
+        auto clusterId = m_viewportManagerWrapper.GetViewportManager()->CreateCluster(AzToolsFramework::ViewportUi::Alignment::TopLeft);
         auto buttonId = m_viewportManagerWrapper.GetViewportManager()->CreateClusterButton(clusterId, "");
         m_viewportManagerWrapper.GetViewportManager()->Update();
 

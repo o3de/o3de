@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "Maestro_precompiled.h"
 
 #include <AzCore/Serialization/SerializeContext.h>
@@ -105,34 +100,11 @@ namespace Maestro
         MaestroAllocatorScope::DeactivateAllocators();
     }
 
-    //////////////////////////////////////////////////////////////////////////
-    void CSystemEventListener_Movie::OnSystemEvent(ESystemEvent event, [[maybe_unused]] UINT_PTR wparam, [[maybe_unused]] UINT_PTR lparam)
-    {
-        switch (event)
-        {
-            case ESYSTEM_EVENT_LEVEL_POST_UNLOAD:
-            {
-                STLALLOCATOR_CLEANUP;
-                CLightAnimWrapper::ReconstructCache();
-                break;
-            }
-        }
-    }
-
     ///////////////////////////////////////////////////////////////////////////////////////////////
     void MaestroSystemComponent::OnCrySystemInitialized(ISystem& system, const SSystemInitParams& startupParams)
     {
-        if (!startupParams.bSkipMovie && !startupParams.bShaderCacheGen)
+        if (!startupParams.bSkipMovie)
         {
-            // OnCrySystemInitialized should only ever be called once, and we should be the only one initializing gEnv->pMovieSystem
-            AZ_Assert(!m_movieSystemEventListener && gEnv && !gEnv->pMovieSystem, "MaestroSystemComponent::OnCrySystemInitialized - movie system was alread initialized.");
-
-            if (!m_movieSystemEventListener)
-            {
-                m_movieSystemEventListener.reset(new CSystemEventListener_Movie);
-            }
-            system.GetISystemEventDispatcher()->RegisterListener(m_movieSystemEventListener.get());
-
             // Create the movie System
             m_movieSystem.reset(new CMovieSystem(&system));
             gEnv->pMovieSystem = m_movieSystem.get();
@@ -142,17 +114,6 @@ namespace Maestro
     ///////////////////////////////////////////////////////////////////////////////////////////////
     void MaestroSystemComponent::OnCrySystemShutdown([[maybe_unused]] ISystem& system)
     {
-        // Remove the system movie listener and clean up allocations
-        if (m_movieSystemEventListener)
-        {
-            if (gEnv && gEnv->pSystem && gEnv->pSystem->GetISystemEventDispatcher())
-            {
-                gEnv->pSystem->GetISystemEventDispatcher()->RemoveListener(m_movieSystemEventListener.get());
-            }
-            // delete m_movieSystemEventListener
-            m_movieSystemEventListener.reset();
-        }
-
         if (gEnv && gEnv->pMovieSystem)
         {
             gEnv->pMovieSystem = nullptr;

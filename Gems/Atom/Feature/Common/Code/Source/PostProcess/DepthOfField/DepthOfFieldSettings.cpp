@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 
 #include <AzCore/Debug/EventTrace.h>
@@ -50,7 +45,7 @@ namespace AZ
 
             static constexpr Quality QualitySet[DepthOfField::QualityLevelMax] =
             {
-                // It is the radial division count of blur kernel. See "https://wiki.agscollab.com/display/ATOM/Pencil+Map" for details.
+                // It is the radial division count of blur kernel.
                 {2, 3, 4},
                 {4, 4, 4}
             };
@@ -205,7 +200,6 @@ namespace AZ
             float scaledDiameter = ScreenApertureDiameter * 0.25f;
 
             // This is the conversion factor for calculating the blend ratio from DofFactor.
-            // Please refer to "https://wiki.agscollab.com/display/ATOM/Dof+factor+and+Buffer+composition" for blending of DofFactor and buffer.
 
             // coc0 : Confusion circle diameter screen ratio
             // coc1 : Confusion circle diameter screen ratio of one lower blur level;

@@ -49,8 +49,6 @@ namespace AZ
                 AZ_CLASS_ALLOCATOR(HairPPLLResolvePass, SystemAllocator, 0);
                 ~HairPPLLResolvePass() = default;
 
-                void Init() override;
-
                 static RPI::Ptr<HairPPLLResolvePass> Create(const RPI::PassDescriptor& descriptor);
 
                 bool AcquireFeatureProcessor();
@@ -61,8 +59,8 @@ namespace AZ
                 }
 
                 //! Override pass behavior methods
-                void OnBuildAttachmentsFinishedInternal() override;
-                void BuildAttachmentsInternal() override;
+                void InitializeInternal() override;
+                void BuildInternal() override;
                 void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
                 void CompileResources(const RHI::FrameGraphCompileContext& context) override;
 

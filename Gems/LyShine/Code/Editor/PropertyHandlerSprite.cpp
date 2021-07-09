@@ -1,16 +1,12 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "UiCanvasEditor_precompiled.h"
 #include "EditorCommon.h"
+#include "Sprite.h"
 
 #include "PropertyHandlerSprite.h"
 
@@ -27,9 +23,9 @@
 
 #include "SpriteBorderEditorCommon.h"
 
-#include <IResourceCompilerHelper.h>
-
 #include <LmbrCentral/Rendering/MaterialAsset.h>
+
+#include <Atom/RPI.Edit/Common/AssetUtils.h>
 
 #include <QApplication>
 #include <QMessageBox>
@@ -44,6 +40,7 @@ PropertySpriteCtrl::PropertySpriteCtrl(QWidget* parent)
         [ this ]([[maybe_unused]] AZ::Data::AssetId newAssetID)
         {
             EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, this);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, m_propertyAssetCtrl);
         });
 
     setAcceptDrops(true);
@@ -150,7 +147,9 @@ void PropertyHandlerSprite::WriteGUIValuesIntoProperty(size_t index, PropertySpr
     AZStd::string assetPath;
     EBUS_EVENT_RESULT(assetPath, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, GUI->GetPropertyAssetCtrl()->GetCurrentAssetID());
 
-    instance.SetAssetPath(assetPath.c_str());
+    // Convert streaming image's product path to relative source path to assign to the SimpleAssetReference<Texture>
+    AZStd::string sourcePath = CSprite::GetImageSourcePathFromProductPath(assetPath);
+    instance.SetAssetPath(sourcePath.c_str());
 }
 
 bool PropertyHandlerSprite::ReadValuesIntoGUI(size_t index, PropertySpriteCtrl* GUI, const property_t& instance, AzToolsFramework::InstanceDataNode* node)
@@ -162,12 +161,26 @@ bool PropertyHandlerSprite::ReadValuesIntoGUI(size_t index, PropertySpriteCtrl* 
 
     ctrl->blockSignals(true);
     {
-        ctrl->SetCurrentAssetType(instance.GetAssetType());
+        // Set the asset type for the PropertyAssetCtrl.
+        // Use the hardcoded streaming image asset type instead of the passed in instance's asset type
+        // since the passed in type is the legacy SimpleAssetReference<Texture>, and the asset picker
+        // does not associate this type with streaming images
+        AZ::Data::AssetType assetType = AZ::AzTypeInfo<AZ::RPI::StreamingImageAsset>::Uuid();
+        ctrl->SetCurrentAssetType(assetType);
 
         AZ::Data::AssetId assetId;
         if (!instance.GetAssetPath().empty())
         {
-            EBUS_EVENT_RESULT(assetId, AZ::Data::AssetCatalogRequestBus, GetAssetIdByPath, instance.GetAssetPath().c_str(), instance.GetAssetType(), false);
+            // Get the image path from the SimpleAssetReference<Texture> and fix it up since CSprite still
+            // allows user specified paths that have the .sprite extension or the deprecated .dds extension
+            AZStd::string sourcePath = CSprite::GetImageSourcePathFromProductPath(instance.GetAssetPath());
+            AZStd::string fixedUpSourcePath;
+            CSprite::FixUpSourceImagePathFromUserDefinedPath(sourcePath, fixedUpSourcePath);
+
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                assetId, &AZ::Data::AssetCatalogRequestBus::Events::GenerateAssetIdTEMP,
+                fixedUpSourcePath.c_str());
+            assetId.m_subId = AZ::RPI::StreamingImageAsset::GetImageAssetSubId();
         }
         ctrl->SetSelectedAssetID(assetId);
     }

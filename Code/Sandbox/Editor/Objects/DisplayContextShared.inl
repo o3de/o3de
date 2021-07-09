@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #include <Cry_Geo.h>
 #include "DisplayContext.h"
@@ -37,7 +32,7 @@ DisplayContext::DisplayContext()
 
     m_currentMatrix = 0;
     m_matrixStack[m_currentMatrix].SetIdentity();
-    pRenderAuxGeom = gEnv->pRenderer ? gEnv->pRenderer->GetIRenderAuxGeom() : nullptr;
+    pRenderAuxGeom = nullptr; // ToDo: Remove DisplayContext or update to work with Atom: LYN-3670
     m_thickness = 0;
 
     m_width = 0;
@@ -1103,85 +1098,6 @@ void DisplayContext::Draw2dTextLabel(float x, float y, float size, const char* t
 {
     float col[4] = { m_color4b.r * (1.0f / 255.0f), m_color4b.g * (1.0f / 255.0f), m_color4b.b * (1.0f / 255.0f), m_color4b.a * (1.0f / 255.0f) };
     renderer->Draw2dLabel(x, y, size, col, bCenter, "%s", text);
-}
-
-void DisplayContext::DrawTextOn2DBox(const Vec3& pos, const char* text, float textScale, const ColorF& TextColor, const ColorF& TextBackColor)
-{
-    Vec3 worldPos = ToWorldSpacePosition(pos);
-    int vx, vy, vw, vh;
-    gEnv->pRenderer->GetViewport(&vx, &vy, &vw, &vh);
-    uint32 backupstate = GetState();
-
-    SetState(backupstate | e_DepthTestOff);
-
-    const CCamera& renderCamera = gEnv->pRenderer->GetCamera();
-    Vec3 screenPos;
-
-    renderCamera.Project(worldPos, screenPos, Vec2i(0, 0), Vec2i(0, 0));
-
-    //! Font size information doesn't seem to exist so the proper size is used
-    int textlen = strlen(text);
-    float fontsize = 7.5f * textScale;
-    float textwidth = fontsize * textlen;
-    float textheight = 16.0f * textScale;
-
-    screenPos.x = screenPos.x - (textwidth * 0.5f);
-
-    Vec3 textregion[4] = {
-        Vec3(screenPos.x, screenPos.y, screenPos.z),
-        Vec3(screenPos.x + textwidth, screenPos.y, screenPos.z),
-        Vec3(screenPos.x + textwidth, screenPos.y + textheight, screenPos.z),
-        Vec3(screenPos.x, screenPos.y + textheight, screenPos.z)
-    };
-
-    Vec3 textworldreign[4];
-    Matrix34 dcInvTm = GetMatrix().GetInverted();
-
-    Matrix44A mProj, mView;
-    mathMatrixPerspectiveFov(&mProj, renderCamera.GetFov(), renderCamera.GetProjRatio(), renderCamera.GetNearPlane(), renderCamera.GetFarPlane());
-    mathMatrixLookAt(&mView, renderCamera.GetPosition(), renderCamera.GetPosition() + renderCamera.GetViewdir(), Vec3(0, 0, 1));
-    Matrix44A mInvViewProj = (mView * mProj).GetInverted();
-
-    if (vw == 0)
-    {
-        vw = 1;
-    }
-
-    if (vh == 0)
-    {
-        vh = 1;
-    }
-
-    for (int i = 0; i < 4; ++i)
-    {
-        Vec4 projectedpos = Vec4((textregion[i].x - vx) / vw * 2.0f - 1.0f,
-                -((textregion[i].y - vy) / vh) * 2.0f + 1.0f,
-                textregion[i].z,
-                1.0f);
-
-        Vec4 wp = projectedpos * mInvViewProj;
-
-        if (wp.w == 0.0f)
-        {
-            wp.w = 0.0001f;
-        }
-
-        wp.x /= wp.w;
-        wp.y /= wp.w;
-        wp.z /= wp.w;
-        textworldreign[i] = dcInvTm.TransformPoint(Vec3(wp.x, wp.y, wp.z));
-    }
-
-    ColorB backupcolor = GetColor();
-
-    SetColor(TextBackColor);
-    SetDrawInFrontMode(true);
-    DrawQuad(textworldreign[3], textworldreign[2], textworldreign[1], textworldreign[0]);
-    SetColor(TextColor);
-    DrawTextLabel(pos, textScale, text);
-    SetDrawInFrontMode(false);
-    SetColor(backupcolor);
-    SetState(backupstate);
 }
 
 //////////////////////////////////////////////////////////////////////////

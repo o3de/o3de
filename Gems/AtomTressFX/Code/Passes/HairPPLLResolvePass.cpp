@@ -42,24 +42,11 @@ namespace AZ
                 return AZStd::move(pass);
             }
 
-            void HairPPLLResolvePass::Init()
+            void HairPPLLResolvePass::InitializeInternal()
             {
-                FullscreenTrianglePass::Init();
-            }
-
-            void HairPPLLResolvePass::OnBuildAttachmentsFinishedInternal()
-            {
-                FullscreenTrianglePass::OnBuildAttachmentsFinishedInternal();
-
-                if (!m_shaderResourceGroup)
+                if (GetScene())
                 {
-                    AZ_Error("Hair Gem", false, "HairPPLLResolvePass: Could not set per pass srg resources: feature processor not ready yet");
-                    return;
-                }
-
-                if (!m_featureProcessor)
-                {
-                    return;
+                    FullscreenTrianglePass::InitializeInternal();
                 }
             }
 
@@ -75,6 +62,10 @@ namespace AZ
                 {
                     m_featureProcessor = scene->GetFeatureProcessor<HairFeatureProcessor>();
                 }
+                else
+                {
+                    return false;
+                }
 
                 if (!m_featureProcessor)
                 {
@@ -86,10 +77,10 @@ namespace AZ
                 return true;
             }
 
-            void HairPPLLResolvePass::BuildAttachmentsInternal()
+            void HairPPLLResolvePass::BuildInternal()
             {
                 // No need to attach any buffer / image - it is done in the fill pass
-                FullscreenTrianglePass::BuildAttachmentsInternal();
+                FullscreenTrianglePass::BuildInternal();
             }
 
             void HairPPLLResolvePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)

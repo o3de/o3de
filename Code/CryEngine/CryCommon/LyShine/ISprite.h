@@ -1,23 +1,15 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <SerializeFwd.h>
 #include <smartptr.h>
 #include <LyShine/Bus/UiTransformBus.h>
 #include <AzCore/Math/Vector2.h>
-
-// forward declarations
-class ITexture;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! A sprite is a texture with extra information about how it behaves for 2D drawing
@@ -79,9 +71,6 @@ public: // member functions
 
     //! Set the borders of a given cell within the sprite-sheet.
     virtual void SetCellBorders(int cellIndex, Borders borders) = 0;
-
-    //! Get the texture for this sprite
-    virtual ITexture* GetTexture() = 0;
 
     //! Serialize this object for save/load
     virtual void Serialize(TSerialize ser) = 0;

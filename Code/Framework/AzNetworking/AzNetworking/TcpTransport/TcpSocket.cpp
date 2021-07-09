@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzNetworking/AzNetworking_Traits_Platform.h>
 #include <AzNetworking/TcpTransport/TcpSocket.h>
@@ -116,8 +111,8 @@ namespace AzNetworking
 
     int32_t TcpSocket::Receive(uint8_t* outData, uint32_t size) const
     {
-        AZ_Assert(size > 0, "Invalid data size for send");
-        AZ_Assert(outData != nullptr, "NULL data pointer passed to send");
+        AZ_Assert(size > 0, "Invalid data size for receive");
+        AZ_Assert(outData != nullptr, "NULL data pointer passed to receive");
         if (!IsOpen())
         {
             return SocketOpResultErrorNotOpen;
@@ -176,7 +171,7 @@ namespace AzNetworking
             if (::bind(aznumeric_cast<int32_t>(m_socketFd), (const sockaddr*)&hints, sizeof(hints)) != 0)
             {
                 const int32_t error = GetLastNetworkError();
-                AZLOG_ERROR("Failed to bind socket (%d:%s)", error, GetNetworkErrorDesc(error));
+                AZLOG_ERROR("Failed to bind TCP socket to port %u (%d:%s)", uint32_t(port), error, GetNetworkErrorDesc(error));
                 return false;
             }
 

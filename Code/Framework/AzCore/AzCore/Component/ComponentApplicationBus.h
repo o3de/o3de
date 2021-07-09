@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -72,6 +67,8 @@ namespace AZ
 
     using EntityAddedEvent = AZ::Event<AZ::Entity*>;
     using EntityRemovedEvent = AZ::Event<AZ::Entity*>;
+    using EntityActivatedEvent = AZ::Event<AZ::Entity*>;
+    using EntityDeactivatedEvent = AZ::Event<AZ::Entity*>;
 
     //! Interface that components can use to make requests of the main application.
     class ComponentApplicationRequests
@@ -101,6 +98,22 @@ namespace AZ
         //! Registers an event handler that will be signalled whenever an entity is removed.
         //! @param handler the event handler to signal.
         virtual void RegisterEntityRemovedEventHandler(EntityRemovedEvent::Handler& handler) = 0;
+
+        //! Registers an event handler that will be signalled whenever an entity is added.
+        //! @param handler the event handler to signal.
+        virtual void RegisterEntityActivatedEventHandler(EntityActivatedEvent::Handler& handler) = 0;
+
+        //! Registers an event handler that will be signalled whenever an entity is removed.
+        //! @param handler the event handler to signal.
+        virtual void RegisterEntityDeactivatedEventHandler(EntityDeactivatedEvent::Handler& handler) = 0;
+
+        //! Signals that the provided entity has been activated.
+        //! @param entity the entity being activated.
+        virtual void SignalEntityActivated(AZ::Entity* entity) = 0;
+
+        //! Signals that the provided entity has been deactivated.
+        //! @param entity the entity being deactivated.
+        virtual void SignalEntityDeactivated(AZ::Entity* entity) = 0;
 
         //! Adds an entity to the application's registry.
         //! Calling Init() on an entity automatically performs this operation.

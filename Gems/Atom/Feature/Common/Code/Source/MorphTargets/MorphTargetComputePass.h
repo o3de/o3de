@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <Atom/RPI.Public/Pass/ComputePass.h>
@@ -18,6 +13,8 @@ namespace AZ
 {
     namespace Render
     {
+        class SkinnedMeshFeatureProcessor;
+
         //! The morph target compute pass submits dispatch items for morph targets. The dispatch items are cleared every frame, so it needs to be re-populated.
         class MorphTargetComputePass
             : public RPI::ComputePass
@@ -31,16 +28,14 @@ namespace AZ
 
             static RPI::Ptr<MorphTargetComputePass> Create(const RPI::PassDescriptor& descriptor);
 
-            //! Thread-safe function for adding a dispatch item to the current frame.
-            void AddDispatchItem(const RHI::DispatchItem* dispatchItem);
             Data::Instance<RPI::Shader> GetShader() const;
 
+            void SetFeatureProcessor(SkinnedMeshFeatureProcessor* m_skinnedMeshFeatureProcessor);
         private:
-            void BuildAttachmentsInternal() override;
+            void BuildInternal() override;
             void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
 
-            AZStd::mutex m_mutex;
-            AZStd::unordered_set<const RHI::DispatchItem*> m_dispatches;
+            SkinnedMeshFeatureProcessor* m_skinnedMeshFeatureProcessor = nullptr;
         };
     }
 }

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzFramework/Physics/Character.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
@@ -40,7 +35,7 @@ namespace EMotionFX
         const Physics::CharacterColliderNodeConfiguration* copyFromNodeConfig = copyFromColliderConfig->FindNodeConfigByName(joint->GetNameString());
         if (copyFromNodeConfig)
         {
-            for (const Physics::ShapeConfigurationPair& shapeConfigPair : copyFromNodeConfig->m_shapes)
+            for (const AzPhysics::ShapeColliderPair& shapeConfigPair : copyFromNodeConfig->m_shapes)
             {
                 const AZStd::string contents = MCore::ReflectionSerializer::Serialize(&shapeConfigPair).GetValue();
                 CommandColliderHelpers::AddCollider(actor->GetID(), joint->GetNameString(), copyTo, contents, AZStd::nullopt, &commandGroup);
@@ -231,7 +226,7 @@ namespace EMotionFX
         const Physics::CharacterColliderNodeConfiguration* copyFromNodeConfig = copyFromColliderConfig->FindNodeConfigByName(joint->GetNameString());
         if (copyFromNodeConfig && shapeIndex < copyFromNodeConfig->m_shapes.size())
         {
-            const Physics::ShapeConfigurationPair* shape = &copyFromNodeConfig->m_shapes[shapeIndex];
+            const AzPhysics::ShapeColliderPair* shape = &copyFromNodeConfig->m_shapes[shapeIndex];
             const AZStd::string contents = MCore::ReflectionSerializer::Serialize(shape).GetValue();
             QMimeData* mimeData = new QMimeData();
             mimeData->setData(

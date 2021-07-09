@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "Tests.h"
 
 #include <AzCore/std/parallel/thread.h>
@@ -234,7 +229,7 @@ public:
 
 /**
 * OfflineModeTest verifies that replica chunks are usable without
-* an active session, and basically behave as masters.
+* an active session, and basically behave as primarys.
 */
 class OfflineModeTest
     : public UnitTest::GridMateMPTestFixture
@@ -297,7 +292,7 @@ public:
         AZ_TEST_ASSERT(OfflineChunk::s_nInstances == 1);
         ReplicaChunkPtr chunkPtr = offlineChunk;
         chunkPtr->Init(ReplicaChunkClassId(OfflineChunk::GetChunkName()));
-        AZ_TEST_ASSERT(chunkPtr->IsMaster());
+        AZ_TEST_ASSERT(chunkPtr->IsPrimary());
         AZ_TEST_ASSERT(!chunkPtr->IsProxy());
         offlineChunk->m_data1.Set(5);
         AZ_TEST_ASSERT(offlineChunk->m_data1.Get() == 5);
@@ -315,7 +310,7 @@ public:
                 return true;
             });
         AZ_TEST_ASSERT(offlineChunk->m_data2.Get() == 10);
-        AZ_TEST_ASSERT(offlineChunk->m_nCallsDataSetChangeCB == 0); // DataSet change CB doesn't get called on master.
+        AZ_TEST_ASSERT(offlineChunk->m_nCallsDataSetChangeCB == 0); // DataSet change CB doesn't get called on primary.
 
         offlineChunk->CallRpc();
         AZ_TEST_ASSERT(offlineChunk->m_nCallsRpcHandlerCB == 1);
@@ -325,11 +320,11 @@ public:
         AZ_TEST_ASSERT(strcmp(offlineReplica->GetDebugName(), replicaName) == 0);
 
         offlineReplica->AttachReplicaChunk(chunkPtr);
-        AZ_TEST_ASSERT(chunkPtr->IsMaster());
+        AZ_TEST_ASSERT(chunkPtr->IsPrimary());
         AZ_TEST_ASSERT(!chunkPtr->IsProxy());
 
         offlineReplica->DetachReplicaChunk(chunkPtr);
-        AZ_TEST_ASSERT(chunkPtr->IsMaster());
+        AZ_TEST_ASSERT(chunkPtr->IsPrimary());
         AZ_TEST_ASSERT(!chunkPtr->IsProxy());
 
         AZ_TEST_ASSERT(OfflineChunk::s_nInstances == 1);
@@ -462,7 +457,7 @@ public:
         ReplicaPeer peer(&rm);
 
         AZ_TracePrintf("GridMate", "\n");
-        Replica* replica = Replica::CreateReplica("TestMasterReplica");
+        Replica* replica = Replica::CreateReplica("TestPrimaryReplica");
 
         ReplicaChunkDescriptorTable::Get().RegisterChunkType<SimpleDataSetChunk>();
         AZStd::unique_ptr<SimpleDataSetChunk> chunk(CreateReplicaChunk<SimpleDataSetChunk>());

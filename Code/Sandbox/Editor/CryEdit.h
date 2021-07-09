@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #ifndef CRYINCLUDE_EDITOR_CRYEDIT_H
 #define CRYINCLUDE_EDITOR_CRYEDIT_H
@@ -198,11 +193,8 @@ public:
     void OnDocumentationGamelift();
     void OnDocumentationReleaseNotes();
     void OnDocumentationGameDevBlog();
-    void OnDocumentationGettingStartedGuide();
-    void OnDocumentationTwitchChannel();
     void OnDocumentationForums();
     void OnDocumentationAWSSupport();
-    void OnDocumentationFeedback();
     void OnCommercePublish();
     void OnCommerceMerch();
     void SaveTagLocations();
@@ -229,7 +221,9 @@ public:
     void OnFileResaveSlices();
     void OnFileEditEditorini();
     void OnPreferences();
-    void OnReloadTextures();
+    void OnOpenProjectManagerSettings();
+    void OnOpenProjectManagerNew();
+    void OnOpenProjectManager();
     void OnRedo();
     void OnUpdateRedo(QAction* action);
     void OnUpdateUndo(QAction* action);
@@ -284,12 +278,6 @@ private:
     //! Test mode is a special mode enabled when Editor ran with /test command line.
     //! In this mode editor starts up, but exit immediately after all initialization.
     bool m_bTestMode = false;
-    bool m_bPrecacheShaderList = false;
-    bool m_bPrecacheShaders = false;
-    bool m_bPrecacheShadersLevels = false;
-    bool m_bMergeShaders = false;
-    bool m_bStatsShaderList = false;
-    bool m_bStatsShaders = false;
     //! In this mode editor will load specified cry file, export t, and then close.
     bool m_bExportMode = false;
     QString m_exportFile;
@@ -339,6 +327,8 @@ private:
     // If this flag is set, the next OnIdle() will update, even if the app is in the background, and then
     // this flag will be reset.
     bool m_bForceProcessIdle = false;
+    // This is set while IdleProcessing is running to prevent re-entrancy
+    bool m_idleProcessingRunning = false;
     // Keep the editor alive, even if no focus is set
     bool m_bKeepEditorActive = false;
     // Currently creating a new level
@@ -365,16 +355,16 @@ AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING 
 
 private:
+    static inline constexpr const char* DefaultLevelTemplateName = "Prefabs/Default_Level.prefab";
+
     struct PythonOutputHandler;
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     AZStd::shared_ptr<PythonOutputHandler> m_pythonOutputHandler;
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     friend struct PythonTestOutputHandler;
 
-    void OnSnap();
-    void OnWireframe();
+    void OpenProjectManager(const AZStd::string& screen);
     void OnUpdateWireframe(QAction* action);
-    void OnViewGridsettings();
     void OnViewConfigureLayout();
 
     // Tag Locations.
@@ -409,11 +399,6 @@ private:
     void OnToolsScriptHelp();
     void OnViewCycle2dviewport();
     void OnDisplayGotoPosition();
-    void OnSnapangle();
-    void OnUpdateSnapangle(QAction* action);
-    void OnChangemovespeedIncrease();
-    void OnChangemovespeedDecrease();
-    void OnChangemovespeedChangestep();
     void OnFileSavelevelresources();
     void OnClearRegistryData();
     void OnValidatelevel();

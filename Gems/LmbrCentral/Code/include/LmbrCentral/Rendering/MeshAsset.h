@@ -1,21 +1,15 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
 
 #include <smartptr.h>
 #include <IStatObj.h>
-#include <IGeomCache.h>
 
 namespace LmbrCentral
 {
@@ -53,18 +47,4 @@ namespace LmbrCentral
     // with the lod bits set in the SUBID
     // note that there is no current reserved UUID for .chr files.
 
-    // for alembic geometry caches / animations
-    class GeomCacheAsset
-        : public AZ::Data::AssetData
-    {
-    public:
-        using GeomCachePtr = _smart_ptr<IGeomCache>;
-        
-        AZ_RTTI(GeomCacheAsset, "{EBC96071-E960-41B6-B3E3-328F515AE5DA}", AZ::Data::AssetData);
-        AZ_CLASS_ALLOCATOR(GeomCacheAsset, AZ::SystemAllocator, 0);
-
-        /// The assigned geom cache instance.
-        GeomCachePtr m_geomCache = nullptr;
-    };
-    
 } // namespace LmbrCentral

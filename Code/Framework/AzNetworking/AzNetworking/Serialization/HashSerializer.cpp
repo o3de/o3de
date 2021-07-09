@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzNetworking/Serialization/HashSerializer.h>
 #include <AzNetworking/Utilities/QuantizedValues.h>
@@ -19,9 +14,12 @@ namespace AzNetworking
     static const int32_t FloatHashMinValue = (INT_MIN >> 7);
     static const int32_t FloatHashMaxValue = (INT_MAX >> 7);
 
-    AZ::HashValue64 HashSerializer::GetHash() const
+    AZ::HashValue32 HashSerializer::GetHash() const
     {
-        return m_hash;
+        // Just truncate the upper bits
+        const AZ::HashValue32 lower = static_cast<AZ::HashValue32>(m_hash);
+        const AZ::HashValue32 upper = static_cast<AZ::HashValue32>(m_hash >> 32);
+        return lower ^ upper;
     }
 
     SerializerMode HashSerializer::GetSerializerMode() const

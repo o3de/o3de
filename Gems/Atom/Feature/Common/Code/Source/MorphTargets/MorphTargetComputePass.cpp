@@ -1,17 +1,13 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 
 #include <MorphTargets/MorphTargetComputePass.h>
+#include <SkinnedMesh/SkinnedMeshFeatureProcessor.h>
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshOutputStreamManagerInterface.h>
 
 #include <Atom/RPI.Public/Shader/Shader.h>
@@ -38,37 +34,28 @@ namespace AZ
             return m_shader;
         }
 
-        void MorphTargetComputePass::BuildAttachmentsInternal()
+        void MorphTargetComputePass::SetFeatureProcessor(SkinnedMeshFeatureProcessor* skinnedMeshFeatureProcessor)
+        {
+            m_skinnedMeshFeatureProcessor = skinnedMeshFeatureProcessor;
+        }
+
+        void MorphTargetComputePass::BuildInternal()
         {
             // The same buffer that skinning writes to is used to manage the computed vertex deltas that are passed from the
             // morph target pass to the skinning pass. This simplifies things by only requiring one class to manage the memory
             AttachBufferToSlot(Name{ "MorphTargetDeltaOutput" }, SkinnedMeshOutputStreamManagerInterface::Get()->GetBuffer());
         }
 
-        void MorphTargetComputePass::AddDispatchItem(const RHI::DispatchItem* dispatchItem)
-        {
-            AZ_Assert(dispatchItem != nullptr, "invalid dispatchItem");
-
-            AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-            //using an unordered_set here to prevent redundantly adding the same dispatchItem to the submission queue
-            //(i.e. if the same morph target exists in multiple views, it can call AddDispatchItem multiple times with the same item)
-            m_dispatches.insert(dispatchItem);
-        }
-
         void MorphTargetComputePass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
         {
-            RHI::CommandList* commandList = context.GetCommandList();
-
-            SetSrgsForDispatch(commandList);
-
-            AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-            for (const RHI::DispatchItem* dispatchItem : m_dispatches)
+            if (m_skinnedMeshFeatureProcessor)
             {
-                commandList->Submit(*dispatchItem);
-            }
+                RHI::CommandList* commandList = context.GetCommandList();
 
-            // Clear the dispatch items. They will need to be re-populated next frame
-            m_dispatches.clear();
+                SetSrgsForDispatch(commandList);
+
+                m_skinnedMeshFeatureProcessor->SubmitMorphTargetDispatchItems(commandList);
+            }
         }
     }   // namespace Render
 }   // namespace AZ

@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 // Description : Image utilities implementation.
 
@@ -21,8 +16,6 @@
 // Editor
 #include "Util/ImageGif.h"
 #include "Util/ImageTIF.h"
-#include "Util/ImageHDR.h"
-#include "Util/Image_DXTC.h"
 
 //////////////////////////////////////////////////////////////////////////
 bool CImageUtil::Save(const QString& strFileName, CImageEx& inImage)
@@ -272,17 +265,9 @@ bool CImageUtil::LoadImage(const QString& fileName, CImageEx& image, bool* pQual
     {
         return LoadPGM(fileName, image);
     }
-    else if (azstricmp(ext, ".dds") == 0)
-    {
-        return CImage_DXTC().Load(fileName.toUtf8().data(), image, pQualityLoss);
-    }
     else if (azstricmp(ext, ".png") == 0)
     {
         return CImageUtil::Load(fileName, image);
-    }
-    else if (azstricmp(ext, ".hdr") == 0)
-    {
-        return CImageHDR().Load(fileName, image);
     }
     else
     {

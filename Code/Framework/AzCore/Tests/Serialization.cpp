@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "FileIOBaseTestTypes.h"
 
@@ -1232,6 +1227,10 @@ namespace UnitTest
         void UnregisterComponentDescriptor(const ComponentDescriptor*) override { }
         void RegisterEntityAddedEventHandler(EntityAddedEvent::Handler&) override { }
         void RegisterEntityRemovedEventHandler(EntityRemovedEvent::Handler&) override { }
+        void RegisterEntityActivatedEventHandler(EntityActivatedEvent::Handler&) override { }
+        void RegisterEntityDeactivatedEventHandler(EntityDeactivatedEvent::Handler&) override { }
+        void SignalEntityActivated(Entity*) override { }
+        void SignalEntityDeactivated(Entity*) override { }
         bool AddEntity(Entity*) override { return false; }
         bool RemoveEntity(Entity*) override { return false; }
         bool DeleteEntity(const EntityId&) override { return false; }
@@ -1252,6 +1251,7 @@ namespace UnitTest
             m_serializeContext.reset(aznew AZ::SerializeContext());
 
             ComponentApplicationBus::Handler::BusConnect();
+            AZ::Interface<AZ::ComponentApplicationRequests>::Register(this);
 
             AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
             AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
@@ -1270,6 +1270,7 @@ namespace UnitTest
             AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
             AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
 
+            AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(this);
             ComponentApplicationBus::Handler::BusDisconnect();
         }
 
@@ -2002,6 +2003,28 @@ TEST_F(SerializeBasicTest, BasicTypeTest_Succeed)
 
         EXPECT_TRUE(result);
 
+    }
+
+
+    /*
+        This test will dynamic cast (azrtti_cast) between incompatible types, which should always result in nullptr.
+        If this test fails, the RTTI declaration for the relevant type is incorrect.
+    */
+    TEST_F(Serialization, AttributeRTTI)
+    {
+        {
+            AttributeInvocable<AZStd::function<AZStd::string(AZStd::string)>> fn([](AZStd::string x) { return x + x; });
+            Attribute* fnDownCast = &fn;
+            auto fnUpCast = azrtti_cast<AttributeInvocable<AZStd::function<int(int)>>*>(fnDownCast);
+            EXPECT_EQ(fnUpCast, nullptr);
+        }
+
+        {
+            AttributeFunction<AZStd::string(AZStd::string)> fn([](AZStd::string x) { return x + x; });
+            Attribute* fnDownCast = &fn;
+            auto fnUpCast = azrtti_cast<AttributeFunction<int(int)>*>(fnDownCast);
+            EXPECT_EQ(fnUpCast, nullptr);
+        }
     }
 
     /*

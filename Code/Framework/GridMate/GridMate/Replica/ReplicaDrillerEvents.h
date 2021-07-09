@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #ifndef GM_REPLICA_DRILLER_EVENTS_H
 #define GM_REPLICA_DRILLER_EVENTS_H
 
@@ -62,7 +57,7 @@ namespace GridMate
             //! Called when an ownership transfer request is received.
             virtual void OnRequestReplicaChangeOwnership(Replica* replica, PeerId requestor) { (void)replica; (void)requestor; }
             //! Called when a replica changes ownership, not necessarily to or from the local node.
-            virtual void OnReplicaChangeOwnership(Replica* replica, bool wasMaster) { (void)replica; (void)wasMaster; }
+            virtual void OnReplicaChangeOwnership(Replica* replica, bool wasPrimary) { (void)replica; (void)wasPrimary; }
 
             //! Called when a chunk has been created. It doesn't mean it will be added to the system.
             //! Object will be partially constructed at this point if you inherit from ReplicaChunk
@@ -91,9 +86,9 @@ namespace GridMate
             //! Called when data is received for a dataset.
             virtual void OnReceiveDataSet(ReplicaChunkBase* chunk, AZ::u32 chunkIndex, DataSetBase* dataSet, PeerId from, PeerId to, const void* data, size_t len) { (void)chunk; (void)chunkIndex; (void)dataSet; (void)from; (void)to; (void)data; (void)len; }
 
-            //! Called when an rpc request is received. RpcRequest pointer will be null if rpc is called on master replica.
+            //! Called when an rpc request is received. RpcRequest pointer will be null if rpc is called on primary replica.
             virtual void OnRequestRpc(ReplicaChunkBase* chunk, Internal::RpcRequest* rpc) { (void)chunk; (void)rpc; }
-            //! Called when an rpc is invoked. RpcRequest pointer will be null if rpc is called on master replica.
+            //! Called when an rpc is invoked. RpcRequest pointer will be null if rpc is called on primary replica.
             virtual void OnInvokeRpc(ReplicaChunkBase* chunk, Internal::RpcRequest* rpc) { (void)chunk; (void)rpc; }
             //! Called every time an rpc is sent to a peer.
             virtual void OnSendRpc(ReplicaChunkBase* chunk, AZ::u32 chunkIndex, Internal::RpcRequest* rpc, PeerId from, PeerId to, const void* data, size_t len) { (void)chunk; (void)chunkIndex; (void)rpc; (void)from; (void)to; (void)data; (void)len; }

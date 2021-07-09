@@ -1,18 +1,14 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Benchmarks/PhysXBenchmarksUtilities.h>
 
 #include <algorithm>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/PhysicsScene.h>
@@ -34,9 +30,9 @@ namespace PhysX::Benchmarks
 
             AzPhysics::RigidBodyConfiguration rigidBodyConfig;
             rigidBodyConfig.m_ccdEnabled = enableCCD;
-            Physics::ColliderConfiguration rigidBodyColliderConfig;
+            auto rigidBodyColliderConfig = AZStd::make_shared<Physics::ColliderConfiguration>();
 
-            Physics::BoxShapeConfiguration defaultShapeConfiguration = Physics::BoxShapeConfiguration(AZ::Vector3::CreateOne());
+            auto defaultShapeConfiguration = AZStd::make_shared<Physics::BoxShapeConfiguration>(AZ::Vector3::CreateOne());
             for (int i = 0; i < numRigidBodies; i++)
             {
                 //call the optional function pointers, otherwise assign a default
@@ -57,16 +53,16 @@ namespace PhysX::Benchmarks
                     rigidBodyConfig.m_orientation = (*genSpawnOriFuncPtr)(i);
                 }
 
-                Physics::ShapeConfiguration* shapeConfig = nullptr;
+                AZStd::shared_ptr<Physics::ShapeConfiguration> shapeConfig = nullptr;
                 if (genColliderFuncPtr != nullptr)
                 {
                     shapeConfig = (*genColliderFuncPtr)(i);
                 }
                 if (shapeConfig == nullptr)
                 {
-                    shapeConfig = &defaultShapeConfiguration;
+                    shapeConfig = defaultShapeConfiguration;
                 }
-                rigidBodyConfig.m_colliderAndShapeData = AZStd::make_pair(&rigidBodyColliderConfig, shapeConfig);
+                rigidBodyConfig.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(rigidBodyColliderConfig, shapeConfig);
 
                 AzPhysics::SimulatedBodyHandle simBodyHandle = scene->AddSimulatedBody(&rigidBodyConfig);
                 rigidBodies.push_back(simBodyHandle);

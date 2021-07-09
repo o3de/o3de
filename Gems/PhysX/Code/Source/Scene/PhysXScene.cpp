@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates, or
-* a third party where indicated.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <PhysX_precompiled.h>
 
 #include <Scene/PhysXScene.h>
@@ -31,6 +26,8 @@
 #include <PhysXCharacters/API/CharacterController.h>
 #include <PhysXCharacters/API/CharacterUtils.h>
 #include <System/PhysXSystem.h>
+#include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
+#include <Joint/PhysXJoint.h>
 
 namespace PhysX
 {
@@ -189,6 +186,22 @@ namespace PhysX
             return newBody;
         }
 
+        AzPhysics::SimulatedBody* CreateRigidBody(const AzPhysics::RigidBodyConfiguration* configuration, AZ::Crc32& crc)
+        {
+            RigidBody* newBody = aznew RigidBody(*configuration);
+            if (!AZStd::holds_alternative<AZStd::monostate>(configuration->m_colliderAndShapeData))
+            {
+                const bool shapeAdded = AddShape(newBody, configuration->m_colliderAndShapeData);
+                AZ_Warning("PhysXScene", shapeAdded, "No Collider or Shape information found when creating Rigid body [%s]", configuration->m_debugName.c_str());
+            }
+            const AzPhysics::MassComputeFlags& flags = configuration->GetMassComputeFlags();
+            newBody->UpdateMassProperties(flags, &configuration->m_centerOfMassOffset,
+                &configuration->m_inertiaTensor, &configuration->m_mass);
+
+            crc = AZ::Crc32(newBody, sizeof(*newBody));
+            return newBody;
+        }
+
         AzPhysics::SimulatedBody* CreateCharacterBody(PhysXScene* scene,
             const Physics::CharacterConfiguration* characterConfig)
         {
@@ -214,6 +227,18 @@ namespace PhysX
         {
             return Utils::Characters::CreateRagdoll(const_cast<Physics::RagdollConfiguration&>(*ragdollConfig),
                 scene->GetSceneHandle());
+        }
+
+        template<class JointType, class ConfigurationType>
+        AzPhysics::Joint* CreateJoint(const ConfigurationType* configuration, 
+            AzPhysics::SceneHandle sceneHandle,
+            AzPhysics::SimulatedBodyHandle parentBodyHandle,
+            AzPhysics::SimulatedBodyHandle childBodyHandle, 
+            AZ::Crc32& crc)
+        {
+            JointType* newBody = aznew JointType(*configuration, sceneHandle, parentBodyHandle, childBodyHandle);
+            crc = AZ::Crc32(newBody, sizeof(*newBody));
+            return newBody;
         }
 
         //helper to perform a ray cast
@@ -473,6 +498,7 @@ namespace PhysX
                     // Disable simulation on body (not signaling OnSimulationBodySimulationDisabled event) 
                     DisableSimulationOfBodyInternal(*simulatedBody.second);
                 }
+                m_simulatedBodyRemovedEvent.Signal(m_sceneHandle, simulatedBody.second->m_bodyHandle);
                 delete simulatedBody.second;
             }
         }
@@ -617,7 +643,7 @@ namespace PhysX
         AZ::Crc32 newBodyCrc;
         if (azrtti_istypeof<AzPhysics::RigidBodyConfiguration>(simulatedBodyConfig))
         {
-            newBody = Internal::CreateSimulatedBody<RigidBody, AzPhysics::RigidBodyConfiguration>(
+            newBody = Internal::CreateRigidBody(
                 azdynamic_cast<const AzPhysics::RigidBodyConfiguration*>(simulatedBodyConfig), newBodyCrc);
         }
         else if (azrtti_istypeof<AzPhysics::StaticRigidBodyConfiguration>(simulatedBodyConfig))
@@ -713,7 +739,7 @@ namespace PhysX
         return results;
     }
 
-    void PhysXScene::RemoveSimulatedBody(AzPhysics::SimulatedBodyHandle bodyHandle)
+    void PhysXScene::RemoveSimulatedBody(AzPhysics::SimulatedBodyHandle& bodyHandle)
     {
         if (bodyHandle == AzPhysics::InvalidSimulatedBodyHandle)
         {
@@ -735,10 +761,12 @@ namespace PhysX
             m_deferredDeletions.push_back(m_simulatedBodies[index].second);
             m_simulatedBodies[index] = AZStd::make_pair(AZ::Crc32(), nullptr);
             m_freeSceneSlots.push(index);
+
+            bodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
         }
     }
 
-    void PhysXScene::RemoveSimulatedBodies(const AzPhysics::SimulatedBodyHandleList& bodyHandles)
+    void PhysXScene::RemoveSimulatedBodies(AzPhysics::SimulatedBodyHandleList& bodyHandles)
     {
         for (auto& handle: bodyHandles)
         {
@@ -791,6 +819,90 @@ namespace PhysX
         else
         {
             AZ_Warning("PhysXScene", false, "Unable to disable Simulated body, failed to find body.")
+        }
+    }
+
+    AzPhysics::JointHandle PhysXScene::AddJoint(const AzPhysics::JointConfiguration* jointConfig, 
+        AzPhysics::SimulatedBodyHandle parentBody, AzPhysics::SimulatedBodyHandle childBody) 
+    {
+        AzPhysics::Joint* newJoint = nullptr;
+        AZ::Crc32 newJointCrc;
+        if (azrtti_istypeof<PhysX::D6JointLimitConfiguration>(jointConfig))
+        {
+            newJoint = Internal::CreateJoint<PhysXD6Joint, D6JointLimitConfiguration>(
+                azdynamic_cast<const D6JointLimitConfiguration*>(jointConfig),
+                m_sceneHandle, parentBody, childBody, newJointCrc);
+        }
+        else if (azrtti_istypeof<PhysX::FixedJointConfiguration*>(jointConfig))
+        {
+            newJoint = Internal::CreateJoint<PhysXFixedJoint, FixedJointConfiguration>(
+                azdynamic_cast<const FixedJointConfiguration*>(jointConfig),
+                m_sceneHandle, parentBody, childBody, newJointCrc);
+        }
+        else if (azrtti_istypeof<PhysX::BallJointConfiguration*>(jointConfig))
+        {
+            newJoint = Internal::CreateJoint<PhysXBallJoint, BallJointConfiguration>(
+                azdynamic_cast<const BallJointConfiguration*>(jointConfig),
+                m_sceneHandle, parentBody, childBody, newJointCrc);
+        }
+        else if (azrtti_istypeof<PhysX::HingeJointConfiguration*>(jointConfig))
+        {
+            newJoint = Internal::CreateJoint<PhysXHingeJoint, HingeJointConfiguration>(
+                azdynamic_cast<const HingeJointConfiguration*>(jointConfig),
+                m_sceneHandle, parentBody, childBody, newJointCrc);
+        }
+        else
+        {
+            AZ_Warning("PhysXScene", false, "Unknown JointConfiguration.");
+            return AzPhysics::InvalidJointHandle;
+        }
+
+        if (newJoint != nullptr)
+        {
+            AzPhysics::JointIndex index = index = m_joints.size();
+            m_joints.emplace_back(newJointCrc, newJoint);
+
+            const AzPhysics::JointHandle newJointHandle(newJointCrc, index);
+            newJoint->m_sceneOwner = m_sceneHandle;
+            newJoint->m_jointHandle = newJointHandle;
+
+            return newJointHandle;
+        }
+
+        return AzPhysics::InvalidJointHandle;
+    }
+
+    AzPhysics::Joint* PhysXScene::GetJointFromHandle(AzPhysics::JointHandle jointHandle) 
+    {
+        if (jointHandle == AzPhysics::InvalidJointHandle)
+        {
+            return nullptr;
+        }
+
+        AzPhysics::JointIndex index = AZStd::get<AzPhysics::HandleTypeIndex::Index>(jointHandle);
+        if (index < m_joints.size()
+            && m_joints[index].first == AZStd::get<AzPhysics::HandleTypeIndex::Crc>(jointHandle))
+        {
+            return m_joints[index].second;
+        }
+        return nullptr;
+    }
+
+    void PhysXScene::RemoveJoint(AzPhysics::JointHandle jointHandle) 
+    {
+        if (jointHandle == AzPhysics::InvalidJointHandle)
+        {
+            return;
+        }
+        
+        AzPhysics::JointIndex index = AZStd::get<AzPhysics::HandleTypeIndex::Index>(jointHandle);
+        if (index < m_joints.size()
+            && m_joints[index].first == AZStd::get<AzPhysics::HandleTypeIndex::Crc>(jointHandle))
+        {
+            m_deferredDeletionsJoints.push_back(m_joints[index].second);
+            m_joints[index] = AZStd::make_pair(AZ::Crc32(), nullptr);
+            m_freeJointSlots.push(index);
+            jointHandle = AzPhysics::InvalidJointHandle;
         }
     }
 
@@ -976,6 +1088,13 @@ namespace PhysX
         for (auto* simulatedBody : deletions)
         {
             delete simulatedBody;
+        }
+
+        AZStd::vector<AzPhysics::Joint*> jointDeletions;
+        jointDeletions.swap(m_deferredDeletionsJoints);
+        for (auto* joint : jointDeletions)
+        {
+            delete joint;
         }
     }
 

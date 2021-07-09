@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #include "EditorDefs.h"
 
@@ -68,12 +63,12 @@ CTrackViewTrack::CTrackViewTrack(IAnimTrack* pTrack, CTrackViewAnimNode* pTrackA
 {
     // Search for child tracks
     const unsigned int subTrackCount = m_pAnimTrack->GetSubTrackCount();
-    for (unsigned int subTrackIndex = 0; subTrackIndex < subTrackCount; ++subTrackIndex)
+    for (unsigned int subTrackI = 0; subTrackI < subTrackCount; ++subTrackI)
     {
-        IAnimTrack* pSubTrack = m_pAnimTrack->GetSubTrack(subTrackIndex);
+        IAnimTrack* pSubTrack = m_pAnimTrack->GetSubTrack(subTrackI);
 
         CTrackViewTrackFactory trackFactory;
-        CTrackViewTrack* pNewTVTrack = trackFactory.BuildTrack(pSubTrack, pTrackAnimNode, this, true, subTrackIndex);
+        CTrackViewTrack* pNewTVTrack = trackFactory.BuildTrack(pSubTrack, pTrackAnimNode, this, true, subTrackI);
         m_childNodes.push_back(std::unique_ptr<CTrackViewNode>(pNewTVTrack));
     }
 

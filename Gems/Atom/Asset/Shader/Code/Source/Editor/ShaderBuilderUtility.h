@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -18,8 +13,9 @@
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 
 #include <Atom/RPI.Edit/Shader/ShaderSourceData.h>
-#include <Atom/RPI.Reflect/Shader/ShaderResourceGroupAsset.h>
+#include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 
+#include "AzslData.h"
 
 namespace AZ
 {
@@ -27,11 +23,9 @@ namespace AZ
     {
         class AzslCompiler;
         struct ShaderFiles;
-        struct AzslData;
         struct BindingDependencies;
         struct RootConstantData;
 
-        using ShaderResourceGroupAssets = AZStd::fixed_vector<Data::Asset<RPI::ShaderResourceGroupAsset>, RHI::Limits::Pipeline::ShaderResourceGroupCountMax>;
         using MapOfStringToStageType = AZStd::unordered_map<AZStd::string, RPI::ShaderStageType>;
 
         namespace ShaderBuilderUtility
@@ -39,8 +33,6 @@ namespace AZ
             Outcome<RPI::ShaderSourceData, AZStd::string> LoadShaderDataJson(const AZStd::string& fullPathToJsonFile);
 
             void GetAbsolutePathToAzslFile(const AZStd::string& shaderTemplatePathAndFile, AZStd::string specifiedShaderPathAndName, AZStd::string& absoluteShaderPath);
-
-            uint32_t MakeDebugByproductSubId(RHI::APIType apiType, const AZStd::string& productFileName);
 
             //! Opens and read the .shader, returns expanded file paths
             AZStd::shared_ptr<ShaderFiles> PrepareSourceInput(
@@ -54,25 +46,28 @@ namespace AZ
 
                 using SubId = RPI::ShaderAssetSubId;
                 // product sub id enumerators:
-                static constexpr SubId SubList[] = { SubId::PostPreprocessingPureAzsl, SubId::IaJson, SubId::OmJson, SubId::SrgJson, SubId::OptionsJson, SubId::BindingdepJson, SubId::GeneratedSource };
+                static constexpr SubId SubList[] = {SubId::FlatAzsl,
+                                                    SubId::IaJson,
+                                                    SubId::OmJson,
+                                                    SubId::SrgJson,
+                                                    SubId::OptionsJson,
+                                                    SubId::BindingdepJson,
+                                                    SubId::GeneratedHlslSource};
                 // in the same order, their file name suffix (they replicate what's in AzslcMain.cpp. and hlsl corresponds to what's in AzslBuilder.cpp)
                 
                 // a type to declare variables holding the full paths of their files
                 using Paths = AZStd::fixed_vector<AZStd::string, AZ_ARRAY_SIZE(SubList)>;
             };
 
-            //! Collects and generates the necessary data for compiling a shader.
+            //! Collects all the JSON files generated during AZSL compilation and loads the data as objects.
             //! @azslData must have paths correctly set.
-            //! shaderOptionGroupLayout, azslData, srgAssets get the output data.
+            //! @azslData, @srgLayoutList, @shaderOptionGroupLayout, @bindingDependencies and @rootConstantData get the output data.
             AssetBuilderSDK::ProcessJobResultCode PopulateAzslDataFromJsonFiles(
-                const char* builderName,
-                const AzslSubProducts::Paths& pathOfJsonFiles,
-                AzslData& azslData,
-                ShaderResourceGroupAssets& srgAssets,
-                RPI::Ptr<RPI::ShaderOptionGroupLayout> shaderOptionGroupLayout,
-                BindingDependencies& bindingDependencies,
-                RootConstantData& rootConstantData
-            );
+                const char* builderName, const AzslSubProducts::Paths& pathOfJsonFiles,
+                const bool platformUsesRegisterSpaces, AzslData& azslData,
+                RPI::ShaderResourceGroupLayoutList& srgLayoutList, RPI::Ptr<RPI::ShaderOptionGroupLayout> shaderOptionGroupLayout,
+                BindingDependencies& bindingDependencies, RootConstantData& rootConstantData);
+
 
             RHI::ShaderHardwareStage ToAssetBuilderShaderType(RPI::ShaderStageType stageType);
 
@@ -82,14 +77,25 @@ namespace AZ
             //! The pipeline layout descriptor is returned, but the same data will also be set into the @shaderPlatformInterface
             //! object, which is why it is important to call this method before calling shaderPlatformInterface->CompilePlatformInternal().
             RHI::Ptr<RHI::PipelineLayoutDescriptor> BuildPipelineLayoutDescriptorForApi(
-                const char* BuilderName,
-                RHI::ShaderPlatformInterface* shaderPlatformInterface,
-                BindingDependencies& bindingDependencies /*inout*/,
-                const ShaderResourceGroupAssets& srgAssets,
+                const char* builderName,
+                const RPI::ShaderResourceGroupLayoutList& srgLayoutList,
                 const MapOfStringToStageType& shaderEntryPoints,
                 const RHI::ShaderCompilerArguments& shaderCompilerArguments,
-                const RootConstantData* rootConstantData = nullptr
-            );
+                const RootConstantData& rootConstantData,
+                RHI::ShaderPlatformInterface* shaderPlatformInterface,
+                BindingDependencies& bindingDependencies /*inout*/);
+
+
+            bool CreateShaderInputAndOutputContracts(
+                const AzslData& azslData, const MapOfStringToStageType& shaderEntryPoints,
+                const RPI::ShaderOptionGroupLayout& shaderOptionGroupLayout, const AZStd::string& pathToOmJson,
+                const AZStd::string& pathToIaJson, RPI::ShaderInputContract& shaderInputContract,
+                RPI::ShaderOutputContract& shaderOutputContract, size_t& colorAttachmentCount);
+
+
+            //! Returns a list of acceptable default entry point names as a single string for debug messages.
+            AZStd::string GetAcceptableDefaultEntryPointNames(const AzslData& shaderData);
+
 
             //! Create a file from a string's content.
             //! That file will be named filename.api.azslin
@@ -121,23 +127,27 @@ namespace AZ
             AZStd::string ExtractStemName(const char* path);
 
             AZStd::vector<RHI::ShaderPlatformInterface*> DiscoverValidShaderPlatformInterfaces(const AssetBuilderSDK::PlatformInfo& info);
+            AZStd::vector<RHI::ShaderPlatformInterface*> DiscoverEnabledShaderPlatformInterfaces(
+                const AssetBuilderSDK::PlatformInfo& info, const RPI::ShaderSourceData& shaderSourceData);
+
+            // The idea is that the "Supervariants" json property is optional in .shader files,
+            // For cases when it is not specified, this function will return a vector with one item, the default, nameless, supervariant.
+            // If "Supervariants" is not empty, then this function will make sure the first supervariant in the list
+            // is the default, nameless, supervariant.
+            AZStd::vector<RPI::ShaderSourceData::SupervariantInfo> GetSupervariantListFromShaderSourceData(
+                const RPI::ShaderSourceData& shaderSourceData);
+
+            void GetDefaultEntryPointsFromFunctionDataList(
+                const AZStd::vector<FunctionData> azslFunctionDataList,
+                AZStd::unordered_map<AZStd::string, RPI::ShaderStageType>& shaderEntryPoints);
 
             void LogProfilingData(const char* builderName, AZStd::string_view shaderPath);
 
-            //! Job products sub id generation helper for AzslBuilder
-            uint32_t MakeAzslBuildProductSubId(RPI::ShaderAssetSubId subId, RHI::APIType apiType);
+            //! Returns the asset path of a product artifact produced by ShaderAssetBuilder.
+            Outcome<AZStd::string, AZStd::string> ObtainBuildArtifactPathFromShaderAssetBuilder(
+                const uint32_t rhiUniqueIndex, const AZStd::string& platformIdentifier, const AZStd::string& shaderJsonPath,
+                const uint32_t supervariantIndex, RPI::ShaderAssetSubId shaderAssetSubId);
 
-            //! Reconstructs the expected output product paths of the AzslBuilder (from the 2 arguments @azslSourceFullPath and @apiType)
-            Outcome<AzslSubProducts::Paths> ObtainBuildArtifactsFromAzslBuilder(const char* builderName, const AZStd::string& azslSourceFullPath, RHI::APIType apiType, const AZStd::string& platform);
-
-            //! Returns true if a file should skip processing.
-            //! Should be called only for non *.srgi files.
-            //! If the file contains "partial ShaderResourceGroup" (validated through a proper regular expression)
-            //! then it is skippable. If this same file also defines non-partial SRGs it will be skipped with error.
-            //! If the file doesn't contain "ShaderResourceGroup" then it does not define a ShaderResourceGroup
-            //! and it is skippable too.
-            enum class SrgSkipFileResult { Error, SkipFile, ContinueProcess };
-            SrgSkipFileResult ShouldSkipFileForSrgProcessing(const char* builderName, const AZStd::string_view fullPath);
         }  // ShaderBuilderUtility namespace
     } // ShaderBuilder namespace
 } // AZ

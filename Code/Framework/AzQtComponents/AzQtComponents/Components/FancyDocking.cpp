@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <cmath>
 
@@ -159,6 +154,8 @@ namespace AzQtComponents
         // Timer for updating our hovered drop zone opacity
         QObject::connect(m_dropZoneHoverFadeInTimer, &QTimer::timeout, this, &FancyDocking::onDropZoneHoverFadeInUpdate);
         m_dropZoneHoverFadeInTimer->setInterval(g_FancyDockingConstants.dropZoneHoverFadeUpdateIntervalMS);
+        QIcon dragIcon = QIcon(QStringLiteral(":/Cursors/Grabbing.svg"));
+        m_dragCursor = QCursor(dragIcon.pixmap(16), 5, 2);
     }
 
     FancyDocking::~FancyDocking()
@@ -1884,6 +1881,8 @@ namespace AzQtComponents
             return;
         }
 
+        QApplication::setOverrideCursor(m_dragCursor);
+
         QPoint relativePressPos = pressPos;
 
         // If we are dragging a floating window, we need to grab a reference to its
@@ -3565,6 +3564,11 @@ namespace AzQtComponents
      */
     void FancyDocking::clearDraggingState()
     {
+        if (QApplication::overrideCursor())
+        {
+            QApplication::restoreOverrideCursor();
+        }
+
         m_ghostWidget->hide();
 
         // Release the mouse and keyboard from our main window since we grab them when we start dragging
