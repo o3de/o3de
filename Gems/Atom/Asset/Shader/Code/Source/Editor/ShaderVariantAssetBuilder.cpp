@@ -428,16 +428,16 @@ namespace AZ
         {
             const auto& jobParameters = request.m_jobDescription.m_jobParameters;
 
-            if (jobParameters.find(ShaderVariantLoadErrorParam) != jobParameters.end())
+            if (jobParameters.contains(ShaderVariantLoadErrorParam))
             {
                 AZ_Error(ShaderVariantAssetBuilderName, false, "Error during CreateJobs: %s", jobParameters.at(ShaderVariantLoadErrorParam).c_str());
                 response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
                 return;
             }
             
-            if (jobParameters.find(ShouldExitEarlyFromProcessJobParam) != jobParameters.end())
+            if (jobParameters.contains(ShouldExitEarlyFromProcessJobParam))
             {
-                AZ_TracePrintf(ShaderVariantAssetBuilderName, "Doing nothing on behalf of [%s] because it's been overridden by game project.", jobParameters.at(ShaderVariantLoadErrorParam).c_str());
+                AZ_TracePrintf(ShaderVariantAssetBuilderName, "Doing nothing on behalf of [%s] because it's been overridden by game project.", jobParameters.at(ShouldExitEarlyFromProcessJobParam).c_str());
                 response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
                 return;
             }
