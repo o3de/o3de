@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/EBus/Event.h>
 
 // Forward Declares
 struct ImVec2;
@@ -86,9 +87,19 @@ namespace ImGui
         virtual void SetImGuiRenderResolution(const ImVec2& res) = 0;
         virtual void OverrideRenderWindowSize(uint32_t width, uint32_t height) = 0;
         virtual void RestoreRenderWindowSizeToDefault() = 0;
+        virtual void ToggleThroughImGuiVisibleState() = 0;
         virtual void SetDpiScalingFactor(float dpiScalingFactor) = 0;
         virtual float GetDpiScalingFactor() const = 0;
         virtual void Render() = 0;
+
+        using ImGuiSetEnabledEvent = AZ::Event<bool>;
+        ImGuiSetEnabledEvent m_setEnabledEvent;
+
+        // interface
+        void ConnectImGuiSetEnabledChangedHandler(ImGuiSetEnabledEvent::Handler& handler)
+        {
+            handler.Connect(m_setEnabledEvent);
+        }
     };
 
     class IImGuiManagerRequests
@@ -101,19 +112,30 @@ namespace ImGui
     };
     using ImGuiManagerBus = AZ::EBus<IImGuiManager, IImGuiManagerRequests>;
 
-    // Bus for getting notifications from the IMGUI Entity Outliner
-    class IImGuiEntityOutlinerNotifcations : public AZ::EBusTraits
+    class IImGuiManagerNotifications : public AZ::EBusTraits
     {
     public:
-        static const char* GetUniqueName() { return "IImGuiEntityOutlinerNotifcations"; }
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
-        using Bus = AZ::EBus<IImGuiEntityOutlinerNotifcations>;
+        using Bus = AZ::EBus<IImGuiManagerNotifications>;
+
+        virtual void ImGuiSetEnabled( [[maybe_unused]] bool enabled) {}
+    };
+    using ImGuiManagerNotificationBus = AZ::EBus<IImGuiManagerNotifications>;
+
+    // Bus for getting notifications from the IMGUI Entity Outliner
+    class IImGuiEntityOutlinerNotifications : public AZ::EBusTraits
+    {
+    public:
+        static const char* GetUniqueName() { return "IImGuiEntityOutlinerNotifications"; }
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+        using Bus = AZ::EBus<IImGuiEntityOutlinerNotifications>;
 
         // Callback for game code to handle targetting an IMGUI entity
         virtual void OnImGuiEntityOutlinerTarget(AZ::EntityId target) { (void)target;  }
     };
-    typedef AZ::EBus<IImGuiEntityOutlinerNotifcations> ImGuiEntityOutlinerNotifcationBus;
+    typedef AZ::EBus<IImGuiEntityOutlinerNotifications> ImGuiEntityOutlinerNotificationBus;
 
     // a pair of an entity id, and a typeid, used to represent component rtti type info
     typedef AZStd::pair<AZ::EntityId, AZ::TypeId> ImGuiEntComponentId;
