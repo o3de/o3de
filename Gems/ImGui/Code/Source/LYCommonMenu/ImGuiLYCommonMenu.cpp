@@ -571,7 +571,26 @@ namespace ImGui
                 // End LY Common Tools menu
                 ImGui::EndMenu();
             }
+            const int labelSize{ 100 };
+            const int buttonSize{ 40 };
             ImGuiUpdateListenerBus::Broadcast(&IImGuiUpdateListener::OnImGuiMainMenuUpdate);
+            ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - labelSize);
+            float backgroundHeight = ImGui::GetTextLineHeight() + 3;
+            ImVec2 cursorPos = ImGui::GetCursorScreenPos();
+            ImGui::GetWindowDrawList()->AddRectFilled(
+                cursorPos, ImVec2(cursorPos.x + labelSize, cursorPos.y + backgroundHeight), IM_COL32(0, 115, 187, 255));
+            ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - labelSize);
+            ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 1);
+            ImGui::Text("ImGui:ON");
+            ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - buttonSize);
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 0, 0, 255));
+            ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(255, 255, 255, 255));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(128, 128, 128, 255));
+            if (ImGui::SmallButton("home"))
+            {
+                ImGuiManagerBus::Broadcast(&IImGuiManager::ToggleThroughImGuiVisibleState);
+            }
+            ImGui::PopStyleColor(3);
             ImGui::EndMainMenuBar();
         }
 
