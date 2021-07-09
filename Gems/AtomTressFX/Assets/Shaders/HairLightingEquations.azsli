@@ -68,8 +68,6 @@
 float M_R_Marschner(float Lh, float meanOffset, float standardDeviation )
 {
     float phi = Lh - meanOffset;
-//    float top = exp(-0.5f * phi * phi / surface.roughnessA2);
-//    float bottom = sqrt(TWO_PI) * surface.roughnessA;
     float exponentSqrt = phi / standardDeviation;
     float top = exp(-0.5f * exponentSqrt * exponentSqrt);
     float normalizer = sqrt(TWO_PI) * standardDeviation;  // divides by the width.
@@ -80,8 +78,8 @@ float M_R_Marschner(float Lh, float meanOffset, float standardDeviation )
 // Notice that tilt and roughness multipliers are a-priori per Epic artistic taste 
 float M_R(Surface surface, float Lh, float sinLiPlusSinLr)
 {
-    float a = 3.0f * surface.cuticleTilt;   // Tilt is translate as the mean offset
-    float b = surface.roughnessA2;          // Roughness is used as the standard deviation
+    float a = 1.0f * surface.cuticleTilt;   // Tilt is translate as the mean offset
+    float b = 0.5 * surface.roughnessA2;    // Roughness is used as the standard deviation
 
 //    return M_R_Marschner(Lh, a, b);
 //    return GaussianNormalized(sinLiPlusSinLr, a, b);
@@ -98,10 +96,12 @@ float M_TT(Surface surface, float Lh, float sinLiPlusSinLr)
 
 float M_TRT(Surface surface, float Lh, float sinLiPlusSinLr)
 {
-    float a = 3.0 * surface.cuticleTilt;
-    float b = 2.0 * surface.roughnessA2;
+    float a = 1.5 * surface.cuticleTilt;
+    float b = 1.0 * surface.roughnessA2;
+
 //    return GaussianNormalized(sinLiPlusSinLr, a, b);
-    return GaussianNormalized(Lh, a, b);    return GaussianNormalized(Lh, a, b);
+//    return M_R_Marschner(Lh, a, b);
+    return GaussianNormalized(Lh, a, b);    
 }
 
 
@@ -139,20 +139,20 @@ float3 N_TT(Surface surface, float n2, float cos_O, float cos_O2, float3 cos_Ld,
     return absorption * (fresnel * distribution);
 }
 
-float N_TRT(Surface surface, float cos_O, float3 cos_Ld, float f0)
+float3 N_TRT(Surface surface, float cos_O, float3 cos_Ld, float f0)
 {
     // Helper variables (see papers)
-    float h = sqrt(3) * 0.5;
+    float h = sqrt(3.0f) * 0.5f;
 
     // Fresnel part of the attentuation term (A in the papers)
     float fresnel = FresnelSchlick(cos_Ld * sqrt( 1 - (h*h) ), f0);
     fresnel = Pow2(1 - fresnel) * fresnel;
 
     // How much light the hair will absorb. Part of the attenuation term (A in the papers)
-    float3 absorption = pow(surface.albedo, 0.8 * cos_Ld);
+    float3 absorption = pow(surface.albedo, 0.8f / max(cos_Ld, 0.001) ); // [To Do] Adi: verify correctness of bound
 
     // Distribution term
-    float distribution = exp(17 * cos_O - 16.78);
+    float distribution = exp(17.0f * cos_O - 16.78f);
 
     return absorption * (fresnel * distribution);
 }

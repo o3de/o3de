@@ -339,7 +339,7 @@ void ApplyAllPointLights(Surface surface, inout LightingData lightingData)
 //                             Disk Lights
 //==============================================================================
 #include <Atom/Features/PBR/Lights/DiskLight.azsli>
-
+/*
 void TestApplyDiskLight(ViewSrg::DiskLight light, Surface surface, inout LightingData lightingData)
 {
     float3 posToLight = light.m_position - surface.position;
@@ -476,7 +476,7 @@ void TestApplyDiskLight(ViewSrg::DiskLight light, Surface surface, inout Lightin
         lightingData.specularLighting += diskIntensityNormalization * GetSpecularLighting(surface, lightingData, lightIntensity, normalize(posToLight)) * litRatio;
     }
 }
-
+*/
 
 void ApplyAllDiskLights(Surface surface, inout LightingData lightingData)
 {    
@@ -484,7 +484,7 @@ void ApplyAllDiskLights(Surface surface, inout LightingData lightingData)
     for (int l = 0; l < ViewSrg::m_diskLightCount; ++l)
     {
         ViewSrg::DiskLight light = ViewSrg::m_diskLights[l];
-        TestApplyDiskLight(light, surface, lightingData);
+        ApplyDiskLight(light, surface, lightingData);
     }
 }
 
@@ -502,8 +502,6 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
 
     SetNormal(surface.tangent, -lightingData.dirToCamera, surface, lightingData);
 
-    // [To Do] Adi: avoid directional shadows for now
-    /*
 //    if (o_enableShadows && shadowIndex <  SceneSrg::m_directionalLightCount)
     if (shadowIndex <  SceneSrg::m_directionalLightCount)
     {
@@ -513,12 +511,12 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
             surface.normal,
             debugInfo);
 
-        if (o_transmission_mode == TransmissionMode::ThickObject)
-        {
-            backShadowRatio = DirectionalLightShadow::GetThickness(shadowIndex, lightingData.shadowCoords);
-        }
+//        if (o_transmission_mode == TransmissionMode::ThickObject)
+//        {
+//            backShadowRatio = DirectionalLightShadow::GetThickness(shadowIndex, lightingData.shadowCoords);
+//        }
     }
-    */
+    
     // Add the lighting contribution for each directional light
     for (int index = 0; index < SceneSrg::m_directionalLightCount; index++)
     {
