@@ -972,11 +972,11 @@ namespace UnitTest
     };
 
 
-    class TestExportEditorComponent
+    class SliceTestExportEditorComponent
         : public AzToolsFramework::Components::EditorComponentBase
     {
     public:
-        AZ_COMPONENT(TestExportEditorComponent, "{8FA877A2-38E6-49AD-B31E-71B86DC8BB03}", AzToolsFramework::Components::EditorComponentBase);
+        AZ_COMPONENT(SliceTestExportEditorComponent, "{8FA877A2-38E6-49AD-B31E-71B86DC8BB03}", AzToolsFramework::Components::EditorComponentBase);
 
         enum ExportComponentType
         {
@@ -986,9 +986,9 @@ namespace UnitTest
             EXPORT_NULL_COMPONENT
         };
 
-        TestExportEditorComponent() {}
+        SliceTestExportEditorComponent() {}
 
-        TestExportEditorComponent(ExportComponentType exportType, bool exportHandled) :
+        SliceTestExportEditorComponent(ExportComponentType exportType, bool exportHandled) :
             m_exportType(exportType),
             m_exportHandled(exportHandled)
         {}
@@ -1000,15 +1000,15 @@ namespace UnitTest
         {
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
-                serializeContext->Class<TestExportEditorComponent, AzToolsFramework::Components::EditorComponentBase>()
+                serializeContext->Class<SliceTestExportEditorComponent, AzToolsFramework::Components::EditorComponentBase>()
                     ;
 
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
-                    editContext->Class<TestExportEditorComponent>(
+                    editContext->Class<SliceTestExportEditorComponent>(
                         "Test Export Editor Component", "Validate different options for exporting editor components")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::RuntimeExportCallback, &TestExportEditorComponent::ExportComponent)
+                        ->Attribute(AZ::Edit::Attributes::RuntimeExportCallback, &SliceTestExportEditorComponent::ExportComponent)
                         ;
                 }
             }
@@ -1070,7 +1070,7 @@ namespace UnitTest
 
             m_app.RegisterComponentDescriptor(TestExportRuntimeComponent::CreateDescriptor());
             m_app.RegisterComponentDescriptor(TestExportOtherRuntimeComponent::CreateDescriptor());
-            m_app.RegisterComponentDescriptor(TestExportEditorComponent::CreateDescriptor());
+            m_app.RegisterComponentDescriptor(SliceTestExportEditorComponent::CreateDescriptor());
 
             m_editorSliceAsset = Data::AssetManager::Instance().CreateAsset<SliceAsset>(Data::AssetId(Uuid::CreateRandom()));
 
@@ -1125,11 +1125,11 @@ namespace UnitTest
         }
 
         // create entity containing the EditorOnly component in the editor slice
-        void CreateTestExportEditorEntity(const char* name, TestExportEditorComponent::ExportComponentType exportType, bool exportHandled)
+        void CreateTestExportEditorEntity(const char* name, SliceTestExportEditorComponent::ExportComponentType exportType, bool exportHandled)
         {
             AZ::Entity* entity = aznew AZ::Entity(name);
             entity->CreateComponent<AzToolsFramework::Components::TransformComponent>();
-            entity->CreateComponent<TestExportEditorComponent>(exportType, exportHandled);
+            entity->CreateComponent<SliceTestExportEditorComponent>(exportType, exportHandled);
             m_editorSliceComponent->AddEntity(entity);
         }
 
@@ -1314,7 +1314,7 @@ namespace UnitTest
     TEST_F(SliceCompilerTest, RuntimeExportCallback_EditorComponentExportedSuccessfully)
     {
         // Create an editor component that has a RuntimeExportCallback and successfully exports itself
-        CreateTestExportEditorEntity("EntityWithEditorComponent", TestExportEditorComponent::ExportComponentType::EXPORT_OTHER_RUNTIME_COMPONENT, true);
+        CreateTestExportEditorEntity("EntityWithEditorComponent", SliceTestExportEditorComponent::ExportComponentType::EXPORT_OTHER_RUNTIME_COMPONENT, true);
 
         if (!CompileSlice())
         {
@@ -1325,7 +1325,7 @@ namespace UnitTest
         // (A result of Runtime component means BuildGameEntity() ran instead)
         AZ::Entity* entity = GetCompiledEntity("EntityWithEditorComponent");
         EXPECT_TRUE(entity);
-        EXPECT_FALSE(entity->FindComponent<TestExportEditorComponent>());
+        EXPECT_FALSE(entity->FindComponent<SliceTestExportEditorComponent>());
         EXPECT_FALSE(entity->FindComponent<TestExportRuntimeComponent>());
         EXPECT_TRUE(entity->FindComponent<TestExportOtherRuntimeComponent>());
     }
@@ -1333,7 +1333,7 @@ namespace UnitTest
     TEST_F(SliceCompilerTest, RuntimeExportCallback_EditorComponentExportSuppressed)
     {
         // Create an editor component that has a RuntimeExportCallback and successfully suppresses itself from exporting
-        CreateTestExportEditorEntity("EntityWithEditorComponent", TestExportEditorComponent::ExportComponentType::EXPORT_NULL_COMPONENT, true);
+        CreateTestExportEditorEntity("EntityWithEditorComponent", SliceTestExportEditorComponent::ExportComponentType::EXPORT_NULL_COMPONENT, true);
 
         if (!CompileSlice())
         {
@@ -1343,7 +1343,7 @@ namespace UnitTest
         // Expected result:  exported slice does NOT contain either component.
         AZ::Entity* entity = GetCompiledEntity("EntityWithEditorComponent");
         EXPECT_TRUE(entity);
-        EXPECT_FALSE(entity->FindComponent<TestExportEditorComponent>());
+        EXPECT_FALSE(entity->FindComponent<SliceTestExportEditorComponent>());
         EXPECT_FALSE(entity->FindComponent<TestExportRuntimeComponent>());
         EXPECT_FALSE(entity->FindComponent<TestExportOtherRuntimeComponent>());
     }
@@ -1351,7 +1351,7 @@ namespace UnitTest
     TEST_F(SliceCompilerTest, RuntimeExportCallback_EditorComponentExportUnhandledFallbackToBuildGameEntity)
     {
         // Create an editor component that has a RuntimeExportCallback, returns a pointer to itself, but says it wasn't handled.
-        CreateTestExportEditorEntity("EntityWithEditorComponent", TestExportEditorComponent::ExportComponentType::EXPORT_EDITOR_COMPONENT, false);
+        CreateTestExportEditorEntity("EntityWithEditorComponent", SliceTestExportEditorComponent::ExportComponentType::EXPORT_EDITOR_COMPONENT, false);
 
         if (!CompileSlice())
         {
@@ -1362,7 +1362,7 @@ namespace UnitTest
         // produced a runtime component.
         AZ::Entity* entity = GetCompiledEntity("EntityWithEditorComponent");
         EXPECT_TRUE(entity);
-        EXPECT_FALSE(entity->FindComponent<TestExportEditorComponent>());
+        EXPECT_FALSE(entity->FindComponent<SliceTestExportEditorComponent>());
         EXPECT_TRUE(entity->FindComponent<TestExportRuntimeComponent>());
         EXPECT_FALSE(entity->FindComponent<TestExportOtherRuntimeComponent>());
     }
@@ -1370,7 +1370,7 @@ namespace UnitTest
     TEST_F(SliceCompilerTest, RuntimeExportCallback_EditorComponentExportSuppressedAndUnhandledFallbackToBuildGameEntity)
     {
         // Create an editor component that has a RuntimeExportCallback and suppresses itself from exporting, but says it wasn't handled
-        CreateTestExportEditorEntity("EntityWithEditorComponent", TestExportEditorComponent::ExportComponentType::EXPORT_NULL_COMPONENT, false);
+        CreateTestExportEditorEntity("EntityWithEditorComponent", SliceTestExportEditorComponent::ExportComponentType::EXPORT_NULL_COMPONENT, false);
 
         if (!CompileSlice())
         {
@@ -1381,7 +1381,7 @@ namespace UnitTest
         // produced a runtime component.
         AZ::Entity* entity = GetCompiledEntity("EntityWithEditorComponent");
         EXPECT_TRUE(entity);
-        EXPECT_FALSE(entity->FindComponent<TestExportEditorComponent>());
+        EXPECT_FALSE(entity->FindComponent<SliceTestExportEditorComponent>());
         EXPECT_TRUE(entity->FindComponent<TestExportRuntimeComponent>());
         EXPECT_FALSE(entity->FindComponent<TestExportOtherRuntimeComponent>());
     }
@@ -1389,7 +1389,7 @@ namespace UnitTest
     TEST_F(SliceCompilerTest, RuntimeExportCallback_EditorComponentFailsToExportItself)
     {
         // Create an editor component that has a RuntimeExportCallback and suppresses itself from exporting, but says it wasn't handled
-        CreateTestExportEditorEntity("EntityWithEditorComponent", TestExportEditorComponent::ExportComponentType::EXPORT_EDITOR_COMPONENT, true);
+        CreateTestExportEditorEntity("EntityWithEditorComponent", SliceTestExportEditorComponent::ExportComponentType::EXPORT_EDITOR_COMPONENT, true);
 
         // We expect the slice compilation to fail, since an editor component is being exported as a game component
         CompileSlice(false);

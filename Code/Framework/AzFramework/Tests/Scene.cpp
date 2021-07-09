@@ -9,7 +9,6 @@
 
 AZ_PUSH_DISABLE_WARNING(, "-Wdelete-non-virtual-dtor")
 
-#include <FrameworkApplicationFixture.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/Component.h>

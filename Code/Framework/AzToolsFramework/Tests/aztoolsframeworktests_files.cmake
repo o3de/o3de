@@ -100,4 +100,19 @@ set(FILES
     Viewport/ClusterTests.cpp
     Viewport/ViewportUiWidgetManagerTests.cpp
     Visibility/EditorVisibilityTests.cpp
+    ComponentAdapterTests.cpp
+    ComponentAddRemove.cpp
+    EntityTestbed.h
+    GenericComponentWrapperTest.cpp
+    InstanceDataHierarchy.cpp
+    Slices.cpp
+    SQLiteConnectionTests.cpp
+    TransformComponent.cpp
+    EntityOwnershipService/EntityOwnershipServiceTestFixture.h
+    EntityOwnershipService/EntityOwnershipServiceTestFixture.cpp
+    EntityOwnershipService/SliceEditorEntityOwnershipTests.cpp
+    EntityOwnershipService/SliceEntityOwnershipTests.cpp
+    Script/ScriptComponentTests.cpp
+    Script/ScriptEntityTests.cpp
+    FileFunc.cpp
 )
