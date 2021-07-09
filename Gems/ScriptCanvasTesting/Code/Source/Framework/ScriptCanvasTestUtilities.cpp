@@ -470,14 +470,6 @@ namespace ScriptCanvasTests
     AZ::u32 TestBehaviorContextObject::s_createdCount = 0;
     AZ::u32 TestBehaviorContextObject::s_destroyedCount = 0;
 
-    ScriptCanvas::Nodes::Core::BehaviorContextObjectNode* CreateTestObjectNode(const AZ::EntityId& graphUniqueId, AZ::EntityId& entityOut, const AZ::Uuid& objectTypeID)
-    {
-        ScriptCanvas::Nodes::Core::BehaviorContextObjectNode* node = CreateTestNode<ScriptCanvas::Nodes::Core::BehaviorContextObjectNode>(graphUniqueId, entityOut);
-        EXPECT_TRUE(node != nullptr);
-        node->InitializeObject(objectTypeID);
-        return node;
-    }
-
     AZ::EntityId CreateClassFunctionNode(const ScriptCanvasId& scriptCanvasId, AZStd::string_view className, AZStd::string_view methodName)
     {
         using namespace ScriptCanvas;
@@ -493,93 +485,6 @@ namespace ScriptCanvasTests
         EXPECT_TRUE(methodNode != nullptr);
         methodNode->InitializeBehaviorMethod(emptyNamespaces, className, methodName, ScriptCanvas::PropertyStatus::None);
         return methodNodeID;
-    }
-
-    ScriptCanvas::Node* CreateDataNodeByType(const ScriptCanvasId& scriptCanvasId, const ScriptCanvas::Data::Type& type, AZ::EntityId& nodeIDout)
-    {
-        using namespace ScriptCanvas;
-
-        Node* node(nullptr);
-
-        switch (type.GetType())
-        {
-        case Data::eType::AABB:
-            node = CreateTestNode<ScriptCanvas::Nodes::Math::AABB>(scriptCanvasId, nodeIDout);
-            break;
-
-        case Data::eType::BehaviorContextObject:
-        {
-            auto objectNode = CreateTestNode<ScriptCanvas::Nodes::Core::BehaviorContextObjectNode>(scriptCanvasId, nodeIDout);
-            objectNode->InitializeObject(type);
-            node = objectNode;
-        }
-        break;
-
-        case Data::eType::Boolean:
-            node = CreateTestNode<ScriptCanvas::Nodes::Logic::Boolean>(scriptCanvasId, nodeIDout);
-            break;
-
-        case Data::eType::Color:
-            node = CreateTestNode<ScriptCanvas::Nodes::Math::Color>(scriptCanvasId, nodeIDout);
-            break;
-
-        case Data::eType::CRC:
-            node = CreateTestNode<ScriptCanvas::Nodes::Math::CRC>(scriptCanvasId, nodeIDout);
-            break;
-
-        case Data::eType::EntityID:
-            node = CreateTestNode<ScriptCanvas::Nodes::Entity::EntityRef>(scriptCanvasId, nodeIDout);
-            break;
-
-        case Data::eType::Matrix3x3:
-            node = CreateTestNode<ScriptCanvas::Nodes::Math::Matrix3x3>(scriptCanvasId, nodeIDout);
-            break;
-
-        case Data::eType::Matrix4x4:
-            node = CreateTestNode<ScriptCanvas::Nodes::Math::Matrix4x4>(scriptCanvasId, nodeIDout);
-            break;
-
-        case Data::eType::Number:
-            node = CreateTestNode<ScriptCanvas::Nodes::Math::Number>(scriptCanvasId, nodeIDout);
-            break;
-
-        case Data::eType::OBB:
-            node = CreateTestNode<ScriptCanvas::Nodes::Math::OBB>(scriptCanvasId, nodeIDout);
-            break;
-
-        case Data::eType::Plane:
-            node = CreateTestNode<ScriptCanvas::Nodes::Math::Plane>(scriptCanvasId, nodeIDout);
-            break;
-
-        case Data::eType::Quaternion:
-            node = CreateTestNode<ScriptCanvas::Nodes::Math::Quaternion>(scriptCanvasId, nodeIDout);
-            break;
-
-        case Data::eType::String:
-            node = CreateTestNode<ScriptCanvas::Nodes::Core::String>(scriptCanvasId, nodeIDout);
-            break;
-
-        case Data::eType::Transform:
-            node = CreateTestNode<ScriptCanvas::Nodes::Math::Transform>(scriptCanvasId, nodeIDout);
-            break;
-
-        case Data::eType::Vector2:
-            node = CreateTestNode<ScriptCanvas::Nodes::Math::Vector2>(scriptCanvasId, nodeIDout);
-            break;
-
-        case Data::eType::Vector3:
-            node = CreateTestNode<ScriptCanvas::Nodes::Math::Vector3>(scriptCanvasId, nodeIDout);
-            break;
-
-        case Data::eType::Vector4:
-            node = CreateTestNode<ScriptCanvas::Nodes::Math::Vector4>(scriptCanvasId, nodeIDout);
-            break;
-
-        default:
-            AZ_Error("ScriptCanvas", false, "unsupported data type");
-        }
-
-        return node;
     }
 
     AZStd::string SlotDescriptorToString(ScriptCanvas::SlotDescriptor descriptor)

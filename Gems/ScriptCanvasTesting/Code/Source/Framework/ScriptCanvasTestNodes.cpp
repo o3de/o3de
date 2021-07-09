@@ -33,25 +33,6 @@ namespace TestNodes
         AddSlot(slotConfiguration);
     }
 
-    void TestResult::OnInputSignal(const ScriptCanvas::SlotId&)
-    {
-        auto valueDatum = FindDatum(GetSlotId("Value"));
-        if (!valueDatum)
-        {
-            return;
-        }
-
-        valueDatum->ToString(m_string);
-
-        // technically, I should remove this, make it an object that holds a string, with an untyped slot, and this could be a local value
-        if (!m_string.empty())
-        {
-            AZ_TracePrintf("Script Canvas", "%s\n", m_string.c_str());
-        }
-
-        SignalOutput(GetSlotId(ScriptCanvas::CommonSlots::GeneralOutSlot::GetName()));
-    }
-
     void TestResult::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
@@ -105,11 +86,6 @@ namespace TestNodes
         AddSlot(ScriptCanvas::DataSlotConfiguration(Data::Type::Number(), "Get Number", ScriptCanvas::ConnectionType::Output));
     }
 
-    void ContractNode::OnInputSignal(const ScriptCanvas::SlotId&)
-    {
-        SignalOutput(GetSlotId(ScriptCanvas::CommonSlots::GeneralOutSlot::GetName()));
-    }
-
     //////////////////////////////////////////////////////////////////////////////
     void InfiniteLoopNode::Reflect(AZ::ReflectContext* reflection)
     {
@@ -119,11 +95,6 @@ namespace TestNodes
                 ->Version(0)
                 ;
         }
-    }
-
-    void InfiniteLoopNode::OnInputSignal(const ScriptCanvas::SlotId&)
-    {
-        SignalOutput(GetSlotId("Before Infinity"));
     }
 
     void InfiniteLoopNode::OnInit()
@@ -157,13 +128,6 @@ namespace TestNodes
         slotConfiguration.m_dynamicDataType = ScriptCanvas::DynamicDataType::Any;
 
         AddSlot(slotConfiguration);
-    }
-
-    void UnitTestErrorNode::OnInputSignal(const ScriptCanvas::SlotId&)
-    {
-        SCRIPTCANVAS_REPORT_ERROR((*this), "Unit test error!");
-
-        SignalOutput(GetSlotId("Out"));
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -203,30 +167,6 @@ namespace TestNodes
     {
         AZStd::erase_if(m_dynamicSlotIds, [slotId](const ScriptCanvas::SlotId& sId) { return (sId == slotId); });
         return Node::RemoveSlot(slotId, true, emitWarning);
-    }
-
-    void AddNodeWithRemoveSlot::OnInputSignal(const ScriptCanvas::SlotId& slotId)
-    {
-        if (slotId == GetSlotId("In"))
-        {
-            ScriptCanvas::Data::NumberType result{};
-            for (const ScriptCanvas::SlotId& dynamicSlotId : m_dynamicSlotIds)
-            {
-                if (auto numberInput = FindDatum(dynamicSlotId))
-                {
-                    if (auto argValue = numberInput->GetAs<ScriptCanvas::Data::NumberType>())
-                    {
-                        result += *argValue;
-                    }
-                }
-            }
-
-            auto resultType = GetSlotDataType(m_resultSlotId);
-            EXPECT_TRUE(resultType.IsValid());
-            ScriptCanvas::Datum output(result);;
-            PushOutput(output, *GetSlot(m_resultSlotId));
-            SignalOutput(GetSlotId("Out"));
-        }
     }
 
     void AddNodeWithRemoveSlot::OnInit()
@@ -290,28 +230,6 @@ namespace TestNodes
     }
 
     //////////////////////////////////////////////////////////////////////////////
-
-    void StringView::OnInputSignal(const ScriptCanvas::SlotId&)
-    {
-        auto viewDatum = FindDatum(GetSlotId("View"));
-
-        if (!viewDatum)
-        {
-            return;
-        }
-
-        ScriptCanvas::Data::StringType result;
-        viewDatum->ToString(result);
-
-        ScriptCanvas::Datum output(result);
-        auto resultSlot = GetSlot(m_resultSlotId);
-        if (resultSlot)
-        {
-            PushOutput(output, *resultSlot);
-        }
-        SignalOutput(GetSlotId("Out"));
-    }
-
     void StringView::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
@@ -352,36 +270,6 @@ namespace TestNodes
         }
 
         return addedSlotId;
-    }
-
-
-    void InsertSlotConcatNode::OnInputSignal(const ScriptCanvas::SlotId& slotId)
-    {
-        if (slotId == GetSlotId(ScriptCanvas::CommonSlots::GeneralInSlot::GetName()))
-        {
-            ScriptCanvas::Data::StringType result{};
-
-            for (const ScriptCanvas::Slot* concatSlot : GetAllSlotsByDescriptor(ScriptCanvas::SlotDescriptors::DataIn()))
-            {
-                if (auto inputDatum = FindDatum(concatSlot->GetId()))
-                {
-                    ScriptCanvas::Data::StringType stringArg;
-                    if (inputDatum->ToString(stringArg))
-                    {
-                        result += stringArg;
-                    }
-                }
-            }
-
-            auto resultSlotId = GetSlotId("Result");
-            auto resultType = GetSlotDataType(resultSlotId);
-            EXPECT_TRUE(resultType.IsValid());
-            if (auto resultSlot = GetSlot(resultSlotId))
-            {
-                PushOutput(ScriptCanvas::Datum(result), *resultSlot);
-            }
-            SignalOutput(GetSlotId("Out"));
-        }
     }
 
     void InsertSlotConcatNode::OnInit()

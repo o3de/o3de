@@ -21,7 +21,6 @@
 #include <Editor/Assets/ScriptCanvasAssetTrackerDefinitions.h>
 
 #include <ScriptCanvas/Asset/ScriptCanvasAssetBase.h>
-#include <ScriptCanvas/Asset/Functions/ScriptCanvasFunctionAsset.h>
 #include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
 
 #include <ScriptCanvas/Bus/ScriptCanvasBus.h>

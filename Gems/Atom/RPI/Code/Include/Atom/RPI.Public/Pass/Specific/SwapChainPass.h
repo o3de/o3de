@@ -15,7 +15,6 @@
 #include <Atom/RHI.Reflect/Format.h>
 #include <Atom/RHI.Reflect/SwapChainDescriptor.h>
 
-#include <Atom/RPI.Public/Pass/AttachmentReadback.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 
 #include <AzFramework/Windowing/WindowBus.h>
@@ -88,9 +87,6 @@ namespace AZ
 
             // Name of the template used to create the child pass. Needed for Recreate()
             Name m_childTemplateName;
-
-            // For read back swap chain
-            AZStd::shared_ptr<AttachmentReadback> m_swapChainReadback;
         };
 
     }   // namespace RPI

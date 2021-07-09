@@ -75,19 +75,6 @@ namespace ScriptCanvasDeveloper
             {
                 ReportError("Active graph is not the newly created graph using hotkey.");
             }
-            else
-            {
-                ScriptCanvas::ScriptCanvasId scriptCanvasId;
-                ScriptCanvasEditor::GeneralRequestBus::BroadcastResult(scriptCanvasId, &ScriptCanvasEditor::GeneralRequests::GetScriptCanvasId, activeGraphCanvasId);
-
-                bool isRuntimeGraph = false;
-                ScriptCanvasEditor::EditorGraphRequestBus::EventResult(isRuntimeGraph, scriptCanvasId, &ScriptCanvasEditor::EditorGraphRequests::IsRuntimeGraph);
-
-                if (!isRuntimeGraph)
-                {
-                    ReportError("Failed to create Runtime graph using button");
-                }
-            }
         }
 
         GraphCanvas::AssetEditorNotificationBus::Handler::BusDisconnect();

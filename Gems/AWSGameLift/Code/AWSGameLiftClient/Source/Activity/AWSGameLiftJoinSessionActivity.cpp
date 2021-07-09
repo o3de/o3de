@@ -27,6 +27,13 @@ namespace AWSGameLift
             // Required attributes
             request.SetPlayerId(joinSessionRequest.m_playerId.c_str());
             request.SetGameSessionId(joinSessionRequest.m_sessionId.c_str());
+
+            AZ_TracePrintf(AWSGameLiftJoinSessionActivityName,
+                "Built CreatePlayerSessionRequest with PlayerData=%s, PlayerId=%s and GameSessionId=%s",
+                request.GetPlayerData().c_str(),
+                request.GetPlayerId().c_str(),
+                request.GetGameSessionId().c_str());
+
             return request;
         }
 
@@ -40,6 +47,13 @@ namespace AWSGameLift
             sessionConnectionConfig.m_ipAddress = createPlayerSessionResult.GetPlayerSession().GetIpAddress().c_str();
             sessionConnectionConfig.m_playerSessionId = createPlayerSessionResult.GetPlayerSession().GetPlayerSessionId().c_str();
             sessionConnectionConfig.m_port = createPlayerSessionResult.GetPlayerSession().GetPort();
+
+            AZ_TracePrintf(AWSGameLiftJoinSessionActivityName,
+                "Built SessionConnectionConfig with IpAddress=%s, PlayerSessionId=%s and Port=%d",
+                sessionConnectionConfig.m_ipAddress.c_str(),
+                sessionConnectionConfig.m_playerSessionId.c_str(),
+                sessionConnectionConfig.m_port);
+
             return sessionConnectionConfig;
         }
 
@@ -54,6 +68,8 @@ namespace AWSGameLift
             Aws::GameLift::Model::CreatePlayerSessionRequest request =
                 BuildAWSGameLiftCreatePlayerSessionRequest(joinSessionRequest);
             auto createPlayerSessionOutcome = gameliftClient.CreatePlayerSession(request);
+            AZ_TracePrintf(AWSGameLiftJoinSessionActivityName,
+                "CreatePlayerSession request for player %s against Amazon GameLift service is complete", joinSessionRequest.m_playerId.c_str());
 
             if (!createPlayerSessionOutcome.IsSuccess())
             {
@@ -72,11 +88,13 @@ namespace AWSGameLift
                 auto clientRequestHandler = AZ::Interface<AzFramework::ISessionHandlingClientRequests>::Get();
                 if (clientRequestHandler)
                 {
-                    AZ_TracePrintf(AWSGameLiftJoinSessionActivityName, "Requesting player to connect to game session ...");
-
                     AzFramework::SessionConnectionConfig sessionConnectionConfig =
                         BuildSessionConnectionConfig(createPlayerSessionOutcome);
+
+                    AZ_TracePrintf(AWSGameLiftJoinSessionActivityName,
+                        "Requesting and validating player session %s to connect to game session ...", sessionConnectionConfig.m_playerSessionId.c_str());
                     result = clientRequestHandler->RequestPlayerJoinSession(sessionConnectionConfig);
+                    AZ_TracePrintf(AWSGameLiftJoinSessionActivityName, "Started connection process, and connection validation is in process.");
                 }
                 else
                 {

@@ -5,6 +5,6 @@
 #
 #
 
-ly_associate_package(PACKAGE_NAME NvCloth-1.1.6-rev2-multiplatform TARGETS NvCloth PACKAGE_HASH 535d927782fa5d3086c5f813c46392ee3c294fc117dcd87b055d469c3f034356)
+ly_associate_package(PACKAGE_NAME NvCloth-v1.1.6-4-gd243404-pr58-rev1-android TARGETS NvCloth PACKAGE_HASH 01eb0bc7fae91bb088a7d4c0f9555743a2c442f7b823a89072eacad361a20b42)
 
 set(PAL_TRAIT_NVCLOTH_USE_STUB FALSE)
