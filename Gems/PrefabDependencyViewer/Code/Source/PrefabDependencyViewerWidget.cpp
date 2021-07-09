@@ -48,6 +48,8 @@ namespace PrefabDependencyViewer
     void PrefabDependencyViewerWidget::DisplayTree([[maybe_unused]]const Utils::DirectedGraph& graph)
     {
         m_sceneId = CreateNewGraph();
+        int widestLevelSize = 0;
+        AZStd::vector nodeCountAtEachLevel = graph.countNodesAtEachLevel(widestLevelSize);
         CreateNodeUi(AzToolsFramework::Prefab::InvalidTemplateId);
     }
 

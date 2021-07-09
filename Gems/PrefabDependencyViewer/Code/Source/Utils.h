@@ -11,6 +11,7 @@
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomTypes.h>
 #include <AzCore/std/algorithm.h>
+#include <AzCore/std/containers/vector.h>
 
 namespace PrefabDependencyViewer
 {
@@ -116,6 +117,50 @@ namespace PrefabDependencyViewer
                 AZStd::for_each(m_nodes.begin(), m_nodes.end(), delete_node);
             }
 
+            AZStd::vector<int> countNodesAtEachLevel(int& widestLevelSize) const
+            {
+                /** Directed Graph can't have cycles because of the
+                non-circular nature of the Prefab. */
+                AZStd::vector<int> count;
+                using pair = AZStd::pair<int, Node*>;
+                AZStd::queue<pair> queue;
+                queue.push(AZStd::make_pair(0, m_root));
+
+
+                while (!queue.empty())
+                {
+                    pair p = queue.front();
+                    int level = p.first;
+                    Node* currNode = p.second;
+
+                    queue.pop();
+
+                    if (count.size() <= level)
+                    {
+                        // Started a new level so check if the previous level
+                        // was any bigger then the widest level size seen so far.
+                        int prevLevelCount = level != 0 ? count[level - 1] : 0;
+                        widestLevelSize = AZStd::max(widestLevelSize, prevLevelCount);
+                        count.push_back(1);
+                    }
+                    else
+                    {
+                        ++count[level];
+                    }
+
+                    auto it = m_children.find(currNode);
+                    if (it != m_children.end())
+                    {
+                        NodeSet children = it->second;
+                        for (Node* node : children)
+                            queue.push(AZStd::make_pair(level + 1, node));
+                    }
+                }
+
+                // Check if the last level was the widest.
+                widestLevelSize = AZStd::max(widestLevelSize, count[count.size() - 1]);
+                return count;
+            }
         private:
             NodeSet m_nodes;
             ChildrenMap m_children;
