@@ -188,14 +188,8 @@ namespace AZ
             {
                 SetScopeId(RHI::ScopeId(GetPathName()));
             }
-            params.m_frameGraphBuilder->ImportScopeProducer(*this);
 
-            // Read the attachment for one frame. The reference can be released afterwards
-            if (m_attachmentReadback)
-            {
-                m_attachmentReadback->FrameBegin(params);
-                m_attachmentReadback = nullptr;
-            }
+            params.m_frameGraphBuilder->ImportScopeProducer(*this);
 
             // Read back the ScopeQueries submitted from previous frames
             ReadbackScopeQueryResults();
@@ -412,31 +406,6 @@ namespace AZ
         {
             m_viewTag = viewTag;
             m_flags.m_hasPipelineViewTag = !viewTag.IsEmpty();
-        }
-
-        void RenderPass::ReadbackAttachment(AZStd::shared_ptr<AttachmentReadback> readback, const PassAttachment* attachment)
-        {
-            m_attachmentReadback = readback;
-
-            uint32_t bindingIndex = 0;
-            for (auto& binding : m_attachmentBindings)
-            {
-                if (attachment == binding.m_attachment)
-                {
-                    RHI::AttachmentType type = binding.m_attachment->GetAttachmentType();
-                    if (type == RHI::AttachmentType::Buffer || type == RHI::AttachmentType::Image)
-                    {
-                        RHI::AttachmentId attachmentId = binding.m_attachment->GetAttachmentId();
-
-                        // Append slot index and pass name so the read back's name won't be same as the attachment used in other passes.
-                        AZStd::string readbackName = AZStd::string::format("%s_%d_%s", attachmentId.GetCStr(),
-                            bindingIndex, GetName().GetCStr());
-                        m_attachmentReadback->ReadPassAttachment(binding.m_attachment.get(), AZ::Name(readbackName));
-                        return;
-                    }
-                }
-                bindingIndex++;
-            }
         }
 
         TimestampResult RenderPass::GetTimestampResultInternal() const

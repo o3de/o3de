@@ -1155,7 +1155,7 @@ namespace Benchmark
     class StorageDriveWindowsFixture : public benchmark::Fixture
     {
     public:
-        constexpr static char* TestFileName = "StreamerBenchmark.bin";
+        constexpr static const char* TestFileName = "StreamerBenchmark.bin";
         constexpr static size_t FileSize = 64_mib;
             
         void SetupStreamer(bool enableFileSharing)

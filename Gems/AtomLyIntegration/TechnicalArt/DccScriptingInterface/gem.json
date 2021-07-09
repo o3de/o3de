@@ -2,6 +2,9 @@
     "gem_name": "DccScriptingInterface",
     "display_name": "Atom DccScriptingInterface (DCCsi)",
     "summary": "A python framework for working with various DCC tools and workflows.",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Open 3D Engine - o3de.org",
+    "type": "Code",
     "canonical_tags": [
         "Gem"
     ],
@@ -10,5 +13,6 @@
 	"Digital",
 	"Content",
 	"Creation"
-    ]
+    ],
+    "requirements": ""
 }

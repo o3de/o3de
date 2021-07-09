@@ -9,7 +9,6 @@
 
 #include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Core/Node.h>
-#include <ScriptCanvas/Libraries/Logic/Boolean.h>
 
 #include <Include/ScriptCanvas/Libraries/Logic/Gate.generated.h>
 
@@ -24,7 +23,6 @@ namespace ScriptCanvas
                 : public Node
             {
             public:
-
                 SCRIPTCANVAS_NODE(Gate);
 
                 Gate();
@@ -36,22 +34,11 @@ namespace ScriptCanvas
 
                 bool IsIfBranch() const override { return true; }
 
-                
-
             protected:
                 ConstSlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot& /*executionSlot*/, CombinedSlotType targetSlotType, const Slot* /*executionChildSlot*/) const override
                 {
                     return AZ::Success(GetSlotsByType(targetSlotType));
                 }
-
-                //////////////////////////////////////////////////////////////////////////
-
-                void OnInputSignal(const SlotId&) override;
-
-            private:
-
-                bool m_condition;
-
             };
         }
     }

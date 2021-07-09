@@ -18,17 +18,6 @@ namespace ScriptCanvas
         const char* UnaryOperator::k_valueName = "Value";
         const char* UnaryOperator::k_resultName = "Result";
 
-        Datum UnaryOperator::Evaluate([[maybe_unused]] const Datum& value)
-        {
-            AZ_Assert(false, "Evaluate must be overridden");
-            return Datum();
-        };
-
-        void UnaryOperator::OnInputSignal([[maybe_unused]] const SlotId& slot)
-        {
-            AZ_Assert(false, "OnInputSignal must be overridden");
-        }
-
         void UnaryOperator::ConfigureSlots()
         {
             {
@@ -66,25 +55,6 @@ namespace ScriptCanvas
 
         void UnaryExpression::InitializeUnaryExpression()
         {
-        }
-
-        void UnaryExpression::OnInputSignal(const SlotId&)
-        {
-            const Datum output = Evaluate(*FindDatumByIndex(k_datumIndex));
-            if (auto slot = GetSlot(GetOutputSlotId()))
-            {
-                PushOutput(output, *slot);
-            }
-
-            const bool* value = output.GetAs<bool>();
-            if (value && *value)
-            {
-                SignalOutput(GetSlotId(k_onTrue));
-            }
-            else
-            {
-                SignalOutput(GetSlotId(k_onFalse));
-            }
         }
 
         void UnaryExpression::ConfigureSlots()

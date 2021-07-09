@@ -61,13 +61,12 @@ namespace ScriptCanvas
                 PropertyFields GetPropertyFields() const override;
                 // Translation
                 //////////////////////////////////////////////////////////////////////////
-                
+
 
             protected:
 
                 void OnInit() override;
-                void OnPostActivate() override;                
-                void OnInputSignal(const SlotId&) override;
+                void OnPostActivate() override;
 
                 void AddSlots();
                 void RemoveSlots();
@@ -85,8 +84,6 @@ namespace ScriptCanvas
                 // VariableNotificationBus
                 void OnVariableRemoved() override;
                 ////
-
-                AnnotateNodeSignal CreateAnnotationData();
 
                 VariableId m_variableId;
 

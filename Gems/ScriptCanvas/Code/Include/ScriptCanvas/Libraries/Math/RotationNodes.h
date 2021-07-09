@@ -20,7 +20,7 @@ namespace ScriptCanvas
         using namespace Data;
         using namespace MathNodeUtilities;
         static const char* k_categoryName = "Math/Quaternion";
-        
+
         AZ_INLINE QuaternionType Add(QuaternionType a, QuaternionType b)
         {
             return a + b;
@@ -106,7 +106,7 @@ namespace ScriptCanvas
             return QuaternionType::CreateFromVector3AndValue(imaginary, aznumeric_cast<float>(real));
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(FromVector3AndValue, k_categoryName, "{955FE6EB-7C38-4587-BBB7-9C886ACEAF94}", "returns a rotation with the imaginary elements from Imaginary and the real element from Real", "Imaginary", "Real");
-        
+
         AZ_INLINE NumberType GetElement(QuaternionType source, NumberType index)
         {
             return source.GetElement(AZ::GetClamp(aznumeric_cast<int>(index), 0, 3));
@@ -172,7 +172,7 @@ namespace ScriptCanvas
             return a.Lerp(b, aznumeric_cast<float>(t));
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(Lerp, k_categoryName, "{91CF1C54-89C6-4A00-A53D-20C58454C4EC}", "returns a the linear interpolation between From and To by the amount T", "From", "To", "T");
-        
+
         AZ_INLINE QuaternionType ModX(QuaternionType source, NumberType value)
         {
             source.SetX(aznumeric_cast<float>(value));
@@ -228,7 +228,7 @@ namespace ScriptCanvas
         AZ_INLINE std::tuple<QuaternionType, NumberType> NormalizeWithLength(QuaternionType source)
         {
             const float length = source.NormalizeWithLength();
-            return std::make_tuple( source, length );
+            return std::make_tuple(source, length);
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_MULTI_RESULTS_NODE(NormalizeWithLength, k_categoryName, "{E1A7F3F8-854E-4BA1-9DEA-7507BEC6D369}", "returns the normalized version of Source, and the length of Source", "Source", "Normalized", "Length");
 
@@ -249,7 +249,7 @@ namespace ScriptCanvas
             return QuaternionType::CreateRotationZ(AZ::DegToRad(aznumeric_caster(degrees)));
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(RotationZDegrees, k_categoryName, "{8BC8B0FE-51A1-4ECC-AFF1-A828A0FC8F8F}", "creates a rotation of Degrees around the z-axis", "Degrees");
-        
+
         AZ_INLINE QuaternionType ShortestArc(Vector3Type from, Vector3Type to)
         {
             return QuaternionType::CreateShortestArc(from, to);
@@ -279,7 +279,7 @@ namespace ScriptCanvas
             return aznumeric_caster(AZ::RadToDeg(source.GetAngle()));
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(ToAngleDegrees, k_categoryName, "{3EA78793-9AFA-4857-8CB8-CD0D47E97D25}", "returns the angle of angle-axis pair that Source represents in degrees", "Source");
-              
+
         AZ_INLINE Vector3Type ToImaginary(QuaternionType source)
         {
             return source.GetImaginary();
@@ -301,7 +301,7 @@ namespace ScriptCanvas
 
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(RotateVector3, k_categoryName, "{DDF7C05C-7148-4860-93A3-D507C5896B6C}", "Returns a new Vector3 that is the source vector3 rotated by the given Quaternion", "Quaternion", "Vector");
 
-        using Registrar = RegistrarGeneric<
+        using Registrar = RegistrarGeneric <
             AddNode
             , ConjugateNode
             , ConvertTransformToRotationNode
@@ -369,5 +369,5 @@ namespace ScriptCanvas
         > ;
 
     }
-} 
+}
 

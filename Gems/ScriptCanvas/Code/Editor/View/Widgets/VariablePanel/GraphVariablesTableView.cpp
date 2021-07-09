@@ -31,7 +31,6 @@
 #include <Editor/View/Widgets/ScriptCanvasNodePaletteDockWidget.h>
 #include <Editor/View/Widgets/NodePalette/VariableNodePaletteTreeItemTypes.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
-#include <ScriptCanvas/Execution/RuntimeBus.h>
 #include <ScriptCanvas/Bus/RequestBus.h>
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 
@@ -722,7 +721,7 @@ namespace ScriptCanvasEditor
         ScriptCanvas::GraphVariableManagerNotificationBus::Handler::BusDisconnect();
 
         m_assetType = AZ::Data::AssetType::CreateNull();
-        ScriptCanvas::RuntimeRequestBus::EventResult(m_assetType, scriptCanvasId, &ScriptCanvas::RuntimeRequests::GetAssetType);
+        ScriptCanvas::GraphRequestBus::EventResult(m_assetType, scriptCanvasId, &ScriptCanvas::GraphRequests::GetAssetType);
 
         m_scriptCanvasId = scriptCanvasId;
 
@@ -1053,9 +1052,6 @@ namespace ScriptCanvasEditor
 
         AZ::SerializeContext* serializeContext = AZ::EntityUtils::GetApplicationSerializeContext();
         AZ::Utils::LoadObjectFromBufferInPlace(byteArray.constData(), static_cast<AZStd::size_t>(byteArray.size()), copiedVariableData, serializeContext);
-
-        bool isRuntimeGraph = false;
-        EditorGraphRequestBus::EventResult(isRuntimeGraph, scriptCanvasId, &EditorGraphRequests::IsRuntimeGraph);
 
         ScriptCanvas::GraphVariableManagerRequests* requests = ScriptCanvas::GraphVariableManagerRequestBus::FindFirstHandler(scriptCanvasId);
 
