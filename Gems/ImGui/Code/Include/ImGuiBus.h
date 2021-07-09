@@ -96,7 +96,7 @@ namespace ImGui
         ImGuiSetEnabledEvent m_setEnabledEvent;
 
         // interface
-        void ConnectImGuiSetEnabledChangedHander(ImGuiSetEnabledEvent::Handler& handler)
+        void ConnectImGuiSetEnabledChangedHandler(ImGuiSetEnabledEvent::Handler& handler)
         {
             handler.Connect(m_setEnabledEvent);
         }
