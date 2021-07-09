@@ -1,0 +1,4 @@
+# copy this file, rename to User_Env.bat (remove .template)
+# use this file to override any local properties that differ from base
+
+TAG_LY_BUILD_PATH = windows_vs2019
