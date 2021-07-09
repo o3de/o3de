@@ -478,6 +478,13 @@ QProgressBar::chunk {
     background-color: #333333;
 }
 
+/************** Filter tag widget **************/
+
+#FilterTagWidgetTextLabel {
+    color: #94D2FF;
+    font-size: 10px;
+}
+
 /************** Gem Catalog (Inspector) **************/
 
 #GemCatalogInspector {
