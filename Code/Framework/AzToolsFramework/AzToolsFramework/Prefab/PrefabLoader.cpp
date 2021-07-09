@@ -197,7 +197,7 @@ namespace AzToolsFramework
                 }
             }
 
-            isLoadSuccessful |= SanitizeLoadedTemplate(newTemplate.GetPrefabDom());
+            isLoadSuccessful &= SanitizeLoadedTemplate(newTemplate.GetPrefabDom());
 
             newTemplate.MarkAsLoadedWithErrors(!isLoadSuccessful);
 
