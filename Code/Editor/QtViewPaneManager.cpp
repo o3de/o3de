@@ -525,6 +525,7 @@ QtViewPaneManager::QtViewPaneManager(QObject* parent)
 
     // view pane manager is interested when we enter/exit ComponentMode
     m_componentModeNotifications.BusConnect(AzToolsFramework::GetEntityContextId());
+    m_windowRequest.BusConnect();
 
     m_componentModeNotifications.SetEnteredComponentModeFunc(
         [this](const AZStd::vector<AZ::Uuid>& /*componentModeTypes*/)
@@ -545,10 +546,23 @@ QtViewPaneManager::QtViewPaneManager(QObject* parent)
             AzQtComponents::SetWidgetInteractEnabled(widget, on);
         });
     });
+
+    m_windowRequest.SetEnableEditorUiFunc(
+        [this](bool enable)
+        {
+            // gray out panels when entering ImGui mode
+            SetDefaultActionsEnabled(
+                enable, m_registeredPanes,
+                [](QWidget* widget, bool on)
+                {
+                    AzQtComponents::SetWidgetInteractEnabled(widget, on);
+                });
+        });
 }
 
 QtViewPaneManager::~QtViewPaneManager()
 {
+    m_windowRequest.BusDisconnect();
     m_componentModeNotifications.BusDisconnect();
 }
 
