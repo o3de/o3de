@@ -138,8 +138,9 @@ namespace PrefabDependencyViewer
             return;
         }
 
-        GenerateTree(tid);
-        window->DisplayTree(tid); // prefabInstance);
+        Utils::DirectedGraph graph = Utils::DirectedGraph();
+        GenerateTreeAndSetRoot(tid, graph);
+        window->DisplayTree(graph); // prefabInstance);
         /*
          AZStd::vector<AZ::Entity&> entities;
         prefabInstance.GetEntities(

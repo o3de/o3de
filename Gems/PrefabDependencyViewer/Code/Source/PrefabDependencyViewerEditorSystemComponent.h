@@ -17,6 +17,7 @@
 
 #include <AzCore/Math/Vector2.h>
 #include <Utils.h>
+#include <AzToolsFramework\Prefab\PrefabDomUtils.h>
 
 namespace PrefabDependencyViewer
 {
@@ -63,15 +64,71 @@ namespace PrefabDependencyViewer
         static PrefabSystemComponentInterface* s_prefabSystemComponentInterface;
 
         static const char* s_prefabViewerTitle;
-        static void GenerateTree(TemplateId tid)
+        static void GenerateTreeAndSetRoot(TemplateId tid, Utils::DirectedGraph& graph)
         {
-            PrefabDom& prefabDom = s_prefabSystemComponentInterface->FindTemplateDom(tid);
-            auto& nestedInstances = prefabDom["Instances"];
-            for (auto& instance : nestedInstances.GetObject())
+            using pair = AZStd::pair<TemplateId, Utils::Node*>;
+            AZStd::stack<pair> stack;
+            stack.push(AZStd::make_pair(tid, nullptr));
+
+            while (!stack.empty())
             {
-                AZ_TracePrintf("Utils", "%s\n", instance.name.GetString());
+                // Get the current TemplateId we are looking at
+                // and it's parent.
+                pair tidAndParent = stack.top();
+                stack.pop();
+
+                TemplateId templateId = tidAndParent.first;
+                Utils::Node* parent = tidAndParent.second;
+
+                // Get the JSON for the current Template we are looking at.
+                PrefabDom& prefabDom = s_prefabSystemComponentInterface->FindTemplateDom(templateId);
+
+                // Get the source file of the current Template
+                auto sourceIterator = prefabDom.FindMember(AzToolsFramework::Prefab::PrefabDomUtils::SourceName);
+                const char* sourceFileName = "";
+                if (sourceIterator != prefabDom.MemberEnd())
+                {
+                    auto&& source = sourceIterator->value;
+                    sourceFileName = source.IsString() ? source.GetString() : "";
+                }
+
+                // Create a new node for the current Template and
+                // Connect it to it's parent.
+                Utils::Node* node = aznew Utils::Node(templateId, sourceFileName);
+                graph.AddNode(node);
+                graph.AddChild(parent, node);
+
+                // Go through current Template's nested instances
+                // and put their TemplateId and current Template node
+                // as their parent on the stack.
+                auto instancesIterator = prefabDom.FindMember(AzToolsFramework::Prefab::PrefabDomUtils::InstancesName);
+
+                if (instancesIterator != prefabDom.MemberEnd())
+                {
+                    auto&& instances = instancesIterator->value;
+
+                    if (instances.IsObject())
+                    {
+                        for (auto&& instance : instances.GetObject())
+                        {
+                            // Get the source file of the current Template
+                            sourceIterator = instance.value.FindMember(AzToolsFramework::Prefab::PrefabDomUtils::SourceName);
+                            sourceFileName = "";
+                            if (sourceIterator != instance.value.MemberEnd())
+                            {
+                                auto&& source = sourceIterator->value;
+                                sourceFileName = source.IsString() ? source.GetString() : "";
+                            }
+
+                            TemplateId childtid = s_prefabSystemComponentInterface->GetTemplateIdFromFilePath(sourceFileName);
+                            if (childtid != AzToolsFramework::Prefab::InvalidTemplateId)
+                            {
+                                stack.push(AZStd::make_pair(childtid, node));
+                            }
+                        }
+                    }
+                }
             }
-            // return Graph();
         }
     };
 } // namespace PrefabDependencyViewer

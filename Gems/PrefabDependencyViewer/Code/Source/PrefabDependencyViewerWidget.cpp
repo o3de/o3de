@@ -45,10 +45,10 @@ namespace PrefabDependencyViewer
         m_nodePalette = nullptr;
     }
 
-    void PrefabDependencyViewerWidget::DisplayTree(const AzToolsFramework::Prefab::TemplateId& tid)
+    void PrefabDependencyViewerWidget::DisplayTree([[maybe_unused]]const Utils::DirectedGraph& graph)
     {
         m_sceneId = CreateNewGraph();
-        CreateNodeUi(tid);
+        CreateNodeUi(AzToolsFramework::Prefab::InvalidTemplateId);
     }
 
     void PrefabDependencyViewerWidget::CreateNodeUi([[maybe_unused]]const AzToolsFramework::Prefab::TemplateId& tid)

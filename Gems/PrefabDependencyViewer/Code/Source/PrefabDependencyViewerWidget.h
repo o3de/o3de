@@ -36,7 +36,7 @@ namespace PrefabDependencyViewer
         virtual void SetupUI() override;
 
         ////////////////// PrefabDependencyViewerWidget overrides ////////////////////
-        virtual void DisplayTree(const AzToolsFramework::Prefab::TemplateId& tid) override;
+        virtual void DisplayTree(const Utils::DirectedGraph& graph) override;
 
         void CreateNodeUi(const AzToolsFramework::Prefab::TemplateId& tid);
 
