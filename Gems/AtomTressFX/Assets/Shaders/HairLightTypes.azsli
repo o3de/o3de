@@ -139,9 +139,17 @@ void SetNormal(
     inout LightingData lightingData)
 {
     // Direct towards close to half vector by never cross fully (more weight to camera direction)
-//    float3 halfDir = normalize( dirToLight + 1.2 * lightingData.dirToCamera);
-//    float3 biNormal = cross(tangent, halfDir);
-    float3 biNormal = cross(tangent, lightingData.dirToCamera);   // Original - simple face forward
+    float3 biNormal;
+    if (lightingModel == HairLightingModel::GGX)
+    {
+        float3 halfDir = normalize( dirToLight + 1.2 * lightingData.dirToCamera);
+        biNormal = cross(tangent, halfDir);
+    }
+    else
+    {
+        biNormal = cross(tangent, lightingData.dirToCamera);   // Original - simple face forward
+    }
+
     float3 projectedNormal = cross(biNormal, tangent);
     surface.normal = normalize(projectedNormal);
 

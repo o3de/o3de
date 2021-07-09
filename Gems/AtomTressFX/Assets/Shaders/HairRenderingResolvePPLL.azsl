@@ -485,11 +485,11 @@ PSColorDepthOutput PPLLResolvePS(VSOutput input)
     PSColorDepthOutput pixOut;
 
     float3 tangent;
-    pixOut.m_color = GetClosestFragment(input.m_position.xy, input.m_texCoord, tangent, pixOut.m_depth);
+//    pixOut.m_color = GetClosestFragment(input.m_position.xy, input.m_texCoord, tangent, pixOut.m_depth);
 //    pixOut.m_color = CombineFragments(input.m_position.xy, pixOut.m_depth);
 //    pixOut.m_color = GatherLinkedList(input.m_position.xy, pixOut.m_depth);
 
-//    pixOut.m_color = GatherLinkedList(input.m_position.xy, input.m_texCoord, pixOut.m_depth);
+    pixOut.m_color = GatherLinkedList(input.m_position.xy, input.m_texCoord, pixOut.m_depth);
 
     return pixOut;
 }
