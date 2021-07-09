@@ -1043,7 +1043,7 @@ string GetUniqueLogFileName(string logFileName)
         logFileNamePrefix = logFileName.substr(0, extensionIndex);
     }
 
-    logFileName.Format("%s(%d)%s", logFileNamePrefix.c_str(), instance, logFileExtension.c_str());
+    logFileName = AZStd::string::format("%s(%d)%s", logFileNamePrefix.c_str(), instance, logFileExtension.c_str()).c_str();
 
     return logFileName;
 }

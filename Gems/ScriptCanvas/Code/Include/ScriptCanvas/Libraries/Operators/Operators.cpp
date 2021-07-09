@@ -49,7 +49,7 @@ namespace ScriptCanvas
         void Operators::InitNodeRegistry(NodeRegistry& nodeRegistry)
         {
             using namespace ScriptCanvas::Nodes::Operators;
-            
+
             // Math
             AddNodeToRegistry<Operators, OperatorAdd>(nodeRegistry);
             AddNodeToRegistry<Operators, OperatorDiv>(nodeRegistry);

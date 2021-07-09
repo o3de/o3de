@@ -33,14 +33,14 @@ namespace ScriptCanvas
             return lhs + rhs;
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_DEPRECATED(Add, k_categoryName, "{0F554E23-9AB6-4D17-A517-C885ECD024F0}", "This node is deprecated, use Add (+), it provides contextual type and slots", "A", "B");
-        
+
         AZ_INLINE Vector3Type AngleMod(const Vector3Type source)
         {
             return source.GetAngleMod();
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(AngleMod, k_categoryName, "{BF5C12A8-F42D-43E7-9CE3-D16D30B182D2}", "wraps the angle in each element into the range [-pi, pi]", "Source")
 
-        AZ_INLINE std::tuple<Vector3Type, Vector3Type> BuildTangentBasis(Vector3Type source)
+            AZ_INLINE std::tuple<Vector3Type, Vector3Type> BuildTangentBasis(Vector3Type source)
         {
             std::tuple<Vector3Type, Vector3Type> tangentBitangent;
             source.NormalizeSafe();
@@ -48,13 +48,13 @@ namespace ScriptCanvas
             return tangentBitangent;
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_MULTI_RESULTS_NODE(BuildTangentBasis, k_categoryName, "{3EBA365F-063A-45A0-BDD1-ED0F995AD310}", "returns a tangent basis from the normal", "Normal", "Tangent", "Bitangent");
-                
+
         AZ_INLINE Vector3Type Clamp(const Vector3Type source, const Vector3Type min, const Vector3Type max)
         {
             return source.GetClamp(min, max);
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(Clamp, k_categoryName, "{28305F88-0940-43C8-B0A8-B8CEB3B0B82A}", "returns vector clamped to [min, max] and equal to source if possible", "Source", "Min", "Max");
-        
+
         AZ_INLINE Vector3Type Cosine(const Vector3Type source)
         {
             return source.GetCos();
@@ -66,7 +66,7 @@ namespace ScriptCanvas
             return lhs.Cross(rhs);
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(Cross, k_categoryName, "{6FAF4ACA-A100-4B71-ACF8-F1DB4674F51C}", "returns the vector cross product of A X B", "A", "B");
-                
+
         AZ_INLINE Vector3Type CrossXAxis(const Vector3Type source)
         {
             return source.CrossXAxis();
@@ -120,7 +120,7 @@ namespace ScriptCanvas
             return lhs.Dot(rhs);
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(Dot, k_categoryName, "{5DFA6260-C044-4798-A55C-3CF5F3DB45CE}", "returns the vector dot product of A dot B", "A", "B");
-                
+
         AZ_INLINE Vector3Type FromElement(Vector3Type source, const NumberType index, const NumberType value)
         {
             source.SetElement(AZ::GetClamp(aznumeric_cast<int>(index), 0, 2), aznumeric_cast<float>(value));
@@ -200,7 +200,7 @@ namespace ScriptCanvas
             return from.Lerp(to, aznumeric_cast<float>(t));
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(Lerp, k_categoryName, "{AA063267-DA0F-4407-9356-30B4E89A9FA4}", "returns the linear interpolation (From + ((To - From) * T)", "From", "To", "T");
-                
+
         AZ_INLINE Vector3Type Max(const Vector3Type a, const Vector3Type b)
         {
             return a.GetMax(b);
@@ -297,7 +297,7 @@ namespace ScriptCanvas
             return std::make_tuple(sin, cos);
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_MULTI_RESULTS_NODE(SineCosine, k_categoryName, "{04EE253D-680D-4F95-A451-837EAE104E88}", "returns a vector from the sine of each element from the source, and from the cosine of each element from the source", "Source", "Sine", "Cosine");
-        
+
         AZ_INLINE Vector3Type Slerp(const Vector3Type from, const Vector3Type to, const NumberType t)
         {
             return from.Slerp(to, aznumeric_cast<float>(t));
@@ -328,7 +328,7 @@ namespace ScriptCanvas
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(ZAxisCross, k_categoryName, "{29206E84-392C-412E-9DD5-781B2759260D}", "returns the vector cross product of Z-Axis X Source", "Source");
 
-        using Registrar = RegistrarGeneric<
+        using Registrar = RegistrarGeneric <
             AbsoluteNode
             , AddNode
 
@@ -409,8 +409,8 @@ namespace ScriptCanvas
             , ZAxisCrossNode
 #endif
 
-        >;
+        > ;
 
     }
-} 
+}
 

@@ -46,14 +46,16 @@ namespace AZ
             //! Save a buffer attachment or a image attachment binded to a pass's slot to a data file.
             //! @param passHierarchy For finding the pass by using PassHierarchyFilter
             //! @param slotName Name of the pass's slot. The attachment bound to this slot will be captured.
+            //! @param option Only valid for an InputOutput attachment. Use PassAttachmentReadbackOption::Input to capture the input state
+            //!               and use PassAttachmentReadbackOption::Output to capture the output state
             //! @param outputFilename The output file path. 
             virtual bool CapturePassAttachment(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slotName
-                , const AZStd::string& outputFilePath) = 0;
+                , const AZStd::string& outputFilePath, RPI::PassAttachmentReadbackOption option) = 0;
 
             //! Similar to CapturePassAttachment. But instead of saving the read back result to a file, it will call the callback function provide
             //! in the input when callback is finished
             virtual bool CapturePassAttachmentWithCallback(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slotName
-                , RPI::AttachmentReadback::CallbackFunction callback) = 0;
+                , RPI::AttachmentReadback::CallbackFunction callback, RPI::PassAttachmentReadbackOption option) = 0;
 
         };
         using FrameCaptureRequestBus = EBus<FrameCaptureRequests>;

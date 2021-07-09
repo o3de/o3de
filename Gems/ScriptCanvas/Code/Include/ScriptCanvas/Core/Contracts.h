@@ -11,7 +11,6 @@
 #include "Contracts/DisallowReentrantExecutionContract.h"
 #include "Contracts/DisplayGroupConnectedSlotLimitContract.h"
 #include "Contracts/DynamicTypeContract.h"
-#include "Contracts/ExclusivePureDataContract.h"
 #include "Contracts/IsReferenceTypeContract.h"
 #include "Contracts/MathOperatorContract.h"
 #include "Contracts/MethodOverloadContract.h"

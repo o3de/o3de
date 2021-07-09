@@ -21,16 +21,8 @@ namespace ScriptCanvas
             class Indexer
                 : public Node
             {
-
             public:
-
                 SCRIPTCANVAS_NODE(Indexer);
-
-                Indexer() = default;
-
-            protected:
-
-                void OnInputSignal(const SlotId& slot) override;
             };
         }
     }
