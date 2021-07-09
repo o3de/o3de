@@ -8,8 +8,6 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QDialog>
-#include "NewsShared/LogType.h"
-#include "NewsShared/ErrorCodes.h"
 #endif
 
 namespace News {
