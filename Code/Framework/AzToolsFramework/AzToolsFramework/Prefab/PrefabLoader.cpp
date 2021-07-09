@@ -293,14 +293,12 @@ namespace AzToolsFramework
                 return false;
             }
 
-            PrefabDom storedPrefabDom(&loadedTemplateDom->get().GetAllocator());
-            storedPrefabDom.SetObject();
-            if (!PrefabDomUtils::StoreInstanceInPrefabDom(loadedPrefabInstance, storedPrefabDom))
+            if (!PrefabDomUtils::StoreInstanceInPrefabDom(loadedPrefabInstance, loadedTemplateDom->get()))
             {
+                loadedTemplateDom->get().CopyFrom(PrefabDom(), loadedTemplateDom->get().GetAllocator());
                 return false;
             }
 
-            loadedTemplateDom->get().CopyFrom(storedPrefabDom, loadedTemplateDom->get().GetAllocator());
             return true;
         }
 

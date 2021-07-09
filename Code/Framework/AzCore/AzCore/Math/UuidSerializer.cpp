@@ -54,7 +54,7 @@ namespace AZ
 
         Uuid* valAsUuid = reinterpret_cast<Uuid*>(outputValue);
 
-        if (IsExplicitDefault(inputValue))
+        if (IsExplicitDefault(inputValue) || (inputValue == m_zeroUuidString.c_str()))
         {
             *valAsUuid = AZ::Uuid::CreateNull();
             return MessageResult("Uuid value set to default of null.", JSR::ResultCode(JSR::Tasks::ReadField, JSR::Outcomes::DefaultsUsed));
@@ -129,15 +129,5 @@ namespace AZ
         }
         
         return MessageResult("Default Uuid used.", JSR::ResultCode(JSR::Tasks::WriteValue, JSR::Outcomes::DefaultsUsed));
-    }
-
-    bool JsonUuidSerializer::IsExplicitDefault(const rapidjson::Value& value)
-    {
-        if (value == m_zeroUuidString.c_str())
-        {
-            return true;
-        }
-
-        return BaseJsonSerializer::IsExplicitDefault(value);
     }
 } // namespace AZ
