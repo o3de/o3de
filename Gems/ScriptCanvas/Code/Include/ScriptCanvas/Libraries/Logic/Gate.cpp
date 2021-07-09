@@ -17,28 +17,11 @@ namespace ScriptCanvas
         {
             Gate::Gate()
                 : Node()
-                , m_condition(false)
             {}
 
             AZ::Outcome<DependencyReport, void> Gate::GetDependencies() const
             {
                 return AZ::Success(DependencyReport{});
-            }
-
-            void Gate::OnInputSignal(const SlotId&)
-            {
-                SlotId trueSlot = GateProperty::GetTrueSlotId(this);
-                SlotId falseSlot = GateProperty::GetFalseSlotId(this);
-
-                m_condition = GateProperty::GetCondition(this);
-                if (m_condition)
-                {
-                    SignalOutput(trueSlot);
-                }
-                else
-                {
-                    SignalOutput(falseSlot);
-                }
             }
         }
     }

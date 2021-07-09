@@ -72,7 +72,7 @@ namespace AWSCore
     {
         static constexpr const char AWSScriptBehaviorS3Name[] = "AWSScriptBehaviorS3";
         static constexpr const char OutputFileIsEmptyErrorMessage[] = "Request validation failed, output file is empty.";
-        static constexpr const char OutputFileMissFullPathErrorMessage[] = "Request validation failed, output file miss full path.";
+        static constexpr const char OutputFileFailedToResolveErrorMessage[] = "Request validation failed, cannot resolve the output file path.";
         static constexpr const char OutputFileIsDirectoryErrorMessage[] = "Request validation failed, output file is a directory.";
         static constexpr const char OutputFileDirectoryNotExistErrorMessage[] = "Request validation failed, output file directory doesn't exist.";
         static constexpr const char OutputFileIsReadOnlyErrorMessage[] = "Request validation failed, output file is read-only.";

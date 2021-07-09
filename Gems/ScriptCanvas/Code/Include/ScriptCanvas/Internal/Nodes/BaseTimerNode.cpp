@@ -23,15 +23,6 @@ namespace ScriptCanvas
                 }
             }
             
-            //////////////////
-            // BaseTimerNode
-            //////////////////
-            
-            BaseTimerNode::~BaseTimerNode()
-            {
-                StopTimer();
-            }
-
             void BaseTimerNode::OnInit()
             {
                 AZStd::string slotName = GetTimeSlotName();
@@ -74,11 +65,6 @@ namespace ScriptCanvas
                 AddTimeDataSlot();
             }
             
-            void BaseTimerNode::OnDeactivate()
-            {
-                StopTimer();
-            }
-
             void BaseTimerNode::ConfigureVisualExtensions()
             {
                 {
@@ -103,54 +89,7 @@ namespace ScriptCanvas
 
                 return nullptr;
             }
-            
-            void BaseTimerNode::OnSystemTick()
-            {
-                AZ::SystemTickBus::Handler::BusDisconnect();
-                
-                if (!AZ::TickBus::Handler::BusIsConnected())
-                {
-                    AZ::TickBus::Handler::BusConnect();
-                }
-            }
-               
-            void BaseTimerNode::OnTick(float delta, AZ::ScriptTimePoint)
-            {
-                if (m_timeUnits == TimeUnits::Ticks)
-                {
-                    m_timerCounter += 1;
-                }
-                switch (m_timeUnits)
-                {
-                case TimeUnits::Ticks:
-                    m_timerCounter += 1;
-                    break;
-                case TimeUnits::Milliseconds:
-                case TimeUnits::Seconds:
-                    m_timerCounter += delta;
-                    break;
-                default:
-                    break;
-                }
-
-                while (m_timerCounter > m_timerDuration)
-                {
-                    if (!m_isActive)
-                    {
-                        break;
-                    }
-                    
-                    m_timerCounter -= m_timerDuration;
-                    
-                    OnTimeElapsed();
-                }
-            }
-
-            int BaseTimerNode::GetTickOrder()
-            {
-                return m_tickOrder;
-            }
-            
+                        
             void BaseTimerNode::AddTimeDataSlot()
             {
                 if (!m_timeSlotId.IsValid())
@@ -174,70 +113,6 @@ namespace ScriptCanvas
                 }
             }
                 
-            void BaseTimerNode::StartTimer()
-            {
-                StopTimer();
-                
-                m_isActive = true;
-                
-                const Datum* datum = FindDatum(m_timeSlotId);
-                
-                if (datum)
-                {
-                    const Data::NumberType* timeAmount = datum->GetAs<Data::NumberType>();
-
-                    if (timeAmount)
-                    {
-                        m_timerDuration = (*timeAmount);
-                        m_timerCounter = 0;
-
-                        // Manage the different unit types
-                        if (m_timeUnits == TimeUnits::Ticks)
-                        {
-                            // Remove all of the floating points
-                            m_timerDuration = aznumeric_cast<float>(aznumeric_cast<int>(m_timerDuration));
-                        }
-                        else if (m_timeUnits == TimeUnits::Milliseconds)
-                        {
-                            m_timerDuration /= 1000.0;
-                        }
-                    }
-                }
-
-                if (AZ::TickBus::Handler::BusIsConnected())
-                {
-                    AZ::TickBus::Handler::BusDisconnect();
-                }
-
-                if (AZ::SystemTickBus::Handler::BusIsConnected())
-                {
-                    AZ::SystemTickBus::Handler::BusDisconnect();
-                }
-                
-                if (!AZ::IsClose(m_timerDuration, 0.0, DBL_EPSILON))
-                {
-                    AZ::SystemTickBus::Handler::BusConnect();
-                }
-                else if (AllowInstantResponse())
-                {
-                    while (m_isActive)
-                    {
-                        OnTimeElapsed();
-                    }
-                }
-            }
-            
-            void BaseTimerNode::StopTimer()
-            {
-                m_isActive = false;
-
-                m_timerCounter = 0.0;
-                m_timerDuration = 0.0;
-                
-                AZ::SystemTickBus::Handler::BusDisconnect();
-                AZ::TickBus::Handler::BusDisconnect();
-            }
-
             AZStd::string BaseTimerNode::GetTimeSlotName() const
             {
                 return GetBaseTimeSlotName();
@@ -283,11 +158,7 @@ namespace ScriptCanvas
             {
                 return false;
             }
-            
-            void BaseTimerNode::OnTimeElapsed()
-            {
-            }
-            
+                        
             void BaseTimerNode::ConfigureTimeSlot(DataSlotConfiguration& configuration)
             {
                 AZ_UNUSED(configuration);

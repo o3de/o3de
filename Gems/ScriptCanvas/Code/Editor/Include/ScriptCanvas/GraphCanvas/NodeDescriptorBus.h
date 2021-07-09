@@ -37,7 +37,7 @@ namespace ScriptCanvasEditor
         EBusHandler,
         EBusHandlerEvent,
         EBusSender,
-        EntityRef,
+        _deprecated_,
         VariableNode,
         SetVariable,
         GetVariable,

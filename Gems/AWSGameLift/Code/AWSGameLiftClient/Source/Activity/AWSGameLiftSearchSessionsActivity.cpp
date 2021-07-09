@@ -35,6 +35,7 @@ namespace AWSGameLift
             {
                 request.SetNextToken(searchSessionsRequest.m_nextToken.c_str());
             }
+
             // Required attributes
             if (!searchSessionsRequest.m_aliasId.empty())
             {
@@ -46,6 +47,16 @@ namespace AWSGameLift
             }
             // TODO: Update the AWS Native SDK to accept the new request parameter.
             //request.SetLocation(searchSessionsRequest.m_location.c_str());
+
+            AZ_TracePrintf(AWSGameLiftSearchSessionsActivityName,
+                "Built SearchGameSessionsRequest with FilterExpression=%s, SortExpression=%s, Limit=%d, NextToken=%s, AliasId=%s and FleetId=%s",
+                request.GetFilterExpression().c_str(),
+                request.GetSortExpression().c_str(),
+                request.GetLimit(),
+                request.GetNextToken().c_str(),
+                request.GetAliasId().c_str(),
+                request.GetFleetId().c_str());
+            
             return request;
         }
 
@@ -58,6 +69,7 @@ namespace AWSGameLift
             AzFramework::SearchSessionsResponse response;
             Aws::GameLift::Model::SearchGameSessionsRequest request = BuildAWSGameLiftSearchGameSessionsRequest(searchSessionsRequest);
             Aws::GameLift::Model::SearchGameSessionsOutcome outcome = gameliftClient.SearchGameSessions(request);
+            AZ_TracePrintf(AWSGameLiftSearchSessionsActivityName, "SearchGameSessions request against Amazon GameLift service is complete");
 
             if (outcome.IsSuccess())
             {

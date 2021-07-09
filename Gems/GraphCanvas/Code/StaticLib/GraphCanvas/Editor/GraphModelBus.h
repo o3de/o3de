@@ -90,19 +90,6 @@ namespace GraphCanvas
             return result;
         }
 
-        //! This is sent to confirm whether or not a variable assignment can take place.
-        virtual bool IsValidVariableAssignment(const AZ::EntityId& variableId, const Endpoint& targetPoint) const = 0;
-
-        //! This will return the structure needed to display why a variable could not be assigned to a specific reference inside of GraphCanvas.
-        virtual ConnectionValidationTooltip GetVariableAssignmentValidityTooltip(const AZ::EntityId& variableId, const Endpoint& targetPoint) const
-        {
-            ConnectionValidationTooltip result;
-
-            result.m_isValid = IsValidVariableAssignment(variableId, targetPoint);
-
-            return result;
-        }
-
         //! Get the Display Type name for the given AZ type
         virtual AZStd::string GetDataTypeString(const AZ::Uuid& typeId) = 0;
 

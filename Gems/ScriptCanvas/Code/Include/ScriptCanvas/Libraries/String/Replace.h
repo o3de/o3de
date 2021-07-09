@@ -28,11 +28,6 @@ namespace ScriptCanvas
 
                 void OnInit() override;
                 void CustomizeReplacementNode(Node* replacementNode, AZStd::unordered_map<SlotId, AZStd::vector<SlotId>>& outSlotIdMap) const override;
-
-            protected:
-
-                void OnInputSignal(const SlotId& slotId) override;
-
             };
         }
     }

@@ -17,7 +17,6 @@ set(FILES
     Source/InputLibrary.h
     Source/InputLibrary.cpp
     Source/InputNode.h
-    Source/InputNode.cpp
     Source/InputHandlerNodeable.h
     Source/InputHandlerNodeable.cpp
     Source/InputHandlerNodeable.ScriptCanvasNodeable.xml

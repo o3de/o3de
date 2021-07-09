@@ -52,32 +52,6 @@ namespace ScriptCanvas
                 }
             }
 
-            void Contains::OnInputSignal(const SlotId&)
-            {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "ScriptCanvas::Contains::OnInputSignal");
-
-                AZStd::string sourceString = ContainsProperty::GetSource(this);
-                AZStd::string patternString = ContainsProperty::GetPattern(this);
-
-                bool caseSensitive = ContainsProperty::GetCaseSensitive(this);
-                bool searchFromEnd = ContainsProperty::GetSearchFromEnd(this);
-
-                auto index = AzFramework::StringFunc::Find(sourceString.c_str(), patternString.c_str(), 0, searchFromEnd, caseSensitive);
-                if (index != AZStd::string::npos)
-                {
-                    const SlotId outputIndexSlotId = ContainsProperty::GetIndexSlotId(this);
-                    if (auto* indexSlot = GetSlot(outputIndexSlotId))
-                    {
-                        Datum outputIndex(index);
-                        PushOutput(outputIndex, *indexSlot);
-                    }
-
-                    SignalOutput(GetSlotId("True"));
-                    return;
-                }
-
-                SignalOutput(GetSlotId("False"));
-            }
         }
     }
 }

@@ -5,6 +5,7 @@
  *
  */
 
+#include <Activity/AWSGameLiftActivityUtils.h>
 #include <Activity/AWSGameLiftCreateSessionActivity.h>
 #include <AWSGameLiftSessionConstants.h>
 
@@ -29,13 +30,12 @@ namespace AWSGameLift
             {
                 request.SetIdempotencyToken(createSessionRequest.m_idempotencyToken.c_str());
             }
-            for (auto iter = createSessionRequest.m_sessionProperties.begin();
-                 iter != createSessionRequest.m_sessionProperties.end(); iter++)
+            AZStd::string propertiesOutput = "";
+            Aws::Vector<Aws::GameLift::Model::GameProperty> properties;
+            AWSGameLiftActivityUtils::GetGameProperties(createSessionRequest.m_sessionProperties, properties, propertiesOutput);
+            if (!properties.empty())
             {
-                Aws::GameLift::Model::GameProperty sessionProperty;
-                sessionProperty.SetKey(iter->first.c_str());
-                sessionProperty.SetValue(iter->second.c_str());
-                request.AddGameProperties(sessionProperty);
+                request.SetGameProperties(properties);
             }
 
             // Required attributes
@@ -49,6 +49,16 @@ namespace AWSGameLift
             }
             request.SetMaximumPlayerSessionCount(createSessionRequest.m_maxPlayer);
 
+            AZ_TracePrintf(AWSGameLiftCreateSessionActivityName,
+                "Built CreateGameSessionRequest with CreatorId=%s, Name=%s, IdempotencyToken=%s, GameProperties=%s, AliasId=%s, FleetId=%s and MaximumPlayerSessionCount=%d",
+                request.GetCreatorId().c_str(),
+                request.GetName().c_str(),
+                request.GetIdempotencyToken().c_str(),
+                AZStd::string::format("[%s]", propertiesOutput.c_str()).c_str(),
+                request.GetAliasId().c_str(),
+                request.GetFleetId().c_str(),
+                request.GetMaximumPlayerSessionCount());
+
             return request;
         }
 
@@ -61,6 +71,7 @@ namespace AWSGameLift
             AZStd::string result = "";
             Aws::GameLift::Model::CreateGameSessionRequest request = BuildAWSGameLiftCreateGameSessionRequest(createSessionRequest);
             auto createSessionOutcome = gameliftClient.CreateGameSession(request);
+            AZ_TracePrintf(AWSGameLiftCreateSessionActivityName, "CreateGameSession request against Amazon GameLift service is complete");
 
             if (createSessionOutcome.IsSuccess())
             {

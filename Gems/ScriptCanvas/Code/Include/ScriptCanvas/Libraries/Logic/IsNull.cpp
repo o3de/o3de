@@ -39,7 +39,7 @@ namespace ScriptCanvas
             {
                 {
                     auto func = []() { return aznew IsReferenceTypeContract(); };
-                    ContractDescriptor descriptor{ AZStd::move(func) };                    
+                    ContractDescriptor descriptor{ AZStd::move(func) };
 
                     DynamicDataSlotConfiguration slotConfiguration;
 
@@ -60,13 +60,6 @@ namespace ScriptCanvas
 
                     AddSlot(slotConfiguration);
                 }
-            }
-
-            void IsNull::OnInputSignal(const SlotId&)
-            {
-                const bool isNull = FindDatum(GetSlotId("Reference"))->Empty();
-                PushOutput(Datum(isNull), *GetSlot(GetSlotId("Is Null")));
-                SignalOutput(isNull ? IsNullProperty::GetTrueSlotId(this) : IsNullProperty::GetFalseSlotId(this));
             }
         }
     }
