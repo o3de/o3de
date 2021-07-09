@@ -435,8 +435,6 @@ QProgressBar {
     border: none;
     background-color: transparent;
     padding: 0px;
-    min-height: 14px;
-    font-size: 2px;
 }
 
 QProgressBar::chunk {
