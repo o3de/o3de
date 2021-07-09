@@ -266,6 +266,18 @@ namespace O3DE::ProjectManager
         SetProjectButtonAction(tr("Build Project"), [this]() { emit BuildProject(m_projectInfo); });
     }
 
+    void ProjectButton::ShowBuildLogsLink(bool show, const QUrl& logUrl)
+    {
+        if (!logUrl.isEmpty())
+        {
+            m_projectImageLabel->GetWarningLabel()->setText(tr("Click to <a href=\"logs\">view logs</a>."));
+        }
+
+        m_projectImageLabel->GetWarningLabel()->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
+        m_projectImageLabel->GetWarningLabel()->setVisible(show);
+        m_projectImageLabel->SetLogUrl(logUrl);
+    }
+
     void ProjectButton::ShowBuildFailed(bool show, const QUrl& logUrl)
     {
         if (!logUrl.isEmpty())
