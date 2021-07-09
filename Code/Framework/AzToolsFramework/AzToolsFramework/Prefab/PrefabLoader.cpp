@@ -172,7 +172,7 @@ namespace AzToolsFramework
             progressedFilePathsSet.emplace(relativePath);
 
             // Get 'Instances' value from Template.
-            bool isLoadedWithErrors = false;
+            bool isLoadSuccessful = true;
             PrefabDomValueReference instancesReference = newTemplate.GetInstancesValue();
             if (instancesReference.has_value())
             {
@@ -185,7 +185,7 @@ namespace AzToolsFramework
                 {
                     if (!LoadNestedInstance(instanceIterator, newTemplateId, progressedFilePathsSet))
                     {
-                        isLoadedWithErrors = true;
+                        isLoadSuccessful = false;
                         AZ_Error(
                             "Prefab", false,
                             "PrefabLoader::LoadTemplate - "
@@ -197,9 +197,9 @@ namespace AzToolsFramework
                 }
             }
 
-            isLoadedWithErrors |= !SanitizeLoadedTemplate(newTemplate.GetPrefabDom());
+            isLoadSuccessful |= SanitizeLoadedTemplate(newTemplate.GetPrefabDom());
 
-            newTemplate.MarkAsLoadedWithErrors(isLoadedWithErrors);
+            newTemplate.MarkAsLoadedWithErrors(!isLoadSuccessful);
 
             // Un-mark the file as being in progress.
             progressedFilePathsSet.erase(originPath);
@@ -282,6 +282,11 @@ namespace AzToolsFramework
 
         bool PrefabLoader::SanitizeLoadedTemplate(PrefabDomReference loadedTemplateDom)
         {
+            // Prefabs are stored to disk with default values stripped. However, while in memory, we need those default values to be
+            // present to make patches work consistently. To accomplish this, we'll instantiate the Dom, then serialize the instance
+            // back into a Dom with all of the default values preserved.
+            // Note that this is the default behavior in Prefab serialization, so we don't need to specify StoreInstanceFlags.
+
             if (!loadedTemplateDom)
             {
                 return false;
@@ -293,17 +298,22 @@ namespace AzToolsFramework
                 return false;
             }
 
-            if (!PrefabDomUtils::StoreInstanceInPrefabDom(loadedPrefabInstance, loadedTemplateDom->get()))
+            PrefabDom storedPrefabDom(&loadedTemplateDom->get().GetAllocator());
+            if (!PrefabDomUtils::StoreInstanceInPrefabDom(loadedPrefabInstance, storedPrefabDom))
             {
-                loadedTemplateDom->get().CopyFrom(PrefabDom(), loadedTemplateDom->get().GetAllocator());
                 return false;
             }
 
+            loadedTemplateDom->get().CopyFrom(storedPrefabDom, loadedTemplateDom->get().GetAllocator());
             return true;
         }
 
         bool PrefabLoader::SanitizeSavingTemplate(PrefabDomReference savingTemplateDom)
         {
+            // Prefabs are stored in memory with default values spelled out to make patches work consistently. However, when we store them
+            // to disk, we strip those default values to save on file size. To accomplish this, we'll instantiate the Dom, then serialize
+            // the instance back into a Dom with all of the default values stripped.
+
             if (!savingTemplateDom)
             {
                 return false;
@@ -317,7 +327,7 @@ namespace AzToolsFramework
 
             PrefabDom storedPrefabDom(&savingTemplateDom->get().GetAllocator());
             if (!PrefabDomUtils::StoreInstanceInPrefabDom(savingPrefabInstance, storedPrefabDom,
-                PrefabDomUtils::StoreInstanceFlags::DoNotStoreDefaultValues))
+                PrefabDomUtils::StoreInstanceFlags::StripDefaultValues))
             {
                 return false;
             }

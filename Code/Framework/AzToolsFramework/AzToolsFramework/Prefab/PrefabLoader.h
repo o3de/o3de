@@ -109,10 +109,10 @@ namespace AzToolsFramework
 
         private:
             /**
-             * Generate a template dom in the proper format to be saved to disk.
-             * @param templateRef The template whose dom we want to generate.
+             * Copies the template dom provided and manipulates it into the proper format to be saved to disk.
+             * @param templateRef The template whose dom we want to transform into the proper format to be saved to disk.
              * @param[out] output The PrefabDom reference we want to store the result into.
-             * @return True if the Prefab dom was generated correctly, false otherwise.
+             * @return True if the operation was completed correctly, false otherwise.
              */
             bool CopyTemplateIntoPrefabFileFormat(
                 TemplateReference templateRef,
@@ -153,7 +153,18 @@ namespace AzToolsFramework
                 TemplateId targetTemplateId,
                 AZStd::unordered_set<AZ::IO::Path>& progressedFilePathsSet);
 
+            /*
+             * Manipulate the provided PrefabDom into the right format to be stored in memory for editor usage.
+             * @param loadedTemplateDom The template to manipulate. Changes will be applied in place.
+             * @return True if the manipulations where applied correctly, false otherwise.
+             */
             bool SanitizeLoadedTemplate(PrefabDomReference loadedTemplateDom);
+            
+            /*
+             * Manipulate the provided PrefabDom into the right format to be stored to disk.
+             * @param savingTemplateDom The template to manipulate. Changes will be applied in place.
+             * @return True if the manipulations where applied correctly, false otherwise.
+             */
             bool SanitizeSavingTemplate(PrefabDomReference savingTemplateDom);
 
             //! Retrieves Dom content and its path from a template id

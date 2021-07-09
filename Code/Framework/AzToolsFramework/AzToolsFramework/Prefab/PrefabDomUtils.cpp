@@ -58,7 +58,7 @@ namespace AzToolsFramework
                 settings.m_metadata.Add(static_cast<AZ::JsonEntityIdSerializer::JsonEntityIdMapper*>(&entityIdMapper));
                 settings.m_metadata.Add(&entityIdMapper);
 
-                if ((flags & StoreInstanceFlags::DoNotStoreDefaultValues) != StoreInstanceFlags::DoNotStoreDefaultValues)
+                if ((flags & StoreInstanceFlags::StripDefaultValues) != StoreInstanceFlags::StripDefaultValues)
                 {
                     settings.m_keepDefaults = true;
                 }

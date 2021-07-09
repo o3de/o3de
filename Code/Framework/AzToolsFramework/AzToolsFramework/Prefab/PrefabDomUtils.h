@@ -43,7 +43,7 @@ namespace AzToolsFramework
 
                 //! By default an instance will be stored with default values. In cases where we want to store less json without defaults
                 //! such as saving to disk, this flag will control that behavior.
-                DoNotStoreDefaultValues = 1 << 0
+                StripDefaultValues = 1 << 0
             };
             AZ_DEFINE_ENUM_BITWISE_OPERATORS(StoreInstanceFlags);
 
