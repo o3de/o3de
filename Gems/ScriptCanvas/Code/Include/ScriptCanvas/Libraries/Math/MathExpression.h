@@ -41,7 +41,13 @@ namespace ScriptCanvas
                 ExpressionEvaluation::ParseOutcome ParseExpression(const AZStd::string& formatString) override;
 
                 AZStd::string GetExpressionSeparator() const override;
+
+            public:
+
+                static void ConfigureSlotDisplayType(ScriptCanvas::Node* node, ScriptCanvas::Slot* slot, AZ::Uuid type, AZStd::string name);
+
             };
+
         }
     }
 }

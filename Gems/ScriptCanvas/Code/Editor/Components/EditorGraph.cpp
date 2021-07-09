@@ -695,10 +695,7 @@ namespace ScriptCanvasEditor
         ScriptCanvas::Node* node, GraphCanvas::SlotId graphCanvasSlotId, const GraphCanvas::NodeId& nodeId)
     {
         auto MathExpressionNode = azrtti_cast<ScriptCanvas::Nodes::Math::MathExpression*>(node);
-        // if dynamicTypeGroup already has slottype, dont trigger slotTypeSelector
-        /*if (node->GetDisplayType(node->GetDisplayGroupId()) {
 
-        }*/
         if (MathExpressionNode && graphCanvasSlotId.IsValid())
         {
             GraphCanvas::Endpoint endpoint;
@@ -728,29 +725,8 @@ namespace ScriptCanvasEditor
 
                     if (createSlot && !selectedSlotSetup.m_type.IsNull())
                     {
-                        if (slot)
-                        {
-                            auto displayType = ScriptCanvas::Data::FromAZType(selectedSlotSetup.m_type);
-                            if (displayType.IsValid())
-                            {
-                                //ScriptCanvas::Node* node = slot->GetNode();
-                                AZ::Crc32 dynamicGroup = AZ_CRC("ExpressionDisplayGroup", 0x770de38e);
-
-                                if (dynamicGroup != AZ::Crc32())
-                                {
-                                    node->SetDisplayType(dynamicGroup, displayType);
-                                }
-                                else
-                                {
-                                    slot->SetDisplayType(displayType);
-                                }
-                            }
-
-                            if (!selectedSlotSetup.m_name.empty())
-                            {
-                                slot->Rename(selectedSlotSetup.m_name);
-                            }
-                        }
+                        ScriptCanvas::Nodes::Math::MathExpression::ConfigureSlotDisplayType(node, slot, selectedSlotSetup.m_type, selectedSlotSetup.m_name);
+              
                     }
                     else
                     {
@@ -4012,5 +3988,5 @@ namespace ScriptCanvasEditor
         GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::ClearScene);
 
         RequestPopPreventUndoStateUpdate();
-    }    
+    }
 }
