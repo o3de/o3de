@@ -23,12 +23,8 @@ namespace ScriptCanvas
             class Format
                 : public Internal::StringFormatted
             {
-            protected:
-
+            public:
                 SCRIPTCANVAS_NODE(Format);
-
-                void OnInputSignal(const SlotId& slotId) override;
-
             };
         }
     }

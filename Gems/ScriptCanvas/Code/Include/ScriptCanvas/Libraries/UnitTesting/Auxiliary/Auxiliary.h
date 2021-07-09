@@ -36,14 +36,14 @@ namespace ScriptCanvas
             };
 
             using EBus = AZ::EBus<EBusTraits>;
-            
-            class EBusHandler 
+
+            class EBusHandler
                 : public EBus::Handler
                 , public AZ::BehaviorEBusHandler
             {
             public:
                 AZ_EBUS_BEHAVIOR_BINDER
-                    ( EBusHandler
+                (EBusHandler
                     , "{5168D163-AAB9-417D-9FD4-CE10541D51CE}"
                     , AZ::SystemAllocator
                     , CStyleToCStyle
@@ -95,14 +95,14 @@ namespace ScriptCanvas
                     return result;
                 }
             };
-            
+
             class StringConversion
             {
             public:
                 AZ_TYPE_INFO(StringConversion, "{47A9CF0C-6F34-4E0C-B1F9-F908FC2B7388}");
 
                 static const char* CStyleToCStyle(const char* input);
-            
+
                 static void Reflect(AZ::ReflectContext* reflection);
             };
 
@@ -118,5 +118,5 @@ namespace ScriptCanvas
                 AZ::Outcome<AZ::Vector3> m_outcomeVector3Void;
             };
         }
-    } 
-} 
+    }
+}

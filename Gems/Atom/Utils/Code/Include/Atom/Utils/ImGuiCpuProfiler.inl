@@ -25,17 +25,15 @@ namespace AZ
         {
             // NOTE: Fix build error in case AZStd::thread_id is not of an arithmetic type, and instead a pointer
             template<typename ThreadId, typename AZStd::enable_if<AZStd::is_pointer<ThreadId>::value>::type* = nullptr>
-            void TextThreadId(ThreadId threadId)
+            AZStd::string TextThreadId(ThreadId threadId)
             {
-                const AZStd::string threadIdText = AZStd::string::format("Thread: %p", threadId);
-                ImGui::Text(threadIdText.c_str());
+                return AZStd::string::format("Thread: %p", threadId);
             }
 
             template<typename ThreadId, typename AZStd::enable_if<!AZStd::is_pointer<ThreadId>::value>::type* = nullptr>
-            void TextThreadId(ThreadId threadId)
+            AZStd::string TextThreadId(ThreadId threadId)
             {
-                const AZStd::string threadIdText = AZStd::string::format("Thread: %zu", static_cast<size_t>(threadId));
-                ImGui::Text(threadIdText.c_str());
+                return AZStd::string::format("Thread: %zu", static_cast<size_t>(threadId));
             }
             inline float TicksToMs(AZStd::sys_time_t ticks)
             {
@@ -108,7 +106,7 @@ namespace AZ
 
                         for (ThreadRegionEntry& entry : entries)
                         {
-                            CpuProfilerImGuiHelper::TextThreadId(entry.m_threadId.m_id);
+                            ImGui::Text(CpuProfilerImGuiHelper::TextThreadId(entry.m_threadId.m_id).c_str());
 
                             const AZStd::sys_time_t elapsed = entry.m_endTick - entry.m_startTick;
                             ShowTimeInMs(elapsed);
@@ -610,7 +608,7 @@ namespace AZ
         {
             auto [wx, wy] = ImGui::GetWindowPos();
             wy -= ImGui::GetScrollY();
-            const AZStd::string threadIdText = AZStd::string::format("Thread %zu", static_cast<size_t>(threadId.m_id));
+            const AZStd::string threadIdText =  CpuProfilerImGuiHelper::TextThreadId(threadId.m_id);
 
             ImGui::GetWindowDrawList()->AddText({ wx + 10, wy + baseRow * RowHeight + 5 }, IM_COL32_WHITE, threadIdText.c_str());
         }

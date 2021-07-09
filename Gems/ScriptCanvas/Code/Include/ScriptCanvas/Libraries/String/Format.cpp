@@ -6,27 +6,3 @@
  */
 
 #include "Format.h"
-
-namespace ScriptCanvas
-{
-    namespace Nodes
-    {
-        namespace String
-        {
-            void Format::OnInputSignal(const SlotId&)
-            {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "ScriptCanvas::Format::OnInputSignal");
-
-                Datum output = Datum(ProcessFormat());
-                
-                const SlotId outputTextSlotId = FormatProperty::GetStringSlotId(this);
-                if (auto* slot = GetSlot(outputTextSlotId))
-                {
-                    PushOutput(output, *slot);
-                }
-
-                SignalOutput(GetSlotId("Out"));
-            }
-        }
-    }
-}

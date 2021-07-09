@@ -108,8 +108,6 @@ namespace ScriptCanvas
 
                     virtual void Initialize(const AZ::Data::AssetId assetId);
 
-                    
-
                 protected:
 
                     // AZ::Data::AssetBus::Handler...

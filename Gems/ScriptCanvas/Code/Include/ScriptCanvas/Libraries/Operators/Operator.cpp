@@ -182,7 +182,7 @@ namespace ScriptCanvas
                                     break;
                                 }
                             }
-                        }                        
+                        }
 
                         if (!handledConfiguration)
                         {
@@ -250,7 +250,7 @@ namespace ScriptCanvas
 
                         if (handledConfiguration)
                         {
-                            configurationIter = unhandledConfigurations.erase(configurationIter);                            
+                            configurationIter = unhandledConfigurations.erase(configurationIter);
                         }
                         else
                         {
@@ -296,7 +296,7 @@ namespace ScriptCanvas
                         m_sourceDisplayType = dataType;
                         OnDisplayTypeChanged(dataType);
                     }
-                }                
+                }
             }
 
             void OperatorBase::OnSlotRemoved(const SlotId& slotId)
@@ -319,7 +319,7 @@ namespace ScriptCanvas
 
                 return nullptr;
             }
-            
+
             Slot* OperatorBase::GetFirstOutputSourceSlot() const
             {
                 for (const SlotId& slotId : m_sourceSlots)
@@ -429,7 +429,7 @@ namespace ScriptCanvas
 
                 bool isInBatchAdd = false;
                 GraphRequestBus::EventResult(isInBatchAdd, GetOwningScriptCanvasId(), &GraphRequests::IsBatchAddingGraphData);
-                
+
                 if (IsSourceSlotId(currentSlotId))
                 {
                     auto node = AZ::EntityUtils::FindFirstDerivedComponent<Node>(endpoint.GetNodeId());
@@ -493,7 +493,7 @@ namespace ScriptCanvas
             }
 
             SlotId OperatorBase::AddSlotWithSourceType()
-            {                
+            {
                 Data::Type type = Data::Type::Invalid();
 
                 if (!m_sourceTypes.empty())

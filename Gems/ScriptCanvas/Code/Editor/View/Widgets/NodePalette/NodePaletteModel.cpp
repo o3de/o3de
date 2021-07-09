@@ -23,7 +23,6 @@
 #include <Editor/Settings.h>
 #include <Editor/Translation/TranslationHelper.h>
 
-#include <ScriptCanvas/Core/PureData.h>
 #include <ScriptCanvas/Data/DataRegistry.h>
 #include <ScriptCanvas/Libraries/Libraries.h>
 #include <ScriptCanvas/Libraries/Core/GetVariable.h>
@@ -342,12 +341,6 @@ namespace
                     continue;
                 }
 
-                // Detect primitive types os we avoid making nodes out of them.
-                // Or anything that is 'pure data' and should be populated through a different mechanism.
-                if (nodeClassData->m_azRtti && nodeClassData->m_azRtti->IsTypeOf<ScriptCanvas::PureData>())
-                {
-                    continue;
-                }
                 // Skip over some of our more dynamic nodes that we want to populate using different means
                 else if (nodeClassData->m_azRtti && nodeClassData->m_azRtti->IsTypeOf<ScriptCanvas::Nodes::Core::GetVariableNode>())
                 {
@@ -1323,56 +1316,6 @@ namespace ScriptCanvasEditor
         return identifiers;
     }
 
-    AZStd::vector<ScriptCanvas::NodeTypeIdentifier> NodePaletteModel::RegisterFunctionInformation(ScriptCanvasFunctionAsset* functionAsset)
-    {
-        const AZ::Data::AssetId& assetId = functionAsset->GetId();
-
-        FunctionNodeModelInformation* modelInformation = aznew FunctionNodeModelInformation();
-
-        modelInformation->m_functionAssetId = assetId;
-        modelInformation->m_titlePaletteOverride = "FunctionNodeTitlePalette";
-        modelInformation->m_nodeIdentifier = ScriptCanvas::NodeUtils::ConstructFunctionNodeIdentifier(assetId);
-
-        // Temporary until I drive data from the function asset itself
-        AZStd::string rootPath;
-        AZ::Data::AssetInfo assetInfo = AssetHelpers::GetAssetInfo(assetId, rootPath);
-        AZStd::string absolutePath;
-
-        AzFramework::StringFunc::Path::Join(rootPath.c_str(), assetInfo.m_relativePath.c_str(), absolutePath);
-
-        AZStd::string category = "User Functions";
-        AZStd::string relativePath;
-
-        if (AzFramework::StringFunc::Path::GetFolderPath(assetInfo.m_relativePath.c_str(), relativePath))
-        {
-            AZStd::to_lower(relativePath.begin(), relativePath.end());
-
-            const AZStd::string root = "scriptcanvas/functions/";
-            if (relativePath.starts_with(root))
-            {
-                relativePath = relativePath.substr(root.size(), relativePath.size() - root.size());
-            }
-
-            category.append("/");
-            category.append(relativePath);
-        }
-
-        modelInformation->m_categoryPath = category;
-
-        AzFramework::StringFunc::Path::Normalize(absolutePath);
-        
-        AzFramework::StringFunc::Path::GetFileName(absolutePath.c_str(), modelInformation->m_displayName);
-        ////
-
-        m_registeredNodes.emplace(AZStd::make_pair(modelInformation->m_nodeIdentifier, modelInformation));
-        m_assetMapping.insert(AZStd::make_pair(assetId, modelInformation->m_nodeIdentifier));
-
-        AZStd::vector<ScriptCanvas::NodeTypeIdentifier> nodeTypeIdentifiers;
-        nodeTypeIdentifiers.push_back(modelInformation->m_nodeIdentifier);
-
-        return nodeTypeIdentifiers;
-    }
-
     void NodePaletteModel::RegisterCategoryInformation(const AZStd::string& category, const CategoryInformation& categoryInformation)
     {
         auto categoryIter = m_categoryInformation.find(category);
@@ -1553,24 +1496,6 @@ namespace ScriptCanvasEditor
                         ScriptEvents::ScriptEventsAsset* data = busAsset.GetAs<ScriptEvents::ScriptEventsAsset>();
 
                         return RegisterScriptEvent(data);
-                    }
-                    else
-                    {
-                        AZ_TracePrintf("NodePaletteModel", "Could not refresh node palette properly, the asset failed to load correctly.");
-                    }
-                }
-                else if (productEntry->GetAssetType() == azrtti_typeid<ScriptCanvasFunctionAsset>())
-                {
-                    const AZ::Data::AssetId& assetId = productEntry->GetAssetId();
-
-                    auto functionAsset = AZ::Data::AssetManager::Instance().GetAsset(assetId, azrtti_typeid<ScriptCanvasFunctionAsset>(), AZ::Data::AssetLoadBehavior::PreLoad);
-                    functionAsset.BlockUntilLoadComplete();
-
-                    if (functionAsset.IsReady())
-                    {
-                        ScriptCanvasFunctionAsset* data = functionAsset.GetAs<ScriptCanvasFunctionAsset>();
-
-                        return RegisterFunctionInformation(data);
                     }
                     else
                     {
