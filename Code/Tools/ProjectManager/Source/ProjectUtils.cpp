@@ -17,6 +17,8 @@
 #include <QProcessEnvironment>
 #include <QGuiApplication>
 #include <QProgressDialog>
+#include <QSpacerItem>
+#include <QGridLayout>
 
 namespace O3DE::ProjectManager
 {
@@ -373,7 +375,7 @@ namespace O3DE::ProjectManager
         {
             QProcessEnvironment environment = QProcessEnvironment::systemEnvironment();
             QString programFilesPath = environment.value("ProgramFiles(x86)");
-            QString vsWherePath = programFilesPath + "\\Microsoft Visual Studio\\Installer\\vswhere.exe";
+            QString vsWherePath = QDir(programFilesPath).filePath("\\Microsoft Visual Studio\\Installer\\vswhere.exe");
 
             QFileInfo vsWhereFile(vsWherePath);
             if (vsWhereFile.exists() && vsWhereFile.isFile())
@@ -383,16 +385,19 @@ namespace O3DE::ProjectManager
 
                 vsWhereProcess.start(
                     vsWherePath,
-                    QStringList{ "-version", "16.0", "-latest", "-requires", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
-                                 "-property", "isComplete" });
+                    QStringList{
+                        "-version",
+                        "16.0",
+                        "-latest",
+                        "-requires",
+                        "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+                        "-property",
+                        "isComplete"
+                    });
 
-                if (!vsWhereProcess.waitForStarted())
+                if (!vsWhereProcess.waitForStarted() && !vsWhereProcess.waitForReadyRead())
                 {
                     return false;
-                }
-
-                while (vsWhereProcess.waitForReadyRead())
-                {
                 }
 
                 QString vsWhereOutput(vsWhereProcess.readAllStandardOutput());
@@ -421,6 +426,10 @@ namespace O3DE::ProjectManager
                     " Install any edition of <a href='https://visualstudio.microsoft.com/downloads/'>Visual Studio 2019</a>"
                     " before proceeding to the next step."));
                 vsWarningMessage.setStandardButtons(QMessageBox::Close);
+
+                QSpacerItem* horizontalSpacer = new QSpacerItem(800, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+                QGridLayout* layout = reinterpret_cast<QGridLayout*>(vsWarningMessage.layout());
+                layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
                 vsWarningMessage.exec();
             }
 
