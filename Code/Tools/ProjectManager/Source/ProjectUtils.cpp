@@ -375,7 +375,7 @@ namespace O3DE::ProjectManager
         {
             QProcessEnvironment environment = QProcessEnvironment::systemEnvironment();
             QString programFilesPath = environment.value("ProgramFiles(x86)");
-            QString vsWherePath = QDir(programFilesPath).filePath("\\Microsoft Visual Studio\\Installer\\vswhere.exe");
+            QString vsWherePath = QDir(programFilesPath).filePath("Microsoft Visual Studio/Installer/vswhere.exe");
 
             QFileInfo vsWhereFile(vsWherePath);
             if (vsWhereFile.exists() && vsWhereFile.isFile())
@@ -395,9 +395,12 @@ namespace O3DE::ProjectManager
                         "isComplete"
                     });
 
-                if (!vsWhereProcess.waitForStarted() && !vsWhereProcess.waitForReadyRead())
+                if (!vsWhereProcess.waitForStarted())
                 {
                     return false;
+                }
+                while (vsWhereProcess.waitForReadyRead())
+                {
                 }
 
                 QString vsWhereOutput(vsWhereProcess.readAllStandardOutput());
