@@ -497,8 +497,14 @@ void LevelEditorMenuHandler::PopulateEditMenu(ActionManager::MenuWrapper& editMe
     // Hide Selection
     editMenu.AddAction(AzToolsFramework::HideSelection);
 
-    // Unhide All
+    // Show All
     editMenu.AddAction(AzToolsFramework::ShowAll);
+
+    // Lock Selection
+    editMenu.AddAction(AzToolsFramework::LockSelection);
+
+    // UnLock All
+    editMenu.AddAction(AzToolsFramework::UnlockAll);
 
     /*
      * The following block of code is part of the feature "Isolation Mode" and is temporarily
