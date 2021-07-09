@@ -354,9 +354,9 @@ namespace ScriptCanvas
             return GetRoot()->m_isPure;
         }
 
-        bool ExecutionTree::IsStart() const
+        bool ExecutionTree::IsStartCall() const
         {
-            return m_isStart;
+            return m_isStartCall;
         }
 
         void ExecutionTree::MarkDebugEmptyStatement()
@@ -403,9 +403,9 @@ namespace ScriptCanvas
             root->m_isLatent = true;
         }
 
-        void ExecutionTree::MarkStart()
+        void ExecutionTree::MarkStartCall()
         {
-            m_isStart = true;
+            m_isStartCall = true;
         }
 
         ExecutionChild& ExecutionTree::ModChild(size_t index)
