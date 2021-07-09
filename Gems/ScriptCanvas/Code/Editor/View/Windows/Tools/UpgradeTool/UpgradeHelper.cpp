@@ -16,8 +16,6 @@
 
 #include "UpgradeHelper.h"
 
-#include <Asset/Functions/ScriptCanvasFunctionAsset.h>
-
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/IO/SystemFile.h>

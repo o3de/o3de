@@ -75,20 +75,6 @@ namespace ScriptCanvas
             }
         }
 
-        void ArithmeticExpression::OnInputSignal(const SlotId& slotId)
-        {
-            if (slotId == GetSlotId(k_evaluateName))
-            {
-                const Datum output = Evaluate(*FindDatumByIndex(k_datumIndexLHS), *FindDatumByIndex(k_datumIndexRHS));
-                if (auto slot = GetSlot(GetOutputSlotId()))
-                {
-                    PushOutput(output, *slot);
-                }
-
-                SignalOutput(GetSlotId(k_outName));
-            }
-        }
-
         void ArithmeticExpression::Reflect(AZ::ReflectContext* reflection)
         {
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection))
@@ -105,17 +91,6 @@ namespace ScriptCanvas
                         ;
                 }
             }
-        }
-
-        Datum BinaryOperator::Evaluate([[maybe_unused]] const Datum& lhs, [[maybe_unused]] const Datum& rhs)
-        {
-            AZ_Assert(false, "Evaluate must be overridden");
-            return Datum();
-        };
-
-        void BinaryOperator::OnInputSignal([[maybe_unused]] const SlotId& slot)
-        {
-            AZ_Assert(false, "OnInputSignal must be overridden");
         }
 
         void BinaryOperator::OnInit()
@@ -157,28 +132,6 @@ namespace ScriptCanvas
         void BooleanExpression::InitializeBooleanExpression()
         {
             AZ_Assert(false, "InitializeBooleanExpression must be overridden");
-        }
-
-        void BooleanExpression::OnInputSignal(const SlotId& slotId)
-        {
-            if (slotId == GetSlotId(k_evaluateName))
-            {
-                const Datum output = Evaluate(*FindDatumByIndex(k_datumIndexLHS), *FindDatumByIndex(k_datumIndexRHS));
-                if (auto slot = GetSlot(GetOutputSlotId()))
-                {
-                    PushOutput(output, *slot);
-                }
-
-                const bool* result = output.GetAs<bool>();
-                if (result && *result)
-                {
-                    SignalOutput(GetSlotId(k_onTrue));
-                }
-                else
-                {
-                    SignalOutput(GetSlotId(k_onFalse));
-                }
-            }
         }
 
         void BooleanExpression::OnInit()

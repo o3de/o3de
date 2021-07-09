@@ -210,6 +210,21 @@ namespace AzToolsFramework
 
         void AssetBrowserTreeView::UpdateAfterFilter(bool hasFilter, bool selectFirstValidEntry)
         {
+            const QModelIndexList& selectedIndexes = selectionModel()->selectedRows();
+
+            // If we've cleared the filter but had something selected, ensure it stays selected and visible.
+            if (!hasFilter && !selectedIndexes.isEmpty())
+            {
+                QModelIndex curIndex = selectedIndexes[0];
+                m_expandToEntriesByDefault = true;
+                m_treeStateSaver->ApplySnapshot();
+
+                setCurrentIndex(curIndex);
+                scrollTo(curIndex);
+
+                return;
+            }
+
             // Flag our default expansion state so that we expand down to source entries after filtering
             m_expandToEntriesByDefault = hasFilter;
             // Then ask our state saver to apply its current snapshot again, falling back on asking us if entries should be expanded or not

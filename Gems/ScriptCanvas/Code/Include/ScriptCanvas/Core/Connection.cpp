@@ -168,7 +168,12 @@ namespace ScriptCanvas
     {
         if (nodeId == m_sourceEndpoint.GetNodeId() || nodeId == m_targetEndpoint.GetNodeId())
         {
-            GraphRequestBus::Event(*GraphNotificationBus::GetCurrentBusId(), &GraphRequests::DisconnectById, GetEntityId());
+            Slot* sourceSlot{};
+            NodeRequestBus::EventResult(sourceSlot, m_sourceEndpoint.GetNodeId(), &NodeRequests::GetSlot, m_sourceEndpoint.GetSlotId());
+            if (sourceSlot)
+            {
+                GraphRequestBus::Event(sourceSlot->GetNode()->GetOwningScriptCanvasId(), &GraphRequests::DisconnectById, GetEntityId());
+            }
         }
     }
 }
