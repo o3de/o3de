@@ -152,7 +152,6 @@ namespace ShaderManagementConsole
     {
         AzFramework::AssetSystemStatusBus::Handler::BusConnect();
         AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusConnect();
-        AZ::Debug::TraceMessageBus::Handler::BusConnect();
 
         AzFramework::Application::StartCommon(systemEntity);
 
@@ -164,7 +163,6 @@ namespace ShaderManagementConsole
     void ShaderManagementConsoleApplication::OnShaderManagementConsoleWindowClosing()
     {
         ExitMainLoop();
-        AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
         ShaderManagementConsoleWindowNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();
     }

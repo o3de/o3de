@@ -18,7 +18,7 @@
 
 namespace AzQtComponents
 {
-    //! Base case for O3DE Tools Applications
+    //! Base class for O3DE Tools Applications
     class AZ_QT_COMPONENTS_API AzQtApplication
         : public QApplication
     {

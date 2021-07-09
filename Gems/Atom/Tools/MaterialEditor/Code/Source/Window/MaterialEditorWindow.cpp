@@ -55,7 +55,7 @@ AZ_POP_DISABLE_WARNING
 namespace MaterialEditor
 {
     MaterialEditorWindow::MaterialEditorWindow(QWidget* parent /* = 0 */)
-        : AzQtComponents::DockMainWindow(parent)
+        : AzQtComponents::AzQtApplicationWindow(parent, "MaterialEditorWindow")
     {
         resize(1280, 1024);
 
@@ -82,45 +82,25 @@ namespace MaterialEditor
             setWindowTitle(QApplication::applicationName());
         }
 
-        m_advancedDockManager = new AzQtComponents::FancyDocking(this);
-
-        setObjectName("MaterialEditorWindow");
-        setDockNestingEnabled(true);
-        setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
-        setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
-        setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
-        setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
-
-        m_menuBar = new QMenuBar(this);
-        m_menuBar->setObjectName("MenuBar");
-        setMenuBar(m_menuBar);
-
         m_toolBar = new MaterialEditorToolBar(this);
         m_toolBar->setObjectName("ToolBar");
         addToolBar(m_toolBar);
 
-        m_centralWidget = new QWidget(this);
-        m_tabWidget = new AzQtComponents::TabWidget(m_centralWidget);
-        m_tabWidget->setObjectName("TabWidget");
-        m_tabWidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
-        m_tabWidget->setContentsMargins(0, 0, 0, 0);
-
         m_materialViewport = new MaterialViewportWidget(m_centralWidget);
         m_materialViewport->setObjectName("Viewport");
         m_materialViewport->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
-
-        QVBoxLayout* vl = new QVBoxLayout(m_centralWidget);
+        
         vl->setMargin(0);
         vl->setContentsMargins(0, 0, 0, 0);
         vl->addWidget(m_tabWidget);
         vl->addWidget(m_materialViewport);
         m_centralWidget->setLayout(vl);
         setCentralWidget(m_centralWidget);
-
+        
         m_statusBar = new StatusBarWidget(this);
         m_statusBar->setObjectName("StatusBar");
         statusBar()->addPermanentWidget(m_statusBar, 1);
-
+        
         SetupMenu();
         SetupTabs();
 
@@ -738,22 +718,6 @@ namespace MaterialEditor
         }
     }
 
-    void MaterialEditorWindow::SelectPreviousTab()
-    {
-        if (m_tabWidget->count() > 1)
-        {
-            // Adding count to wrap around when index <= 0
-            m_tabWidget->setCurrentIndex((m_tabWidget->currentIndex() + m_tabWidget->count() - 1) % m_tabWidget->count());
-        }
-    }
-
-    void MaterialEditorWindow::SelectNextTab()
-    {
-        if (m_tabWidget->count() > 1)
-        {
-            m_tabWidget->setCurrentIndex((m_tabWidget->currentIndex() + 1) % m_tabWidget->count());
-        }
-    }
 } // namespace MaterialEditor
 
 #include <Window/moc_MaterialEditorWindow.cpp>

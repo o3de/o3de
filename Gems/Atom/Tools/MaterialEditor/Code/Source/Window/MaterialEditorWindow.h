@@ -12,10 +12,11 @@
 #include <Atom/Document/MaterialDocumentNotificationBus.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
-#include <AzQtComponents/Components/DockMainWindow.h>
+//#include <AzQtComponents/Components/DockMainWindow.h>
 #include <AzQtComponents/Components/FancyDocking.h>
 #include <AzQtComponents/Components/StyledDockWidget.h>
 #include <AzQtComponents/Components/Widgets/TabWidget.h>
+#include <AzQtComponents/Application/Window/AzQtApplicationWindow.h>
 
 #include <Atom/Window/MaterialEditorWindowRequestBus.h>
 #include <Viewport/MaterialViewportWidget.h>
@@ -43,7 +44,7 @@ namespace MaterialEditor
      * 3) MaterialPropertyInspector  - The user edits the properties of the selected Material.
      */
     class MaterialEditorWindow
-        : public AzQtComponents::DockMainWindow
+        : public AzQtComponents::AzQtApplicationWindow
         , private MaterialEditorWindowRequestBus::Handler
         , private MaterialDocumentNotificationBus::Handler
     {
@@ -74,61 +75,31 @@ namespace MaterialEditor
         void OnDocumentUndoStateChanged(const AZ::Uuid& documentId) override;
         void OnDocumentSaved(const AZ::Uuid& documentId) override;
 
-        void SetupMenu();
+        void SetupMenu() override;
+        void SetupTabs() override;
 
-        void SetupTabs();
         void AddTabForDocumentId(const AZ::Uuid& documentId);
         void RemoveTabForDocumentId(const AZ::Uuid& documentId);
         void UpdateTabForDocumentId(const AZ::Uuid& documentId);
-        QString GetDocumentPath(const AZ::Uuid& documentId) const;
         AZ::Uuid GetDocumentIdFromTab(const int tabIndex) const;
+        QString GetDocumentPath(const AZ::Uuid& documentId) const;
 
-        void OpenTabContextMenu();
-        void SelectPreviousTab();
-        void SelectNextTab();
+        void OpenTabContextMenu() override;
 
         void closeEvent(QCloseEvent* closeEvent) override;
 
-        AzQtComponents::FancyDocking* m_advancedDockManager = nullptr;
-        QWidget* m_centralWidget = nullptr;
-        QMenuBar* m_menuBar = nullptr;
-        AzQtComponents::TabWidget* m_tabWidget = nullptr;
         MaterialViewportWidget* m_materialViewport = nullptr;
         MaterialEditorToolBar* m_toolBar = nullptr;
 
         AZStd::unordered_map <AZStd::string, AzQtComponents::StyledDockWidget*> m_dockWidgets;
 
-        QMenu* m_menuFile = {};
         QAction* m_actionNew = {};
-        QAction* m_actionOpen = {};
-        QAction* m_actionOpenRecent = {};
-        QAction* m_actionClose = {};
-        QAction* m_actionCloseAll = {};
-        QAction* m_actionCloseOthers = {};
-        QAction* m_actionSave = {};
-        QAction* m_actionSaveAsCopy = {};
         QAction* m_actionSaveAsChild = {};
-        QAction* m_actionSaveAll = {};
-        QAction* m_actionExit = {};
 
-        QMenu* m_menuEdit = {};
-        QAction* m_actionUndo = {};
-        QAction* m_actionRedo = {};
-        QAction* m_actionSettings = {};
-
-        QMenu* m_menuView = {};
-        QAction* m_actionAssetBrowser = {};
         QAction* m_actionInspector = {};
         QAction* m_actionConsole = {};
-        QAction* m_actionPythonTerminal = {};
         QAction* m_actionPerfMonitor = {};
         QAction* m_actionViewportSettings = {};
-        QAction* m_actionNextTab = {};
-        QAction* m_actionPreviousTab = {};
-
-        QMenu* m_menuHelp = {};
-        QAction* m_actionHelp = {};
-        QAction* m_actionAbout = {};
 
         StatusBarWidget* m_statusBar = {};
     };
