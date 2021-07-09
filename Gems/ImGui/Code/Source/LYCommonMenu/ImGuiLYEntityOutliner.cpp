@@ -590,7 +590,7 @@ namespace ImGui
                 if (ImGui::SmallButton(targetLabel.c_str()))
                 {
                     // Send EBUS event out to Target an Entity. Up to game code to implement.
-                    ImGuiEntityOutlinerNotifcationBus::Broadcast(&IImGuiEntityOutlinerNotifcations::OnImGuiEntityOutlinerTarget, node->m_entityId);
+                    ImGuiEntityOutlinerNotificationBus::Broadcast(&IImGuiEntityOutlinerNotifications::OnImGuiEntityOutlinerTarget, node->m_entityId);
                 }
             }
 
