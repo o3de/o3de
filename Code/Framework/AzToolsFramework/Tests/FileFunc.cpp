@@ -5,8 +5,8 @@
  *
  */
 
-#include "FrameworkApplicationFixture.h"
-#include "Utils/Utils.h"
+#include <FrameworkApplicationFixture.h>
+#include <Utils/Utils.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
