@@ -27,4 +27,14 @@ namespace Multiplayer
     {
         return m_controlledEntity;
     }
+
+    inline const AZStd::string& ServerToClientConnectionData::GetProviderTicket() const
+    {
+        return m_providerTicket;
+    }
+
+    inline void ServerToClientConnectionData::SetProviderTicket(const AZStd::string& ticket)
+    {
+        m_providerTicket = ticket;
+    }
 }

@@ -19,6 +19,7 @@
 #include "Objects/DisplayContext.h"
 #include "Undo/Undo.h"
 #include "Util/PredefinedAspectRatios.h"
+#include "EditorViewportSettings.h"
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/std/optional.h>
@@ -323,11 +324,6 @@ protected:
 
     void SetViewTM(const Matrix34& tm, bool bMoveOnly);
 
-    virtual float GetCameraMoveSpeed() const;
-    virtual float GetCameraRotateSpeed() const;
-    virtual bool  GetCameraInvertYRotation() const;
-    virtual float GetCameraInvertPan() const;
-
     // Called to render stuff.
     virtual void OnRender();
 
@@ -385,6 +381,11 @@ protected:
     };
     void ResetToViewSourceType(const ViewSourceType& viewSourType);
 
+    bool ShouldPreviewFullscreen() const;
+    void StartFullscreenPreview();
+    void StopFullscreenPreview();
+
+    bool m_inFullscreenPreview = false;
     bool m_bRenderContextCreated = false;
     bool m_bInRotateMode = false;
     bool m_bInMoveMode = false;
@@ -565,6 +566,9 @@ private:
     void UpdateScene();
 
     AzFramework::EntityVisibilityQuery m_entityVisibilityQuery;
+
+    SandboxEditor::GridSnappingChangedEvent::Handler m_gridSnappingHandler;
+    AZStd::unique_ptr<SandboxEditor::EditorViewportSettingsCallbacks> m_editorViewportSettingsCallbacks;
 
     QSet<int> m_keyDown;
 

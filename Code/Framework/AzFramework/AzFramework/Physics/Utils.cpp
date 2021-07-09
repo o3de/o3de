@@ -29,6 +29,7 @@
 #include <AzFramework/Physics/Configuration/SceneConfiguration.h>
 #include <AzFramework/Physics/Configuration/SimulatedBodyConfiguration.h>
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
+#include <AzFramework/Physics/Common/PhysicsJoint.h>
 
 namespace Physics
 {
@@ -117,9 +118,9 @@ namespace Physics
             DefaultMaterialConfiguration::Reflect(context);
             MaterialLibraryAsset::Reflect(context);
             MaterialInfoReflectionWrapper::Reflect(context);
-            JointLimitConfiguration::Reflect(context);
             AzPhysics::SimulatedBodyConfiguration::Reflect(context);
             AzPhysics::RigidBodyConfiguration::Reflect(context);
+            AzPhysics::JointConfiguration::Reflect(context);
             RagdollNodeConfiguration::Reflect(context);
             RagdollConfiguration::Reflect(context);
             CharacterColliderNodeConfiguration::Reflect(context);
@@ -127,6 +128,7 @@ namespace Physics
             AnimationConfiguration::Reflect(context);
             CharacterConfiguration::Reflect(context);
             AzPhysics::SimulatedBody::Reflect(context);
+            AzPhysics::Joint::Reflect(context);
             ReflectSimulatedBodyComponentRequestsBus(context);
             CollisionFilteringRequests::Reflect(context);
             AzPhysics::SceneQuery::ReflectSceneQueryObjects(context);

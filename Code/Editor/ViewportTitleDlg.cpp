@@ -171,7 +171,7 @@ void CViewportTitleDlg::SetupCameraDropdownMenu()
     cameraSpeedActionWidget->setDefaultWidget(cameraSpeedContainer);
 
     // Save off the move speed here since setting up the combo box can cause it to update values in the background.
-    float cameraMoveSpeed = gSettings.cameraMoveSpeed;
+    const float cameraMoveSpeed = SandboxEditor::UsingNewCameraSystem() ? SandboxEditor::CameraTranslateSpeed() : gSettings.cameraMoveSpeed;
 
     // Populate the presets in the ComboBox
     for (float presetValue : m_speedPresetValues)
@@ -182,7 +182,8 @@ void CViewportTitleDlg::SetupCameraDropdownMenu()
     auto comboBoxTextChanged = static_cast<void (QComboBox::*)(const QString&)>(&QComboBox::currentTextChanged);
 
     SetSpeedComboBox(cameraMoveSpeed);
-    m_cameraSpeed->setInsertPolicy(QComboBox::NoInsert);
+    m_cameraSpeed->setInsertPolicy(QComboBox::InsertAtBottom);
+    m_cameraSpeed->setDuplicatesEnabled(false);
     connect(m_cameraSpeed, comboBoxTextChanged, this, &CViewportTitleDlg::OnUpdateMoveSpeedText);
     connect(m_cameraSpeed->lineEdit(), &QLineEdit::returnPressed, this, &CViewportTitleDlg::OnSpeedComboBoxEnter);
 
@@ -918,15 +919,24 @@ void CViewportTitleDlg::OnSpeedComboBoxEnter()
 
 void CViewportTitleDlg::OnUpdateMoveSpeedText(const QString& text)
 {
-    gSettings.cameraMoveSpeed = aznumeric_cast<float>(Round(text.toDouble(), m_speedStep));
+    if (SandboxEditor::UsingNewCameraSystem())
+    {
+        SandboxEditor::SetCameraTranslateSpeed(aznumeric_cast<float>(Round(text.toDouble(), m_speedStep)));
+    }
+    else
+    {
+        gSettings.cameraMoveSpeed = aznumeric_cast<float>(Round(text.toDouble(), m_speedStep));
+    }
 }
 
 void CViewportTitleDlg::CheckForCameraSpeedUpdate()
 {
-    if (gSettings.cameraMoveSpeed != m_prevMoveSpeed && !m_cameraSpeed->lineEdit()->hasFocus())
+    if (const float currentCameraMoveSpeed =
+            SandboxEditor::UsingNewCameraSystem() ? SandboxEditor::CameraTranslateSpeed() : gSettings.cameraMoveSpeed;
+        currentCameraMoveSpeed != m_prevMoveSpeed && !m_cameraSpeed->lineEdit()->hasFocus())
     {
-        m_prevMoveSpeed = gSettings.cameraMoveSpeed;
-        SetSpeedComboBox(gSettings.cameraMoveSpeed);
+        m_prevMoveSpeed = currentCameraMoveSpeed;
+        SetSpeedComboBox(currentCameraMoveSpeed);
     }
 }
 

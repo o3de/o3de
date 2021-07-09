@@ -21,7 +21,6 @@
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
-#include <Atom/RPI.Reflect/Shader/ShaderResourceGroupAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImagePoolAsset.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelLodAsset.h>
@@ -83,7 +82,6 @@ namespace AZ
             m_assetWorkers.emplace_back(MakeAssetBuilder<PassBuilder>());
 
             m_assetHandlers.emplace_back(MakeAssetHandler<ShaderAssetHandler>());
-            m_assetHandlers.emplace_back(MakeAssetHandler<ShaderResourceGroupAssetHandler>());
             m_assetHandlers.emplace_back(MakeAssetHandler<MaterialTypeAssetHandler>());
             m_assetHandlers.emplace_back(MakeAssetHandler<MaterialAssetHandler>());
             m_assetHandlers.emplace_back(MakeAssetHandler<ResourcePoolAssetHandler>());

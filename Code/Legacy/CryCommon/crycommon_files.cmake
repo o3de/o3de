@@ -65,7 +65,6 @@ set(FILES
     CryRandomInternal.h
     Random.h
     LCGRandom.h
-    MTPseudoRandom.cpp
     CryTypeInfo.cpp
     BaseTypes.h
     CompileTimeAssert.h
@@ -98,7 +97,6 @@ set(FILES
     LegacyAllocator.h
     MetaUtils.h
     MiniQueue.h
-    MTPseudoRandom.h
     MultiThread.h
     MultiThread_Containers.h
     NullAudioSystem.h

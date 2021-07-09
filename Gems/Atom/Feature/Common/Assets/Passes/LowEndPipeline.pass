@@ -158,8 +158,8 @@
                         "$type": "RasterPassData",
                         "DrawListTag": "lowEndForward",
                         "PipelineViewTag": "MainCamera",
-                        "PassSrgAsset": {
-                            "FilePath": "shaderlib/atom/features/pbr/forwardpasssrg.azsli:PassSrg"
+                        "PassSrgShaderAsset": {
+                            "FilePath": "Shaders/ForwardPassSrg.shader"
                         }
                     }
                 },

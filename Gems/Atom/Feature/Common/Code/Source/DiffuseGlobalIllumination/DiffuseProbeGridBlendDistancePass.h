@@ -49,7 +49,7 @@ namespace AZ
             // shader
             Data::Instance<RPI::Shader> m_shader;
             const RHI::PipelineState* m_pipelineState = nullptr;
-            Data::Asset<RPI::ShaderResourceGroupAsset> m_srgAsset;
+            RHI::Ptr<RHI::ShaderResourceGroupLayout> m_srgLayout;
             RHI::DispatchDirect m_dispatchArgs;
         };
     }   // namespace Render

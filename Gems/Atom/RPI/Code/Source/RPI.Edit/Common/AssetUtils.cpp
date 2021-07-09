@@ -16,12 +16,6 @@ namespace AZ
     {
         namespace AssetUtils
         {
-            uint32_t CalcSrgProductSubId(const Name& srgName)
-            {
-                //[GFX TODO] Make SrgLayoutBuilder share this code after the gems reorg is complete
-                return static_cast<uint32_t>(AZStd::hash<AZStd::string>()(srgName.GetStringView()) & 0xFFFFFFFF);
-            }
-
             AZStd::string GetProductPathByAssetId(const AZ::Data::AssetId& assetId)
             {
                 AZStd::string productPath;

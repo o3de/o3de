@@ -30,6 +30,7 @@
 
 namespace AWSCore
 {
+
     static constexpr int IconSize = 16;
 
     AWSCoreEditorMenu::AWSCoreEditorMenu(const QString& text)
@@ -204,6 +205,7 @@ namespace AWSCore
             [configFilePath](){
                 QDesktopServices::openUrl(QUrl::fromLocalFile(configFilePath.c_str()));
             });
+
         subMenu->addAction(settingsAction);
         AddSpaceForIcon(subMenu);
     }
@@ -226,7 +228,7 @@ namespace AWSCore
         return nullptr;
     }
 
-    void AWSCoreEditorMenu::AddSpaceForIcon(QMenu* menu)
+    void AWSCoreEditorMenu::AddSpaceForIcon(QMenu *menu)
     {
         QSize size = menu->sizeHint();
         size.setWidth(size.width() + IconSize);

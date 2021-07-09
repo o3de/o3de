@@ -31,6 +31,7 @@
     ],
     "steps": [
       "profile_vs2019",
+      "test_impact_analysis_profile_vs2019",
       "asset_profile_vs2019",
       "test_cpu_profile_vs2019"
     ]
@@ -79,6 +80,18 @@
       "SCRIPT_PARAMETERS": "--platform 3rdParty --type 3rdParty_all"
     }
   },
+  "test_impact_analysis_profile_vs2019": {
+    "TAGS": [
+    ],
+    "COMMAND": "python_windows.cmd",
+    "PARAMETERS": {
+      "OUTPUT_DIRECTORY": "build/windows_vs2019",
+      "CONFIGURATION": "profile",
+      "SCRIPT_PATH": "scripts/build/TestImpactAnalysis/tiaf_driver.py",
+      "SCRIPT_PARAMETERS": 
+      "--config=\"!OUTPUT_DIRECTORY!/bin/TestImpactFramework/persistent/tiaf.profile.json\" --suite=main --test-failure-policy=continue --src-branch=!BRANCH_NAME! --dst-branch=!CHANGE_TARGET! --pipeline=!PIPELINE_NAME! --dest-commit=!CHANGE_ID! --seeding-branches=!BUILD_SNAPSHOTS! --seeding-pipelines=default"
+    }
+  },
   "debug_vs2019": {
     "TAGS": [
         "weekly-build-metrics"
@@ -119,7 +132,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build\\windows_vs2019",
-      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DLY_TEST_IMPACT_ACTIVE=1 -DLY_TEST_IMPACT_INSTRUMENTATION_BIN=!TEST_IMPACT_WIN_BINARY!",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "ALL_BUILD",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
@@ -177,7 +190,8 @@
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
       "CTEST_OPTIONS": "-L \"(SUITE_smoke_REQUIRES_gpu|SUITE_main_REQUIRES_gpu)\" -T Test",
       "TEST_METRICS": "True",
-      "TEST_RESULTS": "True"
+      "TEST_RESULTS": "True",
+      "TEST_SCREENSHOTS": "True"
     }
   },
   "asset_profile_vs2019": {

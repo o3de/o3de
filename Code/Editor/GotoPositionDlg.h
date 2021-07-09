@@ -6,12 +6,7 @@
  */
 
 
-#ifndef CRYINCLUDE_EDITOR_GOTOPOSITIONDLG_H
-#define CRYINCLUDE_EDITOR_GOTOPOSITIONDLG_H
-
 #pragma once
-// GotoPositionDlg.h : header file
-//
 
 #if !defined(Q_MOC_RUN)
 #include <QDialog>
@@ -19,22 +14,19 @@
 
 namespace Ui
 {
-    class GotoPositionDlg;
+    class GotoPositionDialog;
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// CGotoPositionDlg dialog
-
-class CGotoPositionDlg
+//! GotoPositionDialog for setting camera position and rotation.
+class GotoPositionDialog
     : public QDialog
 {
     Q_OBJECT
-    // Construction
-public:
-    CGotoPositionDlg(QWidget* pParent = nullptr);   // standard constructor
-    ~CGotoPositionDlg();
 
-    // Implementation
+public:
+    explicit GotoPositionDialog(QWidget* parent = nullptr);
+    ~GotoPositionDialog();
+
 protected:
     void OnInitDialog();
     void accept() override;
@@ -42,12 +34,9 @@ protected:
     void OnUpdateNumbers();
     void OnChangeEdit();
 
-
 public:
-    QString m_sPos;
+    QString m_transform;
 
 private:
-    QScopedPointer<Ui::GotoPositionDlg> m_ui;
+    QScopedPointer<Ui::GotoPositionDialog> m_ui;
 };
-
-#endif // CRYINCLUDE_EDITOR_GOTOPOSITIONDLG_H

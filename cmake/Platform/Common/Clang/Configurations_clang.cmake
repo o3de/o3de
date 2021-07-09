@@ -36,7 +36,6 @@ ly_append_configurations_options(
         -Wno-unused-private-field
         -Wno-unused-value
         -Wno-unused-variable
-        -Wno-non-pod-varargs
         -Wno-unused-lambda-capture
         # Workaround for compiler seeing file case differently from what OS show in console.
         -Wno-nonportable-include-path

@@ -108,6 +108,8 @@ public:
     //! Switch 2D viewports.
     void Cycle2DViewport();
 
+    using AzQtComponents::ToolBarArea::SetMainWidget;
+
 public slots:
     void ResetLayout();
 

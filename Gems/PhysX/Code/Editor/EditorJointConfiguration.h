@@ -10,7 +10,7 @@
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
-#include <Source/Joint.h>
+#include <Source/JointComponent.h>
 
 namespace PhysX
 {
@@ -63,7 +63,7 @@ namespace PhysX
         static void Reflect(AZ::ReflectContext* context);
 
         bool IsLimited() const;
-        GenericJointLimitsConfiguration ToGameTimeConfig() const;
+        JointLimitProperties ToGameTimeConfig() const;
 
         EditorJointLimitConfig m_standardLimitConfig;
         float m_limitPositive = 45.0f;
@@ -82,7 +82,7 @@ namespace PhysX
         static void Reflect(AZ::ReflectContext* context);
 
         bool IsLimited() const;
-        GenericJointLimitsConfiguration ToGameTimeConfig() const;
+        JointLimitProperties ToGameTimeConfig() const;
 
         EditorJointLimitConfig m_standardLimitConfig;
         float m_limitY = 45.0f;
@@ -100,7 +100,8 @@ namespace PhysX
         static void Reflect(AZ::ReflectContext* context);
 
         void SetLeadEntityId(AZ::EntityId leadEntityId);
-        GenericJointConfiguration ToGameTimeConfig() const;
+        JointGenericProperties ToGenericProperties() const;
+        JointComponentConfiguration ToGameTimeConfig() const;
 
         bool m_breakable = false;
         bool m_displayJointSetup = false;

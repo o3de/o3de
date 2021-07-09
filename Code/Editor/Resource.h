@@ -71,8 +71,6 @@
 #define IDC_GROUPBOX_GLOBALTAGS                    2916
 #define IDC_GROUPBOX_FRAGMENTTAGS                  2917
 #define ID_RESOURCES_REDUCEWORKINGSET              32896
-#define ID_EDIT_HIDE                               32898
-#define ID_EDIT_UNHIDEALL                          32899
 #define ID_RELOAD_TERRAIN                          32902
 #define ID_VIEW_CONFIGURELAYOUT                    32906
 #define ID_TOOLS_LOGMEMORYUSAGE                    32908
@@ -84,9 +82,6 @@
 #define ID_EXPORT_INDOORS                          32915
 #define ID_VIEW_CYCLE2DVIEWPORT                    32916
 #define ID_SNAPANGLE                               32917
-#define ID_CHANGEMOVESPEED_INCREASE                32928
-#define ID_CHANGEMOVESPEED_DECREASE                32929
-#define ID_CHANGEMOVESPEED_CHANGESTEP              32930
 #define ID_PHYSICS_GETPHYSICSSTATE                 32937
 #define ID_PHYSICS_RESETPHYSICSSTATE               32938
 #define ID_GAME_SYNCPLAYER                         32941
@@ -100,7 +95,6 @@
 #define ID_TOOL_LAST                               33173
 #define ID_TOOL_SHELVE_FIRST                       33174
 #define ID_TOOL_SHELVE_LAST                        33375
-#define ID_EDIT_SELECTALL                          33376
 #define ID_WIREFRAME                               33410
 #define ID_FILE_GENERATETERRAINTEXTURE             33445
 #define ID_GENERATORS_TEXTURE                      33448
@@ -109,7 +103,7 @@
 #define ID_EDIT_FETCH                              33465
 #define ID_FILE_EXPORTTOGAMENOSURFACETEXTURE       33473
 #define ID_VIEW_SWITCHTOGAME                       33477
-#define ID_EDIT_DELETE                             33480
+#define ID_VIEW_SWITCHTOGAME_FULLSCREEN            33478
 #define ID_MOVE_OBJECT                             33481
 #define ID_RENAME_OBJ                              33483
 #define ID_FETCH                                   33496
@@ -119,7 +113,6 @@
 #define ID_SELECTION_DELETE                        33512
 #define ID_EDIT_ESCAPE                             33513
 #define ID_UNDO                                    33524
-#define ID_EDIT_CLONE                              33525
 #define ID_GOTO_SELECTED                           33535
 #define ID_EDIT_LEVELDATA                          33542
 #define ID_FILE_EDITEDITORINI                      33543
@@ -187,7 +180,6 @@
 #define ID_PANEL_VEG_RENAMECATEGORY                33683
 #define ID_PANEL_VEG_REMOVECATEGORY                33684
 #define ID_TOOLS_PREFERENCES                       33691
-#define ID_EDIT_INVERTSELECTION                    33692
 #define ID_TOOLTERRAINMODIFY_SMOOTH                33695
 #define ID_TERRAINMODIFY_SMOOTH                    33696
 #define ID_TERRAIN_PAINTLAYERS                     33698
@@ -332,11 +324,6 @@
 #define ID_DOCUMENTATION_FEEDBACK                    36043
 #define ID_OPEN_SUBSTANCE_EDITOR                     36060
 #define ID_IMPORT_ASSET                              36069
-#define ID_EDIT_PIVOT                                36203
-#define ID_EDIT_RESET                                36204
-#define ID_EDIT_RESET_LOCAL                          36205
-#define ID_EDIT_RESET_WORLD                          36206
-#define ID_EDIT_RESET_MANIPULATOR                    36207
 #define ID_GAME_PROVO_ENABLELOWSPEC                   34603
 #define ID_GAME_PROVO_ENABLEMEDIUMSPEC                34604
 #define ID_GAME_PROVO_ENABLEHIGHSPEC                  34605

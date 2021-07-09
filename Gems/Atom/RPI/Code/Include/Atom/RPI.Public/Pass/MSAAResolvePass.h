@@ -37,6 +37,7 @@ namespace AZ
             // Pass behavior overrides...
             void BuildInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
+            bool IsEnabled() const override;
 
         private:
 

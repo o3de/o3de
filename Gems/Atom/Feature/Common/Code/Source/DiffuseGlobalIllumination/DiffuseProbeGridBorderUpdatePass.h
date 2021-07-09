@@ -35,7 +35,7 @@ namespace AZ
             void LoadShader(AZStd::string shaderFilePath,
                             Data::Instance<RPI::Shader>& shader,
                             const RHI::PipelineState*& pipelineState,
-                            Data::Asset<RPI::ShaderResourceGroupAsset>& srgAsset,
+                            RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout,
                             RHI::DispatchDirect& dispatchArgs);
 
             // Pass overrides
@@ -50,8 +50,8 @@ namespace AZ
             Data::Instance<RPI::Shader> m_columnShader;
             const RHI::PipelineState* m_rowPipelineState = nullptr;
             const RHI::PipelineState* m_columnPipelineState = nullptr;
-            Data::Asset<RPI::ShaderResourceGroupAsset> m_rowSrgAsset;
-            Data::Asset<RPI::ShaderResourceGroupAsset> m_columnSrgAsset;
+            RHI::Ptr<RHI::ShaderResourceGroupLayout> m_rowSrgLayout;
+            RHI::Ptr<RHI::ShaderResourceGroupLayout> m_columnSrgLayout;
             RHI::DispatchDirect m_rowDispatchArgs;
             RHI::DispatchDirect m_columnDispatchArgs;
         };

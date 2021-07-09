@@ -49,7 +49,7 @@ namespace AZ
             desc.m_bufferSrgName = "m_diskLights";
             desc.m_elementCountSrgName = "m_diskLightCount";
             desc.m_elementSize = sizeof(DiskLightData);
-            desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgAsset()->GetLayout();
+            desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
 
             m_lightBufferHandler = GpuBufferHandler(desc);
             m_shadowFeatureProcessor = GetParentScene()->GetFeatureProcessor<ProjectedShadowFeatureProcessor>();

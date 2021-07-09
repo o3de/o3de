@@ -825,12 +825,6 @@ void MainWindow::InitActions()
     am->AddAction(ID_SWITCHCAMERA_NEXT, tr("Cycle Camera"))
         .SetShortcut(tr("Ctrl+`"))
         .SetToolTip(tr("Cycle Camera (Ctrl+`)"));
-    am->AddAction(ID_CHANGEMOVESPEED_INCREASE, tr("Increase"))
-        .SetStatusTip(tr("Increase Flycam Movement Speed"));
-    am->AddAction(ID_CHANGEMOVESPEED_DECREASE, tr("Decrease"))
-        .SetStatusTip(tr("Decrease Flycam Movement Speed"));
-    am->AddAction(ID_CHANGEMOVESPEED_CHANGESTEP, tr("Change Step"))
-        .SetStatusTip(tr("Change Flycam Movement Step"));
     am->AddAction(ID_DISPLAY_GOTOPOSITION, tr("Go to Position..."));
     am->AddAction(ID_MODIFY_GOTO_SELECTION, tr("Center on Selection"))
         .SetShortcut(tr("Z"))
@@ -938,6 +932,12 @@ void MainWindow::InitActions()
         .SetApplyHoverEffect()
         .SetCheckable(true)
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdatePlayGame);
+    am->AddAction(ID_VIEW_SWITCHTOGAME_FULLSCREEN, tr("Play &Game (Maximized)"))
+        .SetShortcut(tr("Ctrl+Shift+G"))
+        .SetStatusTip(tr("Activate the game input mode (maximized)"))
+        .SetIcon(Style::icon("Play"))
+        .SetApplyHoverEffect()
+        .SetCheckable(true);
     am->AddAction(ID_TOOLBAR_WIDGET_PLAYCONSOLE_LABEL, tr("Play Controls"))
         .SetText(tr("Play Controls"));
     am->AddAction(ID_SWITCH_PHYSICS, tr("Simulate"))
@@ -1247,10 +1247,25 @@ void MainWindow::OnGameModeChanged(bool inGameMode)
 {
     menuBar()->setDisabled(inGameMode);
     m_toolbarManager->SetEnabled(!inGameMode);
-    QAction* action = m_actionManager->GetAction(ID_VIEW_SWITCHTOGAME);
-    action->blockSignals(true); // avoid a loop
-    action->setChecked(inGameMode);
-    action->blockSignals(false);
+
+    // block signals on the switch to game actions before setting the checked state, as
+    // setting the checked state triggers the action, which will re-enter this function
+    // and result in an infinite loop
+    AZStd::vector<QAction*> actions = { m_actionManager->GetAction(ID_VIEW_SWITCHTOGAME), m_actionManager->GetAction(ID_VIEW_SWITCHTOGAME_FULLSCREEN) };
+    for (auto action : actions)
+    {
+        action->blockSignals(true);
+    }
+
+    for (auto action : actions)
+    {
+        action->setChecked(inGameMode);
+    }
+
+    for (auto action : actions)
+    {
+        action->blockSignals(false);
+    }
 }
 
 void MainWindow::OnEditorNotifyEvent(EEditorNotifyEvent ev)

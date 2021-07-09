@@ -364,7 +364,6 @@ private:
     friend struct PythonTestOutputHandler;
 
     void OpenProjectManager(const AZStd::string& screen);
-    void OnWireframe();
     void OnUpdateWireframe(QAction* action);
     void OnViewConfigureLayout();
 
@@ -400,9 +399,6 @@ private:
     void OnToolsScriptHelp();
     void OnViewCycle2dviewport();
     void OnDisplayGotoPosition();
-    void OnChangemovespeedIncrease();
-    void OnChangemovespeedDecrease();
-    void OnChangemovespeedChangestep();
     void OnFileSavelevelresources();
     void OnClearRegistryData();
     void OnValidatelevel();

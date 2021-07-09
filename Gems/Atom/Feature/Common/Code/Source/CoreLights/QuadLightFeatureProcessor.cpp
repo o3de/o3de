@@ -51,7 +51,7 @@ namespace AZ
             desc.m_bufferSrgName = "m_quadLights";
             desc.m_elementCountSrgName = "m_quadLightCount";
             desc.m_elementSize = sizeof(QuadLightData);
-            desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgAsset()->GetLayout();
+            desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
 
             m_lightBufferHandler = GpuBufferHandler(desc);
 

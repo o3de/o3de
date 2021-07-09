@@ -58,3 +58,5 @@ int main(int argc, char* argv[])
 }
 
 #endif // AZ_TESTS_ENABLED
+
+void CVar_OnViewportPosition([[maybe_unused]] const AZ::Vector2& value) {}

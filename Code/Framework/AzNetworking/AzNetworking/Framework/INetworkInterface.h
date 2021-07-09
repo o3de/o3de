@@ -92,6 +92,10 @@ namespace AzNetworking
         //! @return boolean true if the packet is confirmed acknowledged, false if the packet number is out of range, lost, or still pending acknowledgment
         virtual bool WasPacketAcked(ConnectionId connectionId, PacketId packetId) = 0;
 
+        //! Closes the network interface to stop accepting new incoming connections.
+        //! @return boolean true if the operation was successful, false if it failed
+        virtual bool StopListening() = 0;
+
         //! Disconnects the specified connection.
         //! @param connectionId identifier of the connection to terminate
         //! @param reason      reason for the disconnect

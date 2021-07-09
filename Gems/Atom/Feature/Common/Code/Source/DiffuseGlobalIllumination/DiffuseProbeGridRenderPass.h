@@ -40,7 +40,7 @@ namespace AZ
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;
 
             Data::Instance<RPI::Shader> m_shader;
-            Data::Asset<RPI::ShaderResourceGroupAsset> m_srgAsset;
+            RHI::Ptr<RHI::ShaderResourceGroupLayout> m_srgLayout;
         };
     } // namespace Render
 } // namespace AZ

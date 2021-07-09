@@ -239,7 +239,9 @@ namespace AZ
 
             struct ShaderData
             {
-                AZ::Data::Asset<AZ::RPI::ShaderResourceGroupAsset> m_perObjectSrgAsset;
+                AZ::Data::Asset<AZ::RPI::ShaderAsset> m_shaderAsset; // For @m_perObjectSrgLayout.
+                AZ::RPI::SupervariantIndex m_supervariantIndex; // For @m_perObjectSrgLayout.
+                AZ::RHI::Ptr<AZ::RHI::ShaderResourceGroupLayout> m_perObjectSrgLayout; // Comes from @m_shaderAsset
                 AZ::RHI::DrawListTag m_drawListTag;
                 AZ::RHI::ShaderInputNameIndex m_colorIndex = "m_color";
                 AZ::RHI::ShaderInputNameIndex m_modelToWorldIndex = "m_modelToWorld";

@@ -7,8 +7,6 @@
 
 #pragma once
 
-#include <AzCore/std/smart_ptr/unique_ptr.h>
-
 #include <QMenu>
 #include <QPoint>
 #include <QPointer>
@@ -23,7 +21,6 @@ namespace AzToolsFramework
     //! State of when and where the right-click context menu should appear.
     struct EditorContextMenu final
     {
-        bool m_shouldOpen = false;
         QPoint m_clickPoint = QPoint(0, 0);
         QPointer<QMenu> m_menu;
     };

@@ -13,7 +13,7 @@
 #include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
 #include "EyeAdaptationUtil.azsli"
 
-ShaderResourceGroup PassSrg : SRG_PerDraw
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
     Texture2D<float4> m_framebuffer;
     Sampler LinearSampler

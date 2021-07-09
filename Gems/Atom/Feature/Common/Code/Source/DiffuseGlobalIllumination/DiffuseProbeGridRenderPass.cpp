@@ -34,10 +34,10 @@ namespace AZ
                 return;
             }
 
-            m_srgAsset = m_shader->FindShaderResourceGroupAsset(RPI::SrgBindingSlot::Pass);
-            AZ_Assert(m_srgAsset->IsReady(), "[DiffuseProbeGridRenderPass '%s']: Failed to find SRG asset", GetPathName().GetCStr());
+            m_srgLayout = m_shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Pass);
+            AZ_Assert(m_srgLayout != nullptr, "[DiffuseProbeGridRenderPass '%s']: Failed to find SRG layout", GetPathName().GetCStr());
 
-            m_shaderResourceGroup = RPI::ShaderResourceGroup::Create(m_srgAsset);
+            m_shaderResourceGroup = RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(), m_srgLayout->GetName());
             AZ_Assert(m_shaderResourceGroup, "[DiffuseProbeGridRenderPass '%s']: Failed to create SRG", GetPathName().GetCStr());
         }
 

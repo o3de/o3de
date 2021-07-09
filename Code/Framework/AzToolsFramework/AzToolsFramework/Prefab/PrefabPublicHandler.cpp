@@ -331,7 +331,7 @@ namespace AzToolsFramework
             {
                 // Load the template from the file
                 templateId = m_prefabLoaderInterface->LoadTemplateFromFile(filePath);
-                AZ_Assert(templateId != InvalidTemplateId, "Template with source path %s couldn't be loaded correctly.", filePath);
+                AZ_Assert(templateId != InvalidTemplateId, "Template with source path %.*s couldn't be loaded correctly.", AZ_STRING_ARG(filePath));
             }
 
             const PrefabDom& templateDom = m_prefabSystemComponentInterface->FindTemplateDom(templateId);

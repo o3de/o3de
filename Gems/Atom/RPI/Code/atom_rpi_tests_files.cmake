@@ -25,6 +25,8 @@ set(FILES
     Tests/Common/RHI/Factory.h
     Tests/Common/RHI/Stubs.cpp
     Tests/Common/RHI/Stubs.h
+    Tests/Common/ShaderAssetTestUtils.cpp
+    Tests/Common/ShaderAssetTestUtils.h
     Tests/Image/StreamingImageTests.cpp
     Tests/Material/LuaMaterialFunctorTests.cpp
     Tests/Material/MaterialTypeAssetTests.cpp
@@ -41,7 +43,6 @@ set(FILES
     Tests/Model/ModelTests.cpp
     Tests/Pass/PassTests.cpp
     Tests/Shader/ShaderTests.cpp
-    Tests/ShaderResourceGroup/ShaderResourceGroupAssetTests.cpp
     Tests/ShaderResourceGroup/ShaderResourceGroupBufferTests.cpp
     Tests/ShaderResourceGroup/ShaderResourceGroupConstantBufferTests.cpp
     Tests/ShaderResourceGroup/ShaderResourceGroupImageTests.cpp
