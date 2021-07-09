@@ -11,6 +11,7 @@
 #include <AzToolsFramework/ToolsComponents/EditorEntityIdContainer.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyAudioCtrlTypes.h>
 #include <AzToolsFramework/UI/PropertyEditor/GenericComboBoxCtrl.h>
+#include <AzToolsFramework/UI/PropertyEditor/ExeSelectPropertyHandler.h>
 
 namespace AzToolsFramework
 {
@@ -33,7 +34,8 @@ namespace AzToolsFramework
     void RegisterMultiLineEditHandler();
     void RegisterCrcHandler();
     void ReflectPropertyEditor(AZ::ReflectContext* context);
-
+    void RegisterExeSelectPropertyHandler();
+    
     namespace Components
     {
         PropertyManagerComponent::PropertyManagerComponent()
@@ -185,7 +187,8 @@ namespace AzToolsFramework
             RegisterVectorHandlers();
             RegisterButtonPropertyHandlers();
             RegisterMultiLineEditHandler();
-
+            RegisterExeSelectPropertyHandler();
+            
             // GenericComboBoxHandlers
             RegisterGenericComboBoxHandler<AZ::Crc32>();
         }
