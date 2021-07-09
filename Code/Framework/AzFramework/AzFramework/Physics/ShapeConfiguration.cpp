@@ -63,15 +63,6 @@ namespace Physics
                     ;
             }
         }
-
-        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-        {
-            behaviorContext->Class<SphereShapeConfiguration>()
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
-                ->Attribute(AZ::Script::Attributes::Module, "physics")
-                ->Attribute(AZ::Script::Attributes::Category, "PhysX")
-                ->Property("Radius", BehaviorValueProperty(&SphereShapeConfiguration::m_radius));
-        }
     }
 
     SphereShapeConfiguration::SphereShapeConfiguration(float radius)

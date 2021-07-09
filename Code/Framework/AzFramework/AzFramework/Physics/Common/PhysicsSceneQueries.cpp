@@ -292,8 +292,6 @@ namespace AzPhysics
                     return OverlapRequestHelpers::CreateCapsuleOverlapRequest(
                         height, radius, pose, nullptr);
                 });
-
-
         }
     }
 

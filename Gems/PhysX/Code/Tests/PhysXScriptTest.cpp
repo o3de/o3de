@@ -19,10 +19,6 @@
 #include <AzCore/Math/MathReflection.h>
 #include <AzFramework/Entity/EntityContext.h>
 
-#include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
-#include <AzFramework/Physics/PhysicsSystem.h>
-#include <AzFramework/Physics/PhysicsScene.h>
-
 namespace PhysX
 {
     static AZStd::map<AZStd::string, EntityPtr> s_testEntities;
@@ -135,7 +131,7 @@ namespace PhysX
         EXPECT_TRUE(GetScriptContext()->Execute(luaCode));
     }
 
-    TEST_F(PhysXScriptTest, SimulatedBodyRaycast_RaycastNotInteractingCollisionFilters_ReturnsNoHit)
+    TEST_F(PhysXScriptTest, SimulatedBodyRaycast_RaycastNonInteractingCollisionFilters_ReturnsNoHits)
     {
         s_testEntities.insert(
             {
@@ -249,7 +245,7 @@ namespace PhysX
         EXPECT_TRUE(GetScriptContext()->Execute(luaCode));
     }
 
-    TEST_F(PhysXScriptTest, SceneRaycast_RaycastNotInteractingCollisionFilters_ReturnsNoHits)
+    TEST_F(PhysXScriptTest, SceneRaycast_RaycastNonInteractingCollisionFilters_ReturnsNoHits)
     {
         s_testEntities.insert(
             {
@@ -335,7 +331,7 @@ namespace PhysX
         EXPECT_TRUE(GetScriptContext()->Execute(luaCode));
     }
 
-    TEST_F(PhysXScriptTest, BoxCast_NotInteractingCollisionFilters_ReturnsNoHits)
+    TEST_F(PhysXScriptTest, BoxCast_NonInteractingCollisionFilters_ReturnsNoHits)
     {
         s_testEntities.insert(
             {
