@@ -48,7 +48,7 @@
 // TRT - the light penetrates the hair fiber, bounces inside and exists (Transmitance - Reflection - Transmitance)
 // 
 // For each path, the calculations are devided into longitudinal and azimuthal approximations, 
-// denoted M and R respectively and named: M_R, M_TT, M_TRT  and  N_R, N_TT, N_TRT.
+// denoted M and N respectively and named: M_R, M_TT, M_TRT  and  N_R, N_TT, N_TRT.
 
 // --- Notations ---
 // 
@@ -56,36 +56,52 @@
 // Wr - reflected light vector
 // L - angles with respect to the Longitude
 // O - vectors with respect to the azimuth
-// Li and Lr are the longitudinal angles with respect to incoming/reflected light, i.e. the angle between those vectors
-//     and the normal plane (plane perpendicular to the hair)
-// Oi and Or are the azimuthal angles, i.e. the angles contained within the normal plane
+// Li and Lr are the longitudinal angles with respect to incoming/reflected light, i.e. the angle between 
+//      those vector and the normal plane (plane perpendicular to the hair)
+// Oi and Or are the azimuthal angles, i.e. the angles contained by the normal plane
 // Lh and Oh are the averages, i.e. Lh = (Lr + Li) / 2  and  Oh = (Or + Oi) / 2
 // Ld is the difference angle, i.e. Ld = (Lr - Li) / 2
 // O denotes the relative azimuth, simply O = (Or - Oi)
 
 #include <Atom/RPI/Math.azsli>
-//#include <HairSurface.azsli>
 
+float M_R_Marschner(float Lh, float meanOffset, float standardDeviation )
+{
+    float phi = Lh - meanOffset;
+//    float top = exp(-0.5f * phi * phi / surface.roughnessA2);
+//    float bottom = sqrt(TWO_PI) * surface.roughnessA;
+    float exponentSqrt = phi / standardDeviation;
+    float top = exp(-0.5f * exponentSqrt * exponentSqrt);
+    float normalizer = sqrt(TWO_PI) * standardDeviation;  // divides by the width.
+
+    return top / normalizer;
+}
 // Longitudinal functions (M_R, M_TT, M_RTR)
-float M_R(Surface surface, float Lh)
+// Notice that tilt and roughness multipliers are a-priori per Epic artistic taste 
+float M_R(Surface surface, float Lh, float sinLiPlusSinLr)
 {
-    float a = -surface.cuticleTilt;
-    float b =  surface.roughnessA2;
+    float a = 3.0f * surface.cuticleTilt;   // Tilt is translate as the mean offset
+    float b = surface.roughnessA2;          // Roughness is used as the standard deviation
+
+//    return M_R_Marschner(Lh, a, b);
+//    return GaussianNormalized(sinLiPlusSinLr, a, b);
     return GaussianNormalized(Lh, a, b);
 }
 
-float M_TT(Surface surface, float Lh)
+float M_TT(Surface surface, float Lh, float sinLiPlusSinLr)
 {
-    float a = 0.5 * surface.cuticleTilt;
+    float a = 1.0 * surface.cuticleTilt;
     float b = 0.5 * surface.roughnessA2;
+//    return GaussianNormalized(sinLiPlusSinLr, a, b);
     return GaussianNormalized(Lh, a, b);
 }
 
-float M_TRT(Surface surface, float Lh)
+float M_TRT(Surface surface, float Lh, float sinLiPlusSinLr)
 {
-    float a = 1.5 * surface.cuticleTilt;
+    float a = 3.0 * surface.cuticleTilt;
     float b = 2.0 * surface.roughnessA2;
-    return GaussianNormalized(Lh, a, b);
+//    return GaussianNormalized(sinLiPlusSinLr, a, b);
+    return GaussianNormalized(Lh, a, b);    return GaussianNormalized(Lh, a, b);
 }
 
 
@@ -102,17 +118,19 @@ float N_R(Surface surface, float cos_O2, float3 Wi, float3 Wr, float f0)
     return fresnel * distribution;
 }
 
+// Light passes through the hair and exits at the back - most dominant effect
+// will be of lights at the back of the hair when the hair is thin and not concealed 
 float3 N_TT(Surface surface, float n2, float cos_O, float cos_O2, float3 cos_Ld, float f0)
 {
     // Helper variables (see papers)
-    float a = rcp(n2);
-    float h = (1 + a * (0.6 - (0.8 * cos_O))) * cos_O2;
+    float a = rcp(n2);  // OK
+    float h = (1 + a * (0.6 - (0.8 * cos_O))) * cos_O2; // OK
 
     // Fresnel part of the attentuation term (A in the papers)
     float fresnel = FresnelSchlick(cos_Ld * sqrt( 1 - (h*h) ), f0);
     fresnel = Pow2(1 - fresnel);
 
-    // Absorption part of the attenuation term (A in the papers). Defines how much light the hair will absorb.
+    // The absorption part of the attenuation term (A in the papers).
     float3 absorption = pow(surface.albedo, sqrt( 1 - (h*h*a*a) ) / (2 * cos_Ld) );
 
     // Distribution term
@@ -136,28 +154,30 @@ float N_TRT(Surface surface, float cos_O, float3 cos_Ld, float f0)
     // Distribution term
     float distribution = exp(17 * cos_O - 16.78);
 
-    return absorption * (fresnel * distribution);    
+    return absorption * (fresnel * distribution);
 }
 
 
 float3 HairBSDF(Surface surface, LightingData lightingData, const float3 dirToLight)
 {
     // Incoming and outgoing light directions
-    float3 Wi = dirToLight;
-    float3 Wr = lightingData.dirToCamera;
+    float3 Wi = dirToLight;                 // Incident light direction
+    float3 Wr = lightingData.dirToCamera;   // Reflected light measurement direction AKA reflection
 
     // Hair tangent
     float3 T = surface.tangent;
 
-    // Distance to Normal plane
-    float Distance_i = dot(T, Wi);
-    float Distance_r = dot(T, Wr);
+    // The incident light and reflection directions projected along the tangent
+    float Ti = T * dot(T, Wi);
+    float Tr = T * dot(T, Wr);
 
-    // Project onto Normal plane
-    float3 NPi = normalize( Wi - (T * Distance_i) );
-    float3 NPr = normalize( Wr - (T * Distance_r) );
+    // The light and reflection vectors projected along the normal plane to the hair.
+    // This plane will be used to separate between Azimuth and Longtitude angles.
+    float3 NPi = normalize(Wi - Ti);
+    float3 NPr = normalize(Wr - Tr);
 
-    // Azimuthal angles
+    // Azimuthal angle between the incident light vector and the reflection 
+    // direction (the direction at which we measure the light scaterring)
     // float O = acos(dot(NPi, NPr))  <- Unused, just here for reference
     float cos_O = dot(NPi, NPr);
 
@@ -169,11 +189,13 @@ float3 HairBSDF(Surface surface, LightingData lightingData, const float3 dirToLi
     float Lr = acos(dot(Wr, NPr));
     float Lh = (Lr + Li) * 0.5;
     float Ld = (Lr - Li) * 0.5;
+//    float sinLiPlusSinLr = dot(Wi, NPi) * dot(Wr, NPr);// sin(Li) + sin(Lr);
+    float sinLiPlusSinLr = sin(Li) + sin(Lr);
 
-    // Refraction index
+    // Refraction index 
     const float n = 1.55;
     float cos_Ld = cos(Ld);
-    float n2 = (1.19f / cos_Ld) + 0.36 * cos_Ld;
+    float n2 = (1.19f / cos_Ld) + 0.36f * cos_Ld;
 
     // Fresnel F0
     float f0 = Pow2( (1 - n) / (1 + n) );
@@ -182,17 +204,21 @@ float3 HairBSDF(Surface surface, LightingData lightingData, const float3 dirToLi
 
     // R Path - single reflection from the hair towards the eye.
 //    if(MaterialSrg::m_applyR)
-    {
-        float lighting_R = M_R(surface, Lh);
+//    if (0)
+    {   // OK
+        float lighting_R = M_R(surface, Lh, sinLiPlusSinLr);
+//        lighting_R = dot(surface.normal, dirToLight);
         lighting_R *= N_R(surface, cos_O2, Wi, Wr, f0);
         lighting += float3(lighting_R, lighting_R, lighting_R);
     }
 
     // TT Path - ray refracted into the hair, then refracted again through the 
-    // back of the heir away from the viewer.
+    // back of the heir away from the viewer.  The main contribution here would 
+    // be at thin hair areas from lights behind the hair that are not concealed.
 //    if(MaterialSrg::m_applyTT)
-    {
-        float3 lighting_TT = M_TT(surface, Lh);
+//    if (0)
+    {   // As expected - minimal effect from the azimutal
+        float3 lighting_TT = M_TT(surface, Lh, sinLiPlusSinLr);
         lighting_TT *= N_TT(surface, n2, cos_O, cos_O2, cos_Ld, f0);
         lighting += lighting_TT;
     }
@@ -200,8 +226,11 @@ float3 HairBSDF(Surface surface, LightingData lightingData, const float3 dirToLi
     // RTR Path - ray refracted into the hair, then reflected back and exits 
     // the hair towards the eye.
 //    if(MaterialSrg::m_applyTRT)
+//    if (0)
     {
-        float3 lighting_TRT = M_TRT(surface, Lh);
+        float3 lighting_TRT = M_TRT(surface, Lh, sinLiPlusSinLr);
+//        surface.albedo = float3(0, 1, 0);
+//        float3 lighting_TRT = float3(1, 1, 1);
         lighting_TRT *= N_TRT(surface, cos_O, cos_Ld, f0);
         lighting += lighting_TRT;
     }

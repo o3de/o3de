@@ -262,14 +262,13 @@ float LerpInverse(float a, float b, float value)
 //-------- Gaussinan distribution functions ---------
 // https://en.wikipedia.org/wiki/Gaussian_function
 // Parameter:
-// a is the height of the curve's peak,
-// b is the position of the center of the peak
-// c is the standard deviation and controls the width of the "bell". 
-float Gaussian(float x, float a, float b, float c)
+// amplitude - the height of the curve's peak
+// median - the position of the Mean / Median - the center of the "bell"
+// standardDeviation - controls the width of the "bell"
+float Gaussian(float x, float amplitude, float median, float standardDeviation)
 {
-    float top = Pow2(x - b);
-    float bottom = 2*c*c;
-    return a * exp(-top / bottom);
+    float exponent = -0.5 * Pow2((x - median) / standardDeviation);
+    return amplitude * exp(exponent);
 }
 
 // For parameter description see Gaussian(...) function above

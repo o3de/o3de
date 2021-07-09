@@ -24,7 +24,8 @@
 
     "BlendState" : 
     {
-        "Enable" : true,
+        "Enable" : false,
+//        "Enable" : true,
         "BlendSource" : "AlphaSource",
         "BlendDest" : "AlphaSourceInverse",
         "BlendOp" : "Add",
