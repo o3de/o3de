@@ -9,7 +9,6 @@
 
 #include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Core/Node.h>
-#include <ScriptCanvas/Libraries/Logic/Boolean.h>
 
 #include <Include/ScriptCanvas/Libraries/Logic/Once.generated.h>
 
@@ -31,8 +30,6 @@ namespace ScriptCanvas
                 Once();
 
                 AZ::Outcome<DependencyReport, void> GetDependencies() const override;
-
-                
 
             protected:
 

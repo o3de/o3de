@@ -26,12 +26,6 @@ namespace ScriptCanvas
 
                 SCRIPTCANVAS_NODE(Multiplexer);
 
-                Multiplexer();
-
-            protected:
-
-                void OnInputSignal(const SlotId& slot) override;
-
             };
         }
     }

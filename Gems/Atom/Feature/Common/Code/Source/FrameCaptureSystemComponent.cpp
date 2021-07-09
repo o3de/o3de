@@ -343,7 +343,7 @@ namespace AZ
         }
 
         bool FrameCaptureSystemComponent::CapturePassAttachment(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slot,
-            const AZStd::string& outputFilePath)
+            const AZStd::string& outputFilePath, RPI::PassAttachmentReadbackOption option)
         {
             InitReadback();
 
@@ -376,40 +376,22 @@ namespace AZ
                 return false;
             }
 
-            AZ::RPI::RenderPass* renderPass = azrtti_cast<AZ::RPI::RenderPass*>(foundPasses[0]);
-            if (renderPass)
+            AZ::RPI::Pass* pass = foundPasses[0];
+            if (pass->ReadbackAttachment(m_readback, Name(slot), option))
             {
-                Name slotName = Name(slot);
-                AZ::RPI::PassAttachment* attachment = nullptr;
-                for (auto& binding : renderPass->GetAttachmentBindings())
-                {
-                    if (binding.m_name == slotName)
-                    {
-                        attachment = binding.m_attachment.get();
-                        break;
-                    }
-                }
-                if (attachment)
-                {
-                    m_state = State::Pending;
-                    m_result = FrameCaptureResult::None;
-                    SystemTickBus::Handler::BusConnect();
-                    renderPass->ReadbackAttachment(m_readback, attachment);
-                }
-                else
-                {
-                    AZ_Warning("FrameCaptureSystemComponent", false, "Failed to find attachment bound to pass [%s] slot [%s]",
-                        renderPass->GetName().GetCStr(), slotName.GetCStr());
-                    return false;
-                }
+                m_state = State::Pending;
+                m_result = FrameCaptureResult::None;
+                SystemTickBus::Handler::BusConnect();
+                return true;
             }
-            return true;
+            AZ_Warning("FrameCaptureSystemComponent", false, "Failed to readback the attachment bound to pass [%s] slot [%s]", pass->GetName().GetCStr(), slot.c_str());
+            return false;
         }
 
         bool FrameCaptureSystemComponent::CapturePassAttachmentWithCallback(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slotName
-            , RPI::AttachmentReadback::CallbackFunction callback)
+            , RPI::AttachmentReadback::CallbackFunction callback, RPI::PassAttachmentReadbackOption option)
         {
-            bool result = CapturePassAttachment(passHierarchy, slotName, "");
+            bool result = CapturePassAttachment(passHierarchy, slotName, "", option);
 
             // Append state change to user provided call back
             AZ::RPI::AttachmentReadback::CallbackFunction callbackSetState = [&, callback](const AZ::RPI::AttachmentReadback::ReadbackResult& result)

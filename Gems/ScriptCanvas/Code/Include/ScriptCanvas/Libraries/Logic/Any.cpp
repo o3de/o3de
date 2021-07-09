@@ -28,7 +28,7 @@ namespace ScriptCanvas
                 return AZ::Success(DependencyReport{});
             }
 
-            bool Any::IsNoOp() const 
+            bool Any::IsNoOp() const
             {
                 return true;
             }
@@ -59,12 +59,6 @@ namespace ScriptCanvas
 
                     RegisterExtension(visualExtensions);
                 }
-            }
-            
-            void Any::OnInputSignal([[maybe_unused]] const SlotId& slotId)
-            {
-                const SlotId outSlotId = AnyProperty::GetOutSlotId(this);
-                SignalOutput(outSlotId);
             }
 
             SlotId Any::HandleExtension(AZ::Crc32 extensionId)

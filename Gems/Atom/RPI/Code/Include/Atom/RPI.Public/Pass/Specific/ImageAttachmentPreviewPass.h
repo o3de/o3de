@@ -166,9 +166,6 @@ namespace AZ
             AZ::Vector2 m_position = AZ::Vector2(0, 0.6f);
             AZ::Vector2 m_size = AZ::Vector2(0.4f, 0.4f);
             bool m_keepAspectRatio = true;
-
-            // For readback the output image attachment 
-            AZStd::shared_ptr<AttachmentReadback> m_readback;
         };
     }   // namespace RPI
 }   // namespace AZ

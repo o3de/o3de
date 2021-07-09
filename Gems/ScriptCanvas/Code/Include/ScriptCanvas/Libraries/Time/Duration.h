@@ -23,9 +23,8 @@ namespace ScriptCanvas
         namespace Time
         {
             //! Deprecated: see DurationNodeableNode
-            class Duration 
+            class Duration
                 : public Node
-                , AZ::TickBus::Handler
             {
 
             public:
@@ -41,14 +40,6 @@ namespace ScriptCanvas
 
                 //! Internal counter to track time elapsed
                 float m_currentTime;
-
-                void OnInputSignal(const SlotId&) override;
-            
-            protected:
-
-                void OnDeactivate() override;
-                void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
-
             };
         }
     }

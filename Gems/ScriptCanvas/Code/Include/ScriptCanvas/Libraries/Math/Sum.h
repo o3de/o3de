@@ -24,7 +24,7 @@ namespace ScriptCanvas
                 AZ_COMPONENT(Sum, "{6C52B2D1-3526-4855-A217-5106D54F6B90}", ArithmeticExpression);
 
                 static void Reflect(AZ::ReflectContext* reflection)
-                { 
+                {
                     if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection))
                     {
                         serializeContext->Class<Sum, ArithmeticExpression>()
@@ -51,12 +51,6 @@ namespace ScriptCanvas
                     ScriptCanvas::NodeConfiguration nodeConfig{};
                     nodeConfig.m_type = AZ::Uuid("C1B42FEC-0545-4511-9FAC-11E0387FEDF0");
                     return nodeConfig;
-                }
-                
-            protected:
-                Datum Evaluate(const Datum& lhs, const Datum& rhs) override
-                {
-                    return Datum(*lhs.GetAs<Data::NumberType>() + *rhs.GetAs<Data::NumberType>());
                 }
             };
         }

@@ -14,7 +14,6 @@
 #include <AzCore/Script/ScriptContext.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <Editor/Framework/ScriptCanvasReporter.h>
-#include <ScriptCanvas/Asset/Functions/ScriptCanvasFunctionAsset.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
 #include <ScriptCanvas/Assets/ScriptCanvasAsset.h>

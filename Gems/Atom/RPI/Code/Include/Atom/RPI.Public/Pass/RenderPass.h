@@ -55,10 +55,7 @@ namespace AZ
 
             //! Get MultisampleState of this pass from its output attachments
             RHI::MultisampleState GetMultisampleState() const;
-
-            //! Capture pass's output and input/output attachments in following frames
-            void ReadbackAttachment(AZStd::shared_ptr<AttachmentReadback> readback, const PassAttachment* attachment);
-
+            
             //! Returns a pointer to the Pass ShaderResourceGroup
             Data::Instance<ShaderResourceGroup> GetShaderResourceGroup();
 
@@ -144,9 +141,6 @@ namespace AZ
 
             // Readback the results from the ScopeQueries
             void ReadbackScopeQueryResults();
-
-            // For read back attachments
-            AZStd::shared_ptr<AttachmentReadback> m_attachmentReadback;
 
             AZStd::weak_ptr<ImageAttachmentCopy> m_attachmentCopy;
 

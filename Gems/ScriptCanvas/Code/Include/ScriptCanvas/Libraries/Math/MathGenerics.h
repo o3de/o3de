@@ -42,5 +42,5 @@ namespace ScriptCanvas
             StringToNumberNode
         >;
     }
-} 
+}
 
