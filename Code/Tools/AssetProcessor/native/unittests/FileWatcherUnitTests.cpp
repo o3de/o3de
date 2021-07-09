@@ -1,6 +1,6 @@
 /*
  * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -277,7 +277,7 @@ void FileWatcherUnitTestRunner::StartTest()
         UNIT_TEST_EXPECT_TRUE(QDir::toNativeSeparators(fileAddName).toLower() == QDir::toNativeSeparators(newName3).toLower());
 
 #if !defined(AZ_PLATFORM_LINUX)
-        // final test... make sure that renaming a DIRECTORY works too. 
+        // final test... make sure that renaming a DIRECTORY works too.
         // Note that linux does not get any callbacks if just the directory is renamed (from inotify)
         QDir renamer;
         fileAddCalled = false;
@@ -312,6 +312,6 @@ void FileWatcherUnitTestRunner::StartTest()
     Q_EMIT UnitTestPassed();
 }
 
-#if !AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
+#if !AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS && !defined(AZ_PLATFORM_LINUX)
 REGISTER_UNIT_TEST(FileWatcherUnitTestRunner)
 #endif // !AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
