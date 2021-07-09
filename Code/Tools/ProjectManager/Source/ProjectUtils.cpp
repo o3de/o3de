@@ -269,9 +269,24 @@ namespace O3DE::ProjectManager
             return false;
         }
 
-        bool IsVS2019Installed()
+        bool IsVS2019Installed(QWidget* parent)
         {
             static bool vs2019Installed = IsVS2019Installed_internal();
+
+            if (!vs2019Installed)
+            {
+                QMessageBox vsWarningMessage(parent);
+                vsWarningMessage.setIcon(QMessageBox::Warning);
+                vsWarningMessage.setWindowTitle(QObject::tr("Create Project"));
+                // Makes link clickable
+                vsWarningMessage.setTextFormat(Qt::RichText);
+                vsWarningMessage.setText(QObject::tr("Visual Studio 2019 not found."));
+                vsWarningMessage.setInformativeText(QObject::tr("Visual Studio 2019 is required to build this project."
+                    " Install any edition of <a href='https://visualstudio.microsoft.com/downloads/'>Visual Studio 2019</a>"
+                    " before proceeding to the next step."));
+                vsWarningMessage.setStandardButtons(QMessageBox::Close);
+                vsWarningMessage.exec();
+            }
 
             return vs2019Installed;
         }

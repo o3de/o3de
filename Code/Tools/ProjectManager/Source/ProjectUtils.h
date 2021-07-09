@@ -23,7 +23,7 @@ namespace O3DE::ProjectManager
 
         bool ReplaceFile(const QString& origFile, const QString& newFile, QWidget* parent = nullptr, bool interactive = true);
 
-        bool IsVS2019Installed();
+        bool IsVS2019Installed(QWidget* parent = nullptr);
 
         ProjectManagerScreen GetProjectManagerScreen(const QString& screen);
     } // namespace ProjectUtils
