@@ -105,39 +105,94 @@ file(TO_NATIVE_PATH "${_root_path}/python/python.cmd" _python_cmd)
 file(TO_NATIVE_PATH "${_root_path}/scripts/build/tools/upload_to_s3.py" _upload_script)
 file(TO_NATIVE_PATH "${_cpack_wix_out_dir}" _cpack_wix_out_dir)
 
-# strip the scheme and extract the bucket/key prefix from the URL
-string(REPLACE "s3://" "" _stripped_url ${CPACK_UPLOAD_URL})
-string(REPLACE "/" ";" _tokens ${_stripped_url})
+function(upload_to_s3 in_url in_local_path in_file_regex)
 
-list(POP_FRONT _tokens _bucket)
-string(JOIN "/" _prefix ${_tokens})
+    # strip the scheme and extract the bucket/key prefix from the URL
+    string(REPLACE "s3://" "" _stripped_url ${in_url})
+    string(REPLACE "/" ";" _tokens ${_stripped_url})
 
-set(_file_regex ".*(cab|exe|msi)$")
-set(_extra_args [[{"ACL":"bucket-owner-full-control"}]])
+    list(POP_FRONT _tokens _bucket)
+    string(JOIN "/" _prefix ${_tokens})
 
-set(_upload_command
-    ${_python_cmd} -s
-    -u ${_upload_script}
-    --base_dir ${_cpack_wix_out_dir}
-    --file_regex="${_file_regex}"
-    --bucket ${_bucket}
-    --key_prefix ${_prefix}
-    --extra_args ${_extra_args}
-)
+    set(_extra_args [[{"ACL":"bucket-owner-full-control"}]])
 
-if(CPACK_AWS_PROFILE)
-    list(APPEND _upload_command --profile ${CPACK_AWS_PROFILE})
-endif()
+    set(_upload_command
+        ${_python_cmd} -s
+        -u ${_upload_script}
+        --base_dir ${in_local_path}
+        --file_regex="${in_file_regex}"
+        --bucket ${_bucket}
+        --key_prefix ${_prefix}
+        --extra_args ${_extra_args}
+    )
+
+    if(CPACK_AWS_PROFILE)
+        list(APPEND _upload_command --profile ${CPACK_AWS_PROFILE})
+    endif()
+
+    execute_process(
+        COMMAND ${_upload_command}
+        RESULT_VARIABLE _upload_result
+        OUTPUT_VARIABLE _upload_output
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
+    if (NOT ${_upload_result} EQUAL 0)
+        message(FATAL_ERROR "An error occurred uploading to s3.\nOutput:\n${_upload_output}")
+    endif()
+endfunction()
 
 message(STATUS "Uploading artifacts to ${CPACK_UPLOAD_URL}")
-execute_process(
-    COMMAND ${_upload_command}
-    RESULT_VARIABLE _upload_result
-    ERROR_VARIABLE _upload_errors
+upload_to_s3(
+    ${CPACK_UPLOAD_URL}
+    ${_cpack_wix_out_dir}
+    ".*(cab|exe|msi)$"
 )
+message(STATUS "Artifact uploading complete!")
 
-if (${_upload_result} EQUAL 0)
-    message(STATUS "Artifact uploading complete!")
-else()
-    message(FATAL_ERROR "An error occurred uploading artifacts.  ${_upload_errors}")
+# for auto tagged builds, we will also upload a second copy of just the boostrapper
+# to a special "Latest" folder under the branch in place of the commit date/hash
+if(CPACK_AUTO_GEN_TAG)
+    message(STATUS "Updating latest tagged build")
+
+    # make sure we can extra the commit info from the URL first
+    string(REGEX MATCH "([0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9a-zA-Z]+)"
+        _commit_info ${CPACK_UPLOAD_URL}
+    )
+    if(NOT _commit_info)
+        message(FATAL_ERROR "Failed to extract the build tag")
+    endif()
+
+    set(_temp_dir ${_cpack_wix_out_dir}/temp)
+    if(NOT EXISTS ${_temp_dir})
+        file(MAKE_DIRECTORY ${_temp_dir})
+    endif()
+
+    # strip the version number form the exe name in the one uploaded to latest
+    string(TOLOWER "${CPACK_PACKAGE_NAME}_installer.exe" _non_versioned_exe)
+    set(_temp_exe_copy ${_temp_dir}/${_non_versioned_exe})
+
+    file(COPY ${_bootstrap_output_file} DESTINATION ${_temp_dir})
+    file(RENAME "${_temp_dir}/${_bootstrap_filename}" ${_temp_exe_copy})
+
+    # include the commit info in a text file that will live next to the exe
+    set(_temp_info_file ${_temp_dir}/build_tag.txt)
+    file(WRITE ${_temp_info_file} ${_commit_info})
+
+    # update the URL and upload
+    string(REPLACE
+        ${_commit_info} "Latest"
+        _latest_upload_url ${CPACK_UPLOAD_URL}
+    )
+
+    upload_to_s3(
+        ${_latest_upload_url}
+        ${_temp_dir}
+        "(${_non_versioned_exe}|build_tag.txt)$"
+    )
+
+    # cleanup the temp files
+    file(REMOVE_RECURSE ${_temp_dir})
+
+    message(STATUS "Latest build update complete!")
 endif()
