@@ -17,6 +17,8 @@
 #include <AzCore/std/sort.h>
 #include <AzCore/std/time.h>
 
+#include "../../../Gems/ImGui/External/ImGui/v1.82/imgui/imgui.h"
+
 
 namespace AZ
 {
@@ -52,129 +54,174 @@ namespace AZ
 
             const ImVec2 windowSize(900.0f, 600.0f);
             ImGui::SetNextWindowSize(windowSize, ImGuiCond_Once);
-            bool captureToFile = false;
-            if (ImGui::Begin("Cpu Profiler", &keepDrawing, ImGuiWindowFlags_None))
+            if (ImGui::Begin("CPU Profiler", &keepDrawing, ImGuiWindowFlags_None))
             {
-                m_paused = !AZ::RHI::CpuProfiler::Get()->IsProfilerEnabled();
-                if (ImGui::Button(m_paused ? "Resume" : "Pause"))
+                if (m_enableVisualizer)
                 {
-                    m_paused = !m_paused;
-                    AZ::RHI::CpuProfiler::Get()->SetProfilerEnabled(!m_paused);
+                    DrawVisualizer(currentCpuTimingStatistics);
                 }
-
-                // Update region map and cache the input cpu timing statistics when the profiling is not paused
-                if (!m_paused)
+                else
                 {
-                    UpdateGroupRegionMap();
-                    m_cpuTimingStatisticsWhenPause = currentCpuTimingStatistics;
+                    DrawStatisticsView(currentCpuTimingStatistics);
                 }
+            }
+            ImGui::End();
+         
+            if (m_captureToFile)
+            {
+                AZStd::sys_time_t timeNow = AZStd::GetTimeNowSecond();
+                AZStd::string timeString;
+                AZStd::to_string(timeString, timeNow);
+                u64 currentTick = AZ::RPI::RPISystemInterface::Get()->GetCurrentTick();
+                AZStd::string frameDataFilePath = AZStd::string::format("@user@/CpuProfiler/%s_%llu.json", timeString.c_str(), currentTick);
+                char resolvedPath[AZ::IO::MaxPathLength];
+                AZ::IO::FileIOBase::GetInstance()->ResolvePath(frameDataFilePath.c_str(), resolvedPath, AZ::IO::MaxPathLength);
+                m_lastCapturedFilePath = resolvedPath;
+                AZ::Render::ProfilingCaptureRequestBus::Broadcast(
+                    &AZ::Render::ProfilingCaptureRequestBus::Events::CaptureCpuProfilingStatistics, frameDataFilePath);
+            }
+            m_captureToFile = false;
 
-                if (ImGui::Button("Capture"))
+            // Toggle if the bool isn't the same as the cached value
+            if (cachedShowCpuProfiler != keepDrawing)
+            {
+                AZ::RHI::CpuProfiler::Get()->SetProfilerEnabled(keepDrawing);
+            }
+        }
+
+        inline void ImGuiCpuProfiler::DrawCommonHeader()
+        {
+            if (!m_lastCapturedFilePath.empty())
+            {
+                ImGui::Text("Wrote data to path %s", m_lastCapturedFilePath.c_str());
+            }
+
+            ImGui::Columns(3, "CommonHeaderColumn", true);
+            if (ImGui::Button(m_enableVisualizer ? "Swap to statistics" : "Swap to visualizer"))
+            {
+                m_enableVisualizer = !m_enableVisualizer;
+            }
+             
+            ImGui::NextColumn(); 
+            m_paused = !AZ::RHI::CpuProfiler::Get()->IsProfilerEnabled();
+            if (ImGui::Button(m_paused ? "Resume" : "Pause"))
+            {
+                m_paused = !m_paused;
+                AZ::RHI::CpuProfiler::Get()->SetProfilerEnabled(!m_paused);
+            }
+
+            ImGui::NextColumn(); 
+            if (ImGui::Button("Capture"))
+            {
+                m_captureToFile = true;
+            }
+            
+            ImGui::Columns(1, "RootColumn", true);
+        }
+
+        inline void ImGuiCpuProfiler::DrawStatisticsView(const AZ::RHI::CpuTimingStatistics& currentCpuTimingStatistics)
+        {
+            DrawCommonHeader();
+            // Update region map and cache the input cpu timing statistics when the profiling is not paused
+            if (!m_paused)
+            {
+                UpdateGroupRegionMap();
+                m_cpuTimingStatisticsWhenPause = currentCpuTimingStatistics;
+            }
+
+            const AZ::RHI::CpuTimingStatistics& cpuTimingStatistics = m_cpuTimingStatisticsWhenPause;
+
+            const AZStd::sys_time_t ticksPerSecond = AZStd::GetTimeTicksPerSecond();
+
+            const auto ShowTimeInMs = [ticksPerSecond](AZStd::sys_time_t duration)
+            {
+                ImGui::Text("%.2f ms", CpuProfilerImGuiHelper::TicksToMs(duration));
+            };
+
+            const auto ShowRow = [ticksPerSecond, &ShowTimeInMs](const char* regionLabel, AZStd::sys_time_t duration)
+            {
+                ImGui::Text(regionLabel);
+                ImGui::NextColumn();
+
+                ShowTimeInMs(duration);
+                ImGui::NextColumn();
+            };
+
+            const auto DrawRegionHoverMarker = [this, &ShowTimeInMs](AZStd::vector<ThreadRegionEntry>& entries)
+            {
+                if (ImGui::IsItemHovered())
                 {
-                    captureToFile = true;
-                }
+                    ImGui::BeginTooltip();
+                    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 60.0f);
 
-                if (!m_lastCapturedFilePath.empty())
-                {
-                    ImGui::SameLine();
-                    ImGui::Text(m_lastCapturedFilePath.c_str());
-                }
+					for (ThreadRegionEntry& entry : entries)
+					{
+						ImGui::Text(CpuProfilerImGuiHelper::TextThreadId(entry.m_threadId.m_id).c_str());
 
-                const AZ::RHI::CpuTimingStatistics& cpuTimingStatistics = m_cpuTimingStatisticsWhenPause;
-
-                const AZStd::sys_time_t ticksPerSecond = AZStd::GetTimeTicksPerSecond();
-
-                const auto ShowTimeInMs = [ticksPerSecond](AZStd::sys_time_t duration)
-                {
-                    ImGui::Text("%.2f ms", CpuProfilerImGuiHelper::TicksToMs(duration));
-                };
-
-                const auto ShowRow = [ticksPerSecond, &ShowTimeInMs](const char* regionLabel, AZStd::sys_time_t duration)
-                {
-                    ImGui::Text(regionLabel);
-                    ImGui::NextColumn();
-
-                    ShowTimeInMs(duration);
-                    ImGui::NextColumn();
-                };
-
-                const auto DrawRegionHoverMarker = [this, &ShowTimeInMs](AZStd::vector<ThreadRegionEntry>& entries)
-                {
-                    if (ImGui::IsItemHovered())
-                    {
-                        ImGui::BeginTooltip();
-                        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 60.0f);
-
-                        for (ThreadRegionEntry& entry : entries)
-                        {
-                            ImGui::Text(CpuProfilerImGuiHelper::TextThreadId(entry.m_threadId.m_id).c_str());
-
-                            const AZStd::sys_time_t elapsed = entry.m_endTick - entry.m_startTick;
-                            ShowTimeInMs(elapsed);
-                            ImGui::Separator();
-                        }
-
-                        ImGui::PopTextWrapPos();
-                        ImGui::EndTooltip();
+                        const AZStd::sys_time_t elapsed = entry.m_endTick - entry.m_startTick;
+                        ShowTimeInMs(elapsed);
+                        ImGui::Separator();
                     }
-                };
 
-                const auto ShowRegionRow =
-                    [ticksPerSecond, &DrawRegionHoverMarker,
-                     &ShowTimeInMs](const char* regionLabel, AZStd::vector<ThreadRegionEntry> regions, AZStd::sys_time_t duration)
-                {
-                    // Draw the region label
-                    ImGui::Text(regionLabel);
-                    ImGui::NextColumn();
-
-                    // Draw the thread count label
-                    AZStd::sys_time_t totalTime = 0;
-                    AZStd::set<AZStd::thread_id> threads;
-                    for (ThreadRegionEntry& entry : regions) // Find the thread count and total execution time for all threads
-                    {
-                        threads.insert(entry.m_threadId);
-                        totalTime += entry.m_endTick - entry.m_startTick;
-                    }
-                    const AZStd::string threadLabel = AZStd::string::format("Threads: %u", static_cast<uint32_t>(threads.size()));
-                    ImGui::Text(threadLabel.c_str());
-                    DrawRegionHoverMarker(regions);
-                    ImGui::NextColumn();
-
-                    // Draw the overall invocation count
-                    const AZStd::string invocationLabel = AZStd::string::format("Total calls: %u", static_cast<uint32_t>(regions.size()));
-                    ImGui::Text(invocationLabel.c_str());
-                    DrawRegionHoverMarker(regions);
-                    ImGui::NextColumn();
-
-                    // Draw the time labels (max and then total)
-                    const AZStd::string timeLabel = AZStd::string::format(
-                        "%.2f ms max, %.2f ms total", CpuProfilerImGuiHelper::TicksToMs(duration),
-                        CpuProfilerImGuiHelper::TicksToMs(totalTime));
-                    ImGui::Text(timeLabel.c_str());
-                    ImGui::NextColumn();
-                };
-
-                ImGui::Checkbox("Enable Visualizer", &m_showVisualizer);
-
-                // Set column settings.
-                ImGui::Columns(2, "view", false);
-                ImGui::SetColumnWidth(0, 660.0f);
-                ImGui::SetColumnWidth(1, 100.0f);
-
-                ShowRow("Frame to Frame Time", cpuTimingStatistics.m_frameToFrameTime);
-                ShowRow("Present Time", cpuTimingStatistics.m_presentDuration);
-                for (const auto& queueStatistics : cpuTimingStatistics.m_queueStatistics)
-                {
-                    ShowRow(queueStatistics.m_queueName.GetCStr(), queueStatistics.m_executeDuration);
+                    ImGui::PopTextWrapPos();
+                    ImGui::EndTooltip();
                 }
+            };
 
-                ImGui::Separator();
-                ImGui::Columns(1, "view", false);
+            const auto ShowRegionRow =
+                [ticksPerSecond, &DrawRegionHoverMarker,
+                 &ShowTimeInMs](const char* regionLabel, AZStd::vector<ThreadRegionEntry> regions, AZStd::sys_time_t duration)
+            {
+                // Draw the region label
+                ImGui::Text(regionLabel);
+                ImGui::NextColumn();
 
-                m_timedRegionFilter.Draw("TimedRegion Filter");
+                // Draw the thread count label
+                AZStd::sys_time_t totalTime = 0;
+                AZStd::set<AZStd::thread_id> threads;
+                for (ThreadRegionEntry& entry : regions) // Find the thread count and total execution time for all threads
+                {
+                    threads.insert(entry.m_threadId);
+                    totalTime += entry.m_endTick - entry.m_startTick;
+                }
+                const AZStd::string threadLabel = AZStd::string::format("Threads: %u", static_cast<uint32_t>(threads.size()));
+                ImGui::Text(threadLabel.c_str());
+                DrawRegionHoverMarker(regions);
+                ImGui::NextColumn();
 
-                // Draw the timed regions
-                if (ImGui::BeginChild("TimedRegions"))
+                // Draw the overall invocation count
+                const AZStd::string invocationLabel = AZStd::string::format("Total calls: %u", static_cast<uint32_t>(regions.size()));
+                ImGui::Text(invocationLabel.c_str());
+                DrawRegionHoverMarker(regions);
+                ImGui::NextColumn();
+
+                // Draw the time labels (max and then total)
+                const AZStd::string timeLabel = AZStd::string::format(
+                    "%.2f ms max, %.2f ms total", CpuProfilerImGuiHelper::TicksToMs(duration),
+                    CpuProfilerImGuiHelper::TicksToMs(totalTime));
+                ImGui::Text(timeLabel.c_str());
+                ImGui::NextColumn();
+            };
+
+            // Set column settings.
+            ImGui::Columns(2, "view", false);
+            ImGui::SetColumnWidth(0, 660.0f);
+            ImGui::SetColumnWidth(1, 100.0f);
+
+            ShowRow("Frame to Frame Time", cpuTimingStatistics.m_frameToFrameTime);
+            ShowRow("Present Time", cpuTimingStatistics.m_presentDuration);
+            for (const auto& queueStatistics : cpuTimingStatistics.m_queueStatistics)
+            {
+                ShowRow(queueStatistics.m_queueName.GetCStr(), queueStatistics.m_executeDuration);
+            }
+
+            ImGui::Separator();
+            ImGui::Columns(1, "view", false);
+
+            m_timedRegionFilter.Draw("TimedRegion Filter");
+
+            // Draw the timed regions
+            if (ImGui::BeginChild("TimedRegions"))
                 {
                     for (auto& timeRegionMapEntry : m_groupRegionMap)
                     {
@@ -209,33 +256,6 @@ namespace AZ
                     }
                     ImGui::EndChild();
                 }
-            }
-            ImGui::End();
-
-            if (captureToFile)
-            {
-                AZStd::sys_time_t timeNow = AZStd::GetTimeNowSecond();
-                AZStd::string timeString;
-                AZStd::to_string(timeString, timeNow);
-                u64 currentTick = AZ::RPI::RPISystemInterface::Get()->GetCurrentTick();
-                AZStd::string frameDataFilePath = AZStd::string::format("@user@/CpuProfiler/%s_%llu.json", timeString.c_str(), currentTick);
-                char resolvedPath[AZ::IO::MaxPathLength];
-                AZ::IO::FileIOBase::GetInstance()->ResolvePath(frameDataFilePath.c_str(), resolvedPath, AZ::IO::MaxPathLength);
-                m_lastCapturedFilePath = resolvedPath;
-                AZ::Render::ProfilingCaptureRequestBus::Broadcast(
-                    &AZ::Render::ProfilingCaptureRequestBus::Events::CaptureCpuProfilingStatistics, frameDataFilePath);
-            }
-
-            // Toggle if the bool isn't the same as the cached value
-            if (cachedShowCpuProfiler != keepDrawing)
-            {
-                AZ::RHI::CpuProfiler::Get()->SetProfilerEnabled(keepDrawing);
-            }
-
-            if (m_showVisualizer)
-            {
-                DrawVisualizer(m_showVisualizer, currentCpuTimingStatistics);
-            }
         }
 
         inline void ImGuiCpuProfiler::UpdateGroupRegionMap()
@@ -264,168 +284,165 @@ namespace AZ
         }
 
         // -- CPU Visualizer --
-        inline void ImGuiCpuProfiler::DrawVisualizer(bool& keepDrawing, const AZ::RHI::CpuTimingStatistics& currentCpuTimingStatistics)
+        inline void ImGuiCpuProfiler::DrawVisualizer(const AZ::RHI::CpuTimingStatistics& cpuTimingStatistics)
         {
-            ImGui::SetNextWindowSize({ 900, 600 }, ImGuiCond_Once);
-            if (ImGui::Begin("CPU Visualizer", &keepDrawing, ImGuiWindowFlags_None))
+            DrawCommonHeader();
+
+            // Get the instrumentation data for the last frame if active
+            if (!m_paused && m_groupRegionMap.size() != 0)
             {
-                // Get the instrumentation data for the last frame if active
-                if (!m_paused && m_groupRegionMap.size() != 0)
+                CollectFrameData(); // Also updates viewport bounds
+
+                CullFrameData(cpuTimingStatistics); // Trim data if necessary
+
+                if (!SystemTickBus::Handler::BusIsConnected())
                 {
-                    CollectFrameData(); // Also updates viewport bounds
-
-                    CullFrameData(currentCpuTimingStatistics); // Trim data if necessary
-
-                    if (!SystemTickBus::Handler::BusIsConnected())
-                    {
-                        SystemTickBus::Handler::BusConnect();
-                    }
+                    SystemTickBus::Handler::BusConnect();
                 }
-
-                // Options & Statistics
-                if (ImGui::BeginChild("Options and Statistics", { 0, 0 }, true))
-                {
-                    ImGui::Columns(3, "Options", true);
-                    ImGui::Text("Frames To Collect:");
-                    ImGui::SliderInt("", &m_framesToCollect, 10, 100, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_Logarithmic);
-
-                    ImGui::NextColumn();
-
-                    ImGui::Text("Viewport width: %.3f ms", CpuProfilerImGuiHelper::TicksToMs(GetViewportTickWidth()));
-                    ImGui::Text("Ticks [%lld , %lld]", m_viewportStartTick, m_viewportEndTick);
-                    ImGui::Text("Recording %ld threads", RHI::CpuProfiler::Get()->GetTimeRegionMap().size());
-                    ImGui::Text("%llu profiling events saved", m_savedRegionCount);
-
-                    ImGui::NextColumn();
-
-                    ImGui::TextWrapped(
-                        "Hold the right mouse button to move around. Zoom by scrolling the mouse wheel while holding <ctrl>.");
-                }
-
-
-                ImGui::Columns(1, "RulerColumn", true);
-
-                // Ruler
-                if (ImGui::BeginChild("Ruler", { 0, 30 }, true, ImGuiWindowFlags_NoNavFocus))
-                {
-                    DrawRuler();
-                }
-                ImGui::EndChild();
-
-
-                ImGui::Columns(1, "TimelineColumn", true);
-
-                // Timeline
-                if (ImGui::BeginChild(
-                        "Timeline", { 0, 0 }, true, ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
-                {
-                    // Find the next frame boundary after the viewport's right bound and draw until that tick
-                    auto nextFrameBoundaryItr = AZStd::lower_bound(m_frameEndTicks.begin(), m_frameEndTicks.end(), m_viewportEndTick);
-                    if (nextFrameBoundaryItr == m_frameEndTicks.end() &&
-                        m_frameEndTicks.size() != 0) // lower_bound returns end() if not found
-                    {
-                        nextFrameBoundaryItr--;
-                    }
-                    const AZStd::sys_time_t nextFrameBoundary = *nextFrameBoundaryItr;
-
-                    // Find the start tick of the leftmost frame, which may be offscreen.
-                    auto startTickItr = AZStd::lower_bound(m_frameEndTicks.begin(), m_frameEndTicks.end(), m_viewportStartTick);
-                    if (startTickItr != m_frameEndTicks.begin())
-                    {
-                        startTickItr--;
-                    }
-
-                    // Main draw loop
-                    u64 baseRow = 0;
-                    for (const auto& [currentThreadId, singleThreadData] : m_savedData)
-                    {
-                        // Find the first TimeRegion that we should draw
-                        auto regionItr = AZStd::lower_bound(
-                            singleThreadData.begin(), singleThreadData.end(), *startTickItr,
-                            [](const TimeRegion& wrapper, AZStd::sys_time_t target)
-                            {
-                                return wrapper.m_startTick < target;
-                            });
-
-                        // Draw all of the blocks for a given thread/row
-                        u64 maxDepth = 0;
-                        while (regionItr != singleThreadData.end())
-                        {
-                            const TimeRegion& region = *regionItr;
-
-                            // Early out if we have drawn all the onscreen regions
-                            if (region.m_startTick > nextFrameBoundary)
-                            {
-                                break;
-                            }
-                            u64 targetRow = region.m_stackDepth + baseRow;
-                            maxDepth = AZStd::max(aznumeric_cast<u64>(region.m_stackDepth), maxDepth);
-
-                            DrawBlock(region, targetRow);
-
-                            regionItr++;
-                        }
-
-                        // Draw UI details
-                        DrawThreadLabel(baseRow, currentThreadId);
-                        DrawThreadSeparator(baseRow, maxDepth);
-
-                        baseRow += maxDepth + 1; // Next draw loop should start one row down
-                    }
-
-                    DrawRegionStatistics();
-                    DrawFrameBoundaries();
-
-                    // Draw an invisible button to capture inputs
-                    ImGui::InvisibleButton("Timeline Input", { ImGui::GetWindowContentRegionWidth(), baseRow * RowHeight });
-
-                    // Controls
-                    ImGuiIO& io = ImGui::GetIO();
-                    if (ImGui::IsWindowFocused() && ImGui::IsItemHovered())
-                    {
-                        io.WantCaptureMouse = true;
-                        if (ImGui::IsMouseDragging(ImGuiMouseButton_Right)) // Scrolling
-                        {
-                            auto [deltaX, deltaY] = io.MouseDelta;
-                            if (deltaX != 0 || deltaY != 0)
-                            {
-                                // We want to maintain uniformity in scrolling (a click and drag should leave the cursor at the same spot
-                                // relative to the objects on screen)
-                                const float pixelDeltaNormalized = deltaX / ImGui::GetWindowWidth();
-                                auto tickDelta = aznumeric_cast<AZStd::sys_time_t>(-1 * pixelDeltaNormalized * GetViewportTickWidth());
-                                m_viewportStartTick += tickDelta;
-                                m_viewportEndTick += tickDelta;
-
-                                ImGui::SetScrollY(ImGui::GetScrollY() + deltaY * -1);
-                            }
-                        }
-                        else if (io.MouseWheel != 0 && io.KeyCtrl) // Zooming
-                        {
-                            // We want zooming to be relative to the mouse's current position
-                            const float mouseVel = io.MouseWheel;
-                            const float mouseX = ImGui::GetMousePos().x;
-
-                            // Find the normalized position of the cursor relative to the window
-                            const float percentWindow = (mouseX - ImGui::GetWindowPos().x) / ImGui::GetWindowWidth();
-
-                            const auto overallTickDelta = aznumeric_cast<AZStd::sys_time_t>(0.05 * io.MouseWheel * GetViewportTickWidth());
-
-                            // Split the overall delta between the two bounds depending on mouse pos
-                            const auto newStartTick = m_viewportStartTick + aznumeric_cast<AZStd::sys_time_t>(percentWindow * overallTickDelta);
-                            const auto newEndTick = m_viewportEndTick - aznumeric_cast<AZStd::sys_time_t>((1-percentWindow) * overallTickDelta);
-
-                            // Avoid zooming too much, start tick should always be less than end tick
-                            if (newStartTick < newEndTick)
-                            {
-                                m_viewportStartTick = newStartTick;
-                                m_viewportEndTick = newEndTick;
-                            }
-                        }
-                    }
-                }
-                ImGui::EndChild();
             }
-            ImGui::End();
+
+            // Options & Statistics
+            if (ImGui::BeginChild("Options and Statistics", { 0, 0 }, true))
+            {
+                ImGui::Columns(3, "Options", true);
+                ImGui::Text("Frames To Collect:");
+                ImGui::SliderInt("", &m_framesToCollect, 10, 100, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_Logarithmic);
+
+                ImGui::NextColumn();
+
+                ImGui::Text("Viewport width: %.3f ms", CpuProfilerImGuiHelper::TicksToMs(GetViewportTickWidth()));
+                ImGui::Text("Ticks [%lld , %lld]", m_viewportStartTick, m_viewportEndTick);
+                ImGui::Text("Recording %ld threads", RHI::CpuProfiler::Get()->GetTimeRegionMap().size());
+                ImGui::Text("%llu profiling events saved", m_savedRegionCount);
+
+                ImGui::NextColumn();
+
+                ImGui::TextWrapped(
+                    "Hold the right mouse button to move around. Zoom by scrolling the mouse wheel while holding <ctrl>.");
+            }
+
+
+            ImGui::Columns(1, "RulerColumn", true);
+
+            // Ruler
+            if (ImGui::BeginChild("Ruler", { 0, 30 }, true, ImGuiWindowFlags_NoNavFocus))
+            {
+                DrawRuler();
+            }
+            ImGui::EndChild();
+
+
+            ImGui::Columns(1, "TimelineColumn", true);
+
+            // Timeline
+            if (ImGui::BeginChild(
+                    "Timeline", { 0, 0 }, true, ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
+            {
+                // Find the next frame boundary after the viewport's right bound and draw until that tick
+                auto nextFrameBoundaryItr = AZStd::lower_bound(m_frameEndTicks.begin(), m_frameEndTicks.end(), m_viewportEndTick);
+                if (nextFrameBoundaryItr == m_frameEndTicks.end() &&
+                    m_frameEndTicks.size() != 0) // lower_bound returns end() if not found
+                {
+                    nextFrameBoundaryItr--;
+                }
+                const AZStd::sys_time_t nextFrameBoundary = *nextFrameBoundaryItr;
+
+                // Find the start tick of the leftmost frame, which may be offscreen.
+                auto startTickItr = AZStd::lower_bound(m_frameEndTicks.begin(), m_frameEndTicks.end(), m_viewportStartTick);
+                if (startTickItr != m_frameEndTicks.begin())
+                {
+                    startTickItr--;
+                }
+
+                // Main draw loop
+                u64 baseRow = 0;
+                for (const auto& [currentThreadId, singleThreadData] : m_savedData)
+                {
+                    // Find the first TimeRegion that we should draw
+                    auto regionItr = AZStd::lower_bound(
+                        singleThreadData.begin(), singleThreadData.end(), *startTickItr,
+                        [](const TimeRegion& wrapper, AZStd::sys_time_t target)
+                        {
+                            return wrapper.m_startTick < target;
+                        });
+
+                    // Draw all of the blocks for a given thread/row
+                    u64 maxDepth = 0;
+                    while (regionItr != singleThreadData.end())
+                    {
+                        const TimeRegion& region = *regionItr;
+
+                        // Early out if we have drawn all the onscreen regions
+                        if (region.m_startTick > nextFrameBoundary)
+                        {
+                            break;
+                        }
+                        u64 targetRow = region.m_stackDepth + baseRow;
+                        maxDepth = AZStd::max(aznumeric_cast<u64>(region.m_stackDepth), maxDepth);
+
+                        DrawBlock(region, targetRow);
+
+                        regionItr++;
+                    }
+
+                    // Draw UI details
+                    DrawThreadLabel(baseRow, currentThreadId);
+                    DrawThreadSeparator(baseRow, maxDepth);
+
+                    baseRow += maxDepth + 1; // Next draw loop should start one row down
+                }
+
+                DrawRegionStatistics();
+                DrawFrameBoundaries();
+
+                // Draw an invisible button to capture inputs
+                ImGui::InvisibleButton("Timeline Input", { ImGui::GetWindowContentRegionWidth(), baseRow * RowHeight });
+
+                // Controls
+                ImGuiIO& io = ImGui::GetIO();
+                if (ImGui::IsWindowFocused() && ImGui::IsItemHovered())
+                {
+                    io.WantCaptureMouse = true;
+                    if (ImGui::IsMouseDragging(ImGuiMouseButton_Right)) // Scrolling
+                    {
+                        auto [deltaX, deltaY] = io.MouseDelta;
+                        if (deltaX != 0 || deltaY != 0)
+                        {
+                            // We want to maintain uniformity in scrolling (a click and drag should leave the cursor at the same spot
+                            // relative to the objects on screen)
+                            const float pixelDeltaNormalized = deltaX / ImGui::GetWindowWidth();
+                            auto tickDelta = aznumeric_cast<AZStd::sys_time_t>(-1 * pixelDeltaNormalized * GetViewportTickWidth());
+                            m_viewportStartTick += tickDelta;
+                            m_viewportEndTick += tickDelta;
+
+                            ImGui::SetScrollY(ImGui::GetScrollY() + deltaY * -1);
+                        }
+                    }
+                    else if (io.MouseWheel != 0 && io.KeyCtrl) // Zooming
+                    {
+                        // We want zooming to be relative to the mouse's current position
+                        const float mouseVel = io.MouseWheel;
+                        const float mouseX = ImGui::GetMousePos().x;
+
+                        // Find the normalized position of the cursor relative to the window
+                        const float percentWindow = (mouseX - ImGui::GetWindowPos().x) / ImGui::GetWindowWidth();
+
+                        const auto overallTickDelta = aznumeric_cast<AZStd::sys_time_t>(0.05 * io.MouseWheel * GetViewportTickWidth());
+
+                        // Split the overall delta between the two bounds depending on mouse pos
+                        const auto newStartTick = m_viewportStartTick + aznumeric_cast<AZStd::sys_time_t>(percentWindow * overallTickDelta);
+                        const auto newEndTick = m_viewportEndTick - aznumeric_cast<AZStd::sys_time_t>((1-percentWindow) * overallTickDelta);
+
+                        // Avoid zooming too much, start tick should always be less than end tick
+                        if (newStartTick < newEndTick)
+                        {
+                            m_viewportStartTick = newStartTick;
+                            m_viewportEndTick = newEndTick;
+                        }
+                    }
+                }
+            }
+            ImGui::EndChild();
         }
 
         inline void ImGuiCpuProfiler::CollectFrameData()
@@ -761,7 +778,7 @@ namespace AZ
                 m_frameEndTicks.push_back(AZStd::GetTimeNowTicks());
             }
 
-            if (!m_showVisualizer || m_paused)
+            if (m_paused)
             {
                 SystemTickBus::Handler::BusDisconnect();
             }
