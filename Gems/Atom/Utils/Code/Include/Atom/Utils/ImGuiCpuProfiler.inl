@@ -91,18 +91,13 @@ namespace AZ
 
         inline void ImGuiCpuProfiler::DrawCommonHeader()
         {
-            if (!m_lastCapturedFilePath.empty())
-            {
-                ImGui::Text("Wrote data to path %s", m_lastCapturedFilePath.c_str());
-            }
-
-            ImGui::Columns(3, "CommonHeaderColumn", true);
+            ImGui::Columns(1, "CommonHeaderColumn", true);
             if (ImGui::Button(m_enableVisualizer ? "Swap to statistics" : "Swap to visualizer"))
             {
                 m_enableVisualizer = !m_enableVisualizer;
             }
-             
-            ImGui::NextColumn(); 
+
+            ImGui::SameLine();
             m_paused = !AZ::RHI::CpuProfiler::Get()->IsProfilerEnabled();
             if (ImGui::Button(m_paused ? "Resume" : "Pause"))
             {
@@ -110,10 +105,16 @@ namespace AZ
                 AZ::RHI::CpuProfiler::Get()->SetProfilerEnabled(!m_paused);
             }
 
-            ImGui::NextColumn(); 
+            ImGui::SameLine();
             if (ImGui::Button("Capture"))
             {
                 m_captureToFile = true;
+            }
+
+            if (!m_lastCapturedFilePath.empty())
+            {
+                ImGui::SameLine();
+                ImGui::Text("Saved: %s", m_lastCapturedFilePath.c_str());
             }
             
             ImGui::Columns(1, "RootColumn", true);
@@ -203,25 +204,27 @@ namespace AZ
                 ImGui::NextColumn();
             };
 
-            // Set column settings.
-            ImGui::Columns(2, "view", false);
-            ImGui::SetColumnWidth(0, 660.0f);
-            ImGui::SetColumnWidth(1, 100.0f);
-
-            ShowRow("Frame to Frame Time", cpuTimingStatistics.m_frameToFrameTime);
-            ShowRow("Present Time", cpuTimingStatistics.m_presentDuration);
-            for (const auto& queueStatistics : cpuTimingStatistics.m_queueStatistics)
+            if (ImGui::BeginChild("Statistics View", { 0, 0 }, true))
             {
-                ShowRow(queueStatistics.m_queueName.GetCStr(), queueStatistics.m_executeDuration);
-            }
+                // Set column settings.
+                ImGui::Columns(2, "view", false);
+                ImGui::SetColumnWidth(0, 660.0f);
+                ImGui::SetColumnWidth(1, 100.0f);
 
-            ImGui::Separator();
-            ImGui::Columns(1, "view", false);
+                ShowRow("Frame to Frame Time", cpuTimingStatistics.m_frameToFrameTime);
+                ShowRow("Present Time", cpuTimingStatistics.m_presentDuration);
+                for (const auto& queueStatistics : cpuTimingStatistics.m_queueStatistics)
+                {
+                    ShowRow(queueStatistics.m_queueName.GetCStr(), queueStatistics.m_executeDuration);
+                }
 
-            m_timedRegionFilter.Draw("TimedRegion Filter");
+                ImGui::Separator();
+                ImGui::Columns(1, "view", false);
 
-            // Draw the timed regions
-            if (ImGui::BeginChild("TimedRegions"))
+                m_timedRegionFilter.Draw("TimedRegion Filter");
+
+                // Draw the timed regions
+                if (ImGui::BeginChild("TimedRegions"))
                 {
                     for (auto& timeRegionMapEntry : m_groupRegionMap)
                     {
@@ -256,6 +259,7 @@ namespace AZ
                     }
                     ImGui::EndChild();
                 }
+            } 
         }
 
         inline void ImGuiCpuProfiler::UpdateGroupRegionMap()
@@ -405,7 +409,7 @@ namespace AZ
                     io.WantCaptureMouse = true;
                     if (ImGui::IsMouseDragging(ImGuiMouseButton_Right)) // Scrolling
                     {
-                        auto [deltaX, deltaY] = io.MouseDelta;
+                        const auto [deltaX, deltaY] = io.MouseDelta;
                         if (deltaX != 0 || deltaY != 0)
                         {
                             // We want to maintain uniformity in scrolling (a click and drag should leave the cursor at the same spot
