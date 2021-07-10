@@ -85,7 +85,7 @@
                         "DrawListTag": "reflectionprobeblendweight",
                         "PipelineViewTag": "MainCamera",
                         "PassSrgShaderAsset": {
-                            "FilePath": "shaders/reflections/reflectionprobeblendweight.shader"
+                            "FilePath": "Shaders/Reflections/ReflectionProbeBlendWeight.shader"
                         }
                     }
                 },
@@ -192,7 +192,7 @@
                         "DrawListTag": "reflectionproberenderouter",
                         "PipelineViewTag": "MainCamera",
                         "PassSrgShaderAsset": {
-                            "FilePath": "shaders/reflections/reflectionproberenderouter.shader"
+                            "FilePath": "Shaders/Reflections/ReflectionProbeRenderOuter.shader"
                         }
                     }
                 },
@@ -242,7 +242,7 @@
                         "DrawListTag": "reflectionproberenderinner",
                         "PipelineViewTag": "MainCamera",
                         "PassSrgShaderAsset": {
-                            "FilePath": "shaders/reflections/reflectionproberenderinner.shader"
+                            "FilePath": "Shaders/Reflections/ReflectionProbeRenderInner.shader"
                         }
                     }
                 },
