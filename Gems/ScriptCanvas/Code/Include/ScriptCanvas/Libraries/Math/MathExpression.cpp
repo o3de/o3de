@@ -12,17 +12,6 @@ namespace ScriptCanvas
     {
         namespace Math
         {
-            void MathExpression::OnResult(const ExpressionEvaluation::ExpressionResult& result)
-            {
-                if (result.is<double>())
-                {
-                    Datum output;
-                    output.Set(AZStd::any_cast<double>(result));
-                    PushOutput(output, (*MathExpressionProperty::GetResultSlot(this)));
-                    SignalOutput(MathExpressionProperty::GetOutSlotId(this));
-                }
-            }
-
             ExpressionEvaluation::ParseOutcome MathExpression::ParseExpression(const AZStd::string& formatString)
             {
                 const AZStd::unordered_set<ExpressionEvaluation::ExpressionParserId> mathInterfaceSet = {

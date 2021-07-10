@@ -25,8 +25,6 @@ namespace ScriptCanvas
                 SCRIPTCANVAS_NODE(ExpectEqual);
 
                 void OnInit() override;
-                void OnInputSignal(const SlotId& slotId) override;
-
             };
         }
     }

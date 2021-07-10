@@ -140,10 +140,8 @@ namespace ScriptCanvas
 
         AZ::Crc32 GetInputControlVisibility() const;
         AZ::Crc32 GetScopeControlVisibility() const;
-        AZ::Crc32 GetScriptInputControlVisibility() const;
         AZ::Crc32 GetNetworkSettingsVisibility() const;
-        AZ::Crc32 GetFunctionInputControlVisibility() const;
-        
+
         AZ::Crc32 GetVisibility() const;
         void SetVisibility(AZ::Crc32 visibility);
 

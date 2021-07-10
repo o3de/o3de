@@ -73,7 +73,7 @@ namespace TrackView
         bool startedCapture = false;
         AZ::Render::FrameCaptureRequestBus::BroadcastResult(
             startedCapture, &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachmentWithCallback, m_passHierarchy,
-            AZStd::string("Output"), attachmentReadbackCallback);
+            AZStd::string("Output"), attachmentReadbackCallback, AZ::RPI::PassAttachmentReadbackOption::Output);
 
         return startedCapture;
     }

@@ -50,40 +50,6 @@ namespace ScriptCanvas
                 }
                 ////
             }
-
-            void ExpectGreaterThanEqual::OnInputSignal([[maybe_unused]] const SlotId& slotId)
-            {
-                auto lhs = FindDatum(GetSlotId("Candidate"));
-                if (!lhs)
-                {
-                    return;
-                }
-
-                auto rhs = FindDatum(GetSlotId("Reference"));
-                if (!rhs)
-                {
-                    return;
-                }
-
-                if (lhs->GetType() != rhs->GetType())
-                {
-                    ScriptCanvas::UnitTesting::Bus::Event
-                        ( GetOwningScriptCanvasId()
-                        , &ScriptCanvas::UnitTesting::BusTraits::AddFailure
-                        , "Type mismatch in comparison operator");
-
-                    SignalOutput(GetSlotId("Out"));
-                    return;
-                }
-                
-
-                switch (lhs->GetType().GetType())
-                {
-                    SCRIPT_CANVAS_UNIT_TEST_LEGACY_NODE_COMPARE_IMPLEMENTATIONS(ExpectGreaterThanEqual);
-                }
-
-                SignalOutput(GetSlotId("Out"));
-            }
-        } 
-    } 
-} 
+        }
+    }
+}

@@ -37,8 +37,8 @@ namespace ScriptCanvas
             }
 
             const char* StringConversion::CStyleToCStyle(const char* input)
-            { 
-                return input; 
+            {
+                return input;
             }
 
             void StringConversion::Reflect(AZ::ReflectContext* reflection)
@@ -69,17 +69,17 @@ namespace ScriptCanvas
                         ->Field("outcomeVector3Void", &TypeExposition::m_outcomeVector3Void)
                         ;
                 }
-                
+
                 if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(reflection))
                 {
                     behaviorContext->Class<TypeExposition>("TypeExposition")
                         ->Method("Reflect_AZStd::array<AZ::Vector3, 2>", [](AZStd::array<AZ::Vector3, 2>& vector) {  return vector.size();  })
-                            ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+                        ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                         ->Method("Reflect_AZ::Outcome<AZ::Vector3, void>", [](AZ::Outcome<AZ::Vector3>& vector) { return vector.IsSuccess();  })
-                            ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+                        ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                         ;
                 }
             }
         }
-    } 
-} 
+    }
+}
