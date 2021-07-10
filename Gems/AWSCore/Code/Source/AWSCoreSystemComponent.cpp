@@ -136,6 +136,7 @@ namespace AWSCore
     void AWSCoreSystemComponent::InitAWSApi()
     {
         AWSNativeSDKInit::InitializationManager::InitAwsApi();
+        AWSNativeSDKInit::InitializationManager::CopyCertFiles();
     }
 
     void AWSCoreSystemComponent::ShutdownAWSApi()

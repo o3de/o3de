@@ -25,6 +25,8 @@ namespace AWSNativeSDKInit
 #if defined(PLATFORM_SUPPORTS_AWS_NATIVE_SDK)
         void CustomizeSDKOptions(Aws::SDKOptions& options);
         void CustomizeShutdown();
+
+        void CopyCaFile();
 #endif
     }
 
@@ -75,6 +77,11 @@ namespace AWSNativeSDKInit
         Aws::InitAPI(m_awsSDKOptions);
 
 #endif // #if defined(PLATFORM_SUPPORTS_AWS_NATIVE_SDK)
+    }
+
+    void InitializationManager::CopyCertFiles()
+    {
+        Platform::CopyCaFile();
     }
 
     void InitializationManager::ShutdownAwsApiInternal()
