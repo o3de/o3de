@@ -20,7 +20,7 @@ namespace AZ
             : public AZ::Module
         {
         public:
-            AZ_RTTI(BuilderModule, "{C22CF1CB-59AA-4247-A983-BC371A7B0513}", AZ::Module);
+            AZ_RTTI(BuilderModule, "{1427A7F0-7ECD-45D6-A227-87DDB406D591}", AZ::Module);
 
             BuilderModule()
             {
