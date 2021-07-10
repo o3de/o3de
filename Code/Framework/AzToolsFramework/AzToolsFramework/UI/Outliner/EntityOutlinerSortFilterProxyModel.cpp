@@ -41,11 +41,11 @@ namespace AzToolsFramework
 
             // make sure to compare the correct data types for sorting the current column
             AZ_Assert(leftData.type() == rightData.type(), "EntityOutlinerSortFilterProxyModel::lessThan types do not agree!");
-            if (leftData.type() == QMetaType::QString)
+            if (static_cast<QMetaType::Type>(leftData.type()) == QMetaType::QString)
             {
                 return leftData.toString() < rightData.toString();
             }
-            else if (leftData.type() == QMetaType::ULongLong)
+            else if (static_cast<QMetaType::Type>(leftData.type()) == QMetaType::ULongLong)
             {
                 return leftData.toULongLong() < rightData.toULongLong();
             }
