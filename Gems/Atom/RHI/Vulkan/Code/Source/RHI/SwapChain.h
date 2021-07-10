@@ -50,8 +50,6 @@ namespace AZ
 
             void QueueBarrier(const VkPipelineStageFlags src, const VkPipelineStageFlags dst, const VkImageMemoryBarrier& imageBarrier);
 
-            void SetVerticalSyncInterval(uint32_t verticalSyncInterval) override;
-            
         private:
             SwapChain() = default;
 
@@ -67,6 +65,7 @@ namespace AZ
             RHI::ResultCode InitImageInternal(const RHI::SwapChain::InitImageRequest& request) override;
             RHI::ResultCode ResizeInternal(const RHI::SwapChainDimensions& dimensions, RHI::SwapChainDimensions* nativeDimensions) override;
             uint32_t PresentInternal() override;
+            void SetVerticalSyncIntervalInternal(uint32_t previousVsyncInterval) override;
             //////////////////////////////////////////////////////////////////////
 
             RHI::ResultCode BuildSurface(const RHI::SwapChainDescriptor& descriptor);

@@ -56,18 +56,15 @@ namespace AZ
             m_swapChainBarrier.m_isValid = true;
         }
 
-        void SwapChain::SetVerticalSyncInterval(uint32_t verticalSyncInterval)
+        void SwapChain::SetVerticalSyncIntervalInternal(uint32_t previousVsyncInterval)
         {
-            uint32_t previousVsyncInterval = GetDescriptor().m_verticalSyncInterval;
-
-            RHI::SwapChain::SetVerticalSyncInterval(verticalSyncInterval);
-
+            uint32_t verticalSyncInterval = GetDescriptor().m_verticalSyncInterval;
             if (verticalSyncInterval == 0 || previousVsyncInterval == 0)
             {
                 // The presentation mode may change when transitioning to or from a vsynced presentation mode
                 // In this case, the swapchain must be recreated.
                 InvalidateNativeSwapChain();
-                BuildNativeSwapChain(GetDescriptor().m_dimensions, GetDescriptor().m_verticalSyncInterval);
+                BuildNativeSwapChain(GetDescriptor().m_dimensions, verticalSyncInterval);
             }
         }
 
@@ -273,17 +270,6 @@ namespace AZ
 
                 VkResult result = vkQueuePresentKHR(vulkanQueue->GetNativeQueue(), &info);
 
-                // Vulkan doesn't directly support waiting on a specified number of vsync intervals. Instead, emulate
-                // >1 vblank waits by presenting the same frame as necessary. e.g. m_verticalSyncInterval == 2 => 1 extra present
-                for (int i = 0; i < static_cast<int>(GetDescriptor().m_verticalSyncInterval) - 1; ++i)
-                {
-                    if (result == VK_SUBOPTIMAL_KHR)
-                    {
-                        break;
-                    }
-                    result = vkQueuePresentKHR(vulkanQueue->GetNativeQueue(), &info);
-                }
-
                 // Resizing window cause recreation of SwapChain after calling this method,
                 // so VK_SUBOPTIMAL_KHR or VK_ERROR_OUT_OF_DATE_KHR  should not happen at this point.
                 AZ_Assert(result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR, "Failed to present swapchain %s", GetName().GetCStr());
@@ -478,17 +464,10 @@ namespace AZ
                 VK_NULL_HANDLE,
                 acquiredImageIndex);
 
-            RHI::ResultCode result = ConvertResult(vkResult);
-
-            // The image acquisition can fail if the requested vsync interval exceeds 1.
-            if (vkResult == VK_NOT_READY)
-            {
-                RETURN_RESULT_IF_UNSUCCESSFUL(result);
-            }
-
             // Resizing window cause recreation of SwapChain before calling this method,
             // so VK_SUBOPTIMAL_KHR or VK_ERROR_OUT_OF_DATE_KHR  should not happen.
             AssertSuccess(vkResult);
+            RHI::ResultCode result = ConvertResult(vkResult);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
             imageAvailableSemaphore->SignalEvent();
