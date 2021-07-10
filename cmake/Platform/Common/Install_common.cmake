@@ -509,7 +509,7 @@ function(ly_setup_others)
 
     # Registry
     install(DIRECTORY
-        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>/Registry
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<LOWER_CASE:$<CONFIG>>/Registry
         DESTINATION ./${runtime_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>
     )
     install(DIRECTORY
