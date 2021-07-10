@@ -12,18 +12,12 @@ if(NOT CMAKE_GENERATOR MATCHES "Visual Studio 1[6-7]")
     message(FATAL_ERROR "Generator ${CMAKE_GENERATOR} not supported")
 endif()
 
-# For the other cases, verify that it wasn't invoked with an unsupported architecture. defaults to x86 architecture
-if(SUPPORTED_VS_PLATFORM_NAME_OVERRIDE)
-    set(SUPPORTED_VS_PLATFORM_NAME ${SUPPORTED_VS_PLATFORM_NAME_OVERRIDE})
-else()
-    set(SUPPORTED_VS_PLATFORM_NAME x64)
-endif()
-
-if(CMAKE_VS_PLATFORM_NAME AND NOT CMAKE_VS_PLATFORM_NAME STREQUAL "${SUPPORTED_VS_PLATFORM_NAME}")
-    message(FATAL_ERROR "${CMAKE_VS_PLATFORM_NAME} architecture not supported")
+# Verify that it wasn't invoked with an unsupported target/host architecture. Currently only supports x64/x64
+if(CMAKE_VS_PLATFORM_NAME AND NOT CMAKE_VS_PLATFORM_NAME STREQUAL "x64")
+    message(FATAL_ERROR "${CMAKE_VS_PLATFORM_NAME} target architecture not supported")
 endif()
 if(CMAKE_VS_PLATFORM_TOOLSET_HOST_ARCHITECTURE AND NOT CMAKE_VS_PLATFORM_TOOLSET_HOST_ARCHITECTURE STREQUAL "x64")
-    message(FATAL_ERROR "${CMAKE_VS_PLATFORM_TOOLSET_HOST_ARCHITECTURE} toolset not supported")
+    message(FATAL_ERROR "${CMAKE_VS_PLATFORM_TOOLSET_HOST_ARCHITECTURE} host toolset not supported")
 endif()
 
 ly_append_configurations_options(
