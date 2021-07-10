@@ -125,7 +125,7 @@ namespace AZ
             //! Small API to support getting supported/working swapchain formats for a window.
             //! [GFX TODO]ATOM-1125] [RHI] Device::GetValidSwapChainImageFormats()
             //! Returns the set of supported formats for swapchain images.
-            virtual AZStd::vector<Format> GetValidSwapChainImageFormats(const WindowHandle& windowHandle) const;
+            virtual AZStd::vector<Format> GetValidSwapChainImageFormats(const WindowHandle& windowHandle, const NativeConnection& nativeConnection) const;
 
             //! Converts a GPU timestamp to microseconds
             virtual AZStd::chrono::microseconds GpuTimestampToMicroseconds(uint64_t gpuTimestamp, HardwareQueueClass queueClass) const = 0;

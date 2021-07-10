@@ -256,7 +256,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        AZStd::vector<RHI::Format> Device::GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle) const
+        AZStd::vector<RHI::Format> Device::GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle, [[maybe_unused]] const NativeConnection& nativeConnection) const
         {
             AZStd::vector<RHI::Format> formatsList;
 

@@ -39,7 +39,7 @@ namespace AZ
             //! Initializes the WindowContext from the given AzFramework's window
             //! param[in] windowHandle The native window handle of the Window we want to construct an RPI WindowContext for
             //! param[in] masterPassName The name of the pass that supplies input to the window's swapchain pass
-            void Initialize(RHI::Device& device, AzFramework::NativeWindowHandle windowHandle);
+            void Initialize(RHI::Device& device, AzFramework::NativeWindowHandle windowHandle, AzFramework::NativeConnectionHandle nativeConnection);
 
             //! Gets the ViewportContexts associated with this WindowContext, if any.
             //! Associated ViewportContexts can be enumerated to find the active rendered scene.
@@ -78,7 +78,7 @@ namespace AZ
             bool SetExclusiveFullScreenState(bool fullScreenState) override;
 
             // Creates the underlying RHI level SwapChain for the given Window
-            void CreateSwapChain(RHI::Device& device);
+            void CreateSwapChain(RHI::Device& device, AzFramework::NativeConnectionHandle);
 
             // Destroys the underlying SwapChain
             void DestroySwapChain();
@@ -91,6 +91,9 @@ namespace AZ
 
             // The handle of the window that this is context describes
             AzFramework::NativeWindowHandle m_windowHandle;
+
+            // TODO comment
+            AzFramework::NativeConnectionHandle m_nativeConnection;
 
             // The swapChain that this context has created for the given window
             RHI::Ptr<RHI::SwapChain> m_swapChain;

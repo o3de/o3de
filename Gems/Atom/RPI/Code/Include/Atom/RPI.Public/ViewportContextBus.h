@@ -42,6 +42,8 @@ namespace AZ
                 RHI::Device* device = nullptr;
                 //! The native window to create a swap chain for, must be valid.
                 AzFramework::NativeWindowHandle windowHandle = {};
+                // xcb_connection_t on platforms using X11/xcb
+                void* nativeConnection = nullptr;
                 //! The scene to render, optional.
                 ScenePtr renderScene;
                 //! The ID to use, if specified. This ID must be unique to this ViewportContext.

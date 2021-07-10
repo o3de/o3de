@@ -34,7 +34,7 @@ namespace AZ
 
             //! Used by ViewportContextManager, use AZ::Interface<ViewportContextRequestsInterface>::Get()->CreateViewportContext to create a viewport
             //! context from outside of the ViewportContextManager.
-            ViewportContext(ViewportContextManager* manager, AzFramework::ViewportId id, const AZ::Name& name, RHI::Device& device, AzFramework::NativeWindowHandle nativeWindow, ScenePtr renderScene);
+            ViewportContext(ViewportContextManager* manager, AzFramework::ViewportId id, const AZ::Name& name, RHI::Device& device, AzFramework::NativeWindowHandle nativeWindow, AzFramework::NativeConnectionHandle nativeConnection, ScenePtr renderScene);
             ~ViewportContext();
 
             //! Gets an opaque ID that can be used to uniquely identify this ViewportContext.

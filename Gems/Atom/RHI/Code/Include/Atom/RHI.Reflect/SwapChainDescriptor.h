@@ -18,6 +18,7 @@ namespace AZ
     namespace RHI
     {
         using WindowHandle = Handle<uint64_t, class Window>;
+        using NativeConnection = void*;
 
         struct SwapChainDimensions
         {
@@ -52,6 +53,9 @@ namespace AZ
 
             /// [Not Reflected] API dependent handle to the OS window to attach the swap chain.
             WindowHandle m_window;
+
+            // [Not Reflected] xcb_connection_t on X11/xcb platforms
+            NativeConnection m_nativeConnection = nullptr;
 
             /// ID for the SwapChain's attachment
             RHI::AttachmentId m_attachmentId;

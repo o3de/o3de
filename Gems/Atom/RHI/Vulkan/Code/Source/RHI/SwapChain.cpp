@@ -275,6 +275,7 @@ namespace AZ
         {
             WSISurface::Descriptor surfaceDesc{};
             surfaceDesc.m_windowHandle = descriptor.m_window;
+            surfaceDesc.m_nativeConnection = descriptor.m_nativeConnection;
             RHI::Ptr<WSISurface> surface = WSISurface::Create();
             const RHI::ResultCode result = surface->Init(surfaceDesc);
             if (result == RHI::ResultCode::Success)

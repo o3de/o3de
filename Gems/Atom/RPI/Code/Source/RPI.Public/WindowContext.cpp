@@ -17,11 +17,12 @@ namespace AZ
 {
     namespace RPI
     {
-        void WindowContext::Initialize(RHI::Device& device, AzFramework::NativeWindowHandle windowHandle)
+        void WindowContext::Initialize(RHI::Device& device, AzFramework::NativeWindowHandle windowHandle, AzFramework::NativeConnectionHandle nativeConnection)
         {
             m_windowHandle = windowHandle;
+            m_nativeConnection = nativeConnection;
 
-            CreateSwapChain(device);
+            CreateSwapChain(device, nativeConnection);
 
             FillWindowState(m_swapChain->GetDescriptor().m_dimensions.m_imageWidth, m_swapChain->GetDescriptor().m_dimensions.m_imageHeight);
 
@@ -118,7 +119,7 @@ namespace AZ
             return m_swapChain->SetExclusiveFullScreenState(fullScreenState);
         }
 
-        void WindowContext::CreateSwapChain(RHI::Device& device)
+        void WindowContext::CreateSwapChain(RHI::Device& device, AzFramework::NativeConnectionHandle nativeConnection)
         {
             m_swapChain = RHI::Factory::Get().CreateSwapChain();
 
@@ -135,6 +136,7 @@ namespace AZ
 
             RHI::SwapChainDescriptor descriptor;
             descriptor.m_window = windowHandle;
+            descriptor.m_nativeConnection = nativeConnection;
             descriptor.m_verticalSyncInterval = 0;
             descriptor.m_dimensions.m_imageWidth = width;
             descriptor.m_dimensions.m_imageHeight = height;
@@ -192,7 +194,8 @@ namespace AZ
             };
 
             const RHI::WindowHandle windowHandle = RHI::WindowHandle(reinterpret_cast<uintptr_t>(m_windowHandle));
-            const AZStd::vector<RHI::Format> supportedFormats = device.GetValidSwapChainImageFormats(windowHandle);
+            const RHI::NativeConnection nativeConnection = m_nativeConnection;
+            const AZStd::vector<RHI::Format> supportedFormats = device.GetValidSwapChainImageFormats(windowHandle, nativeConnection);
             AZ_Assert(!supportedFormats.empty(), "There is no supported format for SwapChain images.");
 
             return GetPreferredFormat(preferredFormats, supportedFormats);

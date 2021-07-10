@@ -152,6 +152,7 @@ namespace AZ
                 nameToUse,
                 *params.device,
                 params.windowHandle,
+                params.nativeConnection,
                 params.renderScene
             );
             viewportContext->GetWindowContext()->RegisterAssociatedViewportContext(viewportContext);

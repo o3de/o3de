@@ -15,7 +15,7 @@ namespace AZ
 {
     namespace RPI
     {
-        ViewportContext::ViewportContext(ViewportContextManager* manager, AzFramework::ViewportId id, const AZ::Name& name, RHI::Device& device, AzFramework::NativeWindowHandle nativeWindow, ScenePtr renderScene)
+        ViewportContext::ViewportContext(ViewportContextManager* manager, AzFramework::ViewportId id, const AZ::Name& name, RHI::Device& device, AzFramework::NativeWindowHandle nativeWindow, AzFramework::NativeConnectionHandle nativeConnection, ScenePtr renderScene)
             : m_rootScene(nullptr)
             , m_id(id)
             , m_windowContext(AZStd::make_shared<WindowContext>())
@@ -23,7 +23,7 @@ namespace AZ
             , m_name(name)
             , m_viewportSize(1, 1)
         {
-            m_windowContext->Initialize(device, nativeWindow);
+            m_windowContext->Initialize(device, nativeWindow, nativeConnection);
             AzFramework::WindowRequestBus::EventResult(
                 m_viewportSize,
                 nativeWindow,

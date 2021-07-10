@@ -404,7 +404,7 @@ namespace AZ
             return m_nullDescriptorManager;
         }
         
-        AZStd::vector<RHI::Format> Device::GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle) const
+        AZStd::vector<RHI::Format> Device::GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle, const NativeConnection& nativeConnection) const
         {
             return AZStd::vector<RHI::Format>{RHI::Format::B8G8R8A8_UNORM};
         }

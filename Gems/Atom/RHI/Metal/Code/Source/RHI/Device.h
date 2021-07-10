@@ -167,7 +167,7 @@ namespace AZ
             AZStd::chrono::microseconds GpuTimestampToMicroseconds(uint64_t gpuTimestamp, RHI::HardwareQueueClass queueClass) const override;
             void FillFormatsCapabilitiesInternal(FormatCapabilitiesList& formatsCapabilities) override;
             void PreShutdown() override;
-            AZStd::vector<RHI::Format> GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle) const override;
+            AZStd::vector<RHI::Format> GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle, const NativeConnection& nativeConnection) const override;
             //////////////////////////////////////////////////////////////////////////
 
             void InitFeatures();            

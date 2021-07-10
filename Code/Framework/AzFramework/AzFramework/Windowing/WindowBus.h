@@ -16,6 +16,7 @@ namespace AzFramework
     // attach to.
 
     using NativeWindowHandle = void*; 
+    using NativeConnectionHandle = void*;
 
     //! A simple structure to contain window size.
     struct WindowSize

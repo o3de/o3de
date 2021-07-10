@@ -244,7 +244,7 @@ namespace AZ
             return nearestFormat;
         }
 
-        AZStd::vector<Format> Device::GetValidSwapChainImageFormats([[maybe_unused]] const WindowHandle& windowHandle) const
+        AZStd::vector<Format> Device::GetValidSwapChainImageFormats([[maybe_unused]] const WindowHandle& windowHandle, [[maybe_unused]] const NativeConnection& nativeConnection) const
         {
             // [GFX TODO][ATOM-1125] Implement this method for every platform.  
             // After it, make this method pure virtual.

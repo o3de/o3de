@@ -544,10 +544,12 @@ namespace AZ
             m_commandQueueContext.UpdateCpuTimingStatistics(cpuTimingStatistics);
         }
 
-        AZStd::vector<RHI::Format> Device::GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle) const
+        AZStd::vector<RHI::Format> Device::GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle, const RHI::NativeConnection& nativeConnection) const
         {
             AZStd::vector<RHI::Format> formatsList;
-            WSISurface::Descriptor surfaceDescriptor{windowHandle};
+            WSISurface::Descriptor surfaceDescriptor;
+            surfaceDescriptor.m_windowHandle = windowHandle;
+            surfaceDescriptor.m_nativeConnection = nativeConnection;
             RHI::Ptr<WSISurface> surface = WSISurface::Create();
             const RHI::ResultCode result = surface->Init(surfaceDescriptor);
             if (result != RHI::ResultCode::Success)
