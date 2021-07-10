@@ -41,7 +41,7 @@ namespace AZ
              *
              * A value of 1 syncs to the refresh rate of the monitor.
              */
-            void SetVerticalSyncInterval(uint32_t verticalSyncInterval);
+            virtual void SetVerticalSyncInterval(uint32_t verticalSyncInterval);
 
             /**
              * Resizes the display resolution of the swap chain. Ideally, this matches the platform window

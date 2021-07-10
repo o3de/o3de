@@ -56,6 +56,21 @@ namespace AZ
             m_swapChainBarrier.m_isValid = true;
         }
 
+        void SwapChain::SetVerticalSyncInterval(uint32_t verticalSyncInterval)
+        {
+            uint32_t previousVsyncInterval = GetDescriptor().m_verticalSyncInterval;
+
+            RHI::SwapChain::SetVerticalSyncInterval(verticalSyncInterval);
+
+            if (verticalSyncInterval == 0 || previousVsyncInterval == 0)
+            {
+                // The presentation mode may change when transitioning to or from a vsynced presentation mode
+                // In this case, the swapchain must be recreated.
+                InvalidateNativeSwapChain();
+                BuildNativeSwapChain(GetDescriptor().m_dimensions, GetDescriptor().m_verticalSyncInterval);
+            }
+        }
+
         void SwapChain::SetNameInternal(const AZStd::string_view& name)
         {
             if (IsInitialized() && !name.empty())
@@ -84,7 +99,7 @@ namespace AZ
 
             auto& presentationQueue = device.GetCommandQueueContext().GetOrCreatePresentationCommandQueue(*this);
             m_presentationQueue = &presentationQueue;
-            result = BuildNativeSwapChain(swapchainDimensions);
+            result = BuildNativeSwapChain(swapchainDimensions, descriptor.m_verticalSyncInterval);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
             uint32_t imageCount = 0;
             VkResult vkResult = vkGetSwapchainImagesKHR(device.GetNativeDevice(), m_nativeSwapChain, &imageCount, nullptr);
@@ -166,7 +181,7 @@ namespace AZ
 
             auto& presentationQueue = device.GetCommandQueueContext().GetOrCreatePresentationCommandQueue(*this);
             m_presentationQueue = &presentationQueue;
-            BuildNativeSwapChain(resizeDimensions);
+            BuildNativeSwapChain(resizeDimensions, GetDescriptor().m_verticalSyncInterval);
 
             resizeDimensions.m_imageCount = 0;
             VkResult vkResult = vkGetSwapchainImagesKHR(device.GetNativeDevice(), m_nativeSwapChain, &resizeDimensions.m_imageCount, nullptr);
@@ -256,7 +271,19 @@ namespace AZ
                 info.pImageIndices = &imageIndex;
                 info.pResults = nullptr;
 
-                const VkResult result = vkQueuePresentKHR(vulkanQueue->GetNativeQueue(), &info);
+                VkResult result = vkQueuePresentKHR(vulkanQueue->GetNativeQueue(), &info);
+
+                // Vulkan doesn't directly support waiting on a specified number of vsync intervals. Instead, emulate
+                // >1 vblank waits by presenting the same frame as necessary. e.g. m_verticalSyncInterval == 2 => 1 extra present
+                for (int i = 0; i < static_cast<int>(GetDescriptor().m_verticalSyncInterval) - 1; ++i)
+                {
+                    if (result == VK_SUBOPTIMAL_KHR)
+                    {
+                        break;
+                    }
+                    result = vkQueuePresentKHR(vulkanQueue->GetNativeQueue(), &info);
+                }
+
                 // Resizing window cause recreation of SwapChain after calling this method,
                 // so VK_SUBOPTIMAL_KHR or VK_ERROR_OUT_OF_DATE_KHR  should not happen at this point.
                 AZ_Assert(result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR, "Failed to present swapchain %s", GetName().GetCStr());
@@ -321,9 +348,17 @@ namespace AZ
             return surfaceFormats[0];
         }
 
-        VkPresentModeKHR SwapChain::GetSupportedPresentMode() const
+        VkPresentModeKHR SwapChain::GetSupportedPresentMode(uint32_t verticalSyncInterval) const
         {
             AZ_Assert(m_surface, "Surface has not been initialized.");
+
+            if (verticalSyncInterval > 0)
+            {
+                // When a non-zero vsync interval is requested, the FIFO presentation mode (always available)
+                // is usable without needing to query available presentation modes.
+                return VK_PRESENT_MODE_FIFO_KHR;
+            }
+
             auto& device = static_cast<Device&>(GetDevice());
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(device.GetPhysicalDevice());
 
@@ -335,12 +370,12 @@ namespace AZ
             AZStd::vector<VkPresentModeKHR> supportedModes(modeCount);
             AssertSuccess(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice.GetNativePhysicalDevice(), m_surface->GetNativeSurface(), &modeCount, supportedModes.data()));
 
-            VkPresentModeKHR preferedModes[] = {VK_PRESENT_MODE_IMMEDIATE_KHR, VK_PRESENT_MODE_MAILBOX_KHR};
-            for (VkPresentModeKHR preferedMode : preferedModes)
+            VkPresentModeKHR preferredModes[] = {VK_PRESENT_MODE_IMMEDIATE_KHR, VK_PRESENT_MODE_MAILBOX_KHR};
+            for (VkPresentModeKHR preferredMode : preferredModes)
             {
                 for (VkPresentModeKHR supportedMode : supportedModes)
                 {
-                    if (supportedMode == preferedMode)
+                    if (supportedMode == preferredMode)
                     {
                         return supportedMode;
                     }
@@ -370,7 +405,7 @@ namespace AZ
             return VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
         }
 
-        RHI::ResultCode SwapChain::BuildNativeSwapChain(const RHI::SwapChainDimensions& dimensions)
+        RHI::ResultCode SwapChain::BuildNativeSwapChain(const RHI::SwapChainDimensions& dimensions, uint32_t verticalSyncInterval)
         {
             AZ_Assert(m_nativeSwapChain == VK_NULL_HANDLE, "Vulkan's native SwapChain has been initialized already.");
             auto& device = static_cast<Device&>(GetDevice());
@@ -421,7 +456,7 @@ namespace AZ
             createInfo.pQueueFamilyIndices = familyIndices.empty() ? nullptr : familyIndices.data();
             createInfo.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
             createInfo.compositeAlpha = GetSupportedCompositeAlpha();
-            createInfo.presentMode = GetSupportedPresentMode();
+            createInfo.presentMode = GetSupportedPresentMode(verticalSyncInterval);
             createInfo.clipped = VK_FALSE;
             createInfo.oldSwapchain = VK_NULL_HANDLE;
 
@@ -442,10 +477,18 @@ namespace AZ
                 imageAvailableSemaphore->GetNativeSemaphore(),
                 VK_NULL_HANDLE,
                 acquiredImageIndex);
+
+            RHI::ResultCode result = ConvertResult(vkResult);
+
+            // The image acquisition can fail if the requested vsync interval exceeds 1.
+            if (vkResult == VK_NOT_READY)
+            {
+                RETURN_RESULT_IF_UNSUCCESSFUL(result);
+            }
+
             // Resizing window cause recreation of SwapChain before calling this method,
             // so VK_SUBOPTIMAL_KHR or VK_ERROR_OUT_OF_DATE_KHR  should not happen.
             AssertSuccess(vkResult);
-            RHI::ResultCode result = ConvertResult(vkResult);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
             imageAvailableSemaphore->SignalEvent();

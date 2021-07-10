@@ -14,14 +14,18 @@
 #include <Atom/RHI/Factory.h>
 
 #include <AzCore/Console/IConsole.h>
+#include <AzCore/Math/MathUtils.h>
 
 
 void OnVsyncIntervalChanged(uint32_t const& interval)
 {
-    AzFramework::WindowNotificationBus::Broadcast(&AzFramework::WindowNotificationBus::Events::OnVsyncIntervalChanged, interval);
+    AzFramework::WindowNotificationBus::Broadcast(
+        &AzFramework::WindowNotificationBus::Events::OnVsyncIntervalChanged,
+        AZ::GetClamp(interval, 0u, 4u));
 }
 
 // NOTE: On change, broadcasts the new requested vsync interval to all windows.
+// The value of the vsync interval is constrained between 0 and 4
 AZ_CVAR(uint32_t, rpi_vsync_interval, 0, OnVsyncIntervalChanged, AZ::ConsoleFunctorFlags::Null, "Set swapchain vsync interval");
 
 namespace AZ

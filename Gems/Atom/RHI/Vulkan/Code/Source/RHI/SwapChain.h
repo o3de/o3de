@@ -49,6 +49,8 @@ namespace AZ
             const CommandQueue& GetPresentationQueue() const;
 
             void QueueBarrier(const VkPipelineStageFlags src, const VkPipelineStageFlags dst, const VkImageMemoryBarrier& imageBarrier);
+
+            void SetVerticalSyncInterval(uint32_t verticalSyncInterval) override;
             
         private:
             SwapChain() = default;
@@ -70,9 +72,9 @@ namespace AZ
             RHI::ResultCode BuildSurface(const RHI::SwapChainDescriptor& descriptor);
             bool ValidateSurfaceDimensions(const RHI::SwapChainDimensions& dimensions);
             VkSurfaceFormatKHR GetSupportedSurfaceFormat(const RHI::Format format) const;
-            VkPresentModeKHR GetSupportedPresentMode() const;
+            VkPresentModeKHR GetSupportedPresentMode(uint32_t verticalSyncInterval) const;
             VkCompositeAlphaFlagBitsKHR GetSupportedCompositeAlpha() const;
-            RHI::ResultCode BuildNativeSwapChain(const RHI::SwapChainDimensions& dimensions);
+            RHI::ResultCode BuildNativeSwapChain(const RHI::SwapChainDimensions& dimensions, uint32_t verticalSyncInterval);
             RHI::ResultCode AcquireNewImage(uint32_t* acquiredImageIndex);
 
             void InvalidateSurface();
