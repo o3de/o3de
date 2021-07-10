@@ -13,7 +13,6 @@
 
 #include <LmbrCentral/Rendering/MaterialAsset.h>
 
-#include <LyShine/LyShineBus.h>
 #include <LyShine/Bus/UiSystemBus.h>
 #include <LyShine/Bus/UiCanvasManagerBus.h>
 #include <LyShine/Bus/Tools/UiSystemToolsBus.h>
