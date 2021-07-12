@@ -84,7 +84,7 @@ namespace ScriptCanvasEditor
         m_containerWizard->SetActiveScriptCanvasId(scriptCanvasId);
     }
 
-    void VariablePaletteTableView::PopulateVariablePalette(const AZStd::unordered_set< AZ::Uuid >& objectTypes, bool isCustomSelection)
+    void VariablePaletteTableView::PopulateVariablePalette(const AZStd::unordered_set< AZ::Uuid >& allowedObjectTypes, const AZStd::unordered_set<AZ::Uuid>* restrictedValueTypes)
     {
         clearSelection();
         m_model->ClearTypes();
@@ -93,69 +93,68 @@ namespace ScriptCanvasEditor
 
         auto dataRegistry = ScriptCanvas::GetDataRegistry();        
 
-        if (!isCustomSelection)
+       
+        for (const auto& dataTraitsPair : dataRegistry->m_typeIdTraitMap)
         {
-            for (const auto& dataTraitsPair : dataRegistry->m_typeIdTraitMap)
+            // Object type isn't valid on it's own. Need to skip that in order. Passed in types will all be
+            // processed as an object type.
+            if (dataTraitsPair.first == ScriptCanvas::Data::eType::BehaviorContextObject)
             {
-                // Object type isn't valid on it's own. Need to skip that in order. Passed in types will all be
-                // processed as an object type.
-                if (dataTraitsPair.first == ScriptCanvas::Data::eType::BehaviorContextObject)
-                {
-                    continue;
-                }
-
-                AZ::Uuid typeId = dataTraitsPair.second.m_dataTraits.GetAZType();
-
-                if (typeId.IsNull() || typeId == azrtti_typeid<void>())
-                {
-                    continue;
-                }
-
-                m_containerWizard->RegisterType(typeId);
-                variableTypes.insert(typeId);
+                continue;
             }
 
-            AZStd::intrusive_ptr<EditorSettings::ScriptCanvasEditorSettings> settings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC("ScriptCanvasPreviewSettings", 0x1c5a2965), AZ::UserSettings::CT_LOCAL);
+            AZ::Uuid typeId = dataTraitsPair.second.m_dataTraits.GetAZType();
 
-            for (const AZ::Uuid& objectId : objectTypes)
+            if (typeId.IsNull() || typeId == azrtti_typeid<void>()||(restrictedValueTypes&&restrictedValueTypes->find(typeId)==restrictedValueTypes->end()))
             {
-                ScriptCanvas::Data::Type type = dataRegistry->m_typeIdTraitMap[ScriptCanvas::Data::eType::BehaviorContextObject].m_dataTraits.GetSCType(objectId);
-                if (!type.IsValid() || !dataRegistry->m_creatableTypes.contains(type))
-                {
-                    continue;
-                }
-
-                // For now, we need to register all of the objectId's with the container wizard
-                // in order to properly populate the list of valid container configurations.
-                m_containerWizard->RegisterType(objectId);
-
-                // Sanitize containers so we only put in information about the generic container type
-                if (AZ::Utils::IsContainerType(objectId))
-                {
-                    variableTypes.insert(AZ::Utils::GetGenericContainerType(objectId));
-                }
-                else
-                {
-                    variableTypes.insert(objectId);
-                }
+                continue;
             }
 
-            // Since we gated containers to make them genrealized buckets, we now need to go through
-            // and register in the custom defined types for each of the container types that we created. 
-            for (const AZ::Uuid& pinnedTypeId : settings->m_pinnedDataTypes)
-            {
-                if (variableTypes.find(pinnedTypeId) == variableTypes.end())
-                {
-                    variableTypes.insert(pinnedTypeId);
-                }
-            }
-            
-        }
-        else
-        {
-            variableTypes = objectTypes;
+            m_containerWizard->RegisterType(typeId);
+            variableTypes.insert(typeId);
         }
 
+        AZStd::intrusive_ptr<EditorSettings::ScriptCanvasEditorSettings> settings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC("ScriptCanvasPreviewSettings", 0x1c5a2965), AZ::UserSettings::CT_LOCAL);
+
+        for (const AZ::Uuid& objectId : allowedObjectTypes)
+        {
+            ScriptCanvas::Data::Type type = dataRegistry->m_typeIdTraitMap[ScriptCanvas::Data::eType::BehaviorContextObject].m_dataTraits.GetSCType(objectId);
+            if (!type.IsValid() || !dataRegistry->m_creatableTypes.contains(type))
+            {
+                continue;
+            }
+
+            // For now, we need to register all of the objectId's with the container wizard
+            // in order to properly populate the list of valid container configurations.
+            m_containerWizard->RegisterType(objectId);
+
+            // Sanitize containers so we only put in information about the generic container type
+            if (AZ::Utils::IsContainerType(objectId))
+            {
+                variableTypes.insert(AZ::Utils::GetGenericContainerType(objectId));
+            }
+            else
+            {
+                variableTypes.insert(objectId);
+            }
+        }
+
+        // Since we gated containers to make them genrealized buckets, we now need to go through
+        // and register in the custom defined types for each of the container types that we created. 
+        for (const AZ::Uuid& pinnedTypeId : settings->m_pinnedDataTypes)
+        {
+            if (restrictedValueTypes&&restrictedValueTypes->find(pinnedTypeId)==restrictedValueTypes->end())
+            {
+                continue;
+            }
+
+            if (variableTypes.find(pinnedTypeId) == variableTypes.end())
+            {
+                variableTypes.insert(pinnedTypeId);
+            }
+        }
+        
+ 
         m_model->PopulateVariablePalette(variableTypes);
     }
 

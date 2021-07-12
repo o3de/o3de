@@ -69,7 +69,8 @@ namespace ScriptCanvasEditor
         SlotTypeSelectorWidget(const ScriptCanvas::ScriptCanvasId& scriptCanvasId, QWidget* parent = nullptr);
         ~SlotTypeSelectorWidget();
 
-        void PopulateVariablePalette(const AZStd::unordered_set<AZ::Uuid>& objectTypes, bool isCustomSelection=false);
+        void PopulateVariablePalette(
+            const AZStd::unordered_set<AZ::Uuid>& allowedObjectTypes, const AZStd::unordered_set<AZ::Uuid>* restrictedValueTypes = nullptr);
 
         // AzToolsFramework::EditorEvents::Bus
         void OnEscape() override;

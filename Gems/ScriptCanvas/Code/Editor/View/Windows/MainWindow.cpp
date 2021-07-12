@@ -1152,7 +1152,7 @@ namespace ScriptCanvasEditor
             {
                 AZStd::unordered_set<AZ::Uuid> variableTypes = { ToAZType(ScriptCanvas::Data::Type::Number()), ToAZType(ScriptCanvas::Data::Type::Vector3()) };
 
-                m_slotTypeSelector->PopulateVariablePalette(variableTypes,true);
+                m_slotTypeSelector->PopulateVariablePalette({}, &variableTypes);
             }
             else
             {
