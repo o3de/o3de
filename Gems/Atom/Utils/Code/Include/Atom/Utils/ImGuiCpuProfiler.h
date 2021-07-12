@@ -31,28 +31,29 @@ namespace AZ
             AZStd::sys_time_t m_endTick = 0;
         };
 
-        // Stores data about a region that is agreggated from all collected frames
-        // Data collection can be toggled on and off through m_record. 
-        struct RegionStatistics
+        struct TableRow
         {
-            float CalcAverageTimeMs() const;
             void RecordRegion(const AZ::RHI::CachedTimeRegion& region);
+            double GetAverageInvocationsPerFrame() const;
 
-            bool m_draw = false;
-            bool m_record = true;
-            u64 m_invocations = 0;
-            AZStd::sys_time_t m_totalTicks = 0;
+            static u64 ms_frames;
+               
+            AZStd::string m_groupName;
+            AZStd::string m_regionName;
+            AZStd::sys_time_t m_maxTicks;
+            AZStd::sys_time_t m_runningAverageTicks;
+            u64 m_invocations;
         };
 
         //! Visual profiler for Cpu statistics.
         //! It uses ImGui as the library for displaying the Attachments and Heaps.
-        //! It shows all heaps that are being used by the RHI and how the
+        //! It shows all heaps that are being used by the RHI and how the FIXME
         //! resources are allocated in each heap.
         class ImGuiCpuProfiler
             : SystemTickBus::Handler
         {
             // Region Name -> Array of ThreadRegion entries
-            using RegionEntryMap = AZStd::map<AZStd::string, AZStd::vector<ThreadRegionEntry>>;
+            using RegionEntryMap = AZStd::map<AZStd::string, TableRow>;
             // Group Name -> RegionEntryMap
             using GroupRegionMap = AZStd::map<AZStd::string, RegionEntryMap>;
 
@@ -81,11 +82,20 @@ namespace AZ
             // Draw the shared header between the two windows
             void DrawCommonHeader();
 
+            // Draw the region statstics table in the order specified by the pointers in m_tableData
+            void DrawTable();
+
+            // Sort the table by a given column, rearranges the pointers in m_tableData
+            void SortTable(ImGuiTableSortSpecs* sortSpecs);
+
             // ImGui filter used to filter TimedRegions.
             ImGuiTextFilter m_timedRegionFilter;
 
-            // Saves statistical view data organized by group name -> region name -> regions
+            // Saves statistical view data organized by group name -> region name -> row data
             GroupRegionMap m_groupRegionMap;
+
+            // Saves pointers to objects in m_groupRegionMap, order reflects table ordering
+            AZStd::vector<TableRow*> m_tableData;
 
             // Pause cpu profiling. The profiler will show the statistics of the last frame before pause
             bool m_paused = false;
@@ -119,9 +129,6 @@ namespace AZ
 
             // Draw the "Thread XXXXX" label onto the viewport
             void DrawThreadLabel(u64 baseRow, AZStd::thread_id threadId);
-
-            // Draws all active function statistics windows
-            void DrawRegionStatistics();
 
             // Draw the vertical lines separating frames in the timeline
             void DrawFrameBoundaries();
@@ -164,12 +171,8 @@ namespace AZ
             // Tracks the frame boundaries
             AZStd::vector<AZStd::sys_time_t> m_frameEndTicks = { INT64_MIN };
 
-            // Main data structure for storing function statistics to be shown in the popup windows.
-            // Uses the group name + region name as a key - just the region name does not suffice since there are collisions (ex. GarbageCollect)
-            AZStd::unordered_map<AZStd::string, RegionStatistics> m_regionStatisticsMap;
-
             // Filter for highlighting regions on the visualizer
-            ImGuiTextFilter m_regionHighlightFilter;
+            ImGuiTextFilter m_visualizerHighlightFilter;
         };
     } // namespace Render
 } // namespace AZ
