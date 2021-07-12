@@ -293,7 +293,7 @@ float3 SimplifiedHairLighting(float3 vTangent, float3 vPositionWS, float3 vViewD
 float3 CalculateLighting( 
     float4 screenCoords,    // XY - screen coords 0..max pix res, Z - depth 0..1
     float3 vPositionWS, float3 vViewDirWS, float3 vTangent, 
-    in HairShadeParams material )
+    float thickness, in HairShadeParams material )
 {    
     //-------- Surface init --------
     Surface surface;
@@ -305,6 +305,7 @@ float3 CalculateLighting(
     surface.normal = float3(0, 0, 0);   // Will fail lights that did not initialize properly. 
     surface.roughnessLinear = material.m_Ex1;// 0.50f;
     surface.cuticleTilt = material.m_Ks1;// 0.08715;
+    surface.thickness = thickness;
     surface.CalculateRoughnessA();
     surface.SetAlbedoAndSpecularF0( material.m_color, specularF0Factor);
 
@@ -362,7 +363,7 @@ float3 CalculateLighting(
     return lightingData.diffuseLighting + lightingData.specularLighting;// + lightingData.translucentBackLighting;
 }
 
-float3 TressFXShading(float2 pixelCoord, float depth, float3 vTangentCoverage, float3 baseColor, int shaderParamIndex)
+float3 TressFXShading(float2 pixelCoord, float depth, float3 vTangentCoverage, float3 baseColor, float thickness, int shaderParamIndex)
 {
     float3 vNDC;    // normalized device / screen coordinates: [-1..1, -1..1, 0..1]
     float3 vPositionWS = ScreenPosToWorldPos(PassSrg::m_linearDepth, pixelCoord, depth, vNDC);
@@ -391,7 +392,7 @@ float3 TressFXShading(float2 pixelCoord, float depth, float3 vTangentCoverage, f
     params.m_Ex2 = HairParams[shaderParamIndex].m_hairEx2;
     //---------------------------------------------------
 
-    return CalculateLighting(screenCoords, vPositionWS, vViewDirWS, vTangent, params);
+    return CalculateLighting(screenCoords, vPositionWS, vViewDirWS, vTangent, thickness, params);
     return SimplifiedHairLighting(vTangent, vPositionWS, vViewDirWS, params, vNDC);    
     return AccumulateHairLight(vTangent, vPositionWS, vViewDirWS, params, vNDC);
 }

@@ -32,6 +32,7 @@ class Surface
     // ------- Hair Surface Data -------
     float3 tangent;
     float3 cuticleTilt;
+    float thickness;
 
     //! Applies specular anti-aliasing to roughnessA2 
     void ApplySpecularAA();

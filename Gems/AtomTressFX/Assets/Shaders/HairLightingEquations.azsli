@@ -206,20 +206,31 @@ float3 HairBSDF(Surface surface, LightingData lightingData, const float3 dirToLi
 //    if(MaterialSrg::m_applyR)
 //    if (0)
     {   // OK
+        // The following is a cheap method to get occluded reflection by accoounting 
+        // for the thickness if the reflection of light is going through the hair.
+        // Notice that this is the R lobe and not the TT lobe.
+//        float lightToEye = smoothstep(0.0, 0.6, -dot(Wi, Wr));
+        float lightToEye = saturate(-dot(Wi, Wr));
+        float selfOcclude = lightToEye * surface.thickness;
+        float lightTransferRatio = 1.0f - selfOcclude;
+        lightTransferRatio *= lightTransferRatio;
+
         float lighting_R = M_R(surface, Lh, sinLiPlusSinLr);
-//        lighting_R = dot(surface.normal, dirToLight);
         lighting_R *= N_R(surface, cos_O2, Wi, Wr, f0);
+        lighting_R *= lightTransferRatio;
         lighting += float3(lighting_R, lighting_R, lighting_R);
     }
 
-    // TT Path - ray refracted into the hair, then refracted again through the 
-    // back of the heir away from the viewer.  The main contribution here would 
-    // be at thin hair areas from lights behind the hair that are not concealed.
+    // TT Path - ray passes through the hair.
+    // The ray from the eye is refracted into the hair, then refracted again through the 
+    // back of the hair.  The main contribution here would for thin hair areas from lights 
+    // behind the hair that are not concealed.
 //    if(MaterialSrg::m_applyTT)
 //    if (0)
     {   // As expected - minimal effect from the azimutal
         float3 lighting_TT = M_TT(surface, Lh, sinLiPlusSinLr);
         lighting_TT *= N_TT(surface, n2, cos_O, cos_O2, cos_Ld, f0);
+        lighting_TT *= (1.0f - surface.thickness);
         lighting += lighting_TT;
     }
 
@@ -229,8 +240,6 @@ float3 HairBSDF(Surface surface, LightingData lightingData, const float3 dirToLi
 //    if (0)
     {
         float3 lighting_TRT = M_TRT(surface, Lh, sinLiPlusSinLr);
-//        surface.albedo = float3(0, 1, 0);
-//        float3 lighting_TRT = float3(1, 1, 1);
         lighting_TRT *= N_TRT(surface, cos_O, cos_Ld, f0);
         lighting += lighting_TRT;
     }

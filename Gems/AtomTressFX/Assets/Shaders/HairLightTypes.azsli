@@ -524,7 +524,7 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
 //            backShadowRatio = DirectionalLightShadow::GetThickness(shadowIndex, lightingData.shadowCoords);
 //        }
     }
-    
+
     // Add the lighting contribution for each directional light
     for (int index = 0; index < SceneSrg::m_directionalLightCount; index++)
     {
@@ -544,7 +544,7 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
         float currentBackShadowRatio = 1.0f;
 //        if (o_enableShadows)
         {
-            currentLitRatio = (index == shadowIndex) ? litRatio : 1.;
+            currentLitRatio = (index == shadowIndex) ? litRatio : 1.0f;
 
             currentBackShadowRatio = 1.0 - currentLitRatio;
             if (o_transmission_mode == TransmissionMode::ThickObject)

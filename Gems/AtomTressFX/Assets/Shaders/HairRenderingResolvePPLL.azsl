@@ -205,13 +205,15 @@ float4 GatherLinkedList(float2 vfScreenAddress, float2 screenUV, inout float out
         float alpha = vData.w;
 
         uint shadeParamIndex;	// So we know what settings to shade with
-        float3 vColor = UnpackUintIntoFloat3Byte(color, shadeParamIndex);
+        float3 fragmentColor = UnpackUintIntoFloat3Byte(color, shadeParamIndex);
         
-        // Shade the bottom hair layers (cheap shading, just uses scalp base color)
-        // Just blend in the color for cheap underhairs
-        fcolor.xyz = fcolor.xyz * (1.f - alpha) + (vColor * alpha) * alpha;
-//        fcolor.w *= (1.f - alpha);                // Blend one and inverse alpha
-        fcolor.w = saturate(fcolor.w + alpha);    // Blend alpha and inverse alpha
+        // Cheap shading layers - the bottom hair layers use background and scalp base color
+        // No HW alpha blending - the first layer blends the image buffer and 
+        // the rest of the hairs are blended on top. HOwever, this might be used 
+        // as the blocking factor for the TT lobe in the Marschner lighting model 
+        // to gradually block light passing through the hair strands from the back.
+        fcolor.xyz = fcolor.xyz * (1.f - alpha) + fragmentColor * alpha;
+        fcolor.w += alpha * (1.0f - fcolor.w);
 
         pointer = NODE_NEXT(pointer);
     }
@@ -249,16 +251,19 @@ float4 GatherLinkedList(float2 vfScreenAddress, float2 screenUV, inout float out
         float fDepth = asfloat(nodeDepth);
         float4 vData = UnpackUintIntoFloat4(data);
         float3 vTangent = vData.xyz;
-        float alpha = vData.w;
+        float alpha = vData.w;  // Alpha will be used to determine light pass
         uint shadeParamIndex;	// So we know what settings to shade with
 
         float3 vColor = UnpackUintIntoFloat3Byte(color, shadeParamIndex);
-        float3 fragmentColor = TressFXShading(vfScreenAddress, fDepth, vTangent, vColor, shadeParamIndex);
+        float3 fragmentColor = TressFXShading(vfScreenAddress, fDepth, vTangent, vColor, fcolor.w, shadeParamIndex);
 
         // Blend in the fragment color
-        fcolor.xyz = fcolor.xyz * (1.f - alpha) + (fragmentColor * alpha) * alpha;
-//        fcolor.w *= (1.f - alpha);
-        fcolor.w = saturate(fcolor.w + alpha);    // Blend alpha and inverse alpha
+        fcolor.xyz = fcolor.xyz * (1.f - alpha) + fragmentColor * alpha;
+        // No HW alpha blending - the first layer blends the image buffer and 
+        // the rest of the hairs are blended on top. HOwever, this might be used 
+        // as the blocking factor for the TT lobe in the Marschner lighting model 
+        // to gradually block light passing through the hair strands from the back.
+        fcolor.w += alpha * (1.0f - fcolor.w);
 
         //====== Bring back only the closest fragment color - debug purpose ======
 //        fcolor.xyz = fragmentColor;
@@ -267,7 +272,7 @@ float4 GatherLinkedList(float2 vfScreenAddress, float2 screenUV, inout float out
 
     outDepth = minDepth;    // the last ine standing is the closest
 
-//    return vTmpColor;
+//    return float4(fcolor.w, fcolor.w, fcolor.w, 1.0);
     return fcolor;
 }
 
@@ -367,11 +372,11 @@ float4 CalculateFrontFregmentShading(
         float fDepth = asfloat(nodeDepth);
         float4 vData = UnpackUintIntoFloat4(data);
         float3 vTangent = vData.xyz;
-        float alpha = vData.w;
+        float alpha = vData.w;  // Alpha will be used as thickness of hair
         uint shadeParamIndex;	// So we know what settings to shade with
         float3 vColor = UnpackUintIntoFloat3Byte(color, shadeParamIndex);
 
-        float3 fragmentColor = TressFXShading(vfScreenAddress, fDepth, vTangent, vColor, shadeParamIndex);
+        float3 fragmentColor = TressFXShading(vfScreenAddress, fDepth, vTangent, vColor, finalColor.w, shadeParamIndex);
 
         // Blend in the fragment color
         finalColor.xyz = finalColor.xyz * (1.f - alpha) + (fragmentColor * alpha) * alpha;
@@ -460,7 +465,7 @@ float4 GetClosestFragment(float2 vfScreenAddress, float2 screenUV, inout float3 
     float alpha = 1.0;
     uint shadeParamIndex;	// the material index
     float3 vColor = UnpackUintIntoFloat3Byte(curColor, shadeParamIndex);
-    float3 fragmentColor = TressFXShading(vfScreenAddress, curDepth, vTangent, vColor, shadeParamIndex);
+    float3 fragmentColor = TressFXShading(vfScreenAddress, curDepth, vTangent, vColor, fcolor.w, shadeParamIndex);
 
     // Blend in the fragment color
     fcolor.xyz = fcolor.xyz * (1.f - alpha) + (fragmentColor * alpha);
