@@ -71,10 +71,7 @@ namespace JsonSerializationTests
             const AZ::JsonApplyPatchSettings& settings = AZ::JsonApplyPatchSettings{})
         {
             CheckApplyPatchOutcome(target, patch, outcome, processing, settings);
-            rapidjson::Document expectedPatchedDocument;
-            expectedPatchedDocument.Parse(expectedPatchedResult);
-            ASSERT_FALSE(expectedPatchedDocument.HasParseError());
-            EXPECT_EQ(AZ::JsonSerialization::Compare(expectedPatchedDocument, *m_jsonDocument), AZ::JsonSerializerCompareResult::Equal);
+            Expect_DocStrEq(expectedPatchedResult);
         }
 
         void CheckCreatePatch_Core(const char* source, AZStd::string_view patch, const char* target,
