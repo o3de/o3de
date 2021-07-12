@@ -50,7 +50,62 @@ namespace PrefabDependencyViewer
         m_sceneId = CreateNewGraph();
         int widestLevelSize = 0;
         AZStd::vector nodeCountAtEachLevel = graph.countNodesAtEachLevel(widestLevelSize);
-        CreateNodeUi(AzToolsFramework::Prefab::InvalidTemplateId);
+        DisplayNodesByLevel(graph, nodeCountAtEachLevel, widestLevelSize);
+        // CreateNodeUi(AzToolsFramework::Prefab::InvalidTemplateId);
+    }
+
+    void PrefabDependencyViewerWidget::DisplayNodesByLevel(const Utils::DirectedGraph& graph, [[maybe_unused]] AZStd::vector<int> numNodesAtEachLevel, [[maybe_unused]] int widestLevelSize)
+    {
+        AZStd::queue<Utils::Node*> queue;
+        queue.push(graph.GetRoot());
+
+        int stepDown = 100;
+        int stepRight = 250;
+        double currDepth = 10;
+
+        for (int level = 0; level < numNodesAtEachLevel.size(); ++level)
+        {
+            double currRight = (widestLevelSize - 1.0 * (numNodesAtEachLevel[level] - 1) / 2) * stepRight;
+            for (int nodeNum = 0; nodeNum < numNodesAtEachLevel[level]; ++nodeNum)
+            {
+                Utils::Node* currNode = queue.front();
+                queue.pop();
+
+                AZ::Vector2 pos(currRight, currDepth);
+
+                DisplayNode(currNode, pos);
+
+                Utils::NodeSet currChildren = graph.GetChildren(currNode);
+                for (Utils::Node* currChild : currChildren)
+                {
+                    queue.push(currChild);
+                }
+                currRight += stepRight;
+            }
+
+            currDepth += stepDown;
+        }
+
+        // Queue should be empty once done with all levels.
+        AZ_Assert(queue.empty(), "Queue should be empty.");
+    }
+
+    void PrefabDependencyViewerWidget::DisplayNode(Utils::Node* node, AZ::Vector2 pos)
+    {
+        const char* nodeStyle = "";
+        const AZ::Entity* graphCanvasNode = nullptr;
+        ;
+
+        GraphCanvas::GraphCanvasRequestBus::BroadcastResult(
+            graphCanvasNode, &GraphCanvas::GraphCanvasRequests::CreateGeneralNodeAndActivate, nodeStyle);
+
+        AZ_Assert(graphCanvasNode, "Unable to create GraphCanvas Node");
+
+        AZ::EntityId nodeUiId = graphCanvasNode->GetId();
+        GraphCanvas::NodeTitleRequestBus::Event(nodeUiId, &GraphCanvas::NodeTitleRequests::SetTitle, node->GetMetaDataPtr()->GetSource());
+
+        GraphCanvas::SceneRequestBus::Event(m_sceneId, &GraphCanvas::SceneRequests::AddNode, nodeUiId, pos, false);
+        GraphCanvas::SceneMemberUIRequestBus::Event(nodeUiId, &GraphCanvas::SceneMemberUIRequests::SetSelected, true);
     }
 
     void PrefabDependencyViewerWidget::CreateNodeUi([[maybe_unused]]const AzToolsFramework::Prefab::TemplateId& tid)

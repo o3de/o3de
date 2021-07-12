@@ -111,6 +111,24 @@ namespace PrefabDependencyViewer
                 }
             }
 
+            Node* GetRoot() const
+            {
+                return m_root;
+            }
+
+            NodeSet GetChildren(Node* parent) const
+            {
+                AZ_Assert(parent, "Nullptr can't have children");
+
+                auto iter = m_children.find(parent);
+                if (iter != m_children.end())
+                {
+                    return iter->second;
+                }
+
+                return NodeSet();
+            }
+
             ~DirectedGraph()
             {
                 auto delete_node = [](Node* node) { delete node; };

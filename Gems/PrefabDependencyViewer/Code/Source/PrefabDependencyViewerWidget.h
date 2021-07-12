@@ -38,6 +38,9 @@ namespace PrefabDependencyViewer
         ////////////////// PrefabDependencyViewerWidget overrides ////////////////////
         virtual void DisplayTree(const Utils::DirectedGraph& graph) override;
 
+        void DisplayNodesByLevel(const Utils::DirectedGraph& graph, AZStd::vector<int> numNodesAtEachLevel, int widestLevel);
+
+        void DisplayNode(Utils::Node* node, AZ::Vector2 pos);
         void CreateNodeUi(const AzToolsFramework::Prefab::TemplateId& tid);
 
     protected:
