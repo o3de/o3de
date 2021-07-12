@@ -668,7 +668,6 @@ TEST_F(PlatformConfigurationUnitTests, PlatformConfigFile_IsPresent_Found)
 
 TEST_F(PlatformConfigurationUnitTests, Test_MetaFileTypes_AssetImporterExtensions)
 {
-    using namespace AzToolsFramework::AssetSystem;
     using namespace AssetProcessor;
 
     const auto testExeFolder = AZ::IO::FileIOBase::GetInstance()->ResolvePath(TestAppRoot);
