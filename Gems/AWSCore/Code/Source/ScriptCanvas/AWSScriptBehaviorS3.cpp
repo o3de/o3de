@@ -6,6 +6,7 @@
  */
 
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/SystemFile.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -171,12 +172,16 @@ namespace AWSCore
                 AWSScriptBehaviorS3NotificationBus::Broadcast(notificationFunc, OutputFileIsEmptyErrorMessage);
                 return false;
             }
-            if (!AzFramework::StringFunc::Path::HasDrive(outFile.c_str()))
+
+            char resolvedPath[AZ_MAX_PATH_LEN] = { 0 };
+            if (!AZ::IO::FileIOBase::GetInstance()->ResolvePath(outFile.c_str(), resolvedPath, AZ_MAX_PATH_LEN))
             {
-                AZ_Warning(AWSScriptBehaviorS3Name, false, OutputFileMissFullPathErrorMessage);
-                AWSScriptBehaviorS3NotificationBus::Broadcast(notificationFunc, OutputFileMissFullPathErrorMessage);
+                AZ_Warning(AWSScriptBehaviorS3Name, false, OutputFileFailedToResolveErrorMessage);
+                AWSScriptBehaviorS3NotificationBus::Broadcast(notificationFunc, OutputFileFailedToResolveErrorMessage);
                 return false;
             }
+            outFile = resolvedPath;
+
             if (AZ::IO::FileIOBase::GetInstance()->IsDirectory(outFile.c_str()))
             {
                 AZ_Warning(AWSScriptBehaviorS3Name, false, OutputFileIsDirectoryErrorMessage);
