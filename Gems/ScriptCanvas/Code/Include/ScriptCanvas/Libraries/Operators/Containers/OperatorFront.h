@@ -35,10 +35,7 @@ namespace ScriptCanvas
 
                 void ConfigureContracts(SourceType sourceType, AZStd::vector<ContractDescriptor>& contractDescs) override;
                 void OnSourceTypeChanged() override;
-                void OnInputSignal(const SlotId& slotId) override;
-                void InvokeOperator();
             };
-
         }
     }
 }

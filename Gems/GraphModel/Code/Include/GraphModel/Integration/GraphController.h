@@ -147,8 +147,6 @@ namespace GraphModelIntegration
         bool CreateConnection(const AZ::EntityId& connectionUiId, const GraphCanvas::Endpoint& sourcePoint, const GraphCanvas::Endpoint& targetPoint) override;
 
         bool IsValidConnection(const GraphCanvas::Endpoint& sourcePoint, const GraphCanvas::Endpoint& targetPoint) const override;
-        bool IsValidVariableAssignment(const AZ::EntityId& variableId, const GraphCanvas::Endpoint& targetPoint) const override;
-
 
         ////////////////////////////////////////////////////////////////////////////////////
         // GraphCanvas::GraphModelRequestBus, undo

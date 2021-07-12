@@ -95,8 +95,8 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceMouse::InputDeviceMouse()
-        : InputDevice(Id)
+    InputDeviceMouse::InputDeviceMouse(AzFramework::InputDeviceId id)
+        : InputDevice(id)
         , m_allChannelsById()
         , m_buttonChannelsById()
         , m_movementChannelsById()

@@ -22,7 +22,6 @@
 #include <Editor/Assets/ScriptCanvasMemoryAsset.h>
 
 #include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
-#include <ScriptCanvas/Asset/Functions/ScriptCanvasFunctionAsset.h>
 
 #include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
 #include <ScriptCanvas/Core/ScriptCanvasBus.h>

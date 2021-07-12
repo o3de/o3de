@@ -19,9 +19,9 @@ namespace ScriptCanvas
 #define DIVIDABLE_TYPES { Data::Type::Number(), Data::Type::Vector2(), Data::Type::Vector3(), Data::Type::Vector4() }
 
             //! Deprecated: see MethodOverloaded for "Divide by Number (/)"
-            class OperatorDivideByNumber 
+            class OperatorDivideByNumber
                 : public Node
-            {                
+            {
             public:
 
                 SCRIPTCANVAS_NODE(OperatorDivideByNumber);
@@ -42,7 +42,6 @@ namespace ScriptCanvas
 
                 // Nodes...
                 void OnInit() override;
-                void OnInputSignal(const SlotId& slotId) override;
                 ////
 
             protected:

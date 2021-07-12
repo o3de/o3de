@@ -30,8 +30,6 @@
 #include "Editor/Include/ScriptCanvas/GraphCanvas/NodeDescriptorBus.h"
 
 #include <Core/Attributes.h>
-#include <Libraries/Core/Assign.h>
-#include <Libraries/Core/BehaviorContextObjectNode.h>
 #include <Libraries/Core/Method.h>
 
 #include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>

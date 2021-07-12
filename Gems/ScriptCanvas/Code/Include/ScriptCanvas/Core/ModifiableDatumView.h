@@ -29,8 +29,7 @@ namespace ScriptCanvas
 
         friend class Node;
         friend class GraphVariable;
-        friend class PureData;
-
+        
     public:
         AZ_CLASS_ALLOCATOR(ModifiableDatumView, AZ::SystemAllocator, 0);
 

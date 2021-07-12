@@ -86,6 +86,8 @@ namespace ImGui
         virtual void SetImGuiRenderResolution(const ImVec2& res) = 0;
         virtual void OverrideRenderWindowSize(uint32_t width, uint32_t height) = 0;
         virtual void RestoreRenderWindowSizeToDefault() = 0;
+        virtual void SetDpiScalingFactor(float dpiScalingFactor) = 0;
+        virtual float GetDpiScalingFactor() const = 0;
         virtual void Render() = 0;
     };
 

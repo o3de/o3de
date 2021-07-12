@@ -21,7 +21,7 @@ namespace ScriptCanvas
     {
         namespace Time
         {
-            class TimerNodeable 
+            class TimerNodeable
                 : public Nodeables::Time::BaseTimer
             {
                 SCRIPTCANVAS_NODE(TimerNodeable);

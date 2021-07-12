@@ -17,7 +17,7 @@ import editor_python_test_tools.hydra_test_utils as hydra
 
 logger = logging.getLogger(__name__)
 DEFAULT_SUBFOLDER_PATH = 'user/PythonTests/Automated/Screenshots'
-EDITOR_TIMEOUT = 300
+EDITOR_TIMEOUT = 600
 TEST_DIRECTORY = os.path.join(os.path.dirname(__file__), "atom_hydra_scripts")
 
 

@@ -129,7 +129,7 @@ namespace ScriptCanvas
                 return AZ::TickBus::Handler::BusIsConnected()
                     || AZ::SystemTickBus::Handler::BusIsConnected();
             }
-                        
+
         protected:
             size_t GetRequiredOutCount() const override
             {
