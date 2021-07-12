@@ -156,6 +156,12 @@ def get_mount_name(repository_name, project, pipeline, branch, platform, build_t
     return mount_name
 
 
+def get_pipeline_and_branch(pipeline, branch):
+    pipeline_and_branch = f"{pipeline}_{branch}"
+    pipeline_and_branch = pipeline_and_branch.replace('/', '_').replace('\\', '_')
+    return pipeline_and_branch
+
+
 def get_region_name():
     session = boto3.session.Session()
     region = session.region_name
@@ -231,6 +237,7 @@ def find_snapshot_id(ec2_client, repository_name, project, pipeline, platform, b
 def create_volume(ec2_client, availability_zone, repository_name, project, pipeline, branch, platform, build_type,
                   disk_size, disk_type):
     mount_name = get_mount_name(repository_name, project, pipeline, branch, platform, build_type)
+    pipeline_and_branch = get_pipeline_and_branch(pipeline, branch)
     parameters = dict(
         AvailabilityZone=availability_zone,
         VolumeType=disk_type,
@@ -243,7 +250,10 @@ def create_volume(ec2_client, availability_zone, repository_name, project, pipel
                 {'Key': 'Pipeline', 'Value': pipeline},
                 {'Key': 'BranchName', 'Value': branch},
                 {'Key': 'Platform', 'Value': platform},
-                {'Key': 'BuildType', 'Value': build_type}
+                {'Key': 'BuildType', 'Value': build_type},
+                # Used so the snapshoting easily identifies which volumes to snapshot
+                {'Key': 'PipelineAndBranch', 'Value': pipeline_and_branch},
+
             ]
         }]
     )
@@ -304,9 +314,6 @@ def mount_volume_to_device(created):
         time.sleep(5)
 
         print_drives()
-
-        # drive_letter = next(item for item in drives_after if item not in drives_before)
-        drive_letter = MOUNT_PATH
 
         os.unlink(f.name)
 
