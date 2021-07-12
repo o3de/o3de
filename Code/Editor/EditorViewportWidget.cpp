@@ -2983,7 +2983,7 @@ void EditorViewportWidget::RestoreViewportAfterGameMode()
     QVariant restoreOnExitGameModePopupDisabledRegValue = settings.value(restoreOnExitGameModePopupDisabledRegKey);
 
     // Has the user previously disabled being asked about restoring the camera on exiting game mode?
-    //if (restoreOnExitGameModePopupDisabledRegValue.isNull())
+    if (restoreOnExitGameModePopupDisabledRegValue.isNull())
     {
         // No, ask them now
         QMessageBox messageBox(QMessageBox::Question, "O3DE", text, QMessageBox::StandardButtons(QMessageBox::No | QMessageBox::Yes), this);
