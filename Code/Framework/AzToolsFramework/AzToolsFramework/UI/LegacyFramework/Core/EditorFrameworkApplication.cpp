@@ -151,6 +151,12 @@ namespace LegacyFramework
         specializations.Append("tools");
     }
 
+    void Application::CreateReflectionManager()
+    {
+        AZ::ComponentApplication::CreateReflectionManager();
+        GetSerializeContext()->CreateEditContext();
+    }
+
     int Application::Run(const ApplicationDesc& desc)
     {
         if (!AZ::AllocatorInstance<AZ::OSAllocator>::IsReady())

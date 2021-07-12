@@ -55,68 +55,6 @@ namespace ScriptCanvas
                 }
             }
 
-            void OperatorArithmetic::OnInputSignal([[maybe_unused]] const SlotId& slotId)
-            {
-                AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::ScriptCanvas);
-
-                if (!m_scrapedInputs)
-                    {
-                    m_scrapedInputs = true;
-
-                        AZStd::vector< Slot* > groupedSlots = GetSlotsWithDynamicGroup(GetArithmeticDynamicTypeGroup());
-
-                    SlotId fallbackId;
-
-                        for (Slot* groupedSlot : groupedSlots)
-                        {
-                            if (groupedSlot->IsInput())
-                            {
-                                SlotId groupedSlotId = groupedSlot->GetId();
-
-                            if (!fallbackId.IsValid())
-                                {
-                                fallbackId = groupedSlotId;
-                            }
-
-                            if ((groupedSlot->IsVariableReference() && groupedSlot->GetVariableReference().IsValid()) || IsConnected(groupedSlotId) || IsValidArithmeticSlot(groupedSlotId))
-                            {
-                                const Datum* inputDatum = groupedSlot->FindDatum();
-
-                                if (inputDatum && inputDatum->GetType().IsValid() && inputDatum->GetType().GetType() != Data::eType::BehaviorContextObject)
-                                {
-                                    m_applicableInputs.emplace_back(inputDatum);
-                                }
-                                }
-                            }
-                            else if (groupedSlot->IsOutput())
-                            {
-                            m_resultSlot = groupedSlot;
-                            }
-
-                        m_outSlot = GetSlotByName("Out")->GetId();
-                    }
-
-                    // If none of our inputs are valid input slots. Just use the first one we found to fall into a default use case.
-                    if (m_applicableInputs.empty())
-                    {
-                        const Datum* inputDatum = FindDatum(fallbackId);
-
-                        if (inputDatum && inputDatum->GetType().IsValid())
-                        {
-                            m_applicableInputs.emplace_back(inputDatum);
-                        }
-                            }
-
-                    if (!m_applicableInputs.empty())
-                    {
-                        const Datum* datum = m_applicableInputs.front();
-                        m_result.SetType(datum->GetType());
-                        }
-                    }
-
-                    InvokeOperator();
-                }
-
             void OperatorArithmetic::OnConfigured()
             {
                 auto slotList = GetSlotsWithDynamicGroup(GetArithmeticDynamicTypeGroup());
@@ -135,7 +73,7 @@ namespace ScriptCanvas
             {
                 // Version conversion for previous elements                
                 for (Slot& currentSlot : ModSlots())
-                {                    
+                {
                     if (currentSlot.IsData())
                     {
                         auto& contracts = currentSlot.GetContracts();
@@ -151,7 +89,7 @@ namespace ScriptCanvas
                                     contract->SetSupportedOperator(OperatorFunction());
                                     contract->SetSupportedNativeTypes(GetSupportedNativeDataTypes());
                                 }
-                            }                            
+                            }
                         }
 
                         if (!currentSlot.IsDynamicSlot())
@@ -172,17 +110,17 @@ namespace ScriptCanvas
             void OperatorArithmetic::OnActivate()
             {
                 if (m_scrapedInputs)
-            {
+                {
                     m_scrapedInputs = false;
                     m_applicableInputs.clear();
 
-                    m_result.ReconfigureDatumTo(AZStd::move(ScriptCanvas::Datum()));                    
+                    m_result.ReconfigureDatumTo(AZStd::move(ScriptCanvas::Datum()));
                 }
             }
 
             void OperatorArithmetic::ConfigureVisualExtensions()
             {
-            {
+                {
                     VisualExtensionSlotConfiguration visualExtensions(VisualExtensionSlotConfiguration::VisualExtensionType::ExtenderSlot);
 
                     visualExtensions.m_name = "Add Operand";
@@ -212,12 +150,12 @@ namespace ScriptCanvas
 
             bool OperatorArithmetic::CanDeleteSlot(const SlotId& slotId) const
             {
-                Slot* slot = GetSlot(slotId);            
+                Slot* slot = GetSlot(slotId);
 
                 if (slot && slot->GetDynamicGroup() == GetArithmeticDynamicTypeGroup())
                 {
                     if (!slot->IsOutput())
-                    {                        
+                    {
                         auto slotList = GetSlotsWithDynamicGroup(GetArithmeticDynamicTypeGroup());
 
                         int inputCount = 0;
@@ -247,14 +185,14 @@ namespace ScriptCanvas
                 }
                 else if (operands.size() == 1)
                 {
-                const Datum* operand = operands.front();
+                    const Datum* operand = operands.front();
                     result = (*operand);
                     return;
                 }
 
                 auto type = result.GetType();
-                    Operator(type.GetType(), operands, result);
-                }
+                Operator(type.GetType(), operands, result);
+            }
 
             void OperatorArithmetic::Operator(Data::eType type, const ArithmeticOperands& operands, Datum& result)
             {
@@ -267,20 +205,6 @@ namespace ScriptCanvas
             {
                 AZ_UNUSED(slotId);
                 AZ_UNUSED(dataType);
-            }
-
-            void OperatorArithmetic::InvokeOperator()
-            {
-                if (!m_result.GetType().IsValid())
-                {
-                    return;
-                }
-
-                Evaluate(m_applicableInputs, m_result);
-
-                PushOutput(m_result, (*m_resultSlot));
-
-                SignalOutput(m_outSlot);
             }
 
             SlotId OperatorArithmetic::CreateSlot(AZStd::string_view name, AZStd::string_view toolTip, ConnectionType connectionType)

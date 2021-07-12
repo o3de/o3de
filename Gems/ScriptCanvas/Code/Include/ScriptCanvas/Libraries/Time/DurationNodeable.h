@@ -21,7 +21,7 @@ namespace ScriptCanvas
     {
         namespace Time
         {
-            class DurationNodeable 
+            class DurationNodeable
                 : public ScriptCanvas::Nodeable
                 , public AZ::TickBus::Handler
             {

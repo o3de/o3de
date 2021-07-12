@@ -6,4 +6,5 @@
 #
 
 set(FILES
+    RHI.Builders/BuilderModule_Linux.cpp
 )

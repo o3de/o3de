@@ -10,7 +10,6 @@
 #include <AzCore/std/typetraits/remove_cv.h>
 #include <AzCore/std/typetraits/function_traits.h>
 #include <ScriptCanvas/Core/Node.h>
-#include <ScriptCanvas/Core/PureData.h>
 #include <ScriptCanvas/Core/Datum.h>
 
 namespace ScriptCanvas
@@ -32,8 +31,6 @@ namespace ScriptCanvas
             static const char* k_onTrue;
             static const char* k_onFalse;
 
-            
-
         protected:
             ConstSlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot&, CombinedSlotType targetSlotType, const Slot*) const override
             {
@@ -45,15 +42,7 @@ namespace ScriptCanvas
 
             void ConfigureSlots() override;
 
-            // must be overridden with the binary operations
-            virtual Datum Evaluate(const Datum& value);
-
-            // Triggered by the execution signal
-            void OnInputSignal(const SlotId& slot) override;
-
             SlotId GetOutputSlotId() const;
-
-            
         };
 
         class UnaryExpression : public UnaryOperator
@@ -67,11 +56,7 @@ namespace ScriptCanvas
 
             void ConfigureSlots() override;
 
-            void OnInputSignal(const SlotId& slot) override;
-
             virtual void InitializeUnaryExpression();
-
-            
         };
     }
 }

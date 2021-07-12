@@ -201,10 +201,11 @@ namespace Multiplayer
 
     void ServerToClientReplicationWindow::OnEntityActivated(AZ::Entity* entity)
     {
-        ConstNetworkEntityHandle entityHandle(entity, GetNetworkEntityTracker());
-        NetBindComponent* netBindComponent = entityHandle.GetNetBindComponent();
+        NetBindComponent* netBindComponent = entity->FindComponent<NetBindComponent>();
         if (netBindComponent != nullptr)
         {
+            ConstNetworkEntityHandle entityHandle(netBindComponent, GetNetworkEntityTracker());
+
             if (netBindComponent->HasController())
             {
                 if (IFilterEntityManager* filter = GetMultiplayer()->GetFilterEntityManager())
@@ -233,10 +234,10 @@ namespace Multiplayer
 
     void ServerToClientReplicationWindow::OnEntityDeactivated(AZ::Entity* entity)
     {
-        ConstNetworkEntityHandle entityHandle(entity, GetNetworkEntityTracker());
-        NetBindComponent* netBindComponent = entityHandle.GetNetBindComponent();
+        NetBindComponent* netBindComponent = entity->FindComponent<NetBindComponent>();
         if (netBindComponent != nullptr)
         {
+            ConstNetworkEntityHandle entityHandle(netBindComponent, GetNetworkEntityTracker());
             m_replicationSet.erase(entityHandle);
         }
     }
