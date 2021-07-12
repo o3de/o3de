@@ -529,6 +529,12 @@ function(ly_force_download_package package_name)
     execute_process(COMMAND ${CMAKE_COMMAND} -E tar xf ${temp_download_target} 
          WORKING_DIRECTORY ${final_folder} COMMAND_ECHO STDOUT OUTPUT_VARIABLE unpack_result)
 
+    # For the runtime dependencies cases, we need the timestamps of the files coming from 3rdParty to be newer than the ones
+    # from the output so the new versions get copied over. The untar from the previous step preserves timestamps so they
+    # can produce binaries with older timestamps to the ones that are in the build output.
+    file(GLOB_RECURSE package_files LIST_DIRECTORIES false ${final_folder}/*)
+    file(TOUCH_NOCREATE ${package_files})
+
     if (NOT ${unpack_result} EQUAL 0)
         message(SEND_ERROR "ly_package: required package {package_name} could not be unpacked.  Compile may fail!  Enable LY_PACKAGE_DEBUG to debug.")
         return()
