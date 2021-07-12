@@ -22,6 +22,17 @@ namespace
 
 namespace AssetProcessor
 {
+
+    void AssetImporterPathsVisitor::Visit([[maybe_unused]] AZStd::string_view path, AZStd::string_view, AZ::SettingsRegistryInterface::Type,
+        AZStd::string_view value)
+    {
+        auto found = value.find('.');
+        if (found != AZStd::string::npos)
+        {
+            m_supportedFileExtensions.emplace_back(value.substr(found + 1));
+        }
+    }
+
     struct PlatformsInfoVisitor
         : AZ::SettingsRegistryInterface::Visitor
     {
@@ -1125,6 +1136,16 @@ namespace AssetProcessor
 
         MetaDataTypesVisitor visitor;
         settingsRegistry->Visit(visitor, AZ::SettingsRegistryInterface::FixedValueString(AssetProcessorSettingsKey) + "/MetaDataTypes");
+
+        AZStd::vector<AZStd::string> supportedFileExtensions;
+        AssetImporterPathsVisitor assetImporterVisitor{ settingsRegistry, supportedFileExtensions };
+        settingsRegistry->Visit(assetImporterVisitor, AZ::SettingsRegistryInterface::FixedValueString(AssetImporterSettingsKey) + "/SupportedFileTypeExtensions");
+
+        for (auto& entry : assetImporterVisitor.m_supportedFileExtensions)
+        {
+            visitor.m_metaDataTypes.push_back({ AZStd::string::format("%s.assetinfo", entry.c_str()), entry });
+        }
+
         for (const auto& metaDataType : visitor.m_metaDataTypes)
         {
             QString fileType = AssetUtilities::NormalizeFilePath(QString::fromUtf8(metaDataType.m_fileType.c_str(),
