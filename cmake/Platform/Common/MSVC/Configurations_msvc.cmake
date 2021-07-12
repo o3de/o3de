@@ -14,10 +14,10 @@ endif()
 
 # Verify that it wasn't invoked with an unsupported target/host architecture. Currently only supports x64/x64
 if(CMAKE_VS_PLATFORM_NAME AND NOT CMAKE_VS_PLATFORM_NAME STREQUAL "x64")
-    message(FATAL_ERROR "${CMAKE_VS_PLATFORM_NAME} target architecture not supported")
+    message(FATAL_ERROR "${CMAKE_VS_PLATFORM_NAME} target architecture is not supported, it must be 'x64'")
 endif()
 if(CMAKE_VS_PLATFORM_TOOLSET_HOST_ARCHITECTURE AND NOT CMAKE_VS_PLATFORM_TOOLSET_HOST_ARCHITECTURE STREQUAL "x64")
-    message(FATAL_ERROR "${CMAKE_VS_PLATFORM_TOOLSET_HOST_ARCHITECTURE} host toolset not supported")
+    message(FATAL_ERROR "${CMAKE_VS_PLATFORM_TOOLSET_HOST_ARCHITECTURE} host toolset is not supported, it must be 'x64'")
 endif()
 
 ly_append_configurations_options(
