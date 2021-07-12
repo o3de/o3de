@@ -160,9 +160,9 @@ namespace AZ
                     ImGui::BeginTooltip();
                     ImGui::PushTextWrapPos(ImGui::GetFontSize() * 60.0f);
 
-					for (ThreadRegionEntry& entry : entries)
-					{
-						ImGui::Text(CpuProfilerImGuiHelper::TextThreadId(entry.m_threadId.m_id).c_str());
+                    for (ThreadRegionEntry& entry : entries)
+                    {
+                        ImGui::Text(CpuProfilerImGuiHelper::TextThreadId(entry.m_threadId.m_id).c_str());
 
                         const AZStd::sys_time_t elapsed = entry.m_endTick - entry.m_startTick;
                         ShowTimeInMs(elapsed);
