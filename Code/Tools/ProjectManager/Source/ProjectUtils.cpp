@@ -10,11 +10,15 @@
 
 #include <QFileDialog>
 #include <QDir>
+#include <QtMath>
 #include <QMessageBox>
 #include <QFileInfo>
 #include <QProcess>
 #include <QProcessEnvironment>
 #include <QGuiApplication>
+#include <QProgressDialog>
+#include <QSpacerItem>
+#include <QGridLayout>
 
 namespace O3DE::ProjectManager
 {
@@ -55,7 +59,42 @@ namespace O3DE::ProjectManager
             return false;
         }
 
-        static bool CopyDirectory(const QString& origPath, const QString& newPath)
+        typedef AZStd::function<void(/*fileCount=*/int, /*totalSizeInBytes=*/int)> StatusFunction;
+        static void RecursiveGetAllFiles(const QDir& directory, QStringList& outFileList, qint64& outTotalSizeInBytes, StatusFunction statusCallback)
+        {
+            const QStringList entries = directory.entryList(QDir::Dirs | QDir::Files | QDir::NoSymLinks | QDir::NoDotAndDotDot);
+            for (const QString& entryPath : entries)
+            {
+                const QString filePath = QDir::toNativeSeparators(QString("%1/%2").arg(directory.path()).arg(entryPath));
+                QFileInfo fileInfo(filePath);
+
+                if (fileInfo.isDir())
+                {
+                    QDir subDirectory(filePath);
+                    RecursiveGetAllFiles(subDirectory, outFileList, outTotalSizeInBytes, statusCallback);
+                }
+                else
+                {
+                    outFileList.push_back(filePath);
+                    outTotalSizeInBytes += fileInfo.size();
+
+                    const int updateStatusEvery = 64;
+                    if (outFileList.size() % updateStatusEvery == 0)
+                    {
+                        statusCallback(outFileList.size(), outTotalSizeInBytes);
+                    }
+                }
+            }
+        }
+
+        static bool CopyDirectory(QProgressDialog* progressDialog,
+            const QString& origPath,
+            const QString& newPath,
+            QStringList& filesToCopy,
+            int& outNumCopiedFiles,
+            qint64 totalSizeToCopy,
+            qint64& outCopiedFileSize,
+            bool& showIgnoreFileDialog)
         {
             QDir original(origPath);
             if (!original.exists())
@@ -65,19 +104,91 @@ namespace O3DE::ProjectManager
 
             for (QString directory : original.entryList(QDir::Dirs | QDir::NoDotAndDotDot))
             {
+                if (progressDialog->wasCanceled())
+                {
+                    return false;
+                }
+
                 QString newDirectoryPath = newPath + QDir::separator() + directory;
                 original.mkpath(newDirectoryPath);
 
-                if (!CopyDirectory(origPath + QDir::separator() + directory, newDirectoryPath))
+                if (!CopyDirectory(progressDialog, origPath + QDir::separator() + directory,
+                    newDirectoryPath, filesToCopy, outNumCopiedFiles, totalSizeToCopy, outCopiedFileSize, showIgnoreFileDialog))
                 {
                     return false;
                 }
             }
 
+            QLocale locale;
+            const float progressDialogRangeHalf = qFabs(progressDialog->maximum() - progressDialog->minimum()) * 0.5f;
             for (QString file : original.entryList(QDir::Files))
             {
-                if (!QFile::copy(origPath + QDir::separator() + file, newPath + QDir::separator() + file))
+                if (progressDialog->wasCanceled())
+                {
                     return false;
+                }
+
+                // Progress window update
+                {
+                    // Weight in the number of already copied files as well as the copied bytes to get a better progress indication
+                    // for cases combining many small files and some really large files.
+                    const float normalizedNumFiles = static_cast<float>(outNumCopiedFiles) / filesToCopy.count();
+                    const float normalizedFileSize = static_cast<float>(outCopiedFileSize) / totalSizeToCopy;
+                    const int progress = normalizedNumFiles * progressDialogRangeHalf + normalizedFileSize * progressDialogRangeHalf;
+                    progressDialog->setValue(progress);
+
+                    const QString copiedFileSizeString = locale.formattedDataSize(outCopiedFileSize);
+                    const QString totalFileSizeString = locale.formattedDataSize(totalSizeToCopy);
+                    progressDialog->setLabelText(QString("Coping file %1 of %2 (%3 of %4) ...").arg(QString::number(outNumCopiedFiles),
+                        QString::number(filesToCopy.count()),
+                        copiedFileSizeString,
+                        totalFileSizeString));
+                    qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+                }
+
+                const QString toBeCopiedFilePath = origPath + QDir::separator() + file;
+                const QString copyToFilePath = newPath + QDir::separator() + file;
+                if (!QFile::copy(toBeCopiedFilePath, copyToFilePath))
+                {
+                    // Let the user decide to ignore files that failed to copy or cancel the whole operation.
+                    if (showIgnoreFileDialog)
+                    {
+                        QMessageBox ignoreFileMessageBox;
+                        const QString text = QString("Cannot copy <b>%1</b>.<br><br>"
+                            "Source: %2<br>"
+                            "Destination: %3<br><br>"
+                            "Press <b>Yes</b> to ignore the file, <b>YesToAll</b> to ignore all upcoming non-copyable files or "
+                            "<b>Cancel</b> to abort duplicating the project.").arg(file, toBeCopiedFilePath, copyToFilePath);
+
+                        ignoreFileMessageBox.setModal(true);
+                        ignoreFileMessageBox.setWindowTitle("Cannot copy file");
+                        ignoreFileMessageBox.setText(text);
+                        ignoreFileMessageBox.setIcon(QMessageBox::Question);
+                        ignoreFileMessageBox.setStandardButtons(QMessageBox::YesToAll | QMessageBox::Yes | QMessageBox::Cancel);
+
+                        int ignoreFile = ignoreFileMessageBox.exec();
+                        if (ignoreFile == QMessageBox::YesToAll)
+                        {
+                            showIgnoreFileDialog = false;
+                            continue;
+                        }
+                        else if (ignoreFile == QMessageBox::Yes)
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                }
+                else
+                {
+                    outNumCopiedFiles++;
+
+                    QFileInfo fileInfo(toBeCopiedFilePath);
+                    outCopiedFileSize += fileInfo.size();
+                }
             }
 
             return true;
@@ -119,16 +230,13 @@ namespace O3DE::ProjectManager
                     return false;
                 }
 
-                QGuiApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-                copyResult = CopyProject(origPath, newPath);
-                QGuiApplication::restoreOverrideCursor();
-
+                copyResult = CopyProject(origPath, newPath, parent);
             }
 
             return copyResult;
         }
 
-        bool CopyProject(const QString& origPath, const QString& newPath)
+        bool CopyProject(const QString& origPath, const QString& newPath, QWidget* parent)
         {
             // Disallow copying from or into subdirectory
             if (IsDirectoryDescedent(origPath, newPath) || IsDirectoryDescedent(newPath, origPath))
@@ -136,19 +244,54 @@ namespace O3DE::ProjectManager
                 return false;
             }
 
-            if (!CopyDirectory(origPath, newPath))
+            QStringList filesToCopy;
+            qint64 totalSizeInBytes = 0;
+
+            QProgressDialog* progressDialog = new QProgressDialog(parent);
+            progressDialog->setAutoClose(true);
+            progressDialog->setValue(0);
+            progressDialog->setRange(0, 1000);
+            progressDialog->setModal(true);
+            progressDialog->setWindowTitle(QObject::tr("Copying project ..."));
+            progressDialog->show();
+
+            QLocale locale;
+            RecursiveGetAllFiles(origPath, filesToCopy, totalSizeInBytes, [=](int fileCount, int sizeInBytes)
+                {
+                    // Create a human-readable version of the file size.
+                    const QString fileSizeString = locale.formattedDataSize(sizeInBytes);
+
+                    progressDialog->setLabelText(QString("%1 ... %2 %3, %4 %5.")
+                        .arg(QObject::tr("Indexing files"))
+                        .arg(QString::number(fileCount))
+                        .arg(QObject::tr("files found"))
+                        .arg(fileSizeString)
+                        .arg(QObject::tr("to copy")));
+                    qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+                });
+
+            int numFilesCopied = 0;
+            qint64 copiedFileSize = 0;
+
+            // Phase 1: Copy files
+            bool showIgnoreFileDialog = true;
+            bool success = CopyDirectory(progressDialog, origPath, newPath, filesToCopy, numFilesCopied, totalSizeInBytes, copiedFileSize, showIgnoreFileDialog);
+            if (success)
             {
-                // Cleanup whatever mess was made
-                DeleteProjectFiles(newPath, true);
-                return false;
+                // Phase 2: Register project
+                success = RegisterProject(newPath);
             }
 
-            if (!RegisterProject(newPath))
+            if (!success)
             {
+                progressDialog->setLabelText(QObject::tr("Duplicating project failed/cancelled, removing already copied files ..."));
+                qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+
                 DeleteProjectFiles(newPath, true);
             }
 
-            return true;
+            progressDialog->deleteLater();
+            return success;
         }
 
         bool DeleteProjectFiles(const QString& path, bool force)
@@ -184,7 +327,7 @@ namespace O3DE::ProjectManager
             if (!newDirectory.rename(origPath, newPath))
             {
                 // Likely failed because trying to move to another partition, try copying
-                if (!CopyProject(origPath, newPath))
+                if (!CopyProject(origPath, newPath, parent))
                 {
                     return false;
                 }
@@ -233,47 +376,27 @@ namespace O3DE::ProjectManager
             return true;
         }
 
-        static bool IsVS2019Installed_internal()
+        bool FindSupportedCompiler(QWidget* parent)
         {
-            QProcessEnvironment environment = QProcessEnvironment::systemEnvironment();
-            QString programFilesPath = environment.value("ProgramFiles(x86)");
-            QString vsWherePath = programFilesPath + "\\Microsoft Visual Studio\\Installer\\vswhere.exe";
+            auto findCompilerResult = FindSupportedCompilerForPlatform();
 
-            QFileInfo vsWhereFile(vsWherePath);
-            if (vsWhereFile.exists() && vsWhereFile.isFile())
+            if (!findCompilerResult.IsSuccess())
             {
-                QProcess vsWhereProcess;
-                vsWhereProcess.setProcessChannelMode(QProcess::MergedChannels);
+                QMessageBox vsWarningMessage(parent);
+                vsWarningMessage.setIcon(QMessageBox::Warning);
+                vsWarningMessage.setWindowTitle(QObject::tr("Create Project"));
+                // Makes link clickable
+                vsWarningMessage.setTextFormat(Qt::RichText);
+                vsWarningMessage.setText(findCompilerResult.GetError());
+                vsWarningMessage.setStandardButtons(QMessageBox::Close);
 
-                vsWhereProcess.start(
-                    vsWherePath,
-                    QStringList{ "-version", "16.0", "-latest", "-requires", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
-                                 "-property", "isComplete" });
-
-                if (!vsWhereProcess.waitForStarted())
-                {
-                    return false;
-                }
-
-                while (vsWhereProcess.waitForReadyRead())
-                {
-                }
-
-                QString vsWhereOutput(vsWhereProcess.readAllStandardOutput());
-                if (vsWhereOutput.startsWith("1"))
-                {
-                    return true;
-                }
+                QSpacerItem* horizontalSpacer = new QSpacerItem(600, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+                QGridLayout* layout = reinterpret_cast<QGridLayout*>(vsWarningMessage.layout());
+                layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
+                vsWarningMessage.exec();
             }
 
-            return false;
-        }
-
-        bool IsVS2019Installed()
-        {
-            static bool vs2019Installed = IsVS2019Installed_internal();
-
-            return vs2019Installed;
+            return findCompilerResult.IsSuccess();
         }
 
         ProjectManagerScreen GetProjectManagerScreen(const QString& screen)

@@ -6,6 +6,7 @@
  */
 
 #include <NewProjectSettingsScreen.h>
+#include <ProjectManagerDefs.h>
 #include <PythonBindingsInterface.h>
 #include <FormBrowseEditWidget.h>
 #include <FormLineEditWidget.h>
@@ -117,7 +118,7 @@ namespace O3DE::ProjectManager
                 for (int index = 0; index < m_templates.size(); ++index)
                 {
                     ProjectTemplateInfo projectTemplate = m_templates.at(index);
-                    QString projectPreviewPath = projectTemplate.m_path + "/Template/preview.png";
+                    QString projectPreviewPath = QDir(projectTemplate.m_path).filePath(ProjectPreviewImagePath);
                     QFileInfo doesPreviewExist(projectPreviewPath);
                     if (!doesPreviewExist.exists() || !doesPreviewExist.isFile())
                     {

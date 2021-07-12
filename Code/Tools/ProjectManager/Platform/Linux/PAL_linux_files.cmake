@@ -8,4 +8,5 @@
 set(FILES
     Python_linux.cpp
     ProjectBuilderWorker_linux.cpp
+    ProjectUtils_linux.cpp
 )

@@ -102,6 +102,9 @@ namespace AZ
             void DecrementRemainingRelocationIterations() { m_remainingRelocationIterations = AZStd::max(0, m_remainingRelocationIterations - 1); }
             void ResetRemainingRelocationIterations() { m_remainingRelocationIterations = DefaultNumRelocationIterations; }
 
+            void ResetCullingVisibility();
+            bool GetIsVisible() const;
+
             // compute total number of probes in the grid
             uint32_t GetTotalProbeCount() const;
 
