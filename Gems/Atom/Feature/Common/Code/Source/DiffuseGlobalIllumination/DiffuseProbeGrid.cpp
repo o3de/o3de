@@ -259,6 +259,12 @@ namespace AZ
                 return true;
             }
 
+            // if a bake is in progress we need to make this DiffuseProbeGrid visible
+            if (!m_textureReadback.IsIdle())
+            {
+                return true;
+            }
+
             return m_cullable.m_isVisible;
         }
 
