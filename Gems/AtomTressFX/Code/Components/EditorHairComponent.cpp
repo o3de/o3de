@@ -123,9 +123,9 @@ namespace AZ
 
                 AZStd::string debugString = AZStd::string::format(
                     "Hair component stats:\n"
-                    "    Total number of hairs: %zu\n"
-                    "    Total number of guide hairs: %zu\n"
-                    "    Amount of follow hair per guide hair: %zu\n",
+                    "    Total number of hairs: %d\n"
+                    "    Total number of guide hairs: %d\n"
+                    "    Amount of follow hair per guide hair: %d\n",
                     m_controller.m_renderObject->GetNumTotalHairStrands(),
                     m_controller.m_renderObject->GetNumGuideHairs(),
                     m_controller.m_renderObject->GetNumFollowHairsPerGuideHair());
