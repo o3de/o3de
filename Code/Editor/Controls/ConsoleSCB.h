@@ -174,6 +174,8 @@ public:
 
     static void AddToPendingLines(const QString& text, bool bNewLine);        // call this function instead of AddToConsole() until an instance of CConsoleSCB exists to prevent messages from getting lost
 
+    void ClearText();
+
     // EditorPreferencesNotificationBus...
     void OnEditorPreferencesChanged() override;
 

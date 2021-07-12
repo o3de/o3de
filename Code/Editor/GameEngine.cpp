@@ -29,6 +29,7 @@
 
 // Editor
 #include "IEditorImpl.h"
+#include "Controls/ConsoleSCB.h"
 #include "CryEditDoc.h"
 #include "Settings.h"
 
@@ -564,6 +565,11 @@ void CGameEngine::SwitchToInGame()
         streamer->SetRequestCompleteCallback(flush, [&wait](AZ::IO::FileRequestHandle) { wait.release(); });
         streamer->QueueRequest(flush);
         wait.acquire();
+    }
+
+    if (gSettings.clearConsoleOnGameModeStart)
+    {
+        CConsoleSCB::GetCreatedInstance()->ClearText();
     }
     
     GetIEditor()->Notify(eNotify_OnBeginGameMode);
