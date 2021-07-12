@@ -17,8 +17,6 @@
 #include <AzCore/std/sort.h>
 #include <AzCore/std/time.h>
 
-#include "../../../Gems/ImGui/External/ImGui/v1.82/imgui/imgui.h"
-
 
 namespace AZ
 {
@@ -56,13 +54,29 @@ namespace AZ
             ImGui::SetNextWindowSize(windowSize, ImGuiCond_Once);
             if (ImGui::Begin("CPU Profiler", &keepDrawing, ImGuiWindowFlags_None))
             {
+                // Collect the last frame's profiling data
+                if (!m_paused)
+                {
+                    // Update region map and cache the input cpu timing statistics when the profiling is not paused
+                    m_cpuTimingStatisticsWhenPause = currentCpuTimingStatistics;
+
+                    CollectFrameData();
+                    CullFrameData(currentCpuTimingStatistics); 
+
+                    // Only listen to system ticks when the profiler is active
+                    if (!SystemTickBus::Handler::BusIsConnected())
+                    {
+                        SystemTickBus::Handler::BusConnect();
+                    }
+                }
+
                 if (m_enableVisualizer)
                 {
-                    DrawVisualizer(currentCpuTimingStatistics);
+                    DrawVisualizer();
                 }
                 else
                 {
-                    DrawStatisticsView(currentCpuTimingStatistics);
+                    DrawStatisticsView();
                 }
             }
             ImGui::End();
@@ -91,7 +105,6 @@ namespace AZ
 
         inline void ImGuiCpuProfiler::DrawCommonHeader()
         {
-            ImGui::Columns(1, "CommonHeaderColumn", true);
             if (ImGui::Button(m_enableVisualizer ? "Swap to statistics" : "Swap to visualizer"))
             {
                 m_enableVisualizer = !m_enableVisualizer;
@@ -116,19 +129,11 @@ namespace AZ
                 ImGui::SameLine();
                 ImGui::Text("Saved: %s", m_lastCapturedFilePath.c_str());
             }
-            
-            ImGui::Columns(1, "RootColumn", true);
         }
 
-        inline void ImGuiCpuProfiler::DrawStatisticsView(const AZ::RHI::CpuTimingStatistics& currentCpuTimingStatistics)
+        inline void ImGuiCpuProfiler::DrawStatisticsView()
         {
             DrawCommonHeader();
-            // Update region map and cache the input cpu timing statistics when the profiling is not paused
-            if (!m_paused)
-            {
-                UpdateGroupRegionMap();
-                m_cpuTimingStatisticsWhenPause = currentCpuTimingStatistics;
-            }
 
             const AZ::RHI::CpuTimingStatistics& cpuTimingStatistics = m_cpuTimingStatisticsWhenPause;
 
@@ -237,20 +242,20 @@ namespace AZ
                             ImGui::SetColumnWidth(2, 150.0f);
                             ImGui::SetColumnWidth(3, 240.0f);
 
-                            for (auto& reigon : timeRegionMapEntry.second)
+                            for (auto& region : timeRegionMapEntry.second)
                             {
                                 // Calculate the region with the longest execution time
                                 AZStd::sys_time_t threadExecutionElapsed = 0;
-                                for (ThreadRegionEntry& entry : reigon.second)
+                                for (ThreadRegionEntry& entry : region.second)
                                 {
                                     const AZStd::sys_time_t elapsed = entry.m_endTick - entry.m_startTick;
                                     threadExecutionElapsed = AZStd::max(threadExecutionElapsed, elapsed);
                                 }
 
                                 // Only draw the TimedRegion rows when it passes the filter
-                                if (m_timedRegionFilter.PassFilter(reigon.first.c_str()))
+                                if (m_timedRegionFilter.PassFilter(region.first.c_str()))
                                 {
-                                    ShowRegionRow(reigon.first.c_str(), reigon.second, threadExecutionElapsed);
+                                    ShowRegionRow(region.first.c_str(), region.second, threadExecutionElapsed);
                                 }
                             }
                             ImGui::Columns(1, "view", false);
@@ -262,48 +267,10 @@ namespace AZ
             } 
         }
 
-        inline void ImGuiCpuProfiler::UpdateGroupRegionMap()
-        {
-            // Clear the cached entries
-            m_groupRegionMap.clear();
-
-            // Get the latest TimeRegionMap
-            const RHI::CpuProfiler::TimeRegionMap& timeRegionMap = RHI::CpuProfiler::Get()->GetTimeRegionMap();
-
-            // Iterate through all the cached regions from all threads, and add the entries to this map
-            for (auto& threadEntry : timeRegionMap)
-            {
-                for (auto& cachedRegionEntry : threadEntry.second)
-                {
-                    const AZStd::string& regionName = cachedRegionEntry.first;
-                    for (auto& cachedRegion : cachedRegionEntry.second)
-                    {
-                        const AZStd::string& groupName = cachedRegion.m_groupRegionName->m_groupName;
-
-                        m_groupRegionMap[groupName][regionName].push_back(
-                            { threadEntry.first, cachedRegion.m_startTick, cachedRegion.m_endTick });
-                    }
-                }
-            }
-        }
-
         // -- CPU Visualizer --
-        inline void ImGuiCpuProfiler::DrawVisualizer(const AZ::RHI::CpuTimingStatistics& cpuTimingStatistics)
+        inline void ImGuiCpuProfiler::DrawVisualizer()
         {
             DrawCommonHeader();
-
-            // Get the instrumentation data for the last frame if active
-            if (!m_paused && m_groupRegionMap.size() != 0)
-            {
-                CollectFrameData(); // Also updates viewport bounds
-
-                CullFrameData(cpuTimingStatistics); // Trim data if necessary
-
-                if (!SystemTickBus::Handler::BusIsConnected())
-                {
-                    SystemTickBus::Handler::BusConnect();
-                }
-            }
 
             // Options & Statistics
             if (ImGui::BeginChild("Options and Statistics", { 0, 0 }, true))
@@ -451,6 +418,15 @@ namespace AZ
 
         inline void ImGuiCpuProfiler::CollectFrameData()
         {
+            // We maintain separate datastores for the visualizer and the statistical view because they require different
+            // data formats - one grouped by thread ID versus the other organized by group + region. Since the statistical
+            // view is only holding data from the last frame, the memory overhead is minimal and gives us a faster redraw
+            // compared to if we needed to transform the visualizer's data into the statistical format every frame.
+
+            // Clear the statistical view's cached entries
+            m_groupRegionMap.clear();
+
+            // Get the latest TimeRegionMap
             const RHI::CpuProfiler::TimeRegionMap& timeRegionMap = RHI::CpuProfiler::Get()->GetTimeRegionMap();
 
             m_viewportStartTick = INT64_MAX;
@@ -466,13 +442,18 @@ namespace AZ
                 }
 
                 // Now focus on just the data for the current thread
-                AZStd::vector<TimeRegion> newData;
-                newData.reserve(singleThreadRegionMap.size()); // Avoids reallocation in the normal case when each region only has one invocation
+                AZStd::vector<TimeRegion> newVisualizerData;
+                newVisualizerData.reserve(singleThreadRegionMap.size()); // Avoids reallocation in the normal case when each region only has one invocation
                 for (const auto& [regionName, regionVec] : singleThreadRegionMap)
                 {
                     for (const TimeRegion& region : regionVec)
                     {
-                        newData.push_back(region); // Copies
+                        newVisualizerData.push_back(region); // Copies
+
+                        // Also update the statistical view's data
+                        const AZStd::string& groupName = region.m_groupRegionName->m_groupName;
+                        m_groupRegionMap[groupName][regionName].push_back(
+                            { threadId, region.m_startTick, region.m_endTick });
 
                         // Update running statistics if we want to record this region's data
                         if (m_regionStatisticsMap[region.m_groupRegionName].m_record)
@@ -485,22 +466,22 @@ namespace AZ
                 // Sorting by start tick allows us to speed up some other processes (ex. finding the first block to draw)
                 // since we can binary search by start tick.
                 AZStd::sort(
-                    newData.begin(), newData.end(),
+                    newVisualizerData.begin(), newVisualizerData.end(),
                     [](const TimeRegion& lhs, const TimeRegion& rhs)
                     {
                         return lhs.m_startTick < rhs.m_startTick;
                     });
 
                 // Use the latest frame's data as the new bounds of the viewport
-                m_viewportStartTick = AZStd::min(newData.front().m_startTick, m_viewportStartTick);
-                m_viewportEndTick = AZStd::max(newData.back().m_endTick, m_viewportEndTick);
+                m_viewportStartTick = AZStd::min(newVisualizerData.front().m_startTick, m_viewportStartTick);
+                m_viewportEndTick = AZStd::max(newVisualizerData.back().m_endTick, m_viewportEndTick);
 
-                m_savedRegionCount += newData.size();
+                m_savedRegionCount += newVisualizerData.size();
 
                 // Move onto the end of the current thread's saved data, sorted order maintained
                 AZStd::vector<TimeRegion>& savedDataVec = m_savedData[threadId];
                 savedDataVec.insert(
-                    savedDataVec.end(), AZStd::make_move_iterator(newData.begin()), AZStd::make_move_iterator(newData.end()));
+                    savedDataVec.end(), AZStd::make_move_iterator(newVisualizerData.begin()), AZStd::make_move_iterator(newVisualizerData.end()));
             }
         }
 
@@ -671,10 +652,7 @@ namespace AZ
             // End ticks are sorted in increasing order, find the first frame bound to draw
             auto endTickItr = AZStd::lower_bound(m_frameEndTicks.begin(), m_frameEndTicks.end(), m_viewportStartTick);
 
-            // Draw to one element before the last collected boundary if possible to avoid empty frame at the end
-            auto drawToItr = m_frameEndTicks.size() > 1 ? m_frameEndTicks.end() - 1 : m_frameEndTicks.end();
-
-            while (endTickItr != drawToItr && *endTickItr < m_viewportEndTick)
+            while (endTickItr != m_frameEndTicks.end() && *endTickItr < m_viewportEndTick)
             {
                 const float horizontalPixel = ConvertTickToPixelSpace(*endTickItr);
                 drawList->AddLine({ horizontalPixel, wy }, { horizontalPixel, wy + windowHeight }, red);
@@ -695,9 +673,7 @@ namespace AZ
             const auto [wx, wy] = ImGui::GetWindowPos();
             ImDrawList* drawList = ImGui::GetWindowDrawList();
 
-            auto drawToItr = m_frameEndTicks.size() > 1 ? m_frameEndTicks.end() - 1 : m_frameEndTicks.end();
-
-            while (nextFrameBoundaryItr != drawToItr && *lastFrameBoundaryItr <= m_viewportEndTick)
+            while (nextFrameBoundaryItr != m_frameEndTicks.end() && *lastFrameBoundaryItr <= m_viewportEndTick)
             {
                 const AZStd::sys_time_t lastFrameBoundaryTick = *lastFrameBoundaryItr;
                 const AZStd::sys_time_t nextFrameBoundaryTick = *nextFrameBoundaryItr;
@@ -777,14 +753,13 @@ namespace AZ
         // System tick bus overrides
         inline void ImGuiCpuProfiler::OnSystemTick()
         {
-            if (!m_paused)
-            {
-                m_frameEndTicks.push_back(AZStd::GetTimeNowTicks());
-            }
-
             if (m_paused)
             {
                 SystemTickBus::Handler::BusDisconnect();
+            }
+            else
+            {
+                m_frameEndTicks.push_back(AZStd::GetTimeNowTicks());
             }
         }
 

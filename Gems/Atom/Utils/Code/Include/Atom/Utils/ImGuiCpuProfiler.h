@@ -67,17 +67,14 @@ namespace AZ
             void Draw(bool& keepDrawing, const AZ::RHI::CpuTimingStatistics& cpuTimingStatistics);
 
             //! Draws the statistical view of the CPU profiling data
-            void DrawStatisticsView(const AZ::RHI::CpuTimingStatistics& cpuTimingStatistics);
+            void DrawStatisticsView();
 
             //! Draws the CPU profiling visualizer in a new window. 
-            void DrawVisualizer(const AZ::RHI::CpuTimingStatistics& cpuTimingStatistics);
+            void DrawVisualizer();
 
         private:
             static constexpr float RowHeight = 50.0;
             static constexpr int DefaultFramesToCollect = 50;
-
-            // Update the GroupRegionMap with the latest cached time regions
-            void UpdateGroupRegionMap();
 
             // Draw the shared header between the two windows
             void DrawCommonHeader();
@@ -85,12 +82,13 @@ namespace AZ
             // ImGui filter used to filter TimedRegions.
             ImGuiTextFilter m_timedRegionFilter;
 
+            // Saves statistical view data organized by group name -> region name -> regions
             GroupRegionMap m_groupRegionMap;
 
             // Pause cpu profiling. The profiler will show the statistics of the last frame before pause
             bool m_paused = false;
 
-            // Export the profiling data to a local file
+            // Export the profiling data from a single frame to a local file
             bool m_captureToFile = false;
 
             // Toggle between the normal statistical view and the visual profiling view
