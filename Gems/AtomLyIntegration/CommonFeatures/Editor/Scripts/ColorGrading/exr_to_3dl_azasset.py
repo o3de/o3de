@@ -112,14 +112,14 @@ if True:
     # First line contains the vertex intervals
     dv = 1023.0 / float(lutSize-1)
     for i in range(lutSize):
-        lutIntervals.append(int(dv * i))
+        lutIntervals.append(uint64(dv * i))
     # Texels are in R G B per line with indices increasing first with blue, then green, and then red.
     for r in range(lutSize):
         for g in range(lutSize):
             for b in range(lutSize):
                 uv = GetUvCoord(lutSize, r, g, b)
                 px = buf.getpixel(uv[0], uv[1])
-                lutValues.append((int(px[0] * 4095), int(px[1] * 4095), int(px[2] * 4095)))
+                lutValues.append((uint64(px[0] * 4095), uint64(px[1] * 4095), uint64(px[2] * 4095)))
 
 if True:
     lutFileName = "%s.3dl" % (args.o)
