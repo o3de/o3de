@@ -31,6 +31,7 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
         ->Field("PreviewPanel", &GeneralSettings::m_previewPanel)
         ->Field("ApplyConfigSpec", &GeneralSettings::m_applyConfigSpec)
         ->Field("EnableSourceControl", &GeneralSettings::m_enableSourceControl)
+        ->Field("ClearConsole", &GeneralSettings::m_clearConsoleOnGameModeStart)
         ->Field("ConsoleBackgroundColorTheme", &GeneralSettings::m_consoleBackgroundColorTheme)
         ->Field("AutoloadLastLevel", &GeneralSettings::m_autoLoadLastLevel)
         ->Field("ShowTimeInConsole", &GeneralSettings::m_bShowTimeInConsole)
@@ -76,6 +77,8 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &GeneralSettings::m_previewPanel, "Show Geometry Preview Panel", "Show Geometry Preview Panel")
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &GeneralSettings::m_applyConfigSpec, "Hide objects by config spec", "Hide objects by config spec")
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &GeneralSettings::m_enableSourceControl, "Enable Source Control", "Enable Source Control")
+            ->DataElement(
+                AZ::Edit::UIHandlers::CheckBox, &GeneralSettings::m_clearConsoleOnGameModeStart, "Clear Console at Game Startup", "Clear Console when Game Mode Starts")
             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &GeneralSettings::m_consoleBackgroundColorTheme, "Console Background", "Console Background")
                 ->EnumAttribute(AzToolsFramework::ConsoleColorTheme::Light, "Light")
                 ->EnumAttribute(AzToolsFramework::ConsoleColorTheme::Dark, "Dark")
@@ -141,6 +144,7 @@ void CEditorPreferencesPage_General::OnApply()
     gSettings.bPreviewGeometryWindow = m_generalSettings.m_previewPanel;
     gSettings.bApplyConfigSpecInEditor = m_generalSettings.m_applyConfigSpec;
     gSettings.enableSourceControl = m_generalSettings.m_enableSourceControl;
+    gSettings.clearConsoleOnGameModeStart = m_generalSettings.m_clearConsoleOnGameModeStart;
     gSettings.consoleBackgroundColorTheme = m_generalSettings.m_consoleBackgroundColorTheme;
     gSettings.bShowTimeInConsole = m_generalSettings.m_bShowTimeInConsole;
     gSettings.bShowDashboardAtStartup = m_messaging.m_showDashboard;
@@ -175,6 +179,7 @@ void CEditorPreferencesPage_General::InitializeSettings()
     m_generalSettings.m_previewPanel = gSettings.bPreviewGeometryWindow;
     m_generalSettings.m_applyConfigSpec = gSettings.bApplyConfigSpecInEditor;
     m_generalSettings.m_enableSourceControl = gSettings.enableSourceControl;
+    m_generalSettings.m_clearConsoleOnGameModeStart = gSettings.clearConsoleOnGameModeStart;
     m_generalSettings.m_consoleBackgroundColorTheme = gSettings.consoleBackgroundColorTheme;
     m_generalSettings.m_bShowTimeInConsole = gSettings.bShowTimeInConsole;
     m_generalSettings.m_autoLoadLastLevel = gSettings.bAutoloadLastLevelAtStartup;

@@ -187,6 +187,7 @@ SEditorSettings::SEditorSettings()
 
     consoleBackgroundColorTheme = AzToolsFramework::ConsoleColorTheme::Dark;
     bShowTimeInConsole = false;
+    clearConsoleOnGameModeStart = false;
 
     enableSceneInspector = false;
 
@@ -525,6 +526,8 @@ void SEditorSettings::Save()
 
     SaveValue("Settings", "ConsoleBackgroundColorThemeV2", (int)consoleBackgroundColorTheme);
 
+    SaveValue("Settings", "ClearConsoleOnGameModeStart", clearConsoleOnGameModeStart);
+
     SaveValue("Settings", "ShowTimeInConsole", bShowTimeInConsole);
 
     SaveValue("Settings", "EnableSceneInspector", enableSceneInspector);
@@ -742,6 +745,8 @@ void SEditorSettings::Load()
     {
         consoleBackgroundColorTheme = AzToolsFramework::ConsoleColorTheme::Dark;
     }
+
+    LoadValue("Settings", "ClearConsoleOnGameModeStart", clearConsoleOnGameModeStart);
 
     LoadValue("Settings", "ShowTimeInConsole", bShowTimeInConsole);
 

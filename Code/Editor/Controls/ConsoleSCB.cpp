@@ -537,6 +537,10 @@ void CConsoleSCB::AddToPendingLines(const QString& text, bool bNewLine)
     s_pendingLines.push_back({ text, bNewLine });
 }
 
+void CConsoleSCB::ClearText()
+{
+    ui->textEdit->clear();
+}
 /**
  * When a CVar variable is updated, we need to tell alert our console variables
  * pane so it can update the corresponding row
