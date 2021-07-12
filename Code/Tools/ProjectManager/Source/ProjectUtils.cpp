@@ -371,72 +371,27 @@ namespace O3DE::ProjectManager
             return true;
         }
 
-        static bool IsVS2019Installed_internal()
+        bool FindSupportedCompiler(QWidget* parent)
         {
-            QProcessEnvironment environment = QProcessEnvironment::systemEnvironment();
-            QString programFilesPath = environment.value("ProgramFiles(x86)");
-            QString vsWherePath = QDir(programFilesPath).filePath("Microsoft Visual Studio/Installer/vswhere.exe");
+            auto findCompilerResult = FindSupportedCompilerForPlatform();
 
-            QFileInfo vsWhereFile(vsWherePath);
-            if (vsWhereFile.exists() && vsWhereFile.isFile())
-            {
-                QProcess vsWhereProcess;
-                vsWhereProcess.setProcessChannelMode(QProcess::MergedChannels);
-
-                vsWhereProcess.start(
-                    vsWherePath,
-                    QStringList{
-                        "-version",
-                        "16.0",
-                        "-latest",
-                        "-requires",
-                        "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
-                        "-property",
-                        "isComplete"
-                    });
-
-                if (!vsWhereProcess.waitForStarted())
-                {
-                    return false;
-                }
-                while (vsWhereProcess.waitForReadyRead())
-                {
-                }
-
-                QString vsWhereOutput(vsWhereProcess.readAllStandardOutput());
-                if (vsWhereOutput.startsWith("1"))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        bool IsVS2019Installed(QWidget* parent)
-        {
-            static bool vs2019Installed = IsVS2019Installed_internal();
-
-            if (!vs2019Installed)
+            if (!findCompilerResult.IsSuccess())
             {
                 QMessageBox vsWarningMessage(parent);
                 vsWarningMessage.setIcon(QMessageBox::Warning);
                 vsWarningMessage.setWindowTitle(QObject::tr("Create Project"));
                 // Makes link clickable
                 vsWarningMessage.setTextFormat(Qt::RichText);
-                vsWarningMessage.setText(QObject::tr("Visual Studio 2019 not found."));
-                vsWarningMessage.setInformativeText(QObject::tr("Visual Studio 2019 is required to build this project."
-                    " Install any edition of <a href='https://visualstudio.microsoft.com/downloads/'>Visual Studio 2019</a>"
-                    " before proceeding to the next step."));
+                vsWarningMessage.setText(findCompilerResult.GetError());
                 vsWarningMessage.setStandardButtons(QMessageBox::Close);
 
-                QSpacerItem* horizontalSpacer = new QSpacerItem(800, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+                QSpacerItem* horizontalSpacer = new QSpacerItem(600, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
                 QGridLayout* layout = reinterpret_cast<QGridLayout*>(vsWarningMessage.layout());
                 layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
                 vsWarningMessage.exec();
             }
 
-            return vs2019Installed;
+            return findCompilerResult.IsSuccess();
         }
 
         ProjectManagerScreen GetProjectManagerScreen(const QString& screen)

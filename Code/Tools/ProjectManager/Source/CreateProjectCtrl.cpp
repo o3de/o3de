@@ -223,7 +223,7 @@ namespace O3DE::ProjectManager
 
     void CreateProjectCtrl::CreateProject()
     {
-        if (ProjectUtils::IsVS2019Installed(this))
+        if (ProjectUtils::FindSupportedCompiler(this))
         {
             if (m_newProjectSettingsScreen->Validate())
             {

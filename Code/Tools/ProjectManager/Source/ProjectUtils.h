@@ -8,6 +8,7 @@
 
 #include <ScreenDefs.h>
 #include <QWidget>
+#include <AzCore/Outcome/Outcome.h>
 
 namespace O3DE::ProjectManager
 {
@@ -23,7 +24,8 @@ namespace O3DE::ProjectManager
 
         bool ReplaceFile(const QString& origFile, const QString& newFile, QWidget* parent = nullptr, bool interactive = true);
 
-        bool IsVS2019Installed(QWidget* parent = nullptr);
+        bool FindSupportedCompiler(QWidget* parent = nullptr);
+        AZ::Outcome<void, QString> FindSupportedCompilerForPlatform();
 
         ProjectManagerScreen GetProjectManagerScreen(const QString& screen);
     } // namespace ProjectUtils
