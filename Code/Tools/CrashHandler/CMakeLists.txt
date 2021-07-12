@@ -38,8 +38,19 @@ ly_add_target(
 string(REPLACE "." ";" version_list "${LY_VERSION_STRING}")
 list(GET version_list 0 EXE_VERSION_INFO_0)
 list(GET version_list 1 EXE_VERSION_INFO_1)
-list(GET version_list 2 EXE_VERSION_INFO_2)
-list(GET version_list 3 EXE_VERSION_INFO_3)
+
+list(LENGTH version_list version_component_count)
+if(${version_component_count} GREATER_EQUAL 3)
+    list(GET version_list 2 EXE_VERSION_INFO_2)
+else()
+    set(EXE_VERSION_INFO_2 0)
+endif()
+
+if(${version_component_count} GREATER_EQUAL 4)
+    list(GET version_list 3 EXE_VERSION_INFO_3)
+else()
+    set(EXE_VERSION_INFO_3 0)
+endif()
 
 ly_add_source_properties(
     SOURCES Shared/CrashHandler.cpp
