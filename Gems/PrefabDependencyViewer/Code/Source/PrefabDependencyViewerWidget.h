@@ -41,6 +41,16 @@ namespace PrefabDependencyViewer
         void DisplayNodesByLevel(const Utils::DirectedGraph& graph, AZStd::vector<int> numNodesAtEachLevel, int widestLevel);
 
         void DisplayNode(Utils::Node* node, AZ::Vector2 pos);
+
+        
+        GraphCanvas::SlotId CreateExecutionSlot(
+            GraphCanvas::NodeId nodeId,
+            const AZStd::string& slotName,
+            const AZStd::string& tooltip,
+            GraphCanvas::SlotGroup slotGroup,
+            bool isInput);
+
+        void AddSlotToNode(AZ::Entity* slotEntity, GraphCanvas::NodeId nodeId);
         void CreateNodeUi(const AzToolsFramework::Prefab::TemplateId& tid);
 
     protected:
