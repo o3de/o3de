@@ -4,7 +4,7 @@
     "CompilerHints" : 
     { 
         "DxcDisableOptimizations" : false,
-        "DxcGenerateDebugInfo" : true
+        "DxcGenerateDebugInfo" : false
     },
 
     "DepthStencilState" : 
