@@ -42,9 +42,9 @@ namespace AWSNativeSDKInit
         static void InitAwsApi();
         static bool IsInitialized();
 
-        // Copy certificate files to the expected location which will be specified in the client configuration.
-        // Platforms like Android require CA certificates for the client to connect to AWS.
-        static void CopyCertFiles();
+        // Initialize the certificate bundle which will be required to make AWS requests from
+        // some platforms like Android.
+        static void InitializeCaCertBundle();
 
         // Remove our reference
         static void Shutdown();

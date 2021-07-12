@@ -11,7 +11,7 @@ namespace AWSCore
 {
     namespace Platform
     {
-        void ResolveCaCertFilePath(Aws::String& caFile);
+        void ResolveCaCertBundlePath(Aws::String& caFile);
     }
 
     const char* AwsApiJob::COMPONENT_DISPLAY_NAME = "AWSCoreFramework";
@@ -37,7 +37,7 @@ namespace AWSCore
                 // Instructs the HTTP client where to find the SSL certificate trust store.
                 // It is required to copy the cacert.pem to the expected file path for running the Android client.
                 Aws::String caFilePath;
-                Platform::ResolveCaCertFilePath(caFilePath);
+                Platform::ResolveCaCertBundlePath(caFilePath);
                 if (!caFilePath.empty())
                 {
                     config.caFile = caFilePath;

@@ -26,7 +26,7 @@ namespace AWSNativeSDKInit
         void CustomizeSDKOptions(Aws::SDKOptions& options);
         void CustomizeShutdown();
 
-        void CopyCaFile();
+        void CopyCaCertBundle();
 #endif
     }
 
@@ -79,9 +79,9 @@ namespace AWSNativeSDKInit
 #endif // #if defined(PLATFORM_SUPPORTS_AWS_NATIVE_SDK)
     }
 
-    void InitializationManager::CopyCertFiles()
+    void InitializationManager::InitializeCaCertBundle()
     {
-        Platform::CopyCaFile();
+        Platform::CopyCaCertBundle();
     }
 
     void InitializationManager::ShutdownAwsApiInternal()

@@ -9,7 +9,7 @@ namespace AWSNativeSDKInit
 {
     namespace Platform
     {
-        void CopyCaFile()
+        void CopyCaCertBundle()
         {
         }
     } // namespace Platform

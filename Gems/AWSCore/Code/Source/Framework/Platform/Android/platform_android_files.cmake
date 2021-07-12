@@ -6,5 +6,5 @@
 #
 
 set(FILES
-    CaFile_Android.cpp
+    ResolveCaCertBundlePath_Android.cpp
 )

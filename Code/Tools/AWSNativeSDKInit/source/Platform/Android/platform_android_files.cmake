@@ -7,5 +7,5 @@
 
 set(FILES
     ../Common/Default/AWSNativeSDKInit_Default.cpp
-    CopyCaFile_Android.cpp
+    InitializeCaCertBundle_Android.cpp
 )

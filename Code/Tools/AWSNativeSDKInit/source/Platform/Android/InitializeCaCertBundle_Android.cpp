@@ -23,7 +23,7 @@ namespace AWSNativeSDKInit
 {
     namespace Platform
     {
-        void CopyCaFile()
+        void CopyCaCertBundle()
         {
             AZStd::vector<char> contents;
             AZStd::string certificatePath = "@assets@/certificates/aws/cacert.pem";
@@ -34,7 +34,7 @@ namespace AWSNativeSDKInit
 
             if (!fileBase->Exists(certificatePath.c_str()))
             {
-                AZ_Error("AWSCore", false, "Certificate File(%s) does not exist.\n", certificatePath.c_str());
+                AZ_Error("AWSNativeSDKInit", false, "Certificate File(%s) does not exist.\n", certificatePath.c_str());
             }
 
             AZ::IO::HandleType fileHandle;
@@ -42,7 +42,7 @@ namespace AWSNativeSDKInit
 
             if (!fileResult)
             {
-                AZ_Error("AWSCore", false, "Failed to open certificate file with result %i\n", fileResult.GetResultCode());
+                AZ_Error("AWSNativeSDKInit", false, "Failed to open certificate file with result %i\n", fileResult.GetResultCode());
             }
 
             AZ::u64 fileSize = 0;
@@ -50,7 +50,7 @@ namespace AWSNativeSDKInit
 
             if (fileSize == 0)
             {
-                AZ_Error("GameLift", false, "Given empty file(%s) as certificate file.\n", certificatePath.c_str());
+                AZ_Error("AWSNativeSDKInit", false, "Given empty file(%s) as the certificate bundle.\n", certificatePath.c_str());
             }
 
             contents.resize(fileSize + 1);
@@ -59,11 +59,11 @@ namespace AWSNativeSDKInit
             if (!fileResult)
             {
                 AZ_Error(
-                    "AWSCore", false, "Failed to read from file(%s) with result code(%i).\n", certificatePath.c_str(),
+                    "AWSNativeSDKInit", false, "Failed to read from the certificate bundle(%s) with result code(%i).\n", certificatePath.c_str(),
                     fileResult.GetResultCode());
             }
 
-            AZ_Printf("AWSCore", "Certificate read successfully %s", certificatePath.c_str());
+            AZ_Printf("AWSNativeSDKInit", "Certificate bundle is read successfully from %s", certificatePath.c_str());
 
             AZ::IO::HandleType outFileHandle;
 
@@ -71,19 +71,19 @@ namespace AWSNativeSDKInit
 
             if (!outFileResult)
             {
-                AZ_Error("AWSCore", false, "Failed to open file with result %i\n", fileResult.GetResultCode());
+                AZ_Error("AWSNativeSDKInit", false, "Failed to open the certificate bundle with result %i\n", fileResult.GetResultCode());
             }
 
             AZ::IO::Result writeFileResult = fileBase->Write(outFileHandle, contents.data(), fileSize);
             if (!writeFileResult)
             {
-                AZ_Error("AWSCore", false, "Failed to open file with result %i\n", writeFileResult.GetResultCode());
+                AZ_Error("AWSNativeSDKInit", false, "Failed to write the certificate bundle with result %i\n", writeFileResult.GetResultCode());
             }
 
             fileBase->Close(fileHandle);
             fileBase->Close(outFileHandle);
 
-            AZ_Printf("AWSCore", "Certificate write successfully %s", publicStoragePath.c_str());
+            AZ_Printf("AWSNativeSDKInit", "Certificate bundle successfully copied to %s", publicStoragePath.c_str());
         }
     } // namespace Platform
 }

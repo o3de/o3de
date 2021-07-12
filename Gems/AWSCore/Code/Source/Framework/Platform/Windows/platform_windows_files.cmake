@@ -6,5 +6,5 @@
 #
 
 set(FILES
-    ../Common/CaFile_Default.cpp
+    ../Common/ResolveCaCertBundlePath_Null.cpp
 )
