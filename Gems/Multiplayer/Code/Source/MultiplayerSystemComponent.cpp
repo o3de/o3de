@@ -735,7 +735,7 @@ namespace Multiplayer
 
     NetworkEntityHandle MultiplayerSystemComponent::SpawnDefaultPlayerPrefab()
     {
-        PrefabEntityId playerPrefabEntityId(AZ::Name(static_cast<AZ::CVarFixedString>(sv_defaultPlayerSpawnAsset).c_str()), 1);
+        PrefabEntityId playerPrefabEntityId(AZ::Name(static_cast<AZ::CVarFixedString>(sv_defaultPlayerSpawnAsset).c_str()));
         INetworkEntityManager::EntityList entityList = m_networkEntityManager.CreateEntitiesImmediate(playerPrefabEntityId, NetEntityRole::Authority, AZ::Transform::CreateIdentity());
 
         NetworkEntityHandle controlledEntity;

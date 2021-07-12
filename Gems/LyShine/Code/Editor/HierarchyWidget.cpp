@@ -235,9 +235,7 @@ void HierarchyWidget::contextMenuEvent(QContextMenuEvent* ev)
     {
         HierarchyMenu contextMenu(this,
             (HierarchyMenu::Show::kCutCopyPaste |
-             HierarchyMenu::Show::kSavePrefab |
              HierarchyMenu::Show::kNew_EmptyElement |
-             HierarchyMenu::Show::kNew_ElementFromPrefabs |
              HierarchyMenu::Show::kDeleteElement |
              HierarchyMenu::Show::kNewSlice |
              HierarchyMenu::Show::kNew_InstantiateSlice |

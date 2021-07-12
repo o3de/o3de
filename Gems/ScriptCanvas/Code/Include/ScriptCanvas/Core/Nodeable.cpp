@@ -9,8 +9,6 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <ScriptCanvas/Core/SubgraphInterface.h>
-#include <ScriptCanvas/Grammar/GrammarContext.h>
-#include <ScriptCanvas/Grammar/GrammarContextBus.h>
 
 namespace NodeableOutCpp
 {
@@ -79,6 +77,7 @@ namespace ScriptCanvas
             behaviorContext->Class<Nodeable>()
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::List)
                 ->Attribute(AZ::ScriptCanvasAttributes::VariableCreationForbidden, AZ::AttributeIsValid::IfPresent)
+                ->Attribute(AZ::Script::Attributes::UseClassIndexAllowNil, AZ::AttributeIsValid::IfPresent)
                 ->Constructor<ExecutionStateWeakPtr>()
                 ->Method("Deactivate", &Nodeable::Deactivate)
                 ->Method("InitializeExecutionState", &Nodeable::InitializeExecutionState)

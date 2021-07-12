@@ -45,11 +45,17 @@ namespace PhysX
             hit.m_distance = pxHit.distance;
             hit.m_resultFlags |= AzPhysics::SceneQuery::ResultFlags::Distance;
 
-            hit.m_position = PxMathConvert(pxHit.position);
-            hit.m_resultFlags |= AzPhysics::SceneQuery::ResultFlags::Position;
+            if (pxHit.flags & physx::PxHitFlag::ePOSITION)
+            {
+                hit.m_position = PxMathConvert(pxHit.position);
+                hit.m_resultFlags |= AzPhysics::SceneQuery::ResultFlags::Position;
+            }
 
-            hit.m_normal = PxMathConvert(pxHit.normal);
-            hit.m_resultFlags |= AzPhysics::SceneQuery::ResultFlags::Normal;
+            if (pxHit.flags & physx::PxHitFlag::eNORMAL)
+            {
+                hit.m_normal = PxMathConvert(pxHit.normal);
+                hit.m_resultFlags |= AzPhysics::SceneQuery::ResultFlags::Normal;
+            }
 
             const ActorData* actorData = Utils::GetUserData(pxHit.actor);
             hit.m_bodyHandle = actorData->GetBodyHandle();

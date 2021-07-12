@@ -75,7 +75,7 @@ namespace ScriptCanvas
                     break;
                 case Data::eType::Matrix4x4:
                     OperatorEvaluator::Evaluate<Data::Matrix4x4Type>(OperatorMulImpl<Data::Matrix4x4Type>(), operands, result);
-                    break; 
+                    break;
                 default:
                     AZ_Assert(false, "Multiplication operator not defined for type: %s", Data::ToAZType(type).ToString<AZStd::string>().c_str());
                     break;
@@ -88,7 +88,7 @@ namespace ScriptCanvas
                 FindModifiableDatumView(slotId, datumView);
 
                 OnResetDatumToDefaultValue(datumView);
-            }            
+            }
 
             bool OperatorMul::IsValidArithmeticSlot(const SlotId& slotId) const
             {
@@ -110,7 +110,7 @@ namespace ScriptCanvas
                 return (datum != nullptr);
             }
 
-            void OperatorMul::OnResetDatumToDefaultValue(ModifiableDatumView& datumView)            
+            void OperatorMul::OnResetDatumToDefaultValue(ModifiableDatumView& datumView)
             {
                 Data::Type displayType = GetDisplayType(GetArithmeticDynamicTypeGroup());
 

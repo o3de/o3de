@@ -38,6 +38,7 @@ namespace O3DE::ProjectManager
 
     signals:
         void Done(bool success = true);
+        void NotifyBuildProject(const ProjectInfo& projectInfo);
 
     private:
         ProjectInfo m_projectInfo;

@@ -50,7 +50,6 @@
 
 #include <ScriptCanvas/Core/NodeBus.h>
 #include <ScriptCanvas/Data/DataRegistry.h>
-#include <ScriptCanvas/Execution/RuntimeBus.h>
 #include <ScriptCanvas/GraphCanvas/NodeDescriptorBus.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 

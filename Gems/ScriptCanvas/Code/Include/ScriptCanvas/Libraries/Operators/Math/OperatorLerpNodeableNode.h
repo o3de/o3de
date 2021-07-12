@@ -29,7 +29,7 @@ namespace ScriptCanvas
             AZ::Crc32 GetDataDynamicGroup() const { return AZ_CRC("LerpDataDynamicGroup", 0x62b5f89e); }
         };
 
-    } 
+    }
 
-} 
+}
 

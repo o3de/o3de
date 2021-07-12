@@ -22,16 +22,14 @@ namespace ScriptCanvas
             class WeightedRandomSequencer
                 : public Node
             {
-
             public:
-
                 SCRIPTCANVAS_NODE(WeightedRandomSequencer);
 
                 static void ReflectDataTypes(AZ::ReflectContext* reflectContext);
-            
+
                 WeightedRandomSequencer() = default;
                 ~WeightedRandomSequencer() = default;
-                
+
                 AZ::Outcome<DependencyReport, void> GetDependencies() const override;
 
                 ConstSlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* /*executionChildSlot*/) const override;
@@ -41,24 +39,20 @@ namespace ScriptCanvas
                 void ConfigureVisualExtensions() override;
 
                 bool OnValidateNode(ValidationResults& validationResults);
-                
-                void OnInputSignal(const SlotId& slot);
 
                 SlotId HandleExtension(AZ::Crc32 extensionId) override;
-
-                
 
                 bool CanDeleteSlot(const SlotId& slotId) const override;
 
                 void OnSlotRemoved(const SlotId& slotId) override;
                 ////
-                
+
             protected:
 
                 AZ::Crc32 GetWeightExtensionId() const { return AZ_CRC("WRS_Weight_Extension", 0xd17b9467); }
                 AZ::Crc32 GetExecutionExtensionId() const { return AZ_CRC("WRS_Execution_Extension", 0x0706035e); }
-                AZStd::string GetDisplayGroup() const { return "WeightedExecutionGroup";  }
-            
+                AZStd::string GetDisplayGroup() const { return "WeightedExecutionGroup"; }
+
             private:
 
                 struct WeightedPairing
@@ -74,22 +68,22 @@ namespace ScriptCanvas
                     int m_totalWeight;
                     SlotId m_executionSlotId;
                 };
-            
+
                 void RemoveWeightedPair(SlotId slotId);
-            
+
                 bool AllWeightsFilled() const;
                 bool HasExcessEndpoints() const;
-                
+
                 WeightedPairing AddWeightedPair();
                 void FixupStateNames();
-                
+
                 AZStd::string GenerateDataName(int counter);
-                AZStd::string GenerateOutName(int counter);                
+                AZStd::string GenerateOutName(int counter);
 
                 using WeightedPairingList = AZStd::vector<WeightedPairing>;
 
                 WeightedPairingList m_weightedPairings;
             };
         }
-    }   
+    }
 }
