@@ -40,9 +40,8 @@ namespace O3DE::ProjectManager
                         "isComplete"
                     });
 
-                if (vsWhereProcess.waitForStarted())
+                if (vsWhereProcess.waitForStarted() && vsWhereProcess.waitForFinished())
                 {
-                    while (vsWhereProcess.waitForReadyRead()) {}
                     QString vsWhereOutput(vsWhereProcess.readAllStandardOutput());
                     if (vsWhereOutput.startsWith("1"))
                     {
