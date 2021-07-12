@@ -80,14 +80,44 @@ float3x3 BuildViewAlignedOrthonormalBasis(in float3 normal, in float3 dirToView)
 // xy plane in positive z space.
 float IntegrateEdge(float3 v1, float3 v2)
 {
+    // This alternate version may work better for platforms where acos() precision is low.
+    /*
+    float x = dot(v1, v2);
+    float y = abs(x);
+
+    float a = 5.42031 + (3.12829 + 0.0902326 * y) * y;
+    float b = 3.45068 + (4.18814 + y) * y;
+    float theta_sinTheta = a / b;
+
+    if (x < 0.0)
+    {
+        theta_sinTheta = PI * rsqrt(saturate(1.0 - x * x)) - theta_sinTheta;
+    }
+
+    float3 u = cross(v1, v2);
+    return theta_sinTheta * u.z;
+    */
+
     float cosTheta = dot(v1, v2);
-    cosTheta = clamp(cosTheta, -0.9999, 0.9999);
+    float theta = acos(cosTheta);
 
     // calculate 1.0 / sin(theta)
-    float invSinTheta = rsqrt(1.0 - cosTheta * cosTheta);
+    float invSinTheta = rsqrt(saturate(1.0 - cosTheta * cosTheta));
 
-    float theta = acos(cosTheta);
-    return cross(v1, v2).z * theta * invSinTheta;
+    return cross(v1, v2).z * ((theta > 0.001) ? theta * invSinTheta : 1.0);
+}
+
+// Cheaper version of above which is good enough for diffuse
+float IntegrateEdgeDiffuse(float3 v1, float3 v2)
+{
+    float cosTheta = dot(v1, v2);
+    float absCosTheta = abs(cosTheta);
+    float theta_sinTheta = 1.5708 + (-0.879406 + 0.308609 * absCosTheta) * absCosTheta;
+    if (cosTheta < 0.0)
+    {
+        theta_sinTheta = PI * rsqrt(1.0 - cosTheta * cosTheta) - theta_sinTheta;
+    }
+    return theta_sinTheta * cross(v1, v2).z;
 }
 
 // Returns the unnormalized z plane intersection point between pointAboveHorizon and pointBelowHorizon.
@@ -189,41 +219,89 @@ void ClipQuadToHorizon(inout float3 p[5], out int vertexCount)
     }
 }
 
-// Takes 4 points (p) from a quad plus a 5th dummy point, rotates them into the space of the normal, then transforms
-// the points by the LTC matrix provided. The points are then clipped to the normal's hemisphere. The number of points
-// after the clip is returned in vertexCount. It's possible for the resulting clipped quad to be a triangle (when 3
-// points are below the horizon), or a pentagon (when one point is below the horizon), or be a regular 4 point quad.
-void LtcClipAndNormalizeQuad(in float3 normal, in float3 dirToView, float3x3 ltcMat, inout float3 p[5], out int vertexCount)
+// Applies the LTC matrix to the clipped points of a quad.
+void ApplyLtcMatrixToQuad(in float3x3 ltcMat, inout float3 p[5], in int vertexCount)
 {
-    // Rotate ltc matrix
-    ltcMat = mul(ltcMat, BuildViewAlignedOrthonormalBasis(normal, dirToView));
-
     // Transform points into ltc space
-    p[0] = mul(ltcMat, p[0].xyz);
-    p[1] = mul(ltcMat, p[1].xyz);
-    p[2] = mul(ltcMat, p[2].xyz);
-    p[3] = mul(ltcMat, p[3].xyz);
+    p[0] = mul(ltcMat, p[0]);
+    p[1] = mul(ltcMat, p[1]);
+    p[2] = mul(ltcMat, p[2]);
 
-    ClipQuadToHorizon(p, vertexCount);
-
-    // visibility check
-    if (vertexCount == 0)
+    if (vertexCount > 3)
     {
-        return;
+        p[3] = mul(ltcMat, p[3]);
     }
+    if (vertexCount > 4)
+    {
+        p[4] = mul(ltcMat, p[4]);
+    }
+}
 
-    // project onto sphere
+// Projects the clipped points of a quad onto the sphere.
+void NormalizeQuadPoints(inout float3 p[5], in int vertexCount)
+{
+    // project quad points onto a sphere.
     p[0] = normalize(p[0]);
     p[1] = normalize(p[1]);
     p[2] = normalize(p[2]);
-    p[3] = normalize(p[3]);
-    p[4] = normalize(p[4]);
+
+    if (vertexCount > 3)
+    {
+        p[3] = normalize(p[3]);
+    }
+    if (vertexCount > 4)
+    {
+        p[4] = normalize(p[4]);
+    }
 }
 
-float IntegrateQuad(in float3 v[5], in float vertexCount, in bool doubleSided)
+// Transforms the 4 points of a quad into the hemisphere of the normal
+void TransformQuadToOrthonormalBasis(in float3 normal, in float3 dirToView, inout float3 p[4])
 {
-    // Integrate
+    float3x3 orthoNormalBasis = BuildViewAlignedOrthonormalBasis(normal, dirToView);
+
+    // Transform points into orthonormal space
+    p[0] = mul(orthoNormalBasis, p[0]);
+    p[1] = mul(orthoNormalBasis, p[1]);
+    p[2] = mul(orthoNormalBasis, p[2]);
+    p[3] = mul(orthoNormalBasis, p[3]);
+}
+
+// Integrates the edges of a quad for lambertian diffuse contribution.
+float IntegrateQuadDiffuse(in float3 v[5], in float vertexCount, in bool doubleSided)
+{
     float sum = 0.0;
+
+    NormalizeQuadPoints(v, vertexCount);
+
+    // There must be at least 3 points so don't check for the first 2 edges.
+    sum += IntegrateEdgeDiffuse(v[0], v[1]);
+    sum += IntegrateEdgeDiffuse(v[1], v[2]);
+
+    if (vertexCount > 3)
+    {
+        sum += IntegrateEdgeDiffuse(v[2], v[3]);
+        if (vertexCount == 5)
+        {
+            sum += IntegrateEdgeDiffuse(v[3], v[4]);
+        }
+    }
+
+    // Close the polygon
+    sum += IntegrateEdgeDiffuse(v[vertexCount - 1], v[0]);
+
+    // Note: negated due to winding order
+    sum = doubleSided ? abs(sum) : max(0.0, -sum);
+
+    return sum;
+}
+
+// Integrates the edges of a quad for specular contribution.
+float IntegrateQuadSpecular(in float3 v[5], in float vertexCount, in bool doubleSided)
+{
+    float sum = 0.0;
+
+    NormalizeQuadPoints(v, vertexCount);
 
     // There must be at least 3 points so don't check for the first 2 edges.
     sum += IntegrateEdge(v[0], v[1]);
@@ -247,26 +325,62 @@ float IntegrateQuad(in float3 v[5], in float vertexCount, in bool doubleSided)
     return sum;
 }
 
-float LtcQuadEvaluate(in float3 normal, in float3 dirToView, in float3x3 ltcMat, in float3 p[4], in bool doubleSided)
+// Evaluate linear transform cosine lighting for a 4 point quad.
+//   normal - The surface normal
+//   dirToView - Normalized direction from the surface to the view
+//   ltcMat - The LTC matrix for specular, or identity for diffuse.
+//   p[4] - The 4 light positions relative to the surface position.
+//   doubleSided - If the quad emits light from both sides
+//   diffuse - The output diffuse response for the quad light
+//   specular - The output specular response for the quad light
+void LtcQuadEvaluate(
+    in float3 normal,
+    in float3 dirToView,
+    in float3x3 ltcMat,
+    in float3 p[4],
+    in bool doubleSided,
+    out float diffuse,
+    out float specular)
 {
+    // Transform the points of the light into the space of the normal's hemisphere.
+    TransformQuadToOrthonormalBasis(normal, dirToView, p);
+
     // Initialize quad with dummy point at end in case one corner is clipped (resulting in 5 sided polygon)
     float3 v[5] = {p[0], p[1], p[2], p[3], float3(0.0, 0.0, 0.0)};
 
-    int vertexCount = 0;
-    LtcClipAndNormalizeQuad(normal, dirToView, ltcMat, v, vertexCount);
+    // Clip the light polygon to the normal hemisphere. This is done before the LTC matrix is applied to prevent
+    // parts of the light below the horizon from impacting the surface. The number of points remaining after
+    // the clip is returned in vertexCount. It's possible for the vertexCount of the resulting clipped quad to be
+    // 0 - all points clipped (no work to do, so return)
+    // 3 - 3 points clipped, leaving only a triangular corner of the quad
+    // 4 - 2 or 0 points clipped, leaving a quad
+    // 5 - 1 point clipped leaving a pentagon.
 
-    if (vertexCount > 0)
+    int vertexCount = 0;
+    ClipQuadToHorizon(v, vertexCount);
+
+    if (vertexCount == 0)
     {
-       return IntegrateQuad(v, vertexCount, doubleSided);
+        // Entire light is below the horizon.
+        return;
     }
-    return 0.0;
+
+    // IntegrateQuadDiffuse is a cheap approximation compared to specular.
+    diffuse = IntegrateQuadDiffuse(v, vertexCount, doubleSided);
+
+    ApplyLtcMatrixToQuad(ltcMat, v, vertexCount);
+
+    // IntegrateQuadSpecular uses more accurate integration to handle smooth surfaces correctly.
+    specular = IntegrateQuadSpecular(v, vertexCount, doubleSided);
 }
 
 // Checks an edge against the horizon and integrates it.
-//   p0 - first point
-//   p1 - second point
-//   prevClipPoint - the clip point saved from the last time an edge went from above to below the horizon
-//   sum - the sum total of all integrations to contribute to.
+//   p0 - First point
+//   p1 - Second point
+//   prevClipPoint - The clip point saved from the last time an edge went from above to below the horizon
+//   ltcMat - The ltc lookup matrix for specular
+//   diffuse - The current sum total of diffuse contribution to apply additional contribution to
+//   specular - The current sum total of specular contribution to apply additional contribution to
 //
 // Explanation:
 // When evaluating edges of a polygon there are four possible states to deal with
@@ -283,28 +397,34 @@ float LtcQuadEvaluate(in float3 normal, in float3 dirToView, in float3x3 ltcMat,
 // 4. Both points are below the horizon
 //    - Do nothing.
 
-void EvaluatePolyEdge(in float3 p0, in float3 p1, inout float3 prevClipPoint, inout float sum)
+void EvaluatePolyEdge(in float3 p0, in float3 p1, inout float3 prevClipPoint, in float3x3 ltcMat, inout float diffuse, inout float specular)
 {
     if (p0.z > 0.0)
     {
         if (p1.z > 0.0)
         {
             // Both above horizon
-            sum += IntegrateEdge(normalize(p0), normalize(p1));
+            diffuse += IntegrateEdgeDiffuse(normalize(p0), normalize(p1));
+            specular += IntegrateEdge(normalize(mul(ltcMat, p0)), normalize(mul(ltcMat, p1)));
         }
         else
         {
             // Going from above to below horizon
-            prevClipPoint = normalize(ClipEdge(p0, p1));
-            sum += IntegrateEdge(normalize(p0), prevClipPoint);
+            prevClipPoint = ClipEdge(p0, p1);
+            diffuse += IntegrateEdgeDiffuse(normalize(p0), normalize(prevClipPoint));
+            specular += IntegrateEdge(normalize(mul(ltcMat, p0)), normalize(mul(ltcMat, prevClipPoint)));
         }
     }
     else if (p1.z > 0.0)
     {
         // Going from below to above horizon
-        float3 clipPoint = normalize(ClipEdge(p1, p0));
-        sum += IntegrateEdge(prevClipPoint, clipPoint);
-        sum += IntegrateEdge(clipPoint, normalize(p1));
+        float3 clipPoint = ClipEdge(p1, p0);
+        diffuse += IntegrateEdgeDiffuse(normalize(prevClipPoint), normalize(clipPoint));
+        diffuse += IntegrateEdgeDiffuse(normalize(clipPoint), normalize(p1));
+        
+        clipPoint = mul(ltcMat, clipPoint);
+        specular += IntegrateEdge(normalize(mul(ltcMat, prevClipPoint)), normalize(clipPoint));
+        specular += IntegrateEdge(normalize(clipPoint), normalize(mul(ltcMat, p1)));
     }
 }
 
@@ -316,26 +436,38 @@ void EvaluatePolyEdge(in float3 p0, in float3 p1, inout float3 prevClipPoint, in
 //   positions - The buffer where the polygon positions are
 //   startIdx - The index of the first polygon position
 //   endIdx - The index of the point directly after the last polygon position
-//
+//   diffuse - The output diffuse response for the polygon light
+//   specular - The output specular response for the polygon light
 // The most complicated aspect of this function is clipping the polygon against the horizon of the surface point. See
 // EvaluatePolyEdge() above for details on the general concept. However, this function must deal with the case of the
 // first point being below the horizon. In that case, it needs to search in reverse from the end for the first point 
 // above the horizon, and save the intersection point between the above and below points so it can be used in 
 // EvaluatePolyEdge() later. During this search it also adjusts the end point index as necessary to avoid processing
 // those points that are below the horizon.
-float LtcPolygonEvaluate(in float3 pos, in float3 normal, in float3 dirToView, in float3x3 ltcMat, in StructuredBuffer<float4> positions, in uint startIdx, in uint endIdx)
+void LtcPolygonEvaluate(
+    in float3 pos, 
+    in float3 normal, 
+    in float3 dirToView,
+    in float3x3 ltcMat,
+    in StructuredBuffer<float4> positions,
+    in uint startIdx,
+    in uint endIdx,
+    out float diffuse,
+    out float specular
+)
 {
     if (endIdx - startIdx < 3)
     {
-        return 0.0; // Must have at least 3 points to form a polygon.
+        return; // Must have at least 3 points to form a polygon.
     }
 
     // Rotate ltc matrix
-    ltcMat = mul(ltcMat, BuildViewAlignedOrthonormalBasis(normal, dirToView));
+    float3x3 orthonormalMat = BuildViewAlignedOrthonormalBasis(normal, dirToView);
 
     // Prepare initial values
-    float sum = 0.0; // sum of edge integation
-    float3 p0 = mul(ltcMat, positions[startIdx].xyz - pos); // First point in polygon
+    float3 p0 = mul(orthonormalMat, positions[startIdx].xyz - pos); // First point in polygon
+    diffuse = 0.0;
+    specular = 0.0;
     
     float3 prevClipPoint = float3(0.0, 0.0, 0.0); // Used to hold previous clip point when polygon dips below horizon.
     float3 closePoint = p0;
@@ -349,10 +481,10 @@ float LtcPolygonEvaluate(in float3 pos, in float3 normal, in float3 dirToView, i
         // searching backwards, updating the endIdx along the way to avoid reprocessing those points later
         for ( ; endIdx > startIdx + 1; --endIdx)
         {
-            float3 prevPoint = mul(ltcMat, positions[endIdx - 1].xyz - pos);
-            if (prevPoint.z > 0)
+            float3 prevPoint = mul(orthonormalMat, positions[endIdx - 1].xyz - pos);
+            if (prevPoint.z > 0.0)
             {
-                prevClipPoint = normalize(ClipEdge(prevPoint, p0));
+                prevClipPoint = ClipEdge(prevPoint, p0);
                 closePoint = prevClipPoint;
                 break;
             }
@@ -362,7 +494,7 @@ float LtcPolygonEvaluate(in float3 pos, in float3 normal, in float3 dirToView, i
         // Check if all points below horizon
         if (endIdx == startIdx + 1)
         {
-            return 0.0; 
+            return; 
         }
 
         p0 = firstPoint; // Restore the original p0
@@ -371,13 +503,14 @@ float LtcPolygonEvaluate(in float3 pos, in float3 normal, in float3 dirToView, i
     // Evaluate all the points
     for (uint curIdx = startIdx + 1; curIdx < endIdx; ++curIdx)
     {
-        float3 p1 = mul(ltcMat, positions[curIdx].xyz - pos); // Current point in polygon
-        EvaluatePolyEdge(p0, p1, prevClipPoint, sum);
+        float3 p1 = mul(orthonormalMat, positions[curIdx].xyz - pos); // Current point in polygon
+        EvaluatePolyEdge(p0, p1, prevClipPoint, ltcMat, diffuse, specular);
         p0 = p1;
     }
     
-    EvaluatePolyEdge(p0, closePoint, prevClipPoint, sum);
+    EvaluatePolyEdge(p0, closePoint, prevClipPoint, ltcMat, diffuse, specular);
 
     // Note: negated due to winding order
-    return -sum;
+    diffuse = -diffuse;
+    specular = -specular;
 }

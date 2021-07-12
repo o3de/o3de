@@ -41,50 +41,13 @@ namespace ScriptCanvas
                         slotConfiguration.m_toolTip = "The value at the specified index";
                         slotConfiguration.m_displayGroup = GetSourceDisplayGroup();
                         slotConfiguration.SetType(type);
-                        slotConfiguration.SetConnectionType(ConnectionType::Output);                        
+                        slotConfiguration.SetConnectionType(ConnectionType::Output);
 
                         m_outputSlots.insert(AddSlot(slotConfiguration));
                     }
                 }
             }
 
-            void OperatorBack::InvokeOperator()
-            {
-                const SlotSet& slotSets = GetSourceSlots();
-
-                if (!slotSets.empty())
-                {
-                    SlotId sourceSlotId = (*slotSets.begin());
-                    const Datum* containerDatum = FindDatum(sourceSlotId);
-
-                    if (Datum::IsValidDatum(containerDatum))
-                    {
-                        const Datum* inputKeyDatum = FindDatum(*m_inputSlots.begin());
-                        AZ::Outcome<Datum, AZStd::string> valueOutcome = BehaviorContextMethodHelper::CallMethodOnDatumUnpackOutcomeSuccess(*containerDatum, "Back", *inputKeyDatum);
-                        if (!valueOutcome.IsSuccess())
-                        {
-                            SCRIPTCANVAS_REPORT_ERROR((*this), "Failed to call Back on container: %s", valueOutcome.GetError().c_str());
-                            return;
-                        }
-
-                        if (Data::IsVectorContainerType(containerDatum->GetType()))
-                        {
-                            PushOutput(valueOutcome.TakeValue(), *GetSlot(*m_outputSlots.begin()));
-                        }
-                    }
-                }
-
-                SignalOutput(GetSlotId("Out"));
-            }
-
-            void OperatorBack::OnInputSignal(const SlotId& slotId)
-            {
-                const SlotId inSlotId = OperatorBaseProperty::GetInSlotId(this);
-                if (slotId == inSlotId)
-                {
-                    InvokeOperator();
-                }
-            }
         }
     }
 }

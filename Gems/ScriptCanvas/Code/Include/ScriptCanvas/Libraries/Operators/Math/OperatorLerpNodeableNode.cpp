@@ -189,7 +189,7 @@ namespace ScriptCanvas
 
                         dataSlotConfiguration.SetConnectionType(ScriptCanvas::ConnectionType::Output);
                         dataSlotConfiguration.m_dynamicDataType = DynamicDataType::Value;
-                        
+
                         SlotId slotIdStep = AddSlot(dataSlotConfiguration);
                         AZ_Assert(slotIdStep.IsValid(), "Data slot is not created successfully.");
                         latentOut.outputs.push_back(slotIdStep);

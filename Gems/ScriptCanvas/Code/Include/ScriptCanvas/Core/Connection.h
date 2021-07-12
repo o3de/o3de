@@ -60,8 +60,6 @@ namespace ScriptCanvas
         // GraphNotificationBus
         void OnNodeRemoved(const ID& nodeId) override;
 
-        void UpdateConnectionStatus(NodeUpdateSlotReport& report);
-
     protected:
         //-------------------------------------------------------------------------
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)

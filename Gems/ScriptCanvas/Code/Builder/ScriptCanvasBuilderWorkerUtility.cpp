@@ -8,7 +8,6 @@
 #include "precompiled.h"
 
 #include <Asset/AssetDescription.h>
-#include <Asset/Functions/ScriptCanvasFunctionAsset.h>
 #include <AssetBuilderSDK/SerializationDependencies.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/IO/FileIO.h>
@@ -18,10 +17,9 @@
 #include <AzFramework/Script/ScriptComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <Builder/ScriptCanvasBuilderWorker.h>
-#include <ScriptCanvas/Asset/Functions/RuntimeFunctionAssetHandler.h>
+#include <ScriptCanvas/Asset/SubgraphInterfaceAssetHandler.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
-#include <ScriptCanvas/Assets/Functions/ScriptCanvasFunctionAssetHandler.h>
 #include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
 #include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
@@ -157,18 +155,6 @@ namespace ScriptCanvasBuilder
         AZ::Data::Asset<ScriptCanvas::RuntimeAsset> runtimeAsset;
         runtimeAsset.Create(runtimeAssetId);
 
-        return AZ::Success(runtimeAsset);
-    }
-
-    AZ::Outcome<AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset>, AZStd::string> CreateRuntimeFunctionAsset(const AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasFunctionAsset>& editAsset)
-    {
-        // Flush asset manager events to ensure no asset references are held by closures queued on Ebuses.
-        AZ::Data::AssetManager::Instance().DispatchEvents();
-
-        auto runtimeAssetId = editAsset.GetId();
-        runtimeAssetId.m_subId = AZ_CRC("SubgraphInterface", 0xdfe6dc72);
-        AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset> runtimeAsset;
-        runtimeAsset.Create(runtimeAssetId);
         return AZ::Success(runtimeAsset);
     }
 
@@ -447,48 +433,6 @@ namespace ScriptCanvasBuilder
         if (editorAssetHandler.LoadAssetData(asset, assetDataStream, assetFilterCB) != AZ::Data::AssetHandler::LoadResult::LoadComplete)
         {
             return AZ::Failure(AZStd::string::format("Failed to load ScriptCavas asset: %s", filePath.data()));
-        }
-
-        return AZ::Success(asset);
-    }
-
-    AZ::Outcome<AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasFunctionAsset>, AZStd::string> LoadEditorFunctionAsset(AZStd::string_view filePath)
-    {
-        AZStd::shared_ptr<AZ::Data::AssetDataStream> assetDataStream = AZStd::make_shared<AZ::Data::AssetDataStream>();
-
-        // Read the asset into a memory buffer, then hand ownership of the buffer to assetDataStream
-        {
-            AZ::IO::FileIOStream stream(filePath.data(), AZ::IO::OpenMode::ModeRead);
-            if (!AZ::IO::RetryOpenStream(stream))
-            {
-                return AZ::Failure(AZStd::string::format("File failed to open: %s", filePath.data()));
-            }
-            AZStd::vector<AZ::u8> fileBuffer(stream.GetLength());
-            size_t bytesRead = stream.Read(fileBuffer.size(), fileBuffer.data());
-            if (bytesRead != stream.GetLength())
-            {
-                return AZ::Failure(AZStd::string::format("File failed to open: %s", filePath.data()));
-            }
-
-            assetDataStream->Open(AZStd::move(fileBuffer));
-        }
-
-        AZ::IO::FileIOStream ioStream;
-        if (!ioStream.Open(filePath.data(), AZ::IO::OpenMode::ModeRead))
-        {
-            return AZ::Failure(AZStd::string::format("File failed to open: %s", filePath.data()));
-        }
-
-        ScriptCanvasEditor::ScriptCanvasFunctionAssetHandler editorAssetHandler;
-
-        AZ::SerializeContext* context{};
-        AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-        AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasFunctionAsset> asset;
-        asset.Create(AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
-
-        if (editorAssetHandler.LoadAssetData(asset, assetDataStream, AZ::Data::AssetFilterCB{}) != AZ::Data::AssetHandler::LoadResult::LoadComplete)
-        {
-            return AZ::Failure(AZStd::string::format("Failed to load ScriptCavas Function asset: %s", filePath.data()));
         }
 
         return AZ::Success(asset);
