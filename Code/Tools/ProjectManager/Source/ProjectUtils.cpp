@@ -17,6 +17,8 @@
 #include <QProcessEnvironment>
 #include <QGuiApplication>
 #include <QProgressDialog>
+#include <QSpacerItem>
+#include <QGridLayout>
 
 namespace O3DE::ProjectManager
 {
@@ -374,46 +376,27 @@ namespace O3DE::ProjectManager
             return true;
         }
 
-        static bool IsVS2019Installed_internal()
+        bool FindSupportedCompiler(QWidget* parent)
         {
-            QProcessEnvironment environment = QProcessEnvironment::systemEnvironment();
-            QString programFilesPath = environment.value("ProgramFiles(x86)");
-            QString vsWherePath = programFilesPath + "\\Microsoft Visual Studio\\Installer\\vswhere.exe";
+            auto findCompilerResult = FindSupportedCompilerForPlatform();
 
-            QFileInfo vsWhereFile(vsWherePath);
-            if (vsWhereFile.exists() && vsWhereFile.isFile())
+            if (!findCompilerResult.IsSuccess())
             {
-                QProcess vsWhereProcess;
-                vsWhereProcess.setProcessChannelMode(QProcess::MergedChannels);
+                QMessageBox vsWarningMessage(parent);
+                vsWarningMessage.setIcon(QMessageBox::Warning);
+                vsWarningMessage.setWindowTitle(QObject::tr("Create Project"));
+                // Makes link clickable
+                vsWarningMessage.setTextFormat(Qt::RichText);
+                vsWarningMessage.setText(findCompilerResult.GetError());
+                vsWarningMessage.setStandardButtons(QMessageBox::Close);
 
-                vsWhereProcess.start(
-                    vsWherePath,
-                    QStringList{ "-version", "16.0", "-latest", "-requires", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
-                                 "-property", "isComplete" });
-
-                if (!vsWhereProcess.waitForStarted())
-                {
-                    return false;
-                }
-
-                while (vsWhereProcess.waitForReadyRead())
-                {
-                }
-
-                QString vsWhereOutput(vsWhereProcess.readAllStandardOutput());
-                if (vsWhereOutput.startsWith("1"))
-                {
-                    return true;
-                }
+                QSpacerItem* horizontalSpacer = new QSpacerItem(600, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+                QGridLayout* layout = reinterpret_cast<QGridLayout*>(vsWarningMessage.layout());
+                layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
+                vsWarningMessage.exec();
             }
 
-            return false;
-        }
-
-        bool IsVS2019Installed()
-        {
-            static bool vs2019Installed = IsVS2019Installed_internal();
-            return vs2019Installed;
+            return findCompilerResult.IsSuccess();
         }
 
         ProjectManagerScreen GetProjectManagerScreen(const QString& screen)

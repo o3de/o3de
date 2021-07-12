@@ -516,7 +516,7 @@ namespace O3DE::ProjectManager
 
     bool ProjectsScreen::StartProjectBuild(const ProjectInfo& projectInfo)
     {
-        if (ProjectUtils::IsVS2019Installed())
+        if (ProjectUtils::FindSupportedCompiler(this))
         {
             QMessageBox::StandardButton buildProject = QMessageBox::information(
                 this,
