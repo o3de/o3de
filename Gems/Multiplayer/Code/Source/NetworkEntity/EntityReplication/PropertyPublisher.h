@@ -55,12 +55,14 @@ namespace Multiplayer
             Updating, // Create delta update packets based off what the remote endpoint has received
             Deleting, // Awaiting confirmation that the delete packet was received
         };
+        inline static const char* EntityReplicatorStateStrings[] = { "Invalid", "Creating", "Rebasing", "Updating", "Deleting" };
 
         enum class EntityReplicatorSerializationPhase
         {
             Ready,
             Prepared,
         };
+        inline static const char* EntityReplicatorSerializationPhaseStrings[] = {"Ready", "Prepared"};
 
         EntityReplicatorState GetReplicatorState() const;
 

@@ -109,4 +109,7 @@ set(FILES
     Source/ReplicationWindows/NullReplicationWindow.h
     Source/ReplicationWindows/ServerToClientReplicationWindow.cpp
     Source/ReplicationWindows/ServerToClientReplicationWindow.h
+    Source/ReplicationWindows/ClientToServerReplicationWindow.cpp
+    Source/ReplicationWindows/ClientToServerReplicationWindow.h
+
 )

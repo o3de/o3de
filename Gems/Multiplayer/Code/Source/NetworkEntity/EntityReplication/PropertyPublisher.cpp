@@ -9,6 +9,7 @@
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
+#pragma optimize("", off) //< remember to place this after the #includes so that you only optimize the code you want
 
 namespace Multiplayer
 {
@@ -198,7 +199,14 @@ namespace Multiplayer
     bool PropertyPublisher::RequiresSerialization()
     {
         // Send our entity replication update
-        AZ_Assert(m_serializationPhase == PropertyPublisher::EntityReplicatorSerializationPhase::Ready, "Unexpected serialization phase");
+        if (m_serializationPhase != PropertyPublisher::EntityReplicatorSerializationPhase::Ready)
+        {
+            AZ_Assert(
+                false,
+                "RequiresSerialization failed. Unexpected serialization phase.  Phase is %s, expecting Ready",
+                EntityReplicatorSerializationPhaseStrings[static_cast<int>(m_serializationPhase)])
+        }
+
 
         switch (m_replicatorState)
         {
@@ -229,7 +237,10 @@ namespace Multiplayer
     bool PropertyPublisher::PrepareSerialization()
     {
         // Send our entity replication update
-        AZ_Assert(m_serializationPhase == PropertyPublisher::EntityReplicatorSerializationPhase::Ready, "Unexpected serialization phase");
+        AZ_Assert(
+            m_serializationPhase == PropertyPublisher::EntityReplicatorSerializationPhase::Ready,
+            "PrepareSerialization failed. Unexpected serialization phase.  Phase is %s, expecting Prepared",
+            EntityReplicatorSerializationPhaseStrings[static_cast<int>(m_serializationPhase)])
 
         bool needsUpdate(false);
         switch (m_replicatorState)
@@ -284,13 +295,19 @@ namespace Multiplayer
         case PropertyPublisher::EntityReplicatorState::Creating:
         case PropertyPublisher::EntityReplicatorState::Updating:
         {
-            AZ_Assert(m_serializationPhase == PropertyPublisher::EntityReplicatorSerializationPhase::Prepared, "Unexpected serialization phase");
+            AZ_Assert(
+                m_serializationPhase == PropertyPublisher::EntityReplicatorSerializationPhase::Prepared,
+                "Attempting EntityReplicatorState::Updating failed. Unexpected serialization phase.  Phase is %s, expecting Prepared",
+                EntityReplicatorSerializationPhaseStrings[static_cast<int>(m_serializationPhase)])
+            
             success = SerializeUpdateEntityRecord(serializer);
         }
         break;
         case PropertyPublisher::EntityReplicatorState::Deleting:
         {
-            AZ_Assert(m_serializationPhase == PropertyPublisher::EntityReplicatorSerializationPhase::Prepared, "Unexpected serialization phase");
+            AZ_Assert(m_serializationPhase == PropertyPublisher::EntityReplicatorSerializationPhase::Prepared,
+                "Attempting EntityReplicatorState::Deleting failed. Unexpected serialization phase.  Phase is %s, expecting Prepared",
+                EntityReplicatorSerializationPhaseStrings[static_cast<int>(m_serializationPhase)])
             success = SerializeDeleteEntityRecord(serializer);
         }
         break;
@@ -316,15 +333,23 @@ namespace Multiplayer
         case PropertyPublisher::EntityReplicatorState::Creating:
         case PropertyPublisher::EntityReplicatorState::Updating:
         {
-            AZ_Assert(m_serializationPhase == PropertyPublisher::EntityReplicatorSerializationPhase::Prepared, "Unexpected serialization phase");
+            AZ_Assert(
+                m_serializationPhase == PropertyPublisher::EntityReplicatorSerializationPhase::Prepared,
+                "FinalizeSerialization EntityReplicatorState::Updating failed. Unexpected serialization phase.  Phase is %s, expecting Prepared",
+                EntityReplicatorSerializationPhaseStrings[static_cast<int>(m_serializationPhase)])
+            
             FinalizeUpdateEntityRecord(sentId);
             m_replicatorState = PropertyPublisher::EntityReplicatorState::Updating;
         }
         break;
         case PropertyPublisher::EntityReplicatorState::Deleting:
         {
-            AZ_Assert(m_serializationPhase == PropertyPublisher::EntityReplicatorSerializationPhase::Prepared, "Unexpected serialization phase");
-
+            AZ_Assert(
+                m_serializationPhase == PropertyPublisher::EntityReplicatorSerializationPhase::Prepared,
+                "FinalizeSerialization EntityReplicatorState::Deleting failed. Unexpected serialization phase.  Phase is %s, expecting "
+                "Prepared",
+                EntityReplicatorSerializationPhaseStrings[static_cast<int>(m_serializationPhase)])
+            
             FinalizeDeleteEntityRecord(sentId);
         }
         break;

@@ -120,7 +120,9 @@ namespace Multiplayer
             m_propertyPublisher = AZStd::make_unique<PropertyPublisher>
             (
                 GetRemoteNetworkRole(),
-                !RemoteManagerOwnsEntityLifetime() ? PropertyPublisher::OwnsLifetime::True : PropertyPublisher::OwnsLifetime::False,
+                !RemoteManagerOwnsEntityLifetime() || GetBoundLocalNetworkRole() == NetEntityRole::Autonomous
+                    ? PropertyPublisher::OwnsLifetime::True
+                    : PropertyPublisher::OwnsLifetime::False,
                 m_netBindComponent,
                 *m_connection
             );

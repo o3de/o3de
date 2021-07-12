@@ -11,8 +11,9 @@
 #include <ConnectionData/ClientToServerConnectionData.h>
 #include <ConnectionData/ServerToClientConnectionData.h>
 #include <EntityDomains/FullOwnershipEntityDomain.h>
-#include <ReplicationWindows/NullReplicationWindow.h>
 #include <ReplicationWindows/ServerToClientReplicationWindow.h>
+#include <ReplicationWindows/ClientToServerReplicationWindow.h>
+
 #include <Source/AutoGen/AutoComponentTypes.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
@@ -657,8 +658,9 @@ namespace Multiplayer
                 reinterpret_cast<ClientToServerConnectionData*>(connection->GetUserData())->SetProviderTicket(providerTicket);
             }
 
-            AZStd::unique_ptr<IReplicationWindow> window = AZStd::make_unique<NullReplicationWindow>();
+            AZStd::unique_ptr<IReplicationWindow> window = AZStd::make_unique<ClientToServerReplicationWindow>();
             reinterpret_cast<ClientToServerConnectionData*>(connection->GetUserData())->GetReplicationManager().SetEntityActivationTimeSliceMs(cl_defaultNetworkEntityActivationTimeSliceMs);
+            reinterpret_cast<ClientToServerConnectionData*>(connection->GetUserData())->GetReplicationManager().SetReplicationWindow(AZStd::move(window));
         }
     }
 
