@@ -1,5 +1,5 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 # 
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
@@ -162,6 +162,7 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
     else()
         unset(RUNTIME_DEPENDENCIES_PLACEHOLDER)
     endif()
+
 
     get_target_property(inteface_build_dependencies_props ${TARGET_NAME} INTERFACE_LINK_LIBRARIES)
     unset(INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER)
@@ -522,46 +523,74 @@ function(ly_setup_others)
         DESTINATION .
     )
 
-    # Gem Source Assets and Registry
+    # Gem Source Assets and configuration files
     # Find all gem directories relative to the CMake Source Dir
-    file(GLOB_RECURSE
-        gems_assets_path
-        LIST_DIRECTORIES TRUE
-        RELATIVE "${LY_ROOT_FOLDER}/"
-        "Gems/*"
-    )
-    list(FILTER gems_assets_path INCLUDE REGEX "/(Assets|Registry)$")
 
-    foreach (gem_assets_path ${gems_assets_path})
-        set(gem_abs_assets_path ${LY_ROOT_FOLDER}/${gem_assets_path}/)
-        if (EXISTS ${gem_abs_assets_path})
+    # This first loop is to filter out transient and .gitignore'd folders that should be added to
+    # the install layout from the root directory. Such as <external-subdirectory-root>/Cache.
+    # This is also done to avoid globbing thousands of files in subdirectories that shouldn't
+    # be processed.
+    foreach(gem_candidate_dir IN LISTS LY_EXTERNAL_SUBDIRS LY_PROJECTS)
+        file(REAL_PATH ${gem_candidate_dir} gem_candidate_dir BASE_DIRECTORY ${LY_ROOT_FOLDER})
+        # Don't recurse immediately in order to exclude transient source artifacts
+        file(GLOB
+            external_subdir_files
+            LIST_DIRECTORIES TRUE
+            "${gem_candidate_dir}/*"
+        )
+        # Exclude transient artifacts that shouldn't be copied to the install layout
+        list(FILTER external_subdir_files EXCLUDE REGEX "/([Bb]uild|[Cc]ache|[Uu]ser)$")
+        list(APPEND filtered_asset_paths ${external_subdir_files})
+    endforeach()
+
+    # At this point the filtered_assets_paths contains the list of all directories and files
+    # that are non-excluded candidates that can be scanned for target directories and files
+    # to copy over to the install layout
+    foreach(filtered_asset_path IN LISTS filtered_asset_paths)
+        if(IS_DIRECTORY ${filtered_asset_path})
+            file(GLOB_RECURSE
+                recurse_assets_paths
+                LIST_DIRECTORIES TRUE
+                "${filtered_asset_path}/*"
+            )
+            set(gem_file_paths ${recurse_assets_paths})
+            # Make sure to prepend the current path iteration to the gem_dirs_path to filter
+            set(gem_dir_paths ${filtered_asset_path} ${recurse_assets_paths})
+
+            # Gather directories to copy over
+            # Currently only the Assets, Registry and Config directories are copied over
+            list(FILTER gem_dir_paths INCLUDE REGEX "/(Assets|Registry|Config)$")
+            list(APPEND gems_assets_dir_path ${gem_dir_paths})
+        else()
+            set(gem_file_paths ${filtered_asset_path})
+        endif()
+
+        # Gather files to copy over
+        # Currently only the gem.json file is copied over
+        list(FILTER gem_file_paths INCLUDE REGEX "/(gem.json)$")
+        list(APPEND gems_assets_file_path "${gem_file_paths}")
+    endforeach()
+
+    # gem directories to install
+    foreach(gem_absolute_dir_path ${gems_assets_dir_path})
+        cmake_path(RELATIVE_PATH gem_absolute_dir_path BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE gem_relative_dir_path)
+        if (EXISTS ${gem_absolute_dir_path})
             # The trailing slash is IMPORTANT here as that is needed to prevent
             # the "Assets" folder from being copied underneath the <gem-root>/Assets folder
-            install(DIRECTORY ${gem_abs_assets_path}
-                DESTINATION ${gem_assets_path}
+            install(DIRECTORY "${gem_absolute_dir_path}/"
+                DESTINATION ${gem_relative_dir_path}
             )
         endif()
     endforeach()
 
-    # gem.json files
-    file(GLOB_RECURSE
-        gems_json_path
-        LIST_DIRECTORIES FALSE
-        RELATIVE "${LY_ROOT_FOLDER}"
-        "Gems/*/gem.json"
-    )
-    foreach(gem_json_path ${gems_json_path})
-        get_filename_component(gem_relative_path ${gem_json_path} DIRECTORY)
-        install(FILES ${gem_json_path}
-            DESTINATION ${gem_relative_path}
+    # gem files to install
+    foreach(gem_absolute_file_path ${gems_assets_file_path})
+        cmake_path(RELATIVE_PATH gem_absolute_file_path BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE gem_relative_file_path)
+        cmake_path(GET gem_relative_file_path PARENT_PATH gem_relative_parent_dir)
+        install(FILES ${gem_absolute_file_path}
+            DESTINATION ${gem_relative_parent_dir}
         )
     endforeach()
-
-    # Additional files needed by gems
-    install(DIRECTORY
-        ${LY_ROOT_FOLDER}/Gems/Atom/Asset/ImageProcessingAtom/Config
-        DESTINATION Gems/Atom/Asset/ImageProcessingAtom
-    )
 
     # Templates
     install(DIRECTORY

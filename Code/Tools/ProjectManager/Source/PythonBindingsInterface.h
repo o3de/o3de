@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -140,6 +140,11 @@ namespace O3DE::ProjectManager
          * @return An outcome with the success flag as well as an error message in case of a failure.
          */
         virtual AZ::Outcome<void, AZStd::string> RemoveGemFromProject(const QString& gemPath, const QString& projectPath) = 0;
+
+        /**
+         * Removes invalid projects from the manifest
+         */
+        virtual bool RemoveInvalidProjects() = 0;
 
 
         // Project Templates

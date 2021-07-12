@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -171,7 +171,7 @@ TEST_F(AWSResourceMappingManagerTest, ActivateManager_ParseInvalidConfigFile_Con
     AZStd::string actualRegion;
     AWSResourceMappingRequestBus::BroadcastResult(actualAccountId, &AWSResourceMappingRequests::GetDefaultAccountId);
     AWSResourceMappingRequestBus::BroadcastResult(actualRegion, &AWSResourceMappingRequests::GetDefaultRegion);
-    EXPECT_EQ(m_reloadConfigurationCounter, 1);
+    EXPECT_EQ(m_reloadConfigurationCounter, 0);
     EXPECT_TRUE(actualAccountId.empty());
     EXPECT_TRUE(actualRegion.empty());
     EXPECT_TRUE(m_resourceMappingManager->GetStatus() == AWSResourceMappingManager::Status::Error);
@@ -186,7 +186,7 @@ TEST_F(AWSResourceMappingManagerTest, ActivateManager_ParseValidConfigFile_Confi
     AZStd::string actualRegion;
     AWSResourceMappingRequestBus::BroadcastResult(actualAccountId, &AWSResourceMappingRequests::GetDefaultAccountId);
     AWSResourceMappingRequestBus::BroadcastResult(actualRegion, &AWSResourceMappingRequests::GetDefaultRegion);
-    EXPECT_EQ(m_reloadConfigurationCounter, 1);
+    EXPECT_EQ(m_reloadConfigurationCounter, 0);
     EXPECT_FALSE(actualAccountId.empty());
     EXPECT_FALSE(actualRegion.empty());
     EXPECT_TRUE(m_resourceMappingManager->GetStatus() == AWSResourceMappingManager::Status::Ready);
@@ -413,7 +413,7 @@ TEST_F(AWSResourceMappingManagerTest, ReloadConfigFile_ParseValidConfigFileAfter
     AZStd::string actualRegion;
     AWSResourceMappingRequestBus::BroadcastResult(actualAccountId, &AWSResourceMappingRequests::GetDefaultAccountId);
     AWSResourceMappingRequestBus::BroadcastResult(actualRegion, &AWSResourceMappingRequests::GetDefaultRegion);
-    EXPECT_EQ(m_reloadConfigurationCounter, 1);
+    EXPECT_EQ(m_reloadConfigurationCounter, 0);
     EXPECT_TRUE(actualAccountId.empty());
     EXPECT_TRUE(actualRegion.empty());
     EXPECT_TRUE(m_resourceMappingManager->GetStatus() == AWSResourceMappingManager::Status::Error);
@@ -423,7 +423,7 @@ TEST_F(AWSResourceMappingManagerTest, ReloadConfigFile_ParseValidConfigFileAfter
 
     AWSResourceMappingRequestBus::BroadcastResult(actualAccountId, &AWSResourceMappingRequests::GetDefaultAccountId);
     AWSResourceMappingRequestBus::BroadcastResult(actualRegion, &AWSResourceMappingRequests::GetDefaultRegion);
-    EXPECT_EQ(m_reloadConfigurationCounter, 1);
+    EXPECT_EQ(m_reloadConfigurationCounter, 0);
     EXPECT_FALSE(actualAccountId.empty());
     EXPECT_FALSE(actualRegion.empty());
     EXPECT_TRUE(m_resourceMappingManager->GetStatus() == AWSResourceMappingManager::Status::Ready);

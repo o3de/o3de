@@ -4,9 +4,8 @@
     "restricted_platform_relative_path": "Templates",
     "origin": "The primary repo for DefaultProject goes here: i.e. http://www.mydomain.com",
     "license": "What license DefaultProject uses goes here: i.e. https://opensource.org/licenses/MIT",
-    "display_name": "Default",
-    "summary": "A short description of DefaultProject.",
-    "included_gems": ["Atom","Camera","EMotionFX","UI","Maestro","Input","ImGui"],
+    "display_name": "Standard",
+    "summary": "This template has everything you need to build a full online 3D game or application.",
     "canonical_tags": [],
     "user_tags": [
         "DefaultProject"
@@ -248,8 +247,8 @@
             "isOptional": false
         },
         {
-            "file": "Resources/CryEngineLogoLauncher.bmp",
-            "origin": "Resources/CryEngineLogoLauncher.bmp",
+            "file": "Resources/LegacyLogoLauncher.bmp",
+            "origin": "Resources/LegacyLogoLauncher.bmp",
             "isTemplated": false,
             "isOptional": false
         },

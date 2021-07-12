@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -76,7 +76,7 @@ namespace EMotionFX
         const MotionDataFactory& factory = GetEMotionFX().GetMotionManager()->GetMotionDataFactory();
         for (size_t i = 0; i < factory.GetNumRegistered(); ++i)
         {
-            GUI->addItem(factory.GetRegistered(i)->GetFbxSettingsName());
+            GUI->addItem(factory.GetRegistered(i)->GetSceneSettingsName());
             m_typeIds.emplace_back(factory.GetRegistered(i)->RTTI_GetType());
         }
 

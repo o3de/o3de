@@ -1,6 +1,6 @@
 #!/usr/bin/env groovy
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -13,8 +13,17 @@ EMPTY_JSON = readJSON text: '{}'
 
 ENGINE_REPOSITORY_NAME = 'o3de'
 
-BUILD_SNAPSHOTS = ['development', 'stabilization/2106', '']
-DEFAULT_BUILD_SNAPSHOT = BUILD_SNAPSHOTS.get(0)
+// Branches with build snapshots
+BUILD_SNAPSHOTS = ['development', 'stabilization/2106']
+
+// Build snapshots with empty snapshot (for use with 'SNAPSHOT' pipeline paramater)
+BUILD_SNAPSHOTS_WITH_EMPTY = BUILD_SNAPSHOTS + ''
+
+// The default build snapshot to be selected in the 'SNAPSHOT' pipeline paramater
+DEFAULT_BUILD_SNAPSHOT = BUILD_SNAPSHOTS_WITH_EMPTY.get(0)
+
+// Branches with build snapshots as comma separated value string
+env.BUILD_SNAPSHOTS = BUILD_SNAPSHOTS.join(",")
 
 def pipelineProperties = []
 
@@ -476,7 +485,7 @@ try {
                         }
                     } else {
                         // Non-PR builds
-                        pipelineParameters.add(choice(defaultValue: DEFAULT_BUILD_SNAPSHOT, name: 'SNAPSHOT', choices: BUILD_SNAPSHOTS, description: 'Selects the build snapshot to use. A more diverted snapshot will cause longer build times, but will not cause build failures.'))
+                        pipelineParameters.add(choice(defaultValue: DEFAULT_BUILD_SNAPSHOT, name: 'SNAPSHOT', choices: BUILD_SNAPSHOTS_WITH_EMPTY, description: 'Selects the build snapshot to use. A more diverted snapshot will cause longer build times, but will not cause build failures.'))
                         snapshot = env.SNAPSHOT
                         echo "Snapshot \"${snapshot}\" selected."
                     }

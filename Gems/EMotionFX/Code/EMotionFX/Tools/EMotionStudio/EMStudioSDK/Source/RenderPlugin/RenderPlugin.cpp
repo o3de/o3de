@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -313,7 +313,7 @@ namespace EMStudio
 
     void RenderPlugin::OnActorReady([[maybe_unused]] EMotionFX::Actor* actor)
     {
-        ReInit(/*resetViewCloseup=*/true);
+        m_reinitRequested = true;
     }
 
     // try to locate the helper actor for a given instance
@@ -535,6 +535,7 @@ namespace EMStudio
         }
 
         mFirstFrameAfterReInit = true;
+        m_reinitRequested = false;
 
         // zoom the camera to the available character only in case we're dealing with a single instance
         if (resetViewCloseup && numActorInstances == 1)
@@ -849,6 +850,11 @@ namespace EMStudio
         if (GetManager()->GetAvoidRendering() || mIsVisible == false)
         {
             return;
+        }
+
+        if (m_reinitRequested)
+        {
+            ReInit(/*resetViewCloseup=*/true);
         }
 
         // update EMotion FX, but don't render

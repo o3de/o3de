@@ -1,44 +1,12 @@
 {
     "gem_name": "Vegetation",
-    "Dependencies": [
-        {
-            "Uuid": "ff06785f7145416b9d46fde39098cb0c",
-            "VersionConstraints": [
-                "~>0.1"
-            ],
-            "_comment": "LmbrCentral"
-        },
-        {
-            "Uuid": "8825563d9d964ec3be3bab681f3bd9f2",
-            "VersionConstraints": [
-                "~>0.1"
-            ],
-            "_comment": "GradientSignal"
-        },
-        {
-            "Uuid": "5de82d29d6094bfe97c1a4d35fcd5fbe",
-            "VersionConstraints": [
-                "~>0.1"
-            ],
-            "_comment": "SurfaceData"
-        }
-    ],
-    "GemFormatVersion": 4,
-    "Uuid": "f394e7cf54424bba89615381bba9511b",
-    "Name": "Vegetation",
-    "DisplayName": "Vegetation [PREVIEW]",
-    "Version": "0.1.0",
-    "Summary": "A Lumberyard Gem for authoring Dynamic Procedural Vegetation (A real-time planting engine).<br/><b><u>NOTE:</u></b> The Landscape Canvas gem is an optional node-based Editor that provides the recommended workflows for authoring/editing Dynamic Vegetation content.",
-    "Tags": ["Vegetation"],
-    "IconPath": "preview.png",
-    "Modules": [
-        {
-            "Type": "GameModule"
-        },
-        {
-            "Name": "Editor",
-            "Type": "EditorModule",
-            "Extends": "GameModule"
-        }
-    ]
+    "display_name": "Vegetation",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Open 3D Engine - o3de.org",
+    "type": "Code",
+    "summary": "The Vegetation Gem provides tools to place natural-looking vegetation in Open 3D Engine.",
+    "canonical_tags": ["Gem"],
+    "user_tags": ["Environment", "Tools", "Design"],
+    "icon_path": "preview.png",
+    "requirements": ""
 }

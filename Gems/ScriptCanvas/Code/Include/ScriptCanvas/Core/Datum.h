@@ -1,6 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,8 +9,8 @@
 
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
-#include <AzCore/std/any.h>
 #include <AzCore/std/string/string_view.h>
+#include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Data/Data.h>
 #include <ScriptCanvas/Data/DataTrait.h>
 #include <ScriptCanvas/Data/BehaviorContextObject.h>
@@ -59,7 +59,7 @@ namespace ScriptCanvas
         Datum(BehaviorContextResultTag, const AZ::BehaviorParameter& resultType);
         Datum(const AZStd::string& behaviorClassName, eOriginality originality);
         Datum(const AZ::BehaviorValueParameter& value);
-        
+
         void ReconfigureDatumTo(Datum&& object);
         void ReconfigureDatumTo(const Datum& object);
 
@@ -204,18 +204,18 @@ namespace ScriptCanvas
             {
                 static_assert(!AZStd::is_pointer<t_Value>::value, "no pointer types in the Datum::GetAsHelper<t_Value, false>");
 
-                if (datum.m_storage.empty())
+                if (datum.m_storage.value.empty())
                 {
                     // rare, but can be caused by removals or problems with reflection to BehaviorContext, so must be checked
                     return nullptr;
                 }
                 else if (datum.m_type.GetType() == Data::eType::BehaviorContextObject)
                 {
-                    return (*AZStd::any_cast<BehaviorContextObjectPtr>(&datum.m_storage))->CastConst<t_Value>();
+                    return (*AZStd::any_cast<BehaviorContextObjectPtr>(&datum.m_storage.value))->CastConst<t_Value>();
                 }
                 else
                 {
-                    return AZStd::any_cast<const t_Value>(&datum.m_storage);
+                    return AZStd::any_cast<const t_Value>(&datum.m_storage.value);
                 }
             }
         };
@@ -253,12 +253,12 @@ namespace ScriptCanvas
         // eOriginality records the graph source of the object
         eOriginality m_originality = eOriginality::Copy;
         // storage for the datum, regardless of ScriptCanvas::Data::Type
-        AZStd::any m_storage;
+        RuntimeVariable m_storage;
 
-        // This contains the editor label for m_storage.
+        // This contains the editor label for m_storage.value.
         AZStd::string m_datumLabel;
 
-        // This contains the editor visibility for m_storage.
+        // This contains the editor visibility for m_storage.value.
         AZ::Crc32 m_visibility{ AZ::Edit::PropertyVisibility::ShowChildrenOnly };
         // storage for implicit conversions, when needed
         AZStd::any m_conversionStorage;
@@ -304,7 +304,7 @@ namespace ScriptCanvas
         bool InitializeCRC(const void* source);
 
         bool InitializeEntityID(const void* source);
-        
+
         bool InitializeNamedEntityID(const void* source);
 
         bool InitializeMatrix3x3(const void* source);
@@ -384,7 +384,7 @@ namespace ScriptCanvas
 
     bool Datum::Empty() const
     {
-        return m_storage.empty() || GetValueAddress() == nullptr;
+        return m_storage.value.empty() || GetValueAddress() == nullptr;
     }
 
     template<typename t_Value>
@@ -492,7 +492,7 @@ namespace ScriptCanvas
         {
             if (Data::IsValueType(m_type))
             {
-                m_storage = value;
+                m_storage.value = value;
                 return true;
             }
             else

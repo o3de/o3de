@@ -1,29 +1,12 @@
 {
     "gem_name": "PhysXDebug",
-    "Dependencies": [
-        {
-            "Uuid": "4e08125824434932a0fe3717259caa47",
-            "VersionConstraints": [
-                ">=0.1"
-            ],
-            "_comment": "PhysX Gem"
-        },
-        {
-            "Uuid": "bab8807a1bc646b3909f3cc200ffeedf",
-            "VersionConstraints": [
-                ">=0.1.0"
-            ],
-            "_comment": "ImGui Gem"
-        }
-    ],
-    "GemFormatVersion": 3,
-    "Uuid": "516145e2d9904b13813f1b54605e26a6",
-    "Name": "PhysXDebug",
-    "DisplayName": "PhysX Debug [PREVIEW]",
-    "Version": "0.1.0",	
-    "LinkType": "Dynamic",
-    "Summary": "Debug features for the PhysX gem.",
-    "Tags": ["Physics", "Debug"],
-    "IconPath": "preview.png",
-    "EditorModule": true
+    "display_name": "PhysX Debug",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Open 3D Engine - o3de.org",
+    "type": "Tool",
+    "summary": "The PhysX Debug Gem provides debugging functionality and visualizations for NVIDIA PhysX in Open 3D Engine.",
+    "canonical_tags": ["Gem"],
+    "user_tags": ["Physics", "Simulation", "Debug"],
+    "icon_path": "preview.png",
+    "requirements": ""
 }
