@@ -10,7 +10,6 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QSpacerItem>
-#include <QWidget>
 
 namespace O3DE::ProjectManager
 {
@@ -72,10 +71,9 @@ namespace O3DE::ProjectManager
         hLayout->setMargin(0);
         hLayout->setSpacing(8);
 
-        const int numTags = tags.count();
-        for (int i = 0; i < numTags; ++i)
+        for(const QString& tag : tags)
         {
-            FilterTagWidget* tagWidget = new FilterTagWidget(tags[i]);
+            FilterTagWidget* tagWidget = new FilterTagWidget(tag);
 
             // Add the tag widget to the current row.
             hLayout->addWidget(tagWidget);
