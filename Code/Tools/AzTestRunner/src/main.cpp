@@ -126,15 +126,14 @@ namespace AzTestRunner
                 std::cout << "arg[" << i << "] " << argv[i] << std::endl;
             }
 
-            // Construct a full retry command
-            std::cout << "Full command: " << argv[0] << " " << lib << " " << symbol;
-            for (int i = 1; i < argc; i++)
-            {
-                std::cout << " " << argv[i];
-            }
-            std::cout << std::endl;
-            
             std::cout << "LIB: " << lib << std::endl;
+        }
+
+        // Construct a retry command if test fails
+        std::string retry_command = "Retry command: " + std::string(argv[0]) + " " + lib + " " + symbol;
+        for (int i = 1; i < argc; i++)
+        {
+            retry_command.append(" " + std::string(argv[i]));
         }
 
         // Wait for debugger
@@ -230,6 +229,10 @@ namespace AzTestRunner
         if (testMainFunction->IsValid())
         {
             result = (*testMainFunction)(argc, argv);
+            if (result != 0)
+            {
+                std::cout << retry_command << std::endl;
+            }
             std::cout << "OKAY " << symbol << "() returned " << result << std::endl;
             testMainFunction.reset();
         }
