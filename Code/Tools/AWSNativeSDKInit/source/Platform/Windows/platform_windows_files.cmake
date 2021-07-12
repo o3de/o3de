@@ -7,5 +7,5 @@
 
 set(FILES
     ../Common/Default/AWSNativeSDKInit_Default.cpp
-    ../Common/Default/InitializeCaCertBundle_Null.cpp
+    ../Common/Default/InitializeCerts_Null.cpp
 )

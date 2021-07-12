@@ -42,10 +42,6 @@ namespace AWSNativeSDKInit
         static void InitAwsApi();
         static bool IsInitialized();
 
-        // Initialize the certificate bundle which will be required to make AWS requests from
-        // some platforms like Android.
-        static void InitializeCaCertBundle();
-
         // Remove our reference
         static void Shutdown();
     private:    

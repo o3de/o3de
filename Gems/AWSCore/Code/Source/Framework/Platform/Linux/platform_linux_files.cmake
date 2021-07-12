@@ -6,5 +6,5 @@
 #
 
 set(FILES
-    ../Common/ResolveCaCertBundlePath_Null.cpp
+    ../Common/GetCertsPath_Null.cpp
 )

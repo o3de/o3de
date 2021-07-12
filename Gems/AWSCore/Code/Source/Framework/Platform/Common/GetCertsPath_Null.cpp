@@ -14,19 +14,14 @@
 AZ_PUSH_DISABLE_WARNING(4251 4996, "-Wunknown-warning-option")
 #include <aws/core/utils/memory/stl/AWSString.h>
 AZ_POP_DISABLE_WARNING
-#include <AzCore/Android/Utils.h>
-#include <AzCore/std/string/string.h>
 
 namespace AWSCore
 {
     namespace Platform
     {
-        void ResolveCaCertBundlePath(Aws::String& caCerBundlePath)
+        Aws::String GetCaCertBundlePath()
         {
-            AZStd::string publicStoragePath = AZ::Android::Utils::GetAppPublicStoragePath();
-            publicStoragePath.append("/certificates/aws/cacert.pem");
-
-            caCerBundlePath = publicStoragePath.c_str();
+            return ""; // no-op
         }
     } // namespace Platform
-}
+} // namespace GridMate
