@@ -76,6 +76,7 @@ namespace Physics
         AZStd::string m_colliderTag; //!< Used to identify the collider associated with the character controller.
         AZStd::shared_ptr<Physics::ShapeConfiguration> m_shapeConfig; //!< The shape to use when creating the character controller.
         AZStd::vector<AZStd::shared_ptr<Physics::Shape>> m_colliders; //!< The list of colliders to attach to the character controller.
+        bool m_applyMoveOnPhysicsTick = true; //!< Should accumulated velocity be applied on the physics tick.
     };
 
     /// Basic implementation of common character-style needs as a WorldBody. Is not a full-functional ship-ready
