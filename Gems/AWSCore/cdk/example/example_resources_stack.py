@@ -107,31 +107,31 @@ class ExampleResources(core.Stack):
         self._s3_output = core.CfnOutput(
             self,
             id=f'ExampleBucketOutput',
-            description='An example S3 bucket to use with AWSCore ScriptBehaviors',
-            export_name=f"ExampleS3Bucket",
-            value=self._s3_bucket.bucket_arn)
+            description='An example S3 bucket name to use with AWSCore ScriptBehaviors',
+            export_name=f"{self.stack_name}:ExampleS3Bucket",
+            value=self._s3_bucket.bucket_name)
 
         # Define exports
         # Export resource group
         self._lambda_output = core.CfnOutput(
             self,
             id=f'ExampleLambdaOutput',
-            description='An example Lambda to use with AWSCore ScriptBehaviors',
-            export_name=f"ExampleLambdaFunction",
-            value=self._lambda.function_arn)
+            description='An example Lambda name to use with AWSCore ScriptBehaviors',
+            export_name=f"{self.stack_name}::ExampleLambdaFunction",
+            value=self._lambda.function_name)
 
         # Export DynamoDB Table
         self._table_output = core.CfnOutput(
             self,
             id=f'ExampleDynamoTableOutput',
-            description='An example DynamoDB Table to use with AWSCore ScriptBehaviors',
-            export_name=f"ExampleTable",
-            value=self._table.table_arn)
+            description='An example DynamoDB Table name to use with AWSCore ScriptBehaviors',
+            export_name=f"{self.stack_name}:ExampleTable",
+            value=self._table.table_name)
 
         # Export user policy
         self._user_policy = core.CfnOutput(
             self,
             id=f'ExampleUserPolicyOutput',
             description='A User policy to invoke example resources',
-            export_name=f"ExampleUserPolicy",
+            export_name=f"{self.stack_name}:ExampleUserPolicy",
             value=self._policy.managed_policy_arn)

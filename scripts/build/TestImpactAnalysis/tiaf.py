@@ -93,7 +93,7 @@ class TestImpact:
                 self.__has_src_commit = True
 
     def __write_last_run_hash(self, last_run_hash):
-        os.mkdir(self.__historic_workspace)
+        os.makedirs(self.__historic_workspace, exist_ok=True)
         f = open(self.__last_commit_hash_path, "w")
         f.write(last_run_hash)
         f.close()
