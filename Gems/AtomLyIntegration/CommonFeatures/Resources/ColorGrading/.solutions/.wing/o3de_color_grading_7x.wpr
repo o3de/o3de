@@ -4,7 +4,7 @@
 # Wing project file                                              #
 ##################################################################
 [project attributes]
-proj.directory-list = [{'dirloc': loc('../../../../..'),
+proj.directory-list = [{'dirloc': loc('../../../..'),
                         'excludes': (),
                         'filter': u'*',
                         'include_hidden': False,

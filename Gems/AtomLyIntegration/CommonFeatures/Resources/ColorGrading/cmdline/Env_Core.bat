@@ -37,7 +37,7 @@ echo     CMD_LAUNCHERS = %CMD_LAUNCHERS%
 SET PATH=%CMD_LAUNCHERS%;%PATH%
 
 :: This maps up to the \Dev folder
-IF "%DEV_REL_PATH%"=="" (set DEV_REL_PATH=..\..\..\..\..\..)
+IF "%DEV_REL_PATH%"=="" (set DEV_REL_PATH=..\..\..\..\..)
 echo     DEV_REL_PATH = %DEV_REL_PATH%
 
 :: You can define the project name

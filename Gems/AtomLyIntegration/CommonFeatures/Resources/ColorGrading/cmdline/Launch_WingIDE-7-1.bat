@@ -70,12 +70,12 @@ set DCCSI_PY_DEFAULT=%DCCSI_PY_BASE%
 echo     DCCSI_PY_DEFAULT = %DCCSI_PY_DEFAULT%
 
 :: if the user has set up a custom env call it
-IF EXIST "%~dp0Env_Dev.bat" CALL %~dp0Env_Dev.bat
+IF EXIST "%~dp0User_Dev.bat" CALL %~dp0User_Dev.bat
 
 echo.
 
 :: Change to root dir
-CD /D %LY_PROJECT_PATH%
+CD /D %O3DE_PROJECT_PATH%
 
 IF EXIST "%WINGHOME%\bin\wing.exe" (
     start "" "%WINGHOME%\bin\wing.exe" "%WING_PROJ%"
