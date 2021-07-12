@@ -104,9 +104,9 @@ namespace ScriptCanvasEditor
     {
     }
 
-    void SlotTypeSelectorWidget::PopulateVariablePalette(const AZStd::unordered_set< AZ::Uuid >& objectTypes, bool isMathExpressionNode)
+    void SlotTypeSelectorWidget::PopulateVariablePalette(const AZStd::unordered_set< AZ::Uuid >& objectTypes, bool isCustomSelection)
     {
-        ui->variablePalette->PopulateVariablePalette(objectTypes, isMathExpressionNode);
+        ui->variablePalette->PopulateVariablePalette(objectTypes, isCustomSelection);
     }
 
     void SlotTypeSelectorWidget::OnEscape()

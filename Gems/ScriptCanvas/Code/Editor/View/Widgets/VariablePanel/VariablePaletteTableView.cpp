@@ -84,7 +84,7 @@ namespace ScriptCanvasEditor
         m_containerWizard->SetActiveScriptCanvasId(scriptCanvasId);
     }
 
-    void VariablePaletteTableView::PopulateVariablePalette(const AZStd::unordered_set< AZ::Uuid >& objectTypes, bool isMathExpressionNode)
+    void VariablePaletteTableView::PopulateVariablePalette(const AZStd::unordered_set< AZ::Uuid >& objectTypes, bool isCustomSelection)
     {
         clearSelection();
         m_model->ClearTypes();
@@ -93,7 +93,7 @@ namespace ScriptCanvasEditor
 
         auto dataRegistry = ScriptCanvas::GetDataRegistry();        
 
-        if (!isMathExpressionNode)
+        if (!isCustomSelection)
         {
             for (const auto& dataTraitsPair : dataRegistry->m_typeIdTraitMap)
             {
@@ -153,7 +153,7 @@ namespace ScriptCanvasEditor
         }
         else
         {
-            variableTypes = {ToAZType(ScriptCanvas::Data::Type::Number()), ToAZType(ScriptCanvas::Data::Type::Vector3())};
+            variableTypes = objectTypes;
         }
 
         m_model->PopulateVariablePalette(variableTypes);

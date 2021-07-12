@@ -432,7 +432,7 @@ namespace ScriptCanvas
                         {
                             //use the displayGroup's type. Make sure to not let HandleExpressionNodeExtension to open up
                             slot->SetDisplayType(nodeDataType);
-                            node->isDisplayTypeInitialized = true;
+                            node->m_isDisplayTypeInitialized = true;
                         }
 
 

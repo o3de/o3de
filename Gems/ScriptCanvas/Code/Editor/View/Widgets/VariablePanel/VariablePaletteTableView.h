@@ -40,7 +40,7 @@ namespace ScriptCanvasEditor
 
         void SetActiveScene(const ScriptCanvas::ScriptCanvasId& scriptCanvasId);
         
-        void PopulateVariablePalette(const AZStd::unordered_set< AZ::Uuid >& objectTypes, bool isMathExpressionNode = false);
+        void PopulateVariablePalette(const AZStd::unordered_set< AZ::Uuid >& objectTypes, bool isCustomSelection=false);
         void SetFilter(const QString& filter);
 
         QCompleter* GetVariableCompleter();

@@ -1150,7 +1150,9 @@ namespace ScriptCanvasEditor
             m_slotTypeSelector = new SlotTypeSelectorWidget(GetActiveScriptCanvasId(), this); // Recreate the widget every time because of https://bugreports.qt.io/browse/QTBUG-76509
             if (azrtti_istypeof<const ScriptCanvas::Nodes::Math::MathExpression*>(slot->GetNode()))
             {
-                m_slotTypeSelector->PopulateVariablePalette(m_variablePaletteTypes,true);
+                AZStd::unordered_set<AZ::Uuid> variableTypes = { ToAZType(ScriptCanvas::Data::Type::Number()), ToAZType(ScriptCanvas::Data::Type::Vector3()) };
+
+                m_slotTypeSelector->PopulateVariablePalette(variableTypes,true);
             }
             else
             {
