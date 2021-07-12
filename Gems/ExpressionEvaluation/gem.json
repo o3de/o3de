@@ -6,7 +6,7 @@
     "type": "Code",
     "summary": "The Expression Evaluation Gem provides a method for parsing and executing string expressions in Open 3D Engine.",
     "canonical_tags": ["Gem"],
-    "user_tags": ["Scripting", "Utiltity"],
+    "user_tags": ["Scripting", "Utility"],
     "icon_path": "preview.png",
     "requirements": ""
 }

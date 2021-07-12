@@ -6,7 +6,7 @@
     "type": "Code",
     "summary": "The Surface Data Gem provides functionality to emit signals or tags from surfaces such as meshes and terrain.",
     "canonical_tags": ["Gem"],
-    "user_tags": ["Environment", "Utiltiy", "Design"],
+    "user_tags": ["Environment", "Utility", "Design"],
     "icon_path": "preview.png",
     "requirements": ""
 }
