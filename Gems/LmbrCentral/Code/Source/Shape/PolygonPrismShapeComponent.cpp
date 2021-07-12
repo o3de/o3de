@@ -98,7 +98,7 @@ namespace LmbrCentral
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->EBus<PolygonPrismShapeComponentRequestBus>("PolygonPrismShapeComponentRequestBus")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Edit::Attributes::Category, "Shape")
                 ->Attribute(AZ::Script::Attributes::Module, "shape")
                 ->Event("GetPolygonPrism", &PolygonPrismShapeComponentRequestBus::Events::GetPolygonPrism)
