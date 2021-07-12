@@ -29,7 +29,7 @@ namespace ScriptCanvas
 
                 AZStd::unordered_set< Data::Type > GetSupportedNativeDataTypes() const override;
                 void Operator(Data::eType type, const ArithmeticOperands& operands, Datum& result) override;
-   
+
             protected:
 
                 void InitializeSlot(const SlotId& slotId, const ScriptCanvas::Data::Type& dataType) override;

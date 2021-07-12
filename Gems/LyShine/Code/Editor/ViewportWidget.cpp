@@ -428,9 +428,7 @@ void ViewportWidget::contextMenuEvent(QContextMenuEvent* e)
             const QPoint pos = e->pos();
             HierarchyMenu contextMenu(m_editorWindow->GetHierarchy(),
                 HierarchyMenu::Show::kCutCopyPaste |
-                HierarchyMenu::Show::kSavePrefab |
                 HierarchyMenu::Show::kNew_EmptyElement |
-                HierarchyMenu::Show::kNew_ElementFromPrefabs |
                 HierarchyMenu::Show::kDeleteElement |
                 HierarchyMenu::Show::kNewSlice |
                 HierarchyMenu::Show::kNew_InstantiateSlice |

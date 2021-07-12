@@ -76,6 +76,7 @@ namespace AZ::Render
                 {
                     m_selectedChanged = true;
                     m_attachmentId = AZ::RHI::AttachmentId{};
+                    m_slotName = AZ::Name{};
                 }
             }
 
@@ -88,13 +89,12 @@ namespace AZ::Render
                     m_readback->SetCallback(AZStd::bind(&ImGuiPassTree::ReadbackCallback, this, AZStd::placeholders::_1));
                 }
 
-                if (m_selectedPass && !m_attachmentId.IsEmpty())
+                if (m_selectedPass && !m_slotName.IsEmpty())
                 {
-                    AZ::RPI::RenderPass* renderPass = azrtti_cast<AZ::RPI::RenderPass*>(m_selectedPass);
-                    if (renderPass)
+                    bool readbackResult = m_selectedPass->ReadbackAttachment(m_readback, m_slotName);
+                    if (!readbackResult)
                     {
-                        AZ::RPI::PassAttachment* attachment = FindPassAttachment(renderPass, m_attachmentId);
-                        renderPass->ReadbackAttachment(m_readback, attachment);
+                        AZ_Error("ImGuiPassTree", false, "Failed to readback attachment from pass [%s] slot [%s]", m_selectedPass->GetName().GetCStr(), m_slotName.GetCStr());
                     }
                 }
             }
@@ -144,6 +144,77 @@ namespace AZ::Render
         }
         ImGui::End();
     }
+        
+    inline void ImGuiPassTree::DrawPassAttachments(AZ::RPI::Pass* pass)
+    {
+        for (const auto& binding : pass->GetAttachmentBindings())
+        {
+            // Binding info: [slot type] [slot name]
+            AZStd::string label = AZStd::string::format("[%s] [%s]", AZ::RPI::ToString(binding.m_slotType),
+                binding.m_name.GetCStr());
+
+            // Append attachment info if the attachment exists
+            if (binding.m_attachment)
+            {
+                AZ::RHI::AttachmentType type = binding.m_attachment->GetAttachmentType();
+
+                // Append attachment info: [attachment type] attachment name
+                label += AZStd::string::format(" [%s] %s",
+                    AZ::RHI::ToString(type),
+                    binding.m_attachment->m_name.GetCStr());
+
+                if (type == AZ::RHI::AttachmentType::Image)
+                {
+                    // Append image info: [format] [size] [msaa]
+                    AZ::RHI::ImageDescriptor descriptor;
+                    if (binding.m_attachment->m_importedResource)
+                    {
+                        AZ::RPI::Image* image = static_cast<AZ::RPI::Image*>(binding.m_attachment->m_importedResource.get());
+                        descriptor = image->GetRHIImage()->GetDescriptor();
+                    }
+                    else
+                    {
+                        descriptor = binding.m_attachment->m_descriptor.m_image;
+                    }
+                    auto format = descriptor.m_format;
+                    auto size = descriptor.m_size;
+                    label += AZStd::string::format(" [%s] [%dx%d]", AZ::RHI::ToString(format), size.m_width, size.m_height);
+
+                    if (descriptor.m_multisampleState.m_samples > 1)
+                    {
+                        if (descriptor.m_multisampleState.m_customPositionsCount > 0)
+                        {
+                            label += AZStd::string::format(" [MSAA_Custom_%dx]", descriptor.m_multisampleState.m_samples);
+                        }
+                        else
+                        {
+                            label += AZStd::string::format(" [MSAA_%dx]", descriptor.m_multisampleState.m_samples);
+                        }
+                    }
+                }
+                else if (type == AZ::RHI::AttachmentType::Buffer)
+                {
+                    // Append buffer info: [size]
+                    auto size = binding.m_attachment->m_descriptor.m_buffer.m_byteCount;
+                    label += AZStd::string::format(" [%llu]", size);
+                }
+
+                if (Scriptable_ImGui::Selectable(label.c_str(), m_attachmentId == binding.m_attachment->GetAttachmentId()))
+                {
+                    m_selectedPass = pass;
+                    m_attachmentId = binding.m_attachment->GetAttachmentId();
+                    m_slotName = binding.m_name;
+                    m_selectedChanged = true;
+                }
+            }
+            else
+            {
+                // Only draw text (not selectable) if there is no attachment binded to the slot.
+                ImGui::Text(label.c_str());
+            }
+        }
+
+    }
 
     inline void ImGuiPassTree::DrawTreeView(AZ::RPI::Pass* pass)
     {
@@ -164,6 +235,7 @@ namespace AZ::Render
                 {
                     m_selectedPass = pass;
                     m_attachmentId = AZ::RHI::AttachmentId{};
+                    m_slotName = AZ::Name{};
                     m_selectedChanged = true;
                 }
             }
@@ -179,76 +251,13 @@ namespace AZ::Render
                 {
                     m_selectedPass = pass;
                     m_attachmentId = AZ::RHI::AttachmentId{};
+                    m_slotName = AZ::Name{};
                     m_selectedChanged = true;
                 }
 
                 if (nodeOpen)
                 {
-                    for (const auto& binding : pass->GetAttachmentBindings())
-                    {
-                        // Binding info: [slot type] [slot name]
-                        AZStd::string label = AZStd::string::format("[%s] [%s]", AZ::RPI::ToString(binding.m_slotType),
-                            binding.m_name.GetCStr());
-
-                        // Append attachment info if the attachment exists
-                        if (binding.m_attachment)
-                        {
-                            AZ::RHI::AttachmentType type = binding.m_attachment->GetAttachmentType();
-
-                            // Append attachment info: [attachment type] attachment name
-                            label += AZStd::string::format(" [%s] %s",
-                                AZ::RHI::ToString(type),
-                                binding.m_attachment->m_name.GetCStr());
-
-                            if (type == AZ::RHI::AttachmentType::Image)
-                            {
-                                // Append image info: [format] [size] [msaa]
-                                AZ::RHI::ImageDescriptor descriptor;
-                                if (binding.m_attachment->m_importedResource)
-                                {
-                                    AZ::RPI::Image* image = static_cast<AZ::RPI::Image*>(binding.m_attachment->m_importedResource.get());
-                                    descriptor = image->GetRHIImage()->GetDescriptor();
-                                }
-                                else
-                                {
-                                    descriptor = binding.m_attachment->m_descriptor.m_image;
-                                }
-                                auto format = descriptor.m_format;
-                                auto size = descriptor.m_size;
-                                label += AZStd::string::format(" [%s] [%dx%d]", AZ::RHI::ToString(format), size.m_width, size.m_height);
-
-                                if (descriptor.m_multisampleState.m_samples > 1)
-                                {
-                                    if (descriptor.m_multisampleState.m_customPositionsCount > 0)
-                                    {
-                                        label += AZStd::string::format(" [MSAA_Custom_%dx]", descriptor.m_multisampleState.m_samples);
-                                    }
-                                    else
-                                    {
-                                        label += AZStd::string::format(" [MSAA_%dx]", descriptor.m_multisampleState.m_samples);
-                                    }
-                                }
-                            }
-                            else if (type == AZ::RHI::AttachmentType::Buffer)
-                            {
-                                // Append buffer info: [size]
-                                auto size = binding.m_attachment->m_descriptor.m_buffer.m_byteCount;
-                                label += AZStd::string::format(" [%llu]", size);
-                            }
-
-                            if (Scriptable_ImGui::Selectable(label.c_str(), m_attachmentId == binding.m_attachment->GetAttachmentId()))
-                            {
-                                m_selectedPass = pass;
-                                m_attachmentId = binding.m_attachment->GetAttachmentId();
-                                m_selectedChanged = true;
-                            }
-                        }
-                        else
-                        {
-                            // Only draw text (not selectable) if there is no attachment binded to the slot.
-                            ImGui::Text(label.c_str());
-                        }
-                    }
+                    DrawPassAttachments(pass);
 
                     Scriptable_ImGui::TreePop();
                 }
@@ -266,11 +275,13 @@ namespace AZ::Render
             {
                 m_selectedPass = pass;
                 m_attachmentId = AZ::RHI::AttachmentId{};
+                m_slotName = AZ::Name{};
                 m_selectedChanged = true;
             }
 
             if (nodeOpen)
             {
+                DrawPassAttachments(pass);
                 for (const auto& child : asParent->GetChildren())
                 {
                     DrawTreeView(child.get());
@@ -354,6 +365,7 @@ namespace AZ::Render
 
         m_selectedPass = nullptr;
         m_attachmentId = AZ::RHI::AttachmentId{};
+         m_slotName = AZ::Name{};
         m_selectedChanged = false;
         m_readback = nullptr;
         m_previewPass = nullptr;

@@ -70,49 +70,6 @@ namespace ScriptCanvas
                 }
                 ////
             }
-
-            void OperatorEmpty::OnInputSignal(const SlotId& slotId)
-            {
-                const SlotId inSlotId = OperatorEmptyProperty::GetInSlotId(this);
-                if (slotId == inSlotId)
-                {
-                    SlotId sourceSlotId = OperatorEmptyProperty::GetSourceSlotId(this);
-
-                    const Datum* containerDatum = FindDatum(sourceSlotId);
-
-                    if (Datum::IsValidDatum(containerDatum))
-                    {
-                        // Is the container empty?
-                        auto emptyOutcome = BehaviorContextMethodHelper::CallMethodOnDatum(*containerDatum, "Empty");
-                        if (!emptyOutcome)
-                        {
-                            SCRIPTCANVAS_REPORT_ERROR((*this), "Failed to call Empty on container: %s", emptyOutcome.GetError().c_str());
-                            return;
-                        }
-
-                        Datum emptyResult = emptyOutcome.TakeValue();
-                        bool isEmpty = *emptyResult.GetAs<bool>();
-
-                        PushOutput(Datum(isEmpty), *GetSlot(OperatorEmptyProperty::GetIsEmptySlotId(this)));
-
-                        if (isEmpty)
-                        {
-                            SignalOutput(OperatorEmptyProperty::GetTrueSlotId(this));
-                        }
-                        else
-                        {
-                            SignalOutput(OperatorEmptyProperty::GetFalseSlotId(this));
-                        }
-                    }
-                    else
-                    {
-                        PushOutput(Datum(true), *GetSlot(OperatorEmptyProperty::GetIsEmptySlotId(this)));
-                        SignalOutput(OperatorEmptyProperty::GetFalseSlotId(this));
-                    }
-
-                    SignalOutput(OperatorEmptyProperty::GetOutSlotId(this));
-                }
-            }
         }
     }
 }

@@ -50,11 +50,6 @@ namespace ScriptCanvas
                 //////////////////////////////////////////////////////////////////////////
 
             protected:
-                Datum Evaluate(const Datum& lhs, const Datum& rhs) override
-                {
-                    return Datum(*lhs.GetAs<bool>() || *rhs.GetAs<bool>());
-                }
-
                 void InitializeBooleanExpression() override
                 {
                     {

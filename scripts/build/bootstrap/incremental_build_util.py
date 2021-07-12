@@ -7,7 +7,7 @@ import argparse
 import ast
 import boto3
 import datetime
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import os
 import psutil
 import time
@@ -49,7 +49,7 @@ if os.name == 'nt':
 
     def is_dir_symlink(path):
         FILE_ATTRIBUTE_REPARSE_POINT = 0x0400
-        return os.path.isdir(path) and (ctypes.windll.kernel32.GetFileAttributesW(unicode(path)) & FILE_ATTRIBUTE_REPARSE_POINT)
+        return os.path.isdir(path) and (ctypes.windll.kernel32.GetFileAttributesW(str(path)) & FILE_ATTRIBUTE_REPARSE_POINT)
 
     def get_free_space_mb(path):
         if sys.version_info < (3,):  # Python 2?
@@ -84,7 +84,7 @@ else:
         return st.f_bavail * st.f_frsize / 1024 / 1024
 
 def error(message):
-    print message
+    print(message)
     exit(1)
 
 def parse_args():
@@ -137,19 +137,19 @@ def get_ec2_client(region):
 
 def get_ec2_instance_id():
     try:
-        instance_id = urllib2.urlopen('http://169.254.169.254/latest/meta-data/instance-id').read()
-        return instance_id
+        instance_id = urllib.request.urlopen('http://169.254.169.254/latest/meta-data/instance-id').read()
+        return instance_id.decode("utf-8")
     except Exception as e:
-        print e.message
+        print(e.message)
         error('No EC2 metadata! Check if you are running this script on an EC2 instance.')
 
 
 def get_availability_zone():
     try:
-        availability_zone = urllib2.urlopen('http://169.254.169.254/latest/meta-data/placement/availability-zone').read()
-        return availability_zone
+        availability_zone = urllib.request.urlopen('http://169.254.169.254/latest/meta-data/placement/availability-zone').read()
+        return availability_zone.decode("utf-8")
     except Exception as e:
-        print e.message
+        print(e.message)
         error('No EC2 metadata! Check if you are running this script on an EC2 instance.')
 
 
@@ -158,11 +158,11 @@ def kill_processes(workspace='/dev/'):
     Kills all processes that have open file paths associated with the workspace.
     Uses PSUtil for cross-platform compatibility
     '''
-    print 'Checking for any stuck processes...'
+    print('Checking for any stuck processes...')
     for proc in psutil.process_iter():
         try:
             if workspace in str(proc.open_files()):
-                print "{} has open files in {}. Terminating".format(proc.name(), proc.open_files())
+                print("{} has open files in {}. Terminating".format(proc.name(), proc.open_files()))
                 proc.kill()
                 time.sleep(1) # Just to make sure a parent process has time to close
         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
@@ -171,7 +171,7 @@ def kill_processes(workspace='/dev/'):
 
 def delete_volume(ec2_client, volume_id):
     response = ec2_client.delete_volume(VolumeId=volume_id)
-    print 'Volume {} deleted'.format(volume_id)
+    print('Volume {} deleted'.format(volume_id))
 
 def find_snapshot_id(ec2_client, repository_name, project, pipeline, platform, build_type, disk_size):
     mount_name = get_mount_name(repository_name, project, pipeline, 'stabilization_2106', platform, build_type) # we take snapshots out of stabilization_2106
@@ -234,29 +234,29 @@ def create_volume(ec2_client, availability_zone, repository_name, project, pipel
         time.sleep(1)
         response = ec2_client.describe_volumes(VolumeIds=[volume_id, ])
 
-    print("Volume {} created\n\tSnapshot: {}\n\tRepository {}\n\tProject {}\n\tPipeline {}\n\tBranch {}\n\tPlatform: {}\n\tBuild type: {}"
-        .format(volume_id, snapshot_id, repository_name, project, pipeline, branch, platform, build_type))
+    print(("Volume {} created\n\tSnapshot: {}\n\tRepository {}\n\tProject {}\n\tPipeline {}\n\tBranch {}\n\tPlatform: {}\n\tBuild type: {}"
+        .format(volume_id, snapshot_id, repository_name, project, pipeline, branch, platform, build_type)))
     return volume_id, created
 
 
 def mount_volume(created):
-    print 'Mounting volume...'
+    print('Mounting volume...')
     if os.name == 'nt':
         f = tempfile.NamedTemporaryFile(delete=False)
         f.write("""
       select disk 1
       online disk
       attribute disk clear readonly
-      """) # assume disk # for now
+      """.encode('utf-8')) # assume disk # for now
 
         if created:
-            print 'Creating filesystem on new volume'
+            print('Creating filesystem on new volume')
             f.write("""create partition primary
           select partition 1
           format quick fs=ntfs
           assign
           active
-          """)
+          """.encode('utf-8'))
 
         f.close()
         
@@ -267,7 +267,7 @@ def mount_volume(created):
         drives_after = win32api.GetLogicalDriveStrings()
         drives_after = drives_after.split('\000')[:-1]
 
-        print drives_after
+        print(drives_after)
 
         #drive_letter = next(item for item in drives_after if item not in drives_before)
         drive_letter = MOUNT_PATH
@@ -284,7 +284,7 @@ def mount_volume(created):
 
 
 def attach_volume(volume, volume_id, instance_id, timeout=DEFAULT_TIMEOUT):
-    print 'Attaching volume {} to instance {}'.format(volume_id, instance_id)
+    print('Attaching volume {} to instance {}'.format(volume_id, instance_id))
     volume.attach_to_instance(Device='xvdf',
                               InstanceId=instance_id,
                               VolumeId=volume_id)
@@ -297,7 +297,7 @@ def attach_volume(volume, volume_id, instance_id, timeout=DEFAULT_TIMEOUT):
         time.sleep(1)
         volume.load()
         if (time.clock() - timeout_init) > timeout:
-            print 'ERROR: Timeout reached trying to mount EBS'
+            print('ERROR: Timeout reached trying to mount EBS')
             exit(1)
     volume.create_tags(
         Tags=[
@@ -307,18 +307,18 @@ def attach_volume(volume, volume_id, instance_id, timeout=DEFAULT_TIMEOUT):
             },
         ]
     )
-    print 'Volume {} has been attached to instance {}'.format(volume_id, instance_id)
+    print('Volume {} has been attached to instance {}'.format(volume_id, instance_id))
 
 
 def unmount_volume():
-    print 'Umounting volume...'
+    print('Umounting volume...')
     if os.name == 'nt':
         kill_processes(MOUNT_PATH + 'workspace')
         f = tempfile.NamedTemporaryFile(delete=False)
         f.write("""
           select disk 1
           offline disk
-          """)
+          """.encode('utf-8'))
         f.close()
         subprocess.call('diskpart /s %s' % f.name)
         os.unlink(f.name)
@@ -328,7 +328,7 @@ def unmount_volume():
 
 
 def detach_volume(volume, ec2_instance_id, force, timeout=DEFAULT_TIMEOUT):
-    print 'Detaching volume {} from instance {}'.format(volume.volume_id, ec2_instance_id)
+    print('Detaching volume {} from instance {}'.format(volume.volume_id, ec2_instance_id))
     volume.detach_from_instance(Device='xvdf',
                                 Force=force,
                                 InstanceId=ec2_instance_id,
@@ -338,16 +338,16 @@ def detach_volume(volume, ec2_instance_id, force, timeout=DEFAULT_TIMEOUT):
         time.sleep(1)
         volume.load()
         if (time.clock() - timeout_init) > timeout:
-            print 'ERROR: Timeout reached trying to unmount EBS.'
+            print('ERROR: Timeout reached trying to unmount EBS.')
             volume.detach_from_instance(Device='xvdf',Force=True,InstanceId=ec2_instance_id,VolumeId=volume.volume_id)
             exit(1)
             
-    print 'Volume {} has been detached from instance {}'.format(volume.volume_id, ec2_instance_id)
+    print('Volume {} has been detached from instance {}'.format(volume.volume_id, ec2_instance_id))
     volume.load()
     if len(volume.attachments):
-        print 'Volume still has attachments'
+        print('Volume still has attachments')
         for attachment in volume.attachments:
-            print 'Volume {} {} to instance {}'.format(attachment['VolumeId'], attachment['State'], attachment['InstanceId'])
+            print('Volume {} {} to instance {}'.format(attachment['VolumeId'], attachment['State'], attachment['InstanceId']))
 
 
 def attach_ebs_and_create_partition_with_retry(volume, volume_id, ec2_instance_id, created):
@@ -379,10 +379,10 @@ def mount_ebs(repository_name, project, pipeline, branch, platform, build_type, 
 
     for volume in ec2_instance.volumes.all():
         for attachment in volume.attachments:
-            print 'attachment device: {}'.format(attachment['Device'])
+            print('attachment device: {}'.format(attachment['Device']))
             if 'xvdf' in attachment['Device'] and attachment['State'] != 'detached':
-                print 'A device is already attached to xvdf. This likely means a previous build failed to detach its ' \
-                      'build volume. This volume is considered orphaned and will be detached from this instance.'
+                print('A device is already attached to xvdf. This likely means a previous build failed to detach its ' \
+                      'build volume. This volume is considered orphaned and will be detached from this instance.')
                 unmount_volume()
                 detach_volume(volume, ec2_instance_id, False) # Force unmounts should not be used, as that will cause the EBS block device driver to fail the remount
 
@@ -393,21 +393,21 @@ def mount_ebs(repository_name, project, pipeline, branch, platform, build_type, 
 
     created = False
     if 'Volumes' in response and not len(response['Volumes']):
-        print 'Volume for {} doesn\'t exist creating it...'.format(mount_name)
+        print('Volume for {} doesn\'t exist creating it...'.format(mount_name))
         # volume doesn't exist, create it
         volume_id, created = create_volume(ec2_client, ec2_availability_zone, repository_name, project, pipeline, branch, platform, build_type, disk_size, disk_type)
     else:
         volume = response['Volumes'][0]
         volume_id = volume['VolumeId']
-        print 'Current volume {} is a {} GB {}'.format(volume_id, volume['Size'], volume['VolumeType'])
+        print('Current volume {} is a {} GB {}'.format(volume_id, volume['Size'], volume['VolumeType']))
         if (volume['Size'] != disk_size or volume['VolumeType'] != disk_type):
-            print 'Override disk attributes does not match the existing volume, deleting {} and replacing the volume'.format(volume_id)
+            print('Override disk attributes does not match the existing volume, deleting {} and replacing the volume'.format(volume_id))
             delete_volume(ec2_client, volume_id)
             volume_id, created = create_volume(ec2_client, ec2_availability_zone, repository_name, project, pipeline, branch, platform, build_type, disk_size, disk_type)
         if len(volume['Attachments']):
             # this is bad we shouldn't be attached, we should have detached at the end of a build
             attachment = volume['Attachments'][0]
-            print ('Volume already has attachment {}, detaching...'.format(attachment))
+            print(('Volume already has attachment {}, detaching...'.format(attachment)))
             detach_volume(ec2_resource.Volume(volume_id), attachment['InstanceId'], True)
 
     volume = ec2_resource.Volume(volume_id)
@@ -416,23 +416,23 @@ def mount_ebs(repository_name, project, pipeline, branch, platform, build_type, 
         drives_before = win32api.GetLogicalDriveStrings()
         drives_before = drives_before.split('\000')[:-1]
 
-        print drives_before
+        print(drives_before)
 
     attach_ebs_and_create_partition_with_retry(volume, volume_id, ec2_instance_id, created)
 
     free_space_mb = get_free_space_mb(MOUNT_PATH)
-    print 'Free disk space {}MB'.format(free_space_mb)
+    print('Free disk space {}MB'.format(free_space_mb))
     
     if free_space_mb < LOW_EBS_DISK_SPACE_LIMIT:
-        print 'Volume is running below EBS free disk space treshhold {}MB. Recreating volume and running clean build.'.format(LOW_EBS_DISK_SPACE_LIMIT)
+        print('Volume is running below EBS free disk space treshhold {}MB. Recreating volume and running clean build.'.format(LOW_EBS_DISK_SPACE_LIMIT))
         unmount_volume()
         detach_volume(volume, ec2_instance_id, False)
         delete_volume(ec2_client, volume_id)
         new_disk_size = int(volume.size * 1.25)
         if new_disk_size > MAX_EBS_DISK_SIZE:
-            print 'Error: EBS disk size reached to the allowed maximum disk size {}MB, please contact ly-infra@ and ly-build@ to investigate.'.format(MAX_EBS_DISK_SIZE)
+            print('Error: EBS disk size reached to the allowed maximum disk size {}MB, please contact ly-infra@ and ly-build@ to investigate.'.format(MAX_EBS_DISK_SIZE))
             exit(1)
-        print 'Recreating the EBS with disk size {}'.format(new_disk_size)
+        print('Recreating the EBS with disk size {}'.format(new_disk_size))
         volume_id, created = create_volume(ec2_client, ec2_availability_zone, repository_name, project, pipeline, branch, platform, build_type, new_disk_size, disk_type)
         volume = ec2_resource.Volume(volume_id)
         attach_ebs_and_create_partition_with_retry(volume, volume_id, ec2_instance_id, created)
@@ -454,13 +454,13 @@ def unmount_ebs():
 
     for attached_volume in ec2_instance.volumes.all():
         for attachment in attached_volume.attachments:
-            print 'attachment device: {}'.format(attachment['Device'])
+            print('attachment device: {}'.format(attachment['Device']))
             if attachment['Device'] == 'xvdf':
                 volume = attached_volume
 
     if not volume:
         # volume is not mounted
-        print 'Volume is not mounted'
+        print('Volume is not mounted')
     else:
         unmount_volume()
         detach_volume(volume, ec2_instance_id, False)

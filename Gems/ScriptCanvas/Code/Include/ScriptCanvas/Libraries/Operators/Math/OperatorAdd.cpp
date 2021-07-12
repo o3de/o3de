@@ -45,13 +45,13 @@ namespace ScriptCanvas
                 Data::ColorType operator()(const Data::ColorType& lhs, const Datum& rhs)
                 {
                     const AZ::Color* dataRhs = rhs.GetAs<AZ::Color>();
-                    
+
                     float a = AZ::GetClamp<float>(lhs.GetA(), 0.f, 1.f) + AZ::GetClamp<float>(dataRhs->GetA(), 0.f, 1.f);
                     float r = AZ::GetClamp<float>(lhs.GetR(), 0.f, 1.f) + AZ::GetClamp<float>(dataRhs->GetR(), 0.f, 1.f);
                     float g = AZ::GetClamp<float>(lhs.GetG(), 0.f, 1.f) + AZ::GetClamp<float>(dataRhs->GetG(), 0.f, 1.f);
                     float b = AZ::GetClamp<float>(lhs.GetB(), 0.f, 1.f) + AZ::GetClamp<float>(dataRhs->GetB(), 0.f, 1.f);
 
-                    return AZ::Color(r, g, b, a);                    
+                    return AZ::Color(r, g, b, a);
                 }
             };
 

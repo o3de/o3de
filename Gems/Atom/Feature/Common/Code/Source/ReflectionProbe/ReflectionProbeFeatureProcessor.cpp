@@ -256,6 +256,10 @@ namespace AZ
         {
             AZ_Assert(probe.get(), "SetProbeCubeMap called with an invalid handle");
             probe->SetCubeMapImage(cubeMapImage, relativePath);
+
+            // notify the MeshFeatureProcessor that the reflection probe changed
+            MeshFeatureProcessor* meshFeatureProcessor = GetParentScene()->GetFeatureProcessor<MeshFeatureProcessor>();
+            meshFeatureProcessor->UpdateMeshReflectionProbes();
         }
 
         void ReflectionProbeFeatureProcessor::SetProbeTransform(const ReflectionProbeHandle& probe, const AZ::Transform& transform)

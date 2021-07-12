@@ -57,7 +57,7 @@ namespace ScriptCanvas
             AddNodeToRegistry<Time, ScriptCanvas::Nodes::TimeDelayNodeableNode>(nodeRegistry);
             AddNodeToRegistry<Time, ScriptCanvas::Nodes::TimerNodeableNode>(nodeRegistry);
         }
-        
+
         AZStd::vector<AZ::ComponentDescriptor*> Time::GetComponentDescriptors()
         {
             return AZStd::vector<AZ::ComponentDescriptor*>({
@@ -73,7 +73,7 @@ namespace ScriptCanvas
                 ScriptCanvas::Nodes::HeartBeatNodeableNode::CreateDescriptor(),
                 ScriptCanvas::Nodes::TimeDelayNodeableNode::CreateDescriptor(),
                 ScriptCanvas::Nodes::TimerNodeableNode::CreateDescriptor(),
-            });
+                });
         }
     }
 

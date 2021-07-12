@@ -1,19 +1,12 @@
 {
     "gem_name": "Twitch",
-    "GemFormatVersion": 3,
-    "Uuid": "b63e64141fab40b791211ba257632e84",
-    "Name": "Twitch",
-    "DisplayName": "Twitch",
-    "Version": "1.0.0",
-    "LinkType": "Dynamic",
-    "Summary": "Provides access to the Twitch API v5 SDK including social functions, channels, and other APIs.",
-    "Tags": ["Twitch","SDK","Social"],
-    "IconPath": "preview.png",
-    "Dependencies": [
-        {
-            "Uuid": "28479e255bde466e91fc34eec808d9c7",
-            "VersionConstraints": [ "~>1.0" ],
-            "_comment": "HttpRequestor"
-        }
-    ]
+    "display_name": "Twitch",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Open 3D Engine - o3de.org",
+    "type": "Code",
+    "summary": "The Twitch Gem provides access to the Twitch API v5 SDK including social functions, channels, and other APIs.",
+    "canonical_tags": ["Gem"],
+    "user_tags": ["Network", "SDK", "Multiplayer"],
+    "icon_path": "preview.png",
+    "requirements": ""
 }

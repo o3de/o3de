@@ -13,10 +13,6 @@
 #include <AzCore/Serialization/EditContext.h>
 
 #include <Editor/Assets/ScriptCanvasAssetHolder.h>
-#include <Editor/Assets/ScriptCanvasAssetReference.h>
-#include <Editor/Assets/ScriptCanvasAssetInstance.h>
-
-#include <Editor/Nodes/EditorLibrary.h>
 
 #include <Editor/View/Dialogs/SettingsDialog.h>
 #include <Editor/View/Widgets/LoggingPanel/LiveWindowSession/LiveLoggingWindowSession.h>
@@ -36,12 +32,9 @@ namespace ScriptCanvasEditor
     void ReflectComponent::Reflect(AZ::ReflectContext* context)
     {
         ScriptCanvas::ScriptCanvasData::Reflect(context);
-        ScriptCanvasAssetReference::Reflect(context);
-        ScriptCanvasAssetInstance::Reflect(context);
         ScriptCanvasAssetHolder::Reflect(context);
         EditorSettings::EditorWorkspace::Reflect(context);        
         EditorSettings::ScriptCanvasEditorSettings::Reflect(context);        
-        Library::Editor::Reflect(context);
         LiveLoggingUserSettings::Reflect(context);
         UndoData::Reflect(context);
 
@@ -59,7 +52,6 @@ namespace ScriptCanvasEditor
         CreateEBusHandlerMimeEvent::Reflect(context);
         CreateEBusHandlerEventMimeEvent::Reflect(context);
         CreateEBusSenderMimeEvent::Reflect(context);
-        CreateEntityRefNodeMimeEvent::Reflect(context);
         CreateGetVariableNodeMimeEvent::Reflect(context);
         CreateSetVariableNodeMimeEvent::Reflect(context);
         CreateVariableChangedNodeMimeEvent::Reflect(context);

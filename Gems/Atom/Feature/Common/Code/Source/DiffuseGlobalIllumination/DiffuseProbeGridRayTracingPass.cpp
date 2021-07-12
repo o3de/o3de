@@ -131,7 +131,7 @@ namespace AZ
             }
 
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
-            if (!diffuseProbeGridFeatureProcessor || diffuseProbeGridFeatureProcessor->GetRealTimeProbeGrids().empty())
+            if (!diffuseProbeGridFeatureProcessor || diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids().empty())
             {
                 // no diffuse probe grids
                 return;
@@ -148,9 +148,9 @@ namespace AZ
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
             RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
 
-            frameGraph.SetEstimatedItemCount(aznumeric_cast<uint32_t>(diffuseProbeGridFeatureProcessor->GetRealTimeProbeGrids().size()));
+            frameGraph.SetEstimatedItemCount(aznumeric_cast<uint32_t>(diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids().size()));
 
-            for (const auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetRealTimeProbeGrids())
+            for (const auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids())
             {
                 // TLAS
                 {
@@ -255,7 +255,7 @@ namespace AZ
                 rayTracingFeatureProcessor->GetMeshInfoBuffer() &&
                 rayTracingFeatureProcessor->GetSubMeshCount())
             {
-                for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetRealTimeProbeGrids())
+                for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids())
                 {
                     // the diffuse probe grid Srg must be updated in the Compile phase in order to successfully bind the ReadWrite shader
                     // inputs (see line ValidateSetImageView() in ShaderResourceGroupData.cpp)
@@ -303,7 +303,7 @@ namespace AZ
                 m_rayTracingShaderTable)
             {
                 // submit the DispatchRaysItem for each DiffuseProbeGrid
-                for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetRealTimeProbeGrids())
+                for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids())
                 {
                     const RHI::ShaderResourceGroup* shaderResourceGroups[] = {
                         diffuseProbeGrid->GetRayTraceSrg()->GetRHIShaderResourceGroup(),

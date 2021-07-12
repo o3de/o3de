@@ -1,12 +1,12 @@
 {
     "gem_name": "AWSClientAuth",
-    "GemFormatVersion": 3,
-    "Uuid": "c74f2756f5874c0d8d29646dfc9cb0ad",
-    "Name": "AWSClientAuth",
-    "DisplayName": "AWS Client Auth",
-    "Version": "0.1.0",
-    "LinkType": "Dynamic",
-    "Summary": "AWS Client Auth provides client authentication and AWS authorization solution",
-    "Tags": ["AWS", "Amazon Cognito", "Authentication", "Authorization"],
-    "IconPath": "preview.png"
+    "display_name": "AWS Client Authorization",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Amazon Web Services, Inc.",
+    "type": "Code",
+    "summary": "AWS Client Auth provides client authentication and AWS authorization solution.",
+    "canonical_tags": ["Gem"],
+    "user_tags": ["AWS", "Network", "SDK"],
+    "icon_path": "preview.png",
+    "requirements": ""
 }
