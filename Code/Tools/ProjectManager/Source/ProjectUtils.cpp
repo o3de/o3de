@@ -250,7 +250,7 @@ namespace O3DE::ProjectManager
             progressDialog->setValue(0);
             progressDialog->setRange(0, 1000);
             progressDialog->setModal(true);
-            progressDialog->setWindowTitle("Copying project ...");
+            progressDialog->setWindowTitle(QObject::tr("Copying project ..."));
             progressDialog->show();
 
             QLocale locale;
@@ -259,7 +259,12 @@ namespace O3DE::ProjectManager
                     // Create a human-readable version of the file size.
                     const QString fileSizeString = locale.formattedDataSize(sizeInBytes);
 
-                    progressDialog->setLabelText(QString("Indexing files ... %1 files found, %2 to copy.").arg(fileCount).arg(fileSizeString));
+                    progressDialog->setLabelText(QString("%1 ... %2 %3, %4 %5.")
+                        .arg(QObject::tr("Indexing files"))
+                        .arg(QString::number(fileCount))
+                        .arg(QObject::tr("files found"))
+                        .arg(fileSizeString)
+                        .arg(QObject::tr("to copy")));
                     qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
                 });
 
@@ -277,7 +282,7 @@ namespace O3DE::ProjectManager
 
             if (!success)
             {
-                progressDialog->setLabelText("Duplicating project failed/cancelled, removing already copied files ...");
+                progressDialog->setLabelText(QObject::tr("Duplicating project failed/cancelled, removing already copied files ..."));
                 qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
 
                 DeleteProjectFiles(newPath, true);
