@@ -70,8 +70,9 @@ namespace O3DE::ProjectManager
         m_lastProgress = progress;
         if (m_projectButton)
         {
-            m_projectButton->SetButtonOverlayText(QString("%1 (%2%)\n\n").arg(tr("Building Project..."), QString::number(progress)));
+            m_projectButton->SetButtonOverlayText(QString("%1 (%2%)<br>%3<br>").arg(tr("Building Project..."), QString::number(progress), tr("Click to <a href=\"logs\">view logs</a>.")));
             m_projectButton->SetProgressBarValue(progress);
+            m_projectButton->SetBuildLogsLink(m_worker->GetLogFilePath());
         }
     }
 
