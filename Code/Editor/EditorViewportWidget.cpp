@@ -2972,9 +2972,9 @@ void EditorViewportWidget::RestoreViewportAfterGameMode()
 
     QString text =
         QString(
-            "When leaving \" Game Mode \" the engine will automatically restore your camera position to the default position before you "
+            tr("When leaving \" Game Mode \" the engine will automatically restore your camera position to the default position before you "
             "had entered Game mode.<br/><br/><small>If you dislike this setting you can always change this anytime in the global "
-            "preferences.</small><br/><br/>")
+            "preferences.</small><br/><br/>"))
             .arg(EditorPreferencesGeneralRestoreViewportCameraSettingName);
     QString restoreOnExitGameModePopupDisabledRegKey("Editor/AutoHide/ViewportCameraRestoreOnExitGameMode");
 
