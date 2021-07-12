@@ -583,9 +583,6 @@ set(FILES
     SettingsManager.h
     SettingsManagerDialog.h
     SettingsManagerDialog.ui
-    GraphicsSettingsDialog.h
-    GraphicsSettingsDialog.cpp
-    graphicssettingsdialog.ui
     AboutDialog.cpp
     ErrorReportTableModel.h
     ErrorReportTableModel.cpp
