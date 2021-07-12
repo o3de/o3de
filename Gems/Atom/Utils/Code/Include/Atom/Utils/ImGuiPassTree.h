@@ -32,11 +32,14 @@ namespace AZ
 
             void ReadbackCallback(const AZ::RPI::AttachmentReadback::ReadbackResult& readbackResult);
 
+            void DrawPassAttachments(AZ::RPI::Pass* pass);
+
             bool m_previewAttachment = false;
             bool m_showAttachments = false;
 
             AZ::RPI::Pass* m_selectedPass = nullptr;
             AZ::RHI::AttachmentId m_attachmentId;
+            AZ::Name m_slotName;
             bool m_selectedChanged = false;
 
             AZStd::shared_ptr<AZ::RPI::AttachmentReadback> m_readback;

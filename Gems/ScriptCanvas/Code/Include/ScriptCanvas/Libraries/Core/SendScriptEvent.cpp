@@ -28,64 +28,6 @@ namespace ScriptCanvas
                 ScriptEvents::ScriptEventNotificationBus::Handler::BusDisconnect();
             }
 
-            void SendScriptEvent::OnInputSignal(const SlotId&)
-            {
-                if (!m_method)
-                {
-                    if (!m_asset.IsReady())
-                    {
-                        m_asset = AZ::Data::AssetManager::Instance().GetAsset<ScriptEvents::ScriptEventsAsset>(m_scriptEventAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
-                    }
-
-                    CreateSender(m_asset);
-                }
-
-                if (!m_method)
-                {
-                    AZStd::string error = AZStd::string::format("Script Event sender node called with no initialized method (%s::%s)!", m_busName.c_str(), m_eventName.c_str());
-                    SCRIPTCANVAS_REPORT_ERROR((*this), error.c_str());
-                }
-
-                if (m_method)
-                {
-                    Node::DatumVector inputDatums = GatherDatumsForDescriptor(SlotDescriptors::DataIn());
-
-                    if (m_method->GetNumArguments() != inputDatums.size())
-                    {
-                        SCRIPTCANVAS_REPORT_ERROR((*this), "The Script Event %s number of parameters %d do not correspond to the number of slots %zu in the Script Canvas node (%s). Make sure the node is updated in the Script Canvas graph.", m_method->m_name.c_str(), m_method->GetNumArguments(), inputDatums.size(), GetNodeName().c_str());
-                        return;
-                    }
-
-                    AZStd::array<AZ::BehaviorValueParameter, BehaviorContextMethodHelper::MaxCount> params;
-                    AZ::BehaviorValueParameter* paramFirst(params.begin());
-                    AZ::BehaviorValueParameter* paramIter = paramFirst;
-                    {
-                        // all input should have been pushed into this node already
-                        int argIndex(0);
-                        for (const Datum* datum : inputDatums)
-                        {
-                            AZ::Outcome<AZ::BehaviorValueParameter, AZStd::string> inputParameter = datum->ToBehaviorValueParameter(*m_method->GetArgument(argIndex));
-                            if (!inputParameter.IsSuccess())
-                            {
-                                SCRIPTCANVAS_REPORT_ERROR((*this), "BehaviorContext method input problem at parameter index %d: %s", argIndex, inputParameter.GetError().data());
-                                return;
-                            }
-
-                            paramIter->Set(inputParameter.GetValue());
-                            ++paramIter;
-                            ++argIndex;
-                        }
-
-                        AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::ScriptCanvas, "ScriptCanvas::ScriptEvents::OnInputSignal::Call %s::%s", m_busName.c_str(), m_eventName.c_str());
-                        {
-                            BehaviorContextMethodHelper::Call(*this, m_method, paramFirst, paramIter, m_resultSlotID); 
-                        }
-                    }
-                }
-
-                SignalOutput(GetSlotId("Out"));
-            }
-
             ScriptCanvas::EBusBusId SendScriptEvent::GetBusId() const
             {
                 return m_busId;
@@ -155,11 +97,6 @@ namespace ScriptCanvas
 
             AZ::Outcome<void, AZStd::string> IsExposable(const AZ::BehaviorMethod& method)
             {
-                if (method.GetNumArguments() > BehaviorContextMethodHelper::MaxCount)
-                {
-                    return AZ::Failure(AZStd::string("Too many arguments for a Script Canvas method"));
-                }
-
                 for (size_t argIndex(0), sentinel(method.GetNumArguments()); argIndex != sentinel; ++argIndex)
                 {
                     if (const AZ::BehaviorParameter* argument = method.GetArgument(argIndex))
@@ -271,7 +208,7 @@ namespace ScriptCanvas
                 asset.BlockUntilLoadComplete();
 
                 const ScriptEvents::ScriptEvent& definition = asset.Get()->m_definition;
-                
+
                 // If no name has been serialized, this is a new node, so initialize it to the Script Event's definition values.
                 if (m_busId == ScriptCanvas::EBusBusId())
                 {
@@ -295,7 +232,7 @@ namespace ScriptCanvas
                 }
 
                 NamespacePath emptyNamespacePath;
-    
+
                 ScriptEvents::ScriptEventBus::BroadcastResult(m_scriptEvent, &ScriptEvents::ScriptEventRequests::RegisterScriptEvent, assetId, m_version);
 
                 AZ::BehaviorMethod* method{};
@@ -362,9 +299,9 @@ namespace ScriptCanvas
 
                 ScriptEvents::Method scriptEventMethod;
                 definition.FindMethod(method->m_name, scriptEventMethod);
-                
+
                 size_t argIndex = 0;
-                
+
                 // Address slot (BusId)
                 if (method->HasBusId())
                 {
@@ -460,7 +397,7 @@ namespace ScriptCanvas
                 {
                     return true;
                 }
-                
+
                 RegisterScriptEvent(asset);
 
                 if (asset && asset.IsReady())
@@ -491,7 +428,7 @@ namespace ScriptCanvas
                             {
                                 ConfigureMethod(*method);
                                 InitializeResultSlotId();
-                                
+
                                 return true;
                             }
                         }
@@ -591,7 +528,7 @@ namespace ScriptCanvas
                 if (m_scriptEvent == nullptr)
                 {
                     return false;
-                }                
+                }
 
                 m_ebus = m_scriptEvent->GetBehaviorBus();
 

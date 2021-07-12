@@ -57,6 +57,7 @@ namespace AZ
         class PassTemplate;
         struct PassRequest;
         struct PassValidationResults;
+        class AttachmentReadback;
 
         using SortedPipelineViewTags = AZStd::set<PipelineViewTag, AZNameSortAscending>;
         using PassesByDrawList = AZStd::map<RHI::DrawListTag, const Pass*>;
@@ -65,7 +66,12 @@ namespace AZ
         const uint32_t PassInputBindingCountMax = 16;
         const uint32_t PassInputOutputBindingCountMax = PassInputBindingCountMax;
         const uint32_t PassOutputBindingCountMax = PassInputBindingCountMax;
-
+                
+        enum class PassAttachmentReadbackOption : uint8_t
+        {
+            Input = 0,
+            Output
+        };
 
         //! Atom's base pass class (every pass class in Atom must derive from this class).
         //! 
@@ -222,6 +228,14 @@ namespace AZ
             //! Enables/Disables PipelineStatistics queries for this pass
             virtual void SetPipelineStatisticsQueryEnabled(bool enable);
 
+            //! Readback an attachment attached to the specified slot name
+            //! @param readback The AttachmentReadback object which is used for readback. Its callback function will be called when readback is finished.
+            //! @param slotName The attachment bind to the slot with this slotName is to be readback
+            //! @param option The option is used for choosing input or output state when readback an InputOutput attachment.
+            //!               It's ignored if the attachment isn't an InputOutput attachment.
+            //! Return true if the readback request was successful. User may expect the AttachmentReadback's callback function would be called. 
+            bool ReadbackAttachment(AZStd::shared_ptr<AttachmentReadback> readback, const Name& slotName, PassAttachmentReadbackOption option = PassAttachmentReadbackOption::Output);
+
             //! Returns whether the Timestamp queries is enabled/disabled for this pass
             bool IsTimestampQueryEnabled() const;
 
@@ -265,7 +279,6 @@ namespace AZ
 
             // Update output bindings on this pass that are connected to bindings on other passes
             void UpdateConnectedOutputBindings();
-
 
         protected:
             explicit Pass(const PassDescriptor& descriptor);
@@ -349,6 +362,7 @@ namespace AZ
             void FrameEnd();
             virtual void FrameEndInternal() { }
 
+            void UpdateReadbackAttachment(FramePrepareParams params, bool beforeAddScopes);
 
             // --- Protected Members ---
 
@@ -442,7 +456,10 @@ namespace AZ
             // Sort type to be used by the default sort implementation. Passes can also provide
             // fully custom sort implementations by overriding the SortDrawList() function.
             RHI::DrawListSortType m_drawListSortType = RHI::DrawListSortType::KeyThenDepth;
-
+            
+            // For read back attachment
+            AZStd::shared_ptr<AttachmentReadback> m_attachmentReadback;
+            PassAttachmentReadbackOption m_readbackOption;
 
         private:
             // Return the Timestamp result of this pass

@@ -34,8 +34,6 @@ namespace ScriptCanvas
 
                 bool IsIfBranchPrefacedWithBooleanExpression() const override;
 
-                
-
             protected:
                 ConstSlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot&, CombinedSlotType targetSlotType, const Slot*) const override
                 {
@@ -43,9 +41,6 @@ namespace ScriptCanvas
                 }
 
                 void OnInit() override;
-
-                void OnInputSignal(const SlotId&) override;
-
             };
         }
     }

@@ -56,6 +56,8 @@ namespace LegacyFramework
         virtual int Run(const ApplicationDesc& desc);
         Application();
 
+        void CreateReflectionManager() override;
+
     protected:
 
         // ------------------------------------------------------------------

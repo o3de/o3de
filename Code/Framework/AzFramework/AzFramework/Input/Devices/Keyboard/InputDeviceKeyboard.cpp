@@ -454,8 +454,8 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceKeyboard::InputDeviceKeyboard()
-        : InputDevice(Id)
+    InputDeviceKeyboard::InputDeviceKeyboard(AzFramework::InputDeviceId id)
+        : InputDevice(id)
         , m_modifierKeyStates(AZStd::make_shared<ModifierKeyStates>())
         , m_allChannelsById()
         , m_keyChannelsById()

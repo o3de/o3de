@@ -116,6 +116,11 @@ namespace AzFramework
         SetFullScreenState(!GetFullScreenState());
     }
 
+    float NativeWindow::GetDpiScaleFactor() const
+    {
+        return m_pimpl->GetDpiScaleFactor();
+    }
+
     /*static*/ bool NativeWindow::GetFullScreenStateOfDefaultWindow()
     {
         NativeWindowHandle defaultWindowHandle = nullptr;
@@ -226,6 +231,12 @@ namespace AzFramework
     {
         // For most implementations full screen is the only option
         return false;
+    }
+
+    float NativeWindow::Implementation::GetDpiScaleFactor() const
+    {
+        // For platforms that aren't DPI-aware, we simply return a 1.0 ratio for no scaling
+        return 1.0f;
     }
 
 } // namespace AzFramework
