@@ -110,15 +110,7 @@ namespace AZ
 
             if (result.GetProcessing() == Processing::Halted)
             {
-                ResultCode reportedResult = settings.m_reporting(R"(One of the patches couldn't be applied correctly.)", result, element);
-                if (reportedResult.GetOutcome() == Outcomes::PartialSkip)
-                {
-                    result = reportedResult;
-                }
-                else
-                {
-                    return result;
-                }
+                return result;
             }
         }
 
