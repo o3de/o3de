@@ -31,22 +31,20 @@ namespace LmbrCentral
         return vertices + 1;
     }
 
-    void DrawShape(
-        AzFramework::DebugDisplayRequests& debugDisplay,
-        const ShapeDrawParams& shapeDrawParams, const ShapeMesh& shapeMesh)
+    void DrawShape(AzFramework::DebugDisplayRequests& debugDisplay, const ShapeDrawParams& shapeDrawParams, const ShapeMesh& shapeMesh)
     {
         if (shapeDrawParams.m_filled)
         {
-            debugDisplay.DrawTrianglesIndexed(
-                shapeMesh.m_vertexBuffer,
-                shapeMesh.m_indexBuffer,
-                shapeDrawParams.m_shapeColor
-            );
+            if (!shapeMesh.m_vertexBuffer.empty() && !shapeMesh.m_indexBuffer.empty())
+            {
+                debugDisplay.DrawTrianglesIndexed(shapeMesh.m_vertexBuffer, shapeMesh.m_indexBuffer, shapeDrawParams.m_shapeColor);
+            }
         }
 
-        debugDisplay.DrawLines(
-            shapeMesh.m_lineBuffer,
-            shapeDrawParams.m_wireColor);
+        if (!shapeMesh.m_lineBuffer.empty())
+        {
+            debugDisplay.DrawLines(shapeMesh.m_lineBuffer, shapeDrawParams.m_wireColor);
+        }
     }
 
     /// Determine if a list of vertices constitute a simple polygon

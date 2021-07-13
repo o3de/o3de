@@ -6,12 +6,14 @@
  */
 
 #include "LmbrCentral_precompiled.h"
-#include <AzTest/AzTest.h>
 
 #include <AzCore/Component/ComponentApplication.h>
-#include <Shape/ShapeGeometryUtil.h>
-#include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/UnitTest/TestTypes.h>
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <AzTest/AzTest.h>
+#include <LmbrCentral/Shape/ShapeComponentBus.h>
+#include <Shape/ShapeGeometryUtil.h>
 
 namespace UnitTest
 {
@@ -90,5 +92,44 @@ namespace UnitTest
         );
 
         EXPECT_TRUE(triangles.size() == 18);
+    }
+
+    // test double to record if DrawTrianglesIndexed or DrawLines are called
+    class DebugShapeDebugDisplayRequests : public AzFramework::DebugDisplayRequests
+    {
+    public:
+        void DrawTrianglesIndexed(
+            [[maybe_unused]] const AZStd::vector<AZ::Vector3>& vertices,
+            [[maybe_unused]] const AZStd::vector<AZ::u32>& indices,
+            [[maybe_unused]] const AZ::Color& color) override
+        {
+            m_drawTrianglesIndexedCalled = true;
+        }
+
+        void DrawLines([[maybe_unused]] const AZStd::vector<AZ::Vector3>& lines, [[maybe_unused]] const AZ::Color& color) override
+        {
+            m_drawLinesCalled = true;
+        }
+
+        bool m_drawTrianglesIndexedCalled = false;
+        bool m_drawLinesCalled = false;
+    };
+
+    // DrawShape internally calls DrawTrianglesIndexed and DrawLines - with no geometry
+    // we want to make sure the shape is not submitted to be drawn
+    TEST(ShapeGeometry, Shape_not_attempted_to_be_drawn_with_no_geometry)
+    {
+        using ::testing::Eq;
+
+        // given
+        DebugShapeDebugDisplayRequests debugDisplayRequests;
+
+        // when
+        LmbrCentral::DrawShape(
+            debugDisplayRequests, LmbrCentral::ShapeDrawParams{ AZ::Colors::White, AZ::Colors::White, true }, LmbrCentral::ShapeMesh{});
+
+        // then
+        EXPECT_THAT(debugDisplayRequests.m_drawTrianglesIndexedCalled, Eq(false));
+        EXPECT_THAT(debugDisplayRequests.m_drawLinesCalled, Eq(false));
     }
 }
