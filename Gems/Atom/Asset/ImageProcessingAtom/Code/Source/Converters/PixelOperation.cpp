@@ -5,7 +5,6 @@
  *
  */
 
-#include <ImageProcessing_precompiled.h>
 
 #include <AzCore/std/smart_ptr/make_shared.h>
 

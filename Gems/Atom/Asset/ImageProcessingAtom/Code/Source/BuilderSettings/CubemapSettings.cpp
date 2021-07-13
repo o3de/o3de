@@ -5,7 +5,6 @@
  *
  */
 
-#include "ImageProcessing_precompiled.h"
 #include <BuilderSettings/CubemapSettings.h>
 #include <AzCore/Serialization/SerializeContext.h>
 

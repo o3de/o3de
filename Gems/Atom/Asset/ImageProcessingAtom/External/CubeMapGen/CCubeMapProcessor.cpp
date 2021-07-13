@@ -3,7 +3,6 @@
 //=============================================================================
 // Modified from original
 
-#include <ImageProcessing_precompiled.h>
 #include "CCubeMapProcessor.h"
 
 #include <AzCore/std/bind/bind.h>

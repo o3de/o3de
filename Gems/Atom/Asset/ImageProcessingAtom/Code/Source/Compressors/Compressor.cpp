@@ -5,7 +5,6 @@
  *
  */
 
-#include <ImageProcessing_precompiled.h>
 
 #include <Compressors/CTSquisher.h>
 #include <Compressors/PVRTC.h>

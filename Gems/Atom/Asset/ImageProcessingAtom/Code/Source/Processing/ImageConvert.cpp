@@ -5,8 +5,6 @@
  *
  */
 
-#include <ImageProcessing_precompiled.h>
-
 #include <Processing/PixelFormatInfo.h>
 #include <Processing/ImageToProcess.h>
 #include <Processing/ImageConvert.h>
@@ -23,10 +21,6 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-
-// qt has convenience functions to handle file
-#include <qfile.h>
-#include <qdir.h>
 
 // for texture splitting
 // minimum number of low level mips will be saved in the base file.

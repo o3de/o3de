@@ -5,7 +5,6 @@
  *
  */
 
-#include <ImageProcessing_precompiled.h>
 #include "MipmapSettingWidget.h"
 #include <Source/Editor/ui_MipmapSettingWidget.h>
 

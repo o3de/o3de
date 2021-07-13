@@ -5,11 +5,9 @@
  *
  */
 
-
-#include <ImageProcessing_precompiled.h>
-
 #include <math.h>
 #include "FIR-Weights.h"
+#include <AzCore/Debug/Trace.h>
 
 /* ####################################################################################################################
  */

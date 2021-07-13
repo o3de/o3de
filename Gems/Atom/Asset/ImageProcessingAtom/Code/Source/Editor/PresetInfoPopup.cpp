@@ -5,7 +5,6 @@
  *
  */
 
-#include <ImageProcessing_precompiled.h>
 #include "PresetInfoPopup.h"
 #include <Source/Editor/ui_PresetInfoPopup.h>
 #include <BuilderSettings/PresetSettings.h>

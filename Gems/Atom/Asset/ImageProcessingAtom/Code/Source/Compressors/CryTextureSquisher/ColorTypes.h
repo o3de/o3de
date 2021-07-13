@@ -5,8 +5,9 @@
  *
  */
 
-
 #pragma once
+
+#include <ImageBuilderBaseType.h>
 
 namespace ImageProcessingAtom
 {

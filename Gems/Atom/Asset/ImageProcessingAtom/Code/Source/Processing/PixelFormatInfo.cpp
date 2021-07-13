@@ -5,7 +5,6 @@
  *
  */
 
-#include <ImageProcessing_precompiled.h>
 
 #include <Processing/PixelFormatInfo.h>
 #include <Processing/DDSHeader.h>

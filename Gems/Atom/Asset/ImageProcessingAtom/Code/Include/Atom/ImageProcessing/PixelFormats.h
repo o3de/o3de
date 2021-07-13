@@ -6,6 +6,7 @@
  */
 #pragma once
 
+#include <AzCore/RTTI/RTTI.h>
 
 namespace ImageProcessingAtom
 {

@@ -13,7 +13,7 @@
 #include <stdio.h>
 
 #include "VectorMacros.h"
-
+#include <ImageBuilderBaseType.h>
 
 #ifndef WCHAR 
 #define WCHAR wchar_t

@@ -10,6 +10,7 @@
 #include <Atom/ImageProcessing/PixelFormats.h>
 #include <Atom/ImageProcessing/ImageObject.h>
 #include <Compressors/Compressor.h>
+#include <ImageBuilderBaseType.h>
 
 namespace ImageProcessingAtom
 {

@@ -5,7 +5,6 @@
  *
  */
 
-#include <ImageProcessing_precompiled.h>
 
 #include <AzTest/AzTest.h>
 #include <AzTest/Utils.h>

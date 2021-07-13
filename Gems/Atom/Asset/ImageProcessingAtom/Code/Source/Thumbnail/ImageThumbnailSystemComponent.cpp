@@ -5,7 +5,6 @@
  *
  */
 
-#include "ImageProcessing_precompiled.h"
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>

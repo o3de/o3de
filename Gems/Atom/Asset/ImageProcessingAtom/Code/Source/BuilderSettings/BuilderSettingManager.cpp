@@ -5,7 +5,6 @@
  *
  */
 
-#include "ImageProcessing_precompiled.h"
 
 #include "BuilderSettingManager.h"
 #include <QDirIterator>
