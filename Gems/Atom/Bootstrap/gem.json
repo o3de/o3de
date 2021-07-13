@@ -1,25 +1,10 @@
 {
     "gem_name": "Atom_Bootstrap",
-    "Dependencies": [
-        {
-            "Uuid": "a218db9eb2114477b46600fea4441a6c",
-            "VersionConstraints": [
-                "~>0.1.0"
-            ],
-            "_comment": "Atom RPI.Public"
-        }
-    ],    
-    "GemFormatVersion": 4,
-    "Uuid": "c7ff89ad6e8b4b45b2fadef2bcf12d6e",
-    "Name": "Atom_Bootstrap",
-    "DisplayName": "Atom.Bootstrap",
-    "Version": "0.1.0",
-    "Summary": "Bootstrap gem to setup any necessary Atom components.",
-    "Tags": ["Atom", "Bootstrap"],
-    "IconPath": "preview.png",
-    "Modules": [
-        {
-            "Type": "GameModule"
-        }
+    "display_name": "Atom Bootstrap",
+    "summary": "",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
     ]
 }

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -29,6 +24,8 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
     {
     public:
         using ProcessedObjectStoreContainer = AZStd::vector<ProcessedObjectStore>;
+        using ProductAssetDependencyContainer =
+            AZStd::unordered_map<AZ::Data::AssetId, AZStd::unordered_set<AZ::Data::AssetId>>;
 
         AZ_CLASS_ALLOCATOR(PrefabProcessorContext, AZ::SystemAllocator, 0);
         AZ_RTTI(PrefabProcessorContext, "{C7D77E3A-C544-486B-B774-7C82C38FE22F}");
@@ -37,13 +34,20 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         virtual ~PrefabProcessorContext() = default;
 
         virtual bool AddPrefab(AZStd::string prefabName, PrefabDom prefab);
-        virtual bool RemovePrefab(AZStd::string_view prefabName);
         virtual void ListPrefabs(const AZStd::function<void(AZStd::string_view, PrefabDom&)>& callback);
         virtual void ListPrefabs(const AZStd::function<void(AZStd::string_view, const PrefabDom&)>& callback) const;
         virtual bool HasPrefabs() const;
 
+        virtual bool RegisterSpawnableProductAssetDependency(AZStd::string prefabName, AZStd::string dependentPrefabName);
+        virtual bool RegisterSpawnableProductAssetDependency(AZStd::string prefabName, const AZ::Data::AssetId& dependentAssetId);
+        virtual bool RegisterSpawnableProductAssetDependency(uint32_t spawnableAssetSubId, uint32_t dependentSpawnableAssetSubId);
+        virtual bool RegisterProductAssetDependency(const AZ::Data::AssetId& assetId, const AZ::Data::AssetId& dependentAssetId);
+
         virtual ProcessedObjectStoreContainer& GetProcessedObjects();
         virtual const ProcessedObjectStoreContainer& GetProcessedObjects() const;
+
+        virtual ProductAssetDependencyContainer& GetRegisteredProductAssetDependencies();
+        virtual const ProductAssetDependencyContainer& GetRegisteredProductAssetDependencies() const;
 
         virtual void SetPlatformTags(AZ::PlatformTagSet tags);
         virtual const AZ::PlatformTagSet& GetPlatformTags() const;
@@ -57,7 +61,8 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 
         NamedPrefabContainer m_prefabs;
         ProcessedObjectStoreContainer m_products;
-        AZStd::vector<AZStd::string> m_delayedDelete;
+        ProductAssetDependencyContainer m_registeredProductAssetDependencies;
+
         AZ::PlatformTagSet m_platformTags;
         AZ::Uuid m_sourceUuid;
         bool m_isIterating{ false };

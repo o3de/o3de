@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 // Description : Declaration and definition of the CrySizer class, which is used to
 //               calculate the memory usage by the subsystems and components, to help
@@ -33,7 +28,6 @@
 #include <Cry_Vector3.h>
 #include <Cry_Quat.h>
 #include <Cry_Color.h>
-#include <CryArray2d.h>
 #include <smartptr.h>
 
 // forward declarations for overloads
@@ -47,8 +41,6 @@ struct SPipTangents;
 #ifdef WIN64
 #include <string.h> // workaround for Amd64 compiler
 #endif
-
-#include <IResourceCollector.h>             // <> required for Interfuscator. IResourceCollector
 
 namespace AZ
 {
@@ -251,12 +243,6 @@ public:
     void AddObject([[maybe_unused]] const AZ::Vector3& rObj) {}
     void AddObject(void*) {}
 
-    template<typename T>
-    void AddObject(const Array2d<T>& array2d)
-    {
-        this->AddObject(array2d.m_pData, array2d.GetDataSize());
-    }
-
     // overloads for container, will automaticly traverse the content
     template<typename T, typename Alloc>
     void AddObject(const std::list<T, Alloc>& rList)
@@ -332,20 +318,6 @@ public:
         for (typename DynArray<T, I, S>::const_iterator it = rVector.begin(); it != rVector.end(); ++it)
         {
             this->AddObject(*it);
-        }
-    }
-
-    template<typename T>
-    void AddObject(const TArray<T>& rVector)
-    {
-        if (!this->AddObject(rVector.begin(), rVector.capacity() * sizeof(T)))
-        {
-            return;
-        }
-
-        for (int i = 0, end = rVector.size(); i < end; ++i)
-        {
-            this->AddObject(rVector[i]);
         }
     }
 
@@ -426,11 +398,6 @@ public:
     {
         return AddObject (&rObject, sizeof(T));
     }
-
-    // used to collect the assets needed for streaming and to gather statistics
-    // always returns a valid reference
-    virtual IResourceCollector* GetResourceCollector() = 0;
-    virtual void SetResourceCollector(IResourceCollector* pColl) = 0;
 
     bool Add (const char* szText)
     {

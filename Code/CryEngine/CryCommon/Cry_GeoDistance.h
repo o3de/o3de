@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 // Description : Common distance-computations
 
@@ -1179,7 +1174,7 @@ namespace Distance {
     //  float result = Distance::Point_TriangleSq( pos, triangle );
     //----------------------------------------------------------------------------------
     template<typename F>
-    ILINE F Sphere_TriangleSq(const Sphere& s, const Triangle_tpl<F>& t)
+    ILINE F Sphere_TriangleSq(const ::Sphere& s, const Triangle_tpl<F>& t)
     {
         F sqdistance =  Distance::Point_TriangleSq(s.center, t) - (s.radius * s.radius);
         if (sqdistance < 0)
@@ -1190,7 +1185,7 @@ namespace Distance {
     }
 
     template<typename F>
-    ILINE F Sphere_TriangleSq(const Sphere& s, const Triangle_tpl<F>& t, Vec3_tpl<F>& output)
+    ILINE F Sphere_TriangleSq(const ::Sphere& s, const Triangle_tpl<F>& t, Vec3_tpl<F>& output)
     {
         F sqdistance =  Distance::Point_TriangleSq(s.center, t, output) - (s.radius * s.radius);
         if (sqdistance < 0)

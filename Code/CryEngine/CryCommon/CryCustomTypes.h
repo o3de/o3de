@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 // Description : Derived CTypeInfos for structs, enums, etc.
 //               Compressed numerical types  and associated TypeInfos
@@ -282,11 +277,9 @@ struct TIntTraits
     static const size_t nPOS_BITS
         = sizeof(T) * 8 - bSIGNED;
 
-    static const T nMIN
-        = bSIGNED ? T (T(1) << (T(sizeof(T) * 8 - 1))) : T(0);
+    static const T nMIN = std::numeric_limits<T>::min();
 
-    static const T nMAX
-        = ~nMIN;
+    static const T nMAX = std::numeric_limits<T>::max();
 };
 
 template<uint S>
@@ -1206,24 +1199,5 @@ protected:
     bool                    bRegular;
     uint                    nPrefixLength;
 };
-
-
-// Define an irregular enum with TypeInfo
-
-#define DEFINE_ENUM_VALS(EType, TInt, ...)                         \
-    struct EType                                                   \
-    {                                                              \
-        enum E { __VA_ARGS__ };                                    \
-        DEFINE_ENUM_VALUE(EType, E, TInt)                          \
-        ILINE static uint Count() { return TypeInfo().Count(); }   \
-        static const CEnumInfo<TInt>& TypeInfo() {                 \
-            static char enum_str[] = #__VA_ARGS__;                 \
-            static LegacyDynArray<CEnumDef::SElem> Elems;          \
-            CEnumDef::SInit::Init(Elems);                          \
-            CEnumDef::SInit __VA_ARGS__;                           \
-            static CEnumInfo<TInt> info( #EType, Elems, enum_str); \
-            return info;                                           \
-        }                                                          \
-    };
 
 #endif // CRYINCLUDE_CRYCOMMON_CRYCUSTOMTYPES_H

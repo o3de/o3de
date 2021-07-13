@@ -84,7 +84,8 @@ namespace AZ
                 void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
 
                 // Attach here all the pass buffers
-                void BuildAttachmentsInternal() override;
+                void InitializeInternal() override;
+                void BuildInternal() override;
                 void FrameBeginInternal(FramePrepareParams params) override;
 
                 void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
@@ -92,7 +93,7 @@ namespace AZ
                 // ShaderReloadNotificationBus::Handler overrides...
                 void OnShaderReinitialized(const AZ::RPI::Shader& shader) override;
                 void OnShaderAssetReinitialized(const Data::Asset<AZ::RPI::ShaderAsset>& shaderAsset) override;
-                void OnShaderVariantReinitialized(const AZ::RPI::Shader& shader, const AZ::RPI::ShaderVariantId& shaderVariantId, AZ::RPI::ShaderVariantStableId shaderVariantStableId) override;
+                void OnShaderVariantReinitialized(const AZ::RPI::ShaderVariant& shaderVariant) override;
 
                 bool AcquireFeatureProcessor();
                 void BuildShaderAndRenderData();

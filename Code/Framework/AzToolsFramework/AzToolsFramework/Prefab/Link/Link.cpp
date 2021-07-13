@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzToolsFramework/Prefab/Link/Link.h>
 
@@ -182,16 +177,16 @@ namespace AzToolsFramework
             else
             {
                 AZ::JsonSerializationResult::ResultCode applyPatchResult = AZ::JsonSerialization::ApplyPatch(
-                    linkedInstanceDom,
+                    sourceTemplateDomCopy,
                     targetTemplatePrefabDom.GetAllocator(),
-                    sourceTemplatePrefabDom,
                     patchesReference->get(),
                     AZ::JsonMergeApproach::JsonPatch);
+                linkedInstanceDom.CopyFrom(sourceTemplateDomCopy, targetTemplatePrefabDom.GetAllocator());
                 if (applyPatchResult.GetProcessing() != AZ::JsonSerializationResult::Processing::Completed)
                 {
-                    AZ_Error("Prefab", false,
-                        "Link::UpdateTarget - "
-                        "ApplyPatches failed for Prefab DOM from source Template '%u' and target Template '%u'.",
+                    AZ_Error(
+                        "Prefab", false,
+                        "Link::UpdateTarget - ApplyPatches failed for Prefab DOM from source Template '%u' and target Template '%u'.",
                         m_sourceTemplateId, m_targetTemplateId);
                     return false;
                 }
@@ -232,6 +227,11 @@ namespace AzToolsFramework
             {
                 linkIdReference->get().SetUint64(m_id);
             }
+        }
+
+        PrefabDomValueReference Link::GetLinkPatches()
+        {
+            return PrefabDomUtils::FindPrefabDomValue(m_linkDom, PrefabDomUtils::PatchesName);
         }
 
     } // namespace Prefab

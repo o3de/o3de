@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -22,7 +17,9 @@
 
 namespace AZ
 {
+    class SettingsRegistryInterface;
     class CommandLine;
+
 
     //! @class IConsole
     //! A simple console class for providing text based variable and process interaction.
@@ -32,6 +29,8 @@ namespace AZ
         AZ_RTTI(IConsole, "{20001930-119D-4A80-BD67-825B7E4AEB3D}");
 
         using FunctorVisitor = AZStd::function<void(ConsoleFunctorBase*)>;
+
+        inline static constexpr AZStd::string_view ConsoleRootCommandKey = "/Amazon/AzCore/Runtime/ConsoleCommands";
 
         IConsole() = default;
         virtual ~IConsole() = default;
@@ -144,6 +143,12 @@ namespace AZ
 
         //! Returns the AZ::Event<> invoked whenever a console command could not be found.
         DispatchCommandNotFoundEvent& GetDispatchCommandNotFoundEvent();
+
+        //! Register a notification event handler with the Settings Registry
+        //! That is responsible for updating console commands whenever
+        //! a key is found underneath the "/Amazon/AzCore/Runtime/ConsoleCommands" JSON entry
+        //! @param Settings Registry reference to register notifier with
+        virtual void RegisterCommandInvokerWithSettingsRegistry(AZ::SettingsRegistryInterface& settingsRegistry) = 0;
 
         AZ_DISABLE_COPY_MOVE(IConsole);
 

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "precompiled.h"
 
@@ -236,17 +231,11 @@ namespace ScriptEventsEditor
             moduleConfiguration->RegisterAssetHandler();
         }
 
-        m_propertyHandlers.emplace_back(AzToolsFramework::RegisterGenericComboBoxHandler<ScriptEventData::VersionedProperty>());
+        AzToolsFramework::RegisterGenericComboBoxHandler<ScriptEventData::VersionedProperty>();
     }
 
     void ScriptEventEditorSystemComponent::Deactivate()
     {
-        for (auto&& propertyHandler : m_propertyHandlers)
-        {
-            AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(&AzToolsFramework::PropertyTypeRegistrationMessages::UnregisterPropertyType, propertyHandler.get());
-        }
-        m_propertyHandlers.clear();
-        
         using namespace ScriptEvents;
         ScriptEventsSystemComponentImpl* moduleConfiguration = nullptr;
         ScriptEventModuleConfigurationRequestBus::BroadcastResult(moduleConfiguration, &ScriptEventModuleConfigurationRequests::GetSystemComponentImpl);

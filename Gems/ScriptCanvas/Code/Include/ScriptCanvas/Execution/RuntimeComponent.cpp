@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <ScriptCanvas/Execution/RuntimeComponent.h>
 
@@ -19,11 +14,9 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzFramework/Entity/EntityContextBus.h>
-#include <AzFramework/Network/NetBindingHandlerBus.h>
 #include <ScriptCanvas/Execution/ExecutionBus.h>
 #include <ScriptCanvas/Execution/ExecutionContext.h>
 #include <ScriptCanvas/Execution/ExecutionState.h>
-#include <ScriptCanvas/Variable/GraphVariableNetBindings.h>
 
 #if !defined(_RELEASE) && !defined(PERFORMANCE_BUILD)
 #define SCRIPT_CANVAS_RUNTIME_ASSET_CHECK
@@ -163,8 +156,6 @@ namespace ScriptCanvas
                 ->Field("m_variableOverrides", &RuntimeComponent::m_variableOverrides)
                 ;
         }
-
-        GraphVariableNetBindingTable::Reflect(context);
     }
 
     void RuntimeComponent::SetVariableOverrides(const VariableData& overrideData)

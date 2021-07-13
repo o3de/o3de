@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -134,11 +129,16 @@ namespace AzFramework
         return !operator==(lhs, rhs);
     }
 
+    inline float ScreenVectorLength(const ScreenVector& screenVector)
+    {
+        return aznumeric_cast<float>(AZStd::sqrt(screenVector.m_x * screenVector.m_x + screenVector.m_y * screenVector.m_y));
+    }
+
     inline ScreenPoint ScreenPointFromNDC(const AZ::Vector3& screenNDC, const AZ::Vector2& viewportSize)
     {
         return ScreenPoint(
-            aznumeric_caster(std::round(screenNDC.GetX() * viewportSize.GetX())),
-            aznumeric_caster(std::round((1.0f - screenNDC.GetY()) * viewportSize.GetY())));
+            aznumeric_caster(AZStd::round(screenNDC.GetX() * viewportSize.GetX())),
+            aznumeric_caster(AZStd::round((1.0f - screenNDC.GetY()) * viewportSize.GetY())));
     }
 
     inline AZ::Vector2 NDCFromScreenPoint(const ScreenPoint& screenPoint, const AZ::Vector2& viewportSize)

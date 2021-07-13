@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -21,7 +16,6 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/fixed_string.h>
 
-#include <AzFramework/Network/NetSystemBus.h>
 #include <AzFramework/CommandLine/CommandLine.h>
 #include <AzFramework/API/ApplicationAPI.h>
 
@@ -49,7 +43,6 @@ namespace AzFramework
         : public AZ::ComponentApplication
         , public AZ::UserSettingsFileLocatorBus::Handler
         , public ApplicationRequests::Bus::Handler
-        , public NetSystemRequestBus::Handler
     {
     public:
         // Base class for platform specific implementations of the application.
@@ -137,11 +130,6 @@ namespace AzFramework
 
         // Convenience function that should be called instead of the standard exit() function to ensure platform requirements are met.
         static void Exit(int errorCode) { ApplicationRequests::Bus::Broadcast(&ApplicationRequests::TerminateOnError, errorCode); }
-
-        //////////////////////////////////////////////////////////////////////////
-        //! NetSystemEventBus::Handler
-        //////////////////////////////////////////////////////////////////////////
-        NetworkContext* GetNetworkContext() override;
 
     protected:
 

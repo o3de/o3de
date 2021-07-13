@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/string/conversions.h>
@@ -87,5 +82,29 @@ namespace AZ
     AZStd::string_view SettingsRegistryInterface::Specializations::GetSpecialization(size_t index) const
     {
         return index < m_names.size() ? m_names[index] : AZStd::string_view();
+    }
+
+    SettingsRegistryInterface::CommandLineArgumentSettings::CommandLineArgumentSettings()
+    {
+        m_delimiterFunc = [](AZStd::string_view line) -> JsonPathValue
+        {
+            constexpr AZStd::string_view CommandLineArgumentDelimiters{ "=:" };
+            JsonPathValue pathValue;
+            pathValue.m_value = line;
+
+            // Splits the line on the first delimiter and stores that in the pathValue.m_path variable
+            // The StringFunc::TokenizeNext function updates the pathValue.m_value parameter in place
+            // to contain all the text after the first delimiter
+            // So if pathValue.m_value="foo = Hello Ice Cream=World:17", the call to TokenizeNext would
+            // split the value as follows
+            // pathValue.m_path = "foo"
+            // pathValue.m_value = "Hello Ice Cream=World:17"
+            if (auto path = AZ::StringFunc::TokenizeNext(pathValue.m_value, CommandLineArgumentDelimiters); path.has_value())
+            {
+                pathValue.m_path = AZ::StringFunc::StripEnds(*path);
+            }
+            pathValue.m_value = AZ::StringFunc::StripEnds(pathValue.m_value);
+            return pathValue;
+        };
     }
 } // namespace AZ

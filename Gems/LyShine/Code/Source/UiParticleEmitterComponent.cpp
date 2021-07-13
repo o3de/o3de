@@ -1,18 +1,15 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "LyShine_precompiled.h"
 
 #include "UiParticleEmitterComponent.h"
 #include "EditorPropertyTypes.h"
+#include "Sprite.h"
+#include "RenderGraph.h"
 
 #include <AzCore/Math/Crc.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -21,7 +18,6 @@
 #include <AzCore/std/sort.h>
 
 #include <LyShine/ISprite.h>
-#include <IRenderer.h>
 
 #include <LyShine/IDraw2d.h>
 #include <LyShine/ISprite.h>
@@ -764,6 +760,12 @@ void UiParticleEmitterComponent::InGamePostActivate()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiParticleEmitterComponent::Render(LyShine::IRenderGraph* renderGraph)
 {
+    AZ::u32 particlesToRender = AZ::GetMin<AZ::u32>(m_particleContainer.size(), m_particleBufferSize);
+    if (particlesToRender == 0)
+    {
+        return;
+    }
+
     AZ::Matrix4x4 transform = AZ::Matrix4x4::CreateIdentity();
 
     AZ::Vector2 emitterOffset = AZ::Vector2::CreateZero();
@@ -781,9 +783,15 @@ void UiParticleEmitterComponent::Render(LyShine::IRenderGraph* renderGraph)
         EBUS_EVENT_ID_RESULT(transform, canvasID, UiCanvasBus, GetCanvasToViewportMatrix);
     }
 
-    AZ::u32 particlesToRender = AZ::GetMin<AZ::u32>(m_particleContainer.size(), m_particleBufferSize);
-
-    ITexture* texture = (m_sprite) ? m_sprite->GetTexture() : nullptr;
+    AZ::Data::Instance<AZ::RPI::Image> image;
+    if (m_sprite)
+    {
+        CSprite* sprite = dynamic_cast<CSprite*>(m_sprite);
+        if (sprite)
+        {
+            image = sprite->GetImage();
+        }
+    }
 
     bool isClampTextureMode = true;
     bool isTextureSRGB = false;
@@ -836,7 +844,11 @@ void UiParticleEmitterComponent::Render(LyShine::IRenderGraph* renderGraph)
 
     m_cachedPrimitive.m_numVertices = totalVerticesInserted;
     m_cachedPrimitive.m_numIndices = totalParticlesInserted * indicesPerParticle;
-    renderGraph->AddPrimitive(&m_cachedPrimitive, texture, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, m_blendMode);
+    LyShine::RenderGraph* lyRenderGraph = dynamic_cast<LyShine::RenderGraph*>(renderGraph);
+    if (lyRenderGraph)
+    {
+        lyRenderGraph->AddPrimitiveAtom(&m_cachedPrimitive, image, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, m_blendMode);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

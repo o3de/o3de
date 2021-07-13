@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <EMotionFX/Source/AnimGraph.h>
 #include <EMotionFX/Source/AnimGraphNode.h>
@@ -168,8 +163,8 @@ namespace EMotionFX
         // The skin attachment should now receive morph values from the main actor.
         const Pose& attachPose = *m_attachmentActorInstance->GetTransformData()->GetCurrentPose();
         ASSERT_EQ(attachPose.GetNumMorphWeights(), 4);
-        EXPECT_FLOAT_EQ(attachPose.GetMorphWeight(0), 0.0f);    // Once we auto register missing morphs this should be 0.5. See https://jira.agscollab.com/browse/LY-100212
-        EXPECT_FLOAT_EQ(attachPose.GetMorphWeight(1), 0.0f);    // Once we auto register missing morphs this should be 0.6. See https://jira.agscollab.com/browse/LY-100212
+        EXPECT_FLOAT_EQ(attachPose.GetMorphWeight(0), 0.0f);    // Once we auto register missing morphs this should be 0.5. See LY-100212
+        EXPECT_FLOAT_EQ(attachPose.GetMorphWeight(1), 0.0f);    // Once we auto register missing morphs this should be 0.6. See LY-100212
         EXPECT_FLOAT_EQ(attachPose.GetMorphWeight(2), 0.1f);
         EXPECT_FLOAT_EQ(attachPose.GetMorphWeight(3), 0.2f);
     };

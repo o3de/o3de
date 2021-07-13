@@ -773,7 +773,7 @@ namespace AMD
 
         m_boneSkinningData.resize(m_numTotalStrands);
 
-        TressFXBoneSkinningData skinData;
+        TressFXBoneSkinningData skinData = TressFXBoneSkinningData();
         for (int i = 0; i < numOfStrandsInStream; ++i)
         {
             AMD::int32 index = 0; // Well, we don't really use this here. 
@@ -852,7 +852,7 @@ namespace AMD
         //AMD::int32 boneSkinningMemSize = m_numTotalStrands * sizeof(TressFXBoneSkinningData);
         m_boneSkinningData.resize(m_numTotalStrands);
 
-        TressFXBoneSkinningData skinData;
+        TressFXBoneSkinningData skinData = TressFXBoneSkinningData();
         for (int i = 0; i < numOfStrandsInStream; ++i)
         {
             AMD::int32 index = 0; // Well, we don't really use this here.

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Math/MathReflection.h>
@@ -57,7 +52,6 @@ namespace AZ
                         meshData->AddNormal(Vector3{0.1f, 0.2f, 0.3f});
                         meshData->AddNormal(Vector3{0.4f, 0.5f, 0.6f});
                         meshData->SetOriginalUnitSizeInMeters(10.0f);
-                        meshData->SetSdkMeshIndex(1337);
                         meshData->SetUnitSizeInMeters(0.5f);
                         meshData->SetVertexIndexToControlPointIndexMap(0, 10);
                         meshData->SetVertexIndexToControlPointIndexMap(1, 11);
@@ -252,7 +246,6 @@ namespace AZ
                 ExpectExecute("TestExpectFloatEquals(meshData:GetNormal(1).z, 0.6)");
                 ExpectExecute("TestExpectFloatEquals(meshData:GetOriginalUnitSizeInMeters(), 10.0)");
                 ExpectExecute("TestExpectFloatEquals(meshData:GetUnitSizeInMeters(), 0.5)");
-                ExpectExecute("TestExpectIntegerEquals(meshData:GetSdkMeshIndex(), 1337)");
                 ExpectExecute("TestExpectIntegerEquals(meshData:GetUsedControlPointCount(), 4)");
                 ExpectExecute("TestExpectIntegerEquals(meshData:GetControlPointIndex(0), 10)");
                 ExpectExecute("TestExpectIntegerEquals(meshData:GetControlPointIndex(1), 11)");

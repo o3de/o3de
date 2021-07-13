@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 // Description : interface for the CViewManager class.
 
@@ -20,7 +15,6 @@
 #pragma once
 
 #include "Cry_Geo.h"
-#include "Grid.h"
 #include "Viewport.h"
 #include "Include/IViewPane.h"
 #include "QtViewPaneManager.h"
@@ -66,10 +60,6 @@ public:
 
     void SetUpdateRegion(const AABB& updateRegion) { m_updateRegion = updateRegion; };
     const AABB& GetUpdateRegion() { return m_updateRegion; };
-
-    /** Retrieve Grid used for viewes.
-    */
-    CGrid* GetGrid() { return &m_grid; };
 
     /** Get 2D viewports origin.
     */
@@ -137,7 +127,6 @@ private:
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     AABB m_updateRegion;
 
-    CGrid m_grid;
     //! Origin of 2d viewports.
     Vec3 m_origin2D;
     //! Zoom of 2d viewports.

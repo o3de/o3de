@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <SceneAPI/SceneData/GraphData/MeshData.h>
 #include <AzCore/Casting/numeric_cast.h>
@@ -45,7 +40,6 @@ namespace AZ
                     behaviorContext->Class<MeshData>()
                         ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                         ->Attribute(AZ::Script::Attributes::Module, "scene")
-                        ->Method("GetSdkMeshIndex", &MeshData::GetSdkMeshIndex)
                         ->Method("GetControlPointIndex", &MeshData::GetControlPointIndex)
                         ->Method("GetUsedControlPointCount", &MeshData::GetUsedControlPointCount)
                         ->Method("GetUsedPointIndexForControlPoint", &MeshData::GetUsedPointIndexForControlPoint)
@@ -77,10 +71,6 @@ namespace AZ
             void MeshData::CloneAttributesFrom(const IGraphObject* sourceObject)
             {
                 IMeshData::CloneAttributesFrom(sourceObject);
-                if (const auto* typedSource = azrtti_cast<const MeshData*>(sourceObject))
-                {
-                    SetSdkMeshIndex(typedSource->GetSdkMeshIndex());
-                }
             }
 
             void MeshData::AddPosition(const AZ::Vector3& position)
@@ -109,15 +99,6 @@ namespace AZ
             {
                 m_faceList.push_back(face);
                 m_faceMaterialIds.push_back(faceMaterialId);
-            }
-
-            void MeshData::SetSdkMeshIndex(int sdkMeshIndex)
-            {
-                m_sdkMeshIndex = sdkMeshIndex;
-            }
-            int MeshData::GetSdkMeshIndex() const
-            {
-                return m_sdkMeshIndex;
             }
 
             void MeshData::SetVertexIndexToControlPointIndexMap(int vertexIndex, int controlPointIndex)
@@ -206,8 +187,26 @@ namespace AZ
             void MeshData::GetDebugOutput(SceneAPI::Utilities::DebugOutput& output) const
             {
                 output.Write("Positions", m_positions);
+                int index = 0;
+                for (const auto& position : m_positions)
+                {
+                    output.Write(AZStd::string::format("\t%d", index).c_str(), position);
+                    ++index;
+                }
+                index = 0;
                 output.Write("Normals", m_normals);
+                for (const auto& normal : m_normals)
+                {
+                    output.Write(AZStd::string::format("\t%d", index).c_str(), normal);
+                    ++index;
+                }
+                index = 0;
                 output.Write("FaceList", m_faceList);
+                for (const auto& face : m_faceList)
+                {
+                    output.WriteArray(AZStd::string::format("\t%d", index).c_str(), face.vertexIndex, 3);
+                    ++index;
+                }
                 output.Write("FaceMaterialIds", m_faceMaterialIds);
             }
         }

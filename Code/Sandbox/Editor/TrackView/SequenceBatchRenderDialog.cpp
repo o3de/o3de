@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 // Description : A dialog for batch-rendering sequences
 
@@ -59,7 +54,7 @@ namespace
     {
         int fps;
         const char* fpsDesc;
-    } fps[] = {
+    } fpsOptions[] = {
         {24, "Film(24)"}, {25, "PAL(25)"}, {30, "NTSC(30)"},
         {48, "Show(48)"}, {50, "PAL Field(50)"}, {60, "NTSC Field(60)"}
     };
@@ -213,9 +208,9 @@ void CSequenceBatchRenderDialog::OnInitDialog()
     m_ui->m_resolutionCombo->setCurrentIndex(0);
 
     // Fill the FPS combo box.
-    for (int i = 0; i < AZStd::size(fps); ++i)
+    for (int i = 0; i < AZStd::size(fpsOptions); ++i)
     {
-        m_ui->m_fpsCombo->addItem(fps[i].fpsDesc);
+        m_ui->m_fpsCombo->addItem(fpsOptions[i].fpsDesc);
     }
     m_ui->m_fpsCombo->setCurrentIndex(0);
 
@@ -306,9 +301,9 @@ void CSequenceBatchRenderDialog::OnRenderItemSelChange()
     m_ui->m_destinationEdit->setText(item.folder);
     // fps
     bool bFound = false;
-    for (int i = 0; i < arraysize(fps); ++i)
+    for (int i = 0; i < arraysize(fpsOptions); ++i)
     {
-        if (item.fps == fps[i].fps)
+        if (item.fps == fpsOptions[i].fps)
         {
             m_ui->m_fpsCombo->setCurrentIndex(i);
             bFound = true;
@@ -621,7 +616,7 @@ void CSequenceBatchRenderDialog::OnFPSEditChange()
 
 void CSequenceBatchRenderDialog::OnFPSChange(int itemIndex)
 {
-    m_customFPS = fps[itemIndex].fps;
+    m_customFPS = fpsOptions[itemIndex].fps;
     CheckForEnableUpdateButton();
 }
 
@@ -643,7 +638,7 @@ void CSequenceBatchRenderDialog::OnResolutionSelected()
         CCustomResolutionDlg resDlg(defaultW, defaultH, this);
         if (resDlg.exec() == QDialog::Accepted)
         {
-            const int maxRes = GetIEditor()->GetRenderer()->GetMaxSquareRasterDimension();
+            const int maxRes = 8192;
             m_customResW = min(resDlg.GetWidth(), maxRes);
             m_customResH = min(resDlg.GetHeight(), maxRes);
             const QString resText = QString(customResFormat).arg(m_customResW).arg(m_customResH);
@@ -1543,13 +1538,13 @@ bool CSequenceBatchRenderDialog::SetUpNewRenderItem(SRenderItem& item)
     item.frameRange = Range(m_ui->m_startFrame->value() / m_fpsForTimeToFrameConversion,
             m_ui->m_endFrame->value() / m_fpsForTimeToFrameConversion);
     // fps
-    if (m_ui->m_fpsCombo->currentIndex() == -1 || m_ui->m_fpsCombo->currentText() != fps[m_ui->m_fpsCombo->currentIndex()].fpsDesc)
+    if (m_ui->m_fpsCombo->currentIndex() == -1 || m_ui->m_fpsCombo->currentText() != fpsOptions[m_ui->m_fpsCombo->currentIndex()].fpsDesc)
     {
         item.fps = m_customFPS;
     }
     else
     {
-        item.fps = fps[m_ui->m_fpsCombo->currentIndex()].fps;
+        item.fps = fpsOptions[m_ui->m_fpsCombo->currentIndex()].fps;
     }
     // prefix
     item.prefix = m_ui->BATCH_RENDER_FILE_PREFIX->text();

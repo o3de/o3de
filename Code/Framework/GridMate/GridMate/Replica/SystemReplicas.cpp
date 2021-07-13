@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <GridMate/Replica/MigrationSequence.h>
 #include <GridMate/Replica/ReplicaChunkDescriptor.h>
@@ -84,7 +79,7 @@ namespace GridMate
             // on activation of this replica, create our PeerInfo replica
             Replica* peerReplica = Replica::CreateReplica("PeerInfo");
             CreateAndAttachReplicaChunk<PeerReplica>(peerReplica);
-            rc.m_rm->AddMaster(peerReplica);
+            rc.m_rm->AddPrimary(peerReplica);
         }
         //-----------------------------------------------------------------------------
         void SessionInfo::OnReplicaDeactivate(const ReplicaContext& rc)
@@ -132,7 +127,7 @@ namespace GridMate
             (void)rc;
             if (m_pMgr->IsSyncHost())
             {
-                AZ_Assert(IsMaster(), "The host should always own sessionInfo!!!");
+                AZ_Assert(IsPrimary(), "The host should always own sessionInfo!!!");
                 AZ_Assert(m_pendingPeerReports.find(peerId) == m_pendingPeerReports.end(), "We are already waiting for reports for peer 0x%8x!", peerId);
 
                 vector<PeerId> peers;
@@ -205,7 +200,7 @@ namespace GridMate
         //-----------------------------------------------------------------------------
         void PeerReplica::OnReplicaActivate(const ReplicaContext& rc)
         {
-            if (IsMaster())
+            if (IsPrimary())
             {
                 m_peerId.Set(rc.m_rm->GetLocalPeerId());
             }

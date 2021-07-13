@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AudioEngineWwiseGemSystemComponent.h>
 
@@ -35,10 +30,6 @@
 namespace Audio
 {
     CAudioLogger g_audioImplLogger_wwise;
-
-#if AZ_TRAIT_AUDIOENGINEWWISE_PROVIDE_IMPL_SECONDARY_POOL
-    TMemoryPoolReferenced g_audioImplMemoryPoolSecondary_wwise;
-#endif // AZ_TRAIT_AUDIOENGINEWWISE_PROVIDE_IMPL_SECONDARY_POOL
 
     namespace Platform
     {
@@ -154,13 +145,6 @@ namespace AudioEngineWwiseGem
         m_engineWwise = AZStd::make_unique<Audio::CAudioSystemImpl_wwise>(assetPlatform.c_str());
         if (m_engineWwise)
         {
-        #if AZ_TRAIT_AUDIOENGINEWWISE_PROVIDE_IMPL_SECONDARY_POOL
-            size_t secondarySize = 0;
-            void* secondaryMemoryPtr = Audio::Platform::InitializeSecondaryMemoryPool(secondarySize);
-
-            Audio::g_audioImplMemoryPoolSecondary_wwise.InitMem(secondarySize, static_cast<uint8*>(secondaryMemoryPtr));
-        #endif // AZ_TRAIT_AUDIOENGINEWWISE_PROVIDE_IMPL_SECONDARY_POOL
-
             Audio::g_audioImplLogger_wwise.Log(Audio::eALT_ALWAYS, "AudioEngineWwise created!");
 
             Audio::SAudioRequest oAudioRequestData;

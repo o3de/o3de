@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <AzCore/PlatformDef.h>
 #include <QUuid>
 #include <platform.h>
@@ -777,36 +772,6 @@ bool GraphicsSettingsDialog::CVarChanged(AZStd::any val, const char* cvarName, i
     else
     {
         m_cVarTracker[cvarName].fileVals[specLevel].editedValue = val;
-    }
-
-    // If changing cvar from the platform cfg file currently running, set cvar
-    if (GetISystem()->GetConfigPlatform() == m_currentPlatform && GetISystem()->GetConfigSpec() == specLevel + 1)
-    {
-        if (ICVar* cvar = gEnv->pConsole->GetCVar(cvarName))
-        {
-            int type = cvar->GetType();
-            if (type == CVAR_INT)
-            {
-                int newValue;
-                if (AZStd::any_numeric_cast<int>(&val, newValue))
-                {
-                    cvar->Set(newValue);
-                }
-            }
-            else if (type == CVAR_FLOAT)
-            {
-                float newValue;
-                if (AZStd::any_numeric_cast<float>(&val, newValue))
-                {
-                    cvar->Set(newValue);
-                }
-            }
-            else
-            {
-                AZStd::string* currValue = AZStd::any_cast<AZStd::string>(&val);
-                cvar->Set(currValue->c_str());
-            }
-        }
     }
 
     // Checking if the newly edited value is equal to the overwritten value

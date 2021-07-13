@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 set(FILES
@@ -280,8 +276,6 @@ set(FILES
     Include/IAnimationCompressionManager.h
     Include/IAssetItem.h
     Include/IAssetItemDatabase.h
-    Include/IBackgroundScheduleManager.h
-    Include/IBackgroundTaskManager.h
     Include/ICommandManager.h
     Include/IConsoleConnectivity.h
     Include/IDataBaseItem.h
@@ -309,11 +303,6 @@ set(FILES
     Util/AffineParts.cpp
     Objects/BaseObject.cpp
     Objects/BaseObject.h
-    Alembic/AlembicCompileDialog.cpp
-    Alembic/AlembicCompileDialog.h
-    Alembic/AlembicCompileDialog.ui
-    Alembic/AlembicCompiler.h
-    Alembic/AlembicCompiler.cpp
     Animation/AnimationBipedBoneNames.cpp
     Animation/AnimationBipedBoneNames.h
     AnimationContext.cpp
@@ -343,10 +332,6 @@ set(FILES
     AssetEditor/AssetEditorWindow.cpp
     AssetEditor/AssetEditorWindow.h
     AssetEditor/AssetEditorWindow.ui
-    BackgroundTaskManager.cpp
-    BackgroundScheduleManager.cpp
-    BackgroundTaskManager.h
-    BackgroundScheduleManager.h
     Commands/CommandManager.cpp
     Commands/CommandManager.h
     Controls/BitmapToolTip.cpp
@@ -357,8 +342,6 @@ set(FILES
     Controls/ConsoleSCB.h
     Controls/ConsoleSCB.ui
     Controls/ConsoleSCB.qrc
-    Controls/CurveEditorCtrl.cpp
-    Controls/CurveEditorCtrl.h
     Controls/FolderTreeCtrl.cpp
     Controls/FolderTreeCtrl.h
     Controls/HotTrackingTreeCtrl.cpp
@@ -437,13 +420,6 @@ set(FILES
     GotoPositionDlg.cpp
     GotoPositionDlg.h
     GotoPositionDlg.ui
-    GridSettingsDialog.cpp
-    GridSettingsDialog.h
-    GridSettingsDialog.ui
-    InfoBar.cpp
-    InfoBar.qrc
-    InfoBar.h
-    InfoBar.ui
     LayoutConfigDialog.cpp
     LayoutConfigDialog.h
     LayoutConfigDialog.ui
@@ -465,9 +441,6 @@ set(FILES
     SelectLightAnimationDialog.h
     SelectSequenceDialog.cpp
     SelectSequenceDialog.h
-    ShadersDialog.cpp
-    ShadersDialog.h
-    ShadersDialog.ui
     StartupLogoDialog.cpp
     StartupLogoDialog.h
     StartupLogoDialog.ui
@@ -504,9 +477,6 @@ set(FILES
     Export/OBJExporter.h
     Export/OCMExporter.cpp
     Export/OCMExporter.h
-    FeedbackDialog/FeedbackDialog.h
-    FeedbackDialog/FeedbackDialog.cpp
-    FeedbackDialog/FeedbackDialog.ui
     EditorFileMonitor.cpp
     EditorFileMonitor.h
     Include/IEditorFileMonitor.h
@@ -581,11 +551,6 @@ set(FILES
     QtUI/WaitCursor.cpp
     RenderHelpers/AxisHelper.cpp
     RenderHelpers/AxisHelper.h
-    Serialization.h
-    Serialization/VariableOArchive.cpp
-    Serialization/VariableOArchive.h
-    Serialization/VariableIArchive.cpp
-    Serialization/VariableIArchive.h
     CustomizeKeyboardDialog.h
     CustomizeKeyboardDialog.cpp
     CustomizeKeyboardDialog.ui
@@ -610,6 +575,8 @@ set(FILES
     EditorPreferencesPageViewportDebug.cpp
     EditorPreferencesPageExperimentalLighting.h
     EditorPreferencesPageExperimentalLighting.cpp
+    EditorPreferencesPageAWS.h
+    EditorPreferencesPageAWS.cpp
     EditorPreferencesDialog.h
     EditorPreferencesDialog.cpp
     EditorPreferencesDialog.ui
@@ -659,10 +626,6 @@ set(FILES
     ProcessInfo.cpp
     ProcessInfo.h
     Report.h
-    ShaderCache.cpp
-    ShaderCache.h
-    ShaderEnum.cpp
-    ShaderEnum.h
     SurfaceTypeValidator.cpp
     SurfaceTypeValidator.h
     TrackView/AtomOutputFrameCapture.cpp
@@ -737,29 +700,21 @@ set(FILES
     TrackView/TrackViewNode.cpp
     TrackView/TrackViewSequence.cpp
     TrackView/TrackViewNodeFactories.cpp
-    TrackView/TrackViewGeomCacheAnimationTrack.cpp
     TrackView/TrackViewEventNode.cpp
     TrackView/TrackViewAnimNode.h
     TrackView/TrackViewTrack.h
     TrackView/TrackViewNode.h
     TrackView/TrackViewSequence.h
     TrackView/TrackViewNodeFactories.h
-    TrackView/TrackViewGeomCacheAnimationTrack.h
     TrackView/TrackViewEventNode.h
     ConfigGroup.cpp
     ConfigGroup.h
-    SettingsBlock.cpp
-    SettingsBlock.h
     Util/AffineParts.h
-    Util/ArcBall.cpp
-    Util/ArcBall.h
     Util/AutoLogTime.cpp
     Util/AutoLogTime.h
     Util/AutoDirectoryRestoreFileDialog.h
     Util/AutoDirectoryRestoreFileDialog.cpp
     Util/CryMemFile.h
-    Util/CubemapUtils.cpp
-    Util/CubemapUtils.h
     Util/DynamicArray2D.cpp
     Util/DynamicArray2D.h
     Util/EditorAutoLevelLoadTest.cpp
@@ -775,8 +730,6 @@ set(FILES
     Util/GeometryUtil.cpp
     Util/GuidUtil.cpp
     Util/GuidUtil.h
-    Util/ImageHDR.cpp
-    Util/ImageHDR.h
     Util/IObservable.h
     Util/IndexedFiles.cpp
     Util/IndexedFiles.h
@@ -789,10 +742,13 @@ set(FILES
     Util/PakFile.h
     Util/PredefinedAspectRatios.cpp
     Util/PredefinedAspectRatios.h
+    Util/StringHelpers.cpp
+    Util/StringHelpers.h
     Util/StringNoCasePredicate.h
     Util/TRefCountBase.h
     Util/Triangulate.cpp
     Util/Triangulate.h
+    Util/Util.h
     Util/XmlArchive.cpp
     Util/XmlArchive.h
     Util/XmlHistoryManager.cpp
@@ -833,17 +789,11 @@ set(FILES
     Util/ImageASC.h
     Util/ImageBT.cpp
     Util/ImageBT.h
-    Util/Image_DXTC.cpp
-    Util/Image_DXTC.h
     Util/ImageGif.cpp
     Util/ImageGif.h
     Util/ImageTIF.cpp
     Util/ImageTIF.h
     Util/Math.h
-    Util/Ruler.cpp
-    Util/RulerPoint.cpp
-    Util/Ruler.h
-    Util/RulerPoint.h
     Util/UIEnumerations.cpp
     Util/UIEnumerations.h
     WelcomeScreen/WelcomeScreenDialog.h
@@ -852,18 +802,18 @@ set(FILES
     WelcomeScreen/WelcomeScreenDialog.qrc
     2DViewport.cpp
     2DViewport.h
-    Grid.cpp
-    Grid.h
     LayoutWnd.cpp
     LayoutWnd.h
     EditorViewportWidget.cpp
     EditorViewportWidget.h
+    EditorViewportSettings.cpp
+    EditorViewportSettings.h
+    EditorViewportCamera.cpp
+    EditorViewportCamera.h
     ViewportManipulatorController.cpp
     ViewportManipulatorController.h
     LegacyViewportCameraController.cpp
     LegacyViewportCameraController.h
-    ModernViewportCameraController.cpp
-    ModernViewportCameraController.h
     RenderViewport.cpp
     RenderViewport.h
     TopRendererWnd.cpp

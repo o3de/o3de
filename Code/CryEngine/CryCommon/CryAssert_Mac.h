@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 // Description : Assert dialog box for Mac OS X
 
@@ -30,7 +25,7 @@ void CryAssertTrace(const char* szFormat, ...)
         return;
     }
 
-    if (!gEnv->bIgnoreAllAsserts || gEnv->bTesting)
+    if (!gEnv->bIgnoreAllAsserts)
     {
         if (szFormat == NULL)
         {
@@ -45,43 +40,6 @@ void CryAssertTrace(const char* szFormat, ...)
         }
     }
 }
-/*
-bool CryAssert(const char* szCondition, const char* szFile,unsigned int line, bool *pIgnore)
-{
-    if (!gEnv) return false;
-
-        gEnv->pSystem->OnAssert(szCondition, gs_szMessage, szFile, line);
-
-        if (!gEnv->bNoAssertDialog && !gEnv->bIgnoreAllAsserts)
-    {
-        EDialogAction action = MacOSXHandleAssert(szCondition, szFile, line, gs_szMessage, gEnv->pRenderer != NULL);
-
-        switch (action) {
-            case eDAStop:
-                raise(SIGABRT);
-                exit(-1);
-            case eDABreak:
-                return true;
-            case eDAIgnoreAll:
-                gEnv->bIgnoreAllAsserts = true;
-                break;
-            case eDAIgnore:
-                *pIgnore = true;
-                break;
-            case eDAReportAsBug:
-                if ( gEnv && gEnv->pSystem)
-                {
-                    gEnv->pSystem->ReportBug("Assert: %s - %s", szCondition,gs_szMessage);
-                }
-
-            case eDAContinue:
-            default:
-                break;
-        }
-    }
-
-    return false;
-}*/
 
 bool CryAssert(const char* szCondition, const char* szFile, unsigned int line, bool* pIgnore)
 {

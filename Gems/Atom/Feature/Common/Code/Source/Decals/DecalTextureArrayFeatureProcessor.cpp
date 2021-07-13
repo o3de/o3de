@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Decals/DecalTextureArrayFeatureProcessor.h>
 #include <AzCore/Debug/EventTrace.h>
@@ -72,7 +67,7 @@ namespace AZ
             desc.m_bufferSrgName = "m_decals";
             desc.m_elementCountSrgName = "m_decalCount";
             desc.m_elementSize = sizeof(DecalData);
-            desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgAsset()->GetLayout();
+            desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
 
             m_decalBufferHandler = GpuBufferHandler(desc);
 
@@ -85,7 +80,6 @@ namespace AZ
 
             m_decalData.Clear();
             m_decalBufferHandler.Release();
-            m_materialAssets.clear();
         }
 
         DecalTextureArrayFeatureProcessor::DecalHandle DecalTextureArrayFeatureProcessor::AcquireDecal()
@@ -135,7 +129,14 @@ namespace AZ
             {
                 m_decalData.GetData(decal.GetIndex()) = m_decalData.GetData(sourceDecal.GetIndex());
                 const auto materialAsset = GetMaterialUsedByDecal(sourceDecal);
-                m_materialToTextureArrayLookupTable.at(materialAsset).m_useCount++;
+                if (materialAsset.IsValid())
+                {
+                    m_materialToTextureArrayLookupTable.at(materialAsset).m_useCount++;
+                }
+                else
+                {
+                    AZ_Warning("DecalTextureArrayFeatureProcessor", false, "CloneDecal called on a decal with no material set.");
+                }
                 m_deviceBufferNeedsUpdate = true;
             }
             return decal;
@@ -279,7 +280,7 @@ namespace AZ
         {
             if (handle.IsValid())
             {
-                SetDecalHalfSize(handle, nonUniformScale * world.GetScale());
+                SetDecalHalfSize(handle, nonUniformScale * world.GetUniformScale());
                 SetDecalPosition(handle, world.GetTranslation());
                 SetDecalOrientation(handle, world.GetRotation());
 
@@ -323,7 +324,7 @@ namespace AZ
         {
             for (int i = 0; i < NumTextureArrays; ++i)
             {
-                const RHI::ShaderResourceGroupLayout* viewSrgLayout = RPI::RPISystemInterface::Get()->GetViewSrgAsset()->GetLayout();
+                const RHI::ShaderResourceGroupLayout* viewSrgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
                 const AZStd::string baseName = "m_decalTextureArray" + AZStd::to_string(i);
 
                 m_decalTextureArrayIndices[i] = viewSrgLayout->FindShaderInputImageIndex(Name(baseName.c_str()));
@@ -410,7 +411,7 @@ namespace AZ
             int iter = m_textureArrayList.begin();
             while (iter != -1)
             {
-                const auto packedTexture = m_textureArrayList[iter].second.GetPackedTexture();
+                const auto& packedTexture = m_textureArrayList[iter].second.GetPackedTexture();
                 view->GetShaderResourceGroup()->SetImage(m_decalTextureArrayIndices[iter], packedTexture);
                 iter = m_textureArrayList.next(iter);
             }
@@ -482,22 +483,15 @@ namespace AZ
             return material;
         }
 
-        void DecalTextureArrayFeatureProcessor::QueueMaterialLoadForDecal(const AZ::Data::AssetId material, const DecalHandle handle)
+        void DecalTextureArrayFeatureProcessor::QueueMaterialLoadForDecal(const AZ::Data::AssetId materialId, const DecalHandle handle)
         {
-            // Note that another decal might have already queued this material for loading
-            if (m_materialLoadTracker.IsAssetLoading(material))
-            {
-                m_materialLoadTracker.TrackAssetLoad(handle, material);
-                return;
-            }
+            const auto materialAsset = QueueMaterialAssetLoad(materialId);
 
-            const auto materialAsset = QueueMaterialAssetLoad(material);
-            m_materialAssets.emplace(material, materialAsset);
-            m_materialLoadTracker.TrackAssetLoad(handle, material);
+            m_materialLoadTracker.TrackAssetLoad(handle, materialAsset);
 
             if (materialAsset.IsLoading())
             {
-                AZ::Data::AssetBus::MultiHandler::BusConnect(material);
+                AZ::Data::AssetBus::MultiHandler::BusConnect(materialId);
             }
             else if (materialAsset.IsReady())
             {

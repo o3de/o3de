@@ -26,7 +26,7 @@
 // off every 'zix'.)
 //
 
- // Modifications copyright Amazon.com, Inc. or its affiliates.
+// Modified from original
 
 #include "FastNoise_precompiled.h"
 
@@ -612,7 +612,9 @@ FN_DECIMAL FastNoise::SingleValue(unsigned char offset, FN_DECIMAL x, FN_DECIMAL
     int y1 = y0 + 1;
     int z1 = z0 + 1;
 
-    FN_DECIMAL xs, ys, zs;
+    FN_DECIMAL xs = 0.0f;
+    FN_DECIMAL ys = 0.0f;
+    FN_DECIMAL zs = 0.0f;
     switch (m_interp)
     {
     case Linear:
@@ -726,7 +728,8 @@ FN_DECIMAL FastNoise::SingleValue(unsigned char offset, FN_DECIMAL x, FN_DECIMAL
     int x1 = x0 + 1;
     int y1 = y0 + 1;
 
-    FN_DECIMAL xs, ys;
+    FN_DECIMAL xs = 0.0f;
+    FN_DECIMAL ys = 0.0f;
     switch (m_interp)
     {
     case Linear:
@@ -840,7 +843,9 @@ FN_DECIMAL FastNoise::SinglePerlin(unsigned char offset, FN_DECIMAL x, FN_DECIMA
     int y1 = y0 + 1;
     int z1 = z0 + 1;
 
-    FN_DECIMAL xs, ys, zs;
+    FN_DECIMAL xs = 0.0f;
+    FN_DECIMAL ys = 0.0f;
+    FN_DECIMAL zs = 0.0f;
     switch (m_interp)
     {
     case Linear:
@@ -962,7 +967,8 @@ FN_DECIMAL FastNoise::SinglePerlin(unsigned char offset, FN_DECIMAL x, FN_DECIMA
     int x1 = x0 + 1;
     int y1 = y0 + 1;
 
-    FN_DECIMAL xs, ys;
+    FN_DECIMAL xs = 0.0f;
+    FN_DECIMAL ys = 0.0f;
     switch (m_interp)
     {
     case Linear:
@@ -1699,7 +1705,9 @@ FN_DECIMAL FastNoise::SingleCellular(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) c
     int zr = FastRound(z);
 
     FN_DECIMAL distance = 999999;
-    int xc, yc, zc;
+    int xc = 0;
+    int yc = 0;
+    int zc = 0;
 
     switch (m_cellularDistanceFunction)
     {
@@ -1923,7 +1931,8 @@ FN_DECIMAL FastNoise::SingleCellular(FN_DECIMAL x, FN_DECIMAL y) const
     int yr = FastRound(y);
 
     FN_DECIMAL distance = 999999;
-    int xc, yc;
+    int xc = 0;
+    int yc = 0;
 
     switch (m_cellularDistanceFunction)
     {

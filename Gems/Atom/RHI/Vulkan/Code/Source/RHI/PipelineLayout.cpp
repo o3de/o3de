@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "Atom_RHI_Vulkan_precompiled.h"
 #include <Atom/RHI.Reflect/PipelineLayoutDescriptor.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupPoolDescriptor.h>
@@ -66,21 +61,21 @@ namespace AZ
             }
         }
 
-        RHI::ConstPtr<RHI::ShaderResourceGroupLayout> PipelineLayout::MergeShaderResourceGroupLayouts(const AZStd::vector<const RHI::ShaderResourceGroupLayout*>& srgLayouts) const
+        RHI::ConstPtr<RHI::ShaderResourceGroupLayout> PipelineLayout::MergeShaderResourceGroupLayouts(const AZStd::vector<const RHI::ShaderResourceGroupLayout*>& srgLayoutList) const
         {
-            if (srgLayouts.empty())
+            if (srgLayoutList.empty())
             {
                 return nullptr;
             }
 
-            if (srgLayouts.size() == 1)
+            if (srgLayoutList.size() == 1)
             {
-                return srgLayouts.front();
+                return srgLayoutList.front();
             }
 
             RHI::Ptr<RHI::ShaderResourceGroupLayout> mergedLayout = RHI::ShaderResourceGroupLayout::Create();
-            mergedLayout->SetBindingSlot(srgLayouts.front()->GetBindingSlot());
-            for (const RHI::ShaderResourceGroupLayout* srgLayout : srgLayouts)
+            mergedLayout->SetBindingSlot(srgLayoutList.front()->GetBindingSlot());
+            for (const RHI::ShaderResourceGroupLayout* srgLayout : srgLayoutList)
             {
                 const uint32_t bindingSlot = srgLayout->GetBindingSlot();
                 const auto& srgBindingInfo = m_layoutDescriptor->GetShaderResourceGroupBindingInfo(m_layoutDescriptor->GetShaderResourceGroupIndexFromBindingSlot(bindingSlot));

@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 // Description : Tagged files database for 'SmartFileOpen' dialog
 //
@@ -22,7 +17,6 @@
 
 
 #include "FileUtil.h"
-#include "STLPoolAllocator.h"
 #include <functional>
 
 class CIndexedFiles
@@ -117,15 +111,8 @@ private:
     std::vector <std::function<void()> > m_updateCallbacks;
     IFileUtil::FileArray m_files;
     std::map<QString, int> m_pathToIndex;
-#if defined(_DEBUG) || defined(AZ_COMPILER_CLANG)
-    // In debug, the validation phase of the pool allocator when destructed takes so much time,
-    // and using the STLPoolAllocator causes a strange issue when compiling with clang
     typedef std::set<int, std::less<int> > int_set;
     typedef std::map<QString, int_set, std::less<QString> > TagTable;
-#else
-    typedef std::set<int, std::less<int>, stl::STLPoolAllocator<int> > int_set;
-    typedef std::map<QString, int_set, std::less<QString>, stl::STLPoolAllocator<std::pair<const QString, int_set> > > TagTable;
-#endif
     TagTable m_tags;
     QString m_rootPath;
 

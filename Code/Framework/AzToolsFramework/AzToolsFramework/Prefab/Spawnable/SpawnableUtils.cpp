@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -24,29 +19,21 @@
 
 namespace AzToolsFramework::Prefab::SpawnableUtils
 {
-
-    AzFramework::Spawnable CreateSpawnable(const PrefabDom& prefabDom)
-    {
-        AzFramework::Spawnable spawnable;
-        [[maybe_unused]] bool result = CreateSpawnable(spawnable, prefabDom);
-        AZ_Assert(result,
-            "Failed to Load Prefab Instance from given Prefab DOM while Spawnable creation.");
-        return spawnable;
-    }
-
     bool CreateSpawnable(AzFramework::Spawnable& spawnable, const PrefabDom& prefabDom)
     {
+        AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>> referencedAssets;
+        return CreateSpawnable(spawnable, prefabDom, referencedAssets);
+    }
+
+    bool CreateSpawnable(AzFramework::Spawnable& spawnable, const PrefabDom& prefabDom, AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& referencedAssets)
+    {
         Instance instance;
-        if (Prefab::PrefabDomUtils::LoadInstanceFromPrefabDom(instance, prefabDom,
+        if (Prefab::PrefabDomUtils::LoadInstanceFromPrefabDom(instance, prefabDom, referencedAssets,
             Prefab::PrefabDomUtils::LoadInstanceFlags::AssignRandomEntityId)) // Always assign random entity ids because the spawnable is
                                                                               // going to be used to create clones of the entities.
         {
             AzFramework::Spawnable::EntityList& entities = spawnable.GetEntities();
-            if (instance.HasContainerEntity())
-            {
-                entities.emplace_back(AZStd::move(instance.DetachContainerEntity()));
-            }
-            instance.DetachNestedEntities(
+            instance.DetachAllEntitiesInHierarchy(
                 [&entities](AZStd::unique_ptr<AZ::Entity> entity)
                 {
                     entities.emplace_back(AZStd::move(entity));

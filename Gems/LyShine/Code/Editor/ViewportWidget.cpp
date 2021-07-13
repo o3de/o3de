@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "UiCanvasEditor_precompiled.h"
 
 #include "EditorCommon.h"
@@ -18,7 +13,6 @@
 #include <AzCore/std/containers/map.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
-#include <QViewportSettings.h>
 
 #include <LyShine/Bus/UiEditorCanvasBus.h>
 #include <LyShine/Draw2d.h>
@@ -39,6 +33,7 @@
 
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 
 #define UICANVASEDITOR_SETTINGS_VIEWPORTWIDGET_DRAW_ELEMENT_BORDERS_KEY         "ViewportWidget::m_drawElementBordersFlags"
 #define UICANVASEDITOR_SETTINGS_VIEWPORTWIDGET_DRAW_ELEMENT_BORDERS_DEFAULT     ( ViewportWidget::DrawElementBorders_Unselected )
@@ -221,8 +216,6 @@ ViewportWidget::ViewportWidget(EditorWindow* parent)
 {
     setAcceptDrops(true);
 
-    UpdateViewportBackground();
-
     InitUiRenderer();
 
     SetupShortcuts();
@@ -298,19 +291,6 @@ void ViewportWidget::ToggleDrawElementBorders(uint32 flags)
 
     // Persistence.
     SetDrawElementBordersFlags(m_drawElementBordersFlags);
-}
-
-void ViewportWidget::UpdateViewportBackground()
-{
-    const QColor backgroundColor(ViewportHelpers::backgroundColorDark.GetR8(),
-        ViewportHelpers::backgroundColorDark.GetG8(),
-        ViewportHelpers::backgroundColorDark.GetB8(),
-        ViewportHelpers::backgroundColorDark.GetA8());
-
-    QPalette pal(palette());
-    pal.setColor(QPalette::Window, backgroundColor);
-    setPalette(pal);
-    setAutoFillBackground(true);
 }
 
 void ViewportWidget::ActiveCanvasChanged()
@@ -520,6 +500,9 @@ void ViewportWidget::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoin
     gEnv->pRenderer->SetSrgbWrite(true);
 #endif
 
+    const float dpiScale = QtHelpers::GetHighDpiScaleFactor(*this);
+    ViewportIcon::SetDpiScaleFactor(dpiScale);
+
     // Set up to render a frame to this viewport's window
     GetViewportContext()->RenderTick();
 
@@ -555,7 +538,9 @@ void ViewportWidget::RefreshTick()
 void ViewportWidget::mousePressEvent(QMouseEvent* ev)
 {
     UiEditorMode editorMode = m_editorWindow->GetEditorMode();
-    QMouseEvent scaledEvent(ev->type(), WidgetToViewport(ev->localPos()), ev->button(), ev->buttons(), ev->modifiers());
+
+    QPointF scaledPosition = WidgetToViewport(ev->localPos());
+    QMouseEvent scaledEvent(ev->type(), scaledPosition, ev->button(), ev->buttons(), ev->modifiers());
     if (editorMode == UiEditorMode::Edit)
     {
         // in Edit mode just send input to ViewportInteraction
@@ -570,8 +555,7 @@ void ViewportWidget::mousePressEvent(QMouseEvent* ev)
             if (ev->button() == Qt::LeftButton)
             {
                 // Send event to this canvas
-                QPointF scaledPos = WidgetToViewport(ev->localPos());
-                const AZ::Vector2 viewportPosition(aznumeric_cast<float>(scaledPos.x()), aznumeric_cast<float>(scaledPos.y()));
+                const AZ::Vector2 viewportPosition(aznumeric_cast<float>(scaledPosition.x()), aznumeric_cast<float>(scaledPosition.y()));
                 const AzFramework::InputChannel::Snapshot inputSnapshot(AzFramework::InputDeviceMouse::Button::Left,
                                                                         AzFramework::InputDeviceMouse::Id,
                                                                         AzFramework::InputChannel::State::Began);
@@ -589,7 +573,9 @@ void ViewportWidget::mousePressEvent(QMouseEvent* ev)
 void ViewportWidget::mouseMoveEvent(QMouseEvent* ev)
 {
     UiEditorMode editorMode = m_editorWindow->GetEditorMode();
-    QMouseEvent scaledEvent(ev->type(), WidgetToViewport(ev->localPos()), ev->button(), ev->buttons(), ev->modifiers());
+
+    QPointF scaledPosition = WidgetToViewport(ev->localPos());
+    QMouseEvent scaledEvent(ev->type(), scaledPosition, ev->button(), ev->buttons(), ev->modifiers());
 
     if (editorMode == UiEditorMode::Edit)
     {
@@ -597,7 +583,8 @@ void ViewportWidget::mouseMoveEvent(QMouseEvent* ev)
         m_viewportInteraction->MouseMoveEvent(&scaledEvent,
             m_editorWindow->GetHierarchy()->selectedItems());
 
-        SetRulerCursorPositions(ev->globalPos());
+        QPointF screenPosition = WidgetToViewport(ev->screenPos());
+        SetRulerCursorPositions(screenPosition.toPoint());
     }
     else // if (editorMode == UiEditorMode::Preview)
     {
@@ -605,8 +592,7 @@ void ViewportWidget::mouseMoveEvent(QMouseEvent* ev)
         AZ::EntityId canvasEntityId = m_editorWindow->GetPreviewModeCanvas();
         if (canvasEntityId.IsValid())
         {
-            QPointF scaledPos = WidgetToViewport(ev->localPos());
-            const AZ::Vector2 viewportPosition(aznumeric_cast<float>(scaledPos.x()), aznumeric_cast<float>(scaledPos.y()));
+            const AZ::Vector2 viewportPosition(aznumeric_cast<float>(scaledPosition.x()), aznumeric_cast<float>(scaledPosition.y()));
             const AzFramework::InputChannelId& channelId = (ev->buttons() & Qt::LeftButton) ?
                                                             AzFramework::InputDeviceMouse::Button::Left :
                                                             AzFramework::InputDeviceMouse::SystemCursorPosition;
@@ -626,7 +612,9 @@ void ViewportWidget::mouseMoveEvent(QMouseEvent* ev)
 void ViewportWidget::mouseReleaseEvent(QMouseEvent* ev)
 {
     UiEditorMode editorMode = m_editorWindow->GetEditorMode();
-    QMouseEvent scaledEvent(ev->type(), WidgetToViewport(ev->localPos()), ev->button(), ev->buttons(), ev->modifiers());
+
+    QPointF scaledPosition = WidgetToViewport(ev->localPos());
+    QMouseEvent scaledEvent(ev->type(), scaledPosition, ev->button(), ev->buttons(), ev->modifiers());
     if (editorMode == UiEditorMode::Edit)
     {
         // in Edit mode just send input to ViewportInteraction
@@ -642,8 +630,7 @@ void ViewportWidget::mouseReleaseEvent(QMouseEvent* ev)
             if (ev->button() == Qt::LeftButton)
             {
                 // Send event to this canvas
-                QPointF scaledPos = WidgetToViewport(ev->localPos());
-                const AZ::Vector2 viewportPosition(aznumeric_cast<float>(scaledPos.x()), aznumeric_cast<float>(scaledPos.y()));
+                const AZ::Vector2 viewportPosition(aznumeric_cast<float>(scaledPosition.x()), aznumeric_cast<float>(scaledPosition.y()));
                 const AzFramework::InputChannel::Snapshot inputSnapshot(AzFramework::InputDeviceMouse::Button::Left,
                                                                         AzFramework::InputDeviceMouse::Id,
                                                                         AzFramework::InputChannel::State::Ended);
@@ -727,7 +714,7 @@ bool ViewportWidget::event(QEvent* ev)
         }
     }
     
-    bool result = QWidget::event(ev);
+    bool result = RenderViewportWidget::event(ev);
     return result;
 }
 
@@ -932,13 +919,15 @@ void ViewportWidget::RenderEditMode(float deltaTime)
     EBUS_EVENT_ID_RESULT(canvasSize, canvasEntityId, UiCanvasBus, GetCanvasSize);
 
     m_draw2d->SetSortKey(backgroundKey);
+
+    // Render a rectangle covering the entire editor viewport area
+    RenderViewportBackground();
+
+    // Render a checkerboard background covering the canvas area which represents transparency  
     m_viewportBackground->Draw(draw2d,
         canvasSize,
         m_viewportInteraction->GetCanvasToViewportScale(),
         m_viewportInteraction->GetCanvasToViewportTranslation());
-
-    AZ::Vector2 viewportSize(aznumeric_cast<float>(size().width()), aznumeric_cast<float>(size().height()));
-    viewportSize *= QHighDpiScaling::factor(windowHandle()->screen());
 
 #ifdef LYSHINE_ATOM_TODO
     // clear the stencil buffer before rendering each canvas - required for masking
@@ -954,6 +943,8 @@ void ViewportWidget::RenderEditMode(float deltaTime)
     EBUS_EVENT_ID(canvasEntityId, UiEditorCanvasBus, UpdateCanvasInEditorViewport, deltaTime, false);
 
     // Render this canvas
+    QSize scaledViewportSize = QtHelpers::GetDpiScaledViewportSize(*this);
+    AZ::Vector2 viewportSize(scaledViewportSize.width(), scaledViewportSize.height());
     EBUS_EVENT_ID(canvasEntityId, UiEditorCanvasBus, RenderCanvasInEditorViewport, false, viewportSize);
 
     m_draw2d->SetSortKey(topLayerKey);
@@ -1051,6 +1042,9 @@ void ViewportWidget::RenderEditMode(float deltaTime)
 
 void ViewportWidget::RenderPreviewMode(float deltaTime)
 {
+    // sort keys for different layers
+    static const int64_t backgroundKey = -0x1000;
+
     AZ::EntityId canvasEntityId = m_editorWindow->GetPreviewModeCanvas();
 
     if (m_fontTextureHasChanged)
@@ -1073,10 +1067,10 @@ void ViewportWidget::RenderPreviewMode(float deltaTime)
 
     if (canvasEntityId.IsValid())
     {
-        // Get the canvas size
-        AZ::Vector2 viewportSize(aznumeric_cast<float>(size().width()), aznumeric_cast<float>(size().height()));
-        viewportSize *= QHighDpiScaling::factor(windowHandle()->screen());
+        QSize scaledViewportSize = QtHelpers::GetDpiScaledViewportSize(*this);
+        AZ::Vector2 viewportSize(scaledViewportSize.width(), scaledViewportSize.height());
 
+        // Get the canvas size
         AZ::Vector2 canvasSize = m_editorWindow->GetPreviewCanvasSize();
         if (canvasSize.GetX() == 0.0f && canvasSize.GetY() == 0.0f)
         {
@@ -1140,7 +1134,7 @@ void ViewportWidget::RenderPreviewMode(float deltaTime)
         canvasToViewportMatrix.SetTranslation(translation);
         EBUS_EVENT_ID(canvasEntityId, UiCanvasBus, SetCanvasToViewportMatrix, canvasToViewportMatrix);
 
-#ifdef LYSHINE_ATOM_TODO
+#ifdef LYSHINE_ATOM_TODO // mask support with Atom
         // clear the stencil buffer before rendering each canvas - required for masking
         // NOTE: the FRT_CLEAR_IMMEDIATE is required since we will not be setting the render target
         // We also clear the color to a mid grey so that we can see the bounds of the canvas
@@ -1148,16 +1142,18 @@ void ViewportWidget::RenderPreviewMode(float deltaTime)
         gEnv->pRenderer->ClearTargetsImmediately(FRT_CLEAR, viewportBackgroundColor);
 #endif
 
-#ifdef LYSHINE_ATOM_TODO
+        m_draw2d->SetSortKey(backgroundKey);
+
+        RenderViewportBackground();
+
         // Render a black rectangle covering the canvas area. This allows the canvas bounds to be visible when the canvas size is
         // not exactly the same as the viewport size
         AZ::Vector2 topLeftInViewportSpace = CanvasHelpers::GetViewportPoint(canvasEntityId, AZ::Vector2(0.0f, 0.0f));
         AZ::Vector2 bottomRightInViewportSpace = CanvasHelpers::GetViewportPoint(canvasEntityId, canvasSize);
         AZ::Vector2 sizeInViewportSpace = bottomRightInViewportSpace - topLeftInViewportSpace;
-        Draw2dHelper draw2d(m_draw2d.get())
-        int texId = gEnv->pRenderer->GetBlackTextureId();
-        draw2d.DrawImage(texId, topLeftInViewportSpace, sizeInViewportSpace);
-#endif
+        Draw2dHelper draw2d(m_draw2d.get());
+        auto image = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::Black);
+        draw2d.DrawImage(image, topLeftInViewportSpace, sizeInViewportSpace);
 
         // Render this canvas
         // NOTE: the displayBounds param is always false. If we wanted a debug option to display the bounds
@@ -1165,6 +1161,17 @@ void ViewportWidget::RenderPreviewMode(float deltaTime)
         // show up in the correct viewport
         EBUS_EVENT_ID(canvasEntityId, UiEditorCanvasBus, RenderCanvasInEditorViewport, true, viewportSize);
     }
+}
+
+void ViewportWidget::RenderViewportBackground()
+{
+    QSize viewportSize = QtHelpers::GetDpiScaledViewportSize(*this);
+    AZ::Color backgroundColor = ViewportHelpers::backgroundColorDark;
+    const AZ::Data::Instance<AZ::RPI::Image>& image = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
+
+    Draw2dHelper draw2d(m_draw2d.get());
+    draw2d.SetImageColor(backgroundColor.GetAsVector3());
+    draw2d.DrawImage(image, AZ::Vector2(0.0f, 0.0f), AZ::Vector2(viewportSize.width(), viewportSize.height()));
 }
 
 void ViewportWidget::SetupShortcuts()

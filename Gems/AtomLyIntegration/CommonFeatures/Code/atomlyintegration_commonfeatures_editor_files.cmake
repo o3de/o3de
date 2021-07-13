@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 set(FILES
@@ -24,8 +20,10 @@ set(FILES
     Source/CoreLights/EditorDirectionalLightComponent.cpp
     Source/Decals/EditorDecalComponent.h
     Source/Decals/EditorDecalComponent.cpp
-    Source/DiffuseProbeGrid/EditorDiffuseProbeGridComponent.h
-    Source/DiffuseProbeGrid/EditorDiffuseProbeGridComponent.cpp
+    Source/DiffuseGlobalIllumination/EditorDiffuseProbeGridComponent.h
+    Source/DiffuseGlobalIllumination/EditorDiffuseProbeGridComponent.cpp
+    Source/DiffuseGlobalIllumination/EditorDiffuseGlobalIlluminationComponent.h
+    Source/DiffuseGlobalIllumination/EditorDiffuseGlobalIlluminationComponent.cpp
     Source/Grid/EditorGridComponent.h
     Source/Grid/EditorGridComponent.cpp
     Source/ImageBasedLights/EditorImageBasedLightComponent.h
@@ -50,10 +48,16 @@ set(FILES
     Source/Material/MaterialThumbnail.h
     Source/Mesh/EditorMeshComponent.h
     Source/Mesh/EditorMeshComponent.cpp
+    Source/Mesh/EditorMeshStats.h
+    Source/Mesh/EditorMeshStats.cpp
     Source/Mesh/EditorMeshSystemComponent.cpp
     Source/Mesh/EditorMeshSystemComponent.h
+    Source/Mesh/EditorMeshStatsSerializer.cpp
+    Source/Mesh/EditorMeshStatsSerializer.h
     Source/Mesh/MeshThumbnail.h
     Source/Mesh/MeshThumbnail.cpp
+    Source/OcclusionCullingPlane/EditorOcclusionCullingPlaneComponent.h
+    Source/OcclusionCullingPlane/EditorOcclusionCullingPlaneComponent.cpp
     Source/PostProcess/EditorPostFxLayerComponent.cpp
     Source/PostProcess/EditorPostFxLayerComponent.h
     Source/PostProcess/Bloom/EditorBloomComponent.cpp

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <PhysX_precompiled.h>
 
@@ -100,7 +95,6 @@ namespace PhysX
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
             m_staticRigidBodyHandle = sceneInterface->AddSimulatedBody(m_attachedSceneHandle, &configuration);
-            m_staticRigidBody = azdynamic_cast<PhysX::StaticRigidBody*>(sceneInterface->GetSimulatedBodyFromHandle(m_attachedSceneHandle, m_staticRigidBodyHandle));
         }
     }
 
@@ -118,17 +112,18 @@ namespace PhysX
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
             sceneInterface->RemoveSimulatedBody(m_attachedSceneHandle, m_staticRigidBodyHandle);
-            m_staticRigidBodyHandle = AzPhysics::InvalidSceneHandle;
-            m_staticRigidBody = nullptr;
         }
 
         AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
     }
 
-    void StaticRigidBodyComponent::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
+    void StaticRigidBodyComponent::OnTransformChanged([[maybe_unused]] const AZ::Transform& local, const AZ::Transform& world)
     {
-        m_staticRigidBody->SetTransform(world);
+        if (AzPhysics::SimulatedBody* body = GetSimulatedBody())
+        {
+            body->SetTransform(world);
+        }
     }
 
     void StaticRigidBodyComponent::EnablePhysics()
@@ -153,12 +148,31 @@ namespace PhysX
 
     bool StaticRigidBodyComponent::IsPhysicsEnabled() const
     {
-        return m_staticRigidBody != nullptr && m_staticRigidBody->m_simulating;
+        if (m_staticRigidBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
+        {
+            if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
+                sceneInterface != nullptr &&
+                sceneInterface->IsEnabled(m_attachedSceneHandle))//check if the scene is enabled
+            {
+                if (AzPhysics::SimulatedBody* body = sceneInterface->GetSimulatedBodyFromHandle(m_attachedSceneHandle, m_staticRigidBodyHandle))
+                {
+                    return body->m_simulating;
+                }
+            }
+        }
+        return false;
     }
 
     AZ::Aabb StaticRigidBodyComponent::GetAabb() const
     {
-        return m_staticRigidBody->GetAabb();
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            if (AzPhysics::SimulatedBody* body = sceneInterface->GetSimulatedBodyFromHandle(m_attachedSceneHandle, m_staticRigidBodyHandle))
+            {
+                return body->GetAabb();
+            }
+        }
+        return AZ::Aabb::CreateNull();
     }
 
     AzPhysics::SimulatedBodyHandle StaticRigidBodyComponent::GetSimulatedBodyHandle() const
@@ -168,14 +182,18 @@ namespace PhysX
 
     AzPhysics::SimulatedBody* StaticRigidBodyComponent::GetSimulatedBody()
     {
-        return m_staticRigidBody;
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            return sceneInterface->GetSimulatedBodyFromHandle(m_attachedSceneHandle, m_staticRigidBodyHandle);
+        }
+        return nullptr;
     }
 
     AzPhysics::SceneQueryHit StaticRigidBodyComponent::RayCast(const AzPhysics::RayCastRequest& request)
     {
-        if (m_staticRigidBody)
+        if (auto* body = azdynamic_cast<PhysX::StaticRigidBody*>(GetSimulatedBody()))
         {
-            return m_staticRigidBody->RayCast(request);
+            return body->RayCast(request);
         }
         return AzPhysics::SceneQueryHit();
     }

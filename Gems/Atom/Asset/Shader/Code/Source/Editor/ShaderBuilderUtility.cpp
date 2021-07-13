@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "ShaderBuilderUtility.h"
 
 #include <AzFramework/API/ApplicationAPI.h>
@@ -41,13 +36,15 @@
 #include "ShaderPlatformInterfaceRequest.h"
 #include "AtomShaderConfig.h"
 
+#include "SrgLayoutUtility.h"
+
 namespace AZ
 {
     namespace ShaderBuilder
     {
         namespace ShaderBuilderUtility
         {
-            static const char* ShaderBuilderUtilityName = "ShaderBuilderUtility";
+            static constexpr char ShaderBuilderUtilityName[] = "ShaderBuilderUtility";
 
             Outcome<RPI::ShaderSourceData, AZStd::string> LoadShaderDataJson(const AZStd::string& fullPathToJsonFile)
             {
@@ -84,82 +81,6 @@ namespace AZ
                 AzFramework::StringFunc::Path::ReplaceExtension(absoluteAzslPath, "azsl");
             }
 
-            uint32_t MakeDebugByproductSubId(RHI::APIType apiType, const AZStd::string& productFileName)
-            {
-                // bits: ----- 24 -----|-   4    -|-   4   -
-                //          fn hash    | id + api |   0xF
-                uint32_t subId = 0xF;    // to avoid collisions with subid of other source outputs using RPI::ShaderAssetSubId::GeneratedSource + api
-                uint32_t id_api = static_cast<uint32_t>(RPI::ShaderAssetSubId::DebugByProduct);
-                id_api += apiType;
-                id_api <<= 4;
-                subId |= id_api;
-                size_t fnHash = AZStd::hash<AZStd::string>()(productFileName);
-                subId |= static_cast<uint32_t>(fnHash) & 0xFFFFFF00;
-                return subId;
-            }
-
-            static bool LoadShaderResourceGroupAssets(
-                [[maybe_unused]] const char* BuilderName,
-                const SrgDataContainer& resourceGroups,
-                ShaderResourceGroupAssets& srgAssets)
-            {
-                bool readSRGsSuccessfuly = true;
-
-                // Load all SRGs included in source file 
-                for (const SrgData& srgData : resourceGroups)
-                {
-                    Data::AssetId assetId = {};
-                    AZStd::string srgFilePath = "";
-
-                    srgFilePath = srgData.m_containingFileName;
-                    AzFramework::StringFunc::Path::Normalize(srgFilePath);
-
-                    bool assetFound = false;
-                    Data::AssetInfo sourceInfo;
-                    AZStd::string watchFolder;
-                    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(assetFound, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath, srgFilePath.c_str(), sourceInfo, watchFolder);
-
-                    if (!assetFound)
-                    {
-                        AZ_Error(BuilderName, false, "Could not find asset identified by path '%s'", srgFilePath.c_str());
-                        readSRGsSuccessfuly = false;
-                        continue;
-                    }
-
-                    assetId.m_guid = sourceInfo.m_assetId.m_guid;
-                    assetId.m_subId = static_cast<uint32_t>(AZStd::hash<AZStd::string>()(srgData.m_name) & 0xFFFFFFFF);
-
-                    Data::Asset<RPI::ShaderResourceGroupAsset> asset = Data::AssetManager::Instance().GetAsset<RPI::ShaderResourceGroupAsset>(
-                        assetId, AZ::Data::AssetLoadBehavior::PreLoad);
-                    asset.BlockUntilLoadComplete();
-                    if (!asset.IsReady())
-                    {
-                        using Status = Data::AssetData::AssetStatus;
-                        AZStd::string statusString = asset.GetStatus() == Status::Loading ? "loading"
-                            : asset.GetStatus() == Status::ReadyPreNotify ? "ready-pre-notify"
-                            : asset.GetStatus() == Status::Error ? "error" : "not-loaded/ready/unknown";
-
-                        AZ_Error(BuilderName, false, "Searching SRG [%s]: Could not load SRG asset. (asset status [%s]) AssetId='%s' Path='%s'",
-                            srgData.m_name.c_str(),
-                            statusString.c_str(),
-                            assetId.ToString<AZStd::string>().c_str(), srgFilePath.c_str());
-                        readSRGsSuccessfuly = false;
-                        continue;
-                    }
-                    else if (!asset->IsValid())
-                    {
-                        AZ_Error(BuilderName, false, "SRG asset has no layout information. AssetId='%s' Path='%s'",
-                            assetId.ToString<AZStd::string>().c_str(), srgFilePath.c_str());
-                        readSRGsSuccessfuly = false;
-                        continue;
-                    }
-
-                    srgAssets.push_back(asset);
-                }
-
-                return readSRGsSuccessfuly;
-            }
-
             AZStd::shared_ptr<ShaderFiles> PrepareSourceInput(
                 [[maybe_unused]] const char* builderName,
                 const AZStd::string& shaderAssetSourcePath,
@@ -183,28 +104,32 @@ namespace AZ
             }
 
             AssetBuilderSDK::ProcessJobResultCode PopulateAzslDataFromJsonFiles(
-                const char* BuilderName,
+                const char* builderName,
                 const AzslSubProducts::Paths& pathOfJsonFiles,
+                const bool platformUsesRegisterSpaces,
                 AzslData& azslData,
-                ShaderResourceGroupAssets& srgAssets,
+                RPI::ShaderResourceGroupLayoutList& srgLayoutList,
                 RPI::Ptr<RPI::ShaderOptionGroupLayout> shaderOptionGroupLayout,
                 BindingDependencies& bindingDependencies,
                 RootConstantData& rootConstantData)
             {
-                AzslCompiler azslc(azslData.m_preprocessedFullPath);  // set the input file for eventual error messages, but the compiler won't be called on it.
+                AzslCompiler azslc(
+                    azslData
+                        .m_preprocessedFullPath); // set the input file for eventual error messages, but the compiler won't be called on it.
                 bool allReadSuccess = true;
                 // read: input assembly reflection
                 //       shader resource group reflection
                 //       options reflection
                 //       binding dependencies reflection
-                int indicesOfInterest[] = { AzslSubProducts::ia, AzslSubProducts::srg, AzslSubProducts::options, AzslSubProducts::bindingdep };
+                int indicesOfInterest[] = {
+                    AzslSubProducts::ia, AzslSubProducts::srg, AzslSubProducts::options, AzslSubProducts::bindingdep};
                 AZStd::unordered_map<int, Outcome<rapidjson::Document, AZStd::string>> outcomes;
                 for (int i : indicesOfInterest)
                 {
                     outcomes[i] = JsonSerializationUtils::ReadJsonFile(pathOfJsonFiles[i]);
                     if (!outcomes[i].IsSuccess())
                     {
-                        AZ_Error(BuilderName, false, "%s", outcomes[i].GetError().c_str());
+                        AZ_Error(builderName, false, "%s", outcomes[i].GetError().c_str());
                         allReadSuccess = false;
                     }
                 }
@@ -212,25 +137,25 @@ namespace AZ
                 {
                     return AssetBuilderSDK::ProcessJobResult_Failed;
                 }
-                
+
                 // Get full list of functions eligible for vertex shader entry points
                 // along with metadata for constructing the InputAssembly for each of them
-                if (!azslc.ParseIaPopulateFunctionData(outcomes[AzslSubProducts::ia].GetValue(), azslData.m_topData.m_functions))
+                if (!azslc.ParseIaPopulateFunctionData(outcomes[AzslSubProducts::ia].GetValue(), azslData.m_functions))
                 {
                     return AssetBuilderSDK::ProcessJobResult_Failed;
                 }
-                
+
                 // Each SRG is built as a separate asset in the SrgLayoutBuilder, here we just
                 // build the list and load the data from multiple dependency assets.
-                if (!azslc.ParseSrgPopulateSrgData(outcomes[AzslSubProducts::srg].GetValue(), azslData.m_topData.m_srgData))
+                if (!azslc.ParseSrgPopulateSrgData(outcomes[AzslSubProducts::srg].GetValue(), azslData.m_srgData))
                 {
                     return AssetBuilderSDK::ProcessJobResult_Failed;
                 }
 
                 // Add all Shader Resource Group Assets that were defined in the shader code to the shader asset
-                if (!LoadShaderResourceGroupAssets(BuilderName, azslData.m_topData.m_srgData, srgAssets))
+                if (!SrgLayoutUtility::LoadShaderResourceGroupLayouts(builderName, azslData.m_srgData, platformUsesRegisterSpaces, srgLayoutList))
                 {
-                    AZ_Error(BuilderName, false, "Failed to obtain shader resource group assets");
+                    AZ_Error(builderName, false, "Failed to obtain shader resource group assets");
                     return AssetBuilderSDK::ProcessJobResult_Failed;
                 }
 
@@ -238,22 +163,25 @@ namespace AZ
                 // for each option and what is its default value.
                 if (!azslc.ParseOptionsPopulateOptionGroupLayout(outcomes[AzslSubProducts::options].GetValue(), shaderOptionGroupLayout))
                 {
-                    AZ_Error(BuilderName, false, "Failed to find a valid list of shader options!");
+                    AZ_Error(builderName, false, "Failed to find a valid list of shader options!");
                     return AssetBuilderSDK::ProcessJobResult_Failed;
                 }
 
                 // It analyzes the shader external bindings (all SRG contents)
                 // and informs us on register indexes and shader stages using these resources
-                if (!azslc.ParseBindingdepPopulateBindingDependencies(outcomes[AzslSubProducts::bindingdep].GetValue(), bindingDependencies))   // consuming data from binding-dep
+                if (!azslc.ParseBindingdepPopulateBindingDependencies(
+                        outcomes[AzslSubProducts::bindingdep].GetValue(), bindingDependencies)) // consuming data from binding-dep
                 {
-                    AZ_Error(BuilderName, false, "Failed to obtain shader resource binding reflection");
+                    AZ_Error(builderName, false, "Failed to obtain shader resource binding reflection");
                     return AssetBuilderSDK::ProcessJobResult_Failed;
                 }
 
                 // access the root constants reflection
-                if (!azslc.ParseSrgPopulateRootConstantData(outcomes[AzslSubProducts::srg].GetValue(), rootConstantData))    // consuming data from --srg ("InlineConstantBuffer" subjson section)
+                if (!azslc.ParseSrgPopulateRootConstantData(
+                        outcomes[AzslSubProducts::srg].GetValue(),
+                        rootConstantData)) // consuming data from --srg ("InlineConstantBuffer" subjson section)
                 {
-                    AZ_Error(BuilderName, false, "Failed to obtain root constant data reflection");
+                    AZ_Error(builderName, false, "Failed to obtain root constant data reflection");
                     return AssetBuilderSDK::ProcessJobResult_Failed;
                 }
 
@@ -284,7 +212,8 @@ namespace AZ
             }
 
             //! the binding dependency structure may store lots of high level function names which are not entry points
-            static void PruneNonEntryFunctions(BindingDependencies& bindingDependencies /*inout*/, const MapOfStringToStageType& shaderEntryPoints)
+            static void PruneNonEntryFunctions(
+                BindingDependencies& bindingDependencies /*inout*/, const MapOfStringToStageType& shaderEntryPoints)
             {
                 auto cleaner = [&shaderEntryPoints](BindingDependencies::FunctionsNameVector& functionVector)
                 {
@@ -310,121 +239,6 @@ namespace AZ
                         });
                 }
             }
-    
-            RHI::Ptr<RHI::PipelineLayoutDescriptor> BuildPipelineLayoutDescriptorForApi(
-                [[maybe_unused]] const char* BuilderName,
-                RHI::ShaderPlatformInterface* shaderPlatformInterface,
-                BindingDependencies& bindingDependencies /*inout*/,
-                const ShaderResourceGroupAssets& srgAssets,
-                const MapOfStringToStageType& shaderEntryPoints,
-                const RHI::ShaderCompilerArguments& shaderCompilerArguments,
-                const RootConstantData* rootConstantData /*= nullptr*/)
-            {        
-                PruneNonEntryFunctions(bindingDependencies, shaderEntryPoints);
-            
-                // Translates from a list of function names that use a resource to a shader stage mask.
-                auto getRHIShaderStageMask = [&shaderEntryPoints](const BindingDependencies::FunctionsNameVector& functions)
-                {
-                    RHI::ShaderStageMask mask = RHI::ShaderStageMask::None;
-                    // Iterate through all the functions that are using the resource.
-                    for (const auto& functionName : functions)
-                    {
-                        // Search the function name into the list of valid entry points into the shader.
-                        auto findId = AZStd::find_if(shaderEntryPoints.begin(), shaderEntryPoints.end(), [&functionName, &mask](const auto& item)
-                            {
-                                return item.first == functionName;
-                            });
-        
-                        if (findId != shaderEntryPoints.end())
-                        {
-                            // Use the entry point shader stage type to calculate the mask.
-                            RHI::ShaderHardwareStage hardwareStage = ToAssetBuilderShaderType(findId->second);
-                            mask |= static_cast<RHI::ShaderStageMask>(AZ_BIT(static_cast<uint32_t>(RHI::ToRHIShaderStage(hardwareStage))));
-                        }
-                    }
-        
-                    return mask;
-                };
-            
-                // Build general PipelineLayoutDescriptor data that is provided for all platforms
-                RHI::Ptr<RHI::PipelineLayoutDescriptor> pipelineLayoutDescriptor = shaderPlatformInterface->CreatePipelineLayoutDescriptor();
-                RHI::ShaderPlatformInterface::ShaderResourceGroupInfoList srgInfos;
-                for (const auto& srgAsset : srgAssets)
-                {
-                    // Search the binding info for a Shader Resource Group.
-                    AZStd::string_view srgName = srgAsset->GetName().GetStringView();
-                    const BindingDependencies::SrgResources* srgResources = bindingDependencies.GetSrg(srgName);
-                    if (!srgResources)
-                    {
-                        AZ_Error(BuilderName, false, "SRG %s not found in the dependency dataset", srgName.data());
-                        return nullptr;
-                    }
-        
-                    RHI::ShaderResourceGroupBindingInfo srgBindingInfo;
-                    srgBindingInfo.m_spaceId = srgResources->m_registerSpace;
-                    const RHI::ShaderResourceGroupLayout* layout = srgAsset->GetLayout(shaderPlatformInterface->GetAPIType());
-                    // Calculate the binding in for the constant data. All constant data share the same binding info.
-                    srgBindingInfo.m_constantDataBindingInfo = {
-                        getRHIShaderStageMask(srgResources->m_srgConstantsDependencies.m_binding.m_dependentFunctions),
-                        srgResources->m_srgConstantsDependencies.m_binding.m_registerId };
-                    // Calculate the binding info for each resource of the Shader Resource Group.
-                    for (auto const& resource : srgResources->m_resources)
-                    {
-                        auto const& resourceInfo = resource.second;
-                        srgBindingInfo.m_resourcesRegisterMap.insert(
-                            { AZ::Name(resourceInfo.m_selfName),
-                            RHI::ResourceBindingInfo(getRHIShaderStageMask(resourceInfo.m_dependentFunctions), resourceInfo.m_registerId) });
-                    }
-                    pipelineLayoutDescriptor->AddShaderResourceGroupLayoutInfo(*layout, srgBindingInfo);
-                    srgInfos.push_back(RHI::ShaderPlatformInterface::ShaderResourceGroupInfo{ layout, srgBindingInfo });
-                }
-        
-                RHI::Ptr<RHI::ConstantsLayout> rootConstantsLayout = RHI::ConstantsLayout::Create();
-                if (rootConstantData)
-                {
-                    for (const auto& constantData : rootConstantData->m_constants)
-                    {
-                        RHI::ShaderInputConstantDescriptor rootConstantDesc(
-                            constantData.m_nameId,
-                            constantData.m_constantByteOffset,
-                            constantData.m_constantByteSize,
-                            rootConstantData->m_bindingInfo.m_registerId);
-        
-                        rootConstantsLayout->AddShaderInput(rootConstantDesc);
-                    }
-                }
-        
-                if (!rootConstantsLayout->Finalize())
-                {
-                    AZ_Error(BuilderName, false, "Failed to finalize root constants layout");
-                    return nullptr;
-                }
-
-                pipelineLayoutDescriptor->SetRootConstantsLayout(*rootConstantsLayout);
-        
-                RHI::ShaderPlatformInterface::RootConstantsInfo rootConstantInfo;
-                if (rootConstantData)
-                {
-                    rootConstantInfo.m_spaceId = rootConstantData->m_bindingInfo.m_space;
-                    rootConstantInfo.m_registerId = rootConstantData->m_bindingInfo.m_registerId;
-                }
-                else
-                {
-                    RootConstantData dummyRootConstantData;
-                    rootConstantInfo.m_spaceId = dummyRootConstantData.m_bindingInfo.m_space;
-                    rootConstantInfo.m_registerId = dummyRootConstantData.m_bindingInfo.m_registerId;
-                }
-                rootConstantInfo.m_totalSizeInBytes = rootConstantsLayout->GetDataSize();
-            
-                // Build platform-specific PipelineLayoutDescriptor data, and finalize
-                if (!shaderPlatformInterface->BuildPipelineLayoutDescriptor(pipelineLayoutDescriptor, srgInfos, rootConstantInfo, shaderCompilerArguments))
-                {
-                    AZ_Error(BuilderName, false, "Failed to build pipeline layout descriptor");
-                    return nullptr;
-                }
-            
-                return pipelineLayoutDescriptor;
-            }
 
             static AZStd::string DumpCode(
                 [[maybe_unused]] const char* builderName,
@@ -442,7 +256,7 @@ namespace AZ
                 }
                 else
                 {
-                    formatted = AZStd::string::format("%s.%s.%s", stemName.c_str(), apiTypeString.c_str(), extension.c_str());
+                    formatted = AZStd::string::format("%s_%s.%s", stemName.c_str(), apiTypeString.c_str(), extension.c_str());
                 }
                 AzFramework::StringFunc::Path::Join(dumpDirectory.c_str(), formatted.c_str(), finalFilePath, true, true);
                 AZ::IO::FileIOStream outFileStream(finalFilePath.data(), AZ::IO::OpenMode::ModeWrite);
@@ -470,7 +284,7 @@ namespace AZ
 
             AZStd::string DumpAzslPrependedCode(const char* builderName, const AZStd::string& nonPreprocessedYetAzslSource, const AZStd::string& tempDirPath, const AZStd::string& stemName, const AZStd::string& apiTypeString)
             {
-                return DumpCode(builderName, nonPreprocessedYetAzslSource, tempDirPath, stemName, apiTypeString, "azsl.prepend");
+                return DumpCode(builderName, nonPreprocessedYetAzslSource, tempDirPath, stemName, apiTypeString, "azslprepend");
             }
 
             AZStd::string ExtractStemName(const char* path)
@@ -487,6 +301,82 @@ namespace AZ
                 // filter out nulls:
                 platformInterfaces.erase(AZStd::remove_if(AZ_BEGIN_END(platformInterfaces), [](auto* element) { return element == nullptr; }), platformInterfaces.end());
                 return platformInterfaces;
+            }
+
+
+            AZStd::vector<RHI::ShaderPlatformInterface*> DiscoverEnabledShaderPlatformInterfaces(const AssetBuilderSDK::PlatformInfo& info, const RPI::ShaderSourceData& shaderSourceData)
+            {
+                // Request the list of valid shader platform interfaces for the target platform.
+                AZStd::vector<RHI::ShaderPlatformInterface*> platformInterfaces;
+                ShaderPlatformInterfaceRequestBus::BroadcastResult(
+                    platformInterfaces, &ShaderPlatformInterfaceRequest::GetShaderPlatformInterface, info);
+
+                // Let's remove the unwanted RHI interfaces from the list.
+                platformInterfaces.erase(
+                    AZStd::remove_if(AZ_BEGIN_END(platformInterfaces),
+                        [&](const RHI::ShaderPlatformInterface* shaderPlatformInterface) {
+                            return !shaderPlatformInterface ||
+                                   shaderSourceData.IsRhiBackendDisabled(shaderPlatformInterface->GetAPIName());
+                        }),
+                    platformInterfaces.end());
+                return platformInterfaces;
+            }
+
+            static bool IsValidSupervariantName(const AZStd::string& supervariantName)
+            {
+                return AZStd::all_of(AZ_BEGIN_END(supervariantName),
+                    [](AZStd::string::value_type ch)
+                    {
+                        return AZStd::is_alnum(ch); // allow alpha numeric only
+                    }
+                );
+            }
+
+            AZStd::vector<RPI::ShaderSourceData::SupervariantInfo> GetSupervariantListFromShaderSourceData(
+                const RPI::ShaderSourceData& shaderSourceData)
+            {
+                AZStd::vector<RPI::ShaderSourceData::SupervariantInfo> supervariants;
+                supervariants.reserve(shaderSourceData.m_supervariants.size() + 1);
+
+                // Add the supervariants, always making sure that:
+                //  1- The default, nameless, supervariant goes to the front.
+                //  2- Each supervariant has a unique name
+                AZStd::unordered_set<AZ::Name> uniqueSuperVariants; // This set helps duplicate detection.
+                // Although it is not common, it is possible to declare a nameless supervariant.
+                bool addedNamelessSupervariant = false;
+                for (const auto& supervariantInfo : shaderSourceData.m_supervariants)
+                {
+                    if (!IsValidSupervariantName(supervariantInfo.m_name.GetStringView()))
+                    {
+                        AZ_Error(
+                            ShaderBuilderUtilityName, false, "The supervariant name: [%s] contains invalid characters. Only [a-zA-Z0-9] are supported",
+                            supervariantInfo.m_name.GetCStr());
+                        return {}; // Return an empty vector.
+                    }
+                    if (uniqueSuperVariants.count(supervariantInfo.m_name))
+                    {
+                        AZ_Error(
+                            ShaderBuilderUtilityName, false, "It is invalid to specify more than one supervariant with the same name: [%s]",
+                            supervariantInfo.m_name.GetCStr());
+                        return {}; // Return an empty vector.
+                    }
+                    uniqueSuperVariants.emplace(supervariantInfo.m_name);
+                    supervariants.push_back(supervariantInfo);
+                    if (supervariantInfo.m_name.IsEmpty())
+                    {
+                        addedNamelessSupervariant = true;
+                        // Always move the default, nameless, variant to the begining of the list.
+                        AZStd::swap(supervariants.front(), supervariants.back());
+                    }
+                }
+                if (!addedNamelessSupervariant)
+                {
+                    supervariants.push_back({});
+                    // Always move the default, nameless, variant to the begining of the list.
+                    AZStd::swap(supervariants.front(), supervariants.back());
+                }
+
+                return supervariants;
             }
 
             static void ReadShaderCompilerProfiling([[maybe_unused]] const char* builderName, RHI::ShaderCompilerProfiling& shaderCompilerProfiling, AZStd::string_view shaderPath)
@@ -559,119 +449,450 @@ namespace AZ
 #endif
             }
 
-            uint32_t MakeAzslBuildProductSubId(RPI::ShaderAssetSubId subId, RHI::APIType apiType)
+            Outcome<AZStd::string, AZStd::string> ObtainBuildArtifactPathFromShaderAssetBuilder(
+                const uint32_t rhiUniqueIndex, const AZStd::string& platformIdentifier, const AZStd::string& shaderJsonPath,
+                const uint32_t supervariantIndex, RPI::ShaderAssetSubId shaderAssetSubId)
             {
-                auto subIdMaxEnumerator = RPI::ShaderAssetSubId::GeneratedSource;
-                // separate bit space between subid enum, and api-type:
-                int shiftLeft = static_cast<uint32_t>(log2(static_cast<uint32_t>(subIdMaxEnumerator))) + 1;
-                return static_cast<uint32_t>(subId) + (apiType << shiftLeft);
-            }
-
-            Outcome<AzslSubProducts::Paths> ObtainBuildArtifactsFromAzslBuilder([[maybe_unused]] const char* builderName, const AZStd::string& sourceFullPath, RHI::APIType apiType, const AZStd::string& platform)
-            {
-                AzslSubProducts::Paths products;
-
                 // platform id from identifier
                 AzFramework::PlatformId platformId = AzFramework::PlatformId::PC;
-                if (platform == "pc")
+                if (platformIdentifier == "pc")
                 {
                     platformId = AzFramework::PlatformId::PC;
                 }
-                else if (platform == "osx_gl")
+                else if (platformIdentifier == "mac")
                 {
-                    platformId = AzFramework::PlatformId::OSX;
+                    platformId = AzFramework::PlatformId::MAC_ID;
                 }
-                else if (platform == "es3")
+                else if (platformIdentifier == "android")
                 {
-                    platformId = AzFramework::PlatformId::ES3;
+                    platformId = AzFramework::PlatformId::ANDROID_ID;
                 }
-                else if (platform == "ios")
+                else if (platformIdentifier == "ios")
                 {
                     platformId = AzFramework::PlatformId::IOS;
                 }
 
-                for (RPI::ShaderAssetSubId sub : AzslSubProducts::SubList)
+                uint32_t assetSubId = RPI::ShaderAsset::MakeProductAssetSubId(rhiUniqueIndex, supervariantIndex, aznumeric_cast<uint32_t>(shaderAssetSubId));
+                auto assetIdOutcome = RPI::AssetUtils::MakeAssetId(shaderJsonPath, assetSubId);
+                if (!assetIdOutcome.IsSuccess())
                 {
-                    uint32_t assetSubId = MakeAzslBuildProductSubId(sub, apiType);
-                    auto assetIdOutcome = RPI::AssetUtils::MakeAssetId(sourceFullPath, assetSubId);
-                    AZ_Error(builderName, assetIdOutcome.IsSuccess(), "Missing AZSL product %s, for sub %d", sourceFullPath.c_str(), (uint32_t)sub);
-                    if (!assetIdOutcome.IsSuccess())
-                    {
-                        return Failure();
-                    }
-                    Data::AssetId assetId = assetIdOutcome.TakeValue();
-                    // get the relative path:
-                    AZStd::string assetPath;
-                    Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &Data::AssetCatalogRequests::GetAssetPathById, assetId);
-
-                    // get the root:
-                    AZStd::string assetRoot = AzToolsFramework::PlatformAddressedAssetCatalog::GetAssetRootForPlatform(platformId);
-                    // join
-                    AZStd::string assetFullPath;
-                    AzFramework::StringFunc::Path::Join(assetRoot.c_str(), assetPath.c_str(), assetFullPath);
-                    bool fileExists = IO::FileIOBase::GetInstance()->Exists(assetFullPath.c_str()) && !IO::FileIOBase::GetInstance()->IsDirectory(assetFullPath.c_str());
-                    if (!fileExists)
-                    {
-                        return Failure();
-                    }
-                    products.push_back(assetFullPath);
+                    return Failure(AZStd::string::format(
+                        "Missing ShaderAssetBuilder product %s, for sub %d", shaderJsonPath.c_str(), (uint32_t)shaderAssetSubId));
                 }
-                return AZ::Success(products);
+
+                Data::AssetId assetId = assetIdOutcome.TakeValue();
+                // get the relative path:
+                AZStd::string assetPath;
+                Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &Data::AssetCatalogRequests::GetAssetPathById, assetId);
+
+                // get the root:
+                AZStd::string assetRoot = AzToolsFramework::PlatformAddressedAssetCatalog::GetAssetRootForPlatform(platformId);
+                // join
+                AZStd::string assetFullPath;
+                AzFramework::StringFunc::Path::Join(assetRoot.c_str(), assetPath.c_str(), assetFullPath);
+                bool fileExists = IO::FileIOBase::GetInstance()->Exists(assetFullPath.c_str()) &&
+                    !IO::FileIOBase::GetInstance()->IsDirectory(assetFullPath.c_str());
+                if (!fileExists)
+                {
+                    return Failure(AZStd::string::format(
+                        "asset [%s] from shader source %s and subId %d doesn't exist", assetFullPath.c_str(), shaderJsonPath.c_str(),
+                        (uint32_t)shaderAssetSubId));
+                }
+                return AZ::Success(assetFullPath);
             }
 
-            // See header for info.
-            // REMARK: The approach to string searching and matching done in this function is kind of naive
-            // because the strings can match text within a comment block, etc. So it is not 100% fool proof.
-            // We would need proper grammar parsing to reach 100% confidence.
-            // [GFX TODO][ATOM-5302][ATOM-5308] The following function will be removed once, both, [ATOM-5302] & [ATOM-5308] are addressed, and
-            // azslc allows redundant SrgSemantics for "partial" qualified SRGs.
-            SrgSkipFileResult ShouldSkipFileForSrgProcessing([[maybe_unused]] const char* builderName, const AZStd::string_view fullPath)
+            RHI::Ptr<RHI::PipelineLayoutDescriptor> BuildPipelineLayoutDescriptorForApi(
+                [[maybe_unused]] const char* builderName, const RPI::ShaderResourceGroupLayoutList& srgLayoutList, const MapOfStringToStageType& shaderEntryPoints,
+                const RHI::ShaderCompilerArguments& shaderCompilerArguments, const RootConstantData& rootConstantData,
+                RHI::ShaderPlatformInterface* shaderPlatformInterface, BindingDependencies& bindingDependencies /*inout*/)
             {
-                AZ::IO::FileIOStream stream(fullPath.data(), AZ::IO::OpenMode::ModeRead);
-                if (!stream.IsOpen())
-                {
-                    AZ_Warning(builderName, false, "\"%s\" source file could not be opened.", fullPath.data());
-                    return SrgSkipFileResult::Error;
-                }
+                PruneNonEntryFunctions(bindingDependencies, shaderEntryPoints);
 
-                if (!stream.CanRead())
-                {
-                    AZ_Warning(builderName, false, "\"%s\" source file could not be read.", fullPath.data());
-                    return SrgSkipFileResult::Error;
-                }
-
-                // Do a quick check for "ShaderResourceGroup" to determine if this file might even have a ShaderResourceGroup to parse.
-                AZStd::string fileContents;
-                fileContents.resize(stream.GetLength());
-                stream.Read(stream.GetLength(), fileContents.data());
-
-                static const AZStd::regex partialSrgRegex("\n\\s*partial\\s+ShaderResourceGroup\\s+", AZStd::regex::ECMAScript);
-                if (AZStd::regex_search(fileContents.data(), partialSrgRegex))
-                {
-                    // It is considered a programmer's error if a file declares both, non-partial and partial SRGs.
-                    static const AZStd::regex srgRegex("\n\\s*ShaderResourceGroup\\s+", AZStd::regex::ECMAScript);
-                    if (AZStd::regex_search(fileContents.data(), srgRegex))
+                // Translates from a list of function names that use a resource to a shader stage mask.
+                auto getRHIShaderStageMask = [&shaderEntryPoints](const BindingDependencies::FunctionsNameVector& functions) {
+                    RHI::ShaderStageMask mask = RHI::ShaderStageMask::None;
+                    // Iterate through all the functions that are using the resource.
+                    for (const auto& functionName : functions)
                     {
-                        AZ_Error(builderName, false, "\"%s\" defines both partial and non-partial SRGs.", fullPath.data());
-                        return SrgSkipFileResult::Error;
+                        // Search the function name into the list of valid entry points into the shader.
+                        auto findId =
+                            AZStd::find_if(shaderEntryPoints.begin(), shaderEntryPoints.end(), [&functionName, &mask](const auto& item) {
+                                return item.first == functionName;
+                            });
+
+                        if (findId != shaderEntryPoints.end())
+                        {
+                            // Use the entry point shader stage type to calculate the mask.
+                            RHI::ShaderHardwareStage hardwareStage = ToAssetBuilderShaderType(findId->second);
+                            mask |= static_cast<RHI::ShaderStageMask>(AZ_BIT(static_cast<uint32_t>(RHI::ToRHIShaderStage(hardwareStage))));
+                        }
                     }
-                    // We should skip files that define partial Srgs because an srgi file will eventually
-                    // include it.
-                    return SrgSkipFileResult::SkipFile;
-                }
 
-                // This is an optimization to avoid unnecessary preprocessing a whole tree of azsli files; we can detect when a
-                // ShaderResourceGroupAsset wouldn't be produced and return early. Note, we could remove this early-return check
-                // if the preprocessing code below is updated to not follow include paths [ATOM-5302].
-                // (Note this optimization is not valid for srgi files because those do require scanning all include paths)"
-                if (fileContents.find("ShaderResourceGroup") == AZStd::string::npos)
+                    return mask;
+                };
+
+                // Build general PipelineLayoutDescriptor data that is provided for all platforms
+                RHI::Ptr<RHI::PipelineLayoutDescriptor> pipelineLayoutDescriptor =
+                    shaderPlatformInterface->CreatePipelineLayoutDescriptor();
+                RHI::ShaderPlatformInterface::ShaderResourceGroupInfoList srgInfos;
+                for (const auto& srgLayout : srgLayoutList)
                 {
-                    // No ShaderResourceGroup in this file, so there's nothing to do. Create no jobs and report success.
-                    return SrgSkipFileResult::SkipFile;
+                    // Search the binding info for a Shader Resource Group.
+                    AZStd::string_view srgName = srgLayout->GetName().GetStringView();
+                    const BindingDependencies::SrgResources* srgResources = bindingDependencies.GetSrg(srgName);
+                    if (!srgResources)
+                    {
+                        AZ_Error(builderName, false, "SRG %s not found in the dependency dataset", srgName.data());
+                        return nullptr;
+                    }
+
+                    RHI::ShaderResourceGroupBindingInfo srgBindingInfo;
+                    srgBindingInfo.m_spaceId = srgResources->m_registerSpace;
+                    const RHI::ShaderResourceGroupLayout* layout = srgLayout.get();
+                    // Calculate the binding in for the constant data. All constant data share the same binding info.
+                    srgBindingInfo.m_constantDataBindingInfo = {
+                        getRHIShaderStageMask(srgResources->m_srgConstantsDependencies.m_binding.m_dependentFunctions),
+                        srgResources->m_srgConstantsDependencies.m_binding.m_registerId};
+                    // Calculate the binding info for each resource of the Shader Resource Group.
+                    for (auto const& resource : srgResources->m_resources)
+                    {
+                        auto const& resourceInfo = resource.second;
+                        srgBindingInfo.m_resourcesRegisterMap.insert(
+                            {AZ::Name(resourceInfo.m_selfName),
+                             RHI::ResourceBindingInfo(
+                                 getRHIShaderStageMask(resourceInfo.m_dependentFunctions), resourceInfo.m_registerId)});
+                    }
+                    pipelineLayoutDescriptor->AddShaderResourceGroupLayoutInfo(*layout, srgBindingInfo);
+                    srgInfos.push_back(RHI::ShaderPlatformInterface::ShaderResourceGroupInfo{layout, srgBindingInfo});
                 }
 
-                return SrgSkipFileResult::ContinueProcess;
+                RHI::Ptr<RHI::ConstantsLayout> rootConstantsLayout = RHI::ConstantsLayout::Create();
+                for (const auto& constantData : rootConstantData.m_constants)
+                {
+                    RHI::ShaderInputConstantDescriptor rootConstantDesc(
+                        constantData.m_nameId, constantData.m_constantByteOffset, constantData.m_constantByteSize,
+                        rootConstantData.m_bindingInfo.m_registerId);
+
+                    rootConstantsLayout->AddShaderInput(rootConstantDesc);
+                }
+
+
+                if (!rootConstantsLayout->Finalize())
+                {
+                    AZ_Error(builderName, false, "Failed to finalize root constants layout");
+                    return nullptr;
+                }
+
+                pipelineLayoutDescriptor->SetRootConstantsLayout(*rootConstantsLayout);
+
+                RHI::ShaderPlatformInterface::RootConstantsInfo rootConstantInfo;
+                rootConstantInfo.m_spaceId = rootConstantData.m_bindingInfo.m_space;
+                rootConstantInfo.m_registerId = rootConstantData.m_bindingInfo.m_registerId;
+                rootConstantInfo.m_totalSizeInBytes = rootConstantsLayout->GetDataSize();
+
+                // Build platform-specific PipelineLayoutDescriptor data, and finalize
+                if (!shaderPlatformInterface->BuildPipelineLayoutDescriptor(
+                        pipelineLayoutDescriptor, srgInfos, rootConstantInfo, shaderCompilerArguments))
+                {
+                    AZ_Error(builderName, false, "Failed to build pipeline layout descriptor");
+                    return nullptr;
+                }
+
+                return pipelineLayoutDescriptor;
             }
+
+            static bool IsSystemValueSemantic(const AZStd::string_view semantic)
+            {
+                // https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-semantics#system-value-semantics
+                return AzFramework::StringFunc::StartsWith(semantic, "sv_", false);
+            }
+
+            static bool CreateShaderInputContract(
+                const AzslData& azslData,
+                const AZStd::string& vertexShaderName,
+                const RPI::ShaderOptionGroupLayout& shaderOptionGroupLayout,
+                const AZStd::string& pathToIaJson,
+                RPI::ShaderInputContract& contract)
+            {
+                StructData inputStruct;
+                inputStruct.m_id = "";
+
+                auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(pathToIaJson);
+                if (!jsonOutcome.IsSuccess())
+                {
+                    AZ_Error(ShaderBuilderUtilityName, false, "%s", jsonOutcome.GetError().c_str());
+                    return AssetBuilderSDK::ProcessJobResult_Failed;
+                }
+
+                AzslCompiler azslc(azslData.m_preprocessedFullPath);
+                if (!azslc.ParseIaPopulateStructData(jsonOutcome.GetValue(), vertexShaderName, inputStruct))
+                {
+                    AZ_Error(ShaderBuilderUtilityName, false, "Failed to parse input layout\n");
+                    return false;
+                }
+
+                if (inputStruct.m_id.empty())
+                {
+                    AZ_Error(
+                        ShaderBuilderUtilityName, false, "Failed to find the input struct for vertex shader %s.",
+                        vertexShaderName.c_str());
+                    return false;
+                }
+
+                for (const auto& member : inputStruct.m_members)
+                {
+                    RHI::ShaderSemantic streamChannelSemantic{Name{member.m_semanticText}, static_cast<uint32_t>(member.m_semanticIndex)};
+
+                    // Semantics that represent a system-generated value do not map to an input stream
+                    if (IsSystemValueSemantic(streamChannelSemantic.m_name.GetStringView()))
+                    {
+                        continue;
+                    }
+
+                    contract.m_streamChannels.push_back();
+                    contract.m_streamChannels.back().m_semantic = streamChannelSemantic;
+
+                    if (member.m_variable.m_typeModifier == MatrixMajor::ColumnMajor)
+                    {
+                        contract.m_streamChannels.back().m_componentCount = member.m_variable.m_cols;
+                    }
+                    else
+                    {
+                        contract.m_streamChannels.back().m_componentCount = member.m_variable.m_rows;
+                    }
+
+                    // [GFX_TODO][ATOM-14475]: Come up with a more elegant way to mark optional channels and their corresponding shader
+                    // option
+                    static const char OptionalInputStreamPrefix[] = "m_optional_";
+                    if (AzFramework::StringFunc::StartsWith(member.m_variable.m_name, OptionalInputStreamPrefix, true))
+                    {
+                        AZStd::string expectedOptionName = AZStd::string::format(
+                            "o_%s_isBound", member.m_variable.m_name.substr(strlen(OptionalInputStreamPrefix)).c_str());
+
+                        RPI::ShaderOptionIndex shaderOptionIndex = shaderOptionGroupLayout.FindShaderOptionIndex(Name{expectedOptionName});
+                        if (!shaderOptionIndex.IsValid())
+                        {
+                            AZ_Error(
+                                ShaderBuilderUtilityName, false, "Shader option '%s' not found for optional input stream '%s'",
+                                expectedOptionName.c_str(), member.m_variable.m_name.c_str());
+                            return false;
+                        }
+
+                        const RPI::ShaderOptionDescriptor& option = shaderOptionGroupLayout.GetShaderOption(shaderOptionIndex);
+                        if (option.GetType() != RPI::ShaderOptionType::Boolean)
+                        {
+                            AZ_Error(ShaderBuilderUtilityName, false, "Shader option '%s' must be a bool.", expectedOptionName.c_str());
+                            return false;
+                        }
+
+                        if (option.GetDefaultValue().GetStringView() != "false")
+                        {
+                            AZ_Error(
+                                ShaderBuilderUtilityName, false, "Shader option '%s' must default to false.",
+                                expectedOptionName.c_str());
+                            return false;
+                        }
+
+                        contract.m_streamChannels.back().m_isOptional = true;
+                        contract.m_streamChannels.back().m_streamBoundIndicatorIndex = shaderOptionIndex;
+                    }
+                }
+
+                return true;
+            }
+
+            static bool CreateShaderOutputContract(
+                const AzslData& azslData,
+                const AZStd::string& fragmentShaderName,
+                const AZStd::string& pathToOmJson,
+                RPI::ShaderOutputContract& contract)
+            {
+                StructData outputStruct;
+                outputStruct.m_id = "";
+
+                auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(pathToOmJson);
+                if (!jsonOutcome.IsSuccess())
+                {
+                    AZ_Error(ShaderBuilderUtilityName, false, "%s", jsonOutcome.GetError().c_str());
+                    return AssetBuilderSDK::ProcessJobResult_Failed;
+                }
+
+                AzslCompiler azslc(azslData.m_preprocessedFullPath);
+                if (!azslc.ParseOmPopulateStructData(jsonOutcome.GetValue(), fragmentShaderName, outputStruct))
+                {
+                    AZ_Error(ShaderBuilderUtilityName, false, "Failed to parse output layout\n");
+                    return false;
+                }
+
+                for (const auto& member : outputStruct.m_members)
+                {
+                    RHI::ShaderSemantic semantic = RHI::ShaderSemantic::Parse(member.m_semanticText);
+
+                    bool depthFound = false;
+
+                    if (semantic.m_name.GetStringView() == "SV_Target")
+                    {
+                        contract.m_requiredColorAttachments.push_back();
+                        // Render targets only support 1-D vector types and those are always column-major (per DXC)
+                        contract.m_requiredColorAttachments.back().m_componentCount = member.m_variable.m_cols;
+                    }
+                    else if (
+                        semantic.m_name.GetStringView() == "SV_Depth" || semantic.m_name.GetStringView() == "SV_DepthGreaterEqual" ||
+                        semantic.m_name.GetStringView() == "SV_DepthLessEqual")
+                    {
+                        if (depthFound)
+                        {
+                            AZ_Error(
+                                ShaderBuilderUtilityName, false,
+                                "SV_Depth specified more than once in the fragment shader output structure");
+                            return false;
+                        }
+                        depthFound = true;
+                    }
+                    else
+                    {
+                        AZ_Error(
+                            ShaderBuilderUtilityName, false, "Unsupported shader output semantic '%s'.", semantic.m_name.GetCStr());
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            bool CreateShaderInputAndOutputContracts(
+                const AzslData& azslData,
+                const MapOfStringToStageType& shaderEntryPoints,
+                const RPI::ShaderOptionGroupLayout& shaderOptionGroupLayout,
+                const AZStd::string& pathToOmJson,
+                const AZStd::string& pathToIaJson,
+                RPI::ShaderInputContract& shaderInputContract,
+                RPI::ShaderOutputContract& shaderOutputContract,
+                size_t& colorAttachmentCount)
+            {
+                bool success = true;
+                for (const auto& shaderEntryPoint : shaderEntryPoints)
+                {
+                    auto shaderEntryName = shaderEntryPoint.first;
+                    auto shaderStageType = shaderEntryPoint.second;
+
+                    if (shaderStageType == RPI::ShaderStageType::Vertex)
+                    {
+                        const bool layoutCreated = CreateShaderInputContract(azslData, shaderEntryName, shaderOptionGroupLayout, pathToIaJson, shaderInputContract);
+                        if (!layoutCreated)
+                        {
+                            success = false;
+                            AZ_Error(
+                                ShaderBuilderUtilityName, false, "Could not create the input contract for the vertex function %s",
+                                shaderEntryName.c_str());
+                            continue; // Using continue to report all the errors found
+                        }
+                    }
+
+                    if (shaderStageType == RPI::ShaderStageType::Fragment)
+                    {
+                        const bool layoutCreated =
+                            CreateShaderOutputContract(azslData, shaderEntryName, pathToOmJson, shaderOutputContract);
+                        if (!layoutCreated)
+                        {
+                            success = false;
+                            AZ_Error(
+                                ShaderBuilderUtilityName, false, "Could not create the output contract for the fragment function %s",
+                                shaderEntryName.c_str());
+                            continue; // Using continue to report all the errors found
+                        }
+
+                        colorAttachmentCount = shaderOutputContract.m_requiredColorAttachments.size();
+                    }
+                }
+                return success;
+            }
+
+            
+            //! Returns a list of acceptable default entry point names
+            static void GetAcceptableDefaultEntryPoints(
+                const AZStd::vector<FunctionData>& azslFunctionDataList,
+                AZStd::unordered_map<AZStd::string, RPI::ShaderStageType>& defaultEntryPoints)
+            {
+                for (const auto& func : azslFunctionDataList)
+                {
+                    if (!func.m_hasShaderStageVaryings)
+                    {
+                        // Not declaring any semantics for a shader entry is valid, but unusual.
+                        // A shader entry with no semantics must be explicitly listed and won't be selected by default.
+                        continue;
+                    }
+
+                    if (func.m_name.starts_with("VS") || func.m_name.ends_with("VS"))
+                    {
+                        defaultEntryPoints[func.m_name] = RPI::ShaderStageType::Vertex;
+                        AZ_TracePrintf(
+                            ShaderBuilderUtilityName, "Assuming \"%s\" is a valid Vertex shader entry point.\n", func.m_name.c_str());
+                    }
+                    else if (func.m_name.starts_with("PS") || func.m_name.ends_with("PS"))
+                    {
+                        defaultEntryPoints[func.m_name] = RPI::ShaderStageType::Fragment;
+                        AZ_TracePrintf(
+                            ShaderBuilderUtilityName, "Assuming \"%s\" is a valid Fragment shader entry point.\n",
+                            func.m_name.c_str());
+                    }
+                    else if (func.m_name.starts_with("CS") || func.m_name.ends_with("CS"))
+                    {
+                        defaultEntryPoints[func.m_name] = RPI::ShaderStageType::Compute;
+                        AZ_TracePrintf(
+                            ShaderBuilderUtilityName, "Assuming \"%s\" is a valid Compute shader entry point.\n", func.m_name.c_str());
+                    }
+                }
+            }
+
+
+            // DEPRECATED [ATOM-15472
+            //! Returns a list of acceptable default entry point names
+            //! This function
+            static void GetAcceptableDefaultEntryPoints(
+                const AzslData& azslData, AZStd::unordered_map<AZStd::string, RPI::ShaderStageType>& defaultEntryPoints)
+            {
+                return GetAcceptableDefaultEntryPoints(azslData.m_functions, defaultEntryPoints);
+            }
+
+
+            void GetDefaultEntryPointsFromFunctionDataList(
+                const AZStd::vector<FunctionData> azslFunctionDataList,
+                AZStd::unordered_map<AZStd::string, RPI::ShaderStageType>& shaderEntryPoints)
+            {
+                AZStd::unordered_map<AZStd::string, RPI::ShaderStageType> defaultEntryPoints;
+                GetAcceptableDefaultEntryPoints(azslFunctionDataList, defaultEntryPoints);
+
+                for (const auto& functionData : azslFunctionDataList)
+                {
+                    for (const auto& defaultEntryPoint : defaultEntryPoints)
+                    {
+                        // Equal defaults to case insensitive compares...
+                        if (AzFramework::StringFunc::Equal(defaultEntryPoint.first.c_str(), functionData.m_name.c_str()))
+                        {
+                            shaderEntryPoints[defaultEntryPoint.first] = defaultEntryPoint.second;
+                            break; // stop looping default entry points and go to the next shader function
+                        }
+                    }
+                }
+            }
+
+            AZStd::string GetAcceptableDefaultEntryPointNames(const AzslData& azslData)
+            {
+                AZStd::unordered_map<AZStd::string, RPI::ShaderStageType> defaultEntryPointList;
+                GetAcceptableDefaultEntryPoints(azslData, defaultEntryPointList);
+
+                AZStd::vector<AZStd::string> defaultEntryPointNamesList;
+                for (const auto& shaderEntryPoint : defaultEntryPointList)
+                {
+                    defaultEntryPointNamesList.push_back(shaderEntryPoint.first);
+                }
+                AZStd::string shaderEntryPoints;
+                AzFramework::StringFunc::Join(
+                    shaderEntryPoints, defaultEntryPointNamesList.begin(), defaultEntryPointNamesList.end(), ", ");
+                return AZStd::move(shaderEntryPoints);
+            }
+
         }  // namespace ShaderBuilderUtility
     } // namespace ShaderBuilder
 } // AZ

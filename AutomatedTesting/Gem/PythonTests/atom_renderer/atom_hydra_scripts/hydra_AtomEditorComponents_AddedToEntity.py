@@ -1,12 +1,7 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 
 Hydra script that creates an entity and attaches Atom components to it for test verification.
 """
@@ -77,10 +72,10 @@ def run():
 
     def verify_enter_exit_game_mode(component_name):
         general.enter_game_mode()
-        TestHelper.wait_for_condition(lambda: general.is_in_game_mode(), 1.0)
+        TestHelper.wait_for_condition(lambda: general.is_in_game_mode(), 2.0)
         general.log(f"{component_name}_test: Entered game mode: {general.is_in_game_mode()}")
         general.exit_game_mode()
-        TestHelper.wait_for_condition(lambda: not general.is_in_game_mode(), 1.0)
+        TestHelper.wait_for_condition(lambda: not general.is_in_game_mode(), 2.0)
         general.log(f"{component_name}_test: Exit game mode: {not general.is_in_game_mode()}")
 
     def verify_hide_unhide_entity(component_name, entity_obj):
@@ -97,16 +92,16 @@ def run():
 
     def verify_deletion_undo_redo(component_name, entity_obj):
         editor.ToolsApplicationRequestBus(bus.Broadcast, "DeleteEntityById", entity_obj.id)
-        TestHelper.wait_for_condition(lambda: not hydra.find_entity_by_name(entity_obj.name), 1.0)
+        TestHelper.wait_for_condition(lambda: not hydra.find_entity_by_name(entity_obj.name), 2.0)
         general.log(f"{component_name}_test: Entity deleted: {not hydra.find_entity_by_name(entity_obj.name)}")
 
         general.undo()
-        TestHelper.wait_for_condition(lambda: hydra.find_entity_by_name(entity_obj.name) is not None, 1.0)
+        TestHelper.wait_for_condition(lambda: hydra.find_entity_by_name(entity_obj.name) is not None, 2.0)
         general.log(f"{component_name}_test: UNDO entity deletion works: "
                     f"{hydra.find_entity_by_name(entity_obj.name) is not None}")
 
         general.redo()
-        TestHelper.wait_for_condition(lambda: not hydra.find_entity_by_name(entity_obj.name), 1.0)
+        TestHelper.wait_for_condition(lambda: not hydra.find_entity_by_name(entity_obj.name), 2.0)
         general.log(f"{component_name}_test: REDO entity deletion works: "
                     f"{not hydra.find_entity_by_name(entity_obj.name)}")
 
@@ -120,7 +115,7 @@ def run():
             f"{not is_component_enabled(entity_obj.components[0])}")
         for component in components_to_add:
             entity_obj.add_component(component)
-        TestHelper.wait_for_condition(lambda: is_component_enabled(entity_obj.components[0]), 1.0)
+        TestHelper.wait_for_condition(lambda: is_component_enabled(entity_obj.components[0]), 2.0)
         general.log(
             f"{component_name}_test: Entity enabled after adding "
             f"required components: {is_component_enabled(entity_obj.components[0])}"

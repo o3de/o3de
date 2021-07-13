@@ -1,13 +1,8 @@
 
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -104,7 +99,7 @@ namespace PhysX
         }
     }
 
-    void BaseColliderComponent::SetShapeConfigurationList(const Physics::ShapeConfigurationList& shapeConfigList)
+    void BaseColliderComponent::SetShapeConfigurationList(const AzPhysics::ShapeColliderPairList& shapeConfigList)
     {
         if (GetEntity()->GetState() == AZ::Entity::State::Active)
         {
@@ -115,7 +110,7 @@ namespace PhysX
         m_shapeConfigList = shapeConfigList;
     }
 
-    Physics::ShapeConfigurationList BaseColliderComponent::GetShapeConfigurations()
+    AzPhysics::ShapeColliderPairList BaseColliderComponent::GetShapeConfigurations()
     {
         return m_shapeConfigList;
     }
@@ -319,7 +314,7 @@ namespace PhysX
     {
         AZ_Assert(IsMeshCollider(), "InitMeshCollider called for a non-mesh collider.");
 
-        const Physics::ShapeConfigurationPair& shapeConfigurationPair = *(m_shapeConfigList.begin());
+        const AzPhysics::ShapeColliderPair& shapeConfigurationPair = *(m_shapeConfigList.begin());
         const Physics::ColliderConfiguration& componentColliderConfiguration = *(shapeConfigurationPair.first.get());
         const Physics::PhysicsAssetShapeConfiguration& physicsAssetConfiguration = 
             *(static_cast<const Physics::PhysicsAssetShapeConfiguration*>(shapeConfigurationPair.second.get()));

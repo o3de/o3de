@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -62,7 +57,7 @@ namespace AzPhysics
         virtual void SetLinearVelocity(const AZ::Vector3& velocity) = 0;
         virtual AZ::Vector3 GetAngularVelocity() const = 0;
         virtual void SetAngularVelocity(const AZ::Vector3& angularVelocity) = 0;
-        virtual AZ::Vector3 GetLinearVelocityAtWorldPoint(const AZ::Vector3& worldPoint) = 0;
+        virtual AZ::Vector3 GetLinearVelocityAtWorldPoint(const AZ::Vector3& worldPoint) const = 0;
         virtual void ApplyLinearImpulse(const AZ::Vector3& impulse) = 0;
         virtual void ApplyLinearImpulseAtWorldPoint(const AZ::Vector3& impulse, const AZ::Vector3& worldPoint) = 0;
         virtual void ApplyAngularImpulse(const AZ::Vector3& angularImpulse) = 0;

@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #include "EditorDefs.h"
 
@@ -32,6 +27,7 @@
 #include "GameEngine.h"
 #include "UndoConfigSpec.h"
 #include "ViewManager.h"
+#include "EditorViewportCamera.h"
 
 //////////////////////////////////////////////////////////////////////////
 namespace
@@ -241,25 +237,14 @@ namespace
 
     void PySetCurrentViewPosition(float x, float y, float z)
     {
-        AzToolsFramework::IEditorCameraController* editorCameraController = AZ::Interface<AzToolsFramework::IEditorCameraController>::Get();
-        AZ_Error("editor", editorCameraController, "IEditorCameraController is not registered.");
-        if (editorCameraController)
-        {
-            editorCameraController->SetCurrentViewPosition(AZ::Vector3{ x, y, z });
-        }
+        SandboxEditor::SetDefaultViewportCameraPosition(AZ::Vector3(x, y, z));
     }
 
-    void PySetCurrentViewRotation(float x, float y, float z)
+    void PySetCurrentViewRotation(float x, [[maybe_unused]] float y, float z)
     {
-        AzToolsFramework::IEditorCameraController* editorCameraController = AZ::Interface<AzToolsFramework::IEditorCameraController>::Get();
-        AZ_Error("editor", editorCameraController, "IEditorCameraController is not registered.");
-        if (editorCameraController)
-        {
-            editorCameraController->SetCurrentViewRotation(AZ::Vector3{ x, y, z });
-        }
+        SandboxEditor::SetDefaultViewportCameraRotation(AZ::DegToRad(x), AZ::DegToRad(z));
     }
 }
-
 
 namespace
 {
@@ -488,9 +473,9 @@ namespace AzToolsFramework
 
             addLegacyGeneral(behaviorContext->Method("load_all_plugins", ::Command_LoadPlugins, nullptr, "Loads all available plugins."));
             addLegacyGeneral(behaviorContext->Method("get_current_view_position", PyGetCurrentViewPosition, nullptr, "Returns the position of the current view as a Vec3."));
-            addLegacyGeneral(behaviorContext->Method("get_current_view_rotation", PyGetCurrentViewRotation, nullptr, "Returns the rotation of the current view as a Vec3 of Euler angles."));
+            addLegacyGeneral(behaviorContext->Method("get_current_view_rotation", PyGetCurrentViewRotation, nullptr, "Returns the rotation of the current view as a Vec3 of Euler angles in degrees."));
             addLegacyGeneral(behaviorContext->Method("set_current_view_position", PySetCurrentViewPosition, nullptr, "Sets the position of the current view as given x, y, z coordinates."));
-            addLegacyGeneral(behaviorContext->Method("set_current_view_rotation", PySetCurrentViewRotation, nullptr, "Sets the rotation of the current view as given x, y, z Euler angles."));
+            addLegacyGeneral(behaviorContext->Method("set_current_view_rotation", PySetCurrentViewRotation, nullptr, "Sets the rotation of the current view as given x, y, z Euler angles in degrees."));
 
             addLegacyGeneral(behaviorContext->Method("export_to_engine", CCryEditApp::Command_ExportToEngine, nullptr, "Exports the current level to the engine."));
             addLegacyGeneral(behaviorContext->Method("set_config_spec", PySetConfigSpec, nullptr, "Sets the system config spec and platform."));
@@ -533,7 +518,7 @@ namespace AzToolsFramework
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation);
             behaviorContext->EnumProperty<ESystemConfigPlatform::CONFIG_PC>("SystemConfigPlatform_Pc")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation);
-            behaviorContext->EnumProperty<ESystemConfigPlatform::CONFIG_OSX_GL>("SystemConfigPlatform_OsxGl")
+            behaviorContext->EnumProperty<ESystemConfigPlatform::CONFIG_MAC>("SystemConfigPlatform_Mac")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation);
             behaviorContext->EnumProperty<ESystemConfigPlatform::CONFIG_OSX_METAL>("SystemConfigPlatform_OsxMetal")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation);

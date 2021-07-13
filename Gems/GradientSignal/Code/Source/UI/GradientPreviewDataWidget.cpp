@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "GradientSignal_precompiled.h"
 #include "GradientPreviewDataWidget.h"
@@ -24,8 +19,6 @@ namespace GradientSignal
     //
     // GradientPreviewDataWidgetHandler
     //
-
-    GradientPreviewDataWidgetHandler* GradientPreviewDataWidgetHandler::s_instance = nullptr;
 
     AZ::u32 GradientPreviewDataWidgetHandler::GetHandlerName() const
     {
@@ -92,23 +85,18 @@ namespace GradientSignal
     {
         using namespace AzToolsFramework;
 
-        if (!s_instance)
-        {
-            s_instance = aznew GradientPreviewDataWidgetHandler();
-            PropertyTypeRegistrationMessages::Bus::Broadcast(&PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, s_instance);
-        }
+        // Property handlers are set to auto-delete by default, which means that we're handing off ownership of the pointer to the
+        // PropertyManagerComponent, where it will get cleaned up on system shutdown.
+        auto propertyHandler = aznew GradientPreviewDataWidgetHandler();
+        AZ_Assert(propertyHandler->AutoDelete(),
+            "GradientPreviewDataWidgetHandler is no longer set to auto-delete, it will leak memory.");
+        PropertyTypeRegistrationMessages::Bus::Broadcast(
+            &PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, propertyHandler);
     }
 
     void GradientPreviewDataWidgetHandler::Unregister()
     {
-        using namespace AzToolsFramework;
-
-        if (s_instance)
-        {
-            PropertyTypeRegistrationMessages::Bus::Broadcast(&PropertyTypeRegistrationMessages::Bus::Events::UnregisterPropertyType, s_instance);
-            delete s_instance;
-            s_instance = nullptr;
-        }
+        // We don't need to call UnregisterPropertyType here because it's an autoDelete handler.
     }
 
     //

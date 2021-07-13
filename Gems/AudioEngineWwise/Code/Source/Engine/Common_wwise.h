@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #pragma once
 
@@ -18,20 +13,6 @@
 #include <AK/AkWwiseSDKVersion.h>
 #include <IAudioSystem.h>
 #include <AudioEngineWwise_Traits_Platform.h>
-
-
-#if AZ_TRAIT_AUDIOENGINEWWISE_PROVIDE_IMPL_SECONDARY_POOL
-    #include <platform.h>
-    #include <CryPool/PoolAlloc.h>
-
-    using TMemoryPoolReferenced = NCryPoolAlloc::CThreadSafe<NCryPoolAlloc::CBestFit<NCryPoolAlloc::CReferenced<NCryPoolAlloc::CMemoryDynamic, 4 * 1024, true>, NCryPoolAlloc::CListItemReference>>;
-
-    namespace Audio
-    {
-        extern TMemoryPoolReferenced g_audioImplMemoryPoolSecondary_wwise;
-    }
-#endif // AZ_TRAIT_AUDIOENGINEWWISE_PROVIDE_IMPL_SECONDARY_POOL
-
 
 #define WWISE_IMPL_VERSION_STRING   "Wwise " AK_WWISESDK_VERSIONNAME
 
@@ -105,8 +86,9 @@ namespace Audio
         // See AkMemoryMgr.h
         inline static const char* MemoryManagerCategories[]
         {
-            "Object", "Event", "Structure", "Media", "GameObject", "Processing", "ProcessingPlugin", "Streaming", "StreamingIO", "SpatialAudio",
-            "SpatialAudioGeometry", "SpatialAudioPaths", "GameSim", "MonitorQueue", "Profiler", "FilePackage", "SoundEngine"
+            "Object", "Event", "Structure", "Media", "GameObject", "Processing", "ProcessingPlugin", "Streaming", "StreamingIO",
+            "SpatialAudio", "SpatialAudioGeometry", "SpatialAudioPaths", "GameSim", "MonitorQueue", "Profiler", "FilePackage",
+            "SoundEngine", "Integration"
         };
 
         static_assert(AZ_ARRAY_SIZE(MemoryManagerCategories) == AkMemID_NUM,

@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 // Description : Specific to Win32 declarations, inline functions etc.
 
@@ -93,7 +88,9 @@ int64 CryGetTicksPerSec();
 }
 #endif
 
-#define _MS_ALIGN(num) __declspec(align(num))
+#define _MS_ALIGN(num) \
+    AZ_PUSH_DISABLE_WARNING(4324, "-Wunknown-warning-option") \
+    __declspec(align(num))
 
 #define DEFINE_ALIGNED_DATA(type, name, alignment) _declspec(align(alignment)) type name;
 #define DEFINE_ALIGNED_DATA_STATIC(type, name, alignment) static _declspec(align(alignment)) type name;

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #ifndef GM_DATASET_H
 #define GM_DATASET_H
 
@@ -43,7 +38,7 @@ namespace GridMate
     struct DataSetDefaultTraits
     {
         /**
-         * \brief Should a change in DataSet value invoke a callback on a master replica chunk? 
+         * \brief Should a change in DataSet value invoke a callback on a primary replica chunk? 
          * 
          * By default, DataSet::BindInterface<C, &C::Callback> only invokes on client/non-authoritative replica chunks.
          * This switch enables the callback on server/authoritative replica chunks.
@@ -55,7 +50,7 @@ namespace GridMate
     };
 
     /**
-     * \brief Turns on DataSet callbacks to be invoked on the master replica as well as client replicas.
+     * \brief Turns on DataSet callbacks to be invoked on the primary replica as well as client replicas.
      */
     struct DataSetInvokeEverywhereTraits : DataSetDefaultTraits
     {
@@ -200,7 +195,7 @@ namespace GridMate
         }
 
         /**
-            Modify the DataSet. Call this on the Master node to change the data,
+            Modify the DataSet. Call this on the Primary node to change the data,
             which will be propagated to all proxies.
         **/
         void Set(const DataType& v)
@@ -214,7 +209,7 @@ namespace GridMate
         }
 
         /**
-            Modify the DataSet. Call this on the Master node to change the data,
+            Modify the DataSet. Call this on the Primary node to change the data,
             which will be propagated to all proxies.
         **/
         void Set(DataType&& v)
@@ -228,7 +223,7 @@ namespace GridMate
         }
 
         /**
-            Modify the DataSet. Call this on the Master node to change the data,
+            Modify the DataSet. Call this on the Primary node to change the data,
             which will be propagated to all proxies.
         **/
         template <class ... Args>
@@ -243,7 +238,7 @@ namespace GridMate
         }
 
         /**
-            Modify the DataSet directly without copying it. Call this on the Master node,
+            Modify the DataSet directly without copying it. Call this on the Primary node,
             passing in a function object that takes the value by reference, optionally
             modifies the data, and returns true if the data was changed.
         **/

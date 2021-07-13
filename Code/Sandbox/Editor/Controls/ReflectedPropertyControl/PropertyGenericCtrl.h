@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #ifndef CRYINCLUDE_EDITOR_UTILS_PROPERTYGENERICCTRL_H
 #define CRYINCLUDE_EDITOR_UTILS_PROPERTYGENERICCTRL_H
@@ -100,15 +95,6 @@ public:
     }
 };
 
-class ShaderPropertyEditor
-    : public GenericPopupPropertyEditor
-{
-public:
-    ShaderPropertyEditor(QWidget* pParent = nullptr)
-        : GenericPopupPropertyEditor(pParent){}
-    void onEditClicked() override;
-};
-
 class ReverbPresetPropertyEditor
     : public GenericPopupPropertyEditor
 {
@@ -168,7 +154,6 @@ public:
 // So we use our own
 #define CONST_AZ_CRC(name, value) AZ::u32(value)
 
-using ShaderPropertyHandler = GenericPopupWidgetHandler<ShaderPropertyEditor, CONST_AZ_CRC("ePropertyShader", 0xc40932f1)>;
 using ReverbPresetPropertyHandler = GenericPopupWidgetHandler<ReverbPresetPropertyEditor, CONST_AZ_CRC("ePropertyReverbPreset", 0x51469f38)>;
 using MissionObjPropertyHandler = GenericPopupWidgetHandler<MissionObjPropertyEditor, CONST_AZ_CRC("ePropertyMissionObj", 0x4a2d0dc8)>;
 using SequencePropertyHandler = GenericPopupWidgetHandler<SequencePropertyEditor, CONST_AZ_CRC("ePropertySequence", 0xdd1c7d44)>;

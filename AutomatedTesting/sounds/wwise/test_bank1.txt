@@ -3,8 +3,8 @@ Event	ID	Name			Wwise Object Path	Notes
 	865645077	test_event_1_bank1_embedded_target			\Default Work Unit\test_event_1_bank1_embedded_target	
 
 In Memory Audio	ID	Name	Audio source file		Wwise Object Path	Notes	Data Size
-	23965881	test_sfx_1_bank1_embedded	Q:\audio\dev\AutomatedTesting\sounds\wwise_project\.cache\Windows\SFX\AMZ_sfx_NME_wpn_plasma_pistol_fire_impact004_56D34C19.wem		\Actor-Mixer Hierarchy\Default Work Unit\test_sfx_1_bank1_embedded		93864
+	23965881	test_sfx_1_bank1_embedded	D:\code\o3de\AutomatedTesting\sounds\wwise_project\.cache\Windows\SFX\AMZ_sfx_NME_wpn_plasma_pistol_fire_impact004_56D34C19.wem		\Actor-Mixer Hierarchy\Default Work Unit\test_sfx_1_bank1_embedded		93864
 
 Streamed Audio	ID	Name	Audio source file	Generated audio file	Wwise Object Path	Notes
-	499820003	test_sfx_2_bank1_streamed	Q:\audio\dev\AutomatedTesting\sounds\wwise_project\.cache\Windows\SFX\env_door_scanner_scan_success_56D34C19.wem	499820003.wem	\Actor-Mixer Hierarchy\Default Work Unit\test_sfx_2_bank1_streamed	
+	499820003	test_sfx_2_bank1_streamed	D:\code\o3de\AutomatedTesting\sounds\wwise_project\.cache\Windows\SFX\env_door_scanner_scan_success_56D34C19.wem	499820003.wem	\Actor-Mixer Hierarchy\Default Work Unit\test_sfx_2_bank1_streamed	
 

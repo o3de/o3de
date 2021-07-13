@@ -1,27 +1,10 @@
 {
     "gem_name": "ImageProcessingAtom",
-    "Dependencies": [
-        {
-            "Uuid": "a218db9eb2114477b46600fea4441a6c",
-            "VersionConstraints": [
-                "~>0.1.0"
-            ],
-            "_comment": "Atom RPI"
-        }
+    "display_name": "Atom Image Processing",
+    "summary": "",
+    "canonical_tags": [
+        "Gem"
     ],
-    "GemFormatVersion": 4,
-    "Uuid": "9d10b00be96045caa64c705e5772cb64",
-    "Name": "ImageProcessingAtom",
-    "DisplayName": "Atom.Asset.ImageProcessing",
-    "Version": "0.1.0",
-    "Summary": "Contains Asset Processor builder for processing image files for Atom and UI for Atom texture property editing in Asset Browser",
-    "Tags": [ "Atom Image Builder", "Atom Texture Property Editor" ],
-    "LinkType": "Dynamic",
-    "IconPath": "preview.png",
-    "Modules": [
-        {
-            "Name": "Editor",
-            "Type": "EditorModule"
-        }
+    "user_tags": [
     ]
 }

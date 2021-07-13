@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -23,9 +18,11 @@ namespace AzFramework
 {
     //! Provides an interface to retrieve and update the union of all Aabbs on a single Entity.
     //! @note This will be the combination/union of all individual Component Aabbs.
-    class EntityBoundsUnionRequests : public AZ::EBusTraits
+    class IEntityBoundsUnion
     {
     public:
+        AZ_RTTI(IEntityBoundsUnion, "{106968DD-43C0-478E-8045-523E0BF5D0F5}");
+
         //! Requests the cached union of component Aabbs to be recalculated as one may have changed.
         //! @note This is used to drive event driven updates to the visibility system.
         virtual void RefreshEntityLocalBoundsUnion(AZ::EntityId entityId) = 0;
@@ -38,9 +35,21 @@ namespace AzFramework
         //! also be called explicitly (e.g. For testing purposes).
         virtual void ProcessEntityBoundsUnionRequests() = 0;
 
+        //! Notifies the EntityBoundsUnion system that an entities transform has been modified.
+        //! @param entity the entity whose transform has been modified.
+        virtual void OnTransformUpdated(AZ::Entity* entity) = 0;
+
     protected:
-        ~EntityBoundsUnionRequests() = default;
+        ~IEntityBoundsUnion() = default;
     };
 
-    using EntityBoundsUnionRequestBus = AZ::EBus<EntityBoundsUnionRequests>;
+    // EBus wrapper for ScriptCanvas
+    class IEntityBoundsUnionTraits
+        : public AZ::EBusTraits
+    {
+    public:
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+    };
+    using IEntityBoundsUnionRequestBus = AZ::EBus<IEntityBoundsUnion, IEntityBoundsUnionTraits>;
 } // namespace AzFramework

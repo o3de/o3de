@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 
 #include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
@@ -20,7 +15,7 @@
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
 
-ShaderResourceGroup PassSrg : SRG_PerDraw
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
     Texture2D<float4> m_colorAndDofFactorTexture;
     float m_radiusMin;
@@ -41,7 +36,6 @@ ShaderResourceGroup PassSrg : SRG_PerDraw
 // The number of points to sample.
 // Sample 6 points around center pixel.
 // Similarly, sample around it as 12,18,24 points.
-// Please refer to “https://wiki.agscollab.com/display/ATOM/Pencil+Map” for details.
 option enum class SampleNumber
 {
     Sample6,        // 6
@@ -52,7 +46,6 @@ option enum class SampleNumber
 o_sampleNumber = SampleNumber::Sample6;
 
 // Get CocRadius from dofFactor.
-// Please refer to https://wiki.agscollab.com/display/ATOM/Pencil+Map for CocRadius.
 inline float GetCocRadius(float dofFactor)
 {
     float cocRadius = dofFactor * ViewSrg::m_dof.m_cocToScreenRatio * 0.5f;
@@ -61,14 +54,12 @@ inline float GetCocRadius(float dofFactor)
 }
 
 // Calculate the texcoord U of the pencil map from cocRadius.
-// Please refer to https://wiki.agscollab.com/display/ATOM/Pencil+Map for the pencil map.
 inline float GetPencilMapTexcoordU(float cocRadius)
 {
     return cocRadius * ViewSrg::m_dof.m_pencilMapTexcoordToCocRadius + ViewSrg::m_dof.m_pencilMapFocusPointTexcoordU;
 }
 
 // Get the color from the coordinate array.
-// Please refer to https://wiki.agscollab.com/display/ATOM/Pencil+Map for details of coordinates.
 inline float4 SampleColorAndDofFactor(float2 centerTexCoord, float cocRadius, int sampleIndex)
 {
     float2 sampleTexcoordOffset = PassSrg::m_sampleTexcoordsRadius[sampleIndex].xy * cocRadius;
@@ -78,7 +69,6 @@ inline float4 SampleColorAndDofFactor(float2 centerTexCoord, float cocRadius, in
 }
 
 // Load the pencil map. Since the colors are square rooted, they are decoded (linearized). This is for accuracy.
-// Please refer to https://wiki.agscollab.com/display/ATOM/Pencil+Map for the pencil map.
 inline float4 SamplePencilMap(float lensCoordX, float radius)
 {
     float2 bokehTexcoord = float2(lensCoordX, radius);

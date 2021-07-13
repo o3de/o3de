@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Serialization/SerializeContext.h>
 
@@ -506,9 +501,10 @@ namespace AZ::AtomBridge
     {
         if (m_auxGeomPtr)
         {
+            AZStd::vector<AZ::Vector3> transformedVertices = ToWorldSpacePosition(vertices);
             AZ::RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments drawArgs;
-            drawArgs.m_verts = vertices.data();
-            drawArgs.m_vertCount = aznumeric_cast<uint32_t>(vertices.size());
+            drawArgs.m_verts = transformedVertices.data();
+            drawArgs.m_vertCount = aznumeric_cast<uint32_t>(transformedVertices.size());
             drawArgs.m_colors = &color;
             drawArgs.m_colorCount = 1;
             drawArgs.m_opacityType = m_rendState.m_opacityType;
@@ -526,9 +522,10 @@ namespace AZ::AtomBridge
     {
         if (m_auxGeomPtr)
         {
+            AZStd::vector<AZ::Vector3> transformedVertices = ToWorldSpacePosition(vertices);
             AZ::RPI::AuxGeomDraw::AuxGeomDynamicIndexedDrawArguments drawArgs;
-            drawArgs.m_verts = vertices.data();
-            drawArgs.m_vertCount = aznumeric_cast<uint32_t>(vertices.size());
+            drawArgs.m_verts = transformedVertices.data();
+            drawArgs.m_vertCount = aznumeric_cast<uint32_t>(transformedVertices.size());
             drawArgs.m_indices = indices.data();
             drawArgs.m_indexCount = aznumeric_cast<uint32_t>(indices.size());
             drawArgs.m_colors = &color;
@@ -567,6 +564,29 @@ namespace AZ::AtomBridge
                 GetCurrentTransform(), 
                 m_rendState.m_color, 
                 AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
+                m_rendState.m_depthTest,
+                m_rendState.m_depthWrite,
+                m_rendState.m_faceCullMode,
+                m_rendState.m_viewProjOverrideIndex);
+        }
+    }
+
+    void AtomDebugDisplayViewportInterface::DrawWireOBB(
+        const AZ::Vector3& center, 
+        const AZ::Vector3& axisX, 
+        const AZ::Vector3& axisY, 
+        const AZ::Vector3& axisZ, 
+        const AZ::Vector3& halfExtents)
+    {
+        if (m_auxGeomPtr)
+        {
+            AZ::Quaternion rotation = AZ::Quaternion::CreateFromMatrix3x3(AZ::Matrix3x3::CreateFromColumns(axisX, axisY, axisZ));
+            AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(center, rotation, halfExtents);
+            m_auxGeomPtr->DrawObb(
+                obb,
+                AZ::Vector3::CreateZero(), 
+                m_rendState.m_color, 
+                AZ::RPI::AuxGeomDraw::DrawStyle::Line,
                 m_rendState.m_depthTest,
                 m_rendState.m_depthWrite,
                 m_rendState.m_faceCullMode,
@@ -659,9 +679,10 @@ namespace AZ::AtomBridge
     {
         if (m_auxGeomPtr)
         {
+            AZStd::vector<AZ::Vector3> transformedLines = ToWorldSpacePosition(lines);
             AZ::RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments drawArgs;
-            drawArgs.m_verts = lines.data();
-            drawArgs.m_vertCount = aznumeric_cast<uint32_t>(lines.size());
+            drawArgs.m_verts = transformedLines.data();
+            drawArgs.m_vertCount = aznumeric_cast<uint32_t>(transformedLines.size());
             drawArgs.m_colors = &color;
             drawArgs.m_colorCount = 1;
             drawArgs.m_size = m_rendState.m_lineWidth;
@@ -878,7 +899,7 @@ namespace AZ::AtomBridge
         {
             // Draw circle with single radius.
             const float step = DegToRad(10.0f);
-            const float maxAngle = DegToRad(360.0f) + step;
+            const float maxAngle = DegToRad(360.0f);
             SingleColorStaticSizeLineHelper<40> lines; // hard code 40 lines until DegToRad is constexpr.
 
             AZ::Vector3 radiusV3 = AZ::Vector3(radius);
@@ -903,7 +924,28 @@ namespace AZ::AtomBridge
         }
     }
 
-    void AtomDebugDisplayViewportInterface::DrawCone(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius, float height, bool drawShaded)
+    void AtomDebugDisplayViewportInterface::DrawWireCone(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius, float height)
+    {
+        if (m_auxGeomPtr)
+        {
+            const AZ::Vector3 worldPos = ToWorldSpacePosition(pos);
+            const AZ::Vector3 worldDir = ToWorldSpaceVector(dir);
+            m_auxGeomPtr->DrawCone(
+                worldPos, 
+                worldDir, 
+                radius, 
+                height, 
+                m_rendState.m_color, 
+                AZ::RPI::AuxGeomDraw::DrawStyle::Line,
+                m_rendState.m_depthTest,
+                m_rendState.m_depthWrite,
+                m_rendState.m_faceCullMode,
+                m_rendState.m_viewProjOverrideIndex
+            );
+        }
+    }
+
+    void AtomDebugDisplayViewportInterface::DrawSolidCone(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius, float height, bool drawShaded)
     {
         if (m_auxGeomPtr)
         {
@@ -928,13 +970,14 @@ namespace AZ::AtomBridge
     {
         if (m_auxGeomPtr)
         {
+            const float scale = GetCurrentTransform().RetrieveScale().GetMaxElement();
             const AZ::Vector3 worldCenter = ToWorldSpacePosition(center);
             const AZ::Vector3 worldAxis = ToWorldSpaceVector(axis);
             m_auxGeomPtr->DrawCylinder(
                 worldCenter, 
                 worldAxis, 
-                radius, 
-                height, 
+                scale * radius, 
+                scale * height, 
                 m_rendState.m_color, 
                 AZ::RPI::AuxGeomDraw::DrawStyle::Line,
                 m_rendState.m_depthTest,
@@ -954,13 +997,14 @@ namespace AZ::AtomBridge
     {
         if (m_auxGeomPtr)
         {
+            const float scale = GetCurrentTransform().RetrieveScale().GetMaxElement();
             const AZ::Vector3 worldCenter = ToWorldSpacePosition(center);
             const AZ::Vector3 worldAxis = ToWorldSpaceVector(axis);
             m_auxGeomPtr->DrawCylinder(
                 worldCenter, 
                 worldAxis, 
-                radius, 
-                height, 
+                scale * radius, 
+                scale * height, 
                 m_rendState.m_color, 
                 drawShaded ? AZ::RPI::AuxGeomDraw::DrawStyle::Shaded : AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
                 m_rendState.m_depthTest,
@@ -1064,10 +1108,10 @@ namespace AZ::AtomBridge
     {
         if (m_auxGeomPtr)
         {
-
+            const float scale = GetCurrentTransform().RetrieveScale().GetMaxElement();
             m_auxGeomPtr->DrawSphere(
                 ToWorldSpacePosition(pos), 
-                radius, 
+                scale * radius, 
                 m_rendState.m_color, 
                 AZ::RPI::AuxGeomDraw::DrawStyle::Line,
                 m_rendState.m_depthTest,
@@ -1085,7 +1129,7 @@ namespace AZ::AtomBridge
             // This matches Cry behavior, the DrawWireSphere above may need modifying to use the same approach.
             // Draw 3 axis aligned circles
             const float step = DegToRad(10.0f);
-            const float maxAngle = DegToRad(360.0f) + step;
+            const float maxAngle = DegToRad(360.0f);
             SingleColorStaticSizeLineHelper<40*3> lines; // hard code to 40 lines * 3 circles until DegToRad is constexpr.
 
             // Z Axis
@@ -1111,8 +1155,8 @@ namespace AZ::AtomBridge
             // Draw 3 axis aligned circles
             const float stepAngle  = DegToRad(11.25f);
             const float startAngle = DegToRad(0.0f);
-            const float stopAngle  = DegToRad(360.0f) + startAngle;
-            SingleColorDynamicSizeLineHelper lines(2+static_cast<int>(360.0f/11.25f)); // num disk segments + 1 for azis line + 1 for spare
+            const float stopAngle = DegToRad(360.0f);
+            SingleColorDynamicSizeLineHelper lines(2 + static_cast<int>(360.0f / 11.25f)); // num disk segments + 1 for axis line + 1 for spare
             const AZ::Vector3 radiusV3 = AZ::Vector3(radius);
             CreateArbitraryAxisArc(
                 lines, 
@@ -1158,12 +1202,13 @@ namespace AZ::AtomBridge
     {
         if (m_auxGeomPtr)
         {
+            const float scale = GetCurrentTransform().RetrieveScale().GetMaxElement();
             const AZ::Vector3 worldPos = ToWorldSpacePosition(pos);
             const AZ::Vector3 worldDir = ToWorldSpaceVector(dir);
             m_auxGeomPtr->DrawDisk(
                 worldPos, 
                 worldDir, 
-                radius, 
+                scale * radius, 
                 m_rendState.m_color,
                 AZ::RPI::AuxGeomDraw::DrawStyle::Shaded,
                 m_rendState.m_depthTest,
@@ -1278,7 +1323,7 @@ namespace AZ::AtomBridge
         params.m_hAlign = center ? AzFramework::TextHorizontalAlignment::Center : AzFramework::TextHorizontalAlignment::Left; //! Horizontal text alignment
         params.m_monospace = false; //! disable character proportional spacing
         params.m_depthTest = false; //! Test character against the depth buffer
-        params.m_virtual800x600ScreenSize = true; //! Text placement and size are scaled relative to a virtual 800x600 resolution
+        params.m_virtual800x600ScreenSize = false; //! Text placement and size are scaled in viewport pixel coordinates
         params.m_scaleWithWindow = false; //! Font gets bigger as the window gets bigger
         params.m_multiline = true; //! text respects ascii newline characters
 
@@ -1314,7 +1359,7 @@ namespace AZ::AtomBridge
         params.m_hAlign = center ? AzFramework::TextHorizontalAlignment::Center : AzFramework::TextHorizontalAlignment::Left; //! Horizontal text alignment
         params.m_monospace = false; //! disable character proportional spacing
         params.m_depthTest = false; //! Test character against the depth buffer
-        params.m_virtual800x600ScreenSize = true; //! Text placement and size are scaled relative to a virtual 800x600 resolution
+        params.m_virtual800x600ScreenSize = false; //! Text placement and size are scaled in viewport pixel coordinates
         params.m_scaleWithWindow = false; //! Font gets bigger as the window gets bigger
         params.m_multiline = true; //! text respects ascii newline characters
 
@@ -1330,8 +1375,6 @@ namespace AZ::AtomBridge
     {
         AZ_Assert(false, "Unexpected use of legacy api, please file a feature request with the rendering team to get this implemented!");
     }
-    // unhandledled on Atom - virtual void DrawTextureLabel(ITexture* texture, const AZ::Vector3& pos, float sizeX, float sizeY, int texIconFlags) override;
-    // void AtomDebugDisplayViewportInterface::DrawTextureLabel(int textureId, const AZ::Vector3& pos, float sizeX, float sizeY, int texIconFlags) override;
 
     void AtomDebugDisplayViewportInterface::SetLineWidth(float width)
     {
@@ -1511,6 +1554,26 @@ namespace AZ::AtomBridge
     const AZ::Matrix3x4& AtomDebugDisplayViewportInterface::GetCurrentTransform() const
     {
         return m_rendState.m_transformStack[m_rendState.m_currentTransform];
+    }
+
+    AZStd::vector<AZ::Vector3> AtomDebugDisplayViewportInterface::ToWorldSpacePosition(const AZStd::vector<AZ::Vector3>& positions) const
+    {
+        AZStd::vector<AZ::Vector3> transformedPositions;
+        transformedPositions.resize_no_construct(positions.size());
+        AZStd::transform(positions.begin(), positions.end(), transformedPositions.begin(), [this](const AZ::Vector3& position) {
+            return ToWorldSpacePosition(position);
+        });
+        return transformedPositions;
+    }
+
+    AZStd::vector<AZ::Vector3> AtomDebugDisplayViewportInterface::ToWorldSpaceVector(const AZStd::vector<AZ::Vector3>& vectors) const
+    {
+        AZStd::vector<AZ::Vector3> transformedVectors;
+        transformedVectors.resize_no_construct(vectors.size());
+        AZStd::transform(vectors.begin(), vectors.end(), transformedVectors.begin(), [this](const AZ::Vector3& vector) {
+            return ToWorldSpaceVector(vector);
+        });
+        return transformedVectors;
     }
 
     AZ::RPI::ViewportContextPtr AtomDebugDisplayViewportInterface::GetViewportContext() const

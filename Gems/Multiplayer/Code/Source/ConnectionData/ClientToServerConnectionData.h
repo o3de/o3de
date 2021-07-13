@@ -1,18 +1,14 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
-#include <Source/ConnectionData/IConnectionData.h>
+#include <Multiplayer/ConnectionData/IConnectionData.h>
+#include <Source/NetworkEntity/EntityReplication/EntityReplicationManager.h>
 
 namespace Multiplayer
 {
@@ -23,7 +19,8 @@ namespace Multiplayer
         ClientToServerConnectionData
         (
             AzNetworking::IConnection* connection,
-            AzNetworking::IConnectionListener& connectionListener
+            AzNetworking::IConnectionListener& connectionListener,
+            const AZStd::string& providerTicket = ""
         );
         ~ClientToServerConnectionData() override;
 
@@ -32,13 +29,17 @@ namespace Multiplayer
         ConnectionDataType GetConnectionDataType() const override;
         AzNetworking::IConnection* GetConnection() const override;
         EntityReplicationManager& GetReplicationManager() override;
-        void Update(AZ::TimeMs serverGameTimeMs) override;
+        void Update(AZ::TimeMs hostTimeMs) override;
         bool CanSendUpdates() const override;
         void SetCanSendUpdates(bool canSendUpdates) override;
         //! @}
 
+        const AZStd::string& GetProviderTicket() const;
+        void SetProviderTicket(const AZStd::string&);
+
     private:
         EntityReplicationManager m_entityReplicationManager;
+        AZStd::string m_providerTicket;
         AzNetworking::IConnection* m_connection = nullptr;
         bool m_canSendUpdates = true;
     };

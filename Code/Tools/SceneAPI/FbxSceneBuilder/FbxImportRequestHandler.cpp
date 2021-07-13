@@ -1,21 +1,20 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
+#include <AssetProcessor/AssetBuilderSDK/AssetBuilderSDK/AssetBuilderSDK.h>
+#include <AzCore/Serialization/EditContextConstants.inl>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzFramework/StringFunc/StringFunc.h>
+#include <AzCore/Serialization/Json/JsonSerialization.h>
+#include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/StringFunc/StringFunc.h>
+#include <SceneAPI/FbxSceneBuilder/FbxImportRequestHandler.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Events/CallProcessorBus.h>
 #include <SceneAPI/SceneCore/Events/ImportEventContext.h>
-#include <SceneAPI/FbxSceneBuilder/FbxImportRequestHandler.h>
 
 namespace AZ
 {
@@ -23,10 +22,23 @@ namespace AZ
     {
         namespace FbxSceneImporter
         {
-            const char* FbxImportRequestHandler::s_extension = ".fbx";
+            void SceneImporterSettings::Reflect(AZ::ReflectContext* context)
+            {
+                if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext)
+                {
+                    serializeContext->Class<SceneImporterSettings>()
+                                    ->Version(2)
+                                    ->Field("SupportedFileTypeExtensions", &SceneImporterSettings::m_supportedFileTypeExtensions);
+                }
+            }
 
             void FbxImportRequestHandler::Activate()
             {
+                if (auto* settingsRegistry = AZ::SettingsRegistry::Get())
+                {
+                    settingsRegistry->GetObject(m_settings, "/O3DE/SceneAPI/AssetImporter");
+                }
+
                 BusConnect();
             }
 
@@ -37,21 +49,32 @@ namespace AZ
 
             void FbxImportRequestHandler::Reflect(ReflectContext* context)
             {
+                SceneImporterSettings::Reflect(context);
+
                 SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
                 if (serializeContext)
                 {
-                    serializeContext->Class<FbxImportRequestHandler, SceneCore::BehaviorComponent>()->Version(1);
+                    serializeContext->Class<FbxImportRequestHandler, AZ::Component>()->Version(1)->Attribute(
+                        AZ::Edit::Attributes::SystemComponentTags,
+                        AZStd::vector<AZ::Crc32>(
+                            {AssetBuilderSDK::ComponentTags::AssetBuilder,
+                            AssetImportRequest::GetAssetImportRequestComponentTag()}));
+                    
                 }
             }
 
             void FbxImportRequestHandler::GetSupportedFileExtensions(AZStd::unordered_set<AZStd::string>& extensions)
             {
-                extensions.insert(s_extension);
+                extensions.insert(m_settings.m_supportedFileTypeExtensions.begin(), m_settings.m_supportedFileTypeExtensions.end());
             }
 
             Events::LoadingResult FbxImportRequestHandler::LoadAsset(Containers::Scene& scene, const AZStd::string& path, const Uuid& guid, [[maybe_unused]] RequestingApplication requester)
             {
-                if (!AzFramework::StringFunc::Path::IsExtension(path.c_str(), s_extension))
+                AZStd::string extension;
+                StringFunc::Path::GetExtension(path.c_str(), extension);
+                AZStd::to_lower(extension.begin(), extension.end());
+                
+                if (!m_settings.m_supportedFileTypeExtensions.contains(extension))
                 {
                     return Events::LoadingResult::Ignored;
                 }
@@ -72,6 +95,11 @@ namespace AZ
                 {
                     return Events::LoadingResult::AssetFailure;
                 }
+            }
+
+            void FbxImportRequestHandler::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
+            {
+                provided.emplace_back(AZ_CRC_CE("AssetImportRequestHandler"));
             }
         } // namespace Import
     } // namespace SceneAPI

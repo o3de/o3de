@@ -1,5 +1,7 @@
 {
     "template_name": "DefaultGem",
+    "restricted_name": "o3de",
+    "restricted_platform_relative_path": "Templates",
     "origin": "The primary repo for DefaultGem goes here: i.e. http://www.mydomain.com",
     "license": "What license DefaultGem uses goes here: i.e. https://opensource.org/licenses/MIT",
     "display_name": "DefaultGem",
@@ -155,6 +157,12 @@
             "isOptional": false
         },
         {
+            "file": "Code/Source/${Name}EditorModule.cpp",
+            "origin": "Code/Source/${Name}EditorModule.cpp",
+            "isTemplated": true,
+            "isOptional": false
+        },
+        {
             "file": "Code/Source/${Name}EditorSystemComponent.cpp",
             "origin": "Code/Source/${Name}EditorSystemComponent.cpp",
             "isTemplated": true,
@@ -169,6 +177,12 @@
         {
             "file": "Code/Source/${Name}Module.cpp",
             "origin": "Code/Source/${Name}Module.cpp",
+            "isTemplated": true,
+            "isOptional": false
+        },
+        {
+            "file": "Code/Source/${Name}ModuleInterface.h",
+            "origin": "Code/Source/${Name}ModuleInterface.h",
             "isTemplated": true,
             "isOptional": false
         },
@@ -270,6 +284,10 @@
         }
     ],
     "createDirectories": [
+        {
+            "dir": "Assets",
+            "origin": "Assets"
+        },
         {
             "dir": "Code",
             "origin": "Code"

@@ -1,20 +1,16 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/PlatformIncl.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>
 
 namespace AZ
@@ -23,21 +19,21 @@ namespace AZ
         : public DynamicModuleHandle
     {
     public:
-        AZ_CLASS_ALLOCATOR(DynamicModuleHandleWindows, OSAllocator, 0)
+        AZ_CLASS_ALLOCATOR(DynamicModuleHandleWindows, OSAllocator, 0);
 
-            DynamicModuleHandleWindows(const char* fullFileName)
+        DynamicModuleHandleWindows(const char* fullFileName)
             : DynamicModuleHandle(fullFileName)
             , m_handle(nullptr)
         {
             // Ensure filename ends in ".dll"
             // Otherwise filenames like "gem.1.0.0" fail to load (.0 is assumed to be the extension).
-            if (m_fileName.substr(m_fileName.length() - 4) != AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION)
+            if (!m_fileName.ends_with(AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION))
             {
-                m_fileName = m_fileName + AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION;
+                m_fileName += AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION;
             }
 
             AZ::IO::PathView modulePathView{ m_fileName };
-            // If the module path doesn't have a directory within it, prepend it to the path
+            // If the module path doesn't have a directory within it, prepend the executable directory to the path
             // and check if the new path exist
             if (modulePathView.HasFilename() && !modulePathView.HasParentPath())
             {
@@ -51,7 +47,38 @@ namespace AZ
                     if (AZ::IO::SystemFile::Exists(candidatePath.c_str()))
                     {
                         m_fileName.assign(candidatePath.Native().c_str(), candidatePath.Native().size());
+                        return;
                     }
+                }
+            }
+
+            // If the module file path does not exist, attempt to search for the module within
+            // the project's build directory
+            if (!AZ::IO::SystemFile::Exists(m_fileName.c_str()))
+            {
+                // The Settings Registry may not exist in early startup if modules are loaded
+                // before the ComponentApplication is crated(such as in the Editor main.cpp)
+                // Therefore an existence check is needed
+                if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+                {
+                    if (AZ::IO::FixedMaxPath projectModulePath;
+                        settingsRegistry->Get(projectModulePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectConfigurationBinPath))
+                    {
+                        projectModulePath /= AZStd::string_view(m_fileName);
+                        if (AZ::IO::SystemFile::Exists(projectModulePath.c_str()))
+                        {
+                            m_fileName.assign(projectModulePath.c_str(), projectModulePath.Native().size());
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // The module does exist (in 'cwd'), but still needs to be an absolute path for the module to be loaded.
+                AZStd::optional<AZ::IO::FixedMaxPathString> absPathOptional = AZ::Utils::ConvertToAbsolutePath(m_fileName);
+                if (absPathOptional.has_value())
+                {
+                    m_fileName.assign(absPathOptional->c_str(), absPathOptional->size());
                 }
             }
         }

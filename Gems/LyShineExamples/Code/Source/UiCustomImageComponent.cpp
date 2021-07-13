@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "LyShineExamples_precompiled.h"
 #include "UiCustomImageComponent.h"
 
@@ -78,8 +73,9 @@ namespace LyShineExamples
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    void UiCustomImageComponent::Render(LyShine::IRenderGraph* renderGraph)
+    void UiCustomImageComponent::Render([[maybe_unused]] LyShine::IRenderGraph* renderGraph)
     {
+#ifdef LYSHINE_ATOM_TODO // [LYN-3635] convert to use Atom
         // get fade value (tracked by UiRenderer) and compute the desired alpha for the image
         float fade = renderGraph->GetAlphaFade();
         float desiredAlpha = m_overrideAlpha * fade;
@@ -98,7 +94,7 @@ namespace LyShineExamples
         {
             // if there is no texture we will just use a white texture
             // TODO:  Get a default atom texture here when possible
-            //texture = gEnv->pRenderer->EF_GetTextureByID(gEnv->pRenderer->GetWhiteTextureId());
+            //texture = ???->EF_GetTextureByID(???->GetWhiteTextureId());
         }
 
         if (m_isRenderCacheDirty)
@@ -126,6 +122,7 @@ namespace LyShineExamples
         bool isTexturePremultipliedAlpha = false; // we are not rendering from a render target with alpha in it
         LyShine::BlendMode blendMode = LyShine::BlendMode::Normal;
         renderGraph->AddPrimitive(&m_cachedPrimitive, texture, m_clamp, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
+#endif
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

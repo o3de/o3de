@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -52,7 +47,7 @@ namespace NvCloth
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Cloth.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Cloth.svg")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://docs.aws.amazon.com/lumberyard/latest/userguide/component-cloth.html")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/cloth/")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
                     ->UIElement(AZ::Edit::UIHandlers::CheckBox, "Simulate in editor",
@@ -374,12 +369,15 @@ namespace NvCloth
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ClothConfiguration::m_solverFrequency, "Solver frequency", 
                         "Target solver iterations per second. At least 1 iteration per frame will be solved regardless of the value set.")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &ClothConfiguration::m_accelerationFilterIterations, "Acceleration filter Iterations", 
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ClothConfiguration::m_accelerationFilterIterations, "Acceleration filter iterations", 
                         "Number of iterations to average delta time factor used for gravity and external acceleration.")
                         ->Attribute(AZ::Edit::Attributes::Min, 1)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ClothConfiguration::m_removeStaticTriangles, "Remove static triangles",
                         "Removing static triangles improves performance by not taking into account triangles whose particles are all static.\n"
                         "The removed static particles will not be present for collision or self collision during simulation.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ClothConfiguration::m_updateNormalsOfStaticParticles, "Update normals of static particles",
+                        "When enabled the normals of static particles will be updated according with the movement of the simulated mesh.\n"
+                        "When disabled the static particles will keep the same normals as the original mesh.")
                     ;
             }
         }
@@ -413,6 +411,11 @@ namespace NvCloth
     void EditorClothComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC("MeshService", 0x71d8a455));
+    }
+
+    void EditorClothComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    {
+        incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
     }
 
     const MeshNodeList& EditorClothComponent::GetMeshNodeList() const

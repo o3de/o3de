@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationManager.h>
 
@@ -28,6 +23,7 @@
 #include <AzToolsFramework/ToolsComponents/EditorLayerComponentBus.h>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiInterface.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
+#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
 #include <QApplication>
 #include <QFileDialog>
@@ -93,28 +89,12 @@ namespace AzToolsFramework
             EditorContextMenuBus::Handler::BusConnect();
             PrefabInstanceContainerNotificationBus::Handler::BusConnect();
             AZ::Interface<PrefabIntegrationInterface>::Register(this);
-
-            bool prefabWipFeaturesEnabled = false;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(
-                prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
-
-            if (prefabWipFeaturesEnabled)
-            {
-                AssetBrowser::AssetBrowserSourceDropBus::Handler::BusConnect(s_prefabFileExtension);
-            }
+            AssetBrowser::AssetBrowserSourceDropBus::Handler::BusConnect(s_prefabFileExtension);
         }
 
         PrefabIntegrationManager::~PrefabIntegrationManager()
         {
-            bool prefabWipFeaturesEnabled = false;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(
-                prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
-
-            if (prefabWipFeaturesEnabled)
-            {
-                AssetBrowser::AssetBrowserSourceDropBus::Handler::BusDisconnect();
-            }
-
+            AssetBrowser::AssetBrowserSourceDropBus::Handler::BusDisconnect();
             AZ::Interface<PrefabIntegrationInterface>::Unregister(this);
             PrefabInstanceContainerNotificationBus::Handler::BusDisconnect();
             EditorContextMenuBus::Handler::BusDisconnect();
@@ -135,21 +115,22 @@ namespace AzToolsFramework
             return "Prefabs";
         }
 
-        void PrefabIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu) const
+        void PrefabIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, [[maybe_unused]] const AZ::Vector2& point, [[maybe_unused]] int flags)
         {
-            bool prefabWipFeaturesEnabled = false;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(
-                prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
-
             AzToolsFramework::EntityIdList selectedEntities;
             AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
                 selectedEntities, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
 
-            if (prefabWipFeaturesEnabled)
+            bool prefabWipFeaturesEnabled = false;
+            AzFramework::ApplicationRequests::Bus::BroadcastResult(
+                prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
+
+            // Create Prefab
             {
-                // Create Prefab
+                if (!selectedEntities.empty())
                 {
-                    if (!selectedEntities.empty())
+                    // Hide if the only selected entity is the Level Container
+                    if (selectedEntities.size() > 1 || !s_prefabPublicInterface->IsLevelInstanceContainerEntity(selectedEntities[0]))
                     {
                         bool layerInSelection = false;
 
@@ -180,18 +161,18 @@ namespace AzToolsFramework
                         }
                     }
                 }
-
-                // Instantiate Prefab
-                {
-                    QAction* instantiateAction = menu->addAction(QObject::tr("Instantiate Prefab..."));
-                    instantiateAction->setToolTip(QObject::tr("Instantiates a prefab file in the scene."));
-
-                    QObject::connect(
-                        instantiateAction, &QAction::triggered, instantiateAction, [this] { ContextMenu_InstantiatePrefab(); });
-                }
-
-                menu->addSeparator();
             }
+
+            // Instantiate Prefab
+            {
+                QAction* instantiateAction = menu->addAction(QObject::tr("Instantiate Prefab..."));
+                instantiateAction->setToolTip(QObject::tr("Instantiates a prefab file in the scene."));
+
+                QObject::connect(
+                    instantiateAction, &QAction::triggered, instantiateAction, [this] { ContextMenu_InstantiatePrefab(); });
+            }
+
+            menu->addSeparator();
 
             bool itemWasShown = false;
 
@@ -252,6 +233,24 @@ namespace AzToolsFramework
             {
                 deleteAction->setDisabled(true);
             }
+
+            // Detach Prefab
+            if (selectedEntities.size() == 1)
+            {
+                AZ::EntityId selectedEntity = selectedEntities[0];
+
+                if (s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntity) &&
+                    !s_prefabPublicInterface->IsLevelInstanceContainerEntity(selectedEntity))
+                {
+                    QAction* detachPrefabAction = menu->addAction(QObject::tr("Detach Prefab..."));
+                    QObject::connect(
+                        detachPrefabAction, &QAction::triggered, detachPrefabAction,
+                        [this, selectedEntity]
+                        {
+                            ContextMenu_DetachPrefab(selectedEntity);
+                        });
+                }
+            }
         }
 
         void PrefabIntegrationManager::HandleSourceFileType(AZStd::string_view sourceFilePath, AZ::EntityId parentId, AZ::Vector3 position) const
@@ -271,6 +270,15 @@ namespace AzToolsFramework
             // be able to parent our message dialogs properly
             QWidget* activeWindow = QApplication::activeWindow();
             const AZStd::string prefabFilesPath = "@devassets@/Prefabs";
+
+            // Remove Level entity if it's part of the list
+            
+            auto levelContainerIter =
+                AZStd::find(selectedEntities.begin(), selectedEntities.end(), s_prefabPublicInterface->GetLevelInstanceContainerEntityId());
+            if (levelContainerIter != selectedEntities.end())
+            {
+                selectedEntities.erase(levelContainerIter);
+            }
 
             // Set default folder for prefabs
             AZ::IO::FileIOBase* fileIoBaseInstance = AZ::IO::FileIOBase::GetInstance();
@@ -339,7 +347,7 @@ namespace AzToolsFramework
                 }
             }
 
-            auto createPrefabOutcome = s_prefabPublicInterface->CreatePrefab(selectedEntities, s_prefabLoaderInterface->GetRelativePathToProject(prefabFilePath.data()));
+            auto createPrefabOutcome = s_prefabPublicInterface->CreatePrefab(selectedEntities, prefabFilePath.data());
 
             if (!createPrefabOutcome.IsSuccess())
             {
@@ -390,9 +398,23 @@ namespace AzToolsFramework
             AzToolsFramework::EntityIdList selectedEntityIds;
             AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
                 selectedEntityIds, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+            PrefabOperationResult deleteSelectedResult =
+                s_prefabPublicInterface->DeleteEntitiesAndAllDescendantsInInstance(selectedEntityIds);
+            if (!deleteSelectedResult.IsSuccess())
+            {
+                WarnUserOfError("Delete selected entities error", deleteSelectedResult.GetError());
+            }
+        }
 
-            AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
-                &AzToolsFramework::ToolsApplicationRequests::DeleteEntitiesAndAllDescendants, selectedEntityIds);
+        void PrefabIntegrationManager::ContextMenu_DetachPrefab(AZ::EntityId containerEntity)
+        {
+            PrefabOperationResult detachPrefabResult =
+                s_prefabPublicInterface->DetachPrefab(containerEntity);
+
+            if (!detachPrefabResult.IsSuccess())
+            {
+                WarnUserOfError("Detach Prefab error", detachPrefabResult.GetError());
+            }
         }
 
         void PrefabIntegrationManager::GenerateSuggestedFilenameFromEntities(const EntityIdList& entityIds, AZStd::string& outName)
@@ -562,15 +584,6 @@ namespace AzToolsFramework
 
         bool PrefabIntegrationManager::QueryUserForPrefabFilePath(AZStd::string& outPrefabFilePath)
         {
-            QWidget* mainWindow = nullptr;
-            EditorRequests::Bus::BroadcastResult(mainWindow, &EditorRequests::Bus::Events::GetMainWindow);
-
-            if (mainWindow == nullptr)
-            {
-                AZ_Assert(false, "Prefab - Could not detect Editor main window to generate the asset picker.");
-                return false;
-            }
-
             AssetSelectionModel selection;
 
             // Note, stringfilter will match every source file CONTAINING ".prefab".
@@ -598,7 +611,7 @@ namespace AzToolsFramework
             selection.SetDisplayFilter(compositeFilterPtr);
             selection.SetSelectionFilter(compositeFilterPtr);
 
-            AssetBrowserComponentRequestBus::Broadcast(&AssetBrowserComponentRequests::PickAssets, selection, mainWindow);
+            AssetBrowserComponentRequestBus::Broadcast(&AssetBrowserComponentRequests::PickAssets, selection, AzToolsFramework::GetActiveWindow());
 
             if (!selection.IsValid())
             {
@@ -957,12 +970,7 @@ namespace AzToolsFramework
                         includedEntities.c_str(),
                         referencedEntities.c_str());
 
-                    QWidget* mainWindow = nullptr;
-                    AzToolsFramework::EditorRequests::Bus::BroadcastResult(
-                        mainWindow,
-                        &AzToolsFramework::EditorRequests::Bus::Events::GetMainWindow);
-
-                    QMessageBox msgBox(mainWindow);
+                    QMessageBox msgBox(AzToolsFramework::GetActiveWindow());
                     msgBox.setWindowTitle("External Entity References");
                     msgBox.setText("The prefab contains references to external entities that are not selected.");
                     msgBox.setInformativeText("You can move the referenced entities into this prefab or retain the external references.");

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "LyShine_precompiled.h"
 #include "UiInteractableState.h"
@@ -40,6 +35,16 @@ void UiInteractableStateAction::SetInteractableEntity(AZ::EntityId interactableE
 {
     m_interactableEntity = interactableEntityId;
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void UiInteractableStateAction::Reflect(AZ::ReflectContext* context)
+{
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<UiInteractableStateAction>();
+    }
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiInteractableStateAction::Init(AZ::EntityId interactableEntityId)
@@ -128,8 +133,8 @@ void UiInteractableStateColor::Reflect(AZ::ReflectContext* context)
 
     if (serializeContext)
     {
-        serializeContext->Class<UiInteractableStateColor>()
-            ->Version(2, &VersionConverter)
+        serializeContext->Class<UiInteractableStateColor, UiInteractableStateAction>()
+            ->Version(3, &VersionConverter)
             ->Field("TargetEntity", &UiInteractableStateColor::m_targetEntity)
             ->Field("Color", &UiInteractableStateColor::m_color);
 
@@ -223,8 +228,8 @@ void UiInteractableStateAlpha::Reflect(AZ::ReflectContext* context)
 
     if (serializeContext)
     {
-        serializeContext->Class<UiInteractableStateAlpha>()
-            ->Version(1)
+        serializeContext->Class<UiInteractableStateAlpha, UiInteractableStateAction>()
+            ->Version(2)
             ->Field("TargetEntity", &UiInteractableStateAlpha::m_targetEntity)
             ->Field("Alpha", &UiInteractableStateAlpha::m_alpha);
 
@@ -379,8 +384,8 @@ void UiInteractableStateSprite::Reflect(AZ::ReflectContext* context)
 
     if (serializeContext)
     {
-        serializeContext->Class<UiInteractableStateSprite>()
-            ->Version(3)
+        serializeContext->Class<UiInteractableStateSprite, UiInteractableStateAction>()
+            ->Version(4)
             ->Field("TargetEntity", &UiInteractableStateSprite::m_targetEntity)
             ->Field("Sprite", &UiInteractableStateSprite::m_spritePathname)
             ->Field("Index", &UiInteractableStateSprite::m_spriteSheetCellIndex);
@@ -633,8 +638,8 @@ void UiInteractableStateFont::Reflect(AZ::ReflectContext* context)
 
     if (serializeContext)
     {
-        serializeContext->Class<UiInteractableStateFont>()
-            ->Version(1)
+        serializeContext->Class<UiInteractableStateFont, UiInteractableStateAction>()
+            ->Version(2)
             ->Field("TargetEntity", &UiInteractableStateFont::m_targetEntity)
             ->Field("FontFileName", &UiInteractableStateFont::m_fontFilename)
             ->Field("EffectIndex", &UiInteractableStateFont::m_fontEffectIndex);

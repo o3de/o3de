@@ -1,12 +1,7 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 
 Basic interface to interact with lumberyard launcher
 """
@@ -70,7 +65,7 @@ class Launcher(object):
 
         return config_dict
 
-    def setup(self, backupFiles = True, launch_ap = True):
+    def setup(self, backupFiles=True, launch_ap=True):
         """
         Perform setup of this launcher, must be called before launching.
         Subclasses should call its parent's setup() before calling its own code, unless it changes configuration files
@@ -108,15 +103,7 @@ class Launcher(object):
 
         # Wait for the AssetProcessor to be open.
         if launch_ap:
-            timeout = 10
-            self.workspace.asset_processor.start()
-            ly_test_tools.environment.waiter.wait_for(
-                lambda: ly_test_tools.environment.process_utils.process_exists(
-                    name="AssetProcessor", ignore_extensions=True),
-                exc=ly_test_tools.launchers.exceptions.SetupError(
-                    f'AssetProcessor never opened after {timeout} seconds'),
-                timeout=timeout
-            )
+            self.workspace.asset_processor.start(connect_to_ap=True, connection_timeout=10)  # verify connection
             self.workspace.asset_processor.wait_for_idle()
             log.debug('AssetProcessor started from calling Launcher.setup()')
 
@@ -131,7 +118,6 @@ class Launcher(object):
         """
         backup_path = self.workspace.settings.get_temp_path()
         log.debug(f"Performing automatic backup of bootstrap, platform and user settings in path {backup_path}")
-        self.workspace.settings.backup_bootstrap_settings(backup_path)
         self.workspace.settings.backup_platform_settings(backup_path)
         self.workspace.settings.backup_shader_compiler_settings(backup_path)
 
@@ -193,7 +179,7 @@ class Launcher(object):
         """
         raise NotImplementedError("There is no binary file for this launcher")
 
-    def start(self, backupFiles = True, launch_ap = True):
+    def start(self, backupFiles=True, launch_ap=None):
         """
         Automatically prepare and launch the application
         When called using "with launcher.start():" it will automatically call stop() when block exits
@@ -203,14 +189,14 @@ class Launcher(object):
         """
         return _Application(self, backupFiles, launch_ap=launch_ap)
 
-    def _start_impl(self, backupFiles = True, launch_ap=True):
+    def _start_impl(self, backupFiles = True, launch_ap=None):
         """
         Implementation of start(), intended to be called via context manager in _Application
 
         :param backupFiles: Bool to backup settings files
         :return None:
         """
-        self.setup(backupFiles, launch_ap=launch_ap)
+        self.setup(backupFiles=backupFiles, launch_ap=launch_ap)
         self.launch()
 
     def stop(self):
@@ -326,7 +312,7 @@ class _Application(object):
     """
     Context-manager for opening an application, enables using both "launcher.start()" and "with launcher.start()"
     """
-    def __init__(self, launcher, backupFiles = True, launch_ap = True):
+    def __init__(self, launcher, backupFiles = True, launch_ap=None):
         """
         Called during both "launcher.start()" and "with launcher.start()"
 
@@ -334,7 +320,7 @@ class _Application(object):
         :return None:
         """
         self.launcher = launcher
-        launcher._start_impl(backupFiles, launch_ap=launch_ap)
+        launcher._start_impl(backupFiles, launch_ap)
 
     def __enter__(self):
         """

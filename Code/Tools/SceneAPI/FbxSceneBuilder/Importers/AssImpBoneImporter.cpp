@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
@@ -46,8 +41,8 @@ namespace AZ
             }
 
             void EnumBonesInNode(
-                const aiScene* scene, const aiNode* node, AZStd::unordered_map<AZStd::string, aiNode*>& mainBoneList,
-                AZStd::unordered_map<AZStd::string, aiBone*>& boneLookup)
+                const aiScene* scene, const aiNode* node, AZStd::unordered_map<AZStd::string, const aiNode*>& mainBoneList,
+                AZStd::unordered_map<AZStd::string, const aiBone*>& boneLookup)
             {
                 /* From AssImp Documentation
                     a) Create a map or a similar container to store which nodes are necessary for the skeleton. Pre-initialise it for all nodes with a "no".
@@ -62,14 +57,14 @@ namespace AZ
 
                 for (unsigned meshIndex = 0; meshIndex < node->mNumMeshes; ++meshIndex)
                 {
-                    aiMesh* mesh = scene->mMeshes[node->mMeshes[meshIndex]];
+                    const aiMesh* mesh = scene->mMeshes[node->mMeshes[meshIndex]];
 
                     for (unsigned boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
                     {
-                        aiBone* bone = mesh->mBones[boneIndex];
+                        const aiBone* bone = mesh->mBones[boneIndex];
 
-                        aiNode* boneNode = scene->mRootNode->FindNode(bone->mName);
-                        aiNode* boneParent = boneNode->mParent;
+                        const aiNode* boneNode = scene->mRootNode->FindNode(bone->mName);
+                        const aiNode* boneParent = boneNode->mParent;
 
                         mainBoneList[bone->mName.C_Str()] = boneNode;
                         boneLookup[bone->mName.C_Str()] = bone;
@@ -85,8 +80,8 @@ namespace AZ
             }
 
             void EnumChildren(
-                const aiScene* scene, const aiNode* node, AZStd::unordered_map<AZStd::string, aiNode*>& mainBoneList,
-                AZStd::unordered_map<AZStd::string, aiBone*>& boneLookup)
+                const aiScene* scene, const aiNode* node, AZStd::unordered_map<AZStd::string, const aiNode*>& mainBoneList,
+                AZStd::unordered_map<AZStd::string, const aiBone*>& boneLookup)
             {
                 EnumBonesInNode(scene, node, mainBoneList, boneLookup);
 
@@ -98,11 +93,25 @@ namespace AZ
                 }
             }
 
+            aiMatrix4x4 CalculateWorldTransform(const aiNode* currentNode)
+            {
+                aiMatrix4x4 transform = {};
+                const aiNode* iteratingNode = currentNode;
+                
+                while (iteratingNode)
+                {
+                    transform = iteratingNode->mTransformation * transform;
+                    iteratingNode = iteratingNode->mParent;
+                }
+
+                return transform;
+            }
+
             Events::ProcessingResult AssImpBoneImporter::ImportBone(AssImpNodeEncounteredContext& context)
             {
                 AZ_TraceContext("Importer", "Bone");
 
-                aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
+                const aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
                 const aiScene* scene = context.m_sourceScene.GetAssImpScene();
 
                 if (IsPivotNode(currentNode->mName))
@@ -111,15 +120,10 @@ namespace AZ
                 }
 
                 bool isBone = false;
-
-                if (NodeParentIsOfType(context.m_scene.GetGraph(), context.m_currentGraphPosition, DataTypes::IBoneData::TYPEINFO_Uuid()))
+                
                 {
-                    isBone = true;
-                }
-                else
-                {
-                    AZStd::unordered_map<AZStd::string, aiNode*> mainBoneList;
-                    AZStd::unordered_map<AZStd::string, aiBone*> boneLookup;
+                    AZStd::unordered_map<AZStd::string, const aiNode*> mainBoneList;
+                    AZStd::unordered_map<AZStd::string, const aiBone*> boneLookup;
                     EnumChildren(scene, scene->mRootNode, mainBoneList, boneLookup);
 
                     if (mainBoneList.find(currentNode->mName.C_Str()) != mainBoneList.end())
@@ -170,15 +174,8 @@ namespace AZ
                 {
                     createdBoneData = AZStd::make_shared<SceneData::GraphData::RootBoneData>();
                 }
-
-                aiMatrix4x4 transform = currentNode->mTransformation;
-                aiNode* parent = currentNode->mParent;
                 
-                while (parent)
-                {
-                    transform = parent->mTransformation * transform;
-                    parent = parent->mParent;
-                }
+                aiMatrix4x4 transform = CalculateWorldTransform(currentNode);
                 
                 SceneAPI::DataTypes::MatrixType globalTransform = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(transform);
 

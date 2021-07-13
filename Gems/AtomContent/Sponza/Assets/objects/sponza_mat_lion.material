@@ -4,9 +4,6 @@
     "parentMaterial": "",
     "propertyLayoutVersion": 3,
     "properties": {
-        "occlusion": {
-            "diffuseTextureMap": "Textures/lion_1k_ao.png"
-        },
         "baseColor": {
             "color": [
                 0.800000011920929,
@@ -16,39 +13,16 @@
             ],
             "textureMap": "Textures/lion_1k_basecolor.png"
         },
-        "general": {
-            "applySpecularAA": true
-        },
-        "irradiance": {
+        "emissive": {
             "color": [
-                1.0,
-                0.7364919781684876,
-                0.3672388792037964,
+                0.0,
+                0.0,
+                0.0,
                 1.0
             ]
         },
-        "metallic": {
-            "textureMap": "Textures/lion_1k_metallic.png"
-        },
-        "normal": {
-            "textureMap": "Textures/lion_1k_normal.jpg"
-        },
         "opacity": {
             "factor": 1.0
-        },
-        "parallax": {
-            "algorithm": "ContactRefinement",
-            "enable": true,
-            "factor": 0.009999999776482582,
-            "pdo": true,
-            "quality": "Ultra",
-            "textureMap": "Textures/lion_1k_height.png"
-        },
-        "roughness": {
-            "textureMap": "Textures/lion_1k_roughness.png"
-        },
-        "specularF0": {
-            "enableMultiScatterCompensation": true
         }
     }
 }

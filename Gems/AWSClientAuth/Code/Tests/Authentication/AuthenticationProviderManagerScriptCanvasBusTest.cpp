@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
@@ -257,5 +252,5 @@ TEST_F(AuthenticationProviderManagerScriptCanvasTest, Initialize_Fail_InvalidPat
 {
     AZ_TEST_START_TRACE_SUPPRESSION;
     ASSERT_FALSE(m_mockController->Initialize(m_enabledProviderNames, ""));
-    AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+    AZ_TEST_STOP_TRACE_SUPPRESSION(2);
 }

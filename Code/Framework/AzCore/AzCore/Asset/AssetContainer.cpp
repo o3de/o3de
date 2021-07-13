@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Asset/AssetContainer.h>
 #include <AzCore/Outcome/Outcome.h>
@@ -269,13 +264,13 @@ namespace AZ
             {
                 for (auto& [assetId, dependentAsset] : m_dependencies)
                 {
-                    if (dependentAsset->IsReady())
+                    if (dependentAsset->IsReady() || dependentAsset->IsError())
                     {
                         HandleReadyAsset(dependentAsset);
                     }
                 }
             }
-            if (auto asset = m_rootAsset.GetStrongReference(); asset.IsReady())
+            if (auto asset = m_rootAsset.GetStrongReference(); asset.IsReady() || asset.IsError())
             {
                 HandleReadyAsset(asset);
             }
@@ -496,10 +491,10 @@ namespace AZ
                         m_waitingCount -= 1;
                         disconnectEbus = true;
 
-                        if (m_waitingAssets.empty())
-                        {
-                            allReady = true;
-                        }
+                    }
+                    if (m_waitingAssets.empty())
+                    {
+                        allReady = true;
                     }
                 }
 
@@ -510,8 +505,15 @@ namespace AZ
                 }
             }
 
-            if (allReady && m_initComplete)
+            // If there are no assets left to be loaded, trigger the final AssetContainer notification (ready or canceled).
+            // We guard against prematurely sending it (m_initComplete) because it's possible for assets to get removed from our waiting
+            // list *while* we're still building up the list, so the list would appear to be empty too soon.
+            // We also guard against sending it multiple times (m_finalNotificationSent), because in some error conditions, it may be
+            // possible to try to remove the same asset multiple times, which if it's the last asset, it could trigger multiple
+            // notifications.
+            if (allReady && m_initComplete && !m_finalNotificationSent)
             {
+                m_finalNotificationSent = true;
                 if (m_rootAsset)
                 {
                     AssetManagerBus::Broadcast(&AssetManagerBus::Events::OnAssetContainerReady, this);

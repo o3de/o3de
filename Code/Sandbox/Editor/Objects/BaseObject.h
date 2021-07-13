@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 // Description : Definition of basic Editor object.
 
@@ -604,9 +599,6 @@ public:
 
     virtual IStatObj* GetIStatObj() {   return NULL; }
 
-    //! Display length of each axis.
-    void DrawDimensionsImpl(DisplayContext& dc, const AABB& localBoundBox, AABB* pMergedBoundBox = NULL);
-
     // Invalidates cached transformation matrix.
     // nWhyFlags - Flags that indicate the reason for matrix invalidation.
     virtual void InvalidateTM(int nWhyFlags);
@@ -678,8 +670,6 @@ protected:
     virtual void DrawTextureIcon(DisplayContext& dc, const Vec3& pos, float alpha = 1.0f);
     //! Draw warning icons
     virtual void DrawWarningIcons(DisplayContext& dc, const Vec3& pos);
-    //! Display text with a 3d world coordinate.
-    void DrawTextOn2DBox(DisplayContext& dc, const Vec3& pos, const char* text, float textScale, const ColorF& TextColor, const ColorF& TextBackColor);
     //! Check if dimension's figures can be displayed before draw them.
     virtual void DrawDimensions(DisplayContext& dc, AABB* pMergedBoundBox = NULL);
 

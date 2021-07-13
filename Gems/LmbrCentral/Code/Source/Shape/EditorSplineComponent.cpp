@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "LmbrCentral_precompiled.h"
 #include "EditorSplineComponent.h"
@@ -44,6 +39,7 @@ namespace LmbrCentral
     {
         incompatible.push_back(AZ_CRC("VariableVertexContainerService", 0x70c58740));
         incompatible.push_back(AZ_CRC("FixedVertexContainerService", 0x83f1bbf2));
+        incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
     }
 
     void EditorSplineComponent::Reflect(AZ::ReflectContext* context)
@@ -66,7 +62,7 @@ namespace LmbrCentral
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Spline.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Spline.png")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "http://docs.aws.amazon.com/console/lumberyard/userguide/spline-component")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/shape/spline/")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorSplineComponent::m_visibleInEditor, "Visible", "Always display this shape in the editor viewport")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorSplineComponent::m_splineCommon, "Configuration", "Spline Configuration")
@@ -348,7 +344,7 @@ namespace LmbrCentral
         const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
     {
         const auto rayIntersectData = IntersectSpline(m_cachedUniformScaleTransform, src, dir, *m_splineCommon.m_spline);
-        distance = rayIntersectData.m_rayDistance * m_cachedUniformScaleTransform.GetScale().GetMaxElement();
+        distance = rayIntersectData.m_rayDistance * m_cachedUniformScaleTransform.GetUniformScale();
 
         AzFramework::CameraState cameraState;
         AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::EventResult(
@@ -378,9 +374,7 @@ namespace LmbrCentral
     {
         SplineComponentNotificationBus::Event(
             GetEntityId(), &SplineComponentNotificationBus::Events::OnSplineChanged);
-
-        AzFramework::EntityBoundsUnionRequestBus::Broadcast(
-            &AzFramework::EntityBoundsUnionRequestBus::Events::RefreshEntityLocalBoundsUnion, GetEntityId());
+        AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(GetEntityId());
     }
 
     AZ::SplinePtr EditorSplineComponent::GetSpline()

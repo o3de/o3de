@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 // Compute shader that takes a LightList and remaps it into a format that is fast for the forward shader to read (LightListRemapped)
 
@@ -186,7 +181,7 @@ void InitWriteIndices(uint3 groupID, uint baseBin, out uint writeIndices[NVLC_MA
 // light indices until it hits an END_OF_X marker
 
 // Note that this code could probably be made faster with wave intrinsics
-// https://jira.agscollab.com/browse/ATOM-4104
+// ATOM-4104
 [numthreads(NUM_THREADS, 1, 1)]
 void MainCS(
     uint3 dispatchThreadID : SV_DispatchThreadID, 

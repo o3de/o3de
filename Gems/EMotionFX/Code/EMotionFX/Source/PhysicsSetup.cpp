@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -198,13 +193,13 @@ namespace EMotionFX
         return m_config.m_simulatedObjectColliderConfig;
     }
 
-    AZ::Outcome<Physics::ShapeConfigurationPair> PhysicsSetup::CreateColliderByType(const AZ::TypeId& typeId)
+    AZ::Outcome<AzPhysics::ShapeColliderPair> PhysicsSetup::CreateColliderByType(const AZ::TypeId& typeId)
     {
         AZStd::string outResult;
         return CreateColliderByType(typeId, outResult);
     }
 
-    AZ::Outcome<Physics::ShapeConfigurationPair> PhysicsSetup::CreateColliderByType(const AZ::TypeId& typeId, AZStd::string& outResult)
+    AZ::Outcome<AzPhysics::ShapeColliderPair> PhysicsSetup::CreateColliderByType(const AZ::TypeId& typeId, AZStd::string& outResult)
     {
         if (typeId.IsNull())
         {
@@ -227,14 +222,16 @@ namespace EMotionFX
             return AZ::Failure();
         }
 
-        Physics::ShapeConfiguration* shapeConfig = reinterpret_cast<Physics::ShapeConfiguration*>(classData->m_factory->Create(classData->m_name));
+        AZStd::shared_ptr<Physics::ShapeConfiguration> shapeConfig(
+            reinterpret_cast<Physics::ShapeConfiguration*>(classData->m_factory->Create(classData->m_name)));
+
         if (!shapeConfig)
         {
             outResult = AZStd::string::format("Could not create collider with type '%s'.", typeId.ToString<AZStd::string>().c_str());
             return AZ::Failure();
         }
         
-        Physics::ShapeConfigurationPair pair(AZStd::make_shared<Physics::ColliderConfiguration>(), shapeConfig);
+        AzPhysics::ShapeColliderPair pair(AZStd::make_shared<Physics::ColliderConfiguration>(), shapeConfig);
         if (pair.first->m_materialSelection.GetMaterialIdsAssignedToSlots().empty())
         {
             pair.first->m_materialSelection.SetMaterialSlots(Physics::MaterialSelection::SlotsArray());
@@ -242,7 +239,7 @@ namespace EMotionFX
         return AZ::Success(pair);
     }
 
-    void PhysicsSetup::AutoSizeCollider(Physics::ShapeConfigurationPair& collider, const Actor* actor, const Node* joint)
+    void PhysicsSetup::AutoSizeCollider(AzPhysics::ShapeColliderPair& collider, const Actor* actor, const Node* joint)
     {
         if (!collider.second || !actor || !joint)
         {
@@ -301,14 +298,20 @@ namespace EMotionFX
         {
             Physics::CapsuleShapeConfiguration* capsule = static_cast<Physics::CapsuleShapeConfiguration*>(collider.second.get());
             capsule->m_height = boneDirection.GetLength();
-            collider.first->m_rotation = AZ::Quaternion::CreateShortestArc(AZ::Vector3::CreateAxisZ(), localBoneDirection.GetNormalized());
+            if (AZ::IsClose(localBoneDirection.GetLength(), 1.0f))
+            {
+                collider.first->m_rotation = AZ::Quaternion::CreateShortestArc(AZ::Vector3::CreateAxisZ(), localBoneDirection.GetNormalized());
+            }
             capsule->m_height = boneLength;
             const float radius = AZ::GetMin(rootMeanSquareDistanceFromBone, minRadiusRatio * boneLength);
             capsule->m_radius = radius;
         }
         else if (colliderType == azrtti_typeid<Physics::BoxShapeConfiguration>())
         {
-            collider.first->m_rotation = AZ::Quaternion::CreateShortestArc(AZ::Vector3::CreateAxisZ(), localBoneDirection.GetNormalized());
+            if (AZ::IsClose(localBoneDirection.GetLength(), 1.0f))
+            {
+                collider.first->m_rotation = AZ::Quaternion::CreateShortestArc(AZ::Vector3::CreateAxisZ(), localBoneDirection.GetNormalized());
+            }
             Physics::BoxShapeConfiguration* box = static_cast<Physics::BoxShapeConfiguration*>(collider.second.get());
             box->m_dimensions = AZ::Vector3(2.0f * rootMeanSquareDistanceFromBone, 2.0f * rootMeanSquareDistanceFromBone, boneLength);
         }
@@ -417,7 +420,7 @@ namespace EMotionFX
                         nodeConfig = &hitDetectionConfig.m_nodes.back();
                     }
 
-                    Physics::ShapeConfigurationList& collisionShapes = nodeConfig->m_shapes;
+                    AzPhysics::ShapeColliderPairList& collisionShapes = nodeConfig->m_shapes;
 
                     Physics::ColliderConfiguration* colliderConfig = aznew Physics::ColliderConfiguration();
                     colliderConfig->m_position = position;

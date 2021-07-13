@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 // Description : Common Camera class implementation
 
@@ -620,24 +615,24 @@ public:
     bool IsPointVisible(const Vec3& p) const;
 
     //sphere-frustum test
-    bool IsSphereVisible_F(const Sphere& s) const;
-    uint8 IsSphereVisible_FH(const Sphere& s) const;   //this is going to be the exact version of sphere-culling
+    bool IsSphereVisible_F(const ::Sphere& s) const;
+    uint8 IsSphereVisible_FH(const ::Sphere& s) const;   //this is going to be the exact version of sphere-culling
 
     // AABB-frustum test
     // Fast
-    bool IsAABBVisible_F(const AABB& aabb) const;
-    uint8 IsAABBVisible_FH(const AABB& aabb, bool* pAllInside) const;
-    uint8 IsAABBVisible_FH(const AABB& aabb) const;
+    bool IsAABBVisible_F(const ::AABB& aabb) const;
+    uint8 IsAABBVisible_FH(const ::AABB& aabb, bool* pAllInside) const;
+    uint8 IsAABBVisible_FH(const ::AABB& aabb) const;
 
     // Exact
-    bool IsAABBVisible_E(const AABB& aabb) const;
-    uint8 IsAABBVisible_EH(const AABB& aabb, bool* pAllInside) const;
-    uint8 IsAABBVisible_EH(const AABB& aabb) const;
+    bool IsAABBVisible_E(const ::AABB& aabb) const;
+    uint8 IsAABBVisible_EH(const ::AABB& aabb, bool* pAllInside) const;
+    uint8 IsAABBVisible_EH(const ::AABB& aabb) const;
 
     // Multi-camera
-    bool IsAABBVisible_EHM(const AABB& aabb, bool* pAllInside) const;
-    bool IsAABBVisible_EM(const AABB& aabb) const;
-    bool IsAABBVisible_FM(const AABB& aabb) const;
+    bool IsAABBVisible_EHM(const ::AABB& aabb, bool* pAllInside) const;
+    bool IsAABBVisible_EM(const ::AABB& aabb) const;
+    bool IsAABBVisible_FM(const ::AABB& aabb) const;
 
     //OBB-frustum test
     bool IsOBBVisible_F(const Vec3& wpos, const OBB& obb) const;
@@ -1386,7 +1381,7 @@ inline bool CCamera::IsPointVisible(const Vec3& p) const
 // return values
 //   CULL_EXCLUSION = sphere outside of frustum (very fast rejection-test)
 //   CULL_INTERSECT = sphere and frustum intersects or sphere in completely inside frustum
-inline bool CCamera::IsSphereVisible_F(const Sphere& s) const
+inline bool CCamera::IsSphereVisible_F(const ::Sphere& s) const
 {
     if ((m_fp[0] | s.center) > s.radius)
     {
@@ -1427,7 +1422,7 @@ inline bool CCamera::IsSphereVisible_F(const Sphere& s) const
 //   CULL_EXCLUSION   = sphere outside of frustum (very fast rejection-test)
 //   CULL_INTERSECT   = sphere intersects the borders of the frustum, further checks necessary
 //   CULL_INCLUSION   = sphere is complete inside the frustum, no further checks necessary
-inline uint8 CCamera::IsSphereVisible_FH(const Sphere& s) const
+inline uint8 CCamera::IsSphereVisible_FH(const ::Sphere& s) const
 {
     f32 nc, rc, lc, tc, bc, cc;
     if ((nc = m_fp[0] | s.center) > s.radius)

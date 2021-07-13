@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #include "EditorDefs.h"
 
@@ -86,7 +81,6 @@ inline Vec3 SnapToSize(Vec3 v, double size)
 //////////////////////////////////////////////////////////////////////
 Q2DViewport::Q2DViewport(QWidget* parent)
     : QtViewport(parent)
-    , m_renderer(nullptr)
 {
     // Scroll offset equals origin
     m_rcSelect.setRect(0, 0, 0, 0);
@@ -528,15 +522,6 @@ void Q2DViewport::paintEvent([[maybe_unused]] QPaintEvent* event)
 //////////////////////////////////////////////////////////////////////////
 int Q2DViewport::OnCreate()
 {
-    m_renderer = GetIEditor()->GetRenderer();
-    assert (m_renderer != NULL);
-    if (m_renderer)
-    {
-        WIN_HWND previousContext = m_renderer->GetCurrentContextHWND();
-        m_renderer->CreateContext(renderOverlayHWND());
-        m_renderer->SetCurrentContext(previousContext);
-    }
-
     // Calculate the View transformation matrix.
     CalculateViewTM();
 
@@ -641,10 +626,6 @@ void Q2DViewport::OnTitleMenu(QMenu* menu)
 //////////////////////////////////////////////////////////////////////////
 void Q2DViewport::OnDestroy()
 {
-    if (m_renderer)
-    {
-        m_renderer->DeleteContext(renderOverlayHWND());
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -674,9 +655,7 @@ void Q2DViewport::Draw(DisplayContext& dc)
 //////////////////////////////////////////////////////////////////////////
 void Q2DViewport::DrawGrid(DisplayContext& dc, bool bNoXNumbers)
 {
-    CGrid* pGrid = GetIEditor()->GetViewManager()->GetGrid();
-    float gridSize = pGrid->size;
-
+    float gridSize = 1.0f;
     if (gridSize < 0.00001f)
     {
         return;
@@ -707,8 +686,6 @@ void Q2DViewport::DrawGrid(DisplayContext& dc, bool bNoXNumbers)
         pixelsPerGrid = gridSize * fScale;
         while (pixelsPerGrid <= 5 && griditers++ < 20)
         {
-            m_fGridZoom *= pGrid->majorLine;
-            gridSize = gridSize * pGrid->majorLine;
             pixelsPerGrid = gridSize * fScale;
         }
     }
@@ -757,7 +734,7 @@ void Q2DViewport::DrawGrid(DisplayContext& dc, bool bNoXNumbers)
         //////////////////////////////////////////////////////////////////////////
         // Draw Major grid lines.
         //////////////////////////////////////////////////////////////////////////
-        gridSize = gridSize * pGrid->majorLine;
+        gridSize = gridSize * 1.0f;
 
         if (m_bAutoAdjustGrids)
         {

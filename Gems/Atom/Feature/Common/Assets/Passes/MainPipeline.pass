@@ -337,6 +337,13 @@
                             }
                         },
                         {
+                            "LocalSlot": "InputLinearDepth",
+                            "AttachmentRef": {
+                                "Pass": "DepthPrePass",
+                                "Attachment": "DepthLinear"
+                            }
+                        },
+                        {
                             "LocalSlot": "DepthStencil",
                             "AttachmentRef": {
                                 "Pass": "HairParentPass",
@@ -420,6 +427,13 @@
                             }
                         },
                         {
+                            "LocalSlot": "MotionVectors",
+                            "AttachmentRef": {
+                                "Pass": "MotionVectorPass",
+                                "Attachment": "MotionVectorOutput"
+                            }
+                        },
+                        {
                             "LocalSlot": "SwapChainOutput",
                             "AttachmentRef": {
                                 "Pass": "Parent",
@@ -497,6 +511,13 @@
                             "AttachmentRef": {
                                 "Pass": "DebugOverlayPass",
                                 "Attachment": "InputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "DepthPrePass",
+                                "Attachment": "Depth"
                             }
                         }
                     ]

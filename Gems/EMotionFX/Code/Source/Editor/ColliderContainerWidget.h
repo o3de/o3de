@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -71,7 +66,7 @@ namespace EMotionFX
     public:
         ColliderWidget(QIcon* icon, QWidget* parent, AZ::SerializeContext* serializeContext);
 
-        void Update(Actor* actor, Node* joint, size_t colliderIndex, PhysicsSetup::ColliderConfigType colliderType, const Physics::ShapeConfigurationPair& collider);
+        void Update(Actor* actor, Node* joint, size_t colliderIndex, PhysicsSetup::ColliderConfigType colliderType, const AzPhysics::ShapeColliderPair& collider);
         void Update();
         void Reset();
 
@@ -99,7 +94,7 @@ namespace EMotionFX
         PhysicsSetup::ColliderConfigType m_colliderType = PhysicsSetup::ColliderConfigType::Unknown;
         Node* m_joint = nullptr;
         size_t m_colliderIndex = MCORE_INVALIDINDEX32;
-        Physics::ShapeConfigurationPair m_collider;
+        AzPhysics::ShapeColliderPair m_collider;
 
         QIcon* m_icon;
     };
@@ -140,7 +135,7 @@ namespace EMotionFX
         ColliderContainerWidget(const QIcon& colliderIcon, QWidget* parent = nullptr);
         ~ColliderContainerWidget();
 
-        void Update(Actor* actor, Node* joint, PhysicsSetup::ColliderConfigType colliderType, const Physics::ShapeConfigurationList& colliders, AZ::SerializeContext* serializeContext);
+        void Update(Actor* actor, Node* joint, PhysicsSetup::ColliderConfigType colliderType, const AzPhysics::ShapeColliderPairList& colliders, AZ::SerializeContext* serializeContext);
         void Update();
         void Reset();
         PhysicsSetup::ColliderConfigType ColliderType() { return m_colliderType; }
@@ -156,7 +151,7 @@ namespace EMotionFX
          * @param[in] renderInfo Needed to access the render util.
          * @param[in] colliderColor The collider color.
          */
-        static void RenderColliders(const Physics::ShapeConfigurationList& colliders,
+        static void RenderColliders(const AzPhysics::ShapeColliderPairList& colliders,
             const ActorInstance* actorInstance,
             const Node* node,
             EMStudio::EMStudioPlugin::RenderInfo* renderInfo,

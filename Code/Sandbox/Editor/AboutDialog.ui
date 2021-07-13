@@ -75,14 +75,14 @@
           <widget class="QSvgWidget" name="m_logo" native="true">
            <property name="minimumSize">
             <size>
-             <width>161</width>
-             <height>49</height>
+             <width>175</width>
+             <height>66</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>161</width>
-             <height>49</height>
+             <width>175</width>
+             <height>66</height>
             </size>
            </property>
           </widget>
@@ -92,7 +92,7 @@
        <item>
         <widget class="QLabel" name="m_transparentVersion">
          <property name="text">
-          <string>Open 3D Engine Editor</string>
+          <string>O3DE Editor</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -102,7 +102,7 @@
        <item>
         <widget class="QLabel" name="m_transparentDevelopedBy">
          <property name="text">
-          <string>Development version</string>
+          <string>Developer Preview</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -154,20 +154,7 @@
        <item>
         <widget class="ClickableLabel" name="m_transparentAgreement">
          <property name="text">
-          <string>AWS Customer Agreement</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-         </property>
-         <property name="showDecoration" stdset="0">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="ClickableLabel" name="m_transparentNotice">
-         <property name="text">
-          <string>Privacy Notice</string>
+          <string>Terms of Use</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>

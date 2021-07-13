@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #ifndef CRYINCLUDE_EDITOR_VIEWPORTTITLEDLG_H
 #define CRYINCLUDE_EDITOR_VIEWPORTTITLEDLG_H
@@ -19,8 +14,16 @@
 #include "RenderViewport.h"
 #include <AzCore/Component/Component.h>
 
+#include <IAudioSystem.h>
+
 #include <functional>
 #include <QSharedPointer>
+#include <QWidgetAction>
+#include <QComboBox>
+
+#include <AzQtComponents/Components/Widgets/SpinBox.h>
+
+#include <HMDBus.h>
 #endif
 
 // CViewportTitleDlg dialog
@@ -42,6 +45,7 @@ class CViewportTitleDlg
     : public QWidget
     , public IEditorNotifyListener
     , public ISystemEventListener
+    , public AZ::VR::VREventBus::Handler
 {
     Q_OBJECT
 public:
@@ -60,13 +64,17 @@ public:
     static void LoadCustomPresets(const QString& section, const QString& keyName, QStringList& outCustompresets);
     static void SaveCustomPresets(const QString& section, const QString& keyName, const QStringList& custompresets);
     static void UpdateCustomPresets(const QString& text, QStringList& custompresets);
-    static void OnChangedDisplayInfo(ICVar*    pDisplayInfo, QAbstractButton* pDisplayInfoButton);
 
     bool eventFilter(QObject* object, QEvent* event) override;
+
+    void SetSpeedComboBox(double value);
 
     QMenu* const GetFovMenu();
     QMenu* const GetAspectMenu();
     QMenu* const GetResolutionMenu();
+
+Q_SIGNALS:
+    void ActionTriggered(int command);
 
 protected:
     virtual void OnInitDialog();
@@ -76,7 +84,20 @@ protected:
 
     void OnMaximize();
     void OnToggleHelpers();
-    void OnToggleDisplayInfo();
+    void UpdateDisplayInfo();
+
+    //////////////////////////////////////////////////////////////////////////
+    /// VR Event Bus Implementation
+    //////////////////////////////////////////////////////////////////////////
+    void OnHMDInitialized() override;
+    void OnHMDShutdown() override;
+    //////////////////////////////////////////////////////////////////////////
+
+    void SetupCameraDropdownMenu();
+    void SetupResolutionDropdownMenu();
+    void SetupViewportInformationMenu();
+    void SetupOverflowMenu();
+    void SetupHelpersButton();
 
     QString m_title;
 
@@ -87,24 +108,81 @@ protected:
     QStringList m_customFOVPresets;
     QStringList m_customAspectRatioPresets;
 
-    uint64 m_displayInfoCallbackIndex;
+    float m_prevMoveSpeed;
+
+    // Speed combobox/lineEdit settings
+    double m_minSpeed = 0.01;
+    double m_maxSpeed = 100.0;
+    double m_speedStep = 0.001;
+    int m_numDecimals = 3;
+
+    // Speed presets
+    float m_speedPresetValues[4] = { 0.01f, 0.1f, 1.0f, 10.0f };
+
+    double m_fieldWidthMultiplier = 1.8;
+
 
     void OnMenuFOVCustom();
 
     void CreateFOVMenu();
-    void PopUpFOVMenu();
 
     void OnMenuAspectRatioCustom();
     void CreateAspectMenu();
-    void PopUpAspectMenu();
 
     void OnMenuResolutionCustom();
     void CreateResolutionMenu();
-    void PopUpResolutionMenu();
+
+    void CreateViewportInformationMenu();
+    QMenu* const GetViewportInformationMenu();
+    void SetNoViewportInfo();
+    void SetNormalViewportInfo();
+    void SetFullViewportInfo();
+    void SetCompactViewportInfo();
+
+    void OnBnClickedGotoPosition();
+    void OnBnClickedMuteAudio();
+    void OnBnClickedEnableVR();
+
+    void UpdateMuteActionText();
+
+    void OnToggleDisplayInfo();
+
+    void OnSpeedComboBoxEnter();
+    void OnUpdateMoveSpeedText(const QString&);
+
+    void CheckForCameraSpeedUpdate();
+
+    void OnGridSnappingToggled();
+    void OnAngleSnappingToggled();
+
+    void OnGridSpinBoxChanged(double value);
+    void OnAngleSpinBoxChanged(double value);
+
+    void UpdateOverFlowMenuState();
 
     QMenu* m_fovMenu = nullptr;
     QMenu* m_aspectMenu = nullptr;
     QMenu* m_resolutionMenu = nullptr;
+    QMenu* m_viewportInformationMenu = nullptr;
+    QAction* m_noInformationAction = nullptr;
+    QAction* m_normalInformationAction = nullptr;
+    QAction* m_fullInformationAction = nullptr;
+    QAction* m_compactInformationAction = nullptr;
+    QAction* m_audioMuteAction = nullptr;
+    QAction* m_enableVRAction = nullptr;
+    QAction* m_enableGridSnappingAction = nullptr;
+    QAction* m_enableAngleSnappingAction = nullptr;
+    QComboBox* m_cameraSpeed = nullptr;
+    AzQtComponents::DoubleSpinBox* m_gridSpinBox = nullptr;
+    AzQtComponents::DoubleSpinBox* m_angleSpinBox = nullptr;
+    QWidgetAction* m_gridSizeActionWidget = nullptr;
+    QWidgetAction* m_angleSizeActionWidget = nullptr;
+
+    Audio::SAudioRequest m_oMuteAudioRequest;
+    Audio::SAudioManagerRequestData<Audio::eAMRT_MUTE_ALL> m_oMuteAudioRequestData;
+    Audio::SAudioRequest m_oUnmuteAudioRequest;
+    Audio::SAudioManagerRequestData<Audio::eAMRT_UNMUTE_ALL> m_oUnmuteAudioRequestData;
+
 
     QScopedPointer<Ui::ViewportTitleDlg> m_ui;
 };

@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<WwiseDocument Type="WorkUnit" ID="{923039AD-F8B4-46D4-BDA7-CB5A6EE595E0}" SchemaVersion="97">
+<WwiseDocument Type="WorkUnit" ID="{923039AD-F8B4-46D4-BDA7-CB5A6EE595E0}" SchemaVersion="103">
 	<Effects>
 		<WorkUnit Name="Factory Reflect" ID="{923039AD-F8B4-46D4-BDA7-CB5A6EE595E0}" PersistMode="Standalone">
 			<ChildrenList>
-				<Effect Name="Wwise_Reflect" ID="{37779A87-4754-4420-8175-3236FA46AA12}" PluginName="Wwise Reflect" CompanyID="0" PluginID="171" PluginType="3">					<PluginData>
-	<ReflectData>
+				<Effect Name="Wwise_Reflect" ID="{37779A87-4754-4420-8175-3236FA46AA12}" PluginName="Wwise Reflect" CompanyID="0" PluginID="171" PluginType="3">					<PluginData><ReflectData>
 		<CurveList Version="4">
 			<CurveInfo Name="Diffraction Attenuation">
 				<Curve Name="" ID="{D8294A76-FF48-4022-909E-6A5363A86A52}">
@@ -185,8 +184,7 @@
 				</Curve>
 			</CurveInfo>
 		</CurveList>
-	</ReflectData>
-</PluginData>
+	</ReflectData></PluginData>
 				</Effect>
 			</ChildrenList>
 		</WorkUnit>

@@ -22,7 +22,7 @@
     "COMMAND":"../Windows/python_windows.cmd",
     "PARAMETERS": {
         "SCRIPT_PATH":"scripts/build/ci_build_metrics.py",
-        "SCRIPT_PARAMETERS":"--platform Android --jobname \"!JOB_NAME!\" --jobnumber \"!BUILD_NUMBER!\" --jobnode \"!NODE_NAME!\" --changelist \"!CHANGE_ID!\""
+        "SCRIPT_PARAMETERS":"--platform=Android --repository=!REPOSITORY_NAME! --jobname=!JOB_NAME! --jobnumber=!BUILD_NUMBER! --jobnode=!NODE_LABEL! --changelist=!CHANGE_ID!"
     }
   },
   "debug": {
@@ -99,7 +99,7 @@
         "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
         "ASSET_PROCESSOR_BINARY": "bin\\profile\\AssetProcessorBatch.exe",
         "ASSET_PROCESSOR_OPTIONS": "/zeroAnalysisMode --regset=\"/Amazon/AssetProcessor/Settings/Exclude Android/pattern=.*/DiffuseGlobalIllumination/.*precompiledshader\"",
-        "ASSET_PROCESSOR_PLATFORMS":"es3"
+        "ASSET_PROCESSOR_PLATFORMS":"android"
     }
   },
   "release": {
@@ -136,15 +136,14 @@
   },
   "gradle": {
     "TAGS":[
+        "default",
         "weekly-build-metrics"
     ],
     "COMMAND":"gradle_windows.cmd",
     "PARAMETERS": {
       "CONFIGURATION":"profile",
-      "OUTPUT_DIRECTORY":"build\\android_gradle",
+      "OUTPUT_DIRECTORY":"build\\ad_grd",
       "GAME_PROJECT": "AutomatedTesting",
-      "ANDROID_NDK_PLATFORM": "21",
-      "ANDROID_SDK_PLATFORM": "29",
       "SIGN_APK": "false",
       "GRADLE_BUILD_CMD": "build",
       "ADDITIONAL_GENERATE_ARGS": ""
@@ -158,8 +157,6 @@
       "CONFIGURATION":"profile",
       "OUTPUT_DIRECTORY":"build\\android_unittest",
       "GAME_PROJECT": "AutomatedTesting",
-      "ANDROID_NDK_PLATFORM": "21",
-      "ANDROID_SDK_PLATFORM": "29",
       "SIGN_APK": "true",
       "GRADLE_BUILD_CMD": "assemble",
       "ADDITIONAL_GENERATE_ARGS": "--unit-test"
