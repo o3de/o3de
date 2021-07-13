@@ -5,8 +5,6 @@
  *
  */
 
-#include "Microphone_precompiled.h"
-
 #include "MicrophoneSystemComponent.h"
 #include "SimpleDownsample.h"
 

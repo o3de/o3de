@@ -5,8 +5,6 @@
  *
  */
 
-#include "Microphone_precompiled.h"
-
 #import <Foundation/Foundation.h>
 #import <AudioToolbox/AudioToolbox.h>
 

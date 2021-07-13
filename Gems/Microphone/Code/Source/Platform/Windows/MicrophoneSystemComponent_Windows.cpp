@@ -5,8 +5,6 @@
  *
  */
 
-#include "Microphone_precompiled.h"
-
 #include "MicrophoneSystemComponent.h"
 
 #include <audioclient.h>
@@ -101,7 +99,11 @@ namespace Audio
                 }
 
                 PropVariantClear(&endpointName);
-                SAFE_RELEASE(m_deviceProps);
+                if (m_deviceProps)
+                {
+                    m_deviceProps->Release();
+                    m_deviceProps = nullptr;
+                }
             }
 
             return true;
@@ -115,8 +117,16 @@ namespace Audio
             // Assert: m_audioClient and m_audioCaptureClient are both nullptr!  (i.e. the capture thread is not running)
             AZ_Assert(!m_audioClient && !m_audioCaptureClient, "ShutdownDevice - Audio Client pointers are not null!  You need to call EndSession first!\n");
 
-            SAFE_RELEASE(m_device);
-            SAFE_RELEASE(m_enumerator);
+            if (m_device)
+            {
+                m_device->Release();
+                m_device = nullptr;
+            }
+            if (m_enumerator)
+            {
+                m_enumerator->Release();
+                m_enumerator = nullptr;
+            }
 
             CoUninitialize();
         }
@@ -317,8 +327,16 @@ namespace Audio
                 }
             }
 
-            SAFE_RELEASE(m_audioCaptureClient);
-            SAFE_RELEASE(m_audioClient);
+            if (m_audioCaptureClient)
+            {
+                m_audioCaptureClient->Release();
+                m_audioCaptureClient = nullptr;
+            }
+            if (m_audioClient)
+            {
+                m_audioClient->Release();
+                m_audioClient = nullptr;
+            }
             CoTaskMemFree(m_streamFormat);
             m_streamFormat = nullptr;
 
