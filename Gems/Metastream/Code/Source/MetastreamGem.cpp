@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Metastream_precompiled.h"
 
 #include <sstream>
 #include <string.h>

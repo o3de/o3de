@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Metastream_precompiled.h"
+
 #include "CivetHttpServer.h"
 #include <AzCore/base.h>
 #include <AzCore/std/string/tokenize.h>

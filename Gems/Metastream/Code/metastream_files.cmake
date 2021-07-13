@@ -6,7 +6,6 @@
 #
 
 set(FILES
-    Source/Metastream_precompiled.h
     Include/Metastream/MetastreamBus.h
     Source/DataCache.h
     Source/DataCache.cpp
