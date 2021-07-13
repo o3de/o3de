@@ -5,7 +5,6 @@
  *
  */
 
-#include "SurfaceData_precompiled.h"
 #include <SurfaceData/SurfaceTag.h>
 
 #include <AzCore/RTTI/BehaviorContext.h>

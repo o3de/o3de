@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "SurfaceData_precompiled.h"
+
 #include <SurfaceData/Tests/SurfaceDataTestMocks.h>
 
 #include <AzTest/AzTest.h>

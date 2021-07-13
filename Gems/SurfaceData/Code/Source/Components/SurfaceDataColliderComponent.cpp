@@ -5,7 +5,6 @@
  *
  */
 
-#include "SurfaceData_precompiled.h"
 #include "SurfaceDataColliderComponent.h"
 
 #include <AzCore/Debug/Profiler.h>

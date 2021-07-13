@@ -5,8 +5,6 @@
  *
  */
 
-#include "SurfaceData_precompiled.h"
-
 #include <SurfaceDataModule.h>
 #include <SurfaceDataSystemComponent.h>
 #include <Components/SurfaceDataColliderComponent.h>

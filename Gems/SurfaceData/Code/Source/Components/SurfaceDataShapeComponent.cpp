@@ -5,7 +5,6 @@
  *
  */
 
-#include "SurfaceData_precompiled.h"
 #include "SurfaceDataShapeComponent.h"
 
 #include <AzCore/Component/TransformBus.h>
