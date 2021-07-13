@@ -5,8 +5,6 @@
  *
  */
 
-#include "SliceFavorites_precompiled.h"
-
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include "SliceFavoritesSystemComponent.h"

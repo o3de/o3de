@@ -5,8 +5,6 @@
  *
  */
 
-#include "SliceFavorites_precompiled.h"
-
 #include "ComponentSliceFavoritesWindow.h"
 #include "SliceFavoritesWidget.h"
 #include "SliceFavoritesSystemComponentBus.h"

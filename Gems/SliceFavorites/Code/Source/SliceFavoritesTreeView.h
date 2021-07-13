@@ -11,6 +11,7 @@
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/std/containers/list.h>
 
 #include <QTreeView>
 #endif
