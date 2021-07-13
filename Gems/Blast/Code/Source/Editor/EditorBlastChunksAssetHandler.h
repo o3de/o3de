@@ -6,7 +6,7 @@
  */
 #pragma once
 
-#include <Asset/BlastSliceAsset.h>
+#include <Asset/BlastChunksAsset.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetTypeInfoBus.h>
 #include <AzCore/Serialization/EditContext.h>

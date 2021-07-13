@@ -7,7 +7,7 @@
 
 #include <StdAfx.h>
 
-#include <Asset/BlastSliceAsset.h>
+#include <Asset/BlastChunksAsset.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Editor/EditorSystemComponent.h>
 #include <Editor/EditorWindow.h>

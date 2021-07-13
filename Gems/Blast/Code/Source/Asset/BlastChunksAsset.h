@@ -8,8 +8,6 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 
-// TODO rename to BlastChunksAsset.h/cpp
-
 namespace Blast
 {
     //! The product asset file from a .blast_chunks file product asset file

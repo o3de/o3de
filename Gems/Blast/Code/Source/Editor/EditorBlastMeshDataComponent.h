@@ -6,7 +6,7 @@
  */
 #pragma once
 
-#include <Asset/BlastSliceAsset.h>
+#include <Asset/BlastChunksAsset.h>
 #include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/Model/Model.h>
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>

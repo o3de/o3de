@@ -6,9 +6,9 @@
  */
 #include "StdAfx.h"
 
-#include <Editor/EditorBlastSliceAssetHandler.h>
+#include <Editor/EditorBlastChunksAssetHandler.h>
 #include <Editor/EditorBlastMeshDataComponent.h>
-#include <Asset/BlastSliceAsset.h>
+#include <Asset/BlastChunksAsset.h>
 
 #include <AzTest/AzTest.h>
 #include <AzCore/UnitTest/TestTypes.h>

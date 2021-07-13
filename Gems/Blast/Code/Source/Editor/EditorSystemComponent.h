@@ -10,7 +10,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
-#include <Editor/EditorBlastSliceAssetHandler.h>
+#include <Editor/EditorBlastChunksAssetHandler.h>
 
 namespace Blast
 {

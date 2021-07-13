@@ -7,7 +7,7 @@
 
 #include "StdAfx.h"
 
-#include <Asset/BlastSliceAsset.h>
+#include <Asset/BlastChunksAsset.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 
 namespace Blast

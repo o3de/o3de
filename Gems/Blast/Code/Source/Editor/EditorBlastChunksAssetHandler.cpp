@@ -7,7 +7,7 @@
 #include "StdAfx.h"
 
 #include <Editor/EditorBlastMeshDataComponent.h>
-#include <Editor/EditorBlastSliceAssetHandler.h> // TODO rename to EditorBlastChunksAssetHandler
+#include <Editor/EditorBlastChunksAssetHandler.h>
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/IO/FileIO.h>
@@ -20,8 +20,6 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-
-// TODO rename BlastChunksAssetStorageComponent to BlastManifestAssetStorageComponent
 
 namespace Blast
 {
