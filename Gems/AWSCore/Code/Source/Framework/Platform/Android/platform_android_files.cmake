@@ -6,6 +6,5 @@
 #
 
 set(FILES
-    ../Common/Default/AWSNativeSDKInit_Default.cpp
-    ../Common/Default/InitializeCerts_Null.cpp
+    GetCertsPath_Android.cpp
 )
