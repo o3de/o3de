@@ -10,60 +10,25 @@
 #include <Editor/EditorBlastMeshDataComponent.h>
 #include <Asset/BlastSliceAsset.h>
 
-#include <AzCore/UnitTest/MockComponentApplication.h>
-
 #include <AzTest/AzTest.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <gmock/gmock.h>
 
+#include <AzCore/UnitTest/MockComponentApplication.h>
+
 namespace UnitTest
 {
-    class MockComponentApplicationBusHandler final
-        //: public MockComponentApplication
-        : public AZ::ComponentApplicationBus::Handler
+    MockComponentApplication::MockComponentApplication()
     {
-    public:
-        MockComponentApplicationBusHandler()
-        {
-            AZ::ComponentApplicationBus::Handler::BusConnect();
-        }
+        AZ::ComponentApplicationBus::Handler::BusConnect();
+        AZ::Interface<AZ::ComponentApplicationRequests>::Register(this);
+    }
 
-        virtual ~MockComponentApplicationBusHandler()
-        {
-            AZ::ComponentApplicationBus::Handler::BusDisconnect();
-        }
-
-        MOCK_METHOD0(Destroy, void());
-        MOCK_METHOD1(RegisterComponentDescriptor, void(const AZ::ComponentDescriptor*));
-        MOCK_METHOD1(UnregisterComponentDescriptor, void(const AZ::ComponentDescriptor*));
-        MOCK_METHOD1(RemoveEntity, bool(AZ::Entity*));
-        MOCK_METHOD1(DeleteEntity, bool(const AZ::EntityId&));
-        MOCK_METHOD1(GetEntityName, AZStd::string(const AZ::EntityId&));
-        MOCK_METHOD1(AddEntity, bool(AZ::Entity*));
-        MOCK_METHOD1(FindEntity, AZ::Entity*(const AZ::EntityId&));
-        MOCK_METHOD1(EnumerateEntities, void(const ComponentApplicationRequests::EntityCallback&));
-        MOCK_METHOD0(GetApplication, AZ::ComponentApplication* ());
-        MOCK_METHOD0(GetSerializeContext, AZ::SerializeContext* ());
-        MOCK_METHOD0(GetBehaviorContext, AZ::BehaviorContext* ());
-        MOCK_METHOD0(GetJsonRegistrationContext, AZ::JsonRegistrationContext* ());
-        MOCK_METHOD0(GetAppRoot, const char* ());
-        MOCK_CONST_METHOD0(GetExecutableFolder, const char* ());
-        MOCK_METHOD0(GetDrillerManager, AZ::Debug::DrillerManager* ());
-        MOCK_METHOD0(GetTickDeltaTime, float());
-        MOCK_METHOD1(Tick, void(float));
-        MOCK_METHOD0(TickSystem, void());
-        MOCK_CONST_METHOD0(GetRequiredSystemComponents, AZ::ComponentTypeList());
-        MOCK_METHOD1(ResolveModulePath, void(AZ::OSString&));
-        MOCK_METHOD0(CreateSerializeContext, void());
-        MOCK_METHOD0(DestroySerializeContext, void());
-        MOCK_METHOD0(CreateBehaviorContext, void());
-        MOCK_METHOD0(DestroyBehaviorContext, void());
-        MOCK_METHOD0(RegisterCoreComponents, void());
-        MOCK_METHOD1(AddSystemComponents, void(AZ::Entity*));
-        MOCK_METHOD0(ReflectSerialize, void());
-        MOCK_METHOD1(Reflect, void(AZ::ReflectContext*));
-        MOCK_CONST_METHOD0(GetBinFolder, const char* ());
-    };
+    MockComponentApplication::~MockComponentApplication()
+    {
+        AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(this);
+        AZ::ComponentApplicationBus::Handler::BusDisconnect();
+    }
 
     class MockAssetCatalogRequestBusHandler final
         : public AZ::Data::AssetCatalogRequestBus::Handler
@@ -122,28 +87,21 @@ namespace UnitTest
         : public AllocatorsTestFixture
     {
     public:
-        AZStd::unique_ptr<MockComponentApplicationBusHandler> m_mockComponentApplicationBusHandler;
-        //AZStd::unique_ptr<UnitTest::MockComponentApplication> m_mockComponentApplicationBusHandler;
+        AZStd::unique_ptr<UnitTest::MockComponentApplication> m_mockComponentApplicationBusHandler;
         AZStd::unique_ptr<MockAssetCatalogRequestBusHandler> m_mockAssetCatalogRequestBusHandler;
         AZStd::unique_ptr<MockAssetManager> m_mockAssetManager;
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
-        const AZ::ComponentDescriptor* m_sliceComponentDescriptor = nullptr;
 
         void SetUpSliceComponents()
         {
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
 
             AZ::Entity::Reflect(m_serializeContext.get());
-            Blast::BlastSliceAssetStorageComponent::Reflect(m_serializeContext.get());
             AzToolsFramework::Components::EditorComponentBase::Reflect(m_serializeContext.get());
-
-            m_sliceComponentDescriptor = AZ::SliceComponent::CreateDescriptor();
-            m_sliceComponentDescriptor->Reflect(m_serializeContext.get());
         }
 
         void TearDownSliceComponents()
         {
-            delete m_sliceComponentDescriptor;
             m_serializeContext.reset();
         }
 
@@ -153,7 +111,7 @@ namespace UnitTest
             AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
             AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
 
-            m_mockComponentApplicationBusHandler = AZStd::make_unique<MockComponentApplicationBusHandler>();
+            m_mockComponentApplicationBusHandler = AZStd::make_unique<UnitTest::MockComponentApplication>();
             m_mockAssetCatalogRequestBusHandler = AZStd::make_unique<MockAssetCatalogRequestBusHandler>();
             m_mockAssetManager = AZStd::make_unique<MockAssetManager>(AZ::Data::AssetManager::Descriptor{});
 
@@ -162,9 +120,9 @@ namespace UnitTest
 
         void TearDown() override final
         {
-            AZ::Data::AssetManager::SetInstance(nullptr);
+            m_mockAssetManager.release();
+            AZ::Data::AssetManager::Destroy();
 
-            m_mockAssetManager.reset();
             m_mockAssetCatalogRequestBusHandler.reset();
             m_mockComponentApplicationBusHandler.reset();
 
@@ -183,92 +141,19 @@ namespace UnitTest
         }
     };
 
-    TEST_F(EditorBlastSliceAssetHandlerTestFixture, EditorBlastSliceAssetHandler_AssetManager_Registered)
+    TEST_F(EditorBlastSliceAssetHandlerTestFixture, EditorBlastChunkAssetHandler_AssetManager_Registered)
     {
-        Blast::EditorBlastSliceAssetHandler handler;
+        Blast::EditorBlastChunksAssetHandler handler;
         handler.Register();
-        EXPECT_NE(nullptr, AZ::Data::AssetManager::Instance().GetHandler(azrtti_typeid<Blast::BlastSliceAsset>()));
+        EXPECT_NE(nullptr, AZ::Data::AssetManager::Instance().GetHandler(azrtti_typeid<Blast::BlastChunksAsset>()));
         handler.Unregister();
     }
 
-    TEST_F(EditorBlastSliceAssetHandlerTestFixture, BlastSliceAssetStorageComponent_Behavior_Registered)
+    TEST_F(EditorBlastSliceAssetHandlerTestFixture, EditorBlastChunkAssetHandler_AssetTypeInfoBus_Responds)
     {
-        AZ::BehaviorContext behaviorContext;
-        Blast::BlastSliceAssetStorageComponent::Reflect(&behaviorContext);
+        auto assetId = azrtti_typeid<Blast::BlastChunksAsset>();
 
-        auto classEntry = behaviorContext.m_classes.find("BlastSliceAssetStorageComponent");
-        EXPECT_NE(behaviorContext.m_classes.end(), classEntry);
-        AZ::BehaviorClass* behaviorClass = classEntry->second;
-        auto methodEntry = behaviorClass->m_methods.find("GenerateAssetInfo");
-        EXPECT_NE(behaviorClass->m_methods.end(), methodEntry);
-        AZ::BehaviorMethod* behaviorMethod = methodEntry->second;
-        EXPECT_EQ(4, behaviorMethod->GetNumArguments());
-        EXPECT_EQ(behaviorMethod->GetArgument(0)->m_typeId, azrtti_typeid<Blast::BlastSliceAssetStorageComponent>());
-        EXPECT_EQ(behaviorMethod->GetArgument(1)->m_typeId, azrtti_typeid<AZStd::vector<AZStd::string>>());
-        EXPECT_EQ(behaviorMethod->GetArgument(2)->m_typeId, azrtti_typeid<AZStd::string_view>());
-        EXPECT_EQ(behaviorMethod->GetArgument(3)->m_typeId, azrtti_typeid<AZStd::string_view>());
-    }
-
-    TEST_F(EditorBlastSliceAssetHandlerTestFixture, BlastSliceAsset_Behavior_Registered)
-    {
-        AZ::BehaviorContext behaviorContext;
-        Blast::BlastSliceAsset::Reflect(&behaviorContext);
-
-        auto classEntry = behaviorContext.m_classes.find("BlastSliceAsset");
-        EXPECT_NE(behaviorContext.m_classes.end(), classEntry);
-        AZ::BehaviorClass* behaviorClass = classEntry->second;
-
-        auto setMeshIdListEntry = behaviorClass->m_methods.find("SetMeshIdList");
-        EXPECT_NE(behaviorClass->m_methods.end(), setMeshIdListEntry);
-        {
-            AZ::BehaviorMethod* behaviorMethod = setMeshIdListEntry->second;
-            EXPECT_EQ(2, behaviorMethod->GetNumArguments());
-            EXPECT_EQ(behaviorMethod->GetArgument(0)->m_typeId, azrtti_typeid<Blast::BlastSliceAsset>());
-            EXPECT_EQ(behaviorMethod->GetArgument(1)->m_typeId, azrtti_typeid<AZStd::vector<AZ::Data::AssetId>>());
-        }
-
-        auto getMeshIdListEntry = behaviorClass->m_methods.find("GetMeshIdList");
-        EXPECT_NE(behaviorClass->m_methods.end(), getMeshIdListEntry);
-        {
-            AZ::BehaviorMethod* behaviorMethod = getMeshIdListEntry->second;
-            EXPECT_EQ(1, behaviorMethod->GetNumArguments());
-            EXPECT_EQ(behaviorMethod->GetArgument(0)->m_typeId, azrtti_typeid<Blast::BlastSliceAsset>());
-            EXPECT_EQ(behaviorMethod->GetResult()->m_typeId, azrtti_typeid<AZStd::vector<AZ::Data::AssetId>>());
-        }
-
-        auto setMaterialIdEntry = behaviorClass->m_methods.find("SetMaterialId");
-        EXPECT_NE(behaviorClass->m_methods.end(), setMaterialIdEntry);
-        {
-            AZ::BehaviorMethod* behaviorMethod = setMaterialIdEntry->second;
-            EXPECT_EQ(2, behaviorMethod->GetNumArguments());
-            EXPECT_EQ(behaviorMethod->GetArgument(0)->m_typeId, azrtti_typeid<Blast::BlastSliceAsset>());
-            EXPECT_EQ(behaviorMethod->GetArgument(1)->m_typeId, azrtti_typeid<AZ::Data::AssetId>());
-        }
-
-        auto getMaterialIdEntry = behaviorClass->m_methods.find("GetMaterialId");
-        EXPECT_NE(behaviorClass->m_methods.end(), getMaterialIdEntry);
-        {
-            AZ::BehaviorMethod* behaviorMethod = getMaterialIdEntry->second;
-            EXPECT_EQ(1, behaviorMethod->GetNumArguments());
-            EXPECT_EQ(behaviorMethod->GetArgument(0)->m_typeId, azrtti_typeid<Blast::BlastSliceAsset>());
-            EXPECT_EQ(behaviorMethod->GetResult()->m_typeId, azrtti_typeid<AZ::Data::AssetId>());
-        }
-
-        auto getAssetTypeIdEntry = behaviorClass->m_methods.find("GetAssetTypeId");
-        EXPECT_NE(behaviorClass->m_methods.end(), getAssetTypeIdEntry);
-        {
-            AZ::BehaviorMethod* behaviorMethod = getAssetTypeIdEntry->second;
-            EXPECT_EQ(1, behaviorMethod->GetNumArguments());
-            EXPECT_EQ(behaviorMethod->GetArgument(0)->m_typeId, azrtti_typeid<Blast::BlastSliceAsset>());
-            EXPECT_EQ(behaviorMethod->GetResult()->m_typeId, azrtti_typeid<AZ::TypeId>());
-        }
-    }
-
-    TEST_F(EditorBlastSliceAssetHandlerTestFixture, EditorBlastSliceAssetHandler_AssetTypeInfoBus_Responds)
-    {
-        auto assetId = azrtti_typeid<Blast::BlastSliceAsset>();
-
-        Blast::EditorBlastSliceAssetHandler handler;
+        Blast::EditorBlastChunksAssetHandler handler;
         handler.Register();
 
         AZ::Data::AssetType assetType = AZ::Uuid::CreateNull();
@@ -277,7 +162,7 @@ namespace UnitTest
 
         const char* displayName = nullptr;
         AZ::AssetTypeInfoBus::EventResult(displayName, assetId, &AZ::AssetTypeInfoBus::Events::GetAssetTypeDisplayName);
-        EXPECT_STREQ("Blast Slice Asset", displayName);
+        EXPECT_STREQ("Blast Chunks Asset", displayName);
 
         const char* group = nullptr;
         AZ::AssetTypeInfoBus::EventResult(group, assetId, &AZ::AssetTypeInfoBus::Events::GetGroup);
@@ -285,22 +170,22 @@ namespace UnitTest
 
         const char* icon = nullptr;
         AZ::AssetTypeInfoBus::EventResult(icon, assetId, &AZ::AssetTypeInfoBus::Events::GetBrowserIcon);
-        EXPECT_STREQ("Editor/Icons/Components/Box.png", icon);
+        EXPECT_STREQ("Icons/Components/Box.png", icon);
 
         AZStd::vector<AZStd::string> extensions;
         AZ::AssetTypeInfoBus::Event(assetId, &AZ::AssetTypeInfoBus::Events::GetAssetTypeExtensions, extensions);
         ASSERT_EQ(1, extensions.size());
-        ASSERT_EQ("blast_slice", extensions[0]);
+        ASSERT_EQ("blast_chunks", extensions[0]);
 
         handler.Unregister();
     }
 
-    TEST_F(EditorBlastSliceAssetHandlerTestFixture, EditorBlastSliceAssetHandler_AssetHandler_Ready)
+    TEST_F(EditorBlastSliceAssetHandlerTestFixture, EditorBlastChunkAssetHandler_AssetHandler_Ready)
     {
-        auto assetType = azrtti_typeid<Blast::BlastSliceAsset>();
+        auto assetType = azrtti_typeid<Blast::BlastChunksAsset>();
         auto&& assetManager = AZ::Data::AssetManager::Instance();
 
-        Blast::EditorBlastSliceAssetHandler handler;
+        Blast::EditorBlastChunksAssetHandler handler;
         handler.Register();
         EXPECT_EQ(&handler, assetManager.GetHandler(assetType));
 
@@ -310,68 +195,15 @@ namespace UnitTest
             using ::testing::_;
 
             EXPECT_CALL(*m_mockAssetCatalogRequestBusHandler, GetAssetInfoById(_))
-                .Times(1)
+                .Times(2)
                 .WillRepeatedly(Return(AZ::Data::AssetInfo{}));
 
-            auto assetPtr = assetManager.CreateAsset<Blast::BlastSliceAsset>(AZ::Data::AssetId(AZ::Uuid::CreateRandom(), 0));
+            auto assetPtr = assetManager.CreateAsset<Blast::BlastChunksAsset>(AZ::Data::AssetId(AZ::Uuid::CreateRandom(), 0));
             EXPECT_NE(nullptr, assetPtr.Get());
-            EXPECT_EQ(azrtti_typeid<Blast::BlastSliceAsset>(), assetPtr.GetType());
+            EXPECT_EQ(azrtti_typeid<Blast::BlastChunksAsset>(), assetPtr.GetType());
         }
 
         handler.Unregister();
     }
 
-    TEST_F(EditorBlastSliceAssetHandlerTestFixture, EditorBlastSliceAssetHandler_AssetHandler_LoadsAssetData)
-    {
-        SetUpSliceComponents();
-
-        AZStd::vector<AZStd::string> meshAssetPathList = { "/foo/path/thing.cgf", "/foo/path/that.cgf" };
-        AZ::Entity* storageEntity = aznew AZ::Entity();
-        auto* blastStorage = storageEntity->CreateComponent<Blast::BlastSliceAssetStorageComponent>();
-        blastStorage->SetMeshPathList(meshAssetPathList);
-
-        AZ::Entity sliceEntity;
-        AZ::SliceComponent* slice = sliceEntity.CreateComponent<AZ::SliceComponent>();
-        slice->AddEntity(storageEntity);
-
-        AZStd::vector<char> buffer;
-        SaveSliceAssetToStream(&sliceEntity, buffer);
-
-        // Load a slice with the BlastSliceAssetStorageComponent
-        Blast::EditorBlastSliceAssetHandler handler;
-        handler.Register();
-        {
-            using ::testing::Return;
-            using ::testing::_;
-
-            EXPECT_CALL(*m_mockComponentApplicationBusHandler, GetSerializeContext)
-                .Times(1)
-                .WillOnce(Return(m_serializeContext.get()));
-
-            EXPECT_CALL(*m_mockComponentApplicationBusHandler, FindEntity(_))
-                .Times(1)
-                .WillOnce(Return(&sliceEntity));
-
-            EXPECT_CALL(*m_mockAssetCatalogRequestBusHandler, GetAssetIdByPath(_,_,_))
-                .Times(2)
-                .WillRepeatedly(Return(AZ::Data::AssetId(AZ::Uuid::CreateRandom(), 0)));
-
-            EXPECT_CALL(*m_mockAssetCatalogRequestBusHandler, GetAssetInfoById(_))
-                .Times(2)
-                .WillRepeatedly(Return(AZ::Data::AssetInfo{}));
-
-            auto&& assetManager = AZ::Data::AssetManager::Instance();
-            auto assetPtr = assetManager.CreateAsset<Blast::BlastSliceAsset>(AZ::Data::AssetId(AZ::Uuid::CreateRandom(), 0));
-
-            AZ::IO::ByteContainerStream<AZStd::vector<char>> stream(&buffer);
-            stream.Seek(0, AZ::IO::GenericStream::ST_SEEK_BEGIN);
-
-            const AZ::Data::AssetFilterCB assetLoadFilterCB{};
-            bool loaded = handler.LoadAssetData(assetPtr, &stream, assetLoadFilterCB);
-            EXPECT_TRUE(loaded);
-        }
-        handler.Unregister();
-
-        TearDownSliceComponents();
-    }
 }

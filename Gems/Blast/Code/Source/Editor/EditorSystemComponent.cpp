@@ -17,7 +17,7 @@ namespace Blast
 {
     void EditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        BlastSliceAsset::Reflect(context);
+        BlastChunksAsset::Reflect(context);
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
@@ -27,14 +27,14 @@ namespace Blast
 
     void EditorSystemComponent::Activate()
     {
-        m_editorBlastSliceAssetHandler = AZStd::make_unique<EditorBlastSliceAssetHandler>();
-        m_editorBlastSliceAssetHandler->Register();
+        m_editorBlastChunksAssetHandler = AZStd::make_unique<EditorBlastChunksAssetHandler>();
+        m_editorBlastChunksAssetHandler->Register();
 
         auto assetCatalog = AZ::Data::AssetCatalogRequestBus::FindFirstHandler();
         if (assetCatalog)
         {
-            assetCatalog->EnableCatalogForAsset(azrtti_typeid<BlastSliceAsset>());
-            assetCatalog->AddExtension("blast_slice");
+            assetCatalog->EnableCatalogForAsset(azrtti_typeid<BlastChunksAsset>());
+            assetCatalog->AddExtension("blast_chunks");
         }
 
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
@@ -47,7 +47,7 @@ namespace Blast
     void EditorSystemComponent::Deactivate()
     {
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
-        m_editorBlastSliceAssetHandler.reset();
+        m_editorBlastChunksAssetHandler.reset();
     }
 
     // This will be called when the IEditor instance is ready

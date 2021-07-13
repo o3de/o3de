@@ -10,8 +10,10 @@ set(FILES
     Source/Editor/EditorBlastFamilyComponent.cpp
     Source/Editor/EditorBlastMeshDataComponent.cpp
     Source/Editor/EditorBlastMeshDataComponent.h
+    #
     Source/Editor/EditorBlastSliceAssetHandler.h
     Source/Editor/EditorBlastSliceAssetHandler.cpp
+    #
     Source/Editor/EditorSystemComponent.h
     Source/Editor/EditorSystemComponent.cpp
     Editor/ConfigurationWidget.h

@@ -8,28 +8,27 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 
+// TODO rename to BlastChunksAsset.h/cpp
+
 namespace Blast
 {
-    //! The product asset file from a .blast_slice file product asset file
-    class BlastSliceAsset final : public AZ::Data::AssetData
+    //! The product asset file from a .blast_chunks file product asset file
+    class BlastChunksAsset final
+        : public AZ::Data::AssetData
     {
     public:
-        AZ_RTTI(BlastSliceAsset, "{D04AAF07-EB12-4E50-8964-114A9B9C1FD1}", AZ::Data::AssetData);
-        AZ_CLASS_ALLOCATOR(BlastSliceAsset, AZ::SystemAllocator, 0);
+        AZ_RTTI(BlastChunksAsset, "{993F0B0F-37D9-48C6-9CC2-E27D3F3E343E}", AZ::Data::AssetData);
+        AZ_CLASS_ALLOCATOR(BlastChunksAsset, AZ::SystemAllocator, 0);
 
-        BlastSliceAsset() = default;
-        ~BlastSliceAsset() override = default;
+        BlastChunksAsset() = default;
+        ~BlastChunksAsset() override = default;
 
-        void SetMeshIdList(const AZStd::vector<AZ::Data::AssetId>& meshAssetIdList);
-        const AZStd::vector<AZ::Data::AssetId>& GetMeshIdList() const;
-
-        void SetMaterialId(const AZ::Data::AssetId& materialAssetId);
-        const AZ::Data::AssetId& GetMaterialId() const;
+        void SetModelAssetIds(const AZStd::vector<AZ::Data::AssetId>& modelAssetIds);
+        const AZStd::vector<AZ::Data::AssetId>& GetModelAssetIds() const;
 
         static void Reflect(AZ::ReflectContext* context);
 
     private:
-        AZStd::vector<AZ::Data::AssetId> m_meshAssetIdList;
-        AZ::Data::AssetId m_materialAssetId;
+        AZStd::vector<AZ::Data::AssetId> m_modelAssetIds;
     };
 } // namespace Blast

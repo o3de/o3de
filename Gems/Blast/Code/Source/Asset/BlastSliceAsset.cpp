@@ -12,51 +12,23 @@
 
 namespace Blast
 {
-    void BlastSliceAsset::SetMeshIdList(const AZStd::vector<AZ::Data::AssetId>& meshAssetIdList)
+    void BlastChunksAsset::SetModelAssetIds(const AZStd::vector<AZ::Data::AssetId>& modelAssetIds)
     {
-        m_meshAssetIdList = meshAssetIdList;
+        m_modelAssetIds = modelAssetIds;
     }
 
-    const AZStd::vector<AZ::Data::AssetId>& BlastSliceAsset::GetMeshIdList() const
+    const AZStd::vector<AZ::Data::AssetId>& BlastChunksAsset::GetModelAssetIds() const
     {
-        return m_meshAssetIdList;
+        return m_modelAssetIds;
     }
 
-    void BlastSliceAsset::SetMaterialId(const AZ::Data::AssetId& materialAssetId)
-    {
-        m_materialAssetId = materialAssetId;
-    }
-
-    const AZ::Data::AssetId& BlastSliceAsset::GetMaterialId() const
-    {
-        return m_materialAssetId;
-    }
-
-    void BlastSliceAsset::Reflect(AZ::ReflectContext* context)
+    void BlastChunksAsset::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<BlastSliceAsset, AZ::Data::AssetData>()
+            serializeContext->Class<BlastChunksAsset, AZ::Data::AssetData>()
                 ->Version(1)
-                ->Field("meshAssetIdList", &BlastSliceAsset::m_meshAssetIdList)
-                ->Field("materialAssetId", &BlastSliceAsset::m_materialAssetId);
-        }
-
-        if (AZ::BehaviorContext* behavior = azrtti_cast<AZ::BehaviorContext*>(context))
-        {
-            behavior->Class<BlastSliceAsset>("BlastSliceAsset")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
-                ->Attribute(AZ::Script::Attributes::Module, "blast")
-                ->Method("SetMeshIdList", &BlastSliceAsset::SetMeshIdList)
-                ->Method("GetMeshIdList", &BlastSliceAsset::GetMeshIdList)
-                ->Method("SetMaterialId", &BlastSliceAsset::SetMaterialId)
-                ->Method("GetMaterialId", &BlastSliceAsset::GetMaterialId)
-                ->Method(
-                    "GetAssetTypeId",
-                    [](BlastSliceAsset*)
-                    {
-                        return azrtti_typeid<BlastSliceAsset>();
-                    });
+                ->Field("modelAssetIds", &BlastChunksAsset::m_modelAssetIds);
         }
     }
 
