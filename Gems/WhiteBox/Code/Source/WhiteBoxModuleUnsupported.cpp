@@ -5,8 +5,6 @@
  *
  */
 
-#include <WhiteBoxUnsupported_precompiled.h>
-
 #include <AzCore/Module/Module.h>
 
 #if defined(WHITE_BOX_EDITOR)
