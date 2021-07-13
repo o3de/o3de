@@ -41,7 +41,7 @@ namespace AzNetworking
 
     void TcpSocketManager::ProcessEvents(AZ::TimeMs maxBlockMs, const SocketEventCallback& readCallback, const SocketEventCallback& writeCallback)
     {
-        if(static_cast<int32_t>(m_maxFd) <= 0 && m_socketFds.empty())
+        if(static_cast<int32_t>(m_maxFd) <= 0 || m_socketFds.empty())
         {
             // There are no available sockets to process
             return;
