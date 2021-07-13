@@ -266,7 +266,9 @@ namespace UnitTest
             AZ::IO::SystemFile::SetWritable(filePath.c_str(), false);
 
             // Attempt to save to the same file. Should not be allowed.
+            AZ_TEST_START_TRACE_SUPPRESSION;
             EXPECT_FALSE(m_assetSeedManager->Save(filePath));
+            AZ_TEST_STOP_TRACE_SUPPRESSION(1);
 
             // Clean up the test environment
             AZ::IO::SystemFile::SetWritable(filePath.c_str(), true);
@@ -290,7 +292,9 @@ namespace UnitTest
             AZ::IO::SystemFile::SetWritable(filePath.c_str(), false);
 
             // Attempt to save to the same file. Should not be allowed.
+            AZ_TEST_START_TRACE_SUPPRESSION;
             EXPECT_FALSE(m_assetSeedManager->SaveAssetFileInfo(filePath, AzFramework::PlatformFlags::Platform_PC, {}));
+            AZ_TEST_STOP_TRACE_SUPPRESSION(1);
 
             // Clean up the test environment
             AZ::IO::SystemFile::SetWritable(filePath.c_str(), true);
@@ -357,7 +361,9 @@ namespace UnitTest
             m_assetSeedManager->AddSeedAsset(assets[2], AzFramework::PlatformFlags::Platform_PC);
 
             // Step we are testing
+            AZ_TEST_START_TRACE_SUPPRESSION;
             m_assetSeedManager->AddPlatformToAllSeeds(AzFramework::PlatformId::ANDROID_ID);
+            AZ_TEST_STOP_TRACE_SUPPRESSION(1);
 
             // Verification
             AzFramework::PlatformFlags expectedPlatformFlags = AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_ANDROID;

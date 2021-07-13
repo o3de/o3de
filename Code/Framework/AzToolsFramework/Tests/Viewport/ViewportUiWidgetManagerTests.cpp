@@ -85,19 +85,8 @@ namespace UnitTest
     }
 
     class ViewportUiWidgetAssertFixture
-        : public ::testing::Test
-        , UnitTest::TraceBusRedirector
-    {
-    public:
-        void SetUp() override
-        {
-            AZ::Debug::TraceMessageBus::Handler::BusConnect();
-        }
-        void TearDown() override
-        {
-            AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
-        }
-    };
+        : public ScopedAllocatorSetupFixture
+    {};
 
     TEST_F(ViewportUiWidgetAssertFixture, RegisterUpdateCallbackDoesNotRegisterFunctionForNotAddedObject)
     {

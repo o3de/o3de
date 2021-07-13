@@ -54,6 +54,7 @@ namespace UnitTest
             m_localFileIO = aznew AZ::IO::LocalFileIO();
 
             m_priorFileIO = AZ::IO::FileIOBase::GetInstance();
+            AZ::IO::FileIOBase::SetInstance(nullptr);
             AZ::IO::FileIOBase::SetInstance(m_localFileIO);
 
             AZ::IO::FileIOBase::GetInstance()->SetAlias("@assets@", GetTestFolderPath().c_str());
@@ -175,6 +176,7 @@ namespace UnitTest
             delete m_pcCatalog;
             delete m_localFileIO;
             m_localFileIO = nullptr;
+            AZ::IO::FileIOBase::SetInstance(nullptr);
             AZ::IO::FileIOBase::SetInstance(m_priorFileIO);
             m_application->Stop();
             delete m_application;

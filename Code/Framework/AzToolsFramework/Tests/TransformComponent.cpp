@@ -975,7 +975,7 @@ namespace UnitTest
     // AzToolsFramework::Components::TransformComponent
 
     // Fixture base class for AzToolsFramework::Components::TransformComponent tests
-    class EditorTransformComponentTest
+    class OldEditorTransformComponentTest
         : public ::testing::Test
     {
     protected:
@@ -1000,7 +1000,7 @@ namespace UnitTest
     // Old TransformComponents used to store "Slice Root" entity Id, which could be its own Id.
     // The version-converter could end up making an entity into its own transform parent.
     // The EditorEntityFixupComponent should fix this up during slice instantiation.
-    TEST_F(EditorTransformComponentTest, OldSliceRoots_ShouldHaveNoParent)
+    TEST_F(OldEditorTransformComponentTest, OldSliceRoots_ShouldHaveNoParent)
     {
         const char kSliceData[] =
 R"DELIMITER(<ObjectStream version="1">
