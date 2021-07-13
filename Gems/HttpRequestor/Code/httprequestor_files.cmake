@@ -6,7 +6,6 @@
 #
 
 set(FILES
-    Source/HttpRequestor_precompiled.h
     Source/HttpRequestManager.cpp
     Source/HttpRequestManager.h
     Include/HttpRequestor/HttpRequestorBus.h

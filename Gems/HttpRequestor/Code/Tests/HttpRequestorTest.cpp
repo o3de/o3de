@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "HttpRequestor_precompiled.h"
+
 #include <AzTest/AzTest.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/parallel/atomic.h>

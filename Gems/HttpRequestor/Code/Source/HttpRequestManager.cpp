@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "HttpRequestor_precompiled.h"
 
 #include <AzFramework/AzFramework_Traits_Platform.h>
+#include <AzCore/PlatformDef.h>
 
 // The AWS Native SDK AWSAllocator triggers a warning due to accessing members of std::allocator directly.
 // AWSAllocator.h(70): warning C4996: 'std::allocator<T>::pointer': warning STL4010: Various members of std::allocator are deprecated in C++17.
