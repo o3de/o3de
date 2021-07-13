@@ -5,7 +5,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "CapsuleShapeComponent.h"
 
 #include <AzCore/Math/IntersectPoint.h>

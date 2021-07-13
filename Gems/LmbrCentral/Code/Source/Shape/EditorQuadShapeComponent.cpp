@@ -5,7 +5,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "QuadShapeComponent.h"
 
 #include <AzCore/Serialization/EditContext.h>

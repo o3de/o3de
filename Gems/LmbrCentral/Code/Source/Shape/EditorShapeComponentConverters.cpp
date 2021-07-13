@@ -5,7 +5,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "EditorShapeComponentConverters.h"
 
 #include "EditorCapsuleShapeComponent.h"

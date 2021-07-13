@@ -5,7 +5,6 @@
  *
  */
 
-#include <LmbrCentral_precompiled.h>
 #include "SchemaUtils.h"
 
 #include<AzCore/Serialization/Utils.h>

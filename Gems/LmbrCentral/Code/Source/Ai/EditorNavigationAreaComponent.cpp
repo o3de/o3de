@@ -5,7 +5,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "EditorNavigationAreaComponent.h"
 
 #include "EditorNavigationUtil.h"

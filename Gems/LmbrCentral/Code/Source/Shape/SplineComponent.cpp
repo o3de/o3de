@@ -5,7 +5,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "SplineComponent.h"
 
 #include <AzCore/RTTI/BehaviorContext.h>

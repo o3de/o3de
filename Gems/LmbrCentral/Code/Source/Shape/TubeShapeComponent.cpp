@@ -5,7 +5,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "TubeShapeComponent.h"
 
 #include <AzCore/RTTI/BehaviorContext.h>

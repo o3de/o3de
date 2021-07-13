@@ -5,7 +5,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "MaterialAssetTypeInfo.h"
 
 #include <LmbrCentral/Rendering/MaterialAsset.h>

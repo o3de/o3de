@@ -5,7 +5,6 @@
  *
  */
 
-#include <LmbrCentral_precompiled.h>
 #include "FontBuilderWorker.h"
 
 #include <AzFramework/StringFunc/StringFunc.h>

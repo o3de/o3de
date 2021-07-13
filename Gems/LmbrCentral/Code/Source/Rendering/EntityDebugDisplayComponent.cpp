@@ -5,7 +5,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "EntityDebugDisplayComponent.h"
 
 #include <AzCore/Serialization/SerializeContext.h>

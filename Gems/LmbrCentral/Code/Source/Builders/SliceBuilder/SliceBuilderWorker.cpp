@@ -5,7 +5,6 @@
  *
  */
 
-#include <LmbrCentral_precompiled.h>
 #include "SliceBuilderWorker.h"
 
 #include <AssetBuilderSDK/SerializationDependencies.h>

@@ -5,7 +5,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 
 #include "BoxShapeComponent.h"
 #include <AzCore/RTTI/BehaviorContext.h>

@@ -5,7 +5,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "CompoundShapeComponent.h"
 #include <AzCore/Math/Transform.h>
 #include "Cry_GeoOverlap.h"

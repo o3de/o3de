@@ -5,7 +5,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "LmbrCentralReflectionTest.h"
 #include "Shape/EditorPolygonPrismShapeComponent.h"
 #include "Shape/EditorSphereShapeComponent.h"

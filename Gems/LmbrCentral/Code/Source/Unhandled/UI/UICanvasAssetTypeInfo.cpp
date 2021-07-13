@@ -5,7 +5,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "UICanvasAssetTypeInfo.h"
 
 namespace LmbrCentral

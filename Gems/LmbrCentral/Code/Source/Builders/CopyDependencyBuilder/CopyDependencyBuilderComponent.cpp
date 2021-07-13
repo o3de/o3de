@@ -5,7 +5,6 @@
  *
  */
 
-#include <LmbrCentral_precompiled.h>
 #include "CopyDependencyBuilderComponent.h"
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>

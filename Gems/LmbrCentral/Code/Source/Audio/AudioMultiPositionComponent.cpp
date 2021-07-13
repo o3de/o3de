@@ -5,7 +5,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "AudioMultiPositionComponent.h"
 
 #include <AzCore/Component/TransformBus.h>

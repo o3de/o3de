@@ -5,7 +5,6 @@
  *
  */
 
-#include <LmbrCentral_precompiled.h>
 #include "SliceBuilderComponent.h"
 
 #include <AzCore/Slice/SliceComponent.h>

@@ -5,7 +5,6 @@
  *
  */
 
-#include <LmbrCentral_precompiled.h>
 #include "TranslationBuilderComponent.h"
 
 #include <LmbrCentral_Traits_Platform.h>

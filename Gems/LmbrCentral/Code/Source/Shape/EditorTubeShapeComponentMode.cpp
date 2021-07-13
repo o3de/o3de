@@ -5,7 +5,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "EditorTubeShapeComponentMode.h"
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>

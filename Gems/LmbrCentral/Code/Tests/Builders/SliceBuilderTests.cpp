@@ -5,7 +5,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include <AssetBuilderSDK/SerializationDependencies.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzTest/AzTest.h>

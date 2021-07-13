@@ -5,7 +5,6 @@
  *
  */
 
-#include <LmbrCentral_precompiled.h>
 #include <AzTest/AzTest.h>
 #include <Builders/MaterialBuilder/MaterialBuilderComponent.h>
 #include <AzTest/Utils.h>

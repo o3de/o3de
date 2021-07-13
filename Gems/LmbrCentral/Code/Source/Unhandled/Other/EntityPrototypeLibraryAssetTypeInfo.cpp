@@ -5,7 +5,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "EntityPrototypeLibraryAssetTypeInfo.h"
 
 namespace LmbrCentral

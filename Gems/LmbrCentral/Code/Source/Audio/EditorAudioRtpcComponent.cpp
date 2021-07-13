@@ -5,7 +5,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "EditorAudioRtpcComponent.h"
 
 #include <AzCore/Serialization/EditContext.h>

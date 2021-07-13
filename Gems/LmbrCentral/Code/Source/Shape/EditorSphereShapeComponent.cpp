@@ -5,7 +5,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "SphereShapeComponent.h"
 
 #include <AzCore/Serialization/EditContext.h>

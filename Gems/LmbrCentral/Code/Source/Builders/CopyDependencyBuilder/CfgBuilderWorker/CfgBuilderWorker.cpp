@@ -5,7 +5,6 @@
  *
  */
 
-#include <LmbrCentral_precompiled.h>
 #include "CfgBuilderWorker.h"
 
 #include <AzFramework/FileFunc/FileFunc.h>
