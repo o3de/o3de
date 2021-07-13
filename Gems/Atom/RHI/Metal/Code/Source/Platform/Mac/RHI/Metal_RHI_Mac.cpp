@@ -60,6 +60,8 @@ namespace Platform
 #if defined(__MAC_11_0)
         if(@available(iOS 14.0, macOS 11.0, *))
         {
+            //We check is presentAfterMinimumDuration is present as [MTLCommandBuffer presentDrawable: afterMinimumDuration:] is a
+            //utility function that forwards to [MTLDrawable presentAfterMinimumDuration]
             hasPresentAfterMinimumDurationAPI = [drawable respondsToSelector:@selector(presentAfterMinimumDuration:)];
             if (hasPresentAfterMinimumDurationAPI && presentAfterMinimumDuration > 0.0f)
             {
