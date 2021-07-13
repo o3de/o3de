@@ -5,8 +5,6 @@
  *
  */
 
-#include "EMotionFX_precompiled.h"
-
 #include <AzTest/AzTest.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/Vector3.h>

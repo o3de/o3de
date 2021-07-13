@@ -5,8 +5,6 @@
  *
  */
 
-#include "EMotionFX_precompiled.h"
-
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -29,6 +27,8 @@
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/MainWindow.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/NodeSelectionWindow.h>
 #include <EMotionFX/CommandSystem/Source/SelectionList.h>
+#include <EMotionFX/Source/TransformData.h>
+#include <EMotionFX/Source/AttachmentNode.h>
 #include <MCore/Source/AzCoreConversions.h>
 
 namespace EMotionFX

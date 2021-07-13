@@ -13,6 +13,7 @@
 #include <Integration/AnimationBus.h>
 #include <Integration/AnimAudioComponentBus.h>
 #include <IAudioSystem.h>
+#include <Integration/System/SystemCommon.h>
 
 namespace EMotionFX
 {

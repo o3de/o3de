@@ -7,8 +7,6 @@
 
 #include <AzCore/PlatformDef.h>
 
-#include "EMotionFX_precompiled.h"
-
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>

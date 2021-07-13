@@ -5,9 +5,6 @@
  *
  */
 
-
-#include "EMotionFX_precompiled.h"
-
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -29,6 +26,13 @@
 #include <EMotionFX/Source/Parameter/ParameterFactory.h>
 #include <EMotionFX/Source/TwoStringEventData.h>
 #include <EMotionFX/Source/EventDataFootIK.h>
+#include <EMotionFX/Source/MotionEvent.h>
+#include <EMotionFX/Source/AnimGraphNodeGroup.h>
+#include <EMotionFX/Source/AnimGraphGameControllerSettings.h>
+#include <EMotionFX/Source/MotionEventTable.h>
+#include <EMotionFX/Source/MotionEventTrack.h>
+#include <EMotionFX/Source/AnimGraphSyncTrack.h>
+#include <EMotionFX/Source/AnimGraph.h>
 
 #include <EMotionFX/Source/PhysicsSetup.h>
 #include <EMotionFX/Source/SimulatedObjectSetup.h>

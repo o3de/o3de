@@ -7,7 +7,6 @@
 
 #include <AzCore/PlatformDef.h>
 
-#include "EMotionFX_precompiled.h"
 #include <MathConversion.h>
 
 #include <AzCore/Component/Entity.h>

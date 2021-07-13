@@ -5,13 +5,14 @@
  *
  */
 
-
-#include "EMotionFX_precompiled.h"
-
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/StringFunc/StringFunc.h>
 
 #include <Integration/Assets/MotionSetAsset.h>
+#include <EMotionFX/Source/MotionSet.h>
+#include <EMotionFX/Source/EMotionFXManager.h>
+#include <EMotionFX/Source/Importer/Importer.h>
 
 namespace EMotionFX
 {
@@ -152,9 +153,9 @@ namespace EMotionFX
             {
                 AZStd::string assetSourcePath = devAssetsPath;
 
-                AzFramework::StringFunc::AssetDatabasePath::Normalize(assetSourcePath);
+                AZ::StringFunc::AssetDatabasePath::Normalize(assetSourcePath);
                 AZStd::string filename;
-                AzFramework::StringFunc::AssetDatabasePath::Join(assetSourcePath.c_str(), assetFilename.c_str(), filename);
+                AZ::StringFunc::AssetDatabasePath::Join(assetSourcePath.c_str(), assetFilename.c_str(), filename);
 
                 assetData->m_emfxMotionSet->SetFilename(filename.c_str());
             }
