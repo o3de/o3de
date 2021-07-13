@@ -5,8 +5,6 @@
  *
  */
 
-#include "LyShineExamples_precompiled.h"
-
 #include "LyShineExamplesSystemComponent.h"
 #include "UiTestScrollBoxDataProviderComponent.h"
 #include "UiCustomImageComponent.h"
