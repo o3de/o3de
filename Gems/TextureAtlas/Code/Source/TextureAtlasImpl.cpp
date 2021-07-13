@@ -5,7 +5,6 @@
  *
  */
 
-#include "TextureAtlas_precompiled.h"
 #include "TextureAtlasImpl.h"
 
 #include <AzCore/Serialization/SerializeContext.h>
