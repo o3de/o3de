@@ -100,17 +100,9 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
         cmake_path(RELATIVE_PATH target_library_output_directory BASE_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} OUTPUT_VARIABLE target_library_output_subdirectory)
     endif()
 
-    install(
-        TARGETS ${TARGET_NAME}
-        ARCHIVE
-            DESTINATION ${archive_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>
-            COMPONENT ${install_component}
-        LIBRARY
-            DESTINATION ${library_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_library_output_subdirectory}
-            COMPONENT ${install_component}
-        RUNTIME
-            DESTINATION ${runtime_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_runtime_output_subdirectory}
-            COMPONENT ${install_component}
+    ly_platform_install_target(TARGET ${TARGET_NAME}
+        LIBRARY_OUTPUT_SUBDIR ${target_library_output_subdirectory}
+        RUNTIME_OUTPUT_SUBDIR ${target_runtime_output_subdirectory}
     )
 
     # CMakeLists.txt file
@@ -240,6 +232,32 @@ set_property(TARGET ${TARGET_NAME}
     ly_file_read(${LY_ROOT_FOLDER}/cmake/install/InstalledTarget.in target_cmakelists_template)
     string(CONFIGURE ${target_cmakelists_template} output_cmakelists_data @ONLY)
     set(${OUTPUT_CONFIGURED_TARGET} ${output_cmakelists_data} PARENT_SCOPE)
+endfunction()
+
+
+#! ly_platform_install_target: platform specific target installation
+function(ly_platform_install_target)
+
+    set(options)
+    set(oneValueArgs TARGET LIBRARY_OUTPUT_SUBDIR RUNTIME_OUTPUT_SUBDIR)
+    set(multiValueArgs)
+    cmake_parse_arguments(ly_platform_install_target "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    
+    get_property(install_component TARGET ${ly_platform_install_target_TARGET} PROPERTY INSTALL_COMPONENT)
+    
+    install(
+        TARGETS ${ly_platform_install_target_TARGET}
+        ARCHIVE
+            DESTINATION ${archive_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>
+            COMPONENT ${install_component}
+        LIBRARY
+            DESTINATION ${library_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${ly_platform_install_target_LIBRARY_OUTPUT_SUBDIR}
+            COMPONENT ${install_component}
+        RUNTIME
+            DESTINATION ${runtime_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${ly_platform_install_target_RUNTIME_OUTPUT_SUBDIR}
+            COMPONENT ${install_component}
+    )
+
 endfunction()
 
 
@@ -487,7 +505,7 @@ function(ly_setup_others)
 
     # Scripts
     file(GLOB o3de_scripts "${LY_ROOT_FOLDER}/scripts/o3de.*")
-    install(FILES
+    install(PROGRAMS
         ${o3de_scripts}
         DESTINATION ./scripts
     )
@@ -505,6 +523,14 @@ function(ly_setup_others)
         DESTINATION .
         REGEX "downloaded_packages" EXCLUDE
         REGEX "runtime" EXCLUDE
+        REGEX ".*$\.sh" EXCLUDE
+    )
+
+    # For Mac/Linux shell scripts need to be installed as PROGRAMS to have execute permission
+    file(GLOB python_scripts "${LY_ROOT_FOLDER}/python/*.sh")
+    install(PROGRAMS
+        ${python_scripts}
+        DESTINATION ./python
     )
 
     # Registry
