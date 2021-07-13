@@ -5,7 +5,6 @@
  *
  */
 
-#include <precompiled.h>
 #include <sstream>
 
 #include <AzCore/Math/Vector2.h>
