@@ -12,7 +12,7 @@
 
 #include <TestImpactFramework/TestImpactTestSequence.h>
 #include <TestImpactFramework/TestImpactClientTestSelection.h>
-#include <TestImpactFramework/TestImpactClientFailureReport.h>
+#include <TestImpactFramework/TestImpactClientSequenceReport.h>
 #include <TestImpactFramework/TestImpactClientTestRun.h>
 
 #include <AzCore/std/chrono/chrono.h>
@@ -25,48 +25,26 @@ namespace TestImpact
 {
     namespace Console
     {
-        //! Event handler for all test sequence types.
-        class TestSequenceEventHandler
-        {
-        public:
-            explicit TestSequenceEventHandler(SuiteType suiteFilter);
+        void TestSequenceStartCallback(SuiteType suiteType, const Client::TestRunSelection& selectedTests);
 
-            //! TestSequenceStartCallback.
-            void operator()(Client::TestRunSelection&& selectedTests);
+        void ImpactAnalysisTestSequenceStartCallback(
+            SuiteType suiteType,
+            const Client::TestRunSelection& selectedTests,
+            const AZStd::vector<AZStd::string>& discardedTests,
+            const AZStd::vector<AZStd::string>& draftedTests);
 
-            //! ImpactAnalysisTestSequenceStartCallback.
-            void operator()(
-                Client::TestRunSelection&& selectedTests,
-                AZStd::vector<AZStd::string>&& discardedTests,
-                AZStd::vector<AZStd::string>&& draftedTests);
+        void SafeImpactAnalysisTestSequenceStartCallback(
+            SuiteType suiteType,
+            const Client::TestRunSelection& selectedTests,
+            const Client::TestRunSelection& discardedTests,
+            const AZStd::vector<AZStd::string>& draftedTests);
 
-            //! SafeImpactAnalysisTestSequenceStartCallback.
-            void operator()(
-                Client::TestRunSelection&& selectedTests,
-                Client::TestRunSelection&& discardedTests,
-                AZStd::vector<AZStd::string>&& draftedTests);
+        void TestSequenceCompleteCallback(const Client::SequenceReport& sequenceReport);
 
-            //! TestSequenceCompleteCallback.
-            void operator()(
-                Client::SequenceFailure&& failureReport,
-                AZStd::chrono::milliseconds duration);
+        void ImpactAnalysisTestSequenceCompleteCallback(const Client::ImpactAnalysisSequenceReport& sequenceReport);
 
-            //! SafeTestSequenceCompleteCallback.
-            void operator()(
-                Client::SequenceFailure&& selectedFailureReport,
-                Client::SequenceFailure&& discardedFailureReport,
-                AZStd::chrono::milliseconds selectedDuration,
-                AZStd::chrono::milliseconds discaredDuration);
+        void SafeImpactAnalysisTestSequenceCompleteCallback(const Client::SafeImpactAnalysisSequenceReport& sequenceReport);
 
-            //! TestRunCompleteCallback.
-            void operator()(Client::TestRun&& test);
-
-        private:
-            void ClearState();
-
-            SuiteType m_suiteFilter;
-            size_t m_numTests = 0;
-            size_t m_numTestsComplete = 0;
-        };
+        void TestRunCompleteCallback(const Client::TestRun& testRun, size_t numTestRunsCompleted, size_t totalNumTestRuns);
     } // namespace Console
 } // namespace TestImpact

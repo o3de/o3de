@@ -266,7 +266,7 @@ namespace TestImpact
         Policy::TestFailure testFailurePolicy,
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        AZStd::optional<TestEngineJobCompleteCallback> callback)
+        AZStd::optional<TestEngineJobCompleteCallback> callback) const
     {
         TestEngineJobMap<TestEnumerator::JobInfo::IdType> engineJobs;
         const auto jobInfos = m_testJobInfoGenerator->GenerateTestEnumerationJobInfos(testTargets, TestEnumerator::JobInfo::CachePolicy::Write);
@@ -289,7 +289,7 @@ namespace TestImpact
         [[maybe_unused]]Policy::TargetOutputCapture targetOutputCapture,
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        AZStd::optional<TestEngineJobCompleteCallback> callback)
+        AZStd::optional<TestEngineJobCompleteCallback> callback) const
     {
         DeleteArtifactXmls();
 
@@ -316,7 +316,7 @@ namespace TestImpact
         [[maybe_unused]]Policy::TargetOutputCapture targetOutputCapture,
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        AZStd::optional<TestEngineJobCompleteCallback> callback)
+        AZStd::optional<TestEngineJobCompleteCallback> callback) const
     {
         DeleteArtifactXmls();
 

@@ -13,6 +13,7 @@
 #pragma once
 
 #include <TestImpactFramework/TestImpactChangeList.h>
+#include <TestImpactFramework/TestImpactTestSequence.h>
 
 #include <Artifact/Static/TestImpactProductionTargetDescriptor.h>
 #include <Artifact/Static/TestImpactTestTargetDescriptor.h>
@@ -96,8 +97,10 @@ namespace TestImpact
         //! Applies the specified change list to the dependency map and resolves the change list to a change dependency list
         //! containing the updated source dependencies for each source file in the change list.
         //! @param changeList The change list to apply and resolve.
+        //! @param integrityFailurePolicy The policy to use for handling integrity errors in the source dependency map.
         //! @returns The change list as resolved to the appropriate source dependencies.
-        [[nodiscard]] ChangeDependencyList ApplyAndResoveChangeList(const ChangeList& changeList);
+        [[nodiscard]] ChangeDependencyList ApplyAndResoveChangeList(
+            const ChangeList& changeList, Policy::IntegrityFailure integrityFailurePolicy);
 
         //! Removes the specified test target from all source coverage.
         void RemoveTestTargetFromSourceCoverage(const TestTarget* testTarget);

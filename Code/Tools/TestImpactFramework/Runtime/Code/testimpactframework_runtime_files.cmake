@@ -22,7 +22,7 @@ set(FILES
     Include/TestImpactFramework/TestImpactTestSequence.h
     Include/TestImpactFramework/TestImpactClientTestSelection.h
     Include/TestImpactFramework/TestImpactClientTestRun.h
-    Include/TestImpactFramework/TestImpactClientFailureReport.h
+    Include/TestImpactFramework/TestImpactClientSequenceReport.h
     Include/TestImpactFramework/TestImpactFileUtils.h
     Source/Artifact/TestImpactArtifactException.h
     Source/Artifact/Factory/TestImpactBuildTargetDescriptorFactory.cpp
@@ -130,7 +130,7 @@ set(FILES
     Source/TestImpactTestTargetExclusionList.cpp
     Source/TestImpactClientTestSelection.cpp
     Source/TestImpactClientTestRun.cpp
-    Source/TestImpactClientFailureReport.cpp
+    Source/TestImpactClientSequenceReport.cpp
     Source/TestImpactChangeListSerializer.cpp
     Source/TestImpactRepoPath.cpp
 )

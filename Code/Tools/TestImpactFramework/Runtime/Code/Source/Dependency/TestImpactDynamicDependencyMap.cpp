@@ -351,7 +351,8 @@ namespace TestImpact
         return orphans;
     }
 
-    ChangeDependencyList DynamicDependencyMap::ApplyAndResoveChangeList(const ChangeList& changeList)
+    ChangeDependencyList DynamicDependencyMap::ApplyAndResoveChangeList(
+        const ChangeList& changeList, Policy::IntegrityFailure integrityFailurePolicy)
     {
         AZStd::vector<SourceDependency> createDependencies;
         AZStd::vector<SourceDependency> updateDependencies;
@@ -369,11 +370,15 @@ namespace TestImpact
             {
                 if (sourceDependency->GetNumCoveringTestTargets())
                 {
-                    const AZStd::string msg = AZStd::string::format("The newly-created file %s belongs to a build target yet "
+                    const AZStd::string msg = AZStd::string::format("The newly-created file '%s' belongs to a build target yet "
                         "still has coverage data in the source covering test list implying that a delete CRUD operation has been "
-                        "missed, thus the integrity of the source covering test list has been compromised", createdFile.c_str());
+                        "missed, thus the integrity of the source covering test list has been compromised.", createdFile.c_str());
                     AZ_Error("File Creation", false, msg.c_str());
-                    throw DependencyException(msg);
+
+                    if (integrityFailurePolicy == Policy::IntegrityFailure::Abort)
+                    {
+                        throw DependencyException(msg);
+                    }
                 }
 
                 if (sourceDependency->GetNumParentTargets())
@@ -423,18 +428,26 @@ namespace TestImpact
             {
                 if (sourceDependency->GetNumCoveringTestTargets())
                 {
-                    const AZStd::string msg = AZStd::string::format("The deleted file %s still belongs to a build target and still "
+                    const AZStd::string msg = AZStd::string::format("The deleted file '%s' still belongs to a build target and still "
                         "has coverage data in the source covering test list, implying that the integrity of both the source to target "
-                        "mappings and the source covering test list has been compromised", deletedFile.c_str());
+                        "mappings and the source covering test list has been compromised.", deletedFile.c_str());
                     AZ_Error("File Delete", false, msg.c_str());
-                    throw DependencyException(msg);
+
+                    if (integrityFailurePolicy == Policy::IntegrityFailure::Abort)
+                    {
+                        throw DependencyException(msg);
+                    }
                 }
                 else
                 {
-                    const AZStd::string msg = AZStd::string::format("The deleted file %s still belongs to a build target implying "
-                        "that the integrity of the source to target mappings has been compromised", deletedFile.c_str());
+                    const AZStd::string msg = AZStd::string::format("The deleted file '%s' still belongs to a build target implying "
+                        "that the integrity of the source to target mappings has been compromised.", deletedFile.c_str());
                     AZ_Error("File Delete", false, msg.c_str());
-                    throw DependencyException(msg);
+
+                    if (integrityFailurePolicy == Policy::IntegrityFailure::Abort)
+                    {
+                        throw DependencyException(msg);
+                    }
                 }
             }
             else

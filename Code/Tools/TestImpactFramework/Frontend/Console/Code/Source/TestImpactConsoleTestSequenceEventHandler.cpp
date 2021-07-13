@@ -36,36 +36,36 @@ namespace TestImpact
                 std::cout << "Of which " << numExcludedTests << " tests have been excluded and " << numDraftedTests << " tests have been drafted.\n";
             }
 
-            void FailureReport(const Client::SequenceFailure& failureReport, AZStd::chrono::milliseconds duration)
+            void FailureReport(const Client::TestRunReport& testRunReport)
             {
-                std::cout << "Sequence completed in " << (duration.count() / 1000.f) << "s with";
+                std::cout << "Sequence completed in " << (testRunReport.GetDuration().count() / 1000.f) << "s with";
 
-                if (!failureReport.GetExecutionFailures().empty() ||
-                    !failureReport.GetTestRunFailures().empty() ||
-                    !failureReport.GetTimedOutTests().empty() ||
-                    !failureReport.GetUnexecutedTests().empty())
+                if (!testRunReport.GetExecutionFailureTests().empty() ||
+                    !testRunReport.GetFailingTests().empty() ||
+                    !testRunReport.GetTimedOutTests().empty() ||
+                    !testRunReport.GetUnexecutedTests().empty())
                 {
                     std::cout << ":\n";
                     std::cout << SetColor(Foreground::White, Background::Red).c_str()
-                        << failureReport.GetTestRunFailures().size()
+                        << testRunReport.GetFailingTests().size()
                         << ResetColor().c_str() << " test failures\n";
 
                     std::cout << SetColor(Foreground::White, Background::Red).c_str()
-                        << failureReport.GetExecutionFailures().size()
+                        << testRunReport.GetExecutionFailureTests().size()
                         << ResetColor().c_str() << " execution failures\n";
 
                     std::cout << SetColor(Foreground::White, Background::Red).c_str()
-                        << failureReport.GetTimedOutTests().size()
+                        << testRunReport.GetTimedOutTests().size()
                         << ResetColor().c_str() << " test timeouts\n";
 
                     std::cout << SetColor(Foreground::White, Background::Red).c_str()
-                        << failureReport.GetUnexecutedTests().size()
+                        << testRunReport.GetUnexecutedTests().size()
                         << ResetColor().c_str() << " unexecuted tests\n";
 
-                    if (!failureReport.GetTestRunFailures().empty())
+                    if (!testRunReport.GetFailingTests().empty())
                     {
                         std::cout << "\nTest failures:\n";
-                        for (const auto& testRunFailure : failureReport.GetTestRunFailures())
+                        for (const auto& testRunFailure : testRunReport.GetFailingTests())
                         {
                             std::cout << "  " << testRunFailure.GetTargetName().c_str();
                             for (const auto& testCaseFailure : testRunFailure.GetTestCaseFailures())
@@ -79,29 +79,29 @@ namespace TestImpact
                         }
                     }
 
-                    if (!failureReport.GetExecutionFailures().empty())
+                    if (!testRunReport.GetExecutionFailureTests().empty())
                     {
                         std::cout << "\nExecution failures:\n";
-                        for (const auto& executionFailure : failureReport.GetExecutionFailures())
+                        for (const auto& executionFailure : testRunReport.GetExecutionFailureTests())
                         {
                             std::cout << "  " << executionFailure.GetTargetName().c_str() << "\n";
                             std::cout << executionFailure.GetCommandString().c_str() << "\n";
                         }
                     }
 
-                    if (!failureReport.GetTimedOutTests().empty())
+                    if (!testRunReport.GetTimedOutTests().empty())
                     {
                         std::cout << "\nTimed out tests:\n";
-                        for (const auto& testTimeout : failureReport.GetTimedOutTests())
+                        for (const auto& testTimeout : testRunReport.GetTimedOutTests())
                         {
                             std::cout << "  " << testTimeout.GetTargetName().c_str() << "\n";
                         }
                     }
 
-                    if (!failureReport.GetUnexecutedTests().empty())
+                    if (!testRunReport.GetUnexecutedTests().empty())
                     {
                         std::cout << "\nUnexecuted tests:\n";
-                        for (const auto& unexecutedTest : failureReport.GetUnexecutedTests())
+                        for (const auto& unexecutedTest : testRunReport.GetUnexecutedTests())
                         {
                             std::cout << "  " << unexecutedTest.GetTargetName().c_str() << "\n";
                         }
@@ -114,13 +114,11 @@ namespace TestImpact
             }
         }
 
-        TestSequenceEventHandler::TestSequenceEventHandler(SuiteType suiteFilter)
-            : m_suiteFilter(suiteFilter)
+        void TestSequenceStartCallback(SuiteType suiteType, const Client::TestRunSelection& selectedTests)
         {
         }
 
-        // TestSequenceStartCallback
-        void TestSequenceEventHandler::operator()(Client::TestRunSelection&& selectedTests)
+        void TestSequenceCompleteCallback(SuiteType suiteType, const Client::TestRunSelection& selectedTests)
         {
             ClearState();
             m_numTests = selectedTests.GetNumIncludedTestRuns();
@@ -129,11 +127,11 @@ namespace TestImpact
             std::cout << selectedTests.GetNumIncludedTestRuns() << " tests selected, " << selectedTests.GetNumExcludedTestRuns() << " excluded.\n";
         }
 
-        // ImpactAnalysisTestSequenceStartCallback
-        void TestSequenceEventHandler::operator()(
-            Client::TestRunSelection&& selectedTests,
-            AZStd::vector<AZStd::string>&& discardedTests,
-            AZStd::vector<AZStd::string>&& draftedTests)
+        void ImpactAnalysisTestSequenceStartCallback(
+            SuiteType suiteType,
+            const Client::TestRunSelection& selectedTests,
+            const AZStd::vector<AZStd::string>& discardedTests,
+            const AZStd::vector<AZStd::string>& draftedTests)
         {
             ClearState();
             m_numTests = selectedTests.GetNumIncludedTestRuns() + draftedTests.size();
@@ -143,11 +141,11 @@ namespace TestImpact
                 selectedTests.GetTotalNumTests(), discardedTests.size(), selectedTests.GetNumExcludedTestRuns(), draftedTests.size());
         }
 
-        // SafeImpactAnalysisTestSequenceStartCallback
-        void TestSequenceEventHandler::operator()(
-            Client::TestRunSelection&& selectedTests,
-            Client::TestRunSelection&& discardedTests,
-            AZStd::vector<AZStd::string>&& draftedTests)
+        void SafeImpactAnalysisTestSequenceStartCallback(
+            SuiteType suiteType,
+            const Client::TestRunSelection& selectedTests,
+            const Client::TestRunSelection& discardedTests,
+            const AZStd::vector<AZStd::string>& draftedTests)
         {
             ClearState();
             m_numTests = selectedTests.GetNumIncludedTestRuns() + draftedTests.size();
@@ -160,40 +158,45 @@ namespace TestImpact
                 draftedTests.size());
         }
 
-        // TestSequenceCompleteCallback
-        void TestSequenceEventHandler::operator()(
-            Client::SequenceFailure&& failureReport,
-            AZStd::chrono::milliseconds duration)
+        void TestSequenceCompleteCallback(const Client::SequenceReport& sequenceReport)
         {
             
-            Output::FailureReport(failureReport, duration);
+            Output::FailureReport(sequenceReport.GetSelectedTestRunReport());
             std::cout << "Updating and serializing the test impact analysis data, this may take a moment...\n";
         }
 
-        // SafeTestSequenceCompleteCallback
-        void TestSequenceEventHandler::operator()(
-            Client::SequenceFailure&& selectedFailureReport,
-            Client::SequenceFailure&& discardedFailureReport,
-            AZStd::chrono::milliseconds selectedDuration,
-            AZStd::chrono::milliseconds discaredDuration)
+        void ImpactAnalysisTestSequenceCompleteCallback(const Client::ImpactAnalysisSequenceReport& sequenceReport)
         {
             std::cout << "Selected test run:\n";
-            Output::FailureReport(selectedFailureReport, selectedDuration);
+            Output::FailureReport(sequenceReport.GetSelectedTestRunReport());
 
-            std::cout << "Discarded test run:\n";
-            Output::FailureReport(discardedFailureReport, discaredDuration);
+            std::cout << "Drafted test run:\n";
+            Output::FailureReport(sequenceReport.GetDraftedTestRunReport());
 
             std::cout << "Updating and serializing the test impact analysis data, this may take a moment...\n";
         }
 
-        // TestRunCompleteCallback
-        void TestSequenceEventHandler::operator()([[maybe_unused]] Client::TestRun&& test)
+        void SafeImpactAnalysisTestSequenceCompleteCallback(const Client::SafeImpactAnalysisSequenceReport& sequenceReport)
         {
-            m_numTestsComplete++;
-            const auto progress = AZStd::string::format("(%03u/%03u)", m_numTestsComplete, m_numTests, test.GetTargetName().c_str());
+            std::cout << "Selected test run:\n";
+            Output::FailureReport(sequenceReport.GetSelectedTestRunReport());
+
+            std::cout << "Discarded test run:\n";
+            Output::FailureReport(sequenceReport.GetDiscardedTestRunReport());
+
+            std::cout << "Drafted test run:\n";
+            Output::FailureReport(sequenceReport.GetDraftedTestRunReport());
+
+            std::cout << "Updating and serializing the test impact analysis data, this may take a moment...\n";
+        }
+
+        void TestRunCompleteCallback(const Client::TestRun& testRun, size_t numTestRunsCompleted, size_t totalNumTestRuns)
+        {
+            const auto progress =
+                AZStd::string::format("(%03u/%03u)", numTestRunsCompleted, totalNumTestRuns, testRun.GetTargetName().c_str());
 
             AZStd::string result;
-            switch (test.GetResult())
+            switch (testRun.GetResult())
             {
             case Client::TestRunResult::AllTestsPass:
             {
@@ -222,7 +225,8 @@ namespace TestImpact
             }
             }
 
-            std::cout << progress.c_str() << " " << result.c_str() << " " << test.GetTargetName().c_str() << " (" << (test.GetDuration().count() / 1000.f) << "s)\n";
+            std::cout << progress.c_str() << " " << result.c_str() << " " << testRun.GetTargetName().c_str() << " ("
+                      << (testRun.GetDuration().count() / 1000.f) << "s)\n";
         }
 
         void TestSequenceEventHandler::ClearState()
