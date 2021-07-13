@@ -2488,7 +2488,7 @@ namespace ScriptCanvasEditor
                         {
                             HandleFunctionDefinitionExtension(canvasNode, graphCanvasSlotId, nodeId);
                         }
-                        else if (azrtti_cast<ScriptCanvas::Nodes::Math::MathExpression*>(canvasNode)&&!canvasNode->m_isDisplayTypeInitialized)
+                        else if (azrtti_cast<ScriptCanvas::Nodes::Math::MathExpression*>(canvasNode))
                         {
                             HandleExpressionNodeExtension(canvasNode, graphCanvasSlotId, nodeId);
                         }

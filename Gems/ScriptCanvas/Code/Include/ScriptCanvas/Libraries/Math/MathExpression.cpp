@@ -12,6 +12,31 @@ namespace ScriptCanvas
     {
         namespace Math
         {
+
+            void MathExpression::ConfigureSlotDisplayType(
+                ScriptCanvas::Node* node, ScriptCanvas::Slot* slot, AZ::Uuid type, AZStd::string name)
+            {
+                if (slot)
+                {
+                    auto displayType = ScriptCanvas::Data::FromAZType(type);
+                    if (displayType.IsValid())
+                    {
+                        AZ::Crc32 dynamicGroup = AZ_CRC("ExpressionDisplayGroup", 0x770de38e);
+
+                        if (dynamicGroup != AZ::Crc32())
+                        {
+                            node->SetDisplayType(dynamicGroup, displayType);
+                        }
+                        else
+                        {
+                            slot->SetDisplayType(displayType);
+                        }
+                    }
+
+                    slot->Rename(name);
+                }
+            }
+
             void MathExpression::OnResult(const ExpressionEvaluation::ExpressionResult& result)
             {
                 if (result.is<double>())
@@ -41,30 +66,6 @@ namespace ScriptCanvas
                 return " + ";
             }
 
-            void MathExpression::ConfigureSlotDisplayType(ScriptCanvas::Node* node, ScriptCanvas::Slot* slot, AZ::Uuid type, AZStd::string name)
-            {
-                if (slot)
-                {
-                    auto displayType = ScriptCanvas::Data::FromAZType(type);
-                    if (displayType.IsValid())
-                    {
-                        AZ::Crc32 dynamicGroup = AZ_CRC("ExpressionDisplayGroup", 0x770de38e);
-
-                        if (dynamicGroup != AZ::Crc32())
-                        {
-                            node->SetDisplayType(dynamicGroup, displayType);
-                        }
-                        else
-                        {
-                            slot->SetDisplayType(displayType);
-                        }
-                    }
-
-
-                    slot->Rename(name);
-
-                }
-            }
         }
     }
 }

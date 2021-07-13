@@ -508,8 +508,6 @@ namespace ScriptCanvas
         virtual bool IsEntryPoint() const;
         virtual bool RequiresDynamicSlotOrdering() const;
 
-        bool m_isDisplayTypeInitialized = false;
-
         //! Node internal initialization, for custom init, use OnInit
         void Init() override final;
 

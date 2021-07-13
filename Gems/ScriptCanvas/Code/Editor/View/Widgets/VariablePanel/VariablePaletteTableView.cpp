@@ -105,7 +105,7 @@ namespace ScriptCanvasEditor
 
             AZ::Uuid typeId = dataTraitsPair.second.m_dataTraits.GetAZType();
 
-            if (typeId.IsNull() || typeId == azrtti_typeid<void>()||(restrictedValueTypes&&restrictedValueTypes->find(typeId)==restrictedValueTypes->end()))
+            if (typeId.IsNull() || typeId == azrtti_typeid<void>() || (restrictedValueTypes && !restrictedValueTypes->contains(typeId)))
             {
                 continue;
             }
@@ -143,7 +143,7 @@ namespace ScriptCanvasEditor
         // and register in the custom defined types for each of the container types that we created. 
         for (const AZ::Uuid& pinnedTypeId : settings->m_pinnedDataTypes)
         {
-            if (restrictedValueTypes&&restrictedValueTypes->find(pinnedTypeId)==restrictedValueTypes->end())
+            if (restrictedValueTypes && !restrictedValueTypes->contains(pinnedTypeId))
             {
                 continue;
             }

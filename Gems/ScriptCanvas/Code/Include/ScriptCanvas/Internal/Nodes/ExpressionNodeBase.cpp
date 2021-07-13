@@ -267,7 +267,7 @@ namespace ScriptCanvas
                 return true;
             }
 
-            void ExpressionNodeBase::FixDynamicGroupDataType(const SlotId& slotId, Data::Type displayType)
+            void ExpressionNodeBase::UpdateGroupTypePostChange(const SlotId& slotId, Data::Type displayType)
             {
                 Slot* slot = GetSlot(slotId);
                 if (slot && (!slot->IsDynamicSlot() || slot->HasDisplayType()))
@@ -432,7 +432,6 @@ namespace ScriptCanvas
                         {
                             //use the displayGroup's type. Make sure to not let HandleExpressionNodeExtension to open up
                             slot->SetDisplayType(nodeDataType);
-                            node->m_isDisplayTypeInitialized = true;
                         }
 
 
