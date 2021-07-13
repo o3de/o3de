@@ -5,8 +5,6 @@
  *
  */
 
-#include "WhiteBox_precompiled.h"
-
 #include "WhiteBoxTestUtil.h"
 
 namespace WhiteBox

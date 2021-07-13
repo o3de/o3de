@@ -5,8 +5,6 @@
  *
  */
 
-#include "WhiteBox_precompiled.h"
-
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 

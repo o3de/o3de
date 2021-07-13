@@ -5,8 +5,6 @@
  *
  */
 
-#include "WhiteBox_precompiled.h"
-
 #include "Util/WhiteBoxMathUtil.h"
 #include "WhiteBoxManipulatorBounds.h"
 

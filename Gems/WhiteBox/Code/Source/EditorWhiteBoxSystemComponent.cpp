@@ -5,8 +5,6 @@
  *
  */
 
-#include "WhiteBox_precompiled.h"
-
 #include "Asset/WhiteBoxMeshAsset.h"
 #include "Asset/WhiteBoxMeshAssetHandler.h"
 #include "EditorWhiteBoxSystemComponent.h"

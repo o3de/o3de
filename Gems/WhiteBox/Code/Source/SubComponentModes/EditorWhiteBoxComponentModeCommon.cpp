@@ -5,8 +5,6 @@
  *
  */
 
-#include "WhiteBox_precompiled.h"
-
 #include "EditorWhiteBoxComponentModeCommon.h"
 
 #include <AzCore/Component/ComponentBus.h>

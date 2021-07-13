@@ -5,8 +5,6 @@
  *
  */
 
-#include "WhiteBox_precompiled.h"
-
 #include "Util/WhiteBoxTextureUtil.h"
 #include "WhiteBoxTestFixtures.h"
 #include "Rendering/Atom/WhiteBoxMeshAtomData.h"

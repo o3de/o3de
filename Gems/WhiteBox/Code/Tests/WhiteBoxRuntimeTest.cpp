@@ -5,8 +5,6 @@
  *
  */
 
-#include <WhiteBox_precompiled.h>
-
 #include <AzTest/AzTest.h>
 
 TEST(WhiteBox, PlaceholderTest)

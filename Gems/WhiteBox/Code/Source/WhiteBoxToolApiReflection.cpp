@@ -5,8 +5,6 @@
  *
  */
 
-#include "WhiteBox_precompiled.h"
-
 #include "EditorWhiteBoxComponentModeBus.h"
 #include "WhiteBoxToolApiReflection.h"
 

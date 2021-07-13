@@ -5,8 +5,6 @@
  *
  */
 
-#include "WhiteBox_precompiled.h"
-
 #include "WhiteBoxComponent.h"
 
 #include <AzCore/Component/TransformBus.h>

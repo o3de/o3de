@@ -5,8 +5,6 @@
  *
  */
 
-#include "WhiteBox_precompiled.h"
-
 #include "WhiteBoxRenderData.h"
 
 #include <AzCore/Serialization/SerializeContext.h>

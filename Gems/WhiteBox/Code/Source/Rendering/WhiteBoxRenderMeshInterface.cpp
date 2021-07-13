@@ -5,8 +5,6 @@
  *
  */
 
-#include "WhiteBox_precompiled.h"
-
 #include "WhiteBoxRenderMeshInterface.h"
 
 namespace WhiteBox

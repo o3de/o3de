@@ -7,6 +7,9 @@
 
 #pragma once
 
+#include <AzCore/RTTI/RTTI.h>
+#include <AzCore/Memory/Memory.h>
+
 namespace AZ
 {
     class ReflectContext;

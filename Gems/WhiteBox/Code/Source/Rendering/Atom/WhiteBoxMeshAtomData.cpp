@@ -5,8 +5,6 @@
  *
  */
 
-#include "WhiteBox_precompiled.h"
-
 #include "TangentSpaceHelper.h"
 #include "WhiteBoxMeshAtomData.h"
 
