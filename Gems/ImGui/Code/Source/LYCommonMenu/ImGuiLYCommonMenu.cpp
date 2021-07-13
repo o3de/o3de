@@ -5,7 +5,6 @@
  *
  */
 
-#include "ImGui_precompiled.h"
 #include "ImGuiLYCommonMenu.h"
 
 #ifdef IMGUI_ENABLED

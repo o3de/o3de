@@ -5,7 +5,6 @@
  *
  */
 
-#include "ImGui_precompiled.h"
 #include "ImGuiLYEntityOutliner.h"
 
 #ifdef IMGUI_ENABLED

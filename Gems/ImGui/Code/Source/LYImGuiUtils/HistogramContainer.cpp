@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "ImGui_precompiled.h"
+
 #include "LYImGuiUtils/HistogramContainer.h"
 
 #ifdef IMGUI_ENABLED

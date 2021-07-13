@@ -5,7 +5,6 @@
  *
  */
 
-#include "ImGui_precompiled.h"
 #include "ImGuiLYAssetExplorer.h"
 
 #ifdef IMGUI_ENABLED

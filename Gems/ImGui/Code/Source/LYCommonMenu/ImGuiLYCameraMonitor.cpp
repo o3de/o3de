@@ -5,8 +5,6 @@
  *
  */
 
-#include "ImGui_precompiled.h"
-
 #ifdef IMGUI_ENABLED
 #include "ImGuiLYCameraMonitor.h"
 #include <AzCore/Component/ComponentApplicationBus.h>

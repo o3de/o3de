@@ -5,8 +5,6 @@
  *
  */
 
-#include "ImGui_precompiled.h"
-
 namespace ImGui
 {
     /*!
