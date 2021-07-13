@@ -41,7 +41,7 @@ namespace AzPhysics
                 {"Tick time"} // Parameters
             };
 
-            behaviorContext->Class<SystemInterface>("System Interface")
+            behaviorContext->Class<SystemInterface>("PhysicsSystemInterface")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Module, "physics")
                 ->Attribute(AZ::Script::Attributes::Category, "PhysX")
@@ -49,7 +49,21 @@ namespace AzPhysics
                     ->Attribute(AZ::Script::Attributes::AzEventDescription, presimulateEventDescription)
                 ->Method("GetOnPostsimulateEvent", getOnPostsimulateEvent)
                     ->Attribute(AZ::Script::Attributes::AzEventDescription, postsimulateEventDescription)
-                ;
+                ->Method("GetSceneHandle", &SystemInterface::GetSceneHandle)
+                ->Method("GetScene", &SystemInterface::GetScene);
+
+            behaviorContext->Method(
+                    "GetPhysicsSystem",
+                    []()
+                    {
+                        return AZ::Interface<AzPhysics::SystemInterface>::Get();
+                    });
+
+            behaviorContext
+                ->Constant("DefaultPhysicsSceneName", BehaviorConstant(DefaultPhysicsSceneName))
+                ->Constant("DefaultPhysicsSceneId", BehaviorConstant(DefaultPhysicsSceneId))
+                ->Constant("EditorPhysicsSceneName", BehaviorConstant(EditorPhysicsSceneName))
+                ->Constant("EditorPhysicsSceneId", BehaviorConstant(EditorPhysicsSceneId));
         }
     }
 } // namespace AzPhysics

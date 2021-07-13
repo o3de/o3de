@@ -10,18 +10,15 @@
 
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Core/Graph.h>
-
-#include <StartingPointInput/InputEventNotificationBus.h>
-
 #include <AzCore/RTTI/TypeInfo.h>
 
 namespace StartingPointInput
 {
     //////////////////////////////////////////////////////////////////////////
     /// Input handles raw input from any source and outputs Pressed, Held, and Released input events
+    /// This nodes id deprecated in favor of its nodeable counterpart.
     class InputNode
         : public ScriptCanvas::Node
-        , protected InputEventNotificationBus::Handler
     {
 
     public:
@@ -35,21 +32,5 @@ namespace StartingPointInput
 
         AZStd::string m_eventName;
         float m_value;
-
-        //////////////////////////////////////////////////////////////////////////
-        /// ScriptCanvas_Node
-        void OnInputChanged(const ScriptCanvas::Datum& input, const ScriptCanvas::SlotId& slotId) override;
-
-    protected:
-        //////////////////////////////////////////////////////////////////////////
-        /// Node
-        void OnPostActivate() override;
-        void OnDeactivate() override;
-
-        //////////////////////////////////////////////////////////////////////////
-        /// InputEventNotificationBus::Handler
-        void OnPressed(float value) override;
-        void OnHeld(float value) override;
-        void OnReleased(float value) override;
     };
 }

@@ -1,5 +1,0 @@
-<RCC>
-  <qresource prefix="images">
-    <file>../Resources/missing-image.png</file>
-  </qresource>
-</RCC>

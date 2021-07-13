@@ -60,6 +60,8 @@ namespace AZ
             void DrawPassInfo();
             void DrawFramerate();
 
+            static constexpr float BaseFontSize = 0.7f;
+
             AZStd::string m_rendererDescription;
             AzFramework::TextDrawParameters m_drawParams;
             AzFramework::FontDrawInterface* m_fontDrawInterface = nullptr;

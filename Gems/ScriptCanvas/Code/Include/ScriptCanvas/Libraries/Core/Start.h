@@ -25,11 +25,6 @@ namespace ScriptCanvas
             public:
 
                 SCRIPTCANVAS_NODE(Start);
-
-                
-
-                void OnInputSignal(const SlotId&) override;
-
             };
         }
     }

@@ -27,7 +27,7 @@ namespace AzFramework
         AZStd::string m_ipAddress;
 
         // The port number for the session.
-        uint16_t m_port;
+        uint16_t m_port = 0;
     };
 
     //! SessionConnectionConfig
@@ -35,7 +35,7 @@ namespace AzFramework
     struct PlayerConnectionConfig
     {
         // A unique identifier for player connection.
-        uint32_t m_playerConnectionId;
+        uint32_t m_playerConnectionId = 0;
 
         // A unique identifier for registered player in session.
         AZStd::string m_playerSessionId;

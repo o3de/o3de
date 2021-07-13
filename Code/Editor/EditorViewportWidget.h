@@ -506,7 +506,6 @@ protected:
 
     CPredefinedAspectRatios m_predefinedAspectRatios;
 
-    IVariable* m_pCameraFOVVariable = nullptr;
     bool m_bCursorHidden = false;
 
     void OnMenuResolutionCustom();

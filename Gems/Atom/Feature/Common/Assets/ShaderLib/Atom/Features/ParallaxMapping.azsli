@@ -427,7 +427,7 @@ PixelDepthOffset CalcPixelDepthOffset(  float depthFactor,
     float4 clipOffsetPosition = mul(viewProjectionMatrix, float4(worldOffsetPosition, 1.0));
 
     PixelDepthOffset pdo;
-    pdo.m_depthCS = clipOffsetPosition.z;
+    pdo.m_depthCS = clipOffsetPosition.w;
     pdo.m_depthNDC = clipOffsetPosition.z / clipOffsetPosition.w;
     pdo.m_worldPosition = worldOffsetPosition;
     return pdo;
