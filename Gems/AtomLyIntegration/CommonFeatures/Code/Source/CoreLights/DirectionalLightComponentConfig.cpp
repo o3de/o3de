@@ -9,6 +9,7 @@
 #include <AtomLyIntegration/CommonFeatures/CoreLights/DirectionalLightComponentConfig.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/std/limits.h>
 
 namespace AZ
 {
@@ -55,21 +56,15 @@ namespace AZ
             case PhotometricUnit::Lux:
                 return 0.0f;
             case PhotometricUnit::Ev100Illuminance:
-                return -10.0f;
+                return AZStd::numeric_limits<float>::lowest();
             }
             return 0.0f;
         }
 
         float DirectionalLightComponentConfig::GetIntensityMax() const
         {
-            switch (m_intensityMode)
-            {
-            case PhotometricUnit::Lux:
-                return 1'000'000.0f;
-            case PhotometricUnit::Ev100Illuminance:
-                return 20.0f;
-            }
-            return 0.0f;
+            // While there is no hard-max, a max must be included when there is a hard min.
+            return AZStd::numeric_limits<float>::max();
         }
 
         float DirectionalLightComponentConfig::GetIntensitySoftMin() const

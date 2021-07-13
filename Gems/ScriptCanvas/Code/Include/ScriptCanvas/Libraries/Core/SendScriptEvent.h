@@ -79,11 +79,7 @@ namespace ScriptCanvas
                 bool IsConfigured() const { return m_method != nullptr; }
                 void ConfigureMethod(AZ::BehaviorMethod& method);
                 bool RegisterScriptEvent(AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> asset);
-
-                void OnInputSignal(const SlotId&) override;
-
                 void AddInputSlot(size_t slotIndex, size_t argIndex, const AZStd::string_view argName, const AZStd::string_view tooltip, AZ::BehaviorMethod* method, const AZ::BehaviorParameter* argument, AZ::Uuid slotKey, SlotIdMapping& populationMapping);
-
                 void OnRegistered(const ScriptEvents::ScriptEvent&) override;
 
                 SlotId m_resultSlotID;

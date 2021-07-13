@@ -57,7 +57,10 @@ namespace ImGui
         void SetImGuiRenderResolution(const ImVec2& res) override { m_renderResolution = res; }
         void OverrideRenderWindowSize(uint32_t width, uint32_t height) override;
         void RestoreRenderWindowSizeToDefault() override;
+        void SetDpiScalingFactor(float dpiScalingFactor) override;
+        float GetDpiScalingFactor() const override;
         void Render() override;
+        void ToggleThroughImGuiVisibleState() override;
         // -- ImGuiManagerBus Interface -------------------------------------------------------------------
 
         // -- AzFramework::InputChannelEventListener and AzFramework::InputTextEventListener Interface ------------
@@ -82,7 +85,7 @@ namespace ImGui
         DisplayState m_editorWindowState = DisplayState::Hidden;
 
         // ImGui Resolution Settings
-        ImGuiResolutionMode m_resolutionMode = ImGuiResolutionMode::MatchToMaxRenderResolution;
+        ImGuiResolutionMode m_resolutionMode = ImGuiResolutionMode::MatchRenderResolution;
         ImVec2 m_renderResolution = ImVec2(1920.0f, 1080.0f);
         ImVec2 m_lastRenderResolution;
         AzFramework::WindowSize m_windowSize = AzFramework::WindowSize(1920, 1080);

@@ -38,10 +38,7 @@ namespace ScriptCanvas
                 OperatorLength() = default;
                 ~OperatorLength() = default;
 
-                // Node...
                 void OnInit() override;
-                void OnInputSignal(const SlotId& slotId) override;
-                ////
 
             };
         }

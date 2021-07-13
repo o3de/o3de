@@ -38,7 +38,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedT
         TEST_SUITE main
         TEST_REQUIRES gpu
         TEST_SERIAL
-        TIMEOUT 400
+        TIMEOUT 800
         PATH ${CMAKE_CURRENT_LIST_DIR}/test_Atom_GPUTests.py
         RUNTIME_DEPENDENCIES
             AssetProcessor

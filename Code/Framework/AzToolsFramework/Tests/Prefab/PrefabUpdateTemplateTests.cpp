@@ -145,7 +145,7 @@ namespace UnitTest
         EntityAlias entityAlias = wheelTemplateEntityAliases.front();
         PrefabDomValue* wheelEntityComponents =
             PrefabTestDomUtils::GetPrefabDomComponentsPath(entityAlias).Get(wheelTemplateDom);
-        ASSERT_TRUE(wheelEntityComponents == nullptr);
+        ASSERT_TRUE(wheelEntityComponents->IsArray() && wheelEntityComponents->Size() == 0);
 
         // Create an axle with 0 entities and 1 wheel instance.
         AZStd::unique_ptr<Instance> wheel1UnderAxle = m_prefabSystemComponent->InstantiatePrefab(wheelTemplateId);
@@ -340,7 +340,7 @@ namespace UnitTest
 
         // Validate that the wheel entity does not have a component under it.
         wheelEntityComponents = PrefabTestDomUtils::GetPrefabDomComponentsPath(entityAlias).Get(wheelTemplateDom);
-        ASSERT_TRUE(wheelEntityComponents == nullptr);
+        ASSERT_TRUE(wheelEntityComponents->IsArray() && wheelEntityComponents->Size() == 0);
 
         // Validate that the wheels under the axle have the same DOM as the wheel template.
         PrefabTestDomUtils::ValidatePrefabDomInstances(wheelInstanceAliasesUnderAxle, axleTemplateDom, wheelTemplateDom);
@@ -399,15 +399,14 @@ namespace UnitTest
         m_prefabSystemComponent->UpdatePrefabTemplate(wheelTemplateId, updatedWheelInstanceDom);
         m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
 
-        // Validate that the prefabTestComponent in the wheel template DOM doesn't have a BoolProperty.
-        // Even though we changed the property to false, it won't be serialized out because it's a default value.
+        // Validate that the BoolProperty of the prefabTestComponent in the wheel template DOM is set to false.
         wheelEntityComponents = PrefabTestDomUtils::GetPrefabDomComponentsPath(entityAlias).Get(wheelTemplateDom);
         ASSERT_TRUE(wheelEntityComponents != nullptr && wheelEntityComponents->IsObject());
         EXPECT_EQ(wheelEntityComponents->MemberCount(), 1);
 
         PrefabDomValueReference wheelEntityComponentBoolPropertyValue =
             PrefabDomUtils::FindPrefabDomValue(wheelEntityComponents->MemberBegin()->value, PrefabTestDomUtils::BoolPropertyName);
-        ASSERT_FALSE(wheelEntityComponentBoolPropertyValue.has_value());
+        ASSERT_TRUE(wheelEntityComponentBoolPropertyValue.has_value() && wheelEntityComponentBoolPropertyValue->get() == false);
 
         // Validate that the wheels under the axle have the same DOM as the wheel template.
         PrefabTestDomUtils::ValidatePrefabDomInstances(wheelInstanceAliasesUnderAxle, axleTemplateDom, wheelTemplateDom);

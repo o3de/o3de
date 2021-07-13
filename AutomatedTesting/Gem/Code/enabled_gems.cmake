@@ -47,8 +47,7 @@ set(ENABLED_GEMS
     LmbrCentral
     LyShine
     HttpRequestor
-    Atom_AtomBridge
-    PythonCoverage
+    Atom
     AWSCore
     AWSClientAuth
     AWSMetrics

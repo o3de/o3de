@@ -41,10 +41,6 @@ namespace ScriptCanvas
                 OperatorClear() = default;
 
                 void OnInit() override;
-
-            protected:
-
-                void OnInputSignal(const SlotId& slotId) override;
             };
 
         }

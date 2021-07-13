@@ -27,7 +27,7 @@ namespace ScriptCanvas
                 Type operator()(const Type& a, const Datum& b)
                 {
                     const Type* dataB = b.GetAs<Type>();
-                    
+
                     const Type& divisor = (*dataB);
                     if (AZ::IsClose(divisor, Type(0), std::numeric_limits<Type>::epsilon()))
                     {
@@ -35,7 +35,7 @@ namespace ScriptCanvas
                         return Type(0);
                     }
 
-                    return a / divisor;                    
+                    return a / divisor;
                 }
 
             private:
@@ -65,9 +65,9 @@ namespace ScriptCanvas
                             SCRIPTCANVAS_REPORT_ERROR((*m_node), "Divide by Zero");
                             return VectorType(0);
                         }
-                    }                    
-                    
-                    return a / (*divisor);                    
+                    }
+
+                    return a / (*divisor);
                 }
 
                 OperatorDivVectorTypes(Node* node)
@@ -114,7 +114,7 @@ namespace ScriptCanvas
                 {
                     const AZ::Color* dataA = lhs.GetAs<AZ::Color>();
                     const AZ::Color* dataB = rhs.GetAs<AZ::Color>();
-                    
+
                     if (dataB->IsClose(AZ::Color(), std::numeric_limits<float>::epsilon()))
                     {
                         // Divide by zero

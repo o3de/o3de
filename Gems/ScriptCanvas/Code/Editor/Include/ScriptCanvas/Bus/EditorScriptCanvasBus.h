@@ -154,10 +154,6 @@ namespace ScriptCanvasEditor
         virtual bool ConvertReferenceToVariableNode(const GraphCanvas::Endpoint& endpoint) = 0;
 
         virtual void QueueVersionUpdate(const AZ::EntityId& graphCanvasNodeId) = 0;
-
-        virtual bool IsRuntimeGraph() const = 0;
-        virtual bool IsFunctionGraph() const = 0;
-
         virtual bool CanExposeEndpoint(const GraphCanvas::Endpoint& endpoint) = 0;
 
         virtual ScriptCanvas::Endpoint ConvertToScriptCanvasEndpoint(const GraphCanvas::Endpoint& endpoinnt) const = 0;
