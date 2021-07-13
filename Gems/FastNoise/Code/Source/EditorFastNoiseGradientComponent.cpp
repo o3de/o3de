@@ -5,7 +5,6 @@
  *
  */
 
-#include "FastNoise_precompiled.h"
 #include "EditorFastNoiseGradientComponent.h"
 
 namespace FastNoiseGem

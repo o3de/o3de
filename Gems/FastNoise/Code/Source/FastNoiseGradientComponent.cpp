@@ -5,8 +5,6 @@
  *
  */
 
-#include "FastNoise_precompiled.h"
-
 #include "FastNoiseGradientComponent.h"
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/RTTI/BehaviorContext.h>
