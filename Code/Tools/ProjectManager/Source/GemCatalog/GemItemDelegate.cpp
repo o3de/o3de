@@ -102,9 +102,11 @@ namespace O3DE::ProjectManager
 
         // In case there are feature tags displayed at the bottom, decrease the size of the summary text field.
         const QStringList featureTags = GemModel::GetFeatures(modelIndex);
-        const int summaryHeight = contentRect.height() - (!featureTags.empty() * 30);
+        const int featureTagAreaHeight = 30;
+        const int summaryHeight = contentRect.height() - (!featureTags.empty() * featureTagAreaHeight);
 
-        const QSize summarySize = QSize(contentRect.width() - s_summaryStartX - s_buttonWidth - s_itemMargins.right() * 3,
+        const int additionalSummarySpacing = s_itemMargins.right() * 3;
+        const QSize summarySize = QSize(contentRect.width() - s_summaryStartX - s_buttonWidth - additionalSummarySpacing,
             summaryHeight);
         const QRect summaryRect = QRect(/*topLeft=*/QPoint(contentRect.left() + s_summaryStartX, contentRect.top()), summarySize);
 
