@@ -11,6 +11,8 @@
 
 #pragma once
 
+#include <CryCommon/BaseTypes.h>
+#include <CryCommon/platform.h>
 
 class CTimeValue
 {

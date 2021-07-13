@@ -5,8 +5,6 @@
  *
  */
 
-#include "Gestures_precompiled.h"
-
 #include "InputDeviceGestures.h"
 
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>

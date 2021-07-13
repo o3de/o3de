@@ -5,7 +5,6 @@
  *
  */
 
-#include "Gestures_precompiled.h"
 #include <InputChannelGesture.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
