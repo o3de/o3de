@@ -5,8 +5,6 @@
  *
  */
 
-#include "InAppPurchases_precompiled.h"
-
 #include <InAppPurchases/InAppPurchasesInterface.h>
 
 namespace InAppPurchases
