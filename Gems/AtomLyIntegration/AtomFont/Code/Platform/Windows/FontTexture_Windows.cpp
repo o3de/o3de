@@ -5,7 +5,6 @@
  *
  */
 
-#include <AtomLyIntegration/AtomFont/AtomFont_precompiled.h>
 
 #if !defined(USE_NULLFONT_ALWAYS)
 #include <AtomLyIntegration/AtomFont/FontTexture.h>

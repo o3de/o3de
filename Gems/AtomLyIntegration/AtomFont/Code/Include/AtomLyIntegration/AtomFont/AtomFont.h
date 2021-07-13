@@ -13,6 +13,7 @@
 
 #include <Cry_Vector2.h>
 #include <IXml.h>
+#include <CryCommon/IFont.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/smart_ptr/weak_ptr.h>
 #include <AzCore/std/parallel/shared_mutex.h>
