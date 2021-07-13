@@ -4,8 +4,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "UiCanvasEditor_precompiled.h"
-
 #include "EditorCommon.h"
 
 #define UICANVASEDITOR_HIERARCHY_HEADER_ICON_EYE        ":/Icons/Eye.svg"

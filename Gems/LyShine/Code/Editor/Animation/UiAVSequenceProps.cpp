@@ -6,7 +6,6 @@
  */
 
 
-#include "UiCanvasEditor_precompiled.h"
 #include "UiAVSequenceProps.h"
 #include <LyShine/Animation/IUiAnimation.h>
 #include "UiEditorAnimationBus.h"

@@ -5,8 +5,6 @@
  *
  */
 
-#include "UiCanvasEditor_precompiled.h"
-
 #include "EditorCommon.h"
 
 #include <QApplication>

@@ -12,6 +12,7 @@
 class CUiAnimViewSequence;
 
 #if !defined(Q_MOC_RUN)
+#include <AzCore/PlatformIncl.h>
 #include <QDialog>
 #include <QScopedPointer>
 #endif

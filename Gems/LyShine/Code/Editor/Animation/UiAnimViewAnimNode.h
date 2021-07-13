@@ -15,6 +15,7 @@
 
 class CUiAnimViewAnimNode;
 class CEntityObject;
+class QWidget;
 
 namespace AZ
 {

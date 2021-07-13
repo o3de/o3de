@@ -13,6 +13,7 @@
 
 #include <QInputDialog>
 #include <QMessageBox>
+#include <SandboxAPI.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // StringDlg Qt dialog

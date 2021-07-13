@@ -6,7 +6,6 @@
  */
 
 
-#include "UiCanvasEditor_precompiled.h"
 #include "EditorDefs.h"
 #include "UiAnimViewFindDlg.h"
 #include "UiAnimViewDialog.h"

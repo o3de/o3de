@@ -6,7 +6,6 @@
  */
 
 
-#include "UiCanvasEditor_precompiled.h"
 #include "EditorCommon.h"
 #include <Animation/Controls/UiSplineCtrlEx.h>
 #include <Editor/Resource.h>

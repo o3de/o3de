@@ -6,8 +6,9 @@
  */
 
 
-#include "UiCanvasEditor_precompiled.h"
 //#include "CustomizeKeyboardPage.h"
+
+#include <Util/EditorUtils.h>
 
 #include <Editor/Resource.h>
 

@@ -16,6 +16,7 @@
 #include "../UiAnimUndoObject.h"
 
 #include <LyShine/Animation/IUiAnimation.h>
+#include <Util/EditorUtils.h>
 
 #include <QWidget>
 #endif

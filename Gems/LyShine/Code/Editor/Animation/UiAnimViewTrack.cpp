@@ -6,7 +6,6 @@
  */
 
 
-#include "UiCanvasEditor_precompiled.h"
 #include "UiAnimViewTrack.h"
 #include "UiAnimViewAnimNode.h"
 #include "UiAnimViewSequence.h"
@@ -14,6 +13,8 @@
 #include "UiAnimViewNodeFactories.h"
 
 #include "UiEditorAnimationBus.h"
+
+#include <Util/EditorUtils.h>
 
 //////////////////////////////////////////////////////////////////////////
 void CUiAnimViewTrackBundle::AppendTrack(CUiAnimViewTrack* pTrack)
