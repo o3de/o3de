@@ -5,7 +5,6 @@
  *
  */
 
-#include "precompiled.h"
 
 #include "XMLDoc.h"
 #include <AzCore/XML/rapidxml_print.h>

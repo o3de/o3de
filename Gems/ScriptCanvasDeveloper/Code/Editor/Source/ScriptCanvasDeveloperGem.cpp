@@ -5,7 +5,6 @@
  *
  */
 
-#include "precompiled.h"
 
 #include <ScriptCanvasDeveloper/ScriptCanvasDeveloperGem.h>
 #include <ScriptCanvasDeveloper/ScriptCanvasDeveloperComponent.h>
