@@ -339,6 +339,7 @@ namespace AZ
                                     {
                                         numDrawPackets += AddLodDataToView(c->m_cullData.m_boundingSphere.GetCenter(), c->m_lodData, *m_jobData->m_view);
                                         ++numVisibleCullables;
+                                        c->m_isVisible = true;
                                     }
                                 }
                             }
@@ -374,6 +375,7 @@ namespace AZ
                                     {
                                         numDrawPackets += AddLodDataToView(c->m_cullData.m_boundingSphere.GetCenter(), c->m_lodData, *m_jobData->m_view);
                                         ++numVisibleCullables;
+                                        c->m_isVisible = true;
                                     }
                                 }
                             }
