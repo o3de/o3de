@@ -295,9 +295,9 @@ namespace AzToolsFramework
     {
         auto systemCursorChannel =
             GetInputChannel<AzFramework::InputChannelDeltaWithSharedPosition2D>(AzFramework::InputDeviceMouse::SystemCursorPosition);
-        auto cursorXChannel =
+        auto movementXChannel =
             GetInputChannel<AzFramework::InputChannelDeltaWithSharedPosition2D>(AzFramework::InputDeviceMouse::Movement::X);
-        auto cursorYChannel =
+        auto movementYChannel =
             GetInputChannel<AzFramework::InputChannelDeltaWithSharedPosition2D>(AzFramework::InputDeviceMouse::Movement::Y);
         auto mouseWheelChannel =
             GetInputChannel<AzFramework::InputChannelDeltaWithSharedPosition2D>(AzFramework::InputDeviceMouse::Movement::Z);
@@ -305,15 +305,15 @@ namespace AzToolsFramework
         systemCursorChannel->ProcessRawInputEvent(m_cursorPosition->m_normalizedPositionDelta.GetLength());
         // Generate movement events based on the pixel delta divided by the DPI scaling factor, to calculate a rough approximation
         // of cursor movement velocity.
-        cursorXChannel->ProcessRawInputEvent(
+        movementXChannel->ProcessRawInputEvent(
             m_cursorPosition->m_normalizedPositionDelta.GetX() * aznumeric_cast<float>(m_sourceWidget->width()) / m_sourceWidget->devicePixelRatioF());
-        cursorYChannel->ProcessRawInputEvent(
+        movementYChannel->ProcessRawInputEvent(
             m_cursorPosition->m_normalizedPositionDelta.GetY() * aznumeric_cast<float>(m_sourceWidget->height()) / m_sourceWidget->devicePixelRatioF());
         mouseWheelChannel->ProcessRawInputEvent(0.f);
 
         NotifyUpdateChannelIfNotIdle(systemCursorChannel, nullptr);
-        NotifyUpdateChannelIfNotIdle(cursorXChannel, nullptr);
-        NotifyUpdateChannelIfNotIdle(cursorYChannel, nullptr);
+        NotifyUpdateChannelIfNotIdle(movementXChannel, nullptr);
+        NotifyUpdateChannelIfNotIdle(movementYChannel, nullptr);
         NotifyUpdateChannelIfNotIdle(mouseWheelChannel, nullptr);
     }
 
