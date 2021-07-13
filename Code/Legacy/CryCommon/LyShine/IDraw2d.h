@@ -9,6 +9,7 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Color.h>
+#include <AzCore/std/string/string.h>
 
 // Forward declarations
 struct IFFont;

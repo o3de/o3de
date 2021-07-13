@@ -5,8 +5,6 @@
  *
  */
 
-#include "LyShine_precompiled.h"
-
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/EntityUtils.h>
 #include <AzCore/Component/ComponentApplicationBus.h>

@@ -5,7 +5,6 @@
  *
  */
 
-#include "LyShine_precompiled.h"
 #include "LyShineTest.h"
 
 #include "UiGameEntityContext.h"

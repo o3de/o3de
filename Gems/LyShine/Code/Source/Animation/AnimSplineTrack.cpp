@@ -6,6 +6,5 @@
  */
 
 
-#include "LyShine_precompiled.h"
 #include "AnimSplineTrack.h"
 

@@ -5,7 +5,6 @@
  *
  */
 
-#include "LyShine_precompiled.h"
 #include <AzTest/AzTest.h>
 #include <AzTest/Utils.h>
 #include <CryCommon/Mocks/ISystemMock.h>

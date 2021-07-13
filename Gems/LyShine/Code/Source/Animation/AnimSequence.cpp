@@ -9,8 +9,6 @@
 // Description : Implementation of IAnimSequence interface.
 
 
-#include "LyShine_precompiled.h"
-
 #include "AnimSequence.h"
 
 #include "StlUtils.h"

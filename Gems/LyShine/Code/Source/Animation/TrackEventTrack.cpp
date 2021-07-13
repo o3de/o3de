@@ -6,7 +6,6 @@
  */
 
 
-#include "LyShine_precompiled.h"
 #include "TrackEventTrack.h"
 
 #include <AzCore/Serialization/SerializeContext.h>
