@@ -10,10 +10,7 @@ import logging
 import ly_test_tools.log.log_monitor
 
 # fixture imports
-from AWS.Windows.resource_mappings.resource_mappings import resource_mappings
-from AWS.Windows.cdk.cdk_utils import Cdk
-from AWS.common.aws_utils import AwsUtils
-from assetpipeline.ap_fixtures.asset_processor_fixture import asset_processor as asset_processor
+from assetpipeline.ap_fixtures.asset_processor_fixture import asset_processor
 
 AWS_PROJECT_NAME = 'AWS-AutomationTest'
 AWS_CLIENT_AUTH_FEATURE_NAME = 'AWSClientAuth'
@@ -37,11 +34,45 @@ logger = logging.getLogger(__name__)
 @pytest.mark.parametrize('region_name', ['us-west-2'])
 @pytest.mark.parametrize('assume_role_arn', ['arn:aws:iam::645075835648:role/o3de-automation-tests'])
 @pytest.mark.parametrize('session_name', ['o3de-Automation-session'])
+@pytest.mark.usefixtures('cdk')
+@pytest.mark.parametrize('deployment_params', [[]])
 class TestAWSClientAuthPasswordSignIn(object):
     """
     Test class to verify AWS Cognito IDP Password sign in and Cognito Identity pool authenticated authorization.
     """
 
+    @pytest.mark.parametrize('level', ['AWS/ClientAuth'])
+    @pytest.mark.parametrize('destroy_stacks_on_teardown', [False])
+    def test_anonymous_credentials(self,
+                                   level: str,
+                                   launcher: pytest.fixture,
+                                   resource_mappings: pytest.fixture,
+                                   workspace: pytest.fixture,
+                                   asset_processor: pytest.fixture
+                                   ):
+        """
+        Setup: Deploys cdk and updates resource mapping file.
+        Tests: Getting AWS credentials for no signed in user.
+        Verification: Log monitor looks for success credentials log.
+        """
+        asset_processor.start()
+        asset_processor.wait_for_idle()
+
+        file_to_monitor = os.path.join(launcher.workspace.paths.project_log(), GAME_LOG_NAME)
+        log_monitor = ly_test_tools.log.log_monitor.LogMonitor(launcher=launcher, log_file_path=file_to_monitor)
+
+        launcher.args = ['+LoadLevel', level]
+        launcher.args.extend(['-rhi=null'])
+
+        with launcher.start(launch_ap=False):
+            result = log_monitor.monitor_log_for_lines(
+                expected_lines=['(Script) - Success anonymous credentials'],
+                unexpected_lines=['(Script) - Fail anonymous credentials'],
+                halt_on_unexpected=True,
+            )
+            assert result, 'Anonymous credentials fetched successfully.'
+
+    @pytest.mark.parametrize('destroy_stacks_on_teardown', [True])
     def test_password_signin_credentials(self,
                                          launcher: pytest.fixture,
                                          cdk: pytest.fixture,
@@ -55,9 +86,6 @@ class TestAWSClientAuthPasswordSignIn(object):
         Tests: Sign up new test user, admin confirm the user, sign in and get aws credentials.
         Verification: Log monitor looks for success credentials log.
         """
-        logger.info(f'Cdk stack names:\n{cdk.list()}')
-        stacks = cdk.deploy()
-        resource_mappings.populate_output_keys(stacks)
         asset_processor.start()
         asset_processor.wait_for_idle()
 

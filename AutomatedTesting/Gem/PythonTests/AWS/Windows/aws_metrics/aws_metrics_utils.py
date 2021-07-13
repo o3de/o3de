@@ -8,12 +8,12 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import logging
 import pathlib
 import pytest
+import time
 import typing
 
 from datetime import datetime
 from botocore.exceptions import WaiterError
 
-from AWS.common.aws_utils import AwsUtils
 from .aws_metrics_waiters import KinesisAnalyticsApplicationUpdatedWaiter, \
     CloudWatchMetricsDeliveredWaiter, DataLakeMetricsDeliveredWaiter, GlueCrawlerReadyWaiter
 
@@ -29,7 +29,7 @@ class AWSMetricsUtils:
     Provide utils functions for the AWSMetrics gem to interact with the deployed resources.
     """
 
-    def __init__(self, aws_utils: AwsUtils):
+    def __init__(self, aws_utils: pytest.fixture):
         self._aws_util = aws_utils
 
     def start_kinesis_data_analytics_application(self, application_name: str) -> None:
@@ -199,14 +199,13 @@ class AWSMetricsUtils:
 
             assert state == 'SUCCEEDED', f'Failed to run the named query {named_query.get("Name", {})}'
 
-    def empty_s3_bucket(self, bucket_name: str) -> None:
+    def empty_batch_analytics_bucket(self, bucket_name: str) -> None:
         """
         Empty the S3 bucket following:
         https://boto3.amazonaws.com/v1/documentation/api/latest/guide/migrations3.html
 
         :param bucket_name: Name of the S3 bucket.
         """
-
         s3 = self._aws_util.resource('s3')
         bucket = s3.Bucket(bucket_name)
 
