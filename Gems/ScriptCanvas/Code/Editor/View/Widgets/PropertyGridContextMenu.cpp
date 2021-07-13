@@ -5,7 +5,6 @@
  *
  */
 
-#include <precompiled.h>
 #include "PropertyGrid.h"
 
 #include <QAction>

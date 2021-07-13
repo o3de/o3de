@@ -5,7 +5,6 @@
  *
  */
 
-#include "precompiled.h"
 #include "NewGraphDialog.h"
 
 #include <QLineEdit>

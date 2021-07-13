@@ -5,7 +5,6 @@
  *
  */
 
-#include "precompiled.h"
 
 #include <ScriptCanvas/Core/Graph.h>
 #include <ScriptCanvas/Core/Node.h>

@@ -6,6 +6,5 @@
 #
 
 set(FILES
-    Source/precompiled.h
     Source/ScriptCanvasGem.cpp
 )

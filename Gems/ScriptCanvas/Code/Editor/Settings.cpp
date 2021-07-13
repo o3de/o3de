@@ -5,7 +5,6 @@
  *
  */
 
-#include "precompiled.h"
 
 #include <AzCore/UserSettings/UserSettingsProvider.h>
 

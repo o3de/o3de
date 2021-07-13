@@ -5,8 +5,6 @@
  *
  */
 
-#include <precompiled.h>
-
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <Editor/Model/UnitTestBrowserFilterModel.h>
 #include <Editor/Model/moc_UnitTestBrowserFilterModel.cpp>

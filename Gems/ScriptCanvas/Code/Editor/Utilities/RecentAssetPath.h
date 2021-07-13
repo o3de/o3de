@@ -6,7 +6,7 @@
  */
 #pragma once
 
-#include <QString>
+#include <AzCore/Asset/AssetCommon.h>
 
 namespace ScriptCanvasEditor
 {

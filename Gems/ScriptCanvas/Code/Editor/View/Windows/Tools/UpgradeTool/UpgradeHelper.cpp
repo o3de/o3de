@@ -5,8 +5,6 @@
  *
  */
 
-#include <precompiled.h>
-
 #include <QMessageBox>
 #include <QProcess>
 #include <QDir>

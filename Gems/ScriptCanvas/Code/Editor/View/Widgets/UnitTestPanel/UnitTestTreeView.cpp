@@ -5,8 +5,6 @@
  *
  */
 
-#include <precompiled.h>
-
 #include <qaction.h>
 #include <qevent.h>
 #include <qheaderview.h>

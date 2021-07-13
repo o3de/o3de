@@ -5,7 +5,6 @@
  *
  */
 
-#include "precompiled.h"
 
 #include <Tests/Framework/ScriptCanvasUnitTestFixture.h>
 

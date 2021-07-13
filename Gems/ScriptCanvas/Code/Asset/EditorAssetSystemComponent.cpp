@@ -5,7 +5,6 @@
  *
  */
 
-#include "precompiled.h"
 #include <Asset/EditorAssetSystemComponent.h>
 
 #include <AzCore/Asset/AssetManager.h>

@@ -5,7 +5,6 @@
  *
  */
 
-#include "precompiled.h"
 
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/ComponentApplicationBus.h>

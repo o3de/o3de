@@ -5,7 +5,6 @@
  *
  */
 
-#include "precompiled.h"
 
 #include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
 #include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
