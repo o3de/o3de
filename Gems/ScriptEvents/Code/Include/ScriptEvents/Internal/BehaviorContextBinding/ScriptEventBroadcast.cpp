@@ -5,8 +5,6 @@
  *
  */
 
-#include "precompiled.h"
-
 #include "ScriptEventBroadcast.h"
 #include "ScriptEventsBindingBus.h"
 

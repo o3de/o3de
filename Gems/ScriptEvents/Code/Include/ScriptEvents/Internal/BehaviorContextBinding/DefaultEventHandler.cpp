@@ -5,8 +5,6 @@
  *
  */
 
-#include "precompiled.h"
-
 #include "DefaultEventHandler.h"
 #include <ScriptEvents/ScriptEventsBus.h>
 #include <ScriptEvents/ScriptEventDefinition.h>

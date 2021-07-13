@@ -6,7 +6,6 @@
 #
 
 set(FILES
-    Source/precompiled.h
     Source/Editor/ScriptEventsEditorGem.cpp
     Source/Editor/ScriptEventsSystemEditorComponent.cpp
     Source/Editor/ScriptEventsSystemEditorComponent.h

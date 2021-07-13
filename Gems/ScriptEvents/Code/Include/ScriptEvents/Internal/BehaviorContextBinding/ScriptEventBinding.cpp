@@ -5,8 +5,6 @@
  *
  */
 
-#include "precompiled.h"
-
 #include "DefaultEventHandler.h"
 #include <ScriptEvents/ScriptEventTypes.h>
 #include <ScriptEvents/Internal/BehaviorContextBinding/ScriptEventBinding.h>

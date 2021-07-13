@@ -5,8 +5,6 @@
  *
  */
 
-#include "precompiled.h"
-
 #include <AssetBuilderSDK/AssetBuilderBusses.h>
 
 #include <AzCore/Asset/AssetDataStream.h>

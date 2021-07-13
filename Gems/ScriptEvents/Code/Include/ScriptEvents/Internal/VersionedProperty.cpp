@@ -5,7 +5,6 @@
  *
  */
 
-#include "precompiled.h"
 #include "VersionedProperty.h"
 
 #include <AzCore/Script/ScriptContext.h>
