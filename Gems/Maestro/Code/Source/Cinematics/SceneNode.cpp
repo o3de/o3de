@@ -6,7 +6,6 @@
  */
 
 
-#include "Maestro_precompiled.h"
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/Transform.h>

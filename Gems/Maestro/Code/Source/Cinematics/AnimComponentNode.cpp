@@ -6,7 +6,6 @@
  */
 
 
-#include "Maestro_precompiled.h"
 #include "AnimComponentNode.h"
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/Color.h>
