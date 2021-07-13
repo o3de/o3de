@@ -5,8 +5,6 @@
  *
  */
 
-#include "StartingPointMovement_precompiled.h"
-
 #include <AzCore/Module/Module.h>
 
 #include <AzFramework/Metrics/MetricsPlainTextNameRegistration.h>
