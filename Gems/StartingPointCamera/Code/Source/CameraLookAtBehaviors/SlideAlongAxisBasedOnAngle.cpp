@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "StartingPointCamera_precompiled.h"
+
 #include "SlideAlongAxisBasedOnAngle.h"
 #include "StartingPointCamera/StartingPointCameraUtilities.h"
 #include <AzCore/Math/Quaternion.h>
