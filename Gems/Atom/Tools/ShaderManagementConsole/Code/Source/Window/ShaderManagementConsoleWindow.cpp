@@ -37,8 +37,10 @@ AZ_POP_DISABLE_WARNING
 namespace ShaderManagementConsole
 {
     ShaderManagementConsoleWindow::ShaderManagementConsoleWindow(QWidget* parent /* = 0 */)
-        : AzQtComponents::AzQtApplicationWindow(parent)
+        : AzQtComponents::DockMainWindow(parent)
     {
+        m_advancedDockManager = new AzQtComponents::FancyDocking(this);
+        
         setWindowTitle("Shader Management Console");
         setObjectName("ShaderManagementConsoleWindow");
         setDockNestingEnabled(true);
@@ -46,6 +48,10 @@ namespace ShaderManagementConsole
         setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
         setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
         setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
+
+        m_menuBar = new QMenuBar(this);
+        m_menuBar->setObjectName("MenuBar");
+        setMenuBar(m_menuBar);
 
         m_toolBar = new ShaderManagementConsoleToolBar(this);
         m_toolBar->setObjectName("ToolBar");

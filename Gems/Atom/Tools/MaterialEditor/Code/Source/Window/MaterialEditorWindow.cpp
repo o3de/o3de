@@ -55,7 +55,7 @@ AZ_POP_DISABLE_WARNING
 namespace MaterialEditor
 {
     MaterialEditorWindow::MaterialEditorWindow(QWidget* parent /* = 0 */)
-        : AzQtComponents::AzQtApplicationWindow(parent)
+        : AzQtComponents::DockMainWindow(parent)
     {
         resize(1280, 1024);
 
@@ -82,12 +82,18 @@ namespace MaterialEditor
             setWindowTitle(QApplication::applicationName());
         }
 
+        m_advancedDockManager = new AzQtComponents::FancyDocking(this);
+
         setObjectName("MaterialEditorWindow");
         setDockNestingEnabled(true);
         setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
         setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
         setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
         setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
+
+        m_menuBar = new QMenuBar(this);
+        m_menuBar->setObjectName("MenuBar");
+        setMenuBar(m_menuBar);
 
         m_toolBar = new MaterialEditorToolBar(this);
         m_toolBar->setObjectName("ToolBar");
