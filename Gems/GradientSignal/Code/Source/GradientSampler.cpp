@@ -5,7 +5,6 @@
  *
  */
 
-#include "GradientSignal_precompiled.h"
 #include <GradientSignal/GradientSampler.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Math/Vector3.h>

@@ -5,7 +5,6 @@
  *
  */
 
-#include "GradientSignal_precompiled.h"
 #include <GradientSignal/Editor/EditorGradientComponentBase.h>
 
 #include <AzCore/Serialization/SerializeContext.h>

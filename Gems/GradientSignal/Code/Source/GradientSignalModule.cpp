@@ -5,7 +5,6 @@
  *
  */
 
-#include "GradientSignal_precompiled.h"
 
 #include <GradientSignalModule.h>
 #include <GradientSignalSystemComponent.h>

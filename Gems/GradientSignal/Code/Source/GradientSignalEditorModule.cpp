@@ -5,7 +5,6 @@
  *
  */
 
-#include "GradientSignal_precompiled.h"
 #include <GradientSignalEditorModule.h>
 #include <Editor/EditorSurfaceAltitudeGradientComponent.h>
 #include <Editor/EditorSmoothStepGradientComponent.h>

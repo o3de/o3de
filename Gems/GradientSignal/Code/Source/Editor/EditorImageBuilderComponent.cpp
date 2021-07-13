@@ -5,7 +5,6 @@
  *
  */
 
-#include "GradientSignal_precompiled.h"
 #include "EditorImageBuilderComponent.h"
 
 #include <AssetBuilderSDK/SerializationDependencies.h>

@@ -5,7 +5,6 @@
  *
  */
 
-#include "GradientSignal_precompiled.h"
 #include "GradientPreviewDataWidget.h"
 #include <GradientSignal/Ebuses/GradientPreviewContextRequestBus.h>
 

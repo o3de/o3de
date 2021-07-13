@@ -5,7 +5,6 @@
  *
  */
 
-#include "GradientSignal_precompiled.h"
 
 #include "Tests/GradientSignalTestMocks.h"
 

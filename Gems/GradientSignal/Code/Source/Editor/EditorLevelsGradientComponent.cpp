@@ -5,7 +5,6 @@
  *
  */
 
-#include "GradientSignal_precompiled.h"
 #include "EditorLevelsGradientComponent.h"
 
 namespace GradientSignal
