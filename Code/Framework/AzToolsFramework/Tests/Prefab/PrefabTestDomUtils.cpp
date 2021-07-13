@@ -166,13 +166,29 @@ namespace UnitTest
             if (expectedNestedInstanceDomInstances.has_value())
             {
                 ASSERT_TRUE(actualNestedInstanceDomInstances.has_value());
-                for (auto instanceIterator = expectedNestedInstanceDomInstances->get().MemberBegin();
-                     instanceIterator != expectedNestedInstanceDomInstances->get().MemberEnd(); ++instanceIterator)
+                if (expectedNestedInstanceDomInstances->get().IsArray())
                 {
-                    ComparePrefabDoms(
-                        instanceIterator->value,
-                        PrefabDomUtils::FindPrefabDomValue(actualNestedInstanceDomInstances->get(), instanceIterator->name.GetString()),
-                        shouldCompareLinkIds, shouldCompareContainerEntities);
+                    ASSERT_TRUE(actualNestedInstanceDomInstances->get().IsArray());
+                    const size_t arraySize = expectedNestedInstanceDomInstances->get().GetArray().Size();
+                    for(size_t i = 0; i < arraySize; ++i)
+                    {
+                        ComparePrefabDoms(
+                            expectedNestedInstanceDomInstances->get().GetArray()[i],
+                            actualNestedInstanceDomInstances->get().GetArray()[i],
+                            shouldCompareLinkIds, shouldCompareContainerEntities);
+                    }
+                }
+                if (expectedNestedInstanceDomInstances->get().IsObject())
+                {
+                    ASSERT_TRUE(actualNestedInstanceDomInstances->get().IsObject());
+                    for (auto instanceIterator = expectedNestedInstanceDomInstances->get().MemberBegin();
+                        instanceIterator != expectedNestedInstanceDomInstances->get().MemberEnd(); ++instanceIterator)
+                    {
+                        ComparePrefabDoms(
+                            instanceIterator->value,
+                            PrefabDomUtils::FindPrefabDomValue(actualNestedInstanceDomInstances->get(), instanceIterator->name.GetString()),
+                            shouldCompareLinkIds, shouldCompareContainerEntities);
+                    }
                 }
             }
         }
