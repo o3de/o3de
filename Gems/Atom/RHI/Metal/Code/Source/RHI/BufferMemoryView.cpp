@@ -5,7 +5,6 @@
  *
  */
 
-#include "Atom_RHI_Metal_precompiled.h"
 
 #include <RHI/BufferMemoryView.h>
 
