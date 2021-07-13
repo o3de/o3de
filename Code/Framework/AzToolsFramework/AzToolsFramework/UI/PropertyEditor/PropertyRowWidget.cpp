@@ -1120,10 +1120,10 @@ namespace AzToolsFramework
         if (!m_toggleSwitch)
         {
             m_handlerName = AZ::Edit::UIHandlers::CheckBox;
-            EBUS_EVENT_RESULT(m_handler, PropertyTypeRegistrationMessages::Bus, ResolvePropertyHandler, m_handlerName, azrtti_typeid<bool>());
+            PropertyTypeRegistrationMessages::Bus::BroadcastResult(m_handler, &PropertyTypeRegistrationMessages::Bus::Events::ResolvePropertyHandler, m_handlerName, azrtti_typeid<bool>());
             m_toggleSwitch = m_handler->CreateGUI(this);
             m_middleLayout->insertWidget(0, m_toggleSwitch, 1);
-            auto checkBoxCtrl = reinterpret_cast<AzToolsFramework::PropertyCheckBoxCtrl*>(m_toggleSwitch);
+            auto checkBoxCtrl = static_cast<AzToolsFramework::PropertyCheckBoxCtrl*>(m_toggleSwitch);
             QObject::connect(checkBoxCtrl, &AzToolsFramework::PropertyCheckBoxCtrl::valueChanged, this, &PropertyRowWidget::OnClickedToggleButton);
         }
     }
@@ -1138,7 +1138,7 @@ namespace AzToolsFramework
 
     void PropertyRowWidget::OnClickedToggleButton(bool checked)
     {
-        if ((m_expanded && !checked) || (!m_expanded && checked))
+        if (m_expanded != checked)
         {
             DoExpandOrContract(!IsExpanded(), 0 != (QGuiApplication::keyboardModifiers() & Qt::ControlModifier));
         }

@@ -62,8 +62,9 @@ namespace GradientSignal
                     ->DataElement(0, &GradientSampler::m_invertInput, "Invert Input", "")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GradientSampler::ChangeNotify)
 
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Enable Transform", &GradientSampler::m_enableTransform)
+                    ->GroupElementToggle("Enable Transform", &GradientSampler::m_enableTransform)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GradientSampler::ChangeNotify)
                     ->DataElement(0, &GradientSampler::m_translate, "Translate", "")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientSampler::AreTransformSettingsDisabled)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GradientSampler::ChangeNotify)
@@ -74,8 +75,9 @@ namespace GradientSignal
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientSampler::AreTransformSettingsDisabled)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GradientSampler::ChangeNotify)
 
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Enable Levels", &GradientSampler::m_enableLevels)
+                    ->GroupElementToggle("Enable Levels", &GradientSampler::m_enableLevels)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GradientSampler::ChangeNotify)
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &GradientSampler::m_inputMid, "Input Mid", "")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 10.0f)

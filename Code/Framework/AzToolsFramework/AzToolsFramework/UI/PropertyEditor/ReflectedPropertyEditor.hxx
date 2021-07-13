@@ -50,7 +50,7 @@ namespace AzToolsFramework
 
         typedef AZStd::unordered_map<InstanceDataNode*, PropertyRowWidget*> WidgetList;
 
-        typedef AZStd::unordered_map<InstanceDataNode*, PropertyRowWidget*> SpecialGroupWidgetList;
+        ReflectedPropertyEditor::WidgetList m_specialGroupWidgets;
 
         ReflectedPropertyEditor(QWidget* pParent);
         virtual ~ReflectedPropertyEditor();

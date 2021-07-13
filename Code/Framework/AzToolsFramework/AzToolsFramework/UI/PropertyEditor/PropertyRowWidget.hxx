@@ -143,6 +143,7 @@ namespace AzToolsFramework
         QToolButton* GetIndicatorButton() { return m_indicatorButton; }
         QLabel* GetNameLabel() { return m_nameLabel; }
         QWidget* GetToggle() { return m_toggleSwitch; }
+        const QWidget* GetToggle() const { return m_toggleSwitch; }
         void SetIndentSize(int w);
         void SetAsCustom(bool custom) { m_custom = custom; }
 

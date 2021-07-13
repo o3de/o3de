@@ -1112,7 +1112,8 @@ namespace AzToolsFramework
             const AZ::Edit::ElementData* groupData = nullptr;
             for (const AZ::Edit::ElementData& elementData : parentEditData->m_elements)
             {
-                if ((node->m_elementEditData == &elementData) && (elementData.m_elementId != AZ::Edit::ClassElements::Group)) // this element matches this node
+                // this element matches this node
+                if ((node->m_elementEditData == &elementData) && (elementData.m_elementId != AZ::Edit::ClassElements::Group))
                 {
                     // Record the last found group data
                     node->m_groupElementData = groupData;

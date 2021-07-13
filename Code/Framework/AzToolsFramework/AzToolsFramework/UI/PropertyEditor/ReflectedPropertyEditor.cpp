@@ -167,7 +167,7 @@ namespace AzToolsFramework
         InstanceDataHierarchyList           m_instances; ///< List of instance sets to display, other one can aggregate other instances.
         InstanceDataHierarchy::ValueComparisonFunction m_valueComparisonFunction;
         ReflectedPropertyEditor::WidgetList m_widgets;
-        ReflectedPropertyEditor::SpecialGroupWidgetList m_specialGroupWidgets;
+        ReflectedPropertyEditor::WidgetList m_specialGroupWidgets;
         InstanceDataNode* groupSourceNode = nullptr;
         RowContainerType m_widgetsInDisplayOrder;
         UserWidgetToDataMap m_userWidgetsToData;
@@ -626,7 +626,7 @@ namespace AzToolsFramework
     // creates and populates the GUI to edit the property if not already created
     void ReflectedPropertyEditor::Impl::CreateEditorWidget(PropertyRowWidget* pWidget)
     {
-        if ((!pWidget->HasChildWidgetAlready()) && (!pWidget->GetToggle()))
+        if (!pWidget->HasChildWidgetAlready() && !pWidget->GetToggle())
         {
             PropertyHandlerBase* pHandler = pWidget->GetHandler();
             if (pHandler)
@@ -753,7 +753,7 @@ namespace AzToolsFramework
                         }
                     }
                 }
-                if ((!node->GetElementEditMetadata()) || (node->GetElementEditMetadata()->m_elementId != AZ::Edit::ClassElements::Group))
+                if (!node->GetElementEditMetadata() || (node->GetElementEditMetadata()->m_elementId != AZ::Edit::ClassElements::Group))
                 {
                     pWidget = CreateOrPullFromPool();
                     pWidget->show();
@@ -787,7 +787,7 @@ namespace AzToolsFramework
                 }
 
                 // Save the last InstanceDataNode that is a Group ClassElement so that we can use it as the source node for its widget.
-                if ((node->GetElementEditMetadata()) && (node->GetElementEditMetadata()->m_elementId == AZ::Edit::ClassElements::Group))
+                if (node->GetElementEditMetadata() && (node->GetElementEditMetadata()->m_elementId == AZ::Edit::ClassElements::Group))
                 {
                     groupSourceNode = node;
                 }
@@ -1382,16 +1382,14 @@ namespace AzToolsFramework
             return;
         }
 
-        // get the property editor
+        // Get the property editor from either the widget map or the special toggle group widgets
         auto rowWidget = m_widgets.find(it->second);
-        auto rowWidgetGroup = m_specialGroupWidgets.find(it->second);
-        if (rowWidget != m_widgets.end() || rowWidgetGroup != m_specialGroupWidgets.end())
+        if (rowWidget == m_widgets.end())
         {
-            if (rowWidget == m_widgets.end())
-            {
-                rowWidget = rowWidgetGroup;
-            }
-
+            rowWidget = m_specialGroupWidgets.find(it->second);
+        }
+        if (rowWidget != m_widgets.end() || rowWidget != m_specialGroupWidgets.end())
+        {
             InstanceDataNode* node = rowWidget->first;
             PropertyRowWidget* widget = rowWidget->second;
             PropertyHandlerBase* handler = widget->GetHandler();
