@@ -5,7 +5,6 @@
  *
  */
 
-#include "Atom_RHI_Vulkan_precompiled.h"
 #include <Atom/RHI/BufferFrameAttachment.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
 #include <Atom/RHI/BufferView.h>

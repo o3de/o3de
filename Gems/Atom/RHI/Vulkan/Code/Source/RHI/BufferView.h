@@ -6,6 +6,7 @@
  */
 #pragma once
 
+#include <Atom_RHI_Vulkan_precompiled_Platform.h>
 #include <Atom/RHI/BufferView.h>
 #include <AzCore/Memory/PoolAllocator.h>
 

@@ -6,6 +6,7 @@
  */
 #pragma once
 
+#include <Atom_RHI_Vulkan_precompiled_Platform.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/parallel/mutex.h>

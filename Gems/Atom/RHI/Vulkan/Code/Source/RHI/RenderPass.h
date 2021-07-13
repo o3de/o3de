@@ -6,6 +6,7 @@
  */
 #pragma once
 
+#include <Atom_RHI_Vulkan_precompiled_Platform.h>
 #include <Atom/RHI/DeviceObject.h>
 #include <Atom/RHI.Reflect/Limits.h>
 #include <Atom/RHI.Reflect/ImageScopeAttachmentDescriptor.h>

@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Atom_RHI_Vulkan_precompiled.h"
 #include <Atom/RHI/PipelineStateDescriptor.h>
 #include <Atom/RHI.Reflect/ClearValue.h>
 #include <Atom/RHI.Reflect/ImageScopeAttachmentDescriptor.h>
