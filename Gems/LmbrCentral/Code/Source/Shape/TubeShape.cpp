@@ -379,6 +379,13 @@ namespace LmbrCentral
         const float radius, const AZ::u32 capSegments, const AZ::u32 sides,
         AZStd::vector<AZ::Vector3>& vertexBufferOut)
     {
+        if (const size_t segmentCount = spline->GetSegmentCount(); segmentCount == 0)
+        {
+            // clear the buffers so we no longer draw anything
+            vertexBufferOut.clear();
+            return;
+        }
+
         // notes on vert buffer size
         // total end segments
         // 2 verts for each segment
@@ -401,7 +408,7 @@ namespace LmbrCentral
         const size_t numVerts = totalEndSegments + totalSegments + totalLoops;
         vertexBufferOut.resize(numVerts);
 
-        AZ::Vector3* vertices = vertexBufferOut.begin();
+        AZ::Vector3* vertices = vertexBufferOut.data();
 
         // start cap
         auto address = spline->GetAddressByFraction(0.0f);
