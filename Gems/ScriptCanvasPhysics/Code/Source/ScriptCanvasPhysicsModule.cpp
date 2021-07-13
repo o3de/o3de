@@ -5,8 +5,6 @@
  *
  */
 
-#include "ScriptCanvasPhysics_precompiled.h"
-
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include "ScriptCanvasPhysicsSystemComponent.h"
