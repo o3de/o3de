@@ -5,8 +5,6 @@
  *
  */
 
-#include "VirtualGamepad_precompiled.h"
-
 #include "VirtualGamepadSystemComponent.h"
 #include "InputDeviceVirtualGamepad.h"
 

@@ -5,8 +5,6 @@
  *
  */
 
-#include "VirtualGamepad_precompiled.h"
-
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include "VirtualGamepadButtonComponent.h"

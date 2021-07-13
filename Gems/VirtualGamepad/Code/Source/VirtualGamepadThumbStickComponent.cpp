@@ -5,8 +5,6 @@
  *
  */
 
-#include "VirtualGamepad_precompiled.h"
-
 #include "VirtualGamepadThumbStickComponent.h"
 
 #include <VirtualGamepad/VirtualGamepadBus.h>
