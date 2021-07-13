@@ -7,7 +7,6 @@
 
 set(FILES
     Include/Multiplayer/IMultiplayerTools.h
-    Source/Multiplayer_precompiled.h
     Source/Pipeline/NetworkPrefabProcessor.cpp
     Source/Pipeline/NetworkPrefabProcessor.h
     Source/MultiplayerToolsModule.h
