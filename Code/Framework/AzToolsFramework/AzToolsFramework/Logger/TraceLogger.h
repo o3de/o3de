@@ -14,15 +14,18 @@
 
 #include <AzCore/Debug/TraceMessageBus.h>
 #include <AzFramework/Logging/LogFile.h>
+#include <AzToolsFramework/API/EditorPythonConsoleBus.h>
+#include <AzFramework/Asset/AssetSystemBus.h>
 
 namespace AzToolsFramework
 {
     //! Connects and disconnects TraceMessageBus and allows for logging for O3DE Tools Applications
-    class AzQtTraceLogger : public AZ::Debug::TraceMessageBus::Handler
+    class TraceLogger
+        : public AZ::Debug::TraceMessageBus::Handler
     {
     public:
-        AzQtTraceLogger();
-        ~AzQtTraceLogger();
+        TraceLogger();
+        ~TraceLogger();
 
         //! Intalize logging for O3DEToolsApplications
         void WriteStartupLog(const AZStd::string& logFileName);

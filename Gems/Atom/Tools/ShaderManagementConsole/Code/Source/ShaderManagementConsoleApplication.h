@@ -18,7 +18,7 @@
 
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
-#include <AzToolsFramework/Logger/AzQtTraceLogger.h>
+#include <AzToolsFramework/Logger/TraceLogger.h>
 
 #include <Atom/Document/ShaderManagementConsoleDocumentSystemRequestBus.h>
 #include <Atom/Window/ShaderManagementConsoleWindowNotificationBus.h>
@@ -115,7 +115,7 @@ namespace ShaderManagementConsole
 
         static void PyIdleWaitFrames(uint32_t frames);
 
-        AzToolsFramework::AzQtTraceLogger m_traceLogger;
+        AzToolsFramework::TraceLogger m_traceLogger;
 
         //! Local user settings are used to store asset browser tree expansion state
         AZ::UserSettingsProvider m_localUserSettings;

@@ -85,21 +85,49 @@ namespace MaterialEditor
         QString GetDocumentPath(const AZ::Uuid& documentId) const;
 
         void OpenTabContextMenu() override;
+        void SelectPreviousTab();
+        void SelectNextTab();
 
         void closeEvent(QCloseEvent* closeEvent) override;
 
+        QWidget* m_centralWidget = nullptr;
+        AzQtComponents::TabWidget* m_tabWidget = nullptr;
         MaterialViewportWidget* m_materialViewport = nullptr;
         MaterialEditorToolBar* m_toolBar = nullptr;
 
         AZStd::unordered_map <AZStd::string, AzQtComponents::StyledDockWidget*> m_dockWidgets;
 
+        QMenu* m_menuFile = {};
         QAction* m_actionNew = {};
+        QAction* m_actionOpen = {};
+        QAction* m_actionOpenRecent = {};
+        QAction* m_actionClose = {};
+        QAction* m_actionCloseAll = {};
+        QAction* m_actionCloseOthers = {};
+        QAction* m_actionSave = {};
+        QAction* m_actionSaveAsCopy = {};
         QAction* m_actionSaveAsChild = {};
+        QAction* m_actionSaveAll = {};
+        QAction* m_actionExit = {};
 
+        QMenu* m_menuEdit = {};
+        QAction* m_actionUndo = {};
+        QAction* m_actionRedo = {};
+        QAction* m_actionSettings = {};
+
+        QMenu* m_menuView = {};
+        QAction* m_actionAssetBrowser = {};
         QAction* m_actionInspector = {};
         QAction* m_actionConsole = {};
+        QAction* m_actionPythonTerminal = {};
         QAction* m_actionPerfMonitor = {};
         QAction* m_actionViewportSettings = {};
+        QAction* m_actionNextTab = {};
+        QAction* m_actionPreviousTab = {};
+
+        QMenu* m_menuHelp = {};
+        QAction* m_actionHelp = {};
+        QAction* m_actionAbout = {};
 
         StatusBarWidget* m_statusBar = {};
     };

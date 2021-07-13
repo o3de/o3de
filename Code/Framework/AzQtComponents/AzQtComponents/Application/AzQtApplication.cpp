@@ -31,7 +31,7 @@ namespace AzQtComponents
          QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
     }
 
-    void AzQtApplication::SetDpiScaling()
+    void AzQtApplication::InitializeDpiScaling()
     {    
          QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
          QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
@@ -39,6 +39,5 @@ namespace AzQtComponents
          QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
          AzQtComponents::Utilities::HandleDpiAwareness(AzQtComponents::Utilities::SystemDpiAware);
     }
-    
 } // namespace AzQtComponents
 

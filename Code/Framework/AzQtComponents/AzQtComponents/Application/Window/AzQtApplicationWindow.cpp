@@ -16,46 +16,14 @@
 
 namespace AzQtComponents
 {
-    AzQtApplicationWindow::AzQtApplicationWindow(QWidget* parent /* = 0 */, const AZStd::string& objectName)
+    AzQtApplicationWindow::AzQtApplicationWindow(QWidget* parent /* = 0 */)
         : AzQtComponents::DockMainWindow(parent)
     {
         m_advancedDockManager = new AzQtComponents::FancyDocking(this);
 
-        setObjectName(objectName.c_str());
-        setDockNestingEnabled(true);
-        setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
-        setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
-        setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
-        setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
-
         m_menuBar = new QMenuBar(this);
         m_menuBar->setObjectName("MenuBar");
         setMenuBar(m_menuBar);
-
-        m_centralWidget = new QWidget(this);
-        m_tabWidget = new AzQtComponents::TabWidget(m_centralWidget);
-        m_tabWidget->setObjectName("TabWidget");
-        m_tabWidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
-        m_tabWidget->setContentsMargins(0, 0, 0, 0);
-
-        vl = new QVBoxLayout(m_centralWidget);
-    }
-
-    void AzQtApplicationWindow::SelectPreviousTab()
-    {
-        if (m_tabWidget->count() > 1)
-        {
-            // Adding count to wrap around when index <= 0
-            m_tabWidget->setCurrentIndex((m_tabWidget->currentIndex() + m_tabWidget->count() - 1) % m_tabWidget->count());
-        }
-    }
-
-    void AzQtApplicationWindow::SelectNextTab()
-    {
-        if (m_tabWidget->count() > 1)
-        {
-            m_tabWidget->setCurrentIndex((m_tabWidget->currentIndex() + 1) % m_tabWidget->count());
-        }
     }
 }
     

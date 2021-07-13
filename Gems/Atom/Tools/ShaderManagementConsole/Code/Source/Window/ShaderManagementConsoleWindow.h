@@ -69,6 +69,8 @@ namespace ShaderManagementConsole
         AZ::Uuid GetDocumentIdFromTab(const int tabIndex) const;
 
         void OpenTabContextMenu() override;
+        void SelectPreviousTab();
+        void SelectNextTab();
 
         void SelectDocumentForTab(const int tabIndex);
         void CloseDocumentForTab(const int tabIndex);
@@ -78,11 +80,40 @@ namespace ShaderManagementConsole
 
         void CreateDocumentContent(const AZ::Uuid& documentId, QStandardItemModel* model);
 
+        QWidget* m_centralWidget = nullptr;
+        AzQtComponents::TabWidget* m_tabWidget = nullptr;
         ShaderManagementConsoleBrowserWidget* m_assetBrowser = nullptr;
         ShaderManagementConsoleToolBar* m_toolBar = nullptr;
         AzToolsFramework::CScriptTermDialog* m_pythonTerminal = nullptr;
 
         AzQtComponents::StyledDockWidget* m_assetBrowserDockWidget = nullptr;
         AzQtComponents::StyledDockWidget* m_pythonTerminalDockWidget = nullptr;
+
+        QMenu* m_menuFile = {};
+        QMenu* m_menuNew = {};
+        QAction* m_actionOpen = {};
+        QAction* m_actionOpenRecent = {};
+        QAction* m_actionClose = {};
+        QAction* m_actionCloseAll = {};
+        QAction* m_actionCloseOthers = {};
+        QAction* m_actionSave = {};
+        QAction* m_actionSaveAsCopy = {};
+        QAction* m_actionSaveAll = {};
+        QAction* m_actionExit = {};
+
+        QMenu* m_menuEdit = {};
+        QAction* m_actionUndo = {};
+        QAction* m_actionRedo = {};
+        QAction* m_actionSettings = {};
+
+        QMenu* m_menuView = {};
+        QAction* m_actionAssetBrowser = {};
+        QAction* m_actionPythonTerminal = {};
+        QAction* m_actionNextTab = {};
+        QAction* m_actionPreviousTab = {};
+
+        QMenu* m_menuHelp = {};
+        QAction* m_actionHelp = {};
+        QAction* m_actionAbout = {};
     };
 } // namespace ShaderManagementConsole

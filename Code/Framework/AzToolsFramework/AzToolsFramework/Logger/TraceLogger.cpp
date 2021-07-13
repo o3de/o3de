@@ -10,7 +10,7 @@
  *
  */
 
-#include <AzToolsFramework/Logger/AzQtTraceLogger.h>
+#include <AzToolsFramework/Logger/TraceLogger.h>
 
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -18,17 +18,17 @@
 
 namespace AzToolsFramework
 {
-    AzQtTraceLogger::AzQtTraceLogger()
+    TraceLogger::TraceLogger()
     {
         AZ::Debug::TraceMessageBus::Handler::BusConnect();
     }
 
-    AzQtTraceLogger::~AzQtTraceLogger()
+    TraceLogger::~TraceLogger()
     {
         AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
     }
 
-    bool AzQtTraceLogger::OnOutput(const char* window, const char* message)
+    bool TraceLogger::OnOutput(const char* window, const char* message)
     {
         if (m_logFile)
         {
@@ -41,7 +41,7 @@ namespace AzToolsFramework
         return false;
     }
 
-    void AzQtTraceLogger::WriteStartupLog(const AZStd::string& logFileName)
+    void TraceLogger::WriteStartupLog(const AZStd::string& logFileName)
     {    
         using namespace AzFramework;
         
