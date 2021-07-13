@@ -9,13 +9,13 @@
 #pragma once
 
 #include <IAudioSystem.h>
+#include <ATLUtils.h>
 #include <AzCore/Console/IConsole.h>
 
 struct IConsoleCmdArgs;
 
 namespace Audio::CVars
 {
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
     AZ_CVAR_EXTERNED(AZ::u64, s_ATLMemorySize);
     AZ_CVAR_EXTERNED(AZ::u64, s_FileCacheManagerMemorySize);
     AZ_CVAR_EXTERNED(AZ::u64, s_AudioObjectPoolSize);
@@ -37,6 +37,8 @@ namespace Audio::CVars
     AZ_CVAR_EXTERNED(AZ::CVarFixedString, s_AudioTriggersDebugFilter);
     AZ_CVAR_EXTERNED(AZ::CVarFixedString, s_AudioObjectsDebugFilter);
     AZ_CVAR_EXTERNED(AZ::CVarFixedString, s_AudioLoggingOptions);
+    AZ_CVAR_EXTERNED(AZ::CVarFixedString, s_DrawAudioDebug);
+    inline Audio::Flags<AZ::u32> s_debugDrawOptions;
 #endif // !AUDIO_RELEASE
 
 } // namespace Audio::CVars
@@ -57,7 +59,6 @@ namespace Audio
         void UnregisterVariables();
 
     #if !defined(AUDIO_RELEASE)
-        int m_nDrawAudioDebug;
         int m_nFileCacheManagerDebugFilter;
 
     private:

@@ -8,7 +8,7 @@
 
 #include <SoundCVars.h>
 #include <AudioLogger.h>
-#include <ATLUtils.h>
+#include <AudioInternalInterfaces.h>
 #include <AudioSystem_Traits_Platform.h>
 
 #include <AzCore/StringFunc/StringFunc.h>
@@ -179,15 +179,15 @@ namespace Audio::CVars
     {
         if (options == "0")
         {
-            Audio::Log::s_audioLogLevel = Audio::LogLevel::None;
+            Audio::Log::s_audioLogOptions = Log::Options::None;
             return;
         }
 
         Audio::Flags<AZ::u32> flags;
-        flags.SetFlags(Audio::LogLevel::Errors, options.contains("a"));
-        flags.SetFlags(Audio::LogLevel::Warnings, options.contains("b"));
-        flags.SetFlags(Audio::LogLevel::Comments, options.contains("c"));
-        Audio::Log::s_audioLogLevel = flags.GetRawFlags();
+        flags.SetFlags(Log::Options::Errors, options.contains("a"));
+        flags.SetFlags(Log::Options::Warnings, options.contains("b"));
+        flags.SetFlags(Log::Options::Comments, options.contains("c"));
+        Audio::Log::s_audioLogOptions = flags.GetRawFlags();
     };
 
     AZ_CVAR(AZ::CVarFixedString, s_AudioLoggingOptions, "",
@@ -200,6 +200,48 @@ namespace Audio::CVars
         "b: Warnings\n"
         "c: Comments\n");
 
+    auto debugDrawOptionsChangeCallback = [](const AZ::CVarFixedString& options) -> void
+    {
+        s_debugDrawOptions.ClearAllFlags();
+        if (options == "0")
+        {
+            return;
+        }
+
+        s_debugDrawOptions.SetFlags(DebugDraw::Options::DrawObjects, options.contains("a"));
+        s_debugDrawOptions.SetFlags(DebugDraw::Options::ObjectLabels, options.contains("b"));
+        s_debugDrawOptions.SetFlags(DebugDraw::Options::ObjectTriggers, options.contains("c"));
+        s_debugDrawOptions.SetFlags(DebugDraw::Options::ObjectStates, options.contains("d"));
+        s_debugDrawOptions.SetFlags(DebugDraw::Options::ObjectRtpcs, options.contains("e"));
+        s_debugDrawOptions.SetFlags(DebugDraw::Options::ObjectEnvironments, options.contains("f"));
+        s_debugDrawOptions.SetFlags(DebugDraw::Options::DrawRays, options.contains("g"));
+        s_debugDrawOptions.SetFlags(DebugDraw::Options::RayLabels, options.contains("h"));
+        s_debugDrawOptions.SetFlags(DebugDraw::Options::DrawListener, options.contains("i"));
+        s_debugDrawOptions.SetFlags(DebugDraw::Options::ActiveEvents, options.contains("v"));
+        s_debugDrawOptions.SetFlags(DebugDraw::Options::ActiveObjects, options.contains("w"));
+        s_debugDrawOptions.SetFlags(DebugDraw::Options::FileCacheInfo, options.contains("x"));
+        s_debugDrawOptions.SetFlags(DebugDraw::Options::MemoryInfo, options.contains("y"));
+    };
+
+    AZ_CVAR(AZ::CVarFixedString, s_DrawAudioDebug, "",
+        debugDrawOptionsChangeCallback,
+        AZ::ConsoleFunctorFlags::IsCheat,
+        "Draws AudioTranslationLayer related debug data to the screen.\n"
+        "Usage: s_DrawAudioDebug=abcde (flags can be combined)\n"
+        "0: Turn off.\n"
+        "a: Draw spheres around active audio objects.\n"
+        "b: Show text labels for active audio objects.\n"
+        "c: Show trigger names for active audio objects.\n"
+        "d: Show current states for active audio objects.\n"
+        "e: Show RTPC values for active audio objects.\n"
+        "f: Show Environment amounts for active audio objects.\n"
+        "g: Draw occlusion rays.\n"
+        "h: Show occlusion ray labels.\n"
+        "i: Draw sphere around active audio listener.\n"
+        "v: List active Events.\n"
+        "w: List active Audio Objects.\n"
+        "x: Show FileCache Manager debug info.\n"
+        "y: Show memory pool usage info for the audio engine.\n");
 #endif // !AUDIO_RELEASE
 
 } // namespace Audio::CVars
@@ -211,8 +253,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     CSoundCVars::CSoundCVars()
     #if !defined(AUDIO_RELEASE)
-        : m_nDrawAudioDebug(0)
-        , m_nFileCacheManagerDebugFilter(0)
+        : m_nFileCacheManagerDebugFilter(0)
     #endif // !AUDIO_RELEASE
     {
     }
@@ -292,25 +333,6 @@ namespace Audio
             "Usage: s_SetPanningMode speakers    (default)\n"
             "Usage: s_SetPanningMode headphones\n"
         );
-
-        REGISTER_CVAR2("s_DrawAudioDebug", &m_nDrawAudioDebug, 0, VF_CHEAT | VF_CHEAT_NOCHECK | VF_BITFIELD,
-            "Draws AudioTranslationLayer related debug data to the screen.\n"
-            "Usage: s_DrawAudioDebug [0ab...] (flags can be combined)\n"
-            "0: No audio debug info on the screen.\n"
-            "a: Draw spheres around active audio objects.\n"
-            "b: Show text labels for active audio objects.\n"
-            "c: Show trigger names for active audio objects.\n"
-            "d: Show current states for active audio objects.\n"
-            "e: Show RTPC values for active audio objects.\n"
-            "f: Show Environment amounts for active audio objects.\n"
-            "g: Draw occlusion rays.\n"
-            "h: Show occlusion ray labels.\n"
-            "i: Draw sphere around active audio listener.\n"
-            "v: List active Events.\n"
-            "w: List active Audio Objects.\n"
-            "x: Show FileCache Manager debug info.\n"
-            "y: Show memory pool usage info for the audio impl.\n"
-            );
 
         REGISTER_CVAR2("s_FileCacheManagerDebugFilter", &m_nFileCacheManagerDebugFilter, 0, VF_CHEAT | VF_CHEAT_NOCHECK | VF_BITFIELD,
             "Allows for filtered display of the different AFCM entries such as Globals, Level Specifics, Game Hints and so on.\n"

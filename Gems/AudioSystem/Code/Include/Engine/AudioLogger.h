@@ -23,17 +23,17 @@ namespace Audio
         eALT_ALWAYS,
     };
 
-    enum LogLevel : AZ::u8
-    {
-        None = 0,
-        Errors = (1 << 0),
-        Warnings = (1 << 1),
-        Comments = (1 << 2),
-    };
-
     namespace Log
     {
-        inline AZ::u32 s_audioLogLevel = 0;
+        enum Options : AZ::u8
+        {
+            None = 0,
+            Errors = (1 << 0),
+            Warnings = (1 << 1),
+            Comments = (1 << 2),
+        };
+
+        inline AZ::u32 s_audioLogOptions = 0;
 
 #if defined(ENABLE_AUDIO_LOGGING)
         // Eventually will get rid of the CAudioLogger class and objects and convert
@@ -53,7 +53,7 @@ namespace Audio
                 }
                 case eALT_ERROR:
                 {
-                    if ((s_audioLogLevel & Audio::LogLevel::Errors) != 0)
+                    if ((s_audioLogOptions & Log::Options::Errors) != 0)
                     {
                         AZ_Error(AudioWindow, false, message);
                     }
@@ -61,7 +61,7 @@ namespace Audio
                 }
                 case eALT_WARNING:
                 {
-                    if ((s_audioLogLevel & Audio::LogLevel::Warnings) != 0)
+                    if ((s_audioLogOptions & Log::Options::Warnings) != 0)
                     {
                         AZ_Warning(AudioWindow, false, message);
                     }
@@ -69,7 +69,7 @@ namespace Audio
                 }
                 case eALT_COMMENT:
                 {
-                    if ((s_audioLogLevel & Audio::LogLevel::Comments) != 0)
+                    if ((s_audioLogOptions & Log::Options::Comments) != 0)
                     {
                         AZ_TracePrintf(AudioWindow, message);
                     }
