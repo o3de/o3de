@@ -115,7 +115,7 @@ namespace AzToolsFramework
         // Converts a point in logical source widget space [0..m_sourceWidget->size()] to normalized [0..1] space.
         AZ::Vector2 WidgetPositionToNormalizedPosition(QPoint position);
         // Converts a point in normalized [0..1] space to logical source widget space [0..m_sourceWidget->size()].
-        QPoint QtEventToAzInputMapper::NormalizedPositionToWidgetPosition(AZ::Vector2 normalizedPosition);
+        QPoint NormalizedPositionToWidgetPosition(AZ::Vector2 normalizedPosition);
 
         // Handle mouse click events.
         void HandleMouseButtonEvent(QMouseEvent* mouseEvent);
