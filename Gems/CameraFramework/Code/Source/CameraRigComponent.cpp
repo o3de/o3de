@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "CameraFramework_precompiled.h"
+
 #include "CameraRigComponent.h"
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Math/Transform.h>
