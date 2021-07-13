@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <AzCore/Serialization/Json/JsonSerializationResult.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
@@ -121,6 +122,11 @@ namespace AzToolsFramework
              * @return the instances DOM value or AZStd::nullopt if it instances can't be found.
              */
             PrefabDomValueConstReference GetInstancesValue(const PrefabDomValue& prefabDom);
+
+            AZ::JsonSerializationResult::ResultCode ApplyPatches(
+                PrefabDomValue& prefabDomToApplyPatchesOn,
+                PrefabDom::AllocatorType& allocator,
+                const PrefabDomValue& patches);
 
             /**
              * Prints the contents of the given prefab DOM value to the debug output console in a readable format.
