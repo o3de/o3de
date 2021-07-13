@@ -86,8 +86,10 @@ namespace AZ
                 AZStd::sys_time_t timeNow = AZStd::GetTimeNowSecond();
                 AZStd::string timeString;
                 AZStd::to_string(timeString, timeNow);
-                u64 currentTick = AZ::RPI::RPISystemInterface::Get()->GetCurrentTick();
-                AZStd::string frameDataFilePath = AZStd::string::format("@user@/CpuProfiler/%s_%llu.json", timeString.c_str(), currentTick);
+                const AZStd::string frameDataFilePath = AZStd::string::format(
+                    "@user@/CpuProfiler/%s_%llu.json",
+                    timeString.c_str(),
+                    AZ::RPI::RPISystemInterface::Get()->GetCurrentTick());
                 char resolvedPath[AZ::IO::MaxPathLength];
                 AZ::IO::FileIOBase::GetInstance()->ResolvePath(frameDataFilePath.c_str(), resolvedPath, AZ::IO::MaxPathLength);
                 m_lastCapturedFilePath = resolvedPath;
@@ -311,10 +313,9 @@ namespace AZ
             {
                 // Find the next frame boundary after the viewport's right bound and draw until that tick
                 auto nextFrameBoundaryItr = AZStd::lower_bound(m_frameEndTicks.begin(), m_frameEndTicks.end(), m_viewportEndTick);
-                if (nextFrameBoundaryItr == m_frameEndTicks.end() &&
-                    m_frameEndTicks.size() != 0) // lower_bound returns end() if not found
+                if (nextFrameBoundaryItr == m_frameEndTicks.end() && m_frameEndTicks.size() != 0)
                 {
-                    nextFrameBoundaryItr--;
+                    --nextFrameBoundaryItr;
                 }
                 const AZStd::sys_time_t nextFrameBoundary = *nextFrameBoundaryItr;
 
@@ -322,7 +323,7 @@ namespace AZ
                 auto startTickItr = AZStd::lower_bound(m_frameEndTicks.begin(), m_frameEndTicks.end(), m_viewportStartTick);
                 if (startTickItr != m_frameEndTicks.begin())
                 {
-                    startTickItr--;
+                    --startTickItr;
                 }
 
                 // Main draw loop
@@ -353,7 +354,7 @@ namespace AZ
 
                         DrawBlock(region, targetRow);
 
-                        regionItr++;
+                        ++regionItr;
                     }
 
                     // Draw UI details
@@ -656,7 +657,7 @@ namespace AZ
             {
                 const float horizontalPixel = ConvertTickToPixelSpace(*endTickItr);
                 drawList->AddLine({ horizontalPixel, wy }, { horizontalPixel, wy + windowHeight }, red);
-                endTickItr++;
+                ++endTickItr;
             }
         }
 
@@ -667,7 +668,7 @@ namespace AZ
             auto nextFrameBoundaryItr = lastFrameBoundaryItr;
             if (lastFrameBoundaryItr != m_frameEndTicks.begin()) 
             {
-                lastFrameBoundaryItr--;
+                --lastFrameBoundaryItr;
             }
 
             const auto [wx, wy] = ImGui::GetWindowPos();
@@ -732,7 +733,7 @@ namespace AZ
                     IM_COL32_WHITE);
 
                 lastFrameBoundaryItr = nextFrameBoundaryItr;
-                nextFrameBoundaryItr++;
+                ++nextFrameBoundaryItr;
             }
         }
 
