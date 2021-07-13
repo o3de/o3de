@@ -8,6 +8,7 @@
 
 #include <Atom/RHI/AliasedHeap.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <RHI/DX12.h>
 
 namespace AZ
 {

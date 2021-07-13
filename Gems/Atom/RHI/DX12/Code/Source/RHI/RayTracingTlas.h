@@ -6,6 +6,7 @@
  */
 #pragma once
 
+#include <RHI/DX12.h>
 #include <Atom/RHI/RayTracingAccelerationStructure.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
