@@ -9,8 +9,6 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <ScriptCanvas/Core/SubgraphInterface.h>
-#include <ScriptCanvas/Grammar/GrammarContext.h>
-#include <ScriptCanvas/Grammar/GrammarContextBus.h>
 
 namespace NodeableOutCpp
 {

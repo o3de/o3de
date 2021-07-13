@@ -32,6 +32,15 @@ namespace AZ
     {
         if (m_hashes.size() < m_hashes.max_size())
         {
+            constexpr size_t MaxTagSize = TagName{}.max_size();
+            if (specialization.size() > MaxTagSize)
+            {
+                AZ_Error("Settings Registry", false, R"(Cannot append Specialization tag of "%.*s.")"
+                    " It is longer than the MaxTagNameSize of %zu", AZ_STRING_ARG(specialization),
+                    MaxTagSize);
+                return false;
+            }
+
             m_names.push_back(TagName{ specialization });
             TagName& tag = m_names.back();
             AZStd::to_lower(tag.begin(), tag.end());

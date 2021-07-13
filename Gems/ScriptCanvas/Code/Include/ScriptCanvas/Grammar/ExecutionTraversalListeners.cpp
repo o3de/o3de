@@ -27,7 +27,6 @@
 #include <ScriptCanvas/Variable/VariableData.h>
 
 #include "ExecutionTraversalListeners.h"
-#include "GrammarContextBus.h"
 #include "ParsingUtilities.h"
 #include "Primitives.h"
 
