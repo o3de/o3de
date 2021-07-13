@@ -165,9 +165,11 @@ namespace AZ
             AZStd::vector<AZStd::sys_time_t> m_frameEndTicks = { INT64_MIN };
 
             // Main data structure for storing function statistics to be shown in the popup windows.
-            // For now we default allocate for all regions on the first render frame and then use RegionStatistics.m_draw to determine
-            // if we should draw the window or not. FIXME(ATOM-15948) this should be changed once RegionStatistics gets heavier. 
-            AZStd::unordered_map<const GroupRegionName*, RegionStatistics> m_regionStatisticsMap;
+            // Uses the group name + region name as a key - just the region name does not suffice since there are collisions (ex. GarbageCollect)
+            AZStd::unordered_map<AZStd::string, RegionStatistics> m_regionStatisticsMap;
+
+            // Filter for highlighting regions on the visualizer
+            ImGuiTextFilter m_regionHighlightFilter;
         };
     } // namespace Render
 } // namespace AZ

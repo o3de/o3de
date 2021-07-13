@@ -279,8 +279,8 @@ namespace AZ
             if (ImGui::BeginChild("Options and Statistics", { 0, 0 }, true))
             {
                 ImGui::Columns(3, "Options", true);
-                ImGui::Text("Frames To Collect:");
-                ImGui::SliderInt("", &m_framesToCollect, 10, 10000, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_Logarithmic);
+                ImGui::SliderInt("Saved Frames", &m_framesToCollect, 10, 10000, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_Logarithmic);
+                m_regionHighlightFilter.Draw("Find Region");
 
                 ImGui::NextColumn();
 
@@ -522,6 +522,12 @@ namespace AZ
 
         inline void ImGuiCpuProfiler::DrawBlock(const TimeRegion& block, u64 targetRow)
         {
+            // Don't draw anything if the user is searching for regions and this block doesn't pass the filter
+            if (!m_regionHighlightFilter.PassFilter(block.m_groupRegionName->m_regionName))
+            {
+                return;
+            }
+
             float wy = ImGui::GetWindowPos().y - ImGui::GetScrollY();
 
             ImDrawList* drawList = ImGui::GetWindowDrawList();
