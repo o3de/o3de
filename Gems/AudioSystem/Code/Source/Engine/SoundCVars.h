@@ -36,6 +36,7 @@ namespace Audio::CVars
     AZ_CVAR_EXTERNED(bool, s_ShowActiveAudioObjectsOnly);
     AZ_CVAR_EXTERNED(AZ::CVarFixedString, s_AudioTriggersDebugFilter);
     AZ_CVAR_EXTERNED(AZ::CVarFixedString, s_AudioObjectsDebugFilter);
+    AZ_CVAR_EXTERNED(AZ::CVarFixedString, s_AudioLoggingOptions);
 #endif // !AUDIO_RELEASE
 
 } // namespace Audio::CVars
@@ -58,7 +59,6 @@ namespace Audio
     #if !defined(AUDIO_RELEASE)
         int m_nDrawAudioDebug;
         int m_nFileCacheManagerDebugFilter;
-        int m_nAudioLoggingOptions;
 
     private:
         static void CmdExecuteTrigger(IConsoleCmdArgs* pCmdArgs);

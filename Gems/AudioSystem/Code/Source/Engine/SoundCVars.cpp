@@ -8,6 +8,7 @@
 
 #include <SoundCVars.h>
 #include <AudioLogger.h>
+#include <ATLUtils.h>
 #include <AudioSystem_Traits_Platform.h>
 
 #include <AzCore/StringFunc/StringFunc.h>
@@ -173,6 +174,32 @@ namespace Audio::CVars
         nullptr, AZ::ConsoleFunctorFlags::Null,
         "Filters debug drawing to only audio objects whose name matches this filter as a sub-string.\n"
         "Usage: s_AudioObjectsDebugFilter=weapon_axe\n");
+
+    auto logOptionsChangeCallback = [](const AZ::CVarFixedString& options) -> void
+    {
+        if (options == "0")
+        {
+            Audio::Log::s_audioLogLevel = Audio::LogLevel::None;
+            return;
+        }
+
+        Audio::Flags<AZ::u32> flags;
+        flags.SetFlags(Audio::LogLevel::Errors, options.contains("a"));
+        flags.SetFlags(Audio::LogLevel::Warnings, options.contains("b"));
+        flags.SetFlags(Audio::LogLevel::Comments, options.contains("c"));
+        Audio::Log::s_audioLogLevel = flags.GetRawFlags();
+    };
+
+    AZ_CVAR(AZ::CVarFixedString, s_AudioLoggingOptions, "",
+        logOptionsChangeCallback,
+        AZ::ConsoleFunctorFlags::Null,
+        "Toggles the log level of audio related messages.\n"
+        "Usage: s_AudioLoggingOptions=abc (flags can be combined)\n"
+        "Default: ab (Errors & Warnings)\n"
+        "a: Errors\n"
+        "b: Warnings\n"
+        "c: Comments\n");
+
 #endif // !AUDIO_RELEASE
 
 } // namespace Audio::CVars
@@ -186,7 +213,6 @@ namespace Audio
     #if !defined(AUDIO_RELEASE)
         : m_nDrawAudioDebug(0)
         , m_nFileCacheManagerDebugFilter(0)
-        , m_nAudioLoggingOptions(0)
     #endif // !AUDIO_RELEASE
     {
     }
@@ -294,14 +320,6 @@ namespace Audio
             "b: Level Specifics\n"
             "c: Game Hints\n"
             "d: Currently Loaded\n");
-
-        REGISTER_CVAR2("s_AudioLoggingOptions", &m_nAudioLoggingOptions, AlphaBits("ab"), VF_CHEAT | VF_CHEAT_NOCHECK | VF_BITFIELD,
-            "Toggles the logging of audio related messages.\n"
-            "Usage: s_AudioLoggingOptions [ab...] (flags can be combined)\n"
-            "Default: ab (Errors & Warnings)\n"
-            "a: Errors\n"
-            "b: Warnings\n"
-            "c: Comments\n");
 #endif // !AUDIO_RELEASE
     }
 
