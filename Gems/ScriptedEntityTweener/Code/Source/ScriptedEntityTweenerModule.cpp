@@ -5,8 +5,6 @@
  *
  */
 
-#include "ScriptedEntityTweener_precompiled.h"
-
 #include <IGem.h>
 
 #include <ScriptedEntityTweener/ScriptedEntityTweenerBus.h>
