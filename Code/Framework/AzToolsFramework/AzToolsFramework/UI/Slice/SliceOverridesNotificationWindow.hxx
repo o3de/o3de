@@ -6,12 +6,16 @@
  */
 #pragma once
 
+#include <QtWidgets/QWidget>
+
 namespace Ui
 {
     class NotificationWindow;
 }
 
 class QToolButton;
+class QLabel;
+class QTimer;
 
 namespace AzToolsFramework
 {

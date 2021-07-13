@@ -13,6 +13,8 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
+#include <QtCore/QString>
+
 namespace AZ
 {
     struct ClassDataReflection;

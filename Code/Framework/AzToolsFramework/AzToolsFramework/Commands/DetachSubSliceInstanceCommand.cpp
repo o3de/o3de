@@ -5,7 +5,6 @@
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 #include "DetachSubSliceInstanceCommand.h"
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>

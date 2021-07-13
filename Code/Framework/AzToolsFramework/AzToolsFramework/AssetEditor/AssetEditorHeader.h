@@ -8,6 +8,7 @@
 
 #include <AzQtComponents/AzQtComponentsAPI.h>
 #include <AzQtComponents/Components/Widgets/ElidingLabel.h>
+#include <AzCore/Memory/SystemAllocator.h>
 
 #include <QWidget>
 #include <QTimer>

@@ -5,7 +5,6 @@
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 
 #include <AzToolsFramework/UI/LegacyFramework/Core/EditorFrameworkAPI.h>
 

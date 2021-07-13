@@ -5,7 +5,6 @@
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 
 #include "PropertyAudioCtrl.h"
 #include "PropertyQTConstants.h"

@@ -5,7 +5,6 @@
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 
 #include <AzToolsFramework/SourceControl/LocalFileSCComponent.h>
 

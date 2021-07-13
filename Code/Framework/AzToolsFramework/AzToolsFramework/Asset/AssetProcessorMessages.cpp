@@ -5,7 +5,6 @@
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 #include <AzToolsFramework/Asset/AssetProcessorMessages.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>

@@ -5,15 +5,14 @@
  *
  */
 
-#ifndef EditorFrameworkAPI_H
-#define EditorFrameworkAPI_H
+#pragma once
 
 #include <AzCore/base.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/PlatformIncl.h>
+#include <AzCore/Component/EntityId.h>
 #include <AzFramework/CommandLine/CommandLine.h>
-
-#pragma once
 
 // this file contains the API for the buses that the framework communicates on to NON-GUI-CLIENTS
 // note that this does not include UI messaging, this is for non-ui parts of it!
@@ -22,10 +21,6 @@ namespace AZ
 {
     class SerializeContext;
 }
-
-#ifdef AZ_PLATFORM_WINDOWS
-    typedef HINSTANCE HMODULE;
-#endif
 
 namespace LegacyFramework
 {
@@ -328,5 +323,3 @@ namespace LegacyFramework
 
     typedef AZ::EBus<IPCCommandAPI> IPCCommandBus;
 };
-
-#endif

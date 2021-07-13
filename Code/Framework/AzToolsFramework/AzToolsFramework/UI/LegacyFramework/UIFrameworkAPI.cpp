@@ -5,7 +5,6 @@
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 #include "UIFrameworkAPI.h"
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/std/delegate/delegate.h>
@@ -17,6 +16,7 @@
 #include <AzToolsFramework/UI/UICore/OverwritePromptDialog.hxx>
 
 #include <QWindow>
+#include <QtGui/QGuiApplication>
 
 namespace AzToolsFramework
 {

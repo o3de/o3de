@@ -5,7 +5,6 @@
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/std/chrono/clocks.h>

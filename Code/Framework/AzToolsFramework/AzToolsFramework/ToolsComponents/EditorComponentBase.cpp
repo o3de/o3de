@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "AzToolsFramework_precompiled.h"
 #include "EditorComponentBase.h"
 #include "TransformComponent.h"
 #include "SelectionComponent.h"

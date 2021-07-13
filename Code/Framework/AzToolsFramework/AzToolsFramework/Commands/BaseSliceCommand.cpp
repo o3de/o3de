@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "AzToolsFramework_precompiled.h"
 #include "BaseSliceCommand.h"
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
 

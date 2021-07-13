@@ -5,7 +5,6 @@
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 #include "QTreeViewStateSaver.hxx"
 
 #include <QTreeView>

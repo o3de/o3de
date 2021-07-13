@@ -5,7 +5,6 @@
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 #include <AzCore/Component/Component.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/UI/LegacyFramework/UIFrameworkAPI.h>

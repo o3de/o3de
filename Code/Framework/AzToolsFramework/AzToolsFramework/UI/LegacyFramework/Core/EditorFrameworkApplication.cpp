@@ -5,7 +5,6 @@
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 #include <AzCore/PlatformIncl.h>
 #include "EditorFrameworkApplication.h"
 
@@ -53,6 +52,7 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QFileInfo::d_ptr':
 AZ_POP_DISABLE_OVERRIDE_WARNING
 #include <QSharedMemory>
 #include <QStandardPaths>
+#include <QtWidgets/QApplication>
 
 namespace LegacyFramework
 {

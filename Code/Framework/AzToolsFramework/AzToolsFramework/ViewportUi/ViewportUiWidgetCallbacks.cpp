@@ -5,7 +5,6 @@
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 
 #include "ViewportUiWidgetCallbacks.h"
 

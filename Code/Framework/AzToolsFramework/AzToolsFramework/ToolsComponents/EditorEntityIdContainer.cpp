@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "AzToolsFramework_precompiled.h"
 #include "EditorEntityIdContainer.h"
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/Component.h>
