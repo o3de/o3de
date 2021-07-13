@@ -86,10 +86,11 @@ namespace AZ
                 AZStd::sys_time_t timeNow = AZStd::GetTimeNowSecond();
                 AZStd::string timeString;
                 AZStd::to_string(timeString, timeNow);
+                u64 currentTick = AZ::RPI::RPISystemInterface::Get()->GetCurrentTick();
                 const AZStd::string frameDataFilePath = AZStd::string::format(
                     "@user@/CpuProfiler/%s_%llu.json",
                     timeString.c_str(),
-                    AZ::RPI::RPISystemInterface::Get()->GetCurrentTick());
+                    currentTick);
                 char resolvedPath[AZ::IO::MaxPathLength];
                 AZ::IO::FileIOBase::GetInstance()->ResolvePath(frameDataFilePath.c_str(), resolvedPath, AZ::IO::MaxPathLength);
                 m_lastCapturedFilePath = resolvedPath;
