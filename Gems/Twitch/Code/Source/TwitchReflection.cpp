@@ -5,7 +5,6 @@
  *
  */
 
-#include "Twitch_precompiled.h"
 #include <AzCore/Script/ScriptContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <Twitch/TwitchBus.h>

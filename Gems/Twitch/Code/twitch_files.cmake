@@ -10,7 +10,6 @@ set(FILES
     Include/Twitch/TwitchTypes.h
     Include/Twitch/BaseTypes.h
     Include/Twitch/RESTTypes.h
-    Source/Twitch_precompiled.h
     Source/TwitchSystemComponent.cpp
     Source/TwitchSystemComponent.h
     Source/TwitchReflection.cpp

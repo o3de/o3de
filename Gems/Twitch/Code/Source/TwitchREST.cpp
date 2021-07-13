@@ -5,7 +5,6 @@
  *
  */
 
-#include "Twitch_precompiled.h"
 #include <AzCore/std/time.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/string/conversions.h>

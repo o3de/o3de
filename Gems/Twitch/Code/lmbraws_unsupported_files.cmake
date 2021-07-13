@@ -6,6 +6,5 @@
 #
 
 set(FILES
-    Source/Twitch_precompiled.h
     Source/ComponentStub.cpp
 )
