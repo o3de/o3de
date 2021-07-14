@@ -130,7 +130,12 @@ namespace AZ
 
             if (response.m_handleFound.IsNull())
             {
-                return VirtualAddress::CreateNull();
+                GarbageCollectForce();  // Try to garbage collect - likely the buffer does have the memory.
+                FindNode(request, response);
+                if (response.m_handleFound.IsNull())
+                {   // This time we verified that there is not enough memory left.
+                    return VirtualAddress::CreateNull();
+                }
             }
 
             Node& nodeFound = GetNode(response.m_handleFound);

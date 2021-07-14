@@ -24,6 +24,9 @@
 // Hair specific
 #include <Rendering/SharedBufferInterface.h>
 
+
+#pragma optimize("",off)
+
 namespace AZ
 {
     namespace RPI
@@ -105,8 +108,6 @@ namespace AZ
             Data::Asset<RPI::BufferAsset> GetBufferAsset() const override;
 
             Data::Instance<RPI::Buffer> GetBuffer() override;
-//            Data::Instance<RHI::Buffer> GetBuffer() override;
-//            RHI::BufferView* GetBufferView() override;
 
             //! Update buffer's content with sourceData at an offset of bufferByteOffset
             bool UpdateData(const void* sourceData, uint64_t sourceDataSizeInBytes, uint64_t bufferByteOffset = 0) override;
@@ -134,18 +135,19 @@ namespace AZ
             Data::Instance<RPI::Buffer> m_buffer = nullptr;
             Data::Asset<RPI::BufferAsset> m_bufferAsset = {};
 
-            // new from ComputeExampleComponent
-//            RHI::Ptr<RHI::BufferPool> m_bufferPool;  
-//            Data::Instance<RHI::Buffer> m_buffer;
-//            const RHI::BufferView* m_bufferView = nullptr;
-//            RHI::AttachmentId m_bufferAttachmentId = AZ::RHI::AttachmentId("bufferAttachmentId");
-
             RHI::FreeListAllocator m_freeListAllocator;
             AZStd::mutex m_allocatorMutex;
-            uint64_t m_alignment = 256;     // Adi: verify this, otherwise set it to be 16 --> 4 x float
-            size_t m_sizeInBytes = 256u * (1024u * 1024u);  // Adi: Currently this is fixed - must be changed!
+            uint64_t m_alignment = 16;     // This will be overridden by the size of the largest allocated element
+            // [To Do] Adi: Currently the shared buffer size is fixed - going for dynamic size can be a better
+            // solution but requires using re-allocations and proper synching between all existing buffers
+            // This amount of memory should be enough for 2-3 very details cinematic hair or for 4-6 high
+            // fidelity hair objects.
+            size_t m_sizeInBytes = 256u * (1024u * 1024u);   
             bool m_memoryWasFreed = false;
             bool m_broadcastMemoryAvailableEvent = false;
         };
     } // namespace Render
 } // namespace AZ
+
+
+#pragma optimize("",on)

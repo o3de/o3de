@@ -46,7 +46,7 @@ namespace AZ
         {
             static const size_t PPLL_NODE_SIZE = 16;
             // Adi: replace the following with the actual screen dimensions.
-            static const size_t AVE_FRAGS_PER_PIXEL = 30;
+            static const size_t AVE_FRAGS_PER_PIXEL = 24;
             static const size_t SCREEN_WIDTH = 1920;
             static const size_t SCREEN_HEIGHT = 1080;
             static const size_t RESERVED_PIXELS_FOR_OIT = SCREEN_WIDTH * SCREEN_HEIGHT * AVE_FRAGS_PER_PIXEL;
