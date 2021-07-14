@@ -23,13 +23,13 @@ namespace TestImpact
         return TestTargetMetaMapFactory(masterTestListData, suiteFilter);
     }
 
-    AZStd::vector<TestImpact::BuildTargetDescriptor> ReadBuildTargetDescriptorFiles(const BuildTargetDescriptorConfig& buildTargetDescriptorConfig)
+    AZStd::vector<BuildTargetDescriptor> ReadBuildTargetDescriptorFiles(const BuildTargetDescriptorConfig& buildTargetDescriptorConfig)
     {
-        AZStd::vector<TestImpact::BuildTargetDescriptor> buildTargetDescriptors;
+        AZStd::vector<BuildTargetDescriptor> buildTargetDescriptors;
         for (const auto& buildTargetDescriptorFile : std::filesystem::directory_iterator(buildTargetDescriptorConfig.m_mappingDirectory.c_str()))
         {
             const auto buildTargetDescriptorContents = ReadFileContents<RuntimeException>(buildTargetDescriptorFile.path().string().c_str());
-            auto buildTargetDescriptor = TestImpact::BuildTargetDescriptorFactory(
+            auto buildTargetDescriptor = BuildTargetDescriptorFactory(
                 buildTargetDescriptorContents,
                 buildTargetDescriptorConfig.m_staticInclusionFilters,
                 buildTargetDescriptorConfig.m_inputInclusionFilters,
@@ -40,7 +40,7 @@ namespace TestImpact
         return buildTargetDescriptors;
     }
 
-    AZStd::unique_ptr<TestImpact::DynamicDependencyMap> ConstructDynamicDependencyMap(
+    AZStd::unique_ptr<DynamicDependencyMap> ConstructDynamicDependencyMap(
         SuiteType suiteFilter,
         const BuildTargetDescriptorConfig& buildTargetDescriptorConfig,
         const TestTargetMetaConfig& testTargetMetaConfig)
