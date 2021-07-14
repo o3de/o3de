@@ -221,6 +221,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             COMPILE_DEFINITIONS
                 PRIVATE
                     LYSHINE_EDITOR
+                    LYSHINE_BUILDER
             INCLUDE_DIRECTORIES
                 PRIVATE
                     Tests
@@ -234,6 +235,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     Legacy::CryCommon
                     AZ::AssetBuilderSDK
                     Gem::LyShine.Editor.Static
+                    Gem::LyShine.Builders.Static
                     Gem::LmbrCentral.Editor
                     Gem::TextureAtlas
             RUNTIME_DEPENDENCIES
