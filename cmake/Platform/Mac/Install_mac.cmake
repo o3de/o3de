@@ -5,13 +5,11 @@
 #
 #
 
-include(cmake/Platform/Common/Install_common.cmake)
-
-#! ly_platform_install_target: platform specific target installation
-function(ly_platform_install_target)
+#! ly_install_target_override: Mac specific target installation
+function(ly_install_target_override)
 
     set(options)
-    set(oneValueArgs TARGET LIBRARY_OUTPUT_SUBDIR RUNTIME_OUTPUT_SUBDIR)
+    set(oneValueArgs TARGET ARCHIVE_DIR LIBRARY_DIR RUNTIME_DIR LIBRARY_SUBDIR RUNTIME_SUBDIR)
     set(multiValueArgs)
     cmake_parse_arguments(ly_platform_install_target "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
@@ -29,19 +27,19 @@ function(ly_platform_install_target)
     install(
         TARGETS ${ly_platform_install_target_TARGET}
         ARCHIVE
-            DESTINATION ${archive_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>
+            DESTINATION ${ly_platform_install_target_ARCHIVE_DIR}/${PAL_PLATFORM_NAME}/$<CONFIG>
             COMPONENT ${install_component}
         LIBRARY
-            DESTINATION ${library_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${ly_platform_install_target_LIBRARY_OUTPUT_SUBDIR}
+            DESTINATION ${ly_platform_install_target_LIBRARY_DIR}/${PAL_PLATFORM_NAME}/$<CONFIG>/${ly_platform_install_target_LIBRARY_SUBDIR}
             COMPONENT ${install_component}
         RUNTIME
-            DESTINATION ${runtime_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${ly_platform_install_target_RUNTIME_OUTPUT_SUBDIR}
+            DESTINATION ${ly_platform_install_target_RUNTIME_DIR}/${PAL_PLATFORM_NAME}/$<CONFIG>/${ly_platform_install_target_RUNTIME_SUBDIR}
             COMPONENT ${install_component}
         BUNDLE
-            DESTINATION ${runtime_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${ly_platform_install_target_RUNTIME_OUTPUT_SUBDIR}
+            DESTINATION ${ly_platform_install_target_RUNTIME_DIR}/${PAL_PLATFORM_NAME}/$<CONFIG>/${ly_platform_install_target_RUNTIME_SUBDIR}
             COMPONENT ${install_component}
         RESOURCE
-            DESTINATION ${runtime_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${ly_platform_install_target_RUNTIME_OUTPUT_SUBDIR}/
+            DESTINATION ${ly_platform_install_target_RUNTIME_DIR}/${PAL_PLATFORM_NAME}/$<CONFIG>/${ly_platform_install_target_RUNTIME_SUBDIR}/
             COMPONENT ${install_component}
     )
 
@@ -49,3 +47,5 @@ function(ly_platform_install_target)
         set_property(TARGET ${ly_platform_install_target_TARGET} PROPERTY RESOURCE ${cached_resources_dir})
     endif()
 endfunction()
+
+include(cmake/Platform/Common/Install_common.cmake)
