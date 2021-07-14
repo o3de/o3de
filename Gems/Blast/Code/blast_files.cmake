@@ -6,8 +6,6 @@
 #
 
 set(FILES
-    Source/StdAfx.cpp
-    Source/StdAfx.h
     Include/Blast/BlastActor.h
     Include/Blast/BlastActorData.h
     Include/Blast/BlastFamilyComponentBus.h

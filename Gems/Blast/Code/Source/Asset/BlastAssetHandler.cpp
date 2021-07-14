@@ -5,8 +5,6 @@
  *
  */
 
-#include "StdAfx.h"
-
 #include <Asset/BlastAssetHandler.h>
 
 #include <Asset/BlastAsset.h>

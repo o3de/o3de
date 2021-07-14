@@ -5,8 +5,6 @@
  *
  */
 
-#include "StdAfx.h"
-
 #include <Components/BlastFamilyComponentNotificationBusHandler.h>
 
 namespace Blast

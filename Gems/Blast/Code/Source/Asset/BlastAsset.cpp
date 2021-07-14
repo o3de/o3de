@@ -5,8 +5,6 @@
  *
  */
 
-#include "StdAfx.h"
-
 #include <Asset/BlastAsset.h>
 #include <AzCore/std/parallel/lock.h>
 #include <Blast/BlastSystemBus.h>

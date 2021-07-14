@@ -5,8 +5,6 @@
  *
  */
 
-#include <StdAfx.h>
-
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Serialization/EditContext.h>

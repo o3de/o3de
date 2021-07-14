@@ -5,8 +5,6 @@
  *
  */
 
-#include "StdAfx.h"
-
 #include <AzCore/Asset/AssetManager.h>
 #include <AzFramework/Physics/PropertyTypes.h>
 #include <Components/BlastSystemComponent.h>

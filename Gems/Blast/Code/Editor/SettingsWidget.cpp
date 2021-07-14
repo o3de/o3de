@@ -5,8 +5,6 @@
  *
  */
 
-#include "StdAfx.h"
-
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>

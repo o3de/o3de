@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <StdAfx.h>
 
 #include <AzQtComponents/Components/Widgets/TabWidget.h>
 #include <Editor/ConfigurationWidget.h>

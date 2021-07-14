@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <StdAfx.h>
 
 #include <AzCore/Interface/Interface.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
