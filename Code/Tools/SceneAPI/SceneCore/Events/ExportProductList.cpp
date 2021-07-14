@@ -53,6 +53,12 @@ namespace AZ
 
             void ExportProductList::Reflect(ReflectContext* context)
             {
+                if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+                {
+                    serializeContext->Class<ExportProduct>()->Version(1);
+                    serializeContext->Class<ExportProductList>()->Version(1);
+                }
+
                 if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
                 {
                     behaviorContext->Class<ExportProduct>("ExportProduct")
