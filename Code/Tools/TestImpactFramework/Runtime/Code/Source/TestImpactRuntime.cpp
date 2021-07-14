@@ -81,7 +81,10 @@ namespace TestImpact
                 if (m_testCompleteCallback.has_value())
                 {
                     Client::TestRun testRun(
-                        testJob.GetTestTarget()->GetName(), testJob.GetCommandString(), testJob.GetStartTime(), testJob.GetDuration(),
+                        testJob.GetTestTarget()->GetName(),
+                        testJob.GetCommandString(),
+                        testJob.GetStartTime(),
+                        testJob.GetDuration(),
                         testJob.GetTestResult());
 
                     (*m_testCompleteCallback)(testRun, ++m_numTestsCompleted, m_totalTests);
@@ -89,8 +92,8 @@ namespace TestImpact
             }
 
         private:
-            size_t m_totalTests;
-            size_t m_numTestsCompleted = 0;
+            const size_t m_totalTests; //!< The total number of tests to run for the entire sequence.
+            size_t m_numTestsCompleted = 0; //!< The running total of tests that have completed.
             AZStd::optional<TestRunCompleteCallback> m_testCompleteCallback;
         };
     }
@@ -667,8 +670,8 @@ namespace TestImpact
             (*testSequenceStartCallback)(m_suiteFilter, selectedTests, discardedTests, draftedTests);
         }
 
-        // We share the test run complete handler between the selected and drafted test runs as to present them together as one
-        // continuous test sequence to the client rather than two discrete test runs
+        // We share the test run complete handler between the selected, discarded and drafted test runs as to present them together as one
+        // continuous test sequence to the client rather than three discrete test runs
         const size_t totalNumTestRuns = includedSelectedTestTargets.size() + draftedTestTargets.size() + includedDiscardedTestTargets.size();
         TestRunCompleteCallbackHandler testRunCompleteHandler(totalNumTestRuns, testCompleteCallback);
 
@@ -686,7 +689,7 @@ namespace TestImpact
             AZStd::ref(testRunCompleteHandler));
         const auto selectedTestRunDuration = selectedTestRunTimer.GetElapsedMs();
 
-        // Carry the remaining global sequence time over to the drafted test run
+        // Carry the remaining global sequence time over to the discarded test run
         if (globalTimeout.has_value())
         {
             const auto elapsed = selectedTestRunDuration;
