@@ -82,8 +82,11 @@ namespace TestImpact
         
         for (const auto& testJob : testJobs)
         {
+            // Test job start time relative to start time
             const auto relativeStartTime =
-                testJob.GetStartTime() + AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(testJob.GetStartTime() - startTime);
+                AZStd::chrono::high_resolution_clock::time_point() +
+                AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(testJob.GetStartTime() - startTime);
+
             Client::TestRun clientTestRun(
                 testJob.GetTestTarget()->GetName(), testJob.GetCommandString(), relativeStartTime, testJob.GetDuration(),
                 testJob.GetTestResult());
