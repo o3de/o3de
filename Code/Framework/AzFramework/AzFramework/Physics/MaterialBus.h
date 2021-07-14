@@ -12,6 +12,9 @@
 
 namespace Physics
 {
+    class ShapeConfiguration;
+    class MaterialSelection;
+
     /// Listens to requests for physics materials.
     class PhysicsMaterialRequests
         : public AZ::EBusTraits
