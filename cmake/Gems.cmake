@@ -259,7 +259,7 @@ endfunction()
 # \arg:VARIANT name of the project variant if which to check for availability. Defaults to 'Clients'.
 function(ly_is_gem_available)
     set(options)
-    set(oneValueArgs NAME OUTPUT_VARIABLE VALUE_IF_FOUND VALUE_IF_NOT_FOUND VARIANT)
+    set(oneValueArgs NAME OUTPUT_VARIABLE VARIANT)
     set(multiValueArgs)
 
     cmake_parse_arguments(ly_is_gem_available "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
