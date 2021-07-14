@@ -5,7 +5,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
 #include <Editor/CollisionGroupWidget.h>
 #include <Editor/ConfigurationWindowBus.h>
 #include <AzCore/Interface/Interface.h>

@@ -5,8 +5,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include "PhysXTestUtil.h"
 #include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Physics/Collision/CollisionEvents.h>

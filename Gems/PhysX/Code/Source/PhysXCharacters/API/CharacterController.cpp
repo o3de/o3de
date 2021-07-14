@@ -5,8 +5,8 @@
  *
  */
 
-#include <PhysX_precompiled.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Physics/CollisionBus.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/Shape.h>
@@ -16,6 +16,8 @@
 #include <PhysX/Utils.h>
 #include <PhysX/NativeTypeIdentifiers.h>
 #include <PhysX/PhysXLocks.h>
+#include <PhysX/Debug/PhysXDebugConfiguration.h>
+#include <PhysX/MathConversion.h>
 #include <PhysXCharacters/API/CharacterController.h>
 #include <Source/Collision.h>
 #include <Source/Shape.h>

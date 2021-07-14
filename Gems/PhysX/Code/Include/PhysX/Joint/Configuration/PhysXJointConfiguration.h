@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzFramework/Physics/Configuration/JointConfiguration.h>
+#include <AzCore/Memory/SystemAllocator.h>
 
 namespace PhysX
 {

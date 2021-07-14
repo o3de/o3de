@@ -5,8 +5,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include "ColliderComponentMode.h"
 #include "ColliderSubComponentMode.h"
 #include "ColliderOffsetMode.h"

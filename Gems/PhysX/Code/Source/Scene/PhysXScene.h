@@ -17,7 +17,11 @@
 
 namespace physx
 {
+    class PxControllerManager;
+    struct PxOverlapHit;
+    struct PxRaycastHit;
     class PxScene;
+    struct PxSweepHit;
 }
 
 namespace PhysX

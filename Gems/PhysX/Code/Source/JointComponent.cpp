@@ -5,8 +5,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzFramework/Physics/RigidBodyBus.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
@@ -16,6 +14,7 @@
 #include <Source/JointComponent.h>
 #include <Source/Utils.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
+#include <PhysX/MathConversion.h>
 
 namespace PhysX
 {

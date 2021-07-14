@@ -5,8 +5,7 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzCore/EBus/Results.h>
@@ -15,6 +14,7 @@
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/SimdMath.h>
+#include <AzCore/Math/ToString.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
@@ -38,6 +38,7 @@
 #include <Source/Utils.h>
 #include <PhysX/PhysXLocks.h>
 #include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
+#include <PhysX/MathConversion.h>
 
 namespace PhysX
 {

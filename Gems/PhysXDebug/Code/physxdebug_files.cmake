@@ -6,7 +6,6 @@
 #
 
 set(FILES
-    Source/PhysXDebug_precompiled.h
     Include/PhysXDebug/PhysXDebugBus.h
     Source/Module.cpp
     Source/SystemComponent.h

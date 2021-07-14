@@ -5,8 +5,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include <Source/StaticRigidBodyComponent.h>
 #include <Source/RigidBodyStatic.h>
 #include <Source/Utils.h>

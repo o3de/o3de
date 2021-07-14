@@ -5,8 +5,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include "ColliderBoxMode.h"
 #include <AzToolsFramework/Manipulators/BoxManipulatorRequestBus.h>
 

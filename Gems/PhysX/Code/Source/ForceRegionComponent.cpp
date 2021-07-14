@@ -4,8 +4,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "PhysX_precompiled.h"
-
 #include <Source/ForceRegionComponent.h>
 #include <Source/ForceRegionForces.h>
 

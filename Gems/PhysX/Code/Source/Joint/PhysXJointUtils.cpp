@@ -5,8 +5,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
@@ -14,6 +12,8 @@
 
 #include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
 #include <PhysX/PhysXLocks.h>
+#include <PhysX/Debug/PhysXDebugConfiguration.h>
+#include <PhysX/MathConversion.h>
 #include <Source/Joint/PhysXJointUtils.h>
 #include <Include/PhysX/NativeTypeIdentifiers.h>
 

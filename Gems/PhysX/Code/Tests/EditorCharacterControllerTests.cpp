@@ -5,7 +5,6 @@
  *
  */
 
-#include "PhysX_precompiled.h"
 #include <Tests/EditorTestUtilities.h>
 #include <EditorRigidBodyComponent.h>
 #include <PhysXCharacters/Components/EditorCharacterControllerComponent.h>

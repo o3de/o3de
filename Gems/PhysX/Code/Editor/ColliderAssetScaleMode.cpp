@@ -5,8 +5,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include "ColliderAssetScaleMode.h"
 #include <PhysX/EditorColliderComponentRequestBus.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>

@@ -5,8 +5,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include <Pipeline/StreamWrapper.h>
 
 namespace PhysX

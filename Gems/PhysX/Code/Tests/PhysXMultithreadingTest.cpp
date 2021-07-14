@@ -5,8 +5,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include <AzTest/AzTest.h>
 #include <AzCore/Math/Random.h>
 #include <AzCore/std/parallel/thread.h>

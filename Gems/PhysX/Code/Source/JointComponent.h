@@ -12,6 +12,7 @@
 #include <AzCore/Component/EntityBus.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzFramework/Physics/Common/PhysicsTypes.h>
 
 #include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
 

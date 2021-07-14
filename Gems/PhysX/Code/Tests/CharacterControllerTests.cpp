@@ -5,8 +5,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include <AzFramework/Physics/PhysicsScene.h>
 
 #include <PhysXCharacters/API/CharacterController.h>

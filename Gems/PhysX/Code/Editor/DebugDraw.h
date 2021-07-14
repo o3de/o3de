@@ -6,6 +6,7 @@
  */
 
 #pragma once
+
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
@@ -15,6 +16,11 @@
 #include <PhysX/MeshAsset.h>
 #include <PhysX/Debug/PhysXDebugConfiguration.h>
 #include <PhysX/Debug/PhysXDebugInterface.h>
+
+namespace physx
+{
+    class PxBase;
+}
 
 namespace PhysX
 {

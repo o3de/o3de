@@ -5,8 +5,6 @@
  *
  */
 
-#include "PhysX_precompiled.h"
-
 #include <Source/EditorComponentDescriptors.h>
 
 #include <Source/EditorBallJointComponent.h>

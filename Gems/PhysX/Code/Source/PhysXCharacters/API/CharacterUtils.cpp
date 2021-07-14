@@ -5,7 +5,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
 #include <PhysXCharacters/API/CharacterUtils.h>
 #include <PhysXCharacters/API/CharacterController.h>
 #include <PhysXCharacters/API/Ragdoll.h>
@@ -14,6 +13,8 @@
 #include <cfloat>
 #include <PhysX/PhysXLocks.h>
 #include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
+#include <PhysX/Debug/PhysXDebugConfiguration.h>
+#include <PhysX/MathConversion.h>
 #include <Source/RigidBody.h>
 #include <Source/Scene/PhysXScene.h>
 #include <Source/Shape.h>

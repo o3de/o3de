@@ -5,8 +5,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #ifdef HAVE_BENCHMARK
 #include <vector>
 

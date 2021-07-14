@@ -5,8 +5,6 @@
  *
  */
 
-#include <NumericalMethods_precompiled.h>
-
 #include <cmath>
 
 #include <AzCore/std/algorithm.h>

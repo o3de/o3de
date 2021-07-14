@@ -4,13 +4,12 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <PhysX_precompiled.h>
-
 #include <Scene/PhysXScene.h>
 
 #include <AzCore/Debug/ProfilerBus.h>
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Physics/Character.h>
 #include <AzFramework/Physics/Collision/CollisionEvents.h>
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
@@ -27,6 +26,8 @@
 #include <PhysXCharacters/API/CharacterUtils.h>
 #include <System/PhysXSystem.h>
 #include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
+#include <PhysX/Debug/PhysXDebugConfiguration.h>
+#include <PhysX/MathConversion.h>
 #include <Joint/PhysXJoint.h>
 
 namespace PhysX

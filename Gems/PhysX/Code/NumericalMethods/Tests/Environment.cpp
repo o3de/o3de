@@ -5,7 +5,6 @@
  *
  */
 
-#include <NumericalMethods_precompiled.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzTest/AzTest.h>
 #include <AzCore/Memory/SystemAllocator.h>

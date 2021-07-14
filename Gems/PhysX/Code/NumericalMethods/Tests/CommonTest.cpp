@@ -5,7 +5,6 @@
  *
  */
 
-#include <NumericalMethods_precompiled.h>
 #include <Tests/Environment.h>
 #include <AzTest/AzTest.h>
 #include <LinearAlgebra.h>

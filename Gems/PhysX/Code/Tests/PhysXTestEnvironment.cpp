@@ -5,7 +5,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
 #include <PhysXTestEnvironment.h>
 #include <PhysX_Traits_Platform.h>
 #include <AzCore/Asset/AssetManagerComponent.h>

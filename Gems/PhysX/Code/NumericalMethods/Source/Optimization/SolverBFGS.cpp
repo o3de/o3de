@@ -5,7 +5,6 @@
  *
  */
 
-#include <NumericalMethods_precompiled.h>
 #include <Optimization/SolverBFGS.h>
 #include <Optimization/LineSearch.h>
 #include <Optimization/Utilities.h>

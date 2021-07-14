@@ -5,8 +5,6 @@
  *
  */
 
-#include "PhysXDebug_precompiled.h"
-
 #include "EditorSystemComponent.h"
 #include <AzCore/Interface/Interface.h>
 #include <AzFramework/Physics/PhysicsSystem.h>

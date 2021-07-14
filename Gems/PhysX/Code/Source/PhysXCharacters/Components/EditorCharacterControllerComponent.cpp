@@ -5,7 +5,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Viewport/ViewportColors.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>

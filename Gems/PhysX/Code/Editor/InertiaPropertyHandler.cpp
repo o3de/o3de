@@ -5,7 +5,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
 #include <Editor/InertiaPropertyHandler.h>
 #include <AzCore/Math/Matrix3x3.h>
 

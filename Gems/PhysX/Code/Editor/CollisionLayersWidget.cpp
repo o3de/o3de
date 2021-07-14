@@ -5,8 +5,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzFramework/Physics/Utils.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyStringLineEditCtrl.hxx>

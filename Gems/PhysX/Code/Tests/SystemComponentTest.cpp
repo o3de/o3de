@@ -5,8 +5,6 @@
  *
  */
 
-#include "PhysX_precompiled.h"
-
 #include <Tests/EditorTestUtilities.h>
 
 namespace PhysXEditorTests

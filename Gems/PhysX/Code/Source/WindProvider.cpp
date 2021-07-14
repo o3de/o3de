@@ -4,8 +4,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <PhysX_precompiled.h>
-
 #include <WindProvider.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/std/containers/vector.h>

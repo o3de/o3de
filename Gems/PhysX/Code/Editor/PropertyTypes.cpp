@@ -5,8 +5,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include <Editor/CollisionLayerWidget.h>
 #include <Editor/CollisionGroupWidget.h>
 #include <Editor/MaterialIdWidget.h>

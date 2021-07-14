@@ -5,8 +5,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include <Editor/ComboBoxEditButtonPair.h>
 
 namespace PhysX

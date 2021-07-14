@@ -5,8 +5,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include <AzCore/std/sort.h>
 
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
