@@ -5,8 +5,6 @@
  *
  */
 
-
-#include "PerforcePlugin_precompiled.h"
 #include "CryFile.h"
 #include "PerforceSourceControl.h"
 #include "PasswordDlg.h"

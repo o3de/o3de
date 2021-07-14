@@ -5,8 +5,6 @@
  *
  */
 
-
-#include "PerforcePlugin_precompiled.h"
 #include "PerforcePlugin.h"
 #include "PasswordDlg.h"
 #include <ui_settings.h> // generated
