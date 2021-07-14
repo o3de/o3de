@@ -129,13 +129,6 @@ namespace AzTestRunner
             std::cout << "LIB: " << lib << std::endl;
         }
 
-        // Construct a retry command if test fails
-        std::string retry_command = "Retry command: " + std::string(argv[0]) + " " + lib + " " + symbol;
-        for (int i = 1; i < argc; i++)
-        {
-            retry_command.append(" " + std::string(argv[i]));
-        }
-
         // Wait for debugger
         if (waitForDebugger)
         {
@@ -229,12 +222,14 @@ namespace AzTestRunner
         if (testMainFunction->IsValid())
         {
             result = (*testMainFunction)(argc, argv);
-            if (result != 0)
-            {
-                std::cout << retry_command << std::endl;
-            }
             std::cout << "OKAY " << symbol << "() returned " << result << std::endl;
             testMainFunction.reset();
+        }
+
+        // Construct a retry command if the test fails
+        if (result != 0)
+        {
+            std::cout << "Retry command: " << std::string(argv[0]) << " " << lib << " " << symbol << std::endl;
         }
 
         // unload and reset the module here, because it needs to release resources that were used / activated in
