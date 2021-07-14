@@ -453,9 +453,9 @@ namespace EMStudio
 
         // display the values and names
         int offset = 0;
-        for (const EMotionFX::Recorder::ExtractedNodeHistoryItem& mActiveItem : mActiveItems)
+        for (const EMotionFX::Recorder::ExtractedNodeHistoryItem& activeItem : mActiveItems)
         {
-            EMotionFX::Recorder::NodeHistoryItem* curItem = mActiveItem.mNodeHistoryItem;
+            EMotionFX::Recorder::NodeHistoryItem* curItem = activeItem.mNodeHistoryItem;
             if (curItem == nullptr)
             {
                 continue;
@@ -481,14 +481,14 @@ namespace EMStudio
 
             if (!mTempString.empty())
             {
-                mTempString += AZStd::string::format(" = %.4f", mActiveItem.mValue);
+                mTempString += AZStd::string::format(" = %.4f", activeItem.mValue);
             }
             else
             {
-                mTempString = AZStd::string::format("%.4f", mActiveItem.mValue);
+                mTempString = AZStd::string::format("%.4f", activeItem.mValue);
             }
 
-            const AZ::Color colorCode = (useNodeColors) ? mActiveItem.mNodeHistoryItem->mTypeColor : mActiveItem.mNodeHistoryItem->mColor;
+            const AZ::Color colorCode = (useNodeColors) ? activeItem.mNodeHistoryItem->mTypeColor : activeItem.mNodeHistoryItem->mColor;
             QColor color;
             color.setRgbF(colorCode.GetR(), colorCode.GetG(), colorCode.GetB(), colorCode.GetA());
 

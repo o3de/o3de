@@ -374,9 +374,9 @@ namespace EMotionFX
     // copy all original data over the output data
     void Mesh::ResetToOriginalData()
     {
-        for (VertexAttributeLayer* mVertexAttribute : mVertexAttributes)
+        for (VertexAttributeLayer* vertexAttribute : mVertexAttributes)
         {
-            mVertexAttribute->ResetToOriginalData();
+            vertexAttribute->ResetToOriginalData();
         }
     }
 

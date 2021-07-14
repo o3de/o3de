@@ -107,9 +107,9 @@ namespace EMStudio
         delete mZoomOutCursor;
 
         // get rid of the motion infos
-        for (MotionInfo* mMotionInfo : mMotionInfos)
+        for (MotionInfo* motionInfo : mMotionInfos)
         {
-            delete mMotionInfo;
+            delete motionInfo;
         }
     }
 

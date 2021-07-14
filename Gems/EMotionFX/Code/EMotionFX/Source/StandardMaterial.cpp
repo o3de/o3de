@@ -580,9 +580,9 @@ namespace EMotionFX
 
     void StandardMaterial::RemoveAllLayers()
     {
-        for (StandardMaterialLayer* mLayer : mLayers)
+        for (StandardMaterialLayer* layer : mLayers)
         {
-            mLayer->Destroy();
+            layer->Destroy();
         }
 
         mLayers.clear();

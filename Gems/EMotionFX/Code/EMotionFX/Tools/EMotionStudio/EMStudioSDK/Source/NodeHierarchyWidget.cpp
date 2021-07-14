@@ -187,10 +187,10 @@ namespace EMStudio
         mHierarchy->clear();
 
         // get the number actor instances and iterate over them
-        for (const uint32 mActorInstanceID : mActorInstanceIDs)
+        for (const uint32 actorInstanceID : mActorInstanceIDs)
         {
             // get the actor instance by its id
-            EMotionFX::ActorInstance* actorInstance = EMotionFX::GetActorManager().FindActorInstanceByID(mActorInstanceID);
+            EMotionFX::ActorInstance* actorInstance = EMotionFX::GetActorManager().FindActorInstanceByID(actorInstanceID);
             if (actorInstance)
             {
                 AddActorInstance(actorInstance);

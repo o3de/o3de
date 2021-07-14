@@ -163,9 +163,9 @@ namespace EMStudio
     {
         if (delFromMem)
         {
-            for (TimeTrackElement* mElement : mElements)
+            for (TimeTrackElement* element : mElements)
             {
-                delete mElement;
+                delete element;
             }
         }
 

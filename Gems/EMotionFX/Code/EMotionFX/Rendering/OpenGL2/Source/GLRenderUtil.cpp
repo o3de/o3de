@@ -158,9 +158,9 @@ namespace RenderGL
         delete[] mTextures;
 
         // get rid of texture entries
-        for (TextEntry* mTextEntrie : mTextEntries)
+        for (TextEntry* textEntry : mTextEntries)
         {
-            delete mTextEntrie;
+            delete textEntry;
         }
         mTextEntries.clear();
     }

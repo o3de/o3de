@@ -70,9 +70,9 @@ namespace EMotionFX
     // remove all morph targets
     void MorphSetup::RemoveAllMorphTargets()
     {
-        for (MorphTarget*& mMorphTarget : mMorphTargets)
+        for (MorphTarget*& morphTarget : mMorphTargets)
         {
-            mMorphTarget->Destroy();
+            morphTarget->Destroy();
         }
 
         mMorphTargets.clear();
@@ -176,9 +176,9 @@ namespace EMotionFX
         }
 
         // scale the morph targets
-        for (MorphTarget* mMorphTarget : mMorphTargets)
+        for (MorphTarget* morphTarget : mMorphTargets)
         {
-            mMorphTarget->Scale(scaleFactor);
+            morphTarget->Scale(scaleFactor);
         }
     }
 } // namespace EMotionFX

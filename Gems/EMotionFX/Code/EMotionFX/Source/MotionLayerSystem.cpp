@@ -49,11 +49,11 @@ namespace EMotionFX
     void MotionLayerSystem::RemoveAllLayerPasses(bool delFromMem)
     {
         // delete all layer passes
-        for (LayerPass* mLayerPasse : mLayerPasses)
+        for (LayerPass* layerPass : mLayerPasses)
         {
             if (delFromMem)
             {
-                mLayerPasse->Destroy();
+                layerPass->Destroy();
             }
         }
 
@@ -120,9 +120,9 @@ namespace EMotionFX
         mMotionQueue->Update();
 
         // process all layer passes
-        for (LayerPass* mLayerPasse : mLayerPasses)
+        for (LayerPass* layerPass : mLayerPasses)
         {
-            mLayerPasse->Process();
+            layerPass->Process();
         }
 
         // process the repositioning as last

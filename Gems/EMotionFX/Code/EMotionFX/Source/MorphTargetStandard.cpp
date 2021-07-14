@@ -177,20 +177,20 @@ namespace EMotionFX
         const float normalizedWeight = CalcNormalizedWeight(newWeight); // convert in range of 0..1
 
         // calculate the new transformations for all nodes of this morph target
-        for (const Transformation& mTransform : mTransforms)
+        for (const Transformation& transform : mTransforms)
         {
             // if this is the node that gets modified by this transform
-            if (mTransform.mNodeIndex != nodeIndex)
+            if (transform.mNodeIndex != nodeIndex)
             {
                 continue;
             }
 
-            position += mTransform.mPosition * newWeight;
-            scale += mTransform.mScale * newWeight;
+            position += transform.mPosition * newWeight;
+            scale += transform.mScale * newWeight;
 
             // rotate additively
             const AZ::Quaternion& orgRot = actorInstance->GetTransformData()->GetBindPose()->GetLocalSpaceTransform(nodeIndex).mRotation;
-            const AZ::Quaternion rot = orgRot.NLerp(mTransform.mRotation, normalizedWeight);
+            const AZ::Quaternion rot = orgRot.NLerp(transform.mRotation, normalizedWeight);
             rotation = rotation * (orgRot.GetInverseFull() * rot);
             rotation.Normalize();
 

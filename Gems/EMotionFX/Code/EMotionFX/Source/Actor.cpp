@@ -261,12 +261,12 @@ namespace EMotionFX
     void Actor::RemoveAllMaterials()
     {
         // for all LODs
-        for (AZStd::vector<Material*>& mMaterial : mMaterials)
+        for (AZStd::vector<Material*>& materials : mMaterials)
         {
             // delete all materials
-            for (Material* m : mMaterial)
+            for (Material* material : materials)
             {
-                m->Destroy();
+                material->Destroy();
             }
         }
 
@@ -749,14 +749,14 @@ namespace EMotionFX
         const size_t numLODs = GetNumLODLevels();
 
         // for all LODs, get rid of all the morph setups for each geometry LOD
-        for (MorphSetup* mMorphSetup : mMorphSetups)
+        for (MorphSetup* morphSetup : mMorphSetups)
         {
-            if (mMorphSetup)
+            if (morphSetup)
             {
-                mMorphSetup->Destroy();
+                morphSetup->Destroy();
             }
 
-            mMorphSetup = nullptr;
+            morphSetup = nullptr;
         }
 
         // remove all modifiers from the stacks for each lod in all nodes

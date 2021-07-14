@@ -128,11 +128,11 @@ namespace EMStudio
     void RenderPlugin::CleanEMStudioActors()
     {
         // get rid of the actors
-        for (EMStudioRenderActor* mActor : mActors)
+        for (EMStudioRenderActor* actor : mActors)
         {
-            if (mActor)
+            if (actor)
             {
-                delete mActor;
+                delete actor;
             }
         }
         mActors.clear();

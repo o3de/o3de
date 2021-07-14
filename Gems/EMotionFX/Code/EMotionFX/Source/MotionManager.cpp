@@ -479,10 +479,10 @@ namespace EMotionFX
         size_t result = 0;
 
         // get the number of motion sets and iterate through them
-        for (const MotionSet* mMotionSet : mMotionSets)
+        for (const MotionSet* motionSet : mMotionSets)
         {
             // sum up the root motion sets
-            if (mMotionSet->GetParentSet() == nullptr)
+            if (motionSet->GetParentSet() == nullptr)
             {
                 result++;
             }

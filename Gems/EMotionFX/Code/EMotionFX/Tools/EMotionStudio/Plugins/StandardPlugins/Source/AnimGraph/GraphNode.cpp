@@ -149,9 +149,9 @@ namespace EMStudio
     // remove all node connections
     void GraphNode::RemoveAllConnections()
     {
-        for (NodeConnection* mConnection : mConnections)
+        for (NodeConnection* connection : mConnections)
         {
-            delete mConnection;
+            delete connection;
         }
 
         mConnections.clear();

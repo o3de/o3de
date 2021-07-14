@@ -90,9 +90,9 @@ namespace EMotionFX
 
         // copy the node attributes
         result->mAttributes.reserve(mAttributes.size());
-        for (const NodeAttribute* mAttribute : mAttributes)
+        for (const NodeAttribute* attribute : mAttributes)
         {
-            result->AddAttribute(mAttribute->Clone());
+            result->AddAttribute(attribute->Clone());
         }
 
         // return the resulting clone

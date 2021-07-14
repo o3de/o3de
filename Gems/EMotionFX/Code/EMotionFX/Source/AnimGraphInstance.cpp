@@ -143,11 +143,11 @@ namespace EMotionFX
     {
         if (delFromMem)
         {
-            for (MCore::Attribute* mParamValue : mParamValues)
+            for (MCore::Attribute* paramValue : mParamValues)
             {
-                if (mParamValue)
+                if (paramValue)
                 {
-                    delete mParamValue;
+                    delete paramValue;
                 }
             }
         }
@@ -930,9 +930,9 @@ namespace EMotionFX
     // reset all node flags
     void AnimGraphInstance::ResetFlagsForAllObjects(uint32 flagsToDisable)
     {
-        for (uint32& mObjectFlag : mObjectFlags)
+        for (uint32& objectFlag : mObjectFlags)
         {
-            mObjectFlag &= ~flagsToDisable;
+            objectFlag &= ~flagsToDisable;
         }
     }
 

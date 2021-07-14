@@ -27,9 +27,9 @@ namespace EMotionFX
     AnimGraphPosePool::~AnimGraphPosePool()
     {
         // delete all poses
-        for (AnimGraphPose* mPose : mPoses)
+        for (AnimGraphPose* pose : mPoses)
         {
-            delete mPose;
+            delete pose;
         }
         mPoses.clear();
 

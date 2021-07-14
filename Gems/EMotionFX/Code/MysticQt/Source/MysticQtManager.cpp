@@ -30,9 +30,9 @@ namespace MysticQt
     MysticQtManager::~MysticQtManager()
     {
         // get the number of icons and destroy them
-        for (IconData* mIcon : mIcons)
+        for (IconData* icon : mIcons)
         {
-            delete mIcon;
+            delete icon;
         }
         mIcons.clear();
     }
@@ -57,11 +57,11 @@ namespace MysticQt
     const QIcon& MysticQtManager::FindIcon(const char* filename)
     {
         // get the number of icons and iterate through them
-        for (IconData* mIcon : mIcons)
+        for (IconData* icon : mIcons)
         {
-            if (AzFramework::StringFunc::Equal(mIcon->mFileName.c_str(), filename, false /* no case */))
+            if (AzFramework::StringFunc::Equal(icon->mFileName.c_str(), filename, false /* no case */))
             {
-                return *(mIcon->mIcon);
+                return *(icon->mIcon);
             }
         }
 

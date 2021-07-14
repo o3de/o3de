@@ -65,9 +65,9 @@ namespace EMotionFX
             MCORE_ASSERT(mData == nullptr);
 
             // delete all subpools
-            for (SubPool* mSubPool : mSubPools)
+            for (SubPool* subPool : mSubPools)
             {
-                delete mSubPool;
+                delete subPool;
             }
             mSubPools.clear();
 

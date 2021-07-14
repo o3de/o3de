@@ -1965,7 +1965,7 @@ namespace EMStudio
         // Modify each ID using the operation in the modified array.
         AZStd::string newMotionID;
         AZStd::string tempString;
-        for (const AZStd::string& mMotionID : mMotionIDs)
+        for (const AZStd::string& motionID : mMotionIDs)
         {
             // 0=Replace All, 1=Replace First, 2=Replace Last
             const int operationMode = mComboBox->currentIndex();
@@ -1975,7 +1975,7 @@ namespace EMStudio
             {
                 case 0:
                 {
-                    tempString = mMotionID.c_str();
+                    tempString = motionID.c_str();
                     AzFramework::StringFunc::Replace(tempString, mStringALineEdit->text().toUtf8().data(), mStringBLineEdit->text().toUtf8().data(), true /* case sensitive */);
                     newMotionID = tempString.c_str();
                     break;
@@ -1983,7 +1983,7 @@ namespace EMStudio
 
                 case 1:
                 {
-                    tempString = mMotionID.c_str();
+                    tempString = motionID.c_str();
                     AzFramework::StringFunc::Replace(tempString, mStringALineEdit->text().toUtf8().data(), mStringBLineEdit->text().toUtf8().data(), true /* case sensitive */, true /* replace first */, false /* replace last */);
                     newMotionID = tempString.c_str();
                     break;
@@ -1991,7 +1991,7 @@ namespace EMStudio
 
                 case 2:
                 {
-                    tempString = mMotionID.c_str();
+                    tempString = motionID.c_str();
                     AzFramework::StringFunc::Replace(tempString, mStringALineEdit->text().toUtf8().data(), mStringBLineEdit->text().toUtf8().data(), true /* case sensitive */, false /* replace first */, true /* replace last */);
                     newMotionID = tempString.c_str();
                     break;
@@ -1999,7 +1999,7 @@ namespace EMStudio
             }
 
             // change the value in the array and add the mapping motion to modified
-            auto iterator = AZStd::find(mModifiedMotionIDs.begin(), mModifiedMotionIDs.end(), mMotionID);
+            auto iterator = AZStd::find(mModifiedMotionIDs.begin(), mModifiedMotionIDs.end(), motionID);
             const size_t modifiedIndex = iterator - mModifiedMotionIDs.begin();
             mModifiedMotionIDs[modifiedIndex] = newMotionID;
             mMotionToModifiedMap.push_back(modifiedIndex);

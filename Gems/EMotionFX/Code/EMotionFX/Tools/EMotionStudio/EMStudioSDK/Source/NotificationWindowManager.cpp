@@ -33,9 +33,9 @@ namespace EMStudio
 
         // compute the height of all notification windows with the spacing
         int allNotificationWindowsHeight = 0;
-        for (const NotificationWindow* mNotificationWindow : mNotificationWindows)
+        for (const NotificationWindow* currentNotificationWindow : mNotificationWindows)
         {
-            allNotificationWindowsHeight += mNotificationWindow->geometry().height() + notificationWindowSpacing;
+            allNotificationWindowsHeight += currentNotificationWindow->geometry().height() + notificationWindowSpacing;
         }
 
         // move the notification window
@@ -81,15 +81,15 @@ namespace EMStudio
 
         // move each notification window
         int currentNotificationWindowHeight = notificationWindowMainWindowPadding;
-        for (NotificationWindow* mNotificationWindow : mNotificationWindows)
+        for (NotificationWindow* notificationWindow : mNotificationWindows)
         {
             // add the height of the notification window
-            currentNotificationWindowHeight += mNotificationWindow->geometry().height();
+            currentNotificationWindowHeight += notificationWindow->geometry().height();
 
             // move the notification window
             const QPoint mainWindowBottomRight = mainWindow->geometry().bottomRight();
-            const QRect& notificationWindowGeometry = mNotificationWindow->geometry();
-            mNotificationWindow->move(mainWindowBottomRight.x() - notificationWindowGeometry.width() - notificationWindowMainWindowPadding, mainWindowBottomRight.y() - currentNotificationWindowHeight);
+            const QRect& notificationWindowGeometry = notificationWindow->geometry();
+            notificationWindow->move(mainWindowBottomRight.x() - notificationWindowGeometry.width() - notificationWindowMainWindowPadding, mainWindowBottomRight.y() - currentNotificationWindowHeight);
 
             // spacing is added after to avoid spacing on the bottom of the first notification window
             currentNotificationWindowHeight += notificationWindowSpacing;

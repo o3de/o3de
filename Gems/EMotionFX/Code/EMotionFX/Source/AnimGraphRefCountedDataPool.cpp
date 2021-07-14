@@ -28,9 +28,9 @@ namespace EMotionFX
     AnimGraphRefCountedDataPool::~AnimGraphRefCountedDataPool()
     {
         // delete all items
-        for (AnimGraphRefCountedData*& mItem : mItems)
+        for (AnimGraphRefCountedData*& item : mItems)
         {
-            delete mItem;
+            delete item;
         }
         mItems.clear();
 

@@ -561,9 +561,9 @@ namespace EMotionFX
     // set the attachment matrices
     void ActorInstance::UpdateAttachments()
     {
-        for (Attachment* mAttachment : mAttachments)
+        for (Attachment* attachment : mAttachments)
         {
-            mAttachment->Update();
+            attachment->Update();
         }
     }
 
@@ -1741,9 +1741,9 @@ namespace EMotionFX
         SetIsVisible(isVisible);
 
         // recurse to all child attachments
-        for (Attachment* mAttachment : mAttachments)
+        for (Attachment* attachment : mAttachments)
         {
-            mAttachment->GetAttachmentActorInstance()->RecursiveSetIsVisible(isVisible);
+            attachment->GetAttachmentActorInstance()->RecursiveSetIsVisible(isVisible);
         }
     }
 

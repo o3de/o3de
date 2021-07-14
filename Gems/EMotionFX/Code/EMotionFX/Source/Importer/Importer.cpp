@@ -60,9 +60,9 @@ namespace EMotionFX
     Importer::~Importer()
     {
         // remove all chunk processors
-        for (ChunkProcessor* mChunkProcessor : mChunkProcessors)
+        for (ChunkProcessor* chunkProcessor : mChunkProcessors)
         {
-            mChunkProcessor->Destroy();
+            chunkProcessor->Destroy();
         }
     }
 

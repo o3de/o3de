@@ -88,17 +88,17 @@ namespace EMotionFX
         const size_t lodLevel = actorInstance->GetLODLevel();
 
         // apply all deform passes
-        for (DeformPass& mDeformPasse : mDeformPasses)
+        for (DeformPass& deformPass : mDeformPasses)
         {
             // find the morph target
-            MorphTargetStandard* morphTarget = (MorphTargetStandard*)actor->GetMorphSetup(lodLevel)->FindMorphTargetByID(mDeformPasse.mMorphTarget->GetID());
+            MorphTargetStandard* morphTarget = (MorphTargetStandard*)actor->GetMorphSetup(lodLevel)->FindMorphTargetByID(deformPass.mMorphTarget->GetID());
             if (morphTarget == nullptr)
             {
                 continue;
             }
 
             // get the deform data and number of vertices to deform
-            MorphTargetStandard::DeformData* deformData = morphTarget->GetDeformData(mDeformPasse.mDeformDataNr);
+            MorphTargetStandard::DeformData* deformData = morphTarget->GetDeformData(deformPass.mDeformDataNr);
             const uint32 numDeformVerts = deformData->mNumVerts;
 
             // this mesh deformer can't work on this mesh, because the deformdata number of vertices is bigger than the
@@ -120,7 +120,7 @@ namespace EMotionFX
             const bool nearZero = (MCore::Math::Abs(weight) < 0.0001f);
 
             // we are near zero, and the previous frame as well, so we can return
-            if (nearZero && mDeformPasse.mLastNearZero)
+            if (nearZero && deformPass.mLastNearZero)
             {
                 continue;
             }
@@ -128,11 +128,11 @@ namespace EMotionFX
             // update the flag
             if (nearZero)
             {
-                mDeformPasse.mLastNearZero = true;
+                deformPass.mLastNearZero = true;
             }
             else
             {
-                mDeformPasse.mLastNearZero = false; // we moved away from zero influence
+                deformPass.mLastNearZero = false; // we moved away from zero influence
             }
 
             // output data

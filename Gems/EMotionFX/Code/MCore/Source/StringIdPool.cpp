@@ -29,9 +29,9 @@ namespace MCore
     {
         Lock();
 
-        for (AZStd::basic_string<char>*& mString : mStrings)
+        for (AZStd::basic_string<char>*& string : mStrings)
         {
-            delete mString;
+            delete string;
         }
         mStrings.clear();
 

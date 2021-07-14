@@ -97,16 +97,16 @@ namespace EMotionFX
             bool CheckIfIsCompatibleWith(const Port& otherPort) const
             {
                 // check the data types
-                for (uint32 mCompatibleType : mCompatibleTypes)
+                for (uint32 compatibleType : mCompatibleTypes)
                 {
                     // If there aren't any more compatibility types and we haven't found a compatible one so far, return false
-                    if (mCompatibleType == 0)
+                    if (compatibleType == 0)
                     {
                         return false;
                     }
                     for (uint32 otherCompatibleTypeIndex : otherPort.mCompatibleTypes)
                     {
-                        if (otherCompatibleTypeIndex == mCompatibleType)
+                        if (otherCompatibleTypeIndex == compatibleType)
                         {
                             return true;
                         }
