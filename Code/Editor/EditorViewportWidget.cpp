@@ -1896,7 +1896,7 @@ void EditorViewportWidget::SetViewTM(const Matrix34& viewTM, bool bMoveOnly)
 
         if (m_pressedKeyState != KeyPressedState::PressedInPreviousFrame)
         {
-            CUndo undo("Move Camera");
+            AzToolsFramework::ScopedUndoBatch undo("Move Camera");
             if (bMoveOnly)
             {
                 // specify eObjectUpdateFlags_UserInput so that an undo command gets logged
@@ -1932,7 +1932,7 @@ void EditorViewportWidget::SetViewTM(const Matrix34& viewTM, bool bMoveOnly)
 
         if (m_pressedKeyState != KeyPressedState::PressedInPreviousFrame)
         {
-            CUndo undo("Move Camera");
+            AzToolsFramework::ScopedUndoBatch undo("Move Camera");
             if (bMoveOnly)
             {
                 AZ::TransformBus::Event(
@@ -1945,6 +1945,8 @@ void EditorViewportWidget::SetViewTM(const Matrix34& viewTM, bool bMoveOnly)
                     m_viewEntityId, &AZ::TransformInterface::SetWorldTM,
                     LYTransformToAZTransform(camMatrix));
             }
+
+            AzToolsFramework::ToolsApplicationRequestBus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::AddDirtyEntity, m_viewEntityId);
         }
         else
         {
