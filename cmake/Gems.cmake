@@ -255,13 +255,11 @@ endfunction()
 
 #! ly_is_gem_available: Check if a gem is available in the current project configuration.
 # \arg:NAME name of the gem to check for availability.
-# \arg:RETURN_VARIABLE name of the variable in which to set the returned value.
-# \arg:VALUE_IF_FOUND value to set in the RETURN_VARIABLE when the gem is available. Defaults to TRUE.
-# \arg:VALUE_IF_NOT_FOUND value to set in the RETURN_VARIABLE when the gem is not available. Defaults to FALSE.
+# \arg:OUTPUT_VARIABLE name of the variable in which to set the returned value (either TRUE or FALSE).
 # \arg:VARIANT name of the project variant if which to check for availability. Defaults to 'Clients'.
 function(ly_is_gem_available)
     set(options)
-    set(oneValueArgs NAME RETURN_VARIABLE VALUE_IF_FOUND VALUE_IF_NOT_FOUND VARIANT)
+    set(oneValueArgs NAME OUTPUT_VARIABLE VALUE_IF_FOUND VALUE_IF_NOT_FOUND VARIANT)
     set(multiValueArgs)
 
     cmake_parse_arguments(ly_is_gem_available "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -274,16 +272,8 @@ function(ly_is_gem_available)
         set(ly_is_gem_available_VARIANT "Clients")
     endif()
 
-    if (NOT ly_is_gem_available_VALUE_IF_FOUND)
-        set(ly_is_gem_available_VALUE_IF_FOUND TRUE)
-    endif()
-
-    if (NOT ly_is_gem_available_VALUE_IF_NOT_FOUND)
-        set(ly_is_gem_available_VALUE_IF_NOT_FOUND FALSE)
-    endif()
-
-    if (NOT ly_is_gem_available_RETURN_VARIABLE)
-        message(WARNING "Call to 'ly_is_gem_available' without specifying the RETURN_VARIABLE argument. The call was ignored.")
+    if (NOT ly_is_gem_available_OUTPUT_VARIABLE)
+        message(WARNING "Call to 'ly_is_gem_available' without specifying the OUTPUT_VARIABLE argument. The call was ignored.")
         return()
     endif()
 
@@ -319,10 +309,10 @@ function(ly_is_gem_available)
         # Fetch for the wanted gem dependency.
         foreach(gem_name ${gem_dependencies})
             if (gem_name STREQUAL ${ly_is_gem_available_NAME})
-                set("${ly_is_gem_available_RETURN_VARIABLE}" "${ly_is_gem_available_VALUE_IF_FOUND}" PARENT_SCOPE)
+                set("${ly_is_gem_available_OUTPUT_VARIABLE}" TRUE PARENT_SCOPE)
                 return()
             endif()
         endforeach()
     endforeach()
-    set("${ly_is_gem_available_RETURN_VARIABLE}" "${ly_is_gem_available_VALUE_IF_NOT_FOUND}" PARENT_SCOPE)
+    set("${ly_is_gem_available_OUTPUT_VARIABLE}" FALSE PARENT_SCOPE)
 endfunction()
