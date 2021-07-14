@@ -151,7 +151,7 @@ namespace Multiplayer
         AZStd::queue<AZStd::string> m_pendingConnectionTickets;
 
         AZ::TimeMs m_lastReplicatedHostTimeMs = AZ::TimeMs{ 0 };
-        HostFrameId m_lastReplicatedHostFrameId = InvalidHostFrameId;
+        HostFrameId m_lastReplicatedHostFrameId = HostFrameId(0);
 
         double m_serverSendAccumulator = 0.0;
         float m_renderBlendFactor = 0.0f;
