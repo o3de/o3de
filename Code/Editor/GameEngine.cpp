@@ -29,7 +29,6 @@
 
 // Editor
 #include "IEditorImpl.h"
-#include "Controls/ConsoleSCB.h"
 #include "CryEditDoc.h"
 #include "Settings.h"
 
@@ -567,11 +566,6 @@ void CGameEngine::SwitchToInGame()
         wait.acquire();
     }
 
-    if (gSettings.clearConsoleOnGameModeStart)
-    {
-        CConsoleSCB::GetCreatedInstance()->ClearText();
-    }
-    
     GetIEditor()->Notify(eNotify_OnBeginGameMode);
 
     m_pISystem->GetIMovieSystem()->EnablePhysicsEvents(true);

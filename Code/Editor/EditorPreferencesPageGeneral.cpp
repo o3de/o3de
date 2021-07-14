@@ -78,7 +78,7 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &GeneralSettings::m_applyConfigSpec, "Hide objects by config spec", "Hide objects by config spec")
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &GeneralSettings::m_enableSourceControl, "Enable Source Control", "Enable Source Control")
             ->DataElement(
-                AZ::Edit::UIHandlers::CheckBox, &GeneralSettings::m_clearConsoleOnGameModeStart, "Clear Console at Game Startup", "Clear Console when Game Mode Starts")
+                AZ::Edit::UIHandlers::CheckBox, &GeneralSettings::m_clearConsoleOnGameModeStart, "Clear Console at game startup", "Clear Console when game mode starts")
             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &GeneralSettings::m_consoleBackgroundColorTheme, "Console Background", "Console Background")
                 ->EnumAttribute(AzToolsFramework::ConsoleColorTheme::Light, "Light")
                 ->EnumAttribute(AzToolsFramework::ConsoleColorTheme::Dark, "Dark")

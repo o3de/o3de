@@ -337,6 +337,8 @@ CConsoleSCB::CConsoleSCB(QWidget* parent)
     connect(findPreviousAction, &QAction::triggered, this, &CConsoleSCB::findPrevious);
     ui->findPrevButton->addAction(findPreviousAction);
 
+    GetIEditor()->RegisterNotifyListener(this);
+
     connect(ui->button, &QPushButton::clicked, this, &CConsoleSCB::showVariableEditor);
     connect(ui->findButton, &QPushButton::clicked, this, &CConsoleSCB::toggleConsoleSearch);
     connect(ui->textEdit, &ConsoleTextEdit::searchBarRequested, this, [this]
@@ -374,6 +376,8 @@ CConsoleSCB::CConsoleSCB(QWidget* parent)
 CConsoleSCB::~CConsoleSCB()
 {
     AzToolsFramework::EditorPreferencesNotificationBus::Handler::BusDisconnect();
+
+    GetIEditor()->UnregisterNotifyListener(this);
 
     s_consoleSCB = nullptr;
     CLogFile::AttachEditBox(nullptr);
@@ -537,10 +541,6 @@ void CConsoleSCB::AddToPendingLines(const QString& text, bool bNewLine)
     s_pendingLines.push_back({ text, bNewLine });
 }
 
-void CConsoleSCB::ClearText()
-{
-    ui->textEdit->clear();
-}
 /**
  * When a CVar variable is updated, we need to tell alert our console variables
  * pane so it can update the corresponding row
@@ -1353,6 +1353,21 @@ void CConsoleSCB::findNext()
 CConsoleSCB* CConsoleSCB::GetCreatedInstance()
 {
     return s_consoleSCB;
+}
+
+void CConsoleSCB::OnEditorNotifyEvent(EEditorNotifyEvent event)
+{
+    switch (event)
+    {
+    case eNotify_OnBeginGameMode:
+        if (gSettings.clearConsoleOnGameModeStart)
+        {
+            ui->textEdit->clear();
+        }
+        break;
+    default:
+        break;
+    }
 }
 
 #include <Controls/moc_ConsoleSCB.cpp>

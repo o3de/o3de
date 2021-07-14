@@ -158,6 +158,7 @@ private:
 class CConsoleSCB
     : public QWidget
     , private AzToolsFramework::EditorPreferencesNotificationBus::Handler
+    , public IEditorNotifyListener
 {
     Q_OBJECT
 public:
@@ -174,8 +175,6 @@ public:
 
     static void AddToPendingLines(const QString& text, bool bNewLine);        // call this function instead of AddToConsole() until an instance of CConsoleSCB exists to prevent messages from getting lost
 
-    void ClearText();
-
     // EditorPreferencesNotificationBus...
     void OnEditorPreferencesChanged() override;
 
@@ -188,6 +187,8 @@ private Q_SLOTS:
     void findNext();
 
 private:
+    void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
+
     QScopedPointer<Ui::Console> ui;
     int m_richEditTextLength;
 
