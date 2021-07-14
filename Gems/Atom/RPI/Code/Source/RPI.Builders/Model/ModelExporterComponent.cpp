@@ -40,6 +40,8 @@ namespace AZ
 
         ModelExporterComponent::ModelExporterComponent()
         {
+            // This setting disables model output (for automated testing purposes) to allow an FBX file to be processed without including
+            // all the dependencies required to process a model.  
             auto settingsRegistry = AZ::SettingsRegistry::Get();
             bool skipAtomOutput = false;
             if (settingsRegistry && settingsRegistry->Get(skipAtomOutput, "/O3DE/SceneAPI/AssetImporter/SkipAtomOutput") && skipAtomOutput)
