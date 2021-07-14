@@ -6,4 +6,4 @@
  */
 #pragma once
 
-#include <Atom_RHI_Vulkan_precompiled_Android.h>
+#include <Atom_RHI_Vulkan_Android.h>

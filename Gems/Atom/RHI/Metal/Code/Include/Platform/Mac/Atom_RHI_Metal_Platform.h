@@ -6,4 +6,4 @@
  */
 #pragma once
 
-#include <Atom_RHI_Metal_precompiled_Mac.h>
+#include <Atom_RHI_Metal_Mac.h>
