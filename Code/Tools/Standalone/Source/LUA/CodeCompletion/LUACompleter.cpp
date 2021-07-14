@@ -5,7 +5,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
 #include "LUACompleter.hxx"
 
 #include <Source/LUA/CodeCompletion/moc_LUACompleter.cpp>

@@ -5,8 +5,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "CarrierDataEvents.h"
 #include "CarrierDataAggregator.hxx"
 #include "CarrierDataParser.h"

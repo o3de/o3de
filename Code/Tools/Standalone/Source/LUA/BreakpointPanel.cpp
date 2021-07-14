@@ -5,8 +5,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "BreakpointPanel.hxx"
 #include <Source/LUA/moc_BreakpointPanel.cpp>
 #include <AzCore/Debug/Trace.h>

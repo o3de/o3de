@@ -5,8 +5,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "DrillerEvent.h"
 
 namespace Driller

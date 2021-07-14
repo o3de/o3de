@@ -5,8 +5,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "LuaIDEApplication.h"
 
 #include <AzCore/Asset/AssetManagerComponent.h>

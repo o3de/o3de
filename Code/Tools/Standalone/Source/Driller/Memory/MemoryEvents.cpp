@@ -5,8 +5,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "MemoryEvents.h"
 
 #include "MemoryDataAggregator.hxx"

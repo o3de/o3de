@@ -5,8 +5,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include <limits>
 
 #include <AzCore/Debug/Profiler.h>

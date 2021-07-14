@@ -5,7 +5,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
 #include "LUACompletionModel.hxx"
 #include <Source/LUA/LUAEditorStyleMessages.h>
 

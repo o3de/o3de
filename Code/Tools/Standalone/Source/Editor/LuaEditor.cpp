@@ -5,7 +5,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
 #include "LuaEditor.h"
 #include <Source/LuaIDEApplication.h>
 

@@ -5,8 +5,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "DrillerMainWindow.hxx"
 #include <Source/Driller/moc_DrillerMainWindow.cpp>
 

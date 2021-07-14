@@ -5,8 +5,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "EventTraceDataParser.h"
 #include "EventTraceDataAggregator.h"
 #include "EventTraceEvents.h"

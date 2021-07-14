@@ -5,8 +5,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "AnnotationsHeaderView_Events.hxx"
 #include "AnnotationsDataView_Events.hxx"
 #include "Annotations.hxx"

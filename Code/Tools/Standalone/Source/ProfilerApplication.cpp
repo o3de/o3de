@@ -5,8 +5,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "ProfilerApplication.h"
 
 #include <Source/Driller/DrillerContext.h>

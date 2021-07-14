@@ -5,7 +5,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
 #include <AzCore/Script/ScriptAsset.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzCore/Component/TickBus.h>

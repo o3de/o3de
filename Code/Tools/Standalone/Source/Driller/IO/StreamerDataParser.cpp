@@ -5,8 +5,6 @@
  *
  */
 
-#include "Woodpecker_precompiled.h"
-
 #include "StreamerDataAggregator.hxx"
 
 namespace Driller

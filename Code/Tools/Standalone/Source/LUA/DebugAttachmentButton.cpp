@@ -5,7 +5,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
 #include "DebugAttachmentButton.hxx"
 #include <Source/LUA/moc_DebugAttachmentButton.cpp>
 #include <Source/LUA/LUAContextControlMessages.h>

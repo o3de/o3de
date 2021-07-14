@@ -10,6 +10,7 @@
 
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/std/string/string.h>
 #include "Source/Driller/DrillerEvent.h"
 
 namespace Driller

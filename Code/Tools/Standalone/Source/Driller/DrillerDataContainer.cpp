@@ -5,8 +5,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "DrillerDataContainer.h"
 
 #include <AzCore/Driller/Stream.h>

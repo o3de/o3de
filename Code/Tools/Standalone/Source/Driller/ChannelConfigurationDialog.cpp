@@ -4,8 +4,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "StandaloneTools_precompiled.h"
-
 #include "Source/Driller/ChannelConfigurationDialog.hxx"
 #include <Source/Driller/moc_ChannelConfigurationDialog.cpp>
 

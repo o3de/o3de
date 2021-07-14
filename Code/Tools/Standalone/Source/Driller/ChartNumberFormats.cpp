@@ -5,8 +5,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "ChartNumberFormats.h"
 
 namespace DrillerCharts

@@ -5,7 +5,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
 #include "LUAEditorPlainTextEdit.hxx"
 #include "LUAEditorBlockState.h"
 #include "LUAEditorStyleMessages.h"

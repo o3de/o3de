@@ -5,8 +5,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "ProfilerDataParser.h"
 #include "ProfilerDataAggregator.hxx"
 #include "ProfilerEvents.h"

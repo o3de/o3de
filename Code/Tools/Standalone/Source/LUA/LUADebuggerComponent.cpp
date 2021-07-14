@@ -5,8 +5,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "LUADebuggerComponent.h"
 #include "LUAEditorContextMessages.h"
 

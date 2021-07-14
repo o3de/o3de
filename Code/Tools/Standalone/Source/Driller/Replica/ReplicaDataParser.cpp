@@ -5,8 +5,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "ReplicaDataParser.h"
 
 #include "ReplicaDataAggregator.hxx"

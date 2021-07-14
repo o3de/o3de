@@ -5,8 +5,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "VRAMDataAggregator.hxx"
 #include <Source/Driller/Rendering/VRAM/moc_VRAMDataAggregator.cpp>
 #include "VRAMEvents.h"

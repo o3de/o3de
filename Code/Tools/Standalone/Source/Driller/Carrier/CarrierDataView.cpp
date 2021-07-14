@@ -5,7 +5,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
 #include <AzCore/std/containers/set.h>
 #include "CarrierDataEvents.h"
 #include "CarrierDataAggregator.hxx"
