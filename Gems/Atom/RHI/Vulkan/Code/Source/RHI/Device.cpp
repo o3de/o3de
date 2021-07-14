@@ -182,10 +182,14 @@ namespace AZ
             {
                 vulkan12Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
                 VkPhysicalDeviceVulkan12Features physicalDeviceVulkan12Features = physicalDevice.GetPhysicalDeviceVulkan12Features();
-                vulkan12Features.drawIndirectCount = physicalDevice.GetPhysicalDeviceVulkan12Features().drawIndirectCount;
-                vulkan12Features.shaderFloat16 = physicalDevice.GetPhysicalDeviceVulkan12Features().shaderFloat16;
-                vulkan12Features.shaderInt8 = physicalDevice.GetPhysicalDeviceVulkan12Features().shaderInt8;
-                vulkan12Features.separateDepthStencilLayouts = physicalDevice.GetPhysicalDeviceVulkan12Features().separateDepthStencilLayouts;
+                vulkan12Features.drawIndirectCount = physicalDeviceVulkan12Features.drawIndirectCount;
+                vulkan12Features.shaderFloat16 = physicalDeviceVulkan12Features.shaderFloat16;
+                vulkan12Features.shaderInt8 = physicalDeviceVulkan12Features.shaderInt8;
+                vulkan12Features.separateDepthStencilLayouts = physicalDeviceVulkan12Features.separateDepthStencilLayouts;
+                vulkan12Features.runtimeDescriptorArray = physicalDeviceVulkan12Features.runtimeDescriptorArray;
+                vulkan12Features.descriptorBindingPartiallyBound = physicalDeviceVulkan12Features.descriptorBindingPartiallyBound;
+                vulkan12Features.descriptorBindingVariableDescriptorCount = physicalDeviceVulkan12Features.descriptorBindingVariableDescriptorCount;
+                vulkan12Features.descriptorIndexing = physicalDeviceVulkan12Features.descriptorIndexing;
                 robustness2.pNext = &vulkan12Features;
             }
             else
