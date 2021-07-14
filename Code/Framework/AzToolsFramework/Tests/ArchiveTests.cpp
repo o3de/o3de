@@ -11,6 +11,7 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
+#include <AzCore/IO/FileIO.h>
 #include <Tests/AZTestShared/Utils/Utils.h>
 #include <AzToolsFramework/Archive/ArchiveAPI.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -111,6 +112,11 @@ namespace UnitTest
                 // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
                 // in the unit tests.
                 AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
+
+                if (auto fileIoBase = AZ::IO::FileIOBase::GetInstance(); fileIoBase != nullptr)
+                {
+                    fileIoBase->SetAlias("@assets@", m_tempDir.path().toUtf8().data());
+                }
             }
 
             void TearDown() override
