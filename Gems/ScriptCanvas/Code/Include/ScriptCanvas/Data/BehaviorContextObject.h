@@ -36,8 +36,7 @@ namespace ScriptCanvas
         static void Reflect(AZ::ReflectContext* reflection);
 
         static BehaviorContextObjectPtr Create(const AZ::BehaviorClass& behaviorClass, const void* value = nullptr);
-        static BehaviorContextObjectPtr CreateDeepCopy(const AZ::BehaviorClass& behaviorClass, const BehaviorContextObject* value = nullptr);
-
+        
         template<typename t_Value>
         AZ_INLINE static BehaviorContextObjectPtr Create(const t_Value& value, const AZ::BehaviorClass& behaviorClass);
 
@@ -116,6 +115,8 @@ namespace ScriptCanvas
 
         BehaviorContextObject& operator=(const BehaviorContextObject&) = delete;
 
+        BehaviorContextObject(const BehaviorContextObject&) = delete;
+
         // copy ctor
         AZ_FORCE_INLINE BehaviorContextObject(const void* source, const AnyTypeInfo& typeInfo, AZ::u32 flags);
 
@@ -133,13 +134,6 @@ namespace ScriptCanvas
         AZ_FORCE_INLINE void add_ref();
 
         void release();
-
-    public:
-        // no copying allowed, this is here to allow compile time compatibility with storage in of BehaviorContextObjectPtr AZStd::any, only
-        AZ_FORCE_INLINE BehaviorContextObject(const BehaviorContextObject&)
-        {
-            AZ_Assert(false, "no copying allowed, this is here to allow storage in of BehaviorContextObjectPtr AZStd::any, only");
-        }
     };
 
     AZ_FORCE_INLINE BehaviorContextObject::BehaviorContextObject(const void* value, const AnyTypeInfo& typeInfo, AZ::u32 flags)
