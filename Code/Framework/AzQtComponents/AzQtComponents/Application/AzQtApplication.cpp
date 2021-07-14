@@ -24,7 +24,7 @@ namespace AzQtComponents
          // Use a common Qt settings path for applications that don't register their own application name
          QApplication::setOrganizationName("O3DE");
          QApplication::setOrganizationDomain("o3de.org");
-         QApplication::setApplicationName("O3DEToolsApplication");
+         QApplication::setApplicationName("O3DE Tools Application");
 
          AzQtComponents::PrepareQtPaths();
 
