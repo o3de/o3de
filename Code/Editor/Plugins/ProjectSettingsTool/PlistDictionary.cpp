@@ -5,7 +5,6 @@
  *
  */
 
-#include "ProjectSettingsTool_precompiled.h"
 #include "PlistDictionary.h"
 
 

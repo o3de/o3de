@@ -5,7 +5,6 @@
  *
  */
 
-#include "ProjectSettingsTool_precompiled.h"
 #include "PropertyFileSelect.h"
 
 #include "PlatformSettings_common.h"

@@ -5,7 +5,6 @@
  *
  */
 
-#include "ProjectSettingsTool_precompiled.h"
 #include "PlatformSettings_Ios.h"
 
 #include "PlatformSettings_common.h"

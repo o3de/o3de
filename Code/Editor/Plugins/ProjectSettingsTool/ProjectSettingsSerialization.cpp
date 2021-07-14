@@ -5,7 +5,7 @@
  *
  */
 
-#include "ProjectSettingsTool_precompiled.h"
+#include <EditorDefs.h>
 #include "ProjectSettingsSerialization.h"
 
 #include "PlatformSettings_common.h"

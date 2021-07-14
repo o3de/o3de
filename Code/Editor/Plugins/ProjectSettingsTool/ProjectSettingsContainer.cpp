@@ -5,13 +5,13 @@
  *
  */
 
-#include "ProjectSettingsTool_precompiled.h"
 #include "ProjectSettingsContainer.h"
 
 #include <AzCore/JSON/prettywriter.h>
 #include <AzCore/JSON/stringbuffer.h>
 #include <AzCore/XML/rapidxml_print.h>
 
+#include <CryCommon/platform.h>
 #include <Util/FileUtil.h>
 
 namespace ProjectSettingsTool
