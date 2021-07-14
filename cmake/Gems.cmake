@@ -277,6 +277,8 @@ function(ly_is_gem_available)
         return()
     endif()
 
+    set("${ly_is_gem_available_OUTPUT_VARIABLE}" FALSE PARENT_SCOPE)
+
     get_property(ly_delayed_enable_gems GLOBAL PROPERTY LY_DELAYED_ENABLE_GEMS)
     foreach(project_target_variant ${ly_delayed_enable_gems})
         # we expect a colon separated list of
@@ -314,5 +316,4 @@ function(ly_is_gem_available)
             endif()
         endforeach()
     endforeach()
-    set("${ly_is_gem_available_OUTPUT_VARIABLE}" FALSE PARENT_SCOPE)
 endfunction()
