@@ -248,7 +248,7 @@ namespace UnitTest
 
         AZ_TEST_START_TRACE_SUPPRESSION;
         auto* mockCatalog = new ::testing::NiceMock<PlatformAddressedAssetCatalogMessageTest>(AzFramework::PlatformId::ANDROID_ID);
-        AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         AZStd::unique_ptr< ::testing::NiceMock<PlatformAddressedAssetCatalogMessageTest>> catalogHolder;
         catalogHolder.reset(mockCatalog);
 

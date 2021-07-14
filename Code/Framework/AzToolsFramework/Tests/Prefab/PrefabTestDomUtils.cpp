@@ -169,14 +169,10 @@ namespace UnitTest
                 if (expectedNestedInstanceDomInstances->get().IsArray())
                 {
                     ASSERT_TRUE(actualNestedInstanceDomInstances->get().IsArray());
-                    const size_t arraySize = expectedNestedInstanceDomInstances->get().GetArray().Size();
-                    for(size_t i = 0; i < arraySize; ++i)
-                    {
-                        ComparePrefabDoms(
-                            expectedNestedInstanceDomInstances->get().GetArray()[i],
-                            actualNestedInstanceDomInstances->get().GetArray()[i],
-                            shouldCompareLinkIds, shouldCompareContainerEntities);
-                    }
+                    const size_t expectedArraySize = expectedNestedInstanceDomInstances->get().GetArray().Size();
+                    EXPECT_EQ(0, expectedArraySize);
+                    const size_t actualArraySize = actualNestedInstanceDomInstances->get().GetArray().Size();
+                    EXPECT_EQ(0, actualArraySize);
                 }
                 if (expectedNestedInstanceDomInstances->get().IsObject())
                 {
