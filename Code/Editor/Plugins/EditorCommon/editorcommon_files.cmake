@@ -10,7 +10,6 @@ set(FILES
     EditorCommon.cpp
     EditorCommon.rc
     EditorCommonAPI.h
-    EditorCommon_precompiled.h
     ActionOutput.h
     ActionOutput.cpp
     UiEditorDLLBus.h
