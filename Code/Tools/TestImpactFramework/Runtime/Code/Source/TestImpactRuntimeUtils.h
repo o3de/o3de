@@ -35,7 +35,7 @@ namespace TestImpact
         const AZStd::vector<AZStd::string>& excludedTestTargets);
 
     //! Extracts the name information from the specified test targets.
-    AZStd::vector<AZStd::string> ExtractTestTargetNames(const AZStd::vector<const TestTarget*> testTargets);
+    AZStd::vector<AZStd::string> ExtractTestTargetNames(const AZStd::vector<const TestTarget*>& testTargets);
 
     //! Generates a test run failure report from the specified test engine job information.
     //! @tparam TestJob The test engine job type.

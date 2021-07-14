@@ -392,7 +392,7 @@ namespace TestImpact
         AZStd::optional<TestSequenceCompleteCallback<Client::SequenceReport>> testSequenceEndCallback,
         AZStd::optional<TestRunCompleteCallback> testCompleteCallback)
     {
-        Timer sequenceTimer;
+        const Timer sequenceTimer;
         AZStd::vector<const TestTarget*> includedTestTargets;
         AZStd::vector<const TestTarget*> excludedTestTargets;
         
@@ -420,7 +420,7 @@ namespace TestImpact
         }
 
         // Run the test targets and collect the test run results
-        Timer testRunTimer;
+        const Timer testRunTimer;
         const auto [result, testJobs] = m_testEngine->RegularRun(
             includedTestTargets,
             m_testShardingPolicy,
@@ -496,7 +496,7 @@ namespace TestImpact
         TestRunCompleteCallbackHandler testRunCompleteHandler(totalNumTestRuns, testCompleteCallback);
 
         // Run the selected test targets and collect the test run results
-        Timer selectedTestRunTimer;
+        const Timer selectedTestRunTimer;
         const auto [selectedResult, selectedTestJobs] = testRunner(includedSelectedTestTargets, testRunCompleteHandler, globalTimeout);
         const auto selectedTestRunDuration = selectedTestRunTimer.GetElapsedMs();
 
@@ -546,7 +546,7 @@ namespace TestImpact
         AZStd::optional<TestSequenceCompleteCallback<Client::ImpactAnalysisSequenceReport>> testSequenceEndCallback,
         AZStd::optional<TestRunCompleteCallback> testCompleteCallback)
     {
-        Timer sequenceTimer;
+        const Timer sequenceTimer;
 
         // Draft in the test targets that have no coverage entries in the dynamic dependency map
         AZStd::vector<const TestTarget*> draftedTestTargets = m_dynamicDependencyMap->GetNotCoveringTests();
@@ -640,10 +640,10 @@ namespace TestImpact
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
         AZStd::optional<SafeImpactAnalysisTestSequenceStartCallback> testSequenceStartCallback,
-            AZStd::optional<TestSequenceCompleteCallback<Client::SafeImpactAnalysisSequenceReport>> testSequenceEndCallback,
+        AZStd::optional<TestSequenceCompleteCallback<Client::SafeImpactAnalysisSequenceReport>> testSequenceEndCallback,
         AZStd::optional<TestRunCompleteCallback> testCompleteCallback)
     {
-        Timer sequenceTimer;
+        const Timer sequenceTimer;
         auto sequenceTimeout = globalTimeout;
 
         // Draft in the test targets that have no coverage entries in the dynamic dependency map
@@ -676,7 +676,7 @@ namespace TestImpact
         TestRunCompleteCallbackHandler testRunCompleteHandler(totalNumTestRuns, testCompleteCallback);
 
         // Run the selected test targets and collect the test run results
-        Timer selectedTestRunTimer;
+        const Timer selectedTestRunTimer;
         const auto [selectedResult, selectedTestJobs] = m_testEngine->InstrumentedRun(
             includedSelectedTestTargets,
             m_testShardingPolicy,
@@ -697,7 +697,7 @@ namespace TestImpact
         }
 
         // Run the discarded test targets and collect the test run results
-        Timer discardedTestRunTimer;
+        const Timer discardedTestRunTimer;
         const auto [discardedResult, discardedTestJobs] = m_testEngine->RegularRun(
             includedDiscardedTestTargets,
             m_testShardingPolicy,
@@ -717,7 +717,7 @@ namespace TestImpact
         }
 
         // Run the drafted test targets and collect the test run results
-        Timer draftedTestRunTimer;
+        const Timer draftedTestRunTimer;
         const auto [draftedResult, draftedTestJobs] = m_testEngine->InstrumentedRun(
             draftedTestTargets,
             m_testShardingPolicy,
@@ -757,7 +757,7 @@ namespace TestImpact
         AZStd::optional<TestSequenceCompleteCallback<Client::SequenceReport>> testSequenceEndCallback,
         AZStd::optional<TestRunCompleteCallback> testCompleteCallback)
     {
-        Timer sequenceTimer;
+        const Timer sequenceTimer;
         AZStd::vector<const TestTarget*> includedTestTargets;
         AZStd::vector<const TestTarget*> excludedTestTargets;
 
@@ -784,7 +784,7 @@ namespace TestImpact
         }
 
         // Run the test targets and collect the test run results
-        Timer testRunTimer;
+        const Timer testRunTimer;
         const auto [result, testJobs] = m_testEngine->InstrumentedRun(
             includedTestTargets,
             m_testShardingPolicy,

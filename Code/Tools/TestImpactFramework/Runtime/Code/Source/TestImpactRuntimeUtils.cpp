@@ -49,7 +49,7 @@ namespace TestImpact
         auto buildTargetDescriptors = ReadBuildTargetDescriptorFiles(buildTargetDescriptorConfig);
         auto buildTargets = CompileTargetDescriptors(AZStd::move(buildTargetDescriptors), AZStd::move(testTargetmetaMap));
         auto&& [productionTargets, testTargets] = buildTargets;
-        return AZStd::make_unique<TestImpact::DynamicDependencyMap>(AZStd::move(productionTargets), AZStd::move(testTargets));
+        return AZStd::make_unique<DynamicDependencyMap>(AZStd::move(productionTargets), AZStd::move(testTargets));
     }
 
     AZStd::unordered_set<const TestTarget*> ConstructTestTargetExcludeList(
@@ -67,7 +67,7 @@ namespace TestImpact
         return testTargetExcludeList;
     }
 
-    AZStd::vector<AZStd::string> ExtractTestTargetNames(const AZStd::vector<const TestTarget*> testTargets)
+    AZStd::vector<AZStd::string> ExtractTestTargetNames(const AZStd::vector<const TestTarget*>& testTargets)
     {
         AZStd::vector<AZStd::string> testNames;
         AZStd::transform(testTargets.begin(), testTargets.end(), AZStd::back_inserter(testNames), [](const TestTarget* testTarget)
