@@ -174,6 +174,42 @@ namespace LegacyLevelSystem
             return false;
         }
 
+        // Make sure a spawnable level exists that matches levelname
+        AZStd::string validLevelName = "";
+        AZ::Data::AssetId rootSpawnableAssetId;
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+            rootSpawnableAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, levelName, nullptr, false);
+
+        if (rootSpawnableAssetId.IsValid())
+        {
+            validLevelName = levelName;
+        }
+        else
+        {
+            // It's common for users to only provide the level name, but not the full asset path
+            // Example: "MyLevel" instead of "Levels/MyLevel/MyLevel.spawnable"
+            if (!AZ::IO::PathView(levelName).HasExtension())
+            {
+                // Search inside the "Levels" folder for a level spawnable matching levelname
+                const AZStd::string possibleLevelAssetPath = AZStd::string::format("Levels/%s/%s.spawnable", levelName, levelName);
+
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                    rootSpawnableAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, possibleLevelAssetPath.c_str(),
+                    nullptr, false);
+
+                if (rootSpawnableAssetId.IsValid())
+                {
+                    validLevelName = possibleLevelAssetPath;
+                }
+            }
+        }
+
+        if (validLevelName.empty())
+        {
+            OnLevelNotFound(levelName);
+            return false;
+        }
+
         // If a level is currently loaded, unload it before loading the next one.
         if (IsLevelLoaded())
         {
@@ -181,12 +217,12 @@ namespace LegacyLevelSystem
         }
 
         gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_LOAD_PREPARE, 0, 0);
-        PrepareNextLevel(levelName);
+        PrepareNextLevel(validLevelName.c_str());
 
-        bool result = LoadLevelInternal(levelName);
+        bool result = LoadLevelInternal(validLevelName.c_str());
         if (result)
         {
-            OnLoadingComplete(levelName);
+            OnLoadingComplete(validLevelName.c_str());
         }
 
         return result;

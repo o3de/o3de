@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <AzCore/Serialization/Json/JsonSerializationResult.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
@@ -36,13 +37,25 @@ namespace AzToolsFramework
             PrefabDomValueReference FindPrefabDomValue(PrefabDomValue& parentValue, const char* valueName);
             PrefabDomValueConstReference FindPrefabDomValue(const PrefabDomValue& parentValue, const char* valueName);
 
+            enum class StoreInstanceFlags : uint8_t
+            {
+                //! No flags used during the call to LoadInstanceFromPrefabDom.
+                None = 0,
+
+                //! By default an instance will be stored with default values. In cases where we want to store less json without defaults
+                //! such as saving to disk, this flag will control that behavior.
+                StripDefaultValues = 1 << 0
+            };
+            AZ_DEFINE_ENUM_BITWISE_OPERATORS(StoreInstanceFlags);
+
             /**
             * Stores a valid Prefab Instance within a Prefab Dom. Useful for generating Templates
             * @param instance The instance to store
             * @param prefabDom The prefabDom that will be used to store the Instance data
+            * @param flags Controls behavior such as whether to store default values
             * @return bool on whether the operation succeeded
             */
-            bool StoreInstanceInPrefabDom(const Instance& instance, PrefabDom& prefabDom);
+            bool StoreInstanceInPrefabDom(const Instance& instance, PrefabDom& prefabDom, StoreInstanceFlags flags = StoreInstanceFlags::None);
 
             enum class LoadInstanceFlags : uint8_t
             {
@@ -52,13 +65,13 @@ namespace AzToolsFramework
                 //! unique, e.g. when they are duplicates of live entities, this flag will assign them a random new id.
                 AssignRandomEntityId = 1 << 0
             };
-            AZ_DEFINE_ENUM_BITWISE_OPERATORS(LoadInstanceFlags)
+            AZ_DEFINE_ENUM_BITWISE_OPERATORS(LoadInstanceFlags);
 
             /**
             * Loads a valid Prefab Instance from a Prefab Dom. Useful for generating Instances.
             * @param instance The Instance to load.
             * @param prefabDom The prefabDom that will be used to load the Instance data.
-            * @param shouldClearContainers Whether to clear containers in Instance while loading.
+            * @param flags Controls behavior such as random entity id assignment.
             * @return bool on whether the operation succeeded.
             */
             bool LoadInstanceFromPrefabDom(
@@ -109,6 +122,11 @@ namespace AzToolsFramework
              * @return the instances DOM value or AZStd::nullopt if it instances can't be found.
              */
             PrefabDomValueConstReference GetInstancesValue(const PrefabDomValue& prefabDom);
+
+            AZ::JsonSerializationResult::ResultCode ApplyPatches(
+                PrefabDomValue& prefabDomToApplyPatchesOn,
+                PrefabDom::AllocatorType& allocator,
+                const PrefabDomValue& patches);
 
             /**
              * Prints the contents of the given prefab DOM value to the debug output console in a readable format.

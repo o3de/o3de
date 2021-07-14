@@ -111,7 +111,6 @@ ly_add_target(
             AZ::AzCore
             AZ::AzToolsFramework
             Gem::LmbrCentral.Static
-            Legacy::NewsShared
             AZ::AWSNativeSDKInit
             AZ::AtomCore
             Gem::Atom_RPI.Edit
@@ -139,7 +138,6 @@ ly_add_source_properties(
 ly_add_source_properties(
     SOURCES
         Core/LevelEditorMenuHandler.cpp
-        GraphicsSettingsDialog.cpp
         MainWindow.cpp
     PROPERTY COMPILE_DEFINITIONS 
     VALUES ${LY_PAL_TOOLS_DEFINES}
