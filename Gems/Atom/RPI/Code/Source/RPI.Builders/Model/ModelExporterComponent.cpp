@@ -30,6 +30,7 @@
 #include <cinttypes>
 
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 
 namespace AZ
 {
@@ -39,6 +40,13 @@ namespace AZ
 
         ModelExporterComponent::ModelExporterComponent()
         {
+            auto settingsRegistry = AZ::SettingsRegistry::Get();
+            bool skipAtomOutput = false;
+            if (settingsRegistry && settingsRegistry->Get(skipAtomOutput, "/O3DE/SceneAPI/AssetImporter/SkipAtomOutput") && skipAtomOutput)
+            {
+                return;
+            }
+
             BindToCall(&ModelExporterComponent::ExportModel);
         }
 

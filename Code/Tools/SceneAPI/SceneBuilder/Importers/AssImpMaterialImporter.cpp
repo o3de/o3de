@@ -5,6 +5,7 @@
  *
  */
 
+#include <API/EditorAssetSystemAPI.h>
 #include <SceneAPI/SceneBuilder/Importers/AssImpMaterialImporter.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -195,11 +196,18 @@ namespace AZ
                     return texturePathRelativeToScene;
                 }
 
+                bool ok;
+                AZStd::string relativePath, rootPath;
+                AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                    ok, &AzToolsFramework::AssetSystemRequestBus::Events::GenerateRelativeSourcePath,
+                    texturePathRelativeToScene.c_str(), relativePath, rootPath);
+
                 // The engine only supports relative paths to scan folders.
-                // Scene files may have paths to textures, relative to the scene file. Check for those, first.
-                if (AZ::IO::FileIOBase::GetInstance()->Exists(texturePathRelativeToScene.c_str()))
+                // Scene files may have paths to textures, relative to the scene file.
+                // Try to use a scanfolder relative path instead
+                if (ok)
                 {
-                    return texturePathRelativeToScene;
+                    return relativePath;
                 }
 
 

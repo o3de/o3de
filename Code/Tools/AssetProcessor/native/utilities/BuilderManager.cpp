@@ -220,6 +220,20 @@ namespace AssetProcessor
         #endif // !AZ_TRAIT_OS_PLATFORM_APPLE && !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
         }
 
+        auto settingsRegistry = AZ::SettingsRegistry::Get();
+        bool skipAtomOutput = false;
+        if (settingsRegistry && settingsRegistry->Get(skipAtomOutput, "/O3DE/SceneAPI/AssetImporter/SkipAtomOutput") && skipAtomOutput)
+        {
+            const char* settingString =
+#if !AZ_TRAIT_OS_PLATFORM_APPLE && !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
+                R"( --regset="/O3DE/SceneAPI/AssetImporter/SkipAtomOutput=true")";
+#else
+                R"( --regset="\"/O3DE/SceneAPI/AssetImporter/SkipAtomOutput=true\"")";
+#endif
+
+            params.append(settingString);
+        }
+
         return params;
     }
 

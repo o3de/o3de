@@ -19,6 +19,7 @@
 
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
+#include <AzCore/Utils/Utils.h>
 
 namespace AZ
 {
@@ -75,10 +76,13 @@ namespace AZ
                     filename += s_extension;
                     filename += s_generated;
 
+                    IO::FixedMaxPathString projectPath = AZ::Utils::GetProjectPath();
+
                     AZStd::string altManifestPath = path;
                     AzFramework::ApplicationRequests::Bus::Broadcast(
-                        &AzFramework::ApplicationRequests::Bus::Events::MakePathRootRelative,
-                        altManifestPath);
+                        &AzFramework::ApplicationRequests::Bus::Events::MakePathRelative,
+                        altManifestPath,
+                        projectPath.c_str());
 
                     AZ::StringFunc::Path::GetFolderPath(altManifestPath.c_str(), altManifestPath);
 
