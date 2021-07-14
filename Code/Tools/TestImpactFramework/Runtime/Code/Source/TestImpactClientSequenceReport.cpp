@@ -14,6 +14,11 @@ namespace TestImpact
         //! Calculates the final sequence result for a composite of multiple sequences.
         TestSequenceResult CalculateMultiTestSequenceResult(const AZStd::vector<TestSequenceResult>& results)
         {
+            // Order of precedence:
+            // 1. TestSequenceResult::Failure
+            // 2. TestSequenceResult::Timeout
+            // 3. TestSequenceResult::Success
+
             if (const auto it = AZStd::find(results.begin(), results.end(), TestSequenceResult::Failure);
                 it != results.end())
             {
