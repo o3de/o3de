@@ -5,7 +5,6 @@
  *
  */
 
-#include "EditorAssetImporter_precompiled.h"
 #include <AssetBrowserContextProvider.h>
 #include <AssetImporterPlugin.h>
 #include <QtCore/QMimeData>

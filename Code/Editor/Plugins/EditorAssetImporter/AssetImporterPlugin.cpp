@@ -5,7 +5,6 @@
  *
  */
 
-#include "EditorAssetImporter_precompiled.h"
 #include <AssetImporterPlugin.h>
 #include <AssetImporterWindow.h>
 #include <QtViewPaneManager.h>

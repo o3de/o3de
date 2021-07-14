@@ -14,6 +14,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #if !defined(Q_MOC_RUN)
+#include <AzCore/PlatformIncl.h>
 #include <QMainWindow>
 #include <AssetImporterDocument.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>

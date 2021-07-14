@@ -5,7 +5,6 @@
  *
  */
 
-#include "EditorAssetImporter_precompiled.h"
 #include <AssetImporterWindow.h>
 #include <ui_AssetImporterWindow.h>
 #include <AssetImporterPlugin.h>
