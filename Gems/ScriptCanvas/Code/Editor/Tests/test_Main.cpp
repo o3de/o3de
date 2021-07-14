@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "StdAfx.h"
+
 #include <gtest/gtest.h>
 
 // minimal export required for AzTestScanner
