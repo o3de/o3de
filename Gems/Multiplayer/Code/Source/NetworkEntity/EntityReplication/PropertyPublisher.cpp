@@ -9,7 +9,6 @@
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
-#pragma optimize("", off) //< remember to place this after the #includes so that you only optimize the code you want
 
 namespace Multiplayer
 {
@@ -22,6 +21,11 @@ namespace Multiplayer
         , m_pendingRecord(remoteNetworkRole)
         , m_sentRecords(net_EntityReplicatorRecordsMax)
     {
+        AZ_Warning(
+            "Gene", false, "PropertyPublisher constructed. m_ownsLifetime: %s, m_netBindComponent->GetNetEntityRole: %s, remoteNetworkRole: %s",
+            OwnLifetimeString[static_cast<int>(ownsLifetime)],
+            NetEntityRoleString[static_cast<int>(m_netBindComponent->GetNetEntityRole())], NetEntityRoleString[static_cast<int>(remoteNetworkRole)])
+
         AZ_Assert(m_netBindComponent, "NetBindComponent is nullptr");
         m_pendingRecord.SetRemoteNetworkRole(remoteNetworkRole);
     }
@@ -250,10 +254,11 @@ namespace Multiplayer
             break;
 
         case PropertyPublisher::EntityReplicatorState::Creating:
-            if (m_ownsLifetime == PropertyPublisher::OwnsLifetime::True)
+            if (m_ownsLifetime == PropertyPublisher::OwnsLifetime::True || m_netBindComponent->IsNetEntityRoleAutonomous())
             {
                 needsUpdate = PrepareAddEntityRecord();
             }
+
             m_replicatorState = PropertyPublisher::EntityReplicatorState::Updating;
             break;
 

@@ -25,6 +25,7 @@ namespace Multiplayer
             True,
             False,
         };
+        inline static const char* OwnLifetimeString[] = { "True", "False" };
 
         PropertyPublisher(NetEntityRole remoteNetworkRole, OwnsLifetime ownsLifetime, NetBindComponent* netBindComponent, AzNetworking::IConnection& connection);
 
