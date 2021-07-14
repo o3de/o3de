@@ -218,7 +218,7 @@ namespace TestImpact
                 }
                 case TestSequenceType::Seed:
                 {
-                        const auto sequenceReport = runtime.SeededTestSequence(
+                    const auto sequenceReport = runtime.SeededTestSequence(
                         options.GetTestTargetTimeout(),
                         options.GetGlobalTimeout(),
                         TestSequenceStartCallback,

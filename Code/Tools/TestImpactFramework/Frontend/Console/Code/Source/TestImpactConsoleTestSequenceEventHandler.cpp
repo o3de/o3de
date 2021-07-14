@@ -213,6 +213,10 @@ namespace TestImpact
                 result = SetColorForString(Foreground::White, Background::Magenta, "TIME");
                 break;
             }
+            default:
+            {
+                AZ_Error("TestRunCompleteCallback", true, "Unexpected test result to handle: %u", aznumeric_cast<AZ::u32>(testRun.GetResult()));
+            }
             }
 
             std::cout << progress.c_str() << " " << result.c_str() << " " << testRun.GetTargetName().c_str() << " ("
