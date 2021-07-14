@@ -5,8 +5,6 @@
  *
  */
 
-#include "ComponentEntityEditorPlugin_precompiled.h"
-
 #include "CategoriesList.h"
 
 ComponentCategoryList::ComponentCategoryList(QWidget* parent /*= nullptr*/) 

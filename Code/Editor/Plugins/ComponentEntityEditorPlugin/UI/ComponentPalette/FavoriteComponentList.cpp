@@ -5,8 +5,6 @@
  *
  */
 
-#include "ComponentEntityEditorPlugin_precompiled.h"
-
 #include "FavoriteComponentList.h"
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>

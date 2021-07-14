@@ -4,10 +4,9 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "ComponentEntityEditorPlugin_precompiled.h"
-
 #include "OutlinerSearchWidget.h"
 
+#include <AzCore/Casting/numeric_cast.h>
 #include <AzQtComponents/Components/FlowLayout.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <QLabel>
@@ -15,6 +14,7 @@
 #include <QTextDocument>
 #include <QPainter>
 #include <QToolButton>
+#include <QApplication>
 
 namespace AzQtComponents
 {

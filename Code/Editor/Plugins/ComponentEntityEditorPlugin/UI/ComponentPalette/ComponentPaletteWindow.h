@@ -8,6 +8,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <AzCore/PlatformIncl.h>
 #include <QMainWindow>
 #endif
 

@@ -5,8 +5,6 @@
  *
  */
 
-#include "ComponentEntityEditorPlugin_precompiled.h"
-
 #include "ComponentDataModel.h"
 
 #include "Include/IObjectManager.h"

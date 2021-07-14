@@ -5,8 +5,6 @@
  *
  */
 
-#include "ComponentEntityEditorPlugin_precompiled.h"
-
 #include "ComponentPaletteWindow.h"
 #include "ComponentDataModel.h"
 #include "FavoriteComponentList.h"
@@ -26,6 +24,7 @@
 #include <AzToolsFramework/API/ViewPaneOptions.h>
 
 #include <QLabel>
+#include <QKeyEvent>
 
 ComponentPaletteWindow::ComponentPaletteWindow(QWidget* parent)
     : QMainWindow(parent)

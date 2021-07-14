@@ -4,8 +4,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "ComponentEntityEditorPlugin_precompiled.h"
-
 #include "OutlinerTreeView.hxx"
 #include "OutlinerListModel.hxx"
 
@@ -18,6 +16,7 @@
 #include <QDrag>
 #include <QPainter>
 #include <QHeaderView>
+#include <QMouseEvent>
 
 OutlinerTreeView::OutlinerTreeView(QWidget* pParent)
     : QTreeView(pParent)

@@ -5,8 +5,6 @@
  *
  */
 
-#include "ComponentEntityEditorPlugin_precompiled.h"
-
 #include "ComponentEntityObject.h"
 
 

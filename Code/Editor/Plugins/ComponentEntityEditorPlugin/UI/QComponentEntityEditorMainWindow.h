@@ -10,6 +10,8 @@
 #include <QMainWindow>
 
 #include <AzCore/Serialization/SerializeContext.h>
+
+#include <CryCommon/ISystem.h>
 #endif
 
 class QObjectPropertyModel;

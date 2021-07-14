@@ -5,8 +5,6 @@
  *
  */
 
-#include "ComponentEntityEditorPlugin_precompiled.h"
-
 #include "InformationPanel.h"
 
 // TODO: LMBR-28174
