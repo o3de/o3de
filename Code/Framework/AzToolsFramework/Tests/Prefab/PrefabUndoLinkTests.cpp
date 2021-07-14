@@ -96,8 +96,8 @@ namespace UnitTest
 
         //apply the patch
         PrefabDom& templateDomReference = m_prefabSystemComponent->FindTemplateDom(nestedTemplateId);
-        AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::ApplyPatch(templateDomReference,
-            templateDomReference.GetAllocator(), patch, AZ::JsonMergeApproach::JsonPatch);
+        AZ::JsonSerializationResult::ResultCode result =
+            PrefabDomUtils::ApplyPatches(templateDomReference, templateDomReference.GetAllocator(), patch);
 
         AZ_Error("Prefab", result.GetOutcome() == AZ::JsonSerializationResult::Outcomes::Success,
             "Patch was not successfully applied");

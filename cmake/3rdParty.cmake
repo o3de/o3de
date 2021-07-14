@@ -29,6 +29,9 @@ set(LY_3RDPARTY_PATH "${o3de_default_third_party_path}" CACHE PATH "Path to the 
 
 if(LY_3RDPARTY_PATH)
     file(TO_CMAKE_PATH ${LY_3RDPARTY_PATH} LY_3RDPARTY_PATH)
+    if(NOT EXISTS ${LY_3RDPARTY_PATH})
+        file(MAKE_DIRECTORY ${LY_3RDPARTY_PATH})
+    endif()
 endif()
 if(NOT EXISTS ${LY_3RDPARTY_PATH})
     message(FATAL_ERROR "3rdParty folder: ${LY_3RDPARTY_PATH} does not exist, call cmake defining a valid LY_3RDPARTY_PATH or use cmake-gui to configure it")

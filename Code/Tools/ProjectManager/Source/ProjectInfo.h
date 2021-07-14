@@ -9,6 +9,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Math/Uuid.h>
+#include <QUrl>
 #include <QString>
 #include <QStringList>
 #endif
@@ -54,5 +55,7 @@ namespace O3DE::ProjectManager
 
         // Used in project creation
         bool m_needsBuild = false; //! Does this project need to be built
+        bool m_buildFailed = false;
+        QUrl m_logUrl;
     };
 } // namespace O3DE::ProjectManager

@@ -68,6 +68,11 @@ namespace AzFramework
 
         //! Toggle the full screen state of the window.
         virtual void ToggleFullScreenState() = 0;
+
+        //! Returns a scalar multiplier representing how many dots-per-inch this window has, compared
+        //! to a "standard" value of 96, the default for Windows in a DPI unaware setting. This can
+        //! be used to scale user interface elements to ensure legibility on high density displays.
+        virtual float GetDpiScaleFactor() const = 0;
     };
     using WindowRequestBus = AZ::EBus<WindowRequests>;
 
@@ -86,6 +91,9 @@ namespace AzFramework
 
         //! This is called once when the window is Activated and also called if the user resizes the window.
         virtual void OnWindowResized(uint32_t width, uint32_t height) { AZ_UNUSED(width); AZ_UNUSED(height); };
+
+        //! This is called if the window's underyling DPI scaling factor changes.
+        virtual void OnDpiScaleFactorChanged(float dpiScaleFactor) { AZ_UNUSED(dpiScaleFactor); }
 
         //! This is called when the window is deactivated from code or if the user closes the window.
         virtual void OnWindowClosed() {};

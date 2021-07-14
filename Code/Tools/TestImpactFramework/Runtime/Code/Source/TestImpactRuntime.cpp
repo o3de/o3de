@@ -205,7 +205,7 @@ namespace TestImpact
         AZStd::vector<const TestTarget*> discardedTestTargets;
 
         // Select and prioritize the test targets pertinent to this change list
-        const auto changeDependencyList = m_dynamicDependencyMap->ApplyAndResoveChangeList(changeList);
+        const auto changeDependencyList = m_dynamicDependencyMap->ApplyAndResoveChangeList(changeList, m_integrationFailurePolicy);
         const auto selectedTestTargets = m_testSelectorAndPrioritizer->SelectTestTargets(changeDependencyList, testPrioritizationPolicy);
 
         // Populate a set with the selected test targets so that we can infer the discarded test target not selected for this change list

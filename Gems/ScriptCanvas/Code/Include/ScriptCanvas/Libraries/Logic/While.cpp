@@ -19,7 +19,7 @@ namespace ScriptCanvas
             {
                 return AZ::Success(DependencyReport{});
             }
-            
+
             SlotId While::GetLoopFinishSlotId() const
             {
                 return WhileProperty::GetOutSlotId(const_cast<While*>(this));
@@ -31,8 +31,8 @@ namespace ScriptCanvas
             }
 
             bool While::IsFormalLoop() const
-            { 
-                return true; 
+            {
+                return true;
             }
         }
     }

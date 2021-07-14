@@ -27,11 +27,17 @@ namespace AzToolsFramework
         class AssetBrowserTableModel;
         class AssetBrowserModel;
         class AssetBrowserTableFilterModel;
-    }
-}
 
-class AzAssetBrowserWindow
-    : public QWidget
+        enum class AssetBrowserDisplayState : int
+        {
+            ExpandedMode,
+            DefaultMode,
+            Invalid
+        };
+    } // namespace AssetBrowser
+} // namespace AzToolsFramework
+
+class AzAssetBrowserWindow : public QWidget
 {
     Q_OBJECT
 public:
@@ -47,12 +53,26 @@ public:
     static QObject* createListenerForShowAssetEditorEvent(QObject* parent);
 
 private:
+    void OnInitViewToggleButton();
+    void UpdateDisplayInfo();
+protected slots:
+    void CreateSwitchViewMenu();
+    void SetExpandedAssetBrowserMode();
+    void SetDefaultAssetBrowserMode();
+    void UpdateTableModelAfterFilter();
+    void SetTableViewVisibleAfterFilter();
 
+private:
     QScopedPointer<Ui::AzAssetBrowserWindowClass> m_ui;
     QScopedPointer<AzToolsFramework::AssetBrowser::AssetBrowserFilterModel> m_filterModel;
     QScopedPointer<AzToolsFramework::AssetBrowser::AssetBrowserTableModel> m_tableModel;
     AzToolsFramework::AssetBrowser::AssetBrowserModel* m_assetBrowserModel;
-    
+    QMenu* m_viewSwitchMenu = nullptr;
+    QAction* m_expandedAssetBrowserMode = nullptr;
+    QAction* m_defaultAssetBrowserMode = nullptr;
+    AzToolsFramework::AssetBrowser::AssetBrowserDisplayState m_assetBrowserDisplayState =
+        AzToolsFramework::AssetBrowser::AssetBrowserDisplayState::DefaultMode;
+
     void UpdatePreview() const;
 
 private Q_SLOTS:

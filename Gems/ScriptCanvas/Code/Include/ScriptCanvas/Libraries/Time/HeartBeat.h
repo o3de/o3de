@@ -27,16 +27,13 @@ namespace ScriptCanvas
 
                 void CustomizeReplacementNode(Node* replacementNode, AZStd::unordered_map<SlotId, AZStd::vector<SlotId>>& outSlotIdMap) const override;
 
-                void OnInputSignal(const SlotId&) override;
-
                 const char* GetBaseTimeSlotName() const override { return "Interval"; }
                 const char* GetBaseTimeSlotToolTip() const override { return "The amount of time between pulses."; }
 
             protected:
 
-                void OnTimeElapsed() override;
 
-             };
+            };
         }
     }
 }

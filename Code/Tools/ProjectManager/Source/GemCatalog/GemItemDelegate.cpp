@@ -99,7 +99,15 @@ namespace O3DE::ProjectManager
         painter->drawText(gemCreatorRect, Qt::TextSingleLine, gemCreator);
 
         // Gem summary
-        const QSize summarySize = QSize(contentRect.width() - s_summaryStartX - s_buttonWidth - s_itemMargins.right() * 3, contentRect.height());
+
+        // In case there are feature tags displayed at the bottom, decrease the size of the summary text field.
+        const QStringList featureTags = GemModel::GetFeatures(modelIndex);
+        const int featureTagAreaHeight = 30;
+        const int summaryHeight = contentRect.height() - (!featureTags.empty() * featureTagAreaHeight);
+
+        const int additionalSummarySpacing = s_itemMargins.right() * 3;
+        const QSize summarySize = QSize(contentRect.width() - s_summaryStartX - s_buttonWidth - additionalSummarySpacing,
+            summaryHeight);
         const QRect summaryRect = QRect(/*topLeft=*/QPoint(contentRect.left() + s_summaryStartX, contentRect.top()), summarySize);
 
         painter->setFont(standardFont);
@@ -108,9 +116,9 @@ namespace O3DE::ProjectManager
         const QString summary = GemModel::GetSummary(modelIndex);
         painter->drawText(summaryRect, Qt::AlignLeft | Qt::TextWordWrap, summary);
 
-
         DrawButton(painter, contentRect, modelIndex);
         DrawPlatformIcons(painter, contentRect, modelIndex);
+        DrawFeatureTags(painter, contentRect, featureTags, standardFont, summaryRect);
 
         painter->restore();
     }
@@ -203,6 +211,46 @@ namespace O3DE::ProjectManager
                     startX += s_platformIconSize * aspectRatio + s_platformIconSize / 2.5;
                 }
             }
+        }
+    }
+
+    void GemItemDelegate::DrawFeatureTags(QPainter* painter, const QRect& contentRect, const QStringList& featureTags, const QFont& standardFont, const QRect& summaryRect) const
+    {
+        QFont gemFeatureTagFont(standardFont);
+        gemFeatureTagFont.setPixelSize(s_featureTagFontSize);
+        gemFeatureTagFont.setBold(false);
+        painter->setFont(gemFeatureTagFont);
+
+        int x = s_summaryStartX;
+        for (const QString& featureTag : featureTags)
+        {
+            QRect featureTagRect = GetTextRect(gemFeatureTagFont, featureTag, s_featureTagFontSize);
+            featureTagRect.moveTo(contentRect.left() + x + s_featureTagBorderMarginX,
+                contentRect.top() + 47);
+            featureTagRect = painter->boundingRect(featureTagRect, Qt::TextSingleLine, featureTag);
+
+            QRect backgroundRect = featureTagRect;
+            backgroundRect = backgroundRect.adjusted(/*left=*/-s_featureTagBorderMarginX,
+                /*top=*/-s_featureTagBorderMarginY,
+                /*right=*/s_featureTagBorderMarginX,
+                /*bottom=*/s_featureTagBorderMarginY);
+
+            // Skip drawing all following feature tags as there is no more space available.
+            if (backgroundRect.right() > summaryRect.right())
+            {
+                break;
+            }
+
+            // Draw border.
+            painter->setPen(m_textColor);
+            painter->setBrush(Qt::NoBrush);
+            painter->drawRect(backgroundRect);
+
+            // Draw text within the border.
+            painter->setPen(m_textColor);
+            painter->drawText(featureTagRect, Qt::TextSingleLine, featureTag);
+
+            x += backgroundRect.width() + s_featureTagSpacing;
         }
     }
 

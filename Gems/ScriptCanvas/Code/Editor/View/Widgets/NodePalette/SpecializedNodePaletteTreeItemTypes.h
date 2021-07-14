@@ -11,39 +11,6 @@
 
 namespace ScriptCanvasEditor
 {
-    // <EntityRefNode>
-    class CreateEntityRefNodeMimeEvent
-        : public CreateNodeMimeEvent
-    {
-    public:
-        AZ_RTTI(CreateEntityRefNodeMimeEvent, "{20CD5AF5-216E-4A41-9630-191C2803899B}", CreateNodeMimeEvent);
-        AZ_CLASS_ALLOCATOR(CreateEntityRefNodeMimeEvent, AZ::SystemAllocator, 0);
-
-        static void Reflect(AZ::ReflectContext* reflectContext);
-
-        CreateEntityRefNodeMimeEvent() = default;
-        CreateEntityRefNodeMimeEvent(const AZ::EntityId& entityId);
-        ~CreateEntityRefNodeMimeEvent() = default;
-
-    protected:
-        ScriptCanvasEditor::NodeIdPair CreateNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId) const override;
-
-    private:
-        AZ::EntityId m_entityId;
-    };
-
-    class EntityRefNodePaletteTreeItem
-        : public GraphCanvas::DraggableNodePaletteTreeItem
-    {
-    public:
-        AZ_CLASS_ALLOCATOR(EntityRefNodePaletteTreeItem, AZ::SystemAllocator, 0);
-        EntityRefNodePaletteTreeItem(AZStd::string_view nodeName, const QString& iconPath);
-        ~EntityRefNodePaletteTreeItem() = default;
-
-        GraphCanvas::GraphCanvasMimeEvent* CreateMimeEvent() const override;
-    };
-    // </EntityRefNode>    
-    
     // <CommentNode>
     class CreateCommentNodeMimeEvent
         : public SpecializedCreateNodeMimeEvent

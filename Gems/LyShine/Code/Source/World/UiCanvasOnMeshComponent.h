@@ -62,7 +62,7 @@ public: // static member functions
 
     static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("LegacyMeshService", 0xb462a299));
+        required.push_back(AZ_CRC("MeshService", 0x71d8a455));
         required.push_back(AZ_CRC("UiCanvasRefService", 0xb4cb5ef4));
     }
 

@@ -8,6 +8,7 @@
 #include <Atom/RHI/FrameScheduler.h>
 
 #include <Atom/RPI.Public/WindowContext.h>
+#include <Atom/RPI.Public/Pass/AttachmentReadback.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/Pass/Specific/SwapChainPass.h>
 #include <Atom/RHI/RHISystemInterface.h>
@@ -134,13 +135,6 @@ namespace AZ
             attachmentDatabase.ImportSwapChain(m_windowContext->GetSwapChainAttachmentId(), m_windowContext->GetSwapChain());
 
             ParentPass::FrameBeginInternal(params);
-
-            // Read swap chain for one frame. The reference can be released afterwards
-            if (m_swapChainReadback)
-            {
-                m_swapChainReadback->FrameBegin(params);
-                m_swapChainReadback = nullptr;
-            }
         }
         
         void SwapChainPass::OnWindowResized([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t height)
@@ -152,9 +146,11 @@ namespace AZ
         {
             if (m_swapChainAttachment)
             {
-                m_swapChainReadback = readback;
+                m_readbackOption = PassAttachmentReadbackOption::Output;
+                m_attachmentReadback = readback;
+
                 AZStd::string readbackName = AZStd::string::format("%s_%s", m_swapChainAttachment->GetAttachmentId().GetCStr(), GetName().GetCStr());
-                m_swapChainReadback->ReadPassAttachment(m_swapChainAttachment.get(), AZ::Name(readbackName));
+                m_attachmentReadback->ReadPassAttachment(m_swapChainAttachment.get(), AZ::Name(readbackName));
             }
         }
 
