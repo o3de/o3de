@@ -123,6 +123,9 @@ namespace TestImpact
                 TestRunResult result,
                 AZStd::vector<TestCaseFailure>&& testFailures);
 
+            //! Constructs the client facing representation of a given test target's run.
+            //! @param testRun The test run this run is to be derived from.
+            //! @param testFailures The failing tests for this run.
             TestRunWithTestFailures(TestRun&& testRun, AZStd::vector<TestCaseFailure>&& testFailures);
 
             //! Returns the total number of failing tests in this run.

@@ -87,23 +87,44 @@ namespace TestImpact
             AZStd::vector<TestRun> m_unexecutedTests;
         };
 
-        //! Report detailing the test selection and test run report of a typical test run sequence.
+        //! Report detailing a test run sequence of selected tests.
         class SequenceReport
         {
         public:
+            //! Constructs the report for a sequence of selected tests.
+            //! @param suiteType The suite from which the tests have been selected from.
+            //! @param selectedTests The target names of the selected tests.
+            //! @param selectedTestRunReport The report for the set of selected test runs.
             SequenceReport(SuiteType suiteType, const TestRunSelection& selectedTests, TestRunReport&& selectedTestRunReport);
 
+            //! Returns the tests selected for running in the sequence.
             TestRunSelection GetSelectedTests() const;
+
+            //! Returns the report for the selected test runs.
             TestRunReport GetSelectedTestRunReport() const;
 
+            //! Returns the start time of the sequence.
             AZStd::chrono::high_resolution_clock::time_point GetStartTime() const;
+
+            //! Returns the end time of the sequence.
             AZStd::chrono::high_resolution_clock::time_point GetEndTime() const;
 
+            //! Returns the result of the sequence.
             virtual TestSequenceResult GetResult() const;
+
+            //! Returns the entire duration the sequence took from start to finish.
             virtual AZStd::chrono::milliseconds GetDuration() const;
+
+            //! Get the total number of tests in the sequence that passed.
             virtual size_t GetTotalNumPassingTests() const;
+
+            //! Get the total number of tests in the sequence that contain one or more test failures.
             virtual size_t GetTotalNumFailingTests() const;
+
+            //! Get the total number of tests in the sequence that timed out whilst in flight.
             virtual size_t GetTotalNumTimedOutTests() const;
+
+            //! Get the total number of tests in the sequence that were queued for execution but did not get the oppurtunity to execute.
             virtual size_t GetTotalNumUnexecutedTests() const;
 
         private:
@@ -112,10 +133,17 @@ namespace TestImpact
             TestRunReport m_selectedTestRunReport;
         };
 
+        //! Report detailing a test run sequence of selected and drafted tests.
         class DraftingSequenceReport
             : public SequenceReport
         {
         public:
+            //! Constructs the report for a sequence of selected and drafted tests.
+            //! @param suiteType The suite from which the tests have been selected from.
+            //! @param selectedTests The target names of the selected tests.
+            //! @param draftedTests The target names of the drafted tests.
+            //! @param selectedTestRunReport The report for the set of selected test runs.
+            //! @param draftedTestRunReport The report for the set of drafted test runs.
             DraftingSequenceReport(
                 SuiteType suiteType,
                 const TestRunSelection& selectedTests,
@@ -123,6 +151,7 @@ namespace TestImpact
                 TestRunReport&& selectedTestRunReport,
                 TestRunReport&& draftedTestRunReport);
 
+            // SequenceReport overrides ...
             TestSequenceResult GetResult() const override;
             AZStd::chrono::milliseconds GetDuration() const override;
             size_t GetTotalNumPassingTests() const override;
@@ -130,7 +159,10 @@ namespace TestImpact
             size_t GetTotalNumTimedOutTests() const override;
             size_t GetTotalNumUnexecutedTests() const override;
 
+             //! Returns the tests drafted for running in the sequence.
             const AZStd::vector<AZStd::string>& GetDraftedTests() const;
+
+            //! Returns the report for the drafted test runs.
             TestRunReport GetDraftedTestRunReport() const;
 
         private:
@@ -138,10 +170,18 @@ namespace TestImpact
             TestRunReport m_draftedTestRunReport;
         };
 
+        //! Report detailing an impact analysis sequence of selected, discarded and drafted tests.
         class ImpactAnalysisSequenceReport
             : public DraftingSequenceReport
         {
         public:
+            //! Constructs the report for a sequence of selected and drafted tests.
+            //! @param suiteType The suite from which the tests have been selected from.
+            //! @param selectedTests The target names of the selected tests.
+            //! @param discardedTests The target names of the discarded tests.
+            //! @param draftedTests The target names of the drafted tests.
+            //! @param selectedTestRunReport The report for the set of selected test runs.
+            //! @param draftedTestRunReport The report for the set of drafted test runs.
             ImpactAnalysisSequenceReport(
                 SuiteType suiteType,
                 const TestRunSelection& selectedTests,
@@ -150,15 +190,25 @@ namespace TestImpact
                 TestRunReport&& selectedTestRunReport,
                 TestRunReport&& draftedTestRunReport);
 
+            //! Returns the tests discarded from running in the sequence.
             const AZStd::vector<AZStd::string>& GetDiscardedTests() const;
         private:
             AZStd::vector<AZStd::string> m_discardedTests;
         };
 
+        //! Report detailing an impact analysis sequence of selected, discarded and drafted tests.
         class SafeImpactAnalysisSequenceReport
             : public DraftingSequenceReport
         {
         public:
+            //! Constructs the report for a sequence of selected and drafted tests.
+            //! @param suiteType The suite from which the tests have been selected from.
+            //! @param selectedTests The target names of the selected tests.
+            //! @param discardedTests The target names of the discarded tests.
+            //! @param draftedTests The target names of the drafted tests.
+            //! @param selectedTestRunReport The report for the set of selected test runs.
+            //! @param discardedTestRunReport The report for the set of discarded test runs.
+            //! @param draftedTestRunReport The report for the set of drafted test runs.
             SafeImpactAnalysisSequenceReport(
                 SuiteType suiteType,
                 const TestRunSelection& selectedTests,
@@ -168,6 +218,7 @@ namespace TestImpact
                 TestRunReport&& discardedTestRunReport,
                 TestRunReport&& draftedTestRunReport);
 
+            // DraftingSequenceReport overrides ...
             TestSequenceResult GetResult() const override;
             AZStd::chrono::milliseconds GetDuration() const override;
             size_t GetTotalNumPassingTests() const override;
@@ -175,7 +226,10 @@ namespace TestImpact
             size_t GetTotalNumTimedOutTests() const override;
             size_t GetTotalNumUnexecutedTests() const override;
 
+            //! Returns the report for the discarded test runs.
             const TestRunSelection GetDiscardedTests() const;
+
+            //! Returns the report for the discarded test runs.
             TestRunReport GetDiscardedTestRunReport() const;
 
         private:

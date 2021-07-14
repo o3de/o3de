@@ -11,6 +11,7 @@ namespace TestImpact
 {
     namespace Client
     {
+        //! Calculates the final sequence result for a composite of multiple sequences.
         TestSequenceResult CalculateMultiTestSequenceResult(const AZStd::vector<TestSequenceResult>& results)
         {
             if (const auto it = AZStd::find(results.begin(), results.end(), TestSequenceResult::Failure);
