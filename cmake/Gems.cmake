@@ -316,30 +316,11 @@ function(ly_is_gem_available)
             continue()
         endif()
 
-        if (NOT TARGET ${target})
-            message(FATAL_ERROR "ly_enable_gems specified TARGET '${target}' but no such target was found.")
-        endif()
-
-        # Fetch for the searched gem dependency.
+        # Fetch for the wanted gem dependency.
         foreach(gem_name ${gem_dependencies})
-            # the gem name may already have a namespace.  If it does, we use that one
-            ly_strip_target_namespace(TARGET ${gem_name} OUTPUT_VARIABLE unaliased_gem_name)
-            if (${unaliased_gem_name} STREQUAL ${gem_name})
-                # if stripping a namespace had no effect, it had no namespace
-                # and we supply the default Gem:: namespace.
-                set(gem_name_with_namespace Gem::${gem_name})
-            else()
-                # if stripping the namespace had an effect then we use the original
-                # with the namespace, instead of assuming Gem::
-                set(gem_name_with_namespace ${gem_name})
-            endif()
-            
-            # if the target exists, add it.
-            if (TARGET ${gem_name_with_namespace}.${variant})
-                if (gem_name STREQUAL ${ly_is_gem_available_NAME})
-                    set("${ly_is_gem_available_RETURN_VARIABLE}" "${ly_is_gem_available_VALUE_IF_FOUND}" PARENT_SCOPE)
-                    return()
-                endif()
+            if (gem_name STREQUAL ${ly_is_gem_available_NAME})
+                set("${ly_is_gem_available_RETURN_VARIABLE}" "${ly_is_gem_available_VALUE_IF_FOUND}" PARENT_SCOPE)
+                return()
             endif()
         endforeach()
     endforeach()
