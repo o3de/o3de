@@ -23,7 +23,6 @@
 
 #include <IRenderer.h>
 #include <IRenderAuxGeom.h>
-#include <IConsole.h>
 
 namespace Audio
 {

@@ -1431,20 +1431,6 @@ void CSystem::OnLanguageCVarChanged(ICVar* language)
     }
 }
 
-//////////////////////////////////////////////////////////////////////
-void CSystem::OnLanguageAudioCVarChanged(ICVar* language)
-{
-    static Audio::SAudioRequest oLanguageRequest;
-    static Audio::SAudioManagerRequestData<Audio::eAMRT_CHANGE_LANGUAGE> oLanguageRequestData;
-
-    if (language && (language->GetType() == CVAR_STRING))
-    {
-        oLanguageRequest.pData = &oLanguageRequestData;
-        oLanguageRequest.nFlags = Audio::eARF_PRIORITY_HIGH;
-        Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequest, oLanguageRequest);
-    }
-}
-
 //////////////////////////////////////////////////////////////////////////
 void CSystem::OnLocalizationFolderCVarChanged(ICVar* const pLocalizationFolder)
 {

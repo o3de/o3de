@@ -17,7 +17,6 @@
 #include <AudioLogger.h>
 #include <AudioSystem.h>
 #include <NullAudioSystem.h>
-#include <SoundCVars.h>
 
 #if defined(AUDIO_SYSTEM_EDITOR)
     #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -29,7 +28,6 @@
 namespace Audio
 {
     // Module globals/statics
-    CSoundCVars g_audioCVars;
     CAudioLogger g_audioLogger;
 
     namespace Platform
@@ -133,8 +131,6 @@ namespace AudioSystemGem
             return CreateNullAudioSystem();
         }
 
-        g_audioCVars.RegisterVariables();
-
         bool success = false;
 
         if (CreateAudioSystem())
@@ -184,8 +180,6 @@ namespace AudioSystemGem
         // Delete the Audio System
         // It should be the last object that is freed from the audio system memory pool before the allocator is destroyed.
         m_audioSystem.reset();
-
-        g_audioCVars.UnregisterVariables();
 
         GetISystem()->GetISystemEventDispatcher()->RemoveListener(this);
     }

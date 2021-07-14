@@ -19,7 +19,6 @@
 #include <ATLAudioObject.h>
 #include <IAudioSystemImplementation.h>
 
-#include <IConsole.h>
 #include <ISystem.h>
 #include <IPhysics.h>
 #include <IRenderAuxGeom.h>
@@ -1896,9 +1895,14 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CAudioTranslationLayer::SetImplLanguage()
     {
-        if (ICVar* pCVar = gEnv->pConsole->GetCVar("g_languageAudio"))
+        if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
         {
-            AudioSystemImplementationRequestBus::Broadcast(&AudioSystemImplementationRequestBus::Events::SetLanguage, pCVar->GetString());
+            AZ::CVarFixedString languageAudio;
+            if (auto result = console->GetCvarValue("g_languageAudio", languageAudio); result == AZ::GetValueResult::Success)
+            {
+                AudioSystemImplementationRequestBus::Broadcast(
+                    &AudioSystemImplementationRequestBus::Events::SetLanguage, languageAudio.data());
+            }
         }
     }
 
