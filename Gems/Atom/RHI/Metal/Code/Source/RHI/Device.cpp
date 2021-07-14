@@ -328,14 +328,28 @@ namespace AZ
             m_features.m_indirectDrawSupport = false;
             
             RHI::QueryTypeFlags counterSamplingFlags = RHI::QueryTypeFlags::None;
-            
-#if AZ_TRAIT_ATOM_METAL_COUNTER_SAMPLING
-            counterSamplingFlags |= (RHI::QueryTypeFlags::Timestamp | RHI::QueryTypeFlags::PipelineStatistics);
-            m_features.m_queryTypesMask[static_cast<uint32_t>(RHI::HardwareQueueClass::Copy)] = RHI::QueryTypeFlags::Timestamp;
+
+            bool supportsInterDrawTimestamps = true;
+#if defined(__IPHONE_14_0) || defined(__MAC_11_0) || defined(__TVOS_14_0)
+            if (@available(macOS 11.0, iOS 14, tvOS 14, *))
+            {
+                supportsInterDrawTimestamps = [m_metalDevice supportsCounterSampling:MTLCounterSamplingPointAtDrawBoundary];
+            }
+            else
 #endif
+            {
+                supportsInterDrawTimestamps = ![m_metalDevice.name containsString:@"Apple"]; // Apple GPU's don't support inter draw timestamps at the M1/A14 generation
+            }
+            
+            if (supportsInterDrawTimestamps)
+            {
+                counterSamplingFlags |= (RHI::QueryTypeFlags::Timestamp | RHI::QueryTypeFlags::PipelineStatistics);
+                m_features.m_queryTypesMask[static_cast<uint32_t>(RHI::HardwareQueueClass::Copy)] = RHI::QueryTypeFlags::Timestamp;
+            }
+
             m_features.m_queryTypesMask[static_cast<uint32_t>(RHI::HardwareQueueClass::Graphics)] = RHI::QueryTypeFlags::Occlusion | counterSamplingFlags;
             //Compute queue can do gfx work
-            m_features.m_queryTypesMask[static_cast<uint32_t>(RHI::HardwareQueueClass::Compute)] = RHI::QueryTypeFlags::Occlusion |counterSamplingFlags;            
+            m_features.m_queryTypesMask[static_cast<uint32_t>(RHI::HardwareQueueClass::Compute)] = RHI::QueryTypeFlags::Occlusion | counterSamplingFlags;            
             m_features.m_occlusionQueryPrecise = true;
             
             //Values taken from https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
