@@ -252,3 +252,96 @@ function(ly_enable_gems_delayed)
         endforeach()
     endforeach()
 endfunction()
+
+#! ly_is_gem_available: Check if a gem is available in the current project configuration.
+# \arg:NAME name of the gem to check for availability.
+# \arg:RETURN_VARIABLE name of the variable in which to set the returned value.
+# \arg:VALUE_IF_FOUND value to set in the RETURN_VARIABLE when the gem is available. Defaults to TRUE.
+# \arg:VALUE_IF_NOT_FOUND value to set in the RETURN_VARIABLE when the gem is not available. Defaults to FALSE.
+# \arg:VARIANT name of the project variant if which to check for availability. Defaults to 'Clients'.
+function(ly_is_gem_available)
+    set(options)
+    set(oneValueArgs NAME RETURN_VARIABLE VALUE_IF_FOUND VALUE_IF_NOT_FOUND VARIANT)
+    set(multiValueArgs)
+
+    cmake_parse_arguments(ly_is_gem_available "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    if (NOT ly_is_gem_available_NAME)
+        message(FATAL_ERROR "Invalid call to 'ly_is_gem_available'. Specify the name of the gem with the 'NAME' argument.")
+    endif()
+
+    if (NOT ly_is_gem_available_VARIANT)
+        set(ly_is_gem_available_VARIANT "Clients")
+    endif()
+
+    if (NOT ly_is_gem_available_VALUE_IF_FOUND)
+        set(ly_is_gem_available_VALUE_IF_FOUND TRUE)
+    endif()
+
+    if (NOT ly_is_gem_available_VALUE_IF_NOT_FOUND)
+        set(ly_is_gem_available_VALUE_IF_NOT_FOUND FALSE)
+    endif()
+
+    if (NOT ly_is_gem_available_RETURN_VARIABLE)
+        message(WARNING "Call to 'ly_is_gem_available' without specifying the RETURN_VARIABLE argument. The call was ignored.")
+        return()
+    endif()
+
+    get_property(ly_delayed_enable_gems GLOBAL PROPERTY LY_DELAYED_ENABLE_GEMS)
+    foreach(project_target_variant ${ly_delayed_enable_gems})
+        # we expect a colon separated list of
+        # PROJECT_NAME,target_name,variant_name
+        string(REPLACE "," ";" project_target_variant_list "${project_target_variant}")
+        list(LENGTH project_target_variant_list project_target_variant_length)
+        if(project_target_variant_length EQUAL 0)
+            continue()
+        endif()
+        
+        if(NOT project_target_variant_length EQUAL 3)
+            message(FATAL_ERROR "Invalid specification of gems, expected 'project','target','variant' and got ${project_target_variant}")
+        endif()
+
+        list(POP_BACK project_target_variant_list variant)
+        list(POP_BACK project_target_variant_list target)
+        list(POP_BACK project_target_variant_list project)
+
+        # If the current project variant is not the one we want.
+        if (NOT variant STREQUAL ${ly_is_gem_available_VARIANT})
+            continue()
+        endif()
+
+        get_property(gem_dependencies GLOBAL PROPERTY LY_DELAYED_ENABLE_GEMS_"${project_target_variant}")
+        if (NOT gem_dependencies)
+            # Continue to the next iteration loop regardless as there are no gem dependencies
+            continue()
+        endif()
+
+        if (NOT TARGET ${target})
+            message(FATAL_ERROR "ly_enable_gems specified TARGET '${target}' but no such target was found.")
+        endif()
+
+        # Fetch for the searched gem dependency.
+        foreach(gem_name ${gem_dependencies})
+            # the gem name may already have a namespace.  If it does, we use that one
+            ly_strip_target_namespace(TARGET ${gem_name} OUTPUT_VARIABLE unaliased_gem_name)
+            if (${unaliased_gem_name} STREQUAL ${gem_name})
+                # if stripping a namespace had no effect, it had no namespace
+                # and we supply the default Gem:: namespace.
+                set(gem_name_with_namespace Gem::${gem_name})
+            else()
+                # if stripping the namespace had an effect then we use the original
+                # with the namespace, instead of assuming Gem::
+                set(gem_name_with_namespace ${gem_name})
+            endif()
+            
+            # if the target exists, add it.
+            if (TARGET ${gem_name_with_namespace}.${variant})
+                if (gem_name STREQUAL ${ly_is_gem_available_NAME})
+                    set("${ly_is_gem_available_RETURN_VARIABLE}" "${ly_is_gem_available_VALUE_IF_FOUND}" PARENT_SCOPE)
+                    return()
+                endif()
+            endif()
+        endforeach()
+    endforeach()
+    set("${ly_is_gem_available_RETURN_VARIABLE}" "${ly_is_gem_available_VALUE_IF_NOT_FOUND}" PARENT_SCOPE)
+endfunction()
