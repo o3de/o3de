@@ -14,6 +14,8 @@ struct IStatObj;
 struct IMaterial;
 class CBitmap;
 
+class QImage;
+
 // Note: values are used as array indices
 enum EStatObject
 {

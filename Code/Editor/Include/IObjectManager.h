@@ -10,6 +10,10 @@
 #define CRYINCLUDE_EDITOR_INCLUDE_IOBJECTMANAGER_H
 #pragma once
 
+#include <AzCore/PlatformIncl.h>
+#include <CryCommon/platform.h>
+#include <CryCommon/Cry_Geo.h>
+
 // forward declarations.
 class CEntityObject;
 struct DisplayContext;
@@ -23,6 +27,8 @@ class CViewport;
 struct HitContext;
 enum class ImageRotationDegrees;
 struct IStatObj;
+class CBaseObject;
+class XmlNodeRef;
 
 #include "ObjectEvent.h"
 

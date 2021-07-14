@@ -16,6 +16,8 @@ struct DisplayContext;
 struct HitContext;
 struct IDisplayViewport;
 
+class QPoint;
+
 //////////////////////////////////////////////////////////////////////////
 struct SGizmoParameters
 {

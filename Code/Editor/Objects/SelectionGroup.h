@@ -19,6 +19,8 @@ class CBaseObject;
 #include "ObjectEvent.h"
 #include "Objects/BaseObject.h"
 
+#include <Editor/EditorDefs.h>
+
 /*!
  *  CSelectionGroup is a named selection group of objects.
  */
