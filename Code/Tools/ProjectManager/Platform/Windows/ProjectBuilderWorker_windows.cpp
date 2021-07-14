@@ -125,7 +125,7 @@ namespace O3DE::ProjectManager
         m_buildProjectProcess->start(
             "cmake",
             QStringList{ "--build", QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix), "--target",
-                         m_projectInfo.m_projectName + ".GameLauncher", "Editor", "--config", "profile" });
+                         m_projectInfo.m_projectName + ".GameLauncher", "Editor", "--config", "profile", "-m" });
 
         if (!m_buildProjectProcess->waitForStarted())
         {
