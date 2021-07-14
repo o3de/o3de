@@ -175,7 +175,7 @@ namespace Audio::CVars
         "Filters debug drawing to only audio objects whose name matches this filter as a sub-string.\n"
         "Usage: s_AudioObjectsDebugFilter=weapon_axe\n");
 
-    auto logOptionsChangeCallback = [](const AZ::CVarFixedString& options) -> void
+    auto OnChangeLogOptions = [](const AZ::CVarFixedString& options) -> void
     {
         if (options == "0")
         {
@@ -191,7 +191,7 @@ namespace Audio::CVars
     };
 
     AZ_CVAR(AZ::CVarFixedString, s_AudioLoggingOptions, "",
-        logOptionsChangeCallback,
+        OnChangeLogOptions,
         AZ::ConsoleFunctorFlags::Null,
         "Toggles the log level of audio related messages.\n"
         "Usage: s_AudioLoggingOptions=abc (flags can be combined)\n"
@@ -200,7 +200,7 @@ namespace Audio::CVars
         "b: Warnings\n"
         "c: Comments\n");
 
-    auto debugDrawOptionsChangeCallback = [](const AZ::CVarFixedString& options) -> void
+    auto OnChangeDebugDrawOptions = [](const AZ::CVarFixedString& options) -> void
     {
         s_debugDrawOptions.ClearAllFlags();
         if (options == "0")
@@ -224,7 +224,7 @@ namespace Audio::CVars
     };
 
     AZ_CVAR(AZ::CVarFixedString, s_DrawAudioDebug, "",
-        debugDrawOptionsChangeCallback,
+        OnChangeDebugDrawOptions,
         AZ::ConsoleFunctorFlags::IsCheat,
         "Draws AudioTranslationLayer related debug data to the screen.\n"
         "Usage: s_DrawAudioDebug=abcde (flags can be combined)\n"
@@ -241,7 +241,32 @@ namespace Audio::CVars
         "v: List active Events.\n"
         "w: List active Audio Objects.\n"
         "x: Show FileCache Manager debug info.\n"
-        "y: Show memory pool usage info for the audio engine.\n");
+        "y: Show memory usage info for the audio engine.\n");
+
+    auto OnChangeFileCacheManagerFilterOptions = [](const AZ::CVarFixedString& options) -> void
+    {
+        s_fcmDrawOptions.ClearAllFlags();
+        if (options == "0")
+        {
+            return;
+        }
+
+        s_fcmDrawOptions.SetFlags(FileCacheManagerDebugDraw::Options::Global, options.contains("a"));
+        s_fcmDrawOptions.SetFlags(FileCacheManagerDebugDraw::Options::LevelSpecific, options.contains("b"));
+        s_fcmDrawOptions.SetFlags(FileCacheManagerDebugDraw::Options::UseCounted, options.contains("c"));
+        s_fcmDrawOptions.SetFlags(FileCacheManagerDebugDraw::Options::Loaded, options.contains("d"));
+    };
+
+    AZ_CVAR(AZ::CVarFixedString, s_FileCacheManagerDebugFilter, "",
+        OnChangeFileCacheManagerFilterOptions,
+        AZ::ConsoleFunctorFlags::IsCheat,
+        "Allows for filtered display of the different AFCM entries such as Globals, Level Specifics, Game Hints and so on.\n"
+        "Usage: s_FileCacheManagerDebugFilter [0ab...] (flags can be combined)\n"
+        "Default: 0 (all)\n"
+        "a: Globals\n"
+        "b: Level Specifics\n"
+        "c: Use Counted\n"
+        "d: Currently Loaded\n");
 #endif // !AUDIO_RELEASE
 
 } // namespace Audio::CVars
@@ -252,9 +277,6 @@ namespace Audio
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     CSoundCVars::CSoundCVars()
-    #if !defined(AUDIO_RELEASE)
-        : m_nFileCacheManagerDebugFilter(0)
-    #endif // !AUDIO_RELEASE
     {
     }
 
@@ -333,15 +355,6 @@ namespace Audio
             "Usage: s_SetPanningMode speakers    (default)\n"
             "Usage: s_SetPanningMode headphones\n"
         );
-
-        REGISTER_CVAR2("s_FileCacheManagerDebugFilter", &m_nFileCacheManagerDebugFilter, 0, VF_CHEAT | VF_CHEAT_NOCHECK | VF_BITFIELD,
-            "Allows for filtered display of the different AFCM entries such as Globals, Level Specifics, Game Hints and so on.\n"
-            "Usage: s_FileCacheManagerDebugFilter [0ab...] (flags can be combined)\n"
-            "Default: 0 (all)\n"
-            "a: Globals\n"
-            "b: Level Specifics\n"
-            "c: Game Hints\n"
-            "d: Currently Loaded\n");
 #endif // !AUDIO_RELEASE
     }
 
@@ -358,9 +371,6 @@ namespace Audio
         UNREGISTER_COMMAND("s_PlayFile");
         UNREGISTER_COMMAND("s_PlayExternalSource");
         UNREGISTER_COMMAND("s_SetPanningMode");
-        UNREGISTER_CVAR("s_DrawAudioDebug");
-        UNREGISTER_CVAR("s_FileCacheManagerDebugFilter");
-        UNREGISTER_CVAR("s_AudioLoggingOptions");
 #endif // !AUDIO_RELEASE
     }
 

@@ -39,6 +39,8 @@ namespace Audio::CVars
     AZ_CVAR_EXTERNED(AZ::CVarFixedString, s_AudioLoggingOptions);
     AZ_CVAR_EXTERNED(AZ::CVarFixedString, s_DrawAudioDebug);
     inline Audio::Flags<AZ::u32> s_debugDrawOptions;
+    AZ_CVAR_EXTERNED(AZ::CVarFixedString, s_FileCacheManagerDebugFilter);
+    inline Audio::Flags<AZ::u32> s_fcmDrawOptions;
 #endif // !AUDIO_RELEASE
 
 } // namespace Audio::CVars
@@ -59,8 +61,6 @@ namespace Audio
         void UnregisterVariables();
 
     #if !defined(AUDIO_RELEASE)
-        int m_nFileCacheManagerDebugFilter;
-
     private:
         static void CmdExecuteTrigger(IConsoleCmdArgs* pCmdArgs);
         static void CmdStopTrigger(IConsoleCmdArgs* pCmdArgs);

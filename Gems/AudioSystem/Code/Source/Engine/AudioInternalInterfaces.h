@@ -919,6 +919,18 @@ namespace Audio
             MemoryInfo = (1 << 12),
         };
     }
+
+    namespace FileCacheManagerDebugDraw
+    {
+        enum Options : AZ::u8
+        {
+            All = 0,
+            Global = (1 << 0),
+            LevelSpecific = (1 << 1),
+            UseCounted = (1 << 2),
+            Loaded = (1 << 3),
+        };
+    }
 #endif // !AUDIO_RELEASE
 
 } // namespace Audio
