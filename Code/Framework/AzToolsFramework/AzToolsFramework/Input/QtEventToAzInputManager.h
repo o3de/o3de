@@ -47,6 +47,12 @@ namespace AzToolsFramework
         //! Sets whether or not this input mapper should be updating its input channels from Qt events.
         void SetEnabled(bool enabled);
 
+        //! Sets whether or not the cursor should be constrained to the source widget and invisible.
+        //! Internally, this will reset the cursor position after each move event to ensure movement
+        //! events don't allow the cursor to escape. This can be used for typical camera controls
+        //! like a dolly or rotation, where mouse movement is important but cursor location is not.
+        void SetCursorCaptureEnabled(bool enabled);
+
         // QObject overrides...
         bool eventFilter(QObject* object, QEvent* event) override;
 
@@ -106,6 +112,11 @@ namespace AzToolsFramework
         // Processes any pending mouse movement events, this allows mouse movement channels to close themselves.
         void ProcessPendingMouseEvents();
 
+        // Converts a point in logical source widget space [0..m_sourceWidget->size()] to normalized [0..1] space.
+        AZ::Vector2 WidgetPositionToNormalizedPosition(QPoint position);
+        // Converts a point in normalized [0..1] space to logical source widget space [0..m_sourceWidget->size()].
+        QPoint NormalizedPositionToWidgetPosition(AZ::Vector2 normalizedPosition);
+
         // Handle mouse click events.
         void HandleMouseButtonEvent(QMouseEvent* mouseEvent);
         // Handle mouse move events.
@@ -144,6 +155,8 @@ namespace AzToolsFramework
         bool m_mouseChannelsNeedUpdate = false;
         // Flags whether or not Qt events should currently be processed.
         bool m_enabled = true;
+        // Flags whether or not the cursor is being constrained to the source widget (for invisible mouse movement).
+        bool m_capturingCursor = false;
 
         // Our viewport-specific AZ devices. We control their internal input channel states.
         AZStd::unique_ptr<EditorQtMouseDevice> m_mouseDevice;
