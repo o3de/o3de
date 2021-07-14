@@ -12,6 +12,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <AzFramework/Visibility/BoundsBus.h>
 #include <AzCore/PlatformDef.h>
 #include <Vegetation/Ebuses/InstanceSystemRequestBus.h>
 #include <Vegetation/Ebuses/SystemConfigurationBus.h>
@@ -55,6 +56,7 @@ namespace Vegetation
     class DebugComponent
         : public AZ::Component
         , private AzFramework::EntityDebugDisplayEventBus::Handler
+        , private AzFramework::BoundsRequestBus::Handler
         , private DebugRequestBus::Handler
         , private DebugNotificationBus::Handler
         , private SystemConfigurationRequestBus::Handler
@@ -109,6 +111,19 @@ namespace Vegetation
         void UpdateSystemConfig(const AZ::ComponentConfig* config) override;
         void GetSystemConfig([[maybe_unused]] AZ::ComponentConfig* config) const override {}; // ignore this call
 
+        //////////////////////////////////////////////////////////////////////////
+        // BoundsRequestBus
+        AZ::Aabb GetWorldBounds() override
+        {
+            // The BoundsRequestBus uses entity bounds to determine when to call it for debug drawing.
+            // Since this is a level component that can draw infinitely far in every direction, we return a max AABB so that it
+            // always draws.
+            return AZ::Aabb::CreateFromMinMax(AZ::Vector3(-AZ::Constants::FloatMax), AZ::Vector3(AZ::Constants::FloatMax));
+        }
+        AZ::Aabb GetLocalBounds() override
+        {
+            return AZ::Aabb::CreateFromMinMax(AZ::Vector3(-AZ::Constants::FloatMax), AZ::Vector3(AZ::Constants::FloatMax));
+        }
 
     protected:
         void PrepareNextReport();
