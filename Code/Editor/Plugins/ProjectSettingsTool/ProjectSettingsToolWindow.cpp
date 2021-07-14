@@ -26,7 +26,6 @@
 #include <AzToolsFramework/UI/PropertyEditor/PropertyManagerComponent.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
-#include <Util/FileUtil.h>
 
 #include <QMessageBox>
 #include <QCloseEvent>
@@ -672,9 +671,9 @@ namespace ProjectSettingsTool
                 AZ::IO::FixedMaxPath projectPlist{ m_projectRoot };
                 projectPlist /= relPath;
 
-                if (CFileUtil::FileExists(projectPlist.c_str()))
+                if (AZ::IO::SystemFile::Exists(projectPlist.c_str()))
                 {
-                    return projectPlist.LexicallyNormal().c_str();
+                    return projectPlist.LexicallyNormal().String();
                 }
             }
         }
