@@ -82,22 +82,7 @@ class test_MeshBlocker_InstancesBlockedByMesh(EditorTestHelper):
             bus.Broadcast, "GetAssetIdByPath", os.path.join("objects", "_primitives", "_box_1x1.azmodel"), math.Uuid(),
             False)
         blocker_entity.get_set_test(1, "Controller|Configuration|Mesh Asset", cubeId)
-        components.TransformBus(bus.Event, "SetLocalScale", blocker_entity.id, math.Vector3(2.0, 2.0, 2.0))
-
-        # Disable/Re-enable Mesh component due to ATOM-14299
-        general.idle_wait(1.0)
-        editor.EditorComponentAPIBus(bus.Broadcast, 'DisableComponents', [blocker_entity.components[1]])
-        is_enabled = editor.EditorComponentAPIBus(bus.Broadcast, 'IsComponentEnabled', blocker_entity.components[1])
-        if is_enabled:
-            print("Mesh component is still enabled")
-        else:
-            print("Mesh component was disabled")
-        editor.EditorComponentAPIBus(bus.Broadcast, 'EnableComponents', [blocker_entity.components[1]])
-        is_enabled = editor.EditorComponentAPIBus(bus.Broadcast, 'IsComponentEnabled', blocker_entity.components[1])
-        if is_enabled:
-            print("Mesh component is now enabled")
-        else:
-            print("Mesh component is still disabled")
+        components.TransformBus(bus.Event, "SetLocalUniformScale", blocker_entity.id, 2.0)
 
         # Verify spawned instance counts are accurate after addition of Blocker Entity
         num_expected = 160  # Number of "PurpleFlower"s that plant on a 10 x 10 surface minus 2m blocker cube
