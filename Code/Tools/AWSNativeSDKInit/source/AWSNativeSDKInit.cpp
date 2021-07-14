@@ -25,6 +25,8 @@ namespace AWSNativeSDKInit
 #if defined(PLATFORM_SUPPORTS_AWS_NATIVE_SDK)
         void CustomizeSDKOptions(Aws::SDKOptions& options);
         void CustomizeShutdown();
+
+        void CopyCaCertBundle();
 #endif
     }
 
@@ -44,6 +46,8 @@ namespace AWSNativeSDKInit
     void InitializationManager::InitAwsApi()
     {
         s_initManager = AZ::Environment::CreateVariable<InitializationManager>(initializationManagerTag);
+
+        Platform::CopyCaCertBundle();
     }
 
     void InitializationManager::Shutdown()

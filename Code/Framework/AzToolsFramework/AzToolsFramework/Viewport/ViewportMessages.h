@@ -276,11 +276,6 @@ namespace AzToolsFramework
             virtual void EndCursorCapture() = 0;
             //! Gets the most recent recorded cursor position in the viewport in screen space coordinates.
             virtual AzFramework::ScreenPoint ViewportCursorScreenPosition() = 0;
-            //! Gets the cursor position recorded prior to the most recent cursor position.
-            //! Note: The cursor may be captured by the viewport, in which case this may not correspond to the last result
-            //! from ViewportCursorScreenPosition. This method will always return the correct position to generate a mouse
-            //! position delta.
-            virtual AZStd::optional<AzFramework::ScreenPoint> PreviousViewportCursorScreenPosition() = 0;
             //! Is mouse over viewport.
             virtual bool IsMouseOver() const = 0;
 
