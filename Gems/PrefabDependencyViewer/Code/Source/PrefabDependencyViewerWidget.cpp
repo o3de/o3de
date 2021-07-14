@@ -49,6 +49,8 @@ namespace PrefabDependencyViewer
     void PrefabDependencyViewerWidget::DisplayTree([[maybe_unused]]const Utils::DirectedGraph& graph)
     {
         m_sceneId = CreateNewGraph();
+        GraphCanvas::GraphModelRequestBus::Handler::BusConnect(m_sceneId);
+
         int widestLevelSize = 0;
         AZStd::vector nodeCountAtEachLevel = graph.countNodesAtEachLevel(widestLevelSize);
         DisplayNodesByLevel(graph, nodeCountAtEachLevel, widestLevelSize);
@@ -103,6 +105,8 @@ namespace PrefabDependencyViewer
         AZ_Assert(graphCanvasNode, "Unable to create GraphCanvas Node");
 
         AZ::EntityId nodeUiId = graphCanvasNode->GetId();
+        nodeToNodeUiId[node] = nodeUiId;
+
         GraphCanvas::NodeTitleRequestBus::Event(nodeUiId, &GraphCanvas::NodeTitleRequests::SetTitle, node->GetMetaDataPtr()->GetSource());
 
         GraphCanvas::SceneRequestBus::Event(m_sceneId, &GraphCanvas::SceneRequests::AddNode, nodeUiId, pos, false);
@@ -110,13 +114,77 @@ namespace PrefabDependencyViewer
 
         // Add slot
         GraphCanvas::SlotLayoutRequestBus::Event(
-            nodeUiId, &GraphCanvas::SlotLayoutRequests::ConfigureSlotGroup, GraphCanvas::SlotGroups::ExecutionGroup,
+            nodeUiId, &GraphCanvas::SlotLayoutRequests::ConfigureSlotGroup, GraphCanvas::SlotGroups::DataGroup,
             GraphCanvas::SlotGroupConfiguration(1));
 
-        CreateExecutionSlot(nodeUiId, "Input", "The input slot", GraphCanvas::SlotGroups::ExecutionGroup, true);
-        CreateExecutionSlot(nodeUiId, "Output", "The output slot", GraphCanvas::SlotGroups::ExecutionGroup, false);
-    }
+        GraphCanvas::SlotId inputSlotId = CreateDataSlot(nodeUiId, "Input", "Parent",
+                                                        azrtti_typeid<AZ::EntityId>(),
+                                                        GraphCanvas::SlotGroups::DataGroup, true);
 
+        GraphCanvas::SlotId outputSlotId = CreateDataSlot(nodeUiId, "Output", "Child",
+                                                        azrtti_typeid<AZ::EntityId>(),
+                                                        GraphCanvas::SlotGroups::DataGroup, false);
+
+        /* GraphCanvas::SlotId inputSlotId =
+                CreateExecutionSlot(nodeUiId, "Input", "Child",
+                                            GraphCanvas::SlotGroups::ExecutionGroup, true);
+        GraphCanvas::SlotId outputSlotId = CreateExecutionSlot(nodeUiId, "Output", "Parent",
+                                            GraphCanvas::SlotGroups::ExecutionGroup, false);
+        */
+        nodeToSlotId[node] = AZStd::make_pair(inputSlotId, outputSlotId);
+
+        // This might break if the parent is nullptr
+        if (node->GetParent())
+        {
+            AZ::EntityId sourceNodeUiId = nodeToNodeUiId[node->GetParent()];
+            AZ::EntityId sourceSlotUiId = nodeToSlotId[node->GetParent()].second;
+
+            AZ::EntityId connectionUiId;
+            GraphCanvas::SceneRequestBus::EventResult(
+                connectionUiId, m_sceneId, &GraphCanvas::SceneRequests::CreateConnectionBetween,
+                GraphCanvas::Endpoint(sourceNodeUiId, sourceSlotUiId),
+                GraphCanvas::Endpoint(nodeUiId, inputSlotId));
+        }
+    }
+    GraphCanvas::SlotId PrefabDependencyViewerWidget::CreateDataSlot(
+        GraphCanvas::NodeId nodeId,
+        const AZStd::string& slotName,
+        const AZStd::string& tooltip,
+        AZ::Uuid dataType,
+        GraphCanvas::SlotGroup slotGroup,
+        bool isInput)
+    {
+        GraphCanvas::DataSlotConfiguration dataSlotConfiguration;
+        dataSlotConfiguration.m_typeId = dataType;
+        dataSlotConfiguration.m_dataSlotType = GraphCanvas::DataSlotType::Value;
+
+        dataSlotConfiguration.m_name = slotName;
+        dataSlotConfiguration.m_tooltip = tooltip;
+        dataSlotConfiguration.m_slotGroup = slotGroup;
+
+        // Need to specify the ConnectionType for this slot.
+        if (isInput)
+        {
+            dataSlotConfiguration.m_connectionType = GraphCanvas::CT_Input;
+        }
+        else
+        {
+            dataSlotConfiguration.m_connectionType = GraphCanvas::CT_Output;
+        }
+
+        AZ::Entity* slotEntity = nullptr;
+        GraphCanvas::GraphCanvasRequestBus::BroadcastResult(
+            slotEntity, &GraphCanvas::GraphCanvasRequests::CreateSlot, nodeId, dataSlotConfiguration);
+
+        if (slotEntity)
+        {
+            // Any customization to the Slot Entity will need to be done here before being activated.
+
+            AddSlotToNode(slotEntity, nodeId);
+        }
+
+        return slotEntity ? slotEntity->GetId() : GraphCanvas::SlotId();
+    }
     GraphCanvas::SlotId PrefabDependencyViewerWidget::CreateExecutionSlot(
         GraphCanvas::NodeId nodeId,
         const AZStd::string& slotName,

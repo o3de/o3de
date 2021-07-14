@@ -61,9 +61,10 @@ namespace PrefabDependencyViewer
         public:
             AZ_CLASS_ALLOCATOR(Node, AZ::SystemAllocator, 0);
 
-            Node(TemplateId tid, const char* source)
+            Node(TemplateId tid, const char* source, Node* parent = nullptr)
             {
                 SetMetaData(tid, source);
+                SetParent(parent);
             }
 
             MetaData* GetMetaDataPtr()
@@ -71,10 +72,22 @@ namespace PrefabDependencyViewer
                 return m_metaDataPtr;
             }
 
+            Node* GetParent()
+            {
+                return m_parent;
+            }
+
             ~Node()
             {
                 delete GetMetaDataPtr();
             }
+
+            // In the future want to be able to edit the tree.
+            void SetParent(Node* parent)
+            {
+                m_parent = parent;
+            }
+
         private:
             void SetMetaData(TemplateId tid, const char* source)
             {
@@ -82,6 +95,7 @@ namespace PrefabDependencyViewer
             }
 
             MetaData* m_metaDataPtr;
+            Node* m_parent;
         };
 
         class DirectedGraph
@@ -104,6 +118,7 @@ namespace PrefabDependencyViewer
                 if (parent)
                 {
                     m_children[parent].insert(child);
+                    child->SetParent(parent);
                 }
                 else
                 {
