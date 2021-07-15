@@ -297,7 +297,7 @@ namespace O3DE::ProjectManager
             return PythonBindingsInterface::Get()->RemoveProject(path);
         }
 
-        bool CopyProjectDialog(const QString& origPath, QWidget* parent)
+        bool CopyProjectDialog(const QString& origPath, ProjectInfo& newProjectInfo, QWidget* parent)
         {
             bool copyResult = false;
 
@@ -307,6 +307,8 @@ namespace O3DE::ProjectManager
                 QFileDialog::getExistingDirectory(parent, QObject::tr("Select New Project Directory"), parentOrigDir.path()));
             if (!newPath.isEmpty())
             {
+                newProjectInfo.m_path = newPath;
+
                 if (!WarnDirectoryOverwrite(newPath, parent))
                 {
                     return false;
@@ -326,7 +328,7 @@ namespace O3DE::ProjectManager
                 return false;
             }
 
-            int filesToCopyCount;
+            int filesToCopyCount = 0;
             qint64 totalSizeInBytes = 0;
             QStringList skippedPaths
             {

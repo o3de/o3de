@@ -384,14 +384,17 @@ namespace O3DE::ProjectManager
             emit ChangeScreenRequest(ProjectManagerScreen::UpdateProject);
         }
     }
-    void ProjectsScreen::HandleCopyProject(const QString& projectPath)
+    void ProjectsScreen::HandleCopyProject(const ProjectInfo& projectInfo)
     {
-        if (!WarnIfInBuildQueue(projectPath))
+        if (!WarnIfInBuildQueue(projectInfo.m_path))
         {
+            ProjectInfo newProjectInfo(projectInfo);
+
             // Open file dialog and choose location for copied project then register copy with O3DE
-            if (ProjectUtils::CopyProjectDialog(projectPath, this))
+            if (ProjectUtils::CopyProjectDialog(projectInfo.m_path, newProjectInfo, this))
             {
                 ResetProjectsContent();
+                emit NotifyBuildProject(newProjectInfo);
                 emit ChangeScreenRequest(ProjectManagerScreen::Projects);
             }
         }

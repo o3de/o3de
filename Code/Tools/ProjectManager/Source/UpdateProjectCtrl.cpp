@@ -224,6 +224,8 @@ namespace O3DE::ProjectManager
                     QMessageBox::critical(this, tr("Project move failed"), tr("Failed to move project."));
                     return false;
                 }
+
+                emit NotifyBuildProject(newProjectSettings);
             }
 
             // Update project if settings changed

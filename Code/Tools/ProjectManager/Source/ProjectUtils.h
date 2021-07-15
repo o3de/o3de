@@ -17,7 +17,7 @@ namespace O3DE::ProjectManager
         bool AddProjectDialog(QWidget* parent = nullptr);
         bool RegisterProject(const QString& path);
         bool UnregisterProject(const QString& path);
-        bool CopyProjectDialog(const QString& origPath, QWidget* parent = nullptr);
+        bool CopyProjectDialog(const QString& origPath, ProjectInfo& newProjectInfo, QWidget* parent = nullptr);
         bool CopyProject(const QString& origPath, const QString& newPath, QWidget* parent, bool skipRegister = false);
         bool DeleteProjectFiles(const QString& path, bool force = false);
         bool MoveProject(QString origPath, QString newPath, QWidget* parent, bool skipRegister = false);

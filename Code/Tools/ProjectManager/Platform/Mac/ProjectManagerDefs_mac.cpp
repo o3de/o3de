@@ -10,6 +10,6 @@
 
 namespace O3DE::ProjectManager
 {
-    static const QString ProjectBuildPathPostfix = ProjectBuildDirectoryName + "/mac";
+    const QString ProjectBuildPathPostfix = ProjectBuildDirectoryName + "/mac_xcode";
 
 } // namespace O3DE::ProjectManager

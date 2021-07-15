@@ -233,7 +233,7 @@ namespace O3DE::ProjectManager
             AzQtComponents::ShowFileOnDesktop(m_projectInfo.m_path);
         });
         menu->addSeparator();
-        menu->addAction(tr("Duplicate"), this, [this]() { emit CopyProject(m_projectInfo.m_path); });
+        menu->addAction(tr("Duplicate"), this, [this]() { emit CopyProject(m_projectInfo); });
         menu->addSeparator();
         menu->addAction(tr("Remove from O3DE"), this, [this]() { emit RemoveProject(m_projectInfo.m_path); });
         menu->addAction(tr("Delete this Project"), this, [this]() { emit DeleteProject(m_projectInfo.m_path); });

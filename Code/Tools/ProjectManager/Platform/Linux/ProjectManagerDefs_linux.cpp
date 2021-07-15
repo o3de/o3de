@@ -10,6 +10,6 @@
 
 namespace O3DE::ProjectManager
 {
-    static const QString ProjectBuildPathPostfix = ProjectBuildDirectoryName + "/linux";
+    const QString ProjectBuildPathPostfix = ProjectBuildDirectoryName + "/linux";
 
 } // namespace O3DE::ProjectManager
