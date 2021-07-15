@@ -7,4 +7,5 @@ set(FILES
     Source/Core/Core.h
     Source/PrefabDependencyViewerInterface.h
     Source/Utils.h
+    Source/PrefabDependencyTreeGenerator.h
 )
