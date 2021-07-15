@@ -183,7 +183,6 @@ struct MetadataFileTest
     : public AssetProcessorManagerTest
 {
     void SetUp() override;
-    void TearDown() override;
 };
 
 struct FingerprintTest
