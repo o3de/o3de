@@ -119,12 +119,9 @@ namespace Vegetation
         AZ::Aabb GetWorldBounds() override
         {
             // DisplayEntityViewport relies on the BoundsRequestBus to get the entity bounds to determine when to call debug drawing
-            // for that entity.
-            // Since this is a level component that can draw infinitely far in every direction, we return a near-infinite AABB so that
-            // it always draws.  We can't just use FloatMax because the culling math overflows, so instead we pick an arbitrary number
-            // for "almost max" that for all intents and purposes will still be infinite for any level size.
-            constexpr float almostFloatMax = AZ::Constants::FloatMax / 2.0f;
-            return AZ::Aabb::CreateFromMinMax(AZ::Vector3(-almostFloatMax), AZ::Vector3(almostFloatMax));
+            // for that entity.  Since this is a level component that can draw infinitely far in every direction, we return an
+            // effectively infinite AABB so that it always draws.
+            return AZ::Aabb::CreateFromMinMax(AZ::Vector3(-AZ::Constants::FloatMax), AZ::Vector3(AZ::Constants::FloatMax));
         }
         AZ::Aabb GetLocalBounds() override
         {
