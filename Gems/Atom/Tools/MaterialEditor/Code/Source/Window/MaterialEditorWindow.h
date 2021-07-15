@@ -75,13 +75,13 @@ namespace MaterialEditor
         void OnDocumentSaved(const AZ::Uuid& documentId) override;
 
         void SetupMenu();
-        void SetupTabs();
 
+        void SetupTabs();
         void AddTabForDocumentId(const AZ::Uuid& documentId);
         void RemoveTabForDocumentId(const AZ::Uuid& documentId);
         void UpdateTabForDocumentId(const AZ::Uuid& documentId);
-        AZ::Uuid GetDocumentIdFromTab(const int tabIndex) const;
         QString GetDocumentPath(const AZ::Uuid& documentId) const;
+        AZ::Uuid GetDocumentIdFromTab(const int tabIndex) const;
 
         void OpenTabContextMenu();
         void SelectPreviousTab();
@@ -90,8 +90,8 @@ namespace MaterialEditor
         void closeEvent(QCloseEvent* closeEvent) override;
 
         AzQtComponents::FancyDocking* m_advancedDockManager = nullptr;
-        QMenuBar* m_menuBar = nullptr;
         QWidget* m_centralWidget = nullptr;
+        QMenuBar* m_menuBar = nullptr;
         AzQtComponents::TabWidget* m_tabWidget = nullptr;
         MaterialViewportWidget* m_materialViewport = nullptr;
         MaterialEditorToolBar* m_toolBar = nullptr;

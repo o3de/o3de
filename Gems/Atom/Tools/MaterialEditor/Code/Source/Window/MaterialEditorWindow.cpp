@@ -116,11 +116,11 @@ namespace MaterialEditor
         vl->addWidget(m_materialViewport);
         m_centralWidget->setLayout(vl);
         setCentralWidget(m_centralWidget);
-        
+
         m_statusBar = new StatusBarWidget(this);
         m_statusBar->setObjectName("StatusBar");
         statusBar()->addPermanentWidget(m_statusBar, 1);
-        
+
         SetupMenu();
         SetupTabs();
 
@@ -754,7 +754,6 @@ namespace MaterialEditor
             m_tabWidget->setCurrentIndex((m_tabWidget->currentIndex() + 1) % m_tabWidget->count());
         }
     }
-
 } // namespace MaterialEditor
 
 #include <Window/moc_MaterialEditorWindow.cpp>
