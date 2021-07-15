@@ -34,7 +34,6 @@ namespace AZ
 namespace AssetProcessor
 {
     inline constexpr const char* AssetProcessorSettingsKey{ "/Amazon/AssetProcessor/Settings" };
-    inline constexpr const char* AssetImporterSettingsKey{ "/O3DE/SceneAPI/AssetImporter" };
     class PlatformConfiguration;
     class ScanFolderInfo;
     extern const char AssetConfigPlatformDir[];

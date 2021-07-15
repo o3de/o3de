@@ -13,6 +13,7 @@
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Gem/GemInfo.h>
+#include <AzToolsFramework/Asset/AssetUtils.h>
 
 namespace
 {
@@ -1137,9 +1138,10 @@ namespace AssetProcessor
         MetaDataTypesVisitor visitor;
         settingsRegistry->Visit(visitor, AZ::SettingsRegistryInterface::FixedValueString(AssetProcessorSettingsKey) + "/MetaDataTypes");
 
+        using namespace AzToolsFramework::AssetUtils;
         AZStd::vector<AZStd::string> supportedFileExtensions;
         AssetImporterPathsVisitor assetImporterVisitor{ settingsRegistry, supportedFileExtensions };
-        settingsRegistry->Visit(assetImporterVisitor, AZ::SettingsRegistryInterface::FixedValueString(AssetImporterSettingsKey) + "/SupportedFileTypeExtensions");
+        settingsRegistry->Visit(assetImporterVisitor, AZ::SettingsRegistryInterface::FixedValueString(AssetImporterSettingsKey) + "/" + AssetImporterSupportedFileTypeKey);
 
         for (auto& entry : assetImporterVisitor.m_supportedFileExtensions)
         {

@@ -178,6 +178,22 @@ struct ModtimeScanningTest
     AZStd::unique_ptr<StaticData> m_data;
 };
 
+
+struct MetadataFileTest
+    : public AssetProcessorManagerTest
+{
+    void SetUp() override;
+    void TearDown() override;
+
+    struct StaticData
+    {
+        QString m_relativePathFromWatchFolder[3];
+        AZStd::vector<QString> m_absolutePath;
+    };
+
+    AZStd::unique_ptr<StaticData> m_data;
+};
+
 struct FingerprintTest
     : public AssetProcessorManagerTest
 {
