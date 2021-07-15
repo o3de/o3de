@@ -32,6 +32,10 @@ namespace AssetProcessor
         {
             m_supportedFileExtensions.emplace_back(value.substr(found + 1));
         }
+        else
+        {
+            m_supportedFileExtensions.emplace_back(value);
+        }
     }
 
     struct PlatformsInfoVisitor
