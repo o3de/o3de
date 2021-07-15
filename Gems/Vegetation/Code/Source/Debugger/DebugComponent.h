@@ -81,6 +81,9 @@ namespace Vegetation
 
         //////////////////////////////////////////////////////////////////////////
         // EntityDebugDisplayEventBus
+
+        // Ideally this would use ViewportDebugDisplayEventBus::DisplayViewport, but that doesn't currently work in game mode,
+        // so instead we use this plus the BoundsRequestBus with a large AABB to get ourselves rendered.
         void DisplayEntityViewport(
             const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay) override;
 
@@ -115,14 +118,18 @@ namespace Vegetation
         // BoundsRequestBus
         AZ::Aabb GetWorldBounds() override
         {
-            // The BoundsRequestBus uses entity bounds to determine when to call it for debug drawing.
-            // Since this is a level component that can draw infinitely far in every direction, we return a max AABB so that it
-            // always draws.
-            return AZ::Aabb::CreateFromMinMax(AZ::Vector3(-AZ::Constants::FloatMax), AZ::Vector3(AZ::Constants::FloatMax));
+            // DisplayEntityViewport relies on the BoundsRequestBus to get the entity bounds to determine when to call debug drawing
+            // for that entity.
+            // Since this is a level component that can draw infinitely far in every direction, we return a near-infinite AABB so that
+            // it always draws.  We can't just use FloatMax because the culling math overflows, so instead we pick an arbitrary number
+            // for "almost max" that for all intents and purposes will still be infinite for any level size.
+            constexpr float almostFloatMax = AZ::Constants::FloatMax / 2.0f;
+            return AZ::Aabb::CreateFromMinMax(AZ::Vector3(-almostFloatMax), AZ::Vector3(almostFloatMax));
         }
         AZ::Aabb GetLocalBounds() override
         {
-            return AZ::Aabb::CreateFromMinMax(AZ::Vector3(-AZ::Constants::FloatMax), AZ::Vector3(AZ::Constants::FloatMax));
+            // The local and world bounds will be the same for this component.
+            return GetWorldBounds();
         }
 
     protected:
