@@ -5248,11 +5248,6 @@ void MetadataFileTest::SetUp()
     m_config->AddMetaDataType("foo", "txt");
 }
 
-void MetadataFileTest::TearDown()
-{
-    AssetProcessorManagerTest::TearDown();
-}
-
 TEST_F(MetadataFileTest, MetadataFile_SourceFileExtensionDifferentCase)
 {
 
