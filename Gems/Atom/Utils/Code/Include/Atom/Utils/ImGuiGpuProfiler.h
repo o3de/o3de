@@ -262,8 +262,27 @@ namespace AZ
         public:
             void DrawGpuMemoryWindow(bool& draw);
             void DrawPieChart(const AZ::RHI::MemoryStatistics::Heap& heap);
+            void UpdateTableEntries();
+            void DrawTable();
         private:
-            bool m_paused = true;
+
+            using Buffer = AZ::RHI::MemoryStatistics::Buffer;
+            using Image = AZ::RHI::MemoryStatistics::Image;
+            using TableEntryVariant = AZStd::variant<Buffer*, Image*>;
+
+            struct TableEntry {
+                Name m_parentPoolName;
+                TableEntryVariant m_variant;
+            };
+
+            // Table settings
+            bool m_includeBuffers = true;
+            bool m_includeImages = true;
+            bool m_includeTransientAttachments = true;
+
+            ImGuiTextFilter m_nameFilter;
+
+            AZStd::vector<TableEntry> m_tableEntries;
             AZStd::vector<AZ::RHI::MemoryStatistics::Pool> m_savedPools;
             AZStd::vector<AZ::RHI::MemoryStatistics::Heap> m_savedHeaps;
         };

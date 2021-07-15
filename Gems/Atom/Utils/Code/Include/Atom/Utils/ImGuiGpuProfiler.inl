@@ -17,6 +17,8 @@
 
 
 
+#include <AzCore/std/containers/variant.h>
+#include <Atom/RHI.Reflect/ReflectSystemComponent.h>
 #include <Atom/RHI/FrameScheduler.h>
 #include <Atom/RHI/Device.h>
 #include <Atom/RHI/RHIUtils.h>
@@ -98,10 +100,95 @@ namespace AZ
                 drawList->AddText(font, font->FontSize, pos, ImGui::GetColorU32(ImGuiCol_Text), text, nullptr, size.x);
             }
 
-            inline static constexpr size_t BytesToMb(AZStd::size_t bytesSize)
+            inline static AZStd::string GetImageBindStrings(AZ::RHI::ImageBindFlags imageBindFlags)
             {
-                return bytesSize / 1073741824;
+                // FIXME: any more elegant way to pull binding strings from the enum? Maybe through RTTI?
+                AZStd::string imageBindStrings;
+                if (AZ::RHI::CheckBitsAll(imageBindFlags, AZ::RHI::ImageBindFlags::Color))
+                {
+                    imageBindStrings.append("Color,");
+                }
+                else if (AZ::RHI::CheckBitsAll(imageBindFlags, AZ::RHI::ImageBindFlags::ShaderRead))
+                {
+                    imageBindStrings.append("ShaderRead,");
+                }
+                else if (AZ::RHI::CheckBitsAll(imageBindFlags, AZ::RHI::ImageBindFlags::ShaderWrite))
+                {
+                    imageBindStrings.append("ShaderWrite,");
+                }
+                else if (AZ::RHI::CheckBitsAll(imageBindFlags, AZ::RHI::ImageBindFlags::Depth))
+                {
+                    imageBindStrings.append("Depth,");
+                }
+                else if (AZ::RHI::CheckBitsAll(imageBindFlags, AZ::RHI::ImageBindFlags::Stencil))
+                {
+                    imageBindStrings.append("Stencil,");
+                }
+                else if (AZ::RHI::CheckBitsAll(imageBindFlags, AZ::RHI::ImageBindFlags::CopyRead))
+                {
+                    imageBindStrings.append("CopyRead,");
+                }
+                else if (AZ::RHI::CheckBitsAll(imageBindFlags, AZ::RHI::ImageBindFlags::CopyWrite))
+                {
+                    imageBindStrings.append("CopyWrite,");
+                }
+                return imageBindStrings;
             }
+
+            inline static AZStd::string GetBufferBindStrings(AZ::RHI::BufferBindFlags bufferBindFlags)
+            {
+                //FIXME as well, easier way to pull strings?
+                AZStd::string bufferBindStrings;
+                if (AZ::RHI::CheckBitsAll(bufferBindFlags, AZ::RHI::BufferBindFlags::InputAssembly))
+                {
+                    bufferBindStrings.append("InputAssembly,");
+                }
+                else if (AZ::RHI::CheckBitsAll(bufferBindFlags, AZ::RHI::BufferBindFlags::DynamicInputAssembly))
+                {
+                    bufferBindStrings.append("DynamicInputAssembly,");
+                }
+                else if (AZ::RHI::CheckBitsAll(bufferBindFlags, AZ::RHI::BufferBindFlags::Constant))
+                {
+                    bufferBindStrings.append("Constant,");
+                }
+                else if (AZ::RHI::CheckBitsAll(bufferBindFlags, AZ::RHI::BufferBindFlags::ShaderRead))
+                {
+                    bufferBindStrings.append("ShaderRead,");
+                }
+                else if (AZ::RHI::CheckBitsAll(bufferBindFlags, AZ::RHI::BufferBindFlags::ShaderWrite))
+                {
+                    bufferBindStrings.append("ShaderWrite,");
+                }
+                else if (AZ::RHI::CheckBitsAll(bufferBindFlags, AZ::RHI::BufferBindFlags::CopyRead))
+                {
+                    bufferBindStrings.append("CopyRead,");
+                }
+                else if (AZ::RHI::CheckBitsAll(bufferBindFlags, AZ::RHI::BufferBindFlags::CopyWrite))
+                {
+                    bufferBindStrings.append("CopyWrite,");
+                }
+                else if (AZ::RHI::CheckBitsAll(bufferBindFlags, AZ::RHI::BufferBindFlags::Predication))
+                {
+                    bufferBindStrings.append("Predication,");
+                }
+                else if (AZ::RHI::CheckBitsAll(bufferBindFlags, AZ::RHI::BufferBindFlags::RayTracingAccelerationStructure))
+                {
+                    bufferBindStrings.append("RayTracingAccelerationStructure,");
+                }
+                else if (AZ::RHI::CheckBitsAll(bufferBindFlags, AZ::RHI::BufferBindFlags::Indirect))
+                {
+                    bufferBindStrings.append("Indirect,");
+                }
+                else if (AZ::RHI::CheckBitsAll(bufferBindFlags, AZ::RHI::BufferBindFlags::RayTracingShaderTable))
+                {
+                    bufferBindStrings.append("RayTracingShaderTable,");
+                }
+                return bufferBindStrings;
+            }
+
+            static constexpr u64 KB = 1024;
+            static constexpr u64 MB = 1024 * KB;
+            static constexpr u64 GB = 1024 * MB;
         } // namespace GpuProfilerImGuiHelper 
 
         // --- PassEntry ---
@@ -1041,33 +1128,145 @@ namespace AZ
         }
 
         // --- ImGuiGpuMemoryView ---
+        inline void ImGuiGpuMemoryView::DrawTable()
+        {
+            if (ImGui::BeginTable("Root Table", 4, ImGuiTableFlags_Borders | ImGuiTableFlags_Sortable | ImGuiTableFlags_Resizable))
+            {
+                ImGui::TableSetupColumn("Parent pool", ImGuiTableColumnFlags_NoSort);
+                ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_NoSort);
+                ImGui::TableSetupColumn("Size (MB)", 0, 100.0f);
+                ImGui::TableSetupColumn("BindFlags", ImGuiTableColumnFlags_NoSort);
+                ImGui::TableHeadersRow();
+                ImGui::TableNextColumn();
+
+                // For now the only column we sort on is the size, search tool should be used for the other columns.
+                ImGuiTableSortSpecs* sortSpecs = ImGui::TableGetSortSpecs();
+                if (sortSpecs && sortSpecs->SpecsDirty){
+                    const bool ascending = sortSpecs->Specs->SortDirection == ImGuiSortDirection_Ascending;
+
+                    AZStd::sort(m_tableEntries.begin(), m_tableEntries.end(),
+                        [ascending](const TableEntry& lhs, const TableEntry& rhs){
+                            const float lhsSize = AZStd::visit([](auto&& entry){
+                                    return entry->m_sizeInBytes;
+                                }, lhs.m_variant);
+                            const float rhsSize = AZStd::visit([](auto&& entry){
+                                    return entry->m_sizeInBytes;
+                                }, rhs.m_variant);
+                            return ascending ? lhsSize < rhsSize : lhsSize > rhsSize;
+                        });
+                    sortSpecs->SpecsDirty = false;
+                }
+
+                for (auto& tableEntry : m_tableEntries) {
+                    AZStd::string entryName = "";
+                    float size = 0.0;
+                    AZStd::string bindStrings = ""; 
+
+                    // FIXME any more elegant way to pull fields from the variant?
+                    if (AZStd::holds_alternative<Buffer*>(tableEntry.m_variant))
+                    {
+                        const auto& buffer = AZStd::get<Buffer*>(tableEntry.m_variant);
+                        entryName = buffer->m_name.IsEmpty() ? "Unnamed buffer" : buffer->m_name.GetCStr();
+                        size = 1.0f * buffer->m_sizeInBytes / GpuProfilerImGuiHelper::MB;
+                        bindStrings = GpuProfilerImGuiHelper::GetBufferBindStrings(buffer->m_bindFlags);
+                    }
+                    else 
+                    {
+                        const auto& image = AZStd::get<Image*>(tableEntry.m_variant);
+                        entryName = image->m_name.IsEmpty() ? "Unnamed image" : image->m_name.GetCStr();
+                        size = 1.0f * image->m_sizeInBytes / GpuProfilerImGuiHelper::MB;
+                        bindStrings = GpuProfilerImGuiHelper::GetImageBindStrings(image->m_bindFlags);
+                    }
+
+                    // Early out if none of the entry's text fields pass the filter
+                    if (!m_nameFilter.PassFilter(tableEntry.m_parentPoolName.GetCStr())
+                        && !m_nameFilter.PassFilter(entryName.c_str())
+                        && !m_nameFilter.PassFilter(bindStrings.c_str()))
+                    {
+                        continue;
+                    }
+
+                    ImGui::Text(tableEntry.m_parentPoolName.GetCStr());
+                    ImGui::TableNextColumn();
+                    ImGui::Text(entryName.c_str());
+                    ImGui::TableNextColumn();
+                    ImGui::Text("%.2f", size);
+                    ImGui::TableNextColumn();
+                    ImGui::Text(bindStrings.c_str());
+                    ImGui::TableNextColumn();
+                }
+            }
+            ImGui::EndTable();
+        }
+
+        inline void ImGuiGpuMemoryView::UpdateTableEntries()
+        {
+            // Update the table according to the latest filters applied
+            m_tableEntries.clear();
+            for (auto& pool : m_savedPools)
+            {
+                Name poolName = pool.m_name.IsEmpty() ? Name("Unnamed pool") : pool.m_name;
+
+                // Ignore transient pools
+                if (!m_includeTransientAttachments && pool.m_name.GetStringView().contains("Transient"))
+                {
+                    continue;
+                }
+
+                if (m_includeBuffers)
+                {
+                    for (auto& buf : pool.m_buffers)
+                    {
+                        if (buf.m_name.IsEmpty())
+                        {
+                            buf.m_name = Name("Unnamed Buffer");
+                        }
+                        m_tableEntries.push_back({ poolName, &buf });
+                    }
+                }
+                if (m_includeImages)
+                {
+                    for (auto& img : pool.m_images)
+                    {
+                        if (img.m_name.IsEmpty())
+                        {
+                            img.m_name = Name("Unnamed Image");
+                        }
+                        m_tableEntries.push_back({ poolName, &img });
+                    }
+                }
+            }
+        }
 
         inline void ImGuiGpuMemoryView::DrawPieChart(const AZ::RHI::MemoryStatistics::Heap& heap)
         {
-            ImGui::Text(heap.m_name.GetCStr());
-            if (ImGui::BeginChild("Graph", {150, 150}, true))
+            if (ImGui::BeginChild("PieChart", {150, 150}, true))
             {
                 ImDrawList* drawList = ImGui::GetWindowDrawList();
                 const auto [wx, wy] = ImGui::GetWindowPos();
                 const auto [windowWidth, windowHeight] = ImGui::GetWindowSize();
                 const ImVec2 center = { wx + windowWidth / 2, wy + windowHeight / 2 };
                 const float radius = windowWidth / 2 - 10;
-                drawList->AddCircleFilled(center, radius, IM_COL32_BLACK);
-                const auto fraction = 1.0f * heap.m_memoryUsage.m_residentInBytes / heap.m_memoryUsage.m_budgetInBytes;
-                drawList->PathArcTo(center, radius, 0, AZ::Constants::TwoPi * fraction);
-                drawList->PathArcTo(center, 0, 0, 0);
-                drawList->PathArcTo(center, radius, 0, 0);
-                drawList->PathFillConvex(IM_COL32_WHITE);
-                ImGui::Text("%.2f%%", fraction * 100);
 
-                // Prepare for next draw call
-                drawList->PathArcTo(center, radius, 0, AZ::Constants::TwoPi * fraction);
-                drawList->PathClear();
+                // Draw the pie chart
+                drawList->AddCircleFilled(center, radius, ImGui::GetColorU32({.3, .3, .3, 1}));
+                const float usagePercent = 1.0f * heap.m_memoryUsage.m_residentInBytes / heap.m_memoryUsage.m_budgetInBytes;
+                drawList->PathArcTo(center, radius, 0, AZ::Constants::TwoPi * usagePercent); // Clockwise starting from rightmost point
+                drawList->PathArcTo(center, 0, 0, 0); // To center
+                drawList->PathArcTo(center, radius, 0, 0); // Back to starting position
+                drawList->PathFillConvex(ImGui::GetColorU32({ .039, .8, 0.556, 1 }));
+                ImGui::Text("%.2f%%", usagePercent * 100);
             }
             ImGui::EndChild();
         }
+
         inline void ImGuiGpuMemoryView::DrawGpuMemoryWindow(bool& draw)
         {
+            // Enable GPU memory instrumentation while the window is open. Called every draw frame, but just a bitwise operation so overhead should be low.
+            auto* rhiSystem = AZ::RHI::RHISystemInterface::Get();
+            AZ_Assert(rhiSystem != nullptr, "Error in drawing GPU memory window: RHI System Interface was nullptr");
+            rhiSystem->ModifyFrameSchedulerStatisticsFlags(AZ::RHI::FrameSchedulerStatisticsFlags::GatherMemoryStatistics, draw);
+
             if (!draw)
             {
                 return;
@@ -1076,103 +1275,66 @@ namespace AZ
             ImGui::SetNextWindowSize({ 600, 600 }, ImGuiCond_Once);
             if (ImGui::Begin("Gpu Memory Profiler", &draw, ImGuiViewportFlags_None))
             {
-                if(ImGui::Button(m_paused ? "Resume" : "Pause")){
-                    m_paused = !m_paused;
+                if (ImGui::Button("Capture"))
+                {
+                    // Collect and save new GPU memory usage data
+                    const auto* memoryStatistics = rhiSystem->GetMemoryStatistics();
+                    if (memoryStatistics) 
+                    {
+                        m_tableEntries.clear();
+                        m_savedPools = memoryStatistics->m_pools;
+                        m_savedHeaps = memoryStatistics->m_heaps;
+
+                        // Collect the data into TableEntries, ignoring depending on flags 
+                        UpdateTableEntries();
+                    }
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Export"))
+                {
+                    (void)0;
                 }
 
-
-                // Collect and save new GPU memory usage data
-                if (!m_paused) {
-                    auto sysint = AZ::RHI::RHISystemInterface::Get();
-                    sysint->ModifyFrameSchedulerStatisticsFlags(AZ::RHI::FrameSchedulerStatisticsFlags::GatherMemoryStatistics, true);
-                    auto stat = sysint->GetMemoryStatistics();
-                    if (stat != nullptr)
-                    {
-                        m_savedPools = stat->m_pools;
-                        m_savedHeaps = stat->m_heaps;
-                    }
+                if (ImGui::Checkbox("Show buffers", &m_includeBuffers)
+                    || ImGui::Checkbox("Show images", &m_includeImages)
+                    || ImGui::Checkbox("Show transient attachments", &m_includeTransientAttachments))
+                {
+                    UpdateTableEntries();
                 }
 
                 ImGui::Text("Overall heap usage:");
                 for (const auto& savedHeap : m_savedHeaps)
                 {
-                    if (ImGui::BeginChild(savedHeap.m_name.GetCStr(), { ImGui::GetWindowWidth() / 2, 200 }))
+                    if (ImGui::BeginChild(savedHeap.m_name.GetCStr(), { ImGui::GetWindowWidth() / m_savedHeaps.size(), 250 }), ImGuiWindowFlags_NoScrollbar)
                     {
+                        ImGui::Text(savedHeap.m_name.GetCStr());
+                        ImGui::Columns(2, "HeapData", true);
+
+                        ImGui::Text("Resident (MB): ");
+                        ImGui::NextColumn();
+                        ImGui::Text("%.2f", 1.0 * savedHeap.m_memoryUsage.m_residentInBytes.load() / GpuProfilerImGuiHelper::MB);
+                        ImGui::NextColumn();
+
+                        ImGui::Text("Reserved (MB): ");
+                        ImGui::NextColumn();
+                        ImGui::Text("%.2f", 1.0 * savedHeap.m_memoryUsage.m_reservedInBytes.load() / GpuProfilerImGuiHelper::MB);
+                        ImGui::NextColumn();
+
+                        ImGui::Text("Budget (MB): ");
+                        ImGui::NextColumn();
+                        ImGui::Text("%.2f", 1.0 * savedHeap.m_memoryUsage.m_budgetInBytes / GpuProfilerImGuiHelper::MB);
+
+                        ImGui::Columns(1, "PieChartColumn");
                         DrawPieChart(savedHeap);
                     }
                     ImGui::EndChild();
-                    ImGui::SameLine(ImGui::GetWindowWidth() / 2);
+                    ImGui::SameLine(ImGui::GetWindowWidth() / m_savedHeaps.size());
                 }
                 ImGui::NewLine();
+                ImGui::Separator();
 
-                // Use cstyle loops rather than ranged for so index can be used in PushId to prevent id collisions
-                if (ImGui::TreeNode("Pools"))
-                {
-                    for (u64 i = 0; i < m_savedPools.size(); i++)
-                    {
-                        const auto& pool = m_savedPools.at(i);
-                        ImGui::PushID(i);
-                        if (ImGui::TreeNode(pool.m_name.GetCStr()))
-                        {
-                            ImGui::Text("Device Memory: %zu", pool.m_memoryUsage.GetHeapMemoryUsage(AZ::RHI::HeapMemoryLevel::Device).m_residentInBytes.load());
-                            ImGui::SameLine();
-                            ImGui::Text("Host Memory: %zu", pool.m_memoryUsage.GetHeapMemoryUsage(AZ::RHI::HeapMemoryLevel::Host).m_residentInBytes.load());
-
-                            if (ImGui::TreeNode("Buffers"))
-                            {
-                                for (u64 j = 0; j < pool.m_buffers.size(); j++)
-                                {
-                                    const auto& buf = pool.m_buffers.at(j);
-                                    ImGui::PushID(j);
-                                    if (ImGui::TreeNode(buf.m_name.GetCStr()))
-                                    {
-                                        ImGui::Text("Buffer size: %zu", buf.m_sizeInBytes);
-                                        ImGui::TreePop();
-                                    }
-                                    ImGui::PopID();
-                                }
-                                ImGui::TreePop();
-                            }
-                            if (ImGui::TreeNode("Images"))
-                            {
-                                for (u64 j = 0; j < pool.m_images.size(); j++)
-                                {
-                                    const auto& image = pool.m_images.at(j);
-                                    ImGui::PushID(j);
-                                    if (ImGui::TreeNode(image.m_name.GetCStr()))
-                                    {
-                                        ImGui::Text("Image size: %zu", image.m_sizeInBytes);
-                                        //image.m_bindFlags
-                                        ImGui::TreePop();
-                                    }
-                                    ImGui::PopID();
-                                }
-                                ImGui::TreePop();
-                            }
-                            ImGui::TreePop();
-                        }
-                        ImGui::PopID();
-                    }
-                    ImGui::TreePop();
-                }
-                if (ImGui::TreeNode("Heaps"))
-                {
-                    for (u64 i = 0; i< m_savedHeaps.size(); i++)
-                    {
-                        const auto& heap = m_savedHeaps.at(i);
-                        ImGui::PushID(i);
-                        if (ImGui::TreeNode(heap.m_name.GetCStr()))
-                        {
-                            ImGui::Text("Usage: %zu / %zu / %zu",
-                                GpuProfilerImGuiHelper::BytesToMb(heap.m_memoryUsage.m_residentInBytes.load()),
-                                GpuProfilerImGuiHelper::BytesToMb(heap.m_memoryUsage.m_reservedInBytes.load()),
-                                GpuProfilerImGuiHelper::BytesToMb(heap.m_memoryUsage.m_budgetInBytes));
-                            ImGui::TreePop();
-                        }
-                        ImGui::PopID();
-                    }
-                    ImGui::TreePop();
-                }
+                m_nameFilter.Draw("Search");
+                DrawTable();
             }
         }
 
