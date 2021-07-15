@@ -53,7 +53,6 @@ namespace Platform
 
     void PresentInternal(id <MTLCommandBuffer> mtlCommandBuffer, id<CAMetalDrawable> drawable, float syncInterval, float refreshRate)
     {
-        bool hasPresentAfterMinimumDurationAPI = false;
         bool framePresented = false;
         
         //seconds per frame (1/refreshrate) * num frames (sync interval)
