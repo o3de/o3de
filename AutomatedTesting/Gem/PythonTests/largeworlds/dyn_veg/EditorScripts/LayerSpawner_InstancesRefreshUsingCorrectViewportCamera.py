@@ -13,7 +13,7 @@ import azlmbr.legacy.general as general
 import azlmbr.math as math
 
 sys.path.append(os.path.join(azlmbr.paths.devroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
-from automatedtesting_shared.editor_test_helper import EditorTestHelper
+from editor_python_test_tools.editor_test_helper import EditorTestHelper
 from largeworlds.large_worlds_utils import editor_dynveg_test_helper as dynveg
 
 

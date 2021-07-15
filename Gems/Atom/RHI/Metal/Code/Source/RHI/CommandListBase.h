@@ -101,6 +101,8 @@ namespace AZ
             
             const AZStd::set<id<MTLHeap>>* m_residentHeaps = nullptr;
 
+            bool m_supportsInterDrawTimestamps                  = AZ_TRAIT_ATOM_METAL_COUNTER_SAMPLING; // iOS/TVOS = false, MacOS = defaults to true
+
 #if AZ_TRAIT_ATOM_METAL_COUNTER_SAMPLING
             struct TimeStampData
             {

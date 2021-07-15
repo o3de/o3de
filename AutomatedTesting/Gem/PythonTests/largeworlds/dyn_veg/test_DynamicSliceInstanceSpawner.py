@@ -90,7 +90,6 @@ class TestDynamicSliceInstanceSpawner(object):
     @pytest.mark.SUITE_periodic
     @pytest.mark.dynveg_area
     @pytest.mark.parametrize("launcher_platform", ['windows'])
-    @pytest.mark.skip      # ATOM-14703
     def test_DynamicSliceInstanceSpawner_Embedded_E2E_Launcher(self, workspace, launcher, level,
                                                                remote_console_instance, project, launcher_platform):
 
@@ -126,7 +125,6 @@ class TestDynamicSliceInstanceSpawner(object):
     @pytest.mark.SUITE_periodic
     @pytest.mark.dynveg_area
     @pytest.mark.parametrize("launcher_platform", ['windows'])
-    @pytest.mark.skip      # ATOM-14703
     def test_DynamicSliceInstanceSpawner_External_E2E_Launcher(self, workspace, launcher, level,
                                                                remote_console_instance, project, launcher_platform):
 

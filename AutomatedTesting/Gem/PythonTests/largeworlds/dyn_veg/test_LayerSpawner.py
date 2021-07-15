@@ -121,7 +121,7 @@ class TestLayerSpawner(object):
     @pytest.mark.test_case_id("C30000751")
     @pytest.mark.SUITE_sandbox
     @pytest.mark.dynveg_misc
-    @pytest.mark.skip   # ATOM-14828
+    @pytest.mark.skip    # https://github.com/o3de/o3de/issues/2038
     def test_LayerSpawner_InstancesRefreshUsingCorrectViewportCamera(self, request, editor, level, launcher_platform):
 
         expected_lines = [
@@ -136,5 +136,6 @@ class TestLayerSpawner(object):
             editor,
             "LayerSpawner_InstancesRefreshUsingCorrectViewportCamera.py",
             expected_lines,
-            cfg_args=[level]
+            cfg_args=[level],
+            null_renderer=False
         )

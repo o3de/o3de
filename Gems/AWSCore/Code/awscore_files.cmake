@@ -32,7 +32,6 @@ set(FILES
     Include/Public/Framework/ServiceRequestJobConfig.h
     Include/Public/Framework/Util.h
     Include/Public/ResourceMapping/AWSResourceMappingBus.h
-    Include/Public/ScriptCanvas/AWSScriptBehaviorBase.h
     Include/Public/ScriptCanvas/AWSScriptBehaviorDynamoDB.h
     Include/Public/ScriptCanvas/AWSScriptBehaviorLambda.h
     Include/Public/ScriptCanvas/AWSScriptBehaviorS3.h
