@@ -43,6 +43,7 @@ class BlackboxAssetTest:
     asset_folder: str
     override_asset_folder: str = ""
     scene_debug_file: str = ""
+    override_scene_debug_file: str = ""
     assets: List[asset_db_utils.DBSourceAsset] = ()
     override_assets: List[asset_db_utils.DBSourceAsset] = ()
 
@@ -281,6 +282,7 @@ blackbox_fbx_special_tests = [
             asset_folder= "TwoMeshTwoMaterial",
             override_asset_folder = "OverrideAssetInfoForTwoMeshTwoMaterial",
             scene_debug_file="multiple_mesh_multiple_material.dbgsg",
+            override_scene_debug_file="multiple_mesh_multiple_material_override.dbgsg",
             assets = [
                 asset_db_utils.DBSourceAsset(
                     source_file_name = "multiple_mesh_multiple_material.fbx",
@@ -442,8 +444,11 @@ class TestsFBX_AllPlatforms(object):
                                ASSET_PROCESSOR_PLATFORM_MAP[workspace.asset_processor_platform]))
 
         if blackbox_params.scene_debug_file:
+            scene_debug_file = blackbox_params.override_scene_debug_file if overrideAsset\
+                else blackbox_params.scene_debug_file
+
             debug_graph_path = os.path.join(asset_processor.project_test_cache_folder(), blackbox_params.scene_debug_file)
-            expected_debug_graph_path = os.path.join(asset_processor.project_test_source_folder(), blackbox_params.scene_debug_file)
+            expected_debug_graph_path = os.path.join(asset_processor.project_test_source_folder(), scene_debug_file)
 
             logger.info(f"Parsing scene graph: {debug_graph_path}")
             with open(debug_graph_path, "r") as scene_file:
