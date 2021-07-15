@@ -43,7 +43,7 @@ namespace AZ
             //! This is usually called when Scene's render pipelines changed
             void SetOutputFromScene(const Scene* scene, RHI::DrawListTag overrideDrawListTag = RHI::DrawListTag());
 
-            void SetOutputFromPass(RenderPass* pass);
+            void SetOutputFromPass(const RenderPass* pass);
 
             //! Set input stream
             void SetInputStreamLayout(const RHI::InputStreamLayout& inputStreamLayout);
