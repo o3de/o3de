@@ -483,12 +483,12 @@ namespace AZ
             vertexBuffer->Write(vertexData, vertexDataSize);
             m_cachedStreamBufferViews.push_back(vertexBuffer->GetStreamBufferView(m_perVertexDataSize));
             drawItem.m_streamBufferViewCount = 1;
-            drawItemInfo.m_vertexBufferViewIndex = uint32_t(m_cachedStreamBufferViews.size() - 1);
+            drawItemInfo.m_vertexBufferViewIndex = static_cast<BufferViewIndexType>(m_cachedStreamBufferViews.size() - 1);
 
             // Write data to index buffer and set up index buffer view for DrawItem
             indexBuffer->Write(indexData, indexDataSize);
             m_cachedIndexBufferViews.push_back(indexBuffer->GetIndexBufferView(indexFormat));
-            drawItemInfo.m_indexBufferViewIndex = uint32_t(m_cachedIndexBufferViews.size() - 1);
+            drawItemInfo.m_indexBufferViewIndex = static_cast<BufferViewIndexType>(m_cachedIndexBufferViews.size() - 1);
 
             // Setup per context srg if it exists
             if (m_srgPerContext)

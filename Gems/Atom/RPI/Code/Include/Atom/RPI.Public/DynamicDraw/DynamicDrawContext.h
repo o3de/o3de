@@ -196,13 +196,14 @@ namespace AZ
             const RHI::PipelineState* GetCurrentPipelineState();
                         
             // structure includes DrawItem and stream and index buffer index
-            static const uint32_t InvalidIndex = static_cast<uint32_t>(-1);
+            using BufferViewIndexType = uint32_t;
+            static const BufferViewIndexType InvalidIndex = static_cast<BufferViewIndexType>(-1);
             struct DrawItemInfo
             {
                 RHI::DrawItem m_drawItem;
                 RHI::DrawItemSortKey m_sortKey;
-                uint32_t m_vertexBufferViewIndex = InvalidIndex;
-                uint32_t m_indexBufferViewIndex = InvalidIndex;
+                BufferViewIndexType m_vertexBufferViewIndex = InvalidIndex;
+                BufferViewIndexType m_indexBufferViewIndex = InvalidIndex;
             };
 
             // Create a DrawItemProperties from a drawItemInfo
@@ -253,7 +254,7 @@ namespace AZ
             // Draw variations allowed in this DynamicDrawContext
             DrawStateOptions m_drawStateOptions;
 
-            // DrawLListTag used to help setup PipelineState's output
+            // DrawListTag used to help setup PipelineState's output
             // and also for submitting draw items to views 
             RHI::DrawListTag m_drawListTag;
 
