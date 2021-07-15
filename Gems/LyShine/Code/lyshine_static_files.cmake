@@ -26,8 +26,6 @@ set(FILES
     Source/EditorPropertyTypes.h
     Source/LyShineLoadScreen.cpp
     Source/LyShineLoadScreen.h
-    Source/LyShineSystemComponent.cpp
-    Source/LyShineSystemComponent.h
     Source/RenderGraph.cpp
     Source/RenderGraph.h
     Source/TextMarkup.cpp
