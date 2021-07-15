@@ -331,6 +331,7 @@ namespace Multiplayer
         case PropertyPublisher::EntityReplicatorState::Deleting:
         {
             AZ_Assert(m_serializationPhase == PropertyPublisher::EntityReplicatorSerializationPhase::Prepared, "Unexpected serialization phase");
+
             FinalizeDeleteEntityRecord(sentId);
         }
         break;
