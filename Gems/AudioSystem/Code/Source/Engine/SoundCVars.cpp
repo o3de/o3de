@@ -201,7 +201,7 @@ namespace Audio::CVars
         Audio::Log::s_audioLogOptions = flags.GetRawFlags();
     };
 
-    AZ_CVAR(AZ::CVarFixedString, s_AudioLoggingOptions, "",
+    AZ_CVAR(AZ::CVarFixedString, s_AudioLoggingOptions, "ab",
         OnChangeLogOptions,
         AZ::ConsoleFunctorFlags::Null,
         "Toggles the log level of audio related messages.\n"
@@ -271,7 +271,7 @@ namespace Audio::CVars
     AZ_CVAR(AZ::CVarFixedString, s_FileCacheManagerDebugFilter, "",
         OnChangeFileCacheManagerFilterOptions,
         AZ::ConsoleFunctorFlags::IsCheat,
-        "Allows for filtered display of the different AFCM entries such as Globals, Level Specifics, Game Hints and so on.\n"
+        "Allows for filtered display of the file cache entries such as Globals, Level Specifics, Use Counted and so on.\n"
         "Usage: s_FileCacheManagerDebugFilter [0ab...] (flags can be combined)\n"
         "Default: 0 (all)\n"
         "a: Globals\n"
