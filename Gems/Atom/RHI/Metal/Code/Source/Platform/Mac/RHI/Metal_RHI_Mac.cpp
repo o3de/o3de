@@ -60,10 +60,7 @@ namespace Platform
 #if defined(__MAC_10_15_4)
         if(@available(macOS 10.15.4, *))
         {
-            //We check if presentAfterMinimumDuration is present as [MTLCommandBuffer presentDrawable: afterMinimumDuration:] is a
-            //utility function that forwards to [MTLDrawable presentAfterMinimumDuration]
-            hasPresentAfterMinimumDurationAPI = [drawable respondsToSelector:@selector(presentAfterMinimumDuration:)];
-            if (hasPresentAfterMinimumDurationAPI && presentAfterMinimumDuration > 0.0f)
+            if(presentAfterMinimumDuration > 0.0f)
             {
                 [mtlCommandBuffer presentDrawable:drawable afterMinimumDuration:presentAfterMinimumDuration];
                 framePresented = true;

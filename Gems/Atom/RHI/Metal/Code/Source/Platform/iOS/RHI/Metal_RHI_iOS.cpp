@@ -38,9 +38,7 @@ namespace Platform
     void PresentInternal(id <MTLCommandBuffer> mtlCommandBuffer, id<CAMetalDrawable> drawable, float syncInterval, float refreshRate)
     {
         float presentAfterMinimumDuration = syncInterval / refreshRate;
-        bool hasPresentAfterMinimumDuration = [drawable respondsToSelector:@selector(presentAfterMinimumDuration:)];
-                
-        if (hasPresentAfterMinimumDuration && hasPresentAfterMinimumDuration > 0.0f)
+        if (hasPresentAfterMinimumDuration > 0.0f)
         {
             [mtlCommandBuffer presentDrawable:drawable afterMinimumDuration:presentAfterMinimumDuration];
         }
