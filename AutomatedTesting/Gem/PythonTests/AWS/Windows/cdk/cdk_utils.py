@@ -78,7 +78,7 @@ class Cdk:
         :param project: Project name used for cdk project name env variable.
         :param account_id: AWS account id to use with cdk application.
         :param workspace: ly_test_tools workspace fixture.
-        :param session: Session for interacting with AWS.
+        :param session: Current boto3 session, provides credentials and region.
         """
         self._cdk_env = os.environ.copy()
         unique_id = uuid.uuid4().hex[-4:]

@@ -54,7 +54,7 @@ class TestAWSClientAuthWindows(object):
         Test to verify AWS Cognito Identity pool anonymous authorization.
 
         Setup: Deploys cdk and updates resource mapping file.
-        Tests: Getting AWS credentials for no signed in user.
+        Tests: Getting credentials when no credentials are configured
         Verification: Log monitor looks for success credentials log.
         """
         asset_processor.start()

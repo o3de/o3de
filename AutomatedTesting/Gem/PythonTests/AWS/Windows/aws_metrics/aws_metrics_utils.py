@@ -8,7 +8,6 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import logging
 import pathlib
 import pytest
-import time
 import typing
 
 from datetime import datetime

@@ -120,8 +120,8 @@ class TestAWSCoreAWSResourceInteraction(object):
                                 unexpected_lines: typing.List[str]):
         """
         Setup: Deploys cdk and updates resource mapping file.
-        Tests: Getting AWS credentials for no signed in user.
-        Verification: Script canvas nodes can interact with AWS services successfully.
+        Tests: Interact with AWS S3, DynamoDB and Lambda services.
+        Verification: Script canvas nodes can communicate with AWS services successfully.
         """
 
         log_monitor, s3_download_dir = setup(launcher, asset_processor)
