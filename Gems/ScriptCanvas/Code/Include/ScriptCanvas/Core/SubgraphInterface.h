@@ -235,8 +235,6 @@ namespace ScriptCanvas
 
             void SetNamespacePath(const NamespacePath& namespacePath);
 
-            void TakeNamespacePath(NamespacePath&& namespacePath);
-
             AZStd::string ToExecutionString() const;
 
         private:
