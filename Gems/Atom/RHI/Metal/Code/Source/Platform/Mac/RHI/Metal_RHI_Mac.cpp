@@ -57,8 +57,8 @@ namespace Platform
         bool framePresented = false;
         float presentAfterMinimumDuration = syncInterval / refreshRate;
         
-#if defined(__MAC_11_0)
-        if(@available(macOS 11.0, *))
+#if defined(__MAC_10_15_4)
+        if(@available(macOS 10.15.4, *))
         {
             //We check if presentAfterMinimumDuration is present as [MTLCommandBuffer presentDrawable: afterMinimumDuration:] is a
             //utility function that forwards to [MTLDrawable presentAfterMinimumDuration]
