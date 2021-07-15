@@ -1,5 +1,5 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -58,8 +58,11 @@ class TestFileMenuDefaultNewOpen:
         sc_main = sc.findChild(QtWidgets.QMainWindow)
         sc_tabs = sc_main.findChild(QtWidgets.QTabWidget, "ScriptCanvasTabs")
 
-        # 3) Trigger File->New action
+        # wait for the intial tab count
+        general.idle_wait(GENERAL_WAIT)
         initial_tabs_count = sc_tabs.count()
+
+        # 3) Trigger File->New action
         action = pyside_utils.find_child_by_pattern(
             sc_main, {"objectName": "action_New_Script", "type": QtWidgets.QAction}
         )

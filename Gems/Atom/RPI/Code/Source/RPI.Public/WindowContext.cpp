@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -12,6 +12,22 @@
 #include <Atom/RPI.Public/Pass/Specific/SwapChainPass.h>
 
 #include <Atom/RHI/Factory.h>
+
+#include <AzCore/Console/IConsole.h>
+#include <AzCore/Math/MathUtils.h>
+
+
+void OnVsyncIntervalChanged(uint32_t const& interval)
+{
+    AzFramework::WindowNotificationBus::Broadcast(
+        &AzFramework::WindowNotificationBus::Events::OnVsyncIntervalChanged,
+        AZ::GetClamp(interval, 0u, 4u));
+}
+
+// NOTE: On change, broadcasts the new requested vsync interval to all windows.
+// The value of the vsync interval is constrained between 0 and 4
+// Vsync intervals greater than 1 are not currently supported on the Vulkan RHI (see #2061 for discussion)
+AZ_CVAR(uint32_t, rpi_vsync_interval, 0, OnVsyncIntervalChanged, AZ::ConsoleFunctorFlags::Null, "Set swapchain vsync interval");
 
 namespace AZ
 {
@@ -103,6 +119,14 @@ namespace AZ
             AzFramework::WindowNotificationBus::Handler::BusDisconnect(m_windowHandle);
         }
 
+        void WindowContext::OnVsyncIntervalChanged(uint32_t interval)
+        {
+            if (m_swapChain->GetDescriptor().m_verticalSyncInterval != interval)
+            {
+                m_swapChain->SetVerticalSyncInterval(interval);
+            }
+        }
+
         bool WindowContext::IsExclusiveFullScreenPreferred() const
         {
             return m_swapChain->IsExclusiveFullScreenPreferred();
@@ -135,7 +159,7 @@ namespace AZ
 
             RHI::SwapChainDescriptor descriptor;
             descriptor.m_window = windowHandle;
-            descriptor.m_verticalSyncInterval = 0;
+            descriptor.m_verticalSyncInterval = rpi_vsync_interval;
             descriptor.m_dimensions.m_imageWidth = width;
             descriptor.m_dimensions.m_imageHeight = height;
             descriptor.m_dimensions.m_imageCount = 3;

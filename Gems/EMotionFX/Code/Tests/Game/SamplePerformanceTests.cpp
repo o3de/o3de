@@ -1,6 +1,6 @@
 
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -770,13 +770,13 @@ namespace EMotionFX
 
     TEST_F(PerformanceTestFixture, DISABLED_MotionSamplingPerformanceNonUniform)
     {
-        // Make sure that the motion is set to use NonUniform sampling! Change this in the Fbx settings! Otherwise you get wrong results.
+        // Make sure that the motion is set to use NonUniform sampling! Change this in the scene settings! Otherwise you get wrong results.
         TestMotionSamplingPerformance("@assets@\\animationsamples\\advanced_rinlocomotion\\motions\\rin_idle.motion");
     }
 
     TEST_F(PerformanceTestFixture, DISABLED_MotionSamplingPerformanceUniform)
     {
-        // Make sure that the motion is set to use Uniform sampling! Change this in the Fbx settings! Otherwise you get wrong results.
+        // Make sure that the motion is set to use Uniform sampling! Change this in the scene settings! Otherwise you get wrong results.
         TestMotionSamplingPerformance("@assets@\\animationsamples\\advanced_rinlocomotion\\motions\\rin_walk_kick_01.motion");
     }
 

@@ -1,21 +1,12 @@
 {
     "gem_name": "CrashReporting",
-    "GemFormatVersion": 4,
-    "Uuid": "089562a2cbbd41749b359f85fa04f1c9",
-    "Name": "CrashReporting",
-    "DisplayName": "CrashReporting",
-    "Version": "0.1.0",
-    "Summary": "Enable external crash reporting for a game project",
-    "Tags": ["Untagged"],
-    "IconPath": "preview.png",
-    "Modules": [
-        {
-            "Type": "StaticLib",
-            "Name": "StaticLibrary"
-        },
-        {
-            "Type": "Standalone",
-            "Name": "Uploader"
-        }
-    ]
+    "display_name": "Crash Reporting",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Open 3D Engine - o3de.org",
+    "type": "Code",
+    "summary": "The Crash Reporting Gem provides support for external crash reporting for Open 3D Engine projects.",
+    "canonical_tags": ["Gem"],
+    "user_tags": ["Debug", "Framework"],
+    "icon_path": "preview.png",
+    "requirements": ""
 }

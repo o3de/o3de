@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -11,27 +11,14 @@ namespace AZ
 {
     namespace SDKNode
     {
-        NodeWrapper::NodeWrapper(fbxsdk::FbxNode* fbxNode)
-            :m_fbxNode(fbxNode)
-            , m_assImpNode(nullptr)
-        {
-        }
-
         NodeWrapper::NodeWrapper(aiNode* aiNode)
-            :m_fbxNode(nullptr)
-            , m_assImpNode(aiNode)
+            : m_assImpNode(aiNode)
         {
         }
 
         NodeWrapper::~NodeWrapper()
         {
-            m_fbxNode = nullptr;
             m_assImpNode = nullptr;
-        }
-
-        fbxsdk::FbxNode* NodeWrapper::GetFbxNode()
-        {
-            return m_fbxNode;
         }
 
         aiNode* NodeWrapper::GetAssImpNode()

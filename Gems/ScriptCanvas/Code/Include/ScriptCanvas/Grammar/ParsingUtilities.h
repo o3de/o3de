@@ -1,6 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -113,7 +113,7 @@ namespace ScriptCanvas
         bool IsInfiniteSelfEntityActivationLoop(const AbstractCodeModel& model, ExecutionTreeConstPtr execution);
 
         bool IsInfiniteSelfEntityActivationLoopRecurse(const AbstractCodeModel& model, ExecutionTreeConstPtr execution);
-        
+
         bool IsInfiniteVariableWriteHandlingLoop(const AbstractCodeModel& model, VariableWriteHandlingPtr variableHandling, ExecutionTreeConstPtr execution, bool isConnected);
 
         bool IsInLoop(const ExecutionTreeConstPtr& execution);
@@ -143,6 +143,8 @@ namespace ScriptCanvas
         bool IsOnceReset(const Node& node, const Slot* slot);
 
         bool IsOnSelfEntityActivated(const AbstractCodeModel& model, ExecutionTreeConstPtr execution);
+
+        bool IsParserGeneratedId(const VariableId& id);
 
         bool IsPropertyExtractionSlot(const ExecutionTreeConstPtr& execution, const Slot* outputSlot);
 
@@ -178,6 +180,8 @@ namespace ScriptCanvas
 
         bool IsWrittenMathExpression(const ExecutionTreeConstPtr& execution);
 
+        VariableId MakeParserGeneratedId(size_t count);
+
         AZStd::string MakeMemberVariableName(AZStd::string_view name);
 
         VariableConstructionRequirement ParseConstructionRequirement(Grammar::VariableConstPtr value);
@@ -203,6 +207,5 @@ namespace ScriptCanvas
         void TraverseTree(const AbstractCodeModel& execution, ExecutionTreeTraversalListener& listener);
 
         void TraverseTree(const ExecutionTreeConstPtr& execution, ExecutionTreeTraversalListener& listener);
-    } 
-
-} 
+    }
+}

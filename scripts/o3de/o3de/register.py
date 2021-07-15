@@ -1,6 +1,6 @@
 
 #
-# Copyright (c) Contributors to the Open 3D Engine Project
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 # 
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
@@ -253,7 +253,8 @@ def add_engine_name_to_path(json_data: dict, engine_path: pathlib.Path, force: b
         logger.error(
             f'Attempting to register existing engine "{engine_name}" with a new path of {engine_path.as_posix()}.'
             f' The current path is {pathlib.Path(engines_path_json[engine_name]).as_posix()}.'
-            f' To force registration of a new engine path, specify the -f/--force option.')
+            f' To force registration of a new engine path, specify the -f/--force option.'
+            f'\nAlternatively the engine can be registered with a different name by changing the "engine_name" field in the engine.json.')
         return 1
     engines_path_json[engine_name] = engine_path.as_posix()
     return 0
@@ -341,7 +342,7 @@ def register_o3de_object_path(json_data: dict,
         try:
             paths_to_remove.append(o3de_object_path.relative_to(save_path.parent))
         except ValueError:
-            pass # It is OK  relative path cannot be formed
+            pass # It is OK relative path cannot be formed
     manifest_data[o3de_object_key] = list(filter(lambda p: pathlib.Path(p) not in paths_to_remove,
                                                            manifest_data.setdefault(o3de_object_key, [])))
 
@@ -404,27 +405,27 @@ def register_project_path(json_data: dict,
     if result != 0:
         return result
 
-    # registering a project has the additional step of setting the project.json 'engine' field
-    this_engine_json = manifest.get_engine_json_data(engine_path=manifest.get_this_engine_path())
-    if not this_engine_json:
-        return 1
-    project_json_data = manifest.get_project_json_data(project_path=project_path)
-    if not project_json_data:
-        return 1
-
-    update_project_json = False
-    try:
-        update_project_json = project_json_data['engine'] != this_engine_json['engine_name']
-    except KeyError as e:
-        update_project_json = True
-
-    if update_project_json:
-        project_json_path = project_path / 'project.json'
-        project_json_data['engine'] = this_engine_json['engine_name']
-        utils.backup_file(project_json_path)
-        if not manifest.save_o3de_manifest(project_json_data, project_json_path):
+    if not remove:
+        # registering a project has the additional step of setting the project.json 'engine' field
+        this_engine_json = manifest.get_engine_json_data(engine_path=manifest.get_this_engine_path())
+        if not this_engine_json:
+            return 1
+        project_json_data = manifest.get_project_json_data(project_path=project_path)
+        if not project_json_data:
             return 1
 
+        update_project_json = False
+        try:
+            update_project_json = project_json_data['engine'] != this_engine_json['engine_name']
+        except KeyError as e:
+            update_project_json = True
+
+        if update_project_json:
+            project_json_path = project_path / 'project.json'
+            project_json_data['engine'] = this_engine_json['engine_name']
+            utils.backup_file(project_json_path)
+            if not manifest.save_o3de_manifest(project_json_data, project_json_path):
+                return 1
 
     return 0
 
@@ -657,43 +658,56 @@ def register(engine_path: pathlib.Path = None,
 
     return result
 
+def remove_invalid_o3de_projects(manifest_path: pathlib.Path = None) -> int:
+    if not manifest_path:
+        manifest_path = manifest.get_o3de_manifest()
+
+    json_data = manifest.load_o3de_manifest(manifest_path)
+
+    result = 0
+
+    for project in json_data.get('projects', []):
+        if not validation.valid_o3de_project_json(pathlib.Path(project).resolve() / 'project.json'):
+            logger.warn(f"Project path {project} is invalid.")
+            # Attempt to unregister all invalid projects even if previous projects failed to unregister
+            # but combine the result codes of each command.
+            result = register(project_path=pathlib.Path(project), remove=True) or result
+
+    return result
 
 def remove_invalid_o3de_objects() -> None:
     json_data = manifest.load_o3de_manifest()
 
-    for engine_object in json_data['engines']:
-        engine_path = engine_object['path']
+    for engine_object in json_data.get('engines', []):
+        engine_path = engine_object.get('path', '')
         if not validation.valid_o3de_engine_json(pathlib.Path(engine_path).resolve() / 'engine.json'):
             logger.warn(f"Engine path {engine_path} is invalid.")
             register(engine_path=engine_path, remove=True)
 
-    for project in json_data['projects']:
-        if not validation.valid_o3de_project_json(pathlib.Path(project).resolve() / 'project.json'):
-            logger.warn(f"Project path {project} is invalid.")
-            register(project_path=project, remove=True)
+    remove_invalid_o3de_projects()
 
-    for gem in json_data['gems']:
+    for gem in json_data.get('gems', []):
         if not validation.valid_o3de_gem_json(pathlib.Path(gem).resolve() / 'gem.json'):
             logger.warn(f"Gem path {gem} is invalid.")
             register(gem_path=gem, remove=True)
 
-    for external in json_data['external_subdirectories']:
+    for external in json_data.get('external_subdirectories', []):
         external = pathlib.Path(external).resolve()
         if not external.is_dir():
             logger.warn(f"External subdirectory {external} is invalid.")
             register(engine_path=engine_path, external_subdir_path=external, remove=True)
 
-    for template in json_data['templates']:
+    for template in json_data.get('templates', []):
         if not validation.valid_o3de_template_json(pathlib.Path(template).resolve() / 'template.json'):
             logger.warn(f"Template path {template} is invalid.")
             register(template_path=template, remove=True)
 
-    for restricted in json_data['restricted']:
+    for restricted in json_data.get('restricted', []):
         if not validation.valid_o3de_restricted_json(pathlib.Path(restricted).resolve() / 'restricted.json'):
             logger.warn(f"Restricted path {restricted} is invalid.")
             register(restricted_path=restricted, remove=True)
 
-    default_engines_folder = pathlib.Path(json_data['default_engines_folder']).resolve()
+    default_engines_folder = pathlib.Path(json_data.get('default_engines_folder', manifest.get_o3de_engines_folder())).resolve()
     if not default_engines_folder.is_dir():
         new_default_engines_folder = manifest.get_o3de_folder() / 'Engines'
         new_default_engines_folder.mkdir(parents=True, exist_ok=True)
@@ -701,7 +715,7 @@ def remove_invalid_o3de_objects() -> None:
             f"Default engines folder {default_engines_folder} is invalid. Set default {new_default_engines_folder}")
         register(default_engines_folder=new_default_engines_folder.as_posix())
 
-    default_projects_folder = pathlib.Path(json_data['default_projects_folder']).resolve()
+    default_projects_folder = pathlib.Path(json_data.get('default_projects_folder', manifest.get_o3de_projects_folder())).resolve()
     if not default_projects_folder.is_dir():
         new_default_projects_folder = manifest.get_o3de_folder() / 'Projects'
         new_default_projects_folder.mkdir(parents=True, exist_ok=True)
@@ -709,7 +723,7 @@ def remove_invalid_o3de_objects() -> None:
             f"Default projects folder {default_projects_folder} is invalid. Set default {new_default_projects_folder}")
         register(default_projects_folder=new_default_projects_folder.as_posix())
 
-    default_gems_folder = pathlib.Path(json_data['default_gems_folder']).resolve()
+    default_gems_folder = pathlib.Path(json_data.get('default_gems_folder', manifest.get_o3de_gems_folder())).resolve()
     if not default_gems_folder.is_dir():
         new_default_gems_folder = manifest.get_o3de_folder() / 'Gems'
         new_default_gems_folder.mkdir(parents=True, exist_ok=True)
@@ -717,7 +731,7 @@ def remove_invalid_o3de_objects() -> None:
                     f" Set default {new_default_gems_folder}")
         register(default_gems_folder=new_default_gems_folder.as_posix())
 
-    default_templates_folder = pathlib.Path(json_data['default_templates_folder']).resolve()
+    default_templates_folder = pathlib.Path(json_data.get('default_templates_folder', manifest.get_o3de_templates_folder())).resolve()
     if not default_templates_folder.is_dir():
         new_default_templates_folder = manifest.get_o3de_folder() / 'Templates'
         new_default_templates_folder.mkdir(parents=True, exist_ok=True)
@@ -726,7 +740,7 @@ def remove_invalid_o3de_objects() -> None:
             f" Set default {new_default_templates_folder}")
         register(default_templates_folder=new_default_templates_folder.as_posix())
 
-    default_restricted_folder = pathlib.Path(json_data['default_restricted_folder']).resolve()
+    default_restricted_folder = pathlib.Path(json_data.get('default_restricted_folder', manifest.get_o3de_restricted_folder())).resolve()
     if not default_restricted_folder.is_dir():
         default_restricted_folder = manifest.get_o3de_folder() / 'Restricted'
         default_restricted_folder.mkdir(parents=True, exist_ok=True)
@@ -735,7 +749,7 @@ def remove_invalid_o3de_objects() -> None:
             f" Set default {default_restricted_folder}")
         register(default_restricted_folder=default_restricted_folder.as_posix())
 
-    default_third_party_folder = pathlib.Path(json_data['default_third_party_folder']).resolve()
+    default_third_party_folder = pathlib.Path(json_data.get('default_third_party_folder', manifest.get_o3de_third_party_folder())).resolve()
     if not default_third_party_folder.is_dir():
         default_third_party_folder = manifest.get_o3de_folder() / '3rdParty'
         default_third_party_folder.mkdir(parents=True, exist_ok=True)
@@ -754,9 +768,6 @@ def _run_register(args: argparse) -> int:
         return repo.refresh_repos()
     elif args.this_engine:
         ret_val = register(engine_path=manifest.get_this_engine_path(), force=args.force)
-        error_code = register_shipped_engine_o3de_objects(force=args.force)
-        if error_code:
-            ret_val = error_code
         return ret_val
     elif args.all_engines_path:
         return register_all_engines_in_folder(args.all_engines_path, args.remove, args.force)

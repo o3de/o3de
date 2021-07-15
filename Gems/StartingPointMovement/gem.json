@@ -1,21 +1,12 @@
 {
     "gem_name": "StartingPointMovement",
-    "Dependencies": [
-        {
-            "Uuid": "ff06785f7145416b9d46fde39098cb0c",
-            "VersionConstraints": [
-                "~>0.1"
-            ],
-            "_comment": "LmbrCentral"
-        }
-    ],
-    "GemFormatVersion": 3,
-    "Uuid": "73d8779dc28a4123b7c9ed76217464af",
-    "Name": "StartingPointMovement",
-    "Version": "0.1.0",
-    "LinkType": "Dynamic",
-    "DisplayName": "Starting Point Movement [PREVIEW]",
-    "Summary": "The Starting Point Movement Gem includes a series of Lua scripts that listens for input events that then triggers a transform operation such as movement or rotation.",
-    "Tags": ["Movement", "Starting Point"],
-    "IconPath": "preview.png"
+    "display_name": "Starting Point Movement",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Open 3D Engine - o3de.org",
+    "type": "Code",
+    "summary": "The Starting Point Movement Gem provides a series of Lua scripts that listen and respond to input events and trigger transform operations such as translation and rotation.",
+    "canonical_tags": ["Gem"],
+    "user_tags": ["Input", "Gameplay", "Scripting"],
+    "icon_path": "preview.png",
+    "requirements": ""
 }

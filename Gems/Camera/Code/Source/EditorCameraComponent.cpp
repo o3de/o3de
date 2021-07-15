@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -26,8 +26,10 @@ namespace Camera
 
     void EditorCameraComponent::Activate()
     {
-        auto controllerConfig = m_controller.GetConfiguration();
+        // Ensure our Editor Entity ID is up-to-date to sync camera configurations between Edit & Game mode.
+        CameraComponentConfig controllerConfig = m_controller.GetConfiguration();
         controllerConfig.m_editorEntityId = GetEntityId().operator AZ::u64();
+        m_controller.SetConfiguration(controllerConfig);
 
         // Call base class activate, which in turn calls Activate on our controller.
         EditorCameraComponentBase::Activate();

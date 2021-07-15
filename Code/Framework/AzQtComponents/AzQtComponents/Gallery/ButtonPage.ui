@@ -236,8 +236,10 @@
        <item row="1" column="1">
         <widget class="QLabel" name="toolButtonHoverLabel">
          <property name="text">
-          <string>Hover state
-#00A1C9</string>
+          <string>
+            Hover state
+            #94D2FF
+          </string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
@@ -247,8 +249,10 @@
        <item row="1" column="3">
         <widget class="QLabel" name="toolButtonSelectedLabel">
          <property name="text">
-          <string>Selected state
-#00A1C9</string>
+          <string>
+            Selected state
+            #1E70EB
+          </string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>

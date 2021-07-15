@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -96,8 +96,11 @@ namespace AZ
 
             bool SaveSourceMaterialFromEditData(const AZStd::string& path, const MaterialEditData& editData)
             {
-                // Getting the source info for the material type file to make sure that it exists
-                // We also need to watch folder to generate a relative asset path for the material type
+                // Construct the material source data object that will be exported
+                AZ::RPI::MaterialSourceData exportData;
+                exportData.m_propertyLayoutVersion = editData.m_materialTypeSourceData.m_propertyLayout.m_version;
+
+                // Converting absolute material paths to relative paths
                 bool result = false;
                 AZ::Data::AssetInfo info;
                 AZStd::string watchFolder;
@@ -106,22 +109,30 @@ namespace AZ
                     editData.m_materialTypeSourcePath.c_str(), info, watchFolder);
                 if (!result)
                 {
-                    AZ_Error("AZ::Render::EditorMaterialComponentUtil", false, "Failed to get source file info and asset path while attempting to export: %s", path.c_str());
+                    AZ_Error(
+                        "AZ::Render::EditorMaterialComponentUtil", false,
+                        "Failed to get material type source file info while attempting to export: %s", path.c_str());
                     return false;
                 }
 
-                // Construct the material source data object that will be exported
-                AZ::RPI::MaterialSourceData exportData;
-                exportData.m_propertyLayoutVersion = editData.m_materialTypeSourceData.m_propertyLayout.m_version;
+                exportData.m_materialType = info.m_relativePath;
 
-                // Converting absolute material paths to asset relative paths
-                exportData.m_materialType = editData.m_materialTypeSourcePath;
-                AzFramework::ApplicationRequests::Bus::Broadcast(
-                    &AzFramework::ApplicationRequests::Bus::Events::MakePathRelative, exportData.m_materialType, watchFolder.c_str());
+                if (!editData.m_materialParentSourcePath.empty())
+                {
+                    result = false;
+                    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                        result, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath,
+                        editData.m_materialParentSourcePath.c_str(), info, watchFolder);
+                    if (!result)
+                    {
+                        AZ_Error(
+                            "AZ::Render::EditorMaterialComponentUtil", false,
+                            "Failed to get parent material source file info while attempting to export: %s", path.c_str());
+                        return false;
+                    }
 
-                exportData.m_parentMaterial = editData.m_materialParentSourcePath;
-                AzFramework::ApplicationRequests::Bus::Broadcast(
-                    &AzFramework::ApplicationRequests::Bus::Events::MakePathRelative, exportData.m_parentMaterial, watchFolder.c_str());
+                    exportData.m_parentMaterial = info.m_relativePath;
+                }
 
                 // Copy all of the properties from the material asset to the source data that will be exported
                 result = true;

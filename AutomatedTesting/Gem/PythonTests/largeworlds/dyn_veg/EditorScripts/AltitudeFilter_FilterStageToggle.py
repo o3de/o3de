@@ -1,5 +1,5 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -36,8 +36,8 @@ class TestAltitudeFilterFilterStageToggle(EditorTestHelper):
         :return: None
         """
 
-        PREPROCESS_INSTANCE_COUNT = 24
-        POSTPROCESS_INSTANCE_COUNT = 18
+        PREPROCESS_INSTANCE_COUNT = 44
+        POSTPROCESS_INSTANCE_COUNT = 34
 
         # Create empty level
         self.test_success = self.create_level(
@@ -62,25 +62,7 @@ class TestAltitudeFilterFilterStageToggle(EditorTestHelper):
         dynveg.create_surface_entity("Surface_Entity_Parent", position, 16.0, 16.0, 1.0)
 
         # Add entity with Mesh to replicate creation of hills
-        hill_entity = dynveg.create_mesh_surface_entity_with_slopes("hill", position, 40.0, 40.0, 40.0)
-
-        # Disable/Re-enable Mesh component due to ATOM-14299
-        general.idle_wait(1.0)
-        editor.EditorComponentAPIBus(bus.Broadcast, 'DisableComponents', [hill_entity.components[0]])
-        is_enabled = editor.EditorComponentAPIBus(bus.Broadcast, 'IsComponentEnabled', hill_entity.components[0])
-        if is_enabled:
-            print("Mesh component is still enabled")
-        else:
-            print("Mesh component was disabled")
-        editor.EditorComponentAPIBus(bus.Broadcast, 'EnableComponents', [hill_entity.components[0]])
-        is_enabled = editor.EditorComponentAPIBus(bus.Broadcast, 'IsComponentEnabled', hill_entity.components[0])
-        if is_enabled:
-            print("Mesh component is now enabled")
-        else:
-            print("Mesh component is still disabled")
-
-        # Increase Box Shape size to encompass the hills
-        vegetation.get_set_test(1, "Box Shape|Box Configuration|Dimensions", math.Vector3(100.0, 100.0, 100.0))
+        hill_entity = dynveg.create_mesh_surface_entity_with_slopes("hill", position, 10.0)
 
         # Set a Min Altitude of 38 and Max of 40 in Vegetation Altitude Filter
         vegetation.get_set_test(3, "Configuration|Altitude Min", 38.0)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -248,8 +248,6 @@ namespace ScriptCanvas
             return AZ::Success(scope);
         }
 
-        
-
     protected:
 
         template<typename ArgType, size_t Index>
@@ -297,13 +295,6 @@ namespace ScriptCanvas
 
             MultipleOutputInvoker<t_Func, function, t_Traits>::Add(*this);
         }
-
-        void OnInputSignal(const SlotId&) override
-        {
-            MultipleOutputInvoker<t_Func, function, t_Traits>::Call(*this);
-            SignalOutput(GetSlotId("Out"));
-        }
-
 
         static bool VersionConverter(AZ::SerializeContext& serializeContext, AZ::SerializeContext::DataElementNode& rootElement);
         static bool ConvertOldNodeGeneric(AZ::SerializeContext& serializeContext, AZ::SerializeContext::DataElementNode& rootElement);

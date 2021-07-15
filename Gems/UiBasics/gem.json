@@ -1,12 +1,12 @@
 {
     "gem_name": "UiBasics",
-    "GemFormatVersion": 3,
-    "LinkType": "NoCode",
-    "Name": "UiBasics",
-    "DisplayName": "UI Basics",
-    "Summary": "Provides basic UI prefabs: image, text, button, and text input, as well as the textures that those prefabs require.",
-    "Uuid": "6bb61c9e547043f0afc5019d6d460b78",
-    "Version": "0.1.0",
-    "IconPath": "preview.png",
-    "Tags": ["UI", "Prefab", "Button", "Image"]
+    "display_name": "UI Basics",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Open 3D Engine - o3de.org",
+    "type": "Asset",
+    "summary": "The UI Basics Gem provides a collection of basic UI prefabs such as image, text, and button, that can be used with LyShine, the Open 3D Engine runtime User Interface system and editor.",
+    "canonical_tags": ["Gem"],
+    "user_tags": ["UI", "Assets", "Utility"],
+    "icon_path": "preview.png",
+    "requirements": ""
 }

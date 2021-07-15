@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -123,20 +123,23 @@ namespace Multiplayer
 
     bool PropertyPublisher::PrepareUpdateEntityRecord()
     {
-        // If we reach the maximum outstanding records, reset the replication state
+        bool didPrepare = true;
         if (m_sentRecords.size() >= net_EntityReplicatorRecordsMax)
         {
-            return PrepareAddEntityRecord();
+            // If we reach the maximum outstanding records, reset the replication state
+            didPrepare = PrepareAddEntityRecord();
         }
-
-        // We need to clear out old records, and build up a list of everything that has changed since the last acked packet
-        m_sentRecords.push_front(m_pendingRecord);
-        auto iter = m_sentRecords.begin();
-        ++iter; // Consider everything after the record we are going to send
-        for (; iter != m_sentRecords.end(); ++iter)
+        else
         {
-            // Sequence wasn't acked, so we need to send these bits again
-            m_pendingRecord.Append(*iter);
+            // We need to clear out old records, and build up a list of everything that has changed since the last acked packet
+            m_sentRecords.push_front(m_pendingRecord);
+            auto iter = m_sentRecords.begin();
+            ++iter; // Consider everything after the record we are going to send
+            for (; iter != m_sentRecords.end(); ++iter)
+            {
+                // Sequence wasn't acked, so we need to send these bits again
+                m_pendingRecord.Append(*iter);
+            }
         }
 
         // Don't send predictable properties back to the Autonomous unless we correct them
@@ -145,7 +148,7 @@ namespace Multiplayer
             m_pendingRecord.Subtract(m_netBindComponent->GetPredictableRecord());
         }
 
-        return true;
+        return didPrepare;
     }
 
     bool PropertyPublisher::PrepareDeleteEntityRecord()

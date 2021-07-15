@@ -1,5 +1,5 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 # 
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
@@ -19,7 +19,7 @@ ly_associate_package(PACKAGE_NAME lux_core-2.2-rev5-multiplatform    TARGETS lux
 # platform-specific:
 ly_associate_package(PACKAGE_NAME freetype-2.10.4.14-android         TARGETS freetype        PACKAGE_HASH 74dd75382688323c3a2a5090f473840b5d7e9d2aed1a4fcdff05ed2a09a664f2)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.14-android              TARGETS tiff            PACKAGE_HASH a9b30a1980946390c2fad0ed94562476a1d7ba8c1f36934ae140a89c54a8efd0)
-ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev4-android  TARGETS AWSNativeSDK    PACKAGE_HASH 9d163696591a836881fc22dac3c94e57b0278771b6c6cec807ff6a5e96f2669d)
+ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev6-android  TARGETS AWSNativeSDK    PACKAGE_HASH 1624ba9aaf03d001ed0ffc57d2f945ff82590e75a7ea868de35043cf673e82fb)
 ly_associate_package(PACKAGE_NAME Lua-5.3.5-rev5-android             TARGETS Lua             PACKAGE_HASH 1f638e94a17a87fe9e588ea456d5893876094b4db191234380e4c4eb9e06c300)
 ly_associate_package(PACKAGE_NAME PhysX-4.1.2.29882248-rev3-android  TARGETS PhysX           PACKAGE_HASH b8cb6aa46b2a21671f6cb1f6a78713a3ba88824d0447560ff5ce6c01014b9f43)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-android          TARGETS mikkelsen       PACKAGE_HASH 075e8e4940884971063b5a9963014e2e517246fa269c07c7dc55b8cf2cd99705)

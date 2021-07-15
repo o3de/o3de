@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -168,7 +168,7 @@ namespace EMotionFX
 
             AZ::SceneAPI::Events::ProcessingResult ActorGroupBehavior::BuildDefault(AZ::SceneAPI::Containers::Scene& scene) const
             {
-                // Skip adding the actor group if it's already exist.
+                // Skip adding the actor group if it already exists.
                 if (SceneHasActorGroup(scene))
                 {
                     return AZ::SceneAPI::Events::ProcessingResult::Ignored;
@@ -185,7 +185,7 @@ namespace EMotionFX
                 }
                 
                 const bool hasAnimationData = AZ::SceneAPI::Utilities::DoesSceneGraphContainDataLike<AZ::SceneAPI::DataTypes::IAnimationData>(scene, true);
-                // Skip adding the actor group if it's contain animation data but don't contain any skindata or blendshapedata.
+                // Skip adding the actor group if it contains animation data but doesn't contain any skin or blendshape data.
                 if (hasAnimationData && !hasSkinData && !hasBlendShapeData)
                 {
                     return AZ::SceneAPI::Events::ProcessingResult::Ignored;

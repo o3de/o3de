@@ -1,10 +1,16 @@
 {
     "gem_name": "AtomImGuiTools",
     "display_name": "Atom ImGui",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Open 3D Engine - o3de.org",
+    "type": "Tool",
     "summary": "",
     "canonical_tags": [
         "Gem"
     ],
     "user_tags": [
-    ]
+        "Debug",
+        "Rendering"
+    ],
+    "requirements": ""
 }

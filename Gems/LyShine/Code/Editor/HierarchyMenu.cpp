@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -26,8 +26,7 @@ HierarchyMenu::HierarchyMenu(HierarchyWidget* hierarchy,
     QTreeWidgetItemRawPtrQList selectedItems = hierarchy->selectedItems();
 
 
-    if (showMask & (Show::kNew_EmptyElement | Show::kNew_ElementFromPrefabs |
-                    Show::kNew_EmptyElementAtRoot | Show::kNew_ElementFromPrefabsAtRoot))
+    if (showMask & (Show::kNew_EmptyElement | Show::kNew_EmptyElementAtRoot))
     {
         QMenu* menu = (addMenuForNewElement ? addMenu("&New...") : this);
 
@@ -40,21 +39,11 @@ HierarchyMenu::HierarchyMenu(HierarchyWidget* hierarchy,
         {
             New_ElementFromSlice(hierarchy, selectedItems, menu, (showMask & Show::kNew_InstantiateSliceAtRoot), optionalPos);
         }
-
-        if (showMask & (Show::kNew_ElementFromPrefabs | Show::kNew_ElementFromPrefabsAtRoot))
-        {
-            New_ElementFromPrefabs(hierarchy, selectedItems, menu, (showMask & Show::kNew_ElementFromPrefabsAtRoot), optionalPos);
-        }
     }
 
     if (showMask & (Show::kNewSlice | Show::kPushToSlice))
     {
         SliceMenuItems(hierarchy, selectedItems, showMask);
-    }
-
-    if (showMask & Show::kSavePrefab)
-    {
-        SavePrefab(hierarchy, selectedItems);
     }
 
     addSeparator();
@@ -190,21 +179,6 @@ void HierarchyMenu::CutCopyPaste(HierarchyWidget* hierarchy,
             }
         }
     }
-}
-
-void HierarchyMenu::SavePrefab(HierarchyWidget* hierarchy,
-    QTreeWidgetItemRawPtrQList& selectedItems)
-{
-    QAction* action = PrefabHelpers::CreateSavePrefabAction(hierarchy);
-
-    // Only enable "save as prefab" option if exactly one element is selected
-    // in the hierarchy pane
-    if (selectedItems.size() != 1)
-    {
-        action->setEnabled(false);
-    }
-
-    addAction(action);
 }
 
 void HierarchyMenu::SliceMenuItems(HierarchyWidget* hierarchy,
@@ -402,19 +376,6 @@ void HierarchyMenu::New_EmptyElement(HierarchyWidget* hierarchy,
             selectedItems,
             addAtRoot,
             optionalPos));
-}
-
-void HierarchyMenu::New_ElementFromPrefabs(HierarchyWidget* hierarchy,
-    QTreeWidgetItemRawPtrQList& selectedItems,
-    QMenu* menu,
-    bool addAtRoot,
-    const QPoint* optionalPos)
-{
-    PrefabHelpers::CreateAddPrefabMenu(hierarchy,
-        selectedItems,
-        menu,
-        addAtRoot,
-        optionalPos);
 }
 
 void HierarchyMenu::New_ElementFromSlice(HierarchyWidget* hierarchy,

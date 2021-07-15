@@ -1,12 +1,12 @@
 {
     "gem_name": "Sponza",
-    "GemFormatVersion": 3,
-    "Uuid": "860d8ef2aec5425ab197adc4484c09f1",
-    "Name": "Sponza",
-    "DisplayName": "Sponza",
-    "Version": "0.1.0",
-    "LinkType": "NoCode",
-    "Summary": "A standard test scene for Global Illumination (forked from crytek sponza scene)",
-    "Tags": ["Asset"],
-    "IconPath": "preview.png"
+    "display_name": "Sponza",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Open 3D Engine - o3de.org",
+    "type": "Asset",
+    "summary": "A standard test scene for Global Illumination (forked from crytek sponza scene)",
+    "canonical_tags": ["Gem"],
+    "user_tags": ["Assets"],
+    "icon_path": "preview.png",
+    "requirements": ""
 }

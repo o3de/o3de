@@ -1,5 +1,5 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -15,10 +15,7 @@ import ly_test_tools.log.log_monitor
 
 # fixture imports
 from AWS.Windows.resource_mappings.resource_mappings import resource_mappings
-from AWS.Windows.cdk.cdk_utils import Cdk
-from AWS.common.aws_utils import AwsUtils
-from assetpipeline.ap_fixtures.asset_processor_fixture import asset_processor as asset_processor
-from AWS.common.aws_credentials import aws_credentials
+from assetpipeline.ap_fixtures.asset_processor_fixture import asset_processor
 from .aws_metrics_utils import aws_metrics_utils
 
 AWS_METRICS_FEATURE_NAME = 'AWSMetrics'
@@ -28,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 
 def setup(launcher: ly_test_tools.launchers.Launcher,
-          cdk: Cdk,
+          cdk: pytest.fixture,
           asset_processor: asset_processor,
           resource_mappings: resource_mappings,
           context_variable: str = '') -> typing.Tuple[ly_test_tools.log.log_monitor.LogMonitor, str, str]:
@@ -119,7 +116,7 @@ class TestAWSMetricsWindows(object):
                                                            asset_processor: pytest.fixture,
                                                            workspace: pytest.fixture,
                                                            aws_utils: pytest.fixture,
-                                                           aws_credentials: aws_credentials,
+                                                           aws_credentials: pytest.fixture,
                                                            resource_mappings: pytest.fixture,
                                                            cdk: pytest.fixture,
                                                            aws_metrics_utils: aws_metrics_utils,
@@ -162,7 +159,7 @@ class TestAWSMetricsWindows(object):
                                                 level: str,
                                                 launcher: ly_test_tools.launchers.Launcher,
                                                 cdk: pytest.fixture,
-                                                aws_credentials: aws_credentials,
+                                                aws_credentials: pytest.fixture,
                                                 asset_processor: pytest.fixture,
                                                 resource_mappings: pytest.fixture,
                                                 workspace: pytest.fixture):
@@ -187,7 +184,7 @@ class TestAWSMetricsWindows(object):
                                                             level: str,
                                                             launcher: ly_test_tools.launchers.Launcher,
                                                             cdk: pytest.fixture,
-                                                            aws_credentials: aws_credentials,
+                                                            aws_credentials: pytest.fixture,
                                                             asset_processor: pytest.fixture,
                                                             resource_mappings: pytest.fixture,
                                                             aws_utils: pytest.fixture,

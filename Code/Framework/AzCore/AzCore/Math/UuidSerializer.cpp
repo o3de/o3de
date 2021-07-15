@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -23,6 +23,8 @@ namespace AZ
     }
 
     JsonUuidSerializer::JsonUuidSerializer()
+        : m_zeroUuidString(AZ::Uuid::CreateNull().ToString<AZStd::string>())
+        , m_zeroUuidStringNoDashes(AZ::Uuid::CreateNull().ToString<AZStd::string>(true, false))
     {
         m_uuidFormat = AZStd::regex(R"(\{[a-f0-9]{8}-?[a-f0-9]{4}-?[a-f0-9]{4}-?[a-f0-9]{4}-?[a-f0-9]{12}\})",
             AZStd::regex_constants::icase | AZStd::regex_constants::optimize);
@@ -53,7 +55,7 @@ namespace AZ
 
         Uuid* valAsUuid = reinterpret_cast<Uuid*>(outputValue);
 
-        if (IsExplicitDefault(inputValue))
+        if (IsExplicitDefault(inputValue) || (inputValue == m_zeroUuidString.c_str()) || (inputValue == m_zeroUuidStringNoDashes.c_str()))
         {
             *valAsUuid = AZ::Uuid::CreateNull();
             return MessageResult("Uuid value set to default of null.", JSR::ResultCode(JSR::Tasks::ReadField, JSR::Outcomes::DefaultsUsed));

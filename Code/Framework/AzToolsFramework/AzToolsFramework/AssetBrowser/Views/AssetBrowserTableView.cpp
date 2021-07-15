@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -43,6 +43,11 @@ namespace AzToolsFramework
             setSortingEnabled(true);
             setItemDelegate(m_delegate);
             verticalHeader()->hide();
+
+            //Styling the header aligning text to the left and using a bold font.
+            horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
+            horizontalHeader()->setStyleSheet("QHeaderView { font-weight: bold; }");
+
             setContextMenuPolicy(Qt::CustomContextMenu);
 
             setMouseTracking(true);

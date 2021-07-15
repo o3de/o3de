@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -21,7 +21,7 @@ namespace Camera
     public:
         ~OffsetCameraPosition() override = default;
         AZ_RTTI(OffsetCameraPosition, "{DB64D5DA-84B7-45B7-B221-B5A07BDA2F69}", ICameraTransformBehavior)
-        AZ_CLASS_ALLOCATOR(OffsetCameraPosition, AZ::SystemAllocator, 0); ///< Use AZ::SystemAllocator, otherwise a CryEngine allocator will be used. This will cause the Asset Processor to crash when this object is deleted, because of the wrong uninitialisation order
+        AZ_CLASS_ALLOCATOR(OffsetCameraPosition, AZ::SystemAllocator, 0);
         static void Reflect(AZ::ReflectContext* reflection);
 
         //////////////////////////////////////////////////////////////////////////

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -40,7 +40,7 @@ namespace TestImpact
         //! Returns true if the specified target is in the list, otherwise false.
         bool HasTarget(const AZStd::string& name) const;
 
-        // Returns the number of targets in the list.
+        //! Returns the number of targets in the list.
         size_t GetNumTargets() const;
 
     private:

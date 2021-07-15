@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -83,7 +83,7 @@ namespace AZ
                         auto* bitangentData = AZStd::any_cast<AZ::SceneData::GraphData::MeshVertexBitangentData>(&data);
                         bitangentData->AppendBitangent(AZ::Vector3{0.12f, 0.34f, 0.56f});
                         bitangentData->AppendBitangent(AZ::Vector3{0.77f, 0.88f, 0.99f});
-                        bitangentData->SetTangentSpace(AZ::SceneAPI::DataTypes::TangentSpace::FromFbx);
+                        bitangentData->SetTangentSpace(AZ::SceneAPI::DataTypes::TangentSpace::FromSourceScene);
                         bitangentData->SetBitangentSetIndex(1);
                         return true;
                     }
@@ -317,7 +317,7 @@ namespace AZ
                 ExpectExecute("TestExpectFloatEquals(bitangentData.y, 0.88)");
                 ExpectExecute("TestExpectFloatEquals(bitangentData.z, 0.99)");
                 ExpectExecute("TestExpectIntegerEquals(meshVertexBitangentData:GetBitangentSetIndex(), 1)");
-                ExpectExecute("TestExpectTrue(meshVertexBitangentData:GetTangentSpace(), MeshVertexBitangentData.FromFbx)");
+                ExpectExecute("TestExpectTrue(meshVertexBitangentData:GetTangentSpace(), MeshVertexBitangentData.FromSourceScene)");
             }
 
             TEST_F(GrapDatahBehaviorScriptTest, SceneGraph_MeshVertexTangentData_AccessWorks)

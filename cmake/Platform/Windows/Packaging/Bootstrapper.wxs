@@ -14,8 +14,13 @@
 
         <Variable Name="InstallFolder"
             Type="string"
-            Value="[ProgramFiles64Folder]$(var.CPACK_PACKAGE_INSTALL_DIRECTORY)"
+            Value="[WindowsVolume]$(var.CPACK_PACKAGE_INSTALL_DIRECTORY)"
             bal:Overridable="yes"/>
+
+        <!-- special variable name that auto maps to a WixStandardBootstrapperApplication attribute of the same name -->
+        <Variable Name="LaunchTarget"
+            Type="string"
+            Value="[InstallFolder]\bin\Windows\profile\o3de.exe"/>
 
         <PayloadGroup Id="Images">
             <Payload Id="warning.png" SourceFile="$(var.CPACK_RESOURCE_PATH)/warning.png" Compressed="yes"/>

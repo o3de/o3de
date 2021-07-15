@@ -1,19 +1,12 @@
 {
     "gem_name": "CustomAssetExample",
-    "GemFormatVersion": 3,
-    "Uuid": "ad082dd50c6545849729e9afeaaeaa1d",
-    "Name": "CustomAssetExample",
-    "DisplayName": "CustomAssetExample",
-    "Version": "0.1.0",
-    "Summary": "Contians example code for creating a custom asset in Lumberyard's asset pipeline",
-    "Tags": ["Assets, Example"],
-    "LinkType": "Dynamic",
-    "IconPath": "preview.png",
-    "EditorModule": true,
-    "Modules": [
-        {
-            "Name": "Editor",
-            "Type": "EditorModule"
-        }
-    ]
+    "display_name": "Custom Asset Example",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Open 3D Engine - o3de.org",
+    "type": "Code",
+    "summary": "The Custom Asset Example Gem provides example code for creating a custom asset for Open 3D Engine's asset pipeline.",
+    "canonical_tags": ["Gem"],
+    "user_tags": ["Assets", "Tools"],
+    "icon_path": "preview.png",
+    "requirements": ""
 }

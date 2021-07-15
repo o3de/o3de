@@ -1,5 +1,5 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
@@ -17,7 +17,7 @@ import editor_python_test_tools.hydra_test_utils as hydra
 
 logger = logging.getLogger(__name__)
 DEFAULT_SUBFOLDER_PATH = 'user/PythonTests/Automated/Screenshots'
-EDITOR_TIMEOUT = 300
+EDITOR_TIMEOUT = 600
 TEST_DIRECTORY = os.path.join(os.path.dirname(__file__), "atom_hydra_scripts")
 
 
@@ -77,7 +77,6 @@ class TestAllComponentsIndepthTests(object):
             unexpected_lines=unexpected_lines,
             halt_on_unexpected=True,
             cfg_args=[level],
-            auto_test_mode=False,
             null_renderer=False,
         )
 

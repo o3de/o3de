@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -50,7 +50,7 @@ namespace ScriptCanvas
                 {
                     const AZ::Matrix3x3* dataRhs = rhs.GetAs<AZ::Matrix3x3>();
 
-                    return AZ::Matrix3x3::CreateFromColumns(lhs.GetColumn(0) - dataRhs->GetColumn(0), lhs.GetColumn(1) - dataRhs->GetColumn(1), lhs.GetColumn(2) - dataRhs->GetColumn(2));                    
+                    return AZ::Matrix3x3::CreateFromColumns(lhs.GetColumn(0) - dataRhs->GetColumn(0), lhs.GetColumn(1) - dataRhs->GetColumn(1), lhs.GetColumn(2) - dataRhs->GetColumn(2));
                 }
             };
 

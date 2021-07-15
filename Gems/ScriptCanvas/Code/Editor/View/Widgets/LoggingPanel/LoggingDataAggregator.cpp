@@ -1,6 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -289,7 +289,7 @@ namespace ScriptCanvasEditor
 
     void LoggingDataAggregator::OnRegistrationDisabled(const AZ::NamedEntityId&, const ScriptCanvas::GraphIdentifier&)
     {
-        
+
     }
 
     void LoggingDataAggregator::ResetLog()
@@ -324,7 +324,7 @@ namespace ScriptCanvasEditor
         m_hasAnchor = false;
         m_anchorTimeStamp = ScriptCanvas::Timestamp(0);
     }
-    
+
     void LoggingDataAggregator::RegisterScriptCanvas(const AZ::NamedEntityId& entityId, const ScriptCanvas::GraphIdentifier& graphIdentifier)
     {
         bool foundMatch = false;
@@ -335,7 +335,7 @@ namespace ScriptCanvasEditor
             if (mapIter->second == graphIdentifier)
             {
                 foundMatch = true;
-                AZ_Error("ScriptCanvas", false, "Received a duplicated registration callback.");
+                AZ_Warning("ScriptCanvas", false, "Received a duplicated registration callback.");
             }
         }
 

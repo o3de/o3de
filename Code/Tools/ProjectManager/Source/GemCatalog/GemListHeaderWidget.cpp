@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -7,10 +7,13 @@
 
 #include <GemCatalog/GemItemDelegate.h>
 #include <GemCatalog/GemListHeaderWidget.h>
-#include <QStandardItemModel>
+#include <AzQtComponents/Components/TagSelector.h>
+#include <QAbstractItemModel>
+#include <QItemSelectionModel>
 #include <QLabel>
-#include <QVBoxLayout>
 #include <QSpacerItem>
+#include <QStandardItemModel>
+#include <QVBoxLayout>
 
 namespace O3DE::ProjectManager
 {
@@ -23,15 +26,38 @@ namespace O3DE::ProjectManager
 
         setStyleSheet("background-color: #333333;");
 
-        vLayout->addSpacing(20);
+        vLayout->addSpacing(13);
 
         // Top section
         QHBoxLayout* topLayout = new QHBoxLayout();
+        topLayout->addSpacing(16);
         topLayout->setMargin(0);
+
+        auto* tagWidget = new FilterTagWidgetContainer();
+
+        // Adjust the proxy model and disable the given feature used for filtering.
+        connect(tagWidget, &FilterTagWidgetContainer::TagRemoved, this, [=](QString tagName)
+            {
+                QSet<QString> filteredFeatureTags = proxyModel->GetFeatures();
+                filteredFeatureTags.remove(tagName);
+                proxyModel->SetFeatures(filteredFeatureTags);
+            });
+
+        // Reinitialize the tag widget in case the filter in the proxy model got invalided.
+        connect(proxyModel, &GemSortFilterProxyModel::OnInvalidated, this, [=]
+            {
+                const QSet<QString>& tagSet = proxyModel->GetFeatures();
+                QVector<QString> sortedTags(tagSet.begin(), tagSet.end());
+                std::sort(sortedTags.begin(), sortedTags.end());
+                tagWidget->Reinit(sortedTags);
+            });
+
+        topLayout->addWidget(tagWidget);
+
         topLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding));
 
         QLabel* showCountLabel = new QLabel();
-        showCountLabel->setStyleSheet("font-size: 12px; font: italic;");
+        showCountLabel->setObjectName("GemCatalogHeaderShowCountLabel");
         topLayout->addWidget(showCountLabel);
         connect(proxyModel, &GemSortFilterProxyModel::OnInvalidated, this, [=]
             {
@@ -43,7 +69,7 @@ namespace O3DE::ProjectManager
 
         vLayout->addLayout(topLayout);
 
-        vLayout->addSpacing(20);
+        vLayout->addSpacing(13);
 
         // Separating line
         QFrame* hLine = new QFrame();
@@ -57,27 +83,27 @@ namespace O3DE::ProjectManager
         QHBoxLayout* columnHeaderLayout = new QHBoxLayout();
         columnHeaderLayout->setAlignment(Qt::AlignLeft);
 
-        const int gemNameStartX = GemItemDelegate::s_itemMargins.left() + GemItemDelegate::s_contentMargins.left() - 3;
+        const int gemNameStartX = GemItemDelegate::s_itemMargins.left() + GemItemDelegate::s_contentMargins.left() - 1;
         columnHeaderLayout->addSpacing(gemNameStartX);
 
         QLabel* gemNameLabel = new QLabel(tr("Gem Name"));
-        gemNameLabel->setStyleSheet("font-size: 12px;");
+        gemNameLabel->setObjectName("GemCatalogHeaderLabel");
         columnHeaderLayout->addWidget(gemNameLabel);
 
-        columnHeaderLayout->addSpacing(77);
+        columnHeaderLayout->addSpacing(89);
 
         QLabel* gemSummaryLabel = new QLabel(tr("Gem Summary"));
-        gemSummaryLabel->setStyleSheet("font-size: 12px;");
+        gemSummaryLabel->setObjectName("GemCatalogHeaderLabel");
         columnHeaderLayout->addWidget(gemSummaryLabel);
 
         QSpacerItem* horizontalSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
         columnHeaderLayout->addSpacerItem(horizontalSpacer);
 
         QLabel* gemSelectedLabel = new QLabel(tr("Selected"));
-        gemSelectedLabel->setStyleSheet("font-size: 12px;");
+        gemSelectedLabel->setObjectName("GemCatalogHeaderLabel");
         columnHeaderLayout->addWidget(gemSelectedLabel);
 
-        columnHeaderLayout->addSpacing(60);
+        columnHeaderLayout->addSpacing(65);
 
         vLayout->addLayout(columnHeaderLayout);
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -211,7 +211,7 @@ namespace AZ
             {
                 return;
             }
-            
+               
             m_bufferView = m_rhiBuffer->GetBufferView(m_bufferViewDescriptor);
 
             if(!m_bufferView.get())
@@ -308,17 +308,6 @@ namespace AZ
                 return true;
             }
 
-            return false;
-        }
-
-        bool Buffer::ResetBufferData(uint8_t clearValue, uint64_t clearSizeInBytes, uint64_t bufferByteOffset)
-        {
-            if (void* buf = Map(clearSizeInBytes, bufferByteOffset))
-            {
-                memset(buf, clearValue, clearSizeInBytes);
-                Unmap();
-                return true;
-            }
             return false;
         }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -50,7 +50,8 @@ namespace AZ
         {
             ImGui::OtherActiveImGuiRequestBus::Handler::BusConnect();
 
-            auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+            auto atomViewportRequests = AZ::RPI::ViewportContextRequests::Get();
+            AZ_Assert(atomViewportRequests, "AtomViewportContextRequests interface not found!");
             const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
             AZ::RPI::ViewportContextNotificationBus::Handler::BusConnect(contextName);
 
@@ -105,10 +106,20 @@ namespace AZ
                 // Let our ImguiAtomSystemComponent know once we successfully connect and update the viewport size.
                 if (!m_initialized)
                 {
+                    auto atomViewportRequests = AZ::RPI::ViewportContextRequests::Get();
+                    auto defaultViewportContext = atomViewportRequests->GetDefaultViewportContext();
+                    OnViewportDpiScalingChanged(defaultViewportContext->GetDpiScalingFactor());
                     m_initialized = true;
                 }
             });
-#endif
+#endif //define(IMGUI_ENABLED)
+        }
+
+        void ImguiAtomSystemComponent::OnViewportDpiScalingChanged([[maybe_unused]] float dpiScale)
+        {
+#if defined(IMGUI_ENABLED)
+            ImGui::ImGuiManagerBus::Broadcast(&ImGui::ImGuiManagerBus::Events::SetDpiScalingFactor, dpiScale);
+#endif //define(IMGUI_ENABLED)
         }
     }
 }

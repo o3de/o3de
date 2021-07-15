@@ -1,6 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -37,7 +37,7 @@ namespace ScriptCanvas
 
         ExecutionStateConfig(AZ::Data::Asset<RuntimeAsset> asset, RuntimeComponent& component);
     };
-    
+
     class ExecutionState
         : public AZStd::enable_shared_from_this<ExecutionState>
     {
@@ -50,7 +50,7 @@ namespace ScriptCanvas
         static void Reflect(AZ::ReflectContext* reflectContext);
 
         const RuntimeComponent* m_component = nullptr;
-        
+
         ExecutionState(const ExecutionStateConfig& config);
 
         virtual ~ExecutionState() = default;
@@ -71,7 +71,7 @@ namespace ScriptCanvas
 
         AZ::EntityId GetScriptCanvasId() const;
 
-        const VariableData& GetVariableOverrides() const;
+        const RuntimeDataOverrides& GetRuntimeDataOverrides() const;
 
         virtual void Initialize() = 0;
 
@@ -88,4 +88,4 @@ namespace ScriptCanvas
         ExecutionStateWeakConstPtr WeakFromThisConst() const;
     };
 
-} 
+}

@@ -1,7 +1,7 @@
 #pragma once
 
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -27,7 +27,7 @@ namespace AZ
         {
             class IGraphObject;
         }
-        namespace FbxSceneBuilder
+        namespace SceneBuilder
         {
             struct QueueNode;
             struct ImportContext;
@@ -58,8 +58,8 @@ namespace AZ
                 class NodeIndex
                 {
                     friend class SceneGraph;
-                    friend struct FbxSceneBuilder::QueueNode;
-                    friend struct FbxSceneBuilder::ImportContext;
+                    friend struct SceneBuilder::QueueNode;
+                    friend struct SceneBuilder::ImportContext;
                 public:
                     // Type needs to be able to store an index in a NodeHeader (currently 21-bits).
                     using IndexType = uint32_t;

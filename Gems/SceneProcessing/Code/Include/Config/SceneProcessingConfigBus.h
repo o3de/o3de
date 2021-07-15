@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -70,7 +70,7 @@ namespace AZ
              *     AddFileSoftName("_anim", PatternMatcher::MatchApproach::PostFix, "Ignore", false,
              *                     SceneAPI::DataTypes::IAnimationData::TYPEINFO_Name())
              *     If the filename ends with "_anim" this will mark all nodes as "Ignore" unless they're derived from IAnimationData.
-             *     This will cause only animations to be exported from the .fbx file even if there's other data available.
+             *     This will cause only animations to be exported from the source scene file even if there's other data available.
              */
             virtual bool AddFileSoftName(const char* pattern, SceneAPI::SceneCore::PatternMatcher::MatchApproach approach,
                 const char* virtualType, bool inclusive, const AZStd::string& graphObjectTypeName) = 0;

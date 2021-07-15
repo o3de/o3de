@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -87,24 +87,24 @@ AzToolsFramework--EntityOutlinerCheckBox#VisibilityMixed::indicator:checked
 AzToolsFramework--EntityOutlinerCheckBox#Visibility::indicator:checked
 , AzToolsFramework--EntityOutlinerCheckBox#VisibilityMixed::indicator:checked
 {
-    image: url(:/visibility_default.svg);
+    image: url(:/Outliner/visibility_default.svg);
 }
 
 AzToolsFramework--EntityOutlinerCheckBox#Visibility::indicator:unchecked
 , AzToolsFramework--EntityOutlinerCheckBox#VisibilityMixed::indicator:unchecked
 {
-    image: url(:/visibility_on.svg);
+    image: url(:/Outliner/visibility_on.svg);
 	margin-top: 3px;
 }
 
 AzToolsFramework--EntityOutlinerCheckBox#VisibilityOverridden::indicator:checked
 {
-    image: url(:/visibility_default_transparent.svg);
+    image: url(:/Outliner/visibility_default_transparent.svg);
 }
 
 AzToolsFramework--EntityOutlinerCheckBox#VisibilityOverridden::indicator:unchecked
 {
-    image: url(:/visibility_on_transparent.svg);
+    image: url(:/Outliner/visibility_on_transparent.svg);
 	margin-top: 3px;
 }
 
@@ -112,7 +112,7 @@ AzToolsFramework--EntityOutlinerCheckBox#VisibilityHover::indicator:checked
 , AzToolsFramework--EntityOutlinerCheckBox#VisibilityMixedHover::indicator:checked
 , AzToolsFramework--EntityOutlinerCheckBox#VisibilityOverriddenHover::indicator:checked
 {
-    image: url(:/visibility_default_hover.svg);
+    image: url(:/Outliner/visibility_default_hover.svg);
 	margin-top: 3px;
 }
 
@@ -120,7 +120,7 @@ AzToolsFramework--EntityOutlinerCheckBox#VisibilityHover::indicator:unchecked
 , AzToolsFramework--EntityOutlinerCheckBox#VisibilityMixedHover::indicator:unchecked
 , AzToolsFramework--EntityOutlinerCheckBox#VisibilityOverriddenHover::indicator:unchecked
 {
-    image: url(:/visibility_on_hover.svg);
+    image: url(:/Outliner/visibility_on_hover.svg);
 	margin-top: 3px;
 }
 
@@ -130,24 +130,24 @@ AzToolsFramework--EntityOutlinerCheckBox#VisibilityHover::indicator:unchecked
 AzToolsFramework--EntityOutlinerCheckBox#Lock::indicator:checked
 , AzToolsFramework--EntityOutlinerCheckBox#LockMixed::indicator:checked
 {
-    image: url(:/lock_on.svg);
+    image: url(:/Outliner/lock_on.svg);
 	margin-top: 1px;
 }
 
 AzToolsFramework--EntityOutlinerCheckBox#Lock::indicator:unchecked
 , AzToolsFramework--EntityOutlinerCheckBox#LockMixed::indicator:unchecked
 {
-    image: url(:/lock_default.svg);
+    image: url(:/Outliner/lock_default.svg);
 }
 
 AzToolsFramework--EntityOutlinerCheckBox#LockOverridden::indicator:checked
 {
-    image: url(:/lock_on_transparent.svg);
+    image: url(:/Outliner/lock_on_transparent.svg);
 }
 
 AzToolsFramework--EntityOutlinerCheckBox#LockOverridden::indicator:unchecked
 {
-    image: url(:/lock_default_transparent.svg);
+    image: url(:/Outliner/lock_default_transparent.svg);
 	margin-top: 1px;
 }
 
@@ -155,7 +155,7 @@ AzToolsFramework--EntityOutlinerCheckBox#LockHover::indicator:checked
 , AzToolsFramework--EntityOutlinerCheckBox#LockMixedHover::indicator:checked
 , AzToolsFramework--EntityOutlinerCheckBox#LockOverriddenHover::indicator:checked
 {
-    image: url(:/lock_on_hover.svg);
+    image: url(:/Outliner/lock_on_hover.svg);
 	margin-top: 1px;
 }
 
@@ -163,6 +163,6 @@ AzToolsFramework--EntityOutlinerCheckBox#LockHover::indicator:unchecked
 , AzToolsFramework--EntityOutlinerCheckBox#LockMixedHover::indicator:unchecked
 , AzToolsFramework--EntityOutlinerCheckBox#LockOverriddenHover::indicator:unchecked
 {
-    image: url(:/lock_default_hover.svg);
+    image: url(:/Outliner/lock_default_hover.svg);
 	margin-top: 1px;
 }

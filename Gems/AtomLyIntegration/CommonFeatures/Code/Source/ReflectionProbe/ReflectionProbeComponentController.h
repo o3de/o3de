@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -14,6 +14,7 @@
 #include <Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/Model/Model.h>
 #include <LmbrCentral/Shape/BoxShapeComponentBus.h>
+#include <ReflectionProbe/ReflectionProbeComponentConstants.h>
 
 namespace AZ
 {
@@ -50,12 +51,12 @@ namespace AZ
             AZ_CLASS_ALLOCATOR(ReflectionProbeComponentConfig, SystemAllocator, 0);
             static void Reflect(AZ::ReflectContext* context);
 
-            float m_outerHeight = 20.0f;
-            float m_outerLength = 20.0f;
-            float m_outerWidth = 20.0f;
-            float m_innerHeight = 20.0f;
-            float m_innerLength = 20.0f;
-            float m_innerWidth = 20.0f;
+            float m_outerHeight = DefaultReflectionProbeExtents;
+            float m_outerLength = DefaultReflectionProbeExtents;
+            float m_outerWidth = DefaultReflectionProbeExtents;
+            float m_innerHeight = DefaultReflectionProbeExtents;
+            float m_innerLength = DefaultReflectionProbeExtents;
+            float m_innerWidth = DefaultReflectionProbeExtents;
 
             bool m_useParallaxCorrection = true;
             bool m_showVisualization = true;
@@ -113,6 +114,7 @@ namespace AZ
 
             // Data::AssetBus overrides ...
             void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
+            void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
 
             // TransformNotificationBus overrides ...
             void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;

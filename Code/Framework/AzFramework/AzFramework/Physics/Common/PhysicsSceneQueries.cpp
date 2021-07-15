@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -88,6 +88,19 @@ namespace AzPhysics
                     ;
             }
         }
+
+        if (auto* behaviorContext = azdynamic_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<SceneQueryRequest>("SceneQueryRequest")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Module, "physics")
+                ->Attribute(AZ::Script::Attributes::Category, "PhysX")
+                ->Property("Collision", BehaviorValueProperty(&SceneQueryRequest::m_collisionGroup))
+                // Until enum class support for behavior context is done, expose this as an int
+                ->Property("QueryType", [](const SceneQueryRequest& self) { return static_cast<int>(self.m_queryType); },
+                    [](SceneQueryRequest& self, int newQueryType) { self.m_queryType = SceneQuery::QueryType(newQueryType); })
+                ;
+        }
     }
 
     /*static*/ void RayCastRequest::Reflect(AZ::ReflectContext* context)
@@ -123,10 +136,7 @@ namespace AzPhysics
                 ->Property("Distance", BehaviorValueProperty(&RayCastRequest::m_distance))
                 ->Property("Start", BehaviorValueProperty(&RayCastRequest::m_start))
                 ->Property("Direction", BehaviorValueProperty(&RayCastRequest::m_direction))
-                ->Property("Collision", BehaviorValueProperty(&RayCastRequest::m_collisionGroup))
-                // Until enum class support for behavior context is done, expose this as an int
-                ->Property("QueryType", [](const RayCastRequest& self) { return static_cast<int>(self.m_queryType); },
-                    [](RayCastRequest& self, int newQueryType) { self.m_queryType = SceneQuery::QueryType(newQueryType); })
+                ->Property("ReportMultipleHits", BehaviorValueProperty(&RayCastRequest::m_reportMultipleHits))
                 ;
         }
     }
@@ -143,6 +153,45 @@ namespace AzPhysics
                 ->Field("HitFlags", &ShapeCastRequest::m_hitFlags)
                 ->Field("ReportMultipleHits", &ShapeCastRequest::m_reportMultipleHits)
                 ;
+        }
+
+        if (auto* behaviorContext = azdynamic_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<ShapeCastRequest>("ShapeCastRequest")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Module, "physics")
+                ->Attribute(AZ::Script::Attributes::Category, "PhysX")
+                ->Property("Distance", BehaviorValueProperty(&ShapeCastRequest::m_distance))
+                ->Property("Start", BehaviorValueProperty(&ShapeCastRequest::m_start))
+                ->Property("Direction", BehaviorValueProperty(&ShapeCastRequest::m_direction))
+                ;
+
+            behaviorContext->Method(
+                "CreateSphereCastRequest",
+                [](float radius, const AZ::Transform& startPose, const AZ::Vector3& direction, float distance,
+                   SceneQuery::QueryType queryType, CollisionGroup collisionGroup)
+                {
+                    return ShapeCastRequestHelpers::CreateSphereCastRequest(
+                        radius, startPose, direction, distance, queryType, collisionGroup, nullptr);
+                });
+
+            behaviorContext->Method(
+                "CreateBoxCastRequest",
+                [](const AZ::Vector3& boxDimensions, const AZ::Transform& startPose, const AZ::Vector3& direction, float distance,
+                   SceneQuery::QueryType queryType, CollisionGroup collisionGroup)
+                {
+                    return ShapeCastRequestHelpers::CreateBoxCastRequest(
+                        boxDimensions, startPose, direction, distance, queryType, collisionGroup, nullptr);
+                });
+
+            behaviorContext->Method(
+                "CreateCapsuleCastRequest",
+                [](float capsuleRadius, float capsuleHeight, const AZ::Transform& startPose, const AZ::Vector3& direction, float distance,
+                   SceneQuery::QueryType queryType, CollisionGroup collisionGroup)
+                {
+                    return ShapeCastRequestHelpers::CreateCapsuleCastRequest(
+                        capsuleRadius, capsuleHeight, startPose, direction, distance, queryType, collisionGroup, nullptr);
+                });
         }
     }
 
@@ -209,6 +258,40 @@ namespace AzPhysics
                 ->Field("Pose", &OverlapRequest::m_pose)
                 ->Field("ShapeConfiguration", &OverlapRequest::m_shapeConfiguration)
                 ;
+        }
+
+        if (auto* behaviorContext = azdynamic_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<OverlapRequest>("OverlapRequest")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Module, "physics")
+                ->Attribute(AZ::Script::Attributes::Category, "PhysX")
+                ->Property("Pose", BehaviorValueProperty(&OverlapRequest::m_pose))
+                ;
+
+            behaviorContext->Method(
+                "CreateSphereOverlapRequest",
+                [](float radius, const AZ::Transform& pose)
+                {
+                    return OverlapRequestHelpers::CreateSphereOverlapRequest(
+                        radius, pose, nullptr);
+                });
+
+            behaviorContext->Method(
+                "CreateBoxOverlapRequest",
+                [](const AZ::Vector3& boxDimensions, const AZ::Transform& pose)
+                {
+                    return OverlapRequestHelpers::CreateBoxOverlapRequest(
+                        boxDimensions, pose, nullptr);
+                });
+
+            behaviorContext->Method(
+                "CreateCapsuleOverlapRequest",
+                [](float height, float radius, const AZ::Transform& pose)
+                {
+                    return OverlapRequestHelpers::CreateCapsuleOverlapRequest(
+                        height, radius, pose, nullptr);
+                });
         }
     }
 

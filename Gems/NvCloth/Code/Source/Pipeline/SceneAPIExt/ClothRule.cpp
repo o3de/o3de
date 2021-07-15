@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -19,7 +19,7 @@ namespace NvCloth
     namespace Pipeline
     {
         // It's necessary for the rule to specify the system allocator, otherwise
-        // the editor crashes when deleting the cloth modifier from FBX Settings.
+        // the editor crashes when deleting the cloth modifier from Scene Settings.
         AZ_CLASS_ALLOCATOR_IMPL(ClothRule, AZ::SystemAllocator, 0)
 
         const char* const ClothRule::DefaultChooseNodeName = "Choose a node";

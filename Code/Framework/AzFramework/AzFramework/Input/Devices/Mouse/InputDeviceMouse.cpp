@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -95,8 +95,8 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceMouse::InputDeviceMouse()
-        : InputDevice(Id)
+    InputDeviceMouse::InputDeviceMouse(AzFramework::InputDeviceId id)
+        : InputDevice(id)
         , m_allChannelsById()
         , m_buttonChannelsById()
         , m_movementChannelsById()

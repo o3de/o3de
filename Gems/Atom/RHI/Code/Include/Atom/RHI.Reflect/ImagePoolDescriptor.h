@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -24,7 +24,6 @@ namespace AZ
             static void Reflect(AZ::ReflectContext* context);
 
             ImagePoolDescriptor() = default;
-            ImagePoolDescriptor(ImageBindFlags bindFlags) : m_bindFlags(bindFlags) {};
 
             /// The set of image bind flags supported by this pool.
             ImageBindFlags m_bindFlags = ImageBindFlags::Color;

@@ -5,8 +5,7 @@
 //--------------------------------------------------------------------------------------
 // (C) 2005 ATI Research, Inc., All rights reserved.
 //--------------------------------------------------------------------------------------
-// modifications by Crytek GmbH
-// modifications by Amazon
+// Modified from original
 
 #pragma once
 

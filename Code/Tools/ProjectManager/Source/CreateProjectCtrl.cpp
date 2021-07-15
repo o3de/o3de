@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -10,6 +10,7 @@
 #include <PythonBindingsInterface.h>
 #include <NewProjectSettingsScreen.h>
 #include <ScreenHeaderWidget.h>
+#include <GemCatalog/GemModel.h>
 #include <GemCatalog/GemCatalogScreen.h>
 
 #include <QDialogButtonBox>
@@ -46,6 +47,40 @@ namespace O3DE::ProjectManager
         m_stack->addWidget(m_gemCatalogScreen);
         vLayout->addWidget(m_stack);
 
+        // When there are multiple project templates present, we re-gather the gems when changing the selected the project template.
+        connect(m_newProjectSettingsScreen, &NewProjectSettingsScreen::OnTemplateSelectionChanged, this, [=](int oldIndex, [[maybe_unused]] int newIndex)
+            {
+                const GemModel* gemModel = m_gemCatalogScreen->GetGemModel();
+                const QVector<QModelIndex> toBeAdded = gemModel->GatherGemsToBeAdded();
+                const QVector<QModelIndex> toBeRemoved = gemModel->GatherGemsToBeRemoved();
+                if (!toBeAdded.isEmpty() || !toBeRemoved.isEmpty())
+                {
+                    // In case the user enabled or disabled any gem and the current selection does not match the default from the
+                    // // project template anymore, we need to ask the user if they want to proceed as their modifications will be lost.
+                    const QString title = tr("Modifications will be lost");
+                    const QString text = tr("You selected a new project template after modifying the enabled gems.\n\n"
+                        "All modifications will be lost and the default from the new project template will be used.\n\n"
+                        "Do you want to proceed?");
+                    if (QMessageBox::warning(this, title, text, QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes)
+                    {
+                        // The users wants to proceed. Reinitialize based on the newly selected project template.
+                        ReinitGemCatalogForSelectedTemplate();
+                    }
+                    else
+                    {
+                        // Roll-back to the previously selected project template and
+                        // block signals so that we don't end up in this same callback again.
+                        m_newProjectSettingsScreen->SelectProjectTemplate(oldIndex, /*blockSignals=*/true);
+                    }
+                }
+                else
+                {
+                    // In case the user did not enable or disable any gem and the currently enabled gems matches the previously selected
+                    // ones from the project template, we can just reinitialize based on the newly selected project template.
+                    ReinitGemCatalogForSelectedTemplate();
+                }
+            });
+
         QDialogButtonBox* buttons = new QDialogButtonBox();
         buttons->setObjectName("footer");
         vLayout->addWidget(buttons);
@@ -81,10 +116,8 @@ namespace O3DE::ProjectManager
             currentScreen->NotifyCurrentScreen();
         }
 
-        // Gather the gems from the project template. When we will have multiple project templates, we need to re-gather them
-        // on changing the template and let the user know that any further changes on top of the template will be lost.
-        QString projectTemplatePath = m_newProjectSettingsScreen->GetProjectTemplatePath();
-        m_gemCatalogScreen->ReinitForProject(projectTemplatePath + "/Template", /*isNewProject=*/true);
+        // Gather the enabled gems from the default project template when starting the create new project workflow.
+        ReinitGemCatalogForSelectedTemplate();
     }
 
     void CreateProjectCtrl::HandleBackButton()
@@ -223,4 +256,9 @@ namespace O3DE::ProjectManager
         }
     }
 
+    void CreateProjectCtrl::ReinitGemCatalogForSelectedTemplate()
+    {
+        const QString projectTemplatePath = m_newProjectSettingsScreen->GetProjectTemplatePath();
+        m_gemCatalogScreen->ReinitForProject(projectTemplatePath + "/Template", /*isNewProject=*/true);
+    }
 } // namespace O3DE::ProjectManager

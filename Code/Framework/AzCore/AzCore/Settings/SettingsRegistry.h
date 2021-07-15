@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -49,7 +49,7 @@ namespace AZ
         class Specializations
         {
         public:
-            static constexpr size_t MaxTagNameSize = 32;
+            static constexpr size_t MaxTagNameSize = 64;
             static constexpr size_t MaxCount = 15;
             static constexpr size_t NotFound = static_cast<size_t>(-1);
             using TagName = AZStd::fixed_string<MaxTagNameSize>;

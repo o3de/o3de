@@ -1,5 +1,5 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 # 
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
@@ -194,9 +194,9 @@ def load_o3de_manifest(manifest_path: pathlib.Path = None) -> dict:
             return json_data
 
 
-def save_o3de_manifest(json_data: dict, manifest_path: pathlib.Path = None) -> None:
+def save_o3de_manifest(json_data: dict, manifest_path: pathlib.Path = None) -> bool:
     """
-        Save the json dictionary to the supplied manifest file or ~/.o3de/o3de_manifest.json if None
+        Save the json dictionary to the supplied manifest file or ~/.o3de/o3de_manifest.json if manifest_path is None
 
         :param json_data: dictionary to save in json format at the file path
         :param manifest_path: optional path to manifest file to save
@@ -206,8 +206,32 @@ def save_o3de_manifest(json_data: dict, manifest_path: pathlib.Path = None) -> N
     with manifest_path.open('w') as s:
         try:
             s.write(json.dumps(json_data, indent=4) + '\n')
+            return True
         except OSError as e:
             logger.error(f'Manifest json failed to save: {str(e)}')
+            return False
+
+
+
+def get_gems_from_subdirectories(external_subdirs: list) -> list:
+    '''
+    Helper Method for scanning a set of external subdirectories for gem.json files
+    '''
+    def is_gem_subdirectory(subdir_files):
+        for name in files:
+            if name == 'gem.json':
+                return True
+        return False
+
+    gem_directories = []
+    # Locate all subfolders with gem.json files within them
+    if external_subdirs:
+        for subdirectory in external_subdirs:
+            for root, dirs, files in os.walk(pathlib.Path(subdirectory).resolve()):
+                if is_gem_subdirectory(files):
+                    gem_directories.append(pathlib.PurePath(root).as_posix())
+
+    return gem_directories
 
 
 # Data query methods
@@ -228,11 +252,7 @@ def get_projects() -> list:
 
 
 def get_gems() -> list:
-    def is_gem_subdirectory(subdir):
-        return (pathlib.Path(subdir) / 'gem.json').exists()
-
-    external_subdirs = get_external_subdirectories()
-    return list(filter(is_gem_subdirectory, external_subdirs)) if external_subdirs else []
+    return get_gems_from_subdirectories(get_external_subdirectories())
 
 
 def get_external_subdirectories() -> list:
@@ -258,64 +278,70 @@ def get_repos() -> list:
 def get_engine_projects() -> list:
     engine_path = get_this_engine_path()
     engine_object = get_engine_json_data(engine_path=engine_path)
-    return list(map(lambda rel_path: (pathlib.Path(engine_path) / rel_path).as_posix(),
-                      engine_object['projects'])) if 'projects' in engine_object else []
+    if engine_object:
+        return list(map(lambda rel_path: (pathlib.Path(engine_path) / rel_path).as_posix(),
+                          engine_object['projects'])) if 'projects' in engine_object else []
+    return []
 
 
 def get_engine_gems() -> list:
-    def is_gem_subdirectory(subdir):
-        return (pathlib.Path(subdir) / 'gem.json').exists()
-
-    external_subdirs = get_engine_external_subdirectories()
-    return list(filter(is_gem_subdirectory, external_subdirs)) if external_subdirs else []
+    return get_gems_from_subdirectories(get_engine_external_subdirectories())
 
 
 def get_engine_external_subdirectories() -> list:
     engine_path = get_this_engine_path()
     engine_object = get_engine_json_data(engine_path=engine_path)
-    return list(map(lambda rel_path: (pathlib.Path(engine_path) / rel_path).as_posix(),
-                    engine_object['external_subdirectories'])) if 'external_subdirectories' in engine_object else []
+    if engine_object:
+        return list(map(lambda rel_path: (pathlib.Path(engine_path) / rel_path).as_posix(),
+                        engine_object['external_subdirectories'])) if 'external_subdirectories' in engine_object else []
+    return []
 
 
 def get_engine_templates() -> list:
     engine_path = get_this_engine_path()
     engine_object = get_engine_json_data(engine_path=engine_path)
-    return list(map(lambda rel_path: (pathlib.Path(engine_path) / rel_path).as_posix(),
-                      engine_object['templates']))
+    if engine_object:
+        return list(map(lambda rel_path: (pathlib.Path(engine_path) / rel_path).as_posix(),
+                          engine_object['templates'])) if 'templates' in engine_object else []
+    return []
 
 
 def get_engine_restricted() -> list:
     engine_path = get_this_engine_path()
     engine_object = get_engine_json_data(engine_path=engine_path)
-    return list(map(lambda rel_path: (pathlib.Path(engine_path) / rel_path).as_posix(),
-                    engine_object['restricted'])) if 'restricted' in engine_object else []
+    if engine_object:
+        return list(map(lambda rel_path: (pathlib.Path(engine_path) / rel_path).as_posix(),
+                        engine_object['restricted'])) if 'restricted' in engine_object else []
+    return []
 
 
 # project.json queries
 def get_project_gems(project_path: pathlib.Path) -> list:
-    def is_gem_subdirectory(subdir):
-        return (pathlib.Path(subdir) / 'gem.json').exists()
-
-    external_subdirs = get_project_external_subdirectories(project_path)
-    return list(filter(is_gem_subdirectory, external_subdirs)) if external_subdirs else []
+    return get_gems_from_subdirectories(get_project_external_subdirectories(project_path))
 
 
 def get_project_external_subdirectories(project_path: pathlib.Path) -> list:
     project_object = get_project_json_data(project_path=project_path)
-    return list(map(lambda rel_path: (pathlib.Path(project_path) / rel_path).as_posix(),
-               project_object['external_subdirectories'])) if 'external_subdirectories' in project_object else []
+    if project_object:
+        return list(map(lambda rel_path: (pathlib.Path(project_path) / rel_path).as_posix(),
+                   project_object['external_subdirectories'])) if 'external_subdirectories' in project_object else []
+    return []
 
 
 def get_project_templates(project_path: pathlib.Path) -> list:
     project_object = get_project_json_data(project_path=project_path)
-    return list(map(lambda rel_path: (pathlib.Path(project_path) / rel_path).as_posix(),
-                      project_object['templates']))
+    if project_object:
+        return list(map(lambda rel_path: (pathlib.Path(project_path) / rel_path).as_posix(),
+                          project_object['templates'])) if 'templates' in project_object else []
+    return []
 
 
 def get_project_restricted(project_path: pathlib.Path) -> list:
     project_object = get_project_json_data(project_path=project_path)
-    return list(map(lambda rel_path: (pathlib.Path(project_path) / rel_path).as_posix(),
-                    project_object['restricted'])) if 'restricted' in project_object else []
+    if project_object:
+        return list(map(lambda rel_path: (pathlib.Path(project_path) / rel_path).as_posix(),
+                        project_object['restricted'])) if 'restricted' in project_object else []
+    return []
 
 
 # Combined manifest queries

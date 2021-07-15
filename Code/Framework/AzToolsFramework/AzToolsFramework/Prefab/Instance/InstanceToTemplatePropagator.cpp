@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -172,20 +172,23 @@ namespace AzToolsFramework
             PrefabDom& templateDomReference = m_prefabSystemComponentInterface->FindTemplateDom(templateId);
 
             //apply patch to template
-            AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::ApplyPatch(templateDomReference,
-                templateDomReference.GetAllocator(), providedPatch, AZ::JsonMergeApproach::JsonPatch);
+            AZ::JsonSerializationResult::ResultCode result =
+                PrefabDomUtils::ApplyPatches(templateDomReference, templateDomReference.GetAllocator(), providedPatch);
 
             //trigger propagation
-            if (result.GetOutcome() == AZ::JsonSerializationResult::Outcomes::Success)
+            if (result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::Success)
             {
-                m_prefabSystemComponentInterface->SetTemplateDirtyFlag(templateId, true);
-                m_prefabSystemComponentInterface->PropagateTemplateChanges(templateId, instanceToExclude);
-                return true;
+                AZ_Error("Prefab", false, "Patch was not successfully applied.");
+                return false; 
             }
             else
             {
-                AZ_Error("Prefab", false, "Patch was not successfully applied");
-                return false;
+                AZ_Error(
+                    "Prefab", result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::PartialSkip,
+                    "Some of the patches are not successfully applied.");
+                m_prefabSystemComponentInterface->SetTemplateDirtyFlag(templateId, true);
+                m_prefabSystemComponentInterface->PropagateTemplateChanges(templateId, instanceToExclude);
+                return true;
             }
         }
 

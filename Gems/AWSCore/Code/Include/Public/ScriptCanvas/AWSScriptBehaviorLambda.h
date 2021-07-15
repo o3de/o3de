@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -9,8 +9,6 @@
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/string/string.h>
-
-#include <ScriptCanvas/AWSScriptBehaviorBase.h>
 
 namespace AWSCore
 {
@@ -53,10 +51,14 @@ namespace AWSCore
     };
 
     class AWSScriptBehaviorLambda
-        : public AWSScriptBehaviorBase
     {
     public:
-        AWS_SCRIPT_BEHAVIOR_DEFINITION(AWSScriptBehaviorLambda, "{9E71534D-34B3-4723-B180-2552513DDA3D}");
+        AZ_RTTI(AWSScriptBehaviorLambda, "{9E71534D-34B3-4723-B180-2552513DDA3D}");
+
+        AWSScriptBehaviorLambda() = default;
+        virtual ~AWSScriptBehaviorLambda() = default;
+
+        static void Reflect(AZ::ReflectContext* context);
 
         static void Invoke(const AZStd::string& functionResourceKey, const AZStd::string& payload);
         static void InvokeRaw(const AZStd::string& functionName, const AZStd::string& payload, const AZStd::string& region);

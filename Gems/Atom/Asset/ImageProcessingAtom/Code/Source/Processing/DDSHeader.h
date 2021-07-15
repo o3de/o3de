@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -148,7 +148,7 @@ namespace ImageProcessingAtom
         AZ::u32 dwDepth;        // only if DDS_HEADER_FLAGS_VOLUME is set in dwHeaderFlags
         AZ::u32 dwMipMapCount;
         AZ::u32 dwAlphaBitDepth;
-        AZ::u32 dwReserved1;    // Crytek image flags
+        AZ::u32 dwReserved1;    // Image flags
         float fAvgBrightness;   // Average top mip brightness. Could be f16/half
         float cMinColor[4];
         float cMaxColor[4];
@@ -230,8 +230,8 @@ namespace ImageProcessingAtom
     };
 
     // chunk identifier
-    const static AZ::u32 FOURCC_CExt = IMAGE_BUIDER_MAKEFOURCC('C', 'E', 'x', 't');    // Crytek extension start
-    const static AZ::u32 FOURCC_CEnd = IMAGE_BUIDER_MAKEFOURCC('C', 'E', 'n', 'd');    // Crytek extension end
+    const static AZ::u32 FOURCC_CExt = IMAGE_BUIDER_MAKEFOURCC('C', 'E', 'x', 't');    // O3DE extension start
+    const static AZ::u32 FOURCC_CEnd = IMAGE_BUIDER_MAKEFOURCC('C', 'E', 'n', 'd');    // O3DE extension end
     const static AZ::u32 FOURCC_AttC = IMAGE_BUIDER_MAKEFOURCC('A', 't', 't', 'C');    // Chunk Attached Channel
 
     //Fourcc for pixel formats which aren't supported by dx10, such as astc formats, etc formats, pvrtc formats

@@ -1,5 +1,5 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 # 
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
@@ -21,6 +21,7 @@ set(FILES
     Include/Multiplayer/EntityDomains/IEntityDomain.h
     Include/Multiplayer/NetworkEntity/INetworkEntityManager.h
     Include/Multiplayer/INetworkSpawnableLibrary.h
+    Include/Multiplayer/NetworkEntity/IFilterEntityManager.h
     Include/Multiplayer/NetworkEntity/NetworkEntityRpcMessage.h
     Include/Multiplayer/NetworkEntity/NetworkEntityUpdateMessage.h
     Include/Multiplayer/NetworkEntity/NetworkEntityHandle.h

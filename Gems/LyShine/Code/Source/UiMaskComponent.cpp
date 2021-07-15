@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -553,6 +553,7 @@ void UiMaskComponent::CreateOrResizeRenderTarget(const AZ::Vector2& pixelAligned
     m_viewportTopLeft = pixelAlignedTopLeft;
     m_viewportSize = renderTargetSize;
 
+#ifdef LYSHINE_ATOM_TODO // [LYN-3359] Support RTT using Atom
     // Check if the render target already exists
     if (m_contentRenderTargetHandle != -1)
     {
@@ -618,6 +619,7 @@ void UiMaskComponent::CreateOrResizeRenderTarget(const AZ::Vector2& pixelAligned
             DestroyRenderTarget();
         }
     }
+#endif
 
     // at this point either all render targets and depth surfaces are created or none are.
     // If all succeeded then update the render target size
@@ -803,6 +805,7 @@ void UiMaskComponent::RenderUsingGradientMask(LyShine::IRenderGraph* renderGraph
             }
         }
 
+#ifdef LYSHINE_ATOM_TODO // [LYN-3359] Support RTT using Atom
         // Add a primitive to do the alpha mask
         {
             // Set the texture and other render state required
@@ -817,6 +820,7 @@ void UiMaskComponent::RenderUsingGradientMask(LyShine::IRenderGraph* renderGraph
             renderGraph->AddAlphaMaskPrimitive(&m_cachedPrimitive, texture, maskTexture,
                 isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
         }
+#endif
     }
 }
 

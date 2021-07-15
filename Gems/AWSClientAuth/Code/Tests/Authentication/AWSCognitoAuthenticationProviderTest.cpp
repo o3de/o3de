@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -31,7 +31,7 @@ class AWSCognitoAuthenticationProviderTest
     {
         AWSClientAuthUnitTest::AWSClientAuthGemAllocatorFixture::SetUp();
 
-        m_cognitoAuthenticationProviderMock.Initialize(m_settingsRegistry);
+        m_cognitoAuthenticationProviderMock.Initialize();
 
         AWSCore::AWSCoreRequestBus::Handler::BusConnect();
 
@@ -98,7 +98,7 @@ TEST_F(AWSCognitoAuthenticationProviderTest, Initialize_Success)
 {
     EXPECT_CALL(m_awsResourceMappingRequestBusMock, GetResourceNameId(testing::_)).Times(1);
     AWSClientAuthUnitTest::AWSCognitoAuthenticationProviderrLocalMock mock;
-    ASSERT_TRUE(mock.Initialize(m_settingsRegistry));
+    ASSERT_TRUE(mock.Initialize());
     ASSERT_EQ(mock.m_cognitoAppClientId, AWSClientAuthUnitTest::TEST_RESOURCE_NAME_ID);
 }
 
@@ -260,5 +260,5 @@ TEST_F(AWSCognitoAuthenticationProviderTest, Initialize_Fail_EmptyResourceName)
 {
     AWSClientAuthUnitTest::AWSCognitoAuthenticationProviderrLocalMock mock;
     EXPECT_CALL(m_awsResourceMappingRequestBusMock, GetResourceNameId(testing::_)).Times(1).WillOnce(testing::Return(""));
-    ASSERT_FALSE(mock.Initialize(m_settingsRegistry));
+    ASSERT_FALSE(mock.Initialize());
 }

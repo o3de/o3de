@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -8,6 +8,7 @@
 #include <Atom/RHI/FrameScheduler.h>
 #include <Atom/RHI.Reflect/Format.h>
 
+#include <Atom/RPI.Public/Pass/AttachmentReadback.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/Pass/Specific/RenderToTexturePass.h>
@@ -77,17 +78,6 @@ namespace AZ
             params.m_viewportState = m_viewport;
 
             Base::FrameBeginInternal(params);
-
-            // for read back output
-            if (m_readback)
-            {
-                m_readback->FrameBegin(params);
-                if (m_readback->IsFinished())
-                {
-                    // Done reading. Remove the reference
-                    m_readback = nullptr;
-                }
-            }
         }
 
         void RenderToTexturePass::ResizeOutput(uint32_t width, uint32_t height)
@@ -118,9 +108,10 @@ namespace AZ
         {
             if (m_outputAttachment)
             {
-                m_readback = readback;
+                m_readbackOption = PassAttachmentReadbackOption::Output;
+                m_attachmentReadback = readback;
                 AZStd::string readbackName = AZStd::string::format("%s_%s", m_outputAttachment->GetAttachmentId().GetCStr(), GetName().GetCStr());
-                m_readback->ReadPassAttachment(m_outputAttachment.get(), AZ::Name(readbackName));
+                m_attachmentReadback->ReadPassAttachment(m_outputAttachment.get(), AZ::Name(readbackName));
             }
         }
 

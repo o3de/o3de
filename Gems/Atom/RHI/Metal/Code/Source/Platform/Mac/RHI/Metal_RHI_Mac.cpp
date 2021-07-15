@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -144,6 +144,7 @@ namespace Platform
                 }
                 mappedData += request.m_byteOffset;                
                 response.m_data = mappedData;
+                buffer.SetMapRequestOffset(request.m_byteOffset);
                 break;
             }
             default:
@@ -159,6 +160,8 @@ namespace Platform
     {
         AZ::Metal::Buffer& buffer = static_cast<AZ::Metal::Buffer&>(bufferBase);
         //Ony need to handle MTLStorageModeManaged memory.
-        SynchronizeBufferOnCPU(buffer.GetMemoryView().GetGpuAddress<id<MTLBuffer>>(), buffer.GetMemoryView().GetOffset(), buffer.GetMemoryView().GetSize());
+        SynchronizeBufferOnCPU(buffer.GetMemoryView().GetGpuAddress<id<MTLBuffer>>(),
+                               buffer.GetMemoryView().GetOffset() + buffer.GetMapRequestOffset(),
+                               buffer.GetMemoryView().GetSize());
     }
 }

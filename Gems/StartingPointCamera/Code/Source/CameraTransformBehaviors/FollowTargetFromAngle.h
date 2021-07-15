@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -23,7 +23,7 @@ namespace Camera
     public:
         ~FollowTargetFromAngle() override = default;
         AZ_RTTI(FollowTargetFromAngle, "{4DBE7A2C-8E93-422E-8942-9601A270D37E}", ICameraTransformBehavior)
-        AZ_CLASS_ALLOCATOR(FollowTargetFromAngle, AZ::SystemAllocator, 0); ///< Use AZ::SystemAllocator, otherwise a CryEngine allocator will be used. This will cause the Asset Processor to crash when this object is deleted, because of the wrong uninitialisation order
+        AZ_CLASS_ALLOCATOR(FollowTargetFromAngle, AZ::SystemAllocator, 0);
         static void Reflect(AZ::ReflectContext* reflection);
 
         //////////////////////////////////////////////////////////////////////////
