@@ -17,6 +17,10 @@ namespace AZ
 {
     namespace RPI
     {
+        class Scene;
+        class RenderPipeline;
+        class RasterPass;
+
         //! This class helps setup dynamic draw data as well as provide draw functions to draw dynamic items.
         //! The draw calls added to the context are only valid for one frame.
         //! DynamicDrawContext is only associated with
@@ -79,16 +83,19 @@ namespace AZ
             //! This function can only be called before EndInit() is called
             void AddDrawStateOptions(DrawStateOptions options);
 
+            //! Call any one of these functions to decide which scope this DynamicDrawContext may draw to.
+            //! One of the function has to be called once before EndInit() is called.
+            //! After DynamicDrawContext is initialized, the output scope can be changed. 
+            //! But it has to be called after existing draw calls are submitted.
+            //! @Param scene Draw calls made with this DynamicDrawContext will be submit to this scene
+            //! @Param pipeline Draw calls made with this DynamicDrawContext will be submit to this render pipeline
+            //! @Param pass Draw calls made with this DynamicDrawContext will only be submit to this pass
+            void SetOutputScope(Scene* scene);
+            void SetOutputScope(RenderPipeline* pipeline);
+            void SetOutputScope(RasterPass* pass);
+
             //! Finalize and validate initialization. Any initialization functions should be called before EndInit is called. 
             void EndInit();
-
-            //! Set up the DynamicDrawContext for the input Scene.
-            //! This should be called after the last frame is done and before any draw calls.
-            void SetScene(Scene* scene);
-
-            //! Set up the DynamicDrawContext for the input RenderPipeline.
-            //! This should be called after the last frame is done and before any draw calls.
-            void SetRenderPipeline(RenderPipeline* pipeline);
 
             //! Return if this DynamicDrawContext is ready to add draw calls
             bool IsReady();
@@ -177,12 +184,29 @@ namespace AZ
 
             // Submit draw items to a view
             void SubmitDrawData(ViewPtr view);
+
+            RHI::DrawListView GetDrawListForPass(const RasterPass* pass);
             
             // Reset cached draw data when frame is end (draw data was submitted)
             void FrameEnd();
 
+            void ReInit();
+
             // Get rhi pipeline state which matches current states
             const RHI::PipelineState* GetCurrentPipelineState();
+                        
+            // structure includes DrawItem and stream and index buffer index
+            static const uint32_t InvalidIndex = static_cast<uint32_t>(-1);
+            struct DrawItemInfo
+            {
+                RHI::DrawItem m_drawItem;
+                RHI::DrawItemSortKey m_sortKey;
+                uint32_t m_vertexBufferViewIndex = InvalidIndex;
+                uint32_t m_indexBufferViewIndex = InvalidIndex;
+            };
+
+            // Create a DrawItemProperties from a drawItemInfo
+            RHI::DrawItemProperties CreateDrawItemProperties(DrawItemInfo& drawItemInfo);
 
             struct MultiStates
             {
@@ -229,9 +253,20 @@ namespace AZ
             // Draw variations allowed in this DynamicDrawContext
             DrawStateOptions m_drawStateOptions;
 
-            // For generate output attachment layout and filter draw items
-            Scene* m_scene = nullptr;
+            // DrawLListTag used to help setup PipelineState's output
+            // and also for submitting draw items to views 
             RHI::DrawListTag m_drawListTag;
+
+            // Output scope related
+            enum class OutputScopeType
+            {
+                Scene = 0,
+                RenderPipeline,
+                RasterPass
+            };
+            Scene* m_scene = nullptr;
+            RasterPass* m_pass = nullptr;
+            OutputScopeType m_outputScope;
 
             // All draw items use this filter when submit them to views
             // It's set to RenderPipeline's draw filter mask if the DynamicDrawContext was created for a render pipeline.
@@ -242,17 +277,11 @@ namespace AZ
             AZStd::vector<RHI::IndexBufferView> m_cachedIndexBufferViews;
             AZStd::vector<Data::Instance<ShaderResourceGroup>> m_cachedDrawSrg;
 
-            // structure includes DrawItem and stream and index buffer index
-            static const uint32_t InvalidIndex = static_cast<uint32_t>(-1);
-            struct DrawItemInfo
-            {
-                RHI::DrawItem m_drawItem;
-                RHI::DrawItemSortKey m_sortKey;
-                uint32_t m_vertexBufferViewIndex = InvalidIndex;
-                uint32_t m_indexBufferViewIndex = InvalidIndex;
-            };
 
             AZStd::vector<DrawItemInfo> m_cachedDrawItems;
+
+            // Cached draw list for render to rasterpass
+            RHI::DrawList m_cachedDrawList;
 
             // Flags if this DynamicDrawContext can change shader variants
             bool m_supportShaderVariants = false;

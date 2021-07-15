@@ -82,7 +82,7 @@ namespace AZ::AtomBridge
                 ViewportData& viewportData = m_viewportData[viewportId];
                 for (auto& context : viewportData.m_dynamicDrawContexts)
                 {
-                    context.second->SetRenderPipeline(pipeline.get());
+                    context.second->SetOutputScope(pipeline.get());
                 }
             });
             viewportData.m_viewportDestroyedHandler = AZ::Event<AzFramework::ViewportId>::Handler([this, viewportId](AzFramework::ViewportId id)
@@ -105,7 +105,7 @@ namespace AZ::AtomBridge
             {
                 return nullptr;
             }
-            context = RPI::DynamicDrawInterface::Get()->CreateDynamicDrawContext(pipeline);
+            context = RPI::DynamicDrawInterface::Get()->CreateDynamicDrawContext();
             contextFactoryIt->second(context);
         }
 

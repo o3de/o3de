@@ -52,32 +52,12 @@ namespace AZ
             return m_bufferAlloc->Allocate(size, alignment);
         }
 
-        RHI::Ptr<DynamicDrawContext> DynamicDrawSystem::CreateDynamicDrawContext(Scene* scene)
+        RHI::Ptr<DynamicDrawContext> DynamicDrawSystem::CreateDynamicDrawContext()
         {
-            if (!scene)
-            {
-                AZ_Error("RPI", false, "Failed to create a DynamicDrawContext: the input scene is invalid");
-                return nullptr;
-            }
             RHI::Ptr<DynamicDrawContext> drawContext = aznew DynamicDrawContext();
-            drawContext->m_scene = scene;
-
             AZStd::lock_guard<AZStd::mutex> lock(m_mutexDrawContext);
             m_dynamicDrawContexts.push_back(drawContext);
             return drawContext;
-        }
-
-        RHI::Ptr<DynamicDrawContext> DynamicDrawSystem::CreateDynamicDrawContext(RenderPipeline* pipeline)
-        {
-            if (!pipeline || !pipeline->GetScene())
-            {
-                AZ_Error("RPI", false, "Failed to create a DynamicDrawContext: the input RenderPipeline is invalid or wasn't added to a Scene");
-                return nullptr;
-            }
-
-            auto context = CreateDynamicDrawContext(pipeline->GetScene());
-            context->m_drawFilter = pipeline->GetDrawFilterMask();
-            return context;
         }
 
         // [GFX TODO][ATOM-13184] Add support of draw geometry with material for DynamicDrawSystemInterface
@@ -118,6 +98,21 @@ namespace AZ
                     }
                 }
             }
+        }
+
+        AZStd::vector<RHI::DrawListView> DynamicDrawSystem::GetDrawListsForPass(const RasterPass* pass)
+        {
+            AZStd::vector<RHI::DrawListView> result;
+            AZStd::lock_guard<AZStd::mutex> lock(m_mutexDrawContext);
+            for (RHI::Ptr<DynamicDrawContext> drawContext : m_dynamicDrawContexts)
+            {
+                auto drawListView = drawContext->GetDrawListForPass(pass);
+                if (drawListView.size() > 0)
+                {
+                    result.push_back(drawListView);
+                }
+            }
+            return result;
         }
 
         void DynamicDrawSystem::FrameEnd()
