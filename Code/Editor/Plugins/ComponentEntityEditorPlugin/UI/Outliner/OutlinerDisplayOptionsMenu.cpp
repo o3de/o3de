@@ -20,7 +20,7 @@ namespace EntityOutliner
         sortManually->setData(static_cast<int>(DisplaySortMode::Manually));
         sortManually->setCheckable(true);
 
-        auto sortAtoZ = addAction(QIcon(QStringLiteral(":/Outliner/sort_a_to_z.svg")), tr("Sort: A to Z"));
+        auto sortAtoZ = addAction(QIcon(QStringLiteral(":/Outliner/sort_a_to_z.svg")), tr("Sort: A to ZX"));
         sortAtoZ->setData(static_cast<int>(DisplaySortMode::AtoZ));
         sortAtoZ->setCheckable(true);
 
