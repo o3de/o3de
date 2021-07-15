@@ -157,8 +157,11 @@ ScriptContextDebug::EnumRegisteredClasses(EnumClass enumClass, EnumMethod enumMe
             lua_pop(l, 2); // pop the Class name and behaviorClass
 
             lua_pushnil(l);
+
+            // iterate over the key/value pairs
             while (lua_next(l, -2) != 0)
             {
+                // if key: string value: function
                 if (lua_isstring(l, -2) && lua_isfunction(l, -1))
                 {
                     const char* name = lua_tostring(l, -2);
@@ -167,6 +170,7 @@ ScriptContextDebug::EnumRegisteredClasses(EnumClass enumClass, EnumMethod enumMe
                         bool isRead = true;
                         bool isWrite = true;
 
+                        // check if there is a getter provided
                         lua_getupvalue(l, -1, 1);
                         if (lua_isnil(l, -1))
                         {
@@ -174,6 +178,7 @@ ScriptContextDebug::EnumRegisteredClasses(EnumClass enumClass, EnumMethod enumMe
                         }
                         lua_pop(l, 1);
 
+                        // check if there is a setter provided
                         lua_getupvalue(l, -1, 2);
                         if (lua_isnil(l, -1))
                         {
@@ -181,6 +186,7 @@ ScriptContextDebug::EnumRegisteredClasses(EnumClass enumClass, EnumMethod enumMe
                         }
                         lua_pop(l, 1);
 
+                        // enumerate the remaining property
                         if (!enumProperty(&behaviorClass->m_typeId, name, isRead, isWrite, userData))
                         {
                             lua_pop(l, 5);
@@ -189,21 +195,30 @@ ScriptContextDebug::EnumRegisteredClasses(EnumClass enumClass, EnumMethod enumMe
                     }
                     else
                     {
+                        // for any non-built in methods
                         if (strncmp(name, "__", 2) != 0)
                         {
                             const char* dbgParamInfo = NULL;
-                            lua_getupvalue(l, -1, 2);
+
+                            // attempt to get the name
+                            bool popDebugName = lua_getupvalue(l, -1, 2) != nullptr;
                             if (lua_isstring(l, -1))
                             {
                                 dbgParamInfo = lua_tostring(l, -1);
                             }
 
+                            // enumerate the method's parameters
                             if (!enumMethod(&behaviorClass->m_typeId, name, dbgParamInfo, userData))
                             {
                                 lua_pop(l, 6);
                                 return;
                             }
-                            lua_pop(l, 1); // pop the DBG name
+
+                            // if we were able to get the name, pop it from the stack
+                            if (popDebugName)
+                            {
+                                lua_pop(l, 1);
+                            }
                         }
                     }
                 }
