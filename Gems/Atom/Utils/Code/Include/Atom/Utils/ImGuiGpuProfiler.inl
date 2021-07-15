@@ -14,6 +14,15 @@
 
 #include <inttypes.h>
 
+
+
+
+#include <Atom/RHI/FrameScheduler.h>
+#include <Atom/RHI/Device.h>
+#include <Atom/RHI/RHIUtils.h>
+#include <Atom/RHI/RHISystemInterface.h>
+#include "../../../Gems/ImGui/External/ImGui/v1.82/imgui/imgui.h"
+
 namespace AZ
 {
     namespace Render
@@ -86,6 +95,11 @@ namespace AZ
                     functor();
                 }
                 drawList->AddText(font, font->FontSize, pos, ImGui::GetColorU32(ImGuiCol_Text), text, nullptr, size.x);
+            }
+
+            inline static constexpr size_t BytesToMb(AZStd::size_t bytesSize)
+            {
+                return bytesSize / 1073741824;
             }
         } // namespace GpuProfilerImGuiHelper 
 
@@ -1025,6 +1039,84 @@ namespace AZ
             }
         }
 
+        // --- ImGuiGpuMemoryView ---
+
+        inline void ImGuiGpuMemoryView::DrawGpuMemoryWindow(bool& draw)
+        {
+            if (!draw)
+            {
+                return;
+            }
+             
+            if (ImGui::Begin("Gpu Memory Profiler", &draw, ImGuiViewportFlags_None))
+            {
+                if(ImGui::Button(m_paused ? "Resume" : "Pause")){
+                    m_paused = !m_paused;
+                }
+
+                // Collect and save new GPU memory usage data
+                if (!m_paused) {
+                    auto sysint = AZ::RHI::RHISystemInterface::Get();
+                    sysint->ModifyFrameSchedulerStatisticsFlags(AZ::RHI::FrameSchedulerStatisticsFlags::GatherMemoryStatistics, true);
+                    auto stat = sysint->GetMemoryStatistics();
+                    if (stat != nullptr)
+                    {
+                        m_savedPools = stat->m_pools;
+                        m_savedHeaps = stat->m_heaps;
+                    }
+                }
+                if (ImGui::TreeNode("Pools"))
+                {
+                    for (const auto& pool : m_savedPools)
+                    {
+                        const auto name = pool.m_name;
+                        if (ImGui::TreeNode(name.GetCStr()))
+                        {
+                            ImGui::Text("Device Memory: %zu", pool.m_memoryUsage.GetHeapMemoryUsage(AZ::RHI::HeapMemoryLevel::Device).m_residentInBytes.load());
+                            ImGui::SameLine();
+                            ImGui::Text("Host Memory: %zu", pool.m_memoryUsage.GetHeapMemoryUsage(AZ::RHI::HeapMemoryLevel::Host).m_residentInBytes.load());
+
+                            for (const auto& image : pool.m_images)
+                            {
+                                if (ImGui::TreeNode(image.m_name.GetCStr()))
+                                {
+                                    ImGui::Text("Image size: %zu", image.m_sizeInBytes);
+                                    //image.m_bindFlags
+                                    ImGui::TreePop();
+                                }
+                            }
+
+                            for (const auto& buf : pool.m_buffers)
+                            {
+                                if (ImGui::TreeNode(buf.m_name.GetCStr()))
+                                {
+                                    ImGui::Text("Buffer size: %zu", buf.m_sizeInBytes);
+                                    ImGui::TreePop();
+                                }
+                            }
+                            ImGui::TreePop();
+                        }
+                    }
+                    ImGui::TreePop();
+                }
+                if (ImGui::TreeNode("Heaps"))
+                {
+                    for (const auto& heap : m_savedHeaps)
+                    {
+                        if (ImGui::TreeNode(heap.m_name.GetCStr()))
+                        {
+                            ImGui::Text("Usage: %zu / %zu / %zu",
+                                GpuProfilerImGuiHelper::BytesToMb(heap.m_memoryUsage.m_residentInBytes.load()),
+                                GpuProfilerImGuiHelper::BytesToMb(heap.m_memoryUsage.m_reservedInBytes.load()),
+                                GpuProfilerImGuiHelper::BytesToMb(heap.m_memoryUsage.m_budgetInBytes));
+                            ImGui::TreePop();
+                        }
+                    }
+                    ImGui::TreePop();
+                }
+            }
+        }
+
         // --- ImGuiGpuProfiler ---
 
         inline void ImGuiGpuProfiler::Draw(bool& draw, RHI::Ptr<RPI::ParentPass> rootPass)
@@ -1045,6 +1137,8 @@ namespace AZ
                 {
                     rootPass->SetPipelineStatisticsQueryEnabled(m_drawPipelineStatisticsView);
                 }
+                ImGui::Spacing();
+                ImGui::Checkbox("Enable GpuMemoryView", &m_drawGpuMemoryView);
             });
 
             // Draw the PipelineStatistics window.
@@ -1052,6 +1146,9 @@ namespace AZ
 
             // Draw the PipelineStatistics window.
             m_pipelineStatisticsView.DrawPipelineStatisticsWindow(m_drawPipelineStatisticsView, rootPassEntryRef, m_passEntryDatabase, rootPass);
+
+            // Draw the GpuMemory window.
+            m_gpuMemoryView.DrawGpuMemoryWindow(m_drawGpuMemoryView);
 
             //closing window
             if (wasDraw && !draw)

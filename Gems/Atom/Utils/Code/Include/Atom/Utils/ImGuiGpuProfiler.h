@@ -13,6 +13,13 @@
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/string/string.h>
 
+
+
+#include <AzCore/Name/Name.h>
+#include <Atom/RHI/MemoryStatisticsBus.h>
+#include <Atom/RHI/MemoryStatisticsBuilder.h>
+#include "../../../../../RPI/Code/Include/Atom/RPI.Public/Pass/Pass.h"
+
 namespace AZ
 {
     namespace Render
@@ -250,6 +257,15 @@ namespace AZ
 
         };
 
+        class ImGuiGpuMemoryView
+        {
+        public:
+            void DrawGpuMemoryWindow(bool& draw);
+        private:
+            bool m_paused = true;
+            AZStd::vector<AZ::RHI::MemoryStatistics::Pool> m_savedPools;
+            AZStd::vector<AZ::RHI::MemoryStatistics::Heap> m_savedHeaps;
+        };
         class ImGuiGpuProfiler
         {
         public:
@@ -275,9 +291,11 @@ namespace AZ
 
             bool m_drawTimestampView = false;
             bool m_drawPipelineStatisticsView = false;
+            bool m_drawGpuMemoryView = false;
 
             ImGuiTimestampView m_timestampView;
             ImGuiPipelineStatisticsView m_pipelineStatisticsView;
+            ImGuiGpuMemoryView m_gpuMemoryView;
         };
     } //namespace Render
 } // namespace AZ

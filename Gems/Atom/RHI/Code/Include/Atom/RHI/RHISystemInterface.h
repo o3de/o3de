@@ -13,6 +13,7 @@
 #include <Atom/RHI.Reflect/FrameSchedulerEnums.h>
 #include <Atom/RHI/DrawListTagRegistry.h>
 
+#include <Atom/RHI.Reflect/MemoryStatistics.h>
 namespace AZ
 {
     namespace RHI
@@ -54,6 +55,8 @@ namespace AZ
             virtual const RHI::CpuTimingStatistics* GetCpuTimingStatistics() const = 0;
 
             virtual const RHI::TransientAttachmentStatistics* GetTransientAttachmentStatistics() const = 0;
+
+            virtual const RHI::MemoryStatistics* GetMemoryStatistics() const = 0;
 
             virtual const RHI::TransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const = 0;
 
