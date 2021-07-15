@@ -90,6 +90,7 @@ namespace EMotionFX
             /// Enables rendering of the actor.
             virtual bool GetRenderCharacter() const = 0;
             virtual void SetRenderCharacter(bool enable) = 0;
+            virtual bool GetRenderActorVisible() const = 0;
 
             /// Returns skinning method used by the actor.
             virtual SkinningMethod GetSkinningMethod() const = 0;

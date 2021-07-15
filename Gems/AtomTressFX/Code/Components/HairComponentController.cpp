@@ -226,7 +226,7 @@ namespace AZ
 
                 // Optional - move this to be done by the feature processor
  //               m_renderObject->SetFrameDeltaTime(deltaTime);
-
+                UpdateVisibility();
                 UpdateActorMatrices();
             }
 
@@ -237,6 +237,11 @@ namespace AZ
 
             bool HairComponentController::UpdateActorMatrices()
             {
+                if (!m_renderObject->IsVisible())
+                {
+                    return false;
+                }
+
                 EMotionFX::ActorInstance* actorInstance = nullptr;
                 EMotionFX::Integration::ActorComponentRequestBus::EventResult(
                     actorInstance, m_entityId, &EMotionFX::Integration::ActorComponentRequestBus::Events::GetActorInstance);
@@ -271,6 +276,19 @@ namespace AZ
                 m_entityWorldMatrix = Matrix3x4::CreateFromTransform(actorInstance->GetWorldSpaceTransform().ToAZTransform());
                 m_renderObject->UpdateBoneMatrices(m_entityWorldMatrix, m_cachedHairBoneMatrices);
                 return true;
+            }
+
+            void HairComponentController::UpdateVisibility()
+            {
+                if (!m_renderObject)
+                {
+                    return;
+                }
+
+                bool visible = false;
+                EMotionFX::Integration::ActorComponentRequestBus::EventResult(
+                    visible, m_entityId, &EMotionFX::Integration::ActorComponentRequestBus::Events::GetRenderActorVisible);
+                m_renderObject->SetVisible(visible);
             }
 
             // The hair object will only be created when 1) The hair asset is loaded AND 2) The actor instance is created.

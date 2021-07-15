@@ -298,6 +298,16 @@ namespace AZ
                     m_simCB->g_ResetPositions = (m_SimulationFrame < 2) ? 1.0f : 0.0f;
                     m_SimulationFrame++;
                 }
+
+                bool IsVisible()
+                {
+                    return m_visible;
+                }
+
+                void SetVisible(bool visible)
+                {
+                    m_visible = visible;
+                }
                 //!-----------------------------------------------------------------
 
             private:
@@ -341,6 +351,8 @@ namespace AZ
 
                 // LOD calculations factor
                 float m_LODHairDensity = 1.0f;
+
+                bool m_visible = true;
 
                 // Adi - check required: frame counter for wind effect
                 uint32_t m_SimulationFrame = 0;
