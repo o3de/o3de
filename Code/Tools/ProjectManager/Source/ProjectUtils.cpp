@@ -243,10 +243,11 @@ namespace O3DE::ProjectManager
             return true;
         }
 
-        static bool ClearProjectBuildArtifactsAndCache(const QString& path, QWidget* parent)
+        static bool ClearProjectBuildArtifactsAndCache(const QString& origPath, const QString& newPath, QWidget* parent)
         {
-            QDir buildDirectory = QDir(path);
-            if (!buildDirectory.cd(ProjectBuildDirectoryName) || !DeleteProjectFiles(buildDirectory.path(), true))
+            QDir buildDirectory = QDir(newPath);
+            if ((!buildDirectory.cd(ProjectBuildDirectoryName) || !DeleteProjectFiles(buildDirectory.path(), true))
+                && QDir(origPath).cd(ProjectBuildDirectoryName))
             {
                 QMessageBox::warning(
                     parent,
@@ -258,8 +259,9 @@ namespace O3DE::ProjectManager
                 return false;
             }
 
-            QDir cacheDirectory = QDir(path);
-            if (!cacheDirectory.cd(ProjectCacheDirectoryName) || !DeleteProjectFiles(cacheDirectory.path(), true))
+            QDir cacheDirectory = QDir(newPath);
+            if ((!cacheDirectory.cd(ProjectCacheDirectoryName) || !DeleteProjectFiles(cacheDirectory.path(), true))
+                && QDir(origPath).cd(ProjectCacheDirectoryName))
             {
                 QMessageBox::warning(
                     parent,
@@ -316,7 +318,7 @@ namespace O3DE::ProjectManager
             return copyResult;
         }
 
-        bool CopyProject(const QString& origPath, const QString& newPath, QWidget* parent)
+        bool CopyProject(const QString& origPath, const QString& newPath, QWidget* parent, bool skipRegister)
         {
             // Disallow copying from or into subdirectory
             if (IsDirectoryDescedent(origPath, newPath) || IsDirectoryDescedent(newPath, origPath))
@@ -364,7 +366,7 @@ namespace O3DE::ProjectManager
             QStringList copyFilesSkippedPaths(skippedPaths);
             bool success = CopyDirectory(progressDialog, origPath, newPath, copyFilesSkippedPaths, filesToCopyCount, numFilesCopied,
                 totalSizeInBytes, copiedFileSize, showIgnoreFileDialog);
-            if (success)
+            if (success && !skipRegister)
             {
                 // Phase 2: Register project
                 success = RegisterProject(newPath);
@@ -397,12 +399,12 @@ namespace O3DE::ProjectManager
             return false;
         }
 
-        bool MoveProject(QString origPath, QString newPath, QWidget* parent, bool ignoreRegister)
+        bool MoveProject(QString origPath, QString newPath, QWidget* parent, bool skipRegister)
         {
             origPath = QDir::toNativeSeparators(origPath);
             newPath = QDir::toNativeSeparators(newPath);
 
-            if (!WarnDirectoryOverwrite(newPath, parent) || (!ignoreRegister && !UnregisterProject(origPath)))
+            if (!WarnDirectoryOverwrite(newPath, parent) || (!skipRegister && !UnregisterProject(origPath)))
             {
                 return false;
             }
@@ -425,10 +427,10 @@ namespace O3DE::ProjectManager
             else
             {
                 // If directoy rename succeeded then build and cache directories need to be deleted seperately
-                ClearProjectBuildArtifactsAndCache(newPath, parent);
+                ClearProjectBuildArtifactsAndCache(origPath, newPath, parent);
             }
 
-            if (!ignoreRegister && !RegisterProject(newPath))
+            if (!skipRegister && !RegisterProject(newPath))
             {
                 return false;
             }
