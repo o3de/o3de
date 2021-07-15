@@ -215,7 +215,7 @@ namespace TestImpact
             }
             default:
             {
-                AZ_Error("TestRunCompleteCallback", true, "Unexpected test result to handle: %u", aznumeric_cast<AZ::u32>(testRun.GetResult()));
+                AZ_Error("TestRunCompleteCallback", false, "Unexpected test result to handle: %u", aznumeric_cast<AZ::u32>(testRun.GetResult()));
             }
             }
 
