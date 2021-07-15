@@ -868,7 +868,16 @@ void CViewportTitleDlg::OnBnClickedMuteAudio()
 
 void CViewportTitleDlg::UpdateMuteActionText()
 {
-    m_audioMuteAction->setText(gSettings.bMuteAudio ? tr("Un-mute Audio") : tr("Mute Audio"));
+    if (!Audio::AudioSystemRequestBus::HasHandlers())
+    {
+        m_audioMuteAction->setEnabled(false);
+        m_audioMuteAction->setText(tr("Mute Audio: Enable Audio Gem"));
+    }
+    else
+    {
+        m_audioMuteAction->setEnabled(true);
+        m_audioMuteAction->setText(gSettings.bMuteAudio ? tr("Un-mute Audio") : tr("Mute Audio"));
+    }
 }
 
 void CViewportTitleDlg::OnHMDInitialized()
