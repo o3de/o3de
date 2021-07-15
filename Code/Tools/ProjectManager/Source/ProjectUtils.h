@@ -7,6 +7,8 @@
 #pragma once
 
 #include <ScreenDefs.h>
+#include <ProjectInfo.h>
+
 #include <QWidget>
 #include <AzCore/Outcome/Outcome.h>
 
