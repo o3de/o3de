@@ -476,7 +476,7 @@ namespace TestImpact
         AZStd::optional<TestRunCompleteCallback> testCompleteCallback,
         AZStd::optional<AZStd::function<void(const AZStd::vector<TestJob>& jobs)>> updateCoverage)
     {
-        auto sequenceTimeout = globalTimeout;
+        AZStd::optional<AZStd::chrono::milliseconds> sequenceTimeout = globalTimeout;
 
         // Extract the client facing representation of selected, discarded and drafted test targets
         const Client::TestRunSelection selectedTests(
