@@ -22,6 +22,9 @@ namespace Audio
     extern CAudioLogger g_audioLogger;
     static constexpr const char AudioControlsBasePath[]{ "libs/gameaudio/" };
 
+    // Save off the threadId of the "Main Thread" that was used to connect EBuses.
+    AZStd::thread_id g_mainThreadId;
+
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     // CAudioThread
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -76,6 +79,8 @@ namespace Audio
     CAudioSystem::CAudioSystem()
         : m_bSystemInitialized(false)
     {
+        g_mainThreadId = AZStd::this_thread::get_id();
+
         m_apAudioProxies.reserve(Audio::CVars::s_AudioObjectPoolSize);
         m_apAudioProxiesToBeFreed.reserve(16);
         m_controlsPath.assign(Audio::AudioControlsBasePath);
@@ -98,7 +103,7 @@ namespace Audio
     {
         CAudioRequestInternal request(audioRequestData);
 
-        AZ_Assert(gEnv->mMainThreadId == CryGetCurrentThreadId(), "AudioSystem::PushRequest - called from non-Main thread!");
+        AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::PushRequest - called from non-Main thread!");
         AZ_Assert(0 == (request.nFlags & eARF_THREAD_SAFE_PUSH), "AudioSystem::PushRequest - called with flag THREAD_SAFE_PUSH!");
         AZ_Assert(0 == (request.nFlags & eARF_EXECUTE_BLOCKING), "AudioSystem::PushRequest - called with flag EXECUTE_BLOCKING!");
 
@@ -113,7 +118,7 @@ namespace Audio
 
         CAudioRequestInternal request(audioRequestData);
 
-        AZ_Assert(gEnv->mMainThreadId == CryGetCurrentThreadId(), "AudioSystem::PushRequestBlocking - called from non-Main thread!");
+        AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::PushRequestBlocking - called from non-Main thread!");
         AZ_Assert(0 != (request.nFlags & eARF_EXECUTE_BLOCKING), "AudioSystem::PushRequestBlocking - called without EXECUTE_BLOCKING flag!");
         AZ_Assert(0 == (request.nFlags & eARF_THREAD_SAFE_PUSH), "AudioSystem::PushRequestBlocking - called with THREAD_SAFE_PUSH flag!");
 
@@ -138,7 +143,7 @@ namespace Audio
         const EAudioRequestType requestType,
         const TATLEnumFlagsType specificRequestMask)
     {
-        AZ_Assert(gEnv->mMainThreadId == CryGetCurrentThreadId(), "AudioSystem::AddRequestListener - called from a non-Main thread!");
+        AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::AddRequestListener - called from a non-Main thread!");
 
         if (func)
         {
@@ -154,7 +159,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CAudioSystem::RemoveRequestListener(AudioRequestCallbackType func, void* const callbackOwner)
     {
-        AZ_Assert(gEnv->mMainThreadId == CryGetCurrentThreadId(), "AudioSystem::RemoveRequestListener - called from a non-Main thread!");
+        AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::RemoveRequestListener - called from a non-Main thread!");
 
         SAudioEventListener listener;
         listener.m_callbackOwner = callbackOwner;
@@ -166,7 +171,7 @@ namespace Audio
     void CAudioSystem::ExternalUpdate()
     {
         // Main Thread!
-        AZ_Assert(gEnv->mMainThreadId == CryGetCurrentThreadId(), "AudioSystem::ExternalUpdate - called from non-Main thread!");
+        AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::ExternalUpdate - called from non-Main thread!");
 
         // Notify callbacks on the pending callbacks queue...
         // These are requests that were completed then queued for callback processing to happen here.
@@ -241,7 +246,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     bool CAudioSystem::Initialize()
     {
-        AZ_Assert(gEnv->mMainThreadId == CryGetCurrentThreadId(), "AudioSystem::Initialize - called from a non-Main thread!");
+        AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::Initialize - called from a non-Main thread!");
 
         if (!m_bSystemInitialized)
         {
@@ -264,7 +269,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CAudioSystem::Release()
     {
-        AZ_Assert(gEnv->mMainThreadId == CryGetCurrentThreadId(), "AudioSystem::Release - called from a non-Main thread!");
+        AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::Release - called from a non-Main thread!");
 
         for (auto audioProxy : m_apAudioProxies)
         {
@@ -330,14 +335,14 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     bool CAudioSystem::ReserveAudioListenerID(TAudioObjectID& rAudioObjectID)
     {
-        AZ_Assert(gEnv->mMainThreadId == CryGetCurrentThreadId(), "AudioSystem::ReserveAudioListenerID - called from a non-Main thread!");
+        AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::ReserveAudioListenerID - called from a non-Main thread!");
         return m_oATL.ReserveAudioListenerID(rAudioObjectID);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     bool CAudioSystem::ReleaseAudioListenerID(TAudioObjectID const nAudioObjectID)
     {
-        AZ_Assert(gEnv->mMainThreadId == CryGetCurrentThreadId(), "AudioSystem::ReleaseAudioListenerID - called from a non-Main thread!");
+        AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::ReleaseAudioListenerID - called from a non-Main thread!");
         return m_oATL.ReleaseAudioListenerID(nAudioObjectID);
     }
 
@@ -384,7 +389,7 @@ namespace Audio
     void CAudioSystem::RefreshAudioSystem([[maybe_unused]] const char* const levelName)
     {
     #if !defined(AUDIO_RELEASE)
-        AZ_Assert(gEnv->mMainThreadId == CryGetCurrentThreadId(), "AudioSystem::RefreshAudioSystem - called from a non-Main thread!");
+        AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::RefreshAudioSystem - called from a non-Main thread!");
 
         // Get the controls path and a level-specific preload Id first.
         // This will be passed with the request so that it doesn't have to lookup this data
@@ -408,7 +413,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     IAudioProxy* CAudioSystem::GetFreeAudioProxy()
     {
-        AZ_Assert(gEnv->mMainThreadId == CryGetCurrentThreadId(), "AudioSystem::GetFreeAudioProxy - called from a non-Main thread!");
+        AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::GetFreeAudioProxy - called from a non-Main thread!");
         CAudioProxy* audioProxy = nullptr;
 
         if (!m_apAudioProxies.empty())
@@ -434,7 +439,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CAudioSystem::FreeAudioProxy(IAudioProxy* const audioProxyI)
     {
-        AZ_Assert(gEnv->mMainThreadId == CryGetCurrentThreadId(), "AudioSystem::FreeAudioProxy - called from a non-Main thread!");
+        AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::FreeAudioProxy - called from a non-Main thread!");
         auto const audioProxy = static_cast<CAudioProxy*>(audioProxyI);
 
         if (AZStd::find(m_apAudioProxiesToBeFreed.begin(), m_apAudioProxiesToBeFreed.end(), audioProxy) != m_apAudioProxiesToBeFreed.end() || AZStd::find(m_apAudioProxies.begin(), m_apAudioProxies.end(), audioProxy) != m_apAudioProxies.end())
@@ -468,7 +473,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     const char* CAudioSystem::GetAudioControlName([[maybe_unused]] const EAudioControlType controlType, [[maybe_unused]] const TATLIDType atlID) const
     {
-        AZ_Assert(gEnv->mMainThreadId == CryGetCurrentThreadId(), "AudioSystem::GetAudioControlName - called from non-Main thread!");
+        AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::GetAudioControlName - called from non-Main thread!");
         const char* sResult = nullptr;
 
     #if !defined(AUDIO_RELEASE)
@@ -523,7 +528,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     const char* CAudioSystem::GetAudioSwitchStateName([[maybe_unused]] const TAudioControlID switchID, [[maybe_unused]] const TAudioSwitchStateID stateID) const
     {
-        AZ_Assert(gEnv->mMainThreadId == CryGetCurrentThreadId(), "AudioSystem::GetAudioSwitchStateName - called from non-Main thread!");
+        AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::GetAudioSwitchStateName - called from non-Main thread!");
         const char* sResult = nullptr;
 
     #if !defined(AUDIO_RELEASE)
@@ -637,7 +642,7 @@ namespace Audio
 
         AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::Audio, "Normal Request: %s", request.ToString().c_str());
 
-        AZ_Assert(gEnv->mMainThreadId != CryGetCurrentThreadId(), "AudioSystem::ProcessRequestByPriority - called from Main thread!");
+        AZ_Assert(g_mainThreadId != AZStd::this_thread::get_id(), "AudioSystem::ProcessRequestByPriority - called from Main thread!");
 
         if (m_oATL.CanProcessRequests())
         {
@@ -697,7 +702,7 @@ namespace Audio
 #if !defined(AUDIO_RELEASE)
     void CAudioSystem::DrawAudioDebugData()
     {
-        AZ_Assert(gEnv->mMainThreadId == CryGetCurrentThreadId(), "AudioSystem::DrawAudioDebugData - called from non-Main thread!");
+        AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::DrawAudioDebugData - called from non-Main thread!");
 
         if (g_audioCVars.m_nDrawAudioDebug > 0)
         {
