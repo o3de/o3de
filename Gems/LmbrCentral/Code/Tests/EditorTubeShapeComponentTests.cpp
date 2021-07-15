@@ -5,8 +5,6 @@
  *
  */
 
-#pragma once
-
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzTest/AzTest.h>
 #include <Source/Shape/EditorTubeShapeComponentMode.h>
