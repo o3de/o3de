@@ -484,7 +484,7 @@ namespace {{ Component.attrib['Namespace'] }}
 
         {{ DeclareNetworkPropertyGetters(Component, 'Authority', 'Server', true)|indent(8) -}}
         {{ DeclareNetworkPropertyGetters(Component, 'Authority', 'Client', true)|indent(8) -}}
-	{{ DeclareNetworkPropertyGetters(Component, 'Autonomous', 'Authority', true)|indent(8) -}}
+        {{ DeclareNetworkPropertyGetters(Component, 'Autonomous', 'Authority', true)|indent(8) -}}
         {{ DeclareRpcInvocations(Component, 'Server', 'Authority', true)|indent(8) -}}
         {{ AutoComponentMacros.DeclareRpcHandlers(Component, 'Authority', 'Client', false)|indent(8) -}}
         {{ AutoComponentMacros.DeclareRpcSignals(Component, 'Authority', 'Client')|indent(8) -}}
