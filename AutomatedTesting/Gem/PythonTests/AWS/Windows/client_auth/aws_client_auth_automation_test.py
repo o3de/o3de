@@ -36,9 +36,9 @@ logger = logging.getLogger(__name__)
 @pytest.mark.parametrize('session_name', ['o3de-Automation-session'])
 @pytest.mark.usefixtures('cdk')
 @pytest.mark.parametrize('deployment_params', [[]])
-class TestAWSClientAuthPasswordSignIn(object):
+class TestAWSClientAuthWindows(object):
     """
-    Test class to verify AWS Cognito IDP Password sign in and Cognito Identity pool authenticated authorization.
+    Test class to verify AWS Client Auth gem features on Windows.
     """
 
     @pytest.mark.parametrize('level', ['AWS/ClientAuth'])
@@ -51,6 +51,8 @@ class TestAWSClientAuthPasswordSignIn(object):
                                    asset_processor: pytest.fixture
                                    ):
         """
+        Test to verify AWS Cognito Identity pool anonymous authorization.
+
         Setup: Deploys cdk and updates resource mapping file.
         Tests: Getting AWS credentials for no signed in user.
         Verification: Log monitor looks for success credentials log.
@@ -82,6 +84,8 @@ class TestAWSClientAuthPasswordSignIn(object):
                                          aws_utils: pytest.fixture
                                          ):
         """
+        Test to verify AWS Cognito IDP Password sign in and Cognito Identity pool authenticated authorization.
+
         Setup: Deploys cdk and updates resource mapping file.
         Tests: Sign up new test user, admin confirm the user, sign in and get aws credentials.
         Verification: Log monitor looks for success credentials log.
