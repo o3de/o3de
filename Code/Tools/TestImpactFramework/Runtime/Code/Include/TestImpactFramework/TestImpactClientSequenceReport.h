@@ -63,19 +63,19 @@ namespace TestImpact
             size_t GetNumUnexecutedTests() const;
 
             //! Returns the set of test runs that executed successfully with no failing tests.
-            AZStd::vector<TestRun> GetPassingTests() const;
+            const AZStd::vector<TestRun>& GetPassingTests() const;
 
             //! Returns the set of test runs that executed successfully but had one or more failing tests.
-            AZStd::vector<TestRunWithTestFailures> GetFailingTests() const;
+            const AZStd::vector<TestRunWithTestFailures>& GetFailingTests() const;
 
             //! Returns the set of test runs that failed to execute.
-            AZStd::vector<TestRun> GetExecutionFailureTests() const;
+            const AZStd::vector<TestRun>& GetExecutionFailureTests() const;
 
             //! Returns the set of test runs that executed successfully but were terminated prematurely due to timing out.
-            AZStd::vector<TestRun> GetTimedOutTests() const;
+            const AZStd::vector<TestRun>& GetTimedOutTests() const;
 
             //! Returns the set of test runs that were queued up for execution but did not get the opportunity to execute.
-            AZStd::vector<TestRun> GetUnexecutedTests() const;
+            const AZStd::vector<TestRun>& GetUnexecutedTests() const;
         private:
             TestSequenceResult m_result;
             AZStd::chrono::high_resolution_clock::time_point m_startTime;

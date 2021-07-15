@@ -94,27 +94,27 @@ namespace TestImpact
             return m_unexecutedTests.size();
         }
 
-        AZStd::vector<TestRun> TestRunReport::GetPassingTests() const
+        const AZStd::vector<TestRun>& TestRunReport::GetPassingTests() const
         {
             return m_passingTests;
         }
 
-        AZStd::vector<TestRunWithTestFailures> TestRunReport::GetFailingTests() const
+        const AZStd::vector<TestRunWithTestFailures>& TestRunReport::GetFailingTests() const
         {
             return m_failingTests;
         }
 
-        AZStd::vector<TestRun> TestRunReport::GetExecutionFailureTests() const
+        const AZStd::vector<TestRun>& TestRunReport::GetExecutionFailureTests() const
         {
             return m_executionFailureTests;
         }
 
-        AZStd::vector<TestRun> TestRunReport::GetTimedOutTests() const
+        const AZStd::vector<TestRun>& TestRunReport::GetTimedOutTests() const
         {
             return m_timedOutTests;
         }
 
-        AZStd::vector<TestRun> TestRunReport::GetUnexecutedTests() const
+        const AZStd::vector<TestRun>& TestRunReport::GetUnexecutedTests() const
         {
             return m_unexecutedTests;
         }
