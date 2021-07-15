@@ -64,8 +64,6 @@ namespace Multiplayer
         Authority    // An authoritative proxy on a server (full authority)
     };
 
-    static const char* NetEntityRoleString[] = { "InvalidRole", "Client", "Autonomous", "Server", "Authority" };
-    
     enum class ComponentSerializationType : uint8_t
     {
         Properties,

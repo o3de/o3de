@@ -11,9 +11,8 @@
 #include <ConnectionData/ClientToServerConnectionData.h>
 #include <ConnectionData/ServerToClientConnectionData.h>
 #include <EntityDomains/FullOwnershipEntityDomain.h>
-#include <ReplicationWindows/ServerToClientReplicationWindow.h>
 #include <ReplicationWindows/NullReplicationWindow.h>
-
+#include <ReplicationWindows/ServerToClientReplicationWindow.h>
 #include <Source/AutoGen/AutoComponentTypes.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
