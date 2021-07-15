@@ -1640,7 +1640,7 @@ AZ::FFont::DrawParameters AZ::FFont::ExtractDrawParameters(const AzFramework::Te
     internalParams.m_ctx.EnableFrame(false);
     internalParams.m_ctx.SetProportional(!params.m_monospace && params.m_scaleWithWindow);
     internalParams.m_ctx.SetSizeIn800x600(params.m_scaleWithWindow && params.m_virtual800x600ScreenSize);
-    internalParams.m_ctx.SetSize(AZVec2ToLYVec2(AZ::Vector2(params.m_textSizeFactor, params.m_textSizeFactor) * params.m_scale));
+    internalParams.m_ctx.SetSize(AZVec2ToLYVec2(AZ::Vector2(params.m_textSizeFactor, params.m_textSizeFactor) * params.m_scale * internalParams.m_viewportContext->GetDpiScalingFactor()));
     internalParams.m_ctx.SetLineSpacing(params.m_lineSpacing);
 
     if (params.m_hAlign != AzFramework::TextHorizontalAlignment::Left ||
@@ -1682,7 +1682,7 @@ AZ::FFont::DrawParameters AZ::FFont::ExtractDrawParameters(const AzFramework::Te
         {
             posY -= textSize.y;
         }
-        internalParams.m_size = AZ::Vector2{textSize.x, textSize.y};
+        internalParams.m_size = AZ::Vector2{textSize.x, textSize.y} * internalParams.m_viewportContext->GetDpiScalingFactor();
     }
     SetCommonContextFlags(internalParams.m_ctx, params);
     internalParams.m_ctx.m_drawTextFlags |= eDrawText_2D;
