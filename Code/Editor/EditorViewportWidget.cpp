@@ -455,7 +455,6 @@ void EditorViewportWidget::Update()
         auto m = AZMatrix3x4ToLYMatrix3x4(matrix);
 
         SetViewTM(m);
-        SetFOV(cameraState.m_fovOrZoom);
         m_Camera.SetZRange(cameraState.m_nearClip, cameraState.m_farClip);
     }
 
@@ -2608,6 +2607,8 @@ void EditorViewportWidget::SetDefaultCamera()
     GetViewManager()->SetCameraObjectId(m_cameraObjectId);
     SetName(m_defaultViewName);
     SetViewTM(m_defaultViewTM);
+    // Ensure the FOV matches our internally stored setting
+    SetFOV(GetFOV());
     PostCameraSet();
 }
 
