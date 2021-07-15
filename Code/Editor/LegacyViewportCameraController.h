@@ -69,7 +69,7 @@ namespace SandboxEditor
 
         AZ::RPI::ViewportContextPtr GetViewportContext();
 
-        bool HandleMouseMove(const AzFramework::ScreenPoint& currentMousePos, const AzFramework::ScreenPoint& previousMousePos);
+        bool HandleMouseMove(int dx, int dy);
         bool HandleMouseWheel(float zDelta);
         bool IsKeyDown(Qt::Key key) const;
         void UpdateCursorCapture(bool shouldCaptureCursor);

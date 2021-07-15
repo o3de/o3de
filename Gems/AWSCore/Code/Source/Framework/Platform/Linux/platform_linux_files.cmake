@@ -6,7 +6,5 @@
 #
 
 set(FILES
-    Mocks/MockSpawnableEntitiesInterface.h
-    Utils/Utils.h
-    Utils/Utils.cpp
+    ../Common/GetCertsPath_Null.cpp
 )

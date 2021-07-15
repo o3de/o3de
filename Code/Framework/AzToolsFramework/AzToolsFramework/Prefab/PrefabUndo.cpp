@@ -261,8 +261,13 @@ namespace AzToolsFramework
             instanceDom.CopyFrom(instanceDomRef->get(), instanceDom.GetAllocator());
 
             //apply the patch to the template within the target
-            AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::ApplyPatch(instanceDom,
-                instanceDom.GetAllocator(), patch, AZ::JsonMergeApproach::JsonPatch);
+            AZ::JsonSerializationResult::ResultCode result = PrefabDomUtils::ApplyPatches(instanceDom, instanceDom.GetAllocator(), patch);
+
+            AZ_Error(
+                "Prefab",
+                result.GetOutcome() == AZ::JsonSerializationResult::Outcomes::PartialSkip ||
+                    result.GetOutcome() == AZ::JsonSerializationResult::Outcomes::Success,
+                "Some of the patches are not successfully applied.");
 
             //remove the link id placed into the instance
             auto linkIdIter = instanceDom.FindMember(PrefabDomUtils::LinkIdName);

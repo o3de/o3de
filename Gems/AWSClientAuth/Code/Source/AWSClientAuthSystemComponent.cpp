@@ -13,6 +13,7 @@
 #include <Authorization/AWSCognitoAuthorizationController.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <ResourceMapping/AWSResourceMappingBus.h>
+#include <Framework/AWSApiJobConfig.h>
 
 #include <aws/cognito-identity/CognitoIdentityClient.h>
 #include <aws/cognito-idp/CognitoIdentityProviderClient.h>
@@ -163,7 +164,11 @@ namespace AWSClientAuth
 
     void AWSClientAuthSystemComponent::OnSDKInitialized()
     {
-        Aws::Client::ClientConfiguration clientConfiguration;
+        AWSCore::AwsApiJobConfig* defaultConfig;
+        AWSCore::AWSCoreRequestBus::BroadcastResult(defaultConfig, &AWSCore::AWSCoreRequests::GetDefaultConfig);
+        Aws::Client::ClientConfiguration clientConfiguration =
+            defaultConfig ? defaultConfig->GetClientConfiguration() : Aws::Client::ClientConfiguration();
+
         AZStd::string region;
         AWSCore::AWSResourceMappingRequestBus::BroadcastResult(region, &AWSCore::AWSResourceMappingRequests::GetDefaultRegion);
 

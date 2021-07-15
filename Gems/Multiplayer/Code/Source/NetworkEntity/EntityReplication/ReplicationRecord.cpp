@@ -191,6 +191,8 @@ namespace Multiplayer
 
     bool ReplicationRecord::ContainsAuthorityToClientBits() const
     {
+        // Check != Authority here since several modes require information about client updates
+        // (i.e. Autonomous when performing corrections)
         return (m_remoteNetEntityRole != NetEntityRole::Authority)
             || (m_remoteNetEntityRole == NetEntityRole::InvalidRole);
     }

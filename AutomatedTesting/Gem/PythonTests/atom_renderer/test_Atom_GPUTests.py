@@ -77,7 +77,6 @@ class TestAllComponentsIndepthTests(object):
             unexpected_lines=unexpected_lines,
             halt_on_unexpected=True,
             cfg_args=[level],
-            auto_test_mode=False,
             null_renderer=False,
         )
 

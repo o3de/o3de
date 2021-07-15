@@ -146,7 +146,6 @@ namespace LyShine
     {
         LyShineAllocatorScope::ActivateAllocators();
 
-        LyShineRequestBus::Handler::BusConnect();
         UiSystemBus::Handler::BusConnect();
         UiSystemToolsBus::Handler::BusConnect();
         UiFrameworkBus::Handler::BusConnect();
@@ -194,7 +193,6 @@ namespace LyShine
         UiSystemBus::Handler::BusDisconnect();
         UiSystemToolsBus::Handler::BusDisconnect();
         UiFrameworkBus::Handler::BusDisconnect();
-        LyShineRequestBus::Handler::BusDisconnect();
         CrySystemEventBus::Handler::BusDisconnect();
 
         LyShineAllocatorScope::DeactivateAllocators();

@@ -18,8 +18,9 @@ namespace Platform
     CGFloat GetScreenScale();
     void AttachViewController(NativeWindowType* nativeWindow, NativeViewControllerType* viewController, RHIMetalView* metalView);
     void UnAttachViewController(NativeWindowType* nativeWindow, NativeViewControllerType* viewController);
-    void PresentInternal(id <MTLCommandBuffer> mtlCommandBuffer, id<CAMetalDrawable> drawable, float syncInterval);
+    void PresentInternal(id <MTLCommandBuffer> mtlCommandBuffer, id<CAMetalDrawable> drawable, float syncInterval, float refreshRate);
     void ResizeInternal(RHIMetalView* metalView, CGSize viewSize);
+    float GetRefreshRate();
     RHIMetalView* GetMetalView(NativeWindowType* nativeWindow);
 }
 
@@ -72,6 +73,15 @@ namespace AZ
                 AddSubView();
             }
 
+            m_refreshRate = Platform::GetRefreshRate();
+            
+            //Assume 60hz if 0 is returned.
+            //Internal OSX displays have 'flexible' refresh rates, with a max of 60Hz - but report 0hz
+            if (m_refreshRate < 0.1f)
+            {
+                m_refreshRate = 60.0f;
+            }
+            
             m_drawables.resize(descriptor.m_dimensions.m_imageCount);
 
             if (nativeDimensions)
@@ -147,10 +157,9 @@ namespace AZ
         uint32_t SwapChain::PresentInternal()
         {
             const uint32_t currentImageIndex = GetCurrentImageIndex();
-            //GFX TODO][ATOM-432] - Hardcoding to 30fps for now. Only used by ios. This needs to be driven by higher level code.
-            float syncInterval = 1.0f/30.0f;
+            
             //Preset the drawable
-            Platform::PresentInternal(m_mtlCommandBuffer, m_drawables[currentImageIndex], syncInterval);
+            Platform::PresentInternal(m_mtlCommandBuffer, m_drawables[currentImageIndex], GetDescriptor().m_verticalSyncInterval, m_refreshRate);
             
             [m_drawables[currentImageIndex] release];
             m_drawables[currentImageIndex] = nil;

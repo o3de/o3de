@@ -97,6 +97,9 @@ namespace AzFramework
 
         //! This is called when the window is deactivated from code or if the user closes the window.
         virtual void OnWindowClosed() {};
+
+        //! This is called when vsync interval is changed.
+        virtual void OnVsyncIntervalChanged(uint32_t interval) { AZ_UNUSED(interval); };
     };
     using WindowNotificationBus = AZ::EBus<WindowNotifications>;
 

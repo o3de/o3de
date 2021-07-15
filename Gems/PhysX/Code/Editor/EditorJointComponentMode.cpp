@@ -21,8 +21,8 @@ namespace PhysX
     namespace
     {
         //! Uri's for shortcut actions.
-        const AZ::Crc32 GoToNextModeActionUri = AZ_CRC("com.amazon.action.physx.joint.nextmode", 0xe9cf4ed6);
-        const AZ::Crc32 GoToPrevModeActionUri = AZ_CRC("com.amazon.action.physx.joint.prevmode", 0xe70f8daa);
+        const AZ::Crc32 GoToNextModeActionUri = AZ_CRC("com.o3de.action.physx.joint.nextmode", 0xe9cf4ed6);
+        const AZ::Crc32 GoToPrevModeActionUri = AZ_CRC("com.o3de.action.physx.joint.prevmode", 0xe70f8daa);
     }
 
     const AZStd::string EditorJointComponentMode::s_parameterAngularPair = "Twist Limits";

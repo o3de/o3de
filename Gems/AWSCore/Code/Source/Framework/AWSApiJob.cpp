@@ -9,6 +9,10 @@
 
 namespace AWSCore
 {
+    namespace Platform
+    {
+        Aws::String GetCaCertBundlePath();
+    }
 
     const char* AwsApiJob::COMPONENT_DISPLAY_NAME = "AWSCoreFramework";
 
@@ -29,6 +33,14 @@ namespace AWSCore
                 config.userAgent = "/O3DE_AwsApiJob";
                 config.requestTimeoutMs = 30000;
                 config.connectTimeoutMs = 30000;
+
+                // Instructs the HTTP client where to find the SSL certificate trust store.
+                // It is required to copy the cacert.pem to the expected file path for running the Android client.
+                Aws::String caFilePath = Platform::GetCaCertBundlePath();
+                if (!caFilePath.empty())
+                {
+                    config.caFile = caFilePath;
+                }
             }
         );
     };

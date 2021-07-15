@@ -113,6 +113,27 @@ namespace AWSClientAuthUnitTest
         MOCK_METHOD1(ReloadConfigFile, void(bool isReloadingConfigFileName));
     };
 
+    class AWSCoreRequestBusMock
+        : public AWSCore::AWSCoreRequestBus::Handler
+    {
+    public:
+        AWSCoreRequestBusMock()
+        {
+            AWSCore::AWSCoreRequestBus::Handler::BusConnect();
+
+            ON_CALL(*this, GetDefaultJobContext).WillByDefault(testing::Return(nullptr));
+            ON_CALL(*this, GetDefaultConfig).WillByDefault(testing::Return(nullptr));
+        }
+
+        ~AWSCoreRequestBusMock()
+        {
+            AWSCore::AWSCoreRequestBus::Handler::BusDisconnect();
+        }
+
+        MOCK_METHOD0(GetDefaultJobContext, AZ::JobContext*());
+        MOCK_METHOD0(GetDefaultConfig, AWSCore::AwsApiJobConfig*());
+    };
+
     class HttpRequestorRequestBusMock
         : public HttpRequestor::HttpRequestorRequestBus::Handler
     {
