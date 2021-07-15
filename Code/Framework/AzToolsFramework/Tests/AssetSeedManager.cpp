@@ -87,10 +87,12 @@ namespace UnitTest
                 for (int idx = 0; idx < s_totalAssets; idx++)
                 {
                     AzFramework::StringFunc::Path::Join(assetRoot.c_str(), m_assetsPath[idx].c_str(), m_assetsPathFull[platformCount][idx]);
+                    AZ_TEST_START_TRACE_SUPPRESSION;
                     if (m_fileStreams[platformCount][idx].Open(m_assetsPathFull[platformCount][idx].c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeBinary | AZ::IO::OpenMode::ModeCreatePath))
                     {
                         m_fileStreams[platformCount][idx].Write(m_assetsPath[idx].size(), m_assetsPath[idx].data());
                         m_fileStreams[platformCount][idx].Close();
+                        AZ_TEST_STOP_TRACE_SUPPRESSION(thisPlatform == AzFramework::PlatformId::PC ? 1 : 0); // writing to asset cache folder, only invalid for PC
                     }
                     else
                     {
@@ -112,7 +114,9 @@ namespace UnitTest
             m_testDynamicSliceAssetId = testDynamicSliceAsset;
             m_assetRegistry->RegisterAsset(testDynamicSliceAsset, dynamicSliceAssetInfo);
 
+            AZ_TEST_START_TRACE_SUPPRESSION;
             AZ::IO::FileIOStream dynamicSliceFileIOStream(TestDynamicSliceAssetPath, AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeText);
+            AZ_TEST_STOP_TRACE_SUPPRESSION(1); // writing to asset cache folder
 
             AZ::Data::AssetInfo sliceAssetInfo;
             sliceAssetInfo.m_relativePath = TestSliceAssetPath;
@@ -124,7 +128,9 @@ namespace UnitTest
             secondSliceAssetInfo.m_assetId = secondTestSliceAsset;
             m_assetRegistry->RegisterAsset(secondTestSliceAsset, secondSliceAssetInfo);
 
+            AZ_TEST_START_TRACE_SUPPRESSION;
             AZ::IO::FileIOStream sliceFileIOStream(TestSliceAssetPath, AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeText);
+            AZ_TEST_STOP_TRACE_SUPPRESSION(1); // writing to asset cache folder
 
             // asset0 -> asset1 -> asset2 -> asset4
             //                 --> asset3
@@ -186,7 +192,6 @@ namespace UnitTest
             AZ::IO::Path assetRoot(AZ::Utils::GetProjectPath());
             assetRoot /= "Cache";
             AZ::IO::FileIOBase::GetInstance()->SetAlias("@root@", assetRoot.c_str());
-
         }
 
         void TearDown() override
@@ -195,7 +200,9 @@ namespace UnitTest
 
             if (fileIO->Exists(s_catalogFile))
             {
+                AZ_TEST_START_TRACE_SUPPRESSION;
                 fileIO->Remove(s_catalogFile);
+                AZ_TEST_STOP_TRACE_SUPPRESSION(1); // deleting from asset cache folder
             }
 
             for (size_t platformCount = 0; platformCount < s_totalTestPlatforms; ++platformCount)
@@ -206,26 +213,34 @@ namespace UnitTest
                     // we need to close the handle before we try to remove the file
                     if (fileIO->Exists(m_assetsPathFull[platformCount][idx].c_str()))
                     {
+                        AZ_TEST_START_TRACE_SUPPRESSION;
                         fileIO->Remove(m_assetsPathFull[platformCount][idx].c_str());
+                        AZ_TEST_STOP_TRACE_SUPPRESSION(platformCount == 0 ? 1 : 0); // deleting from asset cache folder
                     }
                 }
             }
 
             if (fileIO->Exists(TestSliceAssetPath))
             {
+                AZ_TEST_START_TRACE_SUPPRESSION;
                 fileIO->Remove(TestSliceAssetPath);
+                AZ_TEST_STOP_TRACE_SUPPRESSION(1); // deleting from asset cache folder
             }
 
             if (fileIO->Exists(TestDynamicSliceAssetPath))
             {
+                AZ_TEST_START_TRACE_SUPPRESSION;
                 fileIO->Remove(TestDynamicSliceAssetPath);
+                AZ_TEST_STOP_TRACE_SUPPRESSION(1); // deleting from asset cache folder
             }
 
             auto pcCatalogFile = AzToolsFramework::PlatformAddressedAssetCatalog::GetCatalogRegistryPathForPlatform(AzFramework::PlatformId::PC);
             auto androidCatalogFile = AzToolsFramework::PlatformAddressedAssetCatalog::GetCatalogRegistryPathForPlatform(AzFramework::PlatformId::ANDROID_ID);
             if (fileIO->Exists(pcCatalogFile.c_str()))
             {
+                AZ_TEST_START_TRACE_SUPPRESSION;
                 fileIO->Remove(pcCatalogFile.c_str());
+                AZ_TEST_STOP_TRACE_SUPPRESSION(1); // deleting from asset cache folder
             }
 
             if (fileIO->Exists(androidCatalogFile.c_str()))
@@ -629,11 +644,13 @@ namespace UnitTest
 
             EXPECT_EQ(assetList1.m_fileInfoList.size(), 1);
             EXPECT_TRUE(Search(assetList1, assets[fileIndex]));
+            AZ_TEST_START_TRACE_SUPPRESSION;
             if (m_fileStreams[0][fileIndex].Open(m_assetsPathFull[0][fileIndex].c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeBinary | AZ::IO::OpenMode::ModeCreatePath))
             {
                 AZStd::string fileContent = AZStd::string::format("asset%d.txt", fileIndex);
                 m_fileStreams[0][fileIndex].Write(fileContent.size(), fileContent.c_str());
                 m_fileStreams[0][fileIndex].Close();
+                AZ_TEST_STOP_TRACE_SUPPRESSION(1); // writing to asset cache folder
             }
 
             AzToolsFramework::AssetFileInfoList assetList2 = m_assetSeedManager->GetDependencyList(AzFramework::PlatformId::PC);
@@ -660,11 +677,13 @@ namespace UnitTest
 
             EXPECT_EQ(assetList1.m_fileInfoList.size(), 1);
             EXPECT_TRUE(Search(assetList1, assets[fileIndex]));
+            AZ_TEST_START_TRACE_SUPPRESSION;
             if (m_fileStreams[0][fileIndex].Open(m_assetsPathFull[0][fileIndex].c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeBinary | AZ::IO::OpenMode::ModeCreatePath))
             {
                 AZStd::string fileContent = AZStd::string::format("asset%d.txt", fileIndex + 1);// changing file content
                 m_fileStreams[0][fileIndex].Write(fileContent.size(), fileContent.c_str());
                 m_fileStreams[0][fileIndex].Close();
+                AZ_TEST_STOP_TRACE_SUPPRESSION(1); // writing to asset cache folder
             }
 
             AzToolsFramework::AssetFileInfoList assetList2 = m_assetSeedManager->GetDependencyList(AzFramework::PlatformId::PC);

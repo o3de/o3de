@@ -24,6 +24,7 @@
 #include <QStandardPaths>
 #include <QTemporaryDir>
 #include <QTextStream>
+#include <Utils/Utils.h>
 
 namespace UnitTest
 {
@@ -73,7 +74,7 @@ namespace UnitTest
 
             void CreateArchiveFolder( QString archiveFolderName, QStringList fileList )
             {
-                QDir tempPath = QDir(m_tempDir.path()).filePath(archiveFolderName);
+                QDir tempPath = QDir(m_tempDir.GetDirectory()).filePath(archiveFolderName);
 
                 for (const auto& thisFile : fileList)
                 {
@@ -89,12 +90,12 @@ namespace UnitTest
 
             QString GetArchivePath()
             {
-                return  QDir(m_tempDir.path()).filePath("TestArchive.pak");
+                return  QDir(m_tempDir.GetDirectory()).filePath("TestArchive.pak");
             }
 
             QString GetArchiveFolder()
             {
-                return QDir(m_tempDir.path()).filePath(GetArchiveFolderName());
+                return QDir(m_tempDir.GetDirectory()).filePath(GetArchiveFolderName());
             }
 
             bool CreateArchive()
@@ -115,7 +116,7 @@ namespace UnitTest
 
                 if (auto fileIoBase = AZ::IO::FileIOBase::GetInstance(); fileIoBase != nullptr)
                 {
-                    fileIoBase->SetAlias("@assets@", m_tempDir.path().toUtf8().data());
+                    fileIoBase->SetAlias("@assets@", m_tempDir.GetDirectory());
                 }
             }
 
@@ -126,16 +127,12 @@ namespace UnitTest
             }
 
             AZStd::unique_ptr<ToolsTestApplication> m_app;
-            QTemporaryDir m_tempDir {QDir(QStandardPaths::writableLocation(QStandardPaths::TempLocation)).filePath("ArchiveTests-")};
+            UnitTest::ScopedTemporaryDirectory m_tempDir;
         };
 
-#if AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
-        TEST_F(ArchiveTest, DISABLED_CreateArchiveBlocking_FilesAtThreeDepths_ArchiveCreated)
-#else
         TEST_F(ArchiveTest, CreateArchiveBlocking_FilesAtThreeDepths_ArchiveCreated)
-#endif // AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
         {
-            EXPECT_TRUE(m_tempDir.isValid());
+            EXPECT_TRUE(m_tempDir.IsValid());
             CreateArchiveFolder();
 
             bool createResult = CreateArchive();
@@ -143,13 +140,9 @@ namespace UnitTest
             EXPECT_EQ(createResult, true);
         }
 
-#if AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
-        TEST_F(ArchiveTest, DISABLED_ListFilesInArchiveBlocking_FilesAtThreeDepths_FilesFound)
-#else
         TEST_F(ArchiveTest, ListFilesInArchiveBlocking_FilesAtThreeDepths_FilesFound)
-#endif // AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
         {
-            EXPECT_TRUE(m_tempDir.isValid());
+            EXPECT_TRUE(m_tempDir.IsValid());
             CreateArchiveFolder();
             
             EXPECT_EQ(CreateArchive(), true);
@@ -161,11 +154,7 @@ namespace UnitTest
             EXPECT_EQ(fileList.size(), 6);
         }
 
-#if AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
-        TEST_F(ArchiveTest, DISABLED_CreateDeltaCatalog_AssetsNotRegistered_Failure)
-#else
         TEST_F(ArchiveTest, CreateDeltaCatalog_AssetsNotRegistered_Failure)
-#endif // AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
         {
             QStringList fileList = CreateArchiveFileList();
 
@@ -209,7 +198,9 @@ namespace UnitTest
             }
 
             bool catalogCreated{ false };
+            AZ_TEST_START_TRACE_SUPPRESSION;
             AzToolsFramework::AssetBundleCommandsBus::BroadcastResult(catalogCreated, &AzToolsFramework::AssetBundleCommandsBus::Events::CreateDeltaCatalog, GetArchivePath().toStdString().c_str(), true);
+            AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT; // produces different counts in different platforms
             EXPECT_EQ(catalogCreated, true);
         }
     }
