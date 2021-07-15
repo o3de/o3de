@@ -211,6 +211,7 @@ namespace AZ
                 AZ::SceneAPI::Containers::SceneGraph::Reflect(context);
                 AZ::SceneAPI::Containers::SceneManifest::Reflect(context);
                 AZ::SceneAPI::Containers::RuleContainer::Reflect(context);
+                AZ::SceneAPI::SceneCore::ExportingComponent::Reflect(context);
             }
 
             void Activate()

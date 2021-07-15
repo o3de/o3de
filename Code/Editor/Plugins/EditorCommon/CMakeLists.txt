@@ -46,4 +46,8 @@ ly_add_target(
             AZ::AzCore
             AZ::AzToolsFramework
             AZ::AzQtComponents
+    RUNTIME_DEPENDENCIES
+        AZ::AzCore
+        AZ::AzToolsFramework
+        AZ::AzQtComponents
 )

@@ -144,6 +144,12 @@ namespace AZ
                 const ShaderResourceGroupInfoList& srgInfoList,
                 const RootConstantsInfo& rootConstantsInfo,
                 const ShaderCompilerArguments& shaderCompilerArguments) = 0;
+            
+            //! In general, shader compilation doesn't require SRG Layout data, but RHIs like
+            //! Metal don't do well if unused resources (descriptors) are not bound. If this function returns TRUE
+            //! the ShaderVariantAssetBuilder will invoke BuildPipelineLayoutDescriptor() so the RHI gets the chance to
+            //! build SRG Layout data which will be useful when compiling MetalISL to Metal byte code.
+            virtual bool VariantCompilationRequiresSrgLayoutData() const { return false; }
 
             //! See AZ::RHI::Factory::GetAPIUniqueIndex() for details.
             //! See AZ::RHI::Limits::APIType::PerPlatformApiUniqueIndexMax.

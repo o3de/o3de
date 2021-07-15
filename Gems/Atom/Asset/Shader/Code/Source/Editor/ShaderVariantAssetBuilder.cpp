@@ -48,6 +48,7 @@
 
 #include "ShaderAssetBuilder.h"
 #include "ShaderBuilderUtility.h"
+#include "SrgLayoutUtility.h"
 #include "AzslData.h"
 #include "AzslCompiler.h"
 #include <CommonFiles/Preprocessor.h>
@@ -520,6 +521,96 @@ namespace AZ
                 return;
             }
         }
+    
+        static bool LoadSrgLayoutListFromShaderAssetBuilder(
+            const RHI::ShaderPlatformInterface* shaderPlatformInterface,
+            const AssetBuilderSDK::PlatformInfo& platformInfo,
+            const AzslCompiler& azslCompiler, const AZStd::string& shaderSourceFileFullPath,
+            const RPI::SupervariantIndex supervariantIndex,
+            const bool platformUsesRegisterSpaces,
+            RPI::ShaderResourceGroupLayoutList& srgLayoutList,
+            RootConstantData& rootConstantData)
+        {
+            auto srgJsonPathOutcome = ShaderBuilderUtility::ObtainBuildArtifactPathFromShaderAssetBuilder(
+                shaderPlatformInterface->GetAPIUniqueIndex(), platformInfo.m_identifier, shaderSourceFileFullPath, supervariantIndex.GetIndex(), AZ::RPI::ShaderAssetSubId::SrgJson);
+            if (!srgJsonPathOutcome.IsSuccess())
+            {
+                AZ_Error(ShaderVariantAssetBuilderName, false, "%s", srgJsonPathOutcome.GetError().c_str());
+                return false;
+            }
+
+            auto srgJsonPath = srgJsonPathOutcome.TakeValue();
+            auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(srgJsonPath);
+            if (!jsonOutcome.IsSuccess())
+            {
+                AZ_Error(ShaderVariantAssetBuilderName, false, "%s", jsonOutcome.GetError().c_str());
+                return false;
+            }
+            SrgDataContainer srgData;
+            if (!azslCompiler.ParseSrgPopulateSrgData(jsonOutcome.GetValue(), srgData))
+            {
+                AZ_Error(ShaderVariantAssetBuilderName, false, "Failed to parse srg data");
+                return false;
+            }
+            // Add all Shader Resource Group Assets that were defined in the shader code to the shader asset
+            if (!SrgLayoutUtility::LoadShaderResourceGroupLayouts(ShaderVariantAssetBuilderName, srgData, platformUsesRegisterSpaces, srgLayoutList))
+            {
+                AZ_Error(ShaderVariantAssetBuilderName, false, "Failed to load ShaderResourceGroupLayouts");
+                return false;
+            }
+            
+            for (auto srgLayout : srgLayoutList)
+            {
+                if (!srgLayout->Finalize())
+                {
+                    AZ_Error(ShaderVariantAssetBuilderName, false,
+                        "Failed to finalize SrgLayout %s", srgLayout->GetName().GetCStr());
+                    return false;
+                }
+            }
+            
+            // Access the root constants reflection
+            if (!azslCompiler.ParseSrgPopulateRootConstantData(
+                    jsonOutcome.GetValue(),
+                    rootConstantData)) // consuming data from --srg ("InlineConstantBuffer" subjson section)
+            {
+                AZ_Error(ShaderVariantAssetBuilderName, false, "Failed to obtain root constant data reflection");
+                return false;
+            }
+            
+            return true;
+        }
+    
+        static bool LoadBindingDependenciesFromShaderAssetBuilder(
+            const RHI::ShaderPlatformInterface* shaderPlatformInterface,
+            const AssetBuilderSDK::PlatformInfo& platformInfo,
+            const AzslCompiler& azslCompiler, const AZStd::string& shaderSourceFileFullPath,
+            const RPI::SupervariantIndex supervariantIndex,
+            BindingDependencies& bindingDependencies)
+        {
+            auto bindingsJsonPathOutcome = ShaderBuilderUtility::ObtainBuildArtifactPathFromShaderAssetBuilder(
+                shaderPlatformInterface->GetAPIUniqueIndex(), platformInfo.m_identifier, shaderSourceFileFullPath,     supervariantIndex.GetIndex(), AZ::RPI::ShaderAssetSubId::BindingdepJson);
+            if (!bindingsJsonPathOutcome.IsSuccess())
+            {
+                AZ_Error(ShaderVariantAssetBuilderName, false, "%s", bindingsJsonPathOutcome.GetError().c_str());
+                return false;
+            }
+    
+            auto bindingsJsonPath = bindingsJsonPathOutcome.TakeValue();
+            auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(bindingsJsonPath);
+            if (!jsonOutcome.IsSuccess())
+            {
+                AZ_Error(ShaderVariantAssetBuilderName, false, "%s", jsonOutcome.GetError().c_str());
+                return false;
+            }
+            if (!azslCompiler.ParseBindingdepPopulateBindingDependencies(jsonOutcome.GetValue(), bindingDependencies))
+            {
+                AZ_Error(ShaderVariantAssetBuilderName, false, "Failed to parse binding dependencies data");
+                return false;
+            }
+        
+            return true;
+        }
 
 
         // Returns the content of the hlsl file for the given supervariant as produced by ShaderAsssetBuilder.
@@ -772,6 +863,50 @@ namespace AZ
                     {
                         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
                         return;
+                    }
+                    
+                    //! It is important to keep this refcounted pointer outside of the if block to prevent it from being destroyed.
+                    RHI::Ptr<RHI::PipelineLayoutDescriptor> pipelineLayoutDescriptor;
+                    if (shaderPlatformInterface->VariantCompilationRequiresSrgLayoutData())
+                    {
+                        AZStd::string azslcCompilerParameters =
+                            shaderPlatformInterface->GetAzslCompilerParameters(buildOptions.m_compilerArguments);
+                        const bool platformUsesRegisterSpaces =
+                            (AzFramework::StringFunc::Find(azslcCompilerParameters, "--use-spaces") != AZStd::string::npos);
+                    
+                        RPI::ShaderResourceGroupLayoutList srgLayoutList;
+                        RootConstantData rootConstantData;
+                        if (!LoadSrgLayoutListFromShaderAssetBuilder(
+                            shaderPlatformInterface, request.m_platformInfo, azslc, shaderSourceFileFullPath, supervariantIndex,
+                            platformUsesRegisterSpaces,
+                            srgLayoutList,
+                            rootConstantData))
+                        {
+                            response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
+                            return;
+                        }
+                        
+                        BindingDependencies bindingDependencies;
+                        if (!LoadBindingDependenciesFromShaderAssetBuilder(
+                            shaderPlatformInterface, request.m_platformInfo, azslc, shaderSourceFileFullPath, supervariantIndex,
+                            bindingDependencies))
+                        {
+                            response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
+                            return;
+                        }
+                        
+                        pipelineLayoutDescriptor =
+                            ShaderBuilderUtility::BuildPipelineLayoutDescriptorForApi(
+                                ShaderVariantAssetBuilderName, srgLayoutList, shaderEntryPoints, buildOptions.m_compilerArguments, rootConstantData,
+                                shaderPlatformInterface, bindingDependencies);
+                        if (!pipelineLayoutDescriptor)
+                        {
+                            AZ_Error(
+                                ShaderVariantAssetBuilderName, false, "Failed to build pipeline layout descriptor for api=[%s]",
+                                shaderPlatformInterface->GetAPIName().GetCStr());
+                            response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
+                            return;
+                        }
                     }
 
                     // Setup the shader variant creation context:
