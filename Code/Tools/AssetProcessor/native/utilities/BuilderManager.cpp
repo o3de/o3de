@@ -14,6 +14,7 @@
 #include <native/connection/connection.h>
 #include <native/utilities/AssetBuilderInfo.h>
 #include <QCoreApplication>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
 namespace AssetProcessor
 {
@@ -221,17 +222,23 @@ namespace AssetProcessor
         }
 
         auto settingsRegistry = AZ::SettingsRegistry::Get();
-        bool skipAtomOutput = false;
-        if (settingsRegistry && settingsRegistry->Get(skipAtomOutput, "/O3DE/SceneAPI/AssetImporter/SkipAtomOutput") && skipAtomOutput)
+        AZ::CommandLine commandLine;
+        AZ::SettingsRegistryMergeUtils::GetCommandLineFromRegistry(*settingsRegistry, commandLine);
+        AZStd::fixed_vector optionKeys{ "regset", "regremove" };
+        for (auto&& optionKey : optionKeys)
         {
-            const char* settingString =
+            size_t commandOptionCount = commandLine.GetNumSwitchValues(optionKey);
+            for (size_t optionIndex = 0; optionIndex < commandOptionCount; ++optionIndex)
+            {
+                const AZStd::string& optionValue = commandLine.GetSwitchValue(optionKey, optionIndex);
+                params.append(AZStd::string::format(
 #if !AZ_TRAIT_OS_PLATFORM_APPLE && !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
-                R"( --regset="/O3DE/SceneAPI/AssetImporter/SkipAtomOutput=true")";
+                    R"( --%s="%s")",
 #else
-                R"( --regset="\"/O3DE/SceneAPI/AssetImporter/SkipAtomOutput=true\"")";
+                    R"( --%s="\"%s\"")",
 #endif
-
-            params.append(settingString);
+                    optionKey, optionValue.c_str()));
+            }
         }
 
         return params;
