@@ -35,6 +35,8 @@ namespace Multiplayer
         void OnScaleChangedEvent(float scale);
         void OnResetCountChangedEvent();
 
+        void UpdateTargetHostFrameId();
+
         AZ::Transform m_previousTransform = AZ::Transform::CreateIdentity();
         AZ::Transform m_targetTransform = AZ::Transform::CreateIdentity();
 
@@ -44,6 +46,8 @@ namespace Multiplayer
         AZ::Event<uint8_t>::Handler m_resetCountEventHandler;
 
         EntityPreRenderEvent::Handler m_entityPreRenderEventHandler;
+
+        Multiplayer::HostFrameId m_targetHostFrameId = HostFrameId(0);
     };
 
     class NetworkTransformComponentController
