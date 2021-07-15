@@ -261,6 +261,7 @@ namespace AZ
         {
         public:
             void DrawGpuMemoryWindow(bool& draw);
+            void DrawPieChart(const AZ::RHI::MemoryStatistics::Heap& heap);
         private:
             bool m_paused = true;
             AZStd::vector<AZ::RHI::MemoryStatistics::Pool> m_savedPools;

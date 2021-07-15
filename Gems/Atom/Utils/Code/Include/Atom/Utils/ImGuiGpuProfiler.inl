@@ -22,6 +22,7 @@
 #include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include "../../../Gems/ImGui/External/ImGui/v1.82/imgui/imgui.h"
+#pragma optimize("", off)
 
 namespace AZ
 {
@@ -1041,6 +1042,30 @@ namespace AZ
 
         // --- ImGuiGpuMemoryView ---
 
+        inline void ImGuiGpuMemoryView::DrawPieChart(const AZ::RHI::MemoryStatistics::Heap& heap)
+        {
+            ImGui::Text(heap.m_name.GetCStr());
+            if (ImGui::BeginChild("Graph", {150, 150}, true))
+            {
+                ImDrawList* drawList = ImGui::GetWindowDrawList();
+                const auto [wx, wy] = ImGui::GetWindowPos();
+                const auto [windowWidth, windowHeight] = ImGui::GetWindowSize();
+                const ImVec2 center = { wx + windowWidth / 2, wy + windowHeight / 2 };
+                const float radius = windowWidth / 2 - 10;
+                drawList->AddCircleFilled(center, radius, IM_COL32_BLACK);
+                const auto fraction = 1.0f * heap.m_memoryUsage.m_residentInBytes / heap.m_memoryUsage.m_budgetInBytes;
+                drawList->PathArcTo(center, radius, 0, AZ::Constants::TwoPi * fraction);
+                drawList->PathArcTo(center, 0, 0, 0);
+                drawList->PathArcTo(center, radius, 0, 0);
+                drawList->PathFillConvex(IM_COL32_WHITE);
+                ImGui::Text("%.2f%%", fraction * 100);
+
+                // Prepare for next draw call
+                drawList->PathArcTo(center, radius, 0, AZ::Constants::TwoPi * fraction);
+                drawList->PathClear();
+            }
+            ImGui::EndChild();
+        }
         inline void ImGuiGpuMemoryView::DrawGpuMemoryWindow(bool& draw)
         {
             if (!draw)
@@ -1048,11 +1073,13 @@ namespace AZ
                 return;
             }
              
+            ImGui::SetNextWindowSize({ 600, 600 }, ImGuiCond_Once);
             if (ImGui::Begin("Gpu Memory Profiler", &draw, ImGuiViewportFlags_None))
             {
                 if(ImGui::Button(m_paused ? "Resume" : "Pause")){
                     m_paused = !m_paused;
                 }
+
 
                 // Collect and save new GPU memory usage data
                 if (!m_paused) {
@@ -1065,44 +1092,75 @@ namespace AZ
                         m_savedHeaps = stat->m_heaps;
                     }
                 }
+
+                ImGui::Text("Overall heap usage:");
+                for (const auto& savedHeap : m_savedHeaps)
+                {
+                    if (ImGui::BeginChild(savedHeap.m_name.GetCStr(), { ImGui::GetWindowWidth() / 2, 200 }))
+                    {
+                        DrawPieChart(savedHeap);
+                    }
+                    ImGui::EndChild();
+                    ImGui::SameLine(ImGui::GetWindowWidth() / 2);
+                }
+                ImGui::NewLine();
+
+                // Use cstyle loops rather than ranged for so index can be used in PushId to prevent id collisions
                 if (ImGui::TreeNode("Pools"))
                 {
-                    for (const auto& pool : m_savedPools)
+                    for (u64 i = 0; i < m_savedPools.size(); i++)
                     {
-                        const auto name = pool.m_name;
-                        if (ImGui::TreeNode(name.GetCStr()))
+                        const auto& pool = m_savedPools.at(i);
+                        ImGui::PushID(i);
+                        if (ImGui::TreeNode(pool.m_name.GetCStr()))
                         {
                             ImGui::Text("Device Memory: %zu", pool.m_memoryUsage.GetHeapMemoryUsage(AZ::RHI::HeapMemoryLevel::Device).m_residentInBytes.load());
                             ImGui::SameLine();
                             ImGui::Text("Host Memory: %zu", pool.m_memoryUsage.GetHeapMemoryUsage(AZ::RHI::HeapMemoryLevel::Host).m_residentInBytes.load());
 
-                            for (const auto& image : pool.m_images)
+                            if (ImGui::TreeNode("Buffers"))
                             {
-                                if (ImGui::TreeNode(image.m_name.GetCStr()))
+                                for (u64 j = 0; j < pool.m_buffers.size(); j++)
                                 {
-                                    ImGui::Text("Image size: %zu", image.m_sizeInBytes);
-                                    //image.m_bindFlags
-                                    ImGui::TreePop();
+                                    const auto& buf = pool.m_buffers.at(j);
+                                    ImGui::PushID(j);
+                                    if (ImGui::TreeNode(buf.m_name.GetCStr()))
+                                    {
+                                        ImGui::Text("Buffer size: %zu", buf.m_sizeInBytes);
+                                        ImGui::TreePop();
+                                    }
+                                    ImGui::PopID();
                                 }
+                                ImGui::TreePop();
                             }
-
-                            for (const auto& buf : pool.m_buffers)
+                            if (ImGui::TreeNode("Images"))
                             {
-                                if (ImGui::TreeNode(buf.m_name.GetCStr()))
+                                for (u64 j = 0; j < pool.m_images.size(); j++)
                                 {
-                                    ImGui::Text("Buffer size: %zu", buf.m_sizeInBytes);
-                                    ImGui::TreePop();
+                                    const auto& image = pool.m_images.at(j);
+                                    ImGui::PushID(j);
+                                    if (ImGui::TreeNode(image.m_name.GetCStr()))
+                                    {
+                                        ImGui::Text("Image size: %zu", image.m_sizeInBytes);
+                                        //image.m_bindFlags
+                                        ImGui::TreePop();
+                                    }
+                                    ImGui::PopID();
                                 }
+                                ImGui::TreePop();
                             }
                             ImGui::TreePop();
                         }
+                        ImGui::PopID();
                     }
                     ImGui::TreePop();
                 }
                 if (ImGui::TreeNode("Heaps"))
                 {
-                    for (const auto& heap : m_savedHeaps)
+                    for (u64 i = 0; i< m_savedHeaps.size(); i++)
                     {
+                        const auto& heap = m_savedHeaps.at(i);
+                        ImGui::PushID(i);
                         if (ImGui::TreeNode(heap.m_name.GetCStr()))
                         {
                             ImGui::Text("Usage: %zu / %zu / %zu",
@@ -1111,6 +1169,7 @@ namespace AZ
                                 GpuProfilerImGuiHelper::BytesToMb(heap.m_memoryUsage.m_budgetInBytes));
                             ImGui::TreePop();
                         }
+                        ImGui::PopID();
                     }
                     ImGui::TreePop();
                 }
