@@ -10,8 +10,6 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/string/string.h>
 
-#include <ScriptCanvas/AWSScriptBehaviorBase.h>
-
 namespace AWSCore
 {
     //! AWS Script Behavior notifications for ScriptCanvas behaviors that interact with AWS S3
@@ -68,7 +66,6 @@ namespace AWSCore
     };
 
     class AWSScriptBehaviorS3
-        : public AWSScriptBehaviorBase
     {
         static constexpr const char AWSScriptBehaviorS3Name[] = "AWSScriptBehaviorS3";
         static constexpr const char OutputFileIsEmptyErrorMessage[] = "Request validation failed, output file is empty.";
@@ -81,7 +78,12 @@ namespace AWSCore
         static constexpr const char RegionNameIsEmptyErrorMessage[] = "Request validation failed, region name is empty.";
 
     public:
-        AWS_SCRIPT_BEHAVIOR_DEFINITION(AWSScriptBehaviorS3, "{7F4E956C-7463-4236-B320-C992D36A9C6E}");
+        AZ_RTTI(AWSScriptBehaviorS3, "{7F4E956C-7463-4236-B320-C992D36A9C6E}");
+
+        AWSScriptBehaviorS3() = default;
+        virtual ~AWSScriptBehaviorS3() = default;
+
+        static void Reflect(AZ::ReflectContext* context);
 
         static void GetObject(const AZStd::string& bucketResourceKey, const AZStd::string& objectKey, const AZStd::string& outFile);
         static void GetObjectRaw(const AZStd::string& bucket, const AZStd::string& objectKey, const AZStd::string& region, const AZStd::string& outFile);

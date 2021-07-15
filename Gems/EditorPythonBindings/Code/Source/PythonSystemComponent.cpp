@@ -237,8 +237,8 @@ namespace EditorPythonBindings
             {
                 ec->Class<PythonSystemComponent>("PythonSystemComponent", "The Python interpreter")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
         }
@@ -284,10 +284,10 @@ namespace EditorPythonBindings
             ReleaseFunction m_releaseFunction;
         };
         ReleaseInitalizeWaiterScope scope([this]()
-        {
-            m_initalizeWaiter.release(m_initalizeWaiterCount);
-            m_initalizeWaiterCount = 0;
-        });
+            {
+                m_initalizeWaiter.release(m_initalizeWaiterCount);
+                m_initalizeWaiterCount = 0;
+            });
 
         if (Py_IsInitialized())
         {
@@ -325,6 +325,11 @@ namespace EditorPythonBindings
         result = StopPythonInterpreter();
         EditorPythonBindingsNotificationBus::Broadcast(&EditorPythonBindingsNotificationBus::Events::OnPostFinalize);
         return result;
+    }
+
+    bool PythonSystemComponent::IsPythonActive()
+    {
+        return Py_IsInitialized() != 0;
     }
 
     void PythonSystemComponent::WaitForInitialization()
