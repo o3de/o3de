@@ -47,11 +47,13 @@ namespace UnitTest
         void SetUp()
         {
             m_prevFileIO = AZ::IO::FileIOBase::GetInstance();
+            AZ::IO::FileIOBase::SetInstance(nullptr);
             AZ::IO::FileIOBase::SetInstance(&m_fileIO);
         }
 
         void TearDown() override
         {
+            AZ::IO::FileIOBase::SetInstance(nullptr);
             AZ::IO::FileIOBase::SetInstance(m_prevFileIO);
         }
 
