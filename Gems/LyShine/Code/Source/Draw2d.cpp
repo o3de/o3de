@@ -108,6 +108,11 @@ void CDraw2d::OnBootstrapSceneReady([[maybe_unused]] AZ::RPI::Scene* bootstrapSc
     m_dynamicDraw->AddDrawStateOptions(AZ::RPI::DynamicDrawContext::DrawStateOptions::PrimitiveType
         | AZ::RPI::DynamicDrawContext::DrawStateOptions::BlendMode);
     m_dynamicDraw->SetOutputScope(scene.get());
+    auto* rhiSystem = AZ::RHI::RHISystemInterface::Get();
+    const AZ::Name drawListTagName("uicanvas");
+    auto drawListTag = rhiSystem->GetDrawListTagRegistry()->FindTag(drawListTagName);
+    AZ_Assert(drawListTag.IsValid(), "Draw list tag is not registered.");
+    m_dynamicDraw->InitDrawListTag(drawListTag);
     m_dynamicDraw->EndInit();
 
     AZ::RHI::TargetBlendState targetBlendState;

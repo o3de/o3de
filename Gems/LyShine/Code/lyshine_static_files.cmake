@@ -11,8 +11,11 @@ set(FILES
     Include/LyShine/Draw2d.h
     Source/LyShine.cpp
     Source/LyShine.h
+    Source/LyShinePassDataBus.h
     Source/LyShineDebug.cpp
     Source/LyShineDebug.h
+    Source/LyShinePass.cpp
+    Source/LyShinePass.h
     Source/LyShine_precompiled.h
     Source/StringUtfUtils.h
     Source/UiImageComponent.cpp
@@ -29,6 +32,7 @@ set(FILES
     Source/LyShineLoadScreen.h
     Source/RenderGraph.cpp
     Source/RenderGraph.h
+    Source/RenderToTextureBus.h
     Source/TextMarkup.cpp
     Source/TextMarkup.h
     Source/UiButtonComponent.cpp

@@ -51,6 +51,7 @@
 #include "UiDynamicLayoutComponent.h"
 #include "UiDynamicScrollBoxComponent.h"
 #include "UiNavigationSettings.h"
+#include "LyShinePass.h"
 
 namespace LyShine
 {
@@ -115,9 +116,11 @@ namespace LyShine
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    void LyShineSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+    void LyShineSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        (void)required;
+#if !defined(LYSHINE_BUILDER)
+        required.push_back(AZ_CRC("RPISystem", 0xf2add773));
+#endif
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -188,6 +191,17 @@ namespace LyShine
         RegisterComponentTypeForMenuOrdering(UiDynamicScrollBoxComponent::RTTI_Type());
         RegisterComponentTypeForMenuOrdering(UiParticleEmitterComponent::RTTI_Type());
         RegisterComponentTypeForMenuOrdering(UiFlipbookAnimationComponent::RTTI_Type());
+
+#if !defined(LYSHINE_BUILDER)
+        // Add LyShine pass
+        auto* passSystem = AZ::RPI::PassSystemInterface::Get();
+        AZ_Assert(passSystem, "Cannot get the pass system.");
+        passSystem->AddPassCreator(AZ::Name("LyShinePass"), &LyShine::LyShinePass::Create);
+
+        // Setup handler for load pass template mappings
+        m_loadTemplatesHandler = AZ::RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler([this]() { this->LoadPassTemplateMappings(); });
+        AZ::RPI::PassSystemInterface::Get()->ConnectEvent(m_loadTemplatesHandler);
+#endif
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -388,4 +402,13 @@ namespace LyShine
     {
         UiCursorBus::Broadcast(&UiCursorInterface::SetUiCursor, m_cursorImagePathname.GetAssetPath().c_str());
     }
+
+#if !defined(LYSHINE_BUILDER)
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    void LyShineSystemComponent::LoadPassTemplateMappings()
+    {
+        const char* passTemplatesFile = "Passes/LyShinePassTemplates.azasset";
+        AZ::RPI::PassSystemInterface::Get()->LoadPassTemplateMappings(passTemplatesFile);
+    }
+#endif
 }
