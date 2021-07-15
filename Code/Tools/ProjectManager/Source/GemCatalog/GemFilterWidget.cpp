@@ -14,6 +14,7 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QPushButton>
+#include <QSignalBlocker>
 
 namespace O3DE::ProjectManager
 {
@@ -485,6 +486,7 @@ namespace O3DE::ProjectManager
             const QString& feature = elementNames[i];
             QAbstractButton* button = buttons[i];
 
+            // Adjust the proxy model and enable or disable the clicked feature used for filtering.
             connect(button, &QAbstractButton::toggled, this, [=](bool checked)
                 {
                     QSet<QString> features = m_filterProxyModel->GetFeatures();
@@ -497,6 +499,15 @@ namespace O3DE::ProjectManager
                         features.remove(feature);
                     }
                     m_filterProxyModel->SetFeatures(features);
+                });
+
+            // Sync the UI state with the proxy model filtering.
+            connect(m_filterProxyModel, &GemSortFilterProxyModel::OnInvalidated, this, [=]
+                {
+                    const QSet<QString>& filteredFeatureTags = m_filterProxyModel->GetFeatures();
+                    const bool isChecked = filteredFeatureTags.contains(button->text());
+                    QSignalBlocker signalsBlocker(button);
+                    button->setChecked(isChecked);
                 });
         }
     }

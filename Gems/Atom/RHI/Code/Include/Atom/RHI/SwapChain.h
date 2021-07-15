@@ -123,6 +123,11 @@ namespace AZ
             /// Returns the index of the current image after the swap.
             virtual uint32_t PresentInternal() = 0;
 
+            virtual void SetVerticalSyncIntervalInternal(uint32_t previousVerticalSyncInterval)
+            {
+                AZ_UNUSED(previousVerticalSyncInterval);
+            }
+
             //////////////////////////////////////////////////////////////////////////
 
             SwapChainDescriptor m_descriptor;

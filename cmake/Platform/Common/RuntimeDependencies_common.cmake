@@ -254,7 +254,8 @@ function(ly_delayed_generate_runtime_dependencies)
 
         # Generate the output file
         set(target_file_dir "$<TARGET_FILE_DIR:${target}>")
-        file(READ ${LY_RUNTIME_DEPENDENCIES_TEMPLATE} template_file)
+        set(target_file "$<TARGET_FILE:${target}>")
+        ly_file_read(${LY_RUNTIME_DEPENDENCIES_TEMPLATE} template_file)
         string(CONFIGURE "${LY_COPY_COMMANDS}" LY_COPY_COMMANDS @ONLY)
         string(CONFIGURE "${template_file}" configured_template_file @ONLY)
         file(GENERATE

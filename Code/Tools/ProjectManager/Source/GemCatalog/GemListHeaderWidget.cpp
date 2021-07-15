@@ -7,10 +7,13 @@
 
 #include <GemCatalog/GemItemDelegate.h>
 #include <GemCatalog/GemListHeaderWidget.h>
-#include <QStandardItemModel>
+#include <AzQtComponents/Components/TagSelector.h>
+#include <QAbstractItemModel>
+#include <QItemSelectionModel>
 #include <QLabel>
-#include <QVBoxLayout>
 #include <QSpacerItem>
+#include <QStandardItemModel>
+#include <QVBoxLayout>
 
 namespace O3DE::ProjectManager
 {
@@ -23,11 +26,34 @@ namespace O3DE::ProjectManager
 
         setStyleSheet("background-color: #333333;");
 
-        vLayout->addSpacing(20);
+        vLayout->addSpacing(13);
 
         // Top section
         QHBoxLayout* topLayout = new QHBoxLayout();
+        topLayout->addSpacing(16);
         topLayout->setMargin(0);
+
+        auto* tagWidget = new FilterTagWidgetContainer();
+
+        // Adjust the proxy model and disable the given feature used for filtering.
+        connect(tagWidget, &FilterTagWidgetContainer::TagRemoved, this, [=](QString tagName)
+            {
+                QSet<QString> filteredFeatureTags = proxyModel->GetFeatures();
+                filteredFeatureTags.remove(tagName);
+                proxyModel->SetFeatures(filteredFeatureTags);
+            });
+
+        // Reinitialize the tag widget in case the filter in the proxy model got invalided.
+        connect(proxyModel, &GemSortFilterProxyModel::OnInvalidated, this, [=]
+            {
+                const QSet<QString>& tagSet = proxyModel->GetFeatures();
+                QVector<QString> sortedTags(tagSet.begin(), tagSet.end());
+                std::sort(sortedTags.begin(), sortedTags.end());
+                tagWidget->Reinit(sortedTags);
+            });
+
+        topLayout->addWidget(tagWidget);
+
         topLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding));
 
         QLabel* showCountLabel = new QLabel();
@@ -43,7 +69,7 @@ namespace O3DE::ProjectManager
 
         vLayout->addLayout(topLayout);
 
-        vLayout->addSpacing(20);
+        vLayout->addSpacing(13);
 
         // Separating line
         QFrame* hLine = new QFrame();

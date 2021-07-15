@@ -49,7 +49,7 @@ namespace AZ
         class Specializations
         {
         public:
-            static constexpr size_t MaxTagNameSize = 32;
+            static constexpr size_t MaxTagNameSize = 64;
             static constexpr size_t MaxCount = 15;
             static constexpr size_t NotFound = static_cast<size_t>(-1);
             using TagName = AZStd::fixed_string<MaxTagNameSize>;

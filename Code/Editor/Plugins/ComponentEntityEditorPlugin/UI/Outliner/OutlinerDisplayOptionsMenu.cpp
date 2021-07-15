@@ -66,3 +66,5 @@ namespace EntityOutliner
         emit OnOptionToggled(DisplayOption::AutoExpand, checked);
     }
 }
+
+#include <UI/Outliner/moc_OutlinerDisplayOptionsMenu.cpp>

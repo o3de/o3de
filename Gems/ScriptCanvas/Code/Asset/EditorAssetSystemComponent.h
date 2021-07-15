@@ -12,11 +12,6 @@
 #include "EditorAssetConversionBus.h"
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <ScriptCanvas/Asset/AssetRegistry.h>
-
-#include <ScriptCanvas/Grammar/GrammarContext.h>
-#include <ScriptCanvas/Grammar/GrammarContextBus.h>
-#include <ScriptCanvas/Translation/TranslationContext.h>
-#include <ScriptCanvas/Translation/TranslationContextBus.h>
 #include <ScriptCanvas/Translation/Translation.h>
 
 namespace ScriptCanvasEditor
@@ -26,8 +21,6 @@ namespace ScriptCanvasEditor
     class EditorAssetSystemComponent
         : public AZ::Component
         , public EditorAssetConversionBus::Handler
-        , public ScriptCanvas::Grammar::RequestBus::Handler
-        , public ScriptCanvas::Translation::RequestBus::Handler
         , private AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
     {
     public:
@@ -60,20 +53,10 @@ namespace ScriptCanvasEditor
         AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> CreateLuaAsset(const AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>& editAsset, AZStd::string_view graphPathForRawLuaFile) override;
         //////////////////////////////////////////////////////////////////////////
         
-        // ScriptCanvas::Grammar::RequestBus::Handler...
-        ScriptCanvas::Grammar::Context* GetGrammarContext() override;
-        
-        // ScriptCanvas::Translation::RequestBus::Handler...
-        ScriptCanvas::Translation::Context* GetTranslationContext() override;
-
-
         ScriptCanvas::AssetRegistry& GetAssetRegistry();
 
     private:
-        ScriptCanvas::AssetRegistry m_editorAssetRegistry;
-        ScriptCanvas::Translation::Context m_translationContext;
-        ScriptCanvas::Grammar::Context m_grammarContext;
-    
+        ScriptCanvas::AssetRegistry m_editorAssetRegistry;    
         EditorAssetSystemComponent(const EditorAssetSystemComponent&) = delete;
     };
 }

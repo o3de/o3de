@@ -14,8 +14,6 @@
 #include <ScriptCanvas/Core/Nodeable.h>
 #include <ScriptCanvas/Execution/Interpreted/ExecutionInterpretedAPI.h>
 #include <ScriptCanvas/Execution/NodeableOut/NodeableOutNative.h>
-#include <ScriptCanvas/Grammar/GrammarContext.h>
-#include <ScriptCanvas/Grammar/GrammarContextBus.h>
 #include <Source/Framework/ScriptCanvasTestFixture.h>
 #include <Source/Framework/ScriptCanvasTestNodes.h>
 #include <Source/Framework/ScriptCanvasTestUtilities.h>
@@ -84,6 +82,16 @@ public:
         return &m_byValue;
     }
 };
+
+TEST_F(ScriptCanvasTestFixture, ProveError)
+{
+    EXPECT_TRUE(false);
+}
+
+TEST_F(ScriptCanvasTestFixture, ParseErrorOnKnownNull)
+{
+    ExpectParseError("LY_SC_UnitTest_ParseErrorOnKnownNull");
+}
 
 TEST_F(ScriptCanvasTestFixture, UseBehaviorContextClassConstant)
 {

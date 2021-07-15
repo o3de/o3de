@@ -376,6 +376,7 @@ namespace AzToolsFramework
         ToolsApplicationEvents::Bus::Handler::BusConnect();
         AZ::EntitySystemBus::Handler::BusConnect();
         EntityPropertyEditorRequestBus::Handler::BusConnect();
+        EditorWindowUIRequestBus::Handler::BusConnect();
         m_spacer = nullptr;
 
         m_emptyIcon = QIcon();
@@ -421,6 +422,7 @@ namespace AzToolsFramework
     {
         qApp->removeEventFilter(this);
 
+        EditorWindowUIRequestBus::Handler::BusDisconnect();
         EntityPropertyEditorRequestBus::Handler::BusDisconnect();
         ToolsApplicationEvents::Bus::Handler::BusDisconnect();
         AZ::EntitySystemBus::Handler::BusDisconnect();
@@ -4959,6 +4961,27 @@ namespace AzToolsFramework
         QWidget* widget, const QVector<QAction*>& actions)
     {
         EnableDisableComponentActions(widget, actions, false);
+    }
+
+    void EntityPropertyEditor::SetEditorUiEnabled(bool enable)
+    {
+        if (enable)
+        {
+            EnableComponentActions(this, m_entityComponentActions);
+        }
+        else
+        {
+            DisableComponentActions(this, m_entityComponentActions);
+        }
+        m_disabled = !enable;
+        SetPropertyEditorState(m_gui, enable);
+
+        for (auto componentEditor : m_componentEditors)
+        {
+            AzQtComponents::SetWidgetInteractEnabled(componentEditor, enable);
+        }
+        // record the selected state after entering/leaving component mode
+        SaveComponentEditorState();
     }
 
     void EntityPropertyEditor::EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes)

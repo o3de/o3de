@@ -24,9 +24,5 @@ namespace O3DE::ProjectManager
 
     protected slots:
         void onToggled();
-
-    private:
-        inline constexpr static int s_templateImageWidth = 92;
-        inline constexpr static int s_templateImageHeight = 122;
     };
 } // namespace O3DE::ProjectManager

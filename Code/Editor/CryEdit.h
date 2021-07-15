@@ -403,7 +403,6 @@ private:
     void OnClearRegistryData();
     void OnValidatelevel();
     void OnToolsPreferences();
-    void OnGraphicsSettings();
     void OnSwitchToDefaultCamera();
     void OnUpdateSwitchToDefaultCamera(QAction* action);
     void OnSwitchToSequenceCamera();
@@ -416,9 +415,6 @@ private:
     void OnOpenTrackView();
     void OnOpenAudioControlsEditor();
     void OnOpenUICanvasEditor();
-    void OnChangeGameSpec(UINT nID);
-    void SetGameSpecCheck(ESystemConfigSpec spec, ESystemConfigPlatform platform, int &nCheck, bool &enable);
-    void OnUpdateGameSpec(QAction* action);
     void OnOpenQuickAccessBar();
 
 public:

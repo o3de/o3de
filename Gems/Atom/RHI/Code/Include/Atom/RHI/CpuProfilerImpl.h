@@ -9,13 +9,13 @@
 #include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI.Reflect/Base.h>
 
+#include <AzCore/Component/TickBus.h>
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/shared_mutex.h>
 #include <AzCore/std/smart_ptr/intrusive_refcount.h>
 
-#include <Atom/RHI/FrameEventBus.h>
 
 namespace AZ
 {
@@ -83,7 +83,7 @@ namespace AZ
         //! cached regions, which are stored on a per thread frequency.
         class CpuProfilerImpl final
             : public CpuProfiler
-            , public FrameEventBus::Handler
+            , public SystemTickBus::Handler
         {
             friend class CpuTimingLocalStorage;
 
@@ -99,7 +99,10 @@ namespace AZ
             //! Unregisters the CpuProfilerImpl instance from the interface 
             void Shutdown();
 
-            void OnFrameBegin();
+            // SystemTickBus::Handler overrides
+            // When fired, the profiler collects all profiling data from registered threads and updates
+            // m_timeRegionMap so that the next frame has up-to-date profiling data.
+            void OnSystemTick() final override;
 
             //! CpuProfiler overrides...
             void BeginTimeRegion(TimeRegion& timeRegion) final;

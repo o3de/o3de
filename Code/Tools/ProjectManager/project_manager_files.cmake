@@ -71,6 +71,8 @@ set(FILES
     Source/GemCatalog/GemCatalogHeaderWidget.cpp
     Source/GemCatalog/GemCatalogScreen.h
     Source/GemCatalog/GemCatalogScreen.cpp
+    Source/GemCatalog/GemFilterTagWidget.h
+    Source/GemCatalog/GemFilterTagWidget.cpp
     Source/GemCatalog/GemFilterWidget.h
     Source/GemCatalog/GemFilterWidget.cpp
     Source/GemCatalog/GemInfo.h

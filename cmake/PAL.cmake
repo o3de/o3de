@@ -29,7 +29,8 @@ function(o3de_restricted_id o3de_json_file restricted)
     ly_file_read(${o3de_json_file} json_data)
     string(JSON restricted_entry ERROR_VARIABLE json_error GET ${json_data} "restricted_name")
     if(json_error)
-        message(WARNING "Unable to read restricted from '${o3de_json_file}', error: ${json_error}")
+        # Restricted fields can never be a requirement so no warning is issued
+        return()
     endif()
     if(restricted_entry)
        set(${restricted} ${restricted_entry} PARENT_SCOPE)
@@ -148,86 +149,89 @@ function(ly_get_absolute_pal_filename out_name in_name)
     set(full_name ${in_name})
 
     if(${ARGC} GREATER 4)
-        # The user has supplied an object restricted path, the object path and the object name for consideration
-        set(object_restricted_path ${ARGV2})
-        set(object_path ${ARGV3})
+        # The object name is used to resolve ambiguities when a PAL directory is requested from
+        # two different external subdirectory root paths
+        # Such as if a PAL directory for two root object paths with same relative structure was requested to be Palified
+        # i.e <gem-root1>/Platform/<platform-name>/IO and <gem-root2>/Platform/<platform-name>/IO
+        # Normally the restricted PAL path for both gems would be "<restricted-root-path>/<platform-name>/IO".
+        # The object name can be used to make this path unique
+        # "<restricted-root-path>/<platform-name>/<custom-name1>/IO" for gem 1 and
+        # "<restricted-root-path>/<platform-name>/<custom-name2>/IO" for gem 2
         set(object_name ${ARGV4})
-
-        # if the file is not in the object path then we cannot determine a PAL file for it
-        file(RELATIVE_PATH relative_path ${object_path} ${full_name})
-        if (NOT (IS_ABSOLUTE relative_path OR relative_path MATCHES [[^(\.\./)+(.*)]]))
-            if (NOT EXISTS ${full_name})
-                string(REGEX MATCH "${object_path}/(.*)/Platform/([^/]*)/?(.*)$" match ${full_name})
-                if(NOT CMAKE_MATCH_1)
-                    string(REGEX MATCH "${object_path}/Platform/([^/]*)/?(.*)$" match ${full_name})
-                    set(full_name ${object_restricted_path}/${CMAKE_MATCH_1}/${object_name})
-                    if(CMAKE_MATCH_2)
-                        string(APPEND full_name "/" ${CMAKE_MATCH_2})
-                    endif()
-                elseif("${CMAKE_MATCH_2}" IN_LIST PAL_RESTRICTED_PLATFORMS)
-                    set(full_name ${object_restricted_path}/${CMAKE_MATCH_2}/${object_name}/${CMAKE_MATCH_1})
-                    if(CMAKE_MATCH_3)
-                        string(APPEND full_name "/" ${CMAKE_MATCH_3})
-                    endif()
-                endif()
-            endif()
-        endif()
-        set(${out_name} ${full_name} PARENT_SCOPE)
-
-    elseif(${ARGC} GREATER 3)
-        # The user has supplied an object restricted path, the object path for consideration
-        set(object_restricted_path ${ARGV2})
-        set(object_path ${ARGV3})
-
-        # if the file is not in the object path then we cannot determine a PAL file for it
-        file(RELATIVE_PATH relative_path ${object_path} ${full_name})
-        if (NOT (IS_ABSOLUTE relative_path OR relative_path MATCHES [[^(\.\./)+(.*)]]))
-            if (NOT EXISTS ${full_name})
-                string(REGEX MATCH "${object_path}/(.*)/Platform/([^/]*)/?(.*)$" match ${full_name})
-                if(NOT CMAKE_MATCH_1)
-                    string(REGEX MATCH "${object_path}/Platform/([^/]*)/?(.*)$" match ${full_name})
-                    set(full_name ${object_restricted_path}/${CMAKE_MATCH_1})
-                    if(CMAKE_MATCH_2)
-                        string(APPEND full_name "/" ${CMAKE_MATCH_2})
-                    endif()
-                elseif("${CMAKE_MATCH_2}" IN_LIST PAL_RESTRICTED_PLATFORMS)
-                    set(full_name ${object_restricted_path}/${CMAKE_MATCH_2}/${CMAKE_MATCH_1})
-                    if(CMAKE_MATCH_3)
-                        string(APPEND full_name "/" ${CMAKE_MATCH_3})
-                    endif()
-                endif()
-            endif()
-        endif()
-        set(${out_name} ${full_name} PARENT_SCOPE)
-
-    else()
-        # The user has not supplied any path so we must assume it is the o3de engine restricted and o3de engine path
-        # if the file is not in the o3de engine path then we cannot determine a PAL file for it
-        file(RELATIVE_PATH relative_path ${LY_ROOT_FOLDER} ${full_name})
-        if (NOT (IS_ABSOLUTE relative_path OR relative_path MATCHES [[^(\.\./)+(.*)]]))
-            if (NOT EXISTS ${full_name})
-                string(REGEX MATCH "${LY_ROOT_FOLDER}/(.*)/Platform/([^/]*)/?(.*)$" match ${full_name})
-                if(NOT CMAKE_MATCH_1)
-                    string(REGEX MATCH "${LY_ROOT_FOLDER}/Platform/([^/]*)/?(.*)$" match ${full_name})
-                    set(full_name ${O3DE_ENGINE_RESTRICTED_PATH}/${CMAKE_MATCH_1})
-                    if(CMAKE_MATCH_2)
-                        string(APPEND full_name "/" ${CMAKE_MATCH_2})
-                    endif()
-                elseif("${CMAKE_MATCH_2}" IN_LIST PAL_RESTRICTED_PLATFORMS)
-                    set(full_name ${O3DE_ENGINE_RESTRICTED_PATH}/${CMAKE_MATCH_2}/${CMAKE_MATCH_1})
-                    if(CMAKE_MATCH_3)
-                        string(APPEND full_name "/" ${CMAKE_MATCH_3})
-                    endif()
-                endif()
-            endif()
-        endif()
-        set(${out_name} ${full_name} PARENT_SCOPE)
     endif()
+
+    # The Default object path for path is the LY_ROOT_FOLDER
+    cmake_path(SET object_path NORMALIZE "${LY_ROOT_FOLDER}")
+    if(${ARGC} GREATER 3)
+        # The user has supplied an object restricted path, the object path for consideration
+        cmake_path(SET object_path NORMALIZE ${ARGV3})
+    endif()
+
+    # The Default restricted object path is the result of the read_engine_restricted_path function
+    cmake_path(SET object_restricted_path NORMALIZE "${O3DE_ENGINE_RESTRICTED_PATH}")
+    if(${ARGC} GREATER 2)
+        # The user has supplied an object restricted path
+        cmake_path(SET object_restricted_path NORMALIZE ${ARGV2})
+    endif()
+
+    # The input path must exist in order to form a PAL path
+    if (NOT EXISTS ${full_name})
+        # if the file is not in the object path then we cannot determine a PAL file for it
+        cmake_path(IS_PREFIX object_path ${full_name} is_input_path_in_root)
+        if(is_input_path_in_root)
+            cmake_path(RELATIVE_PATH full_name BASE_DIRECTORY ${object_path} OUTPUT_VARIABLE relative_object_path)
+            cmake_path(SET current_object_path ${relative_object_path})
+
+            # Remove one path segment from the end of the current_object_path and prepend it to the list path_segments
+            cmake_path(GET current_object_path PARENT_PATH parent_path)
+            cmake_path(GET current_object_path FILENAME path_segment)
+            list(PREPEND path_segments_visited path_segment)
+            cmake_path(COMPARE current_object_path NOT_EQUAL parent_path is_prev_path_segment)
+            cmake_path(SET current_object_path "${parent_path}")
+
+            while(is_prev_path_segment)
+                # The Path is in a PAL structure
+                # Decompose the path into sections before "Platform" and after "Platform"
+                if(path_segment STREQUAL "Platform")
+                    # The first path segment after the "<pre-platform-paths>/Platform/<post-platform-paths>"
+                    # is a potential platform name. Store it off for later checks
+                    list(GET path_segments_visited 0 candidate_platform_name)
+
+                    # Store off all the path segments iterated from the end in the post-"Platform" path
+                    cmake_path(APPEND post_platform_paths ${path_segments_visited})
+                    # The parent path is just the pre-"Platform" section of the path
+                    cmake_path(SET pre_platform_paths "${parent_path}")
+                    break()
+                endif()
+
+                # Remove one path segment from the end of the current_object_path and prepend it to the list path_segments
+                cmake_path(GET current_object_path PARENT_PATH parent_path)
+                cmake_path(GET current_object_path FILENAME path_segment)
+                list(PREPEND path_segments_visited path_segment)
+                cmake_path(COMPARE current_object_path NOT_EQUAL parent_path is_prev_path_segment)
+                cmake_path(SET current_object_path "${parent_path}")
+            endwhile()
+
+            # Compose a candidate restricted path and examine if it exists
+            cmake_path(APPEND object_restricted_path ${pre_platform_paths} "Platform" ${post_platform_paths}
+                OUTPUT_VARIABLE candidate_PAL_path)
+            if(NOT EXISTS ${candidate_PAL_path})
+                if("${candidate_platform_name}" IN_LIST PAL_RESTRICTED_PLATFORMS)
+                    cmake_path(APPEND object_restricted_path ${candidate_platform_name} ${object_name}
+                        ${pre_platform_paths} ${post_platform_paths} OUTPUT_VARIABLE candidate_PAL_path)
+                endif()
+            endif()
+            if(EXISTS ${candidate_PAL_path})
+                cmake_path(SET full_name ${candidate_PAL_path})
+            endif()
+        endif()
+    endif()
+    set(${out_name} ${full_name} PARENT_SCOPE)
 endfunction()
 
 function(ly_get_list_relative_pal_filename out_name in_name)
     ly_get_absolute_pal_filename(abs_name ${in_name} ${ARGN})
-    file(RELATIVE_PATH relative_name ${CMAKE_CURRENT_LIST_DIR} ${abs_name})
+    cmake_path(RELATIVE_PATH abs_name BASE_DIRECTORY ${CMAKE_CURRENT_LIST_DIR} OUTPUT_VARIABLE relative_name)
     set(${out_name} ${relative_name} PARENT_SCOPE)
 endfunction()
 

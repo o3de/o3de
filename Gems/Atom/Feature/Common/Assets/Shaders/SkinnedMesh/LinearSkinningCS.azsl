@@ -14,6 +14,15 @@ option enum class SkinningMethod { LinearSkinning, DualQuaternion } o_skinningMe
 option bool o_applyMorphTargets = false;
 option bool o_applyColorMorphTargets = false;
 
+float3 ReadFloat3FromFloatBuffer(Buffer<float> buffer, uint index)
+{
+    float3 result;
+    result.x = buffer[index * 3];
+    result.y = buffer[index * 3 + 1];
+    result.z = buffer[index * 3 + 2];
+    return result;
+}
+
 // Apply a morph target delta with three components
 void ApplyMorphTargetDelta(uint streamOffset, uint vertexIndex, inout float3 modifiedValue)
 {
@@ -162,10 +171,10 @@ void MainCS(uint3 thread_id: SV_DispatchThreadID)
             return;
         }
 
-        float3 position = InstanceSrg::m_sourcePositions[i];
-        float3 normal = InstanceSrg::m_sourceNormals[i];        
-        float4 tangent = InstanceSrg::m_sourceTangents[i];        
-        float3 bitangent = InstanceSrg::m_sourceBiTangents[i];
+        float3 position = ReadFloat3FromFloatBuffer(InstanceSrg::m_sourcePositions, i);
+        float3 normal = ReadFloat3FromFloatBuffer(InstanceSrg::m_sourceNormals, i);    
+        float4 tangent = InstanceSrg::m_sourceTangents[i];      
+        float3 bitangent = ReadFloat3FromFloatBuffer(InstanceSrg::m_sourceBiTangents, i);
         
         // Four indices, 16-bits each, stored in 2 32-bit uints
         uint2 rawIndices = InstanceSrg::m_sourceBlendIndices.Load2(i * 8);

@@ -94,7 +94,12 @@ namespace AZ
                 {
                     continue;
                 }
-                    
+
+                if (!diffuseProbeGrid->GetIsVisible())
+                {
+                    continue;
+                }
+
                 // probe irradiance image
                 {
                     if (diffuseProbeGrid->GetMode() == DiffuseProbeGridMode::Baked)
@@ -178,6 +183,11 @@ namespace AZ
             {
                 if (diffuseProbeGrid->GetMode() == DiffuseProbeGridMode::Baked &&
                     !diffuseProbeGrid->HasValidBakedTextures())
+                {
+                    continue;
+                }
+
+                if (!diffuseProbeGrid->GetIsVisible())
                 {
                     continue;
                 }
