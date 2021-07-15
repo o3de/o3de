@@ -7,6 +7,8 @@
  */
 #include "EditorCommon.h"
 
+#include "UiCanvasComponent.h"
+
 #include "EditorDefs.h"
 #include "Settings.h"
 #include <AzCore/std/containers/map.h>
@@ -252,6 +254,7 @@ ViewportWidget::~ViewportWidget()
     AzToolsFramework::EditorPickModeNotificationBus::Handler::BusDisconnect();
     FontNotificationBus::Handler::BusDisconnect();
     AZ::TickBus::Handler::BusDisconnect();
+    LyShinePassDataRequestBus::Handler::BusDisconnect();
 
     m_uiRenderer.reset();
 
@@ -272,6 +275,8 @@ void ViewportWidget::InitUiRenderer()
     lyShine->SetUiRendererForEditor(m_uiRenderer);
 
     m_draw2d = AZStd::make_shared<CDraw2d>(GetViewportContext());
+
+    LyShinePassDataRequestBus::Handler::BusConnect(GetViewportContext()->GetRenderScene()->GetId());
 }
 
 ViewportInteraction* ViewportWidget::GetViewportInteraction()
@@ -882,6 +887,40 @@ void ViewportWidget::OnFontsReloaded()
 void ViewportWidget::OnFontTextureUpdated([[maybe_unused]] IFFont* font)
 {
     m_fontTextureHasChanged = true;
+}
+
+LyShine::AttachmentImagesAndDependencies ViewportWidget::GetRenderTargets()
+{
+    LyShine::AttachmentImagesAndDependencies canvasTargets;
+
+    AZ::EntityId canvasEntityId;
+    UiEditorMode editorMode = m_editorWindow->GetEditorMode();
+    if (editorMode == UiEditorMode::Edit)
+    {
+        canvasEntityId = m_editorWindow->GetCanvas();
+    }
+    else // if (editorMode == UiEditorMode::Preview)
+    {
+        canvasEntityId = m_editorWindow->GetPreviewModeCanvas();
+    }
+
+    if (canvasEntityId.IsValid())
+    {
+        AZ::Entity* canvasEntity = nullptr;
+        EBUS_EVENT_RESULT(canvasEntity, AZ::ComponentApplicationBus, FindEntity, canvasEntityId);
+        AZ_Assert(canvasEntity, "Canvas entity not found by ID");
+        if (canvasEntity)
+        {
+            UiCanvasComponent* canvasComponent = canvasEntity->FindComponent<UiCanvasComponent>();
+            AZ_Assert(canvasComponent, "Canvas entity has no canvas component");
+            if (canvasComponent)
+            {
+                canvasComponent->GetRenderTargets(canvasTargets);
+            }
+        }
+    }
+
+    return canvasTargets;
 }
 
 QPointF ViewportWidget::WidgetToViewport(const QPointF & point) const

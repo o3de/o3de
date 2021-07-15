@@ -92,6 +92,9 @@ public: // member functions
     bool HandleInputEventForLoadedCanvases(const AzFramework::InputChannel& inputChannel);
     bool HandleTextEventForLoadedCanvases(const AZStd::string& textUTF8);
 
+    // Get the render targets used by all currently loaded UI Canvases
+    void GetRenderTargets(LyShine::AttachmentImagesAndDependencies& attachmentImagesAndDependencies);
+
 #ifndef _RELEASE
     void DebugDisplayCanvasData(int setting) const;
     void DebugDisplayDrawCallData() const;
