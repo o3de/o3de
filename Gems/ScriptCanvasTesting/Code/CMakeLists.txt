@@ -112,6 +112,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     )
     ly_add_googletest(
         NAME Gem::ScriptCanvasTesting.Editor.Tests
+        TEST_SUITE smoke
     )
 endif()
 
