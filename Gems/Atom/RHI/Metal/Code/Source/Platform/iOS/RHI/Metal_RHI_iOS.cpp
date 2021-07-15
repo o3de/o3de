@@ -37,6 +37,7 @@ namespace Platform
 
     void PresentInternal(id <MTLCommandBuffer> mtlCommandBuffer, id<CAMetalDrawable> drawable, float syncInterval, float refreshRate)
     {
+        //seconds per frame (1/refreshrate) * num frames (sync interval)
         float presentAfterMinimumDuration = syncInterval / refreshRate;
         if (hasPresentAfterMinimumDuration > 0.0f)
         {

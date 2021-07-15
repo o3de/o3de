@@ -55,6 +55,8 @@ namespace Platform
     {
         bool hasPresentAfterMinimumDurationAPI = false;
         bool framePresented = false;
+        
+        //seconds per frame (1/refreshrate) * num frames (sync interval)
         float presentAfterMinimumDuration = syncInterval / refreshRate;
         
 #if defined(__MAC_10_15_4)
