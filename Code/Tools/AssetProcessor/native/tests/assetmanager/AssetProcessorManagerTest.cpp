@@ -5294,6 +5294,6 @@ TEST_F(MetadataFileTest, MetadataFile_SourceFileExtensionDifferentCase)
 
     m_assetProcessorManager->AssessAddedFile(tempPath.absoluteFilePath(metadataFile));
 
-    ASSERT_TRUE(BlockUntilIdle(50000));
+    ASSERT_TRUE(BlockUntilIdle(5000));
     ASSERT_EQ(jobDetails.m_jobEntry.m_pathRelativeToWatchFolder, relFileName);
 }
