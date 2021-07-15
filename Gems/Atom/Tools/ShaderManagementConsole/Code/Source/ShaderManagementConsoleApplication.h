@@ -7,7 +7,6 @@
 
 #pragma once
 
-
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/UserSettings/UserSettingsProvider.h>
