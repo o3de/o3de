@@ -56,6 +56,12 @@ namespace ScriptCanvas
                 return " + ";
             }
 
+            AZStd::optional<NodeRequests::SlotSelectionInfo> MathExpression::CreateSlotTypeSelectorInfo([[maybe_unused]] const SlotId& slotID)
+            {
+                ScriptCanvas::NodeRequests::SlotSelectionInfo info;
+                info.m_restrictedTypes= { ToAZType(ScriptCanvas::Data::Type::Number()), ToAZType(ScriptCanvas::Data::Type::Vector3()) };
+                return info;
+            }
         }
     }
 }

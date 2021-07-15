@@ -32,6 +32,7 @@ namespace ScriptCanvas
 
             public:
                 static void ConfigureSlotDisplayType(ScriptCanvas::Node* node, ScriptCanvas::Slot* slot, AZ::Uuid type, AZStd::string name);
+                AZStd::optional<NodeRequests::SlotSelectionInfo>  CreateSlotTypeSelectorInfo([[maybe_unused]] const SlotId& slotID) override;
 
             protected:
 

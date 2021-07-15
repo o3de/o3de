@@ -713,8 +713,6 @@ namespace ScriptCanvasEditor
                     VariablePaletteRequests::SlotSetup selectedSlotSetup;
                     bool createSlot = false;
 
-                    AZStd::unordered_set<AZ::Uuid> selections = { ToAZType(ScriptCanvas::Data::Type::Number()),
-                                                                  ToAZType(ScriptCanvas::Data::Type::Vector3()) };
                     QPoint scenePoint(aznumeric_cast<int>(position.GetX()), aznumeric_cast<int>(position.GetY()));
                     VariablePaletteRequestBus::BroadcastResult(
                         createSlot, &VariablePaletteRequests::ShowSlotTypeSelector, slot, scenePoint, selectedSlotSetup);

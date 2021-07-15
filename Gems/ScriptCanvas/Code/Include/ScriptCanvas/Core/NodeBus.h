@@ -16,6 +16,7 @@
 
 #include <ScriptCanvas/Core/SlotConfigurations.h>
 
+
 namespace ScriptCanvas
 {
     struct VariableId;
@@ -39,6 +40,15 @@ namespace ScriptCanvas
     public:
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         using BusIdType = ID;
+
+        struct SlotSelectionInfo
+        {
+            AZStd::unordered_set<AZ::Uuid> m_restrictedTypes;
+        };
+        virtual AZStd::optional<SlotSelectionInfo> CreateSlotTypeSelectorInfo([[maybe_unused]] const SlotId& slotID)
+        {
+            return AZStd::nullopt;
+        }
 
         virtual Slot* GetSlot(const SlotId& slotId) const = 0;
         virtual size_t GetSlotIndex(const SlotId& slotId) const = 0;

@@ -1137,13 +1137,14 @@ namespace ScriptCanvasEditor
         AZ_Assert(slot, "A valid slot must be provided");
         if (slot)
         {
+            m_slotTypeSelector = new SlotTypeSelectorWidget(GetActiveScriptCanvasId(), this);
+            AZStd::optional<NodeRequests::SlotSelectionInfo> slotSelectionInfoReturnValue;
             
-            m_slotTypeSelector = new SlotTypeSelectorWidget(GetActiveScriptCanvasId(), this); // Recreate the widget every time because of https://bugreports.qt.io/browse/QTBUG-76509
-            if (azrtti_istypeof<const ScriptCanvas::Nodes::Math::MathExpression*>(slot->GetNode()))
+            NodeRequestBus::EventResult(slotSelectionInfoReturnValue, slot->GetNode()->GetEntityId(), &NodeRequests::CreateSlotTypeSelectorInfo, slot->GetId());
+            if (slotSelectionInfoReturnValue)
             {
-                AZStd::unordered_set<AZ::Uuid> variableTypes = { ToAZType(ScriptCanvas::Data::Type::Number()), ToAZType(ScriptCanvas::Data::Type::Vector3()) };
-
-                m_slotTypeSelector->PopulateVariablePalette({}, &variableTypes);
+                // restrict the types
+                m_slotTypeSelector->PopulateVariablePalette({}, &slotSelectionInfoReturnValue->m_restrictedTypes);
             }
             else
             {
