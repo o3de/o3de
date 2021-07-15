@@ -7,6 +7,8 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <SceneAPI/SceneCore/Components/ExportingComponent.h>
+#include <SceneAPI/SceneCore/Events/ExportProductList.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 
 namespace AZ
 {
@@ -30,6 +32,12 @@ namespace AZ
                 if (serializeContext)
                 {
                     serializeContext->Class<ExportingComponent, AZ::Component>()->Version(2);
+                }
+
+                AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
+                if (behaviorContext)
+                {
+                    Events::ExportProductList::Reflect(behaviorContext);
                 }
             }
         } // namespace SceneCore
