@@ -21,6 +21,13 @@ namespace Multiplayer
         , m_pendingRecord(remoteNetworkRole)
         , m_sentRecords(net_EntityReplicatorRecordsMax)
     {
+        if ( ownsLifetime == OwnsLifetime::False )
+        {
+            // This entity is owned by some other authority, this publisher will only be used for updating (not creating).
+            m_remoteReplicatorEstablished = true;
+            m_replicatorState = EntityReplicatorState::Updating;
+        }
+        
         AZ_Warning(
             "Gene", false, "PropertyPublisher constructed. m_ownsLifetime: %s, m_netBindComponent->GetNetEntityRole: %s, remoteNetworkRole: %s",
             OwnLifetimeString[static_cast<int>(ownsLifetime)],
@@ -254,7 +261,7 @@ namespace Multiplayer
             break;
 
         case PropertyPublisher::EntityReplicatorState::Creating:
-            if (m_ownsLifetime == PropertyPublisher::OwnsLifetime::True || m_netBindComponent->IsNetEntityRoleAutonomous())
+            if (m_ownsLifetime == PropertyPublisher::OwnsLifetime::True)
             {
                 needsUpdate = PrepareAddEntityRecord();
             }
