@@ -29,13 +29,20 @@ namespace Platform
         return physicalDeviceList;
     }
 
-    void PresentInternal(id <MTLCommandBuffer> mtlCommandBuffer, id<CAMetalDrawable> drawable, float syncInterval)
+    float GetRefreshRate()
     {
+        NativeScreenType* nativeScreen = [NativeScreenType mainScreen];
+        return [nativeScreen maximumFramesPerSecond];
+    }
+
+    void PresentInternal(id <MTLCommandBuffer> mtlCommandBuffer, id<CAMetalDrawable> drawable, float syncInterval, float refreshRate)
+    {
+        float presentAfterMinimumDuration = syncInterval / refreshRate;
         bool hasPresentAfterMinimumDuration = [drawable respondsToSelector:@selector(presentAfterMinimumDuration:)];
                 
-        if (hasPresentAfterMinimumDuration && syncInterval > 0.0f)
+        if (hasPresentAfterMinimumDuration && hasPresentAfterMinimumDuration > 0.0f)
         {
-            [mtlCommandBuffer presentDrawable:drawable afterMinimumDuration:syncInterval];
+            [mtlCommandBuffer presentDrawable:drawable afterMinimumDuration:presentAfterMinimumDuration];
         }
         else
         {

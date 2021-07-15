@@ -43,11 +43,38 @@ namespace Platform
         }
         return physicalDeviceList;
     }
-
-    void PresentInternal(id <MTLCommandBuffer> mtlCommandBuffer, id<CAMetalDrawable> drawable, float syncInterval)
+    
+    float GetRefreshRate()
     {
-        AZ_UNUSED(syncInterval);
-        [mtlCommandBuffer presentDrawable:drawable];
+        CGDirectDisplayID display = CGMainDisplayID();
+        CGDisplayModeRef currentMode = CGDisplayCopyDisplayMode(display);
+        return CGDisplayModeGetRefreshRate(currentMode);
+    }
+
+    void PresentInternal(id <MTLCommandBuffer> mtlCommandBuffer, id<CAMetalDrawable> drawable, float syncInterval, float refreshRate)
+    {
+        bool hasPresentAfterMinimumDurationAPI = false;
+        bool framePresented = false;
+        float presentAfterMinimumDuration = syncInterval / refreshRate;
+        
+#if defined(__MAC_11_0)
+        if(@available(iOS 14.0, macOS 11.0, *))
+        {
+            //We check is presentAfterMinimumDuration is present as [MTLCommandBuffer presentDrawable: afterMinimumDuration:] is a
+            //utility function that forwards to [MTLDrawable presentAfterMinimumDuration]
+            hasPresentAfterMinimumDurationAPI = [drawable respondsToSelector:@selector(presentAfterMinimumDuration:)];
+            if (hasPresentAfterMinimumDurationAPI && presentAfterMinimumDuration > 0.0f)
+            {
+                [mtlCommandBuffer presentDrawable:drawable afterMinimumDuration:presentAfterMinimumDuration];
+                framePresented = true;
+            }
+        }
+#endif
+
+        if(!framePresented)
+        {
+            [mtlCommandBuffer presentDrawable:drawable];
+        }
     }
 
     CGRect GetScreenBounds(NativeWindowType* nativeWindow)
