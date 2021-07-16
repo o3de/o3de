@@ -416,7 +416,27 @@
                             }
                         }
                     ]
-                },             
+                },
+                {
+                    "Name": "LyShinePass",
+                    "TemplateName": "LyShineParentTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputOutput",
+                            "AttachmentRef": {
+                                "Pass": "DebugOverlayPass",
+                                "Attachment": "InputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "DepthPrePass",
+                                "Attachment": "Depth"
+                            }
+                        }
+                    ]
+                },
                 {
                     "Name": "UIPass",
                     "TemplateName": "UIParentTemplate",
@@ -424,7 +444,7 @@
                         {
                             "LocalSlot": "InputOutput",
                             "AttachmentRef": {
-                                "Pass": "DebugOverlayPass",
+                                "Pass": "LyShinePass",
                                 "Attachment": "InputOutput"
                             }
                         },
