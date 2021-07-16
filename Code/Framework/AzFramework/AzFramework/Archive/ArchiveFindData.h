@@ -43,7 +43,11 @@ namespace AZ::IO
         ArchiveFileIterator operator++();
         ArchiveFileIterator operator++(int);
 
+        bool operator==(const AZ::IO::ArchiveFileIterator& rhs) const;
+
         explicit operator bool() const;
+
+        size_t GetHash() const;
 
         inline static constexpr size_t FilenameMaxLength = 256;
         AZStd::fixed_string<FilenameMaxLength> m_filename;
@@ -53,6 +57,11 @@ namespace AZ::IO
     private:
         friend class FindData;
         bool m_lastFetchValid{};
+    };
+
+    struct ArchiveFileIteratorHash
+    {
+        size_t operator()(const AZ::IO::ArchiveFileIterator& iter) const;
     };
 
     struct AZStdStringLessCaseInsensitive
@@ -74,7 +83,7 @@ namespace AZ::IO
         void ScanFS(IArchive* archive, AZStd::string_view path);
         void ScanZips(IArchive* archive, AZStd::string_view path);
 
-        using FileStack = AZStd::vector<ArchiveFileIterator>;
-        FileStack m_fileStack;
+        using FileSet = AZStd::unordered_set<ArchiveFileIterator, ArchiveFileIteratorHash>;
+        FileSet m_fileSet;
     };
 }
