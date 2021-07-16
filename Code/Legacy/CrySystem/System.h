@@ -277,7 +277,6 @@ public:
     ~CSystem();
 
     static void OnLanguageCVarChanged(ICVar* language);
-    static void OnLanguageAudioCVarChanged(ICVar* language);
     static void OnLocalizationFolderCVarChanged(ICVar* const pLocalizationFolder);
     // adding CVAR to toggle assert verbosity level
     static void OnAssertLevelCvarChanged(ICVar* pArgs);
