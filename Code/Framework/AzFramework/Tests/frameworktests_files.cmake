@@ -7,44 +7,28 @@
 #
 
 set(FILES
-    ../AzCore/Tests/Main.cpp
+    ../../AzCore/Tests/Main.cpp
     Spawnable/SpawnableEntitiesManagerTests.cpp
     ArchiveCompressionTests.cpp
     ArchiveTests.cpp
     BehaviorEntityTests.cpp
     BinToTextEncode.cpp
-    ComponentAddRemove.cpp
-    ComponentAdapterTests.cpp
     CameraInputTests.cpp
     ClickDetectorTests.cpp
     CursorStateTests.cpp
     EntityContext.cpp
-    EntityTestbed.h
-    FileFunc.cpp
     FileIO.cpp
     FileTagTests.cpp
-    FrameworkApplicationFixture.h
     GenAppDescriptors.cpp
-    GenericComponentWrapperTest.cpp
-    InstanceDataHierarchy.cpp
     OctreePerformanceTests.cpp
     OctreeTests.cpp
-    Slices.cpp
-    Script/ScriptComponentTests.cpp
-    Script/ScriptEntityTests.cpp
     AssetCatalog.cpp
     AssetProcessorConnection.cpp
     NativeWindow.cpp
-    TransformComponent.cpp
-    SQLiteConnectionTests.cpp
     ProcessLaunchParseTests.cpp
     Application.cpp
     PlatformHelper.cpp
     Scene.cpp
-    EntityOwnershipService/EntityOwnershipServiceTestFixture.h
-    EntityOwnershipService/EntityOwnershipServiceTestFixture.cpp
-    EntityOwnershipService/SliceEditorEntityOwnershipTests.cpp
-    EntityOwnershipService/SliceEntityOwnershipTests.cpp
     CameraState.cpp
     InputTests.cpp
 )

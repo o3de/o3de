@@ -14,7 +14,9 @@ namespace UnitTest
 
     TEST_F(PrefabInstantiateTest, PrefabInstantiate_InstantiateInvalidTemplate_InstantiateFails)
     {
+        AZ_TEST_START_TRACE_SUPPRESSION;
         EXPECT_FALSE(m_prefabSystemComponent->InstantiatePrefab(AzToolsFramework::Prefab::InvalidTemplateId));
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
     }
 
     TEST_F(PrefabInstantiateTest, PrefabInstantiate_NoNestingTemplate_InstantiateSucceeds)

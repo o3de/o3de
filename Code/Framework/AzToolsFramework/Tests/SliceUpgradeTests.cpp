@@ -276,6 +276,7 @@ namespace UnitTest
     TEST_F(SliceUpgradeTest, IntermmediateDataTypeChange)
     {
         TestDataA::Reflect(m_serializeContext.get());
+        AzToolsFramework::Components::EditorComponentBase::Reflect(m_serializeContext.get());
         TestComponentA_V0::Reflect(m_serializeContext.get());
         AZ::Entity* entityA = aznew AZ::Entity();
         TestComponentA_V0* component = entityA->CreateComponent<TestComponentA_V0>();
@@ -321,6 +322,7 @@ namespace UnitTest
     TEST_F(SliceUpgradeTest, TypeChangeInUnorderedMap)
     {
         TestDataB_V0::Reflect(m_serializeContext.get());
+        AzToolsFramework::Components::EditorComponentBase::Reflect(m_serializeContext.get());
         TestComponentB_V0::Reflect(m_serializeContext.get());
         AZ::Entity* entityA = aznew AZ::Entity();
         TestComponentB_V0* componentB = entityA->CreateComponent<TestComponentB_V0>();
@@ -396,6 +398,7 @@ namespace UnitTest
     TEST_F(SliceUpgradeTest, TypeChangeInVector)
     {
         TestDataB_V0::Reflect(m_serializeContext.get());
+        AzToolsFramework::Components::EditorComponentBase::Reflect(m_serializeContext.get());
         TestComponentC_V0::Reflect(m_serializeContext.get());
         AZ::Entity* entityA = aznew AZ::Entity();
         TestComponentC_V0* componentC = entityA->CreateComponent<TestComponentC_V0>();
@@ -453,6 +456,7 @@ namespace UnitTest
     TEST_F(SliceUpgradeTest, UpgradeSkipVersion_TypeChange_FloatToDouble)
     {
         // 1. Create an entity with a TestComponentE_V4 with the default value for m_data
+        AzToolsFramework::Components::EditorComponentBase::Reflect(m_serializeContext.get());
         TestComponentE_V4::Reflect(m_serializeContext.get());
         AZ::Entity* testEntity = aznew AZ::Entity();
         TestComponentE_V4* componentEV4 = testEntity->CreateComponent<TestComponentE_V4>();
@@ -564,6 +568,7 @@ namespace UnitTest
         SliceUpgradeTestAsset::Reflect(m_serializeContext.get());
         AzFramework::SimpleAssetReference<SliceUpgradeTestAsset>::Register(*m_serializeContext.get());
 
+        AzToolsFramework::Components::EditorComponentBase::Reflect(m_serializeContext.get());
         TestComponentD_V1::Reflect(m_serializeContext.get());
         AZ::Entity* entity = aznew AZ::Entity();
         entity->CreateComponent<TestComponentD_V1>();

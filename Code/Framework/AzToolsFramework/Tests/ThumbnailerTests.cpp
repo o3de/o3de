@@ -21,7 +21,6 @@ namespace UnitTest
 
     class ThumbnailerTests
         : public ::testing::Test
-        , public TraceBusRedirector
     {
     protected:
         void SetUp() override
@@ -31,8 +30,6 @@ namespace UnitTest
             // changes on shutdown. In some cases this would cause a crash while the unit test
             // was running, because the environment wasn't setup for it to save these settings.
             AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
-
-            TraceBusRedirector::BusConnect();
 
             AZStd::string entityName("test");
             AZ::EntityId testEntityId;
@@ -62,8 +59,6 @@ namespace UnitTest
 
         void TearDown() override
         {
-            TraceBusRedirector::BusDisconnect();
-
             AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
                 &AzToolsFramework::EditorEntityContextRequestBus::Events::DestroyEditorEntity,
                 m_testEntity->GetId());

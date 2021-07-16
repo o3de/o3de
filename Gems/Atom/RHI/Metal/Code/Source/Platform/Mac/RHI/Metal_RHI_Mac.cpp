@@ -44,11 +44,36 @@ namespace Platform
         }
         return physicalDeviceList;
     }
-
-    void PresentInternal(id <MTLCommandBuffer> mtlCommandBuffer, id<CAMetalDrawable> drawable, float syncInterval)
+    
+    float GetRefreshRate()
     {
-        AZ_UNUSED(syncInterval);
-        [mtlCommandBuffer presentDrawable:drawable];
+        CGDirectDisplayID display = CGMainDisplayID();
+        CGDisplayModeRef currentMode = CGDisplayCopyDisplayMode(display);
+        return CGDisplayModeGetRefreshRate(currentMode);
+    }
+
+    void PresentInternal(id <MTLCommandBuffer> mtlCommandBuffer, id<CAMetalDrawable> drawable, float syncInterval, float refreshRate)
+    {
+        bool framePresented = false;
+        
+        //seconds per frame (1/refreshrate) * num frames (sync interval)
+        float presentAfterMinimumDuration = syncInterval / refreshRate;
+        
+#if defined(__MAC_10_15_4)
+        if(@available(macOS 10.15.4, *))
+        {
+            if(presentAfterMinimumDuration > 0.0f)
+            {
+                [mtlCommandBuffer presentDrawable:drawable afterMinimumDuration:presentAfterMinimumDuration];
+                framePresented = true;
+            }
+        }
+#endif
+
+        if(!framePresented)
+        {
+            [mtlCommandBuffer presentDrawable:drawable];
+        }
     }
 
     CGRect GetScreenBounds(NativeWindowType* nativeWindow)

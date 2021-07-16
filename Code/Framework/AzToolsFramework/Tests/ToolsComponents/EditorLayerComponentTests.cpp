@@ -249,8 +249,6 @@ namespace AzToolsFramework
             
             m_app.Stop();
             AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
-
-            
         }
 
         // A few tests save a layer and want to check the state after saving.

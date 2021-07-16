@@ -280,14 +280,11 @@ namespace AZ
             return SystemFile::Exists(resolvedPath);
         }
 
-        void LocalFileIO::CheckInvalidWrite(const char* path)
+        void LocalFileIO::CheckInvalidWrite([[maybe_unused]] const char* path)
         {
-            (void)path;
-
 #if defined(AZ_ENABLE_TRACING)
             const char* assetsAlias = GetAlias("@assets@");
-
-            if (((path) && (assetsAlias) && (azstrnicmp(path, assetsAlias, strlen(assetsAlias)) == 0)))
+            if (path && assetsAlias && AZ::IO::PathView(path).IsRelativeTo(assetsAlias))
             {
                 AZ_Error("FileIO", false, "You may not alter data inside the asset cache.  Please check the call stack and consider writing into the source asset folder instead.\n"
                     "Attempted write location: %s", path);

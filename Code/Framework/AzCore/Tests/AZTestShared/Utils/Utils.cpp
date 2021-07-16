@@ -8,9 +8,9 @@
  */
 
 #include <AZTestShared/Utils/Utils.h>
-#include "AzCore/Component/Entity.h"
-#include "AzCore/Asset/AssetManager.h"
-#include "AzCore/Slice/SliceComponent.h"
+#include <AzCore/Component/Entity.h>
+#include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Slice/SliceComponent.h>
 
 namespace UnitTest
 {
