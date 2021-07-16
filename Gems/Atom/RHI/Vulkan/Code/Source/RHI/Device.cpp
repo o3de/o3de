@@ -165,12 +165,12 @@ namespace AZ
             VkPhysicalDeviceDepthClipEnableFeaturesEXT depthClipEnabled = {};
             depthClipEnabled.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT;
             depthClipEnabled.depthClipEnable = physicalDevice.GetPhysicalDeviceDepthClipEnableFeatures().depthClipEnable;
-            descriptorIndexingFeatures.pNext = &depthClipEnabled;
+            bufferDeviceAddressFeatures.pNext = &depthClipEnabled;
 
             VkPhysicalDeviceRobustness2FeaturesEXT robustness2 = {};
             robustness2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT;
             robustness2.nullDescriptor = physicalDevice.GetPhysicalDeviceRobutness2Features().nullDescriptor;
-            bufferDeviceAddressFeatures.pNext = &robustness2;
+            depthClipEnabled.pNext = &robustness2;
 
             VkPhysicalDeviceVulkan12Features vulkan12Features = {};
             VkPhysicalDeviceShaderFloat16Int8FeaturesKHR float16Int8 = {};
