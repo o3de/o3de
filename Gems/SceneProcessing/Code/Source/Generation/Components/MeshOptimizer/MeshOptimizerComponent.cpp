@@ -117,6 +117,7 @@ namespace AZ::SceneGenerationComponents
         }
 
         using AZStd::unordered_map<AZ::Vector3, AZ::u32>::reserve;
+        using AZStd::unordered_map<AZ::Vector3, AZ::u32>::size;
 
         AZ::u32 operator[](const AZ::u32 vertexIndex)
         {
@@ -203,7 +204,7 @@ namespace AZ::SceneGenerationComponents
             return {};
         }
 
-        const size_t usedControlPointCount = meshData->GetUsedControlPointCount();
+        const size_t usedControlPointCount = positionMap.size();
 
         auto skinningInfo = AZStd::make_unique<AZ::MeshBuilder::MeshBuilderSkinningInfo>(aznumeric_cast<AZ::u32>(usedControlPointCount));
 
