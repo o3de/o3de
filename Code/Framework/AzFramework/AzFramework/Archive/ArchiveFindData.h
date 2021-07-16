@@ -47,12 +47,11 @@ namespace AZ::IO
 
         explicit operator bool() const;
 
-        size_t GetHash() const;
-
         inline static constexpr size_t FilenameMaxLength = 256;
         AZStd::fixed_string<FilenameMaxLength> m_filename;
         FileDesc m_fileDesc;
         AZStd::intrusive_ptr<FindData> m_findData{};
+        size_t m_hash; // hash value used for storage in unordered_set
 
     private:
         friend class FindData;

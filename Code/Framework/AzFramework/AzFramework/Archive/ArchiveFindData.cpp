@@ -16,7 +16,7 @@ namespace AZ::IO
 {
     size_t ArchiveFileIteratorHash::operator()(const AZ::IO::ArchiveFileIterator& iter) const
     {
-        return iter.GetHash();
+        return iter.m_hash;
     }
 
     bool AZStdStringLessCaseInsensitive::operator()(AZStd::string_view left, AZStd::string_view right) const
@@ -55,6 +55,7 @@ namespace AZ::IO
         : m_findData{ findData }
         , m_filename{ filename }
         , m_fileDesc{ fileDesc }
+        , m_hash{ AZStd::hash_string(filename.begin(), filename.length()) }
     {
     }
 
@@ -74,17 +75,12 @@ namespace AZ::IO
 
     bool ArchiveFileIterator::operator==(const AZ::IO::ArchiveFileIterator& rhs) const
     {
-        return GetHash() == rhs.GetHash();
+        return m_hash == rhs.m_hash;
     }
 
     ArchiveFileIterator::operator bool() const
     {
         return m_findData && m_lastFetchValid;
-    }
-
-    size_t ArchiveFileIterator::GetHash() const
-    {
-        return AZStd::hash_string(m_filename.begin(), m_filename.length());
     }
 
     void FindData::Scan(IArchive* archive, AZStd::string_view szDir, bool bAllowUseFS, bool bScanZips)
@@ -127,9 +123,7 @@ namespace AZ::IO
         }
         AZ::IO::FileIOBase::GetDirectInstance()->FindFiles(searchDirectory.c_str(), pattern.c_str(), [&](const char* filePath) -> bool
         {
-            AZ::IO::ArchiveFileIterator fileIterator;
-            fileIterator.m_filename = AZ::IO::PathView(filePath).Filename().Native();
-            fileIterator.m_fileDesc.nAttrib = {};
+            AZ::IO::ArchiveFileIterator fileIterator{ this, AZ::IO::PathView(filePath).Filename().Native(), {} };
 
             if (AZ::IO::FileIOBase::GetDirectInstance()->IsDirectory(filePath))
             {
