@@ -250,13 +250,14 @@ namespace AZ
             // Output scope related
             enum class OutputScopeType
             {
-                Scene = 0,
+                Unset,
+                Scene,
                 RenderPipeline,
                 RasterPass
             };
             Scene* m_scene = nullptr;
             RasterPass* m_pass = nullptr;
-            OutputScopeType m_outputScope;
+            OutputScopeType m_outputScope = OutputScopeType::Unset;
 
             // All draw items use this filter when submit them to views
             // It's set to RenderPipeline's draw filter mask if the DynamicDrawContext was created for a render pipeline.

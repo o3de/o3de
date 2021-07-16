@@ -175,6 +175,7 @@ namespace AZ
         {
             AZ_Warning("RPI", m_pipelineState, "Failed to initialize shader for DynamicDrawContext");
             AZ_Warning("RPI", m_drawListTag.IsValid(), "DynamicDrawContext doesn't have a valid DrawListTag");
+            AZ_Assert(m_outputScope == OutputScopeType::Unset, "DynamicDrawContext need to set output scope before end initialization");
 
             if (!m_drawListTag.IsValid() || m_pipelineState == nullptr)
             {
