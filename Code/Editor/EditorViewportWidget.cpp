@@ -2599,6 +2599,8 @@ void EditorViewportWidget::DestroyRenderContext()
 //////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::SetDefaultCamera()
 {
+    // Ensure the FOV matches our internally stored setting
+    SetFOV(GetFOV());
     if (IsDefaultCamera())
     {
         return;
@@ -2607,8 +2609,6 @@ void EditorViewportWidget::SetDefaultCamera()
     GetViewManager()->SetCameraObjectId(m_cameraObjectId);
     SetName(m_defaultViewName);
     SetViewTM(m_defaultViewTM);
-    // Ensure the FOV matches our internally stored setting
-    SetFOV(GetFOV());
     PostCameraSet();
 }
 
