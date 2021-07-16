@@ -386,9 +386,9 @@ namespace AzToolsFramework
             }
 
             // create all missing folders
-            AZ::IO::FixedMaxPath proximateToPath = absolutePathView.IsRelativeTo(parent->m_fullPath)
-                ?absolutePathView.LexicallyProximate(parent->m_fullPath)
-                : absolutePathView;
+            auto proximateToPath = absolutePathView.IsRelativeTo(parent->m_fullPath)
+                ? absolutePathView.LexicallyProximate(parent->m_fullPath)
+                : AZ::IO::FixedMaxPath(absolutePathView);
             for (AZ::IO::FixedMaxPath scanFolderSegment : proximateToPath)
             {
                 parent = CreateFolder(scanFolderSegment.c_str(), parent);
