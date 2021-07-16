@@ -123,7 +123,7 @@ namespace AZ::IO
         }
         AZ::IO::FileIOBase::GetDirectInstance()->FindFiles(searchDirectory.c_str(), pattern.c_str(), [&](const char* filePath) -> bool
         {
-            AZ::IO::ArchiveFileIterator fileIterator{ this, AZ::IO::PathView(filePath).Filename().Native(), {} };
+            AZ::IO::ArchiveFileIterator fileIterator{ nullptr, AZ::IO::PathView(filePath).Filename().Native(), {} };
 
             if (AZ::IO::FileIOBase::GetDirectInstance()->IsDirectory(filePath))
             {
