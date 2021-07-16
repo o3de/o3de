@@ -1367,10 +1367,6 @@ void AmazonToolbar::InstantiateToolbar(QMainWindow* mainWindow, ToolbarManager* 
 
 void AmazonToolbar::AddAction(int actionId, int toolbarVersionAdded)
 {
-    if (actionId == ID_OPEN_AUDIO_CONTROLS_BROWSER)
-    {
-        actionId = actionId;
-    }
     m_actions.push_back({ actionId, toolbarVersionAdded });
 }
 
