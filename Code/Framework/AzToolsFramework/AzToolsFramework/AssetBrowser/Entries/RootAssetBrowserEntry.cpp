@@ -149,7 +149,7 @@ namespace AzToolsFramework
             }
 
             EntryCache::GetInstance()->m_fileIdMap[fileDatabaseEntry.m_fileID] = file;
-            AZStd::string filePath = AZ::IO::PathView(file->m_fullPath).LexicallyNormal().Native();
+            AZStd::string filePath = AZ::IO::PathView(file->m_fullPath).LexicallyNormal().String();
             EntryCache::GetInstance()->m_absolutePathToFileId[filePath] = fileDatabaseEntry.m_fileID;
         }
 
