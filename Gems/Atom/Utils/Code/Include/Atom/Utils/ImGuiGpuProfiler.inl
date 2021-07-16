@@ -6,25 +6,16 @@
  *
  */
 
+#include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/RPI.Public/Pass/RenderPass.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/Scene.h>
 
+#include <AzCore/std/sort.h>
+
 #include <inttypes.h>
-
-
-
-
-#include <AzCore/std/containers/variant.h>
-#include <Atom/RHI.Reflect/ReflectSystemComponent.h>
-#include <Atom/RHI/FrameScheduler.h>
-#include <Atom/RHI/Device.h>
-#include <Atom/RHI/RHIUtils.h>
-#include <Atom/RHI/RHISystemInterface.h>
-#include "../../../Gems/ImGui/External/ImGui/v1.82/imgui/imgui.h"
-#pragma optimize("", off)
 
 namespace AZ
 {
@@ -102,7 +93,7 @@ namespace AZ
 
             inline static AZStd::string GetImageBindStrings(AZ::RHI::ImageBindFlags imageBindFlags)
             {
-                // FIXME: any more elegant way to pull binding strings from the enum? Maybe through RTTI?
+                // FIXME: any more elegant way to pull binding strings from the enum? Maybe through RTTI? ReflectSystemComponent.cpp L262
                 AZStd::string imageBindStrings;
                 if (AZ::RHI::CheckBitsAll(imageBindFlags, AZ::RHI::ImageBindFlags::Color))
                 {
@@ -1128,67 +1119,102 @@ namespace AZ
         }
 
         // --- ImGuiGpuMemoryView ---
+
+        inline void ImGuiGpuMemoryView::SortTable(ImGuiTableSortSpecs* sortSpecs)
+        {
+            const bool ascending = sortSpecs->Specs->SortDirection == ImGuiSortDirection_Ascending;
+            const ImS16 columnToSort = sortSpecs->Specs->ColumnIndex;
+
+            const auto getName = [](auto&& entry)
+            {
+                return entry->m_name;
+            };
+            const auto getSize = [](auto&& entry)
+            {
+                return entry->m_sizeInBytes;
+            };
+
+            // Sort by the appropriate column in the table
+            switch (columnToSort)
+            {
+            case (0): // Sorting by parent pool name
+                AZStd::sort(m_tableRows.begin(), m_tableRows.end(),
+                    [ascending](const TableRow& lhs, const TableRow& rhs)
+                    {
+                        const auto lhsParentPool = lhs.m_parentPoolName.GetStringView();
+                        const auto rhsParentPool = rhs.m_parentPoolName.GetStringView();
+                        return ascending ? lhsParentPool < rhsParentPool : lhsParentPool > rhsParentPool;
+                    });
+                break;
+            case (1): // Sort by buffer/image name
+                AZStd::sort(m_tableRows.begin(), m_tableRows.end(),
+                    [ascending, &getName](const TableRow& lhs, const TableRow& rhs){
+                        const auto lhsName = AZStd::visit(getName, lhs.m_variant).GetStringView();
+                        const auto rhsName = AZStd::visit(getName, rhs.m_variant).GetStringView();
+                        return ascending ? lhsName < rhsName : lhsName > rhsName;
+                    });
+                break;
+            case (2): // Sort by memory usage
+                AZStd::sort(m_tableRows.begin(), m_tableRows.end(),
+                    [ascending, &getSize](const TableRow& lhs, const TableRow& rhs){
+                        const float lhsSize = AZStd::visit(getSize, lhs.m_variant);
+                        const float rhsSize = AZStd::visit(getSize, rhs.m_variant);
+                        return ascending ? lhsSize < rhsSize : lhsSize > rhsSize;
+                    });
+                break;
+            }
+            sortSpecs->SpecsDirty = false;
+        }
+
         inline void ImGuiGpuMemoryView::DrawTable()
         {
-            if (ImGui::BeginTable("Root Table", 4, ImGuiTableFlags_Borders | ImGuiTableFlags_Sortable | ImGuiTableFlags_Resizable))
+            if (ImGui::BeginTable("Table", 4, ImGuiTableFlags_Borders | ImGuiTableFlags_Sortable | ImGuiTableFlags_Resizable))
             {
-                ImGui::TableSetupColumn("Parent pool", ImGuiTableColumnFlags_NoSort);
-                ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_NoSort);
+                ImGui::TableSetupColumn("Parent pool");
+                ImGui::TableSetupColumn("Name");
                 ImGui::TableSetupColumn("Size (MB)", 0, 100.0f);
                 ImGui::TableSetupColumn("BindFlags", ImGuiTableColumnFlags_NoSort);
                 ImGui::TableHeadersRow();
                 ImGui::TableNextColumn();
 
-                // For now the only column we sort on is the size, search tool should be used for the other columns.
                 ImGuiTableSortSpecs* sortSpecs = ImGui::TableGetSortSpecs();
                 if (sortSpecs && sortSpecs->SpecsDirty){
-                    const bool ascending = sortSpecs->Specs->SortDirection == ImGuiSortDirection_Ascending;
-
-                    AZStd::sort(m_tableEntries.begin(), m_tableEntries.end(),
-                        [ascending](const TableEntry& lhs, const TableEntry& rhs){
-                            const float lhsSize = AZStd::visit([](auto&& entry){
-                                    return entry->m_sizeInBytes;
-                                }, lhs.m_variant);
-                            const float rhsSize = AZStd::visit([](auto&& entry){
-                                    return entry->m_sizeInBytes;
-                                }, rhs.m_variant);
-                            return ascending ? lhsSize < rhsSize : lhsSize > rhsSize;
-                        });
-                    sortSpecs->SpecsDirty = false;
+                    SortTable(sortSpecs);
                 }
 
-                for (auto& tableEntry : m_tableEntries) {
-                    AZStd::string entryName = "";
+                // Draw each row in the table
+                for (const auto& tableRow : m_tableRows) {
+                    AZStd::string rowName = "";
                     float size = 0.0;
                     AZStd::string bindStrings = ""; 
 
-                    // FIXME any more elegant way to pull fields from the variant?
-                    if (AZStd::holds_alternative<Buffer*>(tableEntry.m_variant))
+                    // Get the variant's fields
+                    AZStd::visit(
+                        [&rowName, &size](auto&& val)
+                        {
+                            rowName = val->m_name.GetCStr();
+                            size = 1.0f * val->m_sizeInBytes / GpuProfilerImGuiHelper::MB;
+                        }, tableRow.m_variant);
+                    if (auto buf = AZStd::get_if<Buffer*>(&tableRow.m_variant))
                     {
-                        const auto& buffer = AZStd::get<Buffer*>(tableEntry.m_variant);
-                        entryName = buffer->m_name.IsEmpty() ? "Unnamed buffer" : buffer->m_name.GetCStr();
-                        size = 1.0f * buffer->m_sizeInBytes / GpuProfilerImGuiHelper::MB;
-                        bindStrings = GpuProfilerImGuiHelper::GetBufferBindStrings(buffer->m_bindFlags);
+                        bindStrings = GpuProfilerImGuiHelper::GetBufferBindStrings((*buf)->m_bindFlags);
                     }
-                    else 
+                    else if (auto img = AZStd::get_if<Image*>(&tableRow.m_variant))
                     {
-                        const auto& image = AZStd::get<Image*>(tableEntry.m_variant);
-                        entryName = image->m_name.IsEmpty() ? "Unnamed image" : image->m_name.GetCStr();
-                        size = 1.0f * image->m_sizeInBytes / GpuProfilerImGuiHelper::MB;
-                        bindStrings = GpuProfilerImGuiHelper::GetImageBindStrings(image->m_bindFlags);
+                        bindStrings = GpuProfilerImGuiHelper::GetImageBindStrings((*img)->m_bindFlags);
                     }
 
-                    // Early out if none of the entry's text fields pass the filter
-                    if (!m_nameFilter.PassFilter(tableEntry.m_parentPoolName.GetCStr())
-                        && !m_nameFilter.PassFilter(entryName.c_str())
+                    // Don't draw the row if none of the row's text fields pass the filter
+                    if (!m_nameFilter.PassFilter(tableRow.m_parentPoolName.GetCStr())
+                        && !m_nameFilter.PassFilter(rowName.c_str())
                         && !m_nameFilter.PassFilter(bindStrings.c_str()))
                     {
                         continue;
                     }
 
-                    ImGui::Text(tableEntry.m_parentPoolName.GetCStr());
+                    ImGui::Text(tableRow.m_parentPoolName.GetCStr());
                     ImGui::TableNextColumn();
-                    ImGui::Text(entryName.c_str());
+                    ImGui::Text(rowName.c_str());
                     ImGui::TableNextColumn();
                     ImGui::Text("%.2f", size);
                     ImGui::TableNextColumn();
@@ -1199,10 +1225,10 @@ namespace AZ
             ImGui::EndTable();
         }
 
-        inline void ImGuiGpuMemoryView::UpdateTableEntries()
+        inline void ImGuiGpuMemoryView::UpdateTableRows()
         {
             // Update the table according to the latest filters applied
-            m_tableEntries.clear();
+            m_tableRows.clear();
             for (auto& pool : m_savedPools)
             {
                 Name poolName = pool.m_name.IsEmpty() ? Name("Unnamed pool") : pool.m_name;
@@ -1221,9 +1247,10 @@ namespace AZ
                         {
                             buf.m_name = Name("Unnamed Buffer");
                         }
-                        m_tableEntries.push_back({ poolName, &buf });
+                        m_tableRows.push_back({ poolName, &buf }); // emplace_back does not appear to deduce variant type correctly here
                     }
                 }
+
                 if (m_includeImages)
                 {
                     for (auto& img : pool.m_images)
@@ -1232,7 +1259,7 @@ namespace AZ
                         {
                             img.m_name = Name("Unnamed Image");
                         }
-                        m_tableEntries.push_back({ poolName, &img });
+                        m_tableRows.push_back({poolName, &img});
                     }
                 }
             }
@@ -1281,25 +1308,20 @@ namespace AZ
                     const auto* memoryStatistics = rhiSystem->GetMemoryStatistics();
                     if (memoryStatistics) 
                     {
-                        m_tableEntries.clear();
+                        m_tableRows.clear();
                         m_savedPools = memoryStatistics->m_pools;
                         m_savedHeaps = memoryStatistics->m_heaps;
 
-                        // Collect the data into TableEntries, ignoring depending on flags 
-                        UpdateTableEntries();
+                        // Collect the data into TableRows, ignoring depending on flags 
+                        UpdateTableRows();
                     }
-                }
-                ImGui::SameLine();
-                if (ImGui::Button("Export"))
-                {
-                    (void)0;
                 }
 
                 if (ImGui::Checkbox("Show buffers", &m_includeBuffers)
                     || ImGui::Checkbox("Show images", &m_includeImages)
                     || ImGui::Checkbox("Show transient attachments", &m_includeTransientAttachments))
                 {
-                    UpdateTableEntries();
+                    UpdateTableRows(); 
                 }
 
                 ImGui::Text("Overall heap usage:");

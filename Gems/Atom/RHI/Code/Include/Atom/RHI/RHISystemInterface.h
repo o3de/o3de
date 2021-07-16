@@ -11,9 +11,9 @@
 #include <AzCore/Name/Name.h>
 #include <AzCore/EBus/EBus.h>
 #include <Atom/RHI.Reflect/FrameSchedulerEnums.h>
+#include <Atom/RHI.Reflect/MemoryStatistics.h>
 #include <Atom/RHI/DrawListTagRegistry.h>
 
-#include <Atom/RHI.Reflect/MemoryStatistics.h>
 namespace AZ
 {
     namespace RHI

@@ -8,17 +8,13 @@
 
 #pragma once
 
+#include <Atom/RHI.Reflect/MemoryStatistics.h>
 #include <Atom/RPI.Public/GpuQuery/GpuQueryTypes.h>
 
-#include <AzCore/std/containers/array.h>
-#include <AzCore/std/string/string.h>
-
-
-
 #include <AzCore/Name/Name.h>
-#include <Atom/RHI/MemoryStatisticsBus.h>
-#include <Atom/RHI/MemoryStatisticsBuilder.h>
-#include "../../../../../RPI/Code/Include/Atom/RPI.Public/Pass/Pass.h"
+#include <AzCore/std/containers/array.h>
+#include <AzCore/std/containers/variant.h>
+#include <AzCore/std/string/string.h>
 
 namespace AZ
 {
@@ -260,19 +256,27 @@ namespace AZ
         class ImGuiGpuMemoryView
         {
         public:
+            // Draw the overall GPU memory profiling window.
             void DrawGpuMemoryWindow(bool& draw);
-            void DrawPieChart(const AZ::RHI::MemoryStatistics::Heap& heap);
-            void UpdateTableEntries();
-            void DrawTable();
-        private:
 
+            // Draw the heap usage pie chart
+            void DrawPieChart(const AZ::RHI::MemoryStatistics::Heap& heap);
+
+            // Update the saved pointers in m_tableRows according to new data/filters
+            void UpdateTableRows();
+
+            void DrawTable();
+
+            // Sort the table according to the appropriate column.
+            void SortTable(ImGuiTableSortSpecs* sortSpecs);
+        private:
             using Buffer = AZ::RHI::MemoryStatistics::Buffer;
             using Image = AZ::RHI::MemoryStatistics::Image;
-            using TableEntryVariant = AZStd::variant<Buffer*, Image*>;
+            using TableRowVariant = AZStd::variant<Buffer*, Image*>;
 
-            struct TableEntry {
+            struct TableRow {
                 Name m_parentPoolName;
-                TableEntryVariant m_variant;
+                TableRowVariant m_variant;
             };
 
             // Table settings
@@ -282,10 +286,11 @@ namespace AZ
 
             ImGuiTextFilter m_nameFilter;
 
-            AZStd::vector<TableEntry> m_tableEntries;
+            AZStd::vector<TableRow> m_tableRows;
             AZStd::vector<AZ::RHI::MemoryStatistics::Pool> m_savedPools;
             AZStd::vector<AZ::RHI::MemoryStatistics::Heap> m_savedHeaps;
         };
+
         class ImGuiGpuProfiler
         {
         public:
