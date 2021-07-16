@@ -6,7 +6,7 @@
     "type": "Code",
     "summary": "The Game State Samples Gem provides a set of sample game states (built on top of the Game State Gem), including primary user selection, main menu, level loading, level running, and level paused.",
     "canonical_tags": ["Gem"],
-    "user_tags": ["Gameplay", "Samples", "Assets"],
+    "user_tags": ["Gameplay", "Sample", "Assets"],
     "icon_path": "preview.png",
     "requirements": ""
 }

@@ -12,6 +12,7 @@
 #include <ScreenHeaderWidget.h>
 #include <GemCatalog/GemModel.h>
 #include <GemCatalog/GemCatalogScreen.h>
+#include <ProjectUtils.h>
 
 #include <QDialogButtonBox>
 #include <QHBoxLayout>
@@ -222,37 +223,41 @@ namespace O3DE::ProjectManager
 
     void CreateProjectCtrl::CreateProject()
     {
-        if (m_newProjectSettingsScreen->Validate())
+        if (ProjectUtils::FindSupportedCompiler(this))
         {
-            ProjectInfo projectInfo = m_newProjectSettingsScreen->GetProjectInfo();
-            QString projectTemplatePath = m_newProjectSettingsScreen->GetProjectTemplatePath();
-
-            auto result = PythonBindingsInterface::Get()->CreateProject(projectTemplatePath, projectInfo);
-            if (result.IsSuccess())
+            if (m_newProjectSettingsScreen->Validate())
             {
-                // automatically register the project
-                PythonBindingsInterface::Get()->AddProject(projectInfo.m_path);
+                ProjectInfo projectInfo = m_newProjectSettingsScreen->GetProjectInfo();
+                QString projectTemplatePath = m_newProjectSettingsScreen->GetProjectTemplatePath();
+
+                auto result = PythonBindingsInterface::Get()->CreateProject(projectTemplatePath, projectInfo);
+                if (result.IsSuccess())
+                {
+                    // automatically register the project
+                    PythonBindingsInterface::Get()->AddProject(projectInfo.m_path);
 
 #ifdef TEMPLATE_GEM_CONFIGURATION_ENABLED
-                if (!m_gemCatalogScreen->EnableDisableGemsForProject(projectInfo.m_path))
-                {
-                    QMessageBox::critical(this, tr("Failed to configure gems"), tr("Failed to configure gems for template."));
-                    return;
-                }
+                    if (!m_gemCatalogScreen->EnableDisableGemsForProject(projectInfo.m_path))
+                    {
+                        QMessageBox::critical(this, tr("Failed to configure gems"), tr("Failed to configure gems for template."));
+                        return;
+                    }
 #endif // TEMPLATE_GEM_CONFIGURATION_ENABLED
 
-                projectInfo.m_needsBuild = true;
-                emit NotifyBuildProject(projectInfo);
-                emit ChangeScreenRequest(ProjectManagerScreen::Projects);
+                    projectInfo.m_needsBuild = true;
+                    emit NotifyBuildProject(projectInfo);
+                    emit ChangeScreenRequest(ProjectManagerScreen::Projects);
+                }
+                else
+                {
+                    QMessageBox::critical(this, tr("Project creation failed"), tr("Failed to create project."));
+                }
             }
             else
             {
-                QMessageBox::critical(this, tr("Project creation failed"), tr("Failed to create project."));
+                QMessageBox::warning(
+                    this, tr("Invalid project settings"), tr("Please correct the indicated project settings and try again."));
             }
-        }
-        else
-        {
-            QMessageBox::warning(this, tr("Invalid project settings"), tr("Please correct the indicated project settings and try again."));
         }
     }
 

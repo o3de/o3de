@@ -125,37 +125,32 @@ install(FILES ${_cmake_package_dest}
     DESTINATION ./Tools/Redistributables/CMake
 )
 
-# temporary workaround for acquiring the 3rd party SPDX license manifest, the desired location is from
-# another git repository that's private.  once it's public, only how the URL is formed should change
-set(LY_INSTALLER_3RD_PARTY_LICENSE_URL "" CACHE STRING "URL to the 3rd party SPDX license manifest file for inclusion in packaging.")
+# the version string and git tags are intended to be synchronized so it should be safe to use that instead
+# of directly calling into git which could get messy in certain scenarios
+if(${CPACK_PACKAGE_VERSION} VERSION_GREATER "0.0.0.0")
+    set(_3rd_party_license_filename SPDX-Licenses.txt)
 
-if(${LY_VERSION_STRING} VERSION_GREATER "0.0.0.0" AND NOT LY_INSTALLER_3RD_PARTY_LICENSE_URL)
-    message(FATAL_ERROR "Missing required URL for the 3rd party SPDX license manifest file.  "
-        "Please specifiy where to acquire the file via LY_INSTALLER_3RD_PARTY_LICENSE_URL")
-endif()
+    set(_3rd_party_license_url "https://raw.githubusercontent.com/o3de/3p-package-source/${CPACK_PACKAGE_VERSION}/${_3rd_party_license_filename}")
+    set(_3rd_party_license_dest ${CPACK_BINARY_DIR}/${_3rd_party_license_filename})
 
-string(REPLACE "/" ";" _url_components ${LY_INSTALLER_3RD_PARTY_LICENSE_URL})
-list(POP_BACK _url_components _3rd_party_license_filename)
-
-set(_3rd_party_license_dest ${CPACK_BINARY_DIR}/${_3rd_party_license_filename})
-
-# use the plain file downloader as we don't have the file hash available and using a dummy will
-# delete the file once it fails hash verification
-file(DOWNLOAD
-    ${LY_INSTALLER_3RD_PARTY_LICENSE_URL}
-    ${_3rd_party_license_dest}
-    STATUS _status
-    TLS_VERIFY ON
-)
-list(POP_FRONT _status _status_code)
-
-if (${_status_code} EQUAL 0 AND EXISTS ${_3rd_party_license_dest})
-    install(FILES ${_3rd_party_license_dest}
-        DESTINATION .
+    # use the plain file downloader as we don't have the file hash available and using a dummy will
+    # delete the file once it fails hash verification
+    file(DOWNLOAD
+        ${_3rd_party_license_url}
+        ${_3rd_party_license_dest}
+        STATUS _status
+        TLS_VERIFY ON
     )
-else()
-    file(REMOVE ${_3rd_party_license_dest})
-    message(FATAL_ERROR "Failed to acquire the 3rd Party license manifest file.  Error: ${_status}")
+    list(POP_FRONT _status _status_code)
+
+    if (${_status_code} EQUAL 0 AND EXISTS ${_3rd_party_license_dest})
+        install(FILES ${_3rd_party_license_dest}
+            DESTINATION .
+        )
+    else()
+        file(REMOVE ${_3rd_party_license_dest})
+        message(FATAL_ERROR "Failed to acquire the 3rd Party license manifest file at ${_3rd_party_license_url}.  Error: ${_status}")
+    endif()
 endif()
 
 # checks for and removes trailing slash
