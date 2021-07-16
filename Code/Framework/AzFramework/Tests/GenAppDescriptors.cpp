@@ -15,16 +15,16 @@ namespace UnitTest
 {
     using namespace AZ;
 
-    class SetRestoreFileIOBaseRAII
+    class FileIOBaseRAII
     {
     public:
-        SetRestoreFileIOBaseRAII(AZ::IO::FileIOBase& fileIO)
+        FileIOBaseRAII(AZ::IO::FileIOBase& fileIO)
             : m_prevFileIO(AZ::IO::FileIOBase::GetInstance())
         {
             AZ::IO::FileIOBase::SetInstance(&fileIO);
         }
 
-        ~SetRestoreFileIOBaseRAII()
+        ~FileIOBaseRAII()
         {
             AZ::IO::FileIOBase::SetInstance(m_prevFileIO);
         }
@@ -102,7 +102,7 @@ namespace UnitTest
     TEST_F(GenAppDescriptors, Test)
     {
         AZ::IO::LocalFileIO fileIO;
-        SetRestoreFileIOBaseRAII restoreFileIOScope(fileIO);
+        FileIOBaseRAII restoreFileIOScope(fileIO);
         run();
     }
 }
