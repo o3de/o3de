@@ -565,7 +565,7 @@ function(ly_setup_others)
         endforeach()
 
         # gem directories and files to install
-        get_property(gems_assets_dir_path DIRECTORY ${gem_candidate_dir} PROPERTY gems_assets_paths)
+        get_property(gems_assets_paths DIRECTORY ${gem_candidate_dir} PROPERTY gems_assets_paths)
         foreach(gem_absolute_path IN LISTS gems_assets_paths)
             if(is_gem_subdirectory_of_engine)
                 cmake_path(RELATIVE_PATH gem_absolute_path BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE gem_install_dest_dir)
