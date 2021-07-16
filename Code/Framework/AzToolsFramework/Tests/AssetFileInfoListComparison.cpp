@@ -21,6 +21,7 @@
 #include <AzToolsFramework/AssetCatalog/PlatformAddressedAssetCatalog.h>
 #include <AzToolsFramework/UnitTest/ToolsTestApplication.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
+#include <Utils/Utils.h>
 
 namespace // anonymous
 {
@@ -54,9 +55,11 @@ namespace UnitTest
             m_localFileIO = aznew AZ::IO::LocalFileIO();
 
             m_priorFileIO = AZ::IO::FileIOBase::GetInstance();
+            AZ::IO::FileIOBase::SetInstance(nullptr);
             AZ::IO::FileIOBase::SetInstance(m_localFileIO);
 
-            AZ::IO::FileIOBase::GetInstance()->SetAlias("@assets@", GetTestFolderPath().c_str());
+            AZ::IO::FileIOBase::GetInstance()->SetAlias("@assets@", m_tempDir.GetDirectory());
+
             AZStd::string assetRoot = AzToolsFramework::PlatformAddressedAssetCatalog::GetAssetRootForPlatform(AzFramework::PlatformId::PC);
 
             for (int idx = 0; idx < TotalAssets; idx++)
@@ -68,9 +71,11 @@ namespace UnitTest
                 assetRegistry.RegisterAsset(m_assets[idx], info);
 
                 AzFramework::StringFunc::Path::Join(assetRoot.c_str(), info.m_relativePath.c_str(), m_assetsPath[idx]);
+                AZ_TEST_START_TRACE_SUPPRESSION;
                 if (m_fileStreams[idx].Open(m_assetsPath[idx].c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeBinary | AZ::IO::OpenMode::ModeCreatePath))
                 {
                     m_fileStreams[idx].Write(info.m_relativePath.size(), info.m_relativePath.data());
+                    AZ_TEST_STOP_TRACE_SUPPRESSION(1); // writing to asset cache folder
                 }
                 else
                 {
@@ -114,10 +119,12 @@ namespace UnitTest
 
             // Modify contents of asset2
             int fileIndex = 2;
+            AZ_TEST_START_TRACE_SUPPRESSION;
             if (m_fileStreams[fileIndex].Open(m_assetsPath[fileIndex].c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeBinary | AZ::IO::OpenMode::ModeCreatePath))
             {
                 AZStd::string fileContent = AZStd::string::format("new Asset%d.txt", fileIndex);// changing file content
                 m_fileStreams[fileIndex].Write(fileContent.size(), fileContent.c_str());
+                AZ_TEST_STOP_TRACE_SUPPRESSION(1); // writing to asset cache folder
             }
             else
             {
@@ -126,10 +133,12 @@ namespace UnitTest
 
             // Modify contents of asset 4
             fileIndex = 4;
+            AZ_TEST_START_TRACE_SUPPRESSION;
             if (m_fileStreams[fileIndex].Open(m_assetsPath[fileIndex].c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeBinary | AZ::IO::OpenMode::ModeCreatePath))
             {
                 AZStd::string fileContent = AZStd::string::format("new Asset%d.txt", fileIndex);// changing file content
                 m_fileStreams[fileIndex].Write(fileContent.size(), fileContent.c_str());
+                AZ_TEST_STOP_TRACE_SUPPRESSION(1); // writing to asset cache folder
             }
             else
             {
@@ -151,7 +160,9 @@ namespace UnitTest
             {
                 if (fileIO->Exists(TempFiles[idx]))
                 {
+                    AZ_TEST_START_TRACE_SUPPRESSION;
                     fileIO->Remove(TempFiles[idx]);
+                    AZ_TEST_STOP_TRACE_SUPPRESSION(1); // deleting from asset cache folder
                 }
             }
 
@@ -162,19 +173,24 @@ namespace UnitTest
                 m_fileStreams[idx].Close();
                 if (fileIO->Exists(m_assetsPath[idx].c_str()))
                 {
+                    AZ_TEST_START_TRACE_SUPPRESSION;
                     fileIO->Remove(m_assetsPath[idx].c_str());
+                    AZ_TEST_STOP_TRACE_SUPPRESSION(1); // deleting from asset cache folder
                 }
             }
 
             auto pcCatalogFile = AzToolsFramework::PlatformAddressedAssetCatalog::GetCatalogRegistryPathForPlatform(AzFramework::PlatformId::PC);
             if (fileIO->Exists(pcCatalogFile.c_str()))
             {
+                AZ_TEST_START_TRACE_SUPPRESSION;
                 fileIO->Remove(pcCatalogFile.c_str());
+                AZ_TEST_STOP_TRACE_SUPPRESSION(1); // deleting from asset cache folder
             }
 
             delete m_pcCatalog;
             delete m_localFileIO;
             m_localFileIO = nullptr;
+            AZ::IO::FileIOBase::SetInstance(nullptr);
             AZ::IO::FileIOBase::SetInstance(m_priorFileIO);
             m_application->Stop();
             delete m_application;
@@ -726,6 +742,7 @@ namespace UnitTest
         }
 
         ToolsTestApplication* m_application;
+        UnitTest::ScopedTemporaryDirectory m_tempDir;
         AzToolsFramework::PlatformAddressedAssetCatalog* m_pcCatalog;
         AZ::IO::FileIOBase* m_priorFileIO = nullptr;
         AZ::IO::FileIOBase* m_localFileIO = nullptr;

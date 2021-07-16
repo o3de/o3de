@@ -46,7 +46,7 @@ AZTEST_EXPORT int AZ_UNIT_TEST_HOOK_NAME(int argc, char** argv)
     }
     styleManager->initialize(&app, engineRootPath);
     AZ::Test::printUnusedParametersWarning(argc, argv);
-    AZ::Test::addTestEnvironments({ new ToolsFrameworkHook });
+    AZ::Test::addTestEnvironments({ DEFAULT_UNIT_TEST_ENV, new ToolsFrameworkHook });
     int result = RUN_ALL_TESTS();
     styleManager.release();
     return result;
