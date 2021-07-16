@@ -161,7 +161,7 @@ void UiFlipbookAnimationComponent::Reflect(AZ::ReflectContext* context)
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Flipbook.png")
-                ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Flipbook.png")
+                ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Flipbook.svg")
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
             ;

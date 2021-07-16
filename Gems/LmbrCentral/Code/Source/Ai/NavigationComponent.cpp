@@ -123,7 +123,7 @@ namespace LmbrCentral
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "AI")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Navigation.svg")
-                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Navigation.png")
+                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Navigation.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/navigation/")
