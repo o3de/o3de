@@ -32,7 +32,7 @@ namespace ScriptCanvas
                         }
                     }
 
-                    slot->Rename(name);
+                    //slot->Rename(name);
                 }
             }
 
