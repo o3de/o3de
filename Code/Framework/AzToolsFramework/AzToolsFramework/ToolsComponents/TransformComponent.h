@@ -38,6 +38,8 @@ namespace AzToolsFramework
             , private AZ::TransformNotificationBus::MultiHandler
             , private AZ::TransformHierarchyInformationBus::Handler
         {
+            friend class JsonTransformComponentSerializer;
+
         public:
             friend class TransformComponentFactory;
 

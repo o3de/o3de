@@ -289,6 +289,8 @@ set(FILES
     ToolsComponents/TransformComponent.h
     ToolsComponents/TransformComponent.cpp
     ToolsComponents/TransformComponentBus.h
+    ToolsComponents/TransformComponentSerializer.h
+    ToolsComponents/TransformComponentSerializer.cpp
     ToolsComponents/ScriptEditorComponent.cpp
     ToolsComponents/ScriptEditorComponent.h
     ToolsComponents/ToolsAssetCatalogComponent.cpp
