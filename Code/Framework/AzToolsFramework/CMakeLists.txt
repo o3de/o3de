@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -76,6 +77,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PRIVATE
                 AZ::AzTestShared
                 3rdParty::Qt::Test
+                AZ::AzFrameworkTestShared
                 AZ::AzToolsFramework
                 AZ::AzToolsFrameworkTestCommon
                 AZ::AzManipulatorTestFramework.Static
