@@ -6,12 +6,14 @@
 #
 #
 
+set(minimum_supported_toolset 142)
+if(MSVC_TOOLSET_VERSION VERSION_LESS ${minimum_supported_toolset})
+    message(FATAL_ERROR "MSVC toolset ${MSVC_TOOLSET_VERSION} is too old, minimum supported toolset is ${minimum_supported_toolset}")
+endif()
+unset(minimum_supported_toolset)
+
 include(cmake/Platform/Common/Configurations_common.cmake)
 include(cmake/Platform/Common/VisualStudio_common.cmake)
-
-if(NOT CMAKE_GENERATOR MATCHES "Visual Studio 1[6-7]")
-    message(FATAL_ERROR "Generator ${CMAKE_GENERATOR} not supported")
-endif()
 
 # Verify that it wasn't invoked with an unsupported target/host architecture. Currently only supports x64/x64
 if(CMAKE_VS_PLATFORM_NAME AND NOT CMAKE_VS_PLATFORM_NAME STREQUAL "x64")
