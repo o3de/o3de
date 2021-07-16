@@ -40,7 +40,7 @@ namespace Platform
     {
         //seconds per frame (1/refreshrate) * num frames (sync interval)
         float presentAfterMinimumDuration = syncInterval / refreshRate;
-        if (hasPresentAfterMinimumDuration > 0.0f)
+        if (presentAfterMinimumDuration > 0.0f)
         {
             [mtlCommandBuffer presentDrawable:drawable afterMinimumDuration:presentAfterMinimumDuration];
         }
