@@ -55,7 +55,7 @@ namespace AZ::IO
         : m_findData{ findData }
         , m_filename{ filename }
         , m_fileDesc{ fileDesc }
-        , m_hash{ AZStd::hash_string(filename.begin(), filename.length()) }
+        , m_hash{ AZStd::hash<AZ::IO::PathView>{}(m_filename.c_str()) }
     {
     }
 
