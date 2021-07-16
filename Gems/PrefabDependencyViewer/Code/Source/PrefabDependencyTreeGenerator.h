@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  */
 
+#pragma once
+
 #include <AzCore/std/containers/stack.h>
 #include <AzCore/std/utils.h>
 #include <AzToolsFramework/Prefab/PrefabDomTypes.h>
@@ -23,6 +25,8 @@ namespace PrefabDependencyViewer
         static void GenerateTreeAndSetRoot(TemplateId tid, Utils::DirectedGraph& graph,
             PrefabSystemComponentInterface* s_prefabSystemComponentInterface)
         {
+            const TemplateId InvalidTemplateId = AzToolsFramework::Prefab::InvalidTemplateId;
+
             using pair = AZStd::pair<TemplateId, Utils::Node*>;
             AZStd::stack<pair> stack;
             stack.push(AZStd::make_pair(tid, nullptr));
@@ -35,6 +39,13 @@ namespace PrefabDependencyViewer
                 stack.pop();
 
                 TemplateId templateId = tidAndParent.first;
+
+                if (InvalidTemplateId == templateId)
+                {
+                    AZ_Assert(false, "PrefabDependencyTreeGenerator - Invalid TemplateId found");
+                    return;
+                }
+
                 Utils::Node* parent = tidAndParent.second;
 
                 // Get the JSON for the current Template we are looking at.
