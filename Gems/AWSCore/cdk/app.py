@@ -46,16 +46,12 @@ core = AWSCore(
 )
 
 # Below is the Core example stack which is provided for working with AWSCore ScriptCanvas examples.
-# It also provided as an example how to reference properties across stacks in the same CDK applications
-# Note: This will make the consuming stack a dependent stack on core
-# CDK will deploy the dependent stack first and then the core stack
+# It also provided as an example how to reference resources across stacks via stack outputs.
 # See https://docs.aws.amazon.com/cdk/latest/guide/resources.html#resource_stack
-core_properties = core.properties
 
 example = ExampleResources(
     app,
     id_=f'{PROJECT_FEATURE_NAME}-Example-{env.region}',
-    props_=core_properties,
     project_name=f'{PROJECT_NAME}',
     feature_name=FEATURE_NAME,
     tags={Constants.O3DE_PROJECT_TAG_NAME: PROJECT_NAME, Constants.O3DE_FEATURE_TAG_NAME: FEATURE_NAME},

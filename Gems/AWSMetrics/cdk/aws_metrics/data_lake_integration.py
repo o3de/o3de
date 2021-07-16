@@ -19,9 +19,11 @@ class DataLakeIntegration:
     """
     Create the AWS resources including the S3 bucket, Glue database, table and crawler for data lake integration
     """
-    def __init__(self, stack: core.Construct, application_name: str) -> None:
+    def __init__(self, stack: core.Construct, application_name: str,
+                 server_access_logs_bucket: str = None) -> None:
         self._stack = stack
         self._application_name = application_name
+        self._server_access_logs_bucket = server_access_logs_bucket
 
         self._create_analytics_bucket()
         self._create_events_database()
@@ -34,6 +36,14 @@ class DataLakeIntegration:
         The bucket uses server-side encryption with a CMK managed by S3:
         https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingKMSEncryption.html
         """
+        # Enable server access logging if the server access logs bucket is provided following S3 best practices.
+        # See https://docs.aws.amazon.com/AmazonS3/latest/dev/security-best-practices.html
+        server_access_logs_bucket = s3.Bucket.from_bucket_name(
+            self._stack,
+            f'{self._stack.stack_name}-ImportedAccessLogsBucket',
+            self._server_access_logs_bucket,
+        ) if self._server_access_logs_bucket else None
+
         # Bucket name cannot contain uppercase characters
         # Do not specify the bucket name here since bucket name is required to be unique globally. If we set
         # a specific name here, only one customer can deploy the bucket successfully.
@@ -46,7 +56,9 @@ class DataLakeIntegration:
                 block_public_policy=True,
                 ignore_public_acls=True,
                 restrict_public_buckets=True
-            )
+            ),
+            server_access_logs_bucket=server_access_logs_bucket,
+            server_access_logs_prefix=f'{self._stack.stack_name}-AccessLogs' if server_access_logs_bucket else None
         )
 
         # For Amazon S3 buckets, you must delete all objects in the bucket for deletion to succeed.
