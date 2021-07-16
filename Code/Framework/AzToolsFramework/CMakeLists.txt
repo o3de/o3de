@@ -76,6 +76,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PRIVATE
                 AZ::AzTestShared
                 3rdParty::Qt::Test
+                AZ::AzFrameworkTestShared
                 AZ::AzToolsFramework
                 AZ::AzToolsFrameworkTestCommon
                 AZ::AzManipulatorTestFramework.Static

@@ -20,7 +20,7 @@ set(ENABLED_GEMS
     QtForPython
     PythonAssetBuilder
     Metastream
-    AudioSystem
+
     Camera
     EMotionFX
     PhysX
@@ -51,4 +51,9 @@ set(ENABLED_GEMS
     AWSCore
     AWSClientAuth
     AWSMetrics
+
+
+
+    
+    AudioSystem
 )
