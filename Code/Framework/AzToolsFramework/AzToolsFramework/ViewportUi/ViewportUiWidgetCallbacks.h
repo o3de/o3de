@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <AzCore/Memory/Memory.h>
 #include <AzCore/std/function/function_template.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <QPointer>

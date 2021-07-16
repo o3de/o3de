@@ -240,7 +240,7 @@ namespace AssetUtilities
     inline constexpr AZ::u64 FileHashBufferSize = 1024 * 64;
 
     //! Adjusts a timestamp to fix timezone settings and account for any precision adjustment needed
-    std::uint64_t AdjustTimestamp(QDateTime timestamp);
+    AZ::u64 AdjustTimestamp(QDateTime timestamp);
 
     // Generates a fingerprint string based on details of the file, will return the string "0" if the file does not exist.
     // note that the 'name to use' can be blank, but it used to disambiguate between files that have the same

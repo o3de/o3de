@@ -8,13 +8,9 @@
 
 #pragma once
 
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-
-#include <windows.h>
-#include <process.h>
+#include <AzCore/PlatformIncl.h>
 #include <AzCore/std/parallel/semaphore.h> // for CreateSemaphore
+
 struct SThreadNameDesc
 {
     DWORD dwType;

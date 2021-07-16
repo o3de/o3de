@@ -51,9 +51,6 @@ namespace AzToolsFramework
     // ------------------------------------------------ DESCRIPTOR STRUCTS ----------------------------------------------------
     // ------------------------------------------------------------------------------------------------------------------------
 
-    // helper function:
-    HWND getHWNDForWidget(const QWidget* widget);
-
     struct HotkeyDescription
     {
         enum Scope

@@ -14,6 +14,7 @@
 #pragma once
 
 #include <Include/EditorCoreAPI.h>
+#include <CryCommon/ISystem.h>
 
 //! Derive from this class to get reference counting in your class.
 class EDITOR_CORE_API CRefCountBase

@@ -7,11 +7,10 @@
 
 // LY Editor Crashpad Upload Handler Extension
 
+#include <AzCore/PlatformIncl.h>
 #include <handler/handler_main.h>
 #include <tools/tool_support.h>
 #include <Uploader/CrashUploader.h>
-
-#include <windows.h>
 
 namespace
 {

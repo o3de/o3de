@@ -48,9 +48,7 @@
 #endif
 
 #ifdef WIN32
-#define WIN32_LEAN_AND_MEAN
-// If app hasn't chosen, set to work with Windows 98, Windows Me, Windows 2000, Windows XP and beyond
-#include <windows.h>
+#include <AzCore/PlatformIncl.h>
 
 LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {

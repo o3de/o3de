@@ -14,11 +14,7 @@
 #include <cctype>
 #include <algorithm>
 
-#if defined(AZ_PLATFORM_WINDOWS)
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>   // WideCharToMultibyte(), CP_UTF8, etc.
-#endif
-
+#include <AzCore/PlatformIncl.h> // WideCharToMultibyte(), CP_UTF8, etc.
 #include <AzCore/Casting/numeric_cast.h>
 
 static inline char ToLower(const char c)

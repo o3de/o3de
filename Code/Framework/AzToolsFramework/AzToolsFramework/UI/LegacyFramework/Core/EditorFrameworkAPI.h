@@ -214,9 +214,7 @@ namespace LegacyFramework
         /** (Windows) retrieves the main module of the executable.
         * This is always going to be the main executable except in the situation where the framework may be running as a DLL belonging to another process or program.
         */
-#ifdef AZ_PLATFORM_WINDOWS
-        virtual HMODULE GetMainModule() = 0;
-#endif
+        virtual void* GetMainModule() = 0;
 
         virtual const char* GetApplicationName() = 0;
         virtual const char* GetApplicationModule() = 0;

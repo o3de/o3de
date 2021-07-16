@@ -57,7 +57,7 @@ AZ_POP_DISABLE_OVERRIDE_WARNING
 namespace LegacyFramework
 {
     ApplicationDesc::ApplicationDesc(const char* name, int argc, char** argv)
-        : m_applicationModule(NULL)
+        : m_applicationModule(nullptr)
         , m_enableGridmate(true)
         , m_enablePerforce(true)
         , m_enableGUI(true)
@@ -70,7 +70,7 @@ namespace LegacyFramework
         m_applicationName[0] = 0;
         if (name)
         {
-            azstrcpy(m_applicationName, _MAX_PATH, name);
+            azstrcpy(m_applicationName, AZ_MAX_PATH_LEN, name);
         }
     }
 
@@ -90,7 +90,7 @@ namespace LegacyFramework
         m_enableGUI = other.m_enableGUI;
         m_enableGridmate = other.m_enableGridmate;
         m_enablePerforce = other.m_enablePerforce;
-        azstrcpy(m_applicationName, _MAX_PATH, other.m_applicationName);
+        azstrcpy(m_applicationName, AZ_MAX_PATH_LEN, other.m_applicationName);
         m_enableProjectManager = other.m_enableProjectManager;
         m_shouldRunAssetProcessor = other.m_shouldRunAssetProcessor;
         m_saveUserSettings = other.m_saveUserSettings;
@@ -104,12 +104,12 @@ namespace LegacyFramework
         m_isPrimary = true;
         m_desiredExitCode = 0;
         m_abortRequested = false;
-        m_applicationEntity = NULL;
-        m_ptrSystemEntity = NULL;
+        m_applicationEntity = nullptr;
+        m_ptrSystemEntity = nullptr;
         m_applicationModule[0] = 0;
     }
 
-    HMODULE Application::GetMainModule()
+    void* Application::GetMainModule()
     {
         return m_desc.m_applicationModule;
     }
@@ -371,7 +371,7 @@ namespace LegacyFramework
 
         applicationFilePath.append("_app.xml");
 
-        AZ_Assert(applicationFilePath.size() <= _MAX_PATH, "Application path longer than expected");
+        AZ_Assert(applicationFilePath.size() <= AZ_MAX_PATH_LEN, "Application path longer than expected");
         qstrcpy(m_applicationFilePath, applicationFilePath.c_str());
 
         // load all application entities, if present:

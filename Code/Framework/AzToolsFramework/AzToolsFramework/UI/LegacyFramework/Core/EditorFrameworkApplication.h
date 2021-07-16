@@ -24,7 +24,7 @@ namespace LegacyFramework
 {
     struct ApplicationDesc
     {
-        HMODULE m_applicationModule;  // only necessary if you want to attach your application as a DLL plugin to another application, hosting it
+        void* m_applicationModule;  // only necessary if you want to attach your application as a DLL plugin to another application, hosting it
         bool m_enableGUI; // false if you want none of the QT or GUI functionality to exist.  You cannot use project manager if you do this.
         bool m_enableGridmate; // false if you want to not activate the network communications module.
         bool m_enablePerforce; // false if you want to not activate perforce SCM integration.  note that this will eventually become a plugin anyway
@@ -35,7 +35,7 @@ namespace LegacyFramework
         int m_argc;
         char** m_argv;
 
-        char m_applicationName[_MAX_PATH];
+        char m_applicationName[AZ_MAX_PATH_LEN];
 
         ApplicationDesc(const char* name = "Application", int argc = 0, char** argv = nullptr);
         ApplicationDesc(const ApplicationDesc& other);
@@ -65,7 +65,7 @@ namespace LegacyFramework
         virtual bool IsRunningInGUIMode() { return m_desc.m_enableGUI; }
         virtual bool RequiresGameProject() { return m_desc.m_enableProjectManager; }
         virtual bool ShouldRunAssetProcessor() { return m_desc.m_shouldRunAssetProcessor; }
-        virtual HMODULE GetMainModule();
+        virtual void* GetMainModule();
         virtual const char* GetApplicationName();
         virtual const char* GetApplicationModule();
         virtual const char* GetApplicationDirectory();
@@ -131,11 +131,11 @@ namespace LegacyFramework
         void CreateApplicationComponent();
         void SaveApplicationEntity();
 
-        char m_applicationModule[_MAX_PATH];
+        char m_applicationModule[AZ_MAX_PATH_LEN];
         int m_desiredExitCode;
         bool m_isPrimary;
         volatile bool m_abortRequested; // if you CTRL+C in a console app, this becomes true.  its up to you to check...
-        char m_applicationFilePath[_MAX_PATH];
+        char m_applicationFilePath[AZ_MAX_PATH_LEN];
         ApplicationDesc m_desc;
         AzFramework::CommandLine* m_ptrCommandLineParser;
     };

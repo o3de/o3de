@@ -6,5 +6,4 @@
  */
 #pragma once
 
-#include <Atom_RHI_Vulkan_inux.h>
-
+#include <Atom_RHI_Vulkan_Linux.h>

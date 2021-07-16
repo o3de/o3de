@@ -5,7 +5,7 @@
  *
  */
 
-#include <AzCore/PlatformDef.h>
+#include <AzCore/PlatformIncl.h>
 AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option")
 #include <QtGui>
 #include <QtWidgets/QMenu>
@@ -13,8 +13,7 @@ AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option")
 AZ_POP_DISABLE_WARNING
 
 #ifdef AZ_PLATFORM_WINDOWS
-// windows include must be first so we get the full version (AZCore bring the trimmed one)
-#include <Windows.h>
+#include <AzCore/PlatformIncl.h>
 #else
 #include <signal.h>
 #endif

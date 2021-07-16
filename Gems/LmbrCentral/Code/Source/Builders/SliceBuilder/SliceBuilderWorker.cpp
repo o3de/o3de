@@ -36,6 +36,7 @@
 #include <AzToolsFramework/Slice/SliceUtilities.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include "AzFramework/Asset/SimpleAsset.h"
+#include <AzCore/PlatformIncl.h>
 
 namespace SliceBuilder
 {

@@ -32,7 +32,7 @@ public:
 private:
     CUiAnimViewSequence* m_pSequence;
 
-    virtual BOOL OnInitDialog();
+    virtual bool OnInitDialog();
     virtual void OnOK();
 
     void MoveScaleKeys();

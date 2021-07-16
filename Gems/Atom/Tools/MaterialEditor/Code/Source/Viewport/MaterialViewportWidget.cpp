@@ -63,5 +63,3 @@ namespace MaterialEditor
         return false;
     }
 } // namespace MaterialEditor
-
-#include <Source/Viewport/moc_MaterialViewportWidget.cpp>

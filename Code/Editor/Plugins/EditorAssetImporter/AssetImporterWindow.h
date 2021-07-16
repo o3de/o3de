@@ -19,6 +19,7 @@
 #include <AssetImporterDocument.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/Math/Guid.h>
 #endif
 
 namespace AZStd

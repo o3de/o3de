@@ -13,7 +13,7 @@
 #define CRYINCLUDE_EDITOR_UTIL_EDITORUTILS_H
 #pragma once
 
-
+#include <CryCommon/platform.h>
 #include <IXml.h>
 #include "Util/FileUtil.h"
 #include <Cry_Color.h>

@@ -13,32 +13,6 @@
 #define CRYINCLUDE_CRYCOMMON_CRYWINDOWS_H
 #pragma once
 
-
-#if defined(WIN32) || defined(WIN64)
-
-#ifndef FULL_WINDOWS_HEADER
-    #define WIN32_LEAN_AND_MEAN
-#endif
-
-#include <windows.h>
-
-#undef GetCommandLine
-#undef GetObject
-#undef PlaySound
-#undef GetClassName
-#undef DrawText
-#undef GetCharWidth
-#undef GetUserName
-#undef LoadLibrary
-#undef RegisterClass
-
-#undef min
-#undef max
-
-#undef NOMINMAX
-#undef WIN32_LEAN_AND_MEAN
-#undef FULL_WINDOWS_HEADER
-
-#endif
+#include <AzCore/PlatformIncl.h>
 
 #endif // CRYINCLUDE_CRYCOMMON_CRYWINDOWS_H

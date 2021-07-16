@@ -10,7 +10,7 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/string/conversions.h>
 
-#include <windows.h>
+#include <AzCore/PlatformIncl.h>
 #include <shlobj.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

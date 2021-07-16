@@ -48,32 +48,6 @@ namespace AzToolsFramework
         };
     }
 
-    static QWindow* windowForWidget(const QWidget* widget)
-    {
-        QWindow* window = widget->windowHandle();
-        if (window)
-        {
-            return window;
-        }
-        const QWidget* nativeParent = widget->nativeParentWidget();
-        if (nativeParent)
-        {
-            return nativeParent->windowHandle();
-        }
-        return 0;
-    }
-
-    HWND getHWNDForWidget(const QWidget* widget)
-    {
-        QWindow* window = windowForWidget(widget);
-        if (window && window->handle())
-        {
-            QPlatformNativeInterface* itf = QGuiApplication::platformNativeInterface();
-            return static_cast<HWND>(itf->nativeResourceForWindow(QByteArrayLiteral("handle"), window));
-        }
-        return 0;
-    }
-
     bool GetOverwritePromptResult(QWidget* pParentWidget, const char* assetNameToOvewrite)
     {
         OverwritePromptDialog dlg(pParentWidget);

@@ -14,7 +14,7 @@
 #ifdef WIN32
 
 #include "System.h"
-#include <windows.h>
+#include <AzCore/PlatformIncl.h>
 #include <tchar.h>
 #include "errorrep.h"
 #include "ISystem.h"

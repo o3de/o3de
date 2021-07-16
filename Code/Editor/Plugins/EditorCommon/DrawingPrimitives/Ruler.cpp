@@ -158,7 +158,7 @@ namespace DrawingPrimitives
 
 
         char format[16] = "";
-        sprintf_s(format, "%%.%df", rulerPrecision);
+        azsprintf(format, "%%.%df", rulerPrecision);
 
         const int height = options.m_rect.height();
         const int top = options.m_rect.top();

@@ -14,10 +14,7 @@
 #include "AssetImporterPlugin.h"
 
 
-#if defined(AZ_PLATFORM_WINDOWS)
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#endif
+#include <AzCore/PlatformIncl.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
 PLUGIN_API IPlugin* CreatePluginInstance(PLUGIN_INIT_PARAM* pInitParam)
