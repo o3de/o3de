@@ -439,10 +439,16 @@ namespace AZ
                 AZ_Assert(false, "DynamicDrawContext isn't initialized");
                 return;
             }
-
-            if (!m_drawSrgLayout)
+            
+            if (m_drawFinalized)
             {
-                AZ_Assert(false, "PerDrawSrg need to be provided since the shader uses it");
+                AZ_Assert(false, "Can't add draw calls after draw data was finalized");
+                return;
+            }
+
+            if (m_drawSrgLayout && !drawSrg)
+            {
+                AZ_Assert(false, "drawSrg need to be provided since the shader requires it");
                 return;
             }
 
@@ -533,9 +539,15 @@ namespace AZ
                 return;
             }
 
-            if (!m_drawSrgLayout)
+            if (m_drawFinalized)
             {
-                AZ_Assert(false, "PerDrawSrg need to be provided since the shader uses it");
+                AZ_Assert(false, "Can't add draw calls after draw data was finalized");
+                return;
+            }
+            
+            if (m_drawSrgLayout && !drawSrg)
+            {
+                AZ_Assert(false, "drawSrg need to be provided since the shader requires it");
                 return;
             }
 
@@ -661,29 +673,37 @@ namespace AZ
         {
             return m_sortKey;
         }
-                
-        RHI::DrawItemProperties DynamicDrawContext::CreateDrawItemProperties(DrawItemInfo& drawItemInfo)
+
+        void DynamicDrawContext::FinalizeDrawList()
         {
-            // Note, we can only get the stable pointer for m_indexBufferView and m_streamBufferViews when
-            // the m_cachedIndexBufferViews and m_cachedStreamBufferViews won't change.
-            if (drawItemInfo.m_indexBufferViewIndex != InvalidIndex)
+            if (m_drawFinalized)
             {
-                drawItemInfo.m_drawItem.m_indexBufferView = &m_cachedIndexBufferViews[drawItemInfo.m_indexBufferViewIndex];
+                return;
             }
+            AZ_Assert(m_cachedDrawList.size() == 0, "m_cachedDrawList should be cleared ine the end of last frame ");
 
-            if (drawItemInfo.m_vertexBufferViewIndex != InvalidIndex)
+            for (auto& drawItemInfo : m_cachedDrawItems)
             {
-                drawItemInfo.m_drawItem.m_streamBufferViews = &m_cachedStreamBufferViews[drawItemInfo.m_vertexBufferViewIndex];
-            }
+                if (drawItemInfo.m_indexBufferViewIndex != InvalidIndex)
+                {
+                    drawItemInfo.m_drawItem.m_indexBufferView = &m_cachedIndexBufferViews[drawItemInfo.m_indexBufferViewIndex];
+                }
 
-            RHI::DrawItemProperties drawItemProperties;
-            drawItemProperties.m_sortKey = drawItemInfo.m_sortKey;
-            drawItemProperties.m_item = &drawItemInfo.m_drawItem;
-            drawItemProperties.m_drawFilterMask = m_drawFilter;
-            return drawItemProperties;
+                if (drawItemInfo.m_vertexBufferViewIndex != InvalidIndex)
+                {
+                    drawItemInfo.m_drawItem.m_streamBufferViews = &m_cachedStreamBufferViews[drawItemInfo.m_vertexBufferViewIndex];
+                }
+
+                RHI::DrawItemProperties drawItemProperties;
+                drawItemProperties.m_sortKey = drawItemInfo.m_sortKey;
+                drawItemProperties.m_item = &drawItemInfo.m_drawItem;
+                drawItemProperties.m_drawFilterMask = m_drawFilter;
+                m_cachedDrawList.emplace_back(drawItemProperties);
+            }
+            m_drawFinalized = true;
         }
 
-        void DynamicDrawContext::SubmitDrawData(ViewPtr view)
+        void DynamicDrawContext::SubmitDrawList(ViewPtr view)
         {
             if (!m_initialized || m_outputScope == OutputScopeType::RasterPass)
             {
@@ -695,30 +715,15 @@ namespace AZ
                 return;
             }
 
-            for (auto& drawItemInfo : m_cachedDrawItems)
+            for (auto& drawItemProperties : m_cachedDrawList)
             {                
-                RHI::DrawItemProperties drawItemProperties = CreateDrawItemProperties(drawItemInfo);
                 view->AddDrawItem(m_drawListTag, drawItemProperties);
             }
-
         }
 
-        RHI::DrawListView DynamicDrawContext::GetDrawListForPass(const RasterPass* pass)
+        RHI::DrawListView DynamicDrawContext::GetDrawList()
         {
-            if (pass == m_pass)
-            {
-                if (m_cachedDrawList.size() != m_cachedDrawItems.size())
-                {
-                    m_cachedDrawList.clear();
-                    for (auto& drawItemInfo : m_cachedDrawItems)
-                    {
-                        RHI::DrawItemProperties drawItemProperties = CreateDrawItemProperties(drawItemInfo);
-                        m_cachedDrawList.emplace_back(drawItemProperties);
-                    }
-                }
-                return m_cachedDrawList;
-            }
-            return {};
+            return m_cachedDrawList;
         }
         
         void DynamicDrawContext::FrameEnd()
@@ -729,6 +734,7 @@ namespace AZ
             m_cachedIndexBufferViews.clear();
             m_cachedDrawSrg.clear();
             m_cachedDrawList.clear();
+            m_drawFinalized = false;
         }
 
         const RHI::PipelineState* DynamicDrawContext::GetCurrentPipelineState()

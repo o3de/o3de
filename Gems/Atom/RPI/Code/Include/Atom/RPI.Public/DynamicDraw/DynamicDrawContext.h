@@ -183,9 +183,12 @@ namespace AZ
             DynamicDrawContext() = default;
 
             // Submit draw items to a view
-            void SubmitDrawData(ViewPtr view);
+            void SubmitDrawList(ViewPtr view);
 
-            RHI::DrawListView GetDrawListForPass(const RasterPass* pass);
+            // Finalize the draw list for all submiited draws.
+            void FinalizeDrawList();
+
+            RHI::DrawListView GetDrawList();
             
             // Reset cached draw data when frame is end (draw data was submitted)
             void FrameEnd();
@@ -195,20 +198,6 @@ namespace AZ
             // Get rhi pipeline state which matches current states
             const RHI::PipelineState* GetCurrentPipelineState();
                         
-            // structure includes DrawItem and stream and index buffer index
-            using BufferViewIndexType = uint32_t;
-            static const BufferViewIndexType InvalidIndex = static_cast<BufferViewIndexType>(-1);
-            struct DrawItemInfo
-            {
-                RHI::DrawItem m_drawItem;
-                RHI::DrawItemSortKey m_sortKey;
-                BufferViewIndexType m_vertexBufferViewIndex = InvalidIndex;
-                BufferViewIndexType m_indexBufferViewIndex = InvalidIndex;
-            };
-
-            // Create a DrawItemProperties from a drawItemInfo
-            RHI::DrawItemProperties CreateDrawItemProperties(DrawItemInfo& drawItemInfo);
-
             struct MultiStates
             {
                 // states available for change 
@@ -277,8 +266,17 @@ namespace AZ
             AZStd::vector<RHI::StreamBufferView> m_cachedStreamBufferViews;
             AZStd::vector<RHI::IndexBufferView> m_cachedIndexBufferViews;
             AZStd::vector<Data::Instance<ShaderResourceGroup>> m_cachedDrawSrg;
-
-
+            
+            // structure includes DrawItem and stream and index buffer index
+            using BufferViewIndexType = uint32_t;
+            static const BufferViewIndexType InvalidIndex = static_cast<BufferViewIndexType>(-1);
+            struct DrawItemInfo
+            {
+                RHI::DrawItem m_drawItem;
+                RHI::DrawItemSortKey m_sortKey;
+                BufferViewIndexType m_vertexBufferViewIndex = InvalidIndex;
+                BufferViewIndexType m_indexBufferViewIndex = InvalidIndex;
+            };
             AZStd::vector<DrawItemInfo> m_cachedDrawItems;
 
             // Cached draw list for render to rasterpass
@@ -295,6 +293,8 @@ namespace AZ
             bool m_initialized = false;
 
             RHI::DrawItemSortKey m_sortKey = 0;
+
+            bool m_drawFinalized = false;
         };
 
         AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RPI::DynamicDrawContext::DrawStateOptions);

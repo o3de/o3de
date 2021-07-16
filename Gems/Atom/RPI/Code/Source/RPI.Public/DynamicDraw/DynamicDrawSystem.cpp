@@ -80,9 +80,10 @@ namespace AZ
                 {
                     if (drawContext->m_scene == scene)
                     {
+                        drawContext->FinalizeDrawList();
                         for (auto& view : views)
                         {
-                            drawContext->SubmitDrawData(view);
+                            drawContext->SubmitDrawList(view);
                         }
                     }
                 }
@@ -106,10 +107,14 @@ namespace AZ
             AZStd::lock_guard<AZStd::mutex> lock(m_mutexDrawContext);
             for (RHI::Ptr<DynamicDrawContext> drawContext : m_dynamicDrawContexts)
             {
-                auto drawListView = drawContext->GetDrawListForPass(pass);
-                if (drawListView.size() > 0)
+                if (drawContext->m_pass == pass)
                 {
-                    result.push_back(drawListView);
+                    drawContext->FinalizeDrawList();
+                    auto drawListView = drawContext->GetDrawList();
+                    if (drawListView.size() > 0)
+                    {
+                        result.push_back(drawListView);
+                    }
                 }
             }
             return result;
