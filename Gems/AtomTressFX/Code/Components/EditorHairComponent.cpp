@@ -58,9 +58,6 @@ namespace AZ
                             "HairComponentConfig", "")
                             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->DataElement(
-                                AZ::Edit::UIHandlers::Default, &HairComponentConfig::m_enabled, "Enable",
-                                "Enable the hair object.")
-                            ->DataElement(
                                 AZ::Edit::UIHandlers::Default, &HairComponentConfig::m_simulationSettings, "TressFX Sim Settings",
                                 "TressFX simulation settings to be applied on this entity.")
                             ->DataElement(

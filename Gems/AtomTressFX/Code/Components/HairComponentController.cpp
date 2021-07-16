@@ -39,19 +39,6 @@ namespace AZ
     {
         namespace Hair
         {
-
-            HairComponentController::~HairComponentController()
-            {
-                if (m_featureProcessor)
-                {
-                    m_featureProcessor->RemoveHairRenderObject(m_renderObject);
-                }
-                // the memory should NOW be removed by the instancing mechanism once it is
-                // registered in the feature processor.
-                // When the feature processor will remove its instance, it'll be deleted.
-                m_renderObject = nullptr;
-            }
-
             void HairComponentController::Reflect(ReflectContext* context)
             {
                 HairComponentConfig::Reflect(context);
@@ -124,6 +111,7 @@ namespace AZ
                 Data::AssetBus::MultiHandler::BusDisconnect();
                 TickBus::Handler::BusDisconnect();
 
+                RemoveHairObject();
                 m_entityId.SetInvalid();
             }
 
@@ -232,7 +220,7 @@ namespace AZ
                 bool actorVisible = false;
                 EMotionFX::Integration::ActorComponentRequestBus::EventResult(
                     actorVisible, m_entityId, &EMotionFX::Integration::ActorComponentRequestBus::Events::GetRenderActorVisible);
-                m_renderObject->SetEnabled(actorVisible && m_configuration.GetIsEnabled());
+                m_renderObject->SetEnabled(actorVisible);
 
                 UpdateActorMatrices();
             }

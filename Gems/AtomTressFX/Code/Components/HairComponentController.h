@@ -58,7 +58,7 @@ namespace AZ
 
                 HairComponentController() = default;
                 HairComponentController(const HairComponentConfig& config);
-                ~HairComponentController();
+                ~HairComponentController() = default;
 
                 void Activate(EntityId entityId);
                 void Deactivate();
