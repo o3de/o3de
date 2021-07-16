@@ -23,8 +23,7 @@ namespace UnitTest
     };
 
     struct PerforceComponentFixture
-        : ::testing::Test
-        , TraceBusRedirector
+        : ScopedAllocatorSetupFixture
         , SourceControlTest
 
     {
@@ -40,7 +39,6 @@ namespace UnitTest
             m_jobContext = aznew AZ::JobContext(*m_jobManager);
             AZ::JobContext::SetGlobalContext(m_jobContext);
 
-            AZ::Debug::TraceMessageBus::Handler::BusConnect();
             AZ::TickBus::AllowFunctionQueuing(true);
 
             m_perforceComponent = AZStd::make_unique<MockPerforceComponent>();
@@ -52,8 +50,6 @@ namespace UnitTest
 
         void TearDown() override
         {
-            AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
-
             AZ::TickBus::AllowFunctionQueuing(false);
             AZ::TickBus::ClearQueuedEvents();
 

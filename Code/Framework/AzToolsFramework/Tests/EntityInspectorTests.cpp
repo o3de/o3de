@@ -348,7 +348,6 @@ namespace UnitTest
         EXPECT_FALSE(AzToolsFramework::ComponentPaletteUtil::ContainsEditableComponents(context, &Filter_IsTestComponent2, AZ::ComponentDescriptor::DependencyArrayType()));
 
         // Reflect Test Component 2 for subsequent tests
-        Inspector_TestComponent2::Reflect(context);
         m_application->RegisterComponentDescriptor(Inspector_TestComponent2Descriptor);
 
         // Verify that there is now a component that satisfies the AppearsInGameComponentMenu filter without service dependency conditions
