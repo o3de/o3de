@@ -11,35 +11,37 @@ set(FILES
     AssetFileInfoListComparison.cpp
     AssetSeedManager.cpp
     AssetSystemMocks.h
-    ComponentModeTests.cpp
-    ComponentModeTestDoubles.h
+    ComponentAdapterTests.cpp
+    ComponentAddRemove.cpp
     ComponentModeTestDoubles.cpp
-    ComponentModeTestFixture.h
+    ComponentModeTestDoubles.h
     ComponentModeTestFixture.cpp
+    ComponentModeTestFixture.h
+    ComponentModeTests.cpp
     EditorTransformComponentSelectionTests.cpp
     EditorVertexSelectionTests.cpp
+    Entity/EditorEntityContextComponentTests.cpp
+    Entity/EditorEntityHelpersTests.cpp
+    Entity/EditorEntitySearchComponentTests.cpp
+    Entity/EditorEntitySelectionTests.cpp
     EntityIdQLabelTests.cpp
     EntityInspectorTests.cpp
+    EntityOwnershipService/EntityOwnershipServiceTestFixture.cpp
+    EntityOwnershipService/EntityOwnershipServiceTestFixture.h
+    EntityOwnershipService/SliceEditorEntityOwnershipTests.cpp
+    EntityOwnershipService/SliceEntityOwnershipTests.cpp
+    EntityTestbed.h
+    FileFunc.cpp
     FingerprintingTests.cpp
+    GenericComponentWrapperTest.cpp
+    InstanceDataHierarchy.cpp
+    IntegerPrimtitiveTestConfig.h
     LogLines.cpp
     ManipulatorBoundsTests.cpp
     ManipulatorCoreTests.cpp
     ManipulatorViewTests.cpp
-    PlatformAddressedAssetCatalogTests.cpp
-    PropertyIntCtrlCommonTests.h
-    IntegerPrimtitiveTestConfig.h
-    QtWidgetLimitsTests.cpp
-    PropertyIntSliderCtrlTests.cpp
-    PropertyIntSpinCtrlTests.cpp
-    PropertyTreeEditorTests.cpp
-    PythonBindingTests.cpp
-    Slice.cpp
-    SliceUpgradeTestsData.h
-    SliceUpgradeTests.cpp
-    SpinBoxTests.cpp
-    ThumbnailerTests.cpp
-    UndoStack.cpp
     PerforceComponentTests.cpp
+    PlatformAddressedAssetCatalogTests.cpp
     Prefab/Benchmark/PrefabBenchmarkFixture.cpp
     Prefab/Benchmark/PrefabBenchmarkFixture.h
     Prefab/Benchmark/PrefabCreateBenchmarks.cpp
@@ -47,12 +49,12 @@ set(FILES
     Prefab/Benchmark/PrefabLoadBenchmarks.cpp
     Prefab/Benchmark/PrefabUpdateInstancesBenchmarks.cpp
     Prefab/Benchmark/SpawnableCreateBenchmarks.cpp
-    Prefab/Spawnable/SpawnableMetaDataTests.cpp
     Prefab/MockPrefabFileIOActionValidator.cpp
     Prefab/MockPrefabFileIOActionValidator.h
     Prefab/PrefabDuplicateTests.cpp
     Prefab/PrefabEntityAliasTests.cpp
     Prefab/PrefabInstanceToTemplatePropagatorTests.cpp
+    Prefab/PrefabInstantiateTests.cpp
     Prefab/PrefabInstantiateTests.cpp
     Prefab/PrefabLoadTemplateTests.cpp
     Prefab/PrefabTestComponent.cpp
@@ -67,37 +69,50 @@ set(FILES
     Prefab/PrefabTestFixture.h
     Prefab/PrefabTestUndoFixture.cpp
     Prefab/PrefabTestUndoFixture.h
+    Prefab/PrefabTestUtils.h
     Prefab/PrefabUndoLinkTests.cpp
     Prefab/PrefabUndoTests.cpp
-    Prefab/PrefabTestUtils.h
     Prefab/PrefabUpdateInstancesTests.cpp
     Prefab/PrefabUpdateTemplateTests.cpp
     Prefab/PrefabUpdateWithPatchesTests.cpp
-    Prefab/PrefabInstantiateTests.cpp
+    Prefab/Spawnable/SpawnableMetaDataTests.cpp
     Prefab/SpawnableCreateTests.cpp
-    Prefab/SpawnableRemoveEditorInfoTests.cpp
     Prefab/SpawnableRemoveEditorInfoTestFixture.cpp
     Prefab/SpawnableRemoveEditorInfoTestFixture.h
-    Prefab/SpawnableSortEntitiesTests.cpp
+    Prefab/SpawnableRemoveEditorInfoTests.cpp
     Prefab/SpawnableSortEntitiesTestFixture.cpp
     Prefab/SpawnableSortEntitiesTestFixture.h
-    Entity/EditorEntityContextComponentTests.cpp
-    Entity/EditorEntityHelpersTests.cpp
-    Entity/EditorEntitySearchComponentTests.cpp
-    Entity/EditorEntitySelectionTests.cpp
-    SliceStabilityTests/SliceStabilityTestFramework.h
-    SliceStabilityTests/SliceStabilityTestFramework.cpp
+    Prefab/SpawnableSortEntitiesTests.cpp
+    PropertyIntCtrlCommonTests.h
+    PropertyIntSliderCtrlTests.cpp
+    PropertyIntSpinCtrlTests.cpp
+    PropertyTreeEditorTests.cpp
+    PythonBindingTests.cpp
+    QtWidgetLimitsTests.cpp
+    Script/ScriptComponentTests.cpp
+    Script/ScriptEntityTests.cpp
+    Slice.cpp
+    Slices.cpp
     SliceStabilityTests/SliceStabilityCreateTests.cpp
     SliceStabilityTests/SliceStabilityPushTests.cpp
     SliceStabilityTests/SliceStabilityReParentTests.cpp
+    SliceStabilityTests/SliceStabilityTestFramework.cpp
+    SliceStabilityTests/SliceStabilityTestFramework.h
+    SliceUpgradeTests.cpp
+    SliceUpgradeTestsData.h
+    SpinBoxTests.cpp
+    SQLiteConnectionTests.cpp
+    ThumbnailerTests.cpp
     ToolsComponents/EditorLayerComponentTests.cpp
     ToolsComponents/EditorTransformComponentTests.cpp
+    TransformComponent.cpp
     UI/EntityPropertyEditorTests.cpp
+    UndoStack.cpp
+    Viewport/ClusterTests.cpp
     Viewport/ViewportScreenTests.cpp
     Viewport/ViewportUiClusterTests.cpp
     Viewport/ViewportUiDisplayTests.cpp
     Viewport/ViewportUiManagerTests.cpp
-    Viewport/ClusterTests.cpp
     Viewport/ViewportUiWidgetManagerTests.cpp
     Visibility/EditorVisibilityTests.cpp
 )

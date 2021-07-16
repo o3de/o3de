@@ -742,14 +742,14 @@
 												</Class>
 												<Class name="int" field="methodType" value="2" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
 												<Class name="AZStd::string" field="methodName" value="GetOnPostsimulateEvent" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-												<Class name="AZStd::string" field="className" value="System Interface" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+												<Class name="AZStd::string" field="className" value="PhysicsSystemInterface" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 												<Class name="AZStd::vector" field="namespaces" type="{99DAD0BC-740E-5E82-826B-8FC7968CC02C}"/>
 												<Class name="AZStd::vector" field="resultSlotIDs" type="{D0B13803-101B-54D8-914C-0DA49FDFA268}">
 													<Class name="SlotId" field="element" version="2" type="{14C629F6-467B-46FE-8B63-48FDFCA42175}">
 														<Class name="AZ::Uuid" field="m_id" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
 													</Class>
 												</Class>
-												<Class name="AZStd::string" field="prettyClassName" value="System Interface" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+												<Class name="AZStd::string" field="prettyClassName" value="PhysicsSystemInterface" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 											</Class>
 										</Class>
 										<Class name="bool" field="IsDependencyReady" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>

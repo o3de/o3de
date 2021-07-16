@@ -159,7 +159,13 @@ namespace AZ
                 arguments += " -Zi";  // Generate debug information
                 arguments += " -Zss"; // Compute Shader Hash considering source information
             }
-            arguments += " " + m_dxcAdditionalFreeArguments;
+            // strip spaces at both sides
+            AZStd::string dxcAdditionalFreeArguments = m_dxcAdditionalFreeArguments;
+            AzFramework::StringFunc::TrimWhiteSpace(dxcAdditionalFreeArguments, true, true);
+            if (!dxcAdditionalFreeArguments.empty())
+            {
+                arguments += " " + dxcAdditionalFreeArguments;
+            }
             return arguments;
         }
     }
