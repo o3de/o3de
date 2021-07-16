@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -157,7 +158,7 @@ namespace AZ::Render
         auto viewportSize = viewportContext->GetViewportSize();
         m_drawParams.m_position = AZ::Vector3(viewportSize.m_width, 0.0f, 1.0f) + AZ::Vector3(r_topRightBorderPadding) * viewportContext->GetDpiScalingFactor();
         m_drawParams.m_color = AZ::Colors::White;
-        m_drawParams.m_scale = AZ::Vector2(BaseFontSize * viewportContext->GetDpiScalingFactor());
+        m_drawParams.m_scale = AZ::Vector2(BaseFontSize);
         m_drawParams.m_hAlign = AzFramework::TextHorizontalAlignment::Right;
         m_drawParams.m_monospace = false;
         m_drawParams.m_depthTest = false;
