@@ -10,8 +10,6 @@
 
 #include <QApplication>
 
-using namespace AZ;
-
 // Handle asserts
 class ToolsFrameworkHook
     : public AZ::Test::ITestEnvironment
@@ -19,12 +17,12 @@ class ToolsFrameworkHook
 public:
     void SetupEnvironment() override
     {
-        AllocatorInstance<SystemAllocator>::Create();
+        AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
     }
 
     void TeardownEnvironment() override
     {
-        AllocatorInstance<SystemAllocator>::Destroy();
+        AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
     }
 };
 

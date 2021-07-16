@@ -11,10 +11,10 @@
 #include <Tests/Device.h>
 #include <Atom/RHI/FrameEventBus.h>
 
-using namespace AZ;
-
 namespace UnitTest
 {
+    using namespace AZ;
+
     class QueryTests
         : public RHITestFixture
     {

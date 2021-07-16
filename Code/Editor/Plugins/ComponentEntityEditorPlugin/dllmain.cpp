@@ -5,13 +5,6 @@
  *
  */
 
-// All plugins suffer from the following warning:
-//  warning C4273: 'GetIEditor' : inconsistent dll linkage
-// GetIEditor() is forward-declared using EDITOR_CORE_API, which without EDITOR_CORE set,
-// results in dllimport rather than dllexport. This define ensure it's consistently and
-// properly defined for export.
-#define EDITOR_CORE
-
 #include <platform.h>
 
 #include <IEditor.h>

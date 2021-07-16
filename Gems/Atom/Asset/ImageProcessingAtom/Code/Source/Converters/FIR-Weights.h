@@ -22,11 +22,7 @@ namespace ImageProcessingAtom
     inline DataType minimum(const DataType& ths, const DataType& tht) { return (ths < tht ? ths : tht); }
     template<class DataType>
     inline DataType maximum(const DataType& ths, const DataType& tht) { return (ths > tht ? ths : tht); }
-
-    #ifndef round
-    #define round(x)    ((x) >= 0) ? floor((x) + 0.5) : ceil((x) - 0.5)
-    #endif
-
+   
     /* ####################################################################################################################
      */
 

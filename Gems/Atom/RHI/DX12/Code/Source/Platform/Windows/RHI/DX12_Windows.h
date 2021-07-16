@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <AzCore/PlatformIncl.h>
+
 #if !defined(AZ_DX12_REFCOUNTED)
     #error "Incorrect include of DX12_Windows.h, please include DX12.h instead of this header"
 #endif

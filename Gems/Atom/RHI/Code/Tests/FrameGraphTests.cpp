@@ -15,10 +15,10 @@
 #include <Atom/RHI/BufferScopeAttachment.h>
 #include <AzCore/Math/Random.h>
 
-using namespace AZ;
-
 namespace UnitTest
 {
+    using namespace AZ;
+
     class FrameGraphTests
         : public RHITestFixture
     {

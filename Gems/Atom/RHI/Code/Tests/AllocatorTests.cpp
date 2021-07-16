@@ -12,12 +12,12 @@
 #include <AzCore/std/time.h>
 #include <AzCore/UnitTest/UnitTest.h>
 
-using namespace AZ;
-
 #define PRINTF(...)  do { UnitTest::ColoredPrintf(UnitTest::COLOR_GREEN, "[          ] "); UnitTest::ColoredPrintf(UnitTest::COLOR_YELLOW, __VA_ARGS__); } while(0)
 
 namespace UnitTest
 {
+    using namespace AZ;
+
     class AllocatorTest
         : public RHITestFixture
     {

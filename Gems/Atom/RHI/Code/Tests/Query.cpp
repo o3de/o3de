@@ -9,6 +9,7 @@
 namespace UnitTest
 {
     using namespace AZ;
+
     RHI::ResultCode Query::BeginInternal([[maybe_unused]] RHI::CommandList& commandList, [[maybe_unused]] RHI::QueryControlFlags flags)
     {
         return RHI::ResultCode::Success;
