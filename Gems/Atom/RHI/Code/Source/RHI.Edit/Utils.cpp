@@ -259,7 +259,8 @@ namespace AZ
 
 
             AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-            processLaunchInfo.m_commandlineParameters = AZStd::string::format("\"%s\" %s", executableAbsolutePath.c_str(), parameters.c_str());
+            processLaunchInfo.m_processExecutableString = executableAbsolutePath;
+            processLaunchInfo.m_commandlineParameters = parameters;
             processLaunchInfo.m_showWindow = true;
             processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;
 

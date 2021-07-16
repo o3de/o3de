@@ -157,7 +157,7 @@ namespace AzFramework
 
         executableString = AZ::StringFunc::TrimWhiteSpace(executableString, true, true);
         commandLine = AZ::StringFunc::TrimWhiteSpace(commandLine, true, true);
-        size_t pos;
+        size_t pos, pos2;
 
         // if they didnt supply either, fail
         if (executableString.empty() && commandLine.empty())
@@ -171,15 +171,20 @@ namespace AzFramework
             commandLine = AZStd::string::format(R"("%s" %s)", executableString.c_str(), commandLine.c_str());
         }
 
-        // double quote any commandline args
+        // double quote any quoted commandline args
         pos = 0;
+        pos2 = 0;
         while(pos != AZStd::string::npos)
         {
             pos = AZ::StringFunc::Find(commandLine, "\"", pos);
-            if(pos != AZStd::string::npos)
+            if (pos != AZStd::string::npos)
             {
-                commandLine.insert(pos, "\\\"");
-                pos += 3;
+                pos2 = AZ::StringFunc::Find(commandLine, "\"", pos + 1);
+                if (pos2 != pos + 1)
+                {
+                    commandLine.insert(pos, "\"");
+                    pos += 2;
+                }
             }
         }
 
