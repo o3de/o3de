@@ -6,13 +6,13 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 import logging
 import os
-import tempfile
+import psutil
 
 import ly_test_tools.log.log_monitor
 import ly_test_tools.environment.process_utils as process_utils
 import ly_test_tools.environment.waiter as waiter
-from ly_remote_console.remote_console_commands import RemoteConsole as RemoteConsole
 from ly_remote_console.remote_console_commands import send_command_and_expect_response as send_command_and_expect_response
+
 logger = logging.getLogger(__name__)
 
 
@@ -95,7 +95,7 @@ def launch_and_validate_results_launcher(launcher, level, remote_console_instanc
         return port_listening
         
     if null_renderer:
-        launcher.args.extend(["-NullRenderer"])
+        launcher.args.extend(["-rhi=Null"])
 
     # Start the Launcher
     with launcher.start():
@@ -110,8 +110,8 @@ def launch_and_validate_results_launcher(launcher, level, remote_console_instanc
 
         # Load the specified level in the launcher
         send_command_and_expect_response(remote_console_instance,
-                                         f"map {level}",
-                                         "LEVEL_LOAD_COMPLETE", timeout=30)
+                                         f"LoadLevel {level}",
+                                         "LEVEL_LOAD_END", timeout=30)
 
         # Monitor the console for expected lines
         for line in expected_lines:

@@ -63,6 +63,9 @@ namespace AzToolsFramework
         //! Signal the Python handler to stop
         virtual bool StopPython(bool silenceWarnings = false) = 0;
 
+        //! Query to determine if the Python VM has been initialized indicating an active state 
+        virtual bool IsPythonActive() = 0;
+
         //! Determines if the caller needs to wait for the Python VM to initialize (non-main thread only)
         virtual void WaitForInitialization() {}
 

@@ -100,18 +100,29 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
         cmake_path(RELATIVE_PATH target_library_output_directory BASE_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} OUTPUT_VARIABLE target_library_output_subdirectory)
     endif()
 
-    install(
-        TARGETS ${TARGET_NAME}
-        ARCHIVE
-            DESTINATION ${archive_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>
-            COMPONENT ${install_component}
-        LIBRARY
-            DESTINATION ${library_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_library_output_subdirectory}
-            COMPONENT ${install_component}
-        RUNTIME
-            DESTINATION ${runtime_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_runtime_output_subdirectory}
-            COMPONENT ${install_component}
-    )
+    if(COMMAND ly_install_target_override)
+        # Mac needs special handling because of a cmake issue
+        ly_install_target_override(TARGET ${TARGET_NAME}
+            ARCHIVE_DIR ${archive_output_directory}
+            LIBRARY_DIR ${library_output_directory}
+            RUNTIME_DIR ${runtime_output_directory}
+            LIBRARY_SUBDIR ${target_library_output_subdirectory}
+            RUNTIME_SUBDIR ${target_runtime_output_subdirectory}
+        )
+    else()
+        install(
+            TARGETS ${TARGET_NAME}
+            ARCHIVE
+                DESTINATION ${archive_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>
+                COMPONENT ${install_component}
+            LIBRARY
+                DESTINATION ${library_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_library_output_subdirectory}
+                COMPONENT ${install_component}
+            RUNTIME
+                DESTINATION ${runtime_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_runtime_output_subdirectory}
+                COMPONENT ${install_component}
+        )
+    endif()
 
     # CMakeLists.txt file
     string(REGEX MATCH "(.*)::(.*)$" match ${ALIAS_TARGET_NAME})
@@ -487,7 +498,7 @@ function(ly_setup_others)
 
     # Scripts
     file(GLOB o3de_scripts "${LY_ROOT_FOLDER}/scripts/o3de.*")
-    install(FILES
+    install(PROGRAMS
         ${o3de_scripts}
         DESTINATION ./scripts
     )
@@ -505,6 +516,14 @@ function(ly_setup_others)
         DESTINATION .
         REGEX "downloaded_packages" EXCLUDE
         REGEX "runtime" EXCLUDE
+        REGEX ".*$\.sh" EXCLUDE
+    )
+
+    # For Mac/Linux shell scripts need to be installed as PROGRAMS to have execute permission
+    file(GLOB python_scripts "${LY_ROOT_FOLDER}/python/*.sh")
+    install(PROGRAMS
+        ${python_scripts}
+        DESTINATION ./python
     )
 
     # Registry

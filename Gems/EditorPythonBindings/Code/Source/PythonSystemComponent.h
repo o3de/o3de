@@ -44,6 +44,7 @@ namespace EditorPythonBindings
         // AzToolsFramework::EditorPythonEventsInterface
         bool StartPython(bool silenceWarnings = false) override;
         bool StopPython(bool silenceWarnings = false) override;
+        bool IsPythonActive() override;
         void WaitForInitialization() override;
         void ExecuteWithLock(AZStd::function<void()> executionCallback) override;
         ////////////////////////////////////////////////////////////////////////
