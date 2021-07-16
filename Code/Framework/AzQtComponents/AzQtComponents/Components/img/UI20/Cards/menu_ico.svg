@@ -6,7 +6,7 @@
     <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
         <g id="component-header" transform="translate(-426.000000, -6.000000)" fill="#FFFFFF">
             <g id="Buttons-/-Dropdown-button-with-Icon-/-Default" transform="translate(424.000000, 4.000000)">
-                <polygon id="Triangle" transform="translate(19.000000, 8.500000) scale(1, -1) translate(-19.000000, -8.500000) " points="19 7 22 10 16 10"></polygon>
+                <polygon id="Triangle" transform="translate(19.000000, 8.500000) scale(1, -1) translate(-19.000000, -8.500000) " points="20 9 23 12 17 12"></polygon>
                 <g id="Sky-Icon-/-System-/-Menu">
                     <rect id="Rectangle-11" x="2" y="2" width="12" height="2"></rect>
                     <rect id="Rectangle-11" x="2" y="7" width="12" height="2"></rect>
