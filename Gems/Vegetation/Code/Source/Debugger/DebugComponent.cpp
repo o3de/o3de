@@ -286,7 +286,7 @@ void DebugComponent::DrawSectorTimingData(const AzFramework::ViewportInfo& viewp
                 sectorTiming.m_id.second, static_cast<int>(sectorTiming.m_averageTimeUs), sectorTiming.m_updateCount);
 
             constexpr bool centerText = true;
-            constexpr float fontSize = 1.5f;
+            constexpr float fontSize = 0.7f;
             debugDisplay.SetColor(AZ::Color(1.0f));
             debugDisplay.DrawTextLabel(sectorTiming.m_worldPosition, fontSize, displayString.c_str(), centerText);
         }
@@ -973,7 +973,7 @@ void DebugComponent::DrawDebugStats(AzFramework::DebugDisplayRequests& debugDisp
 
     debugDisplay.SetColor(AZ::Color(1.0f));
     debugDisplay.Draw2dTextLabel(
-        4.0f, 16.0f, 1.5f,
+        40.0f, 22.0f, 0.7f,
         AZStd::string::format(
             "VegetationSystemStats:\nActive Instances Count: %d\nInstance Register Queue: %d\nInstance Unregister Queue: %d\nThread "
             "Queue Count: %d\nThread Processing Count: %d",
