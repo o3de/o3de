@@ -2254,6 +2254,63 @@ namespace UnitTests
         EXPECT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0);
     }
 
+    TEST_F(AssetDatabaseTest, QueryProductDependenciesUnresolvedAdvanced_HandlesLargeSearch_Success)
+    {
+        CreateCoverageTestData();
+
+        constexpr int NumTestPaths = 10000;
+
+        AZStd::vector<AZStd::string> searchPaths;
+
+        searchPaths.reserve(NumTestPaths);
+
+        for (int i = 0; i < NumTestPaths; ++i)
+        {
+            searchPaths.emplace_back(AZStd::string::format("%d.txt", i));
+        }
+
+        ProductDependencyDatabaseEntry dependency1(m_data->m_product1.m_productID, AZ::Uuid::CreateNull(), 0, 0, "pc", false, "*.txt");
+        ProductDependencyDatabaseEntry dependency2(
+            m_data->m_product1.m_productID, AZ::Uuid::CreateNull(), 0, 0, "pc", false, "default.xml");
+
+        m_data->m_connection.SetProductDependency(dependency1);
+        m_data->m_connection.SetProductDependency(dependency2);
+
+        AZStd::vector<AZStd::string> matches;
+        matches.reserve(NumTestPaths);
+
+        ASSERT_TRUE(m_data->m_connection.QueryProductDependenciesUnresolvedAdvanced(
+            searchPaths,
+            [&matches](AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry& /*entry*/, const AZStd::string& path)
+            {
+                matches.push_back(path);
+                return true;
+            }));
+
+        ASSERT_EQ(matches.size(), searchPaths.size());
+
+        // Check the first few results match
+        for (int i = 0; i < 10 && i < NumTestPaths; ++i)
+        {
+            ASSERT_STREQ(matches[i].c_str(), searchPaths[i].c_str());
+        }
+
+        matches.clear();
+        searchPaths.clear();
+        searchPaths.push_back("default.xml");
+
+        // Run the query again to make sure a) we can b) we don't get any extra results and c) we can query for exact (non wildcard) matches
+        ASSERT_TRUE(m_data->m_connection.QueryProductDependenciesUnresolvedAdvanced(
+            searchPaths,
+            [&matches](AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry& /*entry*/, const AZStd::string& path)
+            {
+                matches.push_back(path);
+                return true;
+            }));
+
+        ASSERT_THAT(matches, testing::ElementsAreArray(searchPaths));
+    }
+
     TEST_F(AssetDatabaseTest, QueryCombined_Succeeds)
     {
         // This test specifically checks that the legacy subIds returned by QueryCombined are correctly matched to only the one product that they're associated with

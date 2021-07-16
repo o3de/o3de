@@ -16,6 +16,7 @@ set(FILES
     Tests/EditorCompoundShapeComponentTests.cpp
     Tests/EditorCylinderShapeComponentTests.cpp
     Tests/EditorPolygonPrismShapeComponentTests.cpp
+    Tests/EditorTubeShapeComponentTests.cpp
     Tests/SpawnerComponentTest.cpp
     Tests/Builders/CopyDependencyBuilderTest.cpp
     Tests/Builders/SliceBuilderTests.cpp

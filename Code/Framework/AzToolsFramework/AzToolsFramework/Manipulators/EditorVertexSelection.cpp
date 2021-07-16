@@ -1146,6 +1146,12 @@ namespace AzToolsFramework
             {
                 if (interaction.m_keyboardModifiers.Alt())
                 {
+                    if (!CanDeleteSelection<Vertex>(entityComponentIdPair.GetEntityId(), /*selectedCount=*/1))
+                    {
+                        ShowVertexDeletionWarning();
+                        return;
+                    }
+
                     SafeRemoveVertex<Vertex>(entityComponentIdPair, vertexIndex);
                 }
                 else

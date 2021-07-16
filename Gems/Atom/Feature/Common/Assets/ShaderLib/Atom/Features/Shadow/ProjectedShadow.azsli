@@ -240,9 +240,10 @@ float ProjectedShadow::GetVisibilityEsm()
         const float depth = PerspectiveDepthToLinear(
             m_shadowPosition.z, 
             coefficients);
-        const float occluder = shadowmap.Sample(
+        const float occluder = shadowmap.SampleLevel(
             PassSrg::LinearSampler, 
-            float3(atlasPosition.xy * invAtlasSize, atlasPosition.z)).r;
+            float3(atlasPosition.xy * invAtlasSize, atlasPosition.z),
+            /*LOD=*/0).r;
 
         const float exponent = -ViewSrg::m_projectedShadows[m_shadowIndex].m_esmExponent * (depth - occluder);
         const float ratio = exp(exponent);
@@ -281,9 +282,10 @@ float ProjectedShadow::GetVisibilityEsmPcf()
         const float depth = PerspectiveDepthToLinear(
             m_shadowPosition.z,
             coefficients);
-        const float occluder = shadowmap.Sample(
+        const float occluder = shadowmap.SampleLevel(
             PassSrg::LinearSampler,
-            float3(atlasPosition.xy * invAtlasSize, atlasPosition.z)).r;
+            float3(atlasPosition.xy * invAtlasSize, atlasPosition.z),
+            /*LOD=*/0).r;
 
         const float exponent = -ViewSrg::m_projectedShadows[m_shadowIndex].m_esmExponent * (depth - occluder);
         float ratio = exp(exponent);
@@ -322,8 +324,10 @@ float ProjectedShadow::GetThickness()
     {
         const float3 atlasPosition = GetAtlasPosition(m_shadowPosition.xy);
 
-        const float depthValue = shadowmap.Sample(PassSrg::LinearSampler,  
-            float3(atlasPosition.xy * invAtlasSize, atlasPosition.z)).r;
+        const float depthValue = shadowmap.SampleLevel(PassSrg::LinearSampler,
+            float3(atlasPosition.xy * invAtlasSize, atlasPosition.z),
+            /*LOD=*/0
+            ).r;
             
         const float viewSpaceThickness = abs(UnprojectDepth(m_shadowIndex, m_shadowPosition.z) - UnprojectDepth(m_shadowIndex, depthValue)); 
         return viewSpaceThickness;    
@@ -376,9 +380,9 @@ bool ProjectedShadow::IsShadowed(float3 shadowPosition)
         shadowPosition.y >= 0 && shadowPosition.y * size < size - PixelMargin)
     {
         float3 atlasPosition = GetAtlasPosition(shadowPosition.xy);
-        const float depthInShadowmap = shadowmap.Sample(
+        const float depthInShadowmap = shadowmap.SampleLevel(
             PassSrg::LinearSampler,
-            float3(atlasPosition.xy * invAtlasSize, atlasPosition.z)).r;
+            float3(atlasPosition.xy * invAtlasSize, atlasPosition.z), /*LOD=*/0).r;
         const float depthDiff = depthInShadowmap - shadowPosition.z;
         float bias = ViewSrg::m_projectedShadows[m_shadowIndex].m_bias;
         if (depthDiff < -bias)

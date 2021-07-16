@@ -30,7 +30,6 @@
 
 #include <MathConversion.h>
 #include <IRenderAuxGeom.h>
-#include <IConsole.h>
 
 namespace Audio
 {

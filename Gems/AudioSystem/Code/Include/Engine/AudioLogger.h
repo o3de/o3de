@@ -24,16 +24,18 @@ namespace Audio
         eALT_ALWAYS,
     };
 
-    enum EAudioLoggingOptions
-    {
-        eALO_NONE     = 0,
-        eALO_ERRORS   = AUDIO_BIT(6), // a
-        eALO_WARNINGS = AUDIO_BIT(7), // b
-        eALO_COMMENTS = AUDIO_BIT(8), // c
-    };
-
     namespace Log
     {
+        enum Options : AZ::u8
+        {
+            None = 0,
+            Errors = (1 << 0),
+            Warnings = (1 << 1),
+            Comments = (1 << 2),
+        };
+
+        inline AZ::u32 s_audioLogOptions = 0;
+
 #if defined(ENABLE_AUDIO_LOGGING)
         // Eventually will get rid of the CAudioLogger class and objects and convert
         // all audio log calls to use Audio::Log::Print.
@@ -41,19 +43,6 @@ namespace Audio
         // arguments in CAudioLogger::Log and call this PrintMsg.
         inline void PrintMsg(const EAudioLogType type, const char* const message)
         {
-            EAudioLoggingOptions logLevel = eALO_NONE;
-
-            auto verbosityVar = AZ::Environment::FindVariable<int*>("AudioLogVerbosity");
-            if (verbosityVar.IsConstructed())
-            {
-                logLevel = static_cast<EAudioLoggingOptions>(*(verbosityVar.Get()));
-            }
-
-            if (logLevel == eALO_NONE)
-            {
-                return;
-            }
-
             static constexpr const char* AudioWindow = "Audio";
 
             switch (type)
@@ -65,7 +54,7 @@ namespace Audio
                 }
                 case eALT_ERROR:
                 {
-                    if (logLevel & eALO_ERRORS)
+                    if ((s_audioLogOptions & Log::Options::Errors) != 0)
                     {
                         AZ_Error(AudioWindow, false, message);
                     }
@@ -73,7 +62,7 @@ namespace Audio
                 }
                 case eALT_WARNING:
                 {
-                    if (logLevel & eALO_WARNINGS)
+                    if ((s_audioLogOptions & Log::Options::Warnings) != 0)
                     {
                         AZ_Warning(AudioWindow, false, message);
                     }
@@ -81,7 +70,7 @@ namespace Audio
                 }
                 case eALT_COMMENT:
                 {
-                    if (logLevel & eALO_COMMENTS)
+                    if ((s_audioLogOptions & Log::Options::Comments) != 0)
                     {
                         AZ_TracePrintf(AudioWindow, message);
                     }

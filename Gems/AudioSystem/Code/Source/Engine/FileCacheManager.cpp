@@ -340,20 +340,17 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////
     void CFileCacheManager::DrawDebugInfo(IRenderAuxGeom& auxGeom, const float posX, const float posY)
     {
-        if ((g_audioCVars.m_nDrawAudioDebug & eADDF_SHOW_FILECACHE_MANAGER_INFO) != 0)
+        if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::FileCacheInfo))
         {
             EATLDataScope dataScope = eADS_ALL;
 
-            if ((g_audioCVars.m_nFileCacheManagerDebugFilter & eAFCMDF_ALL) == 0)
+            if (CVars::s_fcmDrawOptions.AreAllFlagsActive(FileCacheManagerDebugDraw::Options::Global))
             {
-                if ((g_audioCVars.m_nFileCacheManagerDebugFilter & eAFCMDF_GLOBALS) != 0)
-                {
-                    dataScope = eADS_GLOBAL;
-                }
-                else if ((g_audioCVars.m_nFileCacheManagerDebugFilter & eAFCMDF_LEVEL_SPECIFICS) != 0)
-                {
-                    dataScope = eADS_LEVEL_SPECIFIC;
-                }
+                dataScope = eADS_GLOBAL;
+            }
+            else if (CVars::s_fcmDrawOptions.AreAllFlagsActive(FileCacheManagerDebugDraw::Options::LevelSpecific))
+            {
+                dataScope = eADS_LEVEL_SPECIFIC;
             }
 
             const auto frameTime = AZStd::chrono::system_clock::now();
@@ -382,11 +379,11 @@ namespace Audio
                 "FileCacheManager (%zu of %zu KiB) [Entries: %zu]", m_currentByteTotal >> 10, m_maxByteTotal >> 10, m_audioFileEntries.size());
             positionY += 15.0f;
 
-            bool displayAll = (g_audioCVars.m_nFileCacheManagerDebugFilter == eAFCMDF_ALL);
-            bool displayGlobals = ((g_audioCVars.m_nFileCacheManagerDebugFilter & eAFCMDF_GLOBALS) != 0);
-            bool displayLevels = ((g_audioCVars.m_nFileCacheManagerDebugFilter & eAFCMDF_LEVEL_SPECIFICS) != 0);
-            bool displayUseCounted = ((g_audioCVars.m_nFileCacheManagerDebugFilter & eAFCMDF_USE_COUNTED) != 0);
-            bool displayLoaded = ((g_audioCVars.m_nFileCacheManagerDebugFilter & eAFCMDF_LOADED) != 0);
+            const bool displayAll = CVars::s_fcmDrawOptions.GetRawFlags() == 0;
+            const bool displayGlobals = CVars::s_fcmDrawOptions.AreAllFlagsActive(FileCacheManagerDebugDraw::Options::Global);
+            const bool displayLevels = CVars::s_fcmDrawOptions.AreAllFlagsActive(FileCacheManagerDebugDraw::Options::LevelSpecific);
+            const bool displayUseCounted = CVars::s_fcmDrawOptions.AreAllFlagsActive(FileCacheManagerDebugDraw::Options::UseCounted);
+            const bool displayLoaded = CVars::s_fcmDrawOptions.AreAllFlagsActive(FileCacheManagerDebugDraw::Options::Loaded);
 
             for (auto& audioFileEntryPair : m_audioFileEntries)
             {

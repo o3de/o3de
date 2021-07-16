@@ -11,6 +11,11 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <SceneAPI/SceneCore/DataTypes/Groups/IGroup.h>
 
+namespace AZ::SceneAPI::Containers
+{
+    class SceneGraph;
+}
+
 namespace EMotionFX
 {
     namespace Pipeline
@@ -27,6 +32,7 @@ namespace EMotionFX
 
                 virtual const AZStd::string& GetSelectedRootBone() const = 0;
                 virtual void SetSelectedRootBone(const AZStd::string& selectedRootBone) = 0;
+                virtual void SetBestMatchingRootBone(const AZ::SceneAPI::Containers::SceneGraph& sceneGraph) = 0;
             };
         }
     }
