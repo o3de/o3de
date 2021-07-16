@@ -127,7 +127,6 @@ namespace UnitTest
         void SetUpEditorFixtureImpl() override
         {
             m_editor = new EntityPropertyEditor();
-            m_editorActions.Connect();
 
             m_entity1 = CreateDefaultEditorEntity("Entity1");
             m_entity2 = CreateDefaultEditorEntity("Entity2");
@@ -137,13 +136,11 @@ namespace UnitTest
 
         void TearDownEditorFixtureImpl() override
         {
-            m_editorActions.Disconnect();
             delete m_editor;
         }
 
     public:
         EntityPropertyEditor* m_editor;
-        TestEditorActions m_editorActions;
         EntityIdList m_entityIds;
         AZ::EntityId m_entity1;
         AZ::EntityId m_entity2;
@@ -234,8 +231,6 @@ namespace UnitTest
             entities.insert(m_levelEntity);
             m_levelEditor->SetOverrideEntityIds(entities);
 
-            m_editorActions.Connect();
-
             // Connect to the EditorRequestBus so that we can intercept calls checking whether or not a level is currently open.
             AzToolsFramework::EditorRequestBus::Handler::BusConnect();
         }
@@ -244,7 +239,6 @@ namespace UnitTest
         {
             AzToolsFramework::EditorRequestBus::Handler::BusDisconnect();
 
-            m_editorActions.Disconnect();
             delete m_levelEditor;
         }
 
@@ -258,7 +252,6 @@ namespace UnitTest
 
     public:
         EntityPropertyEditor* m_levelEditor;
-        TestEditorActions m_editorActions;
         AZ::EntityId m_levelEntity;
         bool m_levelOpen = false;
     };
