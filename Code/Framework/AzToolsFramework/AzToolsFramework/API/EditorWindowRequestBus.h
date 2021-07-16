@@ -36,8 +36,47 @@ namespace AzToolsFramework
         /// Retrieve the main application window.
         virtual QWidget* GetAppMainWindow() { return nullptr; }
     };
-
     using EditorWindowRequestBus = AZ::EBus<EditorWindowRequests>;
+
+    class EditorWindowUIRequests : public AZ::EBusTraits
+    {
+    public:
+        using Bus = AZ::EBus<EditorWindowUIRequests>;
+
+        //////////////////////////////////////////////////////////////////////////
+        // EBusTraits overrides
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+        //////////////////////////////////////////////////////////////////////////
+
+        /// Enable/Disable the Editor UI.
+        virtual void SetEditorUiEnabled([[maybe_unused]] bool enable) {}
+    };
+    using EditorWindowUIRequestBus = AZ::EBus<EditorWindowUIRequests>;
+
+    using EnableUiFunction = AZStd::function<void(bool)>;
+
+    /// Helper for EditorWindowRequests to be used as a 
+    /// member instead of inheriting from EBus directly.
+    class EditorWindowRequestBusImpl
+        : public EditorWindowUIRequestBus::Handler
+    {
+    public:
+        /// Set the function to be called when entering ImGui Mode.
+        void SetEnableEditorUiFunc(const EnableUiFunction enableEditorUiFunc)
+        {
+            m_enableEditorUiFunc = AZStd::move(enableEditorUiFunc);
+        }
+
+        private:
+        // EditorWindowRequestBus
+        void SetEditorUiEnabled( [[maybe_unused]] bool enable) override
+        {
+            m_enableEditorUiFunc(enable);
+        }
+
+        EnableUiFunction m_enableEditorUiFunc; ///< Function to call when entering ImGui Mode.
+    };
+
 } // namespace AzToolsFramework
 
 #endif // AZTOOLSFRAMEWORK_EDITORWINDOWREQUESTBUS_H

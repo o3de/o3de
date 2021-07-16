@@ -34,5 +34,6 @@
         <file>Warning.svg</file>
         <file>Backgrounds/DefaultBackground.jpg</file>
         <file>Backgrounds/FtueBackground.jpg</file>
+        <file>FeatureTagClose.svg</file>
     </qresource>
 </RCC>

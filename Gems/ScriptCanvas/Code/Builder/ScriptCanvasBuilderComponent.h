@@ -12,18 +12,11 @@
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include "ScriptCanvasBuilderWorker.h"
 
-#include <ScriptCanvas/Grammar/GrammarContext.h>
-#include <ScriptCanvas/Grammar/GrammarContextBus.h>
-#include <ScriptCanvas/Translation/TranslationContext.h>
-#include <ScriptCanvas/Translation/TranslationContextBus.h>
-
 namespace ScriptCanvasBuilder
 {
     //! ScriptCanvasBuilder is responsible for turning editor ScriptCanvas Assets into runtime script canvas assets
     class PluginComponent
         : public AZ::Component
-        , public ScriptCanvas::Grammar::RequestBus::Handler
-        , public ScriptCanvas::Translation::RequestBus::Handler
     {
     public:
         AZ_COMPONENT(PluginComponent, "{F8286B21-E751-4745-8BC4-512F190215FF}")
@@ -42,19 +35,9 @@ namespace ScriptCanvasBuilder
         void Deactivate() override;
         //////////////////////////////////////////////////////////////////////////
 
-        // ScriptCanvas::Grammar::RequestBus::Handler
-        ScriptCanvas::Grammar::Context* GetGrammarContext() override;
-
-        // ScriptCanvas::Translation::RequestBus::Handler
-        ScriptCanvas::Translation::Context* GetTranslationContext() override;
-
     private:
         PluginComponent(const PluginComponent&) = delete;
-
         SharedHandlers m_sharedHandlers;
-
         Worker m_scriptCanvasBuilder;
-        ScriptCanvas::Translation::Context m_translationContext;
-        ScriptCanvas::Grammar::Context m_grammarContext;
     };
 }

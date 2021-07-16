@@ -31,6 +31,8 @@ ly_add_target(
             .
     BUILD_DEPENDENCIES
         PRIVATE
+            3rdParty::Qt::Core
+            3rdParty::Qt::Widgets
             AZ::AzCore
             Legacy::CryCommon
             Legacy::EditorLib

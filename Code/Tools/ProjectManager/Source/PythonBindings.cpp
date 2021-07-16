@@ -394,13 +394,20 @@ namespace O3DE::ProjectManager
             if (pybind11::isinstance<pybind11::dict>(o3deData))
             {
                 engineInfo.m_path = Py_To_String(enginePath);
-                engineInfo.m_defaultGemsFolder = Py_To_String(o3deData["default_gems_folder"]);
-                engineInfo.m_defaultProjectsFolder = Py_To_String(o3deData["default_projects_folder"]);
-                engineInfo.m_defaultRestrictedFolder = Py_To_String(o3deData["default_restricted_folder"]);
-                engineInfo.m_defaultTemplatesFolder = Py_To_String(o3deData["default_templates_folder"]);
+                auto defaultGemsFolder = m_manifest.attr("get_o3de_gems_folder")();
+                engineInfo.m_defaultGemsFolder = Py_To_String_Optional(o3deData, "default_gems_folder", Py_To_String(defaultGemsFolder));
+
+                auto defaultProjectsFolder = m_manifest.attr("get_o3de_projects_folder")();
+                engineInfo.m_defaultProjectsFolder = Py_To_String_Optional(o3deData, "default_projects_folder", Py_To_String(defaultProjectsFolder));
+
+                auto defaultRestrictedFolder = m_manifest.attr("get_o3de_restricted_folder")();
+                engineInfo.m_defaultRestrictedFolder = Py_To_String_Optional(o3deData, "default_restricted_folder", Py_To_String(defaultRestrictedFolder));
+
+                auto defaultTemplatesFolder = m_manifest.attr("get_o3de_templates_folder")();
+                engineInfo.m_defaultTemplatesFolder = Py_To_String_Optional(o3deData, "default_templates_folder", Py_To_String(defaultTemplatesFolder));
 
                 auto defaultThirdPartyFolder = m_manifest.attr("get_o3de_third_party_folder")();
-                engineInfo.m_thirdPartyPath = Py_To_String_Optional(o3deData,"default_third_party_folder", Py_To_String(defaultThirdPartyFolder));
+                engineInfo.m_thirdPartyPath = Py_To_String_Optional(o3deData, "default_third_party_folder", Py_To_String(defaultThirdPartyFolder));
             }
 
             auto engineData = m_manifest.attr("get_engine_json_data")(pybind11::none(), enginePath);

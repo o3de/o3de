@@ -8,4 +8,6 @@
 set(FILES
     Source/LyShineModule.cpp
     Source/LyShineModule.h
+    Source/LyShineSystemComponent.cpp
+    Source/LyShineSystemComponent.h
 )

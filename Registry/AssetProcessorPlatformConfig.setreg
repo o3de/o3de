@@ -76,7 +76,8 @@
                     "animsettings": "i_caf",
                     "Animations/SkeletonList.xml": "i_caf",
                     "cbc": "abc",
-                    "fbx.assetinfo": "fbx"
+                    "fbx.assetinfo": "fbx",
+                    "stl.assetinfo": "stl"
                 },
 
                 // ---- add any folders to scan here.  The priority order is the order they appear here

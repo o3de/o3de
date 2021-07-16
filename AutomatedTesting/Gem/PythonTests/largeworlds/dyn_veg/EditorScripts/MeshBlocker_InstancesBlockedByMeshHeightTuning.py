@@ -88,23 +88,8 @@ class test_MeshBlocker_InstancesBlockedByMeshHeightTuning(EditorTestHelper):
             bus.Broadcast, "GetAssetIdByPath", os.path.join("objects", "_primitives", "_box_1x1.azmodel"), math.Uuid(),
             False)
         blocker_entity.get_set_test(1, "Controller|Configuration|Mesh Asset", sphere_id)
-        components.TransformBus(bus.Event, "SetLocalScale", blocker_entity.id, math.Vector3(5.0, 5.0, 5.0))
+        components.TransformBus(bus.Event, "SetLocalUniformScale", blocker_entity.id, 5.0)
         components.TransformBus(bus.Event, "SetLocalRotation", blocker_entity.id, math.Vector3(0.0, y_rotation, 0.0))
-
-        # Disable/Re-enable Mesh component due to ATOM-14299
-        general.idle_wait(1.0)
-        editor.EditorComponentAPIBus(bus.Broadcast, 'DisableComponents', [blocker_entity.components[1]])
-        is_enabled = editor.EditorComponentAPIBus(bus.Broadcast, 'IsComponentEnabled', blocker_entity.components[1])
-        if is_enabled:
-            print("Mesh component is still enabled")
-        else:
-            print("Mesh component was disabled")
-        editor.EditorComponentAPIBus(bus.Broadcast, 'EnableComponents', [blocker_entity.components[1]])
-        is_enabled = editor.EditorComponentAPIBus(bus.Broadcast, 'IsComponentEnabled', blocker_entity.components[1])
-        if is_enabled:
-            print("Mesh component is now enabled")
-        else:
-            print("Mesh component is still disabled")
 
         # 5) Adjust the height Max percentage values of blocker
         blocker_entity.get_set_test(0, "Configuration|Mesh Height Percent Max", 0.8)

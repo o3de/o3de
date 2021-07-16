@@ -40,6 +40,8 @@ namespace AZ
                 const ShaderResourceGroupInfoList& srgInfoList,
                 const RootConstantsInfo& rootConstantsInfo,
                 const RHI::ShaderCompilerArguments& shaderCompilerArguments) override;
+            
+            bool VariantCompilationRequiresSrgLayoutData() const override { return true; }
 
             bool CompilePlatformInternal(
                 const AssetBuilderSDK::PlatformInfo& platform,

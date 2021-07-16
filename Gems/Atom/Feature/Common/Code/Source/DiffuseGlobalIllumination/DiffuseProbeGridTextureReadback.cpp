@@ -22,7 +22,9 @@ namespace AZ
             AZ_Assert(m_readbackState == DiffuseProbeGridReadbackState::Idle, "DiffuseProbeGridTextureReadback is already processing a readback request");
 
             m_callback = callback;
-            m_readbackState = DiffuseProbeGridReadbackState::Irradiance;
+
+            m_remainingInitializationFrames = DefaultNumInitializationFrames;
+            m_readbackState = DiffuseProbeGridReadbackState::Initializing;
         }
 
         void DiffuseProbeGridTextureReadback::Update(const AZ::Name& passName)
@@ -30,6 +32,19 @@ namespace AZ
             if (m_readbackState == DiffuseProbeGridReadbackState::Idle || m_readbackState == DiffuseProbeGridReadbackState::Complete)
             {
                 return;
+            }
+
+            if (m_readbackState == DiffuseProbeGridReadbackState::Initializing)
+            {
+                if (m_remainingInitializationFrames > 0)
+                {
+                    // still in the initialization state to allow the irradiance textures to settle, decrement the frame count
+                    m_remainingInitializationFrames--;
+                    return;
+                }
+
+                // settling complete, move to the irradiance readback state to begin the readback process
+                m_readbackState = DiffuseProbeGridReadbackState::Irradiance;
             }
 
             if (m_attachmentReadback.get() && m_attachmentReadback->GetReadbackState() > RPI::AttachmentReadback::ReadbackState::Idle)

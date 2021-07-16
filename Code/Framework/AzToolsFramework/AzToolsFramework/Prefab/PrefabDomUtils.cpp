@@ -236,6 +236,26 @@ namespace AzToolsFramework
                 return findInstancesResult->get();
             }
 
+            AZ::JsonSerializationResult::ResultCode ApplyPatches(
+                PrefabDomValue& prefabDomToApplyPatchesOn, PrefabDom::AllocatorType& allocator, const PrefabDomValue& patches)
+            {
+                auto issueReportingCallback = [](AZStd::string_view, AZ::JsonSerializationResult::ResultCode result,
+                                                 AZStd::string_view) -> AZ::JsonSerializationResult::ResultCode
+                {
+                    using namespace AZ::JsonSerializationResult;
+                    if (result.GetProcessing() == Processing::Halted)
+                    {
+                        return ResultCode(result.GetTask(), Outcomes::PartialSkip);
+                    }
+                    return result;
+                };
+
+                AZ::JsonApplyPatchSettings applyPatchSettings;
+                applyPatchSettings.m_reporting = AZStd::move(issueReportingCallback);
+                return AZ::JsonSerialization::ApplyPatch(
+                    prefabDomToApplyPatchesOn, allocator, patches, AZ::JsonMergeApproach::JsonPatch, applyPatchSettings);
+            }
+
             void PrintPrefabDomValue(
                 [[maybe_unused]] const AZStd::string_view printMessage,
                 [[maybe_unused]] const PrefabDomValue& prefabDomValue)

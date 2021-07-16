@@ -10,7 +10,6 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include "Translation.h"
-#include "TranslationContextBus.h"
 
 namespace ScriptCanvas
 {

@@ -8,8 +8,6 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QDialog>
-#include "NewsShared/LogType.h"
-#include "NewsShared/ErrorCodes.h"
 #endif
 
 namespace News {
@@ -61,9 +59,6 @@ private:
     void OnOpenLevelBtnClicked(bool checked);
     void OnRecentLevelTableItemClicked(const QModelIndex& index);
     void OnCloseBtnClicked(bool checked);
-
-    void SyncFail(News::ErrorCode error);
-    void SyncSuccess();
 
 private Q_SLOTS:
     void previewAreaScrolled();

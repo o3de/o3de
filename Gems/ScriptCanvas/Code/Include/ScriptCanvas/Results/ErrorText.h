@@ -74,6 +74,7 @@ namespace ScriptCanvas
         constexpr const char* NotEnoughBranchesForReturn = "Not enough branches for defined out return values.";
         constexpr const char* NotEnoughInputForArithmeticOperator = "Not enough input for arithmetic operator";
         constexpr const char* NullEntityInGraph = "Null entity pointer in graph";
+        constexpr const char* NullInputKnown = "The input is known to be null, and the node does not accept it";
         constexpr const char* ParseExecutionMultipleOutSyntaxSugarChildExecutionRemovedAndNotReplaced = "ParseExecutionMultipleOutSyntaxSugar: child execution node was removed, and not replaced.";
         constexpr const char* ParseExecutionMultipleOutSyntaxSugarMismatchOutSize = "ParseExecutionMultipleOutSyntaxSugar: mismatch in connect nodes vs source slots size";
         constexpr const char* ParseExecutionMultipleOutSyntaxSugarNonNullChildExecutionFound = "ParseExecutionMultipleOutSyntaxSugar: non null child execution node";

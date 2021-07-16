@@ -11,8 +11,6 @@
 #include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Core/Graph.h>
 #include <ScriptCanvas/Core/SlotConfigurationDefaults.h>
-#include <ScriptCanvas/Grammar/GrammarContext.h>
-#include <ScriptCanvas/Grammar/GrammarContextBus.h>
 
 #include <gtest/gtest.h>
 

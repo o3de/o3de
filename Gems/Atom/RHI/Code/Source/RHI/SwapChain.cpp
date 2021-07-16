@@ -168,7 +168,11 @@ namespace AZ
 
         void SwapChain::SetVerticalSyncInterval(uint32_t verticalSyncInterval)
         {
+            uint32_t previousVsyncInterval = m_descriptor.m_verticalSyncInterval;
+
             m_descriptor.m_verticalSyncInterval = verticalSyncInterval;
+
+            SetVerticalSyncIntervalInternal(previousVsyncInterval);
         }
 
         const AttachmentId& SwapChain::GetAttachmentId() const

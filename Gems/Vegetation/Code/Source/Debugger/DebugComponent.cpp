@@ -185,7 +185,7 @@ void DebugComponent::DisplayEntityViewport(const AzFramework::ViewportInfo& view
     }
 }
 
-void DebugComponent::DrawInstanceDebug(AzFramework::DebugDisplayRequests& debugDisplay)
+void DebugComponent::DrawInstanceDebug([[maybe_unused]] AzFramework::DebugDisplayRequests& debugDisplay)
 {
 #if defined(VEG_PROFILE_ENABLED)
     AZStd::unordered_map<AreaId, AreaDebugDisplayData> areaDebugDisplayDataMap;
