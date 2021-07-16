@@ -491,6 +491,10 @@ namespace PhysX
     {
         m_physicsSystemConfigChanged.Disconnect();
 
+        s_overlapBuffer.swap({});
+        s_rayCastBuffer.swap({});
+        s_sweepBuffer.swap({});
+
         for (auto& simulatedBody : m_simulatedBodies)
         {
             if (simulatedBody.second != nullptr)

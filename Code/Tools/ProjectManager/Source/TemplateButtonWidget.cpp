@@ -6,6 +6,7 @@
  */
 
 #include <TemplateButtonWidget.h>
+#include <ProjectManagerDefs.h>
 
 #include <QVBoxLayout>
 #include <QLabel>
@@ -16,7 +17,6 @@
 
 namespace O3DE::ProjectManager
 {
-
     TemplateButton::TemplateButton(const QString& imagePath, const QString& labelText, QWidget* parent)
         : QPushButton(parent)
     {
@@ -31,8 +31,8 @@ namespace O3DE::ProjectManager
 
         QLabel* image = new QLabel(this);
         image->setObjectName("templateImage");
-        image->setPixmap(
-            QPixmap(imagePath).scaled(QSize(s_templateImageWidth,s_templateImageHeight) , Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        image->setPixmap(QPixmap(imagePath).scaled(
+            QSize(ProjectTemplateImageWidth, ProjectTemplateImageWidth), Qt::KeepAspectRatio, Qt::SmoothTransformation));
         vLayout->addWidget(image);
 
         QLabel* label = new QLabel(labelText, this);

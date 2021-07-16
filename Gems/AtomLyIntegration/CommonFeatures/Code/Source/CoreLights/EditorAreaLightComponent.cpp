@@ -154,19 +154,19 @@ namespace AZ
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::IsPcfBoundarySearchDisabled)
                         ->DataElement(Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_predictionSampleCount, "Prediction sample count",
-                            "Sample Count for prediction of whether the pixel is on the boundary. Specific to PCF and ESM+PCF.")
+                            "Sample count for prediction of whether the pixel is on the boundary. Specific to PCF and ESM+PCF.")
                             ->Attribute(Edit::Attributes::Min, 4)
                             ->Attribute(Edit::Attributes::Max, 16)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::IsPcfBoundarySearchDisabled)
                         ->DataElement(Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_filteringSampleCount, "Filtering sample count",
-                            "It is used only when the pixel is predicted to be on the boundary. Specific to PCF and ESM+PCF.")
+                            "This is only used when the pixel is predicted to be on the boundary. Specific to PCF and ESM+PCF.")
                             ->Attribute(Edit::Attributes::Min, 4)
                             ->Attribute(Edit::Attributes::Max, 64)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::IsShadowPcfDisabled)
                         ->DataElement(
-                            Edit::UIHandlers::ComboBox, &AreaLightComponentConfig::m_pcfMethod, "Pcf method",
+                            Edit::UIHandlers::ComboBox, &AreaLightComponentConfig::m_pcfMethod, "PCF method",
                             "Type of PCF to use.\n"
                             "  Bicubic: a smooth, fixed-size kernel \n"
                             "  Boundary search: do several taps to first determine if we are on a shadow boundary\n")
@@ -176,8 +176,8 @@ namespace AZ
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::IsShadowPcfDisabled)
                         ->DataElement(
-                            Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_esmExponent, "Esm Exponent",
-                            "Exponent used by Esm shadows. "
+                            Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_esmExponent, "ESM exponent",
+                            "Exponent used by ESM shadows. "
                             "Larger values increase the sharpness of the border between lit and unlit areas.")
                             ->Attribute(Edit::Attributes::Min, 50.0f)
                             ->Attribute(Edit::Attributes::Max, 5000.0f)

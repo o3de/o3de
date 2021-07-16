@@ -52,15 +52,6 @@ namespace AZ
                 return;
             }
 
-            RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
-            AZ_Assert(rayTracingFeatureProcessor, "DiffuseProbeGridRenderPass requires the RayTracingFeatureProcessor");
-
-            if (!rayTracingFeatureProcessor->GetSubMeshCount())
-            {
-                // empty scene
-                return;
-            }
-
             // get output attachment size
             AZ_Assert(GetInputOutputCount() > 0, "DiffuseProbeGridRenderPass: Could not find output bindings");
             RPI::PassAttachment* m_outputAttachment = GetInputOutputBinding(0).m_attachment.get();
@@ -94,7 +85,12 @@ namespace AZ
                 {
                     continue;
                 }
-                    
+
+                if (!diffuseProbeGrid->GetIsVisible())
+                {
+                    continue;
+                }
+
                 // probe irradiance image
                 {
                     if (diffuseProbeGrid->GetMode() == DiffuseProbeGridMode::Baked)
@@ -178,6 +174,11 @@ namespace AZ
             {
                 if (diffuseProbeGrid->GetMode() == DiffuseProbeGridMode::Baked &&
                     !diffuseProbeGrid->HasValidBakedTextures())
+                {
+                    continue;
+                }
+
+                if (!diffuseProbeGrid->GetIsVisible())
                 {
                     continue;
                 }

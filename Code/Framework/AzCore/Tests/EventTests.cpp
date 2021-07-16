@@ -257,6 +257,48 @@ namespace UnitTest
         EXPECT_FALSE(testEvent1.HasHandlerConnected());
         EXPECT_TRUE(testEvent2.HasHandlerConnected());
     }
+
+    TEST_F(EventTests, TestHandlerCopyConstructorOperator)
+    {
+        int32_t invokedCounter = 0;
+
+        AZ::Event<> testEvent;
+        AZ::Event<>::Handler testHandler([&invokedCounter]() { invokedCounter++; });
+
+        testHandler.Connect(testEvent);
+
+        AZ::Event<>::Handler testHandler2(testHandler);
+
+        EXPECT_TRUE(testHandler.IsConnected());
+        EXPECT_TRUE(testHandler2.IsConnected());
+
+        EXPECT_TRUE(invokedCounter == 0);
+        testEvent.Signal();
+        EXPECT_TRUE(invokedCounter == 2);
+    }
+
+    TEST_F(EventTests, TestHandlerCopyAssignmentOperator)
+    {
+        int32_t invokedCounter = 0;
+
+        AZ::Event<> testEvent;
+        AZ::Event<>::Handler testHandler([&invokedCounter]() { invokedCounter++; });
+
+        testHandler.Connect(testEvent);
+
+        AZ::Event<>::Handler testHandler2;
+
+        EXPECT_TRUE(testHandler.IsConnected());
+        EXPECT_FALSE(testHandler2.IsConnected());
+
+        testHandler2 = testHandler;
+
+        EXPECT_TRUE(testHandler2.IsConnected());
+
+        EXPECT_TRUE(invokedCounter == 0);
+        testEvent.Signal();
+        EXPECT_TRUE(invokedCounter == 2);
+    }
 }
 
 #if defined(HAVE_BENCHMARK)

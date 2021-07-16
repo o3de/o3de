@@ -631,13 +631,16 @@ namespace AzToolsFramework
                 //member itself, so we need to move instancesValue to the correct position for the next insert
                 memberFound = instancesValue->get().FindMember(PrefabDomUtils::InstancesName);
                 instancesValue = memberFound->value;
-                instancesValue->get().SetObject();
             }
             else
             {
                 instancesValue = memberFound->value;
             }
 
+            if (!instancesValue->get().IsObject())
+            {
+                instancesValue->get().SetObject();
+            }
             // Only add the instance if it's not there already
             if (instancesValue->get().FindMember(rapidjson::StringRef(instanceAlias.c_str())) == instancesValue->get().MemberEnd())
             {

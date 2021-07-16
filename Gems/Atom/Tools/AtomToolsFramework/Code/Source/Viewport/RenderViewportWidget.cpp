@@ -16,7 +16,6 @@
 #include <AzCore/Math/MathUtils.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/Bootstrap/BootstrapRequestBus.h>
-#include <AzQtComponents/Utilities/QtWindowUtilities.h>
 
 #include <QApplication>
 #include <QCursor>
@@ -234,18 +233,6 @@ namespace AtomToolsFramework
     void RenderViewportWidget::mouseMoveEvent(QMouseEvent* event)
     {
         m_mousePosition = event->localPos();
-
-        if (m_capturingCursor && m_lastCursorPosition.has_value())
-        {
-            AzQtComponents::SetCursorPos(m_lastCursorPosition.value());
-            // Even though we just set the cursor position, there are edge cases such as remote desktop that will leave
-            // the cursor position unchanged. For safety, we re-cache our last cursor position for delta generation.
-            m_lastCursorPosition = QCursor::pos();
-        }
-        else
-        {
-            m_lastCursorPosition = event->globalPos();
-        }
     }
 
     void RenderViewportWidget::SendWindowResizeEvent()
@@ -420,13 +407,6 @@ namespace AtomToolsFramework
         return AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(m_mousePosition.toPoint());
     }
 
-    AZStd::optional<AzFramework::ScreenPoint> RenderViewportWidget::PreviousViewportCursorScreenPosition()
-    {
-        using AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint;
-        return m_lastCursorPosition.has_value() ? ScreenPointFromQPoint(mapFromGlobal(m_lastCursorPosition.value()))
-                                                : AZStd::optional<AzFramework::ScreenPoint>{};
-    }
-
     bool RenderViewportWidget::IsMouseOver() const
     {
         return m_mouseOver;
@@ -434,24 +414,12 @@ namespace AtomToolsFramework
 
     void RenderViewportWidget::BeginCursorCapture()
     {
-        if (m_capturingCursor)
-        {
-            return;
-        }
-
-        qApp->setOverrideCursor(Qt::BlankCursor);
-        m_capturingCursor = true;
+        m_inputChannelMapper->SetCursorCaptureEnabled(true);
     }
 
     void RenderViewportWidget::EndCursorCapture()
     {
-        if (!m_capturingCursor)
-        {
-            return;
-        }
-
-        qApp->restoreOverrideCursor();
-        m_capturingCursor = false;
+        m_inputChannelMapper->SetCursorCaptureEnabled(false);
     }
 
     void RenderViewportWidget::SetWindowTitle(const AZStd::string& title)

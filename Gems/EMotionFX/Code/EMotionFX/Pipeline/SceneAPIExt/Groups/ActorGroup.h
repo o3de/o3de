@@ -45,8 +45,8 @@ namespace EMotionFX
 
                 // IActorGroup overrides
                 const AZStd::string& GetSelectedRootBone() const override;
-
                 void SetSelectedRootBone(const AZStd::string& selectedRootBone)  override;
+                void SetBestMatchingRootBone(const AZ::SceneAPI::Containers::SceneGraph& sceneGraph) override;
 
                 static void Reflect(AZ::ReflectContext* context);
                 static bool IActorGroupVersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);

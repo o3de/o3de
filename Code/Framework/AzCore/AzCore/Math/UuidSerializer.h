@@ -47,6 +47,8 @@ namespace AZ
             const Uuid& valueTypeId, JsonSerializerContext& context);
 
     private:
+        const AZStd::string m_zeroUuidString;
+        const AZStd::string m_zeroUuidStringNoDashes;
         AZStd::regex m_uuidFormat;
     };
 } // namespace AZ

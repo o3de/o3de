@@ -20,7 +20,7 @@ set(ENABLED_GEMS
     QtForPython
     PythonAssetBuilder
     Metastream
-    AudioSystem
+
     Camera
     EMotionFX
     PhysX
@@ -47,9 +47,13 @@ set(ENABLED_GEMS
     LmbrCentral
     LyShine
     HttpRequestor
-    Atom_AtomBridge
-    PythonCoverage
+    Atom
     AWSCore
     AWSClientAuth
     AWSMetrics
+
+
+
+    
+    AudioSystem
 )

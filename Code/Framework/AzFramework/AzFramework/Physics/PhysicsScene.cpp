@@ -48,6 +48,7 @@ namespace AzPhysics
                 ->Attribute(AZ::Script::Attributes::Category, "Physics")
                 ->Method("GetOnGravityChangeEvent", getOnGravityChange)
                     ->Attribute(AZ::Script::Attributes::AzEventDescription, gravityChangedEventDescription)
+                ->Method("QueryScene", &Scene::QueryScene)
                 ;
         }
     }

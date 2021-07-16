@@ -520,16 +520,19 @@ namespace PhysX
 
         CharacterControllerRequestBus::Handler::BusConnect(GetEntityId());
 
-        m_preSimulateHandler = AzPhysics::SystemEvents::OnPresimulateEvent::Handler(
-            [this](float deltaTime)
-            {
-                OnPreSimulate(deltaTime);
-            }
-        );
-
-        if (auto* physXSystem = GetPhysXSystem())
+        if (m_characterConfig->m_applyMoveOnPhysicsTick)
         {
-            physXSystem->RegisterPreSimulateEvent(m_preSimulateHandler);
+            m_preSimulateHandler = AzPhysics::SystemEvents::OnPresimulateEvent::Handler(
+                [this](float deltaTime)
+                {
+                    OnPreSimulate(deltaTime);
+                }
+            );
+
+            if (auto* physXSystem = GetPhysXSystem())
+            {
+                physXSystem->RegisterPreSimulateEvent(m_preSimulateHandler);
+            }
         }
     }
 

@@ -9,9 +9,10 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import azlmbr.asset as asset
+import azlmbr.components as components
 import azlmbr.legacy.general as general
 import azlmbr.bus as bus
-import azlmbr.entity as EntityId
+import azlmbr.entity as entity
 import azlmbr.editor as editor
 import azlmbr.math as math
 import azlmbr.paths
@@ -83,18 +84,12 @@ class TestDynamicSliceInstanceSpawnerEmbeddedEditor(EditorTestHelper):
         self.log(f"Expected {num_expected_instances} instances - Found {num_found} instances")
         self.test_success = self.test_success and num_found == num_expected_instances
 
-        # 5) Create a new entity with a Camera component for testing in the launcher
+        # 5) Move the default Camera entity for testing in the launcher
         cam_position = math.Vector3(512.0, 500.0, 35.0)
-        camera_component = ["Camera"]
-        new_entity_id2 = editor.ToolsApplicationRequestBus(
-            bus.Broadcast, "CreateNewEntityAtPosition", cam_position, EntityId.EntityId()
-        )
-        if new_entity_id2.IsValid():
-            self.log("Camera entity created")
-        camera_entity = hydra.Entity("Camera Entity", new_entity_id2)
-        camera_entity.components = []
-        for component in camera_component:
-            camera_entity.components.append(hydra.add_component(component, new_entity_id2))
+        search_filter = entity.SearchFilter()
+        search_filter.names = ["Camera"]
+        search_entity_ids = entity.SearchBus(bus.Broadcast, 'SearchEntities', search_filter)
+        components.TransformBus(bus.Event, "MoveEntity", search_entity_ids[0], cam_position)
 
         # 6) Save and export to engine
         general.save_level()

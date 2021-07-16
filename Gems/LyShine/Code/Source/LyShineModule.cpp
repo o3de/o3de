@@ -52,9 +52,9 @@
 #include "World/UiCanvasProxyRefComponent.h"
 #include "World/UiCanvasOnMeshComponent.h"
 
-#if defined (LYSHINE_EDITOR)
-#   include "Pipeline/LyShineBuilder/LyShineBuilderComponent.h"
-#endif // LYSHINE_EDITOR
+#if defined(LYSHINE_BUILDER)
+#include "Pipeline/LyShineBuilder/LyShineBuilderComponent.h"
+#endif // LYSHINE_BUILDER
 
 namespace LyShine
 {
@@ -64,7 +64,7 @@ namespace LyShine
         // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
         m_descriptors.insert(m_descriptors.end(), {
                 LyShineSystemComponent::CreateDescriptor(),
-#if defined (LYSHINE_EDITOR)
+#if defined(LYSHINE_EDITOR)
                 LyShineEditor::LyShineEditorSystemComponent::CreateDescriptor(),
 #endif
                 UiCanvasAssetRefComponent::CreateDescriptor(),
@@ -103,7 +103,7 @@ namespace LyShine
                 UiRadioButtonComponent::CreateDescriptor(),
                 UiRadioButtonGroupComponent::CreateDescriptor(),
                 UiParticleEmitterComponent::CreateDescriptor(),
-    #if defined(LYSHINE_EDITOR)
+    #if defined(LYSHINE_BUILDER)
                 // Builder
                 LyShineBuilder::LyShineBuilderComponent::CreateDescriptor(),
     #endif
@@ -123,7 +123,7 @@ namespace LyShine
     {
         return AZ::ComponentTypeList{
                    azrtti_typeid<LyShineSystemComponent>(),
-    #if defined (LYSHINE_EDITOR)
+    #if defined(LYSHINE_EDITOR)
                    azrtti_typeid<LyShineEditor::LyShineEditorSystemComponent>(),
     #endif
     #if AZ_LOADSCREENCOMPONENT_ENABLED

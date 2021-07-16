@@ -58,8 +58,6 @@ namespace AzToolsFramework
             PrefabDom& GetPrefabDom();
             const PrefabDom& GetPrefabDom() const;
 
-            bool CopyTemplateIntoPrefabFileFormat(PrefabDom& output);
-
             PrefabDomValueReference GetInstancesValue();
             PrefabDomValueConstReference GetInstancesValue() const;
 
