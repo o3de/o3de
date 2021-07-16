@@ -10,6 +10,7 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/IO/GenericStreams.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <SceneAPI/SceneCore/Import/ManifestImportRequestHandler.h>
@@ -75,15 +76,16 @@ namespace AZ
                     filename += s_extension;
                     filename += s_generated;
 
-                    AZStd::string altManifestPath = path;
+                    AZStd::string altManifestFolder = path;
                     AzFramework::ApplicationRequests::Bus::Broadcast(
-                        &AzFramework::ApplicationRequests::Bus::Events::MakePathRootRelative,
-                        altManifestPath);
+                        &AzFramework::ApplicationRequests::Bus::Events::MakePathRelative,
+                        altManifestFolder,
+                        AZ::Utils::GetProjectPath().c_str());
 
-                    AZ::StringFunc::Path::GetFolderPath(altManifestPath.c_str(), altManifestPath);
+                    AZ::StringFunc::Path::GetFolderPath(altManifestFolder.c_str(), altManifestFolder);
 
                     AZStd::string generatedAssetInfoPath;
-                    AZ::StringFunc::Path::Join(assetCacheRoot.c_str(), altManifestPath.c_str(), generatedAssetInfoPath);
+                    AZ::StringFunc::Path::Join(assetCacheRoot.c_str(), altManifestFolder.c_str(), generatedAssetInfoPath);
                     AZ::StringFunc::Path::ConstructFull(generatedAssetInfoPath.c_str(), filename.c_str(), generatedAssetInfoPath);
 
                     if (!AZ::IO::FileIOBase::GetInstance()->Exists(generatedAssetInfoPath.c_str()))

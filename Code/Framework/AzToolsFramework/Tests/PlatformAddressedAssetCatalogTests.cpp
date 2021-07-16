@@ -83,9 +83,11 @@ namespace UnitTest
                     info.m_assetId = m_assets[platformNum][idx];
                     assetRegistry->RegisterAsset(m_assets[platformNum][idx], info);
                     m_assetsPath[platformNum][idx] = info.m_relativePath;
+                    AZ_TEST_START_TRACE_SUPPRESSION;
                     if (m_fileStreams[platformNum][idx].Open(m_assetsPath[platformNum][idx].c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeBinary | AZ::IO::OpenMode::ModeCreatePath))
                     {
                         m_fileStreams[platformNum][idx].Write(info.m_relativePath.size(), info.m_relativePath.data());
+                        AZ_TEST_STOP_TRACE_SUPPRESSION(1); // writing to asset cache folder
                     }
                     else
                     {
@@ -131,7 +133,9 @@ namespace UnitTest
                     m_fileStreams[platformNum][idx].Close();
                     if (fileIO->Exists(m_assetsPath[platformNum][idx].c_str()))
                     {
+                        AZ_TEST_START_TRACE_SUPPRESSION;
                         fileIO->Remove(m_assetsPath[platformNum][idx].c_str());
+                        AZ_TEST_STOP_TRACE_SUPPRESSION(1); // removing from asset cache folder
                     }
                 }
             }
@@ -246,7 +250,9 @@ namespace UnitTest
         AzFramework::AssetSystem::NetworkAssetUpdateInterface* notificationInterface = AZ::Interface<AzFramework::AssetSystem::NetworkAssetUpdateInterface>::Get();
         EXPECT_NE(notificationInterface, nullptr);
 
+        AZ_TEST_START_TRACE_SUPPRESSION;
         auto* mockCatalog = new ::testing::NiceMock<PlatformAddressedAssetCatalogMessageTest>(AzFramework::PlatformId::ANDROID_ID);
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         AZStd::unique_ptr< ::testing::NiceMock<PlatformAddressedAssetCatalogMessageTest>> catalogHolder;
         catalogHolder.reset(mockCatalog);
 

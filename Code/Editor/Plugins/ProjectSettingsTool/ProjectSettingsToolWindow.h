@@ -137,8 +137,8 @@ namespace ProjectSettingsTool
         // returns true if the platform is enabled
         bool PlatformEnabled(PlatformId platformId);
 
-        // returns the resource folder
-        const char* PlatformResourcesFolder(PlatformId platformId);
+        // returns the main platform specific resource file e.g. for iOS it would be the Info.plist
+        AZStd::string GetPlatformResource(PlatformId platformId);
 
         // The ui for the window
         QScopedPointer<Ui::ProjectSettingsToolWidget> m_ui;

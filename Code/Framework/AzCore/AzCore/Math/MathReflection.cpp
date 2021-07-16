@@ -116,7 +116,7 @@ namespace AZ
                 {
                     const char* uuidString = nullptr;
                     unsigned int uuidStringLength = 0;
-                    if (dc.ReadArg(0, uuidString) && dc.ReadValue(1, uuidStringLength))
+                    if (dc.ReadArg(0, uuidString) && dc.ReadArg(1, uuidStringLength))
                     {
                         dc.PushResult(Uuid(uuidString, uuidStringLength));
                     }
