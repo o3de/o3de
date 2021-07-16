@@ -5,8 +5,8 @@
  *
  */
 
-#include "FrameworkApplicationFixture.h"
-#include "Utils/Utils.h"
+#include <FrameworkApplicationFixture.h>
+#include <Utils/Utils.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
@@ -47,11 +47,13 @@ namespace UnitTest
         void SetUp()
         {
             m_prevFileIO = AZ::IO::FileIOBase::GetInstance();
+            AZ::IO::FileIOBase::SetInstance(nullptr);
             AZ::IO::FileIOBase::SetInstance(&m_fileIO);
         }
 
         void TearDown() override
         {
+            AZ::IO::FileIOBase::SetInstance(nullptr);
             AZ::IO::FileIOBase::SetInstance(m_prevFileIO);
         }
 

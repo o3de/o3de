@@ -699,7 +699,7 @@ namespace Audio
     {
         AZ_Assert(gEnv->mMainThreadId == CryGetCurrentThreadId(), "AudioSystem::DrawAudioDebugData - called from non-Main thread!");
 
-        if (g_audioCVars.m_nDrawAudioDebug > 0)
+        if (CVars::s_debugDrawOptions.GetRawFlags() != 0)
         {
             SAudioRequest oRequest;
             oRequest.nFlags = (eARF_PRIORITY_HIGH | eARF_EXECUTE_BLOCKING);
