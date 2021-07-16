@@ -90,8 +90,6 @@ namespace AZ
 
                 // Extract actor matrix from the actor instance.
                 bool UpdateActorMatrices();
-                // Update the visiblity based on render actor instance.
-                void UpdateVisibility();
 
                 HairFeatureProcessor* m_featureProcessor = nullptr;
                 // Possibly connect here to the object's settings or specifically create object

@@ -299,14 +299,14 @@ namespace AZ
                     m_SimulationFrame++;
                 }
 
-                bool IsVisible()
+                bool IsEnabled()
                 {
-                    return m_visible;
+                    return m_enabled;
                 }
 
-                void SetVisible(bool visible)
+                void SetEnabled(bool enable)
                 {
-                    m_visible = visible;
+                    m_enabled = enable;
                 }
                 //!-----------------------------------------------------------------
 
@@ -352,7 +352,7 @@ namespace AZ
                 // LOD calculations factor
                 float m_LODHairDensity = 1.0f;
 
-                bool m_visible = true;
+                bool m_enabled = true;
 
                 // Adi - check required: frame counter for wind effect
                 uint32_t m_SimulationFrame = 0;

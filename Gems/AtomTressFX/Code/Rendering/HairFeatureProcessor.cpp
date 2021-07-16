@@ -177,10 +177,11 @@ namespace AZ
                 // Adi: this requires to update the matrices data within the buffer as well!!
                 for (auto objIter = m_hairRenderObjects.begin(); objIter != m_hairRenderObjects.end(); ++objIter)
                 {
-                    if (objIter->get()->IsVisible())
+                    if (!objIter->get()->IsEnabled())
                     {
-                        objIter->get()->Update();
+                        return;
                     }
+                    objIter->get()->Update();
                 }
             }
 
@@ -239,7 +240,7 @@ namespace AZ
                 for ( auto objIter = m_hairRenderObjects.begin() ; objIter != m_hairRenderObjects.end(); ++objIter, ++obj )
                 {
                     HairRenderObject* renderObject = objIter->get();
-                    if (!renderObject->IsVisible())
+                    if (!renderObject->IsEnabled())
                     {
                         continue;
                     }
@@ -278,7 +279,7 @@ namespace AZ
                 for (auto objIter = m_hairRenderObjects.begin(); objIter != m_hairRenderObjects.end(); ++objIter)
                 {
                     HairRenderObject* renderObject = objIter->get();
-                    if (!renderObject->IsVisible())
+                    if (!renderObject->IsEnabled())
                     {
                         continue;
                     }

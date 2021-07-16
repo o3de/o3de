@@ -59,7 +59,7 @@ namespace AZ
                 AMD::TressFXRenderingSettings m_renderingSettings;
 
             private:
-                bool m_enabled = false;
+                bool m_enabled = true;
             };
 
         } // namespace Hair

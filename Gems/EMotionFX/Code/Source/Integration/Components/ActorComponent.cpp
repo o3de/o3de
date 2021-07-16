@@ -185,6 +185,7 @@ namespace EMotionFX
                     ->Event("DebugDrawRoot", &ActorComponentRequestBus::Events::DebugDrawRoot)
                     ->Event("GetRenderCharacter", &ActorComponentRequestBus::Events::GetRenderCharacter)
                     ->Event("SetRenderCharacter", &ActorComponentRequestBus::Events::SetRenderCharacter)
+                    ->Event("GetRenderActorVisible", &ActorComponentRequestBus::Events::GetRenderActorVisible)
                     ->VirtualProperty("RenderCharacter", "GetRenderCharacter", "SetRenderCharacter")
                 ;
 
