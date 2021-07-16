@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -77,6 +78,7 @@ ly_append_configurations_options(
         /Zc:forScope    # Force Conformance in for Loop Scope
         /diagnostics:caret # Compiler diagnostic options: includes the column where the issue was found and places a caret (^) under the location in the line of code where the issue was detected.
         /Zc:__cplusplus
+        /Zc:lambda      # Use the new lambda processor (See https://developercommunity.visualstudio.com/t/A-lambda-that-binds-the-this-pointer-w/1467873 for more details)
         /favor:AMD64    # Create Code optimized for 64 bit
         /bigobj         # Increase number of sections in obj files. Profiling has shown no meaningful impact in memory nore build times
     COMPILATION_DEBUG

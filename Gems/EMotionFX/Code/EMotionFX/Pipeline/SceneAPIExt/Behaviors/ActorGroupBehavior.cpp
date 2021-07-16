@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -143,6 +144,7 @@ namespace EMotionFX
 
                 Group::ActorGroup* group = azrtti_cast<Group::ActorGroup*>(&target);
                 group->SetName(AZ::SceneAPI::DataTypes::Utilities::CreateUniqueName<Group::IActorGroup>(scene.GetName(), scene.GetManifest()));
+                group->SetBestMatchingRootBone(scene.GetGraph());
 
                 // LOD Rule need to be built first in the actor, so we know which mesh and bone belongs to LOD.
                 // After this call, LOD rule will be populated with all the LOD bones

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -493,7 +494,8 @@ namespace AZ::SceneGenerationComponents
         // Copy node attributes
         AZStd::apply([](const auto&&... nodePairView) {
             ((AZStd::for_each(begin(nodePairView), end(nodePairView), [](const auto& nodePair) {
-                auto& [originalNode, optimizedNode] = nodePair;
+                auto& originalNode = nodePair.first;
+                auto& optimizedNode = nodePair.second;
                 optimizedNode->CloneAttributesFrom(&originalNode.get());
             })), ...);
         }, std::tuple {
