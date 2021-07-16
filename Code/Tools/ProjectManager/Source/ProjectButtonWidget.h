@@ -88,7 +88,7 @@ namespace O3DE::ProjectManager
     signals:
         void OpenProject(const QString& projectName);
         void EditProject(const QString& projectName);
-        void CopyProject(const QString& projectName);
+        void CopyProject(const ProjectInfo& projectInfo);
         void RemoveProject(const QString& projectName);
         void DeleteProject(const QString& projectName);
         void BuildProject(const ProjectInfo& projectInfo);

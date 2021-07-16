@@ -9,4 +9,5 @@ set(FILES
     Python_windows.cpp
     ProjectBuilderWorker_windows.cpp
     ProjectUtils_windows.cpp
+    ProjectManagerDefs_windows.cpp
 )
