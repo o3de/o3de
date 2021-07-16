@@ -36,7 +36,7 @@ namespace Audio
 
         virtual ~MicrophoneSystemEventsAndroid() = default;
 
-        virtual void HandleIncomingData(int8* data, int size) {}
+        virtual void HandleIncomingData(AZ::s8* data, int size) {}
     };
     using MicrophoneSystemEventsAndroidBus = AZ::EBus<MicrophoneSystemEventsAndroid>;
 
@@ -170,9 +170,9 @@ namespace Audio
         #endif
         }
 
-        void HandleIncomingData(int8* data, int size) override
+        void HandleIncomingData(AZ::s8* data, int size) override
         {
-            m_captureData->AddData((int16*)data, size / 2, m_config.m_numChannels);
+            m_captureData->AddData((AZ::s16*)data, size / 2, m_config.m_numChannels);
         }
 
     private:

@@ -11,7 +11,7 @@
 #pragma once
 
 #include <AzCore/std/string/string.h>
-#include <azCore/std/containers/map.h>
+#include <AzCore/std/containers/map.h>
 
 /*
     This class is used to control work in progress features at runtime, so QA can test even if the end user will not see those features
