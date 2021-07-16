@@ -26,4 +26,5 @@ ly_add_target(
             AZ::AzToolsFramework
         PUBLIC
             3rdParty::assimplib
+            3rdParty::poly2tri
 )
