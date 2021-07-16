@@ -187,7 +187,6 @@ protected:
      {
          ComponentApplication::SetSettingsRegistrySpecializations(specializations);
          specializations.Append("tools");
-         specializations.Append("editor");
          specializations.Append("gridhub");
      }
 
