@@ -182,6 +182,36 @@ namespace UnitTest
             AZStd::tuple<AZStd::string_view, AZStd::string_view>(R"(foO/Bar)", "foo/bar")
         ));
 
+    using PathHashParamFixture = PathParamFixture;
+    TEST_P(PathHashParamFixture, HashOperator_HashesCaseInsensitiveForWindowsPaths)
+    {
+        AZ::IO::Path path1{ AZStd::get<0>(GetParam()), AZ::IO::WindowsPathSeparator };
+        AZ::IO::Path path2{ AZStd::get<1>(GetParam()), AZ::IO::WindowsPathSeparator };
+        size_t path1Hash = AZStd::hash<AZ::IO::PathView>{}(path1);
+        size_t path2Hash = AZStd::hash<AZ::IO::PathView>{}(path2);
+        EXPECT_EQ(path1Hash, path2Hash) << AZStd::string::format(R"(path1 "%s" should hash to path2 "%s"\n)",
+            path1.c_str(), path2.c_str()).c_str();
+    }
+
+    TEST_P(PathHashParamFixture, HashOperator_HashesCaseSensitiveForPosixPaths)
+    {
+        AZ::IO::Path path1{ AZStd::get<0>(GetParam()), AZ::IO::PosixPathSeparator };
+        AZ::IO::Path path2{ AZStd::get<1>(GetParam()), AZ::IO::PosixPathSeparator };
+        size_t path1Hash = AZStd::hash<AZ::IO::PathView>{}(path1);
+        size_t path2Hash = AZStd::hash<AZ::IO::PathView>{}(path2);
+        EXPECT_NE(path1Hash, path2Hash) << AZStd::string::format(R"(path1 "%s" should NOT hash to path2 "%s"\n)",
+            path1.c_str(), path2.c_str()).c_str();
+    }
+
+    INSTANTIATE_TEST_CASE_P(
+        HashPaths,
+        PathHashParamFixture,
+        ::testing::Values(
+            AZStd::tuple<AZStd::string_view, AZStd::string_view>("C:/test/foo", R"(c:\test/foo)"),
+            AZStd::tuple<AZStd::string_view, AZStd::string_view>(R"(D:\test/bar/baz//foo)", "d:/test/bar/baz\\\\\\foo"),
+            AZStd::tuple<AZStd::string_view, AZStd::string_view>(R"(foO/Bar)", "foo/bar")
+        ));
+
     class PathSingleParamFixture
         : public ScopedAllocatorSetupFixture
         , public ::testing::WithParamInterface<AZStd::tuple<AZStd::string_view>>
