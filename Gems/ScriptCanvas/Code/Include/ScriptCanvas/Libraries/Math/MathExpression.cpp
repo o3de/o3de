@@ -13,8 +13,7 @@ namespace ScriptCanvas
         namespace Math
         {
 
-            void MathExpression::ConfigureSlotDisplayType(
-                ScriptCanvas::Node* node, ScriptCanvas::Slot* slot, AZ::Uuid type, AZStd::string name)
+            void MathExpression::ConfigureSlotDisplayType(ScriptCanvas::Node* node, ScriptCanvas::Slot* slot, AZ::Uuid type, AZStd::string name)
             {
                 if (slot)
                 {

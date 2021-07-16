@@ -687,8 +687,7 @@ namespace ScriptCanvasEditor
             }
         }
     }
-    void Graph::HandleExpressionNodeExtension(
-        ScriptCanvas::Node* node, GraphCanvas::SlotId graphCanvasSlotId, const GraphCanvas::NodeId& nodeId)
+    void Graph::HandleExpressionNodeExtension(ScriptCanvas::Node* node, GraphCanvas::SlotId graphCanvasSlotId, const GraphCanvas::NodeId& nodeId)
     {
         auto MathExpressionNode = azrtti_cast<ScriptCanvas::Nodes::Math::MathExpression*>(node);
 
@@ -712,10 +711,18 @@ namespace ScriptCanvasEditor
 
                     VariablePaletteRequests::SlotSetup selectedSlotSetup;
                     bool createSlot = false;
-
                     QPoint scenePoint(aznumeric_cast<int>(position.GetX()), aznumeric_cast<int>(position.GetY()));
-                    VariablePaletteRequestBus::BroadcastResult(
-                        createSlot, &VariablePaletteRequests::ShowSlotTypeSelector, slot, scenePoint, selectedSlotSetup);
+                    if (slot->GetDisplayType() != ScriptCanvas::Data::Type::Invalid())
+                    {
+                        selectedSlotSetup.m_type = ToAZType(slot->GetDisplayType());
+                        selectedSlotSetup.m_name = slot->GetName();
+                        createSlot = true;
+                    }
+                    else
+                    {
+                        VariablePaletteRequestBus::BroadcastResult(createSlot, &VariablePaletteRequests::ShowSlotTypeSelector, slot, scenePoint, selectedSlotSetup);
+                    }
+                   
 
                     if (createSlot && !selectedSlotSetup.m_type.IsNull())
                     {
