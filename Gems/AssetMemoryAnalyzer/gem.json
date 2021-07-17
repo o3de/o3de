@@ -6,7 +6,7 @@
     "type": "Code",
     "summary": "The Asset Memory Analyzer Gem provides tools to profile asset memory usage in Open 3D Engine through ImGUI (Immediate Mode Graphical User Interface).",
     "canonical_tags": ["Gem"],
-    "user_tags": ["Debug", "Utillity", "Tools"],
+    "user_tags": ["Debug", "Utility", "Tools"],
     "icon_path": "preview.png",
     "requirements": ""
 }
