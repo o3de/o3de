@@ -176,10 +176,23 @@ namespace AZ
         {
             AZ_Warning("RPI", m_pipelineState, "Failed to initialize shader for DynamicDrawContext");
             AZ_Warning("RPI", m_drawListTag.IsValid(), "DynamicDrawContext doesn't have a valid DrawListTag");
-            AZ_Assert(m_outputScope == OutputScopeType::Unset, "DynamicDrawContext need to set output scope before end initialization");
 
             if (!m_drawListTag.IsValid() || m_pipelineState == nullptr)
             {
+                return;
+            }
+
+            if (m_outputScope == OutputScopeType::RenderPipeline || m_outputScope == OutputScopeType::Scene)
+            {
+                m_pipelineState->SetOutputFromScene(m_scene, m_drawListTag);
+            }
+            else if (m_outputScope == OutputScopeType::RasterPass)
+            {
+                m_pipelineState->SetOutputFromPass(m_pass);
+            }
+            else
+            {                
+                AZ_Assert(false, "DynamicDrawContext need to set output scope before end initialization");
                 return;
             }
 
@@ -216,8 +229,7 @@ namespace AZ
             m_scene = scene;
             m_pass = nullptr;
             m_drawFilter = RHI::DrawFilterMaskDefaultValue;
-            m_pipelineState->SetOutputFromScene(m_scene, m_drawListTag);
-
+                        
             ReInit();
         }
 
@@ -234,8 +246,7 @@ namespace AZ
             m_scene = pipeline->GetScene();
             m_pass = nullptr;
             m_drawFilter = pipeline->GetDrawFilterMask();
-            m_pipelineState->SetOutputFromScene(m_scene, m_drawListTag);
-
+            
             ReInit();
         }
 
@@ -250,7 +261,6 @@ namespace AZ
             m_outputScope = OutputScopeType::RasterPass;
             m_scene = nullptr;
             m_pass = pass;
-            m_pipelineState->SetOutputFromPass(pass);
             m_drawFilter = RHI::DrawFilterMaskDefaultValue;
 
             ReInit();
