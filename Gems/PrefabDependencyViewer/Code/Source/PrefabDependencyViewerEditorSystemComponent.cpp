@@ -9,9 +9,11 @@
 #include <PrefabDependencyViewerWidget.h>
 #include <QMenu>
 #include <LyViewPaneNames.h>
+#include <PrefabDependencyTreeGenerator.h>
 
 namespace PrefabDependencyViewer
 {
+    using Outcome = AZ::Outcome<PrefabDependencyTree, const char*>;
 
     InstanceEntityMapperInterface* PrefabDependencyViewerEditorSystemComponent::s_prefabEntityMapperInterface = nullptr;
     PrefabSystemComponentInterface* PrefabDependencyViewerEditorSystemComponent::s_prefabSystemComponentInterface = nullptr;
@@ -138,9 +140,13 @@ namespace PrefabDependencyViewer
             return;
         }
 
-        Utils::DirectedGraph graph = Utils::DirectedGraph();
-        GenerateTreeAndSetRoot(tid, graph);
-        window->DisplayTree(graph); // prefabInstance);
+        Outcome outcome = GenerateTreeAndSetRoot(tid);
+        if (outcome.IsSuccess())
+        {
+            PrefabDependencyTree tree = outcome.GetValue();
+            window->DisplayTree(tree); // prefabInstance);
+        }
+        
         /*
          AZStd::vector<AZ::Entity&> entities;
         prefabInstance.GetEntities(

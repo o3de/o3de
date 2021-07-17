@@ -27,6 +27,8 @@ namespace PrefabDependencyViewer
         public:
             AZ_CLASS_ALLOCATOR(MetaData, AZ::SystemAllocator, 0);
 
+            MetaData() = default;
+
             MetaData(TemplateId tid, const char* source)
             {
                 SetTemplateId(tid);
@@ -38,7 +40,7 @@ namespace PrefabDependencyViewer
                 return m_tid;
             }
 
-            AZStd::string GetSource()
+            const char* GetSource()
             {
                 return m_source;
             }
@@ -67,19 +69,14 @@ namespace PrefabDependencyViewer
                 SetParent(parent);
             }
 
-            MetaData* GetMetaDataPtr()
+            MetaData GetMetaData()
             {
-                return m_metaDataPtr;
+                return m_metaData;
             }
 
             Node* GetParent()
             {
                 return m_parent;
-            }
-
-            ~Node()
-            {
-                delete GetMetaDataPtr();
             }
 
             // In the future want to be able to edit the tree.
@@ -91,10 +88,10 @@ namespace PrefabDependencyViewer
         private:
             void SetMetaData(TemplateId tid, const char* source)
             {
-                m_metaDataPtr = aznew MetaData(tid, source);
+                m_metaData = MetaData(tid, source);
             }
 
-            MetaData* m_metaDataPtr;
+            MetaData m_metaData;
             Node* m_parent;
         };
 
@@ -142,6 +139,34 @@ namespace PrefabDependencyViewer
                 }
 
                 return NodeSet();
+            }
+
+            DirectedGraph(const DirectedGraph& rhs)
+            {
+                AZStd::stack<AZStd::pair<Node*, Node*>> stack;
+                stack.push(AZStd::make_pair(rhs.m_root, nullptr));
+
+                while (!stack.empty())
+                {
+                    AZStd::pair<Node*, Node*> pair = stack.top();
+                    Node* rhsNode = pair.first;
+                    Node* parent = pair.second;
+
+                    stack.pop();
+
+                    MetaData cpyMetaData = rhsNode->GetMetaData();
+                    Node* copy = aznew Node(cpyMetaData.GetTemplateId(),
+                                            cpyMetaData.GetSource(),
+                                            parent);
+
+                    AddNode(copy);
+                    AddChild(parent, copy);
+
+                    for (Node* child : rhs.GetChildren(rhsNode))
+                    {
+                        stack.push(AZStd::make_pair(child, copy));
+                    }
+                }
             }
 
             ~DirectedGraph()

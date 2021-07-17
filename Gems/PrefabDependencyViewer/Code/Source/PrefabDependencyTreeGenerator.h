@@ -11,20 +11,25 @@
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <Utils.h>
-
+#include <AzCore/Outcome/Outcome.h>
 
 namespace PrefabDependencyViewer
 {
+    class PrefabDependencyTree;
+
     using TemplateId                     = AzToolsFramework::Prefab::TemplateId;
     using PrefabDom                      = AzToolsFramework::Prefab::PrefabDom;
     using PrefabSystemComponentInterface = AzToolsFramework::Prefab::PrefabSystemComponentInterface;
+    using Outcome                        = AZ::Outcome<PrefabDependencyTree, const char*>;
 
-    class PrefabDependencyTreeGenerator
+    class PrefabDependencyTree : public Utils::DirectedGraph
     {
     public:
-        static void GenerateTreeAndSetRoot(TemplateId tid, Utils::DirectedGraph& graph,
+        static Outcome GenerateTreeAndSetRoot(TemplateId tid,
             PrefabSystemComponentInterface* s_prefabSystemComponentInterface)
         {
+            PrefabDependencyTree graph;
+
             const TemplateId InvalidTemplateId = AzToolsFramework::Prefab::InvalidTemplateId;
 
             using pair = AZStd::pair<TemplateId, Utils::Node*>;
@@ -42,8 +47,7 @@ namespace PrefabDependencyViewer
 
                 if (InvalidTemplateId == templateId)
                 {
-                    AZ_Assert(false, "PrefabDependencyTreeGenerator - Invalid TemplateId found");
-                    return;
+                    return AZ::Failure("PrefabDependencyTreeGenerator - Invalid TemplateId found");
                 }
 
                 Utils::Node* parent = tidAndParent.second;
@@ -97,6 +101,8 @@ namespace PrefabDependencyViewer
                     }
                 }
             }
+
+            return AZ::Success(graph);
         }
     };
 }

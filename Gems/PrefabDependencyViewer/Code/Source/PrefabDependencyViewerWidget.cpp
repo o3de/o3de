@@ -107,7 +107,7 @@ namespace PrefabDependencyViewer
         AZ::EntityId nodeUiId = graphCanvasNode->GetId();
         nodeToNodeUiId[node] = nodeUiId;
 
-        GraphCanvas::NodeTitleRequestBus::Event(nodeUiId, &GraphCanvas::NodeTitleRequests::SetTitle, node->GetMetaDataPtr()->GetSource());
+        GraphCanvas::NodeTitleRequestBus::Event(nodeUiId, &GraphCanvas::NodeTitleRequests::SetTitle, node->GetMetaData().GetSource());
 
         GraphCanvas::SceneRequestBus::Event(m_sceneId, &GraphCanvas::SceneRequests::AddNode, nodeUiId, pos, false);
         GraphCanvas::SceneMemberUIRequestBus::Event(nodeUiId, &GraphCanvas::SceneMemberUIRequests::SetSelected, true);

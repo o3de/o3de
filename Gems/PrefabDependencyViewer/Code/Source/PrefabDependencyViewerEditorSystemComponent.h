@@ -29,6 +29,7 @@ namespace PrefabDependencyViewer
     using Instance                       = AzToolsFramework::Prefab::Instance;
     using TemplateId                     = AzToolsFramework::Prefab::TemplateId;
     using PrefabDom                      = AzToolsFramework::Prefab::PrefabDom;
+    using Outcome                        = AZ::Outcome<PrefabDependencyTree, const char*>;
 
     /// System component for PrefabDependencyViewer editor
     class PrefabDependencyViewerEditorSystemComponent
@@ -49,9 +50,12 @@ namespace PrefabDependencyViewer
 
         // Opening a View Pane
         void NotifyRegisterViews() override;
-        static void GenerateTreeAndSetRoot(TemplateId tid, Utils::DirectedGraph& graph)
+
+        static Outcome GenerateTreeAndSetRoot(TemplateId tid)
         {
-            PrefabDependencyTreeGenerator::GenerateTreeAndSetRoot(tid, graph, s_prefabSystemComponentInterface);
+            return PrefabDependencyTree::GenerateTreeAndSetRoot(tid,
+                                            s_prefabSystemComponentInterface);
+
         }
 
     private:

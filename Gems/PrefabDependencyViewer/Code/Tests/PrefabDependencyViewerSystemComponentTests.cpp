@@ -13,14 +13,14 @@ namespace PrefabDependencyViewer
 {
     using DirectedGraph                 = Utils::DirectedGraph;
     using TestComponent                 = PrefabDependencyViewerEditorSystemComponent;
+    using Outcome                       = AZ::Outcome<PrefabDependencyTree, const char*>;
 
     TEST_F(PrefabDependencyViewerFixture, INVALID_TEMPLATE_ID)
     {
-        AZ_TEST_START_TRACE_SUPPRESSION;
-        DirectedGraph graph;
-        PrefabDependencyTreeGenerator::GenerateTreeAndSetRoot(InvalidTemplateId, graph, m_prefabSystemComponent);
-        int numExpectedAssertions = 1;
-        AZ_TEST_STOP_TRACE_SUPPRESSION(numExpectedAssertions);
+        Outcome outcome = PrefabDependencyTree::GenerateTreeAndSetRoot(InvalidTemplateId,
+                                                                m_prefabSystemComponent);
+
+        EXPECT_EQ(false, outcome.IsSuccess());
     }
 
     TEST_F(PrefabDependencyViewerFixture, TEST)
@@ -29,7 +29,7 @@ namespace PrefabDependencyViewer
         EXPECT_CALL(*m_prefabSystemComponent, FindTemplateDom(10))
             .WillRepeatedly(::testing::ReturnRef(m_prefabDomsCases["emptyJSON"]));
 
-        DirectedGraph graph;
-        PrefabDependencyTreeGenerator::GenerateTreeAndSetRoot(10, graph, m_prefabSystemComponent);
+        Outcome outcome = PrefabDependencyTree::GenerateTreeAndSetRoot(10, m_prefabSystemComponent);
+        EXPECT_EQ(true, outcome.IsSuccess());
     }
 }
