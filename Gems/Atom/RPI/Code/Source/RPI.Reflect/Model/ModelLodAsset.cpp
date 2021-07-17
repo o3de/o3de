@@ -23,24 +23,25 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<ModelLodAsset>()
-                    ->Version(0)
+                    ->Version(1)
                     ->Field("Meshes", &ModelLodAsset::m_meshes)
                     ->Field("Aabb", &ModelLodAsset::m_aabb)
+                    ->Field("MaterialSlots", &ModelLodAsset::m_materialSlots)
                     ;
             }
 
             Mesh::Reflect(context);
         }
-
+        
         void ModelLodAsset::Mesh::Reflect(AZ::ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<ModelLodAsset::Mesh>()
-                    ->Version(0)
-                    ->Field("Material", &ModelLodAsset::Mesh::m_materialAsset)
+                    ->Version(1)
                     ->Field("Name", &ModelLodAsset::Mesh::m_name)
                     ->Field("AABB", &ModelLodAsset::Mesh::m_aabb)
+                    ->Field("MaterialSlotIndex", &ModelLodAsset::Mesh::m_materialSlotIndex)
                     ->Field("IndexBufferAssetView", &ModelLodAsset::Mesh::m_indexBufferAssetView)
                     ->Field("StreamBufferInfo", &ModelLodAsset::Mesh::m_streamBufferInfo)
                     ;
@@ -75,9 +76,9 @@ namespace AZ
             return m_indexBufferAssetView.GetBufferViewDescriptor().m_elementCount;
         }
 
-        const Data::Asset <MaterialAsset>& ModelLodAsset::Mesh::GetMaterialAsset() const
+        size_t ModelLodAsset::Mesh::GetMaterialSlotIndex() const
         {
-            return m_materialAsset;
+            return m_materialSlotIndex;
         }
 
         const AZ::Name& ModelLodAsset::Mesh::GetName() const
@@ -117,6 +118,41 @@ namespace AZ
         const AZ::Aabb& ModelLodAsset::GetAabb() const
         {
             return m_aabb;
+        }
+        
+        AZStd::array_view<ModelMaterialSlot> ModelLodAsset::GetMaterialSlots() const
+        {
+            return m_materialSlots;
+        }
+            
+        const ModelMaterialSlot& ModelLodAsset::GetMaterialSlot(size_t slotIndex) const
+        {
+            if (slotIndex < m_materialSlots.size())
+            {
+                return m_materialSlots[slotIndex];
+            }
+            else
+            {
+                AZ_Error("ModelAsset", false, "Material slot index %zu out of range. ModelAsset has %zu slots.", slotIndex, m_materialSlots.size());
+                return m_fallbackSlot;
+            }
+        }
+        
+        const ModelMaterialSlot* ModelLodAsset::FindMaterialSlot(uint32_t stableId) const
+        {
+            auto iter = AZStd::find_if(m_materialSlots.begin(), m_materialSlots.end(), [&stableId](const ModelMaterialSlot& existingMaterialSlot)
+                {
+                    return existingMaterialSlot.m_stableId == stableId;
+                });
+
+            if (iter == m_materialSlots.end())
+            {
+                return nullptr;
+            }
+            else
+            {
+                return iter;
+            }
         }
 
         const BufferAssetView* ModelLodAsset::Mesh::GetSemanticBufferAssetView(const AZ::Name& semantic) const

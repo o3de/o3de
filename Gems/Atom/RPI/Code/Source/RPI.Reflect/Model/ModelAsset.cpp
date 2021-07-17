@@ -56,6 +56,30 @@ namespace AZ
         {
             return m_aabb;
         }
+        
+        RPI::ModelMaterialSlotMap ModelAsset::GetModelMaterialSlots() const
+        {
+            RPI::ModelMaterialSlotMap slotMap;
+            
+            for (const Data::Asset<AZ::RPI::ModelLodAsset>& lod : GetLodAssets())
+            {
+                for (const AZ::RPI::ModelMaterialSlot& materialSlot : lod->GetMaterialSlots())
+                {
+                    auto iter = slotMap.find(materialSlot.m_stableId);
+                    if (iter == slotMap.end())
+                    {
+                        slotMap.emplace(materialSlot.m_stableId, materialSlot);
+                    }
+                    else
+                    {
+                        AZ_Assert(materialSlot.m_displayName == iter->second.m_displayName && materialSlot.m_defaultMaterialAsset.GetId() == iter->second.m_defaultMaterialAsset.GetId(),
+                            "Multiple LODs have mismatched data for the same material slot.");
+                    }
+                }
+            }
+
+            return slotMap;
+        }
 
         size_t ModelAsset::GetLodCount() const
         {

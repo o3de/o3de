@@ -639,8 +639,13 @@ namespace AZ
 
                     Aabb localAabb = lod.m_subMeshProperties[i].m_aabb;
                     modelLodCreator.SetMeshAabb(AZStd::move(localAabb));
+                    
+                    // Create a separate material slot for each sub-mesh
+                    AZ::RPI::ModelMaterialSlot materialSlot;
+                    materialSlot.m_stableId = i;
+                    materialSlot.m_defaultMaterialAsset = lod.m_subMeshProperties[i].m_material;
 
-                    modelLodCreator.SetMeshMaterialAsset(lod.m_subMeshProperties[i].m_material);
+                    modelLodCreator.SetMeshMaterialSlot(materialSlot);
 
                     modelLodCreator.EndMesh();
                 }

@@ -589,18 +589,6 @@ namespace AZ
         {
             AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
 
-            auto modelAsset = model->GetModelAsset();
-            for (const auto& modelLodAsset : modelAsset->GetLodAssets())
-            {
-                for (const auto& mesh : modelLodAsset->GetMeshes())
-                {
-                    if (mesh.GetMaterialAsset().GetStatus() != Data::AssetData::AssetStatus::Ready)
-                    {
-
-                    }
-                }
-            }
-
             m_model = model;
             const size_t modelLodCount = m_model->GetLodCount();
             m_drawPacketListsByLod.resize(modelLodCount);
@@ -644,10 +632,12 @@ namespace AZ
 
             for (size_t meshIndex = 0; meshIndex < meshCount; ++meshIndex)
             {
-                Data::Instance<RPI::Material> material = modelLod.GetMeshes()[meshIndex].m_material;
+                const RPI::ModelLod::Mesh& mesh = modelLod.GetMeshes()[meshIndex];
+
+                Data::Instance<RPI::Material> material = mesh.m_material;
 
                 // Determine if there is a material override specified for this sub mesh
-                const MaterialAssignmentId materialAssignmentId(modelLodIndex, material ? material->GetAssetId() : AZ::Data::AssetId());
+                const MaterialAssignmentId materialAssignmentId(modelLodIndex, mesh.m_materialSlotStableId);
                 const MaterialAssignment& materialAssignment = GetMaterialAssignmentFromMapWithFallback(m_materialAssignments, materialAssignmentId);
                 if (materialAssignment.m_materialInstance.get())
                 {
@@ -790,7 +780,7 @@ namespace AZ
                 // retrieve the material
                 Data::Instance<RPI::Material> material = mesh.m_material;
 
-                const MaterialAssignmentId materialAssignmentId(rayTracingLod, material ? material->GetAssetId() : AZ::Data::AssetId());
+                const MaterialAssignmentId materialAssignmentId(rayTracingLod, mesh.m_materialSlotStableId);
                 const MaterialAssignment& materialAssignment = GetMaterialAssignmentFromMapWithFallback(m_materialAssignments, materialAssignmentId);
                 if (materialAssignment.m_materialInstance.get())
                 {

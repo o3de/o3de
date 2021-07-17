@@ -123,7 +123,7 @@ namespace AZ
             }
 
             const MaterialAssignment& assetAssignment =
-                GetMaterialAssignmentFromMap(materials, MaterialAssignmentId::CreateFromAssetOnly(id.m_materialAssetId));
+                GetMaterialAssignmentFromMap(materials, MaterialAssignmentId::CreateFromStableIdOnly(id.m_materialSlotStableId));
             if (assetAssignment.m_materialInstance.get())
             {
                 return assetAssignment;
@@ -152,11 +152,11 @@ namespace AZ
                     {
                         if (mesh.m_material)
                         {
-                            const MaterialAssignmentId generalId = MaterialAssignmentId::CreateFromAssetOnly(mesh.m_material->GetAssetId());
+                            const MaterialAssignmentId generalId = MaterialAssignmentId::CreateFromStableIdOnly(mesh.m_materialSlotStableId);
                             materials[generalId] = MaterialAssignment(mesh.m_material->GetAsset(), mesh.m_material);
 
                             const MaterialAssignmentId specificId =
-                                MaterialAssignmentId::CreateFromLodAndAsset(lodIndex, mesh.m_material->GetAssetId());
+                                MaterialAssignmentId::CreateFromLodAndStableId(lodIndex, mesh.m_materialSlotStableId);
                             materials[specificId] = MaterialAssignment(mesh.m_material->GetAsset(), mesh.m_material);
                         }
                     }

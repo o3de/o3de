@@ -49,6 +49,9 @@ namespace AZ
 
             //! Returns the model-space axis aligned bounding box
             const AZ::Aabb& GetAabb() const;
+            
+            //! Returns the list of all ModelMaterialSlot's for the model, across all LODs.
+            RPI::ModelMaterialSlotMap GetModelMaterialSlots() const;
 
             //! Returns the number of Lods in the model
             size_t GetLodCount() const;

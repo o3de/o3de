@@ -19,9 +19,9 @@ namespace AZ
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<MaterialAssignmentId>()
-                    ->Version(1)
+                    ->Version(2)
                     ->Field("lodIndex", &MaterialAssignmentId::m_lodIndex)
-                    ->Field("materialAssetId", &MaterialAssignmentId::m_materialAssetId)
+                    ->Field("materialSlotStableId", &MaterialAssignmentId::m_materialSlotStableId)
                     ;
             }
 
@@ -33,75 +33,72 @@ namespace AZ
                     ->Attribute(AZ::Script::Attributes::Module, "render")
                     ->Constructor()
                     ->Constructor<const MaterialAssignmentId&>()
-                    ->Constructor<MaterialAssignmentLodIndex, AZ::Data::AssetId>()
+                    ->Constructor<MaterialAssignmentLodIndex, RPI::ModelMaterialSlot::StableId>()
                     ->Method("IsDefault", &MaterialAssignmentId::IsDefault)
-                    ->Method("IsAssetOnly", &MaterialAssignmentId::IsAssetOnly)
-                    ->Method("IsLodAndAsset", &MaterialAssignmentId::IsLodAndAsset)
+                    ->Method("IsAssetOnly", &MaterialAssignmentId::IsSlotIdOnly)     // Included for compatibility. Use "IsSlotIdOnly" instead.
+                    ->Method("IsLodAndAsset", &MaterialAssignmentId::IsLodAndSlotId) // Included for compatibility. Use "IsLodAndSlotId" instead.
+                    ->Method("IsSlotIdOnly", &MaterialAssignmentId::IsSlotIdOnly)
+                    ->Method("IsLodAndSlotId", &MaterialAssignmentId::IsLodAndSlotId)
                     ->Method("ToString", &MaterialAssignmentId::ToString)
                     ->Property("lodIndex", BehaviorValueProperty(&MaterialAssignmentId::m_lodIndex))
-                    ->Property("materialAssetId", BehaviorValueProperty(&MaterialAssignmentId::m_materialAssetId))
+                    ->Property("materialSlotStableId", BehaviorValueProperty(&MaterialAssignmentId::m_materialSlotStableId))
                     ;
             }
         }
 
-        MaterialAssignmentId::MaterialAssignmentId(MaterialAssignmentLodIndex lodIndex, const AZ::Data::AssetId& materialAssetId)
+        MaterialAssignmentId::MaterialAssignmentId(MaterialAssignmentLodIndex lodIndex, RPI::ModelMaterialSlot::StableId materialSlotStableId)
             : m_lodIndex(lodIndex)
-            , m_materialAssetId(materialAssetId)
+            , m_materialSlotStableId(materialSlotStableId)
         {
         }
 
         MaterialAssignmentId MaterialAssignmentId::CreateDefault()
         {
-            return MaterialAssignmentId(NonLodIndex, AZ::Data::AssetId());
+            return MaterialAssignmentId(NonLodIndex, RPI::ModelMaterialSlot::InvalidStableId);
         }
 
-        MaterialAssignmentId MaterialAssignmentId::CreateFromAssetOnly(AZ::Data::AssetId materialAssetId)
+        MaterialAssignmentId MaterialAssignmentId::CreateFromStableIdOnly(RPI::ModelMaterialSlot::StableId materialSlotStableId)
         {
-            return MaterialAssignmentId(NonLodIndex, materialAssetId);
+            return MaterialAssignmentId(NonLodIndex, materialSlotStableId);
         }
 
-        MaterialAssignmentId MaterialAssignmentId::CreateFromLodAndAsset(
-            MaterialAssignmentLodIndex lodIndex, AZ::Data::AssetId materialAssetId)
+        MaterialAssignmentId MaterialAssignmentId::CreateFromLodAndStableId(
+            MaterialAssignmentLodIndex lodIndex, RPI::ModelMaterialSlot::StableId materialSlotStableId)
         {
-            return MaterialAssignmentId(lodIndex, materialAssetId);
+            return MaterialAssignmentId(lodIndex, materialSlotStableId);
         }
 
         bool MaterialAssignmentId::IsDefault() const
         {
-            return m_lodIndex == NonLodIndex && !m_materialAssetId.IsValid();
+            return m_lodIndex == NonLodIndex && m_materialSlotStableId == RPI::ModelMaterialSlot::InvalidStableId;
         }
 
-        bool MaterialAssignmentId::IsAssetOnly() const
+        bool MaterialAssignmentId::IsSlotIdOnly() const
         {
-            return m_lodIndex == NonLodIndex && m_materialAssetId.IsValid();
+            return m_lodIndex == NonLodIndex && m_materialSlotStableId != RPI::ModelMaterialSlot::InvalidStableId;
         }
 
-        bool MaterialAssignmentId::IsLodAndAsset() const
+        bool MaterialAssignmentId::IsLodAndSlotId() const
         {
-            return m_lodIndex != NonLodIndex && m_materialAssetId.IsValid();
+            return m_lodIndex != NonLodIndex && m_materialSlotStableId != RPI::ModelMaterialSlot::InvalidStableId;
         }
 
         AZStd::string MaterialAssignmentId::ToString() const
         {
-            AZStd::string assetPathString;
-            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-                assetPathString, &AZ::Data::AssetCatalogRequests::GetAssetPathById, m_materialAssetId);
-            AZ::StringFunc::Path::StripPath(assetPathString);
-            AZ::StringFunc::Path::StripExtension(assetPathString);
-            return AZStd::string::format("%s:%llu", assetPathString.c_str(), m_lodIndex);
+            return AZStd::string::format("%u:%llu", m_materialSlotStableId, m_lodIndex);
         }
 
         size_t MaterialAssignmentId::GetHash() const
         {
             size_t seed = 0;
             AZStd::hash_combine(seed, m_lodIndex);
-            AZStd::hash_combine(seed, m_materialAssetId.m_subId);
+            AZStd::hash_combine(seed, m_materialSlotStableId);
             return seed;
         }
 
         bool MaterialAssignmentId::operator==(const MaterialAssignmentId& rhs) const
         {
-            return m_lodIndex == rhs.m_lodIndex && m_materialAssetId.m_subId == rhs.m_materialAssetId.m_subId;
+            return m_lodIndex == rhs.m_lodIndex && m_materialSlotStableId == rhs.m_materialSlotStableId;
         }
 
         bool MaterialAssignmentId::operator!=(const MaterialAssignmentId& rhs) const

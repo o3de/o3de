@@ -307,6 +307,19 @@ namespace AZ
             m_meshFeatureProcessor = nullptr;
             m_skinnedMeshFeatureProcessor = nullptr;
         }
+        
+        RPI::ModelMaterialSlotMap AtomActorInstance::GetModelMaterialSlots() const
+        {
+            Data::Asset<const RPI::ModelAsset> modelAsset = GetModelAsset();
+            if (modelAsset.IsReady())
+            {
+                return modelAsset->GetModelMaterialSlots();
+            }
+            else
+            {
+                return {};
+            }
+        }
 
         MaterialAssignmentMap AtomActorInstance::GetMaterialAssignments() const
         {

@@ -69,6 +69,9 @@ namespace AZ
             : public ComponentBus
         {
         public:
+            //! Returns the list of all ModelMaterialSlot's for the model, across all LODs.
+            virtual RPI::ModelMaterialSlotMap GetModelMaterialSlots() const = 0;
+
             virtual MaterialAssignmentMap GetMaterialAssignments() const = 0;
             virtual AZStd::unordered_set<AZ::Name> GetModelUvNames() const = 0;
         };

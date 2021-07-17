@@ -100,10 +100,13 @@ namespace AZ
                     }
                 }
 
-                auto& materialAsset = mesh.GetMaterialAsset();
-                if (materialAsset.IsReady())
+                const ModelMaterialSlot& materialSlot = lodAsset.GetMaterialSlot(mesh.GetMaterialSlotIndex());
+
+                meshInstance.m_materialSlotStableId = materialSlot.m_stableId;
+
+                if (materialSlot.m_defaultMaterialAsset.IsReady())
                 {
-                    meshInstance.m_material = Material::FindOrCreate(materialAsset);
+                    meshInstance.m_material = Material::FindOrCreate(materialSlot.m_defaultMaterialAsset);
                 }
 
                 m_meshes.emplace_back(AZStd::move(meshInstance));

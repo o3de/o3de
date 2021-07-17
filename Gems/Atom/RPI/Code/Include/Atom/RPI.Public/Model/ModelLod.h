@@ -72,6 +72,8 @@ namespace AZ
                 RHI::IndexBufferView m_indexBufferView;
 
                 StreamInfoList m_streamInfo;
+
+                ModelMaterialSlot::StableId m_materialSlotStableId = ModelMaterialSlot::InvalidStableId;
                 
                 //! The default material assigned to the mesh by the asset.
                 Data::Instance<Material> m_material;

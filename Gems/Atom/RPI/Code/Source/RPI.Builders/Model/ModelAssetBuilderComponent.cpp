@@ -109,7 +109,7 @@ namespace AZ
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<ModelAssetBuilderComponent, SceneAPI::SceneCore::ExportingComponent>()
-                    ->Version(27);  // [ATOM-15658]
+                    ->Version(29);  // (updated to separate material slot ID from default material asset)
             }
         }
 
@@ -1806,8 +1806,12 @@ namespace AZ
                 auto iter = materialAssetsByUid.find(meshView.m_materialUid);
                 if (iter != materialAssetsByUid.end())
                 {
-                    const Data::Asset<MaterialAsset>& materialAsset = iter->second.m_asset;
-                    lodAssetCreator.SetMeshMaterialAsset(materialAsset);
+                    ModelMaterialSlot materialSlot;
+                    materialSlot.m_stableId = meshView.m_materialUid;
+                    materialSlot.m_displayName = iter->second.m_name;
+                    materialSlot.m_defaultMaterialAsset = iter->second.m_asset;
+
+                    lodAssetCreator.SetMeshMaterialSlot(materialSlot);
                 }
             }
 

@@ -19,10 +19,10 @@ namespace AZ
     {
         namespace EditorMaterialComponentExporter
         {
-            // Attemts to generate a display label for a material slot by parsing its file name
+            //! Attemts to generate a display label for a material slot by parsing its file name
             AZStd::string GetLabelByAssetId(const AZ::Data::AssetId& assetId);
 
-            // Generates a destination file path for exporting material source data
+            //! Generates a destination file path for exporting material source data
             AZStd::string GetExportPathByAssetId(const AZ::Data::AssetId& assetId);
 
             struct ExportItem
@@ -30,16 +30,17 @@ namespace AZ
                 bool m_enabled = true;
                 bool m_exists = false;
                 bool m_overwrite = false;
-                AZ::Data::AssetId m_assetId;
+                AZ::Data::AssetId m_originalAssetId; //!< AssetId of the original built-in material, which will be exported.
                 AZStd::string m_exportPath;
             };
 
             using ExportItemsContainer = AZStd::vector<ExportItem>;
 
-            // Generates and opens a dialog for configuring material data export paths and actions
+            //! Generates and opens a dialog for configuring material data export paths and actions.
+            //! Note this will not modify the m_originalAssetId field in each ExportItem.
             bool OpenExportDialog(ExportItemsContainer& exportItems);
 
-            // Attemts to construct and save material source data from a product asset
+            //! Attemts to construct and save material source data from a product asset
             bool ExportMaterialSourceData(const ExportItem& exportItem);
         } // namespace EditorMaterialComponentExporter
     } // namespace Render

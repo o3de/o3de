@@ -60,12 +60,32 @@ namespace AZ
                 m_currentMesh.m_aabb = AZStd::move(aabb);
             }
         }
-
-        void ModelLodAssetCreator::SetMeshMaterialAsset(const Data::Asset<MaterialAsset>& materialAsset)
+        
+        void ModelLodAssetCreator::SetMeshMaterialSlot(const ModelMaterialSlot& materialSlot)
         {
-            if (ValidateIsMeshReady())
+            auto iter = AZStd::find_if(m_asset->m_materialSlots.begin(), m_asset->m_materialSlots.end(), [&materialSlot](const ModelMaterialSlot& existingMaterialSlot)
+                {
+                    return existingMaterialSlot.m_stableId == materialSlot.m_stableId;
+                });
+
+            if (iter == m_asset->m_materialSlots.end())
             {
-                m_currentMesh.m_materialAsset = materialAsset;
+                m_currentMesh.m_materialSlotIndex = m_asset->m_materialSlots.size();
+                m_asset->m_materialSlots.push_back(materialSlot);
+            }
+            else
+            {
+                if (materialSlot.m_displayName != iter->m_displayName)
+                {
+                    ReportWarning("Material slot %u was already added with a different name.", materialSlot.m_stableId);
+                }
+
+                if (materialSlot.m_defaultMaterialAsset != iter->m_defaultMaterialAsset)
+                {
+                    ReportWarning("Material slot %u was already added with a different MaterialAsset.", materialSlot.m_stableId);
+                }
+
+                *iter = materialSlot;
             }
         }
 
@@ -288,7 +308,9 @@ namespace AZ
                 creator.SetMeshName(sourceMesh.GetName());
                 AZ::Aabb aabb = sourceMesh.GetAabb();
                 creator.SetMeshAabb(AZStd::move(aabb));
-                creator.SetMeshMaterialAsset(sourceMesh.GetMaterialAsset());
+
+                const ModelMaterialSlot& materialSlot = sourceAsset->GetMaterialSlot(sourceMesh.GetMaterialSlotIndex());
+                creator.SetMeshMaterialSlot(materialSlot);
 
                 // Mesh index buffer view
                 const BufferAssetView& sourceIndexBufferView = sourceMesh.GetIndexBufferAssetView();

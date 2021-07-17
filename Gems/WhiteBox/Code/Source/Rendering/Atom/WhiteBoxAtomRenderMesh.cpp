@@ -116,7 +116,10 @@ namespace WhiteBox
         // set the default material
         if (auto materialAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::MaterialAsset>(TexturedMaterialPath.data()))
         {
-            modelLodCreator.SetMeshMaterialAsset(materialAsset);
+            AZ::RPI::ModelMaterialSlot materialSlot;
+            materialSlot.m_stableId = 0;
+            materialSlot.m_defaultMaterialAsset = materialAsset;
+            modelLodCreator.SetMeshMaterialSlot(materialSlot);
         }
         else
         {

@@ -16,6 +16,7 @@
 #include <Atom/RPI.Reflect/Buffer/BufferAssetView.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
+#include <Atom/RPI.Reflect/Model/ModelMaterialSlot.h>
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Math/Aabb.h>
@@ -84,8 +85,9 @@ namespace AZ
                 //! Returns the number of indices in this mesh
                 uint32_t GetIndexCount() const;
 
-                //! Returns the reference to material asset used by this mesh
-                const Data::Asset <MaterialAsset>& GetMaterialAsset() const;
+                //! Returns the index of the material slot used by this mesh.
+                //! This indexes into the ModelLodAsset's material slot list.
+                size_t GetMaterialSlotIndex() const;
 
                 //! Returns the name of this mesh
                 const AZ::Name& GetName() const;
@@ -124,7 +126,9 @@ namespace AZ
                 AZ::Name m_name;
                 AZ::Aabb m_aabb = AZ::Aabb::CreateNull();
 
-                Data::Asset<MaterialAsset> m_materialAsset{ Data::AssetLoadBehavior::PreLoad };
+                // Identifies the material that is used by this mesh.
+                // References material slot in the ModelLodAsset that owns this mesh; see ModelLodAsset::GetMaterialSlot().
+                size_t m_materialSlotIndex = 0;
 
                 // Both the buffer in m_indexBufferAssetView and the buffers in m_streamBufferInfo 
                 // may point to either unique buffers for the mesh or to consolidated 
@@ -143,17 +147,34 @@ namespace AZ
 
             //! Returns the model-space axis-aligned bounding box of all meshes in the lod
             const AZ::Aabb& GetAabb() const;
+            
+            //! Returns an array view into the collection of material slots available to this lod
+            AZStd::array_view<ModelMaterialSlot> GetMaterialSlots() const;
+            
+            //! Returns a specific material slot by index, with error checking.
+            //! The index can be retrieved from Mesh::GetMaterialSlotIndex().
+            const ModelMaterialSlot& GetMaterialSlot(size_t slotIndex) const;
+
+            //! Find a material slot with the given stableId, or returns null if it isn't found.
+            const ModelMaterialSlot* FindMaterialSlot(uint32_t stableId) const;
 
         private:
             AZStd::vector<Mesh> m_meshes;
             AZ::Aabb m_aabb = AZ::Aabb::CreateNull();
-
+            
             // These buffers owned by the lod are the consolidated super buffers. 
             // Meshes may either have views into these buffers or they may own 
             // their own buffers.
 
             Data::Asset<BufferAsset> m_indexBuffer;
             AZStd::vector<Data::Asset<BufferAsset>> m_streamBuffers;
+
+            // Lists all of the material slots that are used by this LOD.
+            // Note the same slot can appear in multiple LODs in the model, so that LODs don't have to refer back to the model asset.
+            AZStd::vector<ModelMaterialSlot> m_materialSlots;
+
+            // A default ModelMaterialSlot to be returned upon error conditions.
+            ModelMaterialSlot m_fallbackSlot;
 
             void AddMesh(const Mesh& mesh);
 

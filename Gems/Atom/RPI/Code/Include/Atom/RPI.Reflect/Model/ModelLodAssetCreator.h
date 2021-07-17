@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelLodAsset.h>
 #include <Atom/RPI.Reflect/AssetCreator.h>
 
@@ -45,9 +46,10 @@ namespace AZ
             //! Begin and BeginMesh must be called first.
             void SetMeshAabb(AZ::Aabb&& aabb);
 
-            //! Sets the material asset for the current SubMesh.
+            //! Sets the material slot data for the current SubMesh.
+            //! Adds a new material slot to the ModelLodAsset if it doesn't already exist.
             //! Begin and BeginMesh must be called first
-            void SetMeshMaterialAsset(const Data::Asset<MaterialAsset>& materialAsset);
+            void SetMeshMaterialSlot(const ModelMaterialSlot& materialSlot);
 
             //! Sets the given BufferAssetView to the current SubMesh as the index buffer.
             //! Begin and BeginMesh must be called first

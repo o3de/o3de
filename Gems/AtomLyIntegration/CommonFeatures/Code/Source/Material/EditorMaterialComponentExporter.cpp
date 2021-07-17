@@ -132,7 +132,7 @@ namespace AZ
                 int row = 0;
                 for (ExportItem& exportItem : exportItems)
                 {
-                    QFileInfo fileInfo(GetExportPathByAssetId(exportItem.m_assetId).c_str());
+                    QFileInfo fileInfo(GetExportPathByAssetId(exportItem.m_originalAssetId).c_str());
 
                     // Configuring initial settings based on whether or not the target file already exists
                     exportItem.m_exportPath = fileInfo.absoluteFilePath().toUtf8().constData();
@@ -147,7 +147,7 @@ namespace AZ
                     // Create a check box for toggling the enabled state of this item
                     QCheckBox* materialSlotCheckBox = new QCheckBox(tableWidget);
                     materialSlotCheckBox->setChecked(exportItem.m_enabled);
-                    materialSlotCheckBox->setText(GetLabelByAssetId(exportItem.m_assetId).c_str());
+                    materialSlotCheckBox->setText(GetLabelByAssetId(exportItem.m_originalAssetId).c_str());
                     tableWidget->setCellWidget(row, MaterialSlotColumn, materialSlotCheckBox);
 
                     // Create a file picker widget for selecting the save path for the exported material
@@ -256,7 +256,7 @@ namespace AZ
                 }
 
                 EditorMaterialComponentUtil::MaterialEditData editData;
-                if (!EditorMaterialComponentUtil::LoadMaterialEditDataFromAssetId(exportItem.m_assetId, editData))
+                if (!EditorMaterialComponentUtil::LoadMaterialEditDataFromAssetId(exportItem.m_originalAssetId, editData))
                 {
                     AZ_Warning("AZ::Render::EditorMaterialComponentExporter", false, "Failed to load material data.");
                     return false;
