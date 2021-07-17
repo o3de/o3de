@@ -45,7 +45,7 @@ public: // Create from serialization only
 
     Q_INVOKABLE CCryEditDoc();
 
-    virtual ~CCryEditDoc();
+    ~CCryEditDoc() override;
 
     bool IsModified() const;
     void SetModifiedFlag(bool modified);
@@ -81,7 +81,7 @@ public: // Create from serialization only
 
     bool DoSave(const QString& pathName, bool replace);
     SANDBOX_API bool Save();
-    virtual BOOL DoFileSave();
+    virtual bool DoFileSave();
     bool SaveModified();
 
     virtual bool BackupBeforeSave(bool bForce = false);
@@ -90,7 +90,7 @@ public: // Create from serialization only
     // ClassWizard generated virtual function overrides
     virtual bool OnOpenDocument(const QString& lpszPathName);
 
-    const bool IsLevelLoadFailed() const { return m_bLoadFailed; }
+    bool IsLevelLoadFailed() const { return m_bLoadFailed; }
 
     //! Marks this document as having errors.
     void SetHasErrors() { m_hasErrors = true; }
@@ -101,7 +101,7 @@ public: // Create from serialization only
     bool IsLevelExported() const;
     void SetLevelExported(bool boExported = true);
 
-    BOOL CanCloseFrame();
+    bool CanCloseFrame();
 
     enum class FetchPolicy
     {
@@ -120,7 +120,7 @@ public: // Create from serialization only
 
     CClouds* GetClouds() { return m_pClouds; }
     void SetWaterColor(const QColor& col) { m_waterColor = col; }
-    QColor GetWaterColor() { return m_waterColor; }
+    QColor GetWaterColor() const { return m_waterColor; }
     XmlNodeRef& GetFogTemplate() { return m_fogTemplate; }
     XmlNodeRef& GetEnvironmentTemplate() { return m_environmentTemplate; }
     void OnEnvironmentPropertyChanged(IVariable* pVar);
@@ -128,7 +128,7 @@ public: // Create from serialization only
     void RegisterListener(IDocListener* listener);
     void UnregisterListener(IDocListener* listener);
 
-    void GetMemoryUsage(ICrySizer* pSizer);
+    void GetMemoryUsage(ICrySizer* pSizer) const;
 
     static bool IsBackupOrTempLevelSubdirectory(const QString& folderName);
 protected:
@@ -143,7 +143,7 @@ protected:
     };
     bool BeforeOpenDocument(const QString& lpszPathName, TOpenDocContext& context);
     bool DoOpenDocument(TOpenDocContext& context);
-    virtual BOOL LoadXmlArchiveArray(TDocMultiArchive& arrXmlAr, const QString& absoluteLevelPath, const QString& levelPath);
+    virtual bool LoadXmlArchiveArray(TDocMultiArchive& arrXmlAr, const QString& absoluteLevelPath, const QString& levelPath);
     virtual void ReleaseXmlArchiveArray(TDocMultiArchive& arrXmlAr);
 
     virtual void Load(TDocMultiArchive& arrXmlAr, const QString& szFilename);
@@ -160,14 +160,14 @@ protected:
     void SerializeFogSettings(CXmlArchive& xmlAr);
     virtual void SerializeViewSettings(CXmlArchive& xmlAr);
     void SerializeNameSelection(CXmlArchive& xmlAr);
-    void LogLoadTime(int time);
+    void LogLoadTime(int time) const;
 
     struct TSaveDocContext
     {
         bool bSaved;
     };
     bool BeforeSaveDocument(const QString& lpszPathName, TSaveDocContext& context);
-    bool HasLayerNameConflicts();
+    bool HasLayerNameConflicts() const;
     bool DoSaveDocument(const QString& lpszPathName, TSaveDocContext& context);
     bool AfterSaveDocument(const QString& lpszPathName, TSaveDocContext& context, bool bShowPrompt = true);
 
@@ -179,7 +179,7 @@ protected:
     void OnStartLevelResourceList();
     static void OnValidateSurfaceTypesChanged(ICVar*);
 
-    QString GetCryIndexPath(const LPCTSTR levelFilePath);
+    QString GetCryIndexPath(LPCTSTR levelFilePath) const;
 
     //////////////////////////////////////////////////////////////////////////
     // SliceEditorEntityOwnershipServiceNotificationBus::Handler
@@ -187,24 +187,26 @@ protected:
     void OnSliceInstantiationFailed(const AZ::Data::AssetId& sliceAssetId, const AzFramework::SliceInstantiationTicket& /*ticket*/) override;
     //////////////////////////////////////////////////////////////////////////
 
-    bool m_bLoadFailed;
-    QColor m_waterColor;
+    bool m_bLoadFailed = false;
+    QColor m_waterColor  = QColor(0, 0, 255);
     XmlNodeRef m_fogTemplate;
     XmlNodeRef m_environmentTemplate;
     CClouds* m_pClouds;
     std::list<IDocListener*> m_listeners;
-    bool m_bDocumentReady;
-    ICVar* doc_validate_surface_types;
+    bool m_bDocumentReady = false;
+    ICVar* doc_validate_surface_types = nullptr;
     int m_modifiedModuleFlags;
-    bool m_boLevelExported;
-    bool m_modified;
+    // On construction, it assumes loaded levels have already been exported. Can be a big fat lie, though.
+    // The right way would require us to save to the level folder the export status of the level.
+    bool m_boLevelExported = true;
+    bool m_modified = false;
     QString m_pathName;
     QString m_slicePathName;
     QString m_title;
     AZ::Data::AssetId m_envProbeSliceAssetId;
     float m_terrainSize;
-    const char* m_envProbeSliceRelativePath;
-    const float m_envProbeHeight;
+    const char* m_envProbeSliceRelativePath = "EngineAssets/Slices/DefaultLevelSetup.slice";
+    const float m_envProbeHeight = 200.0f;
     bool m_hasErrors = false; ///< This is used to warn the user that they may lose work when they go to save.
 };
 
