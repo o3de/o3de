@@ -245,14 +245,12 @@ ViewportWidget::ViewportWidget(EditorWindow* parent)
         });
 
     FontNotificationBus::Handler::BusConnect();
-    AZ::TickBus::Handler::BusConnect();
 }
 
 ViewportWidget::~ViewportWidget()
 {
     AzToolsFramework::EditorPickModeNotificationBus::Handler::BusDisconnect();
     FontNotificationBus::Handler::BusDisconnect();
-    AZ::TickBus::Handler::BusDisconnect();
 
     m_uiRenderer.reset();
 
@@ -487,7 +485,7 @@ void ViewportWidget::EnableCanvasRender()
     RefreshTick();
 }
 
-void ViewportWidget::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+void ViewportWidget::OnRenderTick()
 {
     if (!m_uiRenderer->IsReady() || !m_canvasRenderIsEnabled)
     {
@@ -501,8 +499,7 @@ void ViewportWidget::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoin
     const float dpiScale = QtHelpers::GetHighDpiScaleFactor(*this);
     ViewportIcon::SetDpiScaleFactor(dpiScale);
 
-    // Set up to render a frame to this viewport's window
-    GetViewportContext()->RenderTick();
+    const float deltaTime = GetLastRenderDeltaTime().count();
 
     UiEditorMode editorMode = m_editorWindow->GetEditorMode();
     if (editorMode == UiEditorMode::Edit)

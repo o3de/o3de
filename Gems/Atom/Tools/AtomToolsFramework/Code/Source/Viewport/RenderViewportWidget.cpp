@@ -7,7 +7,6 @@
 
 #include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
 #include <Atom/RPI.Public/ViewportContext.h>
-#include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/View.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Viewport/ViewportControllerList.h>
@@ -77,8 +76,8 @@ namespace AtomToolsFramework
         AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler::BusConnect(GetId());
         AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Handler::BusConnect(GetId());
         AzFramework::InputChannelEventListener::Connect();
-        AZ::TickBus::Handler::BusConnect();
         AzFramework::WindowRequestBus::Handler::BusConnect(params.windowHandle);
+        AZ::RPI::ViewportContextIdNotificationBus::Handler::BusConnect(m_viewportContext->GetId());
 
         m_inputChannelMapper = new AzToolsFramework::QtEventToAzInputMapper(this, id);
 
@@ -103,7 +102,7 @@ namespace AtomToolsFramework
     RenderViewportWidget::~RenderViewportWidget()
     {
         AzFramework::WindowRequestBus::Handler::BusDisconnect();
-        AZ::TickBus::Handler::BusDisconnect();
+        AZ::RPI::ViewportContextIdNotificationBus::Handler::BusDisconnect();
         AzFramework::InputChannelEventListener::Disconnect();
         AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Handler::BusDisconnect();
         AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler::BusDisconnect();
@@ -187,10 +186,23 @@ namespace AtomToolsFramework
         return eventHandled && shouldConsumeEvent;
     }
 
-    void RenderViewportWidget::OnTick([[maybe_unused]]float deltaTime, AZ::ScriptTimePoint time)
+    void RenderViewportWidget::OnRenderTick()
     {
+        AZ::ScriptTimePoint time(AZStd::chrono::system_clock::now());
+        m_lastDeltaTime = time.Get() - m_time.Get();
         m_time = time;
-        m_controllerList->UpdateViewport({GetId(), AzFramework::FloatSeconds(deltaTime), m_time});
+        
+        m_controllerList->UpdateViewport({GetId(), m_lastDeltaTime, m_time});
+    }
+
+    AZ::ScriptTimePoint RenderViewportWidget::GetLastRenderTime() const
+    {
+        return m_time;
+    }
+
+    AzFramework::FloatSeconds RenderViewportWidget::GetLastRenderDeltaTime() const
+    {
+        return m_lastDeltaTime;
     }
 
     void RenderViewportWidget::resizeEvent([[maybe_unused]] QResizeEvent* event)

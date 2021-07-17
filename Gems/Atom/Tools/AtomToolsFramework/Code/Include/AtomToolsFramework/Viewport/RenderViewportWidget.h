@@ -20,6 +20,7 @@
 #include <AzFramework/Windowing/WindowBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
 
 namespace AtomToolsFramework
 {
@@ -33,7 +34,7 @@ namespace AtomToolsFramework
         , public AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Handler
         , public AzFramework::WindowRequestBus::Handler
         , protected AzFramework::InputChannelEventListener
-        , protected AZ::TickBus::Handler
+        , protected AZ::RPI::ViewportContextIdNotificationBus::Handler
     {
     public:
         //! Creates a RenderViewportWidget.
@@ -88,6 +89,10 @@ namespace AtomToolsFramework
         //! camera controller input processing wholesale to avoid competing input messages.
         //! Input processing is enabled by default.
         void SetInputProcessingEnabled(bool enabled);
+        //! Gets the time stamp of the last frame rendered by this viewport.
+        AZ::ScriptTimePoint GetLastRenderTime() const;
+        //! Gets the time between the last two frames rendered by this viewport, in seconds.
+        AzFramework::FloatSeconds GetLastRenderDeltaTime() const;
 
         // AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler ...
         AzFramework::CameraState GetCameraState() override;
@@ -125,8 +130,8 @@ namespace AtomToolsFramework
         // AzFramework::InputChannelEventListener ...
         bool OnInputChannelEventFiltered(const AzFramework::InputChannel& inputChannel) override;
 
-        // AZ::TickBus::Handler ...
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+        // AZ::RPI::ViewportContextIdNotificationBus::Handler ...
+        void OnRenderTick() override;
 
         // QWidget ...
         void resizeEvent(QResizeEvent *event) override;
@@ -157,6 +162,8 @@ namespace AtomToolsFramework
         QElapsedTimer m_renderTimer;
         // The time of the last recorded tick event from the system tick bus.
         AZ::ScriptTimePoint m_time;
+        // The time between the last two recorded frames, in seconds.
+        AzFramework::FloatSeconds m_lastDeltaTime = AzFramework::FloatSeconds(0.f);
         // Whether the Viewport is currently hiding and capturing the cursor position.
         bool m_capturingCursor = false;
         // The viewport settings (e.g. grid snapping, grid size) for this viewport.

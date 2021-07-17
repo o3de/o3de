@@ -137,9 +137,9 @@ private: // member functions
     void OnFontTextureUpdated(IFFont* font) override;
     // ~FontNotifications
 
-    // AZ::TickBus::Handler
-    void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
-    // ~AZ::TickBus::Handler
+    // AZ::RPI::ViewportContextIdNotificationBus::Handler
+    void OnRenderTick() override;
+    // ~AZ::RPI::ViewportContextIdNotificationBus::Handler
 
     //! Render the viewport when in edit mode
     void RenderEditMode(float deltaTime);
