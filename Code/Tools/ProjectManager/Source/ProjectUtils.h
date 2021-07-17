@@ -8,7 +8,10 @@
 #pragma once
 
 #include <ScreenDefs.h>
+#include <ProjectInfo.h>
+
 #include <QWidget>
+#include <AzCore/Outcome/Outcome.h>
 
 namespace O3DE::ProjectManager
 {
@@ -17,14 +20,15 @@ namespace O3DE::ProjectManager
         bool AddProjectDialog(QWidget* parent = nullptr);
         bool RegisterProject(const QString& path);
         bool UnregisterProject(const QString& path);
-        bool CopyProjectDialog(const QString& origPath, QWidget* parent = nullptr);
-        bool CopyProject(const QString& origPath, const QString& newPath, QWidget* parent);
+        bool CopyProjectDialog(const QString& origPath, ProjectInfo& newProjectInfo, QWidget* parent = nullptr);
+        bool CopyProject(const QString& origPath, const QString& newPath, QWidget* parent, bool skipRegister = false);
         bool DeleteProjectFiles(const QString& path, bool force = false);
-        bool MoveProject(QString origPath, QString newPath, QWidget* parent = nullptr, bool ignoreRegister = false);
+        bool MoveProject(QString origPath, QString newPath, QWidget* parent, bool skipRegister = false);
 
         bool ReplaceFile(const QString& origFile, const QString& newFile, QWidget* parent = nullptr, bool interactive = true);
 
-        bool IsVS2019Installed();
+        bool FindSupportedCompiler(QWidget* parent = nullptr);
+        AZ::Outcome<void, QString> FindSupportedCompilerForPlatform();
 
         ProjectManagerScreen GetProjectManagerScreen(const QString& screen);
     } // namespace ProjectUtils
