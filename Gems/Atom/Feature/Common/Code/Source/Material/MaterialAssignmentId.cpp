@@ -14,12 +14,37 @@ namespace AZ
 {
     namespace Render
     {
+        bool MaterialAssignmentId::ConvertVersion(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
+        {
+            if (classElement.GetVersion() < 2)
+            {
+                constexpr AZ::u32 materialAssetIdCrc = AZ_CRC("materialAssetId");
+
+                AZ::Data::AssetId materialAssetId;
+                if (!classElement.GetChildData(materialAssetIdCrc, materialAssetId))
+                {
+                    AZ_Error("AZ::Render::MaterialAssignmentId::ConvertVersion", false, "Failed to get AssetId element");
+                    return false;
+                }
+
+                if (!classElement.RemoveElementByName(materialAssetIdCrc))
+                {
+                    AZ_Error("AZ::Render::MaterialAssignmentId::ConvertVersion", false, "Failed to remove deprecated element materialAssetId");
+                    // No need to early-return, the object will still load successfully, it will just report more errors about the unrecognized element.
+                }
+
+                classElement.AddElementWithData(context, "materialSlotStableId", materialAssetId.m_subId);
+            }
+
+            return true;
+        }
+
         void MaterialAssignmentId::Reflect(ReflectContext* context)
         {
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<MaterialAssignmentId>()
-                    ->Version(2)
+                    ->Version(2, &MaterialAssignmentId::ConvertVersion)
                     ->Field("lodIndex", &MaterialAssignmentId::m_lodIndex)
                     ->Field("materialSlotStableId", &MaterialAssignmentId::m_materialSlotStableId)
                     ;

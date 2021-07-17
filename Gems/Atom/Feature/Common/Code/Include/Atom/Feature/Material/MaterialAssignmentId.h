@@ -31,6 +31,7 @@ namespace AZ
             AZ_RTTI(AZ::Render::MaterialAssignmentId, "{EB603581-4654-4C17-B6DE-AE61E79EDA97}");
             AZ_CLASS_ALLOCATOR(AZ::Render::MaterialAssignmentId, SystemAllocator, 0);
             static void Reflect(ReflectContext* context);
+            static bool ConvertVersion(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);
 
             MaterialAssignmentId() = default;
 
