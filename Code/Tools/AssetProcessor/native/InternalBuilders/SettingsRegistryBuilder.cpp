@@ -263,6 +263,12 @@ namespace AssetProcessor
                     return;
                 }
 
+                using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+                // Placeholder Key used by the local Settings Registry for storing all Gems SourcePaths
+                // array entries.
+                constexpr auto PlaceholderGemKey = FixedValueString(AZ::SettingsRegistryMergeUtils::OrganizationRootKey)
+                    + "/Gems/__SettingsRegistryBuilderPlaceholder";
+
                 AZ::SettingsRegistryImpl registry;
 
                 // Seed the local settings registry using the AssetProcessor settings registry
@@ -279,17 +285,46 @@ namespace AssetProcessor
 
                     for (const auto& settingsKey : settingsToCopy)
                     {
-                        AZ::SettingsRegistryInterface::FixedValueString settingsValue;
+                        FixedValueString settingsValue;
                         [[maybe_unused]] bool settingsCopied = settingsRegistry->Get(settingsValue, settingsKey)
                             && registry.Set(settingsKey, settingsValue);
                         AZ_Warning("Settings Registry Builder", settingsCopied, "Unable to copy setting %s from AssetProcessor settings registry"
                             " to local settings registry", settingsKey.c_str());
+                    }
+
+                    // Read the AssetProcessor loaded Gem Information from the global Registry
+                    AZStd::vector<AzFramework::GemInfo> gemInfos;
+                    size_t pathIndex{};
+                    if (AzFramework::GetGemsInfo(gemInfos, *settingsRegistry))
+                    {
+                        AZStd::vector<AZ::IO::PathView> sourcePaths;
+                        for (const AzFramework::GemInfo& gemInfo : gemInfos)
+                        {
+                            for (const AZ::IO::Path& absoluteSourcePath : gemInfo.m_absoluteSourcePaths)
+                            {
+                                if (auto foundIt = AZStd::find(sourcePaths.begin(), sourcePaths.end(), absoluteSourcePath);
+                                    foundIt == sourcePaths.end())
+                                {
+                                    sourcePaths.emplace_back(absoluteSourcePath);
+                                }
+                            }
+                        }
+
+                        for (const AZ::IO::Path& sourcePath : sourcePaths)
+                        {
+                            // Use JSON Pointer to append elements to the SourcePaths array
+                            registry.Set(FixedValueString::format("%s/SourcePaths/%zu", PlaceholderGemKey.c_str(), pathIndex++),
+                                sourcePath.Native());
+                        }
                     }
                 }
 
                 AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_EngineRegistry(registry, platform, specialization, &scratchBuffer);
                 AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_GemRegistries(registry, platform, specialization, &scratchBuffer);
                 AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectRegistry(registry, platform, specialization, &scratchBuffer);
+
+                // The Placeholder Key is removed now that the each gem "<gem-source-path>/Registry" directory has been merged
+                registry.Remove(PlaceholderGemKey);
 
                 // Merge the Project User and User home settings registry only in non-release builds
                 constexpr bool executeRegDumpCommands = false;
