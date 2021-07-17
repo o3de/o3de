@@ -8,6 +8,7 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzToolsFramework/Prefab/PrefabDomTypes.h>
 #include <MockPrefabSystemComponentInterface.h>
+#include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 
 namespace PrefabDependencyViewer
 {
@@ -25,12 +26,28 @@ namespace PrefabDependencyViewer
         {
             UnitTest::ScopedAllocatorSetupFixture::SetUp();
             
-            m_prefabDomsCases["emptyJSON"] = PrefabDom();
+            m_prefabDomsCases["emptyUnsavedJSON"] = PrefabDom();
+            m_prefabDomsCases["emptySavedJSON"] = PrefabDom();
 
             for (AZStd::pair<AZStd::string, PrefabDom>& p : m_prefabDomsCases)
             {
                 p.second.SetObject();
             }
+            
+            rapidjson::Value emptySavedJSONSourceKey(
+                AzToolsFramework::Prefab::PrefabDomUtils::SourceName,
+                m_prefabDomsCases["emptySavedJSON"].GetAllocator());
+
+            rapidjson::Value emptySavedJSONSourceValue(
+                "Prefabs/emptySavedJSON.prefab",
+                m_prefabDomsCases["emptySavedJSON"].GetAllocator());
+
+            m_prefabDomsCases["emptySavedJSON"].AddMember(
+                emptySavedJSONSourceKey,
+                emptySavedJSONSourceValue,
+                m_prefabDomsCases["emptySavedJSON"].GetAllocator()
+            );
+            
         }
 
         void TearDown() override
