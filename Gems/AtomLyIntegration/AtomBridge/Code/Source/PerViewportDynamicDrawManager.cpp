@@ -107,7 +107,7 @@ namespace AZ::AtomBridge
                 return nullptr;
             }
             context = RPI::DynamicDrawInterface::Get()->CreateDynamicDrawContext();
-            context->SetOutputScope(pipeline.get());
+            context->SetOutputScope(pipeline);
             contextFactoryIt->second(context);
         }
 
