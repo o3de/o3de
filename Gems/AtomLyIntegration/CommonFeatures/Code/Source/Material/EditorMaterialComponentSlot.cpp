@@ -189,8 +189,7 @@ namespace AZ
             // But we still need to allow the user to reconfigure it using the dialog
             EditorMaterialComponentExporter::ExportItemsContainer exportItems;
             {
-                EditorMaterialComponentExporter::ExportItem exportItem;
-                exportItem.m_originalAssetId = m_defaultMaterialAsset.GetId();
+                EditorMaterialComponentExporter::ExportItem exportItem{m_defaultMaterialAsset.GetId(), m_label};
                 exportItems.push_back(exportItem);
             }
 
@@ -205,7 +204,7 @@ namespace AZ
                     }
 
                     // Generate a new asset ID utilizing the export file path so that we can update this material slot to reference the new asset
-                    const auto& assetIdOutcome = AZ::RPI::AssetUtils::MakeAssetId(exportItem.m_exportPath, 0);
+                    const auto& assetIdOutcome = AZ::RPI::AssetUtils::MakeAssetId(exportItem.GetExportPath(), 0);
                     if (assetIdOutcome)
                     {
                         m_materialAsset.Create(assetIdOutcome.GetValue());

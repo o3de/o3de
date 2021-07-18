@@ -17,6 +17,7 @@
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
+#include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QMenu>
@@ -438,30 +439,46 @@ namespace AZ
             AzToolsFramework::ScopedUndoBatch undoBatch("Generating materials.");
             SetDirty();
             
+            Data::AssetId modelAssetId;
+            MeshComponentRequestBus::EventResult(modelAssetId, GetEntityId(), &MeshComponentRequestBus::Events::GetModelAssetId);
+
             RPI::ModelMaterialSlotMap modelMaterialSlots;
             MaterialReceiverRequestBus::EventResult(modelMaterialSlots, GetEntityId(), &MaterialReceiverRequestBus::Events::GetModelMaterialSlots);
+            
+            EditorMaterialComponentExporter::ExportItemsContainer exportItems;
 
-            // First generating a unique set of all material asset IDs that will be used for source data generation
-            AZStd::unordered_set<AZ::Data::AssetId> assetIds;
-
-            for (auto& materialSlot : modelMaterialSlots)
+            // Generate a list of export items for the set of unique default material assets from the model.
+            for (auto& materialSlotPair : modelMaterialSlots)
             {
-                Data::AssetId defaultMaterialAssetId = materialSlot.second.m_defaultMaterialAsset.GetId();
-                if (defaultMaterialAssetId.IsValid())
+                // We only care about material assets that were generated from the model source file, since those are the
+                // ones that would need conversion (other materials already have their own source file). This can be detected
+                // by matching GUID component of the AssetId.
+                Data::AssetId defaultMaterialAssetId = materialSlotPair.second.m_defaultMaterialAsset.GetId();
+                bool materialWasGeneratedFromModel = defaultMaterialAssetId.IsValid() && defaultMaterialAssetId.m_guid == modelAssetId.m_guid;
+                if (materialWasGeneratedFromModel)
                 {
-                    assetIds.insert(defaultMaterialAssetId);
+                    auto duplicateAssetIter = AZStd::find_if(exportItems.begin(), exportItems.end(),
+                        [defaultMaterialAssetId](const EditorMaterialComponentExporter::ExportItem& existingExportItem)
+                        {
+                            return existingExportItem.GetOriginalAssetId() == defaultMaterialAssetId;
+                        });
+                    
+                    // It's possible for multiple material slots to have the same default material asset. So we just use the first one, which just means the
+                    // exported material file name will be based on the first relevant material slot's name.
+                    if (duplicateAssetIter == exportItems.end())
+                    {                        
+                        EditorMaterialComponentExporter::ExportItem exportItem{defaultMaterialAssetId, materialSlotPair.second.m_displayName.GetStringView()};
+                        exportItems.push_back(exportItem);
+                    }
                 }
             }
 
-            // Convert the unique set of asset IDs into export items that can be configured in the dialog 
-            // The order should not matter because the table in the dialog can sort itself for a specific row
-            EditorMaterialComponentExporter::ExportItemsContainer exportItems;
-            for (const AZ::Data::AssetId& assetId : assetIds)
-            {
-                EditorMaterialComponentExporter::ExportItem exportItem;
-                exportItem.m_originalAssetId = assetId;
-                exportItems.push_back(exportItem);
-            }
+            // Sort by display name so the list order will match what's displayed in the Material Component.
+            AZStd::sort(exportItems.begin(), exportItems.end(),
+                [](const EditorMaterialComponentExporter::ExportItem& a, const EditorMaterialComponentExporter::ExportItem& b)
+                {
+                    return a.GetMaterialSlotName() < b.GetMaterialSlotName();
+                });
 
             // Display the export dialog so that the user can configure how they want different materials to be exported
             if (EditorMaterialComponentExporter::OpenExportDialog(exportItems))
@@ -473,7 +490,7 @@ namespace AZ
                         continue;
                     }
 
-                    const auto& assetIdOutcome = AZ::RPI::AssetUtils::MakeAssetId(exportItem.m_exportPath, 0);
+                    const auto& assetIdOutcome = AZ::RPI::AssetUtils::MakeAssetId(exportItem.GetExportPath(), 0);
                     if (assetIdOutcome)
                     {
                         for (auto& materialSlotPair : GetMaterialSlots())
@@ -488,7 +505,7 @@ namespace AZ
                                 {
                                     auto materialSlot = modelMaterialSlots.find(editorMaterialSlot->m_id.m_materialSlotStableId);
                                     if (materialSlot != modelMaterialSlots.end() &&
-                                        materialSlot->second.m_defaultMaterialAsset.GetId() == exportItem.m_originalAssetId)
+                                        materialSlot->second.m_defaultMaterialAsset.GetId() == exportItem.GetOriginalAssetId())
                                     {
                                         editorMaterialSlot->m_materialAsset.Create(assetIdOutcome.GetValue());
                                     }
