@@ -227,9 +227,11 @@ namespace AZ
                 OnPropertyChanged();
             };
 
-            if (m_materialAsset.GetId().IsValid())
+            Data::Asset<RPI::MaterialAsset> assetToEdit = m_materialAsset.GetId().IsValid() ? m_materialAsset : m_defaultMaterialAsset;
+
+            if (assetToEdit.GetId().IsValid())
             {
-                if (EditorMaterialComponentInspector::OpenInspectorDialog(GetLabel(), m_materialAsset.GetId(), m_propertyOverrides, applyPropertyChangedCallback))
+                if (EditorMaterialComponentInspector::OpenInspectorDialog(GetLabel(), assetToEdit.GetId(), m_propertyOverrides, applyPropertyChangedCallback))
                 {
                     OnMaterialChanged();
                 }
@@ -244,10 +246,12 @@ namespace AZ
                 // Treated as a special property. It will be updated together with properties.
                 OnPropertyChanged();
             };
-
-            if (m_materialAsset.GetId().IsValid())
+            
+            Data::Asset<RPI::MaterialAsset> assetToEdit = m_materialAsset.GetId().IsValid() ? m_materialAsset : m_defaultMaterialAsset;
+            
+            if (assetToEdit.GetId().IsValid())
             {
-                if (EditorMaterialComponentInspector::OpenInspectorDialog(m_materialAsset.GetId(), m_matModUvOverrides, m_modelUvNames, applyMatModUvOverrideChangedCallback))
+                if (EditorMaterialComponentInspector::OpenInspectorDialog(assetToEdit.GetId(), m_matModUvOverrides, m_modelUvNames, applyMatModUvOverrideChangedCallback))
                 {
                     OnMaterialChanged();
                 }
@@ -268,11 +272,13 @@ namespace AZ
             action = menu.addAction("Edit Source Material...", [this]() { OpenMaterialEditor(); });
             action->setEnabled(HasSourceData());
 
+            bool hasAnyMaterial = m_defaultMaterialAsset.GetId().IsValid() || m_materialAsset.GetId().IsValid();
+
             action = menu.addAction("Edit Material Instance...", [this]() { OpenMaterialInspector(); });
-            action->setEnabled(m_materialAsset.GetId().IsValid());
+            action->setEnabled(hasAnyMaterial);
 
             action = menu.addAction("Edit Material Instance UV Map...", [this]() { OpenUvNameMapInspector(); });
-            action->setEnabled(m_materialAsset.GetId().IsValid());
+            action->setEnabled(hasAnyMaterial);
 
             menu.addSeparator();
 
