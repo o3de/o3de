@@ -23,7 +23,8 @@ namespace Multiplayer
     {
         if ( ownsLifetime == OwnsLifetime::False )
         {
-            // This entity is owned by some other authority, this publisher will only be used for updating (not creating).
+            // This entity is owned by some other authority; this publisher will only be used for updating (not creating).
+            // Since this replicator does not own it's lifetime, the remote replicator must exist (otherwise, we would never have created a replicator that doesn't own its lifetime).
             m_remoteReplicatorEstablished = true;
             m_replicatorState = EntityReplicatorState::Updating;
         }
