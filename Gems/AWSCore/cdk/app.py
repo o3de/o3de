@@ -37,7 +37,7 @@ env = core.Environment(account=ACCOUNT, region=REGION)
 
 app = core.App()
 
-core = AWSCore(
+core_construct = AWSCore(
     app,
     id_=f'{PROJECT_FEATURE_NAME}-Construct',
     project_name=PROJECT_NAME,
@@ -49,7 +49,7 @@ core = AWSCore(
 # It also provided as an example how to reference resources across stacks via stack outputs.
 # See https://docs.aws.amazon.com/cdk/latest/guide/resources.html#resource_stack
 
-example = ExampleResources(
+example_stack = ExampleResources(
     app,
     id_=f'{PROJECT_FEATURE_NAME}-Example-{env.region}',
     project_name=f'{PROJECT_NAME}',
@@ -57,5 +57,8 @@ example = ExampleResources(
     tags={Constants.O3DE_PROJECT_TAG_NAME: PROJECT_NAME, Constants.O3DE_FEATURE_TAG_NAME: FEATURE_NAME},
     env=env
 )
+#
+# Add the common stack as a dependency of the feature stack
+example_stack.add_dependency(core_construct.common_stack)
 
 app.synth()
