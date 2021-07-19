@@ -820,7 +820,7 @@ namespace AZ
                 (RHI::CheckBitsAny(
                     descriptor.m_bindFlags, 
                     RHI::BufferBindFlags::ShaderWrite | RHI::BufferBindFlags::Predication | RHI::BufferBindFlags::Indirect) || 
-                    static_cast<uint32_t>(queueFamilies.size()) <= 1) ? 
+                    (queueFamilies.size()) <= 1) ? 
                     VK_SHARING_MODE_EXCLUSIVE : 
                     VK_SHARING_MODE_CONCURRENT;
 
