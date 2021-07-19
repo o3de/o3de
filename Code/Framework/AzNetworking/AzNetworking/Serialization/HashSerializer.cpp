@@ -10,9 +10,9 @@
 
 namespace AzNetworking
 {
-    // This gives us a hash sensitivity of around 1/128th of a unit, and will detect errors within a range of -16,777,216 to +16,777,216
-    static const int32_t FloatHashMinValue = (INT_MIN >> 7);
-    static const int32_t FloatHashMaxValue = (INT_MAX >> 7);
+    // This gives us a hash sensitivity of around 1/512th of a unit, and will detect errors within a range of -4,194,304 to +4,194,304
+    static const int32_t FloatHashMinValue = (INT_MIN >> 9);
+    static const int32_t FloatHashMaxValue = (INT_MAX >> 9);
 
     AZ::HashValue32 HashSerializer::GetHash() const
     {
@@ -92,11 +92,14 @@ namespace AzNetworking
         // This hashing serializer is used to detect desyncs between the predicted and authoritative state of all predictive values
         // If either of these asserts triggers, it means desyncs *will not* be detected for the value being serialized
         // You should consider using a quantized float for the failing value, or potentially adjust the min/max quantized values
-        AZ_Assert(value > FloatHashMinValue, "Out of range float value passed to hashing serializer, this will clamp the float value");
-        AZ_Assert(value < FloatHashMaxValue, "Out of range float value passed to hashing serializer, this will clamp the float value");
-        QuantizedValues<1, 4, FloatHashMinValue, FloatHashMaxValue> quantizedValue(value);
-        const int32_t hashableValue = quantizedValue.GetQuantizedIntegralValues()[0];
-        m_hash = AZ::TypeHash64(hashableValue, m_hash);
+        //AZ_Assert(value > FloatHashMinValue, "Out of range float value passed to hashing serializer, this will clamp the float value");
+        //AZ_Assert(value < FloatHashMaxValue, "Out of range float value passed to hashing serializer, this will clamp the float value");
+        //QuantizedValues<1, 4, FloatHashMinValue, FloatHashMaxValue> quantizedValue(value);
+        //const int32_t hashableValue = quantizedValue.GetQuantizedIntegralValues()[0];
+        //m_hash = AZ::TypeHash64(hashableValue, m_hash);
+        //return true;
+
+        m_hash = AZ::TypeHash64(value, m_hash);
         return true;
     }
 
