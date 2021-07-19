@@ -1731,6 +1731,14 @@ void AZ::FFont::DrawScreenAlignedText3d(
         currentView->GetWorldToViewMatrix(),
         currentView->GetViewToClipMatrix()
     );
+
+    // Text behind the camera shouldn't get rendered.  WorldToScreenNDC returns values in the range 0 - 1, so Z < 0.5 is behind the screen
+    // and >= 0.5 is in front of the screen.
+    if (positionNDC.GetZ() < 0.5f)
+    {
+        return;
+    }
+
     internalParams.m_ctx.m_sizeIn800x600 = false;
 
     DrawStringUInternal(

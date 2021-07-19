@@ -147,6 +147,8 @@ set(FILES
     Entity/SliceEditorEntityOwnershipServiceBus.h
     Fingerprinting/TypeFingerprinter.h
     Fingerprinting/TypeFingerprinter.cpp
+    Logger/TraceLogger.cpp
+    Logger/TraceLogger.h
     Manipulators/AngularManipulator.cpp
     Manipulators/AngularManipulator.h
     Manipulators/BaseManipulator.cpp

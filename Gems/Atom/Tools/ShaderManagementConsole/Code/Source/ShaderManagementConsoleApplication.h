@@ -8,7 +8,6 @@
 
 #pragma once
 
-
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/UserSettings/UserSettingsProvider.h>
@@ -19,18 +18,20 @@
 
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
+#include <AzToolsFramework/Logger/TraceLogger.h>
 
 #include <Atom/Document/ShaderManagementConsoleDocumentSystemRequestBus.h>
 #include <Atom/Window/ShaderManagementConsoleWindowNotificationBus.h>
 
-#include <QApplication>
+#include <AzQtComponents/Application/AzQtApplication.h>
+
 #include <QTimer>
 
 namespace ShaderManagementConsole
 {
     class ShaderManagementConsoleApplication
         : public AzFramework::Application
-        , public QApplication
+        , public AzQtComponents::AzQtApplication
         , private AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler
         , private ShaderManagementConsoleWindowNotificationBus::Handler
         , private AzFramework::AssetSystemStatusBus::Handler
@@ -113,6 +114,8 @@ namespace ShaderManagementConsole
         void StartInternal();
 
         static void PyIdleWaitFrames(uint32_t frames);
+
+        AzToolsFramework::TraceLogger m_traceLogger;
 
         //! Local user settings are used to store asset browser tree expansion state
         AZ::UserSettingsProvider m_localUserSettings;

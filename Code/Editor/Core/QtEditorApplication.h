@@ -8,7 +8,6 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <QApplication>
 #include <QAbstractNativeEventFilter>
 #include <QColor>
 #include <QMap>
@@ -20,6 +19,7 @@
 #include <AzCore/PlatformDef.h>
 #include <AzCore/UserSettings/UserSettingsProvider.h>
 #include <IEditor.h>
+#include <AzQtComponents/Application/AzQtApplication.h>
 #endif
 
 class QFileInfo;
@@ -48,7 +48,7 @@ namespace Editor
     void ScanDirectories(QFileInfoList& directoryList, const QStringList& filters, QFileInfoList& files, ScanDirectoriesUpdateCallBack updateCallback = nullptr);
 
     class EditorQtApplication
-        : public QApplication
+        : public AzQtComponents::AzQtApplication
         , public QAbstractNativeEventFilter
         , public IEditorNotifyListener
         , public AZ::UserSettingsOwnerRequestBus::Handler
