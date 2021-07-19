@@ -30,7 +30,8 @@ namespace AZ
                 if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
                 {
                     serializeContext->Class<HairComponentConfig, ComponentConfig>()
-                        ->Version(3)
+                        ->Version(4)
+                        ->Field("HairAsset", &HairComponentConfig::m_hairAsset)
                         ->Field("SimulationSettings", &HairComponentConfig::m_simulationSettings)
                         ->Field("RenderingSettings", &HairComponentConfig::m_renderingSettings)
                         ;

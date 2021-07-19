@@ -46,10 +46,6 @@ namespace AZ
                             "HairComponentController", "")
                             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                            ->DataElement(
-                                AZ::Edit::UIHandlers::Default, &HairComponentController::m_hairAsset, "Hair Asset",
-                                "TressFX asset to be assigned to this entity.")
-                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &HairComponentController::OnHairAssetChanged)
                             ->DataElement(AZ::Edit::UIHandlers::Default, &HairComponentController::m_configuration, "Configuration", "")
                                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                             ;
@@ -57,6 +53,9 @@ namespace AZ
                         editContext->Class<HairComponentConfig>(
                             "HairComponentConfig", "")
                             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                            ->DataElement(
+                                AZ::Edit::UIHandlers::Default, &HairComponentConfig::m_hairAsset, "Hair Asset",
+                                "TressFX asset to be assigned to this entity.")
                             ->DataElement(
                                 AZ::Edit::UIHandlers::Default, &HairComponentConfig::m_simulationSettings, "TressFX Sim Settings",
                                 "TressFX simulation settings to be applied on this entity.")
@@ -81,6 +80,7 @@ namespace AZ
             EditorHairComponent::EditorHairComponent(const HairComponentConfig& config)
                 : BaseClass(config)
             {
+                m_prevHairAssetId = config.m_hairAsset.GetId();
             }
 
             void EditorHairComponent::Activate()
@@ -97,7 +97,18 @@ namespace AZ
 
             u32 EditorHairComponent::OnConfigurationChanged()
             {
-                m_controller.OnHairConfigChanged();
+                // Since any of the hair config and hair asset change will trigger this call, we use the prev loaded hair assetId
+                // to check which config actually got changed.
+                // This is because an asset change is a heavy operation and we don't want to trigger that when it's not needed.
+                if (m_prevHairAssetId == m_controller.GetConfiguration().m_hairAsset.GetId())
+                {
+                    m_controller.OnHairConfigChanged();
+                }
+                else
+                {
+                    m_controller.OnHairAssetChanged();
+                    m_prevHairAssetId = m_controller.GetConfiguration().m_hairAsset.GetId();
+                }
                 return Edit::PropertyRefreshLevels::AttributesAndValues;
             }
 

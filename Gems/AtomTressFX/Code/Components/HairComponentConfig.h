@@ -58,6 +58,7 @@ namespace AZ
                 AMD::TressFXSimulationSettings m_simulationSettings;
                 AMD::TressFXRenderingSettings m_renderingSettings;
 
+                Data::Asset<HairAsset> m_hairAsset;
             private:
                 bool m_enabled = true;
             };

@@ -25,7 +25,6 @@
 #include <TressFX/TressFXAsset.h>
 #include <TressFX/TressFXSettings.h>
 
-#include <Rendering/HairRenderObject.h>
 #include <Rendering/HairFeatureProcessor.h>
 #include <Components/HairComponentController.h>
 
@@ -39,6 +38,11 @@ namespace AZ
     {
         namespace Hair
         {
+            HairComponentController::~HairComponentController()
+            {
+                RemoveHairObject();
+            }
+
             void HairComponentController::Reflect(ReflectContext* context)
             {
                 HairComponentConfig::Reflect(context);
@@ -46,8 +50,7 @@ namespace AZ
                 if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
                 {
                     serializeContext->Class<HairComponentController>()
-                        ->Version(1)
-                        ->Field("HairAsset", &HairComponentController::m_hairAsset)
+                        ->Version(2)
                         ->Field("Configuration", &HairComponentController::m_configuration)
                         ;
                 }
@@ -129,10 +132,10 @@ namespace AZ
             void HairComponentController::OnHairAssetChanged()
             {
                 Data::AssetBus::MultiHandler::BusDisconnect();
-                if (m_hairAsset.GetId().IsValid())
+                if (m_configuration.m_hairAsset.GetId().IsValid())
                 {
-                    Data::AssetBus::MultiHandler::BusConnect(m_hairAsset.GetId());
-                    m_hairAsset.QueueLoad();
+                    Data::AssetBus::MultiHandler::BusConnect(m_configuration.m_hairAsset.GetId());
+                    m_configuration.m_hairAsset.QueueLoad();
                 }
                 else
                 {
@@ -142,11 +145,11 @@ namespace AZ
 
             void HairComponentController::RemoveHairObject()
             {
-                if (m_renderObject && m_featureProcessor)
+                if (m_featureProcessor)
                 {
                     m_featureProcessor->RemoveHairRenderObject(m_renderObject);
-                    m_renderObject = nullptr; // Actual removal is via the instance mechanism in the feature processor
                 }
+                m_renderObject.reset();
             }
 
             void HairComponentController::OnHairConfigChanged()
@@ -162,9 +165,9 @@ namespace AZ
 
             void HairComponentController::OnAssetReady(Data::Asset<Data::AssetData> asset)
             {
-                if (asset.GetId() == m_hairAsset.GetId())
+                if (asset.GetId() == m_configuration.m_hairAsset.GetId())
                 {
-                    m_hairAsset = asset;
+                    m_configuration.m_hairAsset = asset;
                     CreateHairObject();
                 }
             }
@@ -291,13 +294,13 @@ namespace AZ
                     return false;
                 }
 
-                if (!m_hairAsset.GetId().IsValid() || !m_hairAsset.IsReady())
+                if (!m_configuration.m_hairAsset.GetId().IsValid() || !m_configuration.m_hairAsset.IsReady())
                 {
                     AZ_Warning("Hair Gem", false, "Hair Asset was not ready - second attempt will be made when ready");
                     return false;
                 }
 
-                AMD::TressFXAsset* hairAsset = m_hairAsset.Get()->m_tressFXAsset.get();
+                AMD::TressFXAsset* hairAsset = m_configuration.m_hairAsset.Get()->m_tressFXAsset.get();
                 if (!hairAsset)
                 {
                     AZ_Error("Hair Gem", false, "Hair asset could not be loaded");
@@ -327,14 +330,14 @@ namespace AZ
                 RemoveHairObject();
 
                 // create a new instance - will remove the old one.
-                m_renderObject = new HairRenderObject();
+                m_renderObject.reset(new HairRenderObject());
                 AZStd::string hairName;
-                AzFramework::StringFunc::Path::GetFileName(m_hairAsset.GetHint().c_str(), hairName);
+                AzFramework::StringFunc::Path::GetFileName(m_configuration.m_hairAsset.GetHint().c_str(), hairName);
                 if (!m_renderObject->Init( m_featureProcessor, hairName.c_str(), hairAsset,
                     &m_configuration.m_simulationSettings, &m_configuration.m_renderingSettings))
                 {
                     AZ_Warning("Hair Gem", false, "Hair object was not initialize succesfully");
-                    SAFE_DELETE(m_renderObject);    // no instancing yet - remove manually
+                    m_renderObject.reset();    // no instancing yet - remove manually
                     return false;
                 }
 
