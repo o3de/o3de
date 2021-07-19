@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -892,16 +893,19 @@ void CSystem::InitLocalization()
         OpenLanguagePak(language);
     }
 
-    pCVar = m_env.pConsole != 0 ? m_env.pConsole->GetCVar("g_languageAudio") : 0;
-    if (pCVar)
+    if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
     {
-        if (strlen(pCVar->GetString()) == 0)
+        AZ::CVarFixedString languageAudio;
+        if (auto result = console->GetCvarValue("g_languageAudio", languageAudio); result == AZ::GetValueResult::Success)
         {
-            pCVar->Set(language);
-        }
-        else
-        {
-            language = pCVar->GetString();
+            if (languageAudio.size() == 0)
+            {
+                console->PerformCommand(AZStd::string::format("g_languageAudio %s", language.c_str()).c_str());
+            }
+            else
+            {
+                language.assign(languageAudio.data(), languageAudio.size());
+            }
         }
     }
     OpenLanguageAudioPak(language);
@@ -2079,7 +2083,6 @@ void CSystem::CreateSystemVars()
 
     //Defines selected language.
     REGISTER_STRING_CB("g_language", "", VF_NULL, "Defines which language pak is loaded", CSystem::OnLanguageCVarChanged);
-    REGISTER_STRING_CB("g_languageAudio", "", VF_NULL, "Will automatically match g_language setting unless specified otherwise", CSystem::OnLanguageAudioCVarChanged);
 
 #if defined(WIN32)
     REGISTER_CVAR2("sys_display_threads", &g_cvars.sys_display_threads, 0, 0, "Displays Thread info");
