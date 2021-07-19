@@ -88,13 +88,15 @@ namespace AzToolsFramework
     {
         if (m_rootInstance)
         {
+            AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+                &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);
             Prefab::TemplateId templateId = m_rootInstance->GetTemplateId();
+            m_rootInstance->Reset();
             if (templateId != Prefab::InvalidTemplateId)
             {
                 m_rootInstance->SetTemplateId(Prefab::InvalidTemplateId);
                 m_prefabSystemComponent->RemoveTemplate(templateId);
             }
-            m_rootInstance->Reset();
             m_rootInstance->SetContainerEntityName("Level");
         }
 
@@ -149,6 +151,8 @@ namespace AzToolsFramework
     {
         AZ_Assert(IsInitialized(), "Tried to destroy an entity without initializing the Entity Ownership Service");
         AZ_Assert(m_entitiesRemovedCallback, "Callback function for DestroyEntityById has not been set.");
+        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+            &AzToolsFramework::ToolsApplicationRequestBus::Events::RemoveDirtyEntity, entityId);
         OnEntityRemoved(entityId);
         return true;
     }
