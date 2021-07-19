@@ -9,6 +9,7 @@ import argparse
 import fnmatch
 import json
 import os
+import pathlib
 import re
 import sys
 
@@ -105,9 +106,9 @@ class LicenseScanner:
 def parse_args():
     parser = argparse.ArgumentParser(
         description='Script to run LicenseScanner and generate license file')
-    parser.add_argument('--config-file', '-c', help='Config file for LicenseScanner')
-    parser.add_argument('--license-file-path', '-l', help='Create license file in the provided path')
-    parser.add_argument('--scan-path', '-s', default=os.curdir, help='Path to scan')
+    parser.add_argument('--config-file', '-c', type=pathlib.Path, help='Config file for LicenseScanner')
+    parser.add_argument('--license-file-path', '-l', type=pathlib.Path, help='Create license file in the provided path')
+    parser.add_argument('--scan-path', '-s', default=os.curdir, type=pathlib.Path, help='Path to scan')
     return parser.parse_args()
 
 
@@ -119,7 +120,7 @@ def main():
 
         if args.license_file_path:
             ls.create_license_file(licenses, args.license_file_path)
-    except Exception as e:
+    except FileNotFoundError as e:
         print(f'Type: {type(e).__name__}, Error: {e}')
         return 1
 
