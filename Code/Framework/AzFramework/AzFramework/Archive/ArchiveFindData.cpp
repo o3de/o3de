@@ -17,7 +17,7 @@ namespace AZ::IO
 {
     size_t ArchiveFileIteratorHash::operator()(const AZ::IO::ArchiveFileIterator& iter) const
     {
-        return iter.m_hash;
+        return iter.GetHash();
     }
 
     bool AZStdStringLessCaseInsensitive::operator()(AZStd::string_view left, AZStd::string_view right) const
@@ -56,7 +56,6 @@ namespace AZ::IO
         : m_findData{ findData }
         , m_filename{ filename }
         , m_fileDesc{ fileDesc }
-        , m_hash{ AZStd::hash<AZ::IO::PathView>{}(m_filename.c_str()) }
     {
     }
 
@@ -76,12 +75,17 @@ namespace AZ::IO
 
     bool ArchiveFileIterator::operator==(const AZ::IO::ArchiveFileIterator& rhs) const
     {
-        return m_hash == rhs.m_hash;
+        return GetHash() == rhs.GetHash();
     }
 
     ArchiveFileIterator::operator bool() const
     {
         return m_findData && m_lastFetchValid;
+    }
+
+    size_t ArchiveFileIterator::GetHash() const
+    {
+        return AZStd::hash<AZ::IO::PathView>{}(m_filename.c_str());
     }
 
     void FindData::Scan(IArchive* archive, AZStd::string_view szDir, bool bAllowUseFS, bool bScanZips)
