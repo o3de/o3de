@@ -13,6 +13,7 @@
 #include <Atom/RPI.Public/DynamicDraw/DynamicBuffer.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawContext.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
+#include <Atom/RPI.Public/Pass/RasterPass.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 
 #include <Atom/RPI.Public/View.h>
@@ -173,9 +174,7 @@ namespace AZ
 
         void DynamicDrawContext::EndInit()
         {
-            AZ_Assert(m_scene != nullptr, "DynamicDrawContext should always belong to a scene");
-
-            AZ_Warning("RPI", m_pipelineState, "Failed to initialized shader for DynamicDrawContext");
+            AZ_Warning("RPI", m_pipelineState, "Failed to initialize shader for DynamicDrawContext");
             AZ_Warning("RPI", m_drawListTag.IsValid(), "DynamicDrawContext doesn't have a valid DrawListTag");
 
             if (!m_drawListTag.IsValid() || m_pipelineState == nullptr)
@@ -183,8 +182,27 @@ namespace AZ
                 return;
             }
 
-            m_pipelineState->SetOutputFromScene(m_scene, m_drawListTag);
-            m_pipelineState->Finalize();
+            if (m_outputScope == OutputScopeType::RenderPipeline || m_outputScope == OutputScopeType::Scene)
+            {
+                m_pipelineState->SetOutputFromScene(m_scene, m_drawListTag);
+            }
+            else if (m_outputScope == OutputScopeType::RasterPass)
+            {
+                m_pipelineState->SetOutputFromPass(m_pass);
+            }
+            else
+            {                
+                AZ_Assert(false, "DynamicDrawContext need to set output scope before end initialization");
+                return;
+            }
+
+            m_rhiPipelineState = m_pipelineState->Finalize();
+
+            if (!m_rhiPipelineState)
+            {
+                AZ_Warning("RPI", false, "Failed to initialize PipelineState for DynamicDrawContext");
+                return;
+            }
             m_initialized = true;
 
             // Acquire MultiStates from m_pipelineState
@@ -199,16 +217,58 @@ namespace AZ
             m_rhiPipelineState = m_pipelineState->GetRHIPipelineState();
         }
 
-        void DynamicDrawContext::SetScene(Scene* scene)
+        void DynamicDrawContext::SetOutputScope(Scene* scene)
         {
-            AZ_Assert(scene, "SetScene called with an invalid scene");
-            if (!scene || m_scene == scene)
+            AZ_Assert(scene, "SetOutputScope was called with an invalid Scene");
+            if (!scene)
             {
                 return;
             }
+
+            m_outputScope = OutputScopeType::Scene;
             m_scene = scene;
+            m_pass = nullptr;
             m_drawFilter = RHI::DrawFilterMaskDefaultValue;
-            // Reinitialize if it was initialized
+                        
+            ReInit();
+        }
+
+        void DynamicDrawContext::SetOutputScope(RenderPipeline* pipeline)
+        {
+            AZ_Assert(pipeline, "SetOutputScope was called with an invalid RenderPipeline");
+            AZ_Assert(pipeline->GetScene(), "SetOutputScope called with a RenderPipeline without adding to a scene");
+            if (!pipeline || !pipeline->GetScene())
+            {
+                return;
+            }
+            
+            m_outputScope = OutputScopeType::RenderPipeline;
+            m_scene = pipeline->GetScene();
+            m_pass = nullptr;
+            m_drawFilter = pipeline->GetDrawFilterMask();
+            
+            ReInit();
+        }
+
+        void DynamicDrawContext::SetOutputScope(RasterPass* pass)
+        {
+            AZ_Assert(pass, "SetOutputScope was called with an invalid RasterPass");
+            if (!pass)
+            {
+                return;
+            }
+
+            m_outputScope = OutputScopeType::RasterPass;
+            m_scene = nullptr;
+            m_pass = pass;
+            m_drawFilter = RHI::DrawFilterMaskDefaultValue;
+
+            ReInit();
+        }
+        
+        void DynamicDrawContext::ReInit()
+        {
+         // Reinitialize if it was initialized
             if (m_initialized)
             {
                 // Report warning if there were some draw data
@@ -222,17 +282,6 @@ namespace AZ
                 // Reinitialize
                 EndInit();
             }
-        }
-
-        void DynamicDrawContext::SetRenderPipeline(RenderPipeline* pipeline)
-        {
-            AZ_Assert(pipeline, "SetRenderPipeline called with an invalid pipeline");
-            if (!pipeline)
-            {
-                return;
-            }
-            SetScene(pipeline->GetScene());
-            m_drawFilter = pipeline->GetDrawFilterMask();
         }
 
         bool DynamicDrawContext::IsReady()
@@ -402,10 +451,16 @@ namespace AZ
                 AZ_Assert(false, "DynamicDrawContext isn't initialized");
                 return;
             }
-
-            if (!m_drawSrgLayout)
+            
+            if (m_drawFinalized)
             {
-                AZ_Assert(false, "PerDrawSrg need to be provided since the shader uses it");
+                AZ_Assert(false, "Can't add draw calls after draw data was finalized");
+                return;
+            }
+
+            if (m_drawSrgLayout && !drawSrg)
+            {
+                AZ_Assert(false, "drawSrg need to be provided since the shader requires it");
                 return;
             }
 
@@ -446,12 +501,12 @@ namespace AZ
             vertexBuffer->Write(vertexData, vertexDataSize);
             m_cachedStreamBufferViews.push_back(vertexBuffer->GetStreamBufferView(m_perVertexDataSize));
             drawItem.m_streamBufferViewCount = 1;
-            drawItemInfo.m_vertexBufferViewIndex = uint32_t(m_cachedStreamBufferViews.size() - 1);
+            drawItemInfo.m_vertexBufferViewIndex = static_cast<BufferViewIndexType>(m_cachedStreamBufferViews.size() - 1);
 
             // Write data to index buffer and set up index buffer view for DrawItem
             indexBuffer->Write(indexData, indexDataSize);
             m_cachedIndexBufferViews.push_back(indexBuffer->GetIndexBufferView(indexFormat));
-            drawItemInfo.m_indexBufferViewIndex = uint32_t(m_cachedIndexBufferViews.size() - 1);
+            drawItemInfo.m_indexBufferViewIndex = static_cast<BufferViewIndexType>(m_cachedIndexBufferViews.size() - 1);
 
             // Setup per context srg if it exists
             if (m_srgPerContext)
@@ -487,7 +542,7 @@ namespace AZ
             drawItemInfo.m_sortKey = m_sortKey++;
             m_cachedDrawItems.emplace_back(drawItemInfo);
         }
-                
+
         void DynamicDrawContext::DrawLinear(const void* vertexData, uint32_t vertexCount, Data::Instance<ShaderResourceGroup> drawSrg)
         {
             if (!m_initialized)
@@ -496,9 +551,15 @@ namespace AZ
                 return;
             }
 
-            if (!m_drawSrgLayout)
+            if (m_drawFinalized)
             {
-                AZ_Assert(false, "PerDrawSrg need to be provided since the shader uses it");
+                AZ_Assert(false, "Can't add draw calls after draw data was finalized");
+                return;
+            }
+            
+            if (m_drawSrgLayout && !drawSrg)
+            {
+                AZ_Assert(false, "drawSrg need to be provided since the shader requires it");
                 return;
             }
 
@@ -569,7 +630,6 @@ namespace AZ
             m_cachedDrawItems.emplace_back(drawItemInfo);
         }
 
-
         Data::Instance<ShaderResourceGroup> DynamicDrawContext::NewDrawSrg()
         {
             if (!m_drawSrgLayout)
@@ -626,18 +686,14 @@ namespace AZ
             return m_sortKey;
         }
 
-        void DynamicDrawContext::SubmitDrawData(ViewPtr view)
+        void DynamicDrawContext::FinalizeDrawList()
         {
-            if (!m_initialized)
+            if (m_drawFinalized)
             {
                 return;
             }
+            AZ_Assert(m_cachedDrawList.size() == 0, "m_cachedDrawList should be cleared ine the end of last frame ");
 
-            if (!view->HasDrawListTag(m_drawListTag))
-            {
-                return;
-            }
- 
             for (auto& drawItemInfo : m_cachedDrawItems)
             {
                 if (drawItemInfo.m_indexBufferViewIndex != InvalidIndex)
@@ -654,10 +710,34 @@ namespace AZ
                 drawItemProperties.m_sortKey = drawItemInfo.m_sortKey;
                 drawItemProperties.m_item = &drawItemInfo.m_drawItem;
                 drawItemProperties.m_drawFilterMask = m_drawFilter;
+                m_cachedDrawList.emplace_back(drawItemProperties);
+            }
+            m_drawFinalized = true;
+        }
+
+        void DynamicDrawContext::SubmitDrawList(ViewPtr view)
+        {
+            if (!m_initialized || m_outputScope == OutputScopeType::RasterPass)
+            {
+                return;
+            }
+
+            if (!view->HasDrawListTag(m_drawListTag))
+            {
+                return;
+            }
+
+            for (auto& drawItemProperties : m_cachedDrawList)
+            {                
                 view->AddDrawItem(m_drawListTag, drawItemProperties);
             }
         }
 
+        RHI::DrawListView DynamicDrawContext::GetDrawList()
+        {
+            return m_cachedDrawList;
+        }
+        
         void DynamicDrawContext::FrameEnd()
         {
             m_sortKey = 0;
@@ -665,6 +745,8 @@ namespace AZ
             m_cachedStreamBufferViews.clear();
             m_cachedIndexBufferViews.clear();
             m_cachedDrawSrg.clear();
+            m_cachedDrawList.clear();
+            m_drawFinalized = false;
         }
 
         const RHI::PipelineState* DynamicDrawContext::GetCurrentPipelineState()
