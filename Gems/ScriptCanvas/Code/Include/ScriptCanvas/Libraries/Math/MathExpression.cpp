@@ -21,10 +21,15 @@ namespace ScriptCanvas
                     if (displayType.IsValid())
                     {
                         AZ::Crc32 dynamicGroup = AZ_CRC("ExpressionDisplayGroup", 0x770de38e);
+                        //AZ::Crc32 dynamicGroup = slot->GetDynamicGroup();
 
                         if (dynamicGroup != AZ::Crc32())
                         {
                             node->SetDisplayType(dynamicGroup, displayType);
+                            Slot* resultSlot = node->GetSlot(node->GetSlotId("Result"));
+                            resultSlot->SetDynamicDataType(DynamicDataType::Any);
+                            resultSlot->SetDisplayType(displayType);
+                            
                         }
                         else
                         {
