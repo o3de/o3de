@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -11,7 +12,8 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import azlmbr.legacy.general as general
 import azlmbr.asset as asset
 import azlmbr.bus as bus
-import azlmbr.entity as EntityId
+import azlmbr.components as components
+import azlmbr.entity as entity
 import azlmbr.editor as editor
 import azlmbr.math as math
 import azlmbr.paths
@@ -68,7 +70,7 @@ class TestDynamicSliceInstanceSpawnerExternalEditor(EditorTestHelper):
         veg_area_required_components = ["Vegetation Layer Spawner", "Box Shape", "Vegetation Asset List",
                                         "Script Canvas"]
         new_entity_id = editor.ToolsApplicationRequestBus(
-            bus.Broadcast, "CreateNewEntityAtPosition", entity_position, EntityId.EntityId()
+            bus.Broadcast, "CreateNewEntityAtPosition", entity_position, entity.EntityId()
         )
         if new_entity_id.IsValid():
             self.log("Spawner entity created")
@@ -106,18 +108,12 @@ class TestDynamicSliceInstanceSpawnerExternalEditor(EditorTestHelper):
         self.log(f"Expected {num_expected_instances} instances - Found {num_found} instances")
         self.test_success = self.test_success and num_found == num_expected_instances
 
-        # 5) Create a new entity with a Camera component for testing in the launcher
-        entity_position = math.Vector3(512.0, 500.0, 35.0)
-        camera_component = ["Camera"]
-        new_entity_id2 = editor.ToolsApplicationRequestBus(
-            bus.Broadcast, "CreateNewEntityAtPosition", entity_position, EntityId.EntityId()
-        )
-        if new_entity_id2.IsValid():
-            self.log("Camera entity created")
-        camera_entity = hydra.Entity("Camera Entity", new_entity_id2)
-        camera_entity.components = []
-        for component in camera_component:
-            camera_entity.components.append(hydra.add_component(component, new_entity_id2))
+        # 5) Move the default Camera entity for testing in the launcher
+        cam_position = math.Vector3(512.0, 500.0, 35.0)
+        search_filter = entity.SearchFilter()
+        search_filter.names = ["Camera"]
+        search_entity_ids = entity.SearchBus(bus.Broadcast, 'SearchEntities', search_filter)
+        components.TransformBus(bus.Event, "MoveEntity", search_entity_ids[0], cam_position)
 
         # 6) Save and export to engine
         general.save_level()

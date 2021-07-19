@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -122,6 +123,11 @@ namespace AZ
             /// Called when the swap chain is presenting the currently swap image.
             /// Returns the index of the current image after the swap.
             virtual uint32_t PresentInternal() = 0;
+
+            virtual void SetVerticalSyncIntervalInternal(uint32_t previousVerticalSyncInterval)
+            {
+                AZ_UNUSED(previousVerticalSyncInterval);
+            }
 
             //////////////////////////////////////////////////////////////////////////
 

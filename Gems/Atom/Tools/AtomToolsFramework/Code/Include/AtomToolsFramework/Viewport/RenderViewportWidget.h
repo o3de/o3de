@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -109,7 +110,6 @@ namespace AtomToolsFramework
         void BeginCursorCapture() override;
         void EndCursorCapture() override;
         AzFramework::ScreenPoint ViewportCursorScreenPosition() override;
-        AZStd::optional<AzFramework::ScreenPoint> PreviousViewportCursorScreenPosition() override;
         bool IsMouseOver() const override;
 
         // AzFramework::WindowRequestBus::Handler ...
@@ -160,8 +160,6 @@ namespace AtomToolsFramework
         AZ::ScriptTimePoint m_time;
         // Whether the Viewport is currently hiding and capturing the cursor position.
         bool m_capturingCursor = false;
-        // The last known position of the mouse cursor, if one is available.
-        AZStd::optional<QPoint> m_lastCursorPosition;
         // The viewport settings (e.g. grid snapping, grid size) for this viewport.
         const AzToolsFramework::ViewportInteraction::ViewportSettings* m_viewportSettings = nullptr;
         // Maps our internal Qt events into AzFramework InputChannels for our ViewportControllerList.

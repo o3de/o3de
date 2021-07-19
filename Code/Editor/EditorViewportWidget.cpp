@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -102,7 +103,7 @@
 AZ_CVAR(
     bool, ed_visibility_logTiming, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Output the timing of the new IVisibilitySystem query");
 AZ_CVAR(bool, ed_useNewCameraSystem, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Use the new Editor camera system");
-AZ_CVAR(bool, ed_showCursorCameraLook, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Show the cursor when using free look with the new camera system");
+AZ_CVAR(bool, ed_showCursorCameraLook, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Show the cursor when using free look with the new camera system");
 
 namespace SandboxEditor
 {
@@ -1896,7 +1897,7 @@ void EditorViewportWidget::SetViewTM(const Matrix34& viewTM, bool bMoveOnly)
 
         if (m_pressedKeyState != KeyPressedState::PressedInPreviousFrame)
         {
-            CUndo undo("Move Camera");
+            AzToolsFramework::ScopedUndoBatch undo("Move Camera");
             if (bMoveOnly)
             {
                 // specify eObjectUpdateFlags_UserInput so that an undo command gets logged
@@ -1932,7 +1933,7 @@ void EditorViewportWidget::SetViewTM(const Matrix34& viewTM, bool bMoveOnly)
 
         if (m_pressedKeyState != KeyPressedState::PressedInPreviousFrame)
         {
-            CUndo undo("Move Camera");
+            AzToolsFramework::ScopedUndoBatch undo("Move Camera");
             if (bMoveOnly)
             {
                 AZ::TransformBus::Event(
@@ -1945,6 +1946,8 @@ void EditorViewportWidget::SetViewTM(const Matrix34& viewTM, bool bMoveOnly)
                     m_viewEntityId, &AZ::TransformInterface::SetWorldTM,
                     LYTransformToAZTransform(camMatrix));
             }
+
+            AzToolsFramework::ToolsApplicationRequestBus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::AddDirtyEntity, m_viewEntityId);
         }
         else
         {

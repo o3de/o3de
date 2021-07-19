@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -20,12 +21,12 @@
 #include "ValidationHandler.h"
 
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/IO/Path/Path.h>
 
-#include "AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h"
+#include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyManagerComponent.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
-#include <Util/FileUtil.h>
 
 #include <QMessageBox>
 #include <QCloseEvent>
@@ -52,7 +53,7 @@ namespace ProjectSettingsTool
             PlatformEnabled(PlatformId::Ios) ?
             ProjectSettingsContainer::PlistInitVector({
                 ProjectSettingsContainer::PlatformAndPath
-                { PlatformId::Ios, m_projectRoot + PlatformResourcesFolder(PlatformId::Ios) }
+                { PlatformId::Ios, GetPlatformResource(PlatformId::Ios) }
                 })
             :
                 ProjectSettingsContainer::PlistInitVector())
@@ -647,33 +648,38 @@ namespace ProjectSettingsTool
         // iOS can be disabled if the plist file is missing
         if (platformId == PlatformId::Ios)
         {
-            const AZStd::string filename = m_projectRoot + PlatformResourcesFolder(platformId);
-            return CFileUtil::FileExists(filename.c_str());
+            AZStd::string plistPath = GetPlatformResource(platformId);
+            return !plistPath.empty();
         }
 
         return true;
     }
 
-    const char* ProjectSettingsToolWindow::PlatformResourcesFolder(PlatformId platformId)
+    AZStd::string ProjectSettingsToolWindow::GetPlatformResource(PlatformId platformId)
     {
         if (platformId == PlatformId::Ios)
         {
-            const AZStd::string firstfilename = m_projectRoot + "/Gem/Resources/Platform/iOS/Info.plist";
-            if (CFileUtil::FileExists(firstfilename.c_str()))
+            const char* searchPaths[] = {
+                "Resources/Platform/iOS/Info.plist",
+
+                // legacy paths
+                "Gem/Resources/Platform/iOS/Info.plist",
+                "Gem/Resources/IOSLauncher/Info.plist",
+            };
+
+            for (auto relPath : searchPaths)
             {
-                return "/Gem/Resources/Platform/iOS/Info.plist";
-            }
-            else
-            {
-                const AZStd::string filename = m_projectRoot + "/Gem/Resources/IOSLauncher/Info.plist";
-                if (CFileUtil::FileExists(filename.c_str()))
+                AZ::IO::FixedMaxPath projectPlist{ m_projectRoot };
+                projectPlist /= relPath;
+
+                if (AZ::IO::SystemFile::Exists(projectPlist.c_str()))
                 {
-                    return "/Gem/Resources/IOSLauncher/Info.plist";
+                    return projectPlist.LexicallyNormal().String();
                 }
             }
         }
 
-        return nullptr;
+        return AZStd::string();
     }
 
 #include <moc_ProjectSettingsToolWindow.cpp>

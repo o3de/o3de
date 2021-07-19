@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -45,4 +46,5 @@ def kill_asset_processor():
     kill_processes_named('AssetProcessorBatch', ignore_extensions=True)
     kill_processes_named('AssetBuilder', ignore_extensions=True)
     kill_processes_named('rc', ignore_extensions=True)
+    kill_processes_named('Lua Editor', ignore_extensions=True)
 

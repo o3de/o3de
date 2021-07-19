@@ -1,5 +1,6 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
@@ -1649,7 +1650,8 @@ def create_project(project_path: pathlib.Path,
                     with open(cmakelists_file_name, 'w') as d:
                         if keep_license_text:
                             d.write('# {BEGIN_LICENSE}\n')
-                            d.write('# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.\n')
+                            d.write('# Copyright (c) Contributors to the Open 3D Engine Project.\n')
+                            d.write('# For complete copyright and license terms please see the LICENSE at the root of this distribution.\n')
                             d.write('#\n')
                             d.write('# SPDX-License-Identifier: Apache-2.0 OR MIT\n')
                             d.write('# {END_LICENSE}\n')
@@ -2028,7 +2030,8 @@ def create_gem(gem_path: pathlib.Path,
                         with open(cmakelists_file_name, 'w') as d:
                             if keep_license_text:
                                 d.write('# {BEGIN_LICENSE}\n')
-                                d.write('# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.\n')
+                                d.write('# Copyright (c) Contributors to the Open 3D Engine Project.\n')
+                                d.write('# For complete copyright and license terms please see the LICENSE at the root of this distribution.\n')
                                 d.write('#\n')
                                 d.write('# SPDX-License-Identifier: Apache-2.0 OR MIT\n')
                                 d.write('# {END_LICENSE}\n')

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -97,6 +98,9 @@ namespace AzFramework
 
         //! This is called when the window is deactivated from code or if the user closes the window.
         virtual void OnWindowClosed() {};
+
+        //! This is called when vsync interval is changed.
+        virtual void OnVsyncIntervalChanged(uint32_t interval) { AZ_UNUSED(interval); };
     };
     using WindowNotificationBus = AZ::EBus<WindowNotifications>;
 

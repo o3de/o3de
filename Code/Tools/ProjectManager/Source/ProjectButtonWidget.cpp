@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -39,7 +40,9 @@ namespace O3DE::ProjectManager
         m_overlayLabel->setObjectName("labelButtonOverlay");
         m_overlayLabel->setWordWrap(true);
         m_overlayLabel->setAlignment(Qt::AlignCenter);
+        m_overlayLabel->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
         m_overlayLabel->setVisible(false);
+        connect(m_overlayLabel, &QLabel::linkActivated, this, &LabelButton::OnLinkActivated);
         vLayout->addWidget(m_overlayLabel);
 
         m_buildOverlayLayout = new QVBoxLayout();
@@ -231,7 +234,7 @@ namespace O3DE::ProjectManager
             AzQtComponents::ShowFileOnDesktop(m_projectInfo.m_path);
         });
         menu->addSeparator();
-        menu->addAction(tr("Duplicate"), this, [this]() { emit CopyProject(m_projectInfo.m_path); });
+        menu->addAction(tr("Duplicate"), this, [this]() { emit CopyProject(m_projectInfo); });
         menu->addSeparator();
         menu->addAction(tr("Remove from O3DE"), this, [this]() { emit RemoveProject(m_projectInfo.m_path); });
         menu->addAction(tr("Delete this Project"), this, [this]() { emit DeleteProject(m_projectInfo.m_path); });
@@ -264,6 +267,11 @@ namespace O3DE::ProjectManager
         m_projectImageLabel->GetWarningIcon()->setVisible(true);
         m_projectImageLabel->GetWarningLabel()->setVisible(true);
         SetProjectButtonAction(tr("Build Project"), [this]() { emit BuildProject(m_projectInfo); });
+    }
+
+    void ProjectButton::SetBuildLogsLink(const QUrl& logUrl)
+    {
+        m_projectImageLabel->SetLogUrl(logUrl);
     }
 
     void ProjectButton::ShowBuildFailed(bool show, const QUrl& logUrl)

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -109,7 +110,7 @@ AZ::RPI::ScenePtr UiRenderer::CreateScene(AZStd::shared_ptr<AZ::RPI::ViewportCon
 
 void UiRenderer::CreateDynamicDrawContext(AZ::RPI::ScenePtr scene, AZ::Data::Instance<AZ::RPI::Shader> uiShader)
 {
-    m_dynamicDraw = AZ::RPI::DynamicDrawInterface::Get()->CreateDynamicDrawContext(scene.get());
+    m_dynamicDraw = AZ::RPI::DynamicDrawInterface::Get()->CreateDynamicDrawContext();
 
     // Initialize the dynamic draw context
     m_dynamicDraw->InitShader(uiShader);
@@ -121,6 +122,7 @@ void UiRenderer::CreateDynamicDrawContext(AZ::RPI::ScenePtr scene, AZ::Data::Ins
     );
     m_dynamicDraw->AddDrawStateOptions(AZ::RPI::DynamicDrawContext::DrawStateOptions::StencilState
         | AZ::RPI::DynamicDrawContext::DrawStateOptions::BlendMode);
+    m_dynamicDraw->SetOutputScope(scene.get());
     m_dynamicDraw->EndInit();
 }
 
