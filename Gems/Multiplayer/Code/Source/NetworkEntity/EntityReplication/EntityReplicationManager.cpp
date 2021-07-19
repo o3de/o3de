@@ -183,17 +183,13 @@ namespace Multiplayer
 
         // Generate a list of all our entities that need updates
         EntityReplicatorList toSendList;
-
-        uint32_t elementsAdded = 0;
-        for (auto iter = m_replicatorsPendingSend.begin(); iter != m_replicatorsPendingSend.end() && elementsAdded < m_replicationWindow->GetMaxEntityReplicatorSendCount(); )
+        for (auto iter = m_replicatorsPendingSend.begin(); iter != m_replicatorsPendingSend.end();)
         {
-            EntityReplicator* replicator = GetEntityReplicator(*iter);
             bool clearPendingSend = true;
-            if (replicator)
+            if (EntityReplicator* replicator = GetEntityReplicator(*iter))
             {
                 NetEntityId entityId = replicator->GetEntityHandle().GetNetEntityId();
-                PropertyPublisher* propPublisher = replicator->GetPropertyPublisher();
-                if (propPublisher)
+                if (PropertyPublisher* propPublisher = replicator->GetPropertyPublisher())
                 {
                     // don't have too many replicators pending creation outstanding at a time
                     bool canSend = true;
@@ -219,19 +215,13 @@ namespace Multiplayer
                             m_remoteEntitiesPendingCreation.insert(entityId);
                         }
 
-                        if (replicator->GetRemoteNetworkRole() == NetEntityRole::Autonomous)
+                        if (toSendList.size() < m_replicationWindow->GetMaxEntityReplicatorSendCount() ||
+                            replicator->GetRemoteNetworkRole() == NetEntityRole::Autonomous ||
+                            replicator->GetBoundLocalNetworkRole() == NetEntityRole::Autonomous)
                         {
                             toSendList.push_back(replicator);
                         }
-                        else
-                        {
-                            if (elementsAdded < m_replicationWindow->GetMaxEntityReplicatorSendCount())
-                            {
-                                toSendList.push_back(replicator);
-                            }
-                        }
                     }
-                    ++elementsAdded;
                 }
             }
 

@@ -21,7 +21,7 @@ namespace Multiplayer
 
     uint32_t NullReplicationWindow::GetMaxEntityReplicatorSendCount() const
     {
-        return 128;
+        return 0;
     }
 
     bool NullReplicationWindow::IsInWindow([[maybe_unused]] const ConstNetworkEntityHandle& entityHandle, NetEntityRole& outNetworkRole) const
