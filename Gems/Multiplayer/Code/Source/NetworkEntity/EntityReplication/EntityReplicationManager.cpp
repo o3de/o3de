@@ -183,6 +183,8 @@ namespace Multiplayer
 
         // Generate a list of all our entities that need updates
         EntityReplicatorList toSendList;
+
+        uint32_t proxySendCount = 0;
         for (auto iter = m_replicatorsPendingSend.begin(); iter != m_replicatorsPendingSend.end();)
         {
             bool clearPendingSend = true;
@@ -215,11 +217,15 @@ namespace Multiplayer
                             m_remoteEntitiesPendingCreation.insert(entityId);
                         }
 
-                        if (toSendList.size() < m_replicationWindow->GetMaxEntityReplicatorSendCount() ||
-                            replicator->GetRemoteNetworkRole() == NetEntityRole::Autonomous ||
+                        if (replicator->GetRemoteNetworkRole() == NetEntityRole::Autonomous ||
                             replicator->GetBoundLocalNetworkRole() == NetEntityRole::Autonomous)
                         {
                             toSendList.push_back(replicator);
+                        }
+                        else if (proxySendCount < m_replicationWindow->GetMaxProxyEntityReplicatorSendCount())
+                        {
+                            toSendList.push_back(replicator);
+                            ++proxySendCount;
                         }
                     }
                 }

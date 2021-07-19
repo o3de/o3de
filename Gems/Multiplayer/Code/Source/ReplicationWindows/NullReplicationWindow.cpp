@@ -19,7 +19,7 @@ namespace Multiplayer
         return m_emptySet;
     }
 
-    uint32_t NullReplicationWindow::GetMaxEntityReplicatorSendCount() const
+    uint32_t NullReplicationWindow::GetMaxProxyEntityReplicatorSendCount() const
     {
         return 0;
     }
