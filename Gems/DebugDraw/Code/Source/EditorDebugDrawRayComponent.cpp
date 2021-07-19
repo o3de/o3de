@@ -33,6 +33,7 @@ namespace DebugDraw
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Debugging")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/DebugDrawRay.svg")
+                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/DebugDrawRay.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->DataElement(0, &EditorDebugDrawRayComponent::m_element, "Ray element settings", "Settings for the ray element.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDebugDrawRayComponent::OnPropertyUpdate)

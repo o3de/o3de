@@ -24,7 +24,7 @@ namespace GradientSignal
         static constexpr const char* const s_componentName = "Constant Gradient";
         static constexpr const char* const s_componentDescription = "Returns a specified value as a gradient when sampled";
         static constexpr const char* const s_icon = "Editor/Icons/Components/Gradient.svg";
-        static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/Gradient.png";
+        static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/Gradient.svg";
         static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/";
     };
 }

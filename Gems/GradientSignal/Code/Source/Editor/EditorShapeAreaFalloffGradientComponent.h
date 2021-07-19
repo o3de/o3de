@@ -24,7 +24,7 @@ namespace GradientSignal
         static constexpr const char* const s_componentName = "Shape Falloff Gradient";
         static constexpr const char* const s_componentDescription = "Generates a gradient based on distance from a shape";
         static constexpr const char* const s_icon = "Editor/Icons/Components/Gradient.svg";
-        static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/Gradient.png";
+        static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/Gradient.svg";
         static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/";
     };
 }

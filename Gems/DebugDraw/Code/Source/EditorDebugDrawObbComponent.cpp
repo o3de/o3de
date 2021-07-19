@@ -33,6 +33,7 @@ namespace DebugDraw
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Debugging")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/DebugDrawObb.svg")
+                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/DebugDrawObb.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->DataElement(0, &EditorDebugDrawObbComponent::m_element, "Obb element settings", "Settings for the obb element.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDebugDrawObbComponent::OnPropertyUpdate)

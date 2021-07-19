@@ -46,7 +46,7 @@ namespace LandscapeCanvas
                 editContext->Class<EditorLandscapeCanvasComponent>("Landscape Canvas", "The Landscape Canvas component provides a node-based Editor for authoring Dynamic Vegetation")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/LandscapeCanvas.svg")
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/LandscapeCanvas.png")
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/LandscapeCanvas.svg")
                         ->Attribute(AZ::Edit::Attributes::Category, "Vegetation")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
