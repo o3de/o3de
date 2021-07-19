@@ -93,86 +93,28 @@ namespace AZ
 
             inline static AZStd::string GetImageBindStrings(AZ::RHI::ImageBindFlags imageBindFlags)
             {
-                // FIXME: any more elegant way to pull binding strings from the enum? Maybe through RTTI? ReflectSystemComponent.cpp L262
                 AZStd::string imageBindStrings;
-                if (AZ::RHI::CheckBitsAll(imageBindFlags, AZ::RHI::ImageBindFlags::Color))
+                for (auto& flag : AZ::RHI::ImageBindFlagsMembers)
                 {
-                    imageBindStrings.append("Color,");
-                }
-                else if (AZ::RHI::CheckBitsAll(imageBindFlags, AZ::RHI::ImageBindFlags::ShaderRead))
-                {
-                    imageBindStrings.append("ShaderRead,");
-                }
-                else if (AZ::RHI::CheckBitsAll(imageBindFlags, AZ::RHI::ImageBindFlags::ShaderWrite))
-                {
-                    imageBindStrings.append("ShaderWrite,");
-                }
-                else if (AZ::RHI::CheckBitsAll(imageBindFlags, AZ::RHI::ImageBindFlags::Depth))
-                {
-                    imageBindStrings.append("Depth,");
-                }
-                else if (AZ::RHI::CheckBitsAll(imageBindFlags, AZ::RHI::ImageBindFlags::Stencil))
-                {
-                    imageBindStrings.append("Stencil,");
-                }
-                else if (AZ::RHI::CheckBitsAll(imageBindFlags, AZ::RHI::ImageBindFlags::CopyRead))
-                {
-                    imageBindStrings.append("CopyRead,");
-                }
-                else if (AZ::RHI::CheckBitsAll(imageBindFlags, AZ::RHI::ImageBindFlags::CopyWrite))
-                {
-                    imageBindStrings.append("CopyWrite,");
+                    if (flag.m_value != AZ::RHI::ImageBindFlags::None && AZ::RHI::CheckBitsAll(imageBindFlags, flag.m_value))
+                    {
+                        imageBindStrings.append(flag.m_string);
+                        imageBindStrings.append(", ");
+                    }
                 }
                 return imageBindStrings;
             }
 
             inline static AZStd::string GetBufferBindStrings(AZ::RHI::BufferBindFlags bufferBindFlags)
             {
-                //FIXME as well, easier way to pull strings?
                 AZStd::string bufferBindStrings;
-                if (AZ::RHI::CheckBitsAll(bufferBindFlags, AZ::RHI::BufferBindFlags::InputAssembly))
+                for (auto& flag : AZ::RHI::BufferBindFlagsMembers)
                 {
-                    bufferBindStrings.append("InputAssembly,");
-                }
-                else if (AZ::RHI::CheckBitsAll(bufferBindFlags, AZ::RHI::BufferBindFlags::DynamicInputAssembly))
-                {
-                    bufferBindStrings.append("DynamicInputAssembly,");
-                }
-                else if (AZ::RHI::CheckBitsAll(bufferBindFlags, AZ::RHI::BufferBindFlags::Constant))
-                {
-                    bufferBindStrings.append("Constant,");
-                }
-                else if (AZ::RHI::CheckBitsAll(bufferBindFlags, AZ::RHI::BufferBindFlags::ShaderRead))
-                {
-                    bufferBindStrings.append("ShaderRead,");
-                }
-                else if (AZ::RHI::CheckBitsAll(bufferBindFlags, AZ::RHI::BufferBindFlags::ShaderWrite))
-                {
-                    bufferBindStrings.append("ShaderWrite,");
-                }
-                else if (AZ::RHI::CheckBitsAll(bufferBindFlags, AZ::RHI::BufferBindFlags::CopyRead))
-                {
-                    bufferBindStrings.append("CopyRead,");
-                }
-                else if (AZ::RHI::CheckBitsAll(bufferBindFlags, AZ::RHI::BufferBindFlags::CopyWrite))
-                {
-                    bufferBindStrings.append("CopyWrite,");
-                }
-                else if (AZ::RHI::CheckBitsAll(bufferBindFlags, AZ::RHI::BufferBindFlags::Predication))
-                {
-                    bufferBindStrings.append("Predication,");
-                }
-                else if (AZ::RHI::CheckBitsAll(bufferBindFlags, AZ::RHI::BufferBindFlags::RayTracingAccelerationStructure))
-                {
-                    bufferBindStrings.append("RayTracingAccelerationStructure,");
-                }
-                else if (AZ::RHI::CheckBitsAll(bufferBindFlags, AZ::RHI::BufferBindFlags::Indirect))
-                {
-                    bufferBindStrings.append("Indirect,");
-                }
-                else if (AZ::RHI::CheckBitsAll(bufferBindFlags, AZ::RHI::BufferBindFlags::RayTracingShaderTable))
-                {
-                    bufferBindStrings.append("RayTracingShaderTable,");
+                    if (flag.m_value != AZ::RHI::BufferBindFlags::None && AZ::RHI::CheckBitsAll(bufferBindFlags, flag.m_value))
+                    {
+                        bufferBindStrings.append(flag.m_string);
+                        bufferBindStrings.append(", ");
+                    }
                 }
                 return bufferBindStrings;
             }

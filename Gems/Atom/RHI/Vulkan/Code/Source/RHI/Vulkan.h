@@ -23,7 +23,10 @@ namespace AZ
     namespace RHI
     {
         class ScopeAttachment;
-        enum class BufferBindFlags : uint32_t;
+        inline namespace BufferBindFlagsNamespace
+        {
+            enum class BufferBindFlags : uint32_t;
+        }
         class BufferView;
         class ImageView;
         struct BufferSubresourceRange;
