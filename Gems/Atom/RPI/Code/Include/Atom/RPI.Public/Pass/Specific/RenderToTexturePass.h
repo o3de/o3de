@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -59,9 +60,6 @@ namespace AZ
 
             // Name of the template used to create the child pass. Needed for Recreate()
             Name m_childTemplateName;
-
-            // For read back output
-            AZStd::shared_ptr<AttachmentReadback> m_readback;
 
             Ptr<PassAttachment> m_outputAttachment;
 

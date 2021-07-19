@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -49,12 +50,13 @@ class TestImpact:
         # Config
         self.__parse_config_file(config_file)
         # Sequence
-        if self.__use_test_impact_analysis:
-            if self.__is_seeding_branch and self.__is_seeding_pipeline:
-                self.__is_seeding = True
-            else:
-                self.__is_seeding = False
-                self.__generate_change_list()
+        if self.__is_seeding_branch and self.__is_seeding_pipeline:
+            self.__is_seeding = True
+        else:
+            self.__is_seeding = False
+        print(f"Is seeding: '{self.__is_seeding}'.")
+        if self.__use_test_impact_analysis and not self.__is_seeding:
+            self.__generate_change_list()
 
     # Parse the configuration file and retrieve the data needed for launching the test impact analysis runtime
     def __parse_config_file(self, config_file):
@@ -92,7 +94,7 @@ class TestImpact:
                 self.__has_src_commit = True
 
     def __write_last_run_hash(self, last_run_hash):
-        os.mkdir(self.__historic_workspace)
+        os.makedirs(self.__historic_workspace, exist_ok=True)
         f = open(self.__last_commit_hash_path, "w")
         f.write(last_run_hash)
         f.close()
@@ -192,6 +194,9 @@ class TestImpact:
                     # Sequence type
                     args.append("--sequence=tianowrite")
                     print("Sequence type is set to 'tianowrite'.")
+                    # Integrity failure policy
+                    args.append("--ipolicy=continue")
+                    print("Integration failure policy is set to 'continue'.")
                     # Safe mode
                     if safe_mode:
                         args.append("--safemode=on")
@@ -210,12 +215,12 @@ class TestImpact:
              # Sequence type
             args.append("--sequence=regular")
             print("Sequence type is set to 'regular'.")
-            # Pipeline of truth sequence
-            if self.__is_pipeline_of_truth:
+            # Seeding job
+            if self.__is_seeding:
                 # Test failure policy
                 args.append(f"--fpolicy={seed_sequence_test_failure_policy}")
                 print(f"Test failure policy is set to '{seed_sequence_test_failure_policy}'.")
-            # Non pipeline of truth sequence
+            # Non seeding job
             else:
                 # Test failure policy
                 args.append(f"--fpolicy={test_failure_policy}")
@@ -227,7 +232,7 @@ class TestImpact:
         # If the sequence completed (with or without failures) we will update the historical meta-data
         if result.returncode == 0 or result.returncode == 7:
             print("Test impact analysis runtime returned successfully.")
-            if self.__is_pipeline_of_truth:
+            if self.__is_seeding:
                 print("Writing historical meta-data...")
                 self.__write_last_run_hash(self.__dst_commit)
             print("Complete!")

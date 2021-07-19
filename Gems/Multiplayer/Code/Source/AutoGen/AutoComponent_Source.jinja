@@ -1373,7 +1373,7 @@ namespace {{ Component.attrib['Namespace'] }}
 {%      endif %}
 {% endfor %}
 
-    void {{ ComponentBaseName }}::{{ ComponentBaseName }}::Reflect(AZ::ReflectContext* context)
+    void {{ ComponentBaseName }}::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
@@ -1390,7 +1390,7 @@ namespace {{ Component.attrib['Namespace'] }}
         ReflectToBehaviorContext(context);
     }
 
-    void {{ ComponentBaseName }}::{{ ComponentBaseName }}::ReflectToEditContext(AZ::ReflectContext* context)
+    void {{ ComponentBaseName }}::ReflectToEditContext(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
@@ -1418,7 +1418,7 @@ namespace {{ Component.attrib['Namespace'] }}
         }
     }
 
-    void {{ ComponentBaseName }}::{{ ComponentBaseName }}::ReflectToBehaviorContext(AZ::ReflectContext* context)
+    void {{ ComponentBaseName }}::ReflectToBehaviorContext(AZ::ReflectContext* context)
     {
         AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
         if (behaviorContext)
@@ -1454,12 +1454,12 @@ namespace {{ Component.attrib['Namespace'] }}
         }
     }
 
-    void {{ ComponentBaseName }}::{{ ComponentBaseName }}::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+    void {{ ComponentBaseName }}::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         provided.push_back(AZ_CRC_CE("{{ ComponentName }}"));
     }
 
-    void {{ ComponentBaseName }}::{{ ComponentBaseName }}::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+    void {{ ComponentBaseName }}::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC_CE("NetBindService"));
 {% call(ComponentService) ParseComponentServiceNames(Component, ClassType, 'Required') %}
@@ -1467,14 +1467,14 @@ namespace {{ Component.attrib['Namespace'] }}
 {% endcall %}
     }
 
-    void {{ ComponentBaseName }}::{{ ComponentBaseName }}::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
+    void {{ ComponentBaseName }}::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
 {% call(ComponentService) ParseComponentServiceNames(Component, ClassType, 'Dependent') %}
         dependent.push_back(AZ_CRC_CE("{{ ComponentService }}"));
 {% endcall %}
     }
 
-    void {{ ComponentBaseName }}::{{ ComponentBaseName }}::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    void {{ ComponentBaseName }}::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
         incompatible.push_back(AZ_CRC_CE("{{ ComponentName }}"));
 {% call(ComponentService) ParseComponentServiceNames(Component, ClassType, 'Incompatible') %}

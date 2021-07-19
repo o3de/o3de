@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -3288,15 +3289,20 @@ namespace AzQtComponents
         }
 
         // Untab tabbed dock widgets before restoring, as the restore only works on dock widgets parented directly to the main window
-        const QList<QDockWidget*> dockWidgets = m_mainWindow->findChildren<QDockWidget*>();
-        for (QDockWidget* dockWidget : dockWidgets)
+        for (QDockWidget* dockWidget : m_mainWindow->findChildren<QDockWidget*>(
+            QRegularExpression(QString("%1.*").arg(m_tabContainerIdentifierPrefix)), Qt::FindChildrenRecursively))
         {
-            if (QStackedWidget* stackedWidget = qobject_cast<QStackedWidget*>(dockWidget->parentWidget()))
+            DockTabWidget* tabWidget = qobject_cast<DockTabWidget*>(dockWidget->widget());
+            if (!tabWidget)
             {
-                if (AzQtComponents::DockTabWidget* tabWidget = qobject_cast<AzQtComponents::DockTabWidget*>(stackedWidget->parentWidget()))
-                {
-                    tabWidget->removeTab(dockWidget);
-                }
+                continue;
+            }
+
+            // Remove the tabs from the tab widget (we don't actually want to close them, which could delete them at this point)
+            int numTabs = tabWidget->count();
+            for (int i = 0; i < numTabs; ++i)
+            {
+                tabWidget->removeTab(0);
             }
         }
 

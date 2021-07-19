@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -201,10 +202,11 @@ namespace Multiplayer
 
     void ServerToClientReplicationWindow::OnEntityActivated(AZ::Entity* entity)
     {
-        ConstNetworkEntityHandle entityHandle(entity, GetNetworkEntityTracker());
-        NetBindComponent* netBindComponent = entityHandle.GetNetBindComponent();
+        NetBindComponent* netBindComponent = entity->FindComponent<NetBindComponent>();
         if (netBindComponent != nullptr)
         {
+            ConstNetworkEntityHandle entityHandle(netBindComponent, GetNetworkEntityTracker());
+
             if (netBindComponent->HasController())
             {
                 if (IFilterEntityManager* filter = GetMultiplayer()->GetFilterEntityManager())
@@ -233,10 +235,10 @@ namespace Multiplayer
 
     void ServerToClientReplicationWindow::OnEntityDeactivated(AZ::Entity* entity)
     {
-        ConstNetworkEntityHandle entityHandle(entity, GetNetworkEntityTracker());
-        NetBindComponent* netBindComponent = entityHandle.GetNetBindComponent();
+        NetBindComponent* netBindComponent = entity->FindComponent<NetBindComponent>();
         if (netBindComponent != nullptr)
         {
+            ConstNetworkEntityHandle entityHandle(netBindComponent, GetNetworkEntityTracker());
             m_replicationSet.erase(entityHandle);
         }
     }

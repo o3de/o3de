@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -51,28 +52,6 @@ namespace ScriptCanvas
                 }
             }
 
-            void Replace::OnInputSignal(const SlotId&)
-            {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "ScriptCanvas::Replace::OnInputSignal");
-
-                AZStd::string sourceString = ReplaceProperty::GetSource(this);
-                AZStd::string replaceString = ReplaceProperty::GetReplace(this);
-                AZStd::string withString = ReplaceProperty::GetWith(this);
-
-                bool caseSensitive = ReplaceProperty::GetCaseSensitive(this);
-                
-                AzFramework::StringFunc::Replace(sourceString, replaceString.c_str(), withString.c_str(), caseSensitive);
-
-                const SlotId outputResultSlotId = ReplaceProperty::GetResultSlotId(this);
-
-                ScriptCanvas::Datum output(sourceString);
-                if (auto* outputSlot = GetSlot(outputResultSlotId))
-                {
-                    PushOutput(output, *outputSlot);
-                }
-
-                SignalOutput(GetSlotId("Out"));
-            }
         }
     }
 }

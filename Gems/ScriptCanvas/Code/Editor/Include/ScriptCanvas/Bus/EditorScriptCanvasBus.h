@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -154,10 +155,6 @@ namespace ScriptCanvasEditor
         virtual bool ConvertReferenceToVariableNode(const GraphCanvas::Endpoint& endpoint) = 0;
 
         virtual void QueueVersionUpdate(const AZ::EntityId& graphCanvasNodeId) = 0;
-
-        virtual bool IsRuntimeGraph() const = 0;
-        virtual bool IsFunctionGraph() const = 0;
-
         virtual bool CanExposeEndpoint(const GraphCanvas::Endpoint& endpoint) = 0;
 
         virtual ScriptCanvas::Endpoint ConvertToScriptCanvasEndpoint(const GraphCanvas::Endpoint& endpoinnt) const = 0;

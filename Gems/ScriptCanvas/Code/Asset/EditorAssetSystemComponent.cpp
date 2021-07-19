@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -28,9 +29,7 @@ AZ_PUSH_DISABLE_WARNING(4251 4800 4244, "-Wunknown-warning-option")
 #include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
 AZ_POP_DISABLE_WARNING
 
-#include <ScriptCanvas/Asset/Functions/ScriptCanvasFunctionAsset.h>
-#include <ScriptCanvas/Assets/Functions/ScriptCanvasFunctionAssetHandler.h>
-#include <ScriptCanvas/Asset/Functions/RuntimeFunctionAssetHandler.h>
+#include <ScriptCanvas/Asset/SubgraphInterfaceAssetHandler.h>
 
 namespace ScriptCanvasEditor
 {
@@ -60,16 +59,6 @@ namespace ScriptCanvasEditor
         required.push_back(AZ_CRC("ScriptCanvasService", 0x41fd58f3));
     }
 
-    ScriptCanvas::Grammar::Context* EditorAssetSystemComponent::GetGrammarContext()
-    {
-        return &m_grammarContext;
-    }
-
-    ScriptCanvas::Translation::Context* EditorAssetSystemComponent::GetTranslationContext()
-    {
-        return &m_translationContext;
-    }
-
     void EditorAssetSystemComponent::Init()
     {
     }
@@ -77,21 +66,14 @@ namespace ScriptCanvasEditor
     void EditorAssetSystemComponent::Activate()
     {
         m_editorAssetRegistry.Register<ScriptCanvasAsset, ScriptCanvasAssetHandler, ScriptCanvasAssetDescription>();
-        m_editorAssetRegistry.Register<ScriptCanvasEditor::ScriptCanvasFunctionAsset, ScriptCanvasFunctionAssetHandler, ScriptCanvasEditor::ScriptCanvasFunctionDescription>();
         m_editorAssetRegistry.Register<ScriptCanvas::SubgraphInterfaceAsset, ScriptCanvas::SubgraphInterfaceAssetHandler, ScriptCanvas::SubgraphInterfaceAssetDescription>();
 
         AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
         EditorAssetConversionBus::Handler::BusConnect();
-
-        ScriptCanvas::Translation::RequestBus::Handler::BusConnect();
-        ScriptCanvas::Grammar::RequestBus::Handler::BusConnect();
     }
 
     void EditorAssetSystemComponent::Deactivate()
     {
-        ScriptCanvas::Translation::RequestBus::Handler::BusDisconnect();
-        ScriptCanvas::Grammar::RequestBus::Handler::BusDisconnect();
-
         EditorAssetConversionBus::Handler::BusDisconnect();
         AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
         m_editorAssetRegistry.Unregister();
@@ -131,28 +113,9 @@ namespace ScriptCanvasEditor
         }
     }
 
-    AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasFunctionAsset> EditorAssetSystemComponent::LoadFunctionAsset(AZStd::string_view graphPath)
-    {
-        auto outcome = ScriptCanvasBuilder::LoadEditorFunctionAsset(graphPath);
-
-        if (outcome.IsSuccess())
-        {
-            return outcome.GetValue();
-        }
-        else
-        {
-            return {};
-        }
-    }
-
     AZ::Outcome<AZ::Data::Asset<ScriptCanvas::RuntimeAsset>, AZStd::string> EditorAssetSystemComponent::CreateRuntimeAsset(const AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>& editAsset)
     {
         return ScriptCanvasBuilder::CreateRuntimeAsset(editAsset);
-    }
-
-    AZ::Outcome<AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset>, AZStd::string> EditorAssetSystemComponent::CreateFunctionRuntimeAsset(const AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasFunctionAsset>& editAsset)
-    {
-        return ScriptCanvasBuilder::CreateRuntimeFunctionAsset(editAsset);
     }
 
     AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> EditorAssetSystemComponent::CreateLuaAsset(const AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>& editAsset, AZStd::string_view graphPathForRawLuaFile)

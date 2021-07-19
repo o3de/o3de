@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -14,6 +15,8 @@
 
 namespace AZ
 {
+    class ReflectContext;
+
     namespace SceneAPI
     {
         namespace Events
@@ -24,6 +27,7 @@ namespace AZ
                     Data::ProductDependencyInfo::ProductDependencyFlags dependencyFlags = Data::ProductDependencyInfo::CreateFlags(Data::AssetLoadBehavior::NoLoad));
                 SCENE_CORE_API ExportProduct(AZStd::string&& filename, Uuid id, Data::AssetType assetType, AZStd::optional<u8> lod, AZStd::optional<u32> subId,
                     Data::ProductDependencyInfo::ProductDependencyFlags dependencyFlags = Data::ProductDependencyInfo::CreateFlags(Data::AssetLoadBehavior::NoLoad));
+                ExportProduct() = default;
                 ExportProduct(const ExportProduct& rhs) = default;
                 SCENE_CORE_API ExportProduct(ExportProduct&& rhs);
 
@@ -54,6 +58,8 @@ namespace AZ
             class ExportProductList
             {
             public:
+                static void Reflect(ReflectContext* context);
+
                 SCENE_CORE_API ExportProduct& AddProduct(const AZStd::string& filename, Uuid id, Data::AssetType assetType, AZStd::optional<u8> lod, AZStd::optional<u32> subId,
                     Data::ProductDependencyInfo::ProductDependencyFlags dependencyFlags = Data::ProductDependencyInfo::CreateFlags(Data::AssetLoadBehavior::NoLoad));
                 SCENE_CORE_API ExportProduct& AddProduct(AZStd::string&& filename, Uuid id, Data::AssetType assetType, AZStd::optional<u8> lod, AZStd::optional<u32> subId,
@@ -69,3 +75,9 @@ namespace AZ
         } // namespace Events
     } // namespace SceneAPI
 } // namespace AZ
+
+namespace AZ
+{
+    AZ_TYPE_INFO_SPECIALIZE(SceneAPI::Events::ExportProduct, "{6054EDCB-4C04-4D96-BF26-704999FFB725}");
+    AZ_TYPE_INFO_SPECIALIZE(SceneAPI::Events::ExportProductList, "{1C76A51F-431B-4987-B653-CFCC940D0D0F}");
+}

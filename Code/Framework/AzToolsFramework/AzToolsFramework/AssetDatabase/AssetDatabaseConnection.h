@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -614,6 +615,7 @@ namespace AzToolsFramework
 
             //! Returns any unresolved dependencies which match (by exact or wildcard match) the input searchPaths
             //! The extra path returned for each row is the searchPath entry that was matched with the returned dependency entry
+            //! @param searchPaths vector of relative paths to search for matches
             bool QueryProductDependenciesUnresolvedAdvanced(const AZStd::vector<AZStd::string>& searchPaths, productDependencyAndPathHandler handler);
 
             bool QueryMissingProductDependencyByProductId(AZ::s64 productId, missingProductDependencyHandler handler);
@@ -668,6 +670,7 @@ namespace AzToolsFramework
             bool GetProductResult(const char* callName, SQLite::Statement* statement, AssetDatabaseConnection::productHandler handler, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), const char* jobKey = nullptr, AssetSystem::JobStatus status = AssetSystem::JobStatus::Any);
             bool GetLegacySubIDsResult(const char* callname, SQLite::Statement* statement, AssetDatabaseConnection::legacySubIDsHandler handler);
             bool GetProductDependencyResult(const char* callName, SQLite::Statement* statement, AssetDatabaseConnection::productDependencyHandler handler);
+            bool GetProductDependencyAndPathResult(const char* callName, SQLite::Statement* statement, AssetDatabaseConnection::productDependencyAndPathHandler handler);
             bool GetMissingProductDependencyResult(const char* callName, SQLite::Statement* statement, AssetDatabaseConnection::missingProductDependencyHandler handler);
             bool GetCombinedDependencyResult(const char* callName, SQLite::Statement* statement, AssetDatabaseConnection::combinedProductDependencyHandler handler);
             bool GetFileResult(const char* callName, SQLite::Statement* statement, AssetDatabaseConnection::fileHandler handler);

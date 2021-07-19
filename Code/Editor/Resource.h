@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -187,7 +188,6 @@
 #define ID_SWITCHCAMERA_SEQUENCECAMERA             33701
 #define ID_SWITCHCAMERA_SELECTEDCAMERA             33702
 #define ID_TV_RECORD_AUTO                          33703
-#define ID_GRAPHICS_SETTINGS                       33705
 #define ID_VIEW_OPENVIEWPANE                       33709
 #define ID_VIEW_OPENPANE_FIRST          33712
 #define ID_VIEW_OPENPANE_LAST           33811
@@ -219,10 +219,6 @@
 #define ID_SPLINE_SNAP_GRID_X                      33933
 #define ID_SPLINE_SNAP_GRID_Y                      33934
 #define ID_FREEZE_TANGENTS                         33935
-#define ID_GAME_PC_ENABLELOWSPEC                   33960
-#define ID_GAME_PC_ENABLEMEDIUMSPEC                33961
-#define ID_GAME_PC_ENABLEHIGHSPEC                  33962
-#define ID_GAME_PC_ENABLEVERYHIGHSPEC              33963
 #define ID_PANEL_VEG_CREATE_SEL                    33990
 #define ID_TOOLS_UPDATEPROCEDURALVEGETATION        33999
 #define ID_DISPLAY_GOTOPOSITION                    34004
@@ -287,14 +283,6 @@
 #define ID_CLEAR_REGISTRY                          34470
 #define ID_SOUND_STOPALLSOUNDS                     34476
 #define ID_AUDIO_REFRESH_AUDIO_SYSTEM              34477
-#define ID_GAME_ANDROID_ENABLELOWSPEC              34490
-#define ID_GAME_ANDROID_ENABLEMEDIUMSPEC           34491
-#define ID_GAME_ANDROID_ENABLEHIGHSPEC             34492
-#define ID_GAME_ANDROID_ENABLEVERYHIGHSPEC         34493
-#define ID_GAME_IOS_ENABLELOWSPEC                  34494
-#define ID_GAME_IOS_ENABLEMEDIUMSPEC               34495
-#define ID_GAME_IOS_ENABLEHIGHSPEC                 34496
-#define ID_GAME_IOS_ENABLEVERYHIGHSPEC             34497
 #define ID_OPEN_AUDIO_CONTROLS_BROWSER              34580
 #define ID_CREATE_GLOBAL_FG_MODULE_FROM_SELECTION                   35076
 #define ID_CREATE_LEVEL_FG_MODULE_FROM_SELECTION                    35077
@@ -324,19 +312,6 @@
 #define ID_DOCUMENTATION_FEEDBACK                    36043
 #define ID_OPEN_SUBSTANCE_EDITOR                     36060
 #define ID_IMPORT_ASSET                              36069
-#define ID_GAME_PROVO_ENABLELOWSPEC                   34603
-#define ID_GAME_PROVO_ENABLEMEDIUMSPEC                34604
-#define ID_GAME_PROVO_ENABLEHIGHSPEC                  34605
-#define ID_GAME_OSXMETAL_ENABLELOWSPEC              34606
-#define ID_GAME_OSXMETAL_ENABLEMEDIUMSPEC           34607
-#define ID_GAME_OSXMETAL_ENABLEHIGHSPEC             34608
-#define ID_GAME_OSXMETAL_ENABLEVERYHIGHSPEC         34609
-#define ID_GAME_SALEM_ENABLELOWSPEC                 34610
-#define ID_GAME_SALEM_ENABLEMEDIUMSPEC              34611
-#define ID_GAME_SALEM_ENABLEHIGHSPEC                34612
-#define ID_GAME_JASPER_ENABLELOWSPEC                34613
-#define ID_GAME_JASPER_ENABLEMEDIUMSPEC             34614
-#define ID_GAME_JASPER_ENABLEHIGHSPEC               34615
 #define ID_FILE_RESAVESLICES                        36210
 #define FIRST_QT_ACTION                      50000
 #define ID_VIEW_CONSOLEWINDOW                50001

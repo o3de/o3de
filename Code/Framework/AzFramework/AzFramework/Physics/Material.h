@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -306,8 +307,8 @@ namespace Physics
         
         void SyncSelectionToMaterialLibrary();
         
-        static const AZ::Data::Asset<Physics::MaterialLibraryAsset>& GetMaterialLibrary();
-        static const AZ::Data::AssetId& GetMaterialLibraryId();
+        static AZ::Data::Asset<Physics::MaterialLibraryAsset> GetMaterialLibrary();
+        static AZ::Data::AssetId GetMaterialLibraryId();
 
         bool AreMaterialSlotsReadOnly() const;
 

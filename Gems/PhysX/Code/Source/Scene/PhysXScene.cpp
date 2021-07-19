@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -490,6 +491,10 @@ namespace PhysX
     PhysXScene::~PhysXScene()
     {
         m_physicsSystemConfigChanged.Disconnect();
+
+        s_overlapBuffer.swap({});
+        s_rayCastBuffer.swap({});
+        s_sweepBuffer.swap({});
 
         for (auto& simulatedBody : m_simulatedBodies)
         {

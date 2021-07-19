@@ -1,5 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -12,40 +13,32 @@
 #include <AzCore/Serialization/IdUtils.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
-
 #include <AzFramework/Entity/EntityContextBus.h>
-
-#include <ScriptCanvas/Asset/Functions/ScriptCanvasFunctionAsset.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
-
 #include <ScriptCanvas/Core/Connection.h>
 #include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Core/Datum.h>
 #include <ScriptCanvas/Core/Graph.h>
 #include <ScriptCanvas/Core/Node.h>
-#include <ScriptCanvas/Core/PureData.h>
 #include <ScriptCanvas/Data/BehaviorContextObject.h>
-#include <ScriptCanvas/Grammar/AbstractCodeModel.h>
-
-#include <ScriptCanvas/Debugger/ValidationEvents/DataValidation/DataValidationIds.h>
+#include <ScriptCanvas/Data/PropertyTraits.h>
+#include <ScriptCanvas/Debugger/StatusBus.h>
 #include <ScriptCanvas/Debugger/ValidationEvents/DataValidation/DataValidationEvents.h>
-#include <ScriptCanvas/Debugger/ValidationEvents/ExecutionValidation/ExecutionValidationIds.h>
+#include <ScriptCanvas/Debugger/ValidationEvents/DataValidation/DataValidationIds.h>
 #include <ScriptCanvas/Debugger/ValidationEvents/ExecutionValidation/ExecutionValidationEvents.h>
-
-#include <ScriptCanvas/Libraries/Core/UnaryOperator.h>
+#include <ScriptCanvas/Debugger/ValidationEvents/ExecutionValidation/ExecutionValidationIds.h>
+#include <ScriptCanvas/Grammar/AbstractCodeModel.h>
 #include <ScriptCanvas/Libraries/Core/BinaryOperator.h>
 #include <ScriptCanvas/Libraries/Core/EBusEventHandler.h>
-#include <ScriptCanvas/Libraries/Core/ErrorHandler.h>
 #include <ScriptCanvas/Libraries/Core/FunctionDefinitionNode.h>
 #include <ScriptCanvas/Libraries/Core/Method.h>
-#include <ScriptCanvas/Libraries/Core/Start.h>
-#include <ScriptCanvas/Libraries/Core/SendScriptEvent.h>
 #include <ScriptCanvas/Libraries/Core/ReceiveScriptEvent.h>
 #include <ScriptCanvas/Libraries/Core/ScriptEventBase.h>
-
+#include <ScriptCanvas/Libraries/Core/SendScriptEvent.h>
+#include <ScriptCanvas/Libraries/Core/Start.h>
+#include <ScriptCanvas/Libraries/Core/UnaryOperator.h>
 #include <ScriptCanvas/Profiler/Driller.h>
 #include <ScriptCanvas/Translation/Translation.h>
-#include <ScriptCanvas/Debugger/StatusBus.h>
 #include <ScriptCanvas/Variable/VariableBus.h>
 #include <ScriptCanvas/Variable/VariableData.h>
 
@@ -58,6 +51,7 @@ namespace GraphCpp
         MergeScriptAssetDescriptions,
         VariablePanelSymantics,
         AddVersionData,
+        RemoveFunctionGraphMarker,
         // label your version above
         Current
     };
@@ -75,6 +69,11 @@ namespace ScriptCanvas
         if (componentElementNode.GetVersion() < 13)
         {
             componentElementNode.AddElementWithData(context, "m_assetType", azrtti_typeid<RuntimeAsset>());
+        }
+
+        if (componentElementNode.GetVersion() < GraphCpp::GraphVersion::RemoveFunctionGraphMarker)
+        {
+            componentElementNode.RemoveElementByName(AZ_CRC_CE("isFunctionGraph"));
         }
 
         return true;
@@ -107,18 +106,15 @@ namespace ScriptCanvas
         Nodes::ComparisonExpression::Reflect(context);
         Datum::Reflect(context);
         BehaviorContextObjectPtrReflect(context);
-
         GraphData::Reflect(context);
 
-        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
-        if (serializeContext)
+        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<Graph, AZ::Component>()
                 ->Version(GraphCpp::GraphVersion::Current, &GraphComponentVersionConverter)
                 ->Field("m_graphData", &Graph::m_graphData)
                 ->Field("executionMode", &Graph::m_executionMode)
                 ->Field("m_assetType", &Graph::m_assetType)
-                ->Field("isFunctionGraph", &Graph::m_isFunctionGraph)
                 ->Field("versionData", &Graph::m_versionData)
                 ;
         }
@@ -128,8 +124,6 @@ namespace ScriptCanvas
     {
         const auto& scriptCanvasId = GetScriptCanvasId();
         GraphRequestBus::Handler::BusConnect(scriptCanvasId);
-        RuntimeRequestBus::Handler::BusConnect(scriptCanvasId);
-
         ValidationRequestBus::Handler::BusConnect(scriptCanvasId);
 
         for (auto& nodeEntity : m_graphData.m_nodes)
@@ -148,6 +142,7 @@ namespace ScriptCanvas
         }
 
         m_graphData.BuildEndpointMap();
+
         for (auto& connectionEntity : m_graphData.m_connections)
         {
             if (connectionEntity)
@@ -157,21 +152,6 @@ namespace ScriptCanvas
         }
 
         StatusRequestBus::Handler::BusConnect(scriptCanvasId);
-    }
-
-    bool Graph::IsFunctionGraph() const
-    {
-        if (m_isFunctionGraph)
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    void Graph::MarkFunctionGraph()
-    {
-        m_isFunctionGraph = true;
     }
 
     void Graph::MarkVersion()

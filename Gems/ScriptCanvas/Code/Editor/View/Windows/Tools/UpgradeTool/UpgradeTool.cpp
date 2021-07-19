@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -11,8 +12,6 @@
 #include <QDateTime>
 
 #include "UpgradeTool.h"
-
-#include <Asset/Functions/ScriptCanvasFunctionAsset.h>
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/TickBus.h>
@@ -283,10 +282,6 @@ namespace ScriptCanvasEditor
                     if (asset.GetType() == azrtti_typeid<ScriptCanvasAsset>())
                     {
                         tmpFilesaved = AZ::Utils::SaveObjectToStream<ScriptCanvas::ScriptCanvasData>(fileStream, AZ::DataStream::ST_XML, &asset.GetAs<ScriptCanvasAsset>()->GetScriptCanvasData());
-                    }
-                    else if (asset.GetType() == azrtti_typeid<ScriptCanvasFunctionAsset>())
-                    {
-                        tmpFilesaved = AZ::Utils::SaveObjectToStream<ScriptCanvas::ScriptCanvasData>(fileStream, AZ::DataStream::ST_XML, &asset.GetAs<ScriptCanvasFunctionAsset>()->GetScriptCanvasData());
                     }
 
                     fileStream.Close();
@@ -707,10 +702,6 @@ namespace ScriptCanvasEditor
         if (asset.GetType() == azrtti_typeid<ScriptCanvasAsset>())
         {
             scriptCanvasEntity = UpgradeGraph<ScriptCanvasAsset>(asset, this);
-        }
-        else if (asset.GetType() == azrtti_typeid<ScriptCanvasFunctionAsset>())
-        {
-            scriptCanvasEntity = UpgradeGraph<ScriptCanvasFunctionAsset>(asset, this);
         }
 
         if (!scriptCanvasEntity)

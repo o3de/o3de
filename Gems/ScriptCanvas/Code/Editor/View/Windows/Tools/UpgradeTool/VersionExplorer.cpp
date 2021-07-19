@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -15,8 +16,6 @@
 #include <QToolButton>
 
 #include "VersionExplorer.h"
-
-#include <Asset/Functions/ScriptCanvasFunctionAsset.h>
 
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
@@ -323,10 +322,6 @@ namespace ScriptCanvasEditor
         {
             m_scriptCanvasEntity = UpgradeGraphProcess<ScriptCanvasAsset>(asset, this);
         }
-        else if (asset.GetType() == azrtti_typeid<ScriptCanvasFunctionAsset>())
-        {
-            m_scriptCanvasEntity = UpgradeGraphProcess<ScriptCanvasFunctionAsset>(asset, this);
-        }
 
         if (!m_scriptCanvasEntity)
         {
@@ -357,10 +352,6 @@ namespace ScriptCanvasEditor
                 if (asset.GetType() == azrtti_typeid<ScriptCanvasAsset>())
                 {
                     tmpFilesaved = AZ::Utils::SaveObjectToStream<ScriptCanvas::ScriptCanvasData>(fileStream, AZ::DataStream::ST_XML, &asset.GetAs<ScriptCanvasAsset>()->GetScriptCanvasData());
-                }
-                else if (asset.GetType() == azrtti_typeid<ScriptCanvasFunctionAsset>())
-                {
-                    tmpFilesaved = AZ::Utils::SaveObjectToStream<ScriptCanvas::ScriptCanvasData>(fileStream, AZ::DataStream::ST_XML, &asset.GetAs<ScriptCanvasFunctionAsset>()->GetScriptCanvasData());
                 }
 
                 fileStream.Close();
@@ -639,17 +630,6 @@ namespace ScriptCanvasEditor
         if (asset.GetType() == azrtti_typeid<ScriptCanvasAsset>())
         {
             ScriptCanvasAsset* scriptCanvasAsset = asset.GetAs<ScriptCanvasAsset>();
-            if (!scriptCanvasAsset)
-            {
-                return;
-            }
-
-            scriptCanvasEntity = scriptCanvasAsset->GetScriptCanvasEntity();
-            AZ_Assert(scriptCanvasEntity, "The Script Canvas asset must have a valid entity");
-        }
-        else if (asset.GetType() == azrtti_typeid<ScriptCanvasFunctionAsset>())
-        {
-            ScriptCanvasFunctionAsset* scriptCanvasAsset = asset.GetAs<ScriptCanvasFunctionAsset>();
             if (!scriptCanvasAsset)
             {
                 return;

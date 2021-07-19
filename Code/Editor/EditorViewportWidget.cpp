@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -102,7 +103,7 @@
 AZ_CVAR(
     bool, ed_visibility_logTiming, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Output the timing of the new IVisibilitySystem query");
 AZ_CVAR(bool, ed_useNewCameraSystem, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Use the new Editor camera system");
-AZ_CVAR(bool, ed_showCursorCameraLook, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Show the cursor when using free look with the new camera system");
+AZ_CVAR(bool, ed_showCursorCameraLook, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Show the cursor when using free look with the new camera system");
 
 namespace SandboxEditor
 {
@@ -458,25 +459,7 @@ void EditorViewportWidget::Update()
         SetFOV(cameraState.m_fovOrZoom);
         m_Camera.SetZRange(cameraState.m_nearClip, cameraState.m_farClip);
     }
-    else if (!ed_useNewCameraSystem)
-    {
-        m_renderViewport->GetViewportContext()->SetCameraTransform(LYTransformToAZTransform(m_Camera.GetMatrix()));
-    }
 
-    // Don't override the game mode FOV
-    if (!GetIEditor()->IsInGameMode())
-    {
-        AZ::Matrix4x4 clipMatrix;
-        AZ::MakePerspectiveFovMatrixRH(
-            clipMatrix,
-            GetFOV(),
-            aznumeric_cast<float>(width()) / aznumeric_cast<float>(height()),
-            m_Camera.GetNearPlane(),
-            m_Camera.GetFarPlane(),
-            true
-        );
-        m_renderViewport->GetViewportContext()->SetCameraProjectionMatrix(clipMatrix);
-    }
     // Reset the camera update flag now that we're finished updating our viewport context
     m_updateCameraPositionNextTick = false;
 
@@ -632,7 +615,6 @@ void EditorViewportWidget::SetViewEntity(const AZ::EntityId& viewEntityId, bool 
 void EditorViewportWidget::ResetToViewSourceType(const ViewSourceType& viewSourceType)
 {
     LockCameraMovement(true);
-    m_pCameraFOVVariable = nullptr;
     m_viewEntityId.SetInvalid();
     m_cameraObjectId = GUID_NULL;
     m_viewSourceType = viewSourceType;
@@ -714,7 +696,7 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
 
         if (m_renderViewport)
         {
-            m_renderViewport->GetControllerList()->SetEnabled(false);
+            m_renderViewport->SetInputProcessingEnabled(false);
         }
     }
     break;
@@ -738,7 +720,7 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
 
         if (m_renderViewport)
         {
-            m_renderViewport->GetControllerList()->SetEnabled(true);
+            m_renderViewport->SetInputProcessingEnabled(true);
         }
         break;
 
@@ -1915,7 +1897,7 @@ void EditorViewportWidget::SetViewTM(const Matrix34& viewTM, bool bMoveOnly)
 
         if (m_pressedKeyState != KeyPressedState::PressedInPreviousFrame)
         {
-            CUndo undo("Move Camera");
+            AzToolsFramework::ScopedUndoBatch undo("Move Camera");
             if (bMoveOnly)
             {
                 // specify eObjectUpdateFlags_UserInput so that an undo command gets logged
@@ -1951,7 +1933,7 @@ void EditorViewportWidget::SetViewTM(const Matrix34& viewTM, bool bMoveOnly)
 
         if (m_pressedKeyState != KeyPressedState::PressedInPreviousFrame)
         {
-            CUndo undo("Move Camera");
+            AzToolsFramework::ScopedUndoBatch undo("Move Camera");
             if (bMoveOnly)
             {
                 AZ::TransformBus::Event(
@@ -1964,6 +1946,8 @@ void EditorViewportWidget::SetViewTM(const Matrix34& viewTM, bool bMoveOnly)
                     m_viewEntityId, &AZ::TransformInterface::SetWorldTM,
                     LYTransformToAZTransform(camMatrix));
             }
+
+            AzToolsFramework::ToolsApplicationRequestBus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::AddDirtyEntity, m_viewEntityId);
         }
         else
         {
@@ -2547,13 +2531,26 @@ void EditorViewportWidget::CenterOnSliceInstance()
 //////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::SetFOV(float fov)
 {
-    if (m_pCameraFOVVariable)
+    if (m_viewEntityId.IsValid())
     {
-        m_pCameraFOVVariable->Set(fov);
+        Camera::CameraRequestBus::Event(m_viewEntityId, &Camera::CameraComponentRequests::SetFov, AZ::RadToDeg(fov));
     }
     else
     {
         m_camFOV = fov;
+        // Set the active camera's FOV
+        {
+            AZ::Matrix4x4 clipMatrix;
+            AZ::MakePerspectiveFovMatrixRH(
+                clipMatrix,
+                GetFOV(),
+                aznumeric_cast<float>(width()) / aznumeric_cast<float>(height()),
+                m_Camera.GetNearPlane(),
+                m_Camera.GetFarPlane(),
+                true
+            );
+            m_renderViewport->GetViewportContext()->SetCameraProjectionMatrix(clipMatrix);
+        }
     }
 
     if (m_viewPane)
@@ -2580,13 +2577,7 @@ float EditorViewportWidget::GetFOV() const
         }
     }
 
-    if (m_pCameraFOVVariable)
-    {
-        float fov;
-        m_pCameraFOVVariable->Get(fov);
-        return fov;
-    }
-    else if (m_viewEntityId.IsValid())
+    if (m_viewEntityId.IsValid())
     {
         float fov = AZ::RadToDeg(m_camFOV);
         Camera::CameraRequestBus::EventResult(fov, m_viewEntityId, &Camera::CameraComponentRequests::GetFov);
@@ -2970,7 +2961,12 @@ void EditorViewportWidget::RestoreViewportAfterGameMode()
 {
     Matrix34 preGameModeViewTM = m_preGameModeViewTM;
 
-    QString text = QString("You are exiting Game Mode. Would you like to restore the camera in the viewport to where it was before you entered Game Mode?<br/><br/><small>This option can always be changed in the General Preferences tab of the Editor Settings, by toggling the \"%1\" option.</small><br/><br/>").arg(EditorPreferencesGeneralRestoreViewportCameraSettingName);
+    QString text =
+        QString(
+            tr("When leaving \" Game Mode \" the engine will automatically restore your camera position to the default position before you "
+            "had entered Game mode.<br/><br/><small>If you dislike this setting you can always change this anytime in the global "
+            "preferences.</small><br/><br/>"))
+            .arg(EditorPreferencesGeneralRestoreViewportCameraSettingName);
     QString restoreOnExitGameModePopupDisabledRegKey("Editor/AutoHide/ViewportCameraRestoreOnExitGameMode");
 
     // Read the popup disabled registry value
@@ -2985,6 +2981,7 @@ void EditorViewportWidget::RestoreViewportAfterGameMode()
         messageBox.setDefaultButton(QMessageBox::Yes);
 
         QCheckBox* checkBox = new QCheckBox(QStringLiteral("Do not show this message again"));
+        checkBox->setChecked(true);
         messageBox.setCheckBox(checkBox);
 
         // Unconstrain the system cursor and make it visible before we show the dialog box, otherwise the user can't see the cursor.

@@ -1,5 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -747,19 +748,24 @@ namespace AzFramework
                 return button == inputChannelId;
             });
 
-        if (inputChannelId == InputDeviceMouse::Movement::X)
+        // accept active mouse channel updates, inactive movement channels will just have a 0 delta
+        if (inputChannel.IsActive())
         {
-            return HorizontalMotionEvent{ aznumeric_cast<int>(inputChannel.GetValue()) };
+            if (inputChannelId == InputDeviceMouse::Movement::X)
+            {
+                return HorizontalMotionEvent{ aznumeric_cast<int>(inputChannel.GetValue()) };
+            }
+            else if (inputChannelId == InputDeviceMouse::Movement::Y)
+            {
+                return VerticalMotionEvent{ aznumeric_cast<int>(inputChannel.GetValue()) };
+            }
+            else if (inputChannelId == InputDeviceMouse::Movement::Z)
+            {
+                return ScrollEvent{ inputChannel.GetValue() };
+            }
         }
-        else if (inputChannelId == InputDeviceMouse::Movement::Y)
-        {
-            return VerticalMotionEvent{ aznumeric_cast<int>(inputChannel.GetValue()) };
-        }
-        else if (inputChannelId == InputDeviceMouse::Movement::Z)
-        {
-            return ScrollEvent{ inputChannel.GetValue() };
-        }
-        else if (wasMouseButton || InputDeviceKeyboard::IsKeyboardDevice(inputDeviceId))
+
+        if (wasMouseButton || InputDeviceKeyboard::IsKeyboardDevice(inputDeviceId))
         {
             return DiscreteInputEvent{ inputChannelId, inputChannel.GetState() };
         }

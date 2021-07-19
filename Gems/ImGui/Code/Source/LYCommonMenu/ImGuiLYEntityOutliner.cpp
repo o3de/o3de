@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -590,7 +591,7 @@ namespace ImGui
                 if (ImGui::SmallButton(targetLabel.c_str()))
                 {
                     // Send EBUS event out to Target an Entity. Up to game code to implement.
-                    ImGuiEntityOutlinerNotifcationBus::Broadcast(&IImGuiEntityOutlinerNotifcations::OnImGuiEntityOutlinerTarget, node->m_entityId);
+                    ImGuiEntityOutlinerNotificationBus::Broadcast(&IImGuiEntityOutlinerNotifications::OnImGuiEntityOutlinerTarget, node->m_entityId);
                 }
             }
 

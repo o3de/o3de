@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -31,22 +32,6 @@ namespace ScriptCanvasEditor
     //////////////////
     // CustomActions
     //////////////////
-
-    class AddSelectedEntitiesAction
-        : public GraphCanvas::ContextMenuAction
-    {
-        Q_OBJECT
-    public:
-        AZ_CLASS_ALLOCATOR(AddSelectedEntitiesAction, AZ::SystemAllocator, 0);
-
-        AddSelectedEntitiesAction(QObject* parent);
-        virtual ~AddSelectedEntitiesAction() = default;
-
-        GraphCanvas::ActionGroupId GetActionGroupId() const override;
-
-        void RefreshAction(const GraphCanvas::GraphId& graphCanvasGraphId, const AZ::EntityId& targetId) override;
-        SceneReaction TriggerAction(const GraphCanvas::GraphId& graphCanvasGraphId, const AZ::Vector2& scenePos) override;
-    };
 
     class EndpointSelectionAction
         : public QAction
@@ -217,8 +202,6 @@ namespace ScriptCanvasEditor
     protected:
 
         AZ::EntityId                      m_sourceSlotId;
-
-        AddSelectedEntitiesAction* m_addSelectedEntitiesAction;
     };
 
     class ConnectionContextMenu

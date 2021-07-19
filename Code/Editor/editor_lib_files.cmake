@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -21,7 +22,6 @@ set(FILES
     res/TreeView.bmp
     res/VisualLog_PlayerButtons.bmp
     res/ab_toolbar.bmp
-    res/about_dark.bmp
     res/anim.bmp
     res/animatio.bmp
     res/animations_tree_soundevent.bmp
@@ -137,7 +137,6 @@ set(FILES
     res/litebulb.bmp
     res/lock_sel.bmp
     res/locksele.bmp
-    res/logo.bmp
     res/mainfram.bmp
     res/mann_tagdef_toolbar.bmp
     res/mann_tagdef_tree.bmp
@@ -184,8 +183,6 @@ set(FILES
     res/rename.ico
     res/replace.ico
     res/ribbon_system_button.png
-    res/sandbox_dark.bmp
-    res/sb_welcome_dark.bmp
     res/selectobj.bmp
     res/seq_1_colour_keys.bmp
     res/seq_2_colour_keys.bmp
@@ -587,9 +584,6 @@ set(FILES
     SettingsManager.h
     SettingsManagerDialog.h
     SettingsManagerDialog.ui
-    GraphicsSettingsDialog.h
-    GraphicsSettingsDialog.cpp
-    graphicssettingsdialog.ui
     AboutDialog.cpp
     ErrorReportTableModel.h
     ErrorReportTableModel.cpp

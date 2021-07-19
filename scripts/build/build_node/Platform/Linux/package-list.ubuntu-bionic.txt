@@ -9,6 +9,7 @@ ninja-build                             # For the compiler and its dependencies
 libglu1-mesa-dev                        # For Qt (GL dependency)
 libxcb-xinerama0                        # For Qt plugins at runtime
 libxcb-xinput0                          # For Qt plugins at runtime
+libfontconfig1-dev                      # For Qt plugins at runtime
 libcurl4-openssl-dev                    # For HttpRequestor
 libsdl2-dev                             # for WWise/Audio
 zlib1g-dev

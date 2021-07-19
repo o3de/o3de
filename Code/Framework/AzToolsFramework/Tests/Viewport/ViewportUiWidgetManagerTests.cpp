@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -85,19 +86,8 @@ namespace UnitTest
     }
 
     class ViewportUiWidgetAssertFixture
-        : public ::testing::Test
-        , UnitTest::TraceBusRedirector
-    {
-    public:
-        void SetUp() override
-        {
-            AZ::Debug::TraceMessageBus::Handler::BusConnect();
-        }
-        void TearDown() override
-        {
-            AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
-        }
-    };
+        : public ScopedAllocatorSetupFixture
+    {};
 
     TEST_F(ViewportUiWidgetAssertFixture, RegisterUpdateCallbackDoesNotRegisterFunctionForNotAddedObject)
     {

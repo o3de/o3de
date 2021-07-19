@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -36,8 +37,8 @@ namespace ScriptCanvasEditor
 {
     class Graph;
     class ScriptCanvasAsset;
-    class ScriptCanvasFunctionAsset;
 }
+
 namespace ScriptCanvasBuilder
 {
     constexpr const char* s_scriptCanvasBuilder = "ScriptCanvasBuilder";
@@ -122,8 +123,6 @@ namespace ScriptCanvasBuilder
 
     AZ::Outcome<AZ::Data::Asset<ScriptCanvas::RuntimeAsset>, AZStd::string> CreateRuntimeAsset(const AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>& asset);
 
-    AZ::Outcome<AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset>, AZStd::string> CreateRuntimeFunctionAsset(const AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasFunctionAsset>& asset);
-
     AZ::Outcome<ScriptCanvas::GraphData, AZStd::string> CompileGraphData(AZ::Entity* scriptCanvasEntity);
 
     AZ::Outcome<ScriptCanvas::VariableData, AZStd::string> CompileVariableData(AZ::Entity* scriptCanvasEntity);
@@ -133,8 +132,6 @@ namespace ScriptCanvasBuilder
     int GetBuilderVersion();
 
     AZ::Outcome<AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>, AZStd::string> LoadEditorAsset(AZStd::string_view graphPath, AZ::Data::AssetId assetId, AZ::Data::AssetFilterCB assetFilterCB = {});
-
-    AZ::Outcome<AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasFunctionAsset>, AZStd::string> LoadEditorFunctionAsset(AZStd::string_view graphPath);
 
     AZ::Outcome<ScriptCanvas::Grammar::AbstractCodeModelConstPtr, AZStd::string> ParseGraph(AZ::Entity& buildEntity, AZStd::string_view graphPath);
 
@@ -176,39 +173,6 @@ namespace ScriptCanvasBuilder
         AZ::Data::AssetHandler* m_subgraphInterfaceHandler = nullptr;
 
         mutable AZStd::vector<AZ::Data::AssetFilterInfo> m_processEditorAssetDependencies;
-        // cached on first time query
-        mutable AZStd::string m_fingerprintString;
-    };
-
-    class FunctionWorker
-        : public AssetBuilderSDK::AssetBuilderCommandBus::Handler
-    {
-    public:
-        static AZ::Uuid GetUUID();
-
-        FunctionWorker() = default;
-        FunctionWorker(const FunctionWorker&) = delete;
-
-        void Activate(const AssetHandlers& handlers);
-
-        //! Asset Builder Callback Functions
-        void CreateJobs(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response) const;
-
-        const char* GetFingerprintString() const;
-
-        int GetVersionNumber() const;
-
-        void ProcessJob(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const;
-
-        void ShutDown() override {};
-
-    private:
-        AZ::Data::AssetHandler* m_editorAssetHandler = nullptr;
-        AZ::Data::AssetHandler* m_runtimeAssetHandler = nullptr;
-        AZ::Data::AssetHandler* m_subgraphInterfaceHandler = nullptr;
-
-        mutable AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>> m_sourceDependencies;
-
         // cached on first time query
         mutable AZStd::string m_fingerprintString;
     };

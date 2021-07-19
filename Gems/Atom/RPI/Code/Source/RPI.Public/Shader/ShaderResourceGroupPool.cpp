@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -58,8 +59,8 @@ namespace AZ
             RHI::ShaderResourceGroupPoolDescriptor poolDescriptor;
             poolDescriptor.m_layout = shaderAsset.FindShaderResourceGroupLayout(srgName, supervariantIndex).get();
 
-            
-            m_pool->SetName(srgName);
+            m_pool->SetName(AZ::Name(AZStd::string::format("%s_%s",shaderAsset.GetName().GetCStr(),srgName.GetCStr())));
+ 
             const RHI::ResultCode resultCode = m_pool->Init(*device, poolDescriptor);
             return resultCode;
         }

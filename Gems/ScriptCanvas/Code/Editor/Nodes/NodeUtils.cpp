@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -11,26 +12,10 @@
 #include <GraphCanvas/Components/Slots/SlotBus.h>
 #include <GraphCanvas/Components/DynamicOrderingDynamicSlotComponent.h>
 
-#include <ScriptCanvas/Core/PureData.h>
 #include <ScriptCanvas/Core/NodeBus.h>
 
 namespace
 {
-    void CopyTranslationKeyedNameToDatumLabel(ScriptCanvas::PureData* node,
-                                                const GraphCanvas::TranslationKeyedString& name)
-    {
-        ScriptCanvas::SlotId slotId = node->GetSlotId(ScriptCanvas::PureData::k_setThis);
-        if (!slotId.IsValid())
-        {
-            return;
-        }
-
-        ScriptCanvas::ModifiableDatumView datumView;
-        node->FindModifiableDatumView(slotId, datumView);
-
-        datumView.RelabelDatum(name.GetDisplayString());
-    }
-
     ScriptCanvas::ConnectionType ToScriptCanvasConnectionType(GraphCanvas::ConnectionType connectionType)
     {
         ScriptCanvas::ConnectionType scriptCanvasConnectionType = ScriptCanvas::ConnectionType::Unknown;

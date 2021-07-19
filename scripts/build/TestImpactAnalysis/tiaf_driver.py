@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -60,6 +61,6 @@ if __name__ == "__main__":
         # Non-gating will be removed from this script and handled at the job level in SPEC-7413
         #sys.exit(return_code)
         sys.exit(0)
-    except:
+    except Exception as e:
         # Non-gating will be removed from this script and handled at the job level in SPEC-7413
-        sys.exit(0)
+        print(f"Exception caught by TIAF driver: {e}")

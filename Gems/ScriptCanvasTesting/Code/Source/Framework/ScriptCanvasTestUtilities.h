@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -69,23 +70,6 @@ namespace ScriptCanvasTests
         return GetTestNode<t_NodeType>(scriptCanvasId, entityOut);
     }
 
-    ScriptCanvas::Node* CreateDataNodeByType(const ScriptCanvas::ScriptCanvasId& scriptCanvasId, const ScriptCanvas::Data::Type& type, AZ::EntityId& nodeIDout);
-
-    template<typename t_Value>
-    ScriptCanvas::Node* CreateDataNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId, const t_Value& value, AZ::EntityId& nodeIDout)
-    {
-        using namespace ScriptCanvas;
-        const Data::Type operandType = Data::FromAZType(azrtti_typeid<t_Value>());
-        Node* node = CreateDataNodeByType(scriptCanvasId, operandType, nodeIDout);
-
-        EXPECT_NE(node, nullptr);
-        if (node)
-        {
-            node->SetInput_UNIT_TEST("Set", value);
-        }
-        return node;
-    }
-
     template<typename t_Value>
     ScriptCanvas::VariableId CreateVariable(ScriptCanvas::ScriptCanvasId scriptCanvasId, const t_Value& value, AZStd::string_view variableName)
     {
@@ -101,7 +85,6 @@ namespace ScriptCanvasTests
         return addVariableOutcome.TakeValue();
     }
 
-    ScriptCanvas::Nodes::Core::BehaviorContextObjectNode* CreateTestObjectNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId, AZ::EntityId& entityOut, const AZ::Uuid& objectTypeID);
     AZ::EntityId CreateClassFunctionNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId, AZStd::string_view className, AZStd::string_view methodName);
     AZStd::string SlotDescriptorToString(ScriptCanvas::SlotDescriptor type);
     void DumpSlots(const ScriptCanvas::Node& node);

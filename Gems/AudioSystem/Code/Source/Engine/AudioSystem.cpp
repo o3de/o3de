@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -699,7 +700,7 @@ namespace Audio
     {
         AZ_Assert(gEnv->mMainThreadId == CryGetCurrentThreadId(), "AudioSystem::DrawAudioDebugData - called from non-Main thread!");
 
-        if (g_audioCVars.m_nDrawAudioDebug > 0)
+        if (CVars::s_debugDrawOptions.GetRawFlags() != 0)
         {
             SAudioRequest oRequest;
             oRequest.nFlags = (eARF_PRIORITY_HIGH | eARF_EXECUTE_BLOCKING);

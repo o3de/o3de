@@ -1,11 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <NewProjectSettingsScreen.h>
+#include <ProjectManagerDefs.h>
 #include <PythonBindingsInterface.h>
 #include <FormBrowseEditWidget.h>
 #include <FormLineEditWidget.h>
@@ -117,7 +119,7 @@ namespace O3DE::ProjectManager
                 for (int index = 0; index < m_templates.size(); ++index)
                 {
                     ProjectTemplateInfo projectTemplate = m_templates.at(index);
-                    QString projectPreviewPath = projectTemplate.m_path + "/Template/preview.png";
+                    QString projectPreviewPath = QDir(projectTemplate.m_path).filePath(ProjectPreviewImagePath);
                     QFileInfo doesPreviewExist(projectPreviewPath);
                     if (!doesPreviewExist.exists() || !doesPreviewExist.isFile())
                     {

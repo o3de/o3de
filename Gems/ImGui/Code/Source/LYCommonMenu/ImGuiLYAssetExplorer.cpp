@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -465,7 +466,7 @@ namespace ImGui
                                     ImGui::BeginGroup();
                                     if (ImGui::SmallButton(AZStd::string::format("-View #%03d-##%s", ++instanceCount, meshInstance.first.ToString().c_str()).c_str()))
                                     {
-                                        ImGuiEntityOutlinerNotifcationBus::Broadcast(&IImGuiEntityOutlinerNotifcations::OnImGuiEntityOutlinerTarget, meshInstance.first);
+                                        ImGuiEntityOutlinerNotificationBus::Broadcast(&IImGuiEntityOutlinerNotifications::OnImGuiEntityOutlinerTarget, meshInstance.first);
                                     }
                                     // Build the Label String.
                                     ImGui::SameLine();
