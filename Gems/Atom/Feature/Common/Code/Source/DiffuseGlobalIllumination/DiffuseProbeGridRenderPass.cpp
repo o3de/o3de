@@ -6,6 +6,7 @@
  *
  */
 
+#include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/Image/AttachmentImagePool.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
@@ -44,6 +45,7 @@ namespace AZ
 
         void DiffuseProbeGridRenderPass::FrameBeginInternal(FramePrepareParams params)
         {
+            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
 
@@ -67,10 +69,13 @@ namespace AZ
 
             Base::FrameBeginInternal(params);
 
-            for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetRealTimeProbeGrids())
+            // process attachment readback for RealTime grids, if raytracing is supported on this device            
+            if (device->GetFeatures().m_rayTracing)
             {
-                // process attachment readback
-                diffuseProbeGrid->GetTextureReadback().FrameBegin(params);
+                for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetRealTimeProbeGrids())
+                {
+                    diffuseProbeGrid->GetTextureReadback().FrameBegin(params);
+                }
             }
         }
 
@@ -81,13 +86,7 @@ namespace AZ
 
             for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetProbeGrids())
             {
-                if (diffuseProbeGrid->GetMode() == DiffuseProbeGridMode::Baked &&
-                    !diffuseProbeGrid->HasValidBakedTextures())
-                {
-                    continue;
-                }
-
-                if (!diffuseProbeGrid->GetIsVisible())
+                if (!ShouldRender(diffuseProbeGrid))
                 {
                     continue;
                 }
@@ -173,13 +172,7 @@ namespace AZ
 
             for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetProbeGrids())
             {
-                if (diffuseProbeGrid->GetMode() == DiffuseProbeGridMode::Baked &&
-                    !diffuseProbeGrid->HasValidBakedTextures())
-                {
-                    continue;
-                }
-
-                if (!diffuseProbeGrid->GetIsVisible())
+                if (!ShouldRender(diffuseProbeGrid))
                 {
                     continue;
                 }
@@ -192,6 +185,34 @@ namespace AZ
             }
 
             Base::CompileResources(context);
+        }
+
+        bool DiffuseProbeGridRenderPass::ShouldRender(const AZStd::shared_ptr<DiffuseProbeGrid>& diffuseProbeGrid)
+        {
+            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
+
+            // check for baked mode with no valid textures
+            if (diffuseProbeGrid->GetMode() == DiffuseProbeGridMode::Baked &&
+                !diffuseProbeGrid->HasValidBakedTextures())
+            {
+                return false;
+            }
+
+            // check for RealTime mode without ray tracing
+            if (diffuseProbeGrid->GetMode() == DiffuseProbeGridMode::RealTime &&
+                !device->GetFeatures().m_rayTracing)
+            {
+                return false;
+            }
+
+            // check if culled out
+            if (!diffuseProbeGrid->GetIsVisible())
+            {
+                return false;
+            }
+
+            // DiffuseProbeGrid should be rendered
+            return true;
         }
     } // namespace Render
 } // namespace AZ
