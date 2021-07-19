@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 #include <AzCore/std/string/fixed_string.h>
 
