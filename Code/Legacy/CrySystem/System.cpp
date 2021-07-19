@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -1428,20 +1429,6 @@ void CSystem::OnLanguageCVarChanged(ICVar* language)
                 gEnv->pCryFont->OnLanguageChanged();
             }
         }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////
-void CSystem::OnLanguageAudioCVarChanged(ICVar* language)
-{
-    static Audio::SAudioRequest oLanguageRequest;
-    static Audio::SAudioManagerRequestData<Audio::eAMRT_CHANGE_LANGUAGE> oLanguageRequestData;
-
-    if (language && (language->GetType() == CVAR_STRING))
-    {
-        oLanguageRequest.pData = &oLanguageRequestData;
-        oLanguageRequest.nFlags = Audio::eARF_PRIORITY_HIGH;
-        Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequest, oLanguageRequest);
     }
 }
 

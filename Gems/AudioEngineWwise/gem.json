@@ -6,7 +6,7 @@
     "type": "Code",
     "summary": "The Wwise Audio Engine Gem provides support for Audiokinetic Wave Works Interactive Sound Engine (Wwise).",
     "canonical_tags": ["Gem"],
-    "user_tags": ["Audio", "Utiltity", "Tools"],
+    "user_tags": ["Audio", "Utility", "Tools"],
     "icon_path": "preview.png",
     "requirements": "Users will need to download WWise from the AudioKinetic web site: https://www.audiokinetic.com/download/"
 }
