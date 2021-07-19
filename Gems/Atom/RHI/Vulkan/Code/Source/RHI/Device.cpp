@@ -821,8 +821,8 @@ namespace AZ
                     descriptor.m_bindFlags, 
                     RHI::BufferBindFlags::ShaderWrite | RHI::BufferBindFlags::Predication | RHI::BufferBindFlags::Indirect) || 
                     (queueFamilies.size()) <= 1) 
-                    ? VK_SHARING_MODE_EXCLUSIVE 
-                    : VK_SHARING_MODE_CONCURRENT;
+                ? VK_SHARING_MODE_EXCLUSIVE 
+                : VK_SHARING_MODE_CONCURRENT;
 
             createInfo.queueFamilyIndexCount = static_cast<uint32_t>(queueFamilies.size());
             createInfo.pQueueFamilyIndices = queueFamilies.empty() ? nullptr : queueFamilies.data();
