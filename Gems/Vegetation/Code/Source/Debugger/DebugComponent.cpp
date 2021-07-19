@@ -112,6 +112,7 @@ void DebugComponent::Activate()
     DebugNotificationBus::Handler::BusConnect();
     DebugNotificationBus::AllowFunctionQueuing(true);
     AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(GetEntityId());
+    AzFramework::BoundsRequestBus::Handler::BusConnect(GetEntityId());
     SystemConfigurationRequestBus::Handler::BusConnect();
 
     VEG_PROFILE_METHOD(DebugSystemDataBus::BroadcastResult(m_debugData, &DebugSystemDataBus::Events::GetDebugData));
@@ -120,6 +121,7 @@ void DebugComponent::Activate()
 void DebugComponent::Deactivate()
 {
     SystemConfigurationRequestBus::Handler::BusDisconnect();
+    AzFramework::BoundsRequestBus::Handler::BusDisconnect();
     AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
     DebugRequestBus::Handler::BusDisconnect();
     DebugNotificationBus::Handler::BusDisconnect();

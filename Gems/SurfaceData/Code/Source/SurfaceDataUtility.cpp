@@ -34,7 +34,7 @@ namespace SurfaceData
         {
             // Transform everything back to world space
             outPosition = meshTransform.TransformPoint((rayStartLocal + (rayDirectionLocal * distance)) * clampedScale);
-            outNormal = meshTransform.TransformVector(normalLocal * clampedScale);
+            outNormal = meshTransform.TransformVector(normalLocal).GetNormalized();
             return true;
         }
 
