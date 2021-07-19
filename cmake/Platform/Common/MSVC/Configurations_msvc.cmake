@@ -116,14 +116,6 @@ else()
     )    
 endif()
 
-if(CMAKE_GENERATOR MATCHES "Visual Studio 15")
-    # Visual Studio 2017 has problems with [[maybe_unused]] on lambdas. Sadly, there is no different warning, so 4100 has to remain disabled on 2017
-    ly_append_configurations_options(
-        COMPILATION
-            /wd4100
-    )
-endif()
-
 # Configure system includes
 ly_set(LY_CXX_SYSTEM_INCLUDE_CONFIGURATION_FLAG 
     /experimental:external # Turns on "external" headers feature for MSVC compilers
