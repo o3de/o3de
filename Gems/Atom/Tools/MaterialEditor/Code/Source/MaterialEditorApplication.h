@@ -21,8 +21,9 @@
 #include <AzFramework/Logging/LogFile.h>
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
+#include <AzToolsFramework/Logger/TraceLogger.h>
+#include <AzQtComponents/Application/AzQtApplication.h>
 
-#include <QApplication>
 #include <QTimer>
 
 namespace MaterialEditor
@@ -31,7 +32,7 @@ namespace MaterialEditor
 
     class MaterialEditorApplication
         : public AzFramework::Application
-        , public QApplication
+        , public AzQtComponents::AzQtApplication
         , private AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler
         , private MaterialEditorWindowNotificationBus::Handler
         , private AzFramework::AssetSystemStatusBus::Handler
@@ -100,12 +101,11 @@ namespace MaterialEditor
         //////////////////////////////////////////////////////////////////////////
         // AZ::Debug::TraceMessageBus::Handler overrides...
         bool OnOutput(const char* window, const char* message) override;
-        //////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////// 
 
         void CompileCriticalAssets();
 
         void ProcessCommandLine(const AZ::CommandLine& commandLine);
-        void WriteStartupLog();
 
         void LoadSettings();
         void UnloadSettings();
@@ -124,6 +124,8 @@ namespace MaterialEditor
 
         AZStd::vector<LogMessage> m_startupLogSink;
         AZStd::unique_ptr<AzFramework::LogFile> m_logFile;
+
+        AzToolsFramework::TraceLogger m_traceLogger;
 
         //! Local user settings are used to store material browser tree expansion state
         AZ::UserSettingsProvider m_localUserSettings;

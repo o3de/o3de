@@ -243,7 +243,7 @@ namespace Editor
     }
 
     EditorQtApplication::EditorQtApplication(int& argc, char** argv)
-        : QApplication(argc, argv)
+        : AzQtApplication(argc, argv)
         , m_inWinEventFilter(false)
         , m_stylesheet(new AzQtComponents::O3DEStylesheet(this))
         , m_idleTimer(new QTimer(this))
@@ -253,8 +253,6 @@ namespace Editor
         setWindowIcon(QIcon(":/Application/res/o3de_editor.ico"));
 
         // set the default key store for our preferences:
-        setOrganizationName("O3DE");
-        setOrganizationDomain("o3de.org");
         setApplicationName("O3DE Editor");
 
         connect(m_idleTimer, &QTimer::timeout, this, &EditorQtApplication::maybeProcessIdle);

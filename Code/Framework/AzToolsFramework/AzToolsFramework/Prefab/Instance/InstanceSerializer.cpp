@@ -168,7 +168,6 @@ namespace AzToolsFramework
 
             if (instance->m_containerEntity)
             {
-                instance->m_instanceEntityMapper->UnregisterEntity(instance->m_containerEntity->GetId());
                 instance->m_containerEntity.reset();
             }
 
