@@ -69,8 +69,10 @@ namespace ShaderManagementConsole
 
     ShaderManagementConsoleApplication::ShaderManagementConsoleApplication(int* argc, char*** argv)
         : Application(argc, argv)
-        , QApplication(*argc, *argv)
+        , AzQtApplication(*argc, *argv)
     {
+        QApplication::setApplicationName("O3DE Shader Management Console");
+
         // The settings registry has been created at this point, so add the CMake target
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(
             *AZ::SettingsRegistry::Get(), GetBuildTargetName());
@@ -151,7 +153,6 @@ namespace ShaderManagementConsole
     {
         AzFramework::AssetSystemStatusBus::Handler::BusConnect();
         AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusConnect();
-        AZ::Debug::TraceMessageBus::Handler::BusConnect();
 
         AzFramework::Application::StartCommon(systemEntity);
 
@@ -163,7 +164,6 @@ namespace ShaderManagementConsole
     void ShaderManagementConsoleApplication::OnShaderManagementConsoleWindowClosing()
     {
         ExitMainLoop();
-        AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
         ShaderManagementConsoleWindowNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();
     }
@@ -343,6 +343,8 @@ namespace ShaderManagementConsole
         {
             return;
         }
+
+        m_traceLogger.WriteStartupLog("ShaderManagementConsole.log");
 
         //[GFX TODO][ATOM-415] Try to factor out some of this stuff with AtomSampleViewerApplication
         AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusConnect();
