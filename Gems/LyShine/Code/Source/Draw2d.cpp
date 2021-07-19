@@ -6,7 +6,6 @@
  *
  */
 #include "LyShine_precompiled.h"
-#include "IFont.h"
 #include <IRenderer.h> // for SVF_P3F_C4B_T2F which will be removed in a coming PR
 
 #include <LyShine/Draw2d.h>
@@ -22,9 +21,6 @@
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
-
-static const int g_defaultBlendState = GS_BLSRC_SRCALPHA | GS_BLDST_ONEMINUSSRCALPHA;
-static const int g_defaultBaseState = GS_NODEPTHTEST;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // LOCAL STATIC FUNCTIONS
@@ -48,10 +44,6 @@ CDraw2d::CDraw2d(AZ::RPI::ViewportContextPtr viewportContext)
 {
     // These default options are set here and never change. They are stored so that if a null options
     // structure is passed into the draw functions then this default one can be used instead
-    m_defaultImageOptions.blendMode = g_defaultBlendState;
-    m_defaultImageOptions.color.Set(1.0f, 1.0f, 1.0f);
-    m_defaultImageOptions.pixelRounding = Rounding::Nearest;
-    m_defaultImageOptions.baseState = g_defaultBaseState;
 
     m_defaultTextOptions.fontName = "default";
     m_defaultTextOptions.effectIndex = 0;
@@ -61,7 +53,7 @@ CDraw2d::CDraw2d(AZ::RPI::ViewportContextPtr viewportContext)
     m_defaultTextOptions.dropShadowOffset.Set(0.0f, 0.0f);
     m_defaultTextOptions.dropShadowColor.Set(0.0f, 0.0f, 0.0f, 0.0f);
     m_defaultTextOptions.rotation = 0.0f;
-    m_defaultTextOptions.baseState = g_defaultBaseState;
+    m_defaultTextOptions.depthTestEnabled = false;
 
     AZ::Render::Bootstrap::NotificationBus::Handler::BusConnect();
 }
@@ -106,15 +98,10 @@ void CDraw2d::OnBootstrapSceneReady([[maybe_unused]] AZ::RPI::Scene* bootstrapSc
         {"COLOR", AZ::RHI::Format::B8G8R8A8_UNORM},
         {"TEXCOORD0", AZ::RHI::Format::R32G32_FLOAT} });
     m_dynamicDraw->AddDrawStateOptions(AZ::RPI::DynamicDrawContext::DrawStateOptions::PrimitiveType
-        | AZ::RPI::DynamicDrawContext::DrawStateOptions::BlendMode);
+        | AZ::RPI::DynamicDrawContext::DrawStateOptions::BlendMode
+        | AZ::RPI::DynamicDrawContext::DrawStateOptions::DepthState);
     m_dynamicDraw->SetOutputScope(scene.get());
     m_dynamicDraw->EndInit();
-
-    AZ::RHI::TargetBlendState targetBlendState;
-    targetBlendState.m_enable = true;
-    targetBlendState.m_blendSource = AZ::RHI::BlendFactor::AlphaSource;
-    targetBlendState.m_blendDest = AZ::RHI::BlendFactor::AlphaSourceInverse;
-    m_dynamicDraw->SetTarget0BlendState(targetBlendState);
 
     // Cache draw srg input indices for later use
     static const char textureIndexName[] = "m_texture";
@@ -139,8 +126,6 @@ void CDraw2d::DrawImage(AZ::Data::Instance<AZ::RPI::Image> image, AZ::Vector2 po
 
     AZ::Color color = AZ::Color::CreateFromVector3AndFloat(actualImageOptions->color, opacity);
     AZ::u32 packedColor = PackARGB8888(color);
-
-    int blendMode = actualImageOptions->blendMode;
 
     // Depending on the requested pixel rounding setting we may round position to an exact pixel
     AZ::Vector2 pos = Draw2dHelper::RoundXY(position, actualImageOptions->pixelRounding);
@@ -175,7 +160,7 @@ void CDraw2d::DrawImage(AZ::Data::Instance<AZ::RPI::Image> image, AZ::Vector2 po
     quad.m_image = image;
 
     // add the blendMode flags to the base state
-    quad.m_state = blendMode | actualImageOptions->baseState;
+    quad.m_renderState = actualImageOptions->m_renderState;
 
     // apply rotation if requested
     if (rotation != 0.0f)
@@ -198,11 +183,9 @@ void CDraw2d::DrawImageAligned(AZ::Data::Instance<AZ::RPI::Image> image, AZ::Vec
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void CDraw2d::DrawQuad(AZ::Data::Instance<AZ::RPI::Image> image, VertexPosColUV* verts, int blendMode, Rounding pixelRounding, int baseState)
+void CDraw2d::DrawQuad(AZ::Data::Instance<AZ::RPI::Image> image, VertexPosColUV* verts, Rounding pixelRounding,
+    const CDraw2d::RenderState& renderState)
 {
-    int actualBlendMode = (blendMode == -1) ? g_defaultBlendState : blendMode;
-    int actualBaseState = (baseState == -1) ? g_defaultBaseState : baseState;
-
     // define quad
     DeferredQuad quad;
     for (int i = 0; i < 4; ++i)
@@ -214,19 +197,16 @@ void CDraw2d::DrawQuad(AZ::Data::Instance<AZ::RPI::Image> image, VertexPosColUV*
     quad.m_image = image;
 
     // add the blendMode flags to the base state
-    quad.m_state = actualBlendMode | actualBaseState;
+    quad.m_renderState = renderState;
 
     DrawOrDeferQuad(&quad);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void CDraw2d::DrawLine(AZ::Vector2 start, AZ::Vector2 end, AZ::Color color, int blendMode, Rounding pixelRounding, int baseState)
+void CDraw2d::DrawLine(AZ::Vector2 start, AZ::Vector2 end, AZ::Color color, Rounding pixelRounding,
+    const CDraw2d::RenderState& renderState)
 {
-    int actualBaseState = (baseState == -1) ? g_defaultBaseState : baseState;
-
     auto image = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
-
-    int actualBlendMode = (blendMode == -1) ? g_defaultBlendState : blendMode;
 
     // define line
     uint32 packedColor = PackARGB8888(color);
@@ -244,19 +224,16 @@ void CDraw2d::DrawLine(AZ::Vector2 start, AZ::Vector2 end, AZ::Color color, int 
     line.m_packedColors[1] = packedColor;
 
     // add the blendMode flags to the base state
-    line.m_state = actualBlendMode | actualBaseState;
+    line.m_renderState = renderState;
 
     DrawOrDeferLine(&line);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void CDraw2d::DrawLineTextured(AZ::Data::Instance<AZ::RPI::Image> image, VertexPosColUV* verts, int blendMode, Rounding pixelRounding, int baseState)
+void CDraw2d::DrawLineTextured(AZ::Data::Instance<AZ::RPI::Image> image, VertexPosColUV* verts, Rounding pixelRounding,
+    const CDraw2d::RenderState& renderState)
 {
-    int actualBaseState = (baseState == -1) ? g_defaultBaseState : baseState;
-
-    int actualBlendMode = (blendMode == -1) ? g_defaultBlendState : blendMode;
-
     // define line
     DeferredLine line;
     line.m_image = image;
@@ -269,7 +246,7 @@ void CDraw2d::DrawLineTextured(AZ::Data::Instance<AZ::RPI::Image> image, VertexP
     }
 
     // add the blendMode flags to the base state
-    line.m_state = actualBlendMode | actualBaseState;
+    line.m_renderState = renderState;
 
     DrawOrDeferLine(&line);
 }
@@ -299,7 +276,7 @@ void CDraw2d::DrawText(const char* textString, AZ::Vector2 position, float point
             dropShadowPosition, pointSize, actualTextOptions->dropShadowColor,
             actualTextOptions->rotation,
             actualTextOptions->horizontalAlignment, actualTextOptions->verticalAlignment,
-            actualTextOptions->baseState);
+            actualTextOptions->depthTestEnabled);
     }
 
     // draw the text string
@@ -308,7 +285,7 @@ void CDraw2d::DrawText(const char* textString, AZ::Vector2 position, float point
         position, pointSize, textColor,
         actualTextOptions->rotation,
         actualTextOptions->horizontalAlignment, actualTextOptions->verticalAlignment,
-        actualTextOptions->baseState);
+        actualTextOptions->depthTestEnabled);
 }
 
 void CDraw2d::DrawRectOutlineTextured(AZ::Data::Instance<AZ::RPI::Image> image,
@@ -579,7 +556,7 @@ void CDraw2d::RotatePointsAboutPivot(AZ::Vector2* points, [[maybe_unused]] int n
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CDraw2d::DrawTextInternal(const char* textString, AzFramework::FontId fontId, unsigned int effectIndex,
     AZ::Vector2 position, float pointSize, AZ::Color color, float rotation,
-    HAlign horizontalAlignment, VAlign verticalAlignment, [[maybe_unused]] int baseState)
+    HAlign horizontalAlignment, VAlign verticalAlignment, bool depthTestEnabled)
 {
     // FFont.cpp uses the alpha value of the color to decide whether to use the color, if the alpha value is zero
     // (in a ColorB format) then the color set via SetColor is ignored and it usually ends up drawing with an alpha of 1.
@@ -636,7 +613,7 @@ void CDraw2d::DrawTextInternal(const char* textString, AzFramework::FontId fontI
     drawParams.m_hAlign = hAlignment;
     drawParams.m_vAlign = vAlignment;
     drawParams.m_monospace = false;
-    drawParams.m_depthTest = false;
+    drawParams.m_depthTest = depthTestEnabled;
     drawParams.m_virtual800x600ScreenSize = false;
     drawParams.m_scaleWithWindow = false;
     drawParams.m_multiline = true;
@@ -794,6 +771,8 @@ void CDraw2d::DeferredQuad::Draw(AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynam
 
     // Add the primitive to the dynamic draw context for drawing
     dynamicDraw->SetPrimitiveType(AZ::RHI::PrimitiveTopology::TriangleList);
+    dynamicDraw->SetDepthState(m_renderState.m_depthState);
+    dynamicDraw->SetTarget0BlendState(m_renderState.m_blendState);
     dynamicDraw->DrawLinear(vertices, NUM_VERTS, drawSrg);
 }
 
@@ -853,6 +832,8 @@ void CDraw2d::DeferredLine::Draw(AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynam
 
     // Add the primitive to the dynamic draw context for drawing
     dynamicDraw->SetPrimitiveType(AZ::RHI::PrimitiveTopology::LineList);
+    dynamicDraw->SetDepthState(m_renderState.m_depthState);
+    dynamicDraw->SetTarget0BlendState(m_renderState.m_blendState);
     dynamicDraw->DrawLinear(vertices, NUM_VERTS, drawSrg);
 }
 
@@ -951,4 +932,3 @@ void CDraw2d::DeferredText::Draw([[maybe_unused]] AZ::RHI::Ptr<AZ::RPI::DynamicD
         }
     }
 }
-
