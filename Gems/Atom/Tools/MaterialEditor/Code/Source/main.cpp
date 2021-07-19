@@ -24,10 +24,6 @@
 
 int main(int argc, char** argv)
 {
-    QApplication::setOrganizationName("O3DE");
-    QApplication::setOrganizationDomain("o3de.org");
-    QApplication::setApplicationName("O3DE Material Editor");
-
     AzQtComponents::AzQtApplication::InitializeDpiScaling();
 
     MaterialEditor::MaterialEditorApplication app(&argc, &argv);

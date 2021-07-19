@@ -24,10 +24,6 @@
 
 int main(int argc, char** argv)
 {
-    QApplication::setOrganizationName("O3DE");
-    QApplication::setOrganizationDomain("o3de.com");
-    QApplication::setApplicationName("O3DE Shader Management Console");
-
     AzQtComponents::AzQtApplication::InitializeDpiScaling();
 
     ShaderManagementConsole::ShaderManagementConsoleApplication app(&argc, &argv);
