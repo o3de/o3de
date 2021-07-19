@@ -25,21 +25,7 @@
 
 int main(int argc, char** argv)
 {
-    QApplication::setOrganizationName("O3DE");
-    QApplication::setOrganizationDomain("o3de.org");
-    QApplication::setApplicationName("O3DE Material Editor");
-
-    AzQtComponents::PrepareQtPaths();
-
-    QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
-
-    // Must be set before QApplication is initialized, so that we support HighDpi monitors, like the Retina displays
-    // on Windows 10
-    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
-    QCoreApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
-    QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
-    AzQtComponents::Utilities::HandleDpiAwareness(AzQtComponents::Utilities::SystemDpiAware);
+    AzQtComponents::AzQtApplication::InitializeDpiScaling();
 
     MaterialEditor::MaterialEditorApplication app(&argc, &argv);
 
