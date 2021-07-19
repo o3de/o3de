@@ -271,7 +271,7 @@ namespace AssetProcessor
 
                 AZ::SettingsRegistryImpl registry;
 
-                // Seed the local settings registry using the AssetProcessor settings registry
+                // Seed the local settings registry using the AssetProcessor Settings Registry
                 if (auto settingsRegistry = AZ::Interface<AZ::SettingsRegistryInterface>::Get(); settingsRegistry != nullptr)
                 {
                     AZStd::array settingsToCopy{
@@ -292,7 +292,12 @@ namespace AssetProcessor
                             " to local settings registry", settingsKey.c_str());
                     }
 
-                    // Read the AssetProcessor loaded Gem Information from the global Registry
+                    // The purpose of this section is to copy the Gem's SourcePaths from the Global Settings Registry
+                    // the local SettingsRegistry. The reason this is needed is so that the call to
+                    // `MergeSettingsToRegistry_GemRegistries` below is able to locate each gem's "<gem-root>/Registry" folder
+                    // that will be merged into the bootstrap.game.<configuration>.<platform>.setreg file
+                    // This is used by the GameLauncher applications to read from a single merged .setreg file
+                    // containing the settings needed to run a game/simulation without have access to the source code base registry
                     AZStd::vector<AzFramework::GemInfo> gemInfos;
                     size_t pathIndex{};
                     if (AzFramework::GetGemsInfo(gemInfos, *settingsRegistry))
@@ -320,10 +325,13 @@ namespace AssetProcessor
                 }
 
                 AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_EngineRegistry(registry, platform, specialization, &scratchBuffer);
+                // This function iterates over each path for each the "/Amazon/Gems/<gem-name>/SourcePaths" key and attempts
+                // to merge the "Registry" directory in each path.
                 AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_GemRegistries(registry, platform, specialization, &scratchBuffer);
                 AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectRegistry(registry, platform, specialization, &scratchBuffer);
 
-                // The Placeholder Key is removed now that the each gem "<gem-source-path>/Registry" directory has been merged
+                // The Placeholder Key is removed now that each gem's "<gem-root>/Registry" directory have been merged to
+                // the local Settings Registry instance via `MergeSettingsToRegistry_GemRegistries`
                 registry.Remove(PlaceholderGemKey);
 
                 // Merge the Project User and User home settings registry only in non-release builds
