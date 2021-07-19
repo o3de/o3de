@@ -6,12 +6,16 @@
  *
  */
 
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
 #include <Psapi.h>
+
+AZ_CVAR(bool, ap_tether_lifetime, false, nullptr, AZ::ConsoleFunctorFlags::Null,
+    "If enabled, a parent process that launches the AP will terminate the AP on exit");
 
 namespace AzFramework::AssetSystem::Platform
 {
@@ -101,13 +105,18 @@ namespace AzFramework::AssetSystem::Platform
         }
 
         // Create or retrieve the job handle associated with the asset processor
-        HANDLE apJob = ::CreateJobObjectA(nullptr, "AssetProcessorJob");
-        if (apJob && GetLastError() != ERROR_ALREADY_EXISTS)
+        HANDLE apJob = nullptr;
+
+        if (ap_tether_lifetime)
         {
-            // We're creating the job for the first time. Configure it to close child processes when this process exits.
-            JOBOBJECT_EXTENDED_LIMIT_INFORMATION info = {};
-            info.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
-            ::SetInformationJobObject(apJob, JobObjectExtendedLimitInformation, &info, sizeof(info));
+            apJob = ::CreateJobObjectA(nullptr, "AssetProcessorJob");
+            if (apJob && GetLastError() != ERROR_ALREADY_EXISTS)
+            {
+                // We're creating the job for the first time. Configure it to close child processes when this process exits.
+                JOBOBJECT_EXTENDED_LIMIT_INFORMATION info = {};
+                info.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+                ::SetInformationJobObject(apJob, JobObjectExtendedLimitInformation, &info, sizeof(info));
+            }
         }
 
         STARTUPINFO si;
@@ -119,7 +128,7 @@ namespace AzFramework::AssetSystem::Platform
 
         bool createResult = ::CreateProcessA(nullptr, fullLaunchCommand.data(), nullptr, nullptr, FALSE, 0, nullptr, AZ::IO::FixedMaxPathString{ executableDirectory }.c_str(), &si, &pi) != 0;
 
-        if (apJob && createResult)
+        if (ap_tether_lifetime && apJob && createResult)
         {
             // Save process and thread handle to terminate AP when the parent process exits
             ::AssignProcessToJobObject(apJob, pi.hProcess);
