@@ -270,13 +270,11 @@ namespace AZ
             // Sort the table according to the appropriate column.
             void SortTable(ImGuiTableSortSpecs* sortSpecs);
         private:
-            using Buffer = AZ::RHI::MemoryStatistics::Buffer;
-            using Image = AZ::RHI::MemoryStatistics::Image;
-            using TableRowVariant = AZStd::variant<Buffer*, Image*>;
-
             struct TableRow {
                 Name m_parentPoolName;
-                TableRowVariant m_variant;
+                Name m_bufImgName;
+                size_t m_sizeInBytes = 0;
+                AZStd::string m_bindFlags;
             };
 
             // Table settings

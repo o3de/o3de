@@ -1125,15 +1125,6 @@ namespace AZ
             const bool ascending = sortSpecs->Specs->SortDirection == ImGuiSortDirection_Ascending;
             const ImS16 columnToSort = sortSpecs->Specs->ColumnIndex;
 
-            const auto getName = [](auto&& entry)
-            {
-                return entry->m_name;
-            };
-            const auto getSize = [](auto&& entry)
-            {
-                return entry->m_sizeInBytes;
-            };
-
             // Sort by the appropriate column in the table
             switch (columnToSort)
             {
@@ -1148,17 +1139,17 @@ namespace AZ
                 break;
             case (1): // Sort by buffer/image name
                 AZStd::sort(m_tableRows.begin(), m_tableRows.end(),
-                    [ascending, &getName](const TableRow& lhs, const TableRow& rhs){
-                        const auto lhsName = AZStd::visit(getName, lhs.m_variant).GetStringView();
-                        const auto rhsName = AZStd::visit(getName, rhs.m_variant).GetStringView();
+                    [ascending](const TableRow& lhs, const TableRow& rhs){
+                        const auto lhsName = lhs.m_bufImgName.GetStringView();
+                        const auto rhsName = rhs.m_bufImgName.GetStringView();
                         return ascending ? lhsName < rhsName : lhsName > rhsName;
                     });
                 break;
             case (2): // Sort by memory usage
                 AZStd::sort(m_tableRows.begin(), m_tableRows.end(),
-                    [ascending, &getSize](const TableRow& lhs, const TableRow& rhs){
-                        const float lhsSize = AZStd::visit(getSize, lhs.m_variant);
-                        const float rhsSize = AZStd::visit(getSize, rhs.m_variant);
+                    [ascending](const TableRow& lhs, const TableRow& rhs){
+                        const float lhsSize = lhs.m_sizeInBytes;
+                        const float rhsSize = rhs.m_sizeInBytes;
                         return ascending ? lhsSize < rhsSize : lhsSize > rhsSize;
                     });
                 break;
@@ -1184,41 +1175,21 @@ namespace AZ
 
                 // Draw each row in the table
                 for (const auto& tableRow : m_tableRows) {
-                    AZStd::string rowName = "";
-                    float size = 0.0;
-                    AZStd::string bindStrings = ""; 
-
-                    // Get the variant's fields
-                    AZStd::visit(
-                        [&rowName, &size](auto&& val)
-                        {
-                            rowName = val->m_name.GetCStr();
-                            size = 1.0f * val->m_sizeInBytes / GpuProfilerImGuiHelper::MB;
-                        }, tableRow.m_variant);
-                    if (auto buf = AZStd::get_if<Buffer*>(&tableRow.m_variant))
-                    {
-                        bindStrings = GpuProfilerImGuiHelper::GetBufferBindStrings((*buf)->m_bindFlags);
-                    }
-                    else if (auto img = AZStd::get_if<Image*>(&tableRow.m_variant))
-                    {
-                        bindStrings = GpuProfilerImGuiHelper::GetImageBindStrings((*img)->m_bindFlags);
-                    }
-
                     // Don't draw the row if none of the row's text fields pass the filter
                     if (!m_nameFilter.PassFilter(tableRow.m_parentPoolName.GetCStr())
-                        && !m_nameFilter.PassFilter(rowName.c_str())
-                        && !m_nameFilter.PassFilter(bindStrings.c_str()))
+                        && !m_nameFilter.PassFilter(tableRow.m_bufImgName.GetCStr())
+                        && !m_nameFilter.PassFilter(tableRow.m_bindFlags.c_str()))
                     {
                         continue;
                     }
 
                     ImGui::Text(tableRow.m_parentPoolName.GetCStr());
                     ImGui::TableNextColumn();
-                    ImGui::Text(rowName.c_str());
+                    ImGui::Text(tableRow.m_bufImgName.GetCStr());
                     ImGui::TableNextColumn();
-                    ImGui::Text("%.2f", size);
+                    ImGui::Text("%.2f", 1.0f * tableRow.m_sizeInBytes / GpuProfilerImGuiHelper::MB);
                     ImGui::TableNextColumn();
-                    ImGui::Text(bindStrings.c_str());
+                    ImGui::Text(tableRow.m_bindFlags.c_str());
                     ImGui::TableNextColumn();
                 }
             }
@@ -1247,7 +1218,8 @@ namespace AZ
                         {
                             buf.m_name = Name("Unnamed Buffer");
                         }
-                        m_tableRows.push_back({ poolName, &buf }); // emplace_back does not appear to deduce variant type correctly here
+                        const AZStd::string flags = GpuProfilerImGuiHelper::GetBufferBindStrings(buf.m_bindFlags);
+                        m_tableRows.push_back({ poolName, buf.m_name, buf.m_sizeInBytes, flags });
                     }
                 }
 
@@ -1259,7 +1231,8 @@ namespace AZ
                         {
                             img.m_name = Name("Unnamed Image");
                         }
-                        m_tableRows.push_back({poolName, &img});
+                        const AZStd::string flags = GpuProfilerImGuiHelper::GetImageBindStrings(img.m_bindFlags);
+                        m_tableRows.push_back({ poolName, img.m_name, img.m_sizeInBytes, flags });
                     }
                 }
             }
