@@ -6,7 +6,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "SubstanceAssetTypeInfo.h"
 
 namespace LmbrCentral

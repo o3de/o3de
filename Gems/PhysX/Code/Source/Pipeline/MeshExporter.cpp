@@ -6,8 +6,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
 #include <SceneAPI/SceneCore/Containers/Utilities/Filters.h>
@@ -37,6 +35,7 @@
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/XML/rapidxml.h>
 #include <AzCore/std/algorithm.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <GFxFramework/MaterialIO/Material.h>
 
 // A utility macro helping set/clear bits in a single line

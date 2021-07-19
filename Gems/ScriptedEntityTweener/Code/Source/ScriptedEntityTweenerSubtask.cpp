@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "ScriptedEntityTweener_precompiled.h"
 
 #include <AzCore/Math/Color.h>
 

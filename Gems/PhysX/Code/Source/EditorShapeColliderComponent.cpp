@@ -6,7 +6,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
 #include <EditorShapeColliderComponent.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Physics/ColliderComponentBus.h>
@@ -26,6 +25,7 @@
 #include <PhysX/SystemComponentBus.h>
 #include <Source/Utils.h>
 #include <AzCore/Math/Geometry2DUtils.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <cmath>
 
 #include <RigidBodyStatic.h>

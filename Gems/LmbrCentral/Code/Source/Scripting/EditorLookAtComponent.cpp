@@ -6,7 +6,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "EditorLookAtComponent.h"
 #include "LookAtComponent.h"
 

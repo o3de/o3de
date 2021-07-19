@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "StartingPointInput_precompiled.h"
+
 #include "InputEventMap.h"
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/RTTI/ReflectContext.h>

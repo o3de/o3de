@@ -11,8 +11,6 @@
 #define CRYINCLUDE_CRYCOMMON_MAESTRO_TYPES_ANIMNODETYPE_H
 #pragma once
 
-// **NOTE**: Do not include into the precompiled header hierarchy!
-
 //////////////////////////////////////////////////////////////////////////
 //! Node-Types
 //

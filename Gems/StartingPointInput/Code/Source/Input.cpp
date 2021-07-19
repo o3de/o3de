@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "StartingPointInput_precompiled.h"
+
 #include "Input.h"
 #include "LyToAzInputNameConversions.h"
 #include <AzCore/EBus/EBus.h>

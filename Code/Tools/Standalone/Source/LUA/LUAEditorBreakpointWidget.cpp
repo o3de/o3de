@@ -6,7 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
 #include <AzCore/std/string/conversions.h>
 #include "LUAEditorBreakpointWidget.hxx"
 #include "LUAEditorPlainTextEdit.hxx"

@@ -6,8 +6,6 @@
  *
  */
 
-#include "Gestures_precompiled.h"
-
 #include "GesturesSystemComponent.h"
 
 #include <AzCore/Serialization/SerializeContext.h>

@@ -6,7 +6,6 @@
  *
  */
 
-#include "EditorAssetImporter_precompiled.h"
 #include <AssetImporterDocument.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
 #include <SceneAPI/SceneCore/Export/MtlMaterialExporter.h>

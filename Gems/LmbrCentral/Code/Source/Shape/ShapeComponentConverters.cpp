@@ -6,7 +6,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "ShapeComponentConverters.h"
 
 #include <Shape/BoxShape.h>

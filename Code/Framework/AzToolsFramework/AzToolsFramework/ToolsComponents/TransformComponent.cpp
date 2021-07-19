@@ -6,7 +6,6 @@
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 #include "TransformComponent.h"
 
 #include <AzCore/Component/ComponentApplicationBus.h>

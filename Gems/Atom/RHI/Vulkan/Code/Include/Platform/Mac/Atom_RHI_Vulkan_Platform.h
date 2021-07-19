@@ -6,3 +6,5 @@
  *
  */
 #pragma once
+
+#include <Atom_RHI_Vulkan_Mac.h>

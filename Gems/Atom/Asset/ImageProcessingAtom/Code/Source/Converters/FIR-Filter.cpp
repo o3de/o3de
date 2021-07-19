@@ -6,7 +6,6 @@
  *
  */
 
-#include <ImageProcessing_precompiled.h>
 
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/base.h>

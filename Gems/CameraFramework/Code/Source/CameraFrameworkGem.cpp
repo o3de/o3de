@@ -6,8 +6,6 @@
  *
  */
 
-#include "CameraFramework_precompiled.h"
-
 #include "CameraRigComponent.h"
 
 #include <AzCore/Module/Module.h>

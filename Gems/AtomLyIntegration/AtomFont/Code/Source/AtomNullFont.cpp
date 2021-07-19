@@ -9,7 +9,7 @@
 
 // Description : Dummy font implementation (dedicated server)
 
-#include <AtomLyIntegration/AtomFont/AtomFont_precompiled.h>
+#define USE_NULLFONT
 
 #if defined(USE_NULLFONT)
 

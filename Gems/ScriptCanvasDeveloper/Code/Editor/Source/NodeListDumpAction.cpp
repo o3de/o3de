@@ -6,7 +6,6 @@
  *
  */
 
-#include "precompiled.h"
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>

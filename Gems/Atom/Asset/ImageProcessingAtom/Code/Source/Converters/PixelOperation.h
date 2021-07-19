@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Atom/ImageProcessing/PixelFormats.h>
+#include <ImageBuilderBaseType.h>
 
 namespace ImageProcessingAtom
 {

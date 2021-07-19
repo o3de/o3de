@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "LyShine_precompiled.h"
 #include "LyShineDebug.h"
 #include "IConsole.h"
 #include "IRenderer.h"

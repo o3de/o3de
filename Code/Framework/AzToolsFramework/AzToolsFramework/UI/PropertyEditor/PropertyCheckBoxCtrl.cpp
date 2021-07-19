@@ -6,7 +6,6 @@
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 #include "PropertyCheckBoxCtrl.hxx"
 #include "PropertyQTConstants.h"
 

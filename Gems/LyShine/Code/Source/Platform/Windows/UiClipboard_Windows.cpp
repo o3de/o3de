@@ -7,7 +7,6 @@
  */
 // UiClipboard is responsible setting and getting clipboard data for the UI elements in a platform-independent way.
 
-#include "LyShine_precompiled.h"
 #include "UiClipboard.h"
 #include <AzCore/PlatformIncl.h>
 #include <StringUtils.h>

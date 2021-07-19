@@ -6,7 +6,6 @@
  *
  */
 
-#include "precompiled.h"
 
 #include <QGraphicsItem>
 #include <QGraphicsLayoutItem>

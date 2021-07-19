@@ -6,8 +6,6 @@
  *
  */
 
-#include "WhiteBox_precompiled.h"
-
 #include "WhiteBoxAtomRenderMesh.h"
 
 #include <Rendering/Atom/WhiteBoxMeshAtomData.h>

@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "LyShineExamples_precompiled.h"
+
 #include "UiDynamicContentDatabase.h"
 #include <ISystem.h>
 #include <AzCore/JSON/reader.h>

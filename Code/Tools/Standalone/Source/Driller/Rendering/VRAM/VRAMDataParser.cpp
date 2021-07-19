@@ -6,8 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "VRAMDataParser.h"
 #include "VRAMDataAggregator.hxx"
 #include "VRAMEvents.h"

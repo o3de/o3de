@@ -20,7 +20,6 @@ set(FILES
     SceneSerializationHandler.h
     SceneSerializationHandler.cpp
     Main.cpp
-    EditorAssetImporter_precompiled.h
     AssetImporter.qrc
     AssetImporterWindow.ui
     ImporterRootDisplay.ui

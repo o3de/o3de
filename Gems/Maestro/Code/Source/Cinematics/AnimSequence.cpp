@@ -10,7 +10,6 @@
 // Description : Implementation of IAnimSequence interface.
 
 
-#include "Maestro_precompiled.h"
 
 #include <Maestro/Bus/EditorSequenceComponentBus.h>
 

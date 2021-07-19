@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RHI/SwapChain.h>
+#include <RHI/DX12.h>
 
 namespace AZ
 {

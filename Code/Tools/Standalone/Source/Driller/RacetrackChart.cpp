@@ -6,8 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "RacetrackChart.hxx"
 #include <Source/Driller/moc_RacetrackChart.cpp>
 #include "DrillerMainWindowMessages.h"

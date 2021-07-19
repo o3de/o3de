@@ -7,7 +7,8 @@
  */
 #pragma once
 
-#include <ITimer.h>
+#include <CryCommon/ITimer.h>
+#include <CryCommon/ISerialize.h>
 
 //! Simple stub timer that exposes a single simple interface for setting the current time.
 class StubTimer

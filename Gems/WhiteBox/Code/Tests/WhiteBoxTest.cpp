@@ -6,8 +6,6 @@
  *
  */
 
-#include "WhiteBox_precompiled.h"
-
 #include "WhiteBoxTestFixtures.h"
 #include "WhiteBoxTestUtil.h"
 

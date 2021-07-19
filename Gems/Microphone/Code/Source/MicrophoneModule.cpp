@@ -6,8 +6,6 @@
  *
  */
 
-#include "Microphone_precompiled.h"
-
 #include "MicrophoneSystemComponent.h"
 
 #include <IGem.h>

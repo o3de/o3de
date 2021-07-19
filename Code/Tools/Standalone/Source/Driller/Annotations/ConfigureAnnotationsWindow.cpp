@@ -6,7 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
 #include <QtCore/QAbstractTableModel>
 #include "ConfigureAnnotationsWindow.hxx"
 #include <Source/Driller/Annotations/ui_ConfigureAnnotationsDialog.h>

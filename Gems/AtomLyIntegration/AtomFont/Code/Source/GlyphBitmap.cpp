@@ -10,10 +10,9 @@
 // Purpose:
 //  - Hold a glyph bitmap and blit it to the main texture
 
-#include <AtomLyIntegration/AtomFont/AtomFont_precompiled.h>
 #include <AtomLyIntegration/AtomFont/GlyphBitmap.h>
 #include <math.h>
-
+#include <CryCommon/Cry_Math.h>
 
 //-------------------------------------------------------------------------------------------------
 AZ::GlyphBitmap::GlyphBitmap()

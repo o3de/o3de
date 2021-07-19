@@ -6,8 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "WatchesPanel.hxx"
 #include <Source/LUA/moc_WatchesPanel.cpp>
 #include "LUAEditorDebuggerMessages.h"

@@ -6,8 +6,6 @@
  *
  */
 
-
-#include "EMotionFX_precompiled.h"
 #include "SystemComponentFixture.h"
 
 #include <AzTest/AzTest.h>

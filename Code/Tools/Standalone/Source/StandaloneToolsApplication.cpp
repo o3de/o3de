@@ -6,7 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
 #include "StandaloneToolsApplication.h"
 
 #include <Source/Telemetry/TelemetryComponent.h>

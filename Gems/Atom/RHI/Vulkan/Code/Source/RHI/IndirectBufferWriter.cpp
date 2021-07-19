@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Atom_RHI_Vulkan_precompiled.h"
 #include <RHI/Buffer.h>
 #include <RHI/IndirectBufferWriter.h>
 #include <RHI/IndirectBufferSignature.h>

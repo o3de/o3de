@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "UiCanvasEditor_precompiled.h"
 #include "PresetButton.h"
 #include "AnchorPresets.h"
 #include "AnchorPresetsWidget.h"

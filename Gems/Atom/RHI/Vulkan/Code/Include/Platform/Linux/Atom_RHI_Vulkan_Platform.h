@@ -7,5 +7,4 @@
  */
 #pragma once
 
-#include <AzCore/PlatformDef.h>
-#include <Atom_RHI_Vulkan_precompiled_Platform.h>
+#include <Atom_RHI_Vulkan_Linux.h>

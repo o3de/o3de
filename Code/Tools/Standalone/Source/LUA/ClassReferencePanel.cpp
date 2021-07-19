@@ -6,8 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "ClassReferencePanel.hxx"
 #include <Source/LUA/moc_ClassReferencePanel.cpp>
 

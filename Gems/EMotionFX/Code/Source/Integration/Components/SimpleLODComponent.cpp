@@ -9,8 +9,6 @@
 
 #include <AzCore/PlatformDef.h>
 
-#include "EMotionFX_precompiled.h"
-
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -18,6 +16,7 @@
 
 #include <Integration/Components/SimpleLODComponent.h>
 #include <MCore/Source/AttributeString.h>
+#include <EMotionFX/Source/ActorInstance.h>
 
 #include <MathConversion.h>
 #include <IRenderAuxGeom.h>

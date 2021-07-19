@@ -6,8 +6,6 @@
  *
  */
 
-#include "SliceFavorites_precompiled.h"
-
 #include "FavoriteDataModel.h"
 #include "ComponentSliceFavoritesWindow.h"
 

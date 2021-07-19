@@ -6,10 +6,10 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include <AzTest/AzTest.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AzFramework/IO/LocalFileIO.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <Builders/DependencyBuilder/SeedBuilderWorker/SeedBuilderWorker.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>

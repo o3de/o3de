@@ -6,14 +6,10 @@
  *
  */
 
-#include "ComponentEntityEditorPlugin_precompiled.h"
-
 #include <AzTest/AzTest.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <QApplication>
-
-using namespace AZ;
 
 // Handle asserts
 class ToolsFrameworkHook
@@ -22,12 +18,12 @@ class ToolsFrameworkHook
 public:
     void SetupEnvironment() override
     {
-        AllocatorInstance<SystemAllocator>::Create();
+        AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
     }
 
     void TeardownEnvironment() override
     {
-        AllocatorInstance<SystemAllocator>::Destroy();
+        AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
     }
 };
 

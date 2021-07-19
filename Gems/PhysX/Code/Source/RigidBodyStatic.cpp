@@ -6,8 +6,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
 #include <PxPhysicsAPI.h>
@@ -18,6 +16,7 @@
 #include <Include/PhysX/NativeTypeIdentifiers.h>
 #include <PhysX/PhysXLocks.h>
 #include <Common/PhysXSceneQueryHelpers.h>
+#include <PhysX/MathConversion.h>
 
 namespace PhysX
 {

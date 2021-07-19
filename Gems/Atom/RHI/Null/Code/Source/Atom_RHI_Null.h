@@ -6,3 +6,6 @@
  *
  */
 #pragma once
+
+#include <AzCore/PlatformDef.h>
+#include <Atom_RHI_Null_Platform.h>

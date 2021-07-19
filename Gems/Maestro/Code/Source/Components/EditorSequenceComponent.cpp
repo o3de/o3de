@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Maestro_precompiled.h"
 #include "EditorSequenceComponent.h"
 #include "EditorSequenceAgentComponent.h"
 

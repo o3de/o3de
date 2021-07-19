@@ -6,7 +6,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
 #include <NameConstants.h>
 
 namespace PhysX

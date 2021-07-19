@@ -8,6 +8,7 @@
 #pragma once
 
 #include "time_UnixLike.h"
+#include <AzCore/std/chrono/clocks.h>
 
 /**
 * This file is to be included from the semaphore.h only. It should NOT be included by the user.

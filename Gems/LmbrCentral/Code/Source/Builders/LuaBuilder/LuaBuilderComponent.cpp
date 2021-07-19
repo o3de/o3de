@@ -6,7 +6,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "LuaBuilderComponent.h"
 
 #include <AzCore/Script/ScriptAsset.h>

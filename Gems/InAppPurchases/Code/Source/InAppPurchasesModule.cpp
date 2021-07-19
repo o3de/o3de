@@ -6,8 +6,6 @@
  *
  */
 
-#include "InAppPurchases_precompiled.h"
-
 #include "InAppPurchasesModule.h"
 #include "InAppPurchasesSystemComponent.h"
 

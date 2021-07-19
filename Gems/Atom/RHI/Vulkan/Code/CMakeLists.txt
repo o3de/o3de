@@ -67,7 +67,6 @@ ly_add_target(
     NAME Atom_RHI_Vulkan.Reflect STATIC
     NAMESPACE Gem
     FILES_CMAKE
-        atom_rhi_vulkan_common_files.cmake
         atom_rhi_vulkan_reflect_common_files.cmake
         ${pal_source_dir}/platform_reflect_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES

@@ -6,7 +6,6 @@
  *
  */
 
-#include "SurfaceData_precompiled.h"
 #include "EditorSurfaceDataShapeComponent.h"
 #include <AzCore/Serialization/Utils.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>

@@ -5,10 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
 #pragma once
 
-#include <platform.h>
-#include <CryName.h>
-#include <ISerialize.h>
-#include <IGem.h>
+#include <Atom_RHI_Metal_iOS.h>

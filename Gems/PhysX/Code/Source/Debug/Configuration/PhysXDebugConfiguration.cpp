@@ -5,8 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <PhysX_precompiled.h>
-
 #include <PhysX/Debug/PhysXDebugConfiguration.h>
 
 #include <AzCore/Serialization/SerializeContext.h>

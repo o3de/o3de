@@ -6,7 +6,6 @@
  *
  */
 
-#include "ImageProcessing_precompiled.h"
 #include <AzCore/Module/Module.h>
 #include "ImageProcessingSystemComponent.h"
 #include "ImageBuilderComponent.h"

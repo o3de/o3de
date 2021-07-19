@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "AzToolsFramework_precompiled.h"
 #include "PropertyEntityIdCtrl.hxx"
 #include "PropertyQTConstants.h"
 
@@ -34,6 +33,7 @@ AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option") // 4244: conversi
 AZ_POP_DISABLE_WARNING
 #include <QDropEvent>
 #include <QToolButton>
+#include <QtWidgets/QApplication>
 
 //just a test to see how it would work to pop a dialog
 

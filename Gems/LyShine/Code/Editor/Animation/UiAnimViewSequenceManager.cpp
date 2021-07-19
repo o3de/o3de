@@ -7,7 +7,6 @@
  */
 
 
-#include "UiCanvasEditor_precompiled.h"
 #include "UiEditorAnimationBus.h"
 #include "UiEditorDLLBus.h"
 #include "UiAnimViewSequenceManager.h"

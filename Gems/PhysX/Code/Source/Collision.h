@@ -9,6 +9,7 @@
 #pragma once
 
 #include <PxPhysicsAPI.h>
+#include <AzCore/base.h>
 
 namespace AzPhysics
 {

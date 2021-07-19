@@ -6,7 +6,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
 #include <Source/Collision.h>
 #include <PhysX/Utils.h>
 #include <AzFramework/Physics/Collision/CollisionGroups.h>

@@ -6,8 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "LUAEditorView.hxx"
 
 #include <AzToolsFramework/UI/UICore/ProgressShield.hxx>

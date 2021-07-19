@@ -6,7 +6,6 @@
  *
  */
 
-#include "ProjectSettingsTool_precompiled.h"
 #include "ProjectSettingsValidator.h"
 
 #include "Validators.h"

@@ -5,13 +5,13 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "UiCanvasEditor_precompiled.h"
 #include "EditorCommon.h"
 
 #include "PropertyHandlerDirectory.h"
 
 #include <AzToolsFramework/UI/PropertyEditor/PropertyQTConstants.h>
 #include <LyShine/Bus/UiEditorChangeNotificationBus.h>
+#include <Editor/Util/PathUtil.h>
 
 #include <QBoxLayout>
 

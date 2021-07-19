@@ -5,8 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "UiCanvasEditor_precompiled.h"
-
 #include "EditorCommon.h"
 #include "CommandCanvasSize.h"
 
@@ -17,6 +15,8 @@
 #include <QJsonArray>
 #include <QTextStream>
 #include <QLabel>
+#include <QFile>
+#include <QDir>
 
 namespace
 {

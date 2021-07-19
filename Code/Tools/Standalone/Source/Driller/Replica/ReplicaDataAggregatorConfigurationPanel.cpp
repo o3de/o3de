@@ -5,8 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "StandaloneTools_precompiled.h"
-
 #include <Source/Driller/Replica/ReplicaDataAggregatorConfigurationPanel.hxx>
 #include <Source/Driller/Replica/moc_ReplicaDataAggregatorConfigurationPanel.cpp>
 
