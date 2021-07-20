@@ -58,7 +58,6 @@ class TestPositionModifier(object):
     @pytest.mark.test_case_id("C4874100")
     @pytest.mark.SUITE_sandbox
     @pytest.mark.dynveg_modifier
-    @pytest.mark.xfail  # LYN-3275
     def test_PositionModifier_AutoSnapToSurfaceWorks(self, request, editor, level, launcher_platform):
 
         expected_lines = [
@@ -75,5 +74,6 @@ class TestPositionModifier(object):
             editor,
             "PositionModifier_AutoSnapToSurfaceWorks.py",
             expected_lines,
-            cfg_args=[level]
+            cfg_args=[level],
+            null_renderer=False
         )
