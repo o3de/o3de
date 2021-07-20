@@ -6,7 +6,6 @@
  *
  */
 
-
 #include <AzFramework/Visibility/OctreeSystemComponent.h>
 #include <AzCore/Math/ShapeIntersection.h>
 #include <AzCore/Serialization/SerializeContext.h>
