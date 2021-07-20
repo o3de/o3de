@@ -121,6 +121,9 @@ namespace Multiplayer
         //! @return the current server time in milliseconds
         virtual AZ::TimeMs GetCurrentHostTimeMs() const = 0;
 
+        //! Returns the current blend factor for client side interpolation
+        //! This value is only relevant on the client and is used to smooth between host frames
+        //! @return the current blend factor
         virtual float GetCurrentBlendFactor() const = 0;
 
         //! Returns the network time instance bound to this multiplayer instance.
