@@ -157,9 +157,6 @@ namespace Multiplayer
         double m_serverSendAccumulator = 0.0;
         float m_renderBlendFactor = 0.0f;
 
-        double m_serverSendAccumulator = 0.0;
-        float m_renderBlendFactor = 0.0f;
-
 #if !defined(AZ_RELEASE_BUILD)
         MultiplayerEditorConnection m_editorConnectionListener;
 #endif

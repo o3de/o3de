@@ -98,14 +98,6 @@ namespace AZ
             //! Finalize and validate initialization. Any initialization functions should be called before EndInit is called. 
             void EndInit();
 
-            //! Set up the DynamicDrawContext for the input Scene.
-            //! This should be called after the last frame is done and before any draw calls.
-            void SetScene(Scene* scene);
-
-            //! Set up the DynamicDrawContext for the input RenderPipeline.
-            //! This should be called after the last frame is done and before any draw calls.
-            void SetRenderPipeline(RenderPipeline* pipeline);
-
             //! Return if this DynamicDrawContext is ready to add draw calls
             bool IsReady();
 

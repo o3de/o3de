@@ -2,42 +2,6 @@
   "images" : [
     {
       "extent" : "full-screen",
-      "filename" : "iPhoneLaunchImage1242x2688.png",
-      "idiom" : "iphone",
-      "minimum-system-version" : "12.0",
-      "orientation" : "portrait",
-      "scale" : "3x",
-      "subtype" : "2688h"
-    },
-    {
-      "extent" : "full-screen",
-      "filename" : "iPhoneLaunchImage2688x1242.png",
-      "idiom" : "iphone",
-      "minimum-system-version" : "12.0",
-      "orientation" : "landscape",
-      "scale" : "3x",
-      "subtype" : "2688h"
-    },
-    {
-      "extent" : "full-screen",
-      "filename" : "iPhoneLaunchImage828x1792.png",
-      "idiom" : "iphone",
-      "minimum-system-version" : "12.0",
-      "orientation" : "portrait",
-      "scale" : "2x",
-      "subtype" : "1792h"
-    },
-    {
-      "extent" : "full-screen",
-      "filename" : "iPhoneLaunchImage1792x828.png",
-      "idiom" : "iphone",
-      "minimum-system-version" : "12.0",
-      "orientation" : "landscape",
-      "scale" : "2x",
-      "subtype" : "1792h"
-    },
-    {
-      "extent" : "full-screen",
       "idiom" : "iphone",
       "subtype" : "2436h",
       "filename" : "iPhoneLaunchImage1125x2436.png",

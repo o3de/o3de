@@ -21,16 +21,6 @@ If Git LFS is not installed, download and run the installer from: https://git-lf
 git lfs install
 ```
 
-For Linux and Mac, use the following commands to store credentials 
-
-Linux: 
-```
-git config --global credential.helper cache
-``` 
-Mac:
-```
-git config --global credential.helper osxkeychain
-```
 
 ### Clone the repository 
 

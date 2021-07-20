@@ -13,7 +13,6 @@
 
 #include <Atom/RHI.Reflect/CpuTimingStatistics.h>
 #include <Atom/RHI/CpuProfiler.h>
-#include <Atom/RHI.Reflect/CpuTimingStatistics.h>
 
 
 namespace AZ
