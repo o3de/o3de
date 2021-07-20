@@ -6,7 +6,6 @@
  *
  */
 
-
 #include <PostProcess/ShapeWeightModifier/ShapeWeightModifierComponentController.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
