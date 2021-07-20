@@ -10,6 +10,8 @@
 
 #include <Atom/RHI.Reflect/Format.h>
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
+
+#include <AzCore/Preprocessor/Enum.h>
 #include <AzCore/Utils/TypeHash.h>
 
 namespace AZ
@@ -22,47 +24,44 @@ namespace AZ
          * A set of combinable flags which inform the system how a buffer is to be
          * bound to the pipeline at all stages of its lifetime.
          */
-        enum class BufferBindFlags : uint32_t
-        {
-            None            = 0,
+        AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(BufferBindFlags, uint32_t,
+            (None            , 0),
 
             /// Supports input assembly access through a IndexBufferView or StreamBufferView. This flag is for buffers that are not updated often
-            InputAssembly   = AZ_BIT(0),
+            (InputAssembly   , AZ_BIT(0)),
             
             /// Supports input assembly access through a IndexBufferView or StreamBufferView. This flag is for buffers that are updated frequently
-            DynamicInputAssembly = AZ_BIT(1),
+            (DynamicInputAssembly , AZ_BIT(1)),
             
             /// Supports constant access through a ShaderResourceGroup.
-            Constant        = AZ_BIT(2),
+            (Constant        , AZ_BIT(2)),
 
             /// Supports read access through a ShaderResourceGroup.
-            ShaderRead      = AZ_BIT(3),
+            (ShaderRead      , AZ_BIT(3)),
 
             /// Supports write access through ShaderResourceGroup.
-            ShaderWrite     = AZ_BIT(4),
+            (ShaderWrite     , AZ_BIT(4)),
 
             /// Supports read-write access through a ShaderResourceGroup.
-            ShaderReadWrite = ShaderRead | ShaderWrite,
+            (ShaderReadWrite , ShaderRead | ShaderWrite),
 
             /// Supports read access for GPU copy operations.
-            CopyRead        = AZ_BIT(5),
+            (CopyRead        , AZ_BIT(5)),
 
             /// Supports write access for GPU copy operations.
-            CopyWrite       = AZ_BIT(6),
+            (CopyWrite       , AZ_BIT(6)),
 
             /// Supports predication access for conditional rendering.
-            Predication     = AZ_BIT(7),
+            (Predication     , AZ_BIT(7)),
 
             /// Supports indirect buffer access for indirect draw/dispatch.
-            Indirect        = AZ_BIT(8),
+            (Indirect        , AZ_BIT(8)),
 
             /// Supports ray tracing acceleration structure usage.
-            RayTracingAccelerationStructure = AZ_BIT(9),
+            (RayTracingAccelerationStructure , AZ_BIT(9)),
 
             /// Supports ray tracing shader table usage.
-            RayTracingShaderTable = AZ_BIT(10)
-
-        };
+            (RayTracingShaderTable , AZ_BIT(10)));
 
         AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::BufferBindFlags);
 
