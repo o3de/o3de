@@ -802,6 +802,11 @@ namespace Multiplayer
         }
     }
 
+    float MultiplayerSystemComponent::GetCurrentBlendFactor() const
+    {
+        return m_renderBlendFactor;
+    }
+
     INetworkTime* MultiplayerSystemComponent::GetNetworkTime()
     {
         return &m_networkTime;

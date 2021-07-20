@@ -154,9 +154,12 @@ namespace Multiplayer
             // Discard move input events, client may be speed hacking
             if (m_clientBankedTime < sv_MaxBankTimeWindowSec)
             {
+                // Client blends from previous frame to target so here we subtract blend factor to get to that state
+                const float adjustedBlendFactor = std::pow(0.2f, input.GetHostBlendFactor());
+                const AZ::TimeMs blendMs = AZ::TimeMs(static_cast<float>(static_cast<AZ::TimeMs>(cl_InputRateMs)) * adjustedBlendFactor);
                 m_clientBankedTime = AZStd::min(m_clientBankedTime + clientInputRateSec, (double)sv_MaxBankTimeWindowSec); // clamp to boundary
                 {
-                    ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs(), invokingConnection->GetConnectionId());
+                    ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs() - blendMs, invokingConnection->GetConnectionId());
                     GetNetBindComponent()->ProcessInput(input, static_cast<float>(clientInputRateSec));
                 }
 
@@ -498,6 +501,7 @@ namespace Multiplayer
             input.SetClientInputId(m_clientInputId);
             input.SetHostFrameId(networkTime->GetHostFrameId());
             input.SetHostTimeMs(multiplayer->GetCurrentHostTimeMs());
+            input.SetHostBlendFactor(multiplayer->GetCurrentBlendFactor());
 
             // Allow components to form the input for this frame
             GetNetBindComponent()->CreateInput(input, inputRate);

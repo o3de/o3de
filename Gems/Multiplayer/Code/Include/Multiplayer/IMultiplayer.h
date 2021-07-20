@@ -121,6 +121,8 @@ namespace Multiplayer
         //! @return the current server time in milliseconds
         virtual AZ::TimeMs GetCurrentHostTimeMs() const = 0;
 
+        virtual float GetCurrentBlendFactor() const = 0;
+
         //! Returns the network time instance bound to this multiplayer instance.
         //! @return pointer to the network time instance bound to this multiplayer instance
         virtual INetworkTime* GetNetworkTime() = 0;

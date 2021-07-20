@@ -112,6 +112,7 @@ namespace Multiplayer
         void Terminate(AzNetworking::DisconnectReason reason) override;
         void SendReadyForEntityUpdates(bool readyForEntityUpdates) override;
         AZ::TimeMs GetCurrentHostTimeMs() const override;
+        float GetCurrentBlendFactor() const override;
         INetworkTime* GetNetworkTime() override;
         INetworkEntityManager* GetNetworkEntityManager() override;
         void SetFilterEntityManager(IFilterEntityManager* entityFilter) override;
