@@ -11,6 +11,8 @@
 #define SCRIPTCANVASEDITOR_AZ_QCOREAPPLICATION_SETTINGS_ORGANIZATION_NAME  "O3DE"
 #define SCRIPTCANVASEDITOR_NAME_SHORT   "ScriptCanvasEditor"
 
+#include <AzCore/std/string/string.h>
+
 namespace ScriptCanvasEditor
 {
     AZStd::string GetEditingGameDataFolder();

@@ -5,7 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "RHI/Atom_RHI_DX12_precompiled.h"
+
+#include <AzCore/PlatformIncl.h>
 #include <RHI/SystemComponent.h>
 #include <RHI/WindowsVersionQuery.h>
 

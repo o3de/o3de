@@ -6,8 +6,6 @@
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
-
 #include <AzCore/IO/FileIO.h>
 
 #include <AzFramework/Asset/AssetProcessorMessages.h>

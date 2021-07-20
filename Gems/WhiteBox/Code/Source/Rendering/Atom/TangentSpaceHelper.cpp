@@ -6,11 +6,10 @@
  *
  */
 
-#include "WhiteBox_precompiled.h"
-
 #include "TangentSpaceHelper.h"
 
 #include <AzCore/std/containers/array.h>
+#include <CryCommon/Cry_Math.h>
 
 namespace WhiteBox
 {

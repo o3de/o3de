@@ -6,8 +6,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <PhysX_precompiled.h>
-
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
 

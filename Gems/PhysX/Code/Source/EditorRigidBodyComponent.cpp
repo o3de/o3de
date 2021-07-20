@@ -6,8 +6,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Physics/NameConstants.h>

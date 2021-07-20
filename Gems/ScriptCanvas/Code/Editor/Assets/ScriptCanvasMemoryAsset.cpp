@@ -6,7 +6,6 @@
  *
  */
 
-#include "precompiled.h"
 
 #include "ScriptCanvasMemoryAsset.h"
 #include "ScriptCanvasUndoHelper.h"

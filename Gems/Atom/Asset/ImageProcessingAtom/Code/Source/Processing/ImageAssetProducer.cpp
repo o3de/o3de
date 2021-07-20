@@ -6,7 +6,6 @@
  *
  */
 
-#include <ImageProcessing_precompiled.h>
 
 #include <Processing/ImageAssetProducer.h>
 #include <Processing/ImageObjectImpl.h>

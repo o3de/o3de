@@ -6,13 +6,12 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "Source/Driller/FilteredListView.hxx"
 #include <Source/Driller/moc_FilteredListView.cpp>
 #include <Source/Driller/ui_FilteredListView.h>
 
 #include <AzCore/std/containers/set.h>
+#include <AzCore/std/containers/unordered_set.h>
 
 #include <qtextdocument.h>
 

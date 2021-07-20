@@ -16,6 +16,7 @@
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
 #include <AzCore/Component/Component.h>
 #include <TimeValue.h>
+#include <IEditor.h>
 #endif
 
 class CClouds;

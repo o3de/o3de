@@ -6,7 +6,6 @@
  *
  */
 
-#include "ImGui_precompiled.h"
 #include "ImGuiManager.h"
 #include <ImGuiContextScope.h>
 #include <AzCore/PlatformIncl.h>

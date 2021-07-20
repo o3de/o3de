@@ -6,17 +6,20 @@
  *
  */
 
-
-#include <ImageProcessing_precompiled.h>
-
 #include <math.h>
 #include "FIR-Weights.h"
+#include <AzCore/Debug/Trace.h>
 
 /* ####################################################################################################################
  */
 
 namespace ImageProcessingAtom
 {
+    float round(float x)
+    {
+        return ((x) >= 0) ? floor((x) + 0.5) : ceil((x)-0.5);
+    }
+
     void calculateFilterRange(unsigned int srcFactor, int& srcFirst, int& srcLast,
         unsigned int dstFactor, int  dstFirst, int  dstLast,
         double blurFactor, class IWindowFunction<double>* windowFunction)

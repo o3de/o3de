@@ -6,7 +6,6 @@
  *
  */
 
-#include "ImageProcessing_precompiled.h"
 
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/Math/MathUtils.h>

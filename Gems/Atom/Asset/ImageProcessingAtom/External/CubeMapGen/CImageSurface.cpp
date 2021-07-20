@@ -15,10 +15,7 @@
 //--------------------------------------------------------------------------------------
 // Modified from original
 
-#include <ImageProcessing_precompiled.h>
-
 #include "CImageSurface.h"
-
 
 namespace ImageProcessingAtom
 {
@@ -276,7 +273,7 @@ namespace ImageProcessingAtom
 
         SAFE_DELETE_ARRAY(m_ImgData);   //safe delete old image data
 
-        m_ImgData = new(std::nothrow) CP_ITYPE[m_Width * m_Height * m_NumChannels];   //assume tight data packing
+        m_ImgData = new CP_ITYPE[m_Width * m_Height * m_NumChannels];   //assume tight data packing
         if (!m_ImgData)
         {
             FatalError(L"Unable to allocate data for image in CImageSurface::Init.");

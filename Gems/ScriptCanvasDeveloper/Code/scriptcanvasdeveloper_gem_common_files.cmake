@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    Source/precompiled.h
     Include/ScriptCanvasDeveloper/ScriptCanvasDeveloperGem.h
     Include/ScriptCanvasDeveloper/ScriptCanvasDeveloperComponent.h
     Source/ScriptCanvasDeveloperComponent.cpp

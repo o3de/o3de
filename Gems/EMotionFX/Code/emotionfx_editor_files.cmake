@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    Source/EMotionFX_precompiled.h
     ../Assets/Editor/Layouts/Layouts.qrc
     ../Assets/Editor/Images/Icons/Resources.qrc
     ../Assets/Editor/Images/Icons/ActorComponent.svg

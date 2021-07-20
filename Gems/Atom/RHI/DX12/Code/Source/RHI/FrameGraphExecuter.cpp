@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "RHI/Atom_RHI_DX12_precompiled.h"
 #include <RHI/FrameGraphExecuter.h>
 #include <RHI/FrameGraphExecuteGroupMerged.h>
 #include <RHI/FrameGraphExecuteGroup.h>

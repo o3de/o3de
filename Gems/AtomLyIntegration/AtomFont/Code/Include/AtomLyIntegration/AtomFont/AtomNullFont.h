@@ -9,9 +9,9 @@
 
 // Description : Dummy font implementation (dedicated server)
 
-
 #pragma once
 
+#define USE_NULLFONT
 
 #if defined(USE_NULLFONT)
 

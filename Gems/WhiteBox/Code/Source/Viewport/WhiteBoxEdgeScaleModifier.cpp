@@ -6,8 +6,6 @@
  *
  */
 
-#include "WhiteBox_precompiled.h"
-
 #include "SubComponentModes/EditorWhiteBoxDefaultModeBus.h"
 #include "Util/WhiteBoxMathUtil.h"
 #include "Viewport/WhiteBoxViewportConstants.h"

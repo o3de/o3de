@@ -6,8 +6,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/IntersectSegment.h>
 #include <AzCore/Serialization/EditContext.h>

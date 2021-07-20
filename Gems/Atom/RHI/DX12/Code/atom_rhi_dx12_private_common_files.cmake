@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    Source/RHI/Atom_RHI_DX12_precompiled.h
     Source/RHI/Buffer.cpp
     Source/RHI/Buffer.h
     Source/RHI/BufferPool.cpp

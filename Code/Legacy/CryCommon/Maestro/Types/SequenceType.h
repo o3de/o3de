@@ -11,10 +11,6 @@
 #define CRYINCLUDE_CRYCOMMON_MAESTRO_TYPES_SEQUENCETYPE_H
 #pragma once
 
-// **NOTES**: Do not include into the precompiled header hierarchy!
-//            There is a legacy define in IMovieSystem.h that
-//            correspond to a value, Legacy.
-
 enum class SequenceType
 {
     Legacy                = 0,        // legacy CryEntity Sequence Object

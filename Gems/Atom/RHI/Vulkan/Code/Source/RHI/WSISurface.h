@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom_RHI_Vulkan_Platform.h>
 #include <Atom/RHI/Object.h>
 #include <Atom/RHI.Reflect/SwapChainDescriptor.h>
 

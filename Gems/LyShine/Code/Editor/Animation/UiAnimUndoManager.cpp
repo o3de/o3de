@@ -7,7 +7,6 @@
  */
 
 
-#include "UiCanvasEditor_precompiled.h"
 #include "UiAnimUndoManager.h"
 #include "UiAnimUndoObject.h"
 #include "Undo/IUndoManagerListener.h"

@@ -6,13 +6,13 @@
  *
  */
 
-#include <PhysX_precompiled.h>
 #include <Joint/PhysXJoint.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <Include/PhysX/NativeTypeIdentifiers.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <Source/Joint/PhysXJointUtils.h>
+#include <PhysX/MathConversion.h>
 
 namespace PhysX
 {

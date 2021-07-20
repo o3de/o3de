@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "StdAfx.h"
 
 #include <Actor/BlastActorImpl.h>
 #include <Actor/ShapesProvider.h>

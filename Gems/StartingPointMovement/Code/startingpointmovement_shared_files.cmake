@@ -10,5 +10,4 @@ set(FILES
     Source/StartingPointMovementGem.cpp
     Include/StartingPointMovement/StartingPointMovementConstants.h
     Include/StartingPointMovement/StartingPointMovementUtilities.h
-    Source/StartingPointMovement_precompiled.h
 )

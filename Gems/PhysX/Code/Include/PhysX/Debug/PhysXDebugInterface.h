@@ -24,7 +24,7 @@ namespace PhysX
         using PvdConfigurationChangedEvent = AZ::Event<const PvdConfiguration&>;
 
         //! Event to notify changes to the Debug display data
-        //! When triggered the event will send the newly applied DEbug display data.
+        //! When triggered the event will send the newly applied Debug display data.
         using DebugDisplayDataChangedEvent = AZ::Event<const DebugDisplayData&>;
 
         //! Interface for interacting with the PhysX Debug options.

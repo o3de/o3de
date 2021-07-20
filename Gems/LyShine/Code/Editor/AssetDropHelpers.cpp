@@ -5,8 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "UiCanvasEditor_precompiled.h"
-
 #include "AssetDropHelpers.h"
 #include <LyShine/UiAssetTypes.h>
 #include <AzCore/Asset/AssetTypeInfoBus.h>

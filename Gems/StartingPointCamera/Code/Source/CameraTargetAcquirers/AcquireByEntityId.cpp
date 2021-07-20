@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "StartingPointCamera_precompiled.h"
+
 #include "AcquireByEntityId.h"
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Component/TransformBus.h>

@@ -7,7 +7,6 @@
  */
 
 
-#include "UiCanvasEditor_precompiled.h"
 #include "UiAVTrackEventKeyUIControls.h"
 #include "UiAVEventsDialog.h"
 #include "UiAnimViewSequence.h"

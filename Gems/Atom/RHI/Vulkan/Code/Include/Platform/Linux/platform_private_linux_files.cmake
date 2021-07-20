@@ -7,5 +7,5 @@
 #
 
 set(FILES
-    Atom_RHI_Vulkan_precompiled_Platform.h
+    Atom_RHI_Vulkan_Platform.h
 )

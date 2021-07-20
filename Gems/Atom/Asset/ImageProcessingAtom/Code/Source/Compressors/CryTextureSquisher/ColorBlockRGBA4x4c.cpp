@@ -7,7 +7,6 @@
  */
 
 
-#include <ImageProcessing_precompiled.h>
 
 #include <AzCore/Math/MathUtils.h>
 

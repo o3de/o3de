@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#include <AzCore/PlatformDef.h>
+
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
 #include <QGraphicsWidget>
 AZ_POP_DISABLE_WARNING

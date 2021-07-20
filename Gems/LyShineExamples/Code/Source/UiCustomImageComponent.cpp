@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "LyShineExamples_precompiled.h"
+
 #include "UiCustomImageComponent.h"
 
 #include <LyShineExamples/UiCustomImageBus.h>

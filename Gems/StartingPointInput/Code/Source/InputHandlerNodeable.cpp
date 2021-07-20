@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <StartingPointInput_precompiled.h>
+
 #include <InputHandlerNodeable.h>
 
 #include <ScriptCanvas/Utils/SerializationUtils.h>

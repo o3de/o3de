@@ -6,8 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "TraceMessageDataParser.h"
 #include "TraceMessageDataAggregator.hxx"
 #include "TraceMessageEvents.h"

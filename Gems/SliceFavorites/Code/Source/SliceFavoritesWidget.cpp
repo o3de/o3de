@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "SliceFavorites_precompiled.h"
 
 #include "SliceFavoritesWidget.h"
 #include "FavoriteDataModel.h"

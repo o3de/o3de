@@ -7,7 +7,6 @@
  */
 
 
-#include "Maestro_precompiled.h"
 #include <AzCore/Serialization/SerializeContext.h>
 #include "SelectTrack.h"
 #include "Maestro/Types/AnimValueType.h"

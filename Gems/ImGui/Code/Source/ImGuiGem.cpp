@@ -6,7 +6,6 @@
  *
  */
 
-#include "ImGui_precompiled.h"
 #include "ImGuiGem.h"
 
 namespace ImGui

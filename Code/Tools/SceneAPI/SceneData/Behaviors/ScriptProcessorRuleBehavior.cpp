@@ -305,6 +305,11 @@ namespace AZ::SceneAPI::Behaviors
     {
         using namespace AzToolsFramework;
 
+        // This behavior persists on the same AssetBuilder. Clear the script file name so that if
+        // this builder processes a scene file with a script file name, and then later processes
+        // a scene without a script file name, it won't run the old script on the new scene.
+        m_scriptFilename.clear();
+
         if (action != ManifestAction::Update)
         {
             return Events::ProcessingResult::Ignored;

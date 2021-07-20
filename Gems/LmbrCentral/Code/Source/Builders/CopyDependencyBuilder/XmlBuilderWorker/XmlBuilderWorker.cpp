@@ -6,7 +6,6 @@
  *
  */
 
-#include <LmbrCentral_precompiled.h>
 #include "XmlBuilderWorker.h"
 
 #include <AssetBuilderSDK/SerializationDependencies.h>

@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    Source/ScriptCanvasPhysics_precompiled.h
     Source/PhysicsNodeLibrary.cpp
     Source/PhysicsNodeLibrary.h
     Source/ScriptCanvasPhysicsSystemComponent.cpp

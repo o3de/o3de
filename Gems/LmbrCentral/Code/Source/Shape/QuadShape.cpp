@@ -6,7 +6,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "QuadShape.h"
 
 #include <AzCore/Math/Aabb.h>

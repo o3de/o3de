@@ -5,13 +5,13 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "LyShine_precompiled.h"
 #include "UiCanvasAssetRefComponent.h"
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <LyShine/Bus/UiCanvasBus.h>
 #include <LyShine/LyShineBus.h>
+#include <CryCommon/LyShine/ILyShine.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! UiCanvasAssetRefNotificationBus Behavior context handler class

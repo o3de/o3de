@@ -11,6 +11,7 @@
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
+#include <RHI/DX12.h>
 
 namespace AZ
 {

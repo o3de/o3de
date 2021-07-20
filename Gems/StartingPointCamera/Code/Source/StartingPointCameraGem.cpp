@@ -6,8 +6,6 @@
  *
  */
 
-#include "StartingPointCamera_precompiled.h"
-
 #include "CameraTargetAcquirers/AcquireByEntityId.h"
 #include "CameraTargetAcquirers/AcquireByTag.h"
 #include "CameraTransformBehaviors/FollowTargetFromDistance.h"

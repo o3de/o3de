@@ -6,7 +6,6 @@
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 
 #include <AzToolsFramework/SourceControl/QtSourceControlNotificationHandler.h>
 #include <AzCore/std/string/string.h>

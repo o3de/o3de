@@ -6,11 +6,13 @@
  *
  */
 
-#include "EMotionFX_precompiled.h"
 #include <Integration/Assets/AnimGraphAsset.h>
 #include <EMotionFX/Source/Allocators.h>
 #include <EMotionFX/Source/AnimGraphManager.h>
-
+#include <EMotionFX/Source/AnimGraphInstance.h>
+#include <EMotionFX/Source/EMotionFXManager.h>
+#include <EMotionFX/Source/Importer/Importer.h>
+#include <EMotionFX/Source/AnimGraph.h>
 
 namespace EMotionFX
 {

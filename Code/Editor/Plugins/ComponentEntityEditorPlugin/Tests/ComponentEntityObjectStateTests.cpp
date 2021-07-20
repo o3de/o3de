@@ -6,8 +6,6 @@
  *
  */
 
-#include "ComponentEntityEditorPlugin_precompiled.h"
-
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzTest/AzTest.h>

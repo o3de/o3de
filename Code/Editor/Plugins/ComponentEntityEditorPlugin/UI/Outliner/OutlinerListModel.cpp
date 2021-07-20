@@ -5,8 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "ComponentEntityEditorPlugin_precompiled.h"
-
 #include "OutlinerListModel.hxx"
 
 #include <QtCore/QMimeData>
@@ -65,6 +63,7 @@
 
 #include <Editor/CryEditDoc.h>
 #include <AzCore/Outcome/Outcome.h>
+#include <Editor/Util/PathUtil.h>
 
 ////////////////////////////////////////////////////////////////////////////
 // OutlinerListModel

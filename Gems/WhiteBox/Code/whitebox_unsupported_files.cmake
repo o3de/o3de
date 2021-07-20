@@ -8,5 +8,4 @@
 
 set(FILES
     Source/WhiteBoxModuleUnsupported.cpp
-    Source/WhiteBoxUnsupported_precompiled.h
 )

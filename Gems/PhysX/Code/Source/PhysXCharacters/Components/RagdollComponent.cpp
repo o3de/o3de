@@ -6,8 +6,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include <AzCore/Component/Entity.h>
 #include <PhysXCharacters/API/CharacterUtils.h>
 #include <AzCore/Component/TransformBus.h>

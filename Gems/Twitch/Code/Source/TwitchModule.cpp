@@ -6,7 +6,6 @@
  *
  */
 
-#include "Twitch_precompiled.h"
 #include <TwitchSystemComponent.h>
 #include <AzCore/Module/Module.h>
 

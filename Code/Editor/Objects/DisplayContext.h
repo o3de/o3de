@@ -31,6 +31,7 @@ struct IRenderAuxGeom;
 struct IIconManager;
 class CDisplaySettings;
 class CCamera;
+class QPoint;
 
 enum DisplayFlags
 {

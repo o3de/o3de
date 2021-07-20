@@ -181,7 +181,6 @@ namespace ScriptCanvas
             m_dotCPP.WriteNewLine();
             WriteDoNotModify(m_dotCPP);
             m_dotCPP.WriteNewLine();
-            m_dotCPP.WriteLine("#include \"precompiled.h\"");
             m_dotCPP.WriteLine("#include \"%s.h\"", GetGraphName().data());
             m_dotCPP.WriteNewLine();
         }

@@ -6,7 +6,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
 #include <Editor/MaterialIdWidget.h>
 
 #include <AzFramework/Physics/PropertyTypes.h>

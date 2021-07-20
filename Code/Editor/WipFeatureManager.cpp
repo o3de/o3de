@@ -446,7 +446,7 @@ void CWipFeatureManager::SetFeatureUpdateCallback(int aFeatureId, TWipFeatureUpd
     m_features[aFeatureId].m_pfnUpdateFeature = pfnUpdate;
 }
 
-std::map<int, CWipFeatureManager::SWipFeatureInfo>&  CWipFeatureManager::GetFeatures()
+AZStd::map<int, CWipFeatureManager::SWipFeatureInfo>&  CWipFeatureManager::GetFeatures()
 {
     return m_features;
 }

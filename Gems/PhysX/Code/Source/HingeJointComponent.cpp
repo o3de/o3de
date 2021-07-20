@@ -6,8 +6,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include <Source/HingeJointComponent.h>
 #include <PhysX/MathConversion.h>
 #include <PhysX/PhysXLocks.h>

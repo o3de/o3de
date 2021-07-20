@@ -6,8 +6,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include "RagdollTestData.h"
 #include <AzTest/Utils.h>
 #include <AZTestShared/Utils/Utils.h>

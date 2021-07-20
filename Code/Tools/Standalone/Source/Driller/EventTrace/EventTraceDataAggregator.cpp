@@ -6,8 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include <Source/Driller/Workspaces/Workspace.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/UserSettings/UserSettings.h>

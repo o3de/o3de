@@ -63,7 +63,7 @@ typedef IMovieSystem* (* PFNCREATEMOVIESYSTEM)(struct ISystem*);
 typedef std::vector<IAnimSequence*> AnimSequences;
 typedef AZStd::vector<AZStd::string> TrackEvents;
 
-// Forward declare, including will cause much pain with the precompiled headers
+// Forward declare
 enum class SequenceType;
 enum class AnimNodeType;
 enum class AnimValueType;

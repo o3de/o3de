@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <precompiled.h>
+
 #include <GraphCanvasModule.h>
 #include <GraphCanvas.h>
 

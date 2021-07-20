@@ -6,9 +6,6 @@
  *
  */
 
-
-#include "EMotionFX_precompiled.h"
-
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Script/ScriptProperty.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -22,6 +19,7 @@
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/MainWindow.h>
 #include <Integration/ActorComponentBus.h>
 #include <Integration/Editor/Components/EditorAnimGraphComponent.h>
+#include <EMotionFX/Source/MotionSet.h>
 
 #include <QApplication>
 

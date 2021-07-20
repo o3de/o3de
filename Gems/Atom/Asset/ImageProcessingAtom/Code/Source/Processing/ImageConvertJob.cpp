@@ -6,7 +6,6 @@
  *
  */
 
-#include <ImageProcessing_precompiled.h>
 
 #include <Processing/ImageConvertJob.h>
 #include <Processing/PixelFormatInfo.h>

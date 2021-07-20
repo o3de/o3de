@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include "SurfaceData_precompiled.h"
 #include <SurfaceDataModule.h>
 
 namespace SurfaceData

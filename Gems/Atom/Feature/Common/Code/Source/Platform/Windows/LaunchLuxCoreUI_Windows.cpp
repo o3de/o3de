@@ -7,7 +7,7 @@
  */
 
 #include <AzCore/std/string/string.h>
-#include <windows.h>
+#include <AzCore/PlatformIncl.h>
 
 namespace LuxCoreUI
 {

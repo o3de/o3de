@@ -10,7 +10,6 @@
 // Purpose:
 //  - Create and update a texture with the most recently used glyphs
 
-#include <AtomLyIntegration/AtomFont/AtomFont_precompiled.h>
 
 #if !defined(USE_NULLFONT_ALWAYS)
 

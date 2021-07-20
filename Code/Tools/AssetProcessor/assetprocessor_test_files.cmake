@@ -12,6 +12,7 @@ set(FILES
     testdata/config_broken_noscans/AssetProcessorPlatformConfig.setreg
     testdata/config_broken_recognizers/AssetProcessorPlatformConfig.setreg
     testdata/config_regular/AssetProcessorPlatformConfig.setreg
+    testdata/config_metadata/AssetProcessorPlatformConfig.setreg
     testdata/config_regular_platform_scanfolder/AssetProcessorPlatformConfig.setreg
     testdata/EmptyDummyProject/AssetProcessorGamePlatformConfig.setreg
     testdata/DummyProject/AssetProcessorGamePlatformConfig.setreg

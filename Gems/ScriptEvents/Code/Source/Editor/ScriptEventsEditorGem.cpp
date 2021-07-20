@@ -6,8 +6,6 @@
  *
  */
 
-#include "precompiled.h"
-
 #include <ScriptEvents/ScriptEventsGem.h>
 #include <Source/Editor/ScriptEventsSystemEditorComponent.h>
 

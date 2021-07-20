@@ -6,8 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "DrillerAggregator.hxx"
 #include <Source/Driller/moc_DrillerAggregator.cpp>
 

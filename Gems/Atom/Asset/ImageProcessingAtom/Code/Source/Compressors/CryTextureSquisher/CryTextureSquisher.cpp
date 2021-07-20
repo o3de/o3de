@@ -7,7 +7,6 @@
  */
 
 
-#include <ImageProcessing_precompiled.h>
 #include <ImageProcessing_Traits_Platform.h>
 #include "ColorBlockRGBA4x4c.h"
 #include "ColorBlockRGBA4x4s.h"
