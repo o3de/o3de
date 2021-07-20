@@ -133,6 +133,12 @@ namespace AZ
             ViewportContextIdNotificationBus::Event(GetId(), &ViewportContextIdNotificationBus::Events::OnRenderTick);
         }
 
+        void ViewportContext::OnFrameEnd()
+        {
+            ViewportContextNotificationBus::Event(GetName(), &ViewportContextNotificationBus::Events::OnFrameEnd);
+            ViewportContextIdNotificationBus::Event(GetId(), &ViewportContextIdNotificationBus::Events::OnFrameEnd);
+        }
+
         AZ::Name ViewportContext::GetName() const
         {
             return m_name;

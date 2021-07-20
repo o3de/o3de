@@ -45,6 +45,7 @@ namespace AZ
 
             // AZ::RPI::ViewportContextNotificationBus::Handler overrides...
             void OnRenderTick() override;
+            void OnFrameEnd() override;
 
             // AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Handler overrides...
             AtomBridge::ViewportInfoDisplayState GetDisplayState() const override;
@@ -61,6 +62,8 @@ namespace AZ
             void DrawPassInfo();
             void DrawFramerate();
 
+            void UpdateScene(AZ::RPI::ScenePtr scene);
+
             static constexpr float BaseFontSize = 0.7f;
 
             AZStd::string m_rendererDescription;
@@ -68,7 +71,12 @@ namespace AZ
             AzFramework::FontDrawInterface* m_fontDrawInterface = nullptr;
             float m_lineSpacing;
             AZStd::chrono::duration<double> m_fpsInterval = AZStd::chrono::seconds(1);
-            AZStd::deque<AZStd::chrono::system_clock::time_point> m_fpsHistory;
+            struct FrameTimingInfo
+            {
+                AZStd::chrono::system_clock::time_point m_beginFrameTime;
+                AZStd::optional<AZStd::chrono::system_clock::time_point> m_endFrameTime;
+            };
+            AZStd::deque<FrameTimingInfo> m_fpsHistory;
             AZStd::optional<AZStd::chrono::system_clock::time_point> m_lastMemoryUpdate;
             bool m_updateRootPassQuery = true;
         };

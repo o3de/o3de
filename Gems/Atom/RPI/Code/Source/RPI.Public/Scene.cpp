@@ -583,6 +583,7 @@ namespace AZ
             {
                 fp->OnRenderEnd();
             }
+            SceneNotificationBus::Event(GetId(), &SceneNotification::OnFrameEnd);
         }
 
         void Scene::UpdateSrgs()

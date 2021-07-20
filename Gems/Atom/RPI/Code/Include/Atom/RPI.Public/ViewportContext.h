@@ -81,6 +81,8 @@ namespace AZ
             void OnRenderPipelineRemoved(RenderPipeline* pipeline) override;
             //! OnBeginPrepareRender is forwarded to our RenderTick notification to allow subscribers to do rendering.
             void OnBeginPrepareRender() override;
+            //! OnFrameEnd is forwarded to our OnFrameEnd notification to allow subscribers to measure frame timing.
+            void OnFrameEnd() override;
 
             // WindowNotificationBus interface overrides...
             //! Used to fire a notification when our window resizes.
