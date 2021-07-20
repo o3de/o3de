@@ -82,16 +82,7 @@ namespace AzToolsFramework
                 return;
             }
 
-            // If this instance's templateId is valid, we should be able to unregister this instance from 
-            // Template to Instance mapping successfully.
-            if (m_templateId != InvalidTemplateId &&
-                !m_templateInstanceMapper->UnregisterInstance(*this))
-            {
-                AZ_Assert(false,
-                    "Prefab - Attempted to Unregister Instance from Template with Id '%u'.  "
-                    "Instance may never have been registered or was unregistered early.",
-                    m_templateId);
-            }
+            m_templateInstanceMapper->UnregisterInstance(*this);
 
             m_templateId = templateId;
 
@@ -221,15 +212,7 @@ namespace AzToolsFramework
 
         void Instance::Reset()
         {
-            // Clean up Instance associations.
-            if (m_templateId != InvalidTemplateId && !m_templateInstanceMapper->UnregisterInstance(*this))
-            {
-                AZ_Assert(
-                    false,
-                    "Prefab - Attempted to unregister Instance from Template on file path '%s' with Id '%u'.  "
-                    "Instance may never have been registered or was unregistered early.",
-                    m_templateSourcePath.c_str(), m_templateId);
-            }
+            m_templateInstanceMapper->UnregisterInstance(*this);
 
             ClearEntities();
 
