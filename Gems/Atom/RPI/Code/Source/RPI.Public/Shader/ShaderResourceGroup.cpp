@@ -98,7 +98,7 @@ namespace AZ
             {
                 return RHI::ResultCode::Fail;
             }
-            m_shaderResourceGroup->SetName(srgName);
+            m_shaderResourceGroup->SetName(m_pool->GetRHIPool()->GetName());
             m_data = RHI::ShaderResourceGroupData(m_layout);
             m_asset = { &shaderAsset, AZ::Data::AssetLoadBehavior::PreLoad };
 
