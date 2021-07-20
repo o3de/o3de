@@ -602,10 +602,6 @@ namespace AzToolsFramework
                 "Invalid Game Mode Entities Container encountered after play-in-editor stopped. "
                 "Confirm that the container was initialized correctly");
 
-            AZ_Assert(m_playInEditorData.m_entities.IsSet(),
-                "Invalid Game Mode Entities Container encountered after play-in-editor stopped. "
-                "Confirm that the container was initialized correctly");
-
             m_playInEditorData.m_entities.DespawnAllEntities();
             m_playInEditorData.m_entities.Alert(
                 [assets = AZStd::move(m_playInEditorData.m_assets),
