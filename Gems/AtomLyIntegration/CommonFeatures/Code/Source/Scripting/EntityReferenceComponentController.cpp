@@ -7,6 +7,7 @@
  */
 
 #include <Scripting/EntityReferenceComponentController.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ
 {

@@ -122,11 +122,6 @@ namespace Platform
         return reinterpret_cast<RHIMetalView*>([nativeWindow.contentViewController view]);
     }
 
-    void ApplyTileDimentions(MTLRenderPassDescriptor* mtlRenderPassDescriptor)
-    {
-        AZ_UNUSED(mtlRenderPassDescriptor);
-    }
-
     void SynchronizeBufferOnCPU(id<MTLBuffer> mtlBuffer, size_t bufferOffset, size_t bufferSize)
     {
         if(mtlBuffer.storageMode == MTLStorageModeManaged)

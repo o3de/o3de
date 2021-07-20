@@ -51,6 +51,7 @@ namespace AZ
             void ModifyFrameSchedulerStatisticsFlags(RHI::FrameSchedulerStatisticsFlags statisticsFlags, bool enableFlags) override;
             const RHI::CpuTimingStatistics* GetCpuTimingStatistics() const override;
             const RHI::TransientAttachmentStatistics* GetTransientAttachmentStatistics() const override;
+            const RHI::MemoryStatistics* GetMemoryStatistics() const override;
             const RHI::TransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const override;
             ConstPtr<PlatformLimitsDescriptor> GetPlatformLimitsDescriptor() const override;
             void QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable) override;
