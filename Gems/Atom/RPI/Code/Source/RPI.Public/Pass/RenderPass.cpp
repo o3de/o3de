@@ -1,15 +1,11 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
+#include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
 #include <Atom/RHI/FrameGraphBuilder.h>
@@ -61,6 +57,11 @@ namespace AZ
             {
                 const PassAttachmentBinding& binding = m_attachmentBindings[slotIndex];
 
+                if (!binding.m_attachment)
+                {
+                    continue;
+                }
+
                 // Handle the depth-stencil attachment. There should be only one.
                 if (binding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::DepthStencil)
                 {
@@ -98,6 +99,10 @@ namespace AZ
                 {
                     continue;
                 }
+                if (!binding.m_attachment)
+                {
+                    continue;
+                }
 
                 if (binding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::RenderTarget
                     || binding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::DepthStencil)
@@ -128,7 +133,7 @@ namespace AZ
         }
 
 
-        void RenderPass::OnBuildAttachmentsFinishedInternal()
+        void RenderPass::InitializeInternal()
         {
             if (m_shaderResourceGroup != nullptr)
             {
@@ -165,7 +170,7 @@ namespace AZ
                     }
                     else
                     {
-                        AZ_Error("Pass System", false, "[Pass %s] Could not bind shader buffer index '%s' because it has no attachment.", GetName().GetCStr(), shaderName.GetCStr());
+                        AZ_Error( "Pass System", AZ::RHI::IsNullRenderer(), "[Pass %s] Could not bind shader buffer index '%s' because it has no attachment.", GetName().GetCStr(), shaderName.GetCStr());
                         binding.m_shaderInputIndex = PassAttachmentBinding::ShaderInputNoBind;
                     }
                 }
@@ -342,7 +347,7 @@ namespace AZ
             }
         }
 
-        ViewPtr RenderPass::GetView()
+        ViewPtr RenderPass::GetView() const
         {
             if (m_flags.m_hasPipelineViewTag && m_pipeline)
             {
@@ -522,8 +527,11 @@ namespace AZ
                 }
             };
 
-            ExecuteOnTimestampQuery(beginQuery);
-            ExecuteOnPipelineStatisticsQuery(beginQuery);
+            if (context.GetCommandListIndex() == 0)
+            {
+                ExecuteOnTimestampQuery(beginQuery);
+                ExecuteOnPipelineStatisticsQuery(beginQuery);
+            }
         }
 
         void RenderPass::EndScopeQuery(const RHI::FrameGraphExecuteContext& context)
@@ -533,8 +541,23 @@ namespace AZ
                 query->EndQuery(context);
             };
 
-            ExecuteOnTimestampQuery(endQuery);
-            ExecuteOnPipelineStatisticsQuery(endQuery);
+            // This scopy query implmentation should be replaced by
+            // [ATOM-5407] [RHI][Core] - Add GPU timestamp and pipeline statistic support for scopes
+            
+            // For timestamp query, it's okay to execute across different command lists
+            if (context.GetCommandListIndex() == context.GetCommandListCount() - 1)
+            {
+                ExecuteOnTimestampQuery(endQuery);
+            }
+            // For all the other types of queries except timestamp, the query start and end has to be in the same command list
+            // Here only tracks the PipelineStatistics for the first command list due to that we don't know how many queries are
+            // needed when AddScopeQueryToFrameGraph is called.
+            // This implementation leads to an issue that we may not get accurate pipeline statistic data
+            // for passes which were executed with more than one command list
+            if (context.GetCommandListIndex() == 0)
+            {
+                ExecuteOnPipelineStatisticsQuery(endQuery);
+            }
         }
 
         void RenderPass::ReadbackScopeQueryResults()

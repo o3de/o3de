@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <AzCore/Debug/Trace.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
@@ -16,6 +11,13 @@
 #include <SceneAPI/SDKWrapper/AssImpNodeWrapper.h>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+
+#if AZ_TRAIT_COMPILER_SUPPORT_CSIGNAL
+#include <csignal>
+#include <cstdlib>
+#include <iostream>
+#include <stdlib.h>
+#endif // AZ_TRAIT_COMPILER_SUPPORT_CSIGNAL
 
 namespace AZ
 {
@@ -34,21 +36,52 @@ namespace AZ
         {
         }
 
+#if AZ_TRAIT_COMPILER_SUPPORT_CSIGNAL
+        void signal_handler([[maybe_unused]] int signal) 
+        {
+            AZ_TracePrintf(
+                SceneAPI::Utilities::ErrorWindow,
+                "Failed to import scene with Asset Importer library. An %s has occured in the library, this scene file cannot be parsed by the library.",
+                signal == SIGABRT ? "assert" : "unknown error");
+        }
+#endif // AZ_TRAIT_COMPILER_SUPPORT_CSIGNAL
+
         bool AssImpSceneWrapper::LoadSceneFromFile(const char* fileName)
         {
             AZ_TracePrintf(SceneAPI::Utilities::LogWindow, "AssImpSceneWrapper::LoadSceneFromFile %s", fileName);
             AZ_TraceContext("Filename", fileName);
+
+#if AZ_TRAIT_COMPILER_SUPPORT_CSIGNAL
+            // Turn off the abort popup because it can disrupt automation.
+            // AssImp calls abort when asserts are enabled, and an assert is encountered.
+#ifdef _WRITE_ABORT_MSG
+            _set_abort_behavior(0, _WRITE_ABORT_MSG);
+#endif // #ifdef _WRITE_ABORT_MSG
+            // Instead, capture any calls to abort with a signal handler, and report them.
+            auto previous_handler = std::signal(SIGABRT, signal_handler);
+#endif // AZ_TRAIT_COMPILER_SUPPORT_CSIGNAL
+
             // aiProcess_JoinIdenticalVertices is not enabled because O3DE has a mesh optimizer that also does this,
             // this flag is disabled to keep AssImp output similar to FBX SDK to reduce downstream bugs for the initial AssImp release.
             // There's currently a minimum of properties and flags set to maximize compatibility with the existing node graph.
+
+            // aiProcess_LimitBoneWeights is not enabled because it will remove bones which are not associated with a mesh.
+            // This results in the loss of the offset matrix data for nodes without a mesh which is required for the Transform Importer.
             m_importer.SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, false);
             m_importer.SetPropertyBool(AI_CONFIG_IMPORT_FBX_OPTIMIZE_EMPTY_ANIMATION_CURVES, false);
             m_sceneFileName = fileName;
             m_assImpScene = m_importer.ReadFile(fileName,
                 aiProcess_Triangulate //Triangulates all faces of all meshes
-                | aiProcess_LimitBoneWeights //Limits the number of bones that can affect a vertex to a maximum value
-                                             //dropping the least important and re-normalizing
                 | aiProcess_GenNormals); //Generate normals for meshes
+
+#if AZ_TRAIT_COMPILER_SUPPORT_CSIGNAL
+            // Reset abort behavior for anything else that may call abort.
+            std::signal(SIGABRT, previous_handler);
+#ifdef _WRITE_ABORT_MSG
+            _set_abort_behavior(1, _WRITE_ABORT_MSG);
+#endif // #ifdef _WRITE_ABORT_MSG
+#endif // AZ_TRAIT_COMPILER_SUPPORT_CSIGNAL
+
             if (!m_assImpScene)
             {
                 AZ_TracePrintf(SceneAPI::Utilities::ErrorWindow, "Failed to import Asset Importer Scene. Error returned: %s", m_importer.GetErrorString());

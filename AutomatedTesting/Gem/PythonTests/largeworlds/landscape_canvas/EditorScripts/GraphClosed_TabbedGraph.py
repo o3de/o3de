@@ -1,12 +1,7 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 import os
@@ -29,6 +24,26 @@ class TestGraphClosedTabbedGraph(EditorTestHelper):
         EditorTestHelper.__init__(self, log_prefix="GraphClosedTabbedGraph", args=["level"])
 
     def run_test(self):
+        """
+        Summary:
+        This test verifies that Landscape Canvas tabbed graphs can be independently closed.
+
+        Expected Behavior:
+        Closing a tabbed graph only closes the appropriate graph.
+
+        Test Steps:
+         1) Create a new level
+         2) Open Landscape Canvas and create several new graphs
+         3) Close one of the open graphs
+         4) Ensure the graph properly closed, and other open graphs remain open
+
+        Note:
+        - This test file must be called from the Open 3D Engine Editor command terminal
+        - Any passed and failed tests are written to the Editor.log file.
+                Parsing the file or running a log_monitor are required to observe the test results.
+
+        :return: None
+        """
 
         # Create a new empty level
         self.test_success = self.create_level(

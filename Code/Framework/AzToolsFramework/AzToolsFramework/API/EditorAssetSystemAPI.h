@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -60,9 +55,19 @@ namespace AzToolsFramework
             //! and is generally checked into source control.
             virtual const char* GetAbsoluteDevRootFolderPath() = 0;
         
-            /// Convert a full source path like "c:\\dev\gamename\\blah\\test.tga" into a relative product path.
+            /// Convert a full source path like "c:\\dev\\gamename\\blah\\test.tga" into a relative product path.
             /// asset paths never mention their alias and are relative to the asset cache root
             virtual bool GetRelativeProductPathFromFullSourceOrProductPath(const AZStd::string& fullPath, AZStd::string& relativeProductPath) = 0;
+
+            /** Convert a source path like "c:\\dev\\gamename\\blah\\test.tga" into a relative source path, like "blah/test.tga".
+            * If no valid relative path could be created, the input source path will be returned in relativePath.
+            * @param sourcePath partial or full path to a source file.  (The file doesn't need to exist)
+            * @param relativePath the output relative path for the source file, if a valid one could be created
+            * @param rootFilePath the root path that relativePath is relative to
+            * @return true if a valid relative path was created, false if it wasn't
+            */
+            virtual bool GenerateRelativeSourcePath(
+                const AZStd::string& sourcePath, AZStd::string& relativePath, AZStd::string& rootFilePath) = 0;
 
             /// Convert a relative asset path like "blah/test.tga" to a full source path path.
             /// Once the asset processor has finished building, this function is capable of handling even when the extension changes
@@ -110,14 +115,14 @@ namespace AzToolsFramework
 
             /**
             * Query to see if a specific asset platform is enabled
-            * @param platform the asset platform to check e.g. es3, ios, etc.
+            * @param platform the asset platform to check e.g. android, ios, etc.
             * @return true if enabled, false otherwise
             */
             virtual bool IsAssetPlatformEnabled(const char* platform) = 0;
 
             /**
             * Get the total number of pending assets left to process for a specific asset platform
-            * @param platform the asset platform to check e.g. es3, ios, etc.
+            * @param platform the asset platform to check e.g. android, ios, etc.
             * @return -1 if the process fails, a positive number otherwise
             */
             virtual int GetPendingAssetsForPlatform(const char* platform) = 0;
@@ -302,7 +307,7 @@ namespace AzToolsFramework
         inline const char* GetHostAssetPlatform()
         {
 #if defined(AZ_PLATFORM_MAC)
-            return "osx_gl";
+            return "mac";
 #elif defined(AZ_PLATFORM_WINDOWS)
             return "pc";
 #elif defined(AZ_PLATFORM_LINUX)

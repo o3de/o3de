@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "EditorDefaultSelection.h"
 
@@ -30,8 +25,7 @@ namespace AzToolsFramework
         ActionOverrideRequestBus::Handler::BusConnect(GetEntityContextId());
         ComponentModeFramework::ComponentModeSystemRequestBus::Handler::BusConnect();
 
-        m_manipulatorManager =
-            AZStd::make_shared<AzToolsFramework::ManipulatorManager>(AzToolsFramework::g_mainManipulatorManagerId);
+        m_manipulatorManager = AZStd::make_shared<AzToolsFramework::ManipulatorManager>(AzToolsFramework::g_mainManipulatorManagerId);
         m_transformComponentSelection = AZStd::make_unique<EditorTransformComponentSelection>(entityDataCache);
     }
 
@@ -75,23 +69,18 @@ namespace AzToolsFramework
         for (const auto& componentModeBuilder : entityAndComponentModeBuilders.m_componentModeBuilders)
         {
             m_componentModeCollection.AddComponentMode(
-                AZ::EntityComponentIdPair(
-                    entityAndComponentModeBuilders.m_entityId, componentModeBuilder.m_componentId),
-                componentModeBuilder.m_componentType,
-                componentModeBuilder.m_componentModeBuilder);
+                AZ::EntityComponentIdPair(entityAndComponentModeBuilders.m_entityId, componentModeBuilder.m_componentId),
+                componentModeBuilder.m_componentType, componentModeBuilder.m_componentModeBuilder);
         }
     }
 
     void EditorDefaultSelection::TransitionToComponentMode()
     {
         // entering ComponentMode - disable all default actions in the ActionManager
-        EditorActionRequestBus::Broadcast(
-            &EditorActionRequests::DisableDefaultActions);
+        EditorActionRequestBus::Broadcast(&EditorActionRequests::DisableDefaultActions);
 
         // attach widget to store ComponentMode specific actions
-        EditorActionRequestBus::Broadcast(
-            &EditorActionRequests::AttachOverride,
-            &PhantomWidget());
+        EditorActionRequestBus::Broadcast(&EditorActionRequests::AttachOverride, &PhantomWidget());
 
         if (m_transformComponentSelection)
         {
@@ -103,8 +92,7 @@ namespace AzToolsFramework
 
         // refresh button ui
         ToolsApplicationEvents::Bus::Broadcast(
-            &ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay,
-            PropertyModificationRefreshLevel::Refresh_EntireTree);
+            &ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay, PropertyModificationRefreshLevel::Refresh_EntireTree);
     }
 
     void EditorDefaultSelection::TransitionFromComponentMode()
@@ -117,19 +105,16 @@ namespace AzToolsFramework
             m_transformComponentSelection->RegisterManipulator();
         }
 
-        EditorActionRequestBus::Broadcast(
-            &EditorActionRequests::DetachOverride);
+        EditorActionRequestBus::Broadcast(&EditorActionRequests::DetachOverride);
 
         ClearActionOverrides();
 
         // leaving ComponentMode - enable all default actions in ActionManager
-        EditorActionRequestBus::Broadcast(
-            &EditorActionRequests::EnableDefaultActions);
+        EditorActionRequestBus::Broadcast(&EditorActionRequests::EnableDefaultActions);
 
         // refresh button ui
         ToolsApplicationEvents::Bus::Broadcast(
-            &ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay,
-            PropertyModificationRefreshLevel::Refresh_EntireTree);
+            &ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay, PropertyModificationRefreshLevel::Refresh_EntireTree);
     }
 
     void EditorDefaultSelection::EndComponentMode()
@@ -142,8 +127,7 @@ namespace AzToolsFramework
         m_componentModeCollection.Refresh(entityComponentIdPair);
     }
 
-    bool EditorDefaultSelection::AddedToComponentMode(
-        const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid& componentType)
+    bool EditorDefaultSelection::AddedToComponentMode(const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid& componentType)
     {
         return m_componentModeCollection.AddedToComponentMode(entityComponentIdPair, componentType);
     }
@@ -152,10 +136,10 @@ namespace AzToolsFramework
     {
         ComponentModeFramework::ComponentModeDelegateRequestBus::EnumerateHandlers(
             [componentType](ComponentModeFramework::ComponentModeDelegateRequestBus::InterfaceType* componentModeMouseRequests)
-        {
-            componentModeMouseRequests->AddComponentModeOfType(componentType);
-            return true;
-        });
+            {
+                componentModeMouseRequests->AddComponentModeOfType(componentType);
+                return true;
+            });
 
         TransitionToComponentMode();
     }
@@ -238,8 +222,7 @@ namespace AzToolsFramework
         }
     }
 
-    bool EditorDefaultSelection::InternalHandleMouseViewportInteraction(
-        const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
+    bool EditorDefaultSelection::InternalHandleMouseViewportInteraction(const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
         bool enterComponentModeAttempted = false;
         const bool componentModeBefore = InComponentMode();
@@ -249,15 +232,15 @@ namespace AzToolsFramework
         {
             // enumerate all ComponentModeDelegateRequestBus and check if any triggered AddComponentModes
             ComponentModeFramework::ComponentModeDelegateRequestBus::EnumerateHandlers(
-                [&mouseInteraction, &enterComponentModeAttempted]
-                (ComponentModeFramework::ComponentModeDelegateRequestBus::InterfaceType* componentModeMouseRequests)
-            {
-                // detect if a double click happened on any Component in the viewport, attempting
-                // to move it into ComponentMode (note: this is not guaranteed to succeed as an
-                // incompatible multi-selection may prevent it)
-                enterComponentModeAttempted = componentModeMouseRequests->DetectEnterComponentModeInteraction(mouseInteraction);
-                return !enterComponentModeAttempted;
-            });
+                [&mouseInteraction, &enterComponentModeAttempted](
+                    ComponentModeFramework::ComponentModeDelegateRequestBus::InterfaceType* componentModeMouseRequests)
+                {
+                    // detect if a double click happened on any Component in the viewport, attempting
+                    // to move it into ComponentMode (note: this is not guaranteed to succeed as an
+                    // incompatible multi-selection may prevent it)
+                    enterComponentModeAttempted = componentModeMouseRequests->DetectEnterComponentModeInteraction(mouseInteraction);
+                    return !enterComponentModeAttempted;
+                });
 
             // here we know ComponentMode was entered successfully and was not prohibited
             if (m_componentModeCollection.ModesAdded())
@@ -272,25 +255,24 @@ namespace AzToolsFramework
         else
         {
             ComponentModeFramework::ComponentModeRequestBus::EnumerateHandlers(
-                [&mouseInteraction, &handled]
-                (ComponentModeFramework::ComponentModeRequestBus::InterfaceType* componentModeRequest)
-            {
-                if (componentModeRequest->HandleMouseInteraction(mouseInteraction))
+                [&mouseInteraction, &handled](ComponentModeFramework::ComponentModeRequestBus::InterfaceType* componentModeRequest)
                 {
-                    handled = true;
-                }
+                    if (componentModeRequest->HandleMouseInteraction(mouseInteraction))
+                    {
+                        handled = true;
+                    }
 
-                return true;
-            });
+                    return true;
+                });
 
             if (!handled)
             {
                 ComponentModeFramework::ComponentModeDelegateRequestBus::EnumerateHandlers(
-                    [&mouseInteraction]
-                    (ComponentModeFramework::ComponentModeDelegateRequestBus::InterfaceType* componentModeDelegateRequests)
-                {
-                    return !componentModeDelegateRequests->DetectLeaveComponentModeInteraction(mouseInteraction);
-                });
+                    [&mouseInteraction](
+                        ComponentModeFramework::ComponentModeDelegateRequestBus::InterfaceType* componentModeDelegateRequests)
+                    {
+                        return !componentModeDelegateRequests->DetectLeaveComponentModeInteraction(mouseInteraction);
+                    });
             }
         }
 
@@ -311,8 +293,7 @@ namespace AzToolsFramework
     }
 
     void EditorDefaultSelection::DisplayViewportSelection(
-        const AzFramework::ViewportInfo& viewportInfo,
-        AzFramework::DebugDisplayRequests& debugDisplay)
+        const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
         if (m_transformComponentSelection)
         {
@@ -330,8 +311,7 @@ namespace AzToolsFramework
     }
 
     void EditorDefaultSelection::DisplayViewportSelection2d(
-        const AzFramework::ViewportInfo& viewportInfo,
-        AzFramework::DebugDisplayRequests& debugDisplay)
+        const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
         if (m_transformComponentSelection)
         {
@@ -355,11 +335,12 @@ namespace AzToolsFramework
     void EditorDefaultSelection::AddActionOverride(const ActionOverride& actionOverride)
     {
         // check if an action with this uri is already added
-        const auto actionIt = AZStd::find_if(m_actions.begin(), m_actions.end(),
+        const auto actionIt = AZStd::find_if(
+            m_actions.begin(), m_actions.end(),
             [actionOverride](const AZStd::shared_ptr<ActionOverrideMapping>& actionOverrideMapping)
-        {
-            return actionOverride.m_uri == actionOverrideMapping->m_uri;
-        });
+            {
+                return actionOverride.m_uri == actionOverrideMapping->m_uri;
+            });
 
         // if an action with the same uri is already added, store the callback for this action
         if (actionIt != m_actions.end())
@@ -381,44 +362,45 @@ namespace AzToolsFramework
 
             // set callbacks that should happen when this action is triggered
             auto index = static_cast<int>(m_actions.size());
-            QObject::connect(action.get(), &QAction::triggered, [this, index]()
-            {
-                const auto vec = m_actions; // increment ref count of shared_ptr, callback may clear actions
-                for (auto& callback : vec[index]->m_callbacks)
+            QObject::connect(
+                action.get(), &QAction::triggered,
+                [this, index]()
                 {
-                    callback();
-                }
-            });
+                    const auto vec = m_actions; // increment ref count of shared_ptr, callback may clear actions
+                    for (auto& callback : vec[index]->m_callbacks)
+                    {
+                        callback();
+                    }
+                });
 
-            m_actions.emplace_back(
-                AZStd::make_shared<ActionOverrideMapping>(
-                    actionOverride.m_uri, AZStd::vector<AZStd::function<void()>>{ actionOverride.m_callback },
-                    AZStd::move(action)));
+            m_actions.emplace_back(AZStd::make_shared<ActionOverrideMapping>(
+                actionOverride.m_uri, AZStd::vector<AZStd::function<void()>>{ actionOverride.m_callback }, AZStd::move(action)));
 
             // register action with edit menu
-            EditorMenuRequestBus::Broadcast(
-                &EditorMenuRequests::AddEditMenuAction, m_actions.back()->m_action.get());
+            EditorMenuRequestBus::Broadcast(&EditorMenuRequests::AddEditMenuAction, m_actions.back()->m_action.get());
         }
     }
 
     void EditorDefaultSelection::ClearActionOverrides()
     {
-        AZStd::for_each(m_actions.begin(), m_actions.end(),
+        AZStd::for_each(
+            m_actions.begin(), m_actions.end(),
             [this](const AZStd::shared_ptr<ActionOverrideMapping>& actionMapping)
-        {
-            PhantomWidget().removeAction(actionMapping->m_action.get());
-        });
+            {
+                PhantomWidget().removeAction(actionMapping->m_action.get());
+            });
 
         m_actions.clear();
     }
 
     void EditorDefaultSelection::RemoveActionOverride(const AZ::Crc32 actionOverrideUri)
     {
-        const auto it = AZStd::find_if(m_actions.begin(), m_actions.end(),
+        const auto it = AZStd::find_if(
+            m_actions.begin(), m_actions.end(),
             [actionOverrideUri](const AZStd::shared_ptr<ActionOverrideMapping>& actionMapping)
-        {
-            return actionMapping->m_uri == actionOverrideUri;
-        });
+            {
+                return actionMapping->m_uri == actionOverrideUri;
+            });
 
         if (it != m_actions.end())
         {

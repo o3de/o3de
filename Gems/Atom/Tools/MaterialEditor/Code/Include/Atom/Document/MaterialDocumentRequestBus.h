@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
@@ -19,6 +14,7 @@
 #include <AzCore/std/any.h>
 
 #include <AtomToolsFramework/DynamicProperty/DynamicProperty.h>
+#include <AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h>
 
 namespace AZ
 {
@@ -32,7 +28,7 @@ namespace AZ
 namespace MaterialEditor
 {
     //! UVs are processed in a property group but will be handled differently.
-    static constexpr const char UvGroupName[] = "UvNames";
+    static constexpr const char UvGroupName[] = "uvSets";
 
     class MaterialDocumentRequests
         : public AZ::EBusTraits
@@ -67,6 +63,10 @@ namespace MaterialEditor
         //! Returns a property object
         //! If the document is not open or the id can't be found, an invalid property is returned.
         virtual const AtomToolsFramework::DynamicProperty& GetProperty(const AZ::Name& propertyFullName) const = 0;
+        
+        //! Returns whether a property group is visible
+        //! If the document is not open or the id can't be found, returns false.
+        virtual bool IsPropertyGroupVisible(const AZ::Name& propertyGroupFullName) const = 0;
 
         //! Modify material property value
         virtual void SetPropertyValue(const AZ::Name& propertyFullName, const AZStd::any& value) = 0;

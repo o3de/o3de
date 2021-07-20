@@ -1,19 +1,15 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Casting/lossy_cast.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Vector3.h>
@@ -31,13 +27,13 @@ namespace Vegetation
 {
     AZ_INLINE AZ::Color GetDebugColor()
     {
-        static uint32 debugColor = 0xff << 8;
+        static uint32_t debugColor = 0xff << 8;
         AZ::Color value;
         value.FromU32(debugColor | (0xff << 24)); // add in alpha 255
         // use a golden ratio sequence to generate the next color
         // new color = fract(old color * 1.6)
         // Treat the 24 bits as normalized 0 - 1
-        debugColor = (uint32)((((uint64)debugColor * 0x1999999ull) - 0xffffffull) & 0xffffffull);
+        debugColor = azlossy_cast<uint32_t>(((aznumeric_cast<uint64_t>(debugColor) * 0x1999999ull) - 0xffffffull) & 0xffffffull);
         return value;
     }
 

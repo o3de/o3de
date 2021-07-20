@@ -1,12 +1,7 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 
 Automated scripts for testing the AssetProcessorBatch's missing dependency scanner feature.
 
@@ -75,6 +70,15 @@ class TestsMissingDependencies_WindowsAndMac(object):
     def do_missing_dependency_test(self, source_product, expected_dependencies,
                                    dsp_param,
                                    platforms=None, max_iterations=0):
+        """
+        Test Steps:
+        1. Determine what platforms to run against
+        2. Process assets for that platform
+        3. Determine the missing dependency params to set
+        4. Set the max iteration param
+        5. Run missing dependency scanner against target platforms and search params based on test data
+        6. Validate missing dependencies against test data
+        """
 
         platforms = platforms or ASSET_PROCESSOR_PLATFORM_MAP[self._workspace.asset_processor_platform]
         if not isinstance(platforms, list):
@@ -84,10 +88,11 @@ class TestsMissingDependencies_WindowsAndMac(object):
 
         """Run a single test"""
         for asset_platform in platforms:
-            db_product = db_utils.get_product_id_from_relative(self._workspace, source_product, asset_platform)
+            db_product_path = db_utils.get_db_product_path(self._workspace, source_product, asset_platform)
+            db_product = db_utils.get_product_id(self._missing_dep_helper.asset_db, db_product_path)
             if db_product:
                 db_utils.clear_missing_dependencies(self._missing_dep_helper.asset_db, db_product)
-        expected_product = os.path.join(self._workspace.project, source_product).lower()
+        expected_product = source_product.lower()
 
         dependency_search_params = [f"--dsp={dsp_param}", "--zeroAnalysisMode"]
         if max_iterations:
@@ -103,7 +108,14 @@ class TestsMissingDependencies_WindowsAndMac(object):
     @pytest.mark.assetpipeline
     @pytest.mark.test_case_id("C17226567")
     def test_WindowsAndMac_ValidUUIDNotDependency_ReportsMissingDependency(self):
-        """Tests that a valid UUID referenced in a file will report any missing dependencies"""
+        """
+        Tests that a valid UUID referenced in a file will report any missing dependencies
+
+        Test Steps:
+        1. Set the expected product
+        2. Set the expected missing dependencies
+        3. Execute test
+        """
 
         # Relative path to the txt file with missing dependencies
         expected_product = f"testassets\\validuuidsnotdependency.txt"
@@ -112,17 +124,26 @@ class TestsMissingDependencies_WindowsAndMac(object):
         # Expected missing dependencies
         expected_dependencies = [
             #            String                                      Asset                     #
-            ("06E9D6633C875400A532BCB2C0CA19D6", "{06E9D663-3C87-5400-A532-BCB2C0CA19D6}:0"),
-            ("1CB10C43F3245B93A294C602ADEF95F9:[0", "{1CB10C43-F324-5B93-A294-C602ADEF95F9}:0"),
-            ("58BE9DA51F1753B98CEEEEB10E63454D", "{58BE9DA5-1F17-53B9-8CEE-EEB10E63454D}:914f19b7"),
-            ("6BDE282B49C957F7B0714B26579BCA9A", "{6BDE282B-49C9-57F7-B071-4B26579BCA9A}:0"),
-            ("747D31D71E62553592226173C49CF97E", "{747D31D7-1E62-5535-9222-6173C49CF97E}:1"),
-            ("747D31D71E62553592226173C49CF97E", "{747D31D7-1E62-5535-9222-6173C49CF97E}:2"),
-            ("9886E132-572D-5746-9377-E629AB6C1981", "{9886E132-572D-5746-9377-E629AB6C1981}:0"),
-            ("33bcee02F3225688ABEE534F6058593F", "{33BCEE02-F322-5688-ABEE-534F6058593F}:0"),
-            ("B92667DC-9F5B-5D72-A29D-99219DD9B691", "{B92667DC-9F5B-5D72-A29D-99219DD9B691}:0"),
-            ("D92C4661C8985E19BD3597CB2318CFA6:[0", "{D92C4661-C898-5E19-BD35-97CB2318CFA6}:0"),
-            ("7364AB2B092F5B0B80601BBC6E53087C", "{7364AB2B-092F-5B0B-8060-1BBC6E53087C}:0"),
+            ('1CB10C43F3245B93A294C602ADEF95F9:[0', '{1CB10C43-F324-5B93-A294-C602ADEF95F9}:0'),
+            ('33bcee02F3225688ABEE534F6058593F', '{33BCEE02-F322-5688-ABEE-534F6058593F}:0'),
+            ('345E5C660D6254FF8D0F7C8EE66A2249', '{345E5C66-0D62-54FF-8D0F-7C8EE66A2249}:3e8'),
+            ('345E5C660D6254FF8D0F7C8EE66A2249', '{345E5C66-0D62-54FF-8D0F-7C8EE66A2249}:3ea'),
+            ('345E5C660D6254FF8D0F7C8EE66A2249', '{345E5C66-0D62-54FF-8D0F-7C8EE66A2249}:3eb'),
+            ('37108522F50459499CD6C8D47A960CF1', '{37108522-F504-5949-9CD6-C8D47A960CF1}:3e8'),
+            ('37108522F50459499CD6C8D47A960CF1', '{37108522-F504-5949-9CD6-C8D47A960CF1}:3ea'),
+            ('37108522F50459499CD6C8D47A960CF1', '{37108522-F504-5949-9CD6-C8D47A960CF1}:3eb'),
+            ('6BDE282B49C957F7B0714B26579BCA9A', '{6BDE282B-49C9-57F7-B071-4B26579BCA9A}:0'),
+            ('747D31D71E62553592226173C49CF97E', '{747D31D7-1E62-5535-9222-6173C49CF97E}:1'),
+            ('747D31D71E62553592226173C49CF97E', '{747D31D7-1E62-5535-9222-6173C49CF97E}:2'),
+            ('A26C73D1837E5AE59E68F916FA7C3699', '{A26C73D1-837E-5AE5-9E68-F916FA7C3699}:3e8'),
+            ('A26C73D1837E5AE59E68F916FA7C3699', '{A26C73D1-837E-5AE5-9E68-F916FA7C3699}:3ea'),
+            ('A26C73D1837E5AE59E68F916FA7C3699', '{A26C73D1-837E-5AE5-9E68-F916FA7C3699}:3eb'),
+            ('B076CDDC-14DF-50F4-A5E9-7518ABB3E851', '{B076CDDC-14DF-50F4-A5E9-7518ABB3E851}:0'),
+            ('C67BEA9F-09FF-59AA-A7F0-A52B8F987508', '{C67BEA9F-09FF-59AA-A7F0-A52B8F987508}:3e8'),
+            ('C67BEA9F-09FF-59AA-A7F0-A52B8F987508', '{C67BEA9F-09FF-59AA-A7F0-A52B8F987508}:3ea'),
+            ('C67BEA9F-09FF-59AA-A7F0-A52B8F987508', '{C67BEA9F-09FF-59AA-A7F0-A52B8F987508}:3eb'),
+            ('C67BEA9F-09FF-59AA-A7F0-A52B8F987508', '{C67BEA9F-09FF-59AA-A7F0-A52B8F987508}:3ec'),
+            ('D92C4661C8985E19BD3597CB2318CFA6:[0', '{D92C4661-C898-5E19-BD35-97CB2318CFA6}:0'),
         ]
         self.do_missing_dependency_test(expected_product, expected_dependencies,
                                         "%ValidUUIDsNotDependency.txt")
@@ -131,7 +152,14 @@ class TestsMissingDependencies_WindowsAndMac(object):
     @pytest.mark.assetpipeline
     @pytest.mark.test_case_id("C17226567")
     def test_WindowsAndMac_InvalidUUIDsNotDependencies_NoReportedMessage(self):
-        """Tests that invalid UUIDs do not count as missing dependencies"""
+        """
+        Tests that invalid UUIDs do not count as missing dependencies
+
+        Test Steps:
+        1. Set the expected product
+        2. Set the expected missing dependencies
+        3. Execute test
+        """
         # Relative path to the txt file with invalid UUIDs
         expected_product = f"testassets\\invaliduuidnoreport.txt"
         expected_dependencies = []  # No expected missing dependencies
@@ -143,7 +171,14 @@ class TestsMissingDependencies_WindowsAndMac(object):
     @pytest.mark.assetpipeline
     @pytest.mark.test_case_id("C17226567")
     def test_WindowsAndMac_ValidAssetIdsNotDependencies_ReportsMissingDependency(self):
-        """Tests that valid asset IDs but not dependencies, show missing dependencies"""
+        """
+        Tests that valid asset IDs but not dependencies, show missing dependencies
+
+        Test Steps:
+        1. Set the expected product
+        2. Set the expected missing dependencies
+        3. Execute test
+        """
 
         # Relative path to the txt file with valid asset ids but not dependencies
         expected_product = f"testassets\\validassetidnotdependency.txt"
@@ -151,9 +186,9 @@ class TestsMissingDependencies_WindowsAndMac(object):
         # Expected missing dependencies
         expected_dependencies = [
             #            String                                                  Asset                     #
-            ("2ef92b8D044E5C278E2BB1AC0374A4E7:131072", "{2EF92B8D-044E-5C27-8E2B-B1AC0374A4E7}:20000"),
-            ("A2482826-053D-5634-A27B-084B1326AAE5}:[196608", "{A2482826-053D-5634-A27B-084B1326AAE5}:30000"),
-            ("D83B36F1-61A6-5001-B191-4D0CE282E236}-327680", "{D83B36F1-61A6-5001-B191-4D0CE282E236}:50000"),
+            ('2ef92b8D044E5C278E2BB1AC0374A4E7:1003', '{2EF92B8D-044E-5C27-8E2B-B1AC0374A4E7}:3eb'),
+            ('A2482826-053D-5634-A27B-084B1326AAE5}:[1002', '{A2482826-053D-5634-A27B-084B1326AAE5}:3ea'),
+            ('D83B36F1-61A6-5001-B191-4D0CE282E236}-1002', '{D83B36F1-61A6-5001-B191-4D0CE282E236}:3ea'),
         ]
 
         self.do_missing_dependency_test(expected_product, expected_dependencies,
@@ -163,7 +198,14 @@ class TestsMissingDependencies_WindowsAndMac(object):
     @pytest.mark.assetpipeline
     @pytest.mark.test_case_id("C17226567")
     def test_WindowsAndMac_InvalidAssetsIDNotDependencies_NoReportedMessage(self):
-        """Tests that invalid asset IDs do not count as missing dependencies"""
+        """
+        Tests that invalid asset IDs do not count as missing dependencies
+
+        Test Steps:
+        1. Set the expected product
+        2. Set the expected missing dependencies
+        3. Execute test
+        """
 
         # Relative path to the txt file with invalid asset IDs
         expected_product = f"testassets\\invalidassetidnoreport.txt"
@@ -178,7 +220,14 @@ class TestsMissingDependencies_WindowsAndMac(object):
     # fmt:off
     def test_WindowsAndMac_ValidSourcePathsNotDependencies_ReportsMissingDependencies(self):
         # fmt:on
-        """Tests that valid source paths can translate to missing dependencies"""
+        """
+        Tests that valid source paths can translate to missing dependencies
+
+        Test Steps:
+        1. Set the expected product
+        2. Set the expected missing dependencies
+        3. Execute test
+        """
 
         # Relative path to the txt file with missing dependencies as source paths
         expected_product = f"testassets\\relativesourcepathsnotdependencies.txt"
@@ -186,16 +235,13 @@ class TestsMissingDependencies_WindowsAndMac(object):
         # Expected missing dependencies
         expected_dependencies = [
             #            String                               Asset                     #
-            ("Config/Editor.xml", "{06E9D663-3C87-5400-A532-BCB2C0CA19D6}:0"),
-            (r"TestAssets\WildcardScanTest1.txt", "{1CB10C43-F324-5B93-A294-C602ADEF95F9}:0"),
-            ("TestAssets/RelativeProductPathsNotDependencies.txt", "{B772953C-A08A-5D20-9491-530E87D11504}:0"),
-            ("textures/_dev_Purple.tif", "{A2482826-053D-5634-A27B-084B1326AAE5}:0"),
-            ("textures/_dev_Purple.tif", "{A2482826-053D-5634-A27B-084B1326AAE5}:10000"),
-            ("textures/_dev_Purple.tif", "{A2482826-053D-5634-A27B-084B1326AAE5}:20000"),
-            ("textures/_dev_Purple.tif", "{A2482826-053D-5634-A27B-084B1326AAE5}:30000"),
-            ("textures/_dev_Purple.tif", "{A2482826-053D-5634-A27B-084B1326AAE5}:40000"),
-            ("textures/_dev_Purple.tif", "{A2482826-053D-5634-A27B-084B1326AAE5}:50000"),
-            ("Config/gAME.XML", "{B92667DC-9F5B-5D72-A29D-99219DD9B691}:0"),
+            ('TestAssets\\WildcardScanTest1.txt', '{1CB10C43-F324-5B93-A294-C602ADEF95F9}:0'),
+            ('libs/particles/milestone2PARTICLES.XML', '{6BDE282B-49C9-57F7-B071-4B26579BCA9A}:0'),
+            ('textures/_dev_Purple.tif', '{A2482826-053D-5634-A27B-084B1326AAE5}:3e8'),
+            ('textures/_dev_Purple.tif', '{A2482826-053D-5634-A27B-084B1326AAE5}:3ea'),
+            ('textures/_dev_Purple.tif', '{A2482826-053D-5634-A27B-084B1326AAE5}:3eb'),
+            ('project.json', '{B076CDDC-14DF-50F4-A5E9-7518ABB3E851}:0'),
+            ('TestAssets/RelativeProductPathsNotDependencies.txt', '{B772953C-A08A-5D20-9491-530E87D11504}:0'),
         ]
 
         self.do_missing_dependency_test(expected_product, expected_dependencies,
@@ -205,7 +251,14 @@ class TestsMissingDependencies_WindowsAndMac(object):
     @pytest.mark.assetpipeline
     @pytest.mark.test_case_id("C17226567")
     def test_WindowsAndMac_InvalidARelativePathsNotDependencies_NoReportedMessage(self):
-        """Tests that invalid relative paths do not resolve to missing dependencies"""
+        """
+        Tests that invalid relative paths do not resolve to missing dependencies
+
+        Test Steps:
+        1. Set the expected product
+        2. Set the expected missing dependencies
+        3. Execute test
+        """
 
         # Relative path to the txt file with invalid relative paths
         expected_product = f"testassets\\invalidrelativepathsnoreport.txt"
@@ -220,7 +273,14 @@ class TestsMissingDependencies_WindowsAndMac(object):
     # fmt:off
     def test_WindowsAndMac_ValidProductPathsNotDependencies_ReportsMissingDependencies(self):
         # fmt:on
-        """Tests that valid product paths can resolve to missing dependencies"""
+        """
+        Tests that valid product paths can resolve to missing dependencies
+
+        Test Steps:
+        1. Set the expected product
+        2. Set the expected missing dependencies
+        3. Execute test
+        """
 
         self._asset_processor.add_source_folder_assets(f"Gems\\LyShineExamples\\Assets\\UI\\Fonts\\LyShineExamples")
         self._asset_processor.add_scan_folder(f"Gems\\LyShineExamples\\Assets")
@@ -228,24 +288,22 @@ class TestsMissingDependencies_WindowsAndMac(object):
         expected_product = f"testassets\\relativeproductpathsnotdependencies.txt"
         expected_dependencies = [
             #            String                                 Asset                     #
-            ("materials/floor_tile.mtl", "{0EFF5E4A-F544-5D87-8696-6DDFA62D6063}:0"),
-            ("materials/am_grass1.mtl", "{1151F14D-38A6-5579-888A-BE3139882E68}:0"),
-            ("2ef92b8D044E5C278E2BB1AC0374A4E7:131072", "{2EF92B8D-044E-5C27-8E2B-B1AC0374A4E7}:20000"),
-            ("ui/milestone2menu.uicanvas", "{445D9AF3-6CA5-5281-82A9-5C570BCD1DB8}:0"),
-            ("ui/fonts/lyshineexamples/vera.ttf", "{74F5C29E-4749-5EE8-AEC6-A1C540600CE7}:0"),
-            ("materials/am_rockground.mtl", "{A1DA3D05-A020-5BB5-A608-C4812B7BD733}:0"),
-            ("textures/_dev_yellow_light.dds.2", "{6C40868F-3FC1-5115-96EA-DD0A9E33DEE4}:20000"),
-            (r"automatedtesting\textures\_dev_stucco.dds", "{70114D85-D712-5AEB-A816-8FE3A37087AF}:0"),
-            ("textures/milestone2/ama_grey_02.dds", "{3EE80AAD-EB9C-56BD-9E9C-65410578998C}:0"),
-            (r"textures\\_dev_tan.dds", "{8F2BCEF5-C8CE-5B80-8103-8C1D694D012C}:0"),
-            ("textures/_dev_purple.dds", "{A2482826-053D-5634-A27B-084B1326AAE5}:0"),
-            ("TEXTURES/_DEV_WHITE.dds", "{D83B36F1-61A6-5001-B191-4D0CE282E236}:0"),
-            ("textures/_dev_woodland.dds", "{F3DD193C-5845-569C-A974-AA338B30CF86}:0"),
-            ("A2482826-053D-5634-A27B-084B1326AAE5}:[196608", "{A2482826-053D-5634-A27B-084B1326AAE5}:30000"),
-            ("B92667DC-9F5B-5D72-A29D-99219DD9B691", "{B92667DC-9F5B-5D72-A29D-99219DD9B691}:0"),
-            ("CEAA362B4E505BCEB827CB92EF40A50E", "{CEAA362B-4E50-5BCE-B827-CB92EF40A50E}:1"),
-            ("CEAA362B4E505BCEB827CB92EF40A50E", "{CEAA362B-4E50-5BCE-B827-CB92EF40A50E}:2"),
-            ("ui/fonts/lyshineexamples/veramono.ttf", "{BAD7FDC5-7BA6-5490-95AA-89078E2FA876}:0"),
+            ('materials/floor_tile.mtl', '{0EFF5E4A-F544-5D87-8696-6DDFA62D6063}:0'),
+            ('materials/am_grass1.mtl', '{1151F14D-38A6-5579-888A-BE3139882E68}:0'),
+            ('2ef92b8D044E5C278E2BB1AC0374A4E7:1002', '{2EF92B8D-044E-5C27-8E2B-B1AC0374A4E7}:3ea'),
+            ('textures/milestone2/ama_grey_02.tif.streamingimage', '{3EE80AAD-EB9C-56BD-9E9C-65410578998C}:3e8'),
+            ('ui/milestone2menu.uicanvas', '{445D9AF3-6CA5-5281-82A9-5C570BCD1DB8}:0'),
+            ('libs/particles/milestone2particles.xml', '{6BDE282B-49C9-57F7-B071-4B26579BCA9A}:0'),
+            ('textures/_dev_yellow_light.tif.1002.imagemipchain', '{6C40868F-3FC1-5115-96EA-DD0A9E33DEE4}:3ea'),
+            ('textures\\\\_dev_tan.tif.streamingimage', '{8F2BCEF5-C8CE-5B80-8103-8C1D694D012C}:3e8'),
+            ('materials/am_rockground.mtl', '{A1DA3D05-A020-5BB5-A608-C4812B7BD733}:0'),
+            ('textures/_dev_purple.tif.streamingimage', '{A2482826-053D-5634-A27B-084B1326AAE5}:3e8'),
+            ('A2482826-053D-5634-A27B-084B1326AAE5}:[1002', '{A2482826-053D-5634-A27B-084B1326AAE5}:3ea'),
+            ('project.json', '{B076CDDC-14DF-50F4-A5E9-7518ABB3E851}:0'),
+            ('CEAA362B4E505BCEB827CB92EF40A50E', '{CEAA362B-4E50-5BCE-B827-CB92EF40A50E}:1'),
+            ('CEAA362B4E505BCEB827CB92EF40A50E', '{CEAA362B-4E50-5BCE-B827-CB92EF40A50E}:2'),
+            ('TEXTURES/_DEV_WHITE.tif.streamingimage', '{D83B36F1-61A6-5001-B191-4D0CE282E236}:3e8'),
+            ('textures/_dev_woodland.tif.streamingimage', '{F3DD193C-5845-569C-A974-AA338B30CF86}:3e8'),
         ]
 
         self.do_missing_dependency_test(expected_product, expected_dependencies,
@@ -255,13 +313,20 @@ class TestsMissingDependencies_WindowsAndMac(object):
     @pytest.mark.assetpipeline
     @pytest.mark.test_case_id("C17226567")
     def test_WindowsAndMac_WildcardScan_FindsAllExpectedFiles(self):
-        """Tests that the wildcard scanning will pick up multiple files"""
+        """
+        Tests that the wildcard scanning will pick up multiple files
+
+        Test Steps:
+        1. Set the expected product
+        2. Set the expected missing dependencies
+        3. Execute test
+        """
 
         helper = self._missing_dep_helper
 
         # Relative paths to the txt file with no missing dependencies
-        expected_product_1 = f"{self._workspace.project}\\testassets\\wildcardscantest1.txt"
-        expected_product_2 = f"{self._workspace.project}\\testassets\\wildcardscantest2.txt"
+        expected_product_1 = f"testassets\\wildcardscantest1.txt"
+        expected_product_2 = f"testassets\\wildcardscantest2.txt"
         expected_dependencies = []  # Neither file has expected missing dependencies
 
         # Run missing dependency scanner and validate results for both files
@@ -286,21 +351,33 @@ class TestsMissingDependencies_WindowsAndMac(object):
         For these references that are valid, all but one have available, matching dependencies. This test is
         primarily meant to verify that the missing dependency reporter checks the product dependency table before
         emitting missing dependencies.
+
+        Test Steps:
+        1. Set the expected product
+        2. Set the expected missing dependencies
+        3. Execute test
         """
         # Relative path to target test file
-        expected_product = f"testassets\\dependencyscannerasset.dynamicslice"
+        expected_product = f"testassets\\reportonemissingdependency.txt"
 
         # The only expected missing dependency
-        expected_dependencies = [("Config/Game.xml", "{B92667DC-9F5B-5D72-A29D-99219DD9B691}:0")]
+        expected_dependencies = [('6BDE282B49C957F7B0714B26579BCA9A', '{6BDE282B-49C9-57F7-B071-4B26579BCA9A}:0'),]
 
         self.do_missing_dependency_test(expected_product, expected_dependencies,
-                                        "%DependencyScannerAsset%.dynamicslice")
+                                        "%reportonemissingdependency.txt")
 
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     @pytest.mark.test_case_id("C17226567")
     def test_WindowsAndMac_ReferencesSelfPath_NoReportedMessage(self):
-        """Tests that a file that references itself via relative path does not report itself as a missing dependency"""
+        """
+        Tests that a file that references itself via relative path does not report itself as a missing dependency
+
+        Test Steps:
+        1. Set the expected product
+        2. Set the expected missing dependencies
+        3. Execute test
+        """
         # Relative path to file that references itself via relative path
         expected_product = f"testassets\\selfreferencepath.txt"
         expected_dependencies = []
@@ -312,7 +389,14 @@ class TestsMissingDependencies_WindowsAndMac(object):
     @pytest.mark.assetpipeline
     @pytest.mark.test_case_id("C17226567")
     def test_WindowsAndMac_ReferencesSelfUUID_NoReportedMessage(self):
-        """Tests that a file that references itself via its UUID does not report itself as a missing dependency"""
+        """
+        Tests that a file that references itself via its UUID does not report itself as a missing dependency
+
+        Test Steps:
+        1. Set the expected product
+        2. Set the expected missing dependencies
+        3. Execute test
+        """
 
         # Relative path to file that references itself via its UUID
         expected_product = f"testassets\\selfreferenceuuid.txt"
@@ -325,7 +409,14 @@ class TestsMissingDependencies_WindowsAndMac(object):
     @pytest.mark.assetpipeline
     @pytest.mark.test_case_id("C17226567")
     def test_WindowsAndMac_ReferencesSelfAssetID_NoReportedMessage(self):
-        """Tests that a file that references itself via its Asset ID does not report itself as a missing dependency"""
+        """
+        Tests that a file that references itself via its Asset ID does not report itself as a missing dependency
+
+        Test Steps:
+        1. Set the expected product
+        2. Set the expected missing dependencies
+        3. Execute test
+        """
 
         # Relative path to file that references itself via its Asset ID
         expected_product = f"testassets\\selfreferenceassetid.txt"
@@ -342,6 +433,11 @@ class TestsMissingDependencies_WindowsAndMac(object):
         Tests that the scan limit fails to find a missing dependency that is out of reach.
         The max iteration count is set to just under where a valid missing dependency is on a line in the file,
         so this will not report any missing dependencies.
+
+        Test Steps:
+        1. Set the expected product
+        2. Set the expected missing dependencies
+        3. Execute test
         """
 
         # Relative path to file that has a missing dependency at 31 iterations deep
@@ -359,14 +455,20 @@ class TestsMissingDependencies_WindowsAndMac(object):
         Tests that the scan limit succeeds in finding a missing dependency that is barely in reach.
         In the previous test, the scanner was set to stop recursion just before a missing dependency was found.
         This test runs with the recursion limit set deep enough to actually find the missing dependency.
+
+        Test Steps:
+        1. Set the expected product
+        2. Set the expected missing dependencies
+        3. Execute test
         """
+
         # Relative path to file that has a missing dependency at 31 iterations deep
         expected_product = f"testassets\\maxiteration31deep.txt"
 
         # Expected missing dependency hiding 31 dependencies deep
         expected_dependencies = [
             #            String                                        Asset                     #
-            ("B92667DC-9F5B-5D72-A29D-99219DD9B691", "{B92667DC-9F5B-5D72-A29D-99219DD9B691}:0")
+            ("6BDE282B-49C9-57F7-B071-4B26579BCA9A", "{6BDE282B-49C9-57F7-B071-4B26579BCA9A}:0")
         ]
 
         self.do_missing_dependency_test(expected_product, expected_dependencies,
@@ -378,7 +480,14 @@ class TestsMissingDependencies_WindowsAndMac(object):
     # fmt:off
     def test_WindowsAndMac_PotentialMatchesLongerThanUUIDString_OnlyReportsCorrectLengthUUIDs(self):
         # fmt:on
-        """Tests that dependency references that are longer than expected are ignored"""
+        """
+        Tests that dependency references that are longer than expected are ignored
+
+        Test Steps:
+        1. Set the expected product
+        2. Set the expected missing dependencies
+        3. Execute test
+        """
 
         # Relative path to text file with varying length UUID references
         expected_product = f"testassets\\onlymatchescorrectlengthuuids.txt"
@@ -386,11 +495,11 @@ class TestsMissingDependencies_WindowsAndMac(object):
         # Expected dependencies with valid lengths from file
         expected_dependencies = [
             #            String                                           Asset                   #
-            ("D92C4661C8985E19BD3597CB2318CFA6", "{D92C4661-C898-5E19-BD35-97CB2318CFA6}:0"),
-            ("58BE9DA51F1753B98CEEEEB10E63454D", "{58BE9DA5-1F17-53B9-8CEE-EEB10E63454D}:914f19b7"),
-            ("747D31D71E62553592226173C49CF97E", "{747D31D7-1E62-5535-9222-6173C49CF97E}:1"),
-            ("747D31D71E62553592226173C49CF97E", "{747D31D7-1E62-5535-9222-6173C49CF97E}:2"),
-            ("1CB10C43-F324-5B93-A294-C602ADEF95F9", "{1CB10C43-F324-5B93-A294-C602ADEF95F9}:0"),
+            ('D1265251CC14584AB1CECB10746A2BA0', '{D1265251-CC14-584A-B1CE-CB10746A2BA0}:2'),
+            ('D1265251CC14584AB1CECB10746A2BA0', '{D1265251-CC14-584A-B1CE-CB10746A2BA0}:1'),
+            ('D92C4661C8985E19BD3597CB2318CFA6', '{D92C4661-C898-5E19-BD35-97CB2318CFA6}:0'),
+            ('837412DFD05F576D81AAACF360463749', '{837412DF-D05F-576D-81AA-ACF360463749}:0'),
+            ('785A05D2483E5B43A2B992ACDAE6E938', '{785A05D2-483E-5B43-A2B9-92ACDAE6E938}:0'),
         ]
 
         self.do_missing_dependency_test( expected_product, expected_dependencies,
@@ -403,7 +512,14 @@ class TestsMissingDependencies_WindowsAndMac(object):
     def test_WindowsAndMac_MissingDependencyScanner_GradImageSuccess(
             self, ap_setup_fixture
     ):
-        """Tests the Missing Dependency Scanner can scan gradimage files"""
+        """
+        Tests the Missing Dependency Scanner can scan gradimage files
+
+        Test Steps:
+        1. Create temporary testing environment
+        2. Run the move dependency scanner against the gradimage
+        2. Validate that the expected product files and and expected depdencies match
+        """
 
         env = ap_setup_fixture
         helper = self._missing_dep_helper

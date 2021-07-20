@@ -1,21 +1,17 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
-
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Utils/Utils.h>
+
 #include <dlfcn.h>
 #include <libgen.h>
 
@@ -61,10 +57,11 @@ namespace AZ
             // If it doesn't attempt to append the path to the executable path
             if (!AZ::IO::SystemFile::Exists(fullFilePath.c_str()))
             {
-                auto candidatePath = Platform::GetModulePath() / fullFilePath;
+                AZ::IO::FixedMaxPath candidatePath = Platform::GetModulePath() / fullFilePath;
                 if (AZ::IO::SystemFile::Exists(candidatePath.c_str()))
                 {
-                    fullFilePath = candidatePath;
+                    m_fileName.assign(candidatePath.Native().c_str(), candidatePath.Native().size());
+                    return;
                 }
             }
 
@@ -74,19 +71,26 @@ namespace AZ
             {
                 if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
                 {
-                    if(AZ::IO::FixedMaxPath projectModulePath;
+                    if (AZ::IO::FixedMaxPath projectModulePath;
                         settingsRegistry->Get(projectModulePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectConfigurationBinPath))
                     {
                         projectModulePath /= fullFilePath;
                         if (AZ::IO::SystemFile::Exists(projectModulePath.c_str()))
                         {
-                            fullFilePath = projectModulePath;
+                            m_fileName.assign(projectModulePath.c_str(), projectModulePath.Native().size());
                         }
                     }
                 }
             }
-
-            m_fileName = AZStd::string_view{fullFilePath.Native()};
+            else
+            {
+                // The module does exist (in 'cwd'), but still needs to be an absolute path for the module to be loaded.
+                AZStd::optional<AZ::IO::FixedMaxPathString> absPathOptional = AZ::Utils::ConvertToAbsolutePath(fullFilePath.c_str());
+                if (absPathOptional.has_value())
+                {
+                    m_fileName.assign(absPathOptional->c_str(), absPathOptional->size());
+                }
+            }
         }
 
         ~DynamicModuleHandleUnixLike() override

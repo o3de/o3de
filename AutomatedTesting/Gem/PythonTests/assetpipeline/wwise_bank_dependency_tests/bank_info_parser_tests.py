@@ -1,12 +1,7 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 
 """
 
@@ -26,6 +21,18 @@ def soundbank_metadata_generator_setup_fixture(workspace):
 
 
 def success_case_test(test_folder, expected_dependencies_dict, bank_info, expected_result_code=0):
+    """
+    Test Steps:
+    1. Make sure the return code is what was expected, and that the expected number of banks were returned.
+    2. Validate bank is in the expected dependencies dictionary.
+    3. Validate the path to output the metadata file to was assembled correctly.
+    4. Validate metadata object for this bank is set, and that it has an object assigned to its dependencies field
+    and its includedEvents field
+    5. Validate metadata object has the correct number of dependencies, and validated that every expected dependency
+    exists in the dependencies list of the metadata object.
+    6. Validate metadata object has the correct number of events, and validate that every expected event exists in the
+    events of the metadata object.
+    """
     expected_bank_count = len(expected_dependencies_dict)
 
     banks, result_code = bank_info.generate_metadata(
@@ -80,8 +87,17 @@ class TestSoundBankMetadataGenerator:
 
 
     def test_NoMetadataTooFewBanks_ReturnCodeIsError(self, workspace, soundbank_metadata_generator_setup_fixture):
-        # Trying to generate metadata for banks in a folder with one or fewer banks and no metadata is not possible
-        #   and should fail.
+        """
+        Trying to generate metadata for banks in a folder with one or fewer banks and no metadata is not possible
+        and should fail.
+
+        Test Steps:
+        1. Setup testing environment with only 1 bank file
+        2. Get Sound Bank Info
+        3. Attempt to generate sound bank metadata
+        4. Verify that proper error code is returned
+        """
+        #
         test_assets_folder = os.path.join(soundbank_metadata_generator_setup_fixture['tests_dir'], 'assets',
                                           'test_NoMetadataTooFewBanks_ReturnCodeIsError')
         if not os.path.isdir(test_assets_folder):
@@ -97,15 +113,30 @@ class TestSoundBankMetadataGenerator:
         assert error_code is 2, 'Metadata was generated when there were fewer than two banks in the target directory.'
 
     def test_NoMetadataNoContentBank_NoMetadataGenerated(self, workspace, soundbank_metadata_generator_setup_fixture):
+        """
+        Test Steps:
+        1. Setup testing environment
+        2. No expected dependencies
+        3. Call success case test
+        """
         test_assets_folder = os.path.join(soundbank_metadata_generator_setup_fixture['tests_dir'], 'assets',
                                           'test_NoMetadataNoContentBank_NoMetadataGenerated')
         expected_dependencies = dict()
         success_case_test(test_assets_folder, expected_dependencies, get_bank_info(workspace))
 
     def test_NoMetadataOneContentBank_NoStreamedFiles_OneDependency(self, workspace, soundbank_metadata_generator_setup_fixture):
-        # When no Wwise metadata is present, and there is only one content bank in the target directory with no wem
-        #   files, then only the content bank should have metadata associated with it. The generated metadata should
-        #   only describe a dependency on the init bank.
+        """
+        When no Wwise metadata is present, and there is only one content bank in the target directory with no wem
+        files, then only the content bank should have metadata associated with it. The generated metadata should
+        only describe a dependency on the init bank.
+
+        Test Steps:
+        1. Setup testing environment
+        2. Get current bank info
+        3. Build expected dependencies
+        4. Call success case test
+        """
+
         test_assets_folder = os.path.join(soundbank_metadata_generator_setup_fixture['tests_dir'], 'assets',
                                           'test_NoMetadataOneContentBank_NoStreamedFiles_OneDependency')
 
@@ -116,9 +147,18 @@ class TestSoundBankMetadataGenerator:
         
     def test_NoMetadataOneContentBank_StreamedFiles_MultipleDependencies(self, workspace, 
                                                                          soundbank_metadata_generator_setup_fixture):
-        # When no Wwise metadata is present, and there is only one content bank in the target directory with wem files
-        #   present, then only the content bank should have metadata associated with it. The generated metadata should
-        #   describe a dependency on the init bank and all wem files in the folder.
+        """
+        When no Wwise metadata is present, and there is only one content bank in the target directory with wem files
+        present, then only the content bank should have metadata associated with it. The generated metadata should
+        describe a dependency on the init bank and all wem files in the folder.
+
+        Test Steps:
+        1. Setup testing environment
+        2. Get current bank info
+        3. Build expected dependencies
+        4. Call success case test
+        """
+
         test_assets_folder = os.path.join(soundbank_metadata_generator_setup_fixture['tests_dir'], 'assets',
                                           'test_NoMetadataOneContentBank_StreamedFiles_MultipleDependencies')
 
@@ -136,10 +176,19 @@ class TestSoundBankMetadataGenerator:
         success_case_test(test_assets_folder, expected_dependencies, get_bank_info(workspace))
 
     def test_NoMetadataMultipleBanks_OneDependency_ReturnCodeIsWarning(self, workspace, soundbank_metadata_generator_setup_fixture):
-        # When no Wwise metadata is present, and there are multiple content banks in the target directory with wem files
-        #   present, there is no way to tell which bank requires which wem files. A warning should be emitted,
-        #   stating that the full dependency graph could not be created, and only dependencies on the init bank are
-        #   described in the generated metadata files.
+        """
+        When no Wwise metadata is present, and there are multiple content banks in the target directory with wem files
+        present, there is no way to tell which bank requires which wem files. A warning should be emitted,
+        stating that the full dependency graph could not be created, and only dependencies on the init bank are
+        described in the generated metadata files.
+
+        Test Steps:
+        1. Setup testing environment
+        2. Get current bank info
+        3. Build expected dependencies
+        4. Call success case test
+        """
+
         test_assets_folder = os.path.join(soundbank_metadata_generator_setup_fixture['tests_dir'], 'assets',
                                           'test_NoMetadataMultipleBanks_OneDependency_ReturnCodeIsWarning')
         bank_info = get_bank_info(workspace)
@@ -150,8 +199,17 @@ class TestSoundBankMetadataGenerator:
         success_case_test(test_assets_folder, expected_dependencies, get_bank_info(workspace), expected_result_code=1)
 
     def test_OneContentBank_NoStreamedFiles_OneDependency(self, workspace, soundbank_metadata_generator_setup_fixture):
-        # Wwise metadata describes one content bank that contains all media needed by its events. Generated metadata
-        #   describes a dependency only on the init bank.
+        """
+        Wwise metadata describes one content bank that contains all media needed by its events. Generated metadata
+        describes a dependency only on the init bank.
+
+        Test Steps:
+        1. Setup testing environment
+        2. Get current bank info
+        3. Build expected dependencies
+        4. Call success case test
+        """
+
         test_assets_folder = os.path.join(soundbank_metadata_generator_setup_fixture['tests_dir'], 'assets',
                                           'test_OneContentBank_NoStreamedFiles_OneDependency')
 
@@ -165,8 +223,17 @@ class TestSoundBankMetadataGenerator:
         success_case_test(test_assets_folder, expected_dependencies, get_bank_info(workspace))
 
     def test_OneContentBank_StreamedFiles_MultipleDependencies(self, workspace, soundbank_metadata_generator_setup_fixture):
-        # Wwise metadata describes one content bank that references streamed media files needed by its events. Generated
-        #   metadata describes dependencies on the init bank and wems named by the IDs of referenced streamed media.
+        """
+        Wwise metadata describes one content bank that references streamed media files needed by its events. Generated
+        metadata describes dependencies on the init bank and wems named by the IDs of referenced streamed media.
+
+        Test Steps:
+        1. Setup testing environment
+        2. Get current bank info
+        3. Build expected dependencies
+        4. Call success case test
+        """
+
         test_assets_folder = os.path.join(soundbank_metadata_generator_setup_fixture['tests_dir'], 'assets',
                                           'test_OneContentBank_StreamedFiles_MultipleDependencies')
 
@@ -187,8 +254,17 @@ class TestSoundBankMetadataGenerator:
         success_case_test(test_assets_folder, expected_dependencies, get_bank_info(workspace))
 
     def test_MultipleContentBanks_NoStreamedFiles_OneDependency(self, workspace, soundbank_metadata_generator_setup_fixture):
-        # Wwise metadata describes multiple content banks. Each bank contains all media needed by its events. Generated
-        #   metadata describes each bank having a dependency only on the init bank.
+        """
+        Wwise metadata describes multiple content banks. Each bank contains all media needed by its events. Generated
+        metadata describes each bank having a dependency only on the init bank.
+
+        Test Steps:
+        1. Setup testing environment
+        2. Get current bank info
+        3. Build expected dependencies
+        4. Call success case test
+        """
+
         test_assets_folder = os.path.join(soundbank_metadata_generator_setup_fixture['tests_dir'], 'assets',
                                           'test_MultipleContentBanks_NoStreamedFiles_OneDependency')
 
@@ -206,8 +282,17 @@ class TestSoundBankMetadataGenerator:
         success_case_test(test_assets_folder, expected_dependencies, get_bank_info(workspace))
 
     def test_MultipleContentBanks_Bank1StreamedFiles(self, workspace, soundbank_metadata_generator_setup_fixture):
-        # Wwise metadata describes multiple content banks. Bank 1 references streamed media files needed by its events,
-        #   while bank 2 contains all media need by its events.
+        """
+        Wwise metadata describes multiple content banks. Bank 1 references streamed media files needed by its events,
+        while bank 2 contains all media need by its events.
+
+        Test Steps:
+        1. Setup testing environment
+        2. Get current bank info
+        3. Build expected dependencies
+        4. Call success case test
+        """
+
         test_assets_folder = os.path.join(soundbank_metadata_generator_setup_fixture['tests_dir'], 'assets',
                                           'test_MultipleContentBanks_Bank1StreamedFiles')
 
@@ -228,9 +313,18 @@ class TestSoundBankMetadataGenerator:
         success_case_test(test_assets_folder, expected_dependencies, get_bank_info(workspace))
 
     def test_MultipleContentBanks_SplitBanks_OnlyBankDependenices(self, workspace, soundbank_metadata_generator_setup_fixture):
-        # Wwise metadata describes multiple content banks. Bank 3 events require media that is contained in bank 4.
-        #   Generated metadata describes each bank having a dependency on the init bank, while bank 3 has an additional
-        #   dependency on bank 4.
+        """
+        Wwise metadata describes multiple content banks. Bank 3 events require media that is contained in bank 4.
+        Generated metadata describes each bank having a dependency on the init bank, while bank 3 has an additional
+        dependency on bank 4.
+
+        Test Steps:
+        1. Setup testing environment
+        2. Get current bank info
+        3. Build expected dependencies
+        4. Call success case test
+        """
+
         test_assets_folder = os.path.join(soundbank_metadata_generator_setup_fixture['tests_dir'], 'assets',
                                           'test_MultipleContentBanks_SplitBanks_OnlyBankDependenices')
 
@@ -248,9 +342,18 @@ class TestSoundBankMetadataGenerator:
         success_case_test(test_assets_folder, expected_dependencies, get_bank_info(workspace))
 
     def test_MultipleContentBanks_ReferencedEvent_MediaEmbeddedInBank(self, workspace, soundbank_metadata_generator_setup_fixture):
-        # Wwise metadata describes multiple content banks. Bank 1 contains all media required by its events, while bank
-        #   5 contains a reference to an event in bank 1, but no media for that event. Generated metadata describes both
-        #   banks having a dependency on the init bank, while bank 5 has an additional dependency on bank 1.
+        """
+        Wwise metadata describes multiple content banks. Bank 1 contains all media required by its events, while bank
+        5 contains a reference to an event in bank 1, but no media for that event. Generated metadata describes both
+        banks having a dependency on the init bank, while bank 5 has an additional dependency on bank 1.
+
+        Test Steps:
+        1. Setup testing environment
+        2. Get current bank info
+        3. Build expected dependencies
+        4. Call success case test
+        """
+
         test_assets_folder = os.path.join(soundbank_metadata_generator_setup_fixture['tests_dir'], 'assets',
                                           'test_MultipleContentBanks_ReferencedEvent_MediaEmbeddedInBank')
 
@@ -271,10 +374,19 @@ class TestSoundBankMetadataGenerator:
         success_case_test(test_assets_folder, expected_dependencies, get_bank_info(workspace))
 
     def test_MultipleContentBanks_ReferencedEvent_MediaStreamed(self, workspace, soundbank_metadata_generator_setup_fixture):
-        # Wwise metadata describes multiple content banks. Bank 1 references streamed media files needed by its events,
-        #   while bank 5 contains a reference to an event in bank 1. This causes bank 5 to also describe a reference to
-        #   the streamed media file referenced by the event from bank 1. Generated metadata describes both banks having
-        #   dependencies on the init bank, as well as the wem named by the ID of referenced streamed media.
+        """
+        Wwise metadata describes multiple content banks. Bank 1 references streamed media files needed by its events,
+        while bank 5 contains a reference to an event in bank 1. This causes bank 5 to also describe a reference to
+        the streamed media file referenced by the event from bank 1. Generated metadata describes both banks having
+        dependencies on the init bank, as well as the wem named by the ID of referenced streamed media.
+
+        Test Steps:
+        1. Setup testing environment
+        2. Get current bank info
+        3. Build expected dependencies
+        4. Call success case test
+        """
+
         test_assets_folder = os.path.join(soundbank_metadata_generator_setup_fixture['tests_dir'], 'assets',
                                           'test_MultipleContentBanks_ReferencedEvent_MediaStreamed')
 
@@ -298,11 +410,20 @@ class TestSoundBankMetadataGenerator:
         success_case_test(test_assets_folder, expected_dependencies, get_bank_info(workspace))
 
     def test_MultipleContentBanks_ReferencedEvent_MixedSources(self, workspace, soundbank_metadata_generator_setup_fixture):
-        # Wwise metadata describes multiple content banks. Bank 1 references a streamed media files needed by one of its
-        #   events, and contains all media needed for its other events, while bank 5 contains a reference to two events
-        #   in bank 1: one that requires streamed media, and one that requires media embedded in bank 1. Generated
-        #   metadata describes both banks having dependencies on the init bank and the wem named by the ID of referenced
-        #   streamed media, while bank 5 has an additional dependency on bank 1.
+        """
+        Wwise metadata describes multiple content banks. Bank 1 references a streamed media files needed by one of its
+        events, and contains all media needed for its other events, while bank 5 contains a reference to two events
+        in bank 1: one that requires streamed media, and one that requires media embedded in bank 1. Generated
+        metadata describes both banks having dependencies on the init bank and the wem named by the ID of referenced
+        streamed media, while bank 5 has an additional dependency on bank 1.
+
+        Test Steps:
+        1. Setup testing environment
+        2. Get current bank info
+        3. Build expected dependencies
+        4. Call success case test
+        """
+
         test_assets_folder = os.path.join(soundbank_metadata_generator_setup_fixture['tests_dir'], 'assets',
                                           'test_MultipleContentBanks_ReferencedEvent_MixedSources')
 
@@ -332,8 +453,17 @@ class TestSoundBankMetadataGenerator:
         success_case_test(test_assets_folder, expected_dependencies, get_bank_info(workspace))
 
     def test_MultipleContentBanks_VaryingDependencies_MixedSources(self, workspace, soundbank_metadata_generator_setup_fixture):
-        # Wwise metadata describes multiple content banks that have varying dependencies on each other, and dependencies
-        #   on streamed media files.
+        """
+        Wwise metadata describes multiple content banks that have varying dependencies on each other, and dependencies
+        on streamed media files.
+
+        Test Steps:
+        1. Setup testing environment
+        2. Get current bank info
+        3. Build expected dependencies
+        4. Call success case test
+        """
+
         test_assets_folder = os.path.join(soundbank_metadata_generator_setup_fixture['tests_dir'], 'assets',
                                           'test_MultipleContentBanks_VaryingDependencies_MixedSources')
 

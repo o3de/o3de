@@ -1,21 +1,16 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 import boto3
 from botocore.paginate import (PageIterator, Paginator)
 from botocore.client import BaseClient
-from botocore.exceptions import ClientError
+from botocore.exceptions import (ClientError, ConfigNotFound, NoCredentialsError, ProfileNotFound)
 from typing import Dict, List
 
-from model import (constants, error_messages)
+from model import error_messages
 from model.basic_resource_attributes import (BasicResourceAttributes, BasicResourceAttributesBuilder)
 
 """
@@ -25,6 +20,8 @@ aws account, region, resources, etc.
 
 _PAGINATION_MAX_ITEMS: int = 10
 _PAGINATION_PAGE_SIZE: int = 10
+
+default_session: boto3.session.Session = None
 
 
 class AWSConstants(object):
@@ -53,13 +50,21 @@ def _close_client_connection(client: BaseClient) -> None:
 
 def _initialize_boto3_aws_client(service: str, region: str = "") -> BaseClient:
     if region:
-        boto3_client: BaseClient = boto3.client(service, region_name=region)
+        boto3_client: BaseClient = default_session.client(service, region_name=region)
     else:
-        boto3_client: BaseClient = boto3.client(service)
+        boto3_client: BaseClient = default_session.client(service)
     boto3_client.meta.events.register(
         f"after-call.{service}.*", lambda **kwargs: _close_client_connection(boto3_client)
     )
     return boto3_client
+
+
+def setup_default_session(profile: str) -> None:
+    try:
+        global default_session
+        default_session = boto3.session.Session(profile_name=profile)
+    except (ConfigNotFound, ProfileNotFound) as error:
+        raise RuntimeError(error)
 
 
 def get_default_account_id() -> str:
@@ -69,10 +74,12 @@ def get_default_account_id() -> str:
     except ClientError as error:
         raise RuntimeError(error_messages.AWS_SERVICE_REQUEST_CLIENT_ERROR_MESSAGE.format(
             "get_caller_identity", error.response['Error']['Code'], error.response['Error']['Message']))
+    except NoCredentialsError as error:
+        raise RuntimeError(error)
 
 
 def get_default_region() -> str:
-    region: str = boto3.session.Session().region_name
+    region: str = default_session.region_name
     if region:
         return region
     
@@ -172,10 +179,11 @@ def list_cloudformation_stack_resources(stack_name, region=None) -> List[BasicRe
                 # iterate through page iterator to fetch all resources
                 resource: Dict[str, any]
                 for resource in page["StackResourceSummaries"]:
-                    resource_type_and_name.append(BasicResourceAttributesBuilder()
-                                                  .build_type(resource["ResourceType"])
-                                                  .build_name_id(resource["PhysicalResourceId"])
-                                                  .build())
+                    if "ResourceType" in resource.keys() and "PhysicalResourceId" in resource.keys():
+                        resource_type_and_name.append(BasicResourceAttributesBuilder()
+                                                      .build_type(resource["ResourceType"])
+                                                      .build_name_id(resource["PhysicalResourceId"])
+                                                      .build())
             if iterator.resume_token is None:
                 # when resume token is none, it means there is no more resources left
                 break

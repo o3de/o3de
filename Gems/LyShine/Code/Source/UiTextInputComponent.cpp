@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "LyShine_precompiled.h"
 #include "UiTextInputComponent.h"
 
@@ -1450,13 +1445,17 @@ void UiTextInputComponent::CheckStartTextInput()
         EBUS_EVENT_ID_RESULT(textString, m_textEntity, UiTextBus, GetText);
         options.m_initialText = Utf8SubString(textString, m_textCursorPos, m_textSelectionStartPos);
 
+        AZ::EntityId canvasEntityId;
+        EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+
+        // Calculate height available for virtual keyboard. In game mode, canvas size is the same as viewport size
+        AZ::Vector2 canvasSize;
+        EBUS_EVENT_ID_RESULT(canvasSize, canvasEntityId, UiCanvasBus, GetCanvasSize);
         UiTransformInterface::RectPoints rectPoints;
         EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetViewportSpacePoints, rectPoints);
         const AZ::Vector2 bottomRight = rectPoints.GetAxisAlignedBottomRight();
-        options.m_normalizedMinY = bottomRight.GetY() / static_cast<float>(gEnv->pRenderer->GetHeight());
+        options.m_normalizedMinY = (canvasSize.GetY() > 0.0f) ? bottomRight.GetY() / canvasSize.GetY() : 0.0f;
 
-        AZ::EntityId canvasEntityId;
-        EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
         EBUS_EVENT_ID_RESULT(options.m_localUserId, canvasEntityId, UiCanvasBus, GetLocalUserIdInputFilter);
 
         AzFramework::InputTextEntryRequestBus::Broadcast(&AzFramework::InputTextEntryRequests::TextEntryStart, options);

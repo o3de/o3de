@@ -1,17 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
-// Description : Implementation of the Crytek package files management
 
 
 #include <AzCore/base.h>
@@ -1290,7 +1283,7 @@ namespace AZ::IO
 
 
     //////////////////////////////////////////////////////////////////////////
-    AZ::IO::ArchiveFileIterator Archive::FindFirst(AZStd::string_view pDir, [[maybe_unused]] uint32_t nPathFlags, bool bAllowUseFileSystem)
+    AZ::IO::ArchiveFileIterator Archive::FindFirst(AZStd::string_view pDir, EFileSearchType searchType)
     {
         auto szFullPath = AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(pDir);
         if (!szFullPath)
@@ -1299,8 +1292,26 @@ namespace AZ::IO
             return {};
         }
 
+        bool bScanZips{};
+        bool bAllowUseFileSystem{};
+        switch (searchType)
+        {
+            case IArchive::eFileSearchType_AllowInZipsOnly:
+                bAllowUseFileSystem = false;
+                bScanZips = true;
+                break;
+            case IArchive::eFileSearchType_AllowOnDiskAndInZips:
+                bAllowUseFileSystem = true;
+                bScanZips = true;
+                break;
+            case IArchive::eFileSearchType_AllowOnDiskOnly:
+                bAllowUseFileSystem = true;
+                bScanZips = false;
+                break;
+        }
+
         AZStd::intrusive_ptr<AZ::IO::FindData> pFindData = new AZ::IO::FindData();
-        pFindData->Scan(this, szFullPath->Native(), bAllowUseFileSystem);
+        pFindData->Scan(this, szFullPath->Native(), bAllowUseFileSystem, bScanZips);
 
         return pFindData->Fetch();
     }
@@ -1676,18 +1687,16 @@ namespace AZ::IO
             return true;
         }
 
-        if (AZ::IO::ArchiveFileIterator fileIterator = FindFirst(pWildcardIn, 0, true); fileIterator)
+        if (AZ::IO::ArchiveFileIterator fileIterator = FindFirst(pWildcardIn, IArchive::eFileSearchType_AllowOnDiskOnly); fileIterator)
         {
             AZStd::vector<AZStd::string> files;
             do
             {
-                if (AZStd::wildcard_match(pWildcardIn, fileIterator.m_filename))
-                {
-                    AZStd::string foundFilename{ fileIterator.m_filename };
-                    AZStd::to_lower(foundFilename.begin(), foundFilename.end());
-                    files.emplace_back(AZStd::move(foundFilename));
-                }
-            } while (fileIterator = FindNext(fileIterator));
+                AZStd::string foundFilename{ fileIterator.m_filename };
+                AZStd::to_lower(foundFilename.begin(), foundFilename.end());
+                files.emplace_back(AZStd::move(foundFilename));
+            }
+            while (fileIterator = FindNext(fileIterator));
 
             // Open files in alphabet order.
             AZStd::sort(files.begin(), files.end());
@@ -2008,13 +2017,12 @@ namespace AZ::IO
         // if no bind root is specified, compute one:
         strBindRoot = !bindRoot.empty() ? bindRoot : szFullPath->ParentPath().Native();
 
-        // Check if archive file disk exist on disk or inside of pak.
-        bool bFileExists = IsFileExist(szFullPath->Native());
-
-        if (!bFileExists && (nFactoryFlags & ZipDir::CacheFactory::FLAGS_READ_ONLY))
+        // Check if archive file disk exist on disk.
+        const bool pakOnDisk = FileIOBase::GetDirectInstance()->Exists(szFullPath->c_str());
+        if (!pakOnDisk && (nFactoryFlags & ZipDir::CacheFactory::FLAGS_READ_ONLY))
         {
             // Archive file not found.
-            AZ_TracePrintf("Archive", "Cannot open Archive file %s\n", szFullPath->c_str());
+            AZ_TracePrintf("Archive", "Archive file %s does not exist\n", szFullPath->c_str());
             return nullptr;
         }
 
@@ -2492,8 +2500,6 @@ namespace AZ::IO
 
     void Archive::FindCompressionInfo(bool& found, AZ::IO::CompressionInfo& info, const AZStd::string_view filename)
     {
-        constexpr uint32_t s_compressionTag = static_cast<uint32_t>('Z') << 24 | static_cast<uint32_t>('C') << 16 | static_cast<uint32_t>('R') << 8 | static_cast<uint32_t>('Y');
-
         if (!found)
         {
             auto correctedFilename = AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(filename);
@@ -2519,7 +2525,6 @@ namespace AZ::IO
                 found = true;
 
                 info.m_archiveFilename.InitFromRelativePath(archive->GetFilePath());
-                info.m_compressionTag.m_code = s_compressionTag;
                 info.m_offset = pFileData->GetFileDataOffset();
                 info.m_compressedSize = entry->desc.lSizeCompressed;
                 info.m_uncompressedSize = entry->desc.lSizeUncompressed;
@@ -2539,9 +2544,8 @@ namespace AZ::IO
                     break;
                 }
 
-                info.m_decompressor = [&s_compressionTag]([[maybe_unused]] const AZ::IO::CompressionInfo& info, const void* compressed, size_t compressedSize, void* uncompressed, size_t uncompressedBufferSize)->bool
+                info.m_decompressor = []([[maybe_unused]] const AZ::IO::CompressionInfo& info, const void* compressed, size_t compressedSize, void* uncompressed, size_t uncompressedBufferSize)->bool
                 {
-                    AZ_Assert(info.m_compressionTag.m_code == s_compressionTag, "Provided compression info isn't supported by this decompressor.");
                     size_t nSizeUncompressed = uncompressedBufferSize;
                     return ZipDir::ZipRawUncompress(uncompressed, &nSizeUncompressed, compressed, compressedSize) == 0;
                 };

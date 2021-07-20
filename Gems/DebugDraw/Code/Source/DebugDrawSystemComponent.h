@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -31,6 +26,9 @@
 #ifdef DEBUGDRAW_GEM_EDITOR
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #endif // DEBUGDRAW_GEM_EDITOR
+
+#include <Atom/RPI.Public/SceneBus.h>
+#include <Atom/Bootstrap/BootstrapNotificationBus.h>
 
 namespace DebugDraw
 {
@@ -61,10 +59,11 @@ namespace DebugDraw
 
     class DebugDrawSystemComponent
         : public AZ::Component
-        , public AZ::TickBus::Handler
         , public AZ::EntityBus::MultiHandler
         , protected DebugDrawRequestBus::Handler
         , protected DebugDrawInternalRequestBus::Handler
+        , public AZ::RPI::SceneNotificationBus::Handler
+        , public AZ::Render::Bootstrap::NotificationBus::Handler
 
 #ifdef DEBUGDRAW_GEM_EDITOR
         , protected AzToolsFramework::EditorEntityContextNotificationBus::Handler
@@ -113,20 +112,22 @@ namespace DebugDraw
         void Activate() override;
         void Deactivate() override;
 
-        // TickBus
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
-        int GetTickOrder() override { return AZ::ComponentTickBus::TICK_DEFAULT; }
+        // SceneNotificationBus
+        void OnBeginPrepareRender() override;
+
+        // AZ::Render::Bootstrap::NotificationBus
+        void OnBootstrapSceneReady(AZ::RPI::Scene* scene);
 
         // EntityBus
         void OnEntityDeactivated(const AZ::EntityId& entityId) override;
 
         // Ticking functions for drawing debug elements
-        void OnTickAabbs();
-        void OnTickLines();
-        void OnTickObbs();
-        void OnTickRays();
-        void OnTickSpheres();
-        void OnTickText();
+        void OnTickAabbs(AzFramework::DebugDisplayRequests& debugDisplay);
+        void OnTickLines(AzFramework::DebugDisplayRequests& debugDisplay);
+        void OnTickObbs(AzFramework::DebugDisplayRequests& debugDisplay);
+        void OnTickRays(AzFramework::DebugDisplayRequests& debugDisplay);
+        void OnTickSpheres(AzFramework::DebugDisplayRequests& debugDisplay);
+        void OnTickText(AzFramework::DebugDisplayRequests& debugDisplay);
 
         // Element creation functions, used when DebugDraw components register themselves
         void CreateAabbEntryForComponent(const AZ::EntityId& componentEntityId, const DebugDrawAabbElement& element);
@@ -154,7 +155,7 @@ namespace DebugDraw
 
         double m_currentTime;
 
-        AZStd::vector<Vec3> m_batchPoints;
-        AZStd::vector<ColorB> m_batchColors;
+        AZStd::vector<AZ::Vector3> m_batchPoints;
+        AZStd::vector<AZ::Color> m_batchColors;
     };
 }

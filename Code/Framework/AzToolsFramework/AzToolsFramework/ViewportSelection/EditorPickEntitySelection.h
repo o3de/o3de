@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -17,10 +12,9 @@
 
 namespace AzToolsFramework
 {
-    /// Viewport interaction that will handle assigning an entity in the viewport to
-    /// an entity field in the entity inspector.
-    class EditorPickEntitySelection
-        : public ViewportInteraction::InternalViewportSelectionRequests
+    //! Viewport interaction that will handle assigning an entity in the viewport to
+    //! an entity field in the entity inspector.
+    class EditorPickEntitySelection : public ViewportInteraction::InternalViewportSelectionRequests
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
@@ -30,15 +24,12 @@ namespace AzToolsFramework
 
     private:
         // ViewportInteraction::InternalViewportSelectionRequests ...
-        bool InternalHandleMouseViewportInteraction(
-            const ViewportInteraction::MouseInteractionEvent& mouseInteraction) override;
+        bool InternalHandleMouseViewportInteraction(const ViewportInteraction::MouseInteractionEvent& mouseInteraction) override;
         void DisplayViewportSelection(
-            const AzFramework::ViewportInfo& viewportInfo,
-            AzFramework::DebugDisplayRequests& debugDisplay) override;
+            const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay) override;
 
-        AZStd::unique_ptr<EditorHelpers> m_editorHelpers; ///< Editor visualization of entities (icons, shapes, debug visuals etc).
-
-        AZ::EntityId m_hoveredEntityId; ///< What EntityId is the mouse currently hovering over (if any).
-        AZ::EntityId m_cachedEntityIdUnderCursor; ///< Store the EntityId on each mouse move for use in Display.
+        AZStd::unique_ptr<EditorHelpers> m_editorHelpers; //!< Editor visualization of entities (icons, shapes, debug visuals etc).
+        AZ::EntityId m_hoveredEntityId; //!< What EntityId is the mouse currently hovering over (if any).
+        AZ::EntityId m_cachedEntityIdUnderCursor; //!< Store the EntityId on each mouse move for use in Display.
     };
 } // namespace AzToolsFramework

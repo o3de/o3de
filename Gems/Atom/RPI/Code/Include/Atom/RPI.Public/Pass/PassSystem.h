@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <Atom/RHI.Reflect/Base.h>
@@ -73,12 +68,12 @@ namespace AZ
             bool LoadPassTemplateMappings(const AZStd::string& templateMappingPath) override;
             void WriteTemplateToFile(const PassTemplate& passTemplate, AZStd::string_view assetFilePath) override;
             void DebugPrintPassHierarchy() override;
-            bool IsBuilding() const override;
             bool IsHotReloading() const override;
             void SetHotReloading(bool hotReloading) override;
             void SetTargetedPassDebuggingName(const AZ::Name& targetPassName) override;
             const AZ::Name& GetTargetedPassDebuggingName() const override;
             void ConnectEvent(OnReadyLoadTemplatesEvent::Handler& handler) override;
+            PassSystemState GetState() const override;
 
             // PassSystemInterface factory related functions...
             void AddPassCreator(Name className, PassCreator createFunction) override;
@@ -103,8 +98,11 @@ namespace AZ
             // Returns the root of the pass tree hierarchy
             const Ptr<ParentPass>& GetRootPass() override;
 
-            // Calls BuildAttachments() on passes queued in m_buildAttachmentsList
-            void BuildPassAttachments();
+            // Calls Build() on passes queued in m_buildPassList
+            void BuildPasses();
+
+            // Calls Initialize() on passes queued in m_initializePassList
+            void InitializePasses();
 
             // Validates Pass Hierarchy after building
             void Validate();
@@ -113,13 +111,15 @@ namespace AZ
             void RemovePasses();
 
             // Functions for queuing passes in the lists below
-            void QueueForBuildAttachments(Pass* pass) override;
+            void QueueForBuild(Pass* pass) override;
             void QueueForRemoval(Pass* pass) override;
+            void QueueForInitialization(Pass* pass) override;
 
             // Lists for queuing passes for various function calls
             // Name of the list reflects the pass function it will call
-            AZStd::vector< Ptr<Pass> > m_buildAttachmentsList;
+            AZStd::vector< Ptr<Pass> > m_buildPassList;
             AZStd::vector< Ptr<Pass> > m_removePassList;
+            AZStd::vector< Ptr<Pass> > m_initializePassList;
 
             // Library of pass descriptors that can be instantiated through data driven pass requests
             PassLibrary m_passLibrary;
@@ -133,9 +133,6 @@ namespace AZ
             // Whether the Pass Hierarchy changed
             bool m_passHierarchyChanged = true;
 
-            // Whether the Pass System is currently in it's building phase 
-            bool m_isBuilding = false;
-
             // Whether the Pass System is currently hot reloading passes 
             bool m_isHotReloading = false;
 
@@ -147,6 +144,9 @@ namespace AZ
 
             // Events
             OnReadyLoadTemplatesEvent m_loadTemplatesEvent;
+
+            // Used to track what phase of execution the pass system is in
+            PassSystemState m_state = PassSystemState::Unitialized;
         };
     }   // namespace RPI
 }   // namespace AZ

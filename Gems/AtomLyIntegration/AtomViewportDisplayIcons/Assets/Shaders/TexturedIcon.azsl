@@ -1,0 +1,72 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+ 
+ #include <Atom/Features/SrgSemantics.azsli>
+
+ShaderResourceGroup InstanceSrg : SRG_PerDraw
+{
+    float2 m_viewportSize;
+    Texture2D m_texture;
+    
+    Sampler m_sampler
+    {
+        MaxAnisotropy = 16;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+};
+
+struct VSInput
+{
+    float3 m_position : POSITION;
+    float4 m_color : COLOR0;
+    float2 m_uv : TEXCOORD0;
+};
+
+struct VSOutput
+{
+    float4 m_position : SV_Position;
+    float4 m_color : COLOR0;
+    float2 m_uv : TEXCOORD0;
+};
+
+VSOutput MainVS(VSInput IN)
+{
+    // Convert from screen space to clip space
+    float2 posXY = float2(IN.m_position.xy) / InstanceSrg::m_viewportSize * 2.0f - float2(1.0f, 1.0f);
+    posXY.y *= -1.0f;
+    float4 posPS = float4(posXY, IN.m_position.z, 1.0f);
+
+    VSOutput OUT;
+    OUT.m_position = posPS;
+    OUT.m_color = IN.m_color;
+    OUT.m_uv = IN.m_uv;
+    return OUT;
+};
+
+struct PSOutput
+{
+    float4 m_color : SV_Target0;
+};
+
+PSOutput MainPS(VSOutput IN)
+{
+    PSOutput OUT;
+
+    float4 tex;
+
+    tex = InstanceSrg::m_texture.Sample(InstanceSrg::m_sampler, IN.m_uv);
+    float opacity = IN.m_color.a * tex.a; 
+
+    // We use pre-multiplied alpha here since it is more flexible. For example, it enables alpha-blended rendering to
+    // a render target and then alpha blending that render target into another render target
+    OUT.m_color.rgb = IN.m_color.rgb * tex.rgb * opacity;
+
+    OUT.m_color.a = opacity;
+    return OUT;
+};

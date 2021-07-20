@@ -1,38 +1,138 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <ProjectSettingsScreen.h>
+#include <FormFolderBrowseEditWidget.h>
+#include <FormLineEditWidget.h>
+#include <PathValidator.h>
+#include <PythonBindingsInterface.h>
 
-#include <Source/ui_ProjectSettingsScreen.h>
+#include <QFileDialog>
+#include <QFrame>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QLabel>
+#include <QLineEdit>
+#include <QStandardPaths>
 
 namespace O3DE::ProjectManager
 {
     ProjectSettingsScreen::ProjectSettingsScreen(QWidget* parent)
         : ScreenWidget(parent)
-        , m_ui(new Ui::ProjectSettingsClass())
     {
-        m_ui->setupUi(this);
+        m_horizontalLayout = new QHBoxLayout(this);
+        m_horizontalLayout->setAlignment(Qt::AlignLeft);
+        m_horizontalLayout->setContentsMargins(0, 0, 0, 0);
 
-        connect(m_ui->gemsButton, &QPushButton::pressed, this, &ProjectSettingsScreen::HandleGemsButton);
+        // if we don't provide a parent for this box layout the stylesheet doesn't take
+        // if we don't set this in a frame (just use a sub-layout) all the content will align incorrectly horizontally
+        QFrame* projectSettingsFrame = new QFrame(this);
+        projectSettingsFrame->setObjectName("projectSettings");
+        m_verticalLayout = new QVBoxLayout();
+
+        // you cannot remove content margins in qss
+        m_verticalLayout->setContentsMargins(0, 0, 0, 0);
+        m_verticalLayout->setAlignment(Qt::AlignTop);
+
+        m_projectName = new FormLineEditWidget(tr("Project name"), "", this);
+        connect(m_projectName->lineEdit(), &QLineEdit::textChanged, this, &ProjectSettingsScreen::ValidateProjectName);
+        m_verticalLayout->addWidget(m_projectName);
+
+        m_projectPath = new FormFolderBrowseEditWidget(tr("Project Location"), "", this);
+        m_projectPath->lineEdit()->setReadOnly(true);
+        connect(m_projectPath->lineEdit(), &QLineEdit::textChanged, this, &ProjectSettingsScreen::Validate);
+        m_verticalLayout->addWidget(m_projectPath);
+
+        projectSettingsFrame->setLayout(m_verticalLayout);
+
+        m_horizontalLayout->addWidget(projectSettingsFrame);
+
+        setLayout(m_horizontalLayout);
     }
 
     ProjectManagerScreen ProjectSettingsScreen::GetScreenEnum()
     {
-        return ProjectManagerScreen::ProjectSettings;
+        return ProjectManagerScreen::Invalid;
     }
 
-    void ProjectSettingsScreen::HandleGemsButton()
+    QString ProjectSettingsScreen::GetDefaultProjectPath()
     {
-        emit ChangeScreenRequest(ProjectManagerScreen::GemCatalog);
+        QString defaultPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+        AZ::Outcome<EngineInfo> engineInfoResult = PythonBindingsInterface::Get()->GetEngineInfo();
+        if (engineInfoResult.IsSuccess())
+        {
+            QDir path(QDir::toNativeSeparators(engineInfoResult.GetValue().m_defaultProjectsFolder));
+            if (path.exists())
+            {
+                defaultPath = path.absolutePath();
+            }
+        }
+        return defaultPath;
     }
 
+    ProjectInfo ProjectSettingsScreen::GetProjectInfo()
+    {
+        ProjectInfo projectInfo;
+        projectInfo.m_projectName = m_projectName->lineEdit()->text();
+        // currently we don't have separate fields for changing the project name and display name 
+        projectInfo.m_displayName = projectInfo.m_projectName;
+        projectInfo.m_path = m_projectPath->lineEdit()->text();
+        return projectInfo;
+    }
+
+    bool ProjectSettingsScreen::ValidateProjectName()
+    {
+        bool projectNameIsValid = true;
+        if (m_projectName->lineEdit()->text().isEmpty())
+        {
+            projectNameIsValid = false;
+            m_projectName->setErrorLabelText(tr("Please provide a project name."));
+        }
+        else
+        {
+            // this validation should roughly match the utils.validate_identifier which the cli
+            // uses to validate project names
+            QRegExp validProjectNameRegex("[A-Za-z][A-Za-z0-9_-]{0,63}");
+            const bool result = validProjectNameRegex.exactMatch(m_projectName->lineEdit()->text());
+            if (!result)
+            {
+                projectNameIsValid = false;
+                m_projectName->setErrorLabelText(
+                    tr("Project names must start with a letter and consist of up to 64 letter, number, '_' or '-' characters"));
+            }
+        }
+
+        m_projectName->setErrorLabelVisible(!projectNameIsValid);
+        return projectNameIsValid;
+    }
+    bool ProjectSettingsScreen::ValidateProjectPath()
+    {
+        bool projectPathIsValid = true;
+        if (m_projectPath->lineEdit()->text().isEmpty())
+        {
+            projectPathIsValid = false;
+            m_projectPath->setErrorLabelText(tr("Please provide a valid location."));
+        }
+        else
+        {
+            QDir path(m_projectPath->lineEdit()->text());
+            if (path.exists() && !path.isEmpty())
+            {
+                projectPathIsValid = false;
+                m_projectPath->setErrorLabelText(tr("This folder exists and isn't empty.  Please choose a different location."));
+            }
+        }
+
+        m_projectPath->setErrorLabelVisible(!projectPathIsValid);
+        return projectPathIsValid;
+    }
+
+    bool ProjectSettingsScreen::Validate()
+    {
+        return ValidateProjectName() && ValidateProjectPath();
+    }
 } // namespace O3DE::ProjectManager

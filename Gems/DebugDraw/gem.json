@@ -1,13 +1,12 @@
 {
     "gem_name": "DebugDraw",
-    "GemFormatVersion": 3,
-    "Uuid": "66239f50bf754354b514c850c8b841fb",
-    "Name": "DebugDraw",
-    "DisplayName": "DebugDraw [PREVIEW]",
-    "Version": "0.1.0",
-    "LinkType": "Dynamic",
-    "Summary": "The DebugDraw Gem provides editor and game runtime debug visualization features.",
-    "Tags": ["Debugging"],
-    "IconPath": "preview.png",
-    "EditorModule": true
+    "display_name": "Debug Draw",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Open 3D Engine - o3de.org",
+    "type": "Code",
+    "summary": "The Debug Draw Gem provides Editor and runtime debug visualization features for Open 3D Engine.",
+    "canonical_tags": ["Gem"],
+    "user_tags": ["Debug", "Tools", "Utility"],
+    "icon_path": "preview.png",
+    "requirements": ""
 }

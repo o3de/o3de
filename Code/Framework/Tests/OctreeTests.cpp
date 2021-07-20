@@ -1,19 +1,15 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/Console.h>
 #include <AzCore/Name/NameDictionary.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzFramework/Visibility/OctreeSystemComponent.h>
 #include <random>
 
@@ -94,6 +90,20 @@ namespace UnitTest
         AZ::Console* m_console;
     };
 
+    void ValidateEntryCountEqualsExpectedCount(const IVisibilityScene* visScene, uint32_t expectedEntryCount)
+    {
+        // InsertOrUpdateEntry assumes that updating an existing entry won't change the count
+        // so it doesn't modify the counter used by GetEntryCount.
+        // If an entry is removed from the octree as an unintended side effect of updating an existing entry,
+        // GetEntryCount can't be relied upon to report the actual entry count.
+        // So manually count the entries when using the entry count for validation.
+        uint32_t manualEntryCount = 0;
+        visScene->EnumerateNoCull([&manualEntryCount](const AzFramework::IVisibilityScene::NodeData& nodeData) { manualEntryCount += nodeData.m_entries.size(); });
+
+        EXPECT_EQ(manualEntryCount, expectedEntryCount);
+        EXPECT_EQ(visScene->GetEntryCount(), expectedEntryCount);
+    }
+
     TEST_F(OctreeTests, InsertDeleteSingleEntry)
     {
         AzFramework::VisibilityEntry visEntry;
@@ -102,11 +112,11 @@ namespace UnitTest
         m_octreeScene->InsertOrUpdateEntry(visEntry);
         EXPECT_TRUE(visEntry.m_internalNode != nullptr);
         EXPECT_TRUE(visEntry.m_internalNodeIndex == 0);
-        EXPECT_TRUE(m_octreeScene->GetEntryCount() == 1);
+        ValidateEntryCountEqualsExpectedCount(m_octreeScene, 1);
 
         m_octreeScene->RemoveEntry(visEntry);
         EXPECT_TRUE(visEntry.m_internalNode == nullptr);
-        EXPECT_TRUE(m_octreeScene->GetEntryCount() == 0);
+        ValidateEntryCountEqualsExpectedCount(m_octreeScene, 0);
 
         EXPECT_TRUE(true); //TEST
     }
@@ -121,34 +131,34 @@ namespace UnitTest
         m_octreeScene->InsertOrUpdateEntry(visEntry[0]);
         EXPECT_TRUE(visEntry[0].m_internalNode != nullptr);
         EXPECT_TRUE(visEntry[0].m_internalNodeIndex == 0);
-        EXPECT_TRUE(m_octreeScene->GetEntryCount() == 1);
+        ValidateEntryCountEqualsExpectedCount(m_octreeScene, 1);
         EXPECT_TRUE(m_octreeScene->GetNodeCount() == 1);
 
         m_octreeScene->InsertOrUpdateEntry(visEntry[1]); // This should force a split of the root node
         EXPECT_TRUE(visEntry[1].m_internalNode != nullptr);
         EXPECT_TRUE(visEntry[1].m_internalNodeIndex == 0);
-        EXPECT_TRUE(m_octreeScene->GetEntryCount() == 2);
+        ValidateEntryCountEqualsExpectedCount(m_octreeScene, 2);
         EXPECT_TRUE(m_octreeScene->GetNodeCount() == 1 + m_octreeScene->GetChildNodeCount());
 
         m_octreeScene->InsertOrUpdateEntry(visEntry[2]); // This should force a split of the roots +/+/+ child node
         EXPECT_TRUE(visEntry[2].m_internalNode != nullptr);
         EXPECT_TRUE(visEntry[2].m_internalNodeIndex == 0);
-        EXPECT_TRUE(m_octreeScene->GetEntryCount() == 3);
+        ValidateEntryCountEqualsExpectedCount(m_octreeScene, 3);
         EXPECT_TRUE(m_octreeScene->GetNodeCount() == 1 + (2 * m_octreeScene->GetChildNodeCount()));
 
         m_octreeScene->RemoveEntry(visEntry[2]);
         EXPECT_TRUE(visEntry[2].m_internalNode == nullptr);
-        EXPECT_TRUE(m_octreeScene->GetEntryCount() == 2);
+        ValidateEntryCountEqualsExpectedCount(m_octreeScene, 2);
         EXPECT_TRUE(m_octreeScene->GetNodeCount() == 1 + m_octreeScene->GetChildNodeCount());
 
         m_octreeScene->RemoveEntry(visEntry[1]);
         EXPECT_TRUE(visEntry[1].m_internalNode == nullptr);
-        EXPECT_TRUE(m_octreeScene->GetEntryCount() == 1);
+        ValidateEntryCountEqualsExpectedCount(m_octreeScene, 1);
         EXPECT_TRUE(m_octreeScene->GetNodeCount() == 1);
 
         m_octreeScene->RemoveEntry(visEntry[0]);
         EXPECT_TRUE(visEntry[0].m_internalNode == nullptr);
-        EXPECT_TRUE(m_octreeScene->GetEntryCount() == 0);
+        ValidateEntryCountEqualsExpectedCount(m_octreeScene, 0);
     }
 
     TEST_F(OctreeTests, UpdateSingleEntry)
@@ -159,19 +169,19 @@ namespace UnitTest
         m_octreeScene->InsertOrUpdateEntry(visEntry);
         EXPECT_TRUE(visEntry.m_internalNode != nullptr);
         EXPECT_TRUE(visEntry.m_internalNodeIndex == 0);
-        EXPECT_TRUE(m_octreeScene->GetEntryCount() == 1);
+        ValidateEntryCountEqualsExpectedCount(m_octreeScene, 1);
         EXPECT_TRUE(m_octreeScene->GetNodeCount() == 1);
 
         visEntry.m_boundingVolume = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-0.5f), AZ::Vector3(0.5f));
         m_octreeScene->InsertOrUpdateEntry(visEntry);
         EXPECT_TRUE(visEntry.m_internalNode != nullptr);
         EXPECT_TRUE(visEntry.m_internalNodeIndex == 0);
-        EXPECT_TRUE(m_octreeScene->GetEntryCount() == 1);
+        ValidateEntryCountEqualsExpectedCount(m_octreeScene, 1);
         EXPECT_TRUE(m_octreeScene->GetNodeCount() == 1);
 
         m_octreeScene->RemoveEntry(visEntry);
         EXPECT_TRUE(visEntry.m_internalNode == nullptr);
-        EXPECT_TRUE(m_octreeScene->GetEntryCount() == 0);
+        ValidateEntryCountEqualsExpectedCount(m_octreeScene, 0);
         EXPECT_TRUE(m_octreeScene->GetNodeCount() == 1);
     }
 
@@ -185,19 +195,19 @@ namespace UnitTest
         m_octreeScene->InsertOrUpdateEntry(visEntry[0]);
         EXPECT_TRUE(visEntry[0].m_internalNode != nullptr);
         EXPECT_TRUE(visEntry[0].m_internalNodeIndex == 0);
-        EXPECT_TRUE(m_octreeScene->GetEntryCount() == 1);
+        ValidateEntryCountEqualsExpectedCount(m_octreeScene, 1);
         EXPECT_TRUE(m_octreeScene->GetNodeCount() == 1);
 
         m_octreeScene->InsertOrUpdateEntry(visEntry[1]); // This should force a split of the root node
         EXPECT_TRUE(visEntry[1].m_internalNode != nullptr);
         EXPECT_TRUE(visEntry[1].m_internalNodeIndex == 0);
-        EXPECT_TRUE(m_octreeScene->GetEntryCount() == 2);
+        ValidateEntryCountEqualsExpectedCount(m_octreeScene, 2);
         EXPECT_TRUE(m_octreeScene->GetNodeCount() == 1 + m_octreeScene->GetChildNodeCount());
 
         m_octreeScene->InsertOrUpdateEntry(visEntry[2]); // This should force a split of the roots +/+/+ child node
         EXPECT_TRUE(visEntry[2].m_internalNode != nullptr);
         EXPECT_TRUE(visEntry[2].m_internalNodeIndex == 0);
-        EXPECT_TRUE(m_octreeScene->GetEntryCount() == 3);
+        ValidateEntryCountEqualsExpectedCount(m_octreeScene, 3);
         EXPECT_TRUE(m_octreeScene->GetNodeCount() == 1 + (2 * m_octreeScene->GetChildNodeCount()));
 
         visEntry[1].m_boundingVolume = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-0.9f), AZ::Vector3(-0.6f));
@@ -206,22 +216,22 @@ namespace UnitTest
         m_octreeScene->InsertOrUpdateEntry(visEntry[0]);
         m_octreeScene->InsertOrUpdateEntry(visEntry[1]);
         m_octreeScene->InsertOrUpdateEntry(visEntry[2]);
-        EXPECT_TRUE(m_octreeScene->GetEntryCount() == 3);
+        ValidateEntryCountEqualsExpectedCount(m_octreeScene, 3);
         EXPECT_TRUE(m_octreeScene->GetNodeCount() == 1 + (2 * m_octreeScene->GetChildNodeCount()));
 
         m_octreeScene->RemoveEntry(visEntry[2]);
         EXPECT_TRUE(visEntry[2].m_internalNode == nullptr);
-        EXPECT_TRUE(m_octreeScene->GetEntryCount() == 2);
+        ValidateEntryCountEqualsExpectedCount(m_octreeScene, 2);
         EXPECT_TRUE(m_octreeScene->GetNodeCount() == 1 + m_octreeScene->GetChildNodeCount());
 
         m_octreeScene->RemoveEntry(visEntry[1]);
         EXPECT_TRUE(visEntry[1].m_internalNode == nullptr);
-        EXPECT_TRUE(m_octreeScene->GetEntryCount() == 1);
+        ValidateEntryCountEqualsExpectedCount(m_octreeScene, 1);
         EXPECT_TRUE(m_octreeScene->GetNodeCount() == 1);
 
         m_octreeScene->RemoveEntry(visEntry[0]);
         EXPECT_TRUE(visEntry[0].m_internalNode == nullptr);
-        EXPECT_TRUE(m_octreeScene->GetEntryCount() == 0);
+        ValidateEntryCountEqualsExpectedCount(m_octreeScene, 0);
         EXPECT_TRUE(m_octreeScene->GetNodeCount() == 1);
     }
 
@@ -364,5 +374,49 @@ namespace UnitTest
         AZ::Frustum bound2 = AZ::Frustum(AZ::ViewFrustumAttributes(frustumTransform, 1.0f, 2.0f * atanf(0.5f), 1.0f, 2.0f));
         AZ::Frustum bound3 = AZ::Frustum(AZ::ViewFrustumAttributes(frustumTransform, 1.0f, 2.0f * atanf(0.5f), 2.6f, 2.9f));
         EnumerateMultipleEntriesHelper(m_octreeScene, bound1, bound2, bound3);
+    }
+
+    TEST_F(OctreeTests, InsertOrUpdateEntry_OverFillRootNodeWithLargeEntries_EntriesAreNotLost)
+    {
+        // Validate that the octree works if you exceed the max entry count with large entries,
+        // which will overfill the root node since they can't be distributed to child nodes
+
+        // Get the max extents and entries-per-node for the octree
+        AZ::IConsole* console = AZ::Interface<AZ::IConsole>::Get();
+        EXPECT_TRUE(console);
+
+        float maxExtents = 0.0f;
+        AZ::GetValueResult getCvarResult = console->GetCvarValue("bg_octreeMaxWorldExtents", maxExtents);
+        EXPECT_EQ(getCvarResult, AZ::GetValueResult::Success);
+
+        uint32_t maxEntriesPerNode = 0;
+        getCvarResult = console->GetCvarValue("bg_octreeNodeMaxEntries", maxEntriesPerNode);
+        EXPECT_EQ(getCvarResult, AZ::GetValueResult::Success);
+
+        // Create root entries that would exceed the size of the root node
+        AZ::Aabb exceedMaxExtents = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-maxExtents - 1.0f), AZ::Vector3(maxExtents + 1.0f));
+        uint32_t exceedMaxEntriesPerNode = maxEntriesPerNode + 1;
+
+        AzFramework::VisibilityEntry visEntry;
+        visEntry.m_boundingVolume = exceedMaxExtents;
+        AZStd::vector<AzFramework::VisibilityEntry> visEntries(exceedMaxEntriesPerNode, visEntry);
+
+        // Insert them all into the scene
+        for (AzFramework::VisibilityEntry& entry : visEntries)
+        {
+            m_octreeScene->InsertOrUpdateEntry(entry);
+        }
+
+        // Expect all the entries to be in the scene
+        ValidateEntryCountEqualsExpectedCount(m_octreeScene, visEntries.size());
+
+        // Update them, without making any actual changes
+        for (AzFramework::VisibilityEntry& entry : visEntries)
+        {
+            m_octreeScene->InsertOrUpdateEntry(entry);
+        }
+
+        // Expect all the entries to be in the scene
+        ValidateEntryCountEqualsExpectedCount(m_octreeScene, visEntries.size());
     }
 }

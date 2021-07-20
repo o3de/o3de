@@ -5,7 +5,10 @@
     "propertyLayoutVersion": 3,
     "properties": {
         "blend": {
-            "blendSource": "VertexColors"
+            "blendSource": "BlendMaskVertexColors"
+        },
+        "parallax": {
+            "quality": "Medium"
         }
     }
 }

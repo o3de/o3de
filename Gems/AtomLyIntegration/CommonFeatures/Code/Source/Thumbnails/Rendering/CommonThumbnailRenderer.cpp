@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
@@ -34,12 +29,34 @@ namespace AZ
                 AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler::BusConnect(RPI::MaterialAsset::RTTI_Type());
                 AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler::BusConnect(RPI::ModelAsset::RTTI_Type());
                 SystemTickBus::Handler::BusConnect();
+                ThumbnailFeatureProcessorProviderBus::Handler::BusConnect();
 
                 m_steps[Step::Initialize] = AZStd::make_shared<InitializeStep>(this);
                 m_steps[Step::FindThumbnailToRender] = AZStd::make_shared<FindThumbnailToRenderStep>(this);
                 m_steps[Step::WaitForAssetsToLoad] = AZStd::make_shared<WaitForAssetsToLoadStep>(this);
                 m_steps[Step::Capture] = AZStd::make_shared<CaptureStep>(this);
                 m_steps[Step::ReleaseResources] = AZStd::make_shared<ReleaseResourcesStep>(this);
+
+                m_minimalFeatureProcessors =
+                {
+                    "AZ::Render::TransformServiceFeatureProcessor",
+                    "AZ::Render::MeshFeatureProcessor",
+                    "AZ::Render::SimplePointLightFeatureProcessor",
+                    "AZ::Render::SimpleSpotLightFeatureProcessor",
+                    "AZ::Render::PointLightFeatureProcessor",
+                    // There is currently a bug where having multiple DirectionalLightFeatureProcessors active can result in shadow
+                    // flickering [ATOM-13568]
+                    // as well as continually rebuilding MeshDrawPackets [ATOM-13633]. Lets just disable the directional light FP for now.
+                    // Possibly re-enable with [GFX TODO][ATOM-13639]
+                    // "AZ::Render::DirectionalLightFeatureProcessor",
+                    "AZ::Render::DiskLightFeatureProcessor",
+                    "AZ::Render::CapsuleLightFeatureProcessor",
+                    "AZ::Render::QuadLightFeatureProcessor",
+                    "AZ::Render::DecalTextureArrayFeatureProcessor",
+                    "AZ::Render::ImageBasedLightFeatureProcessor",
+                    "AZ::Render::PostProcessFeatureProcessor",
+                    "AZ::Render::SkyBoxFeatureProcessor"
+                };
             }
 
             CommonThumbnailRenderer::~CommonThumbnailRenderer()
@@ -50,6 +67,7 @@ namespace AZ
                 }
                 AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler::BusDisconnect();
                 SystemTickBus::Handler::BusDisconnect();
+                ThumbnailFeatureProcessorProviderBus::Handler::BusDisconnect();
             }
 
             void CommonThumbnailRenderer::SetStep(Step step)
@@ -77,6 +95,11 @@ namespace AZ
                 AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::ExecuteQueuedEvents();
             }
 
+            const AZStd::vector<AZStd::string>& CommonThumbnailRenderer::GetCustomFeatureProcessors() const
+            {
+                return m_minimalFeatureProcessors;
+            }
+            
             AZStd::shared_ptr<ThumbnailRendererData> CommonThumbnailRenderer::GetData() const
             {
                 return m_data;

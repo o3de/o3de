@@ -16,6 +16,5 @@
 # For customization when using a Version Control System, please read the
 # header note.
 # ${GENERATION_TIMESTAMP}
-ndk.dir=${ANDROID_NDK_PATH}
 sdk.dir=${ANDROID_SDK_PATH}
 ${CMAKE_DIR_LINE}

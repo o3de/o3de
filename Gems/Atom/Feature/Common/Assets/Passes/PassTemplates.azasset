@@ -285,6 +285,14 @@
                 "Path": "Passes/SMAA1xApplyPerceptualColor.pass"
             },
             {
+                "Name": "TaaTemplate",
+                "Path": "Passes/Taa.pass"
+            },
+            {
+                "Name": "ContrastAdaptiveSharpeningTemplate",
+                "Path": "Passes/ContrastAdaptiveSharpening.pass"
+            },
+            {
                 "Name": "SsaoParentTemplate",
                 "Path": "Passes/SsaoParent.pass"
             },

@@ -8,7 +8,6 @@
         },
         "parallax": {
             "algorithm": "POM",
-            "enable": true,
             "factor": 0.02500000037252903,
             "quality": "High",
             "textureMap": "TestData/Textures/TextureHaven/4k_castle_brick_02_red/4k_castle_brick_02_red_disp.png"

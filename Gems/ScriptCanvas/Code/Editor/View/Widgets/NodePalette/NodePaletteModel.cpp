@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "precompiled.h"
 
 #include <AzCore/Interface/Interface.h>
@@ -340,31 +335,31 @@ namespace
                 }
 
                 // Pass in the associated class data so we can do more intensive lookups?
-                const AZ::SerializeContext::ClassData* classData = serializeContext.FindClassData(node.first);
+                const AZ::SerializeContext::ClassData* nodeClassData = serializeContext.FindClassData(node.first);
 
-                if (classData == nullptr)
+                if (nodeClassData == nullptr)
                 {
                     continue;
                 }
 
                 // Detect primitive types os we avoid making nodes out of them.
                 // Or anything that is 'pure data' and should be populated through a different mechanism.
-                if (classData->m_azRtti && classData->m_azRtti->IsTypeOf<ScriptCanvas::PureData>())
+                if (nodeClassData->m_azRtti && nodeClassData->m_azRtti->IsTypeOf<ScriptCanvas::PureData>())
                 {
                     continue;
                 }
                 // Skip over some of our more dynamic nodes that we want to populate using different means
-                else if (classData->m_azRtti && classData->m_azRtti->IsTypeOf<ScriptCanvas::Nodes::Core::GetVariableNode>())
+                else if (nodeClassData->m_azRtti && nodeClassData->m_azRtti->IsTypeOf<ScriptCanvas::Nodes::Core::GetVariableNode>())
                 {
                     continue;
                 }
-                else if (classData->m_azRtti && classData->m_azRtti->IsTypeOf<ScriptCanvas::Nodes::Core::SetVariableNode>())
+                else if (nodeClassData->m_azRtti && nodeClassData->m_azRtti->IsTypeOf<ScriptCanvas::Nodes::Core::SetVariableNode>())
                 {
                     continue;
                 }
                 else
                 {
-                    nodePaletteModel.RegisterCustomNode(categoryPath, node.first, node.second, classData);
+                    nodePaletteModel.RegisterCustomNode(categoryPath, node.first, node.second, nodeClassData);
                 }
             }
 
@@ -471,6 +466,11 @@ namespace
             const AZ::BehaviorClass* behaviorClass = classIter.second;
 
             if (IsDeprecated(behaviorClass->m_attributes))
+            {
+                continue;
+            }
+
+            if (auto excludeFromPointer = AZ::FindAttribute(AZ::ScriptCanvasAttributes::Internal::ImplementedAsNodeGeneric, behaviorClass->m_attributes))
             {
                 continue;
             }

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 
 #include <PhysX_precompiled.h>
@@ -17,6 +12,7 @@
 #include <AzCore/IO/GenericStreams.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Serialization/Utils.h>
+#include <AzCore/Serialization/EditContext.h>
 #include <PhysX/MeshAsset.h>
 #include <PhysX/SystemComponentBus.h>
 #include <Source/Pipeline/MeshAssetHandler.h>
@@ -151,10 +147,31 @@ namespace PhysX
 
                 serializeContext->Class<MeshAssetData>()
                     ->Field("ColliderShapes", &MeshAssetData::m_colliderShapes)
-                    ->Field("SurfaceNames", &MeshAssetData::m_surfaceNames)
-                    ->Field("MaterialNames", &MeshAssetData::m_materialNames)
+                    ->Field("SurfaceNames", &MeshAssetData::m_materialNames)
+                    ->Field("MaterialNames", &MeshAssetData::m_physicsMaterialNames)
                     ->Field("MaterialIndexPerShape", &MeshAssetData::m_materialIndexPerShape)
                     ;
+            }
+        }
+
+        void MeshAsset::Reflect(AZ::ReflectContext* context)
+        {
+            MeshAssetData::Reflect(context);
+
+            if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+            {
+                serializeContext->Class<MeshAsset>()
+                    ->Field("MeshAssetData", &MeshAsset::m_assetData)
+                    ;
+
+                // Note: This class needs to have edit context reflection so PropertyAssetCtrl::OnEditButtonClicked
+                //       can open the asset with the preferred asset editor (Scene Settings).
+                if (auto* editContext = serializeContext->GetEditContext())
+                {
+                    editContext->Class<MeshAsset>("PhysX Mesh Asset", "")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ;
+                }
             }
         }
 
@@ -196,7 +213,7 @@ namespace PhysX
                     AZ::Transform::CreateFromQuaternionAndTranslation(colliderConfiguration.m_rotation, colliderConfiguration.m_position);
 
                 AZ::Transform shapeTransform = *m_transform;
-                shapeTransform.ExtractScale();
+                shapeTransform.ExtractUniformScale();
 
                 shapeTransform = existingTransform * shapeTransform;
 

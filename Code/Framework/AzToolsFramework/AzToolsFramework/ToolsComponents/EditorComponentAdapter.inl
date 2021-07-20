@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzFramework/Components/ComponentAdapterHelpers.h>
 
@@ -28,23 +23,21 @@ namespace AzToolsFramework
         template<typename TController, typename TRuntimeComponent, typename TConfiguration>
         void EditorComponentAdapter<TController, TRuntimeComponent, TConfiguration>::Reflect(AZ::ReflectContext* context)
         {
-            if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+            if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
-                serializeContext->Class<EditorComponentAdapter, EditorComponentBase>()
-                    ->Version(1)
-                    ->Field("Controller", &EditorComponentAdapter::m_controller)
-                    ;
+                serializeContext->Class<EditorComponentAdapter, EditorComponentBase>()->Version(1)->Field(
+                    "Controller", &EditorComponentAdapter::m_controller);
 
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
-                    editContext->Class<EditorComponentAdapter>(
-                        "EditorComponentAdapter", "")
+                    // clang-format off
+                    editContext->Class<EditorComponentAdapter>("EditorComponentAdapter", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &EditorComponentAdapter::m_controller, "Controller", "")
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorComponentAdapter::OnConfigurationChanged)
-                        ;
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorComponentAdapter::OnConfigurationChanged);
+                    // clang-format on
                 }
             }
         }
@@ -53,27 +46,35 @@ namespace AzToolsFramework
         // Get*Services functions
 
         template<typename TController, typename TRuntimeComponent, typename TConfiguration>
-        void EditorComponentAdapter<TController, TRuntimeComponent, TConfiguration>::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+        void EditorComponentAdapter<TController, TRuntimeComponent, TConfiguration>::GetProvidedServices(
+            AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            AzFramework::Components::GetProvidedServicesHelper<TController>(services, typename AZ::HasComponentProvidedServices<TController>::type());
+            AzFramework::Components::GetProvidedServicesHelper<TController>(
+                services, typename AZ::HasComponentProvidedServices<TController>::type());
         }
 
         template<typename TController, typename TRuntimeComponent, typename TConfiguration>
-        void EditorComponentAdapter<TController, TRuntimeComponent, TConfiguration>::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+        void EditorComponentAdapter<TController, TRuntimeComponent, TConfiguration>::GetRequiredServices(
+            AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            AzFramework::Components::GetRequiredServicesHelper<TController>(services, typename AZ::HasComponentRequiredServices<TController>::type());
+            AzFramework::Components::GetRequiredServicesHelper<TController>(
+                services, typename AZ::HasComponentRequiredServices<TController>::type());
         }
 
         template<typename TController, typename TRuntimeComponent, typename TConfiguration>
-        void EditorComponentAdapter<TController, TRuntimeComponent, TConfiguration>::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+        void EditorComponentAdapter<TController, TRuntimeComponent, TConfiguration>::GetIncompatibleServices(
+            AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            AzFramework::Components::GetIncompatibleServicesHelper<TController>(services, typename AZ::HasComponentIncompatibleServices<TController>::type());
+            AzFramework::Components::GetIncompatibleServicesHelper<TController>(
+                services, typename AZ::HasComponentIncompatibleServices<TController>::type());
         }
 
         template<typename TController, typename TRuntimeComponent, typename TConfiguration>
-        void EditorComponentAdapter<TController, TRuntimeComponent, TConfiguration>::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+        void EditorComponentAdapter<TController, TRuntimeComponent, TConfiguration>::GetDependentServices(
+            AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            AzFramework::Components::GetDependentServicesHelper<TController>(services, typename AZ::HasComponentDependentServices<TController>::type());
+            AzFramework::Components::GetDependentServicesHelper<TController>(
+                services, typename AZ::HasComponentDependentServices<TController>::type());
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -99,7 +100,8 @@ namespace AzToolsFramework
 
             if (ShouldActivateController())
             {
-                m_controller.Activate(GetEntityId());
+                AzFramework::Components::ComponentActivateHelper<TController>::Activate(
+                    m_controller, AZ::EntityComponentIdPair(GetEntityId(), GetId()));
             }
         }
 
@@ -122,7 +124,8 @@ namespace AzToolsFramework
         }
 
         template<typename TController, typename TRuntimeComponent, typename TConfiguration>
-        bool EditorComponentAdapter<TController, TRuntimeComponent, TConfiguration>::WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const
+        bool EditorComponentAdapter<TController, TRuntimeComponent, TConfiguration>::WriteOutConfig(
+            AZ::ComponentConfig* outBaseConfig) const
         {
             if (auto config = azrtti_cast<TConfiguration*>(outBaseConfig))
             {
@@ -139,7 +142,8 @@ namespace AzToolsFramework
 
             if (ShouldActivateController())
             {
-                m_controller.Activate(GetEntityId());
+                AzFramework::Components::ComponentActivateHelper<TController>::Activate(
+                    m_controller, AZ::EntityComponentIdPair(GetEntityId(), GetId()));
             }
 
             return AZ::Edit::PropertyRefreshLevels::None;

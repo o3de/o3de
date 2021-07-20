@@ -1,12 +1,8 @@
 # 
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or 
-# its licensors. 
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 # 
-# For complete copyright and license terms please see the LICENSE at the root of this 
-# distribution (the "License"). All use of this software is governed by the License, 
-# or, if provided, by the license below or the license accompanying this file. Do not 
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS, 
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 # 
 
 set(FILES
@@ -23,6 +19,7 @@ set(FILES
     Materials/Types/EnhancedPBR_ForwardPass_EDS.shader
     Materials/Types/EnhancedPBR_Shadowmap_WithPS.azsl
     Materials/Types/EnhancedPBR_Shadowmap_WithPS.shader
+    Materials/Types/EnhancedPBR_SubsurfaceState.lua
     Materials/Types/Skin.azsl
     Materials/Types/Skin.materialtype
     Materials/Types/Skin.shader
@@ -33,11 +30,11 @@ set(FILES
     Materials/Types/StandardMultilayerPBR_Common.azsli
     Materials/Types/StandardMultilayerPBR_DepthPass_WithPS.azsl
     Materials/Types/StandardMultilayerPBR_DepthPass_WithPS.shader
+    Materials/Types/StandardMultilayerPBR_Displacement.lua
     Materials/Types/StandardMultilayerPBR_ForwardPass.azsl
     Materials/Types/StandardMultilayerPBR_ForwardPass.shader
     Materials/Types/StandardMultilayerPBR_ForwardPass_EDS.shader
-    Materials/Types/StandardMultilayerPBR_Parallax.lua
-    Materials/Types/StandardMultilayerPBR_ParallaxPerLayer.lua
+    Materials/Types/StandardMultilayerPBR_LayerEnable.lua
     Materials/Types/StandardMultilayerPBR_ShaderEnable.lua
     Materials/Types/StandardMultilayerPBR_Shadowmap_WithPS.azsl
     Materials/Types/StandardMultilayerPBR_Shadowmap_WithPS.shader
@@ -61,7 +58,6 @@ set(FILES
     Materials/Types/StandardPBR_ShaderEnable.lua
     Materials/Types/StandardPBR_Shadowmap_WithPS.azsl
     Materials/Types/StandardPBR_Shadowmap_WithPS.shader
-    Materials/Types/StandardPBR_SubsurfaceState.lua
     Materials/Types/MaterialInputs/AlphaInput.azsli
     Materials/Types/MaterialInputs/BaseColorInput.azsli
     Materials/Types/MaterialInputs/ClearCoatInput.azsli
@@ -89,6 +85,7 @@ set(FILES
     Passes/CascadedShadowmaps.pass
     Passes/CheckerboardResolveColor.pass
     Passes/CheckerboardResolveDepth.pass
+    Passes/ContrastAdaptiveSharpening.pass
     Passes/ConvertToAcescg.pass
     Passes/DebugOverlayParent.pass
     Passes/DeferredFog.pass
@@ -207,6 +204,7 @@ set(FILES
     Passes/SsaoHalfRes.pass
     Passes/SsaoParent.pass
     Passes/SubsurfaceScattering.pass
+    Passes/Taa.pass
     Passes/Transparent.pass
     Passes/TransparentParent.pass
     Passes/UI.pass
@@ -246,7 +244,6 @@ set(FILES
     ShaderLib/Atom/Features/PBR/Hammersley.azsli
     ShaderLib/Atom/Features/PBR/LightingOptions.azsli
     ShaderLib/Atom/Features/PBR/LightingUtils.azsli
-    ShaderLib/Atom/Features/PBR/TransparentPassSrg.azsli
     ShaderLib/Atom/Features/PBR/Lighting/DualSpecularLighting.azsli
     ShaderLib/Atom/Features/PBR/Lighting/EnhancedLighting.azsli
     ShaderLib/Atom/Features/PBR/Lighting/LightingData.azsli
@@ -353,11 +350,8 @@ set(FILES
     Shaders/MorphTargets/MorphTargetSRG.azsli
     Shaders/MotionVector/CameraMotionVector.azsl
     Shaders/MotionVector/CameraMotionVector.shader
-    Shaders/MotionVector/MeshMotionVectorCommon.azsli
-    Shaders/MotionVector/SkinnedMeshMotionVector.azsl
-    Shaders/MotionVector/SkinnedMeshMotionVector.shader
-    Shaders/MotionVector/StaticMeshMotionVector.azsl
-    Shaders/MotionVector/StaticMeshMotionVector.shader
+    Shaders/MotionVector/MeshMotionVector.azsl
+    Shaders/MotionVector/MeshMotionVector.shader
     Shaders/PostProcessing/AcesOutputTransformLut.azsl
     Shaders/PostProcessing/AcesOutputTransformLut.shader
     Shaders/PostProcessing/ApplyShaperLookupTable.azsl

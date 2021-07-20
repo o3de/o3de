@@ -1,19 +1,15 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "EditorBoxSelect.h"
 
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 #include <QApplication>
 
@@ -27,8 +23,11 @@ namespace AzToolsFramework
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
-        if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left() &&
-            mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down)
+        m_cursorState.SetCurrentPosition(mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates);
+
+        const auto selectClickEvent = ClickDetectorEventFromViewportInteraction(mouseInteraction);
+        const auto clickOutcome = m_clickDetector.DetectClick(selectClickEvent, m_cursorState.CursorDelta());
+        if (clickOutcome == AzFramework::ClickDetector::ClickOutcome::Move)
         {
             if (m_leftMouseDown)
             {
@@ -58,8 +57,7 @@ namespace AzToolsFramework
                 }
             }
 
-            if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left() &&
-                mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Up)
+            if (clickOutcome == AzFramework::ClickDetector::ClickOutcome::Release)
             {
                 if (m_leftMouseUp)
                 {
@@ -76,6 +74,8 @@ namespace AzToolsFramework
     void EditorBoxSelect::Display2d(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+
+        m_cursorState.Update();
 
         if (m_boxSelectRegion)
         {

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 #pragma import ViewSrg
@@ -22,15 +17,14 @@
 // You can optionally provide a prefix for the set of inputs which corresponds to a prefix string supplied by the .materialtype file. This is common for multi-layered material types.
 
 #define COMMON_SRG_INPUTS_PARALLAX(prefix) \
-Texture2D   prefix##m_depthMap;            \
-float       prefix##m_depthFactor;         \
-float       prefix##m_depthOffset;         \
-bool        prefix##m_depthInverted;
+Texture2D   prefix##m_heightmap;           \
+float       prefix##m_heightmapScale;      \
+float       prefix##m_heightmapOffset;         
 
 #define COMMON_OPTIONS_PARALLAX(prefix) \
-option bool prefix##o_useDepthMap; 
+option bool prefix##o_useHeightmap; 
 
-void GetParallaxInput(float3 normal, float3 tangent, float3 bitangent, float depthFactor, float depthOffset,
+void GetParallaxInput(float3 normal, float3 tangent, float3 bitangent, float heightmapScale, float heightmapOffset,
                       float4x4 objectWorldMatrix, float3x3 uvMatrix, float3x3 uvMatrixInverse,
                       inout float2 uv, inout float3 worldPosition, inout float depthNDC, inout float depthCS, out bool isClipped)
 {
@@ -48,8 +42,8 @@ void GetParallaxInput(float3 normal, float3 tangent, float3 bitangent, float dep
             dirToCamera = ViewSrg::m_worldPosition.xyz - worldPosition;
         }
     
-        ParallaxOffset tangentOffset = GetParallaxOffset( depthFactor,
-                                                          depthOffset,
+        ParallaxOffset tangentOffset = GetParallaxOffset( heightmapScale,
+                                                          -heightmapOffset,
                                                           uv,
                                                           dirToCamera, 
                                                           tangent,
@@ -62,7 +56,7 @@ void GetParallaxInput(float3 normal, float3 tangent, float3 bitangent, float dep
 
         if(o_parallax_enablePixelDepthOffset)
         {
-            PixelDepthOffset pdo = CalcPixelDepthOffset(depthFactor,
+            PixelDepthOffset pdo = CalcPixelDepthOffset(heightmapScale,
                                                         tangentOffset.m_offsetTS,
                                                         worldPosition,
                                                         tangent,
@@ -81,19 +75,19 @@ void GetParallaxInput(float3 normal, float3 tangent, float3 bitangent, float dep
     }
 }
 
-void GetParallaxInput(float3 normal, float3 tangent, float3 bitangent, float depthFactor, float depthOffset,
+void GetParallaxInput(float3 normal, float3 tangent, float3 bitangent, float heightmapScale, float heightmapOffset,
                       float4x4 objectWorldMatrix, float3x3 uvMatrix, float3x3 uvMatrixInverse,
                       inout float2 uv, inout float3 worldPosition, inout float depthNDC, inout float depthCS)
 {
     bool isClipped;
-    GetParallaxInput(normal, tangent, bitangent, depthFactor, depthOffset, objectWorldMatrix, uvMatrix, uvMatrixInverse, uv, worldPosition, depthNDC, depthCS, isClipped);
+    GetParallaxInput(normal, tangent, bitangent, heightmapScale, heightmapOffset, objectWorldMatrix, uvMatrix, uvMatrixInverse, uv, worldPosition, depthNDC, depthCS, isClipped);
 }
 
-void GetParallaxInput(float3 normal, float3 tangent, float3 bitangent, float depthFactor, float depthOffset,
+void GetParallaxInput(float3 normal, float3 tangent, float3 bitangent, float heightmapScale, float heightmapOffset,
     float4x4 objectWorldMatrix, float3x3 uvMatrix, float3x3 uvMatrixInverse,
     inout float2 uv, inout float3 worldPosition, inout float depthNDC)
 {
     float depthCS;
-    GetParallaxInput(normal, tangent, bitangent, depthFactor, depthOffset, objectWorldMatrix, uvMatrix, uvMatrixInverse, uv, worldPosition, depthNDC, depthCS);
+    GetParallaxInput(normal, tangent, bitangent, heightmapScale, heightmapOffset, objectWorldMatrix, uvMatrix, uvMatrixInverse, uv, worldPosition, depthNDC, depthCS);
 }
 

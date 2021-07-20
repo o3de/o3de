@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Tests/Serialization/Json/TestCases_Classes.h>
@@ -369,6 +364,57 @@ namespace JsonSerializationTests
             {
                 "enumClass": "Option2",
                 "rawEnum": "Option1"
+            })";
+        return MakeInstanceWithoutDefaults(AZStd::move(instance), json);
+    }
+
+    // NonReflectedEnumWrapper
+    bool NonReflectedEnumWrapper::Equals(const NonReflectedEnumWrapper& rhs, bool fullReflection) const
+    {
+        return !fullReflection || (m_enumClass == rhs.m_enumClass && m_rawEnum== rhs.m_rawEnum);
+    }
+
+    void NonReflectedEnumWrapper::Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context, bool fullReflection)
+    {
+        if (fullReflection)
+        {
+            // Note that the enums are not reflected using context->Enum<>
+
+            context->Class<NonReflectedEnumWrapper>()
+                ->Field("enumClass", &NonReflectedEnumWrapper::m_enumClass)
+                ->Field("rawEnum", &NonReflectedEnumWrapper::m_rawEnum);
+        }
+    }
+
+    InstanceWithSomeDefaults<NonReflectedEnumWrapper> NonReflectedEnumWrapper::GetInstanceWithSomeDefaults()
+    {
+        auto instance = AZStd::make_unique<NonReflectedEnumWrapper>();
+        instance->m_enumClass = NonReflectedEnumWrapper::SimpleEnumClass::Option2;
+
+        const char* strippedDefaults = R"(
+            {
+                "enumClass": 2
+            })";
+        const char* keptDefaults = R"(
+            {
+                "enumClass": 2,
+                "rawEnum": 0
+            })";
+
+        return MakeInstanceWithSomeDefaults(AZStd::move(instance),
+            strippedDefaults, keptDefaults);
+    }
+
+    InstanceWithoutDefaults<NonReflectedEnumWrapper> NonReflectedEnumWrapper::GetInstanceWithoutDefaults()
+    {
+        auto instance = AZStd::make_unique<NonReflectedEnumWrapper>();
+        instance->m_enumClass = NonReflectedEnumWrapper::SimpleEnumClass::Option2;
+        instance->m_rawEnum = NonReflectedEnumWrapper::SimpleRawEnum::RawOption1;
+
+        const char* json = R"(
+            {
+                "enumClass": 2,
+                "rawEnum": 1
             })";
         return MakeInstanceWithoutDefaults(AZStd::move(instance), json);
     }

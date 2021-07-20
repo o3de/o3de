@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <AzCore/base.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/UnitTest/TestTypes.h>
@@ -130,6 +125,9 @@ namespace AssetProcessor
             auto cacheRootKey =
                 AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_cache_path";
             settingsRegistry->Set(cacheRootKey, m_data->m_temporarySourceDir.absoluteFilePath("Cache").toUtf8().constData());
+            auto projectPathKey =
+                AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
+            settingsRegistry->Set(projectPathKey, "AutomatedTesting");
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*settingsRegistry);
             AssetUtilities::ComputeProjectCacheRoot(m_data->m_cacheRootDir);
             QString normalizedCacheRoot = AssetUtilities::NormalizeDirectoryPath(m_data->m_cacheRootDir.absolutePath());
@@ -221,20 +219,28 @@ namespace AssetProcessor
             dbConn->SetScanFolder(newScanFolder);
         }
 
-        // build some default configs.
-        void BuildConfig(const QDir& tempPath, AssetDatabaseConnection* dbConn, PlatformConfiguration& config)
+        virtual void AddScanFolders(
+            const QDir& tempPath, AssetDatabaseConnection* dbConn, PlatformConfiguration& config,
+            const AZStd::vector<AssetBuilderSDK::PlatformInfo>& platforms)
         {
-            config.EnablePlatform({ "pc" ,{ "desktop", "renderer" } }, true);
-            config.EnablePlatform({ "es3" ,{ "mobile", "renderer" } }, true);
-            config.EnablePlatform({ "fandango" ,{ "console", "renderer" } }, false);
-            AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms;
-            config.PopulatePlatformsForScanFolder(platforms);
             //                                               PATH         DisplayName    PortKey      root    recurse  platforms     order
             AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder4"), "subfolder4", "subfolder4", false, false, platforms, -6), config, dbConn); // subfolder 4 overrides subfolder3
             AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder3"), "subfolder3", "subfolder3", false, false, platforms, -5), config, dbConn); // subfolder 3 overrides subfolder2
             AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder2"), "subfolder2", "subfolder2", false, true, platforms, -2), config, dbConn); // subfolder 2 overrides subfolder1
             AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder1"), "subfolder1", "subfolder1", false, true, platforms, -1), config, dbConn); // subfolder1 overrides root
             AddScanFolder(ScanFolderInfo(tempPath.absolutePath(), "temp", "tempfolder", true, false, platforms, 0), config, dbConn); // add the root
+        }
+
+        // build some default configs.
+        void BuildConfig(const QDir& tempPath, AssetDatabaseConnection* dbConn, PlatformConfiguration& config)
+        {
+            config.EnablePlatform({ "pc" ,{ "desktop", "renderer" } }, true);
+            config.EnablePlatform({ "android" ,{ "mobile", "renderer" } }, true);
+            config.EnablePlatform({ "fandango" ,{ "console", "renderer" } }, false);
+            AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms;
+            config.PopulatePlatformsForScanFolder(platforms);
+
+            AddScanFolders(tempPath, dbConn, config, platforms);
 
             config.AddMetaDataType("exportsettings", QString());
 
@@ -243,22 +249,22 @@ namespace AssetProcessor
 
             AssetRecognizer rec;
             AssetPlatformSpec specpc;
-            AssetPlatformSpec speces3;
+            AssetPlatformSpec specandroid;
 
-            speces3.m_extraRCParams = "somerandomparam";
+            specandroid.m_extraRCParams = "somerandomparam";
             rec.m_name = "random files";
             rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.random", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
             rec.m_platformSpecs.insert("pc", specpc);
             config.AddRecognizer(rec);
 
             specpc.m_extraRCParams = ""; // blank must work
-            speces3.m_extraRCParams = "testextraparams";
+            specandroid.m_extraRCParams = "testextraparams";
 
             const char* builderTxt1Name = "txt files";
             rec.m_name = builderTxt1Name;
             rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
             rec.m_platformSpecs.insert("pc", specpc);
-            rec.m_platformSpecs.insert("es3", speces3);
+            rec.m_platformSpecs.insert("android", specandroid);
 
             config.AddRecognizer(rec);
 
@@ -269,7 +275,7 @@ namespace AssetProcessor
             ignore_rec.m_name = "ignore files";
             ignore_rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.ignore", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
             ignore_rec.m_platformSpecs.insert("pc", specpc);
-            ignore_rec.m_platformSpecs.insert("es3", ignore_spec);
+            ignore_rec.m_platformSpecs.insert("android", ignore_spec);
             config.AddRecognizer(ignore_rec);
 
             ExcludeAssetRecognizer excludeRecogniser;
@@ -356,7 +362,8 @@ namespace AssetProcessor
             return false;
         }
 
-        // Calls the GetFullSourcePathFromRelativeProductPath function and checks the return results, returning true if it matches both of the expected results
+        // Calls the GetFullSourcePathFromRelativeProductPath function and checks the return results, returning true if it matches both of
+        // the expected results
         bool TestGetFullSourcePath(const QString& fileToCheck, const QDir& tempPath, bool expectToFind, const char* expectedPath)
         {
             bool fullPathfound = false;
@@ -526,6 +533,177 @@ namespace AssetProcessor
         // note that the casing of the source file is not correct.  It must still work.
         QString fileToCheck = m_data->m_temporarySourceDir.absoluteFilePath("subfolder2/aaa/basefile.txt");
         ASSERT_TRUE(TestGetRelativeProductPath(fileToCheck, true, { "aaa/basefile.txt" }));
+    }
+
+    class AssetCatalogTestRelativeSourcePath : public AssetCatalogTest
+    {
+    public:
+        QDir GetRoot()
+        {
+            // Return an OS-friendly absolute root directory for our tests ("C:/sourceRoot" or "/sourceRoot").  It doesn't
+            // need to exist, it just needs to be an absolute path.
+            return QDir::root().filePath("sourceRoot");
+        }
+
+        // Set up custom scan folders for the "relative source path" tests, so that we can try out specific combinations of watch folders
+        void AddScanFolders(
+            [[maybe_unused]] const QDir& tempPath, AssetDatabaseConnection* dbConn, PlatformConfiguration& config,
+            const AZStd::vector<AssetBuilderSDK::PlatformInfo>& platforms) override
+        {
+            QDir root = GetRoot();
+
+            // This will set up the following watch folders, in highest to lowest priority:
+
+            // /sourceRoot/recurseNested/nested (recurse)
+            // /sourceRoot/noRecurse            (no recurse)
+            // /sourceRoot/recurseNotNested     (recurse)
+            // /sourceRoot/recurseNested        (recurse)
+
+            AddScanFolder(
+                ScanFolderInfo(root.filePath("recurseNested/nested"), "nested", "nested", false, true, platforms, -4), config, dbConn);
+            AddScanFolder(
+                ScanFolderInfo(root.filePath("noRecurse"), "noRecurse", "noRecurse", false, false, platforms, -3), config, dbConn);
+            AddScanFolder(
+                ScanFolderInfo(root.filePath("recurseNotNested"), "recurseNotNested", "recurseNotNested", false, true, platforms, -2),
+                config, dbConn);
+            AddScanFolder(
+                ScanFolderInfo(root.filePath("recurseNested"), "recurseNested", "recurseNested", false, true, platforms, -1),
+                config, dbConn);
+        }
+
+        // Calls the GenerateRelativeSourcePath function and validates that the results match the expected inputs.
+        void TestGetRelativeSourcePath(
+            const AZStd::string& sourcePath, bool expectedToFind, const AZStd::string& expectedPath, const AZStd::string& expectedRoot)
+        {
+            bool relPathFound = false;
+            AZStd::string relPath;
+            AZStd::string rootFolder;
+
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                relPathFound, &AzToolsFramework::AssetSystem::AssetSystemRequest::GenerateRelativeSourcePath, sourcePath,
+                relPath, rootFolder);
+
+            EXPECT_EQ(relPathFound, expectedToFind);
+            EXPECT_EQ(relPath, expectedPath);
+            EXPECT_EQ(rootFolder, expectedRoot);
+        }
+    };
+
+    TEST_F(AssetCatalogTestRelativeSourcePath, GenerateRelativeSourcePath_EmptySourcePath_ReturnsNoMatch)
+    {
+        // Test passes in an empty source path, which shouldn't produce a valid result.
+        // Input:  empty source path
+        // Output: empty, not found result
+        TestGetRelativeSourcePath("", false, "", "");
+    }
+
+    TEST_F(AssetCatalogTestRelativeSourcePath, GenerateRelativeSourcePath_AbsolutePathOutsideWatchFolders_ReturnsNoMatch)
+    {
+        // Test passes in an invalid absolute source path, which shouldn't produce a valid result.
+        // Input:  "/sourceRoot/noWatchFolder/test.txt"
+        // Output: not found result, which also returns the input as the relative file name
+        QDir watchFolder = GetRoot().filePath("noWatchFolder/");
+        QString fileToCheck = watchFolder.filePath("test.txt");
+
+        TestGetRelativeSourcePath(fileToCheck.toUtf8().constData(), false, fileToCheck.toUtf8().constData(), "");
+    }
+
+    TEST_F(AssetCatalogTestRelativeSourcePath, GenerateRelativeSourcePath_AbsolutePathUnderWatchFolder_ReturnsRelativePath)
+    {
+        // Test passes in a valid absolute source path, which should produce a valid relative path
+        // Input:  "/sourceRoot/noRecurse/test.txt"
+        // Output: "test.txt" in folder "/sourceRoot/noRecurse/"
+        QDir watchFolder = GetRoot().filePath("noRecurse/");
+        QString fileToCheck = watchFolder.filePath("test.txt");
+
+        TestGetRelativeSourcePath(fileToCheck.toUtf8().constData(), true, "test.txt", watchFolder.path().toUtf8().constData());
+    }
+
+    TEST_F(AssetCatalogTestRelativeSourcePath, GenerateRelativeSourcePath_AbsolutePathUnderNestedWatchFolders_ReturnsRelativePath)
+    {
+        // Test passes in a valid absolute source path that matches a watch folder and a nested watch folder.
+        // The output relative path should match the nested folder, because the nested folder has a higher priority registered with the AP.
+        // Input:  "/sourceRoot/recurseNested/nested/test.txt"
+        // Output: "test.txt" in folder "/sourceRoot/recurseNested/nested/"
+        QDir watchFolder = GetRoot().filePath("recurseNested/nested/");
+        QString fileToCheck = watchFolder.filePath("test.txt");
+
+        TestGetRelativeSourcePath(fileToCheck.toUtf8().constData(), true, "test.txt", watchFolder.path().toUtf8().constData());
+    }
+
+    TEST_F(AssetCatalogTestRelativeSourcePath, GenerateRelativeSourcePath_BareFileNameValidInWatchFolder_ReturnsHighestPriorityWatchFolder)
+    {
+        // Test passes in a simple file name.  The output should be relative to the highest-priority watch folder.
+        // Input:  "test.txt"
+        // Output: "test.txt" in folder "/sourceRoot/recurseNested/nested/"
+        QDir watchFolder = GetRoot().filePath("recurseNested/nested/");
+
+        TestGetRelativeSourcePath("test.txt", true, "test.txt", watchFolder.path().toUtf8().constData());
+    }
+
+    TEST_F(AssetCatalogTestRelativeSourcePath, GenerateRelativeSourcePath_RelativePathValidInWatchFolder_ReturnsHighestPriorityWatchFolder)
+    {
+        // Test passes in a relative path.  The output should preserve the relative path, but list it as relative to the highest-priority
+        // watch folder.
+        // Input:  "a/b/c/test.txt"
+        // Output: "a/b/c/test.txt" in folder "/sourceRoot/recurseNested/nested/"
+        QDir watchFolder = GetRoot().filePath("recurseNested/nested/");
+
+        TestGetRelativeSourcePath("a/b/c/test.txt", true, "a/b/c/test.txt", watchFolder.path().toUtf8().constData());
+    }
+
+    TEST_F(AssetCatalogTestRelativeSourcePath, GenerateRelativeSourcePath_RelativePathNotInWatchFolder_ReturnsNoMatch)
+    {
+        // Test passes in a relative path that "backs up" two directories.  This will be invalid, because no matter which watch directory
+        // we start at, the result will be outside of any watch directory.
+        // Input:  "../../test.txt"
+        // Output: not found result, which also returns the input as the relative file name
+        TestGetRelativeSourcePath("../../test.txt", false, "../../test.txt", "");
+    }
+
+    TEST_F(AssetCatalogTestRelativeSourcePath, GenerateRelativeSourcePath_RelativePathValidFromNestedWatchFolder_ReturnsOuterFolder)
+    {
+        // Test passes in a relative path that "backs up" one directory.  This will produce a valid result, because we can back up from
+        // the "recurseNested/nested/" watch folder to "recurseNested", which is also a valid watch folder.
+        // Input:  "../test.txt"
+        // Output: "test.txt" in folder "/sourceRoot/recurseNested"
+        QDir watchFolder = GetRoot().filePath("recurseNested/");
+        TestGetRelativeSourcePath("../test.txt", true, "test.txt", watchFolder.path().toUtf8().constData());
+    }
+
+    TEST_F(AssetCatalogTestRelativeSourcePath, GenerateRelativeSourcePath_RelativePathMovesToParentWatchFolder_ReturnsOuterFolder)
+    {
+        // Test passes in a relative path that backs up one directory and then forward into a directory.  This will produce a valid
+        // result, because it can validly start in the highest-priority watch folder (recurseNested/nested), move back one into the
+        // outer watch folder (recurseNested), and then have a subdirectory within it.
+        // Note that it would also be valid to move from recurseNested to recurseNotNested, but that won't be the result of this test
+        // because that's a lower-priority match.
+        // Input:  "../recurseNotNested/test.txt"
+        // Output: "recurseNotNested/test.txt" in folder "/sourceRoot/recurseNested/"
+        QDir watchFolder = GetRoot().filePath("recurseNested/");
+
+        TestGetRelativeSourcePath("../recurseNotNested/test.txt", true, "recurseNotNested/test.txt", watchFolder.path().toUtf8().constData());
+    }
+
+    TEST_F(AssetCatalogTestRelativeSourcePath, GenerateRelativeSourcePath_RelativePathMovesToSiblingWatchFolder_ReturnsSiblingFolder)
+    {
+        // Test passes in a relative path that backs up two directories and then forward into a directory.  This will produce a valid
+        // result, because it can validly start in the recurseNested/nested folder, move back two folders, then forward into the sibling
+        // recurseNotNested folder.  The result will be a relative path to the sibling folder.
+        // Input:  "../../recurseNotNested/test.txt"
+        // Output: "test.txt" in folder "/sourceRoot/recurseNotNested/"
+        QDir watchFolder = GetRoot().filePath("recurseNotNested/");
+
+        TestGetRelativeSourcePath("../../recurseNotNested/test.txt", true, "test.txt", watchFolder.path().toUtf8().constData());
+    }
+
+    TEST_F(AssetCatalogTestRelativeSourcePath, GenerateRelativeSourcePath_RelativePathBacksOutOfWatchFolder_ReturnsNoMatch)
+    {
+        // Test passes in a relative path that adds a directory, then "backs up" three directories.  This will be invalid, because no
+        // matter which watch directory we start at, the result will be outside of any watch directory.
+        // Input:  "../test.txt"
+        // Output: "test.txt" in folder "/sourceRoot/recurseNested"
+        TestGetRelativeSourcePath("a/../../../test.txt", false, "a/../../../test.txt", "");
     }
 
     class AssetCatalogTest_GetFullSourcePath
@@ -909,7 +1087,7 @@ namespace AssetProcessor
         {
             AssetCatalogTest::SetUp();
             m_platforms.push_back("pc");
-            m_platforms.push_back("es3");
+            m_platforms.push_back("android");
 
             // 4 products for one platform, 1 product for the other.
             m_platformToProductsForSourceWithDifferentProducts["pc"].push_back("subfolder3/basefilez.arc2");
@@ -917,7 +1095,7 @@ namespace AssetProcessor
             m_platformToProductsForSourceWithDifferentProducts["pc"].push_back("subfolder3/basefile.arc2");
             m_platformToProductsForSourceWithDifferentProducts["pc"].push_back("subfolder3/basefile.azm2");
 
-            m_platformToProductsForSourceWithDifferentProducts["es3"].push_back("subfolder3/es3exclusivefile.azm2");
+            m_platformToProductsForSourceWithDifferentProducts["android"].push_back("subfolder3/androidexclusivefile.azm2");
 
             m_sourceFileWithDifferentProductsPerPlatform = AZ::Uuid::CreateString("{38032FC9-2838-4D6A-9DA0-79E5E4F20C1B}");
             m_sourceFileWithDependency = AZ::Uuid::CreateString("{807C4174-1D19-42AD-B8BC-A59291D9388C}");
@@ -930,7 +1108,7 @@ namespace AssetProcessor
             // resulting in image processing jobs having different products per platform. Because of this, the material jobs will then have different
             // dependencies per platform, because each material will depend on a referenced texture and all of that texture's mipmaps.
 
-            // Add a source file with 4 products on pc, but 1 on es3
+            // Add a source file with 4 products on pc, but 1 on android
             bool result = AddSourceAndJobForMultiplePlatforms(
                 "subfolder3",
                 "MultiplatformFile.txt",
@@ -945,7 +1123,7 @@ namespace AssetProcessor
             result = AddSourceAndJobForMultiplePlatforms("subfolder3", "FileWithDependency.txt", &(m_data->m_dbConn), sourceFileWithSameProductsJobsPerPlatform, m_platforms, m_sourceFileWithDependency);
             EXPECT_TRUE(result);
 
-            const AZStd::string fileWithDependencyProductPath = "subfolder3/es3exclusivefile.azm2";
+            const AZStd::string fileWithDependencyProductPath = "subfolder3/androidexclusivefile.azm2";
 
             for (const AZStd::string& platform : m_platforms)
             {

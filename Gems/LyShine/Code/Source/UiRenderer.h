@@ -1,24 +1,22 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawContext.h>
 #include <Atom/RPI.Public/WindowContext.h>
 #include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/RHI.Reflect/RenderStates.h>
 #include <Atom/Bootstrap/BootstrapNotificationBus.h>
 
 #ifndef _RELEASE
 #include <AzCore/std/containers/unordered_set.h>
 #endif
+
+class ITexture;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! UI render interface
@@ -36,6 +34,36 @@ public: // types
         AZ::RHI::ShaderInputConstantIndex m_isClampInputIndex;
 
         AZ::RPI::ShaderVariantId m_shaderVariantDefault;
+        AZ::RPI::ShaderVariantId m_shaderVariantAlphaTest;
+    };
+
+    // Base state
+    struct BaseState
+    {
+        BaseState()
+        {
+            ResetToDefault();
+        }
+
+        void ResetToDefault()
+        {
+            // Enable blend/color write
+            m_blendState.m_enable = true;
+            m_blendState.m_writeMask = 0xF;
+            m_blendState.m_blendSource = AZ::RHI::BlendFactor::AlphaSource;
+            m_blendState.m_blendDest = AZ::RHI::BlendFactor::AlphaSourceInverse;
+            m_blendState.m_blendOp = AZ::RHI::BlendOp::Add;
+
+            // Disable stencil
+            m_stencilState = AZ::RHI::StencilState();
+            m_stencilState.m_enable = 0;
+
+            m_useAlphaTest = false;
+        }
+
+        AZ::RHI::TargetBlendState m_blendState;
+        AZ::RHI::StencilState m_stencilState;
+        bool m_useAlphaTest = false;
     };
 
 public: // member functions
@@ -72,10 +100,13 @@ public: // member functions
     AZ::Vector2 GetViewportSize();
 
     //! Get the current base state
-    int GetBaseState();
+    BaseState GetBaseState();
 
     //! Set the base state
-    void SetBaseState(int state);
+    void SetBaseState(BaseState state);
+
+    //! Get the shader variant based on current render properties
+    AZ::RPI::ShaderVariantId GetCurrentShaderVariant();
 
     //! Get the current stencil test reference value
     uint32 GetStencilRef();
@@ -124,8 +155,8 @@ protected: // attributes
 
     static constexpr char LogName[] = "UiRenderer";
 
-    int m_baseState;
-    uint32 m_stencilRef;
+    BaseState m_baseState;
+    uint32 m_stencilRef = 0;
 
     UiShaderData m_uiShaderData;
     AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> m_dynamicDraw;
@@ -136,8 +167,6 @@ protected: // attributes
 
 #ifndef _RELEASE
     int m_debugTextureDataRecordLevel = 0;
-#ifdef LYSHINE_ATOM_TODO // Convert debug code to Atom
-    AZStd::unordered_set<ITexture*> m_texturesUsedInFrame;
-#endif
+    AZStd::unordered_set<ITexture*> m_texturesUsedInFrame; // LYSHINE_ATOM_TODO - convert to RPI::Image
 #endif
 };

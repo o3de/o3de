@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "Atom_RHI_Metal_precompiled.h"
 #include <RHI/Buffer.h>
 #include <RHI/BufferPool.h>
@@ -42,7 +37,6 @@ namespace AZ
                 uploadRequest.m_attachmentBuffer = buffer;
                 uploadRequest.m_byteOffset = request.m_byteOffset;
                 uploadRequest.m_stagingBuffer = stagingBuffer;
-                uploadRequest.m_byteSize = request.m_byteCount;
 
                 return stagingBuffer->GetMemoryView().GetCpuAddress();
             }
@@ -52,6 +46,12 @@ namespace AZ
 
         void BufferPoolResolver::Compile()
         {
+            for (BufferUploadPacket& packet : m_uploadPackets)
+            {
+                Buffer* stagingBuffer = packet.m_stagingBuffer.get();
+                //Inform the GPU that the CPU has modified the staging buffer.
+                Platform::SynchronizeBufferOnCPU(stagingBuffer->GetMemoryView().GetGpuAddress<id<MTLBuffer>>(), stagingBuffer->GetMemoryView().GetOffset(), stagingBuffer->GetMemoryView().GetSize());
+            }
         }
 
         void BufferPoolResolver::Resolve(CommandList& commandList) const
@@ -63,13 +63,13 @@ namespace AZ
                 Buffer* destBuffer = packet.m_attachmentBuffer;
                 AZ_Assert(stagingBuffer, "Staging Buffer is null.");
                 AZ_Assert(destBuffer, "Attachment Buffer is null.");
-
+                
                 RHI::CopyBufferDescriptor copyDescriptor;
                 copyDescriptor.m_sourceBuffer = stagingBuffer;
-                copyDescriptor.m_sourceOffset = 0;
+                copyDescriptor.m_sourceOffset = stagingBuffer->GetMemoryView().GetOffset();
                 copyDescriptor.m_destinationBuffer = destBuffer;
-                copyDescriptor.m_destinationOffset = static_cast<uint32_t>(packet.m_byteOffset);
-                copyDescriptor.m_size = static_cast<uint32_t>(packet.m_byteSize);
+                copyDescriptor.m_destinationOffset = destBuffer->GetMemoryView().GetOffset() + static_cast<uint32_t>(packet.m_byteOffset);
+                copyDescriptor.m_size = stagingBuffer->GetMemoryView().GetSize();
 
                 commandList.Submit(RHI::CopyItem(copyDescriptor));
                 device.QueueForRelease(stagingBuffer->GetMemoryView());

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -91,6 +86,7 @@ namespace UnitTest
     {
         // EditorActionRequestBus ...
         void AddActionViaBus(int id, QAction* action) override;
+        void AddActionViaBusCrc(AZ::Crc32 id, QAction* action) override;
         void RemoveActionViaBus(QAction* action) override;
         void EnableDefaultActions() override;
         void DisableDefaultActions() override;
@@ -138,7 +134,7 @@ namespace UnitTest
             if (!GetApplication())
             {
                 // Create & Start a new ToolsApplication if there's no existing one
-                m_app = AZStd::make_unique<ToolsTestApplication>("ToolsApplication");
+                m_app = CreateTestApplication();
                 m_app->Start(AzFramework::Application::Descriptor());
             }
 
@@ -216,6 +212,12 @@ namespace UnitTest
         TestEditorActions m_editorActions;
         ToolsApplicationMessageHandler m_messageHandler; // used to suppress trace messages in test output
 
+        // Override this if your test fixture needs to use a custom TestApplication
+        virtual AZStd::unique_ptr<ToolsTestApplication> CreateTestApplication()
+        {
+            return AZStd::make_unique<ToolsTestApplication>("ToolsApplication");
+        }
+
     private:
         AZStd::unique_ptr<ToolsTestApplication> m_app;
     };
@@ -233,6 +235,7 @@ namespace UnitTest
         bool PropertyDisplayInvalidated() const { return m_propertyDisplayInvalidated; }
 
         AZStd::vector<AZ::ComponentId> m_componentIds;
+        AzToolsFramework::EntityIdList m_entityIds;
 
     private:
         // PropertyEditorEntityChangeNotificationBus ...

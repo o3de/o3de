@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/TransformSerializer.h>
@@ -44,7 +39,7 @@ namespace JsonSerializationTests
         AZStd::shared_ptr<AZ::Transform> CreateFullySetInstance() override
         {
             return AZStd::make_shared<AZ::Transform>(
-                AZ::Vector3(1.0f, 2.0f, 3.0f), AZ::Quaternion(0.25f, 0.5f, 0.75f, 1.0f), AZ::Vector3(9.0f));
+                AZ::Vector3(1.0f, 2.0f, 3.0f), AZ::Quaternion(0.25f, 0.5f, 0.75f, 1.0f), 9.0f);
         }
 
         AZStd::string_view GetJsonForFullySetInstance() override
@@ -95,7 +90,7 @@ namespace JsonSerializationTests
         AZ::Transform expectedTransform(
             AZ::Vector3(2.25f, 3.5f, 4.75f),
             AZ::Quaternion(0.25f, 0.5f, 0.75f, 1.0f),
-            AZ::Vector3(5.5f));
+            5.5f);
 
         rapidjson::Document json;
         json.Parse(R"({ "Translation": [ 2.25, 3.5, 4.75 ], "Rotation": [ 0.25, 0.5, 0.75, 1.0 ], "Scale": 5.5 })");
@@ -112,7 +107,7 @@ namespace JsonSerializationTests
         AZ::Transform testTransform = AZ::Transform::CreateIdentity();
         AZ::Transform expectedTransform = 
             AZ::Transform::CreateFromQuaternion(AZ::Quaternion(0.25f, 0.5f, 0.75f, 1.0f));
-        expectedTransform.SetScale(AZ::Vector3(5.5f));
+        expectedTransform.SetUniformScale(5.5f);
 
         rapidjson::Document json;
         json.Parse(R"({ "Rotation": [ 0.25, 0.5, 0.75, 1.0 ], "Scale": 5.5 })");
@@ -128,7 +123,7 @@ namespace JsonSerializationTests
     {
         AZ::Transform testTransform = AZ::Transform::CreateIdentity();
         AZ::Transform expectedTransform = AZ::Transform::CreateTranslation(AZ::Vector3(2.25f, 3.5f, 4.75f));
-        expectedTransform.SetScale(AZ::Vector3(5.5f));
+        expectedTransform.SetUniformScale(5.5f);
 
         rapidjson::Document json;
         json.Parse(R"({ "Translation": [ 2.25, 3.5, 4.75 ], "Scale": 5.5 })");
@@ -189,7 +184,7 @@ namespace JsonSerializationTests
     TEST_F(JsonTransformSerializerTests, Load_FullySetTransform_ReturnsSuccessWithOnlyScale)
     {
         AZ::Transform testTransform = AZ::Transform::CreateIdentity();
-        AZ::Transform expectedTransform = AZ::Transform::CreateScale(AZ::Vector3(5.5f));
+        AZ::Transform expectedTransform = AZ::Transform::CreateUniformScale(5.5f);
 
         rapidjson::Document json;
         json.Parse(R"({ "Scale" : 5.5 })");

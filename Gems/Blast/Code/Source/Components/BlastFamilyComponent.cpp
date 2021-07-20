@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #include "StdAfx.h"
@@ -21,6 +16,7 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Physics/SystemBus.h>
+#include <AzFramework/Physics/MaterialBus.h>
 #include <AzFramework/Physics/Collision/CollisionEvents.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <Blast/BlastActor.h>
@@ -147,6 +143,7 @@ namespace Blast
     void BlastFamilyComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
         incompatible.push_back(AZ_CRC("BlastFamilyService"));
+        incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
     }
 
     void BlastFamilyComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -264,16 +261,33 @@ namespace Blast
         auto solverPtr = Nv::Blast::ExtStressSolver::create(
             const_cast<NvBlastFamily&>(*m_family->GetTkFamily()->getFamilyLL()), stressSolverSettings);
         m_solver = physx::unique_ptr<Nv::Blast::ExtStressSolver>(solverPtr);
-        Physics::MaterialFromAssetConfiguration material;
-        AZ::Interface<AzPhysics::SystemInterface>::Get()->GetDefaultMaterialLibrary()->GetDataForMaterialId(
-            m_physicsMaterialId, material);
-        m_solver->setAllNodesInfoFromLL(material.m_configuration.m_density);
+
+        AZStd::shared_ptr<Physics::Material> physicsMaterial;
+        Physics::PhysicsMaterialRequestBus::BroadcastResult(
+            physicsMaterial,
+            &Physics::PhysicsMaterialRequestBus::Events::GetMaterialById,
+            m_physicsMaterialId);
+        if (!physicsMaterial)
+        {
+            AZ_Warning("BlastFamilyComponent", false, "Material Id %s was not found, using default material instead.",
+                m_physicsMaterialId.GetUuid().ToString<AZStd::string>().c_str());
+
+            Physics::PhysicsMaterialRequestBus::BroadcastResult(
+                physicsMaterial,
+                &Physics::PhysicsMaterialRequestBus::Events::GetGenericDefaultMaterial);
+            AZ_Assert(physicsMaterial, "BlastFamilyComponent: Invalid default physics material");
+        }
+        m_solver->setAllNodesInfoFromLL(physicsMaterial->GetDensity());
 
         // Create damage and actor render managers
         m_damageManager = AZStd::make_unique<DamageManager>(blastMaterial, m_family->GetActorTracker());
-        m_actorRenderManager = AZStd::make_unique<ActorRenderManager>(
-            AZ::RPI::Scene::GetFeatureProcessorForEntity<AZ::Render::MeshFeatureProcessorInterface>(GetEntityId()),
-            m_meshDataComponent, GetEntityId(), m_blastAsset->GetPxAsset()->getChunkCount(), transform.GetScale());
+
+        if (m_meshDataComponent)
+        {
+            m_actorRenderManager = AZStd::make_unique<ActorRenderManager>(
+                AZ::RPI::Scene::GetFeatureProcessorForEntity<AZ::Render::MeshFeatureProcessorInterface>(GetEntityId()),
+                m_meshDataComponent, GetEntityId(), m_blastAsset->GetPxAsset()->getChunkCount(), AZ::Vector3(transform.GetUniformScale()));
+        }
 
         // Spawn the family
         m_family->Spawn(transform);
@@ -525,7 +539,11 @@ namespace Blast
 
     void BlastFamilyComponent::OnActorCreated([[maybe_unused]] const BlastFamily& family, const BlastActor& actor)
     {
-        m_actorRenderManager->OnActorCreated(actor);
+        if (m_actorRenderManager)
+        {
+            m_actorRenderManager->OnActorCreated(actor);
+        }
+
         m_solver->notifyActorCreated(*actor.GetTkActor().getActorLL());
         
         if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
@@ -561,7 +579,11 @@ namespace Blast
         }
 
         m_solver->notifyActorDestroyed(*actor.GetTkActor().getActorLL());
-        m_actorRenderManager->OnActorDestroyed(actor);
+
+        if (m_actorRenderManager)
+        {
+            m_actorRenderManager->OnActorDestroyed(actor);
+        }
     }
 
     // Update positions of entities with render meshes corresponding to their right dynamic bodies.

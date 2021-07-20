@@ -1,12 +1,8 @@
 #
-#   All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-#   its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-#   For complete copyright and license terms please see the LICENSE at the root of this
-#   distribution (the "License"). All use of this software is governed by the License,
-#   or, if provided, by the license below or the license accompanying this file. Do not
-#   remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 import json
 import os
@@ -169,118 +165,4 @@ def test_verify_ninja(tmpdir, from_override, version_str, expected_result):
 
     finally:
          subprocess.check_output = orig_check_output
-
-
-TEST_VALIDATE_VERSION_MIN = 19
-TEST_VALIDATE_VERSION_MAX = 21
-
-
-@pytest.mark.parametrize(
-    "test_input, expected", [
-        pytest.param('20', 20),
-        pytest.param('android-20', 20),
-        pytest.param('bad-21', "android-'XX'"),
-        pytest.param('10', "minimum"),
-        pytest.param('30', "maximum")
-    ]
-)
-def test_validate_android_platform_input(test_input, expected):
-    try:
-        result = android_support.validate_android_platform_input(input_android_platform=test_input,
-                                                                 platform_variable_type='test',
-                                                                 min_version=TEST_VALIDATE_VERSION_MIN,
-                                                                 max_version=TEST_VALIDATE_VERSION_MAX)
-        assert isinstance(expected, int)
-        assert result == expected
-    except Exception as e:
-        assert expected in str(e)
-
-
-def test_verify_android_sdk_success(tmpdir):
-
-    test_android_path = 'android_sdk'
-    sdk_version_number = 28
-    sdk_version = f'android-{sdk_version_number}'
-
-    tmpdir.ensure(f'{test_android_path}/platforms/{sdk_version}/package.xml')
-
-    tmpdir.ensure(f'{test_android_path}/build-tools/28.0.3/package.xml')
-    tmpdir.ensure(f'{test_android_path}/build-tools/29.0.3/package.xml')
-
-    input_sdk_path = tmpdir.join(test_android_path).realpath()
-    argument_name = '--android-sdk'
-
-    requested_build_tool_version = '29.0.3'
-
-    result_sdk_version, result_sdk_path, result_build_tool_version = android_support.verify_android_sdk(android_sdk_platform=sdk_version,
-                                                                                                        argument_name=argument_name,
-                                                                                                        override_android_sdk_path=input_sdk_path,
-                                                                                                        preferred_sdk_build_tools_ver=requested_build_tool_version)
-    assert result_sdk_version == sdk_version_number
-    assert result_sdk_path == input_sdk_path
-    assert result_build_tool_version == requested_build_tool_version
-
-    sdk_version_number_only = str(sdk_version_number)
-    result_sdk_version, result_sdk_path, result_build_tool_version = android_support.verify_android_sdk(android_sdk_platform=sdk_version_number_only,
-                                                                                                        argument_name=argument_name,
-                                                                                                        override_android_sdk_path=input_sdk_path)
-    assert result_sdk_version == sdk_version_number
-    assert result_sdk_path == input_sdk_path
-    assert result_build_tool_version == '28.0.3'
-
-    requested_build_tool_version = '30.0.3'
-    result_sdk_version, result_sdk_path, result_build_tool_version = android_support.verify_android_sdk(android_sdk_platform=sdk_version,
-                                                                                                        argument_name=argument_name,
-                                                                                                        override_android_sdk_path=input_sdk_path,
-                                                                                                        preferred_sdk_build_tools_ver=requested_build_tool_version)
-    assert result_sdk_version == sdk_version_number
-    assert result_sdk_path == input_sdk_path
-    assert result_build_tool_version == '28.0.3'
-
-
-@pytest.mark.parametrize(
-    "desired_ndk_version_number, available_ndk_revisions, pkg_revision, mappings, expect_error", [
-        pytest.param(21, [21, 22, 24], '15.2.4203891', None, False, id='preNdk19ExactMatch'),
-        pytest.param(23, [21, 22, 24], '15.2.4203891', None, False, id='preNdk19FallbackMatch'),
-        pytest.param(22, [21, 22, 24], '19.2.4203891', {'23': 21}, False, id='postNdk19ExactMatch'),
-        pytest.param(23, [21, 22, 24], '21.2.4203891', {'23': 21}, False, id='postNdk19MappingMatch'),
-        pytest.param(android_support.ANDROID_NDK_MIN_PLATFORM-1, [21, 22, 24], '15.2.4203891', None, True, id='preNdk19BelowMinVer'),
-        pytest.param(android_support.ANDROID_NDK_MAX_PLATFORM+1, [21, 22, 24], '15.2.4203891', None, True, id='preNdk19AboveMaxVer'),
-        pytest.param(25, [21, 22, 24], '19.2.4203891', {'23': 21}, True, id='postNdk19NoMatch')
-    ]
-)
-def test_verify_android_ndk_success(tmpdir, desired_ndk_version_number, available_ndk_revisions, pkg_revision, mappings, expect_error):
-
-    test_android_path = 'android_ndk'
-    for ndk_number in available_ndk_revisions:
-        tmpdir.ensure(f'{test_android_path}/platforms/android-{ndk_number}/arch-arm64/usr/lib/libc.so')
-
-    tmpdir.ensure(f'{test_android_path}/source.properties')
-    test_ndk_source_properties_file = tmpdir / test_android_path / 'source.properties'
-    test_ndk_source_properties_file.write_text(f'Pkg.Desc = Android NDK\nPkg.Revision = {pkg_revision}\n', encoding='ASCII')
-
-    if mappings:
-        platform_mapping = {
-            # min and max are arbitrary for now since we dont use it during evaluation, but if we do, parameterize it here as well
-            "min": 16,  #
-            "max": 29,
-            "aliases": {}
-        }
-        for key, value in mappings.items():
-            platform_mapping['aliases'][key] = value
-        tmpdir.ensure(f'{test_android_path}/meta/platforms.json')
-        platform_mapping_file = tmpdir / test_android_path / 'meta/platforms.json'
-        platform_mapping_file.write_text(json.dumps(platform_mapping), encoding='ASCII')
-
-    input_ndk_path = tmpdir.join(test_android_path).realpath()
-
-    try:
-        android_ndk_platform_number, android_ndk_path = android_support.verify_android_ndk(android_ndk_platform=str(desired_ndk_version_number),
-                                                                                           argument_name="--android-ndk",
-                                                                                           override_android_ndk_path=input_ndk_path)
-        assert not expect_error
-        assert android_ndk_platform_number == desired_ndk_version_number
-        assert android_ndk_path == input_ndk_path
-    except Exception:
-        assert expect_error
 

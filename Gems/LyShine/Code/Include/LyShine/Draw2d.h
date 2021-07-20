@@ -1,20 +1,16 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <LyShine/IDraw2d.h>
 #include <LyShine/ILyShine.h>
 #include <LyShine/Bus/UiTransformBus.h>
 
+#include <AzFramework/Font/FontInterface.h>
 #include <Atom/Bootstrap/BootstrapNotificationBus.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
 #include <Atom/RPI.Reflect/Image/Image.h>
@@ -256,9 +252,8 @@ protected: // types and constants
             const Draw2dShaderData& shaderData,
             AZ::RPI::ViewportContextPtr viewportContext) const override;
 
-        STextDrawContext    m_fontContext;
-        IFFont*             m_font;
-        AZ::Vector2         m_position;
+        AzFramework::TextDrawParameters m_drawParameters;
+        AzFramework::FontId m_fontId;
         std::string         m_string;
     };
 
@@ -288,7 +283,7 @@ protected: // member functions
     void RotatePointsAboutPivot(AZ::Vector2* points, int numPoints, AZ::Vector2 pivot, float angle) const;
 
     //! Helper function to render a text string
-    void DrawTextInternal(const char* textString, IFFont* font, unsigned int effectIndex,
+    void DrawTextInternal(const char* textString, AzFramework::FontId fontId, unsigned int effectIndex,
         AZ::Vector2 position, float pointSize, AZ::Color color, float rotation,
         HAlign horizontalAlignment, VAlign verticalAlignment, int baseState);
 
@@ -297,6 +292,9 @@ protected: // member functions
 
     //! Draw or defer a line
     void DrawOrDeferLine(const DeferredLine* line);
+
+    //! Draw or defer a text string
+    void DrawOrDeferTextString(const DeferredText* text);
 
     //! Draw or defer a rect outline
     void DrawOrDeferRectOutline(const DeferredRectOutline* outlineRect);
@@ -491,7 +489,7 @@ public: // member functions
     void SetImageBaseState(int state) { m_imageOptions.baseState = state; }
 
     //! Set the text font.
-    void SetTextFont(IFFont* font) { m_textOptions.font = font; }
+    void SetTextFont(AZStd::string_view fontName) { m_textOptions.fontName = fontName; }
 
     //! Set the text font effect index.
     void SetTextEffectIndex(unsigned int effectIndex) { m_textOptions.effectIndex = effectIndex; }

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "PlatformConfigurationUnitTests.h"
 #include "native/utilities/PlatformConfiguration.h"
 
@@ -64,7 +59,7 @@ void PlatformConfigurationTests::StartTest()
 
         PlatformConfiguration config;
         config.EnablePlatform({ "pc",{ "desktop", "host" } }, true);
-        config.EnablePlatform({ "es3",{ "mobile", "android" } }, true);
+        config.EnablePlatform({ "android",{ "mobile", "android" } }, true);
         config.EnablePlatform({ "fandago",{ "console" } }, false);
         AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms;
         config.PopulatePlatformsForScanFolder(platforms);
@@ -88,15 +83,15 @@ void PlatformConfigurationTests::StartTest()
 
         AssetRecognizer rec;
         AssetPlatformSpec specpc;
-        AssetPlatformSpec speces3;
+        AssetPlatformSpec specandroid;
         AssetPlatformSpec specfandago; 
         specpc.m_extraRCParams = ""; // blank must work
-        speces3.m_extraRCParams = "testextraparams";
+        specandroid.m_extraRCParams = "testextraparams";
 
         rec.m_name = "txt files";
         rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
         rec.m_platformSpecs.insert("pc", specpc);
-        rec.m_platformSpecs.insert("es3", speces3);
+        rec.m_platformSpecs.insert("android", specandroid);
         rec.m_platformSpecs.insert("fandago", specfandago); 
         config.AddRecognizer(rec);
 
@@ -111,7 +106,7 @@ void PlatformConfigurationTests::StartTest()
 
         UNIT_TEST_EXPECT_TRUE(config.GetEnabledPlatforms().size() == 2);
         UNIT_TEST_EXPECT_TRUE(config.GetEnabledPlatforms()[0].m_identifier == "pc");
-        UNIT_TEST_EXPECT_TRUE(config.GetEnabledPlatforms()[1].m_identifier == "es3");
+        UNIT_TEST_EXPECT_TRUE(config.GetEnabledPlatforms()[1].m_identifier == "android");
 
         UNIT_TEST_EXPECT_TRUE(config.GetScanFolderCount() == 11);
         UNIT_TEST_EXPECT_FALSE(config.GetScanFolderAt(0).IsRoot());

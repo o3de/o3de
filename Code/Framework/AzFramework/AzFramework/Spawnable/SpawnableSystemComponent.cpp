@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Settings/SettingsRegistry.h>
@@ -48,8 +43,21 @@ namespace AzFramework
 
     void SpawnableSystemComponent::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
     {
-        m_entitiesManager.ProcessQueue();
+        m_entitiesManager.ProcessQueue(
+            SpawnableEntitiesManager::CommandQueuePriority::High | SpawnableEntitiesManager::CommandQueuePriority::Regular);
         RootSpawnableNotificationBus::ExecuteQueuedEvents();
+    }
+
+    int SpawnableSystemComponent::GetTickOrder()
+    {
+        return AZ::ComponentTickBus::TICK_GAME;
+    }
+
+    void SpawnableSystemComponent::OnSystemTick()
+    {
+        // Handle only high priority spawning events such as those created from network. These need to happen even if the client
+        // doesn't have focus to avoid time-out issues for instance.
+        m_entitiesManager.ProcessQueue(SpawnableEntitiesManager::CommandQueuePriority::High);
     }
 
     void SpawnableSystemComponent::OnCatalogLoaded([[maybe_unused]] const char* catalogFile)
@@ -168,7 +176,8 @@ namespace AzFramework
             SpawnableEntitiesManager::CommandQueueStatus queueStatus;
             do
             {
-                queueStatus = m_entitiesManager.ProcessQueue();
+                queueStatus = m_entitiesManager.ProcessQueue(
+                    SpawnableEntitiesManager::CommandQueuePriority::High | SpawnableEntitiesManager::CommandQueuePriority::Regular);
             } while (queueStatus == SpawnableEntitiesManager::CommandQueueStatus::HasCommandsLeft);
         }
 

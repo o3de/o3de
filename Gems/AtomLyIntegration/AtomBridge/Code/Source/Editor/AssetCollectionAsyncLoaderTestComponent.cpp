@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "AssetCollectionAsyncLoaderTestComponent.h"
 
 #include <AzCore/RTTI/ReflectContext.h>
@@ -23,7 +18,6 @@
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
-#include <Atom/RPI.Reflect/Shader/ShaderResourceGroupAsset.h>
 
 namespace AZ
 {
@@ -162,10 +156,6 @@ namespace AZ
             {
                 return azrtti_typeid<RPI::StreamingImageAsset>();
             }
-            else if (extension == "azsrg")
-            {
-                return azrtti_typeid<RPI::ShaderResourceGroupAsset>();
-            }
 
             AZ_Error(AssetCollectionAsyncLoaderTestComponentName, false, "Do not know the asset type for file: %s", assetPath.c_str());
             return {};
@@ -269,12 +259,6 @@ namespace AZ
                 auto asset = m_assetCollectionAsyncLoader->GetAsset<RPI::StreamingImageAsset>(assetPath);
                 return (bool)asset && asset.GetId().IsValid() && asset.IsReady() && asset->GetTotalImageDataSize();
             }
-            else if (assetType == azrtti_typeid<RPI::ShaderResourceGroupAsset>())
-            {
-                auto asset = m_assetCollectionAsyncLoader->GetAsset<RPI::ShaderResourceGroupAsset>(assetPath);
-                return (bool)asset && asset.GetId().IsValid() && asset.IsReady() && !asset->GetName().IsEmpty();
-            }
-
 
             AZ_Error(AssetCollectionAsyncLoaderTestComponentName, false, "Can not handle asset type for assetPath: %s", assetPath.c_str());
             return false;

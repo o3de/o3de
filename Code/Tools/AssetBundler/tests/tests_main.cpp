@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/FileFunc/FileFunc.h>
@@ -40,14 +35,14 @@ namespace AssetBundler
 
     TEST_F(AssetBundlerBatchUtilsTest, SplitFilename_MacFile_OutputBaseNameAndPlatform)
     {
-        AZStd::string filePath = "assetInfoFile_osx_gl.xml";
+        AZStd::string filePath = "assetInfoFile_mac.xml";
         AZStd::string baseFilename;
         AZStd::string platformIdentifier;
 
         AzToolsFramework::SplitFilename(filePath, baseFilename, platformIdentifier);
 
         ASSERT_EQ(baseFilename, "assetInfoFile");
-        ASSERT_EQ(platformIdentifier, "osx_gl");
+        ASSERT_EQ(platformIdentifier, "mac");
     }
 
     TEST_F(AssetBundlerBatchUtilsTest, SplitFilename_PcFile_OutputBaseNameAndPlatform)
@@ -64,14 +59,14 @@ namespace AssetBundler
 
     TEST_F(AssetBundlerBatchUtilsTest, SplitFilename_MacFileWithUnderScoreInFileName_OutputBaseNameAndPlatform)
     {
-        AZStd::string filePath = "assetInfoFile_test_osx_gl.xml";
+        AZStd::string filePath = "assetInfoFile_test_mac.xml";
         AZStd::string baseFilename;
         AZStd::string platformIdentifier;
 
         AzToolsFramework::SplitFilename(filePath, baseFilename, platformIdentifier);
 
         ASSERT_EQ(baseFilename, "assetInfoFile_test");
-        ASSERT_EQ(platformIdentifier, "osx_gl");
+        ASSERT_EQ(platformIdentifier, "mac");
     }
 
     TEST_F(AssetBundlerBatchUtilsTest, SplitFilename_PcFileWithUnderScoreInFileName_OutputBaseNameAndPlatform)
@@ -97,7 +92,28 @@ namespace AssetBundler
     {
     public:
         void SetUp() override
-        {
+        {          
+            AZ::SettingsRegistryInterface* registry = nullptr;
+            if (!AZ::SettingsRegistry::Get())
+            {
+                AZ::SettingsRegistry::Register(&m_registry);
+                registry = &m_registry;
+            }
+            else
+            {
+                registry = AZ::SettingsRegistry::Get();
+            }
+            auto projectPathKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)
+                + "/project_path";
+            registry->Set(projectPathKey, "AutomatedTesting");
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
+
+            AZ::IO::FixedMaxPath engineRoot = AZ::Utils::GetEnginePath();
+            if (engineRoot.empty())
+            {
+                GTEST_FATAL_FAILURE_(AZStd::string::format("Unable to locate engine root.\n").c_str());
+            }
+
             m_data = AZStd::make_unique<StaticData>();
             m_data->m_application.reset(aznew AzToolsFramework::ToolsApplication());
             m_data->m_application.get()->Start(AzFramework::Application::Descriptor());
@@ -106,19 +122,6 @@ namespace AssetBundler
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
             // in the unit tests.
             AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
-
-            if (!AZ::SettingsRegistry::Get())
-            {
-                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_Bootstrap(m_registry);
-                AZ::SettingsRegistry::Register(&m_registry);
-            }
-
-            AZ::IO::FixedMaxPath engineRoot = AZ::Utils::GetEnginePath();
-            if (engineRoot.empty())
-            {
-                GTEST_FATAL_FAILURE_(AZStd::string::format("Unable to locate engine root.\n").c_str());
-            }
-
 
             m_data->m_testEngineRoot = (engineRoot / RelativeTestFolder).LexicallyNormal().String();
 
@@ -144,14 +147,24 @@ namespace AssetBundler
         }
         void TearDown() override
         {
-            AZ::IO::FileIOBase::SetInstance(nullptr);
-            delete m_data->m_localFileIO;
-            AZ::IO::FileIOBase::SetInstance(m_data->m_priorFileIO);
+            if (m_data)
+            {
+                AZ::IO::FileIOBase::SetInstance(nullptr);
+                delete m_data->m_localFileIO;
+                AZ::IO::FileIOBase::SetInstance(m_data->m_priorFileIO);
 
-            m_data->m_gemInfoList.set_capacity(0);
-            m_data->m_gemSeedFilePairList.set_capacity(0);
-            m_data->m_application.get()->Stop();
-            m_data->m_application.reset();
+                m_data->m_gemInfoList.set_capacity(0);
+                m_data->m_gemSeedFilePairList.set_capacity(0);
+                m_data->m_application.get()->Stop();
+                m_data->m_application.reset();
+            }
+
+            if(auto settingsRegistry = AZ::SettingsRegistry::Get();
+                settingsRegistry == &m_registry)
+            {
+                AZ::SettingsRegistry::Unregister(settingsRegistry);
+            }
+
         }
 
         void AddGemData(const char* engineRoot, const char* gemName, bool seedFileExists = true)

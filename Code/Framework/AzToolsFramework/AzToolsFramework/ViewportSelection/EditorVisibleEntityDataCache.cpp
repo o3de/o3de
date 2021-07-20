@@ -1,33 +1,26 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "EditorVisibleEntityDataCache.h"
 
 #include <AzCore/std/sort.h>
+#include <AzToolsFramework/Entity/EditorEntityModel.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <Entity/EditorEntityHelpers.h>
-#include <AzToolsFramework/Entity/EditorEntityModel.h>
 
 namespace AzToolsFramework
 {
-    /// Cached Entity data required by the selection.
+    //! Cached Entity data required by the selection.
     struct EntityData final
     {
         using ComponentEntityAccentType = Components::EditorSelectionAccentSystemComponent::ComponentEntityAccentType;
 
         EntityData() = default;
-        EntityData(
-            AZ::EntityId entityId, const AZ::Transform& worldFromLocal,
-            bool locked, bool visible, bool selected, bool iconHidden);
+        EntityData(AZ::EntityId entityId, const AZ::Transform& worldFromLocal, bool locked, bool visible, bool selected, bool iconHidden);
 
         AZ::Transform m_worldFromLocal;
         AZ::EntityId m_entityId;
@@ -38,7 +31,7 @@ namespace AzToolsFramework
         bool m_iconHidden = false;
     };
 
-    using EntityDatas = AZStd::vector<EntityData>; ///< Alias for vector of EntityDatas.
+    using EntityDatas = AZStd::vector<EntityData>; //!< Alias for vector of EntityDatas.
 
     // Predicate to sort EntityIds with EntityDatas interchangeably.
     struct EntityDataComparer
@@ -52,18 +45,27 @@ namespace AzToolsFramework
     class EditorVisibleEntityDataCache::EditorVisibleEntityDataCacheImpl
     {
     public:
-        EntityIdList m_visibleEntityIds; ///< The EntityIds that are visible this frame.
-        EntityIdList m_prevVisibleEntityIds; ///< The EntityIds that were visible the previous frame (unsorted).
-        EntityDatas m_visibleEntityDatas; ///< Cached EntityData required by EditorTransformComponentSelection.
+        EntityIdList m_visibleEntityIds; //!< The EntityIds that are visible this frame.
+        EntityIdList m_prevVisibleEntityIds; //!< The EntityIds that were visible the previous frame (unsorted).
+        EntityDatas m_visibleEntityDatas; //!< Cached EntityData required by EditorTransformComponentSelection.
     };
 
     // constructor for EntityData to support emplace_back in vector
     EntityData::EntityData(
-        const AZ::EntityId entityId, const AZ::Transform& worldFromLocal,
-        const bool locked, const bool visible, const bool selected, const bool iconHidden)
-        : m_worldFromLocal(worldFromLocal), m_entityId(entityId)
-        , m_locked(locked), m_visible(visible), m_selected(selected)
-        , m_iconHidden(iconHidden) {}
+        const AZ::EntityId entityId,
+        const AZ::Transform& worldFromLocal,
+        const bool locked,
+        const bool visible,
+        const bool selected,
+        const bool iconHidden)
+        : m_worldFromLocal(worldFromLocal)
+        , m_entityId(entityId)
+        , m_locked(locked)
+        , m_visible(visible)
+        , m_selected(selected)
+        , m_iconHidden(iconHidden)
+    {
+    }
 
     bool EntityDataComparer::operator()(const AZ::EntityId lhs, const EntityData& rhs) const
     {
@@ -98,20 +100,17 @@ namespace AzToolsFramework
     static EntityData EntityDataFromEntityId(const AZ::EntityId entityId)
     {
         bool visible = false;
-        EditorEntityInfoRequestBus::EventResult(
-            visible, entityId, &EditorEntityInfoRequestBus::Events::IsVisible);
+        EditorEntityInfoRequestBus::EventResult(visible, entityId, &EditorEntityInfoRequestBus::Events::IsVisible);
 
         bool locked = false;
-        EditorEntityInfoRequestBus::EventResult(
-            locked, entityId, &EditorEntityInfoRequestBus::Events::IsLocked);
+        EditorEntityInfoRequestBus::EventResult(locked, entityId, &EditorEntityInfoRequestBus::Events::IsLocked);
 
         bool iconHidden = false;
         EditorEntityIconComponentRequestBus::EventResult(
             iconHidden, entityId, &EditorEntityIconComponentRequests::IsEntityIconHiddenInViewport);
 
         AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
-        AZ::TransformBus::EventResult(
-            worldFromLocal, entityId, &AZ::TransformBus::Events::GetWorldTM);
+        AZ::TransformBus::EventResult(worldFromLocal, entityId, &AZ::TransformBus::Events::GetWorldTM);
 
         return { entityId, worldFromLocal, locked, visible, IsSelected(entityId), iconHidden };
     }
@@ -155,16 +154,14 @@ namespace AzToolsFramework
         AZStd::sort(m_impl->m_visibleEntityDatas.begin(), m_impl->m_visibleEntityDatas.end());
     }
 
-    void EditorVisibleEntityDataCache::CalculateVisibleEntityDatas(
-        const AzFramework::ViewportInfo& viewportInfo)
+    void EditorVisibleEntityDataCache::CalculateVisibleEntityDatas(const AzFramework::ViewportInfo& viewportInfo)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
         // request list of visible entities from authoritative system
         EntityIdList nextVisibleEntityIds;
         ViewportInteraction::MainEditorViewportInteractionRequestBus::Event(
-            viewportInfo.m_viewportId,
-            &ViewportInteraction::MainEditorViewportInteractionRequestBus::Events::FindVisibleEntities,
+            viewportInfo.m_viewportId, &ViewportInteraction::MainEditorViewportInteractionRequestBus::Events::FindVisibleEntities,
             nextVisibleEntityIds);
 
         // only bother resorting if we know the lists have changed
@@ -181,31 +178,26 @@ namespace AzToolsFramework
             // find entities that are visible this frame but weren't last frame
             AZStd::vector<AZ::EntityId> added;
             std::set_difference(
-                m_impl->m_visibleEntityIds.begin(), m_impl->m_visibleEntityIds.end(),
-                m_impl->m_visibleEntityDatas.begin(), m_impl->m_visibleEntityDatas.end(),
-                std::back_inserter(added), EntityDataComparer());
+                m_impl->m_visibleEntityIds.begin(), m_impl->m_visibleEntityIds.end(), m_impl->m_visibleEntityDatas.begin(),
+                m_impl->m_visibleEntityDatas.end(), std::back_inserter(added), EntityDataComparer());
 
             // find entities that are not visible this frame but were last frame
             AZStd::vector<EntityData> removed;
             std::set_difference(
-                m_impl->m_visibleEntityDatas.begin(), m_impl->m_visibleEntityDatas.end(),
-                m_impl->m_visibleEntityIds.begin(), m_impl->m_visibleEntityIds.end(),
-                std::back_inserter(removed), EntityDataComparer());
+                m_impl->m_visibleEntityDatas.begin(), m_impl->m_visibleEntityDatas.end(), m_impl->m_visibleEntityIds.begin(),
+                m_impl->m_visibleEntityIds.end(), std::back_inserter(removed), EntityDataComparer());
 
             // search for entityData in removed list, return true if it is found
             const auto removePredicate = [&removed](const EntityData& entityData)
             {
-                const auto removeIt = std::equal_range(
-                    removed.begin(), removed.end(), entityData);
+                const auto removeIt = std::equal_range(removed.begin(), removed.end(), entityData);
 
                 return removeIt.first != removeIt.second;
             };
 
             // erase-remove idiom - bubble entities to be removed to the end, then erase them in one go
             m_impl->m_visibleEntityDatas.erase(
-                AZStd::remove_if(
-                    m_impl->m_visibleEntityDatas.begin(),
-                    m_impl->m_visibleEntityDatas.end(), removePredicate),
+                AZStd::remove_if(m_impl->m_visibleEntityDatas.begin(), m_impl->m_visibleEntityDatas.end(), removePredicate),
                 m_impl->m_visibleEntityDatas.end());
 
             // for newly added entities, request their initial state when first cached
@@ -240,8 +232,7 @@ namespace AzToolsFramework
         return m_impl->m_visibleEntityDatas[index].m_entityId;
     }
 
-    EditorVisibleEntityDataCache::ComponentEntityAccentType EditorVisibleEntityDataCache::GetVisibleEntityAccent(
-        const size_t index) const
+    EditorVisibleEntityDataCache::ComponentEntityAccentType EditorVisibleEntityDataCache::GetVisibleEntityAccent(const size_t index) const
     {
         return m_impl->m_visibleEntityDatas[index].m_accent;
     }
@@ -273,8 +264,8 @@ namespace AzToolsFramework
 
     AZStd::optional<size_t> EditorVisibleEntityDataCache::GetVisibleEntityIndexFromId(const AZ::EntityId entityId) const
     {
-        const auto entityIdIt = std::equal_range(
-            m_impl->m_visibleEntityDatas.begin(), m_impl->m_visibleEntityDatas.end(), entityId, EntityDataComparer());
+        const auto entityIdIt =
+            std::equal_range(m_impl->m_visibleEntityDatas.begin(), m_impl->m_visibleEntityDatas.end(), entityId, EntityDataComparer());
 
         if (entityIdIt.first != entityIdIt.second)
         {
@@ -318,8 +309,7 @@ namespace AzToolsFramework
         }
     }
 
-    void EditorVisibleEntityDataCache::OnTransformChanged(
-        const AZ::Transform& /*local*/, const AZ::Transform& world)
+    void EditorVisibleEntityDataCache::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
@@ -367,8 +357,7 @@ namespace AzToolsFramework
         }
     }
 
-    void EditorVisibleEntityDataCache::OnEntityIconChanged(
-        const AZ::Data::AssetId& /*entityIconAssetId*/)
+    void EditorVisibleEntityDataCache::OnEntityIconChanged(const AZ::Data::AssetId& /*entityIconAssetId*/)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 

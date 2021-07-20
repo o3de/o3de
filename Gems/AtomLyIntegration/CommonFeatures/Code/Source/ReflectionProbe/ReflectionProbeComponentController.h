@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -19,11 +14,35 @@
 #include <Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/Model/Model.h>
 #include <LmbrCentral/Shape/BoxShapeComponentBus.h>
+#include <ReflectionProbe/ReflectionProbeComponentConstants.h>
 
 namespace AZ
 {
     namespace Render
     {
+        enum class BakedCubeMapQualityLevel : uint32_t
+        {
+            VeryLow,    // 64
+            Low,        // 128
+            Medium,     // 256
+            High,       // 512
+            VeryHigh,   // 1024
+
+            Count
+        };
+
+        static const char* BakedCubeMapFileSuffixes[] =
+        {
+            "_iblspecularcm64.dds",
+            "_iblspecularcm128.dds",
+            "_iblspecularcm256.dds",
+            "_iblspecularcm512.dds",
+            "_iblspecularcm1024.dds"
+        };
+
+        static_assert(AZ_ARRAY_SIZE(BakedCubeMapFileSuffixes) == aznumeric_cast<uint32_t>(BakedCubeMapQualityLevel::Count),
+            "BakedCubeMapFileSuffixes must have the same number of entries as BakedCubeMapQualityLevel");
+
         class ReflectionProbeComponentConfig final
             : public AZ::ComponentConfig
         {
@@ -32,17 +51,18 @@ namespace AZ
             AZ_CLASS_ALLOCATOR(ReflectionProbeComponentConfig, SystemAllocator, 0);
             static void Reflect(AZ::ReflectContext* context);
 
-            float m_outerHeight = 20.0f;
-            float m_outerLength = 20.0f;
-            float m_outerWidth = 20.0f;
-            float m_innerHeight = 20.0f;
-            float m_innerLength = 20.0f;
-            float m_innerWidth = 20.0f;
+            float m_outerHeight = DefaultReflectionProbeExtents;
+            float m_outerLength = DefaultReflectionProbeExtents;
+            float m_outerWidth = DefaultReflectionProbeExtents;
+            float m_innerHeight = DefaultReflectionProbeExtents;
+            float m_innerLength = DefaultReflectionProbeExtents;
+            float m_innerWidth = DefaultReflectionProbeExtents;
 
             bool m_useParallaxCorrection = true;
             bool m_showVisualization = true;
             bool m_useBakedCubemap = true;
 
+            BakedCubeMapQualityLevel m_bakedCubeMapQualityLevel = BakedCubeMapQualityLevel::Medium;
             AZStd::string m_bakedCubeMapRelativePath;
             Data::Asset<RPI::StreamingImageAsset> m_bakedCubeMapAsset;
             Data::Asset<RPI::StreamingImageAsset> m_authoredCubeMapAsset;
@@ -94,6 +114,7 @@ namespace AZ
 
             // Data::AssetBus overrides ...
             void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
+            void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
 
             // TransformNotificationBus overrides ...
             void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;

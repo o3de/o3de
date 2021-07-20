@@ -1,57 +1,23 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-# Cmake version 3.19 is the minimum version needed for all of Open 3D Engine's supported platforms
-cmake_minimum_required(VERSION 3.19)
-
-# CMP0111 introduced in 3.19 has a bug that produces the policy to warn every time there is an
-# INTERFACE IMPORTED library. We use this type of libraries for handling 3rdParty. The rest of
-# the documentation states that INTERFACE IMPORTED libraries do not require to set locations, but
-# the policy still warns about it. Issue: https://gitlab.kitware.com/cmake/cmake/-/issues/21470
-# The issue was fixed in 3.19.1 so we just disable the policy for 3.19
-if(CMAKE_VERSION VERSION_EQUAL 3.19)
-    cmake_policy(SET CMP0111 OLD)
-endif()
+# Cmake version 3.20 is the minimum version needed for all of Open 3D Engine's supported platforms
+cmake_minimum_required(VERSION 3.20)
 
 include(cmake/LySet.cmake)
 include(cmake/Version.cmake)
 include(cmake/OutputDirectory.cmake)
-
-# Set the engine_path and engine_json
-set(o3de_engine_path ${CMAKE_CURRENT_LIST_DIR})
-set(o3de_engine_json ${o3de_engine_path}/engine.json)
 
 if(NOT PROJECT_NAME)
     project(O3DE
         LANGUAGES C CXX
         VERSION ${LY_VERSION_STRING}
     )
-
-    # o3de manifest
-    include(cmake/o3de_manifest.cmake)
 endif()
-
-################################################################################
-# Resolve this engines name and restricted path
-################################################################################
-o3de_engine_name(${o3de_engine_json} o3de_engine_name)
-o3de_restricted_path(${o3de_engine_json} o3de_engine_restricted_path)
-message(STATUS "O3DE Engine Name: ${o3de_engine_name}")
-message(STATUS "O3DE Engine Path: ${o3de_engine_path}")
-if(o3de_engine_restricted_path)
-    message(STATUS "O3DE Engine Restricted Path: ${o3de_engine_restricted_path}")
-endif()
-
-# add the engines cmake folder to the CMAKE_MODULE_PATH
-list(APPEND CMAKE_MODULE_PATH "${o3de_engine_path}/cmake")
 
 ################################################################################
 # Initialize
@@ -60,6 +26,7 @@ include(cmake/GeneralSettings.cmake)
 include(cmake/FileUtil.cmake)
 include(cmake/PAL.cmake)
 include(cmake/PALTools.cmake)
+include(cmake/RuntimeDependencies.cmake)
 include(cmake/Install.cmake)
 include(cmake/Configurations.cmake) # Requires to be after PAL so we get platform variable definitions
 include(cmake/Dependencies.cmake)
@@ -67,50 +34,53 @@ include(cmake/Deployment.cmake)
 include(cmake/3rdParty.cmake)
 include(cmake/LYPython.cmake)
 include(cmake/LYWrappers.cmake)
+include(cmake/Gems.cmake)
 include(cmake/UnitTest.cmake)
 include(cmake/LYTestWrappers.cmake)
 include(cmake/Monolithic.cmake)
 include(cmake/SettingsRegistry.cmake)
 include(cmake/TestImpactFramework/LYTestImpactFramework.cmake)
 include(cmake/CMakeFiles.cmake)
+include(cmake/O3DEJson.cmake)
 
 ################################################################################
 # Subdirectory processing
 ################################################################################
 
+function(add_engine_json_external_subdirectories)
+    read_json_external_subdirs(external_subdis ${LY_ROOT_FOLDER}/engine.json)
+    foreach(external_subdir ${external_subdis})
+        file(REAL_PATH ${external_subdir} real_external_subdir BASE_DIRECTORY ${LY_ROOT_FOLDER})
+        list(APPEND engine_external_subdirs ${real_external_subdir})
+    endforeach()
+
+    set_property(GLOBAL APPEND PROPERTY LY_EXTERNAL_SUBDIRS ${engine_external_subdirs})
+endfunction()
+
 # Add the projects first so the Launcher can find them
 include(cmake/Projects.cmake)
 
 if(NOT INSTALLED_ENGINE)
+    
     # Add the rest of the targets
     add_subdirectory(Code)
+    add_subdirectory(scripts)
+
+    # SPEC-1417 will investigate and fix this
+    if(NOT PAL_PLATFORM_NAME STREQUAL "Mac")
+        add_subdirectory(Tools/LyTestTools/tests/)
+        add_subdirectory(Tools/RemoteConsole/ly_remote_console/tests/)
+    endif()
+
+    # Add external subdirectories listed in the engine.json. LY_EXTERNAL_SUBDIRS is a cache variable so the user can add extra
+    # external subdirectories
+    add_engine_json_external_subdirectories()
 else()
     ly_find_o3de_packages()
 endif()
 
-# Add external subdirectories listed in the manifest
-list(APPEND LY_EXTERNAL_SUBDIRS ${o3de_engine_external_subdirectories})
-
-set(enabled_platforms
-    ${PAL_PLATFORM_NAME}
-    ${LY_PAL_TOOLS_ENABLED})
-
-# Add any engine restricted platforms as external subdirs
-o3de_add_engine_restricted_platform_external_subdirs()
-
-if(NOT INSTALLED_ENGINE)
-    add_subdirectory(scripts)
-endif()
-
-# SPEC-1417 will investigate and fix this
-if(NOT PAL_PLATFORM_NAME STREQUAL "Mac")
-    add_subdirectory(Tools/LyTestTools/tests/)
-    add_subdirectory(Tools/RemoteConsole/ly_remote_console/tests/)
-endif()
-
-################################################################################
-# Post-processing
-################################################################################
+get_property(external_subdirs GLOBAL PROPERTY LY_EXTERNAL_SUBDIRS)
+list(APPEND LY_EXTERNAL_SUBDIRS ${external_subdirs})
 
 # Loop over the additional external subdirectories and invoke add_subdirectory on them
 foreach(external_directory ${LY_EXTERNAL_SUBDIRS})
@@ -127,28 +97,44 @@ foreach(external_directory ${LY_EXTERNAL_SUBDIRS})
     add_subdirectory(${external_directory} ${CMAKE_BINARY_DIR}/External/${directory_name}-${full_directory_hash})
 endforeach()
 
+################################################################################
+# Post-processing
+################################################################################
 # The following steps have to be done after all targets are registered:
-# 1. generate a settings registry .setreg file for all ly_add_project_dependencies() and ly_add_target_dependencies() calls
+
+# 1. Add any dependencies registered via ly_enable_gems
+ly_enable_gems_delayed()
+
+# 2. Defer generation of the StaticModules.inl file which is needed to create the AZ::Module derived class in monolithic
+#    builds until after all the targets are known and all the gems are enabled
+ly_delayed_generate_static_modules_inl()
+
+# 3. generate a settings registry .setreg file for all ly_add_project_dependencies() and ly_add_target_dependencies() calls
 #    to provide applications with the filenames of gem modules to load
 #    This must be done before ly_delayed_target_link_libraries() as that inserts BUILD_DEPENDENCIES as MANUALLY_ADDED_DEPENDENCIES
 #    if the build dependency is a MODULE_LIBRARY. That would cause a false load dependency to be generated
 ly_delayed_generate_settings_registry()
-# 2. link targets where the dependency was yet not declared, we need to have the declaration so we do different
+
+# 4. link targets where the dependency was yet not declared, we need to have the declaration so we do different
 #    linking logic depending on the type of target
 ly_delayed_target_link_libraries()
-# 3. generate a registry file for unit testing for platforms that support unit testing
+
+# 5. generate a registry file for unit testing for platforms that support unit testing
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_delayed_generate_unit_test_module_registry()
 endif()
-# 4. inject runtime dependencies to the targets. We need to do this after (1) since we are going to walk through
-#    the dependencies
-include(cmake/RuntimeDependencies.cmake)
-# 5. Perform test impact framework post steps once all of the targets have been enumerated
-ly_test_impact_post_step()
-# 6. Generate the O3DE find file and setup install locations for scripts, tools, assets etc., required by the engine
-if(NOT INSTALLED_ENGINE)
-    ly_setup_o3de_install()
 
-    # IMPORTANT: must be included last
+# 5. inject runtime dependencies to the targets. We need to do this after (1) since we are going to walk through
+#    the dependencies
+ly_delayed_generate_runtime_dependencies()
+
+# 6. Perform test impact framework post steps once all of the targets have been enumerated
+ly_test_impact_post_step()
+
+# 7. Generate the O3DE find file and setup install locations for scripts, tools, assets etc., required by the engine
+if(NOT INSTALLED_ENGINE)
+    # 8. Generate the O3DE find file and setup install locations for scripts, tools, assets etc., required by the engine
+    ly_setup_o3de_install()
+    # 9. CPack information (to be included after install)
     include(cmake/Packaging.cmake)
 endif()

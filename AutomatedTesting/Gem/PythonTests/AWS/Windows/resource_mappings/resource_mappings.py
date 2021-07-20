@@ -1,17 +1,16 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 import os
+from os.path import abspath
 import pytest
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 AWS_RESOURCE_MAPPINGS_KEY = 'AWSResourceMappings'
 AWS_RESOURCE_MAPPINGS_ACCOUNT_ID_KEY = 'AccountId'
@@ -39,6 +38,7 @@ class ResourceMappings:
         self._region = region
         self._feature_name = feature_name
         self._account_id = account_id
+        self._resource_mappings = {}
 
         assert os.path.exists(self._resource_mapping_file_path), \
             f'Invalid resource mapping file path {self._resource_mapping_file_path}'
@@ -56,9 +56,9 @@ class ResourceMappings:
             stacks = response.get('Stacks', [])
             assert len(stacks) == 1, f'{stack_name} is invalid.'
 
-            self.__write_resource_mappings(stacks[0].get('Outputs', []))
+            self._write_resource_mappings(stacks[0].get('Outputs', []))
 
-    def __write_resource_mappings(self, outputs, append_feature_name = True) -> None:
+    def _write_resource_mappings(self, outputs, append_feature_name = True) -> None:
         with open(self._resource_mapping_file_path) as file_content:
             resource_mappings = json.load(file_content)
 
@@ -79,6 +79,7 @@ class ResourceMappings:
             resource_mappings[AWS_RESOURCE_MAPPINGS_KEY][resource_key]['Name/ID'] = output.get('OutputValue',
                                                                                                'InvalidId')
 
+        self._resource_mappings = resource_mappings
         with open(self._resource_mapping_file_path, 'w') as file_content:
             json.dump(resource_mappings, file_content, indent=4)
 
@@ -103,6 +104,9 @@ class ResourceMappings:
         self._region = ''
         self._client = None
 
+    def get_resource_name_id(self, resource_key: str):
+        return self._resource_mappings[AWS_RESOURCE_MAPPINGS_KEY][resource_key]['Name/ID']
+
 
 @pytest.fixture(scope='function')
 def resource_mappings(
@@ -124,8 +128,10 @@ def resource_mappings(
     :return: ResourceMappings class object.
     """
 
-    path = f'{workspace.paths.engine_root()}\\{project}\\Config\\{resource_mappings_filename}'
-    resource_mappings_obj = ResourceMappings(path, aws_utils.assume_session().region_name, feature_name,
+    path = f'{workspace.paths.engine_root()}/{project}/Config/{resource_mappings_filename}'
+    logger.info(f'Resource mapping path : {path}')
+    logger.info(f'Resource mapping resolved path : {abspath(path)}')
+    resource_mappings_obj = ResourceMappings(abspath(path), aws_utils.assume_session().region_name, feature_name,
                                              aws_utils.assume_account_id(), workspace,
                                              aws_utils.client('cloudformation'))
 

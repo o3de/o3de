@@ -1,15 +1,10 @@
 
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -162,6 +157,34 @@ namespace ScriptCanvas
             virtual ~MetaData() = default;
 
             virtual void PostParseExecutionTreeBody(AbstractCodeModel& /*model*/, ExecutionTreePtr /*execution*/) {}
+        };
+
+        // for now, no return values supported
+        struct MultipleFunctionCallFromSingleSlotEntry
+        {
+            AZ_TYPE_INFO(MultipleFunctionCallFromSingleSlotEntry, "{360A23A3-C490-4047-B71E-64E290E441D3}");
+            AZ_CLASS_ALLOCATOR(MultipleFunctionCallFromSingleSlotEntry, AZ::SystemAllocator, 0);
+
+            bool isVariadic = false;
+            AZStd::string functionName;
+            LexicalScope lexicalScope;
+            size_t numArguments = 0; // stride in case isVariadic == true
+            size_t startingIndex = 0; // the index of the slot order
+        };
+
+        // for now, no return values supported
+        struct MultipleFunctionCallFromSingleSlotInfo
+        {
+            AZ_TYPE_INFO(MultipleFunctionCallFromSingleSlotInfo, "{DF51F08A-8B28-4851-9888-9AB7CC0B90D2}");
+            AZ_CLASS_ALLOCATOR(MultipleFunctionCallFromSingleSlotInfo, AZ::SystemAllocator, 0);
+
+            // this could likely be implemented, but needs care to duplicate input that the execution-slot created
+            // bool errorOnReusedSlot = false;
+
+            bool errorOnUnusedSlot = false;
+
+            // calls are executed in the order they arrive in the vector
+            AZStd::vector<MultipleFunctionCallFromSingleSlotEntry> functionCalls;
         };
 
         struct NodeableParse

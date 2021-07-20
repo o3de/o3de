@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Icon / Locked Status</title>
+    <g id="Icon-/-Locked-Status" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group-9">
+            <g id="Icons-/-Icon-Grid" transform="translate(17.000000, 15.000000)" fill="#FFFFFF">
+                <path d="M3,0 C4.03553391,-1.90224492e-16 4.875,0.839466094 4.875,1.875 L4.875,3.6 L6,3.6 L6,8 L0,8 L0,3.6 L1.125,3.6 L1.125,1.875 C1.125,0.839466094 1.96446609,1.90224492e-16 3,0 Z M3.375,5.2 L2.625,5.2 L2.625,6.4 L3.375,6.4 L3.375,5.2 Z M3,0.8 C2.37867966,0.8 1.875,1.30367966 1.875,1.925 L1.875,1.925 L1.875,3.6 L4.125,3.6 L4.125,1.925 C4.125,1.30367966 3.62132034,0.8 3,0.8 Z" id="Combined-Shape"></path>
+            </g>
+            <rect id="Rectangle" fill="#F9F9F9" opacity="0" x="0" y="0" width="24" height="24"></rect>
+        </g>
+    </g>
+</svg>

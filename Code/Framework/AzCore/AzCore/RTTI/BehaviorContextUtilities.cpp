@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/RTTI/BehaviorContextUtilities.h>
 
@@ -34,10 +29,17 @@ namespace BehaviorContextUtilitiesCPP
         using argument_type = const BehaviorParameter*;
         using result_type = size_t;
         result_type operator()(const argument_type& value) const 
-        { 
-            result_type result = AZStd::hash<Uuid>()(value->m_typeId);
-            AZStd::hash_combine(result, CleanTraits(value->m_traits));
-            return result;
+        {
+            if (value)
+            { 
+                result_type result = AZStd::hash<Uuid>()(value->m_typeId);
+                AZStd::hash_combine(result, CleanTraits(value->m_traits));
+                return result;
+            }
+            else
+            {
+                return 0;
+            }
         }
     };
 
@@ -45,7 +47,11 @@ namespace BehaviorContextUtilitiesCPP
     {
         bool operator()(const BehaviorParameter* left, const BehaviorParameter* right) const
         {
-            return left->m_typeId == right->m_typeId && CleanTraits(left->m_traits) == CleanTraits(right->m_traits);
+            return (left == nullptr && right == nullptr)
+                || (left != nullptr
+                    && right != nullptr
+                    && left->m_typeId == right->m_typeId
+                    && CleanTraits(left->m_traits) == CleanTraits(right->m_traits));
         }
     };
     
@@ -137,7 +143,7 @@ namespace AZ
         for (size_t argIndex = 0, argSentinel = overload.GetNumArguments(); argIndex < argSentinel; ++argIndex)
         {
             auto overloadedArgIter = variance.m_input.find(argIndex);
-            if (overloadedArgIter != variance.m_input.end())
+            if (overloadedArgIter != variance.m_input.end() && overloadedArgIter->second[overloadIndex])
             {
                 // if this doesn't work try the type name
                 overloadName += ReplaceCppArtifacts(overloadedArgIter->second[overloadIndex]->m_name);
@@ -185,14 +191,22 @@ namespace AZ
             {
                 auto argument = overloads[overloadIndex].first->GetArgument(0);
 
-                const bool isThisPointer
-                    = (argument->m_traits & AZ::BehaviorParameter::Traits::TR_THIS_PTR) != 0
-                    || AZ::FindAttribute(AZ::Script::Attributes::TreatAsMemberFunction, overloads[overloadIndex].first->m_attributes);
+                if (argument)
+                {
+                    const bool isThisPointer
+                        = (argument->m_traits & AZ::BehaviorParameter::Traits::TR_THIS_PTR) != 0
+                        || AZ::FindAttribute(AZ::Script::Attributes::TreatAsMemberFunction, overloads[overloadIndex].first->m_attributes);
 
-                oneArgIsThisPointer = oneArgIsThisPointer || isThisPointer;
+                    oneArgIsThisPointer = oneArgIsThisPointer || isThisPointer;
+                }
 
                 types.insert(argument);
                 stripedArgs.emplace_back(argument);
+            }
+
+            if (types.size() == overloads.size())
+            {
+                variance.m_unambiguousInput.insert(0);
             }
 
             if (types.size() > 1 && (onThis == VariantOnThis::Yes || !oneArgIsThisPointer))
@@ -210,9 +224,13 @@ namespace AZ
             for (size_t overloadIndex = 0, overloadSentinel = overloads.size(); overloadIndex < overloadSentinel; ++overloadIndex)
             {
                 auto argument = overloads[overloadIndex].first->GetArgument(argIndex);
-
                 types.insert(argument);
                 stripedArgs.emplace_back(argument);
+            }
+
+            if (types.size() == overloads.size())
+            {
+                variance.m_unambiguousInput.insert(0);
             }
 
             if (types.size() > 1)

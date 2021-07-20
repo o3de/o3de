@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Matrix4x4.h>
@@ -59,7 +54,7 @@ namespace UnitTest
 
     TEST(MATH_Matrix4x4, TestCreateFrom)
     {
-        float testFloats[] =
+        float thisTestFloats[] =
         {
              1.0f,  2.0f,  3.0f,  4.0f,
              5.0f,  6.0f,  7.0f,  8.0f,
@@ -67,20 +62,20 @@ namespace UnitTest
             13.0f, 14.0f, 15.0f, 16.0f
         };
         float testFloatMtx[16];
-        Matrix4x4 m1 = Matrix4x4::CreateFromRowMajorFloat16(testFloats);
+        Matrix4x4 m1 = Matrix4x4::CreateFromRowMajorFloat16(thisTestFloats);
         AZ_TEST_ASSERT(m1.GetRow(0) == Vector4(1.0f, 2.0f, 3.0f, 4.0f));
         AZ_TEST_ASSERT(m1.GetRow(1) == Vector4(5.0f, 6.0f, 7.0f, 8.0f));
         AZ_TEST_ASSERT(m1.GetRow(2) == Vector4(9.0f, 10.0f, 11.0f, 12.0f));
         AZ_TEST_ASSERT(m1.GetRow(3) == Vector4(13.0f, 14.0f, 15.0f, 16.0f));
         m1.StoreToRowMajorFloat16(testFloatMtx);
-        AZ_TEST_ASSERT(memcmp(testFloatMtx, testFloats, sizeof(testFloatMtx)) == 0);
-        m1 = Matrix4x4::CreateFromColumnMajorFloat16(testFloats);
+        AZ_TEST_ASSERT(memcmp(testFloatMtx, thisTestFloats, sizeof(testFloatMtx)) == 0);
+        m1 = Matrix4x4::CreateFromColumnMajorFloat16(thisTestFloats);
         AZ_TEST_ASSERT(m1.GetRow(0) == Vector4(1.0f, 5.0f, 9.0f, 13.0f));
         AZ_TEST_ASSERT(m1.GetRow(1) == Vector4(2.0f, 6.0f, 10.0f, 14.0f));
         AZ_TEST_ASSERT(m1.GetRow(2) == Vector4(3.0f, 7.0f, 11.0f, 15.0f));
         AZ_TEST_ASSERT(m1.GetRow(3) == Vector4(4.0f, 8.0f, 12.0f, 16.0f));
         m1.StoreToColumnMajorFloat16(testFloatMtx);
-        AZ_TEST_ASSERT(memcmp(testFloatMtx, testFloats, sizeof(testFloatMtx)) == 0);
+        AZ_TEST_ASSERT(memcmp(testFloatMtx, thisTestFloats, sizeof(testFloatMtx)) == 0);
     }
 
     TEST(MATH_Matrix4x4, TestCreateFromMatrix3x4)

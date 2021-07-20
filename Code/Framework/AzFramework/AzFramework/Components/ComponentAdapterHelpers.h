@@ -1,18 +1,14 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <AzCore/Component/EntityBus.h>
 
 namespace AzFramework
 {
@@ -27,18 +23,43 @@ namespace AzFramework
         template<typename T, typename = void>
         struct ComponentInitHelper
         {
-            static void Init(T& common)
+            static void Init([[maybe_unused]] T& controller)
             {
-                AZ_UNUSED(common);
             }
         };
 
         template<typename T>
         struct ComponentInitHelper<T, AZStd::void_t<decltype(AZStd::declval<T>().Init())>>
         {
-            static void Init(T& common)
+            static void Init(T& controller)
             {
-                common.Init();
+                controller.Init();
+            }
+        };
+
+        template<typename T, typename = void>
+        struct ComponentActivateHelper
+        {
+            static void Activate([[maybe_unused]] T& controller, [[maybe_unused]] const AZ::EntityComponentIdPair& entityComponentIdPair)
+            {
+            }
+        };
+
+        template<typename T>
+        struct ComponentActivateHelper<T, AZStd::void_t<decltype(AZStd::declval<T>().Activate(AZ::EntityId()))>>
+        {
+            static void Activate(T& controller, const AZ::EntityComponentIdPair& entityComponentIdPair)
+            {
+                controller.Activate(entityComponentIdPair.GetEntityId());
+            }
+        };
+
+        template<typename T>
+        struct ComponentActivateHelper<T, AZStd::void_t<decltype(AZStd::declval<T>().Activate(AZ::EntityComponentIdPair()))>>
+        {
+            static void Activate(T& controller, const AZ::EntityComponentIdPair& entityComponentIdPair)
+            {
+                controller.Activate(entityComponentIdPair);
             }
         };
 

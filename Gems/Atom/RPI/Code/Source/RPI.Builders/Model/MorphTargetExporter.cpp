@@ -1,22 +1,19 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Model/MorphTargetExporter.h>
 #include <Atom/RPI.Reflect/Model/MorphTargetDelta.h>
 #include <SceneAPI/SceneCore/Containers/Utilities/Filters.h>
 #include <SceneAPI/SceneCore/Containers/Utilities/SceneGraphUtilities.h>
+#include <SceneAPI/SceneCore/Utilities/SceneGraphSelector.h>
 #include <SceneAPI/SceneCore/Containers/Views/FilterIterator.h>
 #include <SceneAPI/SceneCore/Containers/Views/PairIterator.h>
 #include <SceneAPI/SceneCore/Containers/Views/SceneGraphDownwardsIterator.h>
+#include <SceneAPI/SceneCore/Containers/Views/SceneGraphChildIterator.h>
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzCore/Asset/AssetManagerBus.h>
@@ -27,60 +24,40 @@ namespace AZ::RPI
 
     AZStd::unordered_map<AZStd::string, MorphTargetExporter::SourceBlendShapeInfo> MorphTargetExporter::GetBlendShapeInfos(
         const Containers::Scene& scene,
-        const AZStd::optional<AZStd::string>& filterMeshName) const
+        const MeshData* meshData) const
     {
         const Containers::SceneGraph& sceneGraph = scene.GetGraph();
-        const auto contentStorage = sceneGraph.GetContentStorage();
-        const auto nameStorage = sceneGraph.GetNameStorage();
+
+        const auto foundBaseMeshIter = AZStd::find_if(sceneGraph.GetContentStorage().cbegin(), sceneGraph.GetContentStorage().cend(), [meshData](const auto& nodeData)
+        {
+            return nodeData.get() == meshData;
+        });
+        if (foundBaseMeshIter == sceneGraph.GetContentStorage().cend())
+        {
+            return {};
+        }
+
+        const auto baseMeshNodeIndex = sceneGraph.ConvertToNodeIndex(foundBaseMeshIter);
+
+        const auto childBlendShapeDatas = Containers::MakeDerivedFilterView<DataTypes::IBlendShapeData>(
+            Containers::Views::MakeSceneGraphChildView(sceneGraph, baseMeshNodeIndex, sceneGraph.GetContentStorage().cbegin(), true)
+        );
 
         AZStd::unordered_map<AZStd::string, SourceBlendShapeInfo> result;
-
-        const auto keyValueView = Containers::Views::MakePairView(nameStorage, contentStorage);
-        const auto filteredView = Containers::Views::MakeFilterView(keyValueView, Containers::DerivedTypeFilter<DataTypes::IBlendShapeData>());
-        for (const auto& [name, object] : filteredView)
+        for (auto it = childBlendShapeDatas.cbegin(); it != childBlendShapeDatas.cend(); ++it)
         {
-            const Containers::SceneGraph::NodeIndex sceneNodeIndex = sceneGraph.Find(name.GetPath());
+            const Containers::SceneGraph::NodeIndex blendShapeNodeIndex = sceneGraph.ConvertToNodeIndex(it.GetBaseIterator().GetBaseIterator().GetHierarchyIterator());
 
             AZStd::set<AZ::Crc32> types;
-            Events::GraphMetaInfoBus::Broadcast(&Events::GraphMetaInfo::GetVirtualTypes, types, scene, sceneNodeIndex);
-            if (types.find(Events::GraphMetaInfo::GetIgnoreVirtualType()) == types.end())
+            Events::GraphMetaInfoBus::Broadcast(&Events::GraphMetaInfo::GetVirtualTypes, types, scene, blendShapeNodeIndex);
+            if (!types.contains(Events::GraphMetaInfo::GetIgnoreVirtualType()))
             {
-                const char* sceneNodePath = name.GetPath();
-                const Containers::SceneGraph::NodeIndex nodeIndex = sceneGraph.Find(sceneNodePath);
-                if (nodeIndex.IsValid())
-                {
-                    const AZStd::string meshNodeName = SourceBlendShapeInfo::GetMeshNodeName(sceneGraph, nodeIndex);
-                    if (!filterMeshName.has_value() ||
-                        (filterMeshName.has_value() && filterMeshName.value() == meshNodeName))
-                    {
-                        const AZStd::string blendShapeName = sceneGraph.GetNodeName(nodeIndex).GetName();
-                        SourceBlendShapeInfo& blendShapeInfo = result[blendShapeName];
-                        blendShapeInfo.m_sceneNodeIndices.push_back(nodeIndex);
-                    }
-                }
-                else
-                {
-                    AZ_Warning(ModelAssetBuilderComponent::s_builderName, false, "Cannot retrieve scene graph index for blend shape node with path %s.", sceneNodePath);
-                }
+                const AZStd::string blendShapeName{sceneGraph.GetNodeName(blendShapeNodeIndex).GetName(), sceneGraph.GetNodeName(blendShapeNodeIndex).GetNameLength()};
+                result[blendShapeName].m_sceneNodeIndices.emplace_back(blendShapeNodeIndex);
             }
         }
 
         return result;
-    }
-
-    AZStd::string MorphTargetExporter::SourceBlendShapeInfo::GetMeshNodeName(const Containers::SceneGraph& sceneGraph,
-        const Containers::SceneGraph::NodeIndex& sceneNodeIndex)
-    {
-        const auto* blendShapeData =
-            azrtti_cast<const DataTypes::IBlendShapeData*>(sceneGraph.GetNodeContent(sceneNodeIndex).get());
-        AZ_Assert(blendShapeData, "Cannot get mesh node name from scene node. Node is expected to be a blend shape.");
-        if (blendShapeData)
-        {
-            Containers::SceneGraph::NodeIndex morphMeshParentIndex = sceneGraph.GetNodeParent(sceneNodeIndex);
-            return sceneGraph.GetNodeName(morphMeshParentIndex).GetName();
-        }
-
-        return {};
     }
 
     void MorphTargetExporter::ProduceMorphTargets(const Containers::Scene& scene,
@@ -92,9 +69,14 @@ namespace AZ::RPI
     {
         const Containers::SceneGraph& sceneGraph = scene.GetGraph();
 
+#if defined(AZ_ENABLE_TRACING)
+        const auto baseMeshIt = AZStd::find(sceneGraph.GetContentStorage().cbegin(), sceneGraph.GetContentStorage().cend(), sourceMesh.m_meshData);
+        const Containers::SceneGraph::NodeIndex baseMeshIndex = sceneGraph.ConvertToNodeIndex(baseMeshIt);
+        const AZStd::string_view baseMeshName{sceneGraph.GetNodeName(baseMeshIndex).GetName(), sceneGraph.GetNodeName(baseMeshIndex).GetNameLength()};
+#endif
+
         // Get the blend shapes for the given mesh
-        const AZStd::string_view meshName = sourceMesh.m_name.GetStringView();
-        AZStd::unordered_map<AZStd::string, SourceBlendShapeInfo> blendShapeInfos = GetBlendShapeInfos(scene, meshName);
+        AZStd::unordered_map<AZStd::string, SourceBlendShapeInfo> blendShapeInfos = GetBlendShapeInfos(scene, sourceMesh.m_meshData.get());
 
         for (const auto& iter : blendShapeInfos)
         {
@@ -109,12 +91,12 @@ namespace AZ::RPI
                 {
 #if defined(AZ_ENABLE_TRACING)
                     const Containers::SceneGraph::NodeIndex morphMeshParentIndex = sceneGraph.GetNodeParent(sceneNodeIndex);
-                    const char* meshNodeName = sceneGraph.GetNodeName(morphMeshParentIndex).GetName();
+                    const AZStd::string_view sourceMeshName{sceneGraph.GetNodeName(morphMeshParentIndex).GetName(), sceneGraph.GetNodeName(morphMeshParentIndex).GetNameLength()};
 #endif
 
-                    AZ_Assert(AZ::StringFunc::Equal(sourceMesh.m_name.GetCStr(), meshNodeName, /*bCaseSensitive=*/true),
-                        "Scene graph mesh node (%s) has a different name than the product mesh (%s).",
-                        meshNodeName, sourceMesh.m_name.GetCStr());
+                    AZ_Assert(AZ::StringFunc::Equal(baseMeshName, sourceMeshName, /*bCaseSensitive=*/true),
+                        "Scene graph mesh node (%.*s) has a different name than the product mesh (%.*s).",
+                        AZ_STRING_ARG(sourceMeshName), AZ_STRING_ARG(baseMeshName));
 
                     const DataTypes::MatrixType globalTransform = Utilities::BuildWorldTransform(sceneGraph, sceneNodeIndex);
                     BuildMorphTargetMesh(vertexOffset, sourceMesh, productMesh, metaAssetCreator, blendShapeName, blendShapeData, globalTransform, coordSysConverter, scene.GetSourceFilename());

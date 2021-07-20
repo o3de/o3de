@@ -1,0 +1,80 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <scenesrg.srgi>
+#include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
+
+#define TILE_DIM_X 16
+#define TILE_DIM_Y 16
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float4> m_inputColor;
+    RWTexture2D<float4> m_outputColor;
+
+    float m_strength; // Strength of the sharpening effect. Range from 0 to 1.
+}
+
+
+// Constrast Adaptive Sharpening, based on AMD FidelityFX CAS - https://gpuopen.com/fidelityfx-cas/
+
+// This shader sharpens the input based on the contrast of the local neighborhood
+// so that only areas that need sharpening are sharpened, while high constast areas
+// are mostly left alone.
+
+[numthreads(TILE_DIM_X, TILE_DIM_Y, 1)]
+void MainCS(
+    uint3 dispatchThreadID : SV_DispatchThreadID, 
+    uint3 groupID : SV_GroupID, 
+    uint groupIndex : SV_GroupIndex)
+{
+    uint2 pixelCoord = dispatchThreadID.xy;
+
+    // Fetch local neighborhood to determin sharpening weight.
+    //   a
+    // b c d
+    //   e
+
+    float3 sampleA = PassSrg::m_inputColor[pixelCoord + int2( 0, -1)].rgb;
+    float3 sampleB = PassSrg::m_inputColor[pixelCoord + int2(-1,  0)].rgb;
+    float3 sampleC = PassSrg::m_inputColor[pixelCoord + int2( 0,  0)].rgb;
+    float3 sampleD = PassSrg::m_inputColor[pixelCoord + int2( 1,  0)].rgb;
+    float3 sampleE = PassSrg::m_inputColor[pixelCoord + int2( 0,  1)].rgb;
+
+    float lumA = GetLuminance(sampleA);
+    float lumB = GetLuminance(sampleB);
+    float lumC = GetLuminance(sampleC);
+    float lumD = GetLuminance(sampleD);
+    float lumE = GetLuminance(sampleE);
+
+    // Get the min and max. Just use the green channel for luminance.
+    float minLum = min(min(lumA, lumB), min(lumC, min(lumD, lumE)));
+    float maxLum = max(max(lumA, lumB), max(lumC, max(lumD, lumE)));
+
+    float dMinLum = minLum; // Distance from 0 to minimum
+    float dMaxLum = 1.0 - maxLum; // Distance from 1 to the maximum
+
+    // baseSharpening is higher when local contrast is lower to avoid over-sharpening.
+    float baseSharpening = min(dMinLum, dMaxLum) / max(maxLum, 0.0001);
+    baseSharpening = sqrt(baseSharpening); // bias towards more sharpening
+
+    // Negative weights for sharpening effect, center pixel is always weighted 1.
+    float developerMaximum = lerp(-0.125, -0.2, PassSrg::m_strength);
+    float weight = baseSharpening * developerMaximum;
+    float totalWeight = weight * 4 + 1.0;
+
+    float3 output =
+    (
+        sampleA * weight +
+        sampleB * weight +
+        sampleC          +
+        sampleD * weight +
+        sampleE * weight
+    ) / totalWeight;
+
+    PassSrg::m_outputColor[pixelCoord] = float4(output, 1.0);
+}

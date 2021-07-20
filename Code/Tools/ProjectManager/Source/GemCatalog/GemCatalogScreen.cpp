@@ -1,23 +1,21 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <GemCatalog/GemCatalogScreen.h>
 #include <PythonBindingsInterface.h>
+#include <GemCatalog/GemListHeaderWidget.h>
+#include <GemCatalog/GemSortFilterProxyModel.h>
+#include <GemCatalog/GemRequirementDialog.h>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QPushButton>
 #include <QTimer>
-
-//#define USE_TESTGEMDATA
+#include <PythonBindingsInterface.h>
+#include <QMessageBox>
 
 namespace O3DE::ProjectManager
 {
@@ -25,143 +23,171 @@ namespace O3DE::ProjectManager
         : ScreenWidget(parent)
     {
         m_gemModel = new GemModel(this);
+        m_proxModel = new GemSortFilterProxyModel(m_gemModel, this);
 
         QVBoxLayout* vLayout = new QVBoxLayout();
         vLayout->setMargin(0);
+        vLayout->setSpacing(0);
         setLayout(vLayout);
 
+        m_headerWidget = new GemCatalogHeaderWidget(m_gemModel, m_proxModel);
+        vLayout->addWidget(m_headerWidget);
+
         QHBoxLayout* hLayout = new QHBoxLayout();
+        hLayout->setMargin(0);
         vLayout->addLayout(hLayout);
 
-        m_gemListView = new GemListView(m_gemModel, this);
+        m_gemListView = new GemListView(m_proxModel, m_proxModel->GetSelectionModel(), this);
         m_gemInspector = new GemInspector(m_gemModel, this);
-        m_gemInspector->setFixedWidth(320);
+        m_gemInspector->setFixedWidth(240);
 
-        // Start: Temporary gem test data
-#ifdef USE_TESTGEMDATA
-        QVector<GemInfo> testGemData = GenerateTestData();
-        for (const GemInfo& gemInfo : testGemData)
-        {
-            m_gemModel->AddGem(gemInfo);
-        }
-#else
-        // End: Temporary gem test data
-        auto result = PythonBindingsInterface::Get()->GetGems();
-        if (result.IsSuccess())
-        {
-            for (auto gemInfo : result.GetValue())
-            {
-                m_gemModel->AddGem(gemInfo);
-            }
-        }
-#endif
+        QWidget* filterWidget = new QWidget(this);
+        filterWidget->setFixedWidth(240);
+        m_filterWidgetLayout = new QVBoxLayout();
+        m_filterWidgetLayout->setMargin(0);
+        m_filterWidgetLayout->setSpacing(0);
+        filterWidget->setLayout(m_filterWidgetLayout);
 
-        hLayout->addWidget(m_gemListView);
+        GemListHeaderWidget* listHeaderWidget = new GemListHeaderWidget(m_proxModel);
+
+        QVBoxLayout* middleVLayout = new QVBoxLayout();
+        middleVLayout->setMargin(0);
+        middleVLayout->setSpacing(0);
+        middleVLayout->addWidget(listHeaderWidget);
+        middleVLayout->addWidget(m_gemListView);
+
+        hLayout->addWidget(filterWidget);
+        hLayout->addLayout(middleVLayout);
         hLayout->addWidget(m_gemInspector);
+    }
 
+    void GemCatalogScreen::ReinitForProject(const QString& projectPath, bool isNewProject)
+    {
+        m_gemModel->clear();
+        FillModel(projectPath, isNewProject);
+
+        if (m_filterWidget)
+        {
+            m_filterWidget->hide();
+            m_filterWidget->deleteLater();
+        }
+
+        m_proxModel->ResetFilters();
+        m_filterWidget = new GemFilterWidget(m_proxModel);
+        m_filterWidgetLayout->addWidget(m_filterWidget);
+
+        m_headerWidget->ReinitForProject();
+
+        connect(m_gemModel, &GemModel::dataChanged, m_filterWidget, &GemFilterWidget::ResetGemStatusFilter);
 
         // Select the first entry after everything got correctly sized
-        QTimer::singleShot(100, [=]{
+        QTimer::singleShot(200, [=]{
             QModelIndex firstModelIndex = m_gemListView->model()->index(0,0);
             m_gemListView->selectionModel()->select(firstModelIndex, QItemSelectionModel::ClearAndSelect);
             });
     }
 
-    QVector<GemInfo> GemCatalogScreen::GenerateTestData()
+    void GemCatalogScreen::FillModel(const QString& projectPath, bool isNewProject)
     {
-        QVector<GemInfo> result;
+        AZ::Outcome<QVector<GemInfo>, AZStd::string> allGemInfosResult;
+        if (isNewProject)
+        {
+            allGemInfosResult = PythonBindingsInterface::Get()->GetEngineGemInfos();
+        }
+        else
+        {
+            allGemInfosResult = PythonBindingsInterface::Get()->GetAllGemInfos(projectPath);
+        }
 
-        GemInfo gem("EMotion FX",
-            "O3DE Foundation",
-            "EMFX is a real-time character animation system. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-            (GemInfo::Android | GemInfo::iOS | GemInfo::macOS | GemInfo::Windows | GemInfo::Linux),
-            true);
-        gem.m_directoryLink = "C:/";
-        gem.m_documentationLink = "http://www.amazon.com";
-        gem.m_dependingGemUuids = QStringList({"EMotionFX", "Atom"});
-        gem.m_conflictingGemUuids = QStringList({"Vegetation", "Camera", "ScriptCanvas", "CloudCanvas", "Networking"});
-        gem.m_version = "v1.01";
-        gem.m_lastUpdatedDate = "24th April 2021";
-        gem.m_binarySizeInKB = 40;
-        gem.m_features = QStringList({"Animation", "Assets", "Physics"});
-        result.push_back(gem);
+        if (allGemInfosResult.IsSuccess())
+        {
+            // Add all available gems to the model.
+            const QVector<GemInfo> allGemInfos = allGemInfosResult.GetValue();
+            for (const GemInfo& gemInfo : allGemInfos)
+            {
+                m_gemModel->AddGem(gemInfo);
+            }
 
-        gem.m_name = "Atom";
-        gem.m_creator = "O3DE Seattle";
-        gem.m_summary = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
-        gem.m_platforms = (GemInfo::Android | GemInfo::Windows | GemInfo::Linux | GemInfo::macOS);
-        gem.m_isAdded = true;
-        gem.m_directoryLink = "C:/";
-        gem.m_documentationLink = "https://aws.amazon.com/gametech/";
-        gem.m_dependingGemUuids = QStringList({"EMotionFX", "Core", "AudioSystem", "Camera", "Particles"});
-        gem.m_conflictingGemUuids = QStringList({"CloudCanvas", "NovaNet"});
-        gem.m_version = "v2.31";
-        gem.m_lastUpdatedDate = "24th November 2020";
-        gem.m_features = QStringList({"Assets", "Rendering", "UI", "VR", "Debug", "Environment"});
-        gem.m_binarySizeInKB = 2087;
-        result.push_back(gem);
+            // Gather enabled gems for the given project.
+            auto enabledGemNamesResult = PythonBindingsInterface::Get()->GetEnabledGemNames(projectPath);
+            if (enabledGemNamesResult.IsSuccess())
+            {
+                const QVector<AZStd::string> enabledGemNames = enabledGemNamesResult.GetValue();
+                for (const AZStd::string& enabledGemName : enabledGemNames)
+                {
+                    const QModelIndex modelIndex = m_gemModel->FindIndexByNameString(enabledGemName.c_str());
+                    if (modelIndex.isValid())
+                    {
+                        GemModel::SetWasPreviouslyAdded(*m_gemModel, modelIndex, true);
+                        GemModel::SetIsAdded(*m_gemModel, modelIndex, true);
+                    }
+                    else
+                    {
+                        AZ_Warning("ProjectManager::GemCatalog", false,
+                            "Cannot find entry for gem with name '%s'. The CMake target name probably does not match the specified name in the gem.json.",
+                            enabledGemName.c_str());
+                    }
+                }
+            }
+            else
+            {
+                QMessageBox::critical(nullptr, tr("Operation failed"), QString("Cannot retrieve enabled gems for project %1.\n\nError:\n%2").arg(projectPath, enabledGemNamesResult.GetError().c_str()));
+            }
+        }
+        else
+        {
+            QMessageBox::critical(nullptr, tr("Operation failed"), QString("Cannot retrieve gems for %1.\n\nError:\n%2").arg(projectPath, allGemInfosResult.GetError().c_str()));
+        }
+    }
 
-        gem.m_name = "Physics";
-        gem.m_creator = "O3DE London";
-        gem.m_summary = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.";
-        gem.m_platforms = (GemInfo::Android | GemInfo::Linux | GemInfo::macOS);
-        gem.m_isAdded = true;
-        gem.m_directoryLink = "C:/";
-        gem.m_documentationLink = "https://aws.amazon.com/gametech/";
-        gem.m_dependingGemUuids = QStringList({"GraphCanvas", "ExpressionEvaluation", "UI Lib", "Multiplayer", "GameStateSamples"});
-        gem.m_conflictingGemUuids = QStringList({"Cloud Canvas", "EMotion FX", "Streaming", "MessagePopup", "Cloth", "Graph Canvas", "Twitch Integration"});
-        gem.m_version = "v1.5.102145";
-        gem.m_lastUpdatedDate = "1st January 2021";
-        gem.m_binarySizeInKB = 2000000;
-        gem.m_features = QStringList({"Physics", "Gameplay", "Debug", "Assets"});
-        result.push_back(gem);
+    bool GemCatalogScreen::EnableDisableGemsForProject(const QString& projectPath)
+    {
+        IPythonBindings* pythonBindings = PythonBindingsInterface::Get();
+        QVector<QModelIndex> toBeAdded = m_gemModel->GatherGemsToBeAdded();
+        QVector<QModelIndex> toBeRemoved = m_gemModel->GatherGemsToBeRemoved();
 
-        result.push_back(O3DE::ProjectManager::GemInfo("Certificate Manager",
-            "O3DE Irvine",
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-            GemInfo::Windows,
-            false));
+        if (m_gemModel->DoGemsToBeAddedHaveRequirements())
+        {
+            GemRequirementDialog* confirmRequirementsDialog = new GemRequirementDialog(m_gemModel, toBeAdded, this);
+            confirmRequirementsDialog->exec();
 
-        result.push_back(O3DE::ProjectManager::GemInfo("Cloud Gem Framework",
-            "O3DE Seattle",
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-            GemInfo::iOS | GemInfo::Linux,
-            false));
+            if (confirmRequirementsDialog->GetButtonResult() != QDialogButtonBox::ApplyRole)
+            {
+                return false;
+            }
+        }
 
-        result.push_back(O3DE::ProjectManager::GemInfo("Cloud Gem Core",
-            "O3DE Foundation",
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-            GemInfo::Android | GemInfo::Windows | GemInfo::Linux,
-            true));
+        for (const QModelIndex& modelIndex : toBeAdded)
+        {
+            const QString gemPath = GemModel::GetPath(modelIndex);
+            const AZ::Outcome<void, AZStd::string> result = pythonBindings->AddGemToProject(gemPath, projectPath);
+            if (!result.IsSuccess())
+            {
+                QMessageBox::critical(nullptr, "Operation failed",
+                    QString("Cannot add gem %1 to project.\n\nError:\n%2").arg(GemModel::GetName(modelIndex), result.GetError().c_str()));
 
-        result.push_back(O3DE::ProjectManager::GemInfo("Gestures",
-            "O3DE Foundation",
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-            GemInfo::Android | GemInfo::Windows | GemInfo::Linux,
-            false));
+                return false;
+            }
+        }
 
-        result.push_back(O3DE::ProjectManager::GemInfo("Effects System",
-            "O3DE Foundation",
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-            GemInfo::Android | GemInfo::Windows | GemInfo::Linux,
-            true));
+        for (const QModelIndex& modelIndex : toBeRemoved)
+        {
+            const QString gemPath = GemModel::GetPath(modelIndex);
+            const AZ::Outcome<void, AZStd::string> result = pythonBindings->RemoveGemFromProject(gemPath, projectPath);
+            if (!result.IsSuccess())
+            {
+                QMessageBox::critical(nullptr, "Operation failed",
+                    QString("Cannot remove gem %1 from project.\n\nError:\n%2").arg(GemModel::GetName(modelIndex), result.GetError().c_str()));
 
-        result.push_back(O3DE::ProjectManager::GemInfo("Microphone",
-            "O3DE Foundation",
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus euismod ligula vitae dui dictum, a sodales dolor luctus. Sed id elit dapibus, finibus neque sed, efficitur mi. Nam facilisis ligula at eleifend pellentesque. Praesent non ex consectetur, blandit tellus in, venenatis lacus. Duis nec neque in urna ullamcorper euismod id eu leo. Nam efficitur dolor sed odio vehicula venenatis. Suspendisse nec est non velit commodo cursus in sit amet dui. Ut bibendum nisl et libero hendrerit dapibus. Vestibulum ultrices ullamcorper urna, placerat porttitor est lobortis in. Interdum et malesuada fames ac ante ipsum primis in faucibus. Integer a magna ac tellus sollicitudin porttitor. Phasellus lobortis viverra justo id bibendum. Etiam ac pharetra risus. Nulla vitae justo nibh. Nulla viverra leo et molestie interdum. Duis sit amet bibendum nulla, sit amet vehicula augue.",
-            GemInfo::Android | GemInfo::Windows | GemInfo::Linux,
-            false));
+                return false;
+            }
+        }
 
-        return result;
+        return true;
     }
 
     ProjectManagerScreen GemCatalogScreen::GetScreenEnum()
     {
         return ProjectManagerScreen::GemCatalog;
-    }
-
-    QString GemCatalogScreen::GetNextButtonText()
-    {
-        return "Create Project";
     }
 } // namespace O3DE::ProjectManager

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <PrecompiledShaderBuilder.h>
 #include <AzCore/Asset/AssetManagerBus.h>
@@ -71,23 +66,6 @@ namespace AZ
             if (itPlatformIdentifier != precompiledShaderAsset.m_platformIdentifiers.end())
             {
                 AZStd::vector<AssetBuilderSDK::JobDependency> jobDependencyList;
-
-                // setup dependencies on the azsrg asset file names
-                for (const auto& srgFileName : precompiledShaderAsset.m_srgAssetFileNames)
-                {
-                    AZStd::string srgAssetPath = RPI::AssetUtils::ResolvePathReference(request.m_sourceFile.c_str(), srgFileName);
-
-                    AssetBuilderSDK::SourceFileDependency sourceDependency;
-                    sourceDependency.m_sourceFileDependencyPath = srgAssetPath;
-                    response.m_sourceFileDependencyList.push_back(sourceDependency);
-
-                    AssetBuilderSDK::JobDependency jobDependency;
-                    jobDependency.m_jobKey = "azsrg";
-                    jobDependency.m_platformIdentifier = platformInfo.m_identifier;
-                    jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
-                    jobDependency.m_sourceFile = sourceDependency;
-                    jobDependencyList.push_back(jobDependency);
-                }
 
                 // setup dependencies on the root azshadervariant asset file names
                 for (const auto& rootShaderVariantAsset : precompiledShaderAsset.m_rootShaderVariantAssets)
@@ -158,25 +136,6 @@ namespace AZ
 
         AssetBuilderSDK::JobProduct jobProduct;
 
-        // load Srg product assets
-        // these are the dependency Srg asset products that were processed prior to running this job
-        RPI::ShaderAssetCreator::ShaderResourceGroupAssets srgProductAssets;
-        for (const auto& srgAssetFileName : precompiledShaderAsset.m_srgAssetFileNames)
-        {
-            auto assetOutcome = RPI::AssetUtils::LoadAsset<RPI::ShaderResourceGroupAsset>(request.m_fullPath, srgAssetFileName, 0);
-            if (!assetOutcome)
-            {
-                AZ_Error(PrecompiledShaderBuilderName, false, "Failed to retrieve Srg asset for file [%s]", srgAssetFileName.c_str());
-                return;
-            }
-            srgProductAssets.push_back(assetOutcome.GetValue());
-
-            AssetBuilderSDK::ProductDependency productDependency;
-            productDependency.m_dependencyId = assetOutcome.GetValue().GetId();
-            productDependency.m_flags = AZ::Data::ProductDependencyInfo::CreateFlags(AZ::Data::AssetLoadBehavior::PreLoad);
-            jobProduct.m_dependencies.push_back(productDependency);
-        }
-
         // load the variant product assets
         // these are the dependency root variant asset products that were processed prior to running this job
         RPI::ShaderAssetCreator::ShaderRootVariantAssets rootVariantProductAssets;
@@ -202,8 +161,7 @@ namespace AZ
         // Note that the Srg and Variant assets do not have embedded asset references and are processed with the RC Copy functionality
         RPI::ShaderAssetCreator shaderAssetCreator;
         shaderAssetCreator.Clone(Uuid::CreateRandom(),
-            shaderAsset,
-            srgProductAssets,
+            *shaderAsset,
             rootVariantProductAssets);
 
         Data::Asset<RPI::ShaderAsset> outputShaderAsset;

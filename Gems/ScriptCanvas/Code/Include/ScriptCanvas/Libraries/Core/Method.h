@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -132,6 +127,8 @@ namespace ScriptCanvas
 
                 const Slot* GetIfBranchSlot(bool branch) const;
 
+                AZ_INLINE const AZStd::string& GetLookupName() const { return m_lookupName; }
+
                 AZ_INLINE AZStd::recursive_mutex& GetMutex() { return m_mutex; }
 
                 ConstSlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* executionChildSlot) const override;
@@ -159,6 +156,8 @@ namespace ScriptCanvas
                 virtual void OnInitializeOutputPre(MethodOutputConfig&) {}
 
                 bool SanityCheckBranchOnResultMethod(const AZ::BehaviorMethod& branchOnResultMethod) const;
+
+                AZ_INLINE void SetClassNamePretty(AZStd::string_view classNamePretty) { m_classNamePretty = classNamePretty; }
 
                 void SetMethodUnchecked(const AZ::BehaviorMethod* method, const AZ::BehaviorClass* behaviorClass);
 

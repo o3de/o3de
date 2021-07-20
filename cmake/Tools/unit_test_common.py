@@ -1,12 +1,8 @@
 #
-#   All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-#   its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-#   For complete copyright and license terms please see the LICENSE at the root of this
-#   distribution (the "License"). All use of this software is governed by the License,
-#   or, if provided, by the license below or the license accompanying this file. Do not
-#   remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 import configparser
 import hashlib
@@ -46,60 +42,6 @@ def test_determine_engine_root(tmpdir, engine_json_content, expected_success):
         assert os.path.normcase(result) == os.path.normcase(expected_path)
     else:
         assert result is None
-
-
-TEST_BOOTSTRAP_CONTENT_1 = """
-project_path = Game1
-foo = bar
-key1 = value1
-key2 = value2
-assets = pc
---No Assets
-"""
-
-TEST_BOOTSTRAP_CONTENT_2 = """
-project_path = Game2
-  foo = bar
-#-------------------------
-  key1 = value1
-key2 = value2
-assets = pc
---No Assets
-"""
-
-
-@pytest.mark.parametrize(
-    "contents, input_keys, expected_result_map", [
-        pytest.param(TEST_BOOTSTRAP_CONTENT_1, ['project_path', 'foo', 'assets'], {'project_path': 'Game1',
-                                                                                      'foo': 'bar',
-                                                                                      'assets': 'pc'}, id="TestFullMatch"),
-        pytest.param(TEST_BOOTSTRAP_CONTENT_2, ['project_path', 'foo', 'barnone'], {'project_path': 'Game2',
-                                                                                       'foo': 'bar'}, id="TestPartialMatch"),
-        pytest.param(TEST_BOOTSTRAP_CONTENT_2, ['project_pathnone', 'foonone', 'barnone'], {}, id="TestNoMatch")
-    ]
-)
-def test_get_bootstrap_values_success(tmpdir, contents, input_keys, expected_result_map):
-    
-    test_dev_root = 'dev'
-    tmpdir.ensure('{}/bootstrap.cfg'.format(test_dev_root))
-    bootstrap_file = tmpdir.join('{}/bootstrap.cfg'.format(test_dev_root))
-    bootstrap_file.write(contents)
-
-    bootstrap_file_path = str(tmpdir.join(test_dev_root).realpath())
-    
-    result = common.get_bootstrap_values(bootstrap_file_path, input_keys)
-    
-    assert expected_result_map == result
-
-
-def test_get_bootstrap_values_fail():
-    try:
-        bad_file = 'x:\\foo\\bar\\file\\'
-        common.get_bootstrap_values(bad_file, ['input_keys'])
-    except common.LmbrCmdError as err:
-        assert 'Missing' in str(err)
-    else:
-        assert False, "Excepted LayoutToolError (missing file)"
 
 
 TEST_AP_CONFIG_1 = """
@@ -245,7 +187,6 @@ def test_verify_game_project_and_dev_root_success(tmpdir):
     game_name = 'MyFoo'
     game_folder = 'myfoo'
     game_project_json = TEST_GAME_PROJECT_JSON_FORMAT.format(project_name=game_name)
-    tmpdir.ensure(f'{dev_root}/bootstrap.cfg')
     tmpdir.ensure(f'{dev_root}/{game_folder}/project.json')
     project_json_path = tmpdir / dev_root / game_folder / 'project.json'
     project_json_path.write_text(game_project_json, encoding='ascii')
@@ -283,72 +224,6 @@ asset_deploy_type={test_asset_deploy_type}
     assert result.projects == test_projects
     assert result.asset_deploy_mode == test_asset_deploy_mode
     assert result.asset_deploy_type == test_asset_deploy_type
-
-
-def test_transform_bootstrap_project_path(tmpdir):
-
-    tmpdir.ensure('bootstrap.cfg')
-
-    test_bootstrap_content = """
--- Blah Blah
--- Blah Blah
-
-project_path=OldProject
-
--- remote_filesystem - enable Virtual File System (VFS)
--- This feature allows a remote instance of the game to run off assets
--- on the asset processor computers cache instead of deploying them the remote device
--- By default it is off and can be overridden for any platform
-remote_filesystem=0
-"""
-    test_src_bootstrap = tmpdir / 'bootstrap.cfg'
-    test_src_bootstrap.write_text(test_bootstrap_content, encoding='ascii')
-
-    test_dst_bootstrap = tmpdir / 'bootstrap.transformed.cfg'
-    test_game_name = 'FooBar'
-
-    common.transform_bootstrap_for_project(game_name=test_game_name,
-                                        src_bootstrap=str(test_src_bootstrap),
-                                        dst_bootstrap=str(test_dst_bootstrap))
-
-    transformed_text = test_dst_bootstrap.read_text('ascii')
-
-    search_gamename = re.search(r"project_path\s*=\s*(.*)", transformed_text)
-    assert search_gamename
-    assert search_gamename.group(1)
-    assert search_gamename.group(1) == test_game_name
-
-
-def test_transform_bootstrap_project_path_missing(tmpdir):
-
-    tmpdir.ensure('bootstrap.cfg')
-
-    test_bootstrap_content = """
--- Blah Blah
--- Blah Blah
-
--- remote_filesystem - enable Virtual File System (VFS)
--- This feature allows a remote instance of the game to run off assets
--- on the asset processor computers cache instead of deploying them the remote device
--- By default it is off and can be overridden for any platform
-remote_filesystem=0
-"""
-    test_src_bootstrap = tmpdir / 'bootstrap.cfg'
-    test_src_bootstrap.write_text(test_bootstrap_content, encoding='ascii')
-
-    test_dst_bootstrap = tmpdir / 'bootstrap.transformed.cfg'
-    test_game_name = 'FooBar'
-
-    common.transform_bootstrap_for_project(game_name=test_game_name,
-                                        src_bootstrap=str(test_src_bootstrap),
-                                        dst_bootstrap=str(test_dst_bootstrap))
-
-    transformed_text = test_dst_bootstrap.read_text('ascii')
-
-    search_gamename = re.search(r"project_path\s*=\s*(.*)", transformed_text)
-    assert search_gamename
-    assert search_gamename.group(1)
-    assert search_gamename.group(1) == test_game_name
 
 
 def test_cmake_dependency_success(tmpdir):

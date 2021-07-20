@@ -1,12 +1,7 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 import azlmbr.bus as bus
@@ -74,15 +69,23 @@ def add_component(componentName, entityId):
     typeIdsList = editor.EditorComponentAPIBus(bus.Broadcast, 'FindComponentTypeIdsByEntityType', [componentName],
                                                entity.EntityType().Game)
     typeNamesList = editor.EditorComponentAPIBus(bus.Broadcast, 'FindComponentTypeNames', typeIdsList)
+
+    # If the type name comes back as empty, then it means componentName is invalid
+    if len(typeNamesList) != 1 or not typeNamesList[0]:
+        print('Unable to find component TypeId for {}'.format(componentName))
+        return None
+
     componentOutcome = editor.EditorComponentAPIBus(bus.Broadcast, 'AddComponentsOfType', entityId, typeIdsList)
+    if not componentOutcome.IsSuccess():
+        print('Failed to add {} component to entity'.format(typeNamesList[0]))
+        return None
+
     isActive = editor.EditorComponentAPIBus(bus.Broadcast, 'IsComponentEnabled', componentOutcome.GetValue()[0])
     hasComponent = editor.EditorComponentAPIBus(bus.Broadcast, 'HasComponentOfType', entityId, typeIdsList[0])
-    if componentOutcome.IsSuccess() and isActive:
+    if isActive:
         print('{} component was added to entity'.format(typeNamesList[0]))
-    elif componentOutcome.IsSuccess() and not isActive:
+    else:
         print('{} component was added to entity, but the component is disabled'.format(typeNamesList[0]))
-    elif not componentOutcome.IsSuccess():
-        print('Failed to add {} component to entity'.format(typeNamesList[0]))
     if hasComponent:
         print('Entity has a {} component'.format(typeNamesList[0]))
     return componentOutcome.GetValue()[0]
@@ -218,7 +221,8 @@ class Entity:
 
     def add_component(self, component):
         new_component = add_component(component, self.id)
-        self.components.append(new_component)
+        if new_component:
+            self.components.append(new_component)
 
     def add_component_of_type(self, componentTypeId):
         new_component = add_component_of_type(componentTypeId, self.id)

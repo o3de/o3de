@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "AzToolsFramework_precompiled.h"
 
@@ -24,8 +19,6 @@
 
 namespace AzToolsFramework::ViewportUi::Internal
 {
-    // margin for the Viewport UI Overlay in pixels
-    const static int ViewportUiOverlayMargin = 5;
     const static int HighlightBorderSize = 5;
     const static int TopHighlightBorderSize = 25;
     const static char* HighlightBorderColor = "#44B2F8";
@@ -97,6 +90,22 @@ namespace AzToolsFramework::ViewportUi::Internal
         if (auto viewportUiCluster = qobject_cast<ViewportUiCluster*>(GetViewportUiElement(clusterId).get()))
         {
             viewportUiCluster->RegisterButton(button);
+        }
+    }
+
+    void ViewportUiDisplay::SetClusterButtonLocked(const ViewportUiElementId clusterId, const ButtonId buttonId, const bool isLocked)
+    {
+        if (auto viewportUiCluster = qobject_cast<ViewportUiCluster*>(GetViewportUiElement(clusterId).get()))
+        {
+            viewportUiCluster->SetButtonLocked(buttonId, isLocked);
+        }
+    }
+
+    void ViewportUiDisplay::SetClusterButtonTooltip(const ViewportUiElementId clusterId, const ButtonId buttonId, const AZStd::string& tooltip)
+    {
+        if (auto viewportUiCluster = qobject_cast<ViewportUiCluster*>(GetViewportUiElement(clusterId).get()))
+        {
+            viewportUiCluster->SetButtonTooltip(buttonId, tooltip);
         }
     }
 
@@ -265,7 +274,7 @@ namespace AzToolsFramework::ViewportUi::Internal
     void ViewportUiDisplay::HideViewportUiElement(ViewportUiElementId elementId)
     {
         if (ViewportUiElementInfo element = GetViewportUiElementInfo(elementId);
-            element.m_widget && UiDisplayEnabled())
+            element.m_widget)
         {
             element.m_widget->setVisible(false);
         }
@@ -371,7 +380,6 @@ namespace AzToolsFramework::ViewportUi::Internal
         m_fullScreenLayout.setSpacing(0);
         m_fullScreenLayout.setContentsMargins(0, 0, 0, 0);
         m_fullScreenLayout.addLayout(&m_uiOverlayLayout, 0, 0, 1, 1);
-        m_uiOverlayLayout.setMargin(ViewportUiOverlayMargin);
 
         // format the label which will appear on top of the highlight border
         AZStd::string styleSheet = AZStd::string::format(

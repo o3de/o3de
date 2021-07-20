@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <PhysX_precompiled.h>
 
@@ -16,8 +11,10 @@
 #include <PhysX/MathConversion.h>
 #include <PhysX/PhysXLocks.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 #include <AzFramework/Physics/RigidBodyBus.h>
+#include <AzFramework/Physics/PhysicsScene.h>
 
 #include <PxPhysicsAPI.h>
 
@@ -33,15 +30,17 @@ namespace PhysX
         }
     }
 
-    BallJointComponent::BallJointComponent(const GenericJointConfiguration& config
-        , const GenericJointLimitsConfiguration& swingLimit)
-            : JointComponent(config, swingLimit)
+    BallJointComponent::BallJointComponent(
+        const JointComponentConfiguration& configuration, 
+        const JointGenericProperties& genericProperties,
+        const JointLimitProperties& limitProperties)
+        : JointComponent(configuration, genericProperties, limitProperties)
     {
     }
 
     void BallJointComponent::InitNativeJoint()
     {
-        if (m_joint)
+        if (m_jointHandle != AzPhysics::InvalidJointHandle)
         {
             return;
         }
@@ -52,50 +51,24 @@ namespace PhysX
         {
             return;
         }
-        PHYSX_SCENE_READ_LOCK(leadFollowerInfo.m_followerActor->getScene());
-        m_joint = AZStd::make_shared<BallJoint>(physx::PxSphericalJointCreate(
-            PxGetPhysics(),
-            leadFollowerInfo.m_leadActor,
-            leadFollowerInfo.m_leadLocal,
-            leadFollowerInfo.m_followerActor,
-            leadFollowerInfo.m_followerLocal),
-            leadFollowerInfo.m_leadBody,
-            leadFollowerInfo.m_followerBody);
 
-        InitSwingLimits();
-    }
+        BallJointConfiguration configuration;
+        configuration.m_parentLocalPosition = leadFollowerInfo.m_leadLocal.GetTranslation();
+        configuration.m_parentLocalRotation = leadFollowerInfo.m_leadLocal.GetRotation();
+        configuration.m_childLocalPosition = leadFollowerInfo.m_followerLocal.GetTranslation();
+        configuration.m_childLocalRotation = leadFollowerInfo.m_followerLocal.GetRotation();
 
-    void BallJointComponent::InitSwingLimits()
-    {
-        if (!m_joint)
+        configuration.m_genericProperties = m_genericProperties;
+        configuration.m_limitProperties = m_limits;
+
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
-            return;
+            m_jointHandle = sceneInterface->AddJoint(
+                leadFollowerInfo.m_followerBody->m_sceneOwner,
+                &configuration,  
+                leadFollowerInfo.m_leadBody->m_bodyHandle, 
+                leadFollowerInfo.m_followerBody->m_bodyHandle);
+            m_jointSceneOwner = leadFollowerInfo.m_followerBody->m_sceneOwner;
         }
-
-        physx::PxSphericalJoint* ballJointNative = static_cast<physx::PxSphericalJoint*>(m_joint->GetNativePointer());
-        if (!ballJointNative)
-        {
-            return;
-        }
-
-        if (!m_limits.m_isLimited)
-        {
-            ballJointNative->setSphericalJointFlag(physx::PxSphericalJointFlag::eLIMIT_ENABLED, false);
-            return;
-        }
-
-        // Hard limit uses a tolerance value (distance to limit at which limit becomes active).
-        // Soft limit allows angle to exceed limit but springs back with configurable spring stiffness and damping.
-        physx::PxJointLimitCone swingLimit(AZ::DegToRad(m_limits.m_limitFirst)
-            , AZ::DegToRad(m_limits.m_limitSecond)
-            , m_limits.m_tolerance);
-        if (m_limits.m_isSoftLimit)
-        {
-            swingLimit.stiffness = m_limits.m_stiffness;
-            swingLimit.damping = m_limits.m_damping;
-        }
-
-        ballJointNative->setLimitCone(swingLimit);
-        ballJointNative->setSphericalJointFlag(physx::PxSphericalJointFlag::eLIMIT_ENABLED, true);
     }
 } // namespace PhysX

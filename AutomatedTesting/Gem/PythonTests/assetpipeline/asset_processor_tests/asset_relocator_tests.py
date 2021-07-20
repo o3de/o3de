@@ -1,12 +1,7 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 
 General Asset Relocator Tests
 """
@@ -85,6 +80,18 @@ class TestsAssetRelocator_WindowsAndMac(object):
     def test_WindowsMacPlatforms_RelocatorMoveFileWithConfirm_MoveSuccess(self, request, workspace, asset_processor,
                                                                           ap_setup_fixture, testId, readonly, confirm,
                                                                           success):
+        """
+        Tests whether tests with Move File Confirm are successful
+
+        Test Steps:
+        1. Create temporary testing environment
+        2. Set move location
+        3. Determine if confirm flag is set
+        4. Attempt to move the files
+        5. If confirm flag set:
+           * Validate Move was successful
+           * Else: Validate move was not successful
+        """
         env = ap_setup_fixture
         copied_asset = ''
 
@@ -141,6 +148,11 @@ class TestsAssetRelocator_WindowsAndMac(object):
         User should be warned that LeaveEmptyFolders needs to be used with the move or delete command
 
         :return: None
+
+        Test Steps:
+        1. Create temporary testing environment
+        2. Attempt to move with --LeaveEmptyFolders set
+        3. Verify user is given a message that command requires to be used with --move or --delete
         """
         env = ap_setup_fixture
         expected_message = "Command --leaveEmptyFolders must be used with command --move or --delete"
@@ -162,6 +174,11 @@ class TestsAssetRelocator_WindowsAndMac(object):
         Asset with UUID/AssetId reference in non-standard format is
         successfully scanned and relocated to the MoveOutput folder.
         This test uses a pre-corrupted .slice file.
+
+        Test Steps:
+        1. Create temporary testing environment with a corrupted slice
+        2. Attempt to move the corrupted slice
+        3. Verify that corrupted slice was moved successfully
         """
 
         env = ap_setup_fixture
@@ -194,6 +211,11 @@ class TestsAssetRelocator_WindowsAndMac(object):
     def test_WindowsMacPlatforms_UpdateReferences_MoveCommandMessage(self, ap_setup_fixture, asset_processor):
         """
         UpdateReferences without move or delete
+
+        Test Steps:
+        1. Create temporary testing environment
+        2. Attempt to move with UpdateReferences but without move or delete flags
+        3. Verify that message is returned to the user that additional flags are required
         """
         env = ap_setup_fixture
         expected_message = "Command --updateReferences must be used with command --move"
@@ -215,6 +237,11 @@ class TestsAssetRelocator_WindowsAndMac(object):
         """
         When running the relocator command --AllowBrokenDependencies without the move or delete flags, the user should
         be warned that the flags are necessary for the functionality to be used
+
+        Test Steps:
+        1. Create temporary testing environment
+        2. Attempt to move with AllowBrokenDependencies without the move or delete flag
+        3. Verify that message is returned to the user that additional flags are required
         """
 
         env = ap_setup_fixture
@@ -302,10 +329,19 @@ class TestsAssetRelocator_WindowsAndMac(object):
         project
     ):
         """
+        Dynamic data test  for deleting a file with Asset Relocator:
+
         C21968355 Delete a file with confirm
         C21968356 Delete a file without confirm
         C21968359 Delete a file that is marked as ReadOnly
         C21968360 Delete a file that is not marked as ReadOnly
+
+        Test Steps:
+        1. Create temporary testing environment
+        2. Set the read-only status of the file based on the test case
+        3. Run asset relocator with --delete and the confirm status based on the test case
+        4. Assert file existence or nonexistence based on the test case
+        5. Validate the relocation report based on expected and unexpected messages
         """
         env = ap_setup_fixture
         test_file = "testFile.txt"
@@ -430,6 +466,15 @@ class TestsAssetRelocator_WindowsAndMac(object):
         Test the LeaveEmptyFolders flag in various configurations
 
         :returns: None
+
+        Test Steps:
+        1. Create temporary testing environment
+        2. Build the various move/delete commands here based on test data
+        3. Run the move command with the various triggers based on test data
+        4. Verify the original assets folder still exists based on test data
+        5. Verify the files successfully moved to new location based on test data
+        6. Verify that the files were removed from original location based on test data
+        7. Verify the files have not been deleted or moved from original location based on test data
         """
         # # Start test setup # #
         env = ap_setup_fixture
@@ -517,6 +562,12 @@ class TestsAssetRelocator_WindowsAndMac(object):
         """
         The test will attempt to move test assets that are not tracked under P4 source control using the EnableSCM flag
         Because the files are not tracked by source control, the relocation should fail
+
+        Test Steps:
+        1. Create temporary testing environment
+        2. Set ReadOnly or Not-ReadOnly for the test files based on test data
+        3. Generate and run the enableSCM command
+        4. Verify the move failed and expected messages are present
         """
         # Move the test assets into the project folder
         env = ap_setup_fixture
@@ -1037,6 +1088,13 @@ class TestsAssetRelocator_WindowsAndMac(object):
         C21968370 AllowBrokenDependencies with move and confirm
         C21968371 AllowBrokenDependencies with move and without confirm
         C21968375 AllowBrokenDependencies with delete
+
+        Test Steps:
+        1. Create temporary testing environment
+        2. Run Asset Processor to Process Assets
+        3. Build primary AP Batch parameter value and destination paths
+        4. Validate resulting file paths in source and output directories
+        5. Validate the log based on expected and unexpected messages
         """
         env = ap_setup_fixture
         all_test_asset_rel_paths = [
@@ -1254,6 +1312,18 @@ class TestsAssetRelocator_WindowsAndMac(object):
     @pytest.mark.parametrize("test", tests)
     def test_WindowsAndMac_MoveMetadataFiles_PathExistenceAndMessage(self, workspace, request, ap_setup_fixture,
                                                                      asset_processor, test):
+        """
+        Tests whether moving metadata files can be moved
+
+        Test Steps:
+        1. Create temporary testing environment
+        2. Determine if using wildcards on paths or not
+        3. Determine if excludeMetaDataFiles is set or not
+        4. Build primary AP Batch parameter value and destination paths
+        5. Build and run the AP Batch command with parameters
+        6. Validate resulting file paths in source and output directories
+        7. Validate the log based on expected and unexpected messages
+        """
         env = ap_setup_fixture
 
         def teardown():
@@ -1342,7 +1412,7 @@ class TestsAssetRelocator_WindowsAndMac(object):
 
 @dataclass
 class MoveTest:
-    description: str  # test case title directly copied from Testrail
+    description: str  # test case title
     asset_folder: str  # which folder in ./assets will be used for this test
     encoded_command: str  # the command to execute
     encoded_output_dir: str  # the destination directory to validate
@@ -1350,7 +1420,7 @@ class MoveTest:
     name_change_map: dict = None
     files_that_stay: List[str] = field(default_factory=lambda: [])
     output_messages: List[str] = field(default_factory=lambda: [])
-    step: str = None  # the step of the test from Testrail
+    step: str = None  # the step of the test from test repository
     prefix_commands: List[str] = field(default_factory=lambda: ["AssetProcessorBatch", "--zeroAnalysisMode"])
     suffix_commands: List[str] = field(default_factory=lambda: ["--confirm"])
     env: dict = field(init=False, default=None)  # inject the ap_setup_fixture at runtime
@@ -3718,7 +3788,18 @@ class TestsAssetProcessorMove_WindowsAndMac:
     # -k C19462747
 
     @pytest.mark.parametrize("test", move_a_file_tests + move_a_folder_tests)
-    def test_WindowsMacPlatforms_MoveCommand(self, asset_processor, ap_setup_fixture, test: MoveTest, project):
+    def test_WindowsMacPlatforms_MoveCommand_CommandResult(self, asset_processor, ap_setup_fixture, test: MoveTest, project):
+        """
+
+        Test Steps:
+        1. Create temporary testing environment based on test data
+        2. Validate that temporary testing environment was created successfully
+        3. Execute the move command based upon the test data
+        4. Validate that files are where they're expected according to the test data
+        5. Validate unexpected files are not found according to the test data
+        6. Validate output messages according to the test data
+        7. Validate move status according to the test data
+        """
 
         source_folder, _ = asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], test.asset_folder)
         test.map_env(ap_setup_fixture, source_folder)

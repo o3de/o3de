@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
@@ -32,32 +27,29 @@ namespace AZ
 
             void ReleaseResourcesStep::Start()
             {
-                m_context->GetData()->m_defaultMaterialAsset.Release();
-                m_context->GetData()->m_defaultModelAsset.Release();
-                m_context->GetData()->m_materialAsset.Release();
-                m_context->GetData()->m_modelAsset.Release();
+                auto data = m_context->GetData();
+                
+                data->m_defaultMaterialAsset.Release();
+                data->m_defaultModelAsset.Release();
+                data->m_materialAsset.Release();
+                data->m_modelAsset.Release();
+                data->m_lightingPresetAsset.Release();
 
-                if (m_context->GetData()->m_modelEntity)
+                if (data->m_modelEntity)
                 {
-                    AzFramework::EntityContextRequestBus::Event(m_context->GetData()->m_entityContext->GetContextId(),
-                        &AzFramework::EntityContextRequestBus::Events::DestroyEntity, m_context->GetData()->m_modelEntity);
-                    m_context->GetData()->m_modelEntity = nullptr;
+                    AzFramework::EntityContextRequestBus::Event(data->m_entityContext->GetContextId(),
+                        &AzFramework::EntityContextRequestBus::Events::DestroyEntity, data->m_modelEntity);
+                    data->m_modelEntity = nullptr;
                 }
 
-                m_context->GetData()->m_frameworkScene->UnsetSubsystem<RPI::Scene>();
-
-                m_context->GetData()->m_scene->Deactivate();
-                m_context->GetData()->m_scene->RemoveRenderPipeline(m_context->GetData()->m_renderPipeline->GetId());
-                RPI::RPISystemInterface::Get()->UnregisterScene(m_context->GetData()->m_scene);
-
-                auto sceneSystem = AzFramework::SceneSystemInterface::Get();
-                AZ_Assert(sceneSystem, "Thumbnail system failed to get scene system implementation.");
-                [[maybe_unused]] bool sceneRemovedSuccessfully = sceneSystem->RemoveScene(m_context->GetData()->m_sceneName);
-                AZ_Assert(
-                    sceneRemovedSuccessfully, "Thumbnail system was unable to remove scene '%s' from the scene system.",
-                    m_context->GetData()->m_sceneName.c_str());
-                m_context->GetData()->m_scene = nullptr;
-                m_context->GetData()->m_renderPipeline = nullptr;
+                data->m_scene->Deactivate();
+                data->m_scene->RemoveRenderPipeline(data->m_renderPipeline->GetId());
+                RPI::RPISystemInterface::Get()->UnregisterScene(data->m_scene);
+                data->m_frameworkScene->UnsetSubsystem(data->m_scene);
+                data->m_frameworkScene->UnsetSubsystem(data->m_entityContext.get());
+                data->m_scene = nullptr;
+                data->m_frameworkScene = nullptr;
+                data->m_renderPipeline = nullptr;
             }
         } // namespace Thumbnails
     } // namespace LyIntegration

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates, or
-* a third party where indicated.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <AzCore/Math/Crc.h>
@@ -51,8 +46,10 @@ namespace AzPhysics
 
     using SceneIndex = AZ::s8;
     using SimulatedBodyIndex = AZ::s32;
+    using JointIndex = AZ::s32;
     static_assert(std::is_signed<SceneIndex>::value
-        && std::is_signed<SimulatedBodyIndex>::value, "SceneIndex and SimulatedBodyIndex must be signed integers.");
+        && std::is_signed<SimulatedBodyIndex>::value
+        && std::is_signed<JointIndex>::value, "SceneIndex, SimulatedBodyIndex and JointIndex must be signed integers.");
     
 
     //! A handle to a Scene within the physics simulation.
@@ -69,11 +66,26 @@ namespace AzPhysics
     static constexpr SimulatedBodyHandle InvalidSimulatedBodyHandle = { AZ::Crc32(), -1 };
     using SimulatedBodyHandleList = AZStd::vector<SimulatedBodyHandle>;
 
+    //! A handle to a Joint within a physics scene.
+    //! A JointHandle is a tuple of a Crc of the scene's name and the index in the Joint list.
+    using JointHandle = AZStd::tuple<AZ::Crc32, JointIndex>;
+    static constexpr JointHandle InvalidJointHandle = { AZ::Crc32(), -1 };
+
     //! Helper used for pairing the ShapeConfiguration and ColliderConfiguration together which is used when creating a Simulated Body.
     using ShapeColliderPair = AZStd::pair<
         AZStd::shared_ptr<Physics::ColliderConfiguration>,
         AZStd::shared_ptr<Physics::ShapeConfiguration>>;
     using ShapeColliderPairList = AZStd::vector<ShapeColliderPair>;
+
+    //! Joint types are used to request for AZ::TypeId with the JointHelpersInterface::GetSupportedJointTypeId.
+    //! If the Physics backend supports this joint type JointHelpersInterface::GetSupportedJointTypeId will return a AZ::TypeId.
+    enum class JointType
+    {
+        D6Joint,
+        FixedJoint,
+        BallJoint,
+        HingeJoint
+    };
 
     //! Flags used to specifying which properties of a body to compute.
     enum class MassComputeFlags : AZ::u8

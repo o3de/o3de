@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Serialization/Json/MapSerializer.h>
@@ -33,6 +28,11 @@ namespace JsonSerializationTests
         AZStd::shared_ptr<Map> CreateDefaultInstance() override
         {
             return AZStd::make_shared<Map>();
+        }
+
+        AZStd::string_view GetJsonForSingleArrayDefaultInstance() override
+        {
+            return R"({ "{}": {} })";
         }
 
         void ConfigureFeatures(JsonSerializerConformityTestDescriptorFeatures& features) override
@@ -60,6 +60,13 @@ namespace JsonSerializationTests
     {
     public:
         using Map = T<int, double>;
+
+        AZStd::shared_ptr<Map> CreateSingleArrayDefaultInstance() override
+        {
+            auto instance = AZStd::make_shared<Map>();
+            instance->emplace(AZStd::make_pair(0, 0.0));
+            return instance;
+        }
 
         AZStd::shared_ptr<Map> CreateFullySetInstance() override
         {
@@ -99,6 +106,13 @@ namespace JsonSerializationTests
     {
     public:
         using Map = T<AZStd::string, double>;
+
+        AZStd::shared_ptr<Map> CreateSingleArrayDefaultInstance() override
+        {
+            auto instance = AZStd::make_shared<Map>();
+            instance->emplace(AZStd::make_pair(AZStd::string(), 0.0));
+            return instance;
+        }
 
         AZStd::shared_ptr<Map> CreateFullySetInstance() override
         {
@@ -162,6 +176,14 @@ namespace JsonSerializationTests
             instance->emplace(AZStd::make_pair(aznew SimpleClass(342, 342.0), aznew SimpleClass(388, 388.0)));
             return instance;
         }
+
+        AZStd::shared_ptr<Map> CreateSingleArrayDefaultInstance() override
+        {
+            auto instance = AZStd::shared_ptr<Map>(new Map{}, &Delete);
+            instance->emplace(AZStd::make_pair(aznew SimpleClass(), aznew SimpleClass()));
+            return instance;
+        }
+
 
         AZStd::string_view GetJsonForPartialDefaultInstance() override
         {
@@ -237,13 +259,23 @@ namespace JsonSerializationTests
                 return false;
             }
 
-            auto compare = [](typename Map::const_reference lhs, typename Map::const_reference rhs) -> bool
+            // Naive compare to avoid having to split up the test because comparing for ordered and unordered maps would need to be
+            // different.
+            for (auto&& [key, value] : lhs)
             {
-                return
-                    lhs.first->Equals(*rhs.first, true) &&
-                    lhs.second->Equals(*rhs.second, true);
-            };
-            return AZStd::equal(lhs.begin(), lhs.end(), rhs.begin(), compare);
+                for (auto&& [keyCompare, valueCompare] : rhs)
+                {
+                    if (key->Equals(*keyCompare, true))
+                    {
+                        if (!value->Equals(*valueCompare, true))
+                        {
+                            return false;
+                        }
+                        break;
+                    }
+                }
+            }
+            return true;
         }
     };
 
@@ -390,6 +422,29 @@ namespace JsonSerializationTests
  namespace JsonSerializationTests
  {
     TEST_F(JsonMapSerializerTests, Load_DefaultForStringKey_LoadedBackWithDefaults)
+    {
+        using namespace AZ::JsonSerializationResult;
+
+        m_jsonDocument->Parse(R"(
+        {
+            "{}": {}
+        })");
+        ASSERT_FALSE(m_jsonDocument->HasParseError());
+
+        TestStringMap values;
+        ResultCode result = m_unorderedMapSerializer.Load(&values, azrtti_typeid(&values), *m_jsonDocument, *m_jsonDeserializationContext);
+
+        EXPECT_EQ(Processing::Completed, result.GetProcessing());
+        EXPECT_EQ(Outcomes::PartialDefaults, result.GetOutcome());
+
+        EXPECT_EQ(1, values.size());
+
+        auto defaultKey = values.find(TestString());
+        EXPECT_NE(values.end(), defaultKey);
+        EXPECT_STRCASEEQ(TestString().m_value.c_str(), defaultKey->second.m_value.c_str());
+    }
+
+    TEST_F(JsonMapSerializerTests, Load_DefaultForStringKeyAndAdditionalValue_LoadedBackWithDefaults)
     {
         using namespace AZ::JsonSerializationResult;
 
@@ -563,13 +618,13 @@ namespace JsonSerializationTests
         EXPECT_EQ(Outcomes::Catastrophic, result.GetOutcome());
     }
 
-    TEST_F(JsonMapSerializerTests, Load_DefaultValueInMultiMap_DefaultUsed)
+    TEST_F(JsonMapSerializerTests, Load_DefaultObjectInMultiMap_DefaultUsed)
     {
         using namespace AZ::JsonSerializationResult;
 
         m_jsonDocument->Parse(R"(
             {
-                "Hello": {}
+                "World": {}
             })");
         ASSERT_FALSE(m_jsonDocument->HasParseError());
 
@@ -581,17 +636,40 @@ namespace JsonSerializationTests
         EXPECT_EQ(Outcomes::PartialDefaults, result.GetOutcome());
 
         ASSERT_FALSE(values.empty());
-        EXPECT_STREQ("Hello", values.begin()->first.m_value.c_str());
+        EXPECT_STREQ("World", values.begin()->first.m_value.c_str());
         EXPECT_STREQ(TestString().m_value.c_str(), values.begin()->second.m_value.c_str());
     }
 
-    TEST_F(JsonMapSerializerTests, Load_DefaultArrayValueInMultiMap_DefaultUsed)
+    TEST_F(JsonMapSerializerTests, Load_FullDefaultObjectInMultiMap_DefaultUsed)
     {
         using namespace AZ::JsonSerializationResult;
 
         m_jsonDocument->Parse(R"(
             {
-                "Hello": [{}]
+                "{}": {}
+            })");
+        ASSERT_FALSE(m_jsonDocument->HasParseError());
+
+        TestStringMultiMap values;
+        ResultCode result =
+            m_unorderedMultiMapSerializer.Load(&values, azrtti_typeid(&values), *m_jsonDocument, *m_jsonDeserializationContext);
+
+        EXPECT_EQ(Processing::Completed, result.GetProcessing());
+        EXPECT_EQ(Outcomes::PartialDefaults, result.GetOutcome());
+
+        ASSERT_FALSE(values.empty());
+        EXPECT_STREQ("Hello", values.begin()->first.m_value.c_str());
+        EXPECT_STREQ("Hello", values.begin()->second.m_value.c_str());
+        EXPECT_STREQ(TestString().m_value.c_str(), values.begin()->second.m_value.c_str());
+    }
+
+    TEST_F(JsonMapSerializerTests, Load_DefaultObjectValueInMultiMap_DefaultUsed)
+    {
+        using namespace AZ::JsonSerializationResult;
+
+        m_jsonDocument->Parse(R"(
+            {
+                "World": [{}]
             })");
         ASSERT_FALSE(m_jsonDocument->HasParseError());
 
@@ -603,7 +681,8 @@ namespace JsonSerializationTests
         EXPECT_EQ(Outcomes::PartialDefaults, result.GetOutcome());
 
         ASSERT_FALSE(values.empty());
-        EXPECT_STREQ("Hello", values.begin()->first.m_value.c_str());
+        EXPECT_STREQ("World", values.begin()->first.m_value.c_str());
+        EXPECT_STREQ("Hello", values.begin()->second.m_value.c_str());
         EXPECT_STREQ(TestString().m_value.c_str(), values.begin()->second.m_value.c_str());
     }
 
@@ -636,7 +715,7 @@ namespace JsonSerializationTests
             azrtti_typeid(&values), *m_jsonSerializationContext);
 
         EXPECT_EQ(Processing::Completed, result.GetProcessing());
-        EXPECT_EQ(Outcomes::DefaultsUsed, result.GetOutcome());
+        EXPECT_EQ(Outcomes::PartialDefaults, result.GetOutcome());
         Expect_DocStrEq(R"(
             {
                 "{}": {}
@@ -654,7 +733,25 @@ namespace JsonSerializationTests
             azrtti_typeid(&values), *m_jsonSerializationContext);
 
         EXPECT_EQ(Processing::Completed, result.GetProcessing());
-        EXPECT_EQ(Outcomes::DefaultsUsed, result.GetOutcome());
+        EXPECT_EQ(Outcomes::PartialDefaults, result.GetOutcome());
+        Expect_DocStrEq(R"(
+            {
+                "{}": {}
+            })");
+    }
+
+    TEST_F(JsonMapSerializerTests, Store_SingleAllDefaulValue_InitializedWithDefaults)
+    {
+        using namespace AZ::JsonSerializationResult;
+
+        SimpleClassMap values;
+        values.emplace(SimpleClass(), SimpleClass());
+        
+        ResultCode result =
+            m_unorderedMapSerializer.Store(*m_jsonDocument, &values, nullptr, azrtti_typeid(&values), *m_jsonSerializationContext);
+
+        EXPECT_EQ(Processing::Completed, result.GetProcessing());
+        EXPECT_EQ(Outcomes::PartialDefaults, result.GetOutcome());
         Expect_DocStrEq(R"(
             {
                 "{}": {}

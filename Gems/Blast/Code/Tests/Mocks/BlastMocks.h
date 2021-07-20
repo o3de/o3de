@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #pragma once
@@ -15,7 +10,6 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
-#include <AzFramework/Physics/Joint.h>
 #include <AzFramework/Physics/RigidBodyBus.h>
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/SystemBus.h>
@@ -221,23 +215,6 @@ namespace Blast
             AZStd::vector<AZStd::shared_ptr<Physics::Material>>(const Physics::MaterialSelection&));
         MOCK_METHOD2(
             UpdateMaterialSelection, bool(const Physics::ShapeConfiguration&, Physics::ColliderConfiguration&));
-        MOCK_METHOD0(GetSupportedJointTypes, AZStd::vector<AZ::TypeId>());
-        MOCK_METHOD1(CreateJointLimitConfiguration, AZStd::shared_ptr<Physics::JointLimitConfiguration>(AZ::TypeId));
-        MOCK_METHOD3(
-            CreateJoint,
-            AZStd::shared_ptr<Physics::Joint>(
-                const AZStd::shared_ptr<Physics::JointLimitConfiguration>&, AzPhysics::SimulatedBody*, AzPhysics::SimulatedBody*));
-        MOCK_METHOD10(
-            GenerateJointLimitVisualizationData,
-            void(
-                const Physics::JointLimitConfiguration&, const AZ::Quaternion&, const AZ::Quaternion&, float, AZ::u32,
-                AZ::u32, AZStd::vector<AZ::Vector3>&, AZStd::vector<AZ::u32>&, AZStd::vector<AZ::Vector3>&,
-                AZStd::vector<bool>&));
-        MOCK_METHOD5(
-            ComputeInitialJointLimitConfiguration,
-            AZStd::unique_ptr<Physics::JointLimitConfiguration>(
-                const AZ::TypeId&, const AZ::Quaternion&, const AZ::Quaternion&, const AZ::Vector3&,
-                const AZStd::vector<AZ::Quaternion>&));
         MOCK_METHOD3(CookConvexMeshToFile, bool(const AZStd::string&, const AZ::Vector3*, AZ::u32));
         MOCK_METHOD3(CookConvexMeshToMemory, bool(const AZ::Vector3*, AZ::u32, AZStd::vector<AZ::u8>&));
         MOCK_METHOD5(
@@ -644,19 +621,7 @@ namespace Blast
         MOCK_METHOD0(GetLocalX, float());
         MOCK_METHOD0(GetLocalY, float());
         MOCK_METHOD0(GetLocalZ, float());
-        MOCK_METHOD1(SetRotation, void(const AZ::Vector3&));
-        MOCK_METHOD1(SetRotationX, void(float));
-        MOCK_METHOD1(SetRotationY, void(float));
-        MOCK_METHOD1(SetRotationZ, void(float));
-        MOCK_METHOD1(SetRotationQuaternion, void(const AZ::Quaternion&));
-        MOCK_METHOD1(RotateByX, void(float));
-        MOCK_METHOD1(RotateByY, void(float));
-        MOCK_METHOD1(RotateByZ, void(float));
-        MOCK_METHOD0(GetRotationEulerRadians, AZ::Vector3());
-        MOCK_METHOD0(GetRotationQuaternion, AZ::Quaternion());
-        MOCK_METHOD0(GetRotationX, float());
-        MOCK_METHOD0(GetRotationY, float());
-        MOCK_METHOD0(GetRotationZ, float());
+        MOCK_METHOD1(SetWorldRotationQuaternion, void(const AZ::Quaternion&));
         MOCK_METHOD0(GetWorldRotation, AZ::Vector3());
         MOCK_METHOD0(GetWorldRotationQuaternion, AZ::Quaternion());
         MOCK_METHOD1(SetLocalRotation, void(const AZ::Vector3&));
@@ -666,20 +631,10 @@ namespace Blast
         MOCK_METHOD1(RotateAroundLocalZ, void(float));
         MOCK_METHOD0(GetLocalRotation, AZ::Vector3());
         MOCK_METHOD0(GetLocalRotationQuaternion, AZ::Quaternion());
-        MOCK_METHOD1(SetScale, void(const AZ::Vector3&));
-        MOCK_METHOD1(SetScaleX, void(float));
-        MOCK_METHOD1(SetScaleY, void(float));
-        MOCK_METHOD1(SetScaleZ, void(float));
-        MOCK_METHOD0(GetScale, AZ::Vector3());
-        MOCK_METHOD0(GetScaleX, float());
-        MOCK_METHOD0(GetScaleY, float());
-        MOCK_METHOD0(GetScaleZ, float());
-        MOCK_METHOD1(SetLocalScale, void(const AZ::Vector3&));
-        MOCK_METHOD1(SetLocalScaleX, void(float));
-        MOCK_METHOD1(SetLocalScaleY, void(float));
-        MOCK_METHOD1(SetLocalScaleZ, void(float));
         MOCK_METHOD0(GetLocalScale, AZ::Vector3());
-        MOCK_METHOD0(GetWorldScale, AZ::Vector3());
+        MOCK_METHOD1(SetLocalUniformScale, void(float));
+        MOCK_METHOD0(GetLocalUniformScale, float());
+        MOCK_METHOD0(GetWorldUniformScale, float());
         MOCK_METHOD0(GetParentId, AZ::EntityId());
         MOCK_METHOD0(GetParent, TransformInterface*());
         MOCK_METHOD1(SetParent, void(AZ::EntityId));

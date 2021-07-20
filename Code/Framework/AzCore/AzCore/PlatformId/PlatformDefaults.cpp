@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/PlatformId/PlatformDefaults.h>
@@ -19,7 +14,7 @@ namespace AZ
 {
     inline namespace PlatformDefaults
     {
-        static const char* PlatformNames[PlatformId::NumPlatformIds] = { PlatformPC, PlatformES3, PlatformIOS, PlatformOSX, PlatformProvo, PlatformSalem, PlatformJasper, PlatformServer, PlatformAll, PlatformAllClient };
+        static const char* PlatformNames[PlatformId::NumPlatformIds] = { PlatformPC, PlatformAndroid, PlatformIOS, PlatformMac, PlatformProvo, PlatformSalem, PlatformJasper, PlatformServer, PlatformAll, PlatformAllClient };
 
         const char* PlatformIdToPalFolder(AZ::PlatformId platform)
         {
@@ -31,11 +26,11 @@ namespace AZ
             {
             case AZ::PC:
                 return "PC";
-            case AZ::ES3:
+            case AZ::ANDROID_ID:
                 return "Android";
             case AZ::IOS:
                 return "iOS";
-            case AZ::OSX:
+            case AZ::MAC_ID:
                 return "Mac";
             case AZ::PROVO:
                 return "Provo";
@@ -66,11 +61,11 @@ namespace AZ
             }
             else if (osPlatform == PlatformCodeNameMac)
             {
-                return PlatformOSX;
+                return PlatformMac;
             }
             else if (osPlatform == PlatformCodeNameAndroid)
             {
-                return PlatformES3;
+                return PlatformAndroid;
             }
             else if (osPlatform == PlatformCodeNameiOS)
             {
@@ -207,13 +202,13 @@ namespace AZ
                 platformCodes.emplace_back(PlatformCodeNameWindows);
                 platformCodes.emplace_back(PlatformCodeNameLinux);
                 break;
-            case PlatformId::ES3:
+            case PlatformId::ANDROID_ID:
                 platformCodes.emplace_back(PlatformCodeNameAndroid);
                 break;
             case PlatformId::IOS:
                 platformCodes.emplace_back(PlatformCodeNameiOS);
                 break;
-            case PlatformId::OSX:
+            case PlatformId::MAC_ID:
                 platformCodes.emplace_back(PlatformCodeNameMac);
                 break;
             case PlatformId::PROVO:

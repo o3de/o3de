@@ -1,12 +1,7 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 
 Hydra script that creates an entity and attaches Atom components to it for test verification.
 """
@@ -135,9 +130,7 @@ def run():
     # Delete all existing entities initially
     search_filter = azlmbr.entity.SearchFilter()
     all_entities = entity.SearchBus(azlmbr.bus.Broadcast, "SearchEntities", search_filter)
-    general.idle_wait_frames(1)
     editor.ToolsApplicationRequestBus(bus.Broadcast, "DeleteEntities", all_entities)
-    general.idle_wait_frames(1)
 
     class ComponentTests:
         """Test launcher for each component."""
@@ -149,11 +142,9 @@ def run():
         def run_component_tests(self):
             # Run common and additional tests
             entity_obj = create_entity_undo_redo_component_addition(self.component_name)
-            general.idle_wait(0.5)
 
             # Enter/Exit game mode test
             verify_enter_exit_game_mode(self.component_name)
-            general.idle_wait(0.5)
 
             # Any additional tests are executed here
             for test in self.additional_tests:
@@ -161,16 +152,13 @@ def run():
 
             # Hide/Unhide entity test
             verify_hide_unhide_entity(self.component_name, entity_obj)
-            general.idle_wait(0.5)
 
             # Deletion/Undo/Redo test
             verify_deletion_undo_redo(self.component_name, entity_obj)
-            general.idle_wait(0.5)
 
     # DepthOfField Component
     camera_entity = hydra.Entity("camera_entity")
     camera_entity.create_entity(math.Vector3(512.0, 512.0, 34.0), ["Camera"])
-    general.idle_wait(0.5)
     depth_of_field = "DepthOfField"
     ComponentTests(
         depth_of_field,

@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 // Description : AtomFont class.
 
@@ -354,17 +349,26 @@ AZ::AtomFont::AtomFont(ISystem* system)
 #endif
     AZ::Interface<AzFramework::FontQueryInterface>::Register(this);
 
-    m_sceneEventHandler = AzFramework::ISceneSystem::SceneEvent::Handler(
-        [this](AzFramework::ISceneSystem::EventType eventType, const AZStd::shared_ptr<AzFramework::Scene>& scene)
+    // register font per viewport dynamic draw context.
+    static const char* shaderFilepath = "Shaders/SimpleTextured.azshader";
+    AZ::AtomBridge::PerViewportDynamicDraw::Get()->RegisterDynamicDrawContext(
+        AZ::Name(AZ::AtomFontDynamicDrawContextName),
+        [](RPI::Ptr<RPI::DynamicDrawContext> drawContext)
         {
-            if (eventType == AzFramework::ISceneSystem::EventType::ScenePendingRemoval)
-            {
-                SceneAboutToBeRemoved(*scene);
-            }
+            Data::Instance<RPI::Shader> shader = AZ::RPI::LoadShader(shaderFilepath);
+            AZ::RPI::ShaderOptionList shaderOptions;
+            shaderOptions.push_back(AZ::RPI::ShaderOption(AZ::Name("o_useColorChannels"), AZ::Name("false")));
+            shaderOptions.push_back(AZ::RPI::ShaderOption(AZ::Name("o_clamp"), AZ::Name("true")));
+            drawContext->InitShaderWithVariant(shader, &shaderOptions);
+            drawContext->InitVertexFormat(
+                {
+                    {"POSITION", RHI::Format::R32G32B32_FLOAT},
+                    {"COLOR", RHI::Format::B8G8R8A8_UNORM},
+                    {"TEXCOORD0", RHI::Format::R32G32_FLOAT}
+                });
+            drawContext->EndInit();
         });
-    auto sceneSystem = AzFramework::SceneSystemInterface::Get();
-    AZ_Assert(sceneSystem, "Font created before the scene system is available.");
-    sceneSystem->ConnectToEvents(m_sceneEventHandler);
+
 }
 
 AZ::AtomFont::~AtomFont()
@@ -860,52 +864,5 @@ XmlNodeRef AZ::AtomFont::LoadFontFamilyXml(const char* fontFamilyName, string& o
 
     return root;
 }
-
-void AZ::AtomFont::SceneAboutToBeRemoved(AzFramework::Scene& scene)
-{
-    AZ::RPI::ScenePtr* rpiScene = scene.FindSubsystem<AZ::RPI::ScenePtr>();
-    if (rpiScene)
-    {
-        AZStd::lock_guard<AZStd::shared_mutex> lock(m_sceneToDynamicDrawMutex);
-        if (auto it = m_sceneToDynamicDrawMap.find(rpiScene->get()); it != m_sceneToDynamicDrawMap.end())
-        {
-            m_sceneToDynamicDrawMap.erase(it);
-        }
-    }
-}
-
-AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> AZ::AtomFont::GetOrCreateDynamicDrawForScene(AZ::RPI::Scene* scene)
-{
-    static const char* shaderFilepath = "Shaders/SimpleTextured.azshader";
-
-    {
-        // shared lock while reading
-        AZStd::shared_lock<AZStd::shared_mutex> lock(m_sceneToDynamicDrawMutex);
-
-        if (auto it = m_sceneToDynamicDrawMap.find(scene); it != m_sceneToDynamicDrawMap.end())
-        {
-            return it->second;
-        }
-    }
-
-    // Create and initialize DynamicDrawContext for font draw
-    AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw = RPI::DynamicDrawInterface::Get()->CreateDynamicDrawContext(scene);
-
-    Data::Instance<RPI::Shader> shader = AZ::RPI::LoadShader(shaderFilepath);
-    AZ::RPI::ShaderOptionList shaderOptions;
-    shaderOptions.push_back(AZ::RPI::ShaderOption(AZ::Name("o_useColorChannels"), AZ::Name("false")));
-    shaderOptions.push_back(AZ::RPI::ShaderOption(AZ::Name("o_clamp"), AZ::Name("true")));
-    dynamicDraw->InitShaderWithVariant(shader, &shaderOptions);
-    dynamicDraw->InitVertexFormat({{"POSITION", RHI::Format::R32G32B32_FLOAT}, {"COLOR", RHI::Format::R8G8B8A8_UNORM}, {"TEXCOORD0", RHI::Format::R32G32_FLOAT}});
-    dynamicDraw->EndInit();
-
-    // exclusive lock while writing
-    AZStd::lock_guard<AZStd::shared_mutex> lock(m_sceneToDynamicDrawMutex);
-    m_sceneToDynamicDrawMap.insert(AZStd::make_pair(scene, dynamicDraw));
-
-    return dynamicDraw;
-}
-
-
 #endif
 

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <AzFramework/Input/Events/InputChannelEventListener.h>
@@ -43,6 +38,7 @@ namespace MaterialEditor
         void SetTargetPosition(const AZ::Vector3& targetPosition) override;
         float GetDistanceToTarget() const override;
         void GetExtents(float& distanceMin, float& distanceMax) const override;
+        float GetRadius() const override;
         void Reset() override;
         void SetFieldOfView(float value) override;
         bool IsCameraCentered() const override;
@@ -96,6 +92,8 @@ namespace MaterialEditor
         float m_distanceMin = 1.0f;
         //! Maximum distance from camera to target
         float m_distanceMax = 10.0f;
+        //! Model radius
+        float m_radius = 1.0f;
         //! True if camera is centered on a model
         bool m_isCameraCentered = true;
 

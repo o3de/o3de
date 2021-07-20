@@ -1,13 +1,9 @@
 @echo off
 REM 
-REM All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-REM its licensors.
+REM Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+REM 
+REM SPDX-License-Identifier: Apache-2.0 OR MIT
 REM
-REM For complete copyright and license terms please see the LICENSE at the root of this
-REM distribution (the "License"). All use of this software is governed by the License,
-REM or, if provided, by the license below or the license accompanying this file. Do not
-REM remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-REM WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 REM
 
 :: Sets up environment for Lumberyard DCC tools and code access
@@ -68,14 +64,17 @@ IF "%DEV_REL_PATH%"=="" (set DEV_REL_PATH=..\..\..\..)
 echo     DEV_REL_PATH = %DEV_REL_PATH%
 
 :: You can define the project name
-:: if not defined we just use the DCCsi path as standin
-IF "%LY_PROJECT%"=="" (
-    for %%a in (%CD%..\..\..) do set LY_PROJECT=%%~na
+IF "%LY_PROJECT_NAME%"=="" (
+    for %%a in (%CD%..\..\..) do set LY_PROJECT_NAME=%%~na
         )
+echo     LY_PROJECT_NAME = %LY_PROJECT_NAME%
+
+:: if not defined we just use the DCCsi path as stand-in
+IF "%LY_PROJECT%"=="" (set LY_PROJECT=%CD%)
 echo     LY_PROJECT = %LY_PROJECT%
 
 :: set up the default project path (dccsi)
-:: if not set we lso use the DCCsi path as standin
+:: if not set we also use the DCCsi path as stand-in
 CD /D ..\..\
 IF "%LY_PROJECT_PATH%"=="" (set LY_PROJECT_PATH=%CD%)
 echo     LY_PROJECT_PATH = %LY_PROJECT_PATH%
@@ -88,7 +87,7 @@ pushd %ABS_PATH%
 
 :: Change to root Lumberyard dev dir
 CD /d %LY_PROJECT_PATH%\%DEV_REL_PATH%
-set LY_DEV=%CD%
+IF "%LY_DEV%"=="" (set LY_DEV=%CD%)
 echo     LY_DEV = %LY_DEV%
 :: Restore original directory
 popd

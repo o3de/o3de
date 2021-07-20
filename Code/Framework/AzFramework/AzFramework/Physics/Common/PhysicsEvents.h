@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates, or
-* a third party where indicated.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
@@ -48,7 +43,8 @@ namespace AzPhysics
         using OnPresimulateEvent = AZ::Event<float>;
 
         //! Event triggers at the end of the SystemInterface::Simulate call.
-        using OnPostsimulateEvent = AZ::Event<>;
+        //! Parameter is the total time that the physics system will run for during the Simulate call.
+        using OnPostsimulateEvent = AZ::Event<float>;
 
         //! Event trigger when a Scene is added to the simulation.
         //! When triggered will send the handle to the new Scene.
@@ -58,9 +54,18 @@ namespace AzPhysics
         //! When triggered will send the handle to the old Scene (after this call, the Handle will be invalid).
         using OnSceneRemovedEvent = AZ::Event<AzPhysics::SceneHandle>;
 
-        //! Event that triggers when the default material library changes.
+        //! Event that triggers when the material library changes.
         //! When triggered the event will send the Asset Id of the new material library.
-        using OnDefaultMaterialLibraryChangedEvent = AZ::Event<const AZ::Data::AssetId&>;
+        using OnMaterialLibraryChangedEvent = AZ::Event<const AZ::Data::AssetId&>;
+
+        enum class MaterialLibraryLoadErrorType : uint8_t
+        {
+            InvalidId,
+            ErrorLoading
+        };
+
+        //! Event that triggers when the default material library has loaded with errors.
+        using OnMaterialLibraryLoadErrorEvent = AZ::Event<MaterialLibraryLoadErrorType>;
 
         //! Event that triggers when the default scene configuration changes.
         //! When triggered the event will send the new default scene configuration.

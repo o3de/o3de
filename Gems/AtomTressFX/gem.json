@@ -1,13 +1,12 @@
 {
     "gem_name": "AtomTressFX",
-    "GemFormatVersion": 3,
-    "Uuid": "d4a3e3d6b9b14e12982c774f35f48a7c",
-    "Name": "AtomTressFX",
-    "DisplayName": "AtomTressFX [PREVIEW]",
-    "Version": "0.1.0",
-    "LinkType": "Dynamic",
-    "Summary": "The AtomTressFX is a cutting edge hair technology based on TressFX 4.1 SDK from AMD.  It was altered to integrate into Atom harnessing Atom's design and pipeline.",
-    "Tags": ["Hair", "TressFX"],
-    "IconPath": "preview.png",
-    "EditorModule": true
+    "display_name": "Atom TressFX",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Open 3D Engine - o3de.org",
+    "type": "Code",
+    "summary": "The Atom TressFX Gem provides realistic hair and fur simulation and rendering in Atom and Open 3D Engine with AMD TressFX.",
+    "canonical_tags": ["Gem"],
+    "user_tags": ["Rendering", "Physics", "Animation"],
+    "icon_path": "preview.png",
+    "requirements": ""
 }

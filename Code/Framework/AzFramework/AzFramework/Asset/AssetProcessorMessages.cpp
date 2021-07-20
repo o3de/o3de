@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzFramework/Asset/AssetProcessorMessages.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -305,6 +300,56 @@ namespace AzFramework
                     ->Version(1)
                     ->Field("RelativeProductPath", &GetRelativeProductPathFromFullSourceOrProductPathResponse::m_relativeProductPath)
                     ->Field("Resolved", &GetRelativeProductPathFromFullSourceOrProductPathResponse::m_resolved);
+            }
+        }
+
+        //---------------------------------------------------------------------
+        GenerateRelativeSourcePathRequest::GenerateRelativeSourcePathRequest(const AZ::OSString& sourcePath)
+        {
+            AZ_Assert(!sourcePath.empty(), "GenerateRelativeSourcePathRequest: asset path is empty");
+            m_sourcePath = sourcePath;
+        }
+
+        unsigned int GenerateRelativeSourcePathRequest::GetMessageType() const
+        {
+            return MessageType;
+        }
+
+        void GenerateRelativeSourcePathRequest::Reflect(AZ::ReflectContext* context)
+        {
+            auto serialize = azrtti_cast<AZ::SerializeContext*>(context);
+            if (serialize)
+            {
+                serialize->Class<GenerateRelativeSourcePathRequest, BaseAssetProcessorMessage>()
+                    ->Version(1)
+                    ->Field("SourcePath", &GenerateRelativeSourcePathRequest::m_sourcePath);
+            }
+        }
+
+        //---------------------------------------------------------------------
+        GenerateRelativeSourcePathResponse::GenerateRelativeSourcePathResponse(
+            bool resolved, const AZ::OSString& relativeSourcePath, const AZ::OSString& rootFolder)
+        {
+            m_relativeSourcePath = relativeSourcePath;
+            m_resolved = resolved;
+            m_rootFolder = rootFolder;
+        }
+
+        unsigned int GenerateRelativeSourcePathResponse::GetMessageType() const
+        {
+            return GenerateRelativeSourcePathRequest::MessageType;
+        }
+
+        void GenerateRelativeSourcePathResponse::Reflect(AZ::ReflectContext* context)
+        {
+            auto serialize = azrtti_cast<AZ::SerializeContext*>(context);
+            if (serialize)
+            {
+                serialize->Class<GenerateRelativeSourcePathResponse, BaseAssetProcessorMessage>()
+                    ->Version(1)
+                    ->Field("RelativeSourcePath", &GenerateRelativeSourcePathResponse::m_relativeSourcePath)
+                    ->Field("RootFolder", &GenerateRelativeSourcePathResponse::m_rootFolder)
+                    ->Field("Resolved", &GenerateRelativeSourcePathResponse::m_resolved);
             }
         }
 

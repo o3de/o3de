@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <AzCore/RTTI/RTTI.h>
@@ -56,6 +51,7 @@ namespace MaterialEditor
         const AZ::RPI::MaterialTypeSourceData* GetMaterialTypeSourceData() const override;
         const AZStd::any& GetPropertyValue(const AZ::Name& propertyFullName) const override;
         const AtomToolsFramework::DynamicProperty& GetProperty(const AZ::Name& propertyFullName) const override;
+        bool IsPropertyGroupVisible(const AZ::Name& propertyGroupFullName) const override;
         void SetPropertyValue(const AZ::Name& propertyFullName, const AZStd::any& value) override;
         bool Open(AZStd::string_view loadPath) override;
         bool Rebuild() override;
@@ -79,11 +75,14 @@ namespace MaterialEditor
         // Predicate for evaluating properties
         using PropertyFilterFunction = AZStd::function<bool(const AtomToolsFramework::DynamicProperty&)>;
 
-        // Map of documenmt's property
+        // Map of document's properties
         using PropertyMap = AZStd::unordered_map<AZ::Name, AtomToolsFramework::DynamicProperty>;
 
         // Map of raw property values for undo/redo comparison and storage
         using PropertyValueMap = AZStd::unordered_map<AZ::Name, AZStd::any>;
+        
+        // Map of document's property group visibility flags
+        using PropertyGroupVisibilityMap = AZStd::unordered_map<AZ::Name, bool>;
 
         // Function to be bound for undo and redo
         using UndoRedoFunction = AZStd::function<void()>;
@@ -119,10 +118,16 @@ namespace MaterialEditor
 
         void RestorePropertyValues(const PropertyValueMap& propertyValues);
 
+        struct EditorMaterialFunctorResult
+        {
+            AZStd::unordered_set<AZ::Name> m_updatedProperties;
+            AZStd::unordered_set<AZ::Name> m_updatedPropertyGroups;
+        };
+
         // Run editor material functor to update editor metadata.
         // @param dirtyFlags indicates which properties have changed, and thus which MaterialFunctors need to be run.
-        // @return names for the set of properties that have been changed or need update.
-        AZStd::unordered_set<AZ::Name> RunEditorMaterialFunctors(AZ::RPI::MaterialPropertyFlags dirtyFlags);
+        // @return names for the set of properties and groups that have been changed or need update.
+        EditorMaterialFunctorResult RunEditorMaterialFunctors(AZ::RPI::MaterialPropertyFlags dirtyFlags);
 
         // Unique id of this material document
         AZ::Uuid m_id = AZ::Uuid::CreateRandom();
@@ -153,6 +158,9 @@ namespace MaterialEditor
 
         // Collection of all material's properties
         PropertyMap m_properties;
+        
+        // Collection of all material's property groups
+        PropertyGroupVisibilityMap m_propertyGroupVisibility;
 
         // Material functors that run in editor. See MaterialFunctor.h for details.
         AZStd::vector<AZ::RPI::Ptr<AZ::RPI::MaterialFunctor>> m_editorFunctors;
@@ -175,7 +183,7 @@ namespace MaterialEditor
         int m_undoHistoryIndex = 0;
 
         AZStd::any m_invalidValue;
-
+        
         AtomToolsFramework::DynamicProperty m_invalidProperty;
     };
 } // namespace MaterialEditor

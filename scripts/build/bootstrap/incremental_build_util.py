@@ -1,11 +1,7 @@
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import argparse
 import ast
@@ -94,6 +90,7 @@ def error(message):
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-a', '--action', dest="action", help="Action (mount|unmount|delete)")
+    parser.add_argument('-snapshot-hint', '--snapshot-hint', dest="snapshot_hint", help="Build snapshot to attempt to use")
     parser.add_argument('-repository_name', '--repository_name', dest="repository_name", help="Repository name")
     parser.add_argument('-project', '--project', dest="project", help="Project")
     parser.add_argument('-pipe', '--pipeline', dest="pipeline", help="Pipeline")
@@ -177,8 +174,8 @@ def delete_volume(ec2_client, volume_id):
     response = ec2_client.delete_volume(VolumeId=volume_id)
     print 'Volume {} deleted'.format(volume_id)
 
-def find_snapshot_id(ec2_client, repository_name, project, pipeline, platform, build_type, disk_size):
-    mount_name = get_mount_name(repository_name, project, pipeline, 'main', platform, build_type) # we take snapshots out of main
+def find_snapshot_id(ec2_client, snapshot_hint, repository_name, project, pipeline, platform, build_type, disk_size):
+    mount_name = get_mount_name(repository_name, project, pipeline, snapshot_hint, platform, build_type)
     response = ec2_client.describe_snapshots(Filters= [{
         'Name': 'tag:Name', 'Values': [mount_name]
     }])
@@ -194,13 +191,14 @@ def find_snapshot_id(ec2_client, repository_name, project, pipeline, platform, b
                     snapshot_id = snapshot['SnapshotId']
     return snapshot_id
 
-def create_volume(ec2_client, availability_zone, repository_name, project, pipeline, branch, platform, build_type, disk_size, disk_type):
+def create_volume(ec2_client, availability_zone, snapshot_hint, repository_name, project, pipeline, branch, platform, build_type, disk_size, disk_type):
     # The actual EBS default calculation for IOps is a floating point number, the closest approxmiation is 4x of the disk size for simplicity
     mount_name = get_mount_name(repository_name, project, pipeline, branch, platform, build_type)
     pipeline_and_branch = get_pipeline_and_branch(pipeline, branch) 
     parameters = dict(
         AvailabilityZone = availability_zone,
         VolumeType=disk_type,
+        Encrypted=True,
         TagSpecifications= [{
             'ResourceType': 'volume',
             'Tags': [
@@ -218,7 +216,7 @@ def create_volume(ec2_client, availability_zone, repository_name, project, pipel
     if 'io1' in disk_type.lower(): 
         parameters['Iops'] = (4 * disk_size)
 
-    snapshot_id = find_snapshot_id(ec2_client, repository_name, project, pipeline, platform, build_type, disk_size)
+    snapshot_id = find_snapshot_id(ec2_client, snapshot_hint, repository_name, project, pipeline, platform, build_type, disk_size)
     if snapshot_id:
         parameters['SnapshotId'] = snapshot_id
         created = False
@@ -370,7 +368,7 @@ def attach_ebs_and_create_partition_with_retry(volume, volume_id, ec2_instance_i
                 mount_volume(created)
         attempt += 1
 
-def mount_ebs(repository_name, project, pipeline, branch, platform, build_type, disk_size, disk_type):
+def mount_ebs(snapshot_hint, repository_name, project, pipeline, branch, platform, build_type, disk_size, disk_type):
     session = boto3.session.Session()
     region = session.region_name
     if region is None:
@@ -399,7 +397,7 @@ def mount_ebs(repository_name, project, pipeline, branch, platform, build_type, 
     if 'Volumes' in response and not len(response['Volumes']):
         print 'Volume for {} doesn\'t exist creating it...'.format(mount_name)
         # volume doesn't exist, create it
-        volume_id, created = create_volume(ec2_client, ec2_availability_zone, repository_name, project, pipeline, branch, platform, build_type, disk_size, disk_type)
+        volume_id, created = create_volume(ec2_client, ec2_availability_zone, snapshot_hint, repository_name, project, pipeline, branch, platform, build_type, disk_size, disk_type)
     else:
         volume = response['Volumes'][0]
         volume_id = volume['VolumeId']
@@ -407,7 +405,7 @@ def mount_ebs(repository_name, project, pipeline, branch, platform, build_type, 
         if (volume['Size'] != disk_size or volume['VolumeType'] != disk_type):
             print 'Override disk attributes does not match the existing volume, deleting {} and replacing the volume'.format(volume_id)
             delete_volume(ec2_client, volume_id)
-            volume_id, created = create_volume(ec2_client, ec2_availability_zone, repository_name, project, pipeline, branch, platform, build_type, disk_size, disk_type)
+            volume_id, created = create_volume(ec2_client, ec2_availability_zone, snapshot_hint, repository_name, project, pipeline, branch, platform, build_type, disk_size, disk_type)
         if len(volume['Attachments']):
             # this is bad we shouldn't be attached, we should have detached at the end of a build
             attachment = volume['Attachments'][0]
@@ -437,7 +435,7 @@ def mount_ebs(repository_name, project, pipeline, branch, platform, build_type, 
             print 'Error: EBS disk size reached to the allowed maximum disk size {}MB, please contact ly-infra@ and ly-build@ to investigate.'.format(MAX_EBS_DISK_SIZE)
             exit(1)
         print 'Recreating the EBS with disk size {}'.format(new_disk_size)
-        volume_id, created = create_volume(ec2_client, ec2_availability_zone, repository_name, project, pipeline, branch, platform, build_type, new_disk_size, disk_type)
+        volume_id, created = create_volume(ec2_client, ec2_availability_zone, snapshot_hint, repository_name, project, pipeline, branch, platform, build_type, new_disk_size, disk_type)
         volume = ec2_resource.Volume(volume_id)
         attach_ebs_and_create_partition_with_retry(volume, volume_id, ec2_instance_id, created)
 
@@ -492,9 +490,9 @@ def delete_ebs(repository_name, project, pipeline, branch, platform, build_type)
         delete_volume(ec2_client, volume_id)
 
 
-def main(action, repository_name, project, pipeline, branch, platform, build_type, disk_size, disk_type):
+def main(action, snapshot_hint, repository_name, project, pipeline, branch, platform, build_type, disk_size, disk_type):
     if action == 'mount':
-        mount_ebs(repository_name, project, pipeline, branch, platform, build_type, disk_size, disk_type)
+        mount_ebs(snapshot_hint, repository_name, project, pipeline, branch, platform, build_type, disk_size, disk_type)
     elif action == 'unmount':
         unmount_ebs()
     elif action == 'delete':
@@ -502,5 +500,5 @@ def main(action, repository_name, project, pipeline, branch, platform, build_typ
 
 if __name__ == "__main__":
     args = parse_args()
-    ret = main(args.action, args.repository_name, args.project, args.pipeline, args.branch, args.platform, args.build_type, args.disk_size, args.disk_type)
+    ret = main(args.action, args.snapshot_hint, args.repository_name, args.project, args.pipeline, args.branch, args.platform, args.build_type, args.disk_size, args.disk_type)
     sys.exit(ret)

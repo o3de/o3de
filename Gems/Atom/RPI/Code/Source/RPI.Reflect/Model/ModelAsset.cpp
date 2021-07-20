@@ -1,20 +1,16 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelKdTree.h>
 #include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Math/IntersectSegment.h>
+#include <AzCore/std/limits.h>
 
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -75,7 +71,9 @@ namespace AZ
             m_status = Data::AssetData::AssetStatus::Ready;
         }
 
-        bool ModelAsset::LocalRayIntersectionAgainstModel(const AZ::Vector3& rayStart, const AZ::Vector3& dir, float& distance, AZ::Vector3& normal) const
+        bool ModelAsset::LocalRayIntersectionAgainstModel(
+            const AZ::Vector3& rayStart, const AZ::Vector3& rayDir, bool allowBruteForce,
+            float& distanceNormalized, AZ::Vector3& normal) const
         {
             AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
 
@@ -85,7 +83,7 @@ namespace AZ
                 m_modelTriangleCount = CalculateTriangleCount();
             }
 
-            // check the total vertex count for this model and skip kdtree if the model is simple enough
+            // check the total vertex count for this model and skip kd-tree if the model is simple enough
             if (*m_modelTriangleCount > s_minimumModelTriangleCountToOptimize)
             {
                 if (!m_kdTree)
@@ -93,15 +91,15 @@ namespace AZ
                     BuildKdTree();
 
                     AZ_WarningOnce("Model", false, "ray intersection against a model that is still creating spatial information");
-                    return false;
+                    return allowBruteForce ? BruteForceRayIntersect(rayStart, rayDir, distanceNormalized, normal) : false;
                 }
                 else
                 {
-                    return m_kdTree->RayIntersection(rayStart, dir, distance, normal);
+                    return m_kdTree->RayIntersection(rayStart, rayDir, distanceNormalized, normal);
                 }
             }
 
-            return BruteForceRayIntersect(rayStart, dir, distance, normal);
+            return BruteForceRayIntersect(rayStart, rayDir, distanceNormalized, normal);
         }
 
         void ModelAsset::BuildKdTree() const
@@ -136,7 +134,8 @@ namespace AZ
             }
         }
 
-        bool ModelAsset::BruteForceRayIntersect(const AZ::Vector3& rayStart, const AZ::Vector3& dir, float& distance, AZ::Vector3& normal) const
+        bool ModelAsset::BruteForceRayIntersect(
+            const AZ::Vector3& rayStart, const AZ::Vector3& rayDir, float& distanceNormalized, AZ::Vector3& normal) const
         {
             // brute force - check every triangle
             if (GetLodAssets().empty() == false)
@@ -144,27 +143,27 @@ namespace AZ
                 // intersect against the highest level of detail
                 if (ModelLodAsset* loadAssetPtr = GetLodAssets()[0].Get())
                 {
-                    float shortestDistance = std::numeric_limits<float>::max();
                     bool anyHit = false;
-
                     AZ::Vector3 intersectionNormal;
-
+                    float shortestDistanceNormalized = AZStd::numeric_limits<float>::max();
                     for (const ModelLodAsset::Mesh& mesh : loadAssetPtr->GetMeshes())
                     {
-                        if (LocalRayIntersectionAgainstMesh(mesh, rayStart, dir, distance, intersectionNormal))
+                        float currentDistanceNormalized;
+                        if (LocalRayIntersectionAgainstMesh(mesh, rayStart, rayDir, currentDistanceNormalized, intersectionNormal))
                         {
                             anyHit = true;
-                            if (distance < shortestDistance)
+
+                            if (currentDistanceNormalized < shortestDistanceNormalized)
                             {
                                 normal = intersectionNormal;
-                                shortestDistance = distance;
+                                shortestDistanceNormalized = currentDistanceNormalized;
                             }
                         }
                     }
 
                     if (anyHit)
                     {
-                        distance = shortestDistance;
+                        distanceNormalized = shortestDistanceNormalized;
                     }
 
                     return anyHit;
@@ -174,7 +173,12 @@ namespace AZ
             return false;
         }
 
-        bool ModelAsset::LocalRayIntersectionAgainstMesh(const ModelLodAsset::Mesh& mesh, const AZ::Vector3& rayStart, const AZ::Vector3& dir, float& distance, AZ::Vector3& normal) const
+        bool ModelAsset::LocalRayIntersectionAgainstMesh(
+            const ModelLodAsset::Mesh& mesh,
+            const AZ::Vector3& rayStart,
+            const AZ::Vector3& rayDir,
+            float& distanceNormalized,
+            AZ::Vector3& normal) const
         {
             const BufferAssetView& indexBufferView = mesh.GetIndexBufferAssetView();
             const AZStd::array_view<ModelLodAsset::Mesh::StreamBufferInfo>& streamBufferList = mesh.GetStreamBufferInfoList();
@@ -217,14 +221,13 @@ namespace AZ
                 AZStd::array_view<uint8_t> indexRawBuffer = indexAssetViewPtr->GetBuffer();
                 RHI::BufferViewDescriptor indexRawDesc = indexAssetViewPtr->GetBufferViewDescriptor();
 
-                float closestNormalizedDistance = 1.f;
                 bool anyHit = false;
 
-                const AZ::Vector3 rayEnd = rayStart + dir * distance;
+                const AZ::Vector3 rayEnd = rayStart + rayDir;
                 AZ::Vector3 a, b, c;
                 AZ::Vector3 intersectionNormal;
-                float normalizedDistance = 1.f;
 
+                float shortestDistanceNormalized = AZStd::numeric_limits<float>::max();
                 const AZ::u32* indexPtr = reinterpret_cast<const AZ::u32*>(indexRawBuffer.data());
                 for (uint32_t indexIter = 0; indexIter <= indexRawDesc.m_elementCount - 3; indexIter += 3, indexPtr += 3)
                 {
@@ -247,20 +250,22 @@ namespace AZ
                     p = reinterpret_cast<const float*>(&positionRawBuffer[index2 * positionElementSize]);
                     c.Set(const_cast<float*>(p));
 
-                    if (AZ::Intersect::IntersectSegmentTriangleCCW(rayStart, rayEnd, a, b, c, intersectionNormal, normalizedDistance))
+                    float currentDistanceNormalized;
+                    if (AZ::Intersect::IntersectSegmentTriangleCCW(rayStart, rayEnd, a, b, c, intersectionNormal, currentDistanceNormalized))
                     {
-                        if (normalizedDistance < closestNormalizedDistance)
+                        anyHit = true;
+
+                        if (currentDistanceNormalized < shortestDistanceNormalized)
                         {
                             normal = intersectionNormal;
-                            closestNormalizedDistance = normalizedDistance;
+                            shortestDistanceNormalized = currentDistanceNormalized;
                         }
-                        anyHit = true;
                     }
                 }
 
                 if (anyHit)
                 {
-                    distance = closestNormalizedDistance * distance;
+                    distanceNormalized = shortestDistanceNormalized;
                 }
 
                 return anyHit;
@@ -306,5 +311,26 @@ namespace AZ
 
             return modelTriangleCount;
         }
-    } //namespace RPI
+
+        bool ModelAssetHandler::HasConflictingProducts(const AZStd::vector<AZ::Data::AssetType>& productAssetTypes) const
+        {
+            size_t modelAssetCount = 0;
+            size_t actorAssetCount = 0;
+            for (const AZ::Data::AssetType& assetType : productAssetTypes)
+            {
+                if (assetType == azrtti_typeid<ModelAsset>())
+                {
+                    modelAssetCount++;
+                }
+                else if (assetType == AZ::Data::AssetType("{F67CC648-EA51-464C-9F5D-4A9CE41A7F86}")) // ActorAsset
+                {
+                    actorAssetCount++;
+                }
+            }
+
+            // When dropping a well-defined character, consisting of a mesh and a skeleton/actor,
+            // do not create an entity with a mesh component.
+            return modelAssetCount == 1 && actorAssetCount == 1;
+        }
+    } // namespace RPI
 } // namespace AZ

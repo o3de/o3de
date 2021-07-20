@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/Features/Shadow/Shadow.azsli>
 #include <Atom/Features/Math/Filter.azsli>
@@ -33,7 +28,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     StructuredBuffer<FilterParameter> m_filterParameters;
 }
 
-[numthreads(8,8,1)]
+[numthreads(16,16,1)]
 void MainCS(uint3 dispatchId: SV_DispatchThreadID)
 {
     const float3 inputSize = GetImageSize(PassSrg::m_inputShadowmap);
@@ -56,7 +51,6 @@ void MainCS(uint3 dispatchId: SV_DispatchThreadID)
         return; // Early return if filter is disabled.
     }
     
-    float depth = 0.;
     switch (o_shadowmapLightType)
     {
         case ShadowmapLightType::Directional:
@@ -68,9 +62,10 @@ void MainCS(uint3 dispatchId: SV_DispatchThreadID)
             // and it often causes light bleeding with ESM.
             // So this converts it to "depth" to emphasize the difference
             // within the frustum.
-            depth = (depthInClip - distanceMin) / (1. - distanceMin);
-        }
+            const float depth = (depthInClip - distanceMin) / (1. - distanceMin);
+            PassSrg::m_outputShadowmap[dispatchId].r = depth;
             break;
+        }
         case ShadowmapLightType::Spot:
         {
             const float3 coefficients = float3(
@@ -84,12 +79,9 @@ void MainCS(uint3 dispatchId: SV_DispatchThreadID)
             // and it often causes light bleeding with ESM.
             // So this converts it to a linear depth to emphasize the 
             // difference like a orthogonal depth.
-            depth = PerspectiveDepthToLinear(depthInClip, coefficients);
-        }
+            PassSrg::m_outputShadowmap[dispatchId].r = PerspectiveDepthToLinear(depthInClip, coefficients);
             break;
+        }
     }
-
-    const float outValue = exp(EsmExponentialShift * depth);
-    PassSrg::m_outputShadowmap[dispatchId].r = outValue;
 }
 

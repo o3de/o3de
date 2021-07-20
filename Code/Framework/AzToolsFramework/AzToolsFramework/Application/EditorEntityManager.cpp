@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -43,7 +38,7 @@ namespace AzToolsFramework
 
     void EditorEntityManager::DeleteEntityById(AZ::EntityId entityId)
     {
-        DeleteEntities({entityId});
+        DeleteEntities(EntityIdList{ entityId });
     }
 
     void EditorEntityManager::DeleteEntities(const EntityIdList& entities)
@@ -53,12 +48,30 @@ namespace AzToolsFramework
 
     void EditorEntityManager::DeleteEntityAndAllDescendants(AZ::EntityId entityId)
     {
-        DeleteEntitiesAndAllDescendants({entityId});
+        DeleteEntitiesAndAllDescendants(EntityIdList{ entityId });
     }
 
     void EditorEntityManager::DeleteEntitiesAndAllDescendants(const EntityIdList& entities)
     {
         m_prefabPublicInterface->DeleteEntitiesAndAllDescendantsInInstance(entities);
+    }
+
+    void EditorEntityManager::DuplicateSelected()
+    {
+        EntityIdList selectedEntities;
+        ToolsApplicationRequestBus::BroadcastResult(selectedEntities, &ToolsApplicationRequests::GetSelectedEntities);
+
+        m_prefabPublicInterface->DuplicateEntitiesInInstance(selectedEntities);
+    }
+
+    void EditorEntityManager::DuplicateEntityById(AZ::EntityId entityId)
+    {
+        DuplicateEntities(EntityIdList{ entityId });
+    }
+
+    void EditorEntityManager::DuplicateEntities(const EntityIdList& entities)
+    {
+        m_prefabPublicInterface->DuplicateEntitiesInInstance(entities);
     }
 }
 

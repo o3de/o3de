@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "FunctionDefinitionNode.h"
 #include <ScriptCanvas/Core/GraphBus.h>
@@ -18,6 +13,32 @@
 #include <ScriptCanvas/Libraries/Core/FunctionBus.h>
 
 #include <ScriptCanvas/Debugger/ValidationEvents/DataValidation/InvalidPropertyEvent.h>
+
+namespace FunctionDefinitionNodeCpp
+{
+    void VersionUpdateRemoveDefaultDisplayGroup(ScriptCanvas::Nodes::Core::FunctionDefinitionNode& node)
+    {
+        using namespace ScriptCanvas;
+        using namespace ScriptCanvas::Nodes::Core;
+
+        AZ::SerializeContext* serializeContext{};
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+        if (serializeContext)
+        {
+            const auto& classData = serializeContext->FindClassData(azrtti_typeid<FunctionDefinitionNode>());
+            if (classData && classData->m_version < FunctionDefinitionNode::NodeVersion::RemoveDefaultDisplayGroup)
+            {
+                for (auto& slot : node.ModAllSlots())
+                {
+                    if (slot->GetType() == CombinedSlotType::DataIn || slot->GetType() == CombinedSlotType::DataOut)
+                    {
+                        slot->ClearDynamicGroup();
+                    }
+                }
+            }
+        }
+    }
+}
 
 namespace ScriptCanvas
 {
@@ -111,6 +132,12 @@ namespace ScriptCanvas
                 {
                     GetGraph()->ReportError((*this), "Parse Error", GenerateErrorMessage());
                 }
+            }
+
+            void FunctionDefinitionNode::OnInit()
+            {
+                Nodeling::OnInit();
+                FunctionDefinitionNodeCpp::VersionUpdateRemoveDefaultDisplayGroup(*this);
             }
 
             void FunctionDefinitionNode::SetupSlots()
@@ -208,7 +235,6 @@ namespace ScriptCanvas
                 slotConfiguration.SetConnectionType(connectionType);
 
                 slotConfiguration.m_displayGroup = GetDataDisplayGroup();
-                slotConfiguration.m_dynamicGroup = GetDataDynamicTypeGroup();
                 slotConfiguration.m_dynamicDataType = DynamicDataType::Any;
                 slotConfiguration.m_isUserAdded = true;
 

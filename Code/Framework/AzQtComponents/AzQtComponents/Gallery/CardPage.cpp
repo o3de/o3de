@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "CardPage.h"
 #include <AzQtComponents/Gallery/ui_CardPage.h>
@@ -69,7 +64,7 @@ AzQtComponents::CardHeader* header = ui->functionalCard->header();
 header->setIcon(QIcon(":/Cards/img/UI20/Cards/slice_item.png"));
 
 // Set the help url to open in a browser if the user clicks the help button
-header->setHelpURL("https://aws.amazon.com/documentation/lumberyard/");
+header->setHelpURL("https://o3de.org/docs/");
 
 // Clear the help url
 header->clearHelpURL();
@@ -108,7 +103,7 @@ card->mockDisabledState(true);
     ui->disabledCard->setTitle("Actually Disabled Card");
     ui->disabledCard->setContentWidget(new QWidget());
     ui->disabledCard->header()->setIcon(QIcon(QStringLiteral(":/stylesheet/img/search.svg")));
-    ui->disabledCard->header()->setHelpURL("https://aws.amazon.com/documentation/lumberyard/");
+    ui->disabledCard->header()->setHelpURL("https://o3de.org/docs/");
     ui->disabledCard->setSecondaryTitle("Secondary Title");
     ui->disabledCard->setSecondaryContentWidget(new QWidget());
     ui->disabledCard->setEnabled(false);
@@ -116,7 +111,7 @@ card->mockDisabledState(true);
     ui->disabledCard2->setTitle("Mock Disabled Card");
     ui->disabledCard2->setContentWidget(new QWidget());
     ui->disabledCard2->header()->setIcon(QIcon(QStringLiteral(":/stylesheet/img/search.svg")));
-    ui->disabledCard2->header()->setHelpURL("https://aws.amazon.com/documentation/lumberyard/");
+    ui->disabledCard2->header()->setHelpURL("https://o3de.org/docs/");
     ui->disabledCard2->setSecondaryTitle("Secondary Title");
     ui->disabledCard2->setSecondaryContentWidget(new QWidget());
     ui->disabledCard2->mockDisabledState(true);
@@ -127,7 +122,7 @@ card->mockDisabledState(true);
     // put in an example icon
     AzQtComponents::CardHeader* header = ui->functionalCard->header();
     header->setIcon(QIcon(":/Cards/img/UI20/Cards/slice_item.png"));
-    header->setHelpURL("https://aws.amazon.com/documentation/lumberyard/");
+    header->setHelpURL("https://o3de.org/docs/");
 
     connect(ui->addButton, &QPushButton::clicked, this, &CardPage::addNotification);
 

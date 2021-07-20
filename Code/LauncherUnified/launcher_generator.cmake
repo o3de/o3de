@@ -1,19 +1,18 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
+
+set_property(GLOBAL PROPERTY LAUNCHER_UNIFIED_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
 # Launcher targets for a project need to be generated when configuring a project.
 # When building the engine source, this file will be included by LauncherUnified's CMakeLists.txt
 # When using an installed engine, this file will be included by the FindLauncherGenerator.cmake script
 get_property(LY_PROJECTS_TARGET_NAME GLOBAL PROPERTY LY_PROJECTS_TARGET_NAME)
 foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJECTS)
+    
     # Computes the realpath to the project
     # If the project_path is relative, it is evaluated relative to the ${LY_ROOT_FOLDER}
     # Otherwise the the absolute project_path is returned with symlinks resolved
@@ -23,7 +22,7 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
             message(FATAL_ERROR "The specified project path of ${project_real_path} does not contain a project.json file")
         else()
             # Add the project_name to global LY_PROJECTS_TARGET_NAME property
-            file(READ "${project_real_path}/project.json" project_json)
+            ly_file_read("${project_real_path}/project.json" project_json)
             string(JSON project_name ERROR_VARIABLE json_error GET ${project_json} "project_name")
             if(json_error)
                 message(FATAL_ERROR "There is an error reading the \"project_name\" key from the '${project_real_path}/project.json' file: ${json_error}")
@@ -33,6 +32,28 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
                 "to the LY_PROJECTS_TARGET_NAME global property. Other configuration errors might occur")
         endif()
     endif()
+
+    ################################################################################
+    # Assets
+    ################################################################################
+    if(PAL_TRAIT_BUILD_HOST_TOOLS)
+        add_custom_target(${project_name}.Assets
+            COMMENT "Processing ${project_name} assets..."
+            COMMAND "${CMAKE_COMMAND}" 
+                -DLY_LOCK_FILE=$<TARGET_FILE_DIR:AZ::AssetProcessorBatch>/project_assets.lock
+                -P ${LY_ROOT_FOLDER}/cmake/CommandExecution.cmake
+                    EXEC_COMMAND $<TARGET_FILE:AZ::AssetProcessorBatch> 
+                        --zeroAnalysisMode 
+                        --project-path=${project_real_path} 
+                        --platforms=${LY_ASSET_DEPLOY_ASSET_TYPE}
+        )
+        set_target_properties(${project_name}.Assets
+            PROPERTIES 
+                EXCLUDE_FROM_ALL TRUE
+                FOLDER ${project_name}
+        )
+    endif()
+
     ################################################################################
     # Monolithic game
     ################################################################################
@@ -40,28 +61,8 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
 
         # In the monolithic case, we need to register the gem modules, to do so we will generate a StaticModules.inl
         # file from StaticModules.in
-
+        set_property(GLOBAL APPEND PROPERTY LY_STATIC_MODULE_PROJECTS_NAME ${project_name})
         get_property(game_gem_dependencies GLOBAL PROPERTY LY_DELAYED_DEPENDENCIES_${project_name}.GameLauncher)
-        
-        unset(extern_module_declarations)
-        unset(module_invocations)
-
-        foreach(game_gem_dependency ${game_gem_dependencies})
-            # To match the convention on how gems targets vs gem modules are named, we remove the "Gem::" from prefix 
-            # and remove the ".Static" from the suffix
-            string(REGEX REPLACE "^Gem::" "Gem_" game_gem_dependency ${game_gem_dependency})
-            string(REGEX REPLACE "^Project::" "Project_" game_gem_dependency ${game_gem_dependency})
-            # Replace "." with "_"
-            string(REPLACE "." "_" game_gem_dependency ${game_gem_dependency})
-
-            string(APPEND extern_module_declarations "extern \"C\" AZ::Module* CreateModuleClass_${game_gem_dependency}();\n")
-            string(APPEND module_invocations "    modulesOut.push_back(CreateModuleClass_${game_gem_dependency}());\n")
-
-        endforeach()
-
-        configure_file(StaticModules.in
-            ${CMAKE_CURRENT_BINARY_DIR}/${project_name}.GameLauncher/Includes/StaticModules.inl
-        )
 
         set(game_build_dependencies 
             ${game_gem_dependencies}
@@ -70,29 +71,9 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
 
         if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
             get_property(server_gem_dependencies GLOBAL PROPERTY LY_DELAYED_DEPENDENCIES_${project_name}.ServerLauncher)
-        
-            unset(extern_module_declarations)
-            unset(module_invocations)
-
-            foreach(server_gem_dependency ${server_gem_dependencies})
-                # To match the convention on how gems targets vs gem modules are named, we remove the "Gem::" from prefix 
-                # and remove the ".Static" from the suffix
-                string(REGEX REPLACE "^Gem::" "Gem_" server_gem_dependency ${server_gem_dependency})
-                string(REGEX REPLACE "^Project::" "Project_" server_gem_dependency ${server_gem_dependency})
-                # Replace "." with "_"
-                string(REPLACE "." "_" server_gem_dependency ${server_gem_dependency})
-
-                string(APPEND extern_module_declarations "extern \"C\" AZ::Module* CreateModuleClass_${server_gem_dependency}();\n")
-                string(APPEND module_invocations "    modulesOut.push_back(CreateModuleClass_${server_gem_dependency}());\n")
-
-            endforeach()
-
-            configure_file(StaticModules.in
-                ${CMAKE_CURRENT_BINARY_DIR}/${project_name}.ServerLauncher/Includes/StaticModules.inl
-            )
 
             set(server_build_dependencies 
-                ${game_gem_dependencies}
+                ${server_gem_dependencies}
                 Legacy::CrySystem
             )
         endif()
@@ -141,6 +122,10 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
             FOLDER ${project_name}
     )
 
+    if(LY_DEFAULT_PROJECT_PATH)
+        set_property(TARGET ${project_name}.GameLauncher APPEND PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "--project-path=\"${LY_DEFAULT_PROJECT_PATH}\"")
+    endif()
+
     ################################################################################
     # Server
     ################################################################################
@@ -181,8 +166,92 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
                 PROPERTIES 
                     FOLDER ${project_name}
             )
+
+            if(LY_DEFAULT_PROJECT_PATH)
+                set_property(TARGET ${project_name}.ServerLauncher APPEND PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "--project-path=\"${LY_DEFAULT_PROJECT_PATH}\"")
+            endif()
         endif()
 
     endif()
 
 endforeach()
+
+#! Defer generation of the StaticModules.inl file needed in monolithic builds until after all the CMake targets are known
+#  This is that the GEM_MODULE target runtime dependencies can be parsed to discover the list of dependent modules
+#  to load
+function(ly_delayed_generate_static_modules_inl)
+    if(LY_MONOLITHIC_GAME)
+        get_property(launcher_unified_binary_dir GLOBAL PROPERTY LAUNCHER_UNIFIED_BINARY_DIR)
+        get_property(project_names GLOBAL PROPERTY LY_STATIC_MODULE_PROJECTS_NAME)
+        foreach(project_name ${project_names})
+
+            unset(extern_module_declarations)
+            unset(module_invocations)
+
+            unset(all_game_gem_dependencies)
+            ly_get_gem_load_dependencies(all_game_gem_dependencies ${project_name}.GameLauncher)
+
+            foreach(game_gem_dependency ${all_game_gem_dependencies})
+                # Sometimes, a gem's Client variant may be an interface library
+                # which dependes on multiple gem targets. The interface libraries
+                # should be skipped; the real dependencies of the interface will be processed
+                if(TARGET ${game_gem_dependency})
+                    get_target_property(target_type ${game_gem_dependency} TYPE)
+                    if(${target_type} STREQUAL "INTERFACE_LIBRARY")
+                        continue()
+                    endif()
+                endif()
+
+                # To match the convention on how gems targets vs gem modules are named,
+                # we remove the ".Static" from the suffix
+                # Replace "." with "_"
+                string(REPLACE "." "_" game_gem_dependency ${game_gem_dependency})
+
+                string(APPEND extern_module_declarations "extern \"C\" AZ::Module* CreateModuleClass_Gem_${game_gem_dependency}();\n")
+                string(APPEND module_invocations "    modulesOut.push_back(CreateModuleClass_Gem_${game_gem_dependency}());\n")
+
+            endforeach()
+
+            configure_file(${CMAKE_CURRENT_FUNCTION_LIST_DIR}/StaticModules.in
+                ${launcher_unified_binary_dir}/${project_name}.GameLauncher/Includes/StaticModules.inl
+            )
+
+            ly_target_link_libraries(${project_name}.GameLauncher PRIVATE ${all_game_gem_dependencies})
+            if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
+                get_property(server_gem_dependencies GLOBAL PROPERTY LY_STATIC_MODULE_PROJECTS_DEPENDENCIES_${project_name}.ServerLauncher)
+
+                unset(extern_module_declarations)
+                unset(module_invocations)
+
+                unset(all_server_gem_dependencies)
+                ly_get_gem_load_dependencies(all_server_gem_dependencies ${project_name}.ServerLauncher)
+                foreach(server_gem_dependency ${server_gem_dependencies})
+                    ly_get_gem_load_dependencies(server_gem_load_dependencies ${server_gem_dependency})
+                    list(APPEND all_server_gem_dependencies ${server_gem_load_dependencies} ${server_gem_dependency})
+                endforeach()
+                foreach(server_gem_dependency ${all_server_gem_dependencies})
+                    # Skip interface libraries
+                    if(TARGET ${server_gem_dependency})
+                        get_target_property(target_type ${server_gem_dependency} TYPE)
+                        if(${target_type} STREQUAL "INTERFACE_LIBRARY")
+                            continue()
+                        endif()
+                    endif()
+
+                    # Replace "." with "_"
+                    string(REPLACE "." "_" server_gem_dependency ${server_gem_dependency})
+
+                    string(APPEND extern_module_declarations "extern \"C\" AZ::Module* CreateModuleClass_Gem_${server_gem_dependency}();\n")
+                    string(APPEND module_invocations "    modulesOut.push_back(CreateModuleClass_Gem_${server_gem_dependency}());\n")
+
+                endforeach()
+
+                configure_file(${CMAKE_CURRENT_FUNCTION_LIST_DIR}/StaticModules.in
+                    ${launcher_unified_binary_dir}/${project_name}.ServerLauncher/Includes/StaticModules.inl
+                )
+
+                ly_target_link_libraries(${project_name}.ServerLauncher PRIVATE ${all_server_gem_dependencies})
+            endif()
+        endforeach()
+    endif()
+endfunction()

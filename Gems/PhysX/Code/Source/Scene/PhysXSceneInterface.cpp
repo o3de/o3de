@@ -1,16 +1,12 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates, or
-* a third party where indicated.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <Scene/PhysXSceneInterface.h>
 
+#include <AzFramework/Physics/Common/PhysicsJoint.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/Configuration/SceneConfiguration.h>
 #include <System/PhysXSystem.h>
@@ -141,6 +137,36 @@ namespace PhysX
         if (AzPhysics::Scene* scene = m_physxSystem->GetScene(sceneHandle))
         {
             scene->DisableSimulationOfBody(bodyHandle);
+        }
+    }
+
+    AzPhysics::JointHandle PhysXSceneInterface::AddJoint(
+        AzPhysics::SceneHandle sceneHandle, const AzPhysics::JointConfiguration* jointConfig, 
+        AzPhysics::SimulatedBodyHandle parentBody, AzPhysics::SimulatedBodyHandle childBody) 
+    {
+        if (AzPhysics::Scene* scene = m_physxSystem->GetScene(sceneHandle))
+        {
+            return scene->AddJoint(jointConfig, parentBody, childBody);
+        }
+
+        return AzPhysics::InvalidJointHandle;
+    }
+
+    AzPhysics::Joint* PhysXSceneInterface::GetJointFromHandle(AzPhysics::SceneHandle sceneHandle, AzPhysics::JointHandle jointHandle) 
+    {
+        if (AzPhysics::Scene* scene = m_physxSystem->GetScene(sceneHandle))
+        {
+            return scene->GetJointFromHandle(jointHandle);
+        }
+
+        return nullptr;
+    }
+
+    void PhysXSceneInterface::RemoveJoint(AzPhysics::SceneHandle sceneHandle, AzPhysics::JointHandle jointHandle) 
+    {
+        if (AzPhysics::Scene* scene = m_physxSystem->GetScene(sceneHandle))
+        {
+            scene->RemoveJoint(jointHandle);
         }
     }
 

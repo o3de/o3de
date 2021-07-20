@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "AssetRequestHandler.h"
 
 
@@ -102,6 +97,27 @@ namespace
         }
 
         return GetRelativeProductPathFromFullSourceOrProductPathResponse(relPathFound, relProductPath);
+    }
+
+    GenerateRelativeSourcePathResponse HandleGenerateRelativeSourcePathRequest(
+        MessageData<GenerateRelativeSourcePathRequest> messageData)
+    {
+        bool relPathFound = false;
+        AZStd::string relPath;
+        AZStd::string watchFolder;
+
+        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+            relPathFound, &AzToolsFramework::AssetSystemRequestBus::Events::GenerateRelativeSourcePath,
+            messageData.m_message->m_sourcePath, relPath, watchFolder);
+
+        if (!relPathFound)
+        {
+            AZ_TracePrintf(
+                AssetProcessor::ConsoleChannel, "Could not find relative source path for the source file (%s).",
+                messageData.m_message->m_sourcePath.c_str());
+        }
+
+        return GenerateRelativeSourcePathResponse(relPathFound, relPath, watchFolder);
     }
 
     SourceAssetInfoResponse HandleSourceAssetInfoRequest(MessageData<SourceAssetInfoRequest> messageData)
@@ -407,6 +423,7 @@ AssetRequestHandler::AssetRequestHandler()
 
     m_requestRouter.RegisterMessageHandler(&HandleGetFullSourcePathFromRelativeProductPathRequest);
     m_requestRouter.RegisterMessageHandler(&HandleGetRelativeProductPathFromFullSourceOrProductPathRequest);
+    m_requestRouter.RegisterMessageHandler(&HandleGenerateRelativeSourcePathRequest);
     m_requestRouter.RegisterMessageHandler(&HandleSourceAssetInfoRequest);
     m_requestRouter.RegisterMessageHandler(&HandleSourceAssetProductsInfoRequest);
     m_requestRouter.RegisterMessageHandler(&HandleGetScanFoldersRequest);

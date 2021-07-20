@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <PhysX_precompiled.h>
 
 #include <PhysX/Configuration/PhysXConfiguration.h>
@@ -35,6 +30,18 @@ namespace PhysX
 #endif
 
             return configuration;
+        }
+
+        bool PhysXSystemConfigurationConverter([[maybe_unused]] AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& dataElement)
+        {
+            if (dataElement.GetVersion() <= 1)
+            {
+                dataElement.RemoveElementByName(AZ_CRC_CE("DefaultMaterialLibrary"));
+                AZ_Warning("PhysXSystemConfigurationConverter", false,
+                    "Old version of PhysX Configuration data found. Physics material library will be reset to default.");
+            }
+
+            return true;
         }
     }
 
@@ -89,9 +96,8 @@ namespace PhysX
         if (auto* serializeContext = azdynamic_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<PhysX::PhysXSystemConfiguration, AzPhysics::SystemConfiguration>()
-                ->Version(1)
+                ->Version(2, &PhysXInternal::PhysXSystemConfigurationConverter)
                 ->Field("WindConfiguration", &PhysXSystemConfiguration::m_windConfiguration)
-                ->Field("MaterialLibrary", &PhysXSystemConfiguration::m_defaultMaterialLibrary)
                 ;
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
@@ -115,7 +121,6 @@ namespace PhysX
     bool PhysXSystemConfiguration::operator==(const PhysXSystemConfiguration& other) const
     {
         return AzPhysics::SystemConfiguration::operator==(other) &&
-            m_defaultMaterialLibrary == other.m_defaultMaterialLibrary &&
             m_windConfiguration == other.m_windConfiguration
             ;
     }

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "GraphToLua.h"
 
@@ -1220,8 +1215,18 @@ namespace ScriptCanvas
 
         void GraphToLua::WriteClassPropertyRead(Grammar::ExecutionTreeConstPtr execution)
         {
-            WriteFunctionCallInput(execution, 0, IsFormatStringInput::No);
-            m_dotLua.Write(".%s", Grammar::ToIdentifier(execution->GetName()).c_str());
+            if (execution->GetInputCount() > 0)
+            {
+                WriteFunctionCallInput(execution, 0, IsFormatStringInput::No);
+                m_dotLua.Write(".");
+            }
+            else
+            {
+                // it's a constant
+                WriteResolvedScope(execution, execution->GetNameLexicalScope());
+            }
+
+            m_dotLua.Write(Grammar::ToIdentifier(execution->GetName()).c_str());
         }
 
         void GraphToLua::WriteClassPropertyWrite(Grammar::ExecutionTreeConstPtr execution)
@@ -1509,20 +1514,7 @@ namespace ScriptCanvas
                     }
                     else
                     {
-                        const AZStd::string resolvedScope = ResolveScope(lexicalScope.m_namespaces);
-
-                        auto& abbreviation = FindAbbreviation(resolvedScope);
-
-                        if (!abbreviation.empty())
-                        {
-                            m_dotLua.Write("%s%.*s", abbreviation.c_str(),
-                                aznumeric_cast<int>(m_configuration.m_lexicalScopeDelimiter.size()), m_configuration.m_lexicalScopeDelimiter.data());
-                        }
-                        else if (!resolvedScope.empty())
-                        {
-                            m_dotLua.Write("%s%.*s", resolvedScope.c_str(),
-                                aznumeric_cast<int>(m_configuration.m_lexicalScopeDelimiter.size()), m_configuration.m_lexicalScopeDelimiter.data());
-                        }
+                        WriteResolvedScope(execution, lexicalScope);
                     }
                 }
                 break;
@@ -2413,5 +2405,28 @@ namespace ScriptCanvas
             }
         }
 
+        void GraphToLua::WriteResolvedScope(Grammar::ExecutionTreeConstPtr execution, const Grammar::LexicalScope& lexicalScope)
+        {
+            if (lexicalScope.m_type != Grammar::LexicalScopeType::Class && lexicalScope.m_type != Grammar::LexicalScopeType::Namespace)
+            {
+                AddError(execution, aznew Internal::ParseError(execution->GetNodeId(), "Invalid arguments to WriteResolvedScope."));
+                return;
+            }
+
+            const AZStd::string resolvedScope = ResolveScope(lexicalScope.m_namespaces);
+
+            auto& abbreviation = FindAbbreviation(resolvedScope);
+
+            if (!abbreviation.empty())
+            {
+                m_dotLua.Write("%s%.*s", abbreviation.c_str(),
+                    aznumeric_cast<int>(m_configuration.m_lexicalScopeDelimiter.size()), m_configuration.m_lexicalScopeDelimiter.data());
+            }
+            else if (!resolvedScope.empty())
+            {
+                m_dotLua.Write("%s%.*s", resolvedScope.c_str(),
+                    aznumeric_cast<int>(m_configuration.m_lexicalScopeDelimiter.size()), m_configuration.m_lexicalScopeDelimiter.data());
+            }
+        }
     } 
 } 

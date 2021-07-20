@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <PhysX_precompiled.h>
 
@@ -26,7 +21,7 @@
 #include <Benchmarks/PhysXBenchmarksCommon.h>
 
 #include <PhysXTestCommon.h>
-#include <Joint.h>
+#include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
 
 namespace PhysX::Benchmarks
 {
@@ -102,7 +97,7 @@ namespace PhysX::Benchmarks
         {
             AzPhysics::RigidBody* m_parent;
             AzPhysics::SimulatedBody* m_child;
-            AZStd::shared_ptr<Physics::Joint> m_joint;
+            AzPhysics::JointHandle m_jointHandle;
         };
         //! Structure to hold the upper and lower twist limits
         //! used with Utils::CreateJoints GenerateTwistLimitsFuncPtr
@@ -122,13 +117,11 @@ namespace PhysX::Benchmarks
 
         //! Helper function to add the required number of joints to the provided world
         //! @param numJoints, the requested number of joints to spawn
-        //! @param system, current active physics system
         //! @param scene, the physics scene to spawn the joints and their world bodies into
         //! @param parentPositionGenerator, [optional] function pointer to allow caller to pick the spawn position of the parent body
         //! @param childPositionGenerator, [optional] function pointer to allow caller to pick the spawn position of the child body
         //! @param GenerateTwistLimitsFuncPtr, [optional] function pointer to allow caller to pick the twist limits of the joint
         AZStd::vector<JointGroup> CreateJoints(int numJoints,
-            Physics::System* system,
             AzPhysics::Scene* scene,
             GenerateSpawnPositionFuncPtr* parentPositionGenerator = nullptr,
             GenerateSpawnPositionFuncPtr* childPositionGenerator = nullptr,
@@ -173,18 +166,18 @@ namespace PhysX::Benchmarks
                 AzPhysics::SimulatedBodyHandle staticRigidBodyHandle = scene->AddSimulatedBody(&staticRigidBodyConfig);
                 newJoint.m_child = scene->GetSimulatedBodyFromHandle(staticRigidBodyHandle);
 
-                AZStd::shared_ptr <PhysX::D6JointLimitConfiguration> config = AZStd::make_shared<D6JointLimitConfiguration>();
+                PhysX::D6JointLimitConfiguration config;
 
                 TwistLimits limits(JointConstants::CreateJointDefaults::UpperLimit, JointConstants::CreateJointDefaults::LowerLimit);
                 if (twistLimitsGenerator)
                 {
                     limits = (*twistLimitsGenerator)(i);
                 }
-                config->m_twistLimitUpper = limits.m_upperLimit;
-                config->m_twistLimitLower = limits.m_lowerLimit;
-                config->m_swingLimitY = 1.0f;
-                config->m_swingLimitZ = 1.0f;
-                newJoint.m_joint = system->CreateJoint(config, newJoint.m_parent, newJoint.m_child);
+                config.m_twistLimitUpper = limits.m_upperLimit;
+                config.m_twistLimitLower = limits.m_lowerLimit;
+                config.m_swingLimitY = 1.0f;
+                config.m_swingLimitZ = 1.0f;
+                newJoint.m_jointHandle = scene->AddJoint(&config, newJoint.m_parent->m_bodyHandle, newJoint.m_child->m_bodyHandle);
                 joints.emplace_back(AZStd::move(newJoint));
             }
 
@@ -201,8 +194,6 @@ namespace PhysX::Benchmarks
         virtual void SetUp([[maybe_unused]] const ::benchmark::State &state) override
         {
             PhysXBaseBenchmarkFixture::SetUpInternal();
-            //need to get the Physics::System to be able to spawn the rigid bodies
-            m_system = AZ::Interface<Physics::System>::Get();
         }
 
         virtual void TearDown([[maybe_unused]] const ::benchmark::State &state) override
@@ -218,8 +209,6 @@ namespace PhysX::Benchmarks
             return sceneConfig;
         }
         // PhysXBaseBenchmarkFixture Interface ---------
-
-        Physics::System *m_system;
     };
 
     //! BM_Joints_AtRest - This test will spawn the requested number of joints
@@ -237,7 +226,7 @@ namespace PhysX::Benchmarks
             return position;
         };
 
-        AZStd::vector<Utils::JointGroup> joinGroups = Utils::CreateJoints(aznumeric_cast<int>(state.range(0)), m_system, m_defaultScene,
+        AZStd::vector<Utils::JointGroup> joinGroups = Utils::CreateJoints(aznumeric_cast<int>(state.range(0)), m_defaultScene,
             &parentPosGenerator, &childPosGenerator);
 
         //setup the sub tick tracker
@@ -259,6 +248,11 @@ namespace PhysX::Benchmarks
             }
         }
         subTickTracker.Stop();
+
+        for (const auto& jointGroup : joinGroups)
+        {
+            m_defaultScene->RemoveJoint(jointGroup.m_jointHandle);
+        }
 
         //sort the frame times and get the P50, P90, P99 percentiles
         Utils::ReportFramePercentileCounters(state, tickTimes, subTickTracker.GetSubTickTimes());
@@ -287,7 +281,7 @@ namespace PhysX::Benchmarks
             return Utils::TwistLimits(JointConstants::JointSettings::SwingingJointUpperLimit, JointConstants::JointSettings::SwingingJointLowerLimit);
         };
 
-        AZStd::vector<Utils::JointGroup> joinGroups = Utils::CreateJoints(aznumeric_cast<int>(state.range(0)), m_system, m_defaultScene,
+        AZStd::vector<Utils::JointGroup> joinGroups = Utils::CreateJoints(aznumeric_cast<int>(state.range(0)), m_defaultScene,
             &parentPosGenerator, &childPosGenerator, &twistGenerator);
 
         //setup the sub tick tracker
@@ -325,6 +319,11 @@ namespace PhysX::Benchmarks
             }
         }
         subTickTracker.Stop();
+
+        for (const auto& jointGroup : joinGroups)
+        {
+            m_defaultScene->RemoveJoint(jointGroup.m_jointHandle);
+        }
 
         //sort the frame times and get the P50, P90, P99 percentiles
         Utils::ReportFramePercentileCounters(state, tickTimes, subTickTracker.GetSubTickTimes());
@@ -370,17 +369,18 @@ namespace PhysX::Benchmarks
         snakeRigidBodies = Utils::GetRigidBodiesFromHandles(m_defaultScene, snakeRigidBodyHandles);
 
         //build the snake
-        AZStd::vector<AZStd::shared_ptr<Physics::Joint>> joints;
-        AZStd::shared_ptr <PhysX::D6JointLimitConfiguration> config = AZStd::make_shared<D6JointLimitConfiguration>();
-        config->m_twistLimitUpper = JointConstants::CreateJointDefaults::UpperLimit;
-        config->m_twistLimitLower = JointConstants::CreateJointDefaults::LowerLimit;
-        config->m_swingLimitY = 1.0f;
-        config->m_swingLimitZ = 1.0f;
+        AZStd::vector<AzPhysics::JointHandle> jointHandles;
+        PhysX::D6JointLimitConfiguration config;
+        config.m_twistLimitUpper = JointConstants::CreateJointDefaults::UpperLimit;
+        config.m_twistLimitLower = JointConstants::CreateJointDefaults::LowerLimit;
+        config.m_swingLimitY = 1.0f;
+        config.m_swingLimitZ = 1.0f;
         //build the head
-        joints.emplace_back(m_system->CreateJoint(config, snakeRigidBodies[0], snakeHead));
+        jointHandles.emplace_back(m_defaultScene->AddJoint(&config, snakeRigidBodies[0]->m_bodyHandle, snakeHead->m_bodyHandle));
         for (size_t i = 0; (i+1) < snakeRigidBodies.size(); i++)
         {
-            joints.emplace_back(m_system->CreateJoint(config, snakeRigidBodies[i + 1], snakeRigidBodies[i]));
+            jointHandles.emplace_back(
+                m_defaultScene->AddJoint(&config, snakeRigidBodies[i + 1]->m_bodyHandle, snakeRigidBodies[i]->m_bodyHandle));
         }
 
         //setup the sub tick tracker
@@ -404,6 +404,10 @@ namespace PhysX::Benchmarks
         subTickTracker.Stop();
 
         m_defaultScene->RemoveSimulatedBodies(snakeRigidBodyHandles);
+        for (const auto& jointHandle : jointHandles)
+        {
+            m_defaultScene->RemoveJoint(jointHandle);
+        }
         snakeRigidBodyHandles.clear();
 
         //sort the frame times and get the P50, P90, P99 percentiles

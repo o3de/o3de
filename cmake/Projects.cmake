@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 # Deals with projects (e.g. game gems)
@@ -105,6 +101,7 @@ function(ly_add_project_dependencies)
     )
 endfunction()
 
+
 #template for generating the project build_path setreg
 set(project_build_path_template [[
 {
@@ -119,7 +116,6 @@ set(project_build_path_template [[
     }
 }]]
 )
-
 
 #! ly_generate_project_build_path_setreg: Generates a .setreg file that contains an absolute path to the ${CMAKE_BINARY_DIR}
 #  This allows locate the directory where the project it's binaries are built to be located within the engine.
@@ -136,18 +132,32 @@ set(project_build_path_template [[
 #       can only run on the host platform
 # \arg:project_real_path Full path to the o3de project directory
 function(ly_generate_project_build_path_setreg project_real_path)
-        # The build path isn't needed on non-monolithic platforms
-        # Nor on any non-host platforms
-        if (LY_MONOLITHIC_GAME OR NOT PAL_TRAIT_BUILD_HOST_TOOLS)
-            return()
-        endif()
+    # The build path isn't needed on non-monolithic platforms
+    # Nor on any non-host platforms
+    if (LY_MONOLITHIC_GAME OR NOT PAL_TRAIT_BUILD_HOST_TOOLS)
+        return()
+    endif()
 
-        # Set the project_bin_path to the ${CMAKE_BINARY_DIR} to provide the configure template
-        # with the project build directory
-        set(project_bin_path ${CMAKE_BINARY_DIR})
-        string(CONFIGURE ${project_build_path_template} project_build_path_setreg_content @ONLY)
-        set(project_user_build_path_setreg_file ${project_real_path}/user/Registry/Platform/${PAL_PLATFORM_NAME}/build_path.setreg)
-        file(GENERATE OUTPUT ${project_user_build_path_setreg_file} CONTENT ${project_build_path_setreg_content})
+    # Set the project_bin_path to the ${CMAKE_BINARY_DIR} to provide the configure template
+    # with the project build directory
+    set(project_bin_path ${CMAKE_BINARY_DIR})
+    string(CONFIGURE ${project_build_path_template} project_build_path_setreg_content @ONLY)
+    set(project_user_build_path_setreg_file ${project_real_path}/user/Registry/Platform/${PAL_PLATFORM_NAME}/build_path.setreg)
+    file(GENERATE OUTPUT ${project_user_build_path_setreg_file} CONTENT ${project_build_path_setreg_content})
+endfunction()
+
+
+function(add_project_json_external_subdirectories project_path)
+    set(project_json_path ${project_path}/project.json)
+    if(EXISTS ${project_json_path})
+        read_json_external_subdirs(external_subdirs ${project_path}/project.json)
+        foreach(external_subdir ${external_subdirs})
+            file(REAL_PATH ${external_subdir} real_external_subdir BASE_DIRECTORY ${project_path})
+            list(APPEND project_external_subdirs ${real_external_subdir})
+        endforeach()
+
+        set_property(GLOBAL APPEND PROPERTY LY_EXTERNAL_SUBDIRS ${project_external_subdirs})
+    endif()
 endfunction()
 
 # Add the projects here so the above function is found
@@ -163,5 +173,15 @@ foreach(project ${LY_PROJECTS})
     list(APPEND LY_PROJECTS_FOLDER_NAME ${project_folder_name})
     add_subdirectory(${project} "${project_folder_name}-${full_directory_hash}")
     ly_generate_project_build_path_setreg(${full_directory_path})
+    add_project_json_external_subdirectories(${full_directory_path})
 endforeach()
+
+# If just one project is defined we pass it as a parameter to the applications
+list(LENGTH LY_PROJECTS projects_length)
+if(projects_length EQUAL "1")
+    list(GET LY_PROJECTS 0 project)
+    file(REAL_PATH ${project} full_directory_path BASE_DIRECTORY ${CMAKE_SOURCE_DIR})
+    ly_set(LY_DEFAULT_PROJECT_PATH ${full_directory_path})
+endif()
+
 ly_set(LY_PROJECTS_FOLDER_NAME ${LY_PROJECTS_FOLDER_NAME})

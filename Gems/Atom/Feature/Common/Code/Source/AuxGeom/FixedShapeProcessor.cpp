@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "FixedShapeProcessor.h"
 #include "AuxGeomDrawProcessorShared.h"
@@ -112,7 +107,8 @@ namespace AZ
         }
 
         void FixedShapeProcessor::PrepareFrame()
-        {
+        {            
+            AZ_ATOM_PROFILE_FUNCTION("AuxGeom", "FixedShapeProcessor: PrepareFrame");
             m_processSrgs.clear();
             m_drawPackets.clear();
 
@@ -1369,15 +1365,12 @@ namespace AZ
         void FixedShapeProcessor::FillShaderData(Data::Instance<RPI::Shader>& shader, ShaderData& shaderData)
         {
             // Get the per-object SRG and store the indices of the data we need to set per object
-            shaderData.m_perObjectSrgAsset = shader->FindShaderResourceGroupAsset(Name{ "ObjectSrg" });
-            if (!shaderData.m_perObjectSrgAsset.GetId().IsValid())
+            shaderData.m_shaderAsset = shader->GetAsset();
+            shaderData.m_supervariantIndex = shader->GetSupervariantIndex();
+            shaderData.m_perObjectSrgLayout = shader->FindShaderResourceGroupLayout(Name{ "ObjectSrg" });
+            if (!shaderData.m_perObjectSrgLayout)
             {
-                AZ_Error("FixedShapeProcessor", false, "Failed to get shader resource group asset");
-                return;
-            }
-            else if (!shaderData.m_perObjectSrgAsset.IsReady())
-            {
-                AZ_Error("FixedShapeProcessor", false, "Shader resource group asset is not loaded");
+                AZ_Error("FixedShapeProcessor", false, "Failed to get shader resource group layout");
                 return;
             }
 
@@ -1568,7 +1561,7 @@ namespace AZ
 
             // Create a SRG for the shape to specify its transform and color
             // [GFX TODO] [ATOM-2333] Try to avoid doing SRG create/compile per draw. Possibly using instancing.
-            auto srg = RPI::ShaderResourceGroup::Create(shaderData.m_perObjectSrgAsset);
+            auto srg = RPI::ShaderResourceGroup::Create(shaderData.m_shaderAsset, shaderData.m_supervariantIndex, shaderData.m_perObjectSrgLayout->GetName());
             if (!srg)
             {
                 AZ_Warning("AuxGeom", false, "Failed to create a shader resource group for an AuxGeom draw, Ignoring the draw");
@@ -1667,7 +1660,7 @@ namespace AZ
         {
             ShaderData& shaderData = m_perObjectShaderData[drawStyle==DrawStyle_Shaded?1:0];
             // Create a SRG for the box to specify its transform and color
-            auto srg = RPI::ShaderResourceGroup::Create(shaderData.m_perObjectSrgAsset);
+            auto srg = RPI::ShaderResourceGroup::Create(shaderData.m_shaderAsset, shaderData.m_supervariantIndex, shaderData.m_perObjectSrgLayout->GetName());
             if (!srg)
             {
                 AZ_Warning("AuxGeom", false, "Failed to create a shader resource group for an AuxGeom draw, Ignoring the draw");

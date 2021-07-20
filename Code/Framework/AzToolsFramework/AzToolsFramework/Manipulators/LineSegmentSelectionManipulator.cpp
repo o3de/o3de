@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "LineSegmentSelectionManipulator.h"
 
@@ -20,18 +15,23 @@
 namespace AzToolsFramework
 {
     LineSegmentSelectionManipulator::Action CalculateManipulationDataAction(
-        const AZ::Transform& worldFromLocal, const AZ::Vector3& nonUniformScale, const AZ::Vector3& rayOrigin,
-        const AZ::Vector3& rayDirection, const float rayLength, const AZ::Vector3& localStart, const AZ::Vector3& localEnd)
+        const AZ::Transform& worldFromLocal,
+        const AZ::Vector3& nonUniformScale,
+        const AZ::Vector3& rayOrigin,
+        const AZ::Vector3& rayDirection,
+        const float rayLength,
+        const AZ::Vector3& localStart,
+        const AZ::Vector3& localEnd)
     {
         AZ::Vector3 worldClosestPositionRay, worldClosestPositionLineSegment;
         float rayProportion, lineSegmentProportion;
         AZ::Intersect::ClosestSegmentSegment(
-            rayOrigin, rayOrigin + rayDirection * rayLength,
-            worldFromLocal.TransformPoint(nonUniformScale * localStart), worldFromLocal.TransformPoint(nonUniformScale * localEnd),
-            rayProportion, lineSegmentProportion, worldClosestPositionRay, worldClosestPositionLineSegment);
+            rayOrigin, rayOrigin + rayDirection * rayLength, worldFromLocal.TransformPoint(nonUniformScale * localStart),
+            worldFromLocal.TransformPoint(nonUniformScale * localEnd), rayProportion, lineSegmentProportion, worldClosestPositionRay,
+            worldClosestPositionLineSegment);
 
         AZ::Transform worldFromLocalNormalized = worldFromLocal;
-        const AZ::Vector3 scale = worldFromLocalNormalized.ExtractScale() * nonUniformScale;
+        const AZ::Vector3 scale = worldFromLocalNormalized.ExtractUniformScale() * nonUniformScale;
         const AZ::Transform localFromWorldNormalized = worldFromLocalNormalized.GetInverse();
 
         return { (localFromWorldNormalized.TransformPoint(worldClosestPositionLineSegment)) / scale };
@@ -47,7 +47,9 @@ namespace AzToolsFramework
         AttachLeftMouseDownImpl();
     }
 
-    LineSegmentSelectionManipulator::~LineSegmentSelectionManipulator() {}
+    LineSegmentSelectionManipulator::~LineSegmentSelectionManipulator()
+    {
+    }
 
     void LineSegmentSelectionManipulator::InstallLeftMouseDownCallback(const MouseActionCallback& onMouseDownCallback)
     {
@@ -112,12 +114,9 @@ namespace AzToolsFramework
         if (mouseInteraction.m_keyboardModifiers.Ctrl() && !mouseInteraction.m_keyboardModifiers.Shift())
         {
             m_manipulatorView->Draw(
-                GetManipulatorManagerId(), managerState,
-                GetManipulatorId(), {
-                    TransformUniformScale(GetSpace()), GetNonUniformScale(),
-                    m_localStart, MouseOver()
-                },
-                debugDisplay, cameraState, mouseInteraction);
+                GetManipulatorManagerId(), managerState, GetManipulatorId(),
+                { TransformUniformScale(GetSpace()), GetNonUniformScale(), m_localStart, MouseOver() }, debugDisplay, cameraState,
+                mouseInteraction);
         }
     }
 
@@ -135,4 +134,4 @@ namespace AzToolsFramework
     {
         m_manipulatorView->Invalidate(GetManipulatorManagerId());
     }
-}
+} // namespace AzToolsFramework

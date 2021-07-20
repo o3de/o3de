@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -58,7 +53,7 @@ DepthResult DepthResultAbsolute(float depth)
 
 //! The client shader must define this function.
 //! This allows the client shader to implement special depth map sampling, for example procedurally generating or blending depth maps.
-//! In simple cases though, the implementation of GetDepth() can simply call SampleDepthOrHeightMap().
+//! In simple cases though, the implementation of GetDepth() can simply call SampleDepthFromHeightmap().
 //! @param uv the UV coordinates to use for sampling
 //! @param uv_ddx will be set to ddx_fine(uv)
 //! @param uv_ddy will be set to ddy_fine(uv)
@@ -66,13 +61,12 @@ DepthResult DepthResultAbsolute(float depth)
 DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy);
 
 //! Convenience function that can be used to implement GetDepth().
-//! @param isHeightmap indicates whether to sample the map is a height map rather than a depth map.
 //! @return see struct DepthResult. In this case it will always contain a Code::Normalized result. 
-DepthResult SampleDepthOrHeightMap(bool isHeightmap, Texture2D map, sampler mapSampler, float2 uv, float2 uv_ddx, float2 uv_ddy)
+DepthResult SampleDepthFromHeightmap(Texture2D map, sampler mapSampler, float2 uv, float2 uv_ddx, float2 uv_ddy)
 {
     DepthResult result;
     result.m_resultCode = DepthResultCode_Normalized;
-    result.m_depth = abs((isHeightmap * 1.0) - map.SampleGrad(mapSampler, uv, uv_ddx, uv_ddy).r);
+    result.m_depth = 1.0 - map.SampleGrad(mapSampler, uv, uv_ddx, uv_ddy).r;
     return result;
 }
 
@@ -169,20 +163,20 @@ ParallaxOffset AdvancedParallaxMapping(float depthFactor, float depthOffset, flo
     float2 ddx_uv = ddx_fine(uv);
     float2 ddy_uv = ddy_fine(uv);
 
-    float depthSearchStart = -depthOffset;
+    float depthSearchStart = depthOffset;
     float depthSearchEnd = depthSearchStart + depthFactor;
     
     float inverseDepthFactor = 1.0 / depthFactor;
 
     // This is the relative position at which we begin searching for intersection.
     // It is adjusted according to the depthOffset, raising or lowering the whole surface by depthOffset units.
-    float3 parallaxOffset = dirToCameraTS.xyz * dirToCameraZInverse * depthOffset;
+    float3 parallaxOffset = -dirToCameraTS.xyz * dirToCameraZInverse * depthOffset;
     
     // Get an initial heightmap sample to start the intersection search, starting at our initial parallaxOffset position.
     float currentSample = GetNormalizedDepth(depthSearchStart, depthSearchEnd, inverseDepthFactor, uv + parallaxOffset.xy, ddx_uv, ddy_uv);
     float prevSample;
     
-    // Note that when depthOffset < 0, we could actually narrow the search so that instead of going through the entire [depthSearchStart,depthSearchEnd] range
+    // Note that when depthOffset > 0, we could actually narrow the search so that instead of going through the entire [depthSearchStart,depthSearchEnd] range
     // of the heightmap, we could go through the range [0,depthSearchEnd]. This would give more accurate results and fewer artifacts
     // in case where the magnitude of depthOffset is significant. But for the sake of simplicity we currently search the whole range in all cases.
 
@@ -271,7 +265,7 @@ ParallaxOffset AdvancedParallaxMapping(float depthFactor, float depthOffset, flo
     }
     
     // Even though we do a bunch of clamping above when calling GetClampedDepth(), there are still cases where the parallax offset
-    // can be noticeably above the surface and still needs to be clamped here. The main case is when depthFactor==0 and depthOffset>1.
+    // can be noticeably above the surface and still needs to be clamped here. The main case is when depthFactor==0 and depthOffset<1.
     if(parallaxOffset.z > 0.0)
     {
         parallaxOffset = float3(0,0,0);
@@ -371,13 +365,13 @@ ParallaxOffset CalculateParallaxOffset(float depthFactor, float depthOffset, flo
 // @param dirToCameraTS - normalized direction to the camera, in tangent space.
 // @param dirToLightTS - normalized direction to a light source, in tangent space, for self-shadowing (if enabled via o_parallax_shadow).
 ParallaxOffset GetParallaxOffset( float depthFactor, 
-                          float depthOffset,
-                          float2 uv,
-                          float3 dirToCameraWS,
-                          float3 tangentWS,
-                          float3 bitangentWS,
-                          float3 normalWS,
-                          float3x3 uvMatrix)
+                                  float depthOffset,
+                                  float2 uv,
+                                  float3 dirToCameraWS,
+                                  float3 tangentWS,
+                                  float3 bitangentWS,
+                                  float3 normalWS,
+                                  float3x3 uvMatrix)
 {
     // Tangent space eye vector
     float3 dirToCameraTS = normalize(WorldSpaceToTangent(dirToCameraWS, normalWS, tangentWS, bitangentWS));

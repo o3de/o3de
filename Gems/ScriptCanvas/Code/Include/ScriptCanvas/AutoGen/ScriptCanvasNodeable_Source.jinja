@@ -1,12 +1,7 @@
 {#
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or 
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 #}
 {% import 'ScriptCanvas_Macros.jinja' as macros %}
 {% import 'ScriptCanvas_Nodeable_Macros.jinja' as nodemacro %}
@@ -19,15 +14,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include <AzCore/RTTI/BehaviorContext.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/RTTI/TypeInfo.h>
-
 #include <ScriptCanvas/Core/Contracts.h>
 #include <ScriptCanvas/Core/NodeableNode.h>
 #include <ScriptCanvas/Core/SlotExecutionMap.h>
 #include <ScriptCanvas/Grammar/ParsingUtilities.h>
-
 #include <ScriptCanvas/Utils/VersionConverters.h>
 
 {% for xml in dataFiles %}
@@ -47,12 +37,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 {%- set attribute_Category = Class.attrib['Category']  %}
 {%- set attribute_Uuid = Class.attrib['Uuid']  %}
 {%- set attribute_Icon = Class.attrib['Icon']  %}
-{%- set attribute_Base = Class.attrib['Base']  %}
 {%- set attribute_GeneratePropertyFriend = Class.attrib['GeneratePropertyFriend']  %}
 {%- set attribute_Version = Class.attrib['Version'] %}
 {%- set attribute_VersionConverter = Class.attrib['VersionConverter'] %}
 {%- set attribute_EventHandler = Class.attrib['EventHandler'] %}
 {%- set attribute_Deprecated = Class.attrib['Deprecated'] %}
+
+
+{%- set attribute_Base = Class.attrib['Base']  %}
+{% if not Class.attrib['Base'] is defined %}
+{%    set attribute_Base = "ScriptCanvas::Nodeable" %}
+{% endif %}
 
 {% set attribute_Namespace = undefined %}
 {%- if Class.attrib['Namespace'] is defined %}
@@ -95,19 +90,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 {{CollectDisplayGroups('Output')}}
 {{CollectDisplayGroups('Parameter')}}
 
-{# FOR DEBUGGING / DIAGNOSTIC
-
-// Standalone (No DisplayGroup) {{ global_standaloneTagMap }}
-{% for key, value in global_standaloneTagMap.items() %}
-// {{key}} : {{value}} 
-{% endfor %}
-
-// DisplayGrouped {{ global_displayGroupMap }}
-{% for key, value in global_displayGroupMap.items() %}
-// {{key}} : {{value}}
-{% endfor %}
-#}
-
 {# ----------------------------------------------------------------------------------------- #}
 
 {% if attribute_Namespace is defined %}
@@ -115,33 +97,6 @@ namespace {{attribute_Namespace}}
 {
 {% endif %}
 
-{# Standard "In" function }
-{{nodemacro.FunctionSignature(attribute_QualifiedName, Class)}}
-{
-{%-  for parameter in Class.findall('Parameter') -%}
-{%     if parameter.attrib['Input'] is defined and parameter.attrib['Input'] == "True" %}
-
-//    this->{{parameter.attrib['Name']}} = arg{{loop.index0}};
-
-{%-     endif -%}
-{%  endfor %}
-
-{%  set returnNames = [] %}
-{%  set returnTypes = [] %}
-{%-     for return in Class.findall('Parameter') -%}
-{%-         if return.attrib['Output'] is defined and return.attrib['Output'] == "True" -%}
-{%              if returnTypes.append(return.attrib['Type']) %}{% endif %}
-{%              if returnNames.append("this->" + return.attrib['Name']) %}{% endif %}
-{%-         endif -%}
-{%-     endfor -%}
-
-{%  if returnNames|length() == 1 %}
-return {{returnNames[0]}};
-{%  elif returnNames|length() > 1 %}
-    return AZStd::tuple<{{returnTypes|join(", ")}}>({{returnNames|join(", ")}});
-{%  endif %}
-}
-#}
 {%- set nodeableNodeName = attribute_Name + 'Node' %}
 {% set list_outputs = [] %}
 {% for output in Class.iter('Output') %}
@@ -156,43 +111,81 @@ return {{returnNames[0]}};
 {% for item in Class.iter('Output') %}
 {%      if item.attrib['DisplayGroup'] is defined %}{% set displayGroup = item.attrib['DisplayGroup'] %}{% endif %}
 {% endfor %}
+{% set branches = [] %}
+{% for method in Class.findall('Input') %}
+{%      for branch in method.findall('Branch') %}
+{%			if branches.append(branch) %}{% endif %}
+{%		endfor %}
+{% endfor %}
 {# ExecutionOuts #}
 // ExecutionOuts begin
 {{ nodemacro.ExecutionOutDefinitions(Class, attribute_QualifiedName)}}
+{% if not Class.attrib['ExtendConfigureSlots'] is defined %} size_t {{attribute_QualifiedName}}::GetRequiredOutCount() const { return {{Class.findall('Output')|length + branches|length}}; }{% endif %}
 // ExecutionOuts end
 {# Reflect #}
+
+{% if Class.attrib['ExtendReflectionSerialize'] is defined %}
+{%      set ExtendReflectionSerialize = "defined" %}
+{%      set preSerialize = "serializeBuilder" %}
+{%      set postSerialize = ";" %}
+{% else %}
+{%      set preSerialize = "" %}
+{%      set postSerialize = "" %}
+{% endif %}
+
+{% if Class.attrib['ExtendReflectionEdit'] is defined %}
+{%      set ExtendReflectionEdit = "defined" %}
+{%      set preEdit = "editorBuilder" %}
+{%      set postEdit = ";" %}
+{% else %}
+{%      set preEdit = "" %}
+{%      set postEdit = "" %}
+{% endif %}
+
+{% if Class.attrib['ExtendReflectionBehavior'] is defined %}
+{%      set ExtendReflectionBehavior = "defined" %}
+{%      set preBehavior = "behaviorBuilder" %}
+{%      set postBehavior = ";" %}
+{% else %}
+{%      set preBehavior = "" %}
+{%      set postBehavior = "" %}
+{% endif %}
+
 void {{attribute_QualifiedName}}::Reflect(AZ::ReflectContext* context)
 {
     using namespace ScriptCanvas;
 
     if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
     {
-        serializeContext->Class<{{ attribute_Name }}{% if attribute_Base is defined %}, {{ attribute_Base }}{% endif %}>()
+{% if ExtendReflectionSerialize is defined %}   auto {{preSerialize}} = {% else %}   {% endif %}serializeContext->Class<{{ attribute_Name }}{% if attribute_Base is defined %}, {{ attribute_Base }}{% endif %}>(){{postSerialize}}
 {% if attribute_EventHandler is defined %}
-            ->EventHandler<{{ attribute_EventHandler }}>()
+            {{preSerialize}}->EventHandler<{{ attribute_EventHandler }}>(){{postSerialize}}
 {% endif %}
 
 {# Serialized Properties #}
 {% for Property in Class.iter('Property') %}
 {% set property_Name = Property.attrib['Name'] %}
-            ->Field("{{ property_Name }}", &{{ attribute_Name }}::{{ property_Name | replace(' ','') }})
+            {{preSerialize}}->Field("{{ property_Name }}", &{{ attribute_Name }}::{{ property_Name | replace(' ','') }}){{postSerialize}}
 {% endfor %}
         ;
 
+{% if ExtendReflectionSerialize is defined %}
+        ExtendReflectionSerialize(&{{preSerialize}});
+{% endif %}
+
         if (AZ::EditContext* editContext = serializeContext->GetEditContext())
         {
-            editContext->Class<{{ attribute_QualifiedName }}>("{{ attribute_PreferredClassName }}", "{{ attribute_Description }}")
-                       ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                            ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-
+{% if ExtendReflectionEdit is defined %}     auto {{preEdit}} = {% else %}   {% endif %}editContext->Class<{{ attribute_QualifiedName }}>("{{ attribute_PreferredClassName }}", "{{ attribute_Description }}"){{postEdit}}
+                       {{preEdit}}->ClassElement(AZ::Edit::ClassElements::EditorData, ""){{postEdit}}
+                       {{preEdit}}->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly){{postEdit}}
 {% if attribute_Category is defined %}
-                            ->Attribute(AZ::Edit::Attributes::Category, "{{ attribute_Category }}")
+                        {{preEdit}}->Attribute(AZ::Edit::Attributes::Category, "{{ attribute_Category }}"){{postEdit}}
 {%- endif %}
 {% if attribute_Icon is defined %}
-                            ->Attribute(AZ::Edit::Attributes::Icon, "{{ attribute_Icon }}")
+                        {{preEdit}}->Attribute(AZ::Edit::Attributes::Icon, "{{ attribute_Icon }}"){{postEdit}}
 {%- endif %}
 {% if attribute_Deprecated is defined %}
-                            ->Attribute(AZ::Edit::Attributes::Deprecated, "{{ attribute_Deprecated }}")
+                        {{preEdit}}->Attribute(AZ::Edit::Attributes::Deprecated, "{{ attribute_Deprecated }}"){{postEdit}}
 {%- endif %}
 {% set uihandler = 'AZ::Edit::UIHandlers::Default' %}
 {% for item in Class.iter('Property') %}
@@ -203,29 +196,34 @@ void {{attribute_QualifiedName}}::Reflect(AZ::ReflectContext* context)
 {% if item.attrib['Description'] is defined %}
     {% set description = item.attrib['Description'] %}
 {% endif %}
-                            // {{ item.attrib['Name'] }}
-                            ->DataElement({{ uihandler }}, &{{ attribute_Name }}::{{ item.attrib['Name'] }}, "{{ item.attrib['Name'] }}", "{{ description }}")
+        // {{ item.attrib['Name'] }}
+                        {{preEdit}}->DataElement({{ uihandler }}, &{{ attribute_Name }}::{{ item.attrib['Name'] }}, "{{ item.attrib['Name'] }}", "{{ description }}"){{postEdit}}
 {%          for EditAttribute in item.iter('EditAttribute') %}
-                                ->Attribute({{ EditAttribute.attrib['Key'] }}, {{ EditAttribute.attrib['Value'] }})
+                        {{preEdit}}->Attribute({{ EditAttribute.attrib['Key'] }}, {{ EditAttribute.attrib['Value'] }}){{postEdit}}
 {%          endfor %}
 {% endfor %}
                             ;
+{% if ExtendReflectionEdit is defined %}
+                            ExtendReflectionEdit(&{{preEdit}});
+{% endif %}
             }
         }
 
     // Behavior Context Reflection
     if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
     {
-        behaviorContext->Class<{{ attribute_Name }}>("{{ attribute_Name }}")
-            ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::List)
-            ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+{% if ExtendReflectionBehavior is defined %}    auto {{preBehavior}} = {% else %}    {% endif %}behaviorContext->Class<{{ attribute_Name }}>("{{ attribute_Name }}"){{postBehavior}}
+            {{preBehavior}}->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::List){{postBehavior}}
+            {{preBehavior}}->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common){{postBehavior}}
 {% for inputMethod in Class.iter('Input') %}
 {% set methodName = inputMethod.attrib['Name'] %}
             // {{ inputMethod.attrib['Name'] }}
-            ->Method(Grammar::ToIdentifier("{{ macros.SlotName(methodName) }}").c_str(), &{{ attribute_Name }}::{{ macros.CleanName(methodName) }})
+            {{preBehavior}}->Method(Grammar::ToIdentifier("{{ macros.SlotName(methodName) }}").c_str(), &{{ attribute_Name }}::{{ macros.CleanName(methodName) }}){{postBehavior}}
 {% endfor %}
-
         ;
+{% if ExtendReflectionBehavior is defined %}
+        ExtendReflectionBehavior(&{{preBehavior}});
+{% endif %}
     }
 }
 
@@ -253,27 +251,32 @@ Nodes::{{ nodeableNodeName }}::{{ nodeableNodeName }}()
 {# NodeableNode Reflection #}
 void Nodes::{{ nodeableNodeName }}::Reflect(AZ::ReflectContext* context)
 {
-
     {{ attribute_QualifiedName }}::Reflect(context);
 
     // Serialization Context Reflection
     if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
     {
-        serializeContext->Class<{{ nodeableNodeName }}, NodeableNode>()
+        {%if ExtendReflectionSerialize is defined%}auto {{preSerialize}} = {%endif%}serializeContext->Class<{{ nodeableNodeName }}, NodeableNode>(){{postSerialize}}
 {% if attribute_Version is defined %}
-            ->Version({{ attribute_Version }}{% if attribute_VersionConverter is defined %}, &{{ attribute_VersionConverter }}{% endif %})
+            {{preSerialize}}->Version({{ attribute_Version }}{% if attribute_VersionConverter is defined %}, &{{ attribute_VersionConverter }}{% endif %}){{postSerialize}}
 {% else %}
-            ->Version(0)
+            {{preSerialize}}->Version(0){{postSerialize}}
 {% endif %}
-        ;
+            ;
+{% if ExtendReflectionSerialize is defined %}
+        ExtendReflectionSerialize(&{{preSerialize}});
+{% endif %}
 
         if (AZ::EditContext* editContext = serializeContext->GetEditContext())
         {
-            editContext->Class<{{ nodeableNodeName }}>("{{ attribute_PreferredClassName }}", "{{ attribute_Description }}")
-                       ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                            ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                            ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ;
+            {% if ExtendReflectionEdit is defined %}auto {{preEdit}} = {%endif%}editContext->Class<{{ nodeableNodeName }}>("{{ attribute_PreferredClassName }}", "{{ attribute_Description }}"){{postEdit}}
+                {{preEdit}}->ClassElement(AZ::Edit::ClassElements::EditorData, ""){{postEdit}}
+                {{preEdit}}->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly){{postEdit}}
+                {{preEdit}}->Attribute(AZ::Edit::Attributes::AutoExpand, true){{postEdit}}
+                ;
+{% if ExtendReflectionEdit is defined %}
+            ExtendReflectionEdit(&{{preEdit}});
+{% endif %}
         }
     }
 }
@@ -324,6 +327,7 @@ void Nodes::{{ nodeableNodeName }}::ConfigureVisualExtensions()
         RegisterExtension(visualExtensions);
     }
 {% endfor %}
+    OnConfigureVisualExtensions();
 }
 
 {# ConfigureSlots #}
@@ -457,6 +461,9 @@ void Nodes::{{ nodeableNodeName }}::ConfigureSlots()
 {% endfor %}
 #}
 
+{% if Class.attrib['ExtendConfigureSlots'] is defined %}    
+    ExtendConfigureSlots(ins, outs);
+{% endif %}
     // Generate the execution map
     m_slotExecutionMap = SlotExecution::Map(AZStd::move(ins), AZStd::move(outs));
 

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -43,7 +38,7 @@ namespace AZ
             {
                 PrimitiveType = AZ_BIT(0),
                 DepthState = AZ_BIT(1),
-                EnableStencil = AZ_BIT(2),
+                StencilState = AZ_BIT(2),
                 FaceCullMode = AZ_BIT(3),
                 BlendMode = AZ_BIT(4)
             };
@@ -87,6 +82,14 @@ namespace AZ
             //! Finalize and validate initialization. Any initialization functions should be called before EndInit is called. 
             void EndInit();
 
+            //! Set up the DynamicDrawContext for the input Scene.
+            //! This should be called after the last frame is done and before any draw calls.
+            void SetScene(Scene* scene);
+
+            //! Set up the DynamicDrawContext for the input RenderPipeline.
+            //! This should be called after the last frame is done and before any draw calls.
+            void SetRenderPipeline(RenderPipeline* pipeline);
+
             //! Return if this DynamicDrawContext is ready to add draw calls
             bool IsReady();
 
@@ -102,8 +105,8 @@ namespace AZ
 
             //! Set DepthState if DrawStateOptions::DepthState option is enabled
             void SetDepthState(RHI::DepthState depthState);
-            //! Enable/disable stencil if DrawStateOptions::EnableStencil option is enabled
-            void SetEnableStencil(bool enable);
+            //! Set StencilState if DrawStateOptions::StencilState option is enabled
+            void SetStencilState(RHI::StencilState stencilState);
             //! Set CullMode if DrawStateOptions::FaceCullMode option is enabled
             void SetCullMode(RHI::CullMode cullMode);
             //! Set TargetBlendState for target 0 if DrawStateOptions::BlendMode option is enabled
@@ -130,13 +133,19 @@ namespace AZ
             //! Without per draw viewport, the viewport setup in pass is usually used. 
             void UnsetViewport();
 
+            //! Set stencil reference for following draws which are added to this DynamicDrawContext
+            void SetStencilReference(uint8_t stencilRef);
+
+            //! Get the current stencil reference.
+            uint8_t GetStencilReference() const;
+
             //! Draw Indexed primitives with vertex and index data and per draw srg
             //! The per draw srg need to be provided if it's required by shader. 
-            void DrawIndexed(void* vertexData, uint32_t vertexCount, void* indexData, uint32_t indexCount, RHI::IndexFormat indexFormat, Data::Instance < ShaderResourceGroup> drawSrg = nullptr);
+            void DrawIndexed(const void* vertexData, uint32_t vertexCount, const void* indexData, uint32_t indexCount, RHI::IndexFormat indexFormat, Data::Instance < ShaderResourceGroup> drawSrg = nullptr);
 
             //! Draw linear indexed primitives with vertex data and per draw srg
             //! The per draw srg need to be provided if it's required by shader. 
-            void DrawLinear(void* vertexData, uint32_t vertexCount, Data::Instance<ShaderResourceGroup> drawSrg);
+            void DrawLinear(const void* vertexData, uint32_t vertexCount, Data::Instance<ShaderResourceGroup> drawSrg);
 
             //! Get per vertex size. The size was evaluated when vertex format was set
             uint32_t GetPerVertexDataSize();
@@ -180,7 +189,7 @@ namespace AZ
                 // states available for change 
                 RHI::CullMode m_cullMode;
                 RHI::DepthState m_depthState;
-                bool m_enableStencil;
+                RHI::StencilState m_stencilState;
                 RHI::PrimitiveTopology m_topology;
                 RHI::TargetBlendState m_blendState0;
 
@@ -196,9 +205,12 @@ namespace AZ
             bool m_useScissor = false;
             RHI::Scissor m_scissor;
 
-            // current scissor
+            // current viewport
             bool m_useViewport = false;
             RHI::Viewport m_viewport;
+
+            // Current stencil reference value
+            uint8_t m_stencilRef = 0;
 
             // Cached RHI pipeline states for different combination of render states 
             AZStd::unordered_map<HashValue64, const RHI::PipelineState*> m_cachedRhiPipelineStates;
@@ -211,7 +223,7 @@ namespace AZ
             Data::Instance<ShaderResourceGroup> m_srgPerContext;
             RHI::ShaderResourceGroup* m_srgGroups[1]; // array for draw item's srg groups
             uint32_t m_perVertexDataSize = 0;
-            Data::Asset<ShaderResourceGroupAsset> m_drawSrgAsset;
+            RHI::Ptr<RHI::ShaderResourceGroupLayout> m_drawSrgLayout;
             bool m_hasShaderVariantKeyFallbackEntry = false;
 
             // Draw variations allowed in this DynamicDrawContext

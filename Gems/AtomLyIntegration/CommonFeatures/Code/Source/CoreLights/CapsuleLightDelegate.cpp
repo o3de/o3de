@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <CoreLights/CapsuleLightDelegate.h>
 #include <Atom/RPI.Public/Scene.h>
@@ -35,7 +30,7 @@ namespace AZ
             // This equation is based off of the integration of a line segment against a perpendicular normal pointing at the center of the
             // line segment from some distance away.
 
-            float scale = GetTransform().GetScale().GetMaxElement();
+            float scale = GetTransform().GetUniformScale();
             float h = GetInteriorHeight() * scale;
             float t2 = lightThreshold * lightThreshold;
             float h2 = h * h;
@@ -54,7 +49,7 @@ namespace AZ
                 const auto endpoints = m_shapeBus->GetCapsulePoints();
                 GetFeatureProcessor()->SetCapsuleLineSegment(GetLightHandle(), endpoints.m_begin, endpoints.m_end);
 
-                float scale = GetTransform().GetScale().GetMaxElement();
+                float scale = GetTransform().GetUniformScale();
                 float radius = m_shapeBus->GetRadius();
                 GetFeatureProcessor()->SetCapsuleRadius(GetLightHandle(), scale * radius);
             }
@@ -62,7 +57,7 @@ namespace AZ
 
         float CapsuleLightDelegate::GetSurfaceArea() const
         {
-            float scale = GetTransform().GetScale().GetMaxElement();
+            float scale = GetTransform().GetUniformScale();
             float radius = m_shapeBus->GetRadius();
             float capsArea = 4.0f * Constants::Pi * radius * radius; // both caps make a sphere
             float sideArea = 2.0f * Constants::Pi * radius * GetInteriorHeight(); // cylindrical area of capsule
@@ -74,10 +69,10 @@ namespace AZ
             if (isSelected)
             {
                 // Attenuation radius shape is just a capsule with the same internal height, but a radius of the attenuation radius.
-                float radius = CalculateAttenuationRadius(AreaLightComponentConfig::CutoffIntensity);
+                float radius = GetConfig()->m_attenuationRadius;
 
                 // Add on the caps for the attenuation radius
-                float scale = GetTransform().GetScale().GetMaxElement();
+                float scale = GetTransform().GetUniformScale();
                 float height = m_shapeBus->GetHeight() * scale;
 
                 debugDisplay.SetColor(color);

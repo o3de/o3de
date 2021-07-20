@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <AzCore/EBus/BusImpl.h> //Just to get AZ::NullMutex
@@ -24,11 +19,6 @@ namespace AZ
         //! and aggregating the measured times as running statistics.
         //!
         //! See "StatisticalProfilerProxy.h" for more explanations on the meaning of Statistical Profiling.
-        //!
-        //! See sample UnitTest code in "dev\Code\Framework\Tests\StatisticalProfiler.cpp" which is part of the "FrameworkTests"
-        //! project. Also, "dev\Code\CryEngine\Cry3DEngine\TerrainProfiler.h,.cpp"
-        //! and "dev\Code\CryEngine\RenderDll\Common\RendElements\TerrainUtils\Debug\TerrainProfiler.h,.cpp"
-        //! are good examples.
         //!
         //! The StatisticalProfiler was made as a template to accommodate for several performance needs...
         //! If all the code that is being profiled is single threaded and you want to identify

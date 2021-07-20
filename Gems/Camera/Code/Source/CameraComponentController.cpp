@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "CameraComponentController.h"
 #include "CameraViewRegistrationBus.h"
@@ -106,9 +101,9 @@ namespace Camera
             OnTransformChanged(localTransform, worldTransform);
 
             // Push the Atom camera after we make sure we're up-to-date with our component's transform to ensure the viewport reads the correct state
+            UpdateCamera();
             atomViewportRequests->PushView(contextName, m_atomCamera);
             AZ::RPI::ViewportContextNotificationBus::Handler::BusConnect(contextName);
-            UpdateCamera();
         }
     }
 
@@ -178,7 +173,10 @@ namespace Camera
         if ((!m_viewSystem)||(!m_system))
         {
             // perform first-time init
-            m_system = gEnv->pSystem;
+            if (gEnv)
+            {
+                m_system = gEnv->pSystem;
+            }
             if (m_system)
             {
                 // Initialize local view.
@@ -240,7 +238,9 @@ namespace Camera
         CameraBus::Handler::BusConnect();
         CameraNotificationBus::Broadcast(&CameraNotificationBus::Events::OnCameraAdded, m_entityId);
 
-        if (m_config.m_makeActiveViewOnActivation)
+        // Activate our camera if we're running from the launcher or Editor game mode
+        // Otherwise, let the Editor keep managing the active camera
+        if (m_config.m_makeActiveViewOnActivation && (!gEnv || !gEnv->IsEditor() || gEnv->IsEditorGameMode()))
         {
             MakeActiveView();
         }
@@ -382,6 +382,11 @@ namespace Camera
 
     void CameraComponentController::OnTransformChanged([[maybe_unused]] const AZ::Transform& local, const AZ::Transform& world)
     {
+        if (m_updatingTransformFromEntity)
+        {
+            return;
+        }
+
         if (m_view)
         {
             CCamera& camera = m_view->GetCamera();

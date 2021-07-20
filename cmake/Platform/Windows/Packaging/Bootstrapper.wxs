@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?include "cpack_variables.wxi"?>
+
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+    xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
+
+    <Bundle Name="$(var.CPACK_PACKAGE_NAME) [Developer Preview]"
+        Version="$(var.CPACK_PACKAGE_VERSION)"
+        Manufacturer="$(var.CPACK_PACKAGE_VENDOR)"
+        UpgradeCode="$(var.CPACK_BOOTSTRAP_UPGRADE_GUID)"
+        IconSourceFile="$(var.CPACK_WIX_PRODUCT_ICON)"
+        DisableModify="yes">
+
+        <Variable Name="InstallFolder"
+            Type="string"
+            Value="[WindowsVolume]$(var.CPACK_PACKAGE_INSTALL_DIRECTORY)"
+            bal:Overridable="yes"/>
+
+        <!-- special variable name that auto maps to a WixStandardBootstrapperApplication attribute of the same name -->
+        <Variable Name="LaunchTarget"
+            Type="string"
+            Value="[InstallFolder]\bin\Windows\profile\o3de.exe"/>
+
+        <PayloadGroup Id="Images">
+            <Payload Id="warning.png" SourceFile="$(var.CPACK_RESOURCE_PATH)/warning.png" Compressed="yes"/>
+        </PayloadGroup>
+
+        <?ifdef CPACK_LICENSE_URL?>
+            <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.HyperlinkLicense">
+                <bal:WixStandardBootstrapperApplication
+                    LicenseUrl="$(var.CPACK_LICENSE_URL)"
+                    LogoFile="$(var.CPACK_WIX_PRODUCT_LOGO)"
+                    ThemeFile="$(var.CPACK_BOOTSTRAP_THEME_FILE).xml"
+                    LocalizationFile="$(var.CPACK_BOOTSTRAP_THEME_FILE).wxl"
+                    ShowVersion="yes" />
+
+                <PayloadGroupRef Id="Images"/>
+            </BootstrapperApplicationRef>
+        <?else?>
+            <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.RtfLicense">
+                <bal:WixStandardBootstrapperApplication
+                    LicenseFile="$(var.CPACK_WIX_LICENSE_RTF)"
+                    LogoFile="$(var.CPACK_WIX_PRODUCT_LOGO)"
+                    ThemeFile="$(var.CPACK_BOOTSTRAP_THEME_FILE).xml"
+                    LocalizationFile="$(var.CPACK_BOOTSTRAP_THEME_FILE).wxl"
+                    ShowVersion="yes" />
+
+                <PayloadGroupRef Id="Images"/>
+            </BootstrapperApplicationRef>
+        <?endif?>
+
+        <Chain>
+            <MsiPackage Id="$(var.CPACK_PACKAGE_FILE_NAME)"
+                SourceFile="$(var.CPACK_LOCAL_INSTALLER_DIR)/$(var.CPACK_PACKAGE_FILE_NAME).msi"
+                DownloadUrl="$(var.CPACK_DOWNLOAD_SITE)/{2}"
+                Vital="yes"
+                Compressed="no">
+
+                <MsiProperty Name="INSTALL_ROOT" Value="[InstallFolder]" />
+            </MsiPackage>
+        </Chain>
+    </Bundle>
+</Wix>

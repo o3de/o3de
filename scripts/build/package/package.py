@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 import os
 import sys
@@ -24,9 +20,6 @@ from glob3 import glob
 
 def package(options):
     package_env = PackageEnv(options.platform, options.type, options.package_env)
-
-    # Override values in bootstrap.cfg for PC package
-    override_bootstrap_cfg(package_env)
 
     if not package_env.get('SKIP_BUILD'):
         print(package_env.get('SKIP_BUILD'))
@@ -49,34 +42,6 @@ def get_python_path(package_env):
         return os.path.join(package_env.get('ENGINE_ROOT'), 'python', 'python.cmd')
     else:
         return os.path.join(package_env.get('ENGINE_ROOT'), 'python', 'python.sh')
-
-
-def override_bootstrap_cfg(package_env):
-    print('Override values in bootstrap.cfg')
-    engine_root = package_env.get('ENGINE_ROOT')
-    bootstrap_path = os.path.join(engine_root, 'bootstrap.cfg')
-    replace_values = {'project_path':'{}'.format(package_env.get('BOOTSTRAP_CFG_GAME_FOLDER'))}
-    try:
-        with open(bootstrap_path, 'r') as bootstrap_cfg:
-            content = bootstrap_cfg.read()
-    except:
-        error('Cannot read file {}'.format(bootstrap_path))
-    content = content.split('\n')
-    new_content = []
-    for line in content:
-        if not line.startswith('--'):
-            strs = line.split('=')
-            if len(strs):
-                key = strs[0].strip(' ')
-                if key in replace_values:
-                    line = '{}={}'.format(key, replace_values[key])
-        new_content.append(line)
-    try:
-        with open(bootstrap_path, 'w') as out:
-            out.write('\n'.join(new_content))
-    except:
-        error('Cannot write to file {}'.format(bootstrap_path))
-    print('{} updated with value {}'.format(bootstrap_path, replace_values))
 
 
 def cmake_build(package_env):

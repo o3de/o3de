@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <GridMate/Serialize/MathMarshal.h>
 #include <GridMate/Serialize/CompressionMarshal.h>
@@ -488,18 +483,17 @@ void TransformCompressor::Marshal(WriteBuffer& wb, const AZ::Transform& value) c
 {
     AZ::u8 flags = 0;
     auto flagsMarker = wb.InsertMarker(flags);
-    AZ::Matrix3x3 m33 = AZ::Matrix3x3::CreateFromTransform(value);
-    AZ::Vector3 scale = m33.ExtractScale();
-    AZ::Quaternion rot = AZ::Quaternion::CreateFromMatrix3x3(m33.GetOrthogonalized());
+    float scale = value.GetUniformScale();
+    AZ::Quaternion rot = value.GetRotation();
     if (!rot.IsIdentity())
     {
         flags |= HAS_ROT;
         wb.Write(rot, QuatCompMarshaler());
     }
-    if (!scale.IsClose(AZ::Vector3::CreateOne()))
+    if (!AZ::IsClose(scale, 1.0f, AZ::Constants::Tolerance))
     {
         flags |= HAS_SCALE;
-        wb.Write(scale, Vec3CompMarshaler());
+        wb.Write(scale, HalfMarshaler());
     }
     AZ::Vector3 pos = value.GetTranslation();
     if (!pos.IsZero())
@@ -527,9 +521,9 @@ void TransformCompressor::Unmarshal(AZ::Transform& value, ReadBuffer& rb) const
     }
     if (flags & HAS_SCALE)
     {
-        AZ::Vector3 scale;
-        rb.Read(scale, Vec3CompMarshaler());
-        xform.MultiplyByScale(scale);
+        float scale;
+        rb.Read(scale, HalfMarshaler());
+        xform.MultiplyByUniformScale(scale);
     }
     if (flags & HAS_POS)
     {

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <cctype>
 
@@ -77,6 +72,27 @@
 #endif // defined(AZ_ENABLE_DEBUG_TOOLS)
 
 #include <AzCore/Module/Environment.h>
+#include <AzCore/std/string/conversions.h>
+
+static void PrintEntityName(const AZ::ConsoleCommandContainer& arguments)
+{
+    if (arguments.empty())
+    {
+        return;
+    }
+
+    const auto entityIdStr = AZStd::string(arguments.front());
+    const auto entityIdValue = AZStd::stoull(entityIdStr);
+
+    AZStd::string entityName;
+    AZ::ComponentApplicationBus::BroadcastResult(
+        entityName, &AZ::ComponentApplicationBus::Events::GetEntityName, AZ::EntityId(entityIdValue));
+
+    AZ_Printf("Entity Debug", "EntityId: %" PRIu64 ", Entity Name: %s", entityIdValue, entityName.c_str());
+}
+
+AZ_CONSOLEFREEFUNC(
+    PrintEntityName, AZ::ConsoleFunctorFlags::Null, "Parameter: EntityId value, Prints the name of the entity to the console");
 
 namespace AZ
 {
@@ -462,8 +478,6 @@ namespace AZ
         // for the application root.
         CalculateAppRoot();
 
-        // Merge the bootstrap.cfg file into the Settings Registry as soon as the OSAllocator has been created.
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_Bootstrap(*m_settingsRegistry);
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(*m_settingsRegistry, AZ_TRAIT_OS_PLATFORM_CODENAME, {});
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_settingsRegistry, m_commandLine, executeRegDumpCommands);
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*m_settingsRegistry);
@@ -1262,7 +1276,7 @@ namespace AZ
                 // So auto load is turned off if option "AutoLoad" key is bool that is false
                 if (valueName == "AutoLoad" && !value)
                 {
-                    // Strip off the AutoLoead entry from the path
+                    // Strip off the AutoLoad entry from the path
                     auto autoLoadKey = AZ::StringFunc::TokenizeLast(path, "/");
                     if (!autoLoadKey)
                     {
@@ -1332,7 +1346,7 @@ namespace AZ
                 {
                     auto CompareDynamicModuleDescriptor = [&dynamicLibraryPath](const DynamicModuleDescriptor& entry)
                     {
-                        return entry.m_dynamicLibraryPath.contains(dynamicLibraryPath);
+                        return AZ::IO::PathView(entry.m_dynamicLibraryPath).Stem() == AZ::IO::PathView(dynamicLibraryPath).Stem();
                     };
                     if (auto moduleIter = AZStd::find_if(gemModules.begin(), gemModules.end(), CompareDynamicModuleDescriptor);
                         moduleIter == gemModules.end())

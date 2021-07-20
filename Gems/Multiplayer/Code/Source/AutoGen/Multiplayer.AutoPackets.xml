@@ -9,6 +9,7 @@
 
     <Packet Name="Connect" Desc="Client connection packet, on success the server will reply with an Accept">
         <Member Type="uint16_t" Name="networkProtocolVersion" Init="0" />
+        <Member Type="Multiplayer::LongNetworkString" Name="ticket" />
     </Packet>
 
     <Packet Name="Accept" Desc="Server accept packet">
@@ -28,12 +29,6 @@
         <Member Type="Multiplayer::LongNetworkString" Name="command" />
     </Packet>
 
-    <Packet Name="SyncConnectionCvars" Desc="Packet for synchornizing connection quality of service simulation cvars">
-        <Member Type="int32_t"    Name="lossPercent" Init="0" />
-        <Member Type="AZ::TimeMs" Name="latencyMs"   Init="AZ::TimeMs{ 0 }" />
-        <Member Type="AZ::TimeMs" Name="varianceMs"  Init="AZ::TimeMs{ 0 }" />
-    </Packet>
-
     <Packet Name="EntityUpdates" Desc="A packet that contains multiple entity updates">
         <Member Type="AZ::TimeMs" Name="hostTimeMs" Init="AZ::TimeMs{ 0 }" />
         <Member Type="Multiplayer::HostFrameId" Name="hostFrameId" Init="Multiplayer::InvalidHostFrameId" />
@@ -49,15 +44,4 @@
         <Member Type="AzNetworking::IpAddress" Name="remoteServerAddress" Init="AzNetworking::IpAddress()" />
         <Member Type="AZ::TimeMs" Name="lastInputGameTimeMs" Init="AZ::TimeMs{ 0 }" />
     </Packet>
-
-    <Packet Name="NotifyClientMigration" Desc="Tells a server that a client is about to migrate">
-        <Member Type="uint64_t" Name="temporaryUserIdentifier" Init="0" />
-    </Packet>
-
-    <Packet Name="EntityMigration" Desc="A packet that migrates a set of entities to a new server">
-        <Member Type="Multiplayer::NetEntityId"           Name="entityId"           Init="Multiplayer::InvalidNetEntityId" />
-        <Member Type="Multiplayer::PrefabEntityId"        Name="prefabEntityId"     Init="" />
-        <Member Type="AzNetworking::PacketEncodingBuffer" Name="propertyUpdateData" Init="" SuppressFromInitializerList="true" />
-    </Packet>
-    
 </PacketGroup>

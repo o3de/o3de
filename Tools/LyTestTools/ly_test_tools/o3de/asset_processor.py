@@ -1,12 +1,7 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 
 A class to control functionality of Lumberyard's asset processor.
 The class manages a workspace's asset processor and asset configurations.
@@ -36,10 +31,10 @@ DEFAULT_TIMEOUT_HOURS = 8
 DEFAULT_TIMEOUT_SECONDS = 300
 
 ASSET_PROCESSOR_PLATFORM_MAP = {
-    'android': 'es3',
+    'android': 'android',
     'ios': 'ios',
     'linux': 'linux',  # Not fully implemented, see SPEC-2501
-    'mac': 'osx_gl',
+    'mac': 'mac',
     'windows': 'pc',
 }
 
@@ -597,9 +592,10 @@ class AssetProcessor(object):
         run_result = subprocess.run(command, close_fds=True, timeout=timeout, capture_output=capture_output)
         output_list = None
         if capture_output:
-            output_list = run_result.stdout.split(b"\r\n")
             if decode:
-                output_list = [line.decode('utf-8') for line in output_list]
+                output_list = run_result.stdout.decode('utf-8').splitlines()
+            else:
+                output_list = run_result.stdout.splitlines()
 
         if run_result.returncode != 0:
             errorMessage = f"{command} returned error code: {run_result.returncode}"
@@ -664,8 +660,7 @@ class AssetProcessor(object):
             make_dir = os.path.join(self._temp_asset_root, copy_dir)
             if not os.path.isdir(make_dir):
                 os.makedirs(make_dir)
-        for copyfile_name in ['bootstrap.cfg',
-                              'Registry/AssetProcessorPlatformConfig.setreg',
+        for copyfile_name in ['Registry/AssetProcessorPlatformConfig.setreg',
                               os.path.join(self._workspace.project, "project.json"),
                               os.path.join('Assets', 'Engine', 'exclude.filetag')]:
             shutil.copyfile(os.path.join(self._workspace.paths.engine_root(), copyfile_name),

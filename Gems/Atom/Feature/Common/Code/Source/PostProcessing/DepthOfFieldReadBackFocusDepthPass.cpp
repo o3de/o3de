@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
@@ -34,31 +29,15 @@ namespace AZ
         DepthOfFieldReadBackFocusDepthPass::DepthOfFieldReadBackFocusDepthPass(const RPI::PassDescriptor& descriptor)
             : ParentPass(descriptor)
         {
-            RPI::PassSystemInterface* passSystem = RPI::PassSystemInterface::Get();
-
-            // Create read back pass
-            m_readbackPass = passSystem->CreatePass<DepthOfFieldCopyFocusDepthToCpuPass>(AZ::Name("DepthOfFieldReadBackPass"));
-            AZ_Assert(m_readbackPass, "DepthOfFieldReadBackFocusDepthPass : read back pass is invalid");
-
-            AddChild(m_readbackPass);
-
-            // Find GetDepth pass on template
-            auto pass = FindChildPass(Name("DepthOfFieldWriteFocusDepthFromGpu"));
-            m_getDepthPass = static_cast<DepthOfFieldWriteFocusDepthFromGpuPass*>(pass.get());
-
             // Create buffer for read back focus depth. We append static counter to avoid name conflicts.
-            AZStd::string bufferName = AZStd::string::format("DepthOfFieldReadBackAutoFocusDepthBuffer_%d", s_bufferInstance++);
             RPI::CommonBufferDescriptor desc;
-            desc.m_bufferName = bufferName;
+            desc.m_bufferName = "DepthOfFieldReadBackAutoFocusDepthBuffer";
             desc.m_poolType = RPI::CommonBufferPoolType::ReadWrite;
             desc.m_byteCount = sizeof(float);
             desc.m_elementSize = aznumeric_cast<uint32_t>(desc.m_byteCount);
             desc.m_bufferData = nullptr;
             desc.m_elementFormat = RHI::Format::R32_FLOAT;
             m_buffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
-
-            m_getDepthPass->SetBufferRef(m_buffer);
-            m_readbackPass->SetBufferRef(m_buffer);
         }
 
         DepthOfFieldReadBackFocusDepthPass::~DepthOfFieldReadBackFocusDepthPass()
@@ -84,6 +63,24 @@ namespace AZ
             {
                 m_getDepthPass->SetScreenPosition(screenPosition);
             }
+        }
+
+        void DepthOfFieldReadBackFocusDepthPass::CreateChildPassesInternal()
+        {
+            RPI::PassSystemInterface* passSystem = RPI::PassSystemInterface::Get();
+
+            // Create read back pass
+            m_readbackPass = passSystem->CreatePass<DepthOfFieldCopyFocusDepthToCpuPass>(AZ::Name("DepthOfFieldReadBackPass"));
+            AZ_Assert(m_readbackPass, "DepthOfFieldReadBackFocusDepthPass : read back pass is invalid");
+
+            AddChild(m_readbackPass);
+
+            // Find GetDepth pass on template
+            auto pass = FindChildPass(Name("DepthOfFieldWriteFocusDepthFromGpu"));
+            m_getDepthPass = static_cast<DepthOfFieldWriteFocusDepthFromGpuPass*>(pass.get());
+
+            m_getDepthPass->SetBufferRef(m_buffer);
+            m_readbackPass->SetBufferRef(m_buffer);
         }
 
         void DepthOfFieldReadBackFocusDepthPass::FrameBeginInternal(FramePrepareParams params)

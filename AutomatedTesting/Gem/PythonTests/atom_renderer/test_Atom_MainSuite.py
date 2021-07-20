@@ -1,12 +1,7 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 
 Main suite tests for the Atom renderer.
 """
@@ -26,19 +21,23 @@ TEST_DIRECTORY = os.path.join(os.path.dirname(__file__), "atom_hydra_scripts")
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("level", ["auto_test"])
 class TestAtomEditorComponentsMain(object):
+    """Holds tests for Atom components."""
 
-    @pytest.mark.test_case_id(
-        "C32078130",  # Display Mapper
-        "C32078129",  # Light
-        "C32078131",  # Radius Weight Modifier
-        "C32078127",  # PostFX Layer
-        "C32078125",  # Physical Sky
-        "C32078115",  # Global Skylight (IBL)
-        "C32078121",  # Exposure Control
-        "C32078120",  # Directional Light
-        "C32078119",  # DepthOfField
-        "C32078118")  # Decal (Atom)
     def test_AtomEditorComponents_AddedToEntity(self, request, editor, level, workspace, project, launcher_platform):
+        """
+        Please review the hydra script run by this test for more specific test info.
+        Tests the following Atom components and verifies all "expected_lines" appear in Editor.log:
+        1. Display Mapper
+        2. Light
+        3. Radius Weight Modifier
+        4. PostFX Layer
+        5. Physical Sky
+        6. Global Skylight (IBL)
+        7. Exposure Control
+        8. Directional Light
+        9. DepthOfField
+        10. Decal (Atom)
+        """
         cfg_args = [level]
 
         expected_lines = [

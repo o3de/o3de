@@ -1,0 +1,149 @@
+#
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
+#
+
+function(gp_resolve_item_override context item exepath dirs resolved_item_var resolved_var)
+    # Qt frameworks could resolve the binary to eg qt/lib/QtCore.framework/Headers/QtCore instead of qt/lib/QtCore.framework/Versions/5/QtCore
+    # This is because GetPrerequisites.cmake gp_resolve_item function searches for the first file that matches the "frameworks name"
+    if(${${resolved_var}} AND ${item} MATCHES "/(Qt[^\\.]+\\.framework)/(.*)")
+        set(qt_framework ${CMAKE_MATCH_1})
+        set(qt_framework_subpath ${CMAKE_MATCH_2})
+        string(REGEX REPLACE "(.*)/(Qt[^\\.]+\\.framework)/(.*)" "\\1/\\2/${qt_framework_subpath}" new_resolved_item "${${resolved_item_var}}")
+        set(${resolved_item_var} ${new_resolved_item} PARENT_SCOPE)
+    endif()
+endfunction()
+
+include(BundleUtilities)
+
+cmake_policy(SET CMP0012 NEW) # new policy for the if that evaluates a boolean out of the LY_BUILD_FIXUP_BUNDLE expansion 
+
+set(anything_new FALSE)
+set(plugin_libs)
+set(plugin_dirs)
+
+function(ly_copy source_file target_directory)
+    
+    get_filename_component(target_filename "${source_file}" NAME)
+    
+    # If source_file is a Framework and target_directory is a bundle
+    if("${source_file}" MATCHES "\\.[Ff]ramework[^\\.]" AND "${target_directory}" MATCHES "\\.app/Contents/MacOS")
+
+        if(NOT @LY_BUILD_FIXUP_BUNDLE@)
+            return()
+        endif()
+
+        # fixup origin to copy the whole Framework folder and change destination to Contents/Frameworks
+        string(REGEX REPLACE "(.*\\.[Ff]ramework).*" "\\1" source_file "${source_file}")
+        get_filename_component(source_file_folder "${source_file}" DIRECTORY)
+        
+        set(local_plugin_dirs ${plugin_dirs})
+        list(APPEND local_plugin_dirs "${source_file_folder}")
+        set(plugin_dirs ${local_plugin_dirs} PARENT_SCOPE)
+        return()
+
+    elseif("${source_file}" MATCHES "qt/plugins" AND "${target_directory}" MATCHES "\\.app/Contents/MacOS")
+
+        if(NOT @LY_BUILD_FIXUP_BUNDLE@)
+            return()
+        endif()
+
+        # fixup the destination so it ends up in Contents/Plugins
+        string(REGEX REPLACE "(.*\\.app/Contents)/MacOS" "\\1/plugins" target_directory "${target_directory}")
+
+        set(local_plugin_dirs ${plugin_dirs})
+        list(APPEND local_plugin_dirs "${target_directory}")
+        set(plugin_dirs ${local_plugin_dirs} PARENT_SCOPE)
+        set(local_plugin_libs ${plugin_libs})
+        list(APPEND local_plugin_libs "${target_directory}/${target_filename}")
+        set(plugin_libs ${local_plugin_libs} PARENT_SCOPE)
+
+    elseif("${source_file}" MATCHES "qt/translations" AND "${target_directory}" MATCHES "\\.app/Contents/MacOS")
+
+        return() # skip, is this used?
+    
+    elseif("${source_file}" MATCHES ".dylib")
+        
+        set(local_plugin_dirs ${plugin_dirs})
+        list(APPEND local_plugin_dirs "${target_directory}")
+        set(plugin_dirs ${local_plugin_dirs} PARENT_SCOPE)
+
+    endif()
+
+    cmake_path(COMPARE "${source_file}" EQUAL "${target_directory}/${target_filename}" same_location)
+    if(NOT ${same_location})
+        if(NOT EXISTS "${target_directory}")
+            file(MAKE_DIRECTORY "${target_directory}")
+        endif()
+        if(NOT EXISTS "${target_directory}/${target_filename}" OR "${source_file}" IS_NEWER_THAN "${target_directory}/${target_filename}")
+            message(STATUS "Copying \"${source_file}\" to \"${target_directory}\"...")
+            file(COPY "${source_file}" DESTINATION "${target_directory}" FILE_PERMISSIONS @LY_COPY_PERMISSIONS@ FOLLOW_SYMLINK_CHAIN)
+            file(TOUCH ${target_directory}/${target_filename})
+            set(anything_new TRUE PARENT_SCOPE)
+        endif()
+    endif()
+endfunction()
+
+@LY_COPY_COMMANDS@
+
+if(NOT @LY_BUILD_FIXUP_BUNDLE@)
+    return()
+endif()
+
+if(@target_file_dir@ MATCHES ".app/Contents/MacOS")
+    string(REGEX REPLACE "(.*\\.app)/Contents/MacOS.*" "\\1" bundle_path "@target_file_dir@")
+    set(fixup_timestamp_file "${bundle_path}.fixup.stamp")
+    if(NOT anything_new)
+        if(NOT EXISTS "${fixup_timestamp_file}" OR "${bundle_path}" IS_NEWER_THAN "${fixup_timestamp_file}")
+            set(anything_new TRUE)
+        endif()
+    endif()
+    if(anything_new)
+        unset(fixup_bundle_ignore)
+        # LYN-4505: Patch dxc, is configured in the wrong folder in 3p
+        if(EXISTS ${bundle_path}/Contents/MacOS/Builders/DirectXShaderCompiler/bin/dxc-3.7)
+            list(APPEND fixup_bundle_ignore dxc-3.7)
+        endif()
+        # Python.framework being copied by fixup_bundle
+        #if(EXISTS ${bundle_path}/Contents/Frameworks/Python.framework)
+        #    # LYN-4502: Patch python bundle, it contains some windows executables, some files that fixup_bundle doesnt like and has
+        #    # duplicated binaries between Versions/3.7 and Versions/Current. 
+        #    file(GLOB exe_files 
+        #        ${bundle_path}/Contents/Frameworks/Python.framework/Versions/3.7/lib/python3.7/distutils/command/*.exe
+        #        ${bundle_path}/Contents/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/pip/_vendor/distlib/*.exe
+        #        ${bundle_path}/Contents/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/setuptools/*.exe
+        #    )
+        #    foreach(exe_file ${exe_files})
+        #        file(REMOVE ${exe_file})
+        #    endforeach()
+        #    file(REMOVE_RECURSE 
+        #        ${bundle_path}/Contents/Frameworks/Python.framework/Versions/3.7/lib/python3.7/test
+        #        ${bundle_path}/Contents/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/scipy/io/tests
+        #        ${bundle_path}/Contents/Frameworks/Python.framework/Versions/3.7/Resources
+        #        ${bundle_path}/Contents/Frameworks/Python.framework/Python
+        #        ${bundle_path}/Contents/Frameworks/Python.framework/Resources/Python.app
+        #        ${bundle_path}/Contents/Frameworks/Python.framework/Versions/3.7/Python
+        #    )
+        #    file(REMOVE_RECURSE ${bundle_path}/Contents/Frameworks/Python.framework/Versions/Current)
+        #    execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink 3.7 Current
+        #        WORKING_DIRECTORY ${bundle_path}/Contents/Frameworks/Python.framework/Versions/
+        #    )
+        #endif()
+        list(REMOVE_DUPLICATES plugin_libs)
+        list(REMOVE_DUPLICATES plugin_dirs)
+        fixup_bundle("${bundle_path}" "${plugin_libs}" "${plugin_dirs}" IGNORE_ITEM ${fixup_bundle_ignore})
+        file(TOUCH "${bundle_path}")
+        file(TOUCH "${fixup_timestamp_file}")
+
+        # fixup bundle ends up removing the rpath of dxc (despite we exclude it)
+        if(EXISTS ${bundle_path}/Contents/MacOS/Builders/DirectXShaderCompiler/bin/dxc-3.7)
+            find_program(LY_INSTALL_NAME_TOOL install_name_tool)
+            if (NOT LY_INSTALL_NAME_TOOL)
+                message(FATAL_ERROR "Unable to locate 'install_name_tool'")
+            endif()
+            execute_process(COMMAND ${LY_INSTALL_NAME_TOOL} -add_rpath @executable_path/../lib ${bundle_path}/Contents/MacOS/Builders/DirectXShaderCompiler/bin/dxc-3.7)
+        endif()
+    endif()
+endif()

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "LyShine_precompiled.h"
 
@@ -18,6 +13,7 @@
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 
 #ifndef _RELEASE
+#include <AzCore/Asset/AssetManagerBus.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #endif
 
@@ -136,7 +132,11 @@ namespace LyShine
         AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw = uiRenderer->GetDynamicDrawContext();
         const UiRenderer::UiShaderData& uiShaderData = uiRenderer->GetUiShaderData();
 
-        dynamicDraw->SetShaderVariant(uiShaderData.m_shaderVariantDefault);
+        // Set render state
+        dynamicDraw->SetStencilState(uiRenderer->GetBaseState().m_stencilState);
+        dynamicDraw->SetTarget0BlendState(uiRenderer->GetBaseState().m_blendState);
+
+        dynamicDraw->SetShaderVariant(uiRenderer->GetCurrentShaderVariant());
 
         // Set up per draw SRG
         AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = dynamicDraw->NewDrawSrg();
@@ -306,7 +306,7 @@ namespace LyShine
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void MaskRenderNode::Render(UiRenderer* uiRenderer)
     {
-        int priorBaseState = uiRenderer->GetBaseState();
+        UiRenderer::BaseState priorBaseState = uiRenderer->GetBaseState();
 
         if (m_isMaskingEnabled || m_drawBehind)
         {
@@ -368,68 +368,61 @@ namespace LyShine
 #endif
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    void MaskRenderNode::SetupBeforeRenderingMask(UiRenderer* uiRenderer, bool firstPass, int priorBaseState)
+    void MaskRenderNode::SetupBeforeRenderingMask(UiRenderer* uiRenderer, bool firstPass, UiRenderer::BaseState priorBaseState)
     {
+        UiRenderer::BaseState curBaseState = priorBaseState;
+
         // If using alpha test for drawing the renderable components on this element then we turn on
         // alpha test as a pre-render step
-        int alphaTest = 0;
-        if (m_useAlphaTest)
-        {
-            alphaTest = GS_ALPHATEST_GREATER;
-        }
+        curBaseState.m_useAlphaTest = m_useAlphaTest;
 
         // if either of the draw flags are checked then we may want to draw the renderable component(s)
         // on this element, otherwise use the color mask to stop them rendering
-        int colorMask = GS_COLMASK_NONE;
+        curBaseState.m_blendState.m_enable = false;
+        curBaseState.m_blendState.m_writeMask = 0x0;
         if ((m_drawBehind && firstPass) ||
             (m_drawInFront && !firstPass))
         {
-            colorMask = 0;  // mask everything, don't write color or alpha, we just write to stencil buffer
+            curBaseState.m_blendState.m_enable = true;
+            curBaseState.m_blendState.m_writeMask = 0xF;
         }
 
-       if (m_isMaskingEnabled)
+        if (m_isMaskingEnabled)
         {
+            AZ::RHI::StencilOpState stencilOpState;
+            stencilOpState.m_func = AZ::RHI::ComparisonFunc::Equal;
+
             // masking is enabled so we want to setup to increment (first pass) or decrement (second pass)
             // the stencil buff when rendering the renderable component(s) on this element
-            int passOp = 0;
             if (firstPass)
             {
-                passOp = STENCOP_PASS(FSS_STENCOP_INCR);
-                gEnv->pRenderer->PushProfileMarker(s_maskIncrProfileMarker);
+                stencilOpState.m_passOp = AZ::RHI::StencilOp::Increment;
             }
             else
             {
-                passOp = STENCOP_PASS(FSS_STENCOP_DECR);
-                gEnv->pRenderer->PushProfileMarker(s_maskDecrProfileMarker);
+                stencilOpState.m_passOp = AZ::RHI::StencilOp::Decrement;
             }
 
-            // set up for stencil write
-            const uint32 stencilRef = uiRenderer->GetStencilRef();
-            const uint32 stencilMask = 0xFF;
-            const uint32 stencilWriteMask = 0xFF;
-            const int32 stencilState = STENC_FUNC(FSS_STENCFUNC_EQUAL)
-                | STENCOP_FAIL(FSS_STENCOP_KEEP) | STENCOP_ZFAIL(FSS_STENCOP_KEEP) | passOp;
-            gEnv->pRenderer->SetStencilState(stencilState, stencilRef, stencilMask, stencilWriteMask);
+            curBaseState.m_stencilState.m_frontFace = stencilOpState;
+            curBaseState.m_stencilState.m_backFace = stencilOpState;
 
-            // Set the base state that should be used when rendering the renderable component(s) on this
-            // element
-            uiRenderer->SetBaseState(priorBaseState | GS_STENCIL | alphaTest | colorMask);
+            // set up for stencil write
+            AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw = uiRenderer->GetDynamicDrawContext();
+            dynamicDraw->SetStencilReference(uiRenderer->GetStencilRef());
+            curBaseState.m_stencilState.m_enable = true;
+            curBaseState.m_stencilState.m_writeMask = 0xFF;
         }
         else
         {
             // masking is not enabled
-
-            // Even if not masking we still use alpha test (if checked). This is primarily to help the user to
-            // visualize what their alpha tested mask looks like.
-            if (colorMask || alphaTest)
-            {
-                uiRenderer->SetBaseState(priorBaseState | colorMask | alphaTest);
-            }
+            curBaseState.m_stencilState.m_enable = false;
         }
+
+        uiRenderer->SetBaseState(curBaseState);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    void MaskRenderNode::SetupAfterRenderingMask(UiRenderer* uiRenderer, bool firstPass, int priorBaseState)
+    void MaskRenderNode::SetupAfterRenderingMask(UiRenderer* uiRenderer, bool firstPass, UiRenderer::BaseState priorBaseState)
     {
         if (m_isMaskingEnabled)
         {
@@ -441,26 +434,29 @@ namespace LyShine
             if (firstPass)
             {
                 uiRenderer->IncrementStencilRef();
-                gEnv->pRenderer->PopProfileMarker(s_maskIncrProfileMarker);
             }
             else
             {
                 uiRenderer->DecrementStencilRef();
-                gEnv->pRenderer->PopProfileMarker(s_maskDecrProfileMarker);
             }
 
-            // turn off stencil write and turn on stencil test
-            const uint32 stencilRef = uiRenderer->GetStencilRef();
-            const uint32 stencilMask = 0xFF;
-            const uint32 stencilWriteMask = 0x00;
-            const int32 stencilState = STENC_FUNC(FSS_STENCFUNC_EQUAL)
-                | STENCOP_FAIL(FSS_STENCOP_KEEP) | STENCOP_ZFAIL(FSS_STENCOP_KEEP) | STENCOP_PASS(FSS_STENCOP_KEEP);
-            gEnv->pRenderer->SetStencilState(stencilState, stencilRef, stencilMask, stencilWriteMask);
+            AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw = uiRenderer->GetDynamicDrawContext();
+            dynamicDraw->SetStencilReference(uiRenderer->GetStencilRef());
 
             if (firstPass)
             {
-                // first pass, turn on stencil test for drawing children
-                uiRenderer->SetBaseState(priorBaseState | GS_STENCIL);
+                UiRenderer::BaseState curBaseState = priorBaseState;
+
+                // turn off stencil write and turn on stencil test
+                curBaseState.m_stencilState.m_enable = true;
+                curBaseState.m_stencilState.m_writeMask = 0x00;
+
+                AZ::RHI::StencilOpState stencilOpState;
+                stencilOpState.m_func = AZ::RHI::ComparisonFunc::Equal;
+                curBaseState.m_stencilState.m_frontFace = stencilOpState;
+                curBaseState.m_stencilState.m_backFace = stencilOpState;
+
+                uiRenderer->SetBaseState(curBaseState);
             }
             else
             {
@@ -474,7 +470,6 @@ namespace LyShine
             // remove any color mask or alpha test that we set in pre-render
             uiRenderer->SetBaseState(priorBaseState);
         }
-
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -636,35 +631,24 @@ namespace LyShine
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void RenderGraph::BeginMask(bool isMaskingEnabled, bool useAlphaTest, bool drawBehind, bool drawInFront)
     {
-#ifdef LYSHINE_ATOM_TODO // keeping this code for future phase (masks and render targets)
-
         // this uses pool allocator
         MaskRenderNode* maskRenderNode = new MaskRenderNode(m_currentMask, isMaskingEnabled, useAlphaTest, drawBehind, drawInFront);
 
         m_currentMask = maskRenderNode;
         m_renderNodeListStack.push(&maskRenderNode->GetMaskRenderNodeList());
-#else
-        AZ_UNUSED(drawInFront);
-        AZ_UNUSED(drawBehind);
-        AZ_UNUSED(useAlphaTest);
-        AZ_UNUSED(isMaskingEnabled);
-#endif
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void RenderGraph::StartChildrenForMask()
     {
-#ifdef LYSHINE_ATOM_TODO // keeping this code for future phase (masks and render targets)
         AZ_Assert(m_currentMask, "Calling StartChildrenForMask while not defining a mask");
         m_renderNodeListStack.pop();
         m_renderNodeListStack.push(&m_currentMask->GetContentRenderNodeList());
-#endif
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void RenderGraph::EndMask()
     {
-#ifdef LYSHINE_ATOM_TODO // keeping this code for future phase (masks and render targets)
         AZ_Assert(m_currentMask, "Calling EndMask while not defining a mask");
         if (m_currentMask)
         {
@@ -685,7 +669,6 @@ namespace LyShine
                 m_renderNodeListStack.top()->push_back(newMaskRenderNode);
             }
         }
-#endif
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -995,6 +978,12 @@ namespace LyShine
         // LYSHINE_ATOM_TODO - will probably need to support this when converting UI Editor to use Atom
         AZ_UNUSED(viewportSize);
 
+        AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw = uiRenderer->GetDynamicDrawContext();
+
+        // Disable stencil and enable blend/color write
+        dynamicDraw->SetStencilState(uiRenderer->GetBaseState().m_stencilState);
+        dynamicDraw->SetTarget0BlendState(uiRenderer->GetBaseState().m_blendState);
+
         // First render the render targets, they are sorted so that more deeply nested ones are rendered first.
 
 #ifdef LYSHINE_ATOM_TODO // keeping this code for reference for future phase (render targets)
@@ -1115,7 +1104,7 @@ namespace LyShine
 
         m_wasBuiltThisFrame = false;
 
-        AZStd::set<ITexture*> uniqueTextures;
+        AZStd::set<AZ::Data::Instance<AZ::RPI::Image>> uniqueTextures;
 
         // If we are rendering to the render targets this frame then record the stats for doing that
         if (m_renderToRenderTargetCount < 2)
@@ -1144,13 +1133,11 @@ namespace LyShine
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    void RenderGraph::GetDebugInfoRenderNodeList(const AZStd::vector<RenderNode*>& renderNodeList, LyShineDebug::DebugInfoRenderGraph& info, AZStd::set<ITexture*>& uniqueTextures) const
+    void RenderGraph::GetDebugInfoRenderNodeList(
+        const AZStd::vector<RenderNode*>& renderNodeList,
+        LyShineDebug::DebugInfoRenderGraph& info,
+        AZStd::set<AZ::Data::Instance<AZ::RPI::Image>>& uniqueTextures) const
     {
-        AZ_UNUSED(renderNodeList);
-        AZ_UNUSED(info);
-        AZ_UNUSED(uniqueTextures);
-
-#ifdef LYSHINE_ATOM_TODO // keeping this code for future phase (convert debug info to use Atom)
         const PrimitiveListRenderNode* prevPrimListNode = nullptr;
         bool isFirstNode = true;
         bool wasLastNodeAMask = false;
@@ -1235,7 +1222,6 @@ namespace LyShine
 
             isFirstNode = false;
         }
-#endif
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1290,13 +1276,6 @@ namespace LyShine
         void* context,
         const AZStd::string& indent) const
     {
-        AZ_UNUSED(renderNodeList);
-        AZ_UNUSED(fileHandle);
-        AZ_UNUSED(reportInfo);
-        AZ_UNUSED(context);
-        AZ_UNUSED(indent);
-
-#ifdef LYSHINE_ATOM_TODO // keeping this code for future phase (convert debug info to use Atom)
         AZStd::string logLine;
 
         bool previousNodeAlreadyCounted = false;
@@ -1355,10 +1334,10 @@ namespace LyShine
                     {
                         for (int i = 0; i < prevPrimListNode->GetNumTextures(); ++i)
                         {
-                            ITexture* texture = prevPrimListNode->GetTexture(i);
+                            AZ::Data::Instance<AZ::RPI::Image> texture = prevPrimListNode->GetTexture(i);
                             if (!texture)
                             {
-                                texture = gEnv->pRenderer->GetWhiteTexture();
+                                texture = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
                             }
                             bool isClampTextureUsage = prevPrimListNode->GetTextureIsClampMode(i);
 
@@ -1405,17 +1384,19 @@ namespace LyShine
 
                 for (int i = 0; i < primListRenderNode->GetNumTextures(); ++i)
                 {
-                    ITexture* texture = primListRenderNode->GetTexture(i);
+                    AZ::Data::Instance<AZ::RPI::Image> texture = primListRenderNode->GetTexture(i);
                     if (!texture)
                     {
-                        texture = gEnv->pRenderer->GetWhiteTexture();
+                        texture = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
                     }
                     bool isClampTextureUsage = primListRenderNode->GetTextureIsClampMode(i);
 
                     LyShineDebug::DebugInfoTextureUsage* matchingTextureUsage = nullptr;
 
                     // Write line to logfile for this texture
-                    logLine = AZStd::string::format("%s  %s\r\n", indent.c_str(), texture->GetName());
+                    AZStd::string textureName;
+                    AZ::Data::AssetCatalogRequestBus::BroadcastResult(textureName, &AZ::Data::AssetCatalogRequests::GetAssetPathById, texture->GetAssetId());
+                    logLine = AZStd::string::format("%s  %s\r\n", indent.c_str(), textureName.c_str());
                     AZ::IO::LocalFileIO::GetInstance()->Write(fileHandle, logLine.c_str(), logLine.size());
 
                     // see if texture is in reportInfo
@@ -1459,7 +1440,6 @@ namespace LyShine
                 prevPrimListNode = primListRenderNode;
             }
         }
-#endif
     }
 
 #endif

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <QHash>
 
@@ -137,10 +132,13 @@ TEST_F(AssetUtilitiesTest, UpdateToCorrectCase_ExistingFile_ReturnsTrue_Corrects
     thingsToTry << "SomeFile.TxT";
     thingsToTry << "otherfile.txt";
     thingsToTry << "subfolder1/otherfile.txt";
+
+    #if defined(AZ_PLATFORM_WINDOWS)
     thingsToTry << "subfolder2\\otherfile.txt";
     thingsToTry << "subFolder3\\somefile.txt";
     thingsToTry << "subFolder4\\subfolder6\\somefile.txt";
     thingsToTry << "subFolder5\\subfolder7/someFile.txt";
+    #endif // AZ_PLATFORM_WINDOWS
     thingsToTry << "specialFileName[.txt";
     thingsToTry << "specialFileName].txt";
     thingsToTry << "specialFileName!.txt";

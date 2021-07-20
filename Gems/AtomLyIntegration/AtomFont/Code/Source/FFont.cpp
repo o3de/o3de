@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 // Description : Font class.
 
@@ -54,21 +49,13 @@
 
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
 
-static const AZ::Vector2 UiDraw_TextSizeFactor = AZ::Vector2(12.0f, 12.0f);
 static const int TabCharCount = 4;
 // set buffer sizes to hold max characters that can be drawn in 1 DrawString call
 static const size_t MaxVerts = 8 * 1024; // 2048 quads
 static const size_t MaxIndices = (MaxVerts * 6) / 4; // 6 indices per quad, 6/4 * MaxVerts
 static const char DrawList2DPassName[] = "2dpass";
 
-namespace ShaderInputs
-{
-    static const char TextureIndexName[] = "m_texture";
-    static const char WorldToProjIndexName[] = "m_worldToProj";
-    static const char SamplerIndexName[] = "m_sampler";
-}
-
-AZ::FFont::FFont(AtomFont* atomFont, const char* fontName)
+AZ::FFont::FFont(AZ::AtomFont* atomFont, const char* fontName)
     : m_name(fontName)
     , m_atomFont(atomFont)
 {
@@ -79,9 +66,14 @@ AZ::FFont::FFont(AtomFont* atomFont, const char* fontName)
     FontEffect* effect = AddEffect("default");
     effect->AddPass();
 
-    AddRef();
+    // Create cpu memory to cache the font draw data before submit
+    m_vertexBuffer = new SVF_P3F_C4B_T2F[MaxVerts];
+    m_indexBuffer = new u16[MaxIndices];
 
-    AZ::Render::Bootstrap::NotificationBus::Handler::BusConnect();
+    m_vertexCount = 0;
+    m_indexCount = 0;
+
+    AddRef();
 }
 
 AZ::RPI::ViewportContextPtr AZ::FFont::GetDefaultViewportContext() const
@@ -99,54 +91,9 @@ AZ::RPI::WindowContextSharedPtr AZ::FFont::GetDefaultWindowContext() const
     return {};
 }
 
-bool AZ::FFont::InitFont(AZ::RPI::Scene* renderScene)
-{
-    if (!renderScene)
-    {
-        return false;
-    }
-
-    auto initializationState = InitializationState::Uninitialized;
-    // Do an atomic transition to Initializing if we're in the Uninitialized state.
-    // Otherwise, check the current state.
-    // If we're Initialized, there's no more work to be done, return true to indicate we're good to go.
-    // If we're Initializing (on another thread), return false to let the consumer know it's not safe for us to be used yet.
-    if (!m_fontInitializationState.compare_exchange_strong(initializationState, InitializationState::Initializing))
-    {
-        return initializationState == InitializationState::Initialized;
-    }
-
-    // Create and initialize DynamicDrawContext for font draw
-    AZ::RPI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw = m_atomFont->GetOrCreateDynamicDrawForScene(renderScene);
-
-    // Save draw srg input indices for later use
-    Data::Instance<RPI::ShaderResourceGroup> drawSrg = dynamicDraw->NewDrawSrg();
-    const RHI::ShaderResourceGroupLayout* layout = drawSrg->GetAsset()->GetLayout();
-
-    m_fontShaderData.m_imageInputIndex = layout->FindShaderInputImageIndex(AZ::Name(ShaderInputs::TextureIndexName));
-    AZ_Error("AtomFont::FFont", m_fontShaderData.m_imageInputIndex.IsValid(), "Failed to find shader input constant %s.",
-        ShaderInputs::TextureIndexName);
-
-    m_fontShaderData.m_viewProjInputIndex = layout->FindShaderInputConstantIndex(AZ::Name(ShaderInputs::WorldToProjIndexName));
-    AZ_Error("AtomFont::FFont", m_fontShaderData.m_viewProjInputIndex.IsValid(), "Failed to find shader input constant %s.",
-        ShaderInputs::WorldToProjIndexName);
-
-    // Create cpu memory to cache the font draw data before submit
-    m_vertexBuffer = new SVF_P3F_C4B_T2F[MaxVerts];
-    m_indexBuffer = new u16[MaxIndices];
-
-    m_vertexCount = 0;
-    m_indexCount = 0;
-
-    m_fontInitializationState = InitializationState::Initialized;
-    return true;
-}
-
 AZ::FFont::~FFont()
 {
     AZ_Assert(m_atomFont == nullptr, "The font should already be unregistered through a call to AZ::FFont::Release()");
-
-    AZ::Render::Bootstrap::NotificationBus::Handler::BusDisconnect();
 
     delete[] m_vertexBuffer;
     delete[] m_indexBuffer;
@@ -304,7 +251,8 @@ void AZ::FFont::DrawStringUInternal(
     const TextDrawContext& ctx)
 {
     // Lazily ensure we're initialized before attempting to render.
-    if (!viewportContext || !InitFont(viewportContext->GetRenderScene().get()))
+    // Validate that there is a render scene before attempting to init.
+    if (!viewportContext || !viewportContext->GetRenderScene())
     {
         return;
     }
@@ -320,12 +268,6 @@ void AZ::FFont::DrawStringUInternal(
 
     const size_t fxSize = m_effects.size();
     if (fxSize && !m_fontImage && !InitTexture())
-    {
-        return;
-    }
-
-    // if the font is about to be deleted then m_atomFont can be nullptr
-    if (!m_atomFont)
     {
         return;
     }
@@ -407,14 +349,17 @@ void AZ::FFont::DrawStringUInternal(
 
     if (numQuads)
     {
-        auto dynamicDraw = m_atomFont->GetOrCreateDynamicDrawForScene(viewportContext->GetRenderScene().get());
-        //setup per draw srg
-        auto drawSrg = dynamicDraw->NewDrawSrg();
-        drawSrg->SetConstant(m_fontShaderData.m_viewProjInputIndex, modelViewProjMat);
-        drawSrg->SetImageView(m_fontShaderData.m_imageInputIndex, m_fontStreamingImage->GetImageView());
-        drawSrg->Compile();
+        AZ::RPI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw = AZ::AtomBridge::PerViewportDynamicDraw::Get()->GetDynamicDrawContextForViewport(m_dynamicDrawContextName, viewportContext->GetId());
+        if (dynamicDraw)
+        {
+            //setup per draw srg
+            auto drawSrg = dynamicDraw->NewDrawSrg();
+            drawSrg->SetConstant(m_fontShaderData.m_viewProjInputIndex, modelViewProjMat);
+            drawSrg->SetImageView(m_fontShaderData.m_imageInputIndex, m_fontStreamingImage->GetImageView());
+            drawSrg->Compile();
 
-        dynamicDraw->DrawIndexed(m_vertexBuffer, m_vertexCount, m_indexBuffer, m_indexCount, RHI::IndexFormat::Uint16, drawSrg);
+            dynamicDraw->DrawIndexed(m_vertexBuffer, m_vertexCount, m_indexBuffer, m_indexCount, RHI::IndexFormat::Uint16, drawSrg);
+        }
         m_indexCount = 0;
         m_vertexCount = 0;
     }
@@ -695,12 +640,6 @@ uint32_t AZ::FFont::WriteTextQuadsToBuffers(SVF_P2F_C4B_T2F_F4B* verts, uint16_t
         return numQuadsWritten;
     }
 
-    // if the font is about to be deleted then m_atomFont can be nullptr
-    if (!m_atomFont)
-    {
-        return numQuadsWritten;
-    }
-
     SVF_P2F_C4B_T2F_F4B* vertexData = verts;
     uint16_t* indexData = indices;
     size_t vertexOffset = 0;
@@ -864,7 +803,7 @@ int AZ::FFont::CreateQuadsForText(const RHI::Viewport& viewport, float x, float 
         if (drawFrame)
         {
             ColorB tempColor(255, 255, 255, 255);
-            uint32_t frameColor = tempColor.pack_abgr8888();        //note: this ends up in r,g,b,a order on little-endian machines
+            uint32_t frameColor = tempColor.pack_argb8888();        //note: this ends up in r,g,b,a order on little-endian machines
 
             Vec2 textSize = GetTextSizeUInternal(viewport, str, asciiMultiLine, ctx);
 
@@ -1122,7 +1061,7 @@ int AZ::FFont::CreateQuadsForText(const RHI::Viewport& viewport, float x, float 
             {
                 ColorB tempColor = color;
                 tempColor.a = ((uint32_t) tempColor.a * alphaBlend) >> 8;
-                packedColor = tempColor.pack_abgr8888();                    //note: this ends up in r,g,b,a order on little-endian machines
+                packedColor = tempColor.pack_argb8888();                    //note: this ends up in r,g,b,a order on little-endian machines
             }
 
             if (ctx.m_drawTextFlags & eDrawText_UseTransform)
@@ -1524,7 +1463,7 @@ bool AZ::FFont::UpdateTexture()
 {
     using namespace AZ;
 
-    if (m_fontInitializationState != InitializationState::Initialized || !m_fontImage)
+    if (!m_fontImage)
     {
         return false;
     }
@@ -1592,7 +1531,7 @@ void AZ::FFont::Prepare(const char* str, bool updateTexture, const AtomFont::Gly
     const bool rerenderGlyphs = m_sizeBehavior == SizeBehavior::Rerender;
     const AtomFont::GlyphSize usedGlyphSize = rerenderGlyphs ? glyphSize : AtomFont::defaultGlyphSize;
     bool texUpdateNeeded = m_fontTexture->PreCacheString(str, nullptr, m_sizeRatio, usedGlyphSize, m_fontHintParams) == 1 || m_fontTexDirty;
-    if (m_fontInitializationState == InitializationState::Initialized && updateTexture && texUpdateNeeded && m_fontImage)
+    if (updateTexture && texUpdateNeeded && m_fontImage)
     {
         UpdateTexture();
         m_fontTexDirty = false;
@@ -1624,12 +1563,6 @@ void AZ::FFont::ScaleCoord(const RHI::Viewport& viewport, float& x, float& y) co
 
     x *= width / WindowScaleWidth;
     y *= height / WindowScaleHeight;
-}
-
-
-void AZ::FFont::OnBootstrapSceneReady([[maybe_unused]] AZ::RPI::Scene* bootstrapScene)
-{
-    InitFont(bootstrapScene);
 }
 
 static void SetCommonContextFlags(AZ::TextDrawContext& ctx, const AzFramework::TextDrawParameters& params)
@@ -1673,6 +1606,12 @@ static void SetCommonContextFlags(AZ::TextDrawContext& ctx, const AzFramework::T
         {
             ctx.m_drawTextFlags |= eDrawText_FixedSize;
         }
+
+        if (params.m_useTransform)
+        {
+            ctx.m_drawTextFlags |= eDrawText_UseTransform;
+            ctx.SetTransform(AZMatrix3x4ToLYMatrix3x4(params.m_transform));
+        }
 }
 
 AZ::FFont::DrawParameters AZ::FFont::ExtractDrawParameters(const AzFramework::TextDrawParameters& params, AZStd::string_view text, bool forceCalculateSize)
@@ -1696,22 +1635,25 @@ AZ::FFont::DrawParameters AZ::FFont::ExtractDrawParameters(const AzFramework::Te
     }
     internalParams.m_ctx.SetBaseState(GS_NODEPTHTEST);
     internalParams.m_ctx.SetColor(AZColorToLYColorF(params.m_color));
+    internalParams.m_ctx.SetEffect(params.m_effectIndex);
     internalParams.m_ctx.SetCharWidthScale((params.m_monospace || params.m_scaleWithWindow) ? 0.5f : 1.0f);
     internalParams.m_ctx.EnableFrame(false);
     internalParams.m_ctx.SetProportional(!params.m_monospace && params.m_scaleWithWindow);
     internalParams.m_ctx.SetSizeIn800x600(params.m_scaleWithWindow && params.m_virtual800x600ScreenSize);
-    internalParams.m_ctx.SetSize(AZVec2ToLYVec2(UiDraw_TextSizeFactor * params.m_scale));
+    internalParams.m_ctx.SetSize(AZVec2ToLYVec2(AZ::Vector2(params.m_textSizeFactor, params.m_textSizeFactor) * params.m_scale));
     internalParams.m_ctx.SetLineSpacing(params.m_lineSpacing);
-    if (params.m_monospace || !params.m_scaleWithWindow)
-    {
-        ScaleCoord(viewport, posX, posY);
-    }
 
     if (params.m_hAlign != AzFramework::TextHorizontalAlignment::Left ||
         params.m_vAlign != AzFramework::TextVerticalAlignment::Top ||
         forceCalculateSize)
     {
+        // We align based on the size of the default font effect because we do not want the
+        // text to move when the font effect is changed
+        unsigned int effectIndex = internalParams.m_ctx.m_fxIdx;
+        internalParams.m_ctx.SetEffect(0);
         Vec2 textSize = GetTextSizeUInternal(viewport, text.data(), params.m_multiline, internalParams.m_ctx);
+        internalParams.m_ctx.SetEffect(effectIndex);
+        
         // If we're using virtual 800x600 coordinates, convert the text size from
         // pixels to that before using it as an offset.
         if (internalParams.m_ctx.m_sizeIn800x600)
@@ -1786,18 +1728,17 @@ void AZ::FFont::DrawScreenAlignedText3d(
     }
     AZ::Vector3 positionNDC = AzFramework::WorldToScreenNDC(
         params.m_position,
-        currentView->GetViewToWorldMatrix(),
+        currentView->GetWorldToViewMatrix(),
         currentView->GetViewToClipMatrix()
     );
-    AzFramework::TextDrawParameters param2d = params;
-    param2d.m_position = positionNDC;
+    internalParams.m_ctx.m_sizeIn800x600 = false;
 
     DrawStringUInternal(
         *internalParams.m_viewport, 
         internalParams.m_viewportContext, 
-        internalParams.m_position.GetX(), 
-        internalParams.m_position.GetY(), 
-        params.m_position.GetZ(), // Z
+        positionNDC.GetX() * internalParams.m_viewport->GetWidth(), 
+        (1.0f - positionNDC.GetY()) * internalParams.m_viewport->GetHeight(), 
+        positionNDC.GetZ(), // Z
         text.data(),
         params.m_multiline,
         internalParams.m_ctx

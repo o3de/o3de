@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "LyShine_precompiled.h"
 #include "UiTextComponent.h"
 
@@ -40,6 +35,7 @@
 #include "RenderGraph.h"
 
 #include <AtomLyIntegration/AtomFont/FFont.h>
+#include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 
 namespace
 {
@@ -1076,7 +1072,7 @@ UiTextComponent::InlineImage::InlineImage(const AZStd::string& texturePathname,
 {
     m_filepath = texturePathname;
     AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::NormalizePath, m_filepath);
-    m_texture = nullptr;
+    m_texture.reset();
     m_size = AZ::Vector2(0.0f, 0.0f);
     m_vAlign = vAlign;
     m_yOffset = yOffset;
@@ -1094,24 +1090,11 @@ UiTextComponent::InlineImage::InlineImage(const AZStd::string& texturePathname,
     else
     {
         // Load the texture
-        uint32 loadTextureFlags = (FT_USAGE_ALLOWREADSRGB | FT_DONT_STREAM);
-        ITexture* texture = gEnv->pRenderer->EF_LoadTexture(texturePathname.c_str(), loadTextureFlags);
-
-        if (!texture || !texture->IsTextureLoaded())
+        m_texture = CDraw2d::LoadTexture(m_filepath);
+        if (m_texture)
         {
-            gEnv->pSystem->Warning(
-                VALIDATOR_MODULE_SHINE,
-                VALIDATOR_WARNING,
-                VALIDATOR_FLAG_FILE | VALIDATOR_FLAG_TEXTURE,
-                texturePathname.c_str(),
-                "No texture file found for image: %s. "
-                "NOTE: File must be in current project or a gem.",
-                texturePathname.c_str());
-        }
-        else
-        {
-            m_texture = texture;
-            m_size = AZ::Vector2(static_cast<float>(m_texture->GetWidth()), static_cast<float>(m_texture->GetHeight()));
+            AZ::RHI::Size size = m_texture->GetDescriptor().m_size;
+            m_size = AZ::Vector2(size.m_width, size.m_height);
         }
     }
 
@@ -1127,17 +1110,6 @@ UiTextComponent::InlineImage::InlineImage(const AZStd::string& texturePathname,
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 UiTextComponent::InlineImage::~InlineImage()
 {
-    // In order to avoid the texture being deleted while there are still commands on the render
-    // thread command queue that use it, we queue a command to delete the texture onto the
-    // command queue.
-
-    if (m_texture && !m_atlas)
-    {
-        SResourceAsync* pInfo = new SResourceAsync();
-        pInfo->eClassName = eRCN_Texture;
-        pInfo->pResource = m_texture;
-        gEnv->pRenderer->ReleaseResourceAsync(pInfo);
-    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1148,13 +1120,6 @@ bool UiTextComponent::InlineImage::OnAtlasLoaded(const TextureAtlasNamespace::Te
         m_coordinates = atlas->GetAtlasCoordinates(m_filepath);
         if (m_coordinates.GetWidth() > 0)
         {
-            if (m_texture)
-            {
-                SResourceAsync* pInfo = new SResourceAsync();
-                pInfo->eClassName = eRCN_Texture;
-                pInfo->pResource = m_texture;
-                gEnv->pRenderer->ReleaseResourceAsync(pInfo);
-            }
             m_atlas = atlas;
             m_texture = m_atlas->GetTexture();
             return true;
@@ -1177,25 +1142,7 @@ bool UiTextComponent::InlineImage::OnAtlasUnloaded(const TextureAtlasNamespace::
         else
         {
             // Load the texture
-            uint32 loadTextureFlags = (FT_USAGE_ALLOWREADSRGB | FT_DONT_STREAM);
-            ITexture* texture = gEnv->pRenderer->EF_LoadTexture(m_filepath.c_str(), loadTextureFlags);
-
-            if (!texture || !texture->IsTextureLoaded())
-            {
-                gEnv->pSystem->Warning(
-                    VALIDATOR_MODULE_SHINE,
-                    VALIDATOR_WARNING,
-                    VALIDATOR_FLAG_FILE | VALIDATOR_FLAG_TEXTURE,
-                    m_filepath.c_str(),
-                    "No texture file found for image: %s. "
-                    "NOTE: File must be in current project or a gem.",
-                    m_filepath.c_str());
-                m_texture = nullptr;
-            }
-            else
-            {
-                m_texture = texture;
-            }
+            m_texture = CDraw2d::LoadTexture(m_filepath);
         }
         return true;
     }
@@ -1869,7 +1816,7 @@ void UiTextComponent::Render(LyShine::IRenderGraph* renderGraph)
         UiTransformInterface::RectPointsArray rectPoints;
         GetTextBoundingBoxPrivate(GetDrawBatchLines(), m_selectionStart, m_selectionEnd, rectPoints);
 
-        ITexture* whiteTexture = gEnv->pRenderer->GetWhiteTexture();
+        auto systemImage = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
         bool isClampTextureMode = true;
 
         uint32 packedColor = (m_textSelectionColor.GetA8() << 24) | (m_textSelectionColor.GetR8() << 16) | (m_textSelectionColor.GetG8() << 8) | m_textSelectionColor.GetB8();
@@ -1878,7 +1825,12 @@ void UiTextComponent::Render(LyShine::IRenderGraph* renderGraph)
         {
             IRenderer::DynUiPrimitive* primitive = renderGraph->GetDynamicQuadPrimitive(rect.pt, packedColor);
             primitive->m_next = nullptr;
-            renderGraph->AddPrimitive(primitive, whiteTexture, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
+
+            LyShine::RenderGraph* lyRenderGraph = dynamic_cast<LyShine::RenderGraph*>(renderGraph);
+            if (lyRenderGraph)
+            {
+                lyRenderGraph->AddPrimitiveAtom(primitive, systemImage, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
+            }
         }
     }
 
@@ -1887,21 +1839,25 @@ void UiTextComponent::Render(LyShine::IRenderGraph* renderGraph)
     {
         for (auto batch : m_renderCache.m_imageBatches)
         {
-            ITexture* texture = batch->m_texture;
+            AZ::Data::Instance<AZ::RPI::Image> texture = batch->m_texture;
 
             // If the fade value has changed we need to update the alpha values in the vertex colors but we do
             // not want to touch or recompute the RGB values
             if (batch->m_cachedPrimitive.m_vertices[0].color.a != finalAlphaByte)
             {
-                for (int i=0; i < 4; ++i)
+                for (int i = 0; i < 4; ++i)
                 {
                     batch->m_cachedPrimitive.m_vertices[i].color.a = finalAlphaByte;
                 }
             }
 
             bool isClampTextureMode = true;
-            renderGraph->AddPrimitive(&batch->m_cachedPrimitive, texture,
-                isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
+            LyShine::RenderGraph* lyRenderGraph = dynamic_cast<LyShine::RenderGraph*>(renderGraph);
+            if (lyRenderGraph)
+            {
+                lyRenderGraph->AddPrimitiveAtom(&batch->m_cachedPrimitive, texture,
+                    isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
+            }
         }
     }
 

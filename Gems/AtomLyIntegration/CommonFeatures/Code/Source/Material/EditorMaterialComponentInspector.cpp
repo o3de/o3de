@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Material/EditorMaterialComponentInspector.h>
 
@@ -184,7 +179,7 @@ namespace AZ
             void MaterialPropertyInspector::AddUvNamesGroup()
             {
                 const AZStd::string groupNameId = AZ::RPI::UvGroupName;
-                const AZStd::string groupDisplayName = "UV Names";
+                const AZStd::string groupDisplayName = "UV Sets";
                 const AZStd::string groupDescription = "UV set names in this material, which can be renamed to match those in the model.";
                 auto& group = m_groups[groupNameId];
 
@@ -296,15 +291,25 @@ namespace AZ
             void MaterialPropertyInspector::RunEditorMaterialFunctors()
             {
                 AZStd::unordered_set<AZ::Name> changedPropertyNames;
+                AZStd::unordered_set<AZ::Name> changedPropertyGroupNames;
 
                 // Convert editor property configuration data into material property meta data so that it can be used to execute functors
                 AZStd::unordered_map<AZ::Name, AZ::RPI::MaterialPropertyDynamicMetadata> propertyDynamicMetadata;
-                for (auto& group : m_groups)
+                AZStd::unordered_map<AZ::Name, AZ::RPI::MaterialPropertyGroupDynamicMetadata> propertyGroupDynamicMetadata;
+                for (auto& groupPair : m_groups)
                 {
-                    for (auto& property : group.second.m_properties)
+                    AZ::RPI::MaterialPropertyGroupDynamicMetadata& metadata = propertyGroupDynamicMetadata[AZ::Name{groupPair.first}];
+                    
+                    for (auto& property : groupPair.second.m_properties)
                     {
                         AtomToolsFramework::ConvertToPropertyMetaData(propertyDynamicMetadata[property.GetId()], property.GetConfig());
                     }
+
+                    // It's significant that we check IsGroupHidden rather than IsGroupVisisble, because it follows the same rules as QWidget::isHidden().
+                    // We don't care whether the widget and all its parents are visible, we only care about whether the group was hidden within the context
+                    // of the material property inspector.
+                    metadata.m_visibility = IsGroupHidden(groupPair.first) ?
+                        AZ::RPI::MaterialPropertyGroupVisibility::Hidden : AZ::RPI::MaterialPropertyGroupVisibility::Enabled;
                 }
 
                 for (AZ::RPI::Ptr<AZ::RPI::MaterialFunctor>& functor : m_editorFunctors)
@@ -318,7 +323,9 @@ namespace AZ
                             m_materialInstance->GetPropertyValues(),
                             m_materialInstance->GetMaterialPropertiesLayout(),
                             propertyDynamicMetadata,
+                            propertyGroupDynamicMetadata,
                             changedPropertyNames,
+                            changedPropertyGroupNames,
                             &materialPropertyDependencies
                         );
                         functor->Process(context);
@@ -327,9 +334,16 @@ namespace AZ
                 m_dirtyPropertyFlags.reset();
 
                 // Apply any changes to material property meta data back to the editor property configurations
-                for (auto& group : m_groups)
+                for (auto& groupPair : m_groups)
                 {
-                    for (auto& property : group.second.m_properties)
+                    AZ::Name groupName{groupPair.first};
+
+                    if (changedPropertyGroupNames.find(groupName) != changedPropertyGroupNames.end())
+                    {
+                        SetGroupVisible(groupPair.first, propertyGroupDynamicMetadata[groupName].m_visibility == AZ::RPI::MaterialPropertyGroupVisibility::Enabled);
+                    }
+
+                    for (auto& property : groupPair.second.m_properties)
                     {
                         AtomToolsFramework::DynamicPropertyConfig propertyConfig = property.GetConfig();
 

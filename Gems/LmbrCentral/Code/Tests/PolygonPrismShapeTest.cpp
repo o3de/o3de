@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "LmbrCentral_precompiled.h"
 #include <AzTest/AzTest.h>
@@ -329,7 +324,7 @@ namespace UnitTest
         AZ::Entity entity;
         AZ::Transform transform = AZ::Transform::CreateFromQuaternionAndTranslation(
             AZ::Quaternion::CreateRotationY(AZ::DegToRad(45.0f)), AZ::Vector3(3.0f, 4.0f, 5.0f));
-        transform.MultiplyByScale(AZ::Vector3(1.5f, 1.5f, 1.5f));
+        transform.MultiplyByUniformScale(1.5f);
         const float height = 1.2f;
         const AZ::Vector3 nonUniformScale(2.0f, 1.2f, 0.5f);
         const AZStd::vector<AZ::Vector2> vertices =
@@ -447,7 +442,7 @@ namespace UnitTest
         AZ::Entity entity;
         AZ::Transform transform = AZ::Transform::CreateFromQuaternionAndTranslation(
             AZ::Quaternion::CreateRotationY(AZ::DegToRad(45.0f)), AZ::Vector3(3.0f, 4.0f, 5.0f));
-        transform.MultiplyByScale(AZ::Vector3(1.5f, 1.5f, 1.5f));
+        transform.MultiplyByUniformScale(1.5f);
         const float height = 1.2f;
         const AZ::Vector3 nonUniformScale(2.0f, 1.2f, 0.5f);
         const AZStd::vector<AZ::Vector2> vertices =
@@ -608,7 +603,7 @@ namespace UnitTest
         AZ::Entity entity;
         CreatePolygonPrism(
             AZ::Transform::CreateTranslation(AZ::Vector3(5.0f, 15.0f, 40.0f)) *
-            AZ::Transform::CreateScale(AZ::Vector3(3.0f)), 2.0f,
+            AZ::Transform::CreateUniformScale(3.0f), 2.0f,
             AZStd::vector<AZ::Vector2>(
             {
                 AZ::Vector2(-2.0f, -2.0f),
@@ -669,7 +664,7 @@ namespace UnitTest
         AZ::Entity entity;
         AZ::Transform transform = AZ::Transform::CreateFromQuaternionAndTranslation(
             AZ::Quaternion::CreateRotationY(AZ::DegToRad(60.0f)), AZ::Vector3(1.0f, 2.5f, -1.0f));
-        transform.MultiplyByScale(AZ::Vector3(2.0f, 2.0f, 2.0f));
+        transform.MultiplyByUniformScale(2.0f);
         const float height = 1.5f;
         const AZ::Vector3 nonUniformScale(0.5f, 1.5f, 2.0f);
 
@@ -772,7 +767,7 @@ namespace UnitTest
         AZ::Entity entity;
         CreatePolygonPrism(
             AZ::Transform::CreateTranslation(AZ::Vector3(5.0f, 15.0f, 40.0f)) *
-            AZ::Transform::CreateScale(AZ::Vector3(3.0f)), 1.5f,
+            AZ::Transform::CreateUniformScale(3.0f), 1.5f,
             AZStd::vector<AZ::Vector2>(
             {
                 AZ::Vector2(-2.0f, -2.0f),
@@ -795,7 +790,7 @@ namespace UnitTest
         AZ::Entity entity;
         AZ::Transform transform = AZ::Transform::CreateFromQuaternionAndTranslation(
             AZ::Quaternion::CreateRotationX(AZ::DegToRad(30.0f)), AZ::Vector3(2.0f, -5.0f, 3.0f));
-        transform.MultiplyByScale(AZ::Vector3(2.0f, 2.0f, 2.0f));
+        transform.MultiplyByUniformScale(2.0f);
         const float height = 1.2f;
         const AZ::Vector3 nonUniformScale(1.5f, 0.8f, 2.0f);
         const AZStd::vector<AZ::Vector2> vertices =

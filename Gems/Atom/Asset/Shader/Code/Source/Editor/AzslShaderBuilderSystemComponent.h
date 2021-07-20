@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -18,14 +13,10 @@
 
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 
-#include "AzslBuilder.h"
-#include "SrgLayoutBuilder.h"
 #include "ShaderAssetBuilder.h"
 #include "ShaderVariantAssetBuilder.h"
 #include "PrecompiledShaderBuilder.h"
 #include "ShaderPlatformInterfaceRequest.h"
-#include "ShaderAssetBuilder2.h"
-#include "ShaderVariantAssetBuilder2.h"
 
 namespace AZ
 {
@@ -68,13 +59,9 @@ namespace AZ
             AZStd::vector<RHI::ShaderPlatformInterface*> GetShaderPlatformInterface(const AssetBuilderSDK::PlatformInfo& platformInfo) override;
 
         private:
-            AzslBuilder m_azslBuilder;
-            SrgLayoutBuilder m_srgLayoutBuilder;
             ShaderAssetBuilder m_shaderAssetBuilder;
             ShaderVariantAssetBuilder m_shaderVariantAssetBuilder;
             PrecompiledShaderBuilder m_precompiledShaderBuilder;
-            ShaderAssetBuilder2 m_shaderAssetBuilder2;
-            ShaderVariantAssetBuilder2 m_shaderVariantAssetBuilder2;
 
             /// Contains the ShaderPlatformInterface for all registered RHIs
             AZStd::unordered_map<RHI::APIType, RHI::ShaderPlatformInterface*> m_shaderPlatformInterfaces;

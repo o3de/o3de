@@ -12,7 +12,7 @@
             "IsPowerOf2": true
         },
         "PlatformsPresets": {
-            "es3": {
+            "android": {
                 "UUID": "{E7F9DF56-DCB0-4683-96EE-F04DA547BE24}",
                 "Name": "SF_Gradient",
                 "SourceColor": "Linear",
@@ -28,7 +28,7 @@
                 "SuppressEngineReduce": true,
                 "IsPowerOf2": true
             },
-            "osx_gl": {
+            "mac": {
                 "UUID": "{E7F9DF56-DCB0-4683-96EE-F04DA547BE24}",
                 "Name": "SF_Gradient",
                 "SourceColor": "Linear",

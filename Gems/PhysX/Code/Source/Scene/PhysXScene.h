@@ -1,17 +1,13 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates, or
-* a third party where indicated.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <AzFramework/Physics/PhysicsScene.h>
+#include <AzFramework/Physics/Common/PhysicsJoint.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/Configuration/SceneConfiguration.h>
@@ -52,6 +48,10 @@ namespace PhysX
         void RemoveSimulatedBodies(AzPhysics::SimulatedBodyHandleList& bodyHandles) override;
         void EnableSimulationOfBody(AzPhysics::SimulatedBodyHandle bodyHandle) override;
         void DisableSimulationOfBody(AzPhysics::SimulatedBodyHandle bodyHandle) override;
+        AzPhysics::JointHandle AddJoint(const AzPhysics::JointConfiguration* jointConfig, 
+            AzPhysics::SimulatedBodyHandle parentBody, AzPhysics::SimulatedBodyHandle childBody) override;
+        AzPhysics::Joint* GetJointFromHandle(AzPhysics::JointHandle jointHandle) override;
+        void RemoveJoint(AzPhysics::JointHandle jointHandle) override;
         AzPhysics::SceneQueryHits QueryScene(const AzPhysics::SceneQueryRequest* request) override;
         AzPhysics::SceneQueryHitsList QuerySceneBatch(const AzPhysics::SceneQueryRequests& requests) override;
         [[nodiscard]] bool QuerySceneAsync(AzPhysics::SceneQuery::AsyncRequestId requestId,
@@ -93,6 +93,10 @@ namespace PhysX
         AZStd::vector<AZStd::pair<AZ::Crc32, AzPhysics::SimulatedBody*>> m_simulatedBodies; //this will become a SimulatedBody with LYN-1334
         AZStd::vector<AzPhysics::SimulatedBody*> m_deferredDeletions;
         AZStd::queue<AzPhysics::SimulatedBodyIndex> m_freeSceneSlots;
+
+        AZStd::vector<AZStd::pair<AZ::Crc32, AzPhysics::Joint*>> m_joints;
+        AZStd::vector<AzPhysics::Joint*> m_deferredDeletionsJoints;
+        AZStd::queue<AzPhysics::JointIndex> m_freeJointSlots;
 
         AzPhysics::SystemEvents::OnConfigurationChangedEvent::Handler m_physicsSystemConfigChanged;
 

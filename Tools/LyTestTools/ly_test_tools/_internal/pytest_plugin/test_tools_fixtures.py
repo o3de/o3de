@@ -1,12 +1,7 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 
 Generic fixtures bundled with LyTestTools
 These fixtures will be available to the end user without requiring to import any file.
@@ -50,7 +45,6 @@ def pytest_addoption(parser):
                      help="An existing CMake binary output directory which contains the lumberyard executables,"
                           "such as: D:/ly/dev/windows_vs2017/bin/profile/")
 
-
 def pytest_configure(config):
     """
     Save custom CLI options during Pytest configuration, so they are later accessible without using fixtures
@@ -60,6 +54,13 @@ def pytest_configure(config):
     ly_test_tools._internal.pytest_plugin.build_directory = _get_build_directory(config)
     ly_test_tools._internal.pytest_plugin.output_path = _get_output_path(config)
 
+
+def pytest_pycollect_makeitem(collector, name, obj):
+    import inspect
+    if inspect.isclass(obj):
+        for base in obj.__bases__:
+            if hasattr(base, "pytest_custom_makeitem"):
+                return base.pytest_custom_makeitem(collector, name, obj)
 
 def _get_build_directory(config):
     """
@@ -362,6 +363,9 @@ def _workspace(request,  # type: _pytest.fixtures.SubRequest
                asset_processor_platform,  # type: str
                ):
     """Separate implementation to call directly during unit tests"""
+
+    # Convert build directory to absolute path in case it was provided as relative path
+    build_directory = os.path.abspath(build_directory)
 
     workspace = helpers.create_builtin_workspace(
         build_directory=build_directory,

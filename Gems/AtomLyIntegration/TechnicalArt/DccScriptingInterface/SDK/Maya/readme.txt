@@ -1,11 +1,6 @@
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 -------------------------------------------------------------------------------
 
 "DccScriptingInterface" aka DCCsi is a Gem for O3DE to extend and interface with dcc tools
@@ -29,7 +24,7 @@ A general goal of the DCCsi is be self-maintained, and to not taint the users in
 So we boostrap additional access to site-packages in our userSetup.py:
 "C:\Depot\Lumberyard\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\SDK\Maya\Scripts\userSetup.py"
 
-We don't want users to have to install or use Python2.7 although with maya and possibly other dcc tools we don't have that control.  Maya still is on Python2.7, so instead of forcing another install of python we can just use mayapy to manage extensions.
+We don't want users to have to install or use Python2.7 although with maya and possibly other dcc tools we don't have that control.  Maya 2020 and earlier versions are still on Python2.7, so instead of forcing another install of python we can just use mayapy to manage extensions.
 
 Pip may already be installed, you can check like so (your maya install path may be different):
 

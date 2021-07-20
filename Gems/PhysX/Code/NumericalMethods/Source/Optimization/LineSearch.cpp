@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <NumericalMethods_precompiled.h>
 #include <Optimization/LineSearch.h>
@@ -72,7 +67,7 @@ namespace NumericalMethods::Optimization
 
         for (AZ::u32 iteration = 0; iteration < lineSearchIterations; iteration++)
         {
-            ScalarVariable alphaNew;
+            ScalarVariable alphaNew = 0.0;
             if (iteration > 0)
             {
                 // first try selecting a new alpha value based on cubic interpolation through the most recent points
@@ -162,16 +157,16 @@ namespace NumericalMethods::Optimization
         {
             // if the value of f corresponding to alpha1 isn't sufficiently small compared to f at x0,
             // then the interval [alpha0 ... alpha1] must bracket a suitable point.
-            if ((f_alpha1 > f_x0 + c1 * alpha1 * df_x0) || (iteration > 0 && f_alpha1 > f_alpha0))
+            if ((f_alpha1 > f_x0 + WolfeConditionsC1 * alpha1 * df_x0) || (iteration > 0 && f_alpha1 > f_alpha0))
             {
                 return SelectStepSizeFromInterval(alpha0, alpha1, f_alpha0, f_alpha1, df_alpha0,
-                    f, x0, searchDirection, f_x0, df_x0, c1, c2);
+                    f, x0, searchDirection, f_x0, df_x0, WolfeConditionsC1, WolfeConditionsC2);
             }
 
             // otherwise, if the derivative corresponding to alpha1 is large enough, alpha1 already
             // satisfies the Wolfe conditions and so return alpha1.
             double df_alpha1 = DirectionalDerivative(f, x0 + alpha1 * searchDirection, searchDirection);
-            if (fabs(df_alpha1) <= -c2 * df_x0)
+            if (fabs(df_alpha1) <= -WolfeConditionsC2 * df_x0)
             {
                 LineSearchResult result;
                 result.m_outcome = LineSearchOutcome::Success;
@@ -184,7 +179,7 @@ namespace NumericalMethods::Optimization
             if (df_alpha1 >= 0.0)
             {
                 return SelectStepSizeFromInterval(alpha1, alpha0, f_alpha1, f_alpha0, df_alpha1,
-                    f, x0, searchDirection, f_x0, df_x0, c1, c2);
+                    f, x0, searchDirection, f_x0, df_x0, WolfeConditionsC1, WolfeConditionsC2);
             }
 
             // haven't found an interval which is guaranteed to bracket a suitable point,

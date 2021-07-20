@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "TextureAtlas_precompiled.h"
 
@@ -22,7 +17,25 @@
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
-#include <IRenderer.h>
+#include <Atom/RPI.Public/Image/StreamingImage.h>
+
+namespace
+{
+    AZ::Data::Instance<AZ::RPI::Image> LoadAtlasImage(const AZStd::string& imagePath)
+    {
+        // The file may not be in the AssetCatalog at this point if it is still processing or doesn't exist on disk.
+        // Use GenerateAssetIdTEMP instead of GetAssetIdByPath so that it will return a valid AssetId anyways
+        AZ::Data::AssetId streamingImageAssetId;
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+            streamingImageAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GenerateAssetIdTEMP,
+            imagePath.c_str());
+
+        streamingImageAssetId.m_subId = AZ::RPI::StreamingImageAsset::GetImageAssetSubId();
+        auto streamingImageAsset = AZ::Data::AssetManager::Instance().FindOrCreateAsset<AZ::RPI::StreamingImageAsset>(streamingImageAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
+        AZ::Data::Instance<AZ::RPI::Image> image = AZ::RPI::StreamingImage::FindOrCreate(streamingImageAsset);
+        return image;
+    }
+}
 
 namespace TextureAtlasNamespace
 {
@@ -95,27 +108,15 @@ namespace TextureAtlasNamespace
                 // We reload the image here to prevent stuttering in the editor
                 if (iterator->second.m_atlas && iterator->second.m_atlas->GetTexture())
                 {
-                    SResourceAsync* pInfo = new SResourceAsync();
-                    pInfo->eClassName = eRCN_Texture;
-                    pInfo->pResource = iterator->second.m_atlas->GetTexture();
-                    // ToDo: Update to work with Atom? LYN-3680
-                    // ???->ReleaseResourceAsync(pInfo);
+                    iterator->second.m_atlas->GetTexture().reset();
                 }
-                // Reload Texture
-                AZStd::string imagePath = iterator->second.m_path.substr(0, iterator->second.m_path.find_last_of('.'));
-                imagePath.append(".dds");
-
-                // ToDo: Update to work with Atom? LYN-3680
-                // uint32 loadTextureFlags = (FT_USAGE_ALLOWREADSRGB | FT_DONT_STREAM);
-                ITexture* texture = nullptr;
-
-                if (!texture || !texture->IsTextureLoaded())
+                AZStd::string imagePath = iterator->second.m_path;
+                AZ::Data::Instance<AZ::RPI::Image> texture = LoadAtlasImage(imagePath);
+                if (!texture)
                 {
-                    gEnv->pSystem->Warning(VALIDATOR_MODULE_UNKNOWN,
-                        VALIDATOR_WARNING,
-                        VALIDATOR_FLAG_FILE | VALIDATOR_FLAG_TEXTURE,
-                        imagePath.c_str(),
-                        "No texture file found for texture atlas: %s. "
+                    AZ_Error("TextureAtlasSystemComponent",
+                        false,
+                        "Failed to find or create an image instance for texture atlas '%s'"
                         "NOTE: File must be in current project or a gem.",
                         imagePath.c_str());
                     TextureAtlas* temp = iterator->second.m_atlas;
@@ -123,6 +124,7 @@ namespace TextureAtlasNamespace
                     TextureAtlasNotificationBus::Broadcast(&TextureAtlasNotifications::OnAtlasUnloaded, temp);
                     return;
                 }
+
                 iterator->second.m_atlas->SetTexture(texture);
                 TextureAtlasNotificationBus::Broadcast(&TextureAtlasNotifications::OnAtlasReloaded, iterator->second.m_atlas);
                 break;
@@ -186,30 +188,23 @@ namespace TextureAtlasNamespace
         delete[] buffer;
         if (loadedAtlas)
         {
-            // Get the image path based on the atlas path
+            // Convert to image path based on the atlas path
             AZStd::string imagePath = path;
-            AzFramework::StringFunc::Path::ReplaceExtension(imagePath, "dds");
-
-            // Load the image in
-            // ToDo: Update to work with Atom? LYN-3680
-            // uint32 loadTextureFlags = (FT_USAGE_ALLOWREADSRGB | FT_DONT_STREAM);
-            ITexture* texture = nullptr;
-
-            if (!texture || !texture->IsTextureLoaded())
+            AzFramework::StringFunc::Path::ReplaceExtension(imagePath, "texatlas");
+            AZ::Data::Instance<AZ::RPI::Image> texture = LoadAtlasImage(imagePath);
+            if (!texture)
             {
-                gEnv->pSystem->Warning(VALIDATOR_MODULE_UNKNOWN,
-                    VALIDATOR_WARNING,
-                    VALIDATOR_FLAG_FILE | VALIDATOR_FLAG_TEXTURE,
-                    imagePath.c_str(),
-                    "No texture file found for texture atlas: %s. "
+                AZ_Error("TextureAtlasSystemComponent",
+                    false,
+                    "Failed to find or create an image instance for texture atlas '%s'"
                     "NOTE: File must be in current project or a gem.",
-                    imagePath.c_str());
+                    path.c_str());
+
                 delete loadedAtlas;
                 return nullptr;
             }
             else
             {
-                texture->SetFilter(FILTER_LINEAR);
                 // Add the atlas to the list
                 AtlasInfo info(loadedAtlas, assetPath);
                 ++info.m_refs;
@@ -241,11 +236,7 @@ namespace TextureAtlasNamespace
                     // Tell the renderer to release the texture.
                     if (temp.m_atlas && temp.m_atlas->GetTexture())
                     {
-                        SResourceAsync* pInfo = new SResourceAsync();
-                        pInfo->eClassName = eRCN_Texture;
-                        pInfo->pResource = temp.m_atlas->GetTexture();
-                        // ToDo: Update to work with Atom? LYN-3680
-                        // ???->ReleaseResourceAsync(pInfo);
+                        temp.m_atlas->GetTexture().reset();
                     }
                     // Delete the atlas
                     SAFE_DELETE(temp.m_atlas);

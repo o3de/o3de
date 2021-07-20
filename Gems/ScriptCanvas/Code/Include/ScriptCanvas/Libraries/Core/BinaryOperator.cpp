@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "BinaryOperator.h"
 
@@ -33,15 +28,6 @@ namespace ScriptCanvas
                 outSlotIdMap.emplace(this->GetSlotId(k_lhsName), AZStd::vector<SlotId>{ slotIds[0] });
                 outSlotIdMap.emplace(this->GetSlotId(k_rhsName), AZStd::vector<SlotId>{ slotIds[1] });
             }
-        }
-
-        AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>> ArithmeticExpression::GetReplacementSlotsMap() const
-        {
-            AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>> slotsMap;
-            slotsMap.emplace(k_evaluateName, AZStd::vector<AZStd::string>{ "In" });
-            slotsMap.emplace(k_outName, AZStd::vector<AZStd::string>{ "Out" });
-            slotsMap.emplace(k_resultName, AZStd::vector<AZStd::string>{ "Result" });
-            return slotsMap;
         }
 
         void ArithmeticExpression::OnInit()

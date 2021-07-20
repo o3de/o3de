@@ -30,7 +30,7 @@
             }
         },
         "PlatformsPresets": {
-            "es3": {
+            "android": {
                 "UUID": "{2174E04B-73BB-4DF1-8961-4900DC3C9D72}",
                 "Name": "ConvolvedCubemap",
                 "SourceColor": "Linear",
@@ -82,7 +82,7 @@
                     "MipGenType": "Box"
                 }
             },
-            "osx_gl": {
+            "mac": {
                 "UUID": "{2174E04B-73BB-4DF1-8961-4900DC3C9D72}",
                 "Name": "ConvolvedCubemap",
                 "SourceColor": "Linear",

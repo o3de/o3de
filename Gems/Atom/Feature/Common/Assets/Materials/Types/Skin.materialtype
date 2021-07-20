@@ -24,6 +24,16 @@
                 "description": "Properties related to configuring surface normal."
             },
             {
+                "id": "detailLayerGroup",
+                "displayName": "Detail Layer",
+                "description": "Properties for Fine Details Layer."
+            },
+            {
+                "id": "detailUV",
+                "displayName": "Detail Layer UV",
+                "description": "Properties for modifying detail layer UV."
+            },
+            {
                 "id": "occlusion",
                 "displayName": "Occlusion",
                 "description": "Properties for baked textures that represent geometric occlusion of light."
@@ -39,18 +49,8 @@
                 "description": "Properties for wrinkle maps to support morph animation, using vertex color blend weights."
             },
             {
-                "id": "detailLayerGroup",
-                "displayName": "Detail Layer",
-                "description": "Properties for Fine Details Layer."
-            },
-            {
-                "id": "detailUV",
-                "displayName": "Detail Layer UV",
-                "description": "Properties for modifying detail layer UV."
-            },
-            {
                 "id": "general",
-                "displayName": "General",
+                "displayName": "General Settings",
                 "description": "General settings."
             }
         ],
@@ -150,7 +150,7 @@
                 },
                 {
                     "id": "textureMap",
-                    "displayName": "Texture Map",
+                    "displayName": "Texture",
                     "description": "Base color texture map",
                     "type": "Image",
                     "connection": {
@@ -161,14 +161,14 @@
                 {
                     "id": "useTexture",
                     "displayName": "Use Texture",
-                    "description": "Whether to use the texture map.",
+                    "description": "Whether to use the texture.",
                     "type": "Bool",
                     "defaultValue": true
                 },
                 {
                     "id": "textureMapUv",
                     "displayName": "UV",
-                    "description": "Base color texture map UV set",
+                    "description": "Base color map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
                     "defaultValue": "Unwrapped",
@@ -180,7 +180,7 @@
                 {
                     "id": "textureBlendMode",
                     "displayName": "Texture Blend Mode",
-                    "description": "Selects the equation to use when combining Color, Factor, and Texture Map.",
+                    "description": "Selects the equation to use when combining Color, Factor, and Texture.",
                     "type": "Enum",
                     "enumValues": [ "Multiply", "LinearLight", "Lerp", "Overlay" ],
                     "defaultValue": "Multiply",
@@ -193,8 +193,8 @@
             "roughness": [
                 {
                     "id": "textureMap",
-                    "displayName": "Texture Map",
-                    "description": "Texture map for defining surface roughness.",
+                    "displayName": "Texture",
+                    "description": "Texture for defining surface roughness.",
                     "type": "Image",
                     "connection": {
                         "type": "ShaderInput",
@@ -204,14 +204,14 @@
                 {
                     "id": "useTexture",
                     "displayName": "Use Texture",
-                    "description": "Whether to use the texture map, or just default to the Factor value.",
+                    "description": "Whether to use the texture, or just default to the Factor value.",
                     "type": "Bool",
                     "defaultValue": true
                 },
                 {
                     "id": "textureMapUv",
                     "displayName": "UV",
-                    "description": "Roughness texture map UV set",
+                    "description": "Roughness map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
                     "defaultValue": "Unwrapped",
@@ -224,7 +224,7 @@
                     // Note that "factor" is mutually exclusive with "lowerBound"/"upperBound". These are swapped by a lua functor.
                     "id": "lowerBound",
                     "displayName": "Lower Bound",
-                    "description": "The roughness value that corresponds to black in the texture map.",
+                    "description": "The roughness value that corresponds to black in the texture.",
                     "type": "Float",
                     "defaultValue": 0.0,
                     "min": 0.0,
@@ -238,7 +238,7 @@
                     // Note that "factor" is mutually exclusive with "lowerBound"/"upperBound". These are swapped by a lua functor.
                     "id": "upperBound",
                     "displayName": "Upper Bound",
-                    "description": "The roughness value that corresponds to white in the texture map.",
+                    "description": "The roughness value that corresponds to white in the texture.",
                     "type": "Float",
                     "defaultValue": 1.0,
                     "min": 0.0,
@@ -279,8 +279,8 @@
                 },
                 {
                     "id": "textureMap",
-                    "displayName": "Texture Map",
-                    "description": "Texture map for defining surface reflectance.",
+                    "displayName": "Texture",
+                    "description": "Texture for defining surface reflectance.",
                     "type": "Image",
                     "connection": {
                         "type": "ShaderInput",
@@ -288,9 +288,16 @@
                     }
                 },
                 {
+                    "id": "useTexture",
+                    "displayName": "Use Texture",
+                    "description": "Whether to use the texture, or just default to the Factor value.",
+                    "type": "Bool",
+                    "defaultValue": true
+                },
+                {
                     "id": "textureMapUv",
                     "displayName": "UV",
-                    "description": "Specular reflection texture map UV set",
+                    "description": "Specular reflection map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
                     "defaultValue": "Unwrapped",
@@ -299,13 +306,7 @@
                         "id": "m_specularF0MapUvIndex"
                     }
                 },
-                {
-                    "id": "useTexture",
-                    "displayName": "Use Texture",
-                    "description": "Whether to use the texture map, or just default to the Factor value.",
-                    "type": "Bool",
-                    "defaultValue": true
-                },
+                // Consider moving this to the "general" group to be consistent with StandardMultilayerPBR
                 {
                     "id": "enableMultiScatterCompensation",
                     "displayName": "Multiscattering Compensation",
@@ -320,8 +321,8 @@
             "normal": [
                 {
                     "id": "textureMap",
-                    "displayName": "Texture Map",
-                    "description": "Texture map for defining surface normal direction.",
+                    "displayName": "Texture",
+                    "description": "Texture for defining surface normal direction.",
                     "type": "Image",
                     "connection": {
                         "type": "ShaderInput",
@@ -331,14 +332,14 @@
                 {
                     "id": "useTexture",
                     "displayName": "Use Texture",
-                    "description": "Whether to use the texture map, or just rely on vertex normals.",
+                    "description": "Whether to use the texture, or just rely on vertex normals.",
                     "type": "Bool",
                     "defaultValue": true
                 },
                 {
                     "id": "textureMapUv",
                     "displayName": "UV",
-                    "description": "Normal texture map UV set",
+                    "description": "Normal map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
                     "defaultValue": "Unwrapped",
@@ -387,7 +388,7 @@
                 {
                     "id": "diffuseTextureMap",
                     "displayName": "Diffuse AO",
-                    "description": "Texture map for defining occlusion area for diffuse ambient lighting.",
+                    "description": "Texture for defining occlusion area for diffuse ambient lighting.",
                     "type": "Image",
                     "connection": {
                         "type": "ShaderInput",
@@ -397,14 +398,14 @@
                 {
                     "id": "diffuseUseTexture",
                     "displayName": "    Use Texture",
-                    "description": "Whether to use the Diffuse AO texture map.",
+                    "description": "Whether to use the Diffuse AO map.",
                     "type": "Bool",
                     "defaultValue": true
                 },
                 {
                     "id": "diffuseTextureMapUv",
                     "displayName": "    UV",
-                    "description": "Diffuse AO texture map UV set.",
+                    "description": "Diffuse AO map UV set.",
                     "type": "Enum",
                     "enumIsUv": true,
                     "defaultValue": "Tiled",
@@ -429,7 +430,7 @@
                 {
                     "id": "specularTextureMap",
                     "displayName": "Specular Cavity",
-                    "description": "Texture map for defining occlusion area for specular lighting.",
+                    "description": "Texture for defining occlusion area for specular lighting.",
                     "type": "Image",
                     "connection": {
                         "type": "ShaderInput",
@@ -439,14 +440,14 @@
                 {
                     "id": "specularUseTexture",
                     "displayName": "    Use Texture",
-                    "description": "Whether to use the Specular Cavity texture map.",
+                    "description": "Whether to use the Specular Cavity map.",
                     "type": "Bool",
                     "defaultValue": true
                 },
                 {
                     "id": "specularTextureMapUv",
                     "displayName": "    UV",
-                    "description": "Specular Cavity texture map UV set.",
+                    "description": "Specular Cavity map UV set.",
                     "type": "Enum",
                     "enumIsUv": true,
                     "defaultValue": "Tiled",
@@ -497,7 +498,7 @@
                 {
                     "id": "influenceMap",
                     "displayName": "    Influence Map",
-                    "description": "Use texture map to control the strength of subsurface scattering",
+                    "description": "Texture for controlling the strength of subsurface scattering",
                     "type": "Image",
                     "connection": {
                         "type": "ShaderInput",
@@ -507,7 +508,7 @@
                 {
                     "id": "useInfluenceMap",
                     "displayName": "    Use Influence Map",
-                    "description": "Whether to use the texture map as influence mask.",
+                    "description": "Whether to use the influence map.",
                     "type": "Bool",
                     "defaultValue": true
                 },
@@ -576,7 +577,7 @@
                 {
                     "id": "thicknessMap",
                     "displayName": "    Thickness Map",
-                    "description": "Use a greyscale texture for per pixel thickness",
+                    "description": "Texture for controlling per pixel thickness",
                     "type": "Image",
                     "connection": {
                         "type": "ShaderInput",
@@ -605,7 +606,7 @@
                 {
                     "id": "transmissionTint",
                     "displayName": "    Transmission Tint",
-                    "description": "Color of the volume light travelling through",
+                    "description": "Color of the volume light traveling through",
                     "type": "Color",
                     "defaultValue": [ 1.0, 0.8, 0.6 ]
                 },
@@ -616,7 +617,7 @@
                     "type": "float",
                     "defaultValue": 6.0,
                     "min": 0.0,
-                    "softMax":  20.0
+                    "softMax": 20.0
                 },
                 {
                     "id": "transmissionDistortion",
@@ -791,7 +792,7 @@
                 {
                     "id": "enableDetailMaskTexture",
                     "displayName": "    Use Texture",
-                    "description": "Enable detail mask texture",
+                    "description": "Enable detail blend mask",
                     "type": "Bool",
                     "defaultValue": true
                 },
@@ -810,7 +811,7 @@
                 {
                     "id": "textureMapUv",
                     "displayName": "Detail Map UVs",
-                    "description": "Which UV set to use for detail map texture sampling",
+                    "description": "Which UV set to use for detail map sampling",
                     "type": "Enum",
                     "enumIsUv": true,
                     "defaultValue": "Unwrapped",
@@ -828,8 +829,8 @@
                 },
                 {
                     "id": "baseColorDetailMap",
-                    "displayName": "    Texture Map",
-                    "description": "Detailed Base Color Texture map",
+                    "displayName": "    Texture",
+                    "description": "Detailed Base Color Texture",
                     "type": "Image",
                     "connection": {
                         "type": "ShaderInput",
@@ -852,7 +853,7 @@
                 {
                     "id": "enableNormals",
                     "displayName": "Enable Normal",
-                    "description": "Enable detail normal texture to be used for fine detail normal such as scratches and small dents",
+                    "description": "Enable detail normal map to be used for fine detail normal such as scratches and small dents",
                     "type": "Bool",
                     "defaultValue": false
                 },
@@ -871,8 +872,8 @@
                 },
                 {
                     "id": "normalDetailMap",
-                    "displayName": "    Texture Map",
-                    "description": "Detailed Normal Texture map",
+                    "displayName": "    Texture",
+                    "description": "Detailed Normal map",
                     "type": "Image",
                     "connection": {
                         "type": "ShaderInput",
@@ -909,7 +910,7 @@
                     "description": "Center point for scaling and rotation transformations.",
                     "type": "vector2",
                     "vectorLabels": [ "U", "V" ],
-                    "defaultValue": [ 0.0, 0.0 ]
+                    "defaultValue": [ 0.5, 0.5 ]
                 },
                 {
                     "id": "tileU",
@@ -979,14 +980,9 @@
             "file": "Shaders/Depth/DepthPass.shader",
             "tag": "DepthPass"
         },
-        // [GFX TODO][ATOM-4726] Use an "isSkinnedMesh" external material property and a functor that enables/disables the appropriate motion-vector shader
         {
-            "file": "Shaders/MotionVector/StaticMeshMotionVector.shader",
-            "tag": "StaticMeshMotionVector"
-        },
-        {
-            "file": "Shaders/MotionVector/SkinnedMeshMotionVector.shader",
-            "tag": "SkinnedMeshMotionVector"
+            "file": "Shaders/MotionVector/MeshMotionVector.shader",
+            "tag": "MeshMotionVector"
         }
     ],
     "functors": [
@@ -1011,18 +1007,18 @@
             "type": "HandleSubsurfaceScatteringParameters",
             "args": {
                 "mode": "subsurfaceScattering.transmissionMode",
-                "scale" : "subsurfaceScattering.transmissionScale",
-                "power" : "subsurfaceScattering.transmissionPower",
-                "distortion" : "subsurfaceScattering.transmissionDistortion",
-                "attenuation" : "subsurfaceScattering.transmissionAttenuation",
-                "tintColor" : "subsurfaceScattering.transmissionTint",
-                "thickness" : "subsurfaceScattering.thickness",
+                "scale": "subsurfaceScattering.transmissionScale",
+                "power": "subsurfaceScattering.transmissionPower",
+                "distortion": "subsurfaceScattering.transmissionDistortion",
+                "attenuation": "subsurfaceScattering.transmissionAttenuation",
+                "tintColor": "subsurfaceScattering.transmissionTint",
+                "thickness": "subsurfaceScattering.thickness",
                 "enabled": "subsurfaceScattering.enableSubsurfaceScattering",
-                "scatterDistanceColor" : "subsurfaceScattering.scatterColor",
-                "scatterDistanceIntensity" : "subsurfaceScattering.scatterDistance",
-                "scatterDistanceShaderInput" : "m_scatterDistance",
-                "parametersShaderInput" : "m_transmissionParams",
-                "tintThickenssShaderInput" : "m_transmissionTintThickness"
+                "scatterDistanceColor": "subsurfaceScattering.scatterColor",
+                "scatterDistanceIntensity": "subsurfaceScattering.scatterDistance",
+                "scatterDistanceShaderInput": "m_scatterDistance",
+                "parametersShaderInput": "m_transmissionParams",
+                "tintThickenssShaderInput": "m_transmissionTintThickness"
             }
         },
         {
@@ -1038,8 +1034,8 @@
             "type": "UseTexture",
             "args": {
                 "textureProperty": "specularF0.textureMap",
-                "dependentProperties": ["specularF0.textureMapUv"],
                 "useTextureProperty": "specularF0.useTexture",
+                "dependentProperties": ["specularF0.textureMapUv"],
                 "shaderOption": "o_specularF0_useTexture"
             }
         },
@@ -1079,7 +1075,7 @@
         {
             "type": "Lua",
             "args": {
-                "file": "StandardPBR_SubsurfaceState.lua"
+                "file": "EnhancedPBR_SubsurfaceState.lua"
             }
         },
         {

@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 set(LY_ENABLE_RAD_TELEMETRY OFF CACHE BOOL "Enables RAD Telemetry in Debug/Profile mode.")
@@ -42,3 +38,8 @@ ly_add_target(
         PRIVATE
             Gem::RADTelemetry.Static
 )
+
+# the RADTelemetry module above can be used in all kinds of applications, but we don't enable it in asset builders
+ly_create_alias(NAME RADTelemetry.Clients NAMESPACE Gem TARGETS Gem::RADTelemetry)
+ly_create_alias(NAME RADTelemetry.Tools   NAMESPACE Gem TARGETS Gem::RADTelemetry)
+ly_create_alias(NAME RADTelemetry.Servers NAMESPACE Gem TARGETS Gem::RADTelemetry)

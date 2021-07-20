@@ -1,12 +1,8 @@
 #
-#   All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-#   its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-#   For complete copyright and license terms please see the LICENSE at the root of this
-#   distribution (the "License"). All use of this software is governed by the License,
-#   or, if provided, by the license below or the license accompanying this file. Do not
-#   remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 import datetime
 import os
@@ -21,7 +17,7 @@ from cmake.Tools.Platform.Android import android_deployment
 TEST_GAME_NAME = "Foo"
 TEST_DEV_ROOT = pathlib.Path("Foo")
 TEST_ASSET_MODE = 'LOOSE'
-TEST_ASSET_TYPE = 'es3'
+TEST_ASSET_TYPE = 'android'
 TEST_ANDROID_SDK_PATH = pathlib.Path('c:\\AndroidSDK')
 TEST_BUILD_DIR = 'android_gradle_test'
 TEST_DEVICE_ID = '9A201FFAZ000ER'
@@ -661,10 +657,10 @@ def test_execute_success(tmpdir, test_config, test_package_name, test_device_sto
 
 @pytest.mark.parametrize(
     "test_game_name, test_config, test_package_name, test_device_storage_path, test_asset_type", [
-        pytest.param('game1','profile', 'com.amazon.lumberyard.foo', '/data/fool_storage', 'es3'),
-        pytest.param('game1','debug', 'com.amazon.lumberyard.foo', '/data/fool_storage', 'es3'),
-        pytest.param('game2','profile', 'com.amazon.lumberyard.bar', '/data/fool_storage', 'es3'),
-        pytest.param('game2','debug', 'com.amazon.lumberyard.bar', '/data/fool_storage', 'es3'),
+        pytest.param('game1','profile', 'com.amazon.lumberyard.foo', '/data/fool_storage', 'android'),
+        pytest.param('game1','debug', 'com.amazon.lumberyard.foo', '/data/fool_storage', 'android'),
+        pytest.param('game2','profile', 'com.amazon.lumberyard.bar', '/data/fool_storage', 'android'),
+        pytest.param('game2','debug', 'com.amazon.lumberyard.bar', '/data/fool_storage', 'android'),
         pytest.param('game3','profile', 'com.amazon.lumberyard.foo', '/data/fool_storage2', 'pc'),
         pytest.param('game3','debug', 'com.amazon.lumberyard.foo', '/data/fool_storage2', 'pc'),
         pytest.param('game4','profile', 'com.amazon.lumberyard.bar', '/data/fool_storage2', 'pc'),

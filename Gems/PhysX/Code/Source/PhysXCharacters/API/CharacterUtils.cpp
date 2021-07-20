@@ -1,29 +1,22 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <PhysX_precompiled.h>
 #include <PhysXCharacters/API/CharacterUtils.h>
 #include <PhysXCharacters/API/CharacterController.h>
 #include <PhysXCharacters/API/Ragdoll.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <AzFramework/Physics/PhysicsScene.h>
-#include <AzFramework/Physics/PhysicsSystem.h>
-#include <AzFramework/Physics/SystemBus.h>
+#include <AzFramework/Physics/MaterialBus.h>
 #include <cfloat>
 #include <PhysX/PhysXLocks.h>
+#include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
 #include <Source/RigidBody.h>
 #include <Source/Scene/PhysXScene.h>
 #include <Source/Shape.h>
-#include <Source/Joint.h>
 
 namespace PhysX
 {
@@ -51,18 +44,32 @@ namespace PhysX
             static void AppendShapeIndependentProperties(physx::PxControllerDesc& controllerDesc,
                 const Physics::CharacterConfiguration& characterConfig, CharacterControllerCallbackManager* callbackManager)
             {
-                AZStd::vector<AZStd::shared_ptr<Physics::Material> > materials;
+                AZStd::vector<AZStd::shared_ptr<Physics::Material>> materials;
 
-                Physics::SystemRequestBus::BroadcastResult(
-                    materials,
-                    &Physics::SystemRequests::CreateMaterialsFromLibrary,
-                    characterConfig.m_materialSelection
-                );
-
-                if (materials.empty())
+                if (characterConfig.m_materialSelection.GetMaterialIdsAssignedToSlots().empty())
                 {
-                    AZ_Error("PhysX Character Controller", false, "Could not create character controller, material was invalid.");
-                    return;
+                    // If material selection has no slots, falling back to default material.
+                    AZStd::shared_ptr<Physics::Material> defaultMaterial;
+                    Physics::PhysicsMaterialRequestBus::BroadcastResult(defaultMaterial,
+                        &Physics::PhysicsMaterialRequestBus::Events::GetGenericDefaultMaterial);
+                    if (!defaultMaterial)
+                    {
+                        AZ_Error("PhysX Character Controller", false, "Invalid default material.");
+                        return;
+                    }
+                    materials.push_back(AZStd::move(defaultMaterial));
+                }
+                else
+                {
+                    Physics::PhysicsMaterialRequestBus::Broadcast(
+                        &Physics::PhysicsMaterialRequestBus::Events::GetMaterials,
+                        characterConfig.m_materialSelection,
+                        materials);
+                    if (materials.empty())
+                    {
+                        AZ_Error("PhysX Character Controller", false, "Could not create character controller, material list was empty.");
+                        return;
+                    }
                 }
 
                 physx::PxMaterial* pxMaterial = static_cast<physx::PxMaterial*>(materials.front()->GetNativePointer());
@@ -250,21 +257,24 @@ namespace PhysX
                             physx::PxTransform parentTM(parentOffset);
                             physx::PxTransform childTM(physx::PxIdentity);
 
-                            AZStd::shared_ptr<Physics::JointLimitConfiguration> jointLimitConfig = configuration.m_nodes[nodeIndex].m_jointLimit;
-                            if (!jointLimitConfig)
+                            AZStd::shared_ptr<AzPhysics::JointConfiguration> jointConfig = configuration.m_nodes[nodeIndex].m_jointConfig;
+                            if (!jointConfig)
                             {
-                                AZStd::vector<AZ::TypeId> supportedJointLimitTypes = JointUtils::GetSupportedJointTypes();
-
-                                if (!supportedJointLimitTypes.empty())
-                                {
-                                    jointLimitConfig = JointUtils::CreateJointLimitConfiguration(supportedJointLimitTypes[0]);
-                                }
+                                jointConfig = AZStd::make_shared<D6JointLimitConfiguration>();
                             }
+                            
+                            AzPhysics::JointHandle jointHandle = sceneInterface->AddJoint(
+                                sceneHandle, jointConfig.get(), 
+                                ragdoll->GetNode(parentIndex)->GetRigidBody().m_bodyHandle,
+                                ragdoll->GetNode(nodeIndex)->GetRigidBody().m_bodyHandle);
 
-                            AZStd::shared_ptr<Physics::Joint> joint = JointUtils::CreateJoint(
-                                jointLimitConfig,
-                                &ragdoll->GetNode(parentIndex)->GetRigidBody(),
-                                &ragdoll->GetNode(nodeIndex)->GetRigidBody());
+                            AzPhysics::Joint* joint = sceneInterface->GetJointFromHandle(sceneHandle, jointHandle);
+
+                            if (!joint)
+                            {
+                                AZ_Error("PhysX Ragdoll", false, "Failed to create joint for node index %i.", nodeIndex);
+                                return nullptr;
+                            }
 
                             // Moving from PhysX 3.4 to 4.1, the allowed range of the twist angle was expanded from -pi..pi
                             // to -2*pi..2*pi.

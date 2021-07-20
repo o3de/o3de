@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
@@ -172,7 +167,7 @@ namespace AzToolsFramework
             }
         }
 
-        bool InstanceToTemplatePropagator::PatchTemplate(PrefabDomValue& providedPatch, TemplateId templateId)
+        bool InstanceToTemplatePropagator::PatchTemplate(PrefabDomValue& providedPatch, TemplateId templateId, InstanceOptionalReference instanceToExclude)
         {
             PrefabDom& templateDomReference = m_prefabSystemComponentInterface->FindTemplateDom(templateId);
 
@@ -184,7 +179,7 @@ namespace AzToolsFramework
             if (result.GetOutcome() == AZ::JsonSerializationResult::Outcomes::Success)
             {
                 m_prefabSystemComponentInterface->SetTemplateDirtyFlag(templateId, true);
-                m_prefabSystemComponentInterface->PropagateTemplateChanges(templateId);
+                m_prefabSystemComponentInterface->PropagateTemplateChanges(templateId, instanceToExclude);
                 return true;
             }
             else
@@ -276,18 +271,14 @@ namespace AzToolsFramework
             PrefabDomValueReference linkPatchesReference =
                 PrefabDomUtils::FindPrefabDomValue(linkDom, PrefabDomUtils::PatchesName);
 
-            // This logic only covers addition of patches. If patches already exists, the given list of patches must be appended to them.
-            if (!linkPatchesReference.has_value())
-            {
-                /*
-                If the original allocator the patches were created with gets destroyed, then the patches would become garbage in the
-                linkDom. Since we cannot guarantee the lifecycle of the patch allocators, we are doing a copy of the patches here to
-                associate them with the linkDom's allocator.
-                */
-                PrefabDom patchesCopy;
-                patchesCopy.CopyFrom(patches, linkDom.GetAllocator());
-                linkDom.AddMember(rapidjson::StringRef(PrefabDomUtils::PatchesName), patchesCopy, linkDom.GetAllocator());
-            }
+            /*
+            If the original allocator the patches were created with gets destroyed, then the patches would become garbage in the
+            linkDom. Since we cannot guarantee the lifecycle of the patch allocators, we are doing a copy of the patches here to
+            associate them with the linkDom's allocator.
+            */
+            PrefabDom patchesCopy;
+            patchesCopy.CopyFrom(patches, linkDom.GetAllocator());
+            linkDom.AddMember(rapidjson::StringRef(PrefabDomUtils::PatchesName), patchesCopy, linkDom.GetAllocator());
         }
     }
 }

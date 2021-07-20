@@ -1,20 +1,16 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
 #include "CommandSystemConfig.h"
 #include <EMotionFX/Source/ActorBus.h>
 #include <EMotionFX/Source/ActorInstance.h>
+#include <EMotionFX/Source/ActorInstanceBus.h>
 #include <EMotionFX/Source/Motion.h>
 #include <EMotionFX/Source/Node.h>
 #include <EMotionFX/Source/MotionInstance.h>
@@ -27,7 +23,8 @@ namespace CommandSystem
      * specific time stamp in a scene.
      */
     class COMMANDSYSTEM_API SelectionList
-        : EMotionFX::ActorNotificationBus::Handler
+        : private EMotionFX::ActorNotificationBus::Handler
+        , private EMotionFX::ActorInstanceNotificationBus::Handler
     {
         MCORE_MEMORYOBJECTCATEGORY(SelectionList, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_COMMANDSYSTEM);
 
@@ -399,6 +396,9 @@ namespace CommandSystem
     private:
         // ActorNotificationBus overrides
         void OnActorDestroyed(EMotionFX::Actor* actor) override;
+
+        // ActorInstanceNotificationBus overrides
+        void OnActorInstanceDestroyed(EMotionFX::ActorInstance* actorInstance) override;
 
         AZStd::vector<EMotionFX::Node*>             mSelectedNodes;             /**< Array of selected nodes. */
         AZStd::vector<EMotionFX::Actor*>            mSelectedActors;            /**< The selected actors.  */

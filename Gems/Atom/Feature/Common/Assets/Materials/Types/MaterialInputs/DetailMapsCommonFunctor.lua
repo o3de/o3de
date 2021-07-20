@@ -1,13 +1,9 @@
 --------------------------------------------------------------------------------------
 --
--- All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
--- its licensors.
+-- Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+-- 
+-- SPDX-License-Identifier: Apache-2.0 OR MIT
 --
--- For complete copyright and license terms please see the LICENSE at the root of this
--- distribution (the "License"). All use of this software is governed by the License,
--- or, if provided, by the license below or the license accompanying this file. Do not
--- remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
--- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 --
 --
 ----------------------------------------------------------------------------------------------------
@@ -35,16 +31,16 @@ end
 function Process(context)
     local isFeatureEnabled = context:GetMaterialPropertyValue_bool("detailLayerGroup.enableDetailLayer")
     
-    local blendMaskTexture = context:GetMaterialPropertyValue_image("detailLayerGroup.blendDetailMask")
+    local blendMaskTexture = context:GetMaterialPropertyValue_Image("detailLayerGroup.blendDetailMask")
     local blendMaskTextureEnabled = context:GetMaterialPropertyValue_bool("detailLayerGroup.enableDetailMaskTexture")
     context:SetShaderOptionValue_bool("o_detail_blendMask_useTexture", isFeatureEnabled and blendMaskTextureEnabled and blendMaskTexture ~= nil)
 
     local baseColorDetailEnabled = context:GetMaterialPropertyValue_bool("detailLayerGroup.enableBaseColor")
-    local baseColorDetailTexture = context:GetMaterialPropertyValue_image("detailLayerGroup.baseColorDetailMap")
+    local baseColorDetailTexture = context:GetMaterialPropertyValue_Image("detailLayerGroup.baseColorDetailMap")
     context:SetShaderOptionValue_bool("o_detail_baseColor_useTexture", isFeatureEnabled and baseColorDetailEnabled and baseColorDetailTexture ~= nil)
     
     local normalDetailEnabled = context:GetMaterialPropertyValue_bool("detailLayerGroup.enableNormals")
-    local normalDetailTexture = context:GetMaterialPropertyValue_image("detailLayerGroup.normalDetailMap")
+    local normalDetailTexture = context:GetMaterialPropertyValue_Image("detailLayerGroup.normalDetailMap")
     context:SetShaderOptionValue_bool("o_detail_normal_useTexture", isFeatureEnabled and normalDetailEnabled and normalDetailTexture ~= nil)
 end
 
@@ -78,7 +74,7 @@ function ProcessEditor(context)
     context:SetMaterialPropertyVisibility("detailUV.rotateDegrees", mainVisibility)
     context:SetMaterialPropertyVisibility("detailUV.scale", mainVisibility)
     
-    local blendMaskTexture = context:GetMaterialPropertyValue_image("detailLayerGroup.blendDetailMask")
+    local blendMaskTexture = context:GetMaterialPropertyValue_Image("detailLayerGroup.blendDetailMask")
     if(nil == blendMaskTexture) then
         context:SetMaterialPropertyVisibility("detailLayerGroup.enableDetailMaskTexture", MaterialPropertyVisibility_Hidden)
         context:SetMaterialPropertyVisibility("detailLayerGroup.blendDetailMaskUv", MaterialPropertyVisibility_Hidden)

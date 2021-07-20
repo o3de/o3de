@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -17,13 +12,14 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <AzFramework/Physics/MaterialBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <LyViewPaneNames.h>
 #include <LmbrCentral/Geometry/GeometrySystemComponentBus.h>
 #include <Source/Utils.h>
 
-#include <PhysX/Configuration/PhysXConfiguration.h>
-#include <System/PhysXSystem.h>
+#include <PhysX/Debug/PhysXDebugInterface.h>
 
 namespace PhysX
 {
@@ -54,6 +50,15 @@ namespace PhysX
                 return physXDebug->GetDebugDisplayData().m_globalCollisionDebugDraw == requiredState;
             }
             return false;
+        }
+
+        bool IsDrawColliderReadOnly()
+        {
+            bool helpersVisible = false;
+            AzToolsFramework::EditorRequestBus::BroadcastResult(helpersVisible,
+                &AzToolsFramework::EditorRequests::DisplayHelpersVisible);
+            // if helpers are visible, draw colliders is NOT read only and can be changed.
+            return !helpersVisible;
         }
 
         static void BuildAABBVerts(const AZ::Aabb& aabb,
@@ -145,28 +150,42 @@ namespace PhysX
                         "PhysX Collider Debug Draw", "Manages global and per-collider debug draw settings and logic")
                         ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Collider::m_locallyEnabled, "Draw collider",
                             "Shows the geometry for the collider in the viewport")
-                        ->Attribute(AZ::Edit::Attributes::CheckboxTooltip,
-                            "If set, the geometry of this collider is visible in the viewport")
-                        ->Attribute(AZ::Edit::Attributes::Visibility,
-                            VisibilityFunc{ []() { return IsGlobalColliderDebugCheck(GlobalCollisionDebugState::Manual); } })
+                            ->Attribute(AZ::Edit::Attributes::CheckboxTooltip,
+                                "If set, the geometry of this collider is visible in the viewport. 'Draw Helpers' needs to be enabled to use.")
+                            ->Attribute(AZ::Edit::Attributes::Visibility,
+                                VisibilityFunc{ []() { return IsGlobalColliderDebugCheck(GlobalCollisionDebugState::Manual); } })
+                            ->Attribute(AZ::Edit::Attributes::ReadOnly, &IsDrawColliderReadOnly)
                         ->DataElement(AZ::Edit::UIHandlers::Button, &Collider::m_globalButtonState, "Draw collider",
                             "Shows the geometry for the collider in the viewport")
-                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Global override")
-                        ->Attribute(AZ::Edit::Attributes::ButtonTooltip,
-                            "A global setting is overriding this property (to disable the override, "
-                            "set the Global Collision Debug setting to \"Set manually\" in the PhysX Configuration)")
-                        ->Attribute(AZ::Edit::Attributes::Visibility,
-                            VisibilityFunc{ []() { return !IsGlobalColliderDebugCheck(GlobalCollisionDebugState::Manual); } })
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &OpenPhysXSettingsWindow)
+                            ->Attribute(AZ::Edit::Attributes::ButtonText, "Global override")
+                            ->Attribute(AZ::Edit::Attributes::ButtonTooltip,
+                                "A global setting is overriding this property (to disable the override, "
+                                "set the Global Collision Debug setting to \"Set manually\" in the PhysX Configuration)."
+                                "'Draw Helpers' needs to be enabled to use.")
+                            ->Attribute(AZ::Edit::Attributes::Visibility,
+                                VisibilityFunc{ []() { return !IsGlobalColliderDebugCheck(GlobalCollisionDebugState::Manual); } })
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &OpenPhysXSettingsWindow)
+                            ->Attribute(AZ::Edit::Attributes::ReadOnly, &IsDrawColliderReadOnly)
                         ;
                 }
             }
+        }
+
+        Collider::Collider()
+            : m_debugDisplayDataChangedEvent(
+                  [this]([[maybe_unused]] const PhysX::Debug::DebugDisplayData& data)
+                  {
+                      this->RefreshTreeHelper();
+                  })
+        {
+            
         }
 
         void Collider::Connect(AZ::EntityId entityId)
         {
             m_entityId = entityId;
             AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(m_entityId);
+            AzToolsFramework::EntitySelectionEvents::Bus::Handler::BusConnect(m_entityId);
         }
 
         void Collider::SetDisplayCallback(const DisplayCallback* callback)
@@ -176,6 +195,9 @@ namespace PhysX
 
         void Collider::Disconnect()
         {
+            m_debugDisplayDataChangedEvent.Disconnect();
+            AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusDisconnect();
+            AzToolsFramework::EntitySelectionEvents::Bus::Handler::BusDisconnect();
             AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
             m_displayCallback = nullptr;
             m_entityId = AZ::EntityId();
@@ -415,11 +437,16 @@ namespace PhysX
             {
             case GlobalCollisionDebugColorMode::MaterialColor:
             {
-                Physics::MaterialFromAssetConfiguration materialConfiguration;
                 const Physics::MaterialId materialId = colliderConfig.m_materialSelection.GetMaterialId(elementDebugInfo.m_materialSlotIndex);
-                if (colliderConfig.m_materialSelection.GetMaterialConfiguration(materialConfiguration, materialId))
+
+                AZStd::shared_ptr<Physics::Material> physicsMaterial;
+                Physics::PhysicsMaterialRequestBus::BroadcastResult(
+                    physicsMaterial,
+                    &Physics::PhysicsMaterialRequestBus::Events::GetMaterialById,
+                    materialId);
+                if (physicsMaterial)
                 {
-                    debugColor = materialConfiguration.m_configuration.m_debugColor;
+                    debugColor = physicsMaterial->GetDebugColor();
                 }
                 break;
             }
@@ -555,25 +582,37 @@ namespace PhysX
 
             if (meshConfig.GetCachedNativeMesh())
             {
-                const AZ::Transform scaleMatrix = AZ::Transform::CreateScale(meshScale);
-                debugDisplay.PushMatrix(GetColliderLocalTransform(colliderConfig) * scaleMatrix);
+                debugDisplay.PushMatrix(GetColliderLocalTransform(colliderConfig));
 
                 if (meshConfig.GetMeshType() == Physics::CookedMeshShapeConfiguration::MeshType::TriangleMesh)
                 {
-                    DrawTriangleMesh(debugDisplay, colliderConfig, geomIndex);
+                    DrawTriangleMesh(debugDisplay, colliderConfig, geomIndex, meshScale);
                 }
                 else
                 {
-                    DrawConvexMesh(debugDisplay, colliderConfig, geomIndex);
+                    DrawConvexMesh(debugDisplay, colliderConfig, geomIndex, meshScale);
                 }
 
                 debugDisplay.PopMatrix();
             }
         }
 
-        void Collider::DrawTriangleMesh(AzFramework::DebugDisplayRequests& debugDisplay,
-            const Physics::ColliderConfiguration& colliderConfig,
-            AZ::u32 geomIndex) const
+        AZStd::vector<AZ::Vector3> ScalePoints(const AZ::Vector3& scale, const AZStd::vector<AZ::Vector3>& points)
+        {
+            AZStd::vector<AZ::Vector3> scaledPoints;
+            scaledPoints.resize_no_construct(points.size());
+            AZStd::transform(
+                points.begin(), points.end(), scaledPoints.begin(),
+                [scale](const AZ::Vector3& point)
+                {
+                    return scale * point;
+                });
+            return scaledPoints;
+        }
+
+        void Collider::DrawTriangleMesh(
+            AzFramework::DebugDisplayRequests& debugDisplay, const Physics::ColliderConfiguration& colliderConfig, AZ::u32 geomIndex,
+            const AZ::Vector3& meshScale) const
         {
             AZ_Assert(geomIndex < m_geometry.size(), "DrawTriangleMesh: geomIndex is out of range");
 
@@ -581,10 +620,10 @@ namespace PhysX
 
             const AZStd::unordered_map<int, AZStd::vector<AZ::u32>>& triangleIndexesByMaterialSlot
                 = geom.m_triangleIndexesByMaterialSlot;
-            const AZStd::vector<AZ::Vector3>& verts = geom.m_verts;
-            const AZStd::vector<AZ::Vector3>& points = geom.m_points;
+            AZStd::vector<AZ::Vector3> scaledVerts = ScalePoints(meshScale, geom.m_verts);
+            AZStd::vector<AZ::Vector3> scaledPoints = ScalePoints(meshScale, geom.m_points);
 
-            if (!verts.empty())
+            if (!scaledVerts.empty())
             {
                 for (const auto& element : triangleIndexesByMaterialSlot)
                 {
@@ -596,30 +635,31 @@ namespace PhysX
                     triangleMeshInfo.m_numTriangles = triangleCount;
                     triangleMeshInfo.m_materialSlotIndex = materialSlot;
 
-                    debugDisplay.DrawTrianglesIndexed(verts, triangleIndexes
+                    debugDisplay.DrawTrianglesIndexed(scaledVerts, triangleIndexes
                         , CalcDebugColor(colliderConfig, triangleMeshInfo));
                 }
-                debugDisplay.DrawLines(points, WireframeColor);
+                debugDisplay.DrawLines(scaledPoints, WireframeColor);
             }
         }
 
-        void Collider::DrawConvexMesh(AzFramework::DebugDisplayRequests& debugDisplay,
-            const Physics::ColliderConfiguration& colliderConfig, AZ::u32 geomIndex) const
+        void Collider::DrawConvexMesh(
+            AzFramework::DebugDisplayRequests& debugDisplay, const Physics::ColliderConfiguration& colliderConfig, AZ::u32 geomIndex,
+            const AZ::Vector3& meshScale) const
         {
             AZ_Assert(geomIndex < m_geometry.size(), "DrawConvexMesh: geomIndex is out of range");
 
             const GeometryData& geom = m_geometry[geomIndex];
-            const AZStd::vector<AZ::Vector3>& verts = geom.m_verts;
-            const AZStd::vector<AZ::Vector3>& points = geom.m_points;
+            AZStd::vector<AZ::Vector3> scaledVerts = ScalePoints(meshScale, geom.m_verts);
+            AZStd::vector<AZ::Vector3> scaledPoints = ScalePoints(meshScale, geom.m_points);
 
-            if (!verts.empty())
+            if (!scaledVerts.empty())
             {
-                const AZ::u32 triangleCount = static_cast<AZ::u32>(verts.size() / 3);
+                const AZ::u32 triangleCount = static_cast<AZ::u32>(scaledVerts.size() / 3);
                 ElementDebugInfo convexMeshInfo;
                 convexMeshInfo.m_numTriangles = triangleCount;
 
-                debugDisplay.DrawTriangles(verts, CalcDebugColor(colliderConfig, convexMeshInfo));
-                debugDisplay.DrawLines(points, WireframeColor);
+                debugDisplay.DrawTriangles(scaledVerts, CalcDebugColor(colliderConfig, convexMeshInfo));
+                debugDisplay.DrawLines(scaledPoints, WireframeColor);
             }
         }
 
@@ -685,7 +725,7 @@ namespace PhysX
             // Let each collider decide how to scale itself, so extract the scale here.
             AZ::Transform entityWorldTransformWithoutScale = AZ::Transform::CreateIdentity();
             AZ::TransformBus::EventResult(entityWorldTransformWithoutScale, m_entityId, &AZ::TransformInterface::GetWorldTM);
-            entityWorldTransformWithoutScale.ExtractScale();
+            entityWorldTransformWithoutScale.ExtractUniformScale();
 
             auto* physXDebug = AZ::Interface<Debug::PhysXDebugInterface>::Get();
             if (physXDebug == nullptr)
@@ -711,6 +751,33 @@ namespace PhysX
                     debugDisplay.PopMatrix();
                 }
             }
+        }
+
+        void Collider::OnDrawHelpersChanged([[maybe_unused]] bool enabled)
+        {
+            RefreshTreeHelper();
+        }
+
+        void Collider::OnSelected()
+        {
+            AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusConnect(
+                AzFramework::g_defaultSceneEntityDebugDisplayId);
+            if (auto* physXDebug = AZ::Interface<Debug::PhysXDebugInterface>::Get())
+            {
+                physXDebug->RegisterDebugDisplayDataChangedEvent(m_debugDisplayDataChangedEvent);
+            }
+        }
+
+        void Collider::OnDeselected()
+        {
+            AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusDisconnect();
+            m_debugDisplayDataChangedEvent.Disconnect();
+        }
+
+        void Collider::RefreshTreeHelper()
+        {
+            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+                &AzToolsFramework::ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
         }
 
         AZStd::string Collider::GetEntityName() const 

@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 include(cmake/Platform/Common/Configurations_common.cmake)
@@ -63,19 +59,10 @@ ly_append_configurations_options(
 
         # Disabling these warnings while they get fixed
         /wd4018 # signed/unsigned mismatch
-        /wd4121 # alignment of a member was sensitive to packing
         /wd4244 # conversion, possible loss of data
         /wd4245 # conversion, signed/unsigned mismatch
         /wd4267 # conversion, possible loss of data
-        /wd4310 # cast truncates constant value
-        /wd4324 # structure was padded due to alignment specifier
-        /wd4366 # the result of unary operator may be unaligned
         /wd4389 # comparison, signed/unsigned mismatch
-        /wd4436 # the result of unary operator may be unaligned
-        /wd4450 # declaration hides global declaration
-        /wd4457 # declaration hides function parameter
-        /wd4459 # declaration hides global declaration
-        /wd4701 # potentially unintialized local variable
 
         # Enabling warnings that are disabled by default from /W4
         # https://docs.microsoft.com/en-us/cpp/preprocessor/compiler-warnings-that-are-off-by-default?view=vs-2019
@@ -130,7 +117,7 @@ ly_append_configurations_options(
         /INCREMENTAL:NO
 )
 
-set(LY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG TRUE CACHE BOOL "Indicates if incremental linking is used in debug configurations (default = TRUE)")
+set(LY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG FALSE CACHE BOOL "Indicates if incremental linking is used in debug configurations (default = FALSE)")
 if(LY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG)
     ly_append_configurations_options(
         COMPILATION_DEBUG

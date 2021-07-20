@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <viewsrg.srgi>
 
@@ -39,10 +34,27 @@ PSOutput MainPS(VSOutput IN)
     PSOutput OUT;
 
     float depth = PassSrg::m_depthStencil.Sample(PassSrg::LinearSampler, IN.m_texCoord).r;
+
+    // If depth is 0, that means depth is on the far plane. This should be treated as being infinitely far
+    // away, not actually on the far plane, because the infinitely far background shouldn't move as a result
+    // of camera translation. Tweaking the depth to -near/far distance makes that happen. Keep in mind near
+    // and far are inverted, so this normally a very small value.
+    if (depth == 0.0)
+    {
+        depth = -ViewSrg::GetFarZ() / ViewSrg::GetNearZ();
+    }
+
     float2 clipPos = float2(mad(IN.m_texCoord.x, 2.0, -1.0), mad(IN.m_texCoord.y, -2.0, 1.0));
     float4 worldPos = mul(ViewSrg::m_viewProjectionInverseMatrix, float4(clipPos, depth, 1.0));
+
     float4 clipPosPrev = mul(ViewSrg::m_viewProjectionPrevMatrix, float4((worldPos / worldPos.w).xyz, 1.0));
-    
-    OUT.m_motion = (clipPos - (clipPosPrev / clipPosPrev.w).xy) * 0.5;
+    clipPosPrev = (clipPosPrev / clipPosPrev.w);
+
+    // Clip space is from -1.0 to 1.0, so the motion vectors are 2x as big as they should be
+    OUT.m_motion = (clipPos - clipPosPrev.xy) * 0.5;
+
+    // Flip y to line up with uv coordinates
+    OUT.m_motion.y = -OUT.m_motion.y;
+
     return OUT;
 }

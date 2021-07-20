@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <string>
@@ -21,13 +16,14 @@
 #include <LyShine/Bus/UiLayoutCellDefaultBus.h>
 #include <LyShine/Bus/UiElementBus.h>
 #include <LyShine/Bus/UiCanvasBus.h>
+#include <LyShine/Bus/UiAnimateEntityBus.h>
+#include <LyShine/UiAssetTypes.h>
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/containers/set.h>
-#include <LyShine/Bus/UiAnimateEntityBus.h>
 
-#include <LyShine/UiAssetTypes.h>
+#include <Atom/RPI.Reflect/Image/Image.h>
 
 // Only needed for internal unit-testing
 #include <LyShine.h>
@@ -91,7 +87,7 @@ public: //types
         bool OnAtlasLoaded(const TextureAtlasNamespace::TextureAtlas* atlas);
         bool OnAtlasUnloaded(const TextureAtlasNamespace::TextureAtlas* atlas);
 
-        ITexture* m_texture;
+        AZ::Data::Instance<AZ::RPI::Image> m_texture;
         AZ::Vector2 m_size;
         VAlign m_vAlign;
         float m_yOffset;
@@ -616,8 +612,8 @@ private: // types
 
     struct RenderCacheImageBatch
     {
-        ITexture*           m_texture;
-        IRenderer::DynUiPrimitive m_cachedPrimitive;
+        AZ::Data::Instance<AZ::RPI::Image>  m_texture;
+        IRenderer::DynUiPrimitive           m_cachedPrimitive;
     };
 
     struct RenderCacheData

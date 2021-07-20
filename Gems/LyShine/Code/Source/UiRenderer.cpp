@@ -1,17 +1,13 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "LyShine_precompiled.h"
 #include "UiRenderer.h"
 
+#include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/RPIUtils.h>
@@ -19,12 +15,11 @@
 #include <Atom/Bootstrap/DefaultWindowBus.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
-#include <IRenderer.h> // LYSHINE_ATOM_TODO - remove when GS_DEPTHFUNC_LEQUAL reference is removed with LyShine render target Atom conversion
 
 #include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Debug/Trace.h>
 
-#include <LyShine/IDraw2d.h>
+#include <LyShine/Draw2d.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // PUBLIC MEMBER FUNCTIONS
@@ -32,9 +27,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 UiRenderer::UiRenderer(AZ::RPI::ViewportContextPtr viewportContext)
-    : m_baseState(GS_DEPTHFUNC_LEQUAL)
-    , m_stencilRef(0)
-    , m_viewportContext(viewportContext)
+    : m_viewportContext(viewportContext)
 {
     // Use bootstrap scene event to indicate when the RPI has fully
     // initialized with all assets loaded and is ready to be used
@@ -126,6 +119,8 @@ void UiRenderer::CreateDynamicDrawContext(AZ::RPI::ScenePtr scene, AZ::Data::Ins
         { "TEXCOORD", AZ::RHI::Format::R32G32_FLOAT },
         { "BLENDINDICES", AZ::RHI::Format::R16G16_UINT } }
     );
+    m_dynamicDraw->AddDrawStateOptions(AZ::RPI::DynamicDrawContext::DrawStateOptions::StencilState
+        | AZ::RPI::DynamicDrawContext::DrawStateOptions::BlendMode);
     m_dynamicDraw->EndInit();
 }
 
@@ -150,7 +145,7 @@ void UiRenderer::CacheShaderData(const AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext>
     static const char worldToProjIndexName[] = "m_worldToProj";
     static const char isClampIndexName[] = "m_isClamp";
     AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = dynamicDraw->NewDrawSrg();
-    const AZ::RHI::ShaderResourceGroupLayout* layout = drawSrg->GetAsset()->GetLayout();
+    const AZ::RHI::ShaderResourceGroupLayout* layout = drawSrg->GetLayout();
     m_uiShaderData.m_imageInputIndex = layout->FindShaderInputImageIndex(AZ::Name(textureIndexName));
     AZ_Error(LogName, m_uiShaderData.m_imageInputIndex.IsValid(), "Failed to find shader input constant %s.",
         textureIndexName);
@@ -169,25 +164,24 @@ void UiRenderer::CacheShaderData(const AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext>
     shaderOptionsDefault.push_back(AZ::RPI::ShaderOption(AZ::Name("o_srgbWrite"), AZ::Name("true")));
     shaderOptionsDefault.push_back(AZ::RPI::ShaderOption(AZ::Name("o_modulate"), AZ::Name("Modulate::None")));
     m_uiShaderData.m_shaderVariantDefault = dynamicDraw->UseShaderVariant(shaderOptionsDefault);
+    AZ::RPI::ShaderOptionList shaderOptionsAlphaTest;
+    shaderOptionsAlphaTest.push_back(AZ::RPI::ShaderOption(AZ::Name("o_preMultiplyAlpha"), AZ::Name("false")));
+    shaderOptionsAlphaTest.push_back(AZ::RPI::ShaderOption(AZ::Name("o_alphaTest"), AZ::Name("true")));
+    shaderOptionsAlphaTest.push_back(AZ::RPI::ShaderOption(AZ::Name("o_srgbWrite"), AZ::Name("true")));
+    shaderOptionsAlphaTest.push_back(AZ::RPI::ShaderOption(AZ::Name("o_modulate"), AZ::Name("Modulate::None")));
+    m_uiShaderData.m_shaderVariantAlphaTest = dynamicDraw->UseShaderVariant(shaderOptionsAlphaTest);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiRenderer::BeginUiFrameRender()
 {
-#ifdef LYSHINE_ATOM_TODO
-    m_renderer = gEnv->pRenderer;
-
-    // we are rendering at the end of the frame, after tone mapping, so we should be writing sRGB values
-    m_renderer->SetSrgbWrite(true);
-
 #ifndef _RELEASE
     if (m_debugTextureDataRecordLevel > 0)
     {
         m_texturesUsedInFrame.clear();
     }
 #endif
-#endif
-    
+   
     // Various platform drivers expect all texture slots used in the shader to be bound
     BindNullTexture();
 }
@@ -203,18 +197,10 @@ void UiRenderer::EndUiFrameRender()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiRenderer::BeginCanvasRender()
 {
-#ifdef LYSHINE_ATOM_TODO
-    m_baseState = GS_NODEPTHTEST;
-    
     m_stencilRef = 0;
 
-    // Set default starting state
-    IRenderer* renderer = gEnv->pRenderer;
-
-    renderer->SetCullMode(R_CULL_DISABLE);
-    renderer->SetColorOp(eCO_MODULATE, eCO_MODULATE, DEF_TEXARG0, DEF_TEXARG0);
-    renderer->SetState(GS_BLSRC_SRCALPHA | GS_BLDST_ONEMINUSSRCALPHA | GS_NODEPTHTEST);
-#endif
+    // Set base state
+    m_baseState.ResetToDefault();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -228,11 +214,13 @@ AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> UiRenderer::GetDynamicDrawContext()
     return m_dynamicDraw;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
 const UiRenderer::UiShaderData& UiRenderer::GetUiShaderData()
 {
     return m_uiShaderData;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
 AZ::Matrix4x4 UiRenderer::GetModelViewProjectionMatrix()
 {
     auto viewportContext = GetViewportContext();
@@ -252,6 +240,7 @@ AZ::Matrix4x4 UiRenderer::GetModelViewProjectionMatrix()
     return modelViewProjMat;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
 AZ::Vector2 UiRenderer::GetViewportSize()
 {
     auto viewportContext = GetViewportContext();
@@ -266,15 +255,28 @@ AZ::Vector2 UiRenderer::GetViewportSize()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-int UiRenderer::GetBaseState()
+UiRenderer::BaseState UiRenderer::GetBaseState()
 {
     return m_baseState;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiRenderer::SetBaseState(int state)
+void UiRenderer::SetBaseState(BaseState state)
 {
     m_baseState = state;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+AZ::RPI::ShaderVariantId UiRenderer::GetCurrentShaderVariant()
+{
+    AZ::RPI::ShaderVariantId variantId = m_uiShaderData.m_shaderVariantDefault;
+
+    if (m_baseState.m_useAlphaTest)
+    {
+        variantId = m_uiShaderData.m_shaderVariantAlphaTest;
+    }
+
+    return variantId;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -353,7 +355,7 @@ void UiRenderer::DebugDisplayTextureData(int recordingOption)
 {
     if (recordingOption > 0)
     {
-#ifdef LYSHINE_ATOM_TODO
+#ifdef LYSHINE_ATOM_TODO // Convert debug to use Atom images
         // compute the total area of all the textures, also create a vector that we can sort by area
         AZStd::vector<ITexture*> textures;
         int totalArea = 0;
@@ -374,15 +376,14 @@ void UiRenderer::DebugDisplayTextureData(int recordingOption)
             return lhs->GetDataSize() > rhs->GetDataSize();
         });
 
-        IDraw2d* draw2d = Draw2dHelper::GetDraw2d();
+        CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
         // setup to render lines of text for the debug display
-        draw2d->BeginDraw2d(false);
 
         float xOffset = 20.0f;
         float yOffset = 20.0f;
 
-        int blackTexture = gEnv->pRenderer->GetBlackTextureId();
+        auto blackTexture = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::Black);
         float textOpacity = 1.0f;
         float backgroundRectOpacity = 0.75f;
         const float lineSpacing = 20.0f;
@@ -432,8 +433,6 @@ void UiRenderer::DebugDisplayTextureData(int recordingOption)
                 texture->GetWidth(), texture->GetHeight(), texture->GetDataSize(), texture->GetFormatName(), texture->GetName());
             WriteLine(buffer, white);
         }
-
-        draw2d->EndDraw2d();
 #endif
     }
 }

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "PhysX_precompiled.h"
 
@@ -93,39 +88,43 @@ namespace PhysXEditorTests
         editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
         editorEntity->CreateComponent(LmbrCentral::EditorCylinderShapeComponentTypeId);
         editorEntity->Activate();
-        
+
         {
-            UnitTest::ErrorHandler warningHandler("Negative or zero cylinder dimensions are invalid");
+            UnitTest::ErrorHandler dimensionWarningHandler("Negative or zero cylinder dimensions are invalid");
+            UnitTest::ErrorHandler colliderWarningHandler("No Collider or Shape information found when creating Rigid body");
             LmbrCentral::CylinderShapeComponentRequestsBus::Event(editorEntity->GetId(),
                 &LmbrCentral::CylinderShapeComponentRequests::SetRadius, radius);
         
             // expect 2 warnings
                 //1 if the radius is invalid
                 //2 when re-creating the underlying simulated body
-            int expectedWarningCount = radius <= 0.f ? 2 : 0;
-            EXPECT_EQ(warningHandler.GetWarningCount(), expectedWarningCount);
+            int expectedWarningCount = radius <= 0.f ? 1 : 0;
+            EXPECT_EQ(dimensionWarningHandler.GetExpectedWarningCount(), expectedWarningCount);
+            EXPECT_EQ(colliderWarningHandler.GetExpectedWarningCount(), expectedWarningCount);
         }
-        
+
         {
-            UnitTest::ErrorHandler warningHandler("Negative or zero cylinder dimensions are invalid");
+            UnitTest::ErrorHandler dimensionWarningHandler("Negative or zero cylinder dimensions are invalid");
+            UnitTest::ErrorHandler colliderWarningHandler("No Collider or Shape information found when creating Rigid body");
             LmbrCentral::CylinderShapeComponentRequestsBus::Event(editorEntity->GetId(),
                 &LmbrCentral::CylinderShapeComponentRequests::SetHeight, height);
         
             // expect 2 warnings
                 //1 if the radius or height is invalid
                 //2 when re-creating the underlying simulated body
-            int expectedWarningCount = radius <= 0.f || height <= 0.f ? 2 : 0;
-            EXPECT_EQ(warningHandler.GetWarningCount(), expectedWarningCount);
+            int expectedWarningCount = radius <= 0.f || height <= 0.f ? 1 : 0;
+            EXPECT_EQ(dimensionWarningHandler.GetExpectedWarningCount(), expectedWarningCount);
+            EXPECT_EQ(colliderWarningHandler.GetExpectedWarningCount(), expectedWarningCount);
         }
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
-        
+
         // since there was no editor rigid body component, the runtime entity should have a static rigid body
         const auto* staticBody = azdynamic_cast<PhysX::StaticRigidBody*>(gameEntity->FindComponent<PhysX::StaticRigidBodyComponent>()->GetSimulatedBody());
         const auto* pxRigidStatic = static_cast<const physx::PxRigidStatic*>(staticBody->GetNativePointer());
-        
+
         PHYSX_SCENE_READ_LOCK(pxRigidStatic->getScene());
-        
+
         // there should be no shapes on the rigid body because the cylinder radius and/or height is invalid
         EXPECT_EQ(pxRigidStatic->getNbShapes(), 0);
     }

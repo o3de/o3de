@@ -32,6 +32,10 @@
                     "Name": "LightListRemapped",
                     "SlotType": "Input"
                 },
+                {
+                    "Name": "InputLinearDepth",
+                    "SlotType": "Input"
+                },
                 // Input/Outputs...
                 {
                     "Name": "DepthStencil",
@@ -91,6 +95,13 @@
                                 "Attachment": "LightListRemapped"
                             }
                         },
+                        {
+                            "LocalSlot": "InputLinearDepth",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "InputLinearDepth"
+                            }
+                        },
                         // Input/Outputs...
                         {
                             "LocalSlot": "DepthStencil",
@@ -112,8 +123,8 @@
                         "DrawListTag": "transparent",
                         "DrawListSortType": "KeyThenReverseDepth",
                         "PipelineViewTag": "MainCamera",
-                        "PassSrgAsset": {
-                            "FilePath": "shaderlib/atom/features/pbr/transparentpasssrg.azsli:PassSrg"
+                        "PassSrgShaderAsset": {
+                            "FilePath": "Shaders/ForwardPassSrg.shader"
                         }
                     }
                 }

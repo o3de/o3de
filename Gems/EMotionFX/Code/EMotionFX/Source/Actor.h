@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -63,7 +58,6 @@ namespace EMotionFX
      * still share the same data from the Actor class. The Actor contains information about the hierarchy/structure of the characters.
      */
     class EMFX_API Actor
-        : private AZ::Data::AssetBus::MultiHandler
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
@@ -99,6 +93,12 @@ namespace EMotionFX
             uint16  mSourceNode;        // from which node to extract the motion
             uint8   mAxis;              // X=0, Y=1, Z=2
             uint8   mFlags;             // bitfield with MIRRORFLAG_ prefix
+        };
+
+        enum class LoadRequirement : bool
+        {
+            RequireBlockingLoad,
+            AllowAsyncLoad
         };
 
         //------------------------------------------------
@@ -885,36 +885,35 @@ namespace EMotionFX
         bool GetOptimizeSkeleton() const { return m_optimizeSkeleton; }
 
         void SetMeshAssetId(const AZ::Data::AssetId& assetId);
-        void CheckFinalizeActor();
-        void LoadMeshAssetsQueued();
-        void LoadRemainingAssets();
+        AZ::Data::AssetId GetMeshAssetId() const { return m_meshAssetId; };
 
         const AZ::Data::Asset<AZ::RPI::ModelAsset>& GetMeshAsset() const { return m_meshAsset; }
         const AZ::Data::Asset<AZ::RPI::SkinMetaAsset>& GetSkinMetaAsset() const { return m_skinMetaAsset; }
         const AZ::Data::Asset<AZ::RPI::MorphTargetMetaAsset>& GetMorphTargetMetaAsset() const { return m_morphTargetMetaAsset; }
-
         const AZStd::unordered_map<AZ::u16, AZ::u16>& GetSkinToSkeletonIndexMap() const { return m_skinToSkeletonIndexMap; }
 
-        void SetMeshAsset(AZ::Data::Asset<AZ::RPI::ModelAsset> asset) { m_meshAsset = asset; }
-        void SetSkinMetaAsset(AZ::Data::Asset<AZ::RPI::SkinMetaAsset> asset) { m_skinMetaAsset = asset; }
-        void SetMorphTargetMetaAsset(AZ::Data::Asset<AZ::RPI::MorphTargetMetaAsset> asset) { m_morphTargetMetaAsset = asset; }
+        /**
+         * Is the actor fully ready?
+         * @result True in case the actor as well as its dependent files (e.g. mesh, skin, morph targets) are fully loaded and initialized.
+         **/
+        bool IsReady() const { return m_isReady; }
 
         /**
-        * Is the actor fully ready?
-        * @result True in case the actor as well as its dependent files (e.g. mesh, skin, morph targets) are fully loaded and initialized.
-        **/
-        bool IsReady() const { return m_isReady; }
+         * Finalize the actor with preload assets (mesh, skinmeta and morph target assets).
+         * LoadRequirement - We won't need a blocking load if the actor is part of the actor asset, as that will trigger the preload assets
+         * to load and get ready before finalize has been reached.
+         * However, if we are calling this on an actor that bypassed the asset system (e.g loading the actor directly from disk), it will require
+         * a blocking load. This option is now being used because emfx editor does not fully integrate with the asset system.
+         */
+        void Finalize(LoadRequirement loadReq = LoadRequirement::AllowAsyncLoad);
 
     private:
         void InsertJointAndParents(AZ::u32 jointIndex, AZStd::unordered_set<AZ::u32>& includedJointIndices);
 
-        // AZ::Data::AssetBus::Handler
-        void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
-        void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
-
         AZStd::unordered_map<AZ::u16, AZ::u16> ConstructSkinToSkeletonIndexMap(const AZ::Data::Asset<AZ::RPI::SkinMetaAsset>& skinMetaAsset);
-        void ConstructMeshes(const AZStd::unordered_map<AZ::u16, AZ::u16>& skinToSkeletonIndexMap);
+        void ConstructMeshes();
         void ConstructMorphTargets();
+
         Node* FindJointByMeshName(const AZStd::string_view meshName) const;
 
         // per node info (shared between lods)
@@ -966,9 +965,6 @@ namespace EMotionFX
 
         Node* FindMeshJoint(const AZ::Data::Asset<AZ::RPI::ModelLodAsset>& lodModelAsset) const;
 
-        void SetActorReady();
-        bool m_isReady = false;
-
         Skeleton*                                       mSkeleton;                  /**< The skeleton, containing the nodes and bind pose. */
         MCore::Array<Dependency>                        mDependencies;              /**< The dependencies on other actors (shared meshes and transforms). */
         AZStd::vector<NodeInfo>                         mNodeInfos;                 /**< The per node info, shared between lods. */
@@ -992,7 +988,7 @@ namespace EMotionFX
         bool                                            mDirtyFlag;                 /**< The dirty flag which indicates whether the user has made changes to the actor since the last file save operation. */
         bool                                            mUsedForVisualization;      /**< Indicates if the actor is used for visualization specific things and is not used as a normal in-game actor. */
         bool                                            m_optimizeSkeleton;         /**< Indicates if we should perform/ */
-
+        bool                                            m_isReady = false;          /**< If actor as well as its dependent files are fully loaded and initialized.*/
 #if defined(EMFX_DEVELOPMENT_BUILD)
         bool                                            mIsOwnedByRuntime;          /**< Set if the actor is used/owned by the engine runtime. */
 #endif // EMFX_DEVELOPMENT_BUILD

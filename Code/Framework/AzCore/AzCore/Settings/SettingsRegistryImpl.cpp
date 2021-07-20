@@ -1,19 +1,15 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <cctype>
 #include <cerrno>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/JSON/error/en.h>
+#include <AzCore/NativeUI//NativeUIRequests.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/StackedString.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
@@ -880,6 +876,13 @@ namespace AZ
         const Specializations& specializations, const rapidjson::Pointer& historyPointer, AZStd::string_view folderPath)
     {
         using namespace rapidjson;
+        
+        if (&lhs == &rhs)
+        {
+            // Early return to avoid setting the collisionFound reference to true
+            // std::sort is allowed to pass in the same memory address for the left and right elements
+            return false;
+        }
 
         AZ_Assert(!lhs.m_tags.empty(), "Comparing a settings file without at least a name tag.");
         AZ_Assert(!rhs.m_tags.empty(), "Comparing a settings file without at least a name tag.");
@@ -1054,15 +1057,23 @@ namespace AZ
         jsonPatch.ParseInsitu<flags>(scratchBuffer.data());
         if (jsonPatch.HasParseError())
         {
+            auto nativeUI = AZ::Interface<NativeUI::NativeUIRequests>::Get();
             if (jsonPatch.GetParseError() == rapidjson::kParseErrorDocumentEmpty)
             {
-                AZ_Warning("Settings Registry", false, R"(Unable to parse registry file "%s" due to json error "%s" at offset %llu.)",
+                AZ_Warning("Settings Registry", false, R"(Unable to parse registry file "%s" due to json error "%s" at offset %zu.)",
                     path, GetParseError_En(jsonPatch.GetParseError()), jsonPatch.GetErrorOffset());
             }
             else
             {
-                AZ_Error("Settings Registry", false, R"(Unable to parse registry file "%s" due to json error "%s" at offset %llu.)", path,
+                using ErrorString = AZStd::fixed_string<4096>;
+                auto jsonError = ErrorString::format(R"(Unable to parse registry file "%s" due to json error "%s" at offset %zu.)", path,
                     GetParseError_En(jsonPatch.GetParseError()), jsonPatch.GetErrorOffset());
+                AZ_Error("Settings Registry", false, "%s", jsonError.c_str());
+
+                if (nativeUI)
+                {
+                    nativeUI->DisplayOkDialog("Setreg(Patch) Merge Issue", AZStd::string_view(jsonError), false);
+                }
             }
             
             pointer.Create(m_settings, m_settings.GetAllocator()).SetObject()

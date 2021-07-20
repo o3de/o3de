@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
@@ -117,6 +112,24 @@ namespace MaterialEditor
         const AtomToolsFramework::DynamicProperty& property = it->second;
         return property;
     }
+    
+    bool MaterialDocument::IsPropertyGroupVisible(const AZ::Name& propertyGroupFullName) const
+    {
+        if (!IsOpen())
+        {
+            AZ_Error("MaterialDocument", false, "Material document is not open.");
+            return false;
+        }
+
+        const auto it = m_propertyGroupVisibility.find(propertyGroupFullName);
+        if (it == m_propertyGroupVisibility.end())
+        {
+            AZ_Error("MaterialDocument", false, "Material document property group could not be found: '%s'.", propertyGroupFullName.GetCStr());
+            return false;
+        }
+
+        return it->second;
+    }
 
     void MaterialDocument::SetPropertyValue(const AZ::Name& propertyFullName, const AZStd::any& value)
     {
@@ -153,8 +166,12 @@ namespace MaterialEditor
 
                 Recompile();
 
-                AZStd::unordered_set<Name> changedPropertyNames = RunEditorMaterialFunctors(dirtyFlags);
-                for (const Name& changedPropertyName : changedPropertyNames)
+                EditorMaterialFunctorResult result = RunEditorMaterialFunctors(dirtyFlags);
+                for (const Name& changedPropertyGroupName : result.m_updatedPropertyGroups)
+                {
+                    MaterialDocumentNotificationBus::Broadcast(&MaterialDocumentNotificationBus::Events::OnDocumentPropertyGroupVisibilityChanged, m_id, changedPropertyGroupName, IsPropertyGroupVisible(changedPropertyGroupName));
+                }
+                for (const Name& changedPropertyName : result.m_updatedProperties)
                 {
                     MaterialDocumentNotificationBus::Broadcast(&MaterialDocumentNotificationBus::Events::OnDocumentPropertyConfigModified, m_id, GetProperty(changedPropertyName));
                 }
@@ -550,9 +567,11 @@ namespace MaterialEditor
     {
         if (m_compilePending)
         {
-            m_materialInstance->Compile();
-            m_compilePending = false;
-            AZ::TickBus::Handler::BusDisconnect();
+            if (m_materialInstance->Compile())
+            {
+                m_compilePending = false;
+                AZ::TickBus::Handler::BusDisconnect();
+            }
         }
     }
 
@@ -776,11 +795,18 @@ namespace MaterialEditor
                 propertyConfig.m_showThumbnail = true;
                 propertyConfig.m_originalValue = AtomToolsFramework::ConvertToEditableType(m_materialAsset->GetPropertyValues()[propertyIndex.GetIndex()]);
                 propertyConfig.m_parentValue = AtomToolsFramework::ConvertToEditableType(parentPropertyValues[propertyIndex.GetIndex()]);
-                propertyConfig.m_groupName = m_materialTypeSourceData.FindGroup(groupNameId)->m_displayName;
+                auto groupDefinition = m_materialTypeSourceData.FindGroup(groupNameId);
+                propertyConfig.m_groupName = groupDefinition ? groupDefinition->m_displayName : groupNameId;
                 m_properties[propertyConfig.m_id] = AtomToolsFramework::DynamicProperty(propertyConfig);
             }
             return true;
         });
+
+        // Populate the property group visibility map
+        for (MaterialTypeSourceData::GroupDefinition& group : m_materialTypeSourceData.GetGroupDefinitionsInDisplayOrder())
+        {
+            m_propertyGroupVisibility[AZ::Name{group.m_nameId}] = true;
+        }
 
         // Adding properties for material type and parent as part of making dynamic
         // properties and the inspector more general purpose.
@@ -790,10 +816,10 @@ namespace MaterialEditor
         // is implemented.
         AtomToolsFramework::DynamicPropertyConfig propertyConfig;
         propertyConfig.m_dataType = AtomToolsFramework::DynamicPropertyType::Asset;
-        propertyConfig.m_id = "details.materialType";
+        propertyConfig.m_id = "overview.materialType";
         propertyConfig.m_nameId = "materialType";
         propertyConfig.m_displayName = "Material Type";
-        propertyConfig.m_groupName = "Details";
+        propertyConfig.m_groupName = "Overview";
         propertyConfig.m_description = "The material type defines the layout, properties, default values, shader connections, and other "
                                        "data needed to create and edit a derived material.";
         propertyConfig.m_defaultValue = AZStd::any(materialTypeAsset);
@@ -805,10 +831,10 @@ namespace MaterialEditor
 
         propertyConfig = {};
         propertyConfig.m_dataType = AtomToolsFramework::DynamicPropertyType::Asset;
-        propertyConfig.m_id = "details.parentMaterial";
+        propertyConfig.m_id = "overview.parentMaterial";
         propertyConfig.m_nameId = "parentMaterial";
         propertyConfig.m_displayName = "Parent Material";
-        propertyConfig.m_groupName = "Details";
+        propertyConfig.m_groupName = "Overview";
         propertyConfig.m_description =
             "The parent material provides an initial configuration whose properties are inherited and overriden by a derived material.";
         propertyConfig.m_defaultValue = AZStd::any(parentMaterialAsset);
@@ -831,7 +857,7 @@ namespace MaterialEditor
             propertyConfig.m_id = MaterialPropertyId(UvGroupName, shaderInput).GetCStr();
             propertyConfig.m_nameId = shaderInput;
             propertyConfig.m_displayName = shaderInput;
-            propertyConfig.m_groupName = "UV Names";
+            propertyConfig.m_groupName = "UV Sets";
             propertyConfig.m_description = shaderInput;
             propertyConfig.m_defaultValue = uvName;
             propertyConfig.m_originalValue = uvName;
@@ -914,16 +940,26 @@ namespace MaterialEditor
         }
     }
 
-    AZStd::unordered_set<AZ::Name> MaterialDocument::RunEditorMaterialFunctors(AZ::RPI::MaterialPropertyFlags dirtyFlags)
+    MaterialDocument::EditorMaterialFunctorResult MaterialDocument::RunEditorMaterialFunctors(AZ::RPI::MaterialPropertyFlags dirtyFlags)
     {
-        AZStd::unordered_set<AZ::Name> changedPropertyNames;
+        EditorMaterialFunctorResult result;
+
         AZStd::unordered_map<AZ::Name, AZ::RPI::MaterialPropertyDynamicMetadata> propertyDynamicMetadata;
+        AZStd::unordered_map<AZ::Name, AZ::RPI::MaterialPropertyGroupDynamicMetadata> propertyGroupDynamicMetadata;
         for (auto& propertyPair : m_properties)
         {
             AtomToolsFramework::DynamicProperty& property = propertyPair.second;
             AtomToolsFramework::ConvertToPropertyMetaData(propertyDynamicMetadata[property.GetId()], property.GetConfig());
         }
+        for (auto& groupPair : m_propertyGroupVisibility)
+        {
+            AZ::RPI::MaterialPropertyGroupDynamicMetadata& metadata = propertyGroupDynamicMetadata[AZ::Name{groupPair.first}];
 
+            bool visible = groupPair.second;
+            metadata.m_visibility = visible ?
+                AZ::RPI::MaterialPropertyGroupVisibility::Enabled : AZ::RPI::MaterialPropertyGroupVisibility::Hidden;
+        }
+        
         for (AZ::RPI::Ptr<AZ::RPI::MaterialFunctor>& functor : m_editorFunctors)
         {
             const AZ::RPI::MaterialPropertyFlags& materialPropertyDependencies = functor->GetMaterialPropertyDependencies();
@@ -935,7 +971,9 @@ namespace MaterialEditor
                     m_materialInstance->GetPropertyValues(),
                     m_materialInstance->GetMaterialPropertiesLayout(),
                     propertyDynamicMetadata,
-                    changedPropertyNames,
+                    propertyGroupDynamicMetadata,
+                    result.m_updatedProperties,
+                    result.m_updatedPropertyGroups,
                     &materialPropertyDependencies
                 );
                 functor->Process(context);
@@ -950,7 +988,13 @@ namespace MaterialEditor
             property.SetConfig(propertyConfig);
         }
 
-        return changedPropertyNames;
+        for (auto& updatedPropertyGroup : result.m_updatedPropertyGroups)
+        {
+            bool visible = propertyGroupDynamicMetadata[updatedPropertyGroup].m_visibility == AZ::RPI::MaterialPropertyGroupVisibility::Enabled;
+            m_propertyGroupVisibility[updatedPropertyGroup] = visible;
+        }
+
+        return result;
     }
 
 } // namespace MaterialEditor

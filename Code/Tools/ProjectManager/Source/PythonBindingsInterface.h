@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #pragma once
@@ -34,6 +29,12 @@ namespace O3DE::ProjectManager
         IPythonBindings() = default;
         virtual ~IPythonBindings() = default;
 
+        /**
+         * Get whether Python was started or not.  All Python functionality will fail if Python
+         * failed to start. 
+         * @return true if Python was started successfully, false on failure 
+         */
+        virtual bool PythonStarted() = 0;
 
         // Engine
 
@@ -57,13 +58,27 @@ namespace O3DE::ProjectManager
          * @param path the absolute path to the Gem 
          * @return an outcome with GemInfo on success 
          */
-        virtual AZ::Outcome<GemInfo> GetGem(const QString& path) = 0;
+        virtual AZ::Outcome<GemInfo> GetGemInfo(const QString& path, const QString& projectPath = {}) = 0;
 
         /**
-         * Get info about all known Gems
-         * @return an outcome with GemInfos on success 
+         * Get all available gem infos. This concatenates gems registered by the engine and the project.
+         * @param path The absolute path to the project.
+         * @return A list of gem infos.
          */
-        virtual AZ::Outcome<QVector<GemInfo>> GetGems() = 0;
+        virtual AZ::Outcome<QVector<GemInfo>, AZStd::string> GetAllGemInfos(const QString& projectPath) = 0;
+
+        /**
+        * Get engine gem infos.
+        * @return A list of all registered gem infos.
+        */
+        virtual AZ::Outcome<QVector<GemInfo>, AZStd::string> GetEngineGemInfos() = 0;
+
+        /**
+         * Get a list of all enabled gem names for a given project.
+         * @param[in] projectPath Absolute file path to the project.
+         * @return A list of gem names of all the enabled gems for a given project or a error message on failure.
+         */
+        virtual AZ::Outcome<QVector<AZStd::string>, AZStd::string> GetEnabledGemNames(const QString& projectPath) = 0;
 
 
         // Projects 
@@ -88,13 +103,48 @@ namespace O3DE::ProjectManager
          * @return an outcome with ProjectInfos on success 
          */
         virtual AZ::Outcome<QVector<ProjectInfo>> GetProjects() = 0;
+        
+        /**
+         * Adds existing project on disk
+         * @param path the absolute path to the project
+         * @return true on success, false on failure
+         */
+        virtual bool AddProject(const QString& path) = 0;
+
+        /**
+         * Adds existing project on disk
+         * @param path the absolute path to the project
+         * @return true on success, false on failure
+         */
+        virtual bool RemoveProject(const QString& path) = 0;
 
         /**
          * Update a project
          * @param projectInfo the info to use to update the project 
          * @return true on success, false on failure
          */
-        virtual bool UpdateProject(const ProjectInfo& projectInfo) = 0;
+        virtual AZ::Outcome<void, AZStd::string> UpdateProject(const ProjectInfo& projectInfo) = 0;
+
+        /**
+         * Add a gem to a project
+         * @param gemPath the absolute path to the gem 
+         * @param projectPath the absolute path to the project
+         * @return An outcome with the success flag as well as an error message in case of a failure.
+         */
+        virtual AZ::Outcome<void, AZStd::string> AddGemToProject(const QString& gemPath, const QString& projectPath) = 0;
+
+        /**
+         * Remove gem to a project
+         * @param gemPath the absolute path to the gem 
+         * @param projectPath the absolute path to the project
+         * @return An outcome with the success flag as well as an error message in case of a failure.
+         */
+        virtual AZ::Outcome<void, AZStd::string> RemoveGemFromProject(const QString& gemPath, const QString& projectPath) = 0;
+
+        /**
+         * Removes invalid projects from the manifest
+         */
+        virtual bool RemoveInvalidProjects() = 0;
 
 
         // Project Templates
@@ -103,7 +153,7 @@ namespace O3DE::ProjectManager
          * Get info about all known project templates
          * @return an outcome with ProjectTemplateInfos on success 
          */
-        virtual AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplates() = 0;
+        virtual AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplates(const QString& projectPath = {}) = 0;
     };
 
     using PythonBindingsInterface = AZ::Interface<IPythonBindings>;

@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 set(FILES
@@ -204,6 +200,8 @@ set(FILES
     Physics/Collision/CollisionLayers.cpp
     Physics/Collision/CollisionGroups.h
     Physics/Collision/CollisionGroups.cpp
+    Physics/Common/PhysicsJoint.h
+    Physics/Common/PhysicsJoint.cpp
     Physics/Common/PhysicsSceneQueries.h
     Physics/Common/PhysicsSceneQueries.cpp
     Physics/Common/PhysicsEvents.h
@@ -215,6 +213,8 @@ set(FILES
     Physics/Common/PhysicsSimulatedBodyEvents.cpp
     Physics/Common/PhysicsTypes.h
     Physics/Components/SimulatedBodyComponentBus.h
+    Physics/Configuration/JointConfiguration.h
+    Physics/Configuration/JointConfiguration.cpp
     Physics/Configuration/CollisionConfiguration.h
     Physics/Configuration/CollisionConfiguration.cpp
     Physics/Configuration/RigidBodyConfiguration.h
@@ -259,8 +259,6 @@ set(FILES
     Physics/Ragdoll.h
     Physics/Utils.h
     Physics/Utils.cpp
-    Physics/Joint.h
-    Physics/Joint.cpp
     Physics/ClassConverters.cpp
     Physics/ClassConverters.h
     Physics/MaterialBus.h

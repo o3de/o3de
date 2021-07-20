@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
@@ -17,6 +12,7 @@
 #include <AzCore/EBus/Event.h>
 #include <AtomCore/std/containers/array_view.h>
 
+#include <Atom/RPI.Public/AssetInitBus.h>
 #include <Atom/RPI.Reflect/Base.h>
 #include <Atom/RPI.Reflect/Material/ShaderCollection.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
@@ -52,6 +48,7 @@ namespace AZ
         class MaterialTypeAsset
             : public AZ::Data::AssetData
             , public Data::AssetBus::MultiHandler
+            , public AssetInitBus::Handler
         {
             friend class MaterialTypeAssetCreator;
             friend class MaterialTypeAssetHandler;
@@ -65,6 +62,8 @@ namespace AZ
             static const char* Group;
             static const char* Extension;
 
+            static constexpr uint32_t InvalidShaderIndex = static_cast<uint32_t>(-1);
+
             static void Reflect(ReflectContext* context);
 
             virtual ~MaterialTypeAsset();
@@ -77,15 +76,39 @@ namespace AZ
             //! See MaterialFunctor.h for details.
             const MaterialFunctorList& GetMaterialFunctors() const;
 
-            //! Returns the shader resource group asset that has per-material frequency, which indicates most of the topology 
+            //! Returns the shader resource group layout that has per-material frequency, which indicates most of the topology
             //! for a material's shaders.
-            //! All shaders in a material will have the same per-material SRG asset.
-            const Data::Asset<ShaderResourceGroupAsset>& GetMaterialSrgAsset() const;
-            
-            //! Returns the shader resource group asset that has per-object frequency. What constitutes an "object" is an
+            //! All shaders in a material will have the same per-material SRG layout.
+            //! @param supervariantIndex: supervariant index to get the layout from.
+            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetMaterialSrgLayout(const SupervariantIndex& supervariantIndex) const;
+
+            //! Same as above but accepts the supervariant name. There's a minor penalty when using this function
+            //! because it will discover the index from the name.  
+            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetMaterialSrgLayout(const AZ::Name& supervariantName) const;
+
+            //! Just like the original GetMaterialSrgLayout() where it uses the index of the default supervariant.
+            //! See the definition of DefaultSupervariantIndex.
+            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetMaterialSrgLayout() const;
+
+            //! Returns a ShaderAsset from @m_shaderCollection that contains the MaterialSrg layout.
+            const Data::Asset<ShaderAsset>& GetShaderAssetForMaterialSrg() const;
+
+            //! Returns the shader resource group layout that has per-object frequency. What constitutes an "object" is an
             //! agreement between the FeatureProcessor and the shaders, but an example might be world-transform for a model.
-            //! All shaders in a material will have the same per-object SRG asset.
-            const Data::Asset<ShaderResourceGroupAsset>& GetObjectSrgAsset() const;
+            //! All shaders in a material will have the same per-object SRG layout.
+            //! @param supervariantIndex: supervariant index to get the layout from.
+            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetObjectSrgLayout(const SupervariantIndex& supervariantIndex) const;
+
+            //! Same as above but accepts the supervariant name. There's a minor penalty when using this function
+            //! because it will discover the index from the name.  
+            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetObjectSrgLayout(const AZ::Name& supervariantName) const;
+
+            //! Just like the original GetObjectSrgLayout() where it uses the index of the default supervariant.
+            //! See the definition of DefaultSupervariantIndex.
+            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetObjectSrgLayout() const;
+
+            //! Returns a ShaderAsset from @m_shaderCollection that contains the ObjectSrg layout.
+            const Data::Asset<ShaderAsset>& GetShaderAssetForObjectSrg() const;
 
             //! Returns a layout that includes a list of MaterialPropertyDescriptors for each material property.
             const MaterialPropertiesLayout* GetMaterialPropertiesLayout() const;
@@ -100,13 +123,20 @@ namespace AZ
             MaterialUvNameMap GetUvNameMap() const;
 
         private:
-            bool PostLoadInit();
+            bool PostLoadInit() override;
+
+            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetSrgLayout(uint32_t shaderIndex, const SupervariantIndex& supervariantIndex, uint32_t srgBindingSlot) const;
+            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetSrgLayout(uint32_t shaderIndex, const AZ::Name& supervariantName, uint32_t srgBindingSlot) const;
 
             //! Called by asset creators to assign the asset to a ready state.
             void SetReady();
 
             // AssetBus overrides...
             void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
+            void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
+
+            //! Replaces the appropriate asset members when a reload occurs
+            void ReinitializeAsset(Data::Asset<Data::AssetData> asset);
 
             //! Holds values for each material property, used to initialize Material instances.
             //! This is indexed by MaterialPropertyIndex and aligns with entries in m_materialPropertiesLayout.
@@ -125,9 +155,12 @@ namespace AZ
             //! See MaterialFunctor.h for details.
             MaterialFunctorList m_materialFunctors;
 
-            //! Reference to the SRGs that are the same for all shaders in a material
-            Data::Asset<ShaderResourceGroupAsset> m_materialSrgAsset;
-            Data::Asset<ShaderResourceGroupAsset> m_objectSrgAsset;
+            //! Index in @m_shaderCollection of the shader asset that contains the MaterialSrg.
+            uint32_t m_materialSrgShaderIndex = InvalidShaderIndex;
+
+            //! Index in @m_shaderCollection of the shader asset that contains the ObjectSrg.
+            uint32_t m_objectSrgShaderIndex = InvalidShaderIndex;
+
         };
 
         class MaterialTypeAssetHandler : public AssetHandler<MaterialTypeAsset>

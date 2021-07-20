@@ -1,22 +1,15 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <EditorCommonSystemComponent.h>
 #include <Source/Material/UseTextureFunctorSourceData.h>
-#include <Source/Material/PropertyVisibilityFunctorSourceData.h>
 #include <Source/Material/DrawListFunctorSourceData.h>
 #include <Source/Material/SubsurfaceTransmissionParameterFunctorSourceData.h>
 #include <Source/Material/Transform2DFunctorSourceData.h>
-#include <Source/Material/ShaderEnableFunctorSourceData.h>
 #include <Source/Material/ConvertEmissiveUnitFunctorSourceData.h>
 
 #include <Atom/Feature/Utils/EditorLightingPreset.h>
@@ -58,11 +51,9 @@ namespace AZ
                 }
 
                 AZ::Render::UseTextureFunctorSourceData::Reflect(context);
-                AZ::Render::PropertyVisibilityFunctorSourceData::Reflect(context);
                 AZ::Render::DrawListFunctorSourceData::Reflect(context);
                 AZ::Render::Transform2DFunctorSourceData::Reflect(context);
                 AZ::Render::ConvertEmissiveUnitFunctorSourceData::Reflect(context);
-                AZ::Render::ShaderEnableFunctorSourceData::Reflect(context);
                 AZ::Render::SubsurfaceTransmissionParameterFunctorSourceData::Reflect(context);
 
                 AZ::Render::EditorLightingPreset::Reflect(context);
@@ -104,11 +95,9 @@ namespace AZ
             }
 
             materialFunctorRegistration->RegisterMaterialFunctor("UseTexture", azrtti_typeid<UseTextureFunctorSourceData>());
-            materialFunctorRegistration->RegisterMaterialFunctor("UpdatePropertyVisibility", azrtti_typeid<PropertyVisibilityFunctorSourceData>());
             materialFunctorRegistration->RegisterMaterialFunctor("OverrideDrawList",         azrtti_typeid<DrawListFunctorSourceData>());
             materialFunctorRegistration->RegisterMaterialFunctor("Transform2D",              azrtti_typeid<Transform2DFunctorSourceData>());
             materialFunctorRegistration->RegisterMaterialFunctor("ConvertEmissiveUnit",      azrtti_typeid<ConvertEmissiveUnitFunctorSourceData>());
-            materialFunctorRegistration->RegisterMaterialFunctor("ShaderEnable",             azrtti_typeid<ShaderEnableFunctorSourceData>());
             materialFunctorRegistration->RegisterMaterialFunctor("HandleSubsurfaceScatteringParameters", azrtti_typeid<SubsurfaceTransmissionParameterFunctorSourceData>());
             materialFunctorRegistration->RegisterMaterialFunctor("Lua", azrtti_typeid<RPI::LuaMaterialFunctorSourceData>());
 

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -166,7 +161,7 @@ namespace Physics
                 ->RegisterGenericType<AZStd::shared_ptr<PhysicsAssetShapeConfiguration>>();
 
             serializeContext->Class<PhysicsAssetShapeConfiguration, ShapeConfiguration>()
-                ->Version(1)
+                ->Version(3)
                 ->Field("PhysicsAsset", &PhysicsAssetShapeConfiguration::m_asset)
                 ->Field("AssetScale", &PhysicsAssetShapeConfiguration::m_assetScale)
                 ->Field("UseMaterialsFromAsset", &PhysicsAssetShapeConfiguration::m_useMaterialsFromAsset)
@@ -182,7 +177,7 @@ namespace Physics
                     ->DataElement(AZ::Edit::UIHandlers::Default, &PhysicsAssetShapeConfiguration::m_assetScale, "Asset Scale", "The scale of the asset shape")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &PhysicsAssetShapeConfiguration::m_useMaterialsFromAsset, "Physics Materials from Mesh", "Auto-set physics materials using Mesh's material surfaces names")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &PhysicsAssetShapeConfiguration::m_useMaterialsFromAsset, "Physics materials from asset", "Auto-set physics materials using asset's physics material names")
                     ;
             }
         }

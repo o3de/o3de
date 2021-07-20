@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "UserTypes.h"
 
 #include <AzCore/std/string/string.h>
@@ -1914,7 +1909,7 @@ namespace UnitTest
     TEST_F(String, StringView_CompareIsConstexpr)
     {
         using TypeParam = char;
-        auto MakeCompileTimeString1 = []() constexpr -> const TypeParam*
+        auto ThisTestMakeCompileTimeString1 = []() constexpr -> const TypeParam*
         {
             return "HelloWorld";
         };
@@ -1922,7 +1917,7 @@ namespace UnitTest
         {
             return "HelloPearl";
         };
-        constexpr const TypeParam* compileTimeString1 = MakeCompileTimeString1();
+        constexpr const TypeParam* compileTimeString1 = ThisTestMakeCompileTimeString1();
         constexpr const TypeParam* compileTimeString2 = MakeCompileTimeString2();
         constexpr basic_string_view<TypeParam> lhsView(compileTimeString1);
         constexpr basic_string_view<TypeParam> rhsView(compileTimeString2);
@@ -1937,11 +1932,11 @@ namespace UnitTest
     TEST_F(String, StringView_CompareOperatorsAreConstexpr)
     {
         using TypeParam = char;
-        auto MakeCompileTimeString1 = []() constexpr -> const TypeParam*
+        auto TestMakeCompileTimeString1 = []() constexpr -> const TypeParam*
         {
             return "HelloWorld";
         };
-        constexpr const TypeParam* compileTimeString1 = MakeCompileTimeString1();
+        constexpr const TypeParam* compileTimeString1 = TestMakeCompileTimeString1();
         constexpr basic_string_view<TypeParam> compareView(compileTimeString1);
         static_assert(compareView == "HelloWorld", "string_view operator== comparison has failed");
         static_assert(compareView != "MadWorld", "string_view operator!= comparison has failed");
@@ -1955,7 +1950,7 @@ namespace UnitTest
     {
         auto swap_test_func = []() constexpr -> basic_string_view<TypeParam>
         {
-            constexpr auto MakeCompileTimeString1 = []() constexpr -> const TypeParam*
+            constexpr auto ThisTestMakeCompileTimeString1 = []() constexpr -> const TypeParam*
             {
                 if constexpr (AZStd::is_same_v<TypeParam, char>)
                 {
@@ -1977,7 +1972,7 @@ namespace UnitTest
                     return L"InuWorld";
                 }
             };
-            constexpr const TypeParam* compileTimeString1 = MakeCompileTimeString1();
+            constexpr const TypeParam* compileTimeString1 = ThisTestMakeCompileTimeString1();
             constexpr const TypeParam* compileTimeString2 = MakeCompileTimeString2();
             basic_string_view<TypeParam> lhsView(compileTimeString1);
             basic_string_view<TypeParam> rhsView(compileTimeString2);
@@ -2001,7 +1996,7 @@ namespace UnitTest
 
     TYPED_TEST(BasicStringViewConstexprFixture, HashString_FunctionIsConstexpr)
     {
-        auto MakeCompileTimeString1 = []() constexpr -> const TypeParam*
+        auto ThisTestMakeCompileTimeString1 = []() constexpr -> const TypeParam*
         {
             if constexpr (AZStd::is_same_v<TypeParam, char>)
             {
@@ -2012,7 +2007,7 @@ namespace UnitTest
                 return L"HelloWorld";
             }
         };
-        constexpr const TypeParam* compileTimeString1 = MakeCompileTimeString1();
+        constexpr const TypeParam* compileTimeString1 = ThisTestMakeCompileTimeString1();
         constexpr basic_string_view<TypeParam> hashView(compileTimeString1);
         constexpr size_t compileHash = AZStd::hash<basic_string_view<TypeParam>>{}(hashView);
         static_assert(compileHash != 0, "Hash of \"HelloWorld\" should not be 0");

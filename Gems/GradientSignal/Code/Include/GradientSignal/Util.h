@@ -1,19 +1,15 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Component/EntityId.h>
+#include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Transform.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 
@@ -64,15 +60,15 @@ namespace GradientSignal
             AZ::LerpInverse(bounds.GetMin().GetZ(), bounds.GetMax().GetZ(), point.GetZ()));
     }
 
-    inline void GetObbParamsFromShape(const AZ::EntityId& entity, AZ::Aabb& bounds, AZ::Transform& worldToBoundsTransform)
+    inline void GetObbParamsFromShape(const AZ::EntityId& entity, AZ::Aabb& bounds, AZ::Matrix3x4& worldToBoundsTransform)
     {
         //get bound and transform data for associated shape
         bounds = AZ::Aabb::CreateNull();
-        worldToBoundsTransform = AZ::Transform::CreateIdentity();
+        AZ::Transform transform = AZ::Transform::CreateIdentity();
         if (entity.IsValid())
         {
-            LmbrCentral::ShapeComponentRequestsBus::Event(entity, &LmbrCentral::ShapeComponentRequestsBus::Events::GetTransformAndLocalBounds, worldToBoundsTransform, bounds);
-            worldToBoundsTransform.Invert();
+            LmbrCentral::ShapeComponentRequestsBus::Event(entity, &LmbrCentral::ShapeComponentRequestsBus::Events::GetTransformAndLocalBounds, transform, bounds);
+            worldToBoundsTransform = AZ::Matrix3x4::CreateFromTransform(transform.GetInverse());
         }
     }
 

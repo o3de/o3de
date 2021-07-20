@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -122,6 +117,12 @@ namespace AZ
                     m_nativeWindow->Activate();
 
                     m_windowHandle = m_nativeWindow->GetWindowHandle();
+                }
+                else
+                {
+                    // Disable default scene creation for non-games projects
+                    // This can be manually overridden via the DefaultWindowBus.
+                    m_createDefaultScene = false;
                 }
 
                 AzFramework::AssetCatalogEventBus::Handler::BusConnect();
@@ -351,6 +352,17 @@ namespace AZ
                     scene->AddRenderPipeline(brdfTexturePipeline);
                 }
 
+                // Send notification when the scene and its pipeline are ready.
+                // Use the first created pipeline's scene as our default scene for now to allow
+                // consumers waiting on scene availability to initialize.
+                if (!m_defaultSceneReady)
+                {
+                    m_defaultScene = scene;
+                    Render::Bootstrap::NotificationBus::Broadcast(
+                        &Render::Bootstrap::NotificationBus::Handler::OnBootstrapSceneReady, m_defaultScene.get());
+                    m_defaultSceneReady = true;
+                }
+
                 return true;
             }
 
@@ -364,9 +376,6 @@ namespace AZ
                 {
                     m_renderPipelineId = pipeline->GetId();
                 }
-
-                // Send notification when the scene and its pipeline are ready
-                Render::Bootstrap::NotificationBus::Broadcast(&Render::Bootstrap::NotificationBus::Handler::OnBootstrapSceneReady, m_defaultScene.get());
             }
 
             void BootstrapSystemComponent::DestroyDefaultScene()

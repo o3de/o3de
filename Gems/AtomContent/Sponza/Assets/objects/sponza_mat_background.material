@@ -47,7 +47,8 @@
             "factor": 0.03099999949336052,
             "pdo": true,
             "quality": "High",
-            "textureMap": "Textures/background_1k_height.png"
+            "textureMap": "Textures/background_1k_height.png",
+            "useTexture": false
         },
         "roughness": {
             "textureMap": "Textures/background_1k_roughness.png"

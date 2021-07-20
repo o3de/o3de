@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 add_subdirectory(CommonFeatures)
@@ -17,3 +13,13 @@ add_subdirectory(AtomFont)
 add_subdirectory(TechnicalArt)
 add_subdirectory(AtomBridge)
 add_subdirectory(AtomViewportDisplayInfo)
+add_subdirectory(AtomViewportDisplayIcons)
+
+# The "AtomLyIntegration" Gem will also alias the real Atom_AtomBridge target variants
+# The Atom Gem does the same at the moment.
+ly_create_alias(NAME AtomLyIntegration.Clients NAMESPACE Gem TARGETS Gem::Atom_AtomBridge.Clients)
+ly_create_alias(NAME AtomLyIntegration.Servers NAMESPACE Gem TARGETS Gem::Atom_AtomBridge.Servers)
+if(PAL_TRAIT_BUILD_HOST_TOOLS)
+    ly_create_alias(NAME AtomLyIntegration.Builders NAMESPACE Gem TARGETS Gem::Atom_AtomBridge.Builders)
+    ly_create_alias(NAME AtomLyIntegration.Tools    NAMESPACE Gem TARGETS Gem::Atom_AtomBridge.Tools)
+endif()

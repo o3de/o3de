@@ -1,12 +1,7 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 from aws_cdk import (
@@ -111,8 +106,7 @@ class BatchProcessing:
 
         self._events_firehose_delivery_stream = kinesisfirehose.CfnDeliveryStream(
             self._stack,
-            id='EventsFirehoseDeliveryStream',
-            delivery_stream_name=f'{self._stack.stack_name}-EventsFirehoseDeliveryStream',
+            id=f'{self._stack.stack_name}-EventsFirehoseDeliveryStream',
             delivery_stream_type='KinesisStreamAsSource',
             kinesis_stream_source_configuration=kinesisfirehose.CfnDeliveryStream.KinesisStreamSourceConfigurationProperty(
                 kinesis_stream_arn=self._input_stream_arn,
@@ -327,7 +321,7 @@ class BatchProcessing:
 
     @property
     def delivery_stream_name(self) -> kinesisfirehose.CfnDeliveryStream.delivery_stream_name:
-        return self._events_firehose_delivery_stream.delivery_stream_name
+        return self._events_firehose_delivery_stream.ref
 
     @property
     def delivery_stream_role_arn(self) -> iam.Role.role_arn:

@@ -1,19 +1,13 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
 #include <IRenderer.h>
-#include <IFont.h>
 #include <LyShine/IRenderGraph.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/std/containers/stack.h>
@@ -23,11 +17,10 @@
 #include <Atom/RPI.Reflect/Image/Image.h>
 #include <AtomCore/Instance/Instance.h>
 
+#include "UiRenderer.h"
 #ifndef _RELEASE
 #include "LyShineDebug.h"
 #endif
-
-class UiRenderer;
 
 namespace LyShine
 {
@@ -158,8 +151,8 @@ namespace LyShine
 #endif
 
     private: // functions
-        void SetupBeforeRenderingMask(UiRenderer* uiRenderer, bool firstPass, int priorBaseState);
-        void SetupAfterRenderingMask(UiRenderer* uiRenderer, bool firstPass, int priorBaseState);
+        void SetupBeforeRenderingMask(UiRenderer* uiRenderer, bool firstPass, UiRenderer::BaseState priorBaseState);
+        void SetupAfterRenderingMask(UiRenderer* uiRenderer, bool firstPass, UiRenderer::BaseState priorBaseState);
 
     private: // data
         AZStd::vector<RenderNode*>  m_maskRenderNodes;      //!< The render nodes used to render the mask shape
@@ -294,7 +287,10 @@ namespace LyShine
         void ValidateGraph();
 
         void GetDebugInfoRenderGraph(LyShineDebug::DebugInfoRenderGraph& info) const;
-        void GetDebugInfoRenderNodeList(const AZStd::vector<RenderNode*>& renderNodeList, LyShineDebug::DebugInfoRenderGraph& info, AZStd::set<ITexture*>& uniqueTextures) const;
+        void GetDebugInfoRenderNodeList(
+            const AZStd::vector<RenderNode*>& renderNodeList,
+            LyShineDebug::DebugInfoRenderGraph& info,
+            AZStd::set<AZ::Data::Instance<AZ::RPI::Image>>& uniqueTextures) const;
 
         void DebugReportDrawCalls(AZ::IO::HandleType fileHandle, LyShineDebug::DebugInfoDrawCallReport& reportInfo, void* context) const;
         void DebugReportDrawCallsRenderNodeList(const AZStd::vector<RenderNode*>& renderNodeList, AZ::IO::HandleType fileHandle,

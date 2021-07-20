@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "Atom_RHI_Vulkan_precompiled.h"
 #include <RHI/Buffer.h>
 #include <RHI/BufferPool.h>
@@ -180,6 +175,7 @@ namespace AZ
             for (uint32_t imageIndex = static_cast<uint32_t>(NullDescriptorManager::ImageTypes::General2D); imageIndex < static_cast<uint32_t>(NullDescriptorManager::ImageTypes::Count); imageIndex++)
             {
                 // different options for the images
+                imageCreateInfo.imageType = (imageIndex >= static_cast<uint32_t>(NullDescriptorManager::ImageTypes::General3D)) ? VK_IMAGE_TYPE_3D : VK_IMAGE_TYPE_2D;
                 imageCreateInfo.extent = { m_imageNullDescriptor.m_images[imageIndex].m_dimension, m_imageNullDescriptor.m_images[imageIndex].m_dimension, 1 };
                 imageCreateInfo.samples = m_imageNullDescriptor.m_images[imageIndex].m_sampleCountFlag;
                 imageCreateInfo.format = m_imageNullDescriptor.m_images[imageIndex].m_format;

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "ManipulatorBoundManager.h"
 
@@ -16,8 +11,7 @@ namespace AzToolsFramework
 {
     namespace Picking
     {
-        RegisteredBoundId ManipulatorBoundManager::UpdateOrRegisterBound(
-            const BoundRequestShapeBase& shapeData, RegisteredBoundId boundId)
+        RegisteredBoundId ManipulatorBoundManager::UpdateOrRegisterBound(const BoundRequestShapeBase& shapeData, RegisteredBoundId boundId)
         {
             if (boundId == InvalidBoundId)
             {
@@ -25,8 +19,7 @@ namespace AzToolsFramework
                 boundId = m_nextBoundId++;
             }
 
-            if (auto result = m_boundIdToShapeMap.find(boundId);
-                result == m_boundIdToShapeMap.end())
+            if (auto result = m_boundIdToShapeMap.find(boundId); result == m_boundIdToShapeMap.end())
             {
                 if (AZStd::shared_ptr<BoundShapeInterface> createdShape = CreateShape(shapeData, boundId))
                 {
@@ -49,19 +42,16 @@ namespace AzToolsFramework
 
         void ManipulatorBoundManager::UnregisterBound(const RegisteredBoundId boundId)
         {
-            if (const auto findIter = m_boundIdToShapeMap.find(boundId);
-                findIter != m_boundIdToShapeMap.end())
+            if (const auto findIter = m_boundIdToShapeMap.find(boundId); findIter != m_boundIdToShapeMap.end())
             {
                 DeleteShape(findIter->second.get());
                 m_boundIdToShapeMap.erase(findIter);
             }
         }
 
-        void ManipulatorBoundManager::SetBoundValidity(
-            const RegisteredBoundId boundId, const bool valid)
+        void ManipulatorBoundManager::SetBoundValidity(const RegisteredBoundId boundId, const bool valid)
         {
-            if (auto found = m_boundIdToShapeMap.find(boundId);
-                found != m_boundIdToShapeMap.end())
+            if (auto found = m_boundIdToShapeMap.find(boundId); found != m_boundIdToShapeMap.end())
             {
                 found->second->SetValidity(valid);
             }
@@ -104,9 +94,9 @@ namespace AzToolsFramework
                         const auto hitItr = AZStd::lower_bound(
                             rayHits.begin(), rayHits.end(), BoundIdHitDistance(0, t),
                             [](const BoundIdHitDistance& lhs, const BoundIdHitDistance& rhs)
-                        {
-                            return lhs.second < rhs.second;
-                        });
+                            {
+                                return lhs.second < rhs.second;
+                            });
 
                         rayHits.insert(hitItr, AZStd::make_pair(bound->GetBoundId(), t));
                     }

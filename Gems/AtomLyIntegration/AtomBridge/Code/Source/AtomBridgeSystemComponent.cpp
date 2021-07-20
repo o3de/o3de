@@ -1,18 +1,14 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <AtomBridgeSystemComponent.h>
 #include <AtomDebugDisplayViewportInterface.h>
 #include <FlyCameraInputComponent.h>
+#include <PerViewportDynamicDrawManager.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -104,10 +100,12 @@ namespace AZ
             AzFramework::GameEntityContextRequestBus::BroadcastResult(m_entityContextId, &AzFramework::GameEntityContextRequestBus::Events::GetGameEntityContextId);
 
             AZ::Render::Bootstrap::NotificationBus::Handler::BusConnect();
+            m_dynamicDrawManager = AZStd::make_unique<PerViewportDynamicDrawManager>();
         }
 
         void AtomBridgeSystemComponent::Deactivate()
         { 
+            m_dynamicDrawManager.reset();
             AZ::RPI::ViewportContextManagerNotificationsBus::Handler::BusDisconnect();
             RPI::Scene* scene = RPI::RPISystemInterface::Get()->GetDefaultScene().get();
             // Check if scene is emptry since scene might be released already when running AtomSampleViewer 
@@ -158,47 +156,8 @@ namespace AZ
 
         void AtomBridgeSystemComponent::OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene)
         {
-            AZStd::shared_ptr<AZ::RPI::WindowContext> windowContext;
-            AZ::Render::Bootstrap::DefaultWindowBus::BroadcastResult(windowContext, &AZ::Render::Bootstrap::DefaultWindowInterface::GetDefaultWindowContext);
-
-            if (!windowContext)
-            {
-                AZ_Warning("Atom", false, "Cannot initialize Atom because no window context is available");
-                return;
-            }
-
-            AZ::RPI::RenderPipelinePtr renderPipeline = bootstrapScene->GetDefaultRenderPipeline();
-
-            // If RenderPipeline doesn't have a default view, create a view and make it the default view.
-            // These settings will be overridden by the editor or game camera.
-            if (renderPipeline->GetDefaultView() == nullptr)
-            {
-                auto viewContextManager = AZ::Interface<RPI::ViewportContextRequestsInterface>::Get();
-                m_view = AZ::RPI::View::CreateView(AZ::Name("AtomSystem Default View"), RPI::View::UsageCamera);
-                viewContextManager->PushView(viewContextManager->GetDefaultViewportContextName(), m_view);
-                const auto& viewport = windowContext->GetViewport();
-                const float aspectRatio = viewport.m_maxX / viewport.m_maxY;
-
-                // Note: This is projection assumes a setup for reversed depth
-                AZ::Matrix4x4 viewToClipMatrix;
-                AZ::MakePerspectiveFovMatrixRH(viewToClipMatrix, AZ::Constants::HalfPi, aspectRatio, 0.1f, 100.f, true);
-
-                m_view->SetViewToClipMatrix(viewToClipMatrix);
-
-                renderPipeline = bootstrapScene->GetDefaultRenderPipeline();
-                renderPipeline->SetDefaultView(m_view);
-            }
-            else
-            {
-                m_view = renderPipeline->GetDefaultView();
-            }
-            auto auxGeomFP = bootstrapScene->GetFeatureProcessor<RPI::AuxGeomFeatureProcessorInterface>();
-            if (auxGeomFP)
-            {
-                auxGeomFP->GetOrCreateDrawQueueForView(m_view.get());
-            }
-
-            // Make default AtomDebugDisplayViewportInterface for the scene
+            AZ_UNUSED(bootstrapScene);
+            // Make default AtomDebugDisplayViewportInterface
             AZStd::shared_ptr<AtomDebugDisplayViewportInterface> mainEntityDebugDisplay = AZStd::make_shared<AtomDebugDisplayViewportInterface>(AzFramework::g_defaultSceneEntityDebugDisplayId);
             m_activeViewportsList[AzFramework::g_defaultSceneEntityDebugDisplayId] = mainEntityDebugDisplay;
         }

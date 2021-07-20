@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/std/functional.h>
 
@@ -30,8 +25,10 @@ namespace AZ
             bool m_isModifiedContainer;
         };
 
-        template<typename IdType>
-        unsigned int Remapper<IdType>::RemapIds(void* classPtr, const AZ::Uuid& classUuid, const typename Remapper<IdType>::IdMapper& mapper, AZ::SerializeContext* context, bool replaceId)
+        template<typename IdType, bool AllowDuplicates>
+        unsigned int Remapper<IdType, AllowDuplicates>::RemapIds(
+            void* classPtr, const AZ::Uuid& classUuid, const typename Remapper<IdType, AllowDuplicates>::IdMapper& mapper,
+            AZ::SerializeContext* context, bool replaceId)
         {
             if (!context)
             {
@@ -152,16 +149,18 @@ namespace AZ
             return replaced;
         }
 
-        template<typename IdType>
-        unsigned int Remapper<IdType>::ReplaceIdsAndIdRefs(void* classPtr, const AZ::Uuid& classUuid, const IdMapper& mapper, AZ::SerializeContext* context /*= nullptr*/)
+        template<typename IdType, bool AllowDuplicates>
+        unsigned int Remapper<IdType, AllowDuplicates>::ReplaceIdsAndIdRefs(void* classPtr, const AZ::Uuid& classUuid, const IdMapper& mapper, AZ::SerializeContext* context /*= nullptr*/)
         {
             unsigned int replaced = RemapIds(classPtr, classUuid, mapper, context, true);
             replaced += RemapIds(classPtr, classUuid, mapper, context, false);
             return replaced;
         }
 
-        template<typename IdType>
-        unsigned int Remapper<IdType>::RemapIdsAndIdRefs(void* classPtr, const AZ::Uuid& classUuid, const typename Remapper<IdType>::IdReplacer& mapper, AZ::SerializeContext* context)
+        template<typename IdType, bool AllowDuplicates>
+        unsigned int Remapper<IdType, AllowDuplicates>::RemapIdsAndIdRefs(
+            void* classPtr, const AZ::Uuid& classUuid, const typename Remapper<IdType, AllowDuplicates>::IdReplacer& mapper,
+            AZ::SerializeContext* context)
         {
             if (!context)
             {

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "EMotionFX_precompiled.h"
 
@@ -58,11 +53,49 @@ namespace EMotionFX
                     ->Field("SkinningMethod", &EditorActorComponent::m_skinningMethod)
                     ->Field("UpdateJointTransformsWhenOutOfView", &EditorActorComponent::m_forceUpdateJointsOOV)
                     ->Field("LodLevel", &EditorActorComponent::m_lodLevel)
+                    ->Field("BBoxConfig", &EditorActorComponent::m_bboxConfig)
                     ;
 
                 AZ::EditContext* editContext = serializeContext->GetEditContext();
                 if (editContext)
                 {
+                    editContext->Class<ActorComponent::BoundingBoxConfiguration>("Actor Bounding Box Config", "")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+
+                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ActorComponent::BoundingBoxConfiguration::m_boundsType,
+                                      "Bounds type",
+                                      "The method used to compute the Actor bounding box. NOTE: ordered by least expensive to compute to most expensive to compute."
+                        )
+                        ->EnumAttribute(ActorInstance::BOUNDS_STATIC_BASED, "Static bounds (source-asset bounds)")
+                        ->EnumAttribute(ActorInstance::BOUNDS_NODE_BASED, "Bone position-based")
+                        ->EnumAttribute(ActorInstance::BOUNDS_NODEOBB_BASED, "Bone local bounding box-based")
+                        ->EnumAttribute(ActorInstance::BOUNDS_MESH_BASED, "Render mesh vertex position-based (VERY EXPENSIVE)")
+
+                        ->DataElement(0, &ActorComponent::BoundingBoxConfiguration::m_autoUpdateBounds,
+                                      "Automatically update bounds?",
+                                      "If true, bounds are automatically updated based on some frequency. Otherwise bounds are computed only at creation or when triggered manually"
+                        )
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
+
+                        ->DataElement(0, &ActorComponent::BoundingBoxConfiguration::m_updateTimeFrequency,
+                                      "Update frequency",
+                                      "How often to update bounds automatically"
+                        )
+                        ->Attribute(AZ::Edit::Attributes::Suffix, " Hz")
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.f)
+                        ->Attribute(AZ::Edit::Attributes::Step, 0.001f)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &ActorComponent::BoundingBoxConfiguration::m_autoUpdateBounds)
+
+                        ->DataElement(0, &ActorComponent::BoundingBoxConfiguration::m_updateItemFrequency,
+                                      "Update item skip factor",
+                                      "How many items (bones or vertices) to skip when automatically updating bounds."
+                                      " <br> i.e. =1 uses every single item, =2 uses every 2nd item, =3 uses every 3rd item... "
+                        )
+                        ->Attribute(AZ::Edit::Attributes::Suffix, " items")
+                        ->Attribute(AZ::Edit::Attributes::Min, (AZ::u32)1)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &ActorComponent::BoundingBoxConfiguration::m_autoUpdateBounds)
+                        ;
+
                     editContext->Class<EditorActorComponent>("Actor", "The Actor component manages an instance of an Actor")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Animation")
@@ -71,7 +104,7 @@ namespace EMotionFX
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, ":/EMotionFX/ActorComponent.svg")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://docs.aws.amazon.com/lumberyard/latest/userguide/component-actor.html")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/actor/")
                         ->DataElement(0, &EditorActorComponent::m_actorAsset,
                             "Actor asset", "Assigned actor asset")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnAssetSelected)
@@ -118,6 +151,9 @@ namespace EMotionFX
                         ->DataElement(0, &EditorActorComponent::m_forceUpdateJointsOOV,
                             "Force update joints", "Force update the joint transforms of actor, even when the character is out of the camera view.")
 
+                        ->DataElement(0, &EditorActorComponent::m_bboxConfig,
+                                      "Bounding box configuration", "")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnBBoxConfigChanged)
                         ;
                 }
             }
@@ -156,8 +192,6 @@ namespace EMotionFX
         //////////////////////////////////////////////////////////////////////////
         void EditorActorComponent::Activate()
         {
-            EMotionFX::ActorNotificationBus::Handler::BusConnect();
-
             LoadActorAsset();
 
             const AZ::EntityId entityId = GetEntityId();
@@ -185,8 +219,6 @@ namespace EMotionFX
             AZ::TransformNotificationBus::Handler::BusDisconnect();
             AZ::TickBus::Handler::BusDisconnect();
             AZ::Data::AssetBus::Handler::BusDisconnect();
-
-            EMotionFX::ActorNotificationBus::Handler::BusDisconnect();
 
             DestroyActorInstance();
             m_actorAsset.Release();
@@ -234,13 +266,6 @@ namespace EMotionFX
                 AZ::Data::AssetBus::Handler::BusDisconnect();
                 AZ::Data::AssetBus::Handler::BusConnect(m_actorAsset.GetId());
                 m_actorAsset.QueueLoad();
-
-                // In case the asset was already loaded fully, create the actor directly.
-                if (m_actorAsset.IsReady() &&
-                    m_actorAsset->GetActor())
-                {
-                    m_actorAsset->GetActor()->LoadRemainingAssets();
-                }
             }
             else
             {
@@ -444,20 +469,26 @@ namespace EMotionFX
             return refreshLevel;
         }
 
+        void EditorActorComponent::OnBBoxConfigChanged()
+        {
+            if (m_actorInstance)
+            {
+                m_bboxConfig.SetAndUpdate(m_actorInstance.get());
+            }
+        }
+
         void EditorActorComponent::LaunchAnimationEditor(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType&)
         {
+            // call to open must be done before LoadCharacter
+            const char* panelName = EMStudio::MainWindow::GetEMotionFXPaneName();
+            EBUS_EVENT(AzToolsFramework::EditorRequests::Bus, OpenViewPane, panelName);
+
             if (assetId.IsValid())
             {
                 AZ::Data::AssetId animgraphAssetId;
-                animgraphAssetId.SetInvalid();
                 EditorAnimGraphComponentRequestBus::EventResult(animgraphAssetId, GetEntityId(), &EditorAnimGraphComponentRequestBus::Events::GetAnimGraphAssetId);
                 AZ::Data::AssetId motionSetAssetId;
-                motionSetAssetId.SetInvalid();
                 EditorAnimGraphComponentRequestBus::EventResult(motionSetAssetId, GetEntityId(), &EditorAnimGraphComponentRequestBus::Events::GetMotionSetAssetId);
-
-                // call to open must be done before LoadCharacter
-                const char* panelName = EMStudio::MainWindow::GetEMotionFXPaneName();
-                EBUS_EVENT(AzToolsFramework::EditorRequests::Bus, OpenViewPane, panelName);
 
                 EMStudio::MainWindow* mainWindow = EMStudio::GetMainWindow();
                 if (mainWindow)
@@ -472,30 +503,15 @@ namespace EMotionFX
         void EditorActorComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
         {
             m_actorAsset = asset;
-            Actor* actor = m_actorAsset->GetActor();
-            AZ_Assert(m_actorAsset.IsReady() && actor, "Actor asset should be loaded and actor valid.");
+            AZ_Assert(m_actorAsset.IsReady() && m_actorAsset->GetActor(), "Actor asset should be loaded and actor valid.");
 
-            actor->LoadRemainingAssets();
-            actor->CheckFinalizeActor();
+            CheckActorCreation();
         }
 
         void EditorActorComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
         {
             DestroyActorInstance();
-
-            const Actor* oldActor = m_actorAsset->GetActor();
-            AZ::Data::Asset<AZ::RPI::ModelAsset> meshAsset = oldActor->GetMeshAsset();
-            AZ::Data::Asset<AZ::RPI::SkinMetaAsset> skinMetaAsset = oldActor->GetSkinMetaAsset();
-            AZ::Data::Asset<AZ::RPI::MorphTargetMetaAsset> morphTargetMetaAsset = oldActor->GetMorphTargetMetaAsset();
-
-            m_actorAsset = asset;
-            Actor* newActor = m_actorAsset->GetActor();
-            AZ_Assert(m_actorAsset.IsReady() && newActor, "Actor asset should be loaded and actor valid.");
-
-            newActor->SetMeshAsset(meshAsset);
-            newActor->SetSkinMetaAsset(skinMetaAsset);
-            newActor->SetMorphTargetMetaAsset(morphTargetMetaAsset);
-            newActor->CheckFinalizeActor();
+            OnAssetReady(asset);
         }
 
         void EditorActorComponent::SetActorAsset(AZ::Data::Asset<ActorAsset> actorAsset)
@@ -505,7 +521,7 @@ namespace EMotionFX
             Actor* actor = m_actorAsset->GetActor();
             if (actor)
             {
-                OnActorReady(actor);
+                CheckActorCreation();
             }
         }
 
@@ -580,6 +596,7 @@ namespace EMotionFX
                 RenderActorInstance::DebugOptions debugOptions;
                 debugOptions.m_drawAABB = m_renderBounds;
                 debugOptions.m_drawSkeleton = m_renderSkeleton;
+                debugOptions.m_emfxDebugDraw = true;
                 m_renderActorInstance->DebugDraw(debugOptions);
             }
         }
@@ -597,6 +614,7 @@ namespace EMotionFX
             cfg.m_attachmentJointIndex = m_attachmentJointIndex;
             cfg.m_lodLevel = m_lodLevel;
             cfg.m_skinningMethod = m_skinningMethod;
+            cfg.m_bboxConfig = m_bboxConfig;
             cfg.m_forceUpdateJointsOOV = m_forceUpdateJointsOOV;
 
             gameEntity->AddComponent(aznew ActorComponent(&cfg));
@@ -818,14 +836,6 @@ namespace EMotionFX
             return false;
         }
 
-        void EditorActorComponent::OnActorReady(Actor* actor)
-        {
-            if (m_actorAsset && m_actorAsset->GetActor() == actor)
-            {
-                CheckActorCreation();
-            }
-        }
-
         void EditorActorComponent::CheckActorCreation()
         {
             // Enable/disable debug drawing.
@@ -880,6 +890,7 @@ namespace EMotionFX
 
             // Force an update of node transforms so we can get an accurate bounding box.
             m_actorInstance->UpdateTransformations(0.0f, true, false);
+            OnBBoxConfigChanged(); // Apply BBox config
 
             // Creating the render actor AFTER both actor asset and mesh asset loaded.
             RenderBackend* renderBackend = AZ::Interface<RenderBackendManager>::Get()->GetRenderBackend();
@@ -932,4 +943,3 @@ namespace EMotionFX
         }
     } //namespace Integration
 } // namespace EMotionFX
-

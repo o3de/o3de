@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Math/Plane.h>
 #include "RenderUtil.h"
@@ -1157,7 +1152,7 @@ namespace MCommon
     void RenderUtil::RenderSphere(const AZ::Vector3& position, float radius, const MCore::RGBAColor& color)
     {
         // setup the world space matrix of the sphere
-        AZ::Transform sphereTransform = AZ::Transform::CreateScale(AZ::Vector3(radius, radius, radius));
+        AZ::Transform sphereTransform = AZ::Transform::CreateUniformScale(radius);
         sphereTransform.SetTranslation(position);
 
         // render the sphere
@@ -1294,18 +1289,6 @@ namespace MCommon
 
         // return the mesh
         return mesh;
-    }
-
-
-    // render a cube
-    void RenderUtil::RenderCube(const AZ::Vector3& size, const AZ::Vector3& position, const MCore::RGBAColor& color)
-    {
-        // setup the world space matrix of the cube
-        AZ::Transform cubeTransform = AZ::Transform::CreateScale(size);
-        cubeTransform.SetTranslation(position);
-
-        // render the cube
-        RenderCube(color, cubeTransform);
     }
 
 
@@ -1640,18 +1623,18 @@ namespace MCommon
         }
         else
         {
-            const float screenWidth     = static_cast<float>(camera->GetScreenWidth());
-            const float screenHeight    = static_cast<float>(camera->GetScreenHeight());
+            const float cameraScreenWidth     = static_cast<float>(camera->GetScreenWidth());
+            const float cameraScreenHeight    = static_cast<float>(camera->GetScreenHeight());
 
             // find the 4 corners of the frustum
             AZ::Vector3 corners[4];
             const AZ::Matrix4x4 inversedProjectionMatrix = MCore::InvertProjectionMatrix(camera->GetProjectionMatrix());
             const AZ::Matrix4x4 inversedViewMatrix = MCore::InvertProjectionMatrix(camera->GetViewMatrix());
 
-            corners[0] = MCore::Unproject(0.0f, 0.0f, screenWidth, screenHeight, camera->GetFarClipDistance(), inversedProjectionMatrix, inversedViewMatrix);
-            corners[1] = MCore::Unproject(screenWidth, 0.0f, screenWidth, screenHeight, camera->GetFarClipDistance(), inversedProjectionMatrix, inversedViewMatrix);
-            corners[2] = MCore::Unproject(screenWidth, screenHeight, screenWidth, screenHeight, camera->GetFarClipDistance(), inversedProjectionMatrix, inversedViewMatrix);
-            corners[3] = MCore::Unproject(0.0f, screenHeight, screenWidth, screenHeight, camera->GetFarClipDistance(), inversedProjectionMatrix, inversedViewMatrix);
+            corners[0] = MCore::Unproject(0.0f, 0.0f, cameraScreenWidth, cameraScreenHeight, camera->GetFarClipDistance(), inversedProjectionMatrix, inversedViewMatrix);
+            corners[1] = MCore::Unproject(cameraScreenWidth, 0.0f, cameraScreenWidth, cameraScreenHeight, camera->GetFarClipDistance(), inversedProjectionMatrix, inversedViewMatrix);
+            corners[2] = MCore::Unproject(cameraScreenWidth, cameraScreenHeight, cameraScreenWidth, cameraScreenHeight, camera->GetFarClipDistance(), inversedProjectionMatrix, inversedViewMatrix);
+            corners[3] = MCore::Unproject(0.0f, cameraScreenHeight, cameraScreenWidth, cameraScreenHeight, camera->GetFarClipDistance(), inversedProjectionMatrix, inversedViewMatrix);
 
             // calculate the intersection points with the ground plane and create an AABB around those
             // if there is no intersection point then use the ray target as point, which is the projection onto the far plane basically

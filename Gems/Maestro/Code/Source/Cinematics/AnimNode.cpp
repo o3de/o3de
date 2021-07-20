@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #include "Maestro_precompiled.h"
 #include <AzCore/Serialization/SerializeContext.h>
@@ -60,7 +55,6 @@ static const EAnimCurveType DEFAULT_TRACK_TYPE = eAnimCurveType_BezierFloat;
 
 // Old serialization values that are no longer
 // defined in IMovieSystem.h, but needed for conversion:
-static const int OLD_APARAM_USER = 100;
 static const int OLD_ACURVE_GOTO = 21;
 static const int OLD_APARAM_PARTICLE_COUNT_SCALE = 95;
 static const int OLD_APARAM_PARTICLE_PULSE_PERIOD = 96;
@@ -280,6 +274,45 @@ static bool AnimNodeVersionConverter(
         rootElement.AddElement(serializeContext, "BaseClass1", azrtti_typeid<IAnimNode>());
     }
 
+    if (rootElement.GetVersion() < 4)
+    {
+        // remove vector scale tracks from transform anim nodes
+        AZStd::string name;
+        if (rootElement.FindSubElementAndGetData<AZStd::string>(AZ_CRC_CE("Name"), name) && name == "Transform")
+        {
+            auto tracksElement = rootElement.FindSubElement(AZ_CRC_CE("Tracks"));
+            if (tracksElement)
+            {
+                for (int trackIndex = tracksElement->GetNumSubElements() - 1; trackIndex >= 0; trackIndex--)
+                {
+                    auto trackElement = tracksElement->GetSubElement(trackIndex);
+                    bool isScale = false;
+
+                    // trackElement should be an intrusive_ptr with one child
+                    if (trackElement.GetNumSubElements() == 1)
+                    {
+                        auto ptrElement = trackElement.GetSubElement(0);
+                        auto paramTypeElement = ptrElement.FindSubElement(AZ_CRC_CE("ParamType"));
+                        if (paramTypeElement)
+                        {
+                            AZStd::string paramName;
+                            if (paramTypeElement->FindSubElementAndGetData<AZStd::string>(AZ_CRC_CE("Name"), paramName) && paramName == "Scale")
+                            {
+                                isScale = true;
+                            }
+                        }
+                    }
+
+                    if (isScale)
+                    {
+                        tracksElement->RemoveElement(trackIndex);
+                    }
+                }
+            }
+        }
+
+    }
+
     return true;
 }
 
@@ -288,7 +321,7 @@ void CAnimNode::Reflect(AZ::ReflectContext* context)
     if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
     {
         serializeContext->Class<CAnimNode, IAnimNode>()
-            ->Version(3, &AnimNodeVersionConverter)
+            ->Version(4, &AnimNodeVersionConverter)
             ->Field("ID", &CAnimNode::m_id)
             ->Field("Name", &CAnimNode::m_name)
             ->Field("Flags", &CAnimNode::m_flags)

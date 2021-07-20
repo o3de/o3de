@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "LyShine_precompiled.h"
 #include "UiCanvasManager.h"
 #include <LyShine/Draw2d.h>
@@ -1425,7 +1420,8 @@ void UiCanvasManager::DebugReportDrawCalls(const AZStd::string& name) const
         if (reportTextureUsage.m_numCanvasesUsed > 1 &&
             reportTextureUsage.m_numDrawCallsWhereExceedingMaxTextures)
         {
-            AZStd::string textureName = reportTextureUsage.m_texture->GetName();
+            AZStd::string textureName;
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(textureName, &AZ::Data::AssetCatalogRequests::GetAssetPathById, reportTextureUsage.m_texture->GetAssetId());
             if (textureName.compare(0, fontTexturePrefix.length(), fontTexturePrefix) != 0)
             {
                 logLine = AZStd::string::format("%s\r\n", textureName.c_str());
@@ -1457,7 +1453,8 @@ void UiCanvasManager::DebugReportDrawCalls(const AZStd::string& name) const
                 reportTextureUsage.m_lastContextUsed == canvas &&
                 reportTextureUsage.m_numDrawCallsWhereExceedingMaxTextures)
             {
-                AZStd::string textureName = reportTextureUsage.m_texture->GetName();
+                AZStd::string textureName;
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(textureName, &AZ::Data::AssetCatalogRequests::GetAssetPathById, reportTextureUsage.m_texture->GetAssetId());
 
                 // exclude font textures
                 if (textureName.compare(0, fontTexturePrefix.length(), fontTexturePrefix) != 0)

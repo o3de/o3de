@@ -1,18 +1,14 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzTest/AzTest.h>
 #include <Common/RPITestFixture.h>
 #include <Common/JsonTestUtils.h>
+#include <Common/ShaderAssetTestUtils.h>
 #include <Material/MaterialAssetTestUtils.h>
 
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
@@ -20,7 +16,6 @@
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAssetCreator.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
-#include <Atom/RPI.Reflect/Shader/ShaderResourceGroupAssetCreator.h>
 
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
@@ -39,7 +34,7 @@ namespace UnitTest
         : public RPITestFixture
     {
     protected:
-        Data::Asset<ShaderResourceGroupAsset> m_testMaterialSrgAsset;
+        RHI::Ptr<RHI::ShaderResourceGroupLayout> m_testMaterialSrgLayout;
         Data::Asset<ShaderAsset> m_testShaderAsset;
         Data::Asset<MaterialTypeAsset> m_testMaterialTypeAsset;
         Data::Asset<ImageAsset> m_testImageAsset;
@@ -63,9 +58,9 @@ namespace UnitTest
             AZ::Utils::GetExecutableDirectory(rootPath, AZ_MAX_PATH_LEN);
             localFileIO->SetAlias("@exefolder@", rootPath);
 
-            m_testMaterialSrgAsset = CreateCommonTestMaterialSrgAsset();
+            m_testMaterialSrgLayout = CreateCommonTestMaterialSrgLayout();
 
-            m_testShaderAsset = CreateTestShaderAsset(Uuid::CreateRandom(), m_testMaterialSrgAsset);
+            m_testShaderAsset = CreateTestShaderAsset(Uuid::CreateRandom(), m_testMaterialSrgLayout);
 
             MaterialTypeAssetCreator materialTypeCreator;
             materialTypeCreator.Begin(Uuid::CreateRandom());
@@ -85,7 +80,7 @@ namespace UnitTest
         void TearDown() override
         {
             m_testMaterialTypeAsset.Reset();
-            m_testMaterialSrgAsset.Reset();
+            m_testMaterialSrgLayout = nullptr;
             m_testShaderAsset.Reset();
             m_testImageAsset.Reset();
 

@@ -1,12 +1,8 @@
 #
-#   All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-#   its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-#   For complete copyright and license terms please see the LICENSE at the root of this
-#   distribution (the "License"). All use of this software is governed by the License,
-#   or, if provided, by the license below or the license accompanying this file. Do not
-#   remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 
@@ -212,16 +208,15 @@ def test_create_link_error():
 
 
 @pytest.mark.parametrize(
-    "project_path, asset_type, ensure_path, warn_on_missing, expected_result", [
-        pytest.param('Foo', 'pc', 'Foo/Cache/pc/bootstrap.cfg', False, 'Foo/Cache/pc'),
-        pytest.param('Foo', 'pc', 'dev/bootstrap.cfg', True, None),
-        pytest.param('Foo', 'pc', 'Foo/Cache/es3/bootstrap.cfg', True, None),
-        pytest.param('Foo', 'pc', 'dev/bootstrap.cfg', False, common.LmbrCmdError),
-        pytest.param('Foo', 'pc', 'Foo/Cache/es3/bootstrap.cfg', False, common.LmbrCmdError),
+    "project_path, asset_type, warn_on_missing, expected_result", [
+        pytest.param('Foo', 'pc', False, 'Foo/Cache/pc'),
+        pytest.param('Foo', 'pc', True, None),
+        pytest.param('Foo', 'pc', True, None),
+        pytest.param('Foo', 'pc', False, common.LmbrCmdError),
+        pytest.param('Foo', 'pc', False, common.LmbrCmdError),
     ]
 )
-def test_construct_and_validate_cache_game_asset_folder_success(tmpdir, project_path, asset_type, ensure_path, warn_on_missing, expected_result):
-    tmpdir.ensure(ensure_path)
+def test_construct_and_validate_cache_game_asset_folder_success(tmpdir, project_path, asset_type, warn_on_missing, expected_result):
     if isinstance(expected_result, str):
         expected_path_realpath = str(tmpdir.join(expected_result).realpath())
     elif expected_result == common.LmbrCmdError:
@@ -385,7 +380,6 @@ def test_sync_layout_non_vfs_success(tmpdir, mode, existing_game_link, existing_
     old_remove_link = layout_tool.remove_link
     try:
         # Simple Test Parameters
-        tmpdir.ensure('engine-root/bootstrap.cfg')
         engine_root_realpath = str(tmpdir.join('engine-root').realpath())
         test_project_path = str(tmpdir.join('Foo').realpath())
         test_project_name_lower = 'foo'

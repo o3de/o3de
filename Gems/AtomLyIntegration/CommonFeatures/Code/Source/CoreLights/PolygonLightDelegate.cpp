@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <CoreLights/PolygonLightDelegate.h>
 #include <Atom/RPI.Public/Scene.h>
@@ -50,7 +45,7 @@ namespace AZ
                 AZStd::vector<Vector2> vertices = m_shapeBus->GetPolygonPrism()->m_vertexContainer.GetVertices();
 
                 Transform transform = GetTransform();
-                transform.SetScale(Vector3(transform.GetScale().GetMaxElement())); // Poly Prism only supports uniform scale, so use max element.
+                transform.SetUniformScale(transform.GetUniformScale()); // Poly Prism only supports uniform scale.
 
                 AZStd::vector<Vector3> transformedVertices;
                 transformedVertices.reserve(vertices.size());
@@ -73,7 +68,7 @@ namespace AZ
                 twiceArea += vertices.at(i).GetX() * vertices.at(j).GetY();
                 twiceArea -= vertices.at(i).GetY() * vertices.at(j).GetX();
             }
-            float scale = GetTransform().GetScale().GetMaxElement();
+            float scale = GetTransform().GetUniformScale();
             return GetAbs(twiceArea * 0.5f * scale * scale);
         }
 
@@ -84,7 +79,7 @@ namespace AZ
                 debugDisplay.SetColor(color);
 
                 // Draw a Polygon for the attenuation radius
-                debugDisplay.DrawWireSphere(transform.GetTranslation(), CalculateAttenuationRadius(AreaLightComponentConfig::CutoffIntensity));
+                debugDisplay.DrawWireSphere(transform.GetTranslation(), GetConfig()->m_attenuationRadius);
                 debugDisplay.DrawArrow(transform.GetTranslation(), transform.GetTranslation() + transform.GetBasisZ());
             }
         }

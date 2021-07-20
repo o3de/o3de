@@ -5,7 +5,7 @@
     "ClassData": {
         "AnalysisFingerprint": "2",
         "BuildSettings": {
-            "es3": {
+            "android": {
                 "GlossScale": 16.0,
                 "GlossBias": 0.0,
                 "Streaming": false,
@@ -17,7 +17,7 @@
                 "Streaming": false,
                 "Enable": true
             },
-            "osx_gl": {
+            "mac": {
                 "GlossScale": 16.0,
                 "GlossBias": 0.0,
                 "Streaming": false,

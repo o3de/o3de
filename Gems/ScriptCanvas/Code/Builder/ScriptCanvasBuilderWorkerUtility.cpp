@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright(c) Amazon.com, Inc.or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-*or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-*WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "precompiled.h"
 
@@ -22,9 +17,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Script/ScriptComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-
 #include <Builder/ScriptCanvasBuilderWorker.h>
-
 #include <ScriptCanvas/Asset/Functions/RuntimeFunctionAssetHandler.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
@@ -37,7 +30,6 @@
 #include <ScriptCanvas/Grammar/AbstractCodeModel.h>
 #include <ScriptCanvas/Results/ErrorText.h>
 #include <ScriptCanvas/Utils/BehaviorContextUtils.h>
-
 #include <Source/Components/SceneComponent.h>
 
 namespace ScriptCanvasBuilder
@@ -67,6 +59,26 @@ namespace ScriptCanvasBuilder
         }
     }
 
+    AZ::Outcome<ScriptCanvas::Grammar::AbstractCodeModelConstPtr, AZStd::string> ParseGraph(AZ::Entity& buildEntity, AZStd::string_view graphPath)
+    {
+        AZStd::string fileNameOnly;
+        AzFramework::StringFunc::Path::GetFullFileName(graphPath.data(), fileNameOnly);
+
+        ScriptCanvas::Grammar::Request request;
+        request.graph = PrepareSourceGraph(&buildEntity);
+        if (!request.graph)
+        {
+            return AZ::Failure(AZStd::string("build entity did not have source graph components"));
+        }
+
+        request.rawSaveDebugOutput = ScriptCanvas::Grammar::g_saveRawTranslationOuputToFileAtPrefabTime;
+        request.printModelToConsole = ScriptCanvas::Grammar::g_printAbstractCodeModelAtPrefabTime;
+        request.name = fileNameOnly.empty() ? fileNameOnly : "BuilderGraph";
+        request.addDebugInformation = false;
+
+        return ScriptCanvas::Translation::ParseGraph(request);
+    }
+
     AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> CreateLuaAsset(AZ::Entity* buildEntity, AZ::Data::AssetId scriptAssetId, AZStd::string_view rawLuaFilePath)
     {
         AZStd::string fullPath(rawLuaFilePath);
@@ -77,7 +89,7 @@ namespace ScriptCanvasBuilder
         auto sourceGraph = PrepareSourceGraph(buildEntity);
 
         ScriptCanvas::Grammar::Request request;
-        request.assetId = scriptAssetId;
+        request.scriptAssetId = scriptAssetId;
         request.graph = sourceGraph;
         request.name = fileNameOnly;
         request.rawSaveDebugOutput = ScriptCanvas::Grammar::g_saveRawTranslationOuputToFile;
@@ -87,7 +99,7 @@ namespace ScriptCanvasBuilder
         bool pathFound = false;
         AZStd::string relativePath;
         AzToolsFramework::AssetSystemRequestBus::BroadcastResult
-            ( pathFound
+        (pathFound
             , &AzToolsFramework::AssetSystem::AssetSystemRequest::GetRelativeProductPathFromFullSourceOrProductPath
             , fullPath.c_str(), relativePath);
 
@@ -401,7 +413,7 @@ namespace ScriptCanvasBuilder
             ;
     }
 
-    AZ::Outcome < AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>, AZStd::string> LoadEditorAsset(AZStd::string_view filePath)
+    AZ::Outcome < AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>, AZStd::string> LoadEditorAsset(AZStd::string_view filePath, AZ::Data::AssetId assetId, AZ::Data::AssetFilterCB assetFilterCB)
     {
         AZStd::shared_ptr<AZ::Data::AssetDataStream> assetDataStream = AZStd::make_shared<AZ::Data::AssetDataStream>();
 
@@ -430,9 +442,9 @@ namespace ScriptCanvasBuilder
         AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
         AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset> asset;
-        asset.Create(AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
+        asset.Create(assetId);
 
-        if (editorAssetHandler.LoadAssetData(asset, assetDataStream, AZ::Data::AssetFilterCB{}) != AZ::Data::AssetHandler::LoadResult::LoadComplete)
+        if (editorAssetHandler.LoadAssetData(asset, assetDataStream, assetFilterCB) != AZ::Data::AssetHandler::LoadResult::LoadComplete)
         {
             return AZ::Failure(AZStd::string::format("Failed to load ScriptCavas asset: %s", filePath.data()));
         }
@@ -518,10 +530,7 @@ namespace ScriptCanvasBuilder
             }
         }
 
-        if (buildEntity->GetState() == AZ::Entity::State::Constructed)
-        {
-            buildEntity->Init();
-        }
+        ScriptCanvas::ScopedAuxiliaryEntityHandler entityHandler(buildEntity);
 
         if (buildEntity->GetState() == AZ::Entity::State::Init)
         {
@@ -538,7 +547,7 @@ namespace ScriptCanvasBuilder
 
         auto version = sourceGraph->GetVersion();
         if (version.grammarVersion == ScriptCanvas::GrammarVersion::Initial
-        || version.runtimeVersion == ScriptCanvas::RuntimeVersion::Initial)
+            || version.runtimeVersion == ScriptCanvas::RuntimeVersion::Initial)
         {
             return AZ::Failure(AZStd::string(ScriptCanvas::ParseErrors::SourceUpdateRequired));
         }
@@ -547,7 +556,7 @@ namespace ScriptCanvasBuilder
         request.path = input.fullPath;
         request.name = input.fileNameOnly;
         request.namespacePath = input.namespacePath;
-        request.assetId = input.assetID;
+        request.scriptAssetId = input.assetID;
         request.graph = sourceGraph;
         request.rawSaveDebugOutput = ScriptCanvas::Grammar::g_saveRawTranslationOuputToFile;
         request.printModelToConsole = ScriptCanvas::Grammar::g_printAbstractCodeModel;
@@ -681,6 +690,19 @@ namespace ScriptCanvasBuilder
         }
 
         AssetBuilderSDK::JobProduct jobProduct;
+
+        // Scan our runtime input for any asset references
+        // Store them as product dependencies
+        AssetBuilderSDK::OutputObject(&runtimeData.m_input,
+            azrtti_typeid<decltype(runtimeData.m_input)>(),
+            input.runtimeScriptCanvasOutputPath,
+            azrtti_typeid<ScriptCanvas::RuntimeAsset>(),
+            AZ_CRC("RuntimeData", 0x163310ae), jobProduct);
+
+        // Output Object marks dependencies as handled.
+        // We still have more to evaluate
+        jobProduct.m_dependenciesHandled = false;
+
         jobProduct.m_dependencies.push_back({ runtimeData.m_script.GetId(), {} });
 
         for (const auto& assetDependency : runtimeData.m_requiredAssets)
@@ -713,9 +735,6 @@ namespace ScriptCanvasBuilder
         }
 
         jobProduct.m_dependenciesHandled = true;
-        jobProduct.m_productFileName = input.runtimeScriptCanvasOutputPath;
-        jobProduct.m_productAssetType = azrtti_typeid<ScriptCanvas::RuntimeAsset>();
-        jobProduct.m_productSubID = AZ_CRC("RuntimeData", 0x163310ae);
         input.response->m_outputProducts.push_back(AZStd::move(jobProduct));
         return AZ::Success();
     }
@@ -723,6 +742,6 @@ namespace ScriptCanvasBuilder
     ScriptCanvas::Translation::Result TranslateToLua(ScriptCanvas::Grammar::Request& request)
     {
         request.translationTargetFlags = ScriptCanvas::Translation::TargetFlags::Lua;
-        return ScriptCanvas::Translation::ParseGraph(request);        
+        return ScriptCanvas::Translation::ParseAndTranslateGraph(request);
     }
 }

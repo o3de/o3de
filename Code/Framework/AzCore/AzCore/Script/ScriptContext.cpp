@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <AzCore/Script/ScriptContext.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -694,6 +689,81 @@ namespace AZ
             return 1;
         }
 
+        int Class__IndexAllowNil(lua_State* l)
+        {
+            LSV_BEGIN(l, 1);
+
+            // calling format __index(table,key)
+            lua_getmetatable(l, -2); // load the userdata metatable
+            int metaTableIndex = lua_gettop(l);
+
+            // Check if the key is string, if so we expect it to be a function or property name
+            // otherwise we allow users to provide custom index handlers
+            // Technically we can allow strings too, but it will clash with function/property names and it be hard to figure
+            // out what is going on from with in the system.
+            if (lua_type(l, -2) == LUA_TSTRING)
+            {
+                lua_pushvalue(l, -2); // duplicate the key
+                lua_rawget(l, -2); // load the value at this index
+            }
+            else
+            {
+                lua_pushliteral(l, "__AZ_Index");
+                lua_rawget(l, -2); // check if the user provided custom Index method in the class metatable
+                if (lua_isnil(l, -1)) // if not report an error
+                {
+                    lua_rawgeti(l, -2, AZ_LUA_CLASS_METATABLE_NAME_INDEX); // load the class name for a better error
+                    if (!lua_isstring(l, -1))   // if we failed it means we are the base metatable
+                    {
+                        lua_pop(l, 1);
+                        lua_rawgeti(l, 1, AZ_LUA_CLASS_METATABLE_NAME_INDEX);
+                    }
+                    ScriptContext::FromNativeContext(l)->Error(ScriptContext::ErrorType::Warning, true, "Invalid index type [], should be string! '%s:%s'!", lua_tostring(l, -1), lua_tostring(l, -4));
+                }
+                else
+                {
+                    // if we have custom index handler
+                    lua_pushvalue(l, -4); // duplicate the table (class pointer)
+                    lua_pushvalue(l, -4); // duplicate the index value for the call
+                    lua_call(l, 2, 1); // call the function
+                }
+
+                lua_remove(l, metaTableIndex); // remove the metatable
+                return 1;
+            }
+
+            if (!lua_isnil(l, -1))
+            {
+                if (lua_tocfunction(l, -1) == &Internal::LuaPropertyTagHelper) // if it's a property
+                {
+                    lua_getupvalue(l, -1, 1);   // push on the stack the getter function
+                    lua_remove(l, -2); // remove property object
+
+                    if (lua_isnil(l, -1))
+                    {
+                        lua_rawgeti(l, -2, AZ_LUA_CLASS_METATABLE_NAME_INDEX); // load the class name for a better error
+                        if (!lua_isstring(l, -1))   // if we failed it means we are the base metatable
+                        {
+                            lua_pop(l, 1);
+                            lua_rawgeti(l, 1, AZ_LUA_CLASS_METATABLE_NAME_INDEX);
+                        }
+
+                        ScriptContext::FromNativeContext(l)->Error(ScriptContext::ErrorType::Warning, true, "Property '%s:%s' is write only", lua_tostring(l, -1), lua_tostring(l, -4));
+                        lua_pop(l, 1); // pop class name
+                    }
+                    else
+                    {
+                        lua_pushvalue(l, -4); // copy the user data to be passed as a this pointer.
+                        lua_call(l, 1, 1); // call a function with one argument (this pointer) and 1 result
+                    }
+                }
+            }
+
+            lua_remove(l, metaTableIndex); // remove the metatable
+            return 1;
+        }
+
+
         //=========================================================================
         // Class__NewIndex
         // [3/22/2012]
@@ -829,30 +899,6 @@ namespace AZ
             lua_pushstring(l, AZStd::string::format("LuaUserData (%p)->(%p):%s %s", userData, userData->value, StorageTypeToString((Script::Attributes::StorageType)userData->storageType), className).c_str());
             // Lua: object, string
             return 1;
-        }
-
-        //=========================================================================
-        // ClassMetatable__Index
-        // [3/24/2012]
-        //=========================================================================
-        int ClassMetatable__Index(lua_State* l)
-        {
-            // since the Class__Index is generic function (ask for the class metatable)
-            // we can reuse the code for the base metatable (which is a metatable
-            // of the class metatable)
-            return Class__Index(l);
-        }
-
-        //=========================================================================
-        // ClassMetatable__NewIndex
-        // [3/30/2012]
-        //=========================================================================
-        int ClassMetatable__NewIndex(lua_State* l)
-        {
-            // since the Class__NewIndex is generic function (ask for the class metatable)
-            // we can reuse the code for the base metatable (which is a metatable
-            // of the class metatable)
-            return Class__NewIndex(l);
         }
 
         inline size_t BufferStringCopy(const char* source, char* destination, size_t destinationSize)
@@ -2048,10 +2094,6 @@ LUA_API const Node* lua_getDummyNode()
 
             return true;
         }
-        else
-        {
-            AZ_Warning("Script", false, "Index %d is not a function!", functionIndex);
-        }
 
         return false;
     }
@@ -2078,7 +2120,6 @@ LUA_API const Node* lua_getDummyNode()
         }
         else
         {
-            AZ_Warning("Script", lua_isnil(m_nativeContext, -1), "Name %s exists but is not a function!", functionName);
             lua_pop(m_nativeContext, 1);
         }
 
@@ -5063,9 +5104,20 @@ LUA_API const Node* lua_getDummyNode()
                 lua_pushcclosure(m_lua, &DefaultBehaviorCaller::Destroy, 0);
                 lua_rawset(m_lua, -3);
 
-                lua_pushliteral(m_lua, "__index");
-                lua_pushcclosure(m_lua, &Internal::Class__Index, 0);
-                lua_rawset(m_lua, -3);
+                {
+                    lua_pushliteral(m_lua, "__index");
+
+                    if (FindAttribute(Script::Attributes::UseClassIndexAllowNil, behaviorClass->m_attributes))
+                    {
+                        lua_pushcclosure(m_lua, &Internal::Class__IndexAllowNil, 0);
+                    }
+                    else
+                    {
+                        lua_pushcclosure(m_lua, &Internal::Class__Index, 0);
+                    }
+
+                    lua_rawset(m_lua, -3);
+                }
 
                 lua_pushliteral(m_lua, "__newindex");
                 lua_pushcclosure(m_lua, &Internal::Class__NewIndex, 0);
@@ -5606,7 +5658,7 @@ LUA_API const Node* lua_getDummyNode()
             // Debugging
             void Error(ScriptContext::ErrorType error, bool doStackTrace, const char* format, va_list mark)
             {
-                // max size due to requirements of \CryEngine\CrySystem\Log.h MAX_TEMP_LENGTH_SIZE(2048) minus room for the time stamp (128)
+                // max size due to requirements of \Legacy\CrySystem\Log.h MAX_TEMP_LENGTH_SIZE(2048) minus room for the time stamp (128)
                 // otherwise if the script passes in a string larger, their script will cause an assert 
                 char message[4096 - 128];
                 azvsnprintf(message, AZ_ARRAY_SIZE(message), format, mark);
@@ -5888,7 +5940,6 @@ LUA_API const Node* lua_getDummyNode()
         else
         {
             lua_pop(m_impl->m_lua, 1);
-            AZ_Warning("Script", false, "%s is not a function!", functionName);
         }
         return false;
     }
@@ -5906,7 +5957,6 @@ LUA_API const Node* lua_getDummyNode()
         else
         {
             lua_pop(m_impl->m_lua, 1);
-            AZ_Warning("Script", false, "CacheIndex %d is not a function!", cachedIndex);
         }
         return false;
     }

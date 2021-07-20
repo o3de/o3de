@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Component/TransformBus.h>
@@ -44,6 +39,8 @@ namespace MaterialEditor
         MaterialEditorViewportInputControllerRequestBus::BroadcastResult(
             m_targetPosition,
             &MaterialEditorViewportInputControllerRequestBus::Handler::GetTargetPosition);
+        MaterialEditorViewportInputControllerRequestBus::BroadcastResult(
+            m_radius, &MaterialEditorViewportInputControllerRequestBus::Handler::GetRadius);
     }
 
     void Behavior::End()
@@ -119,7 +116,8 @@ namespace MaterialEditor
 
     float Behavior::GetSensitivityZ()
     {
-        return 0.001f;
+        // adjust zooming sensitivity by model size, so that large models zoom at the same speed as smaller ones
+        return 0.001f * AZ::GetMax(0.5f, m_radius);
     }
 
     AZ::Quaternion Behavior::LookRotation(AZ::Vector3 forward)

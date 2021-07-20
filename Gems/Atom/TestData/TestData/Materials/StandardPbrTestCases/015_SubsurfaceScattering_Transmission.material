@@ -6,7 +6,6 @@
     "properties": {
         "subsurfaceScattering": {
             "enableSubsurfaceScattering": true,
-            "enableTransmission": true,
             "scatterDistance": 64.6464614868164,
             "subsurfaceScatterFactor": 1.0,
             "thicknessMap": "TestData/Textures/checker8x8_512.png",

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/RTTI/BehaviorContextUtilities.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
@@ -52,6 +47,10 @@ namespace ParsingUtilitiesCpp
     using namespace ScriptCanvas;
     using namespace ScriptCanvas::Grammar;
 
+    const AZ::u64 k_parserGeneratedMask = 0x7FC0616C94E7465F;
+    const size_t k_maskIndex = 0;
+    const size_t k_countIndex = 1;
+
     class PrettyPrinter
         : public ExecutionTreeTraversalListener
     {
@@ -90,7 +89,7 @@ namespace ParsingUtilitiesCpp
             {
                 m_result += AZStd::string::format(" # children: %zu", childCount);
             }
-            
+
             if (m_marker == execution)
             {
                 m_result += " <<<< MARKER <<<< ";
@@ -102,7 +101,7 @@ namespace ParsingUtilitiesCpp
             m_result += "\n";
         }
 
-        void EvaluateRoot(ExecutionTreeConstPtr node, const Slot* )
+        void EvaluateRoot(ExecutionTreeConstPtr node, const Slot*)
         {
             m_result += "\nRoot:\n";
         }
@@ -361,7 +360,7 @@ namespace ScriptCanvas
                 else if (nodeling->IsExecutionExit())
                 {
                     return NodelingType::Out;
-                }               
+                }
             }
 
             return NodelingType::None;
@@ -790,7 +789,7 @@ namespace ScriptCanvas
         {
             return execution->GetInputCount() > index
                 && ((execution->GetInput(index).m_value->m_datum.GetAs<Data::NamedEntityIDType>() && *execution->GetInput(index).m_value->m_datum.GetAs<Data::NamedEntityIDType>() == GraphOwnerId && !execution->GetInput(index).m_value->m_isExposedToConstruction)
-                   || (execution->GetInput(index).m_value->m_datum.GetAs<Data::EntityIDType>() && *execution->GetInput(index).m_value->m_datum.GetAs<Data::EntityIDType>() == GraphOwnerId && !execution->GetInput(index).m_value->m_isExposedToConstruction));
+                    || (execution->GetInput(index).m_value->m_datum.GetAs<Data::EntityIDType>() && *execution->GetInput(index).m_value->m_datum.GetAs<Data::EntityIDType>() == GraphOwnerId && !execution->GetInput(index).m_value->m_isExposedToConstruction));
         }
 
         bool IsIsNull(const ExecutionTreeConstPtr& execution)
@@ -860,7 +859,7 @@ namespace ScriptCanvas
                     return true;
                 }
             }
-            
+
             return IsMidSequence(parent);
         }
 
@@ -928,6 +927,7 @@ namespace ScriptCanvas
         {
             return execution->GetId().m_node
                 && IsOnce(*execution->GetId().m_node)
+                && execution->GetId().m_slot
                 && execution->GetId().m_slot->GetType() == CombinedSlotType::ExecutionIn;
         }
 
@@ -938,7 +938,7 @@ namespace ScriptCanvas
 
         bool IsOnceReset(const Node& node, const Slot* slot)
         {
-            return slot = OnceProperty::GetResetSlot(&node);
+            return slot == OnceProperty::GetResetSlot(&node);
         }
 
         bool IsOperatorArithmetic(const ExecutionTreeConstPtr& execution)
@@ -1005,10 +1005,16 @@ namespace ScriptCanvas
             return true;
         }
 
+        bool IsParserGeneratedId(const ScriptCanvas::VariableId& id)
+        {
+            using namespace ParsingUtilitiesCpp;
+            return reinterpret_cast<const AZ::u64*>(id.m_id.data)[k_maskIndex] == k_parserGeneratedMask;
+        }
+
         bool IsPropertyExtractionSlot(const ExecutionTreeConstPtr& execution, const Slot* outputSlot)
         {
             auto iter = AZStd::find_if
-                ( execution->GetPropertyExtractionSources().begin()
+            (execution->GetPropertyExtractionSources().begin()
                 , execution->GetPropertyExtractionSources().end()
                 , [&](const auto& iter) { return iter.first == outputSlot; });
 
@@ -1056,9 +1062,9 @@ namespace ScriptCanvas
         bool IsSequenceNode(const ExecutionTreeConstPtr& execution)
         {
             return (IsSequenceNode(execution->GetId().m_node)
-                    && execution->GetId().m_slot->GetType() == CombinedSlotType::ExecutionIn);
+                && execution->GetId().m_slot->GetType() == CombinedSlotType::ExecutionIn);
         }
-        
+
         bool IsSwitchStatement(const ExecutionTreeConstPtr& execution)
         {
             return execution->GetId().m_node->IsSwitchStatement()
@@ -1124,6 +1130,16 @@ namespace ScriptCanvas
             return AZStd::string::format("%s%s", k_memberNamePrefix, name.data());
         }
 
+        VariableId MakeParserGeneratedId(size_t count)
+        {
+            using namespace ParsingUtilitiesCpp;
+
+            AZ::Uuid parserGenerated;
+            reinterpret_cast<AZ::u64*>(parserGenerated.data)[k_maskIndex] = k_parserGeneratedMask;
+            reinterpret_cast<AZ::u64*>(parserGenerated.data)[k_countIndex] = count;
+            return ScriptCanvas::VariableId(parserGenerated);
+        }
+
         VariableConstructionRequirement ParseConstructionRequirement(VariableConstPtr variable)
         {
             if (IsEntityIdThatRequiresRuntimeRemap(variable))
@@ -1132,13 +1148,13 @@ namespace ScriptCanvas
             }
             else if (variable->m_isExposedToConstruction)
             {
-                if (variable->m_sourceVariableId.IsValid())
-                {
-                    return VariableConstructionRequirement::InputVariable;
-                }
-                else if (variable->m_nodeableNodeId.IsValid())
+                if (variable->m_nodeableNodeId.IsValid())
                 {
                     return VariableConstructionRequirement::InputNodeable;
+                }
+                else if (variable->m_sourceVariableId.IsValid())
+                {
+                    return VariableConstructionRequirement::InputVariable;
                 }
                 else
                 {
@@ -1220,7 +1236,7 @@ namespace ScriptCanvas
                 result += AZStd::string::format("Variable: %s, Type: %s, Scope: %s, \n"
                     , variable->m_name.data()
                     , Data::GetName(variable->m_datum.GetType()).data()
-                    , variable->m_isMember ? "Member" : "Local" );
+                    , variable->m_isMember ? "Member" : "Local");
             }
 
             auto roots = model.GetAllExecutionRoots();
@@ -1265,11 +1281,11 @@ namespace ScriptCanvas
 
         bool RequiresRuntimeRemap(const AZ::EntityId& entityId)
         {
-            return entityId.IsValid() 
+            return entityId.IsValid()
                 && entityId != UniqueId
                 && entityId != GraphOwnerId;
         }
-        
+
         AZStd::string SlotNameToIndexString(const Slot& slot)
         {
             auto indexString = slot.GetName();
@@ -1449,5 +1465,5 @@ namespace ScriptCanvas
                 }
             }
         }
-    } 
-} 
+    }
+}

@@ -1,16 +1,22 @@
 #!/usr/bin/env bash
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 set -o errexit # exit on the first failure encountered
+
+# Jenkins defines environment variables for parameters and passes "false" to variables 
+# that are not set. Here we clear them if they are false so we can also just define them
+# from command line
+if [[ "${CLEAN_ASSETS}" == "false" ]]; then
+    CLEAN_ASSETS=
+fi
+if [[ "${CLEAN_OUTPUT_DIRECTORY}" == "false" ]]; then
+    CLEAN_OUTPUT_DIRECTORY=
+fi
 
 if [[ -n "$CLEAN_ASSETS" ]]; then
     echo "[ci_build] CLEAN_ASSETS option set"
@@ -23,6 +29,25 @@ if [[ -n "$CLEAN_ASSETS" ]]; then
     done
 fi
 
+# If the node label changes, we issue a clean output since node changes can change SDK/CMake/toolchains/etc
+LAST_CONFIGURE_NODE_LABEL_FILE=ci_last_node_label.txt
+if [[ -n "$NODE_LABEL" ]]; then
+    if [[ -d $OUTPUT_DIRECTORY ]]; then
+        pushd $OUTPUT_DIRECTORY
+        if [[ -e ${LAST_CONFIGURE_NODE_LABEL_FILE} ]]; then
+            LAST_NODE_LABEL=$(<${LAST_CONFIGURE_NODE_LABEL_FILE})    
+        else
+            LAST_NODE_LABEL=
+        fi
+        # Detect if the node label has changed
+        if [[ "${LAST_NODE_LABEL}" != "${NODE_LABEL}" ]]; then
+            echo [ci_build] Last run was done with node label \"${LAST_NODE_LABEL}\", new node label is \"${NODE_LABEL}\", forcing CLEAN_OUTPUT_DIRECTORY
+            CLEAN_OUTPUT_DIRECTORY=1
+        fi
+        popd
+    fi
+fi
+
 if [[ -n "$CLEAN_OUTPUT_DIRECTORY" ]]; then
     echo "[ci_build] CLEAN_OUTPUT_DIRECTORY option set"
     if [[ -d $OUTPUT_DIRECTORY ]]; then
@@ -30,3 +55,9 @@ if [[ -n "$CLEAN_OUTPUT_DIRECTORY" ]]; then
         rm -rf ${OUTPUT_DIRECTORY}
     fi
 fi
+
+mkdir -p ${OUTPUT_DIRECTORY}
+# Save the node label
+pushd $OUTPUT_DIRECTORY
+echo "${NODE_LABEL}" > ${LAST_CONFIGURE_NODE_LABEL_FILE}
+popd

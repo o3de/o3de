@@ -1,14 +1,7 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-
-C16780783: Base Edit Menu Options (New Viewport Interaction Model)
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 import os
@@ -17,6 +10,7 @@ import pytest
 # Bail on the test if ly_test_tools doesn't exist.
 pytest.importorskip('ly_test_tools')
 import ly_test_tools.environment.file_system as file_system
+import ly_test_tools.environment.process_utils as process_utils
 import editor_python_test_tools.hydra_test_utils as hydra
 
 test_directory = os.path.join(os.path.dirname(__file__), "EditorScripts")
@@ -33,13 +27,14 @@ class TestMenus(object):
     def setup_teardown(self, request, workspace, project, level):
         def teardown():
             file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
+            process_utils.kill_processes_named("o3de", ignore_extensions=True)  # Kill ProjectManager windows
 
         request.addfinalizer(teardown)
 
         file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
     @pytest.mark.test_case_id("C16780783", "C2174438")
-    @pytest.mark.SUITE_periodic
+    @pytest.mark.SUITE_sandbox
     def test_Menus_EditMenuOptions_Work(self, request, editor, level, launcher_platform):
         expected_lines = [
             "Undo Action triggered",
@@ -80,8 +75,7 @@ class TestMenus(object):
             expected_lines,
             cfg_args=[level],
             run_python="--runpython",
-            auto_test_mode=True,
-            timeout=log_monitor_timeout,
+            timeout=log_monitor_timeout
         )
 
     @pytest.mark.test_case_id("C16780807")
@@ -90,7 +84,7 @@ class TestMenus(object):
         expected_lines = [
             "Center on Selection Action triggered",
             "Show Quick Access Bar Action triggered",
-            "Wireframe Action triggered",
+            "Configure Layout Action triggered",
             "Go to Position Action triggered",
             "Center on Selection Action triggered",
             "Go to Location Action triggered",
@@ -107,13 +101,13 @@ class TestMenus(object):
             "Menus_ViewMenuOptions.py",
             expected_lines,
             cfg_args=[level],
-            auto_test_mode=True,
             run_python="--runpython",
-            timeout=log_monitor_timeout,
+            timeout=log_monitor_timeout
         )
 
     @pytest.mark.test_case_id("C16780778")
-    @pytest.mark.SUITE_periodic
+    @pytest.mark.SUITE_sandbox
+    @pytest.mark.xfail      # LYN-4208
     def test_Menus_FileMenuOptions_Work(self, request, editor, level, launcher_platform):
         expected_lines = [
             "New Level Action triggered",
@@ -122,7 +116,10 @@ class TestMenus(object):
             "Save Action triggered",
             "Save As Action triggered",
             "Save Level Statistics Action triggered",
-            "Project Settings Tool Action triggered",
+            "Edit Project Settings Action triggered",
+            "Edit Platform Settings Action triggered",
+            "New Project Action triggered",
+            "Open Project Action triggered",
             "Show Log File Action triggered",
             "Resave All Slices Action triggered",
             "Exit Action triggered",
@@ -135,7 +132,6 @@ class TestMenus(object):
             "Menus_FileMenuOptions.py",
             expected_lines,
             cfg_args=[level],
-            auto_test_mode=True,
             run_python="--runpython",
-            timeout=log_monitor_timeout,
+            timeout=log_monitor_timeout
         )

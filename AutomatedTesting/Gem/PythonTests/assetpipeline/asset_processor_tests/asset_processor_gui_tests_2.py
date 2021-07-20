@@ -1,12 +1,7 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 
 General Asset Processor GUI Tests
 """
@@ -75,10 +70,17 @@ class TestsAssetProcessorGUI_WindowsAndMac(object):
     @pytest.mark.test_case_id("C3540434")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    def test_WindowsAndMacPlatforms_AP_GUI_FastScanSettingCreated(self, asset_processor, fast_scan_backup):
+    def test_WindowsAndMacPlatforms_GUIFastScanNoSettingSet_FastScanSettingCreated(self, asset_processor, fast_scan_backup):
         """
          Tests that a fast scan settings entry gets created for the AP if it does not exist
          and ensures that the entry is defaulted to fast-scan enabled
+
+         Test Steps:
+         1. Create temporary testing environment
+         2. Delete existing fast scan setting if exists
+         3. Run Asset Processor GUI without setting FastScan setting (default:true) and without quitonidle
+         4. Wait and check to see if Windows Registry fast scan setting is created
+         5. Verify that Fast Scan setting is set to true
         """
 
         asset_processor.create_temp_asset_root()
@@ -119,6 +121,14 @@ class TestsAssetProcessorGUI_WindowsAndMac(object):
         Make sure game launcher working with Asset Processor set to turbo mode
         Validate that no fatal errors (crashes) are reported within a certain
         time frame for the AP and the GameLauncher
+
+        Test Steps:
+        1. Create temporary testing environment
+        2. Set fast scan to true
+        3. Verify fast scan is set to true
+        4. Launch game launcher
+        5. Verify launcher has launched without error
+        6. Verify that asset processor has launched
         """
         CHECK_ALIVE_SECONDS = 15
 
@@ -158,6 +168,7 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
     """
 
     @pytest.mark.test_case_id("C1591337")
+    @pytest.mark.SUITE_sandbox
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     # fmt:off
@@ -166,6 +177,14 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
         # fmt:on
         """
         Deleting slices and uicanvases while AP is running
+
+        Test Steps:
+        1. Create temporary testing environment with test assets
+        2. Launch Asset Processor and wait for it to go idle
+        3. Verify product assets were created in the cache
+        4. Delete test assets from the cache
+        5. Wait for Asset Processor to go idle
+        6. Verify product assets were regenerated in the cache
         """
         env = ap_setup_fixture
 
@@ -194,6 +213,7 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
         asset_processor.stop()
 
     @pytest.mark.test_case_id("C4874115")
+    @pytest.mark.SUITE_sandbox
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     def test_AllSupportedPlatforms_AddScanFolder_AssetsProcessed(
@@ -201,6 +221,15 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
     ):
         """
         Process slice files and uicanvas files from the additional scanfolder
+
+        Test Steps:
+        1. Create temporary testing environment
+        2. Run asset processor batch
+        3. Validate that product assets were generated in the cache
+        4. Create an additional scan folder with assets
+        5. Create additional scan folder params to pass to Asset Processor
+        6. Run Asset Processor GUI with QuitOnIdle and pass in params for the additional scan folder settings
+        7. Verify additional product assets from additional scan folder are present in the cache
         """
         env = ap_setup_fixture
         # Copy test assets to new folder in dev folder
@@ -250,6 +279,12 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
         """
         Launch AP with invalid address in bootstrap.cfg
         Assets should process regardless of the new address
+
+        Test Steps:
+        1. Create a temporary testing environment
+        2. Set an invalid ip address in Asset Processor settings file
+        3. Launch Asset Processor GUI
+        4. Verify that it processes assets and exits cleanly even though it has an invalid IP.
         """
         test_ip_address = "1.1.1.1"  # an IP address without Asset Processor
 
@@ -269,6 +304,14 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
     def test_AllSupportedPlatforms_ModifyAssetInfo_AssetsReprocessed(self, ap_setup_fixture, asset_processor):
         """
         Modifying assetinfo files triggers file reprocessing
+
+        Test Steps:
+        1. Create temporary testing environment with test assets
+        2. Run Asset Processor GUI
+        3. Verify that Asset Processor exited cleanly and product assets are in the cache
+        4. Modify the .assetinfo file by adding a newline
+        5. Wait for Asset Processor to go idle
+        6. Verify that product files were regenerated (Time Stamp compare)
         """
         env = ap_setup_fixture
 

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <QStringList>
 #include <QCoreApplication>
 #include <QElapsedTimer>
@@ -1697,7 +1692,10 @@ namespace AssetProcessor
 
                 if(productFileInfo.absoluteDir().entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot).empty())
                 {
-                    productFileInfo.absoluteDir().rmdir(".");
+                    const QDir productDir = productFileInfo.absoluteDir();
+                    QDir parentDir = productDir;
+                    parentDir.cdUp();
+                    successfullyRemoved &= parentDir.rmdir(productDir.dirName());
                 }
 
                 if (successfullyRemoved)
@@ -2550,7 +2548,7 @@ namespace AssetProcessor
 
                             jobdetail.m_jobParam[AZ_CRC(AutoFailReasonKey)] = AZStd::string::format(
                                 "Source file ( %s ) contains non ASCII characters.\n"
-                                "Open 3D Engine currently only supports file paths having ASCII characters and therefore asset processor will not be able to process this file.\n"
+                                "O3DE currently only supports file paths having ASCII characters and therefore asset processor will not be able to process this file.\n"
                                 "Please rename the source file to fix this error.\n",
                                 normalizedPath.toUtf8().data());
 

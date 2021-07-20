@@ -1,15 +1,12 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 set(FILES
+    Include/Atom/RPI.Public/AssetInitBus.h
     Include/Atom/RPI.Public/Base.h
     Include/Atom/RPI.Public/Culling.h
     Include/Atom/RPI.Public/FeatureProcessor.h
@@ -57,6 +54,7 @@ set(FILES
     Include/Atom/RPI.Public/Model/ModelLod.h
     Include/Atom/RPI.Public/Model/ModelLodUtils.h
     Include/Atom/RPI.Public/Model/ModelSystem.h
+    Include/Atom/RPI.Public/Model/UvStreamTangentBitmask.h
     Include/Atom/RPI.Public/Pass/AttachmentReadback.h
     Include/Atom/RPI.Public/Pass/ComputePass.h
     Include/Atom/RPI.Public/Pass/CopyPass.h
@@ -77,15 +75,13 @@ set(FILES
     Include/Atom/RPI.Public/Pass/Specific/DownsampleMipChainPass.h
     Include/Atom/RPI.Public/Pass/Specific/ImageAttachmentPreviewPass.h
     Include/Atom/RPI.Public/Pass/Specific/EnvironmentCubeMapPass.h
+    Include/Atom/RPI.Public/Pass/Specific/MSAAResolveFullScreenPass.h
     Include/Atom/RPI.Public/Pass/Specific/RenderToTexturePass.h
     Include/Atom/RPI.Public/Pass/Specific/SelectorPass.h
     Include/Atom/RPI.Public/Pass/Specific/SwapChainPass.h
     Include/Atom/RPI.Public/Shader/Shader.h
-    Include/Atom/RPI.Public/Shader/Shader2.h
     Include/Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h
-    Include/Atom/RPI.Public/Shader/ShaderReloadNotificationBus2.h
     Include/Atom/RPI.Public/Shader/ShaderVariant.h
-    Include/Atom/RPI.Public/Shader/ShaderVariant2.h
     Include/Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h
     Include/Atom/RPI.Public/Shader/ShaderResourceGroup.h
     Include/Atom/RPI.Public/Shader/ShaderResourceGroupPool.h
@@ -136,6 +132,7 @@ set(FILES
     Source/RPI.Public/Model/ModelLod.cpp
     Source/RPI.Public/Model/ModelLodUtils.cpp
     Source/RPI.Public/Model/ModelSystem.cpp
+    Source/RPI.Public/Model/UvStreamTangentBitmask.cpp
     Source/RPI.Public/Pass/AttachmentReadback.cpp
     Source/RPI.Public/Pass/ComputePass.cpp
     Source/RPI.Public/Pass/CopyPass.cpp
@@ -154,13 +151,12 @@ set(FILES
     Source/RPI.Public/Pass/Specific/DownsampleMipChainPass.cpp
     Source/RPI.Public/Pass/Specific/ImageAttachmentPreviewPass.cpp
     Source/RPI.Public/Pass/Specific/EnvironmentCubeMapPass.cpp
+    Source/RPI.Public/Pass/Specific/MSAAResolveFullScreenPass.cpp
     Source/RPI.Public/Pass/Specific/RenderToTexturePass.cpp
     Source/RPI.Public/Pass/Specific/SelectorPass.cpp
     Source/RPI.Public/Pass/Specific/SwapChainPass.cpp
     Source/RPI.Public/Shader/Shader.cpp
-    Source/RPI.Public/Shader/Shader2.cpp
     Source/RPI.Public/Shader/ShaderVariant.cpp
-    Source/RPI.Public/Shader/ShaderVariant2.cpp
     Source/RPI.Public/Shader/ShaderReloadDebugTracker.cpp
     Source/RPI.Public/Shader/ShaderResourceGroup.cpp
     Source/RPI.Public/Shader/ShaderResourceGroupPool.cpp

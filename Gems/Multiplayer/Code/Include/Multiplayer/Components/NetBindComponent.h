@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -35,9 +30,11 @@ namespace Multiplayer
 
     using EntityStopEvent = AZ::Event<const ConstNetworkEntityHandle&>;
     using EntityDirtiedEvent = AZ::Event<>;
+    using EntitySyncRewindEvent = AZ::Event<>;
     using EntityMigrationStartEvent = AZ::Event<ClientInputId>;
     using EntityMigrationEndEvent = AZ::Event<>;
     using EntityServerMigrationEvent = AZ::Event<const ConstNetworkEntityHandle&, HostId, AzNetworking::ConnectionId>;
+    using EntityPreRenderEvent = AZ::Event<float, float>;
 
     //! @class NetBindComponent
     //! @brief Component that provides net-binding to a networked entity.
@@ -62,10 +59,23 @@ namespace Multiplayer
         //! @}
 
         NetEntityRole GetNetEntityRole() const;
-        bool IsAuthority() const;
-        bool IsAutonomous() const;
-        bool IsServer() const;
-        bool IsClient() const;
+        
+        //! IsNetEntityRoleAuthority
+        //! @return true if this network entity is an authoritative proxy on a server (full authority); otherwise false.
+        bool IsNetEntityRoleAuthority() const;
+        
+        //! IsNetEntityRoleAutonomous
+        //! @return true if this network entity is an autonomous proxy on a client (can execute local prediction) or if this network entity is an authoritative proxy on a server but has autonomous privileges (ie: a host who is also a player); otherwise false.   
+        bool IsNetEntityRoleAutonomous() const;
+
+        //! IsNetEntityRoleServer
+        //! @return true if this network entity is a simulated proxy on a server (ie: a different server may have authority for this entity, but the entity has been replicated on this server; otherwise false.
+        bool IsNetEntityRoleServer() const;
+
+        //! IsNetEntityRoleClient
+        //! @return true if this network entity is a simulated proxy on a client; otherwise false.
+        bool IsNetEntityRoleClient() const;
+        
         bool HasController() const;
         NetEntityId GetNetEntityId() const;
         const PrefabEntityId& GetPrefabEntityId() const;
@@ -73,6 +83,7 @@ namespace Multiplayer
         NetworkEntityHandle GetEntityHandle();
 
         void SetOwningConnectionId(AzNetworking::ConnectionId connectionId);
+        AzNetworking::ConnectionId GetOwningConnectionId() const;
         void SetAllowAutonomy(bool value);
         MultiplayerComponentInputVector AllocateComponentInputs();
         bool IsProcessingInput() const;
@@ -91,15 +102,19 @@ namespace Multiplayer
 
         void MarkDirty();
         void NotifyLocalChanges();
+        void NotifySyncRewindState();
         void NotifyMigrationStart(ClientInputId migratedInputId);
         void NotifyMigrationEnd();
         void NotifyServerMigration(HostId hostId, AzNetworking::ConnectionId connectionId);
+        void NotifyPreRender(float deltaTime, float blendFactor);
 
         void AddEntityStopEventHandler(EntityStopEvent::Handler& eventHandler);
         void AddEntityDirtiedEventHandler(EntityDirtiedEvent::Handler& eventHandler);
+        void AddEntitySyncRewindEventHandler(EntitySyncRewindEvent::Handler& eventHandler);
         void AddEntityMigrationStartEventHandler(EntityMigrationStartEvent::Handler& eventHandler);
         void AddEntityMigrationEndEventHandler(EntityMigrationEndEvent::Handler& eventHandler);
         void AddEntityServerMigrationEventHandler(EntityServerMigrationEvent::Handler& eventHandler);
+        void AddEntityPreRenderEventHandler(EntityPreRenderEvent::Handler& eventHandler);
 
         bool SerializeEntityCorrection(AzNetworking::ISerializer& serializer);
 
@@ -144,9 +159,11 @@ namespace Multiplayer
 
         EntityStopEvent       m_entityStopEvent;
         EntityDirtiedEvent    m_dirtiedEvent;
+        EntitySyncRewindEvent m_syncRewindEvent;
         EntityMigrationStartEvent  m_entityMigrationStartEvent;
         EntityMigrationEndEvent    m_entityMigrationEndEvent;
         EntityServerMigrationEvent m_entityServerMigrationEvent;
+        EntityPreRenderEvent  m_entityPreRenderEvent;
         AZ::Event<>           m_onRemove;
         RpcSendEvent::Handler m_handleLocalServerRpcMessageEventHandle;
         AZ::Event<>::Handler  m_handleMarkedDirty;
@@ -156,6 +173,8 @@ namespace Multiplayer
         NetworkEntityHandle   m_netEntityHandle;
         NetEntityRole         m_netEntityRole   = NetEntityRole::InvalidRole;
         NetEntityId           m_netEntityId     = InvalidNetEntityId;
+
+        AzNetworking::ConnectionId m_owningConnectionId = AzNetworking::InvalidConnectionId;
 
         bool                  m_isProcessingInput    = false;
         bool                  m_isMigrationDataValid = false;

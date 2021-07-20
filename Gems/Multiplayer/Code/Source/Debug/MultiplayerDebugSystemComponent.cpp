@@ -1,18 +1,15 @@
 /*
-* All or portions of this file Copyright(c) Amazon.com, Inc.or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution(the "License").All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file.Do not
-* remove or modify any license notices.This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Source/Debug/MultiplayerDebugSystemComponent.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzNetworking/Framework/INetworking.h>
+#include <AzNetworking/Framework/INetworkInterface.h>
 #include <Multiplayer/IMultiplayer.h>
 
 namespace Multiplayer
@@ -232,6 +229,43 @@ namespace Multiplayer
     {
         const float TEXT_BASE_WIDTH = ImGui::CalcTextSize("A").x;
         const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
+
+        if (m_displayNetworkingStats)
+        {
+            if (ImGui::Begin("Networking Stats", &m_displayNetworkingStats, ImGuiWindowFlags_None))
+            {
+                AzNetworking::INetworking* networking = AZ::Interface<AzNetworking::INetworking>::Get();
+
+                ImGui::Text("Total sockets monitored by TcpListenThread: %u", networking->GetTcpListenThreadSocketCount());
+                ImGui::Text("Total time spent updating TcpListenThread: %lld", aznumeric_cast<AZ::s64>(networking->GetTcpListenThreadUpdateTime()));
+                ImGui::Text("Total sockets monitored by UdpReaderThread: %u", networking->GetUdpReaderThreadSocketCount());
+                ImGui::Text("Total time spent updating UdpReaderThread: %lld", aznumeric_cast<AZ::s64>(networking->GetUdpReaderThreadUpdateTime()));
+
+                for (auto& networkInterface : networking->GetNetworkInterfaces())
+                {
+                    const char* protocol = networkInterface.second->GetType() == AzNetworking::ProtocolType::Tcp ? "Tcp" : "Udp";
+                    const char* trustZone = networkInterface.second->GetTrustZone() == AzNetworking::TrustZone::ExternalClientToServer ? "ExternalClientToServer" : "InternalServerToServer";
+                    const uint32_t port = aznumeric_cast<uint32_t>(networkInterface.second->GetPort());
+                    ImGui::Text("%sNetworkInterface: %s - open to %s on port %u", protocol, networkInterface.second->GetName().GetCStr(), trustZone, port);
+
+                    const AzNetworking::NetworkInterfaceMetrics& metrics = networkInterface.second->GetMetrics();
+                    ImGui::Text(" - Total time spent updating in milliseconds: %lld", aznumeric_cast<AZ::s64>(metrics.m_updateTimeMs));
+                    ImGui::Text(" - Total number of connections: %llu", aznumeric_cast<AZ::u64>(metrics.m_connectionCount));
+                    ImGui::Text(" - Total send time in milliseconds: %lld", aznumeric_cast<AZ::s64>(metrics.m_sendTimeMs));
+                    ImGui::Text(" - Total sent packets: %llu", aznumeric_cast<AZ::s64>(metrics.m_sendPackets));
+                    ImGui::Text(" - Total sent bytes after compression: %llu", aznumeric_cast<AZ::u64>(metrics.m_sendBytes));
+                    ImGui::Text(" - Total sent bytes before compression: %llu", aznumeric_cast<AZ::u64>(metrics.m_sendBytesUncompressed));
+                    ImGui::Text(" - Total sent compressed packets without benefit: %llu", aznumeric_cast<AZ::u64>(metrics.m_sendCompressedPacketsNoGain));
+                    ImGui::Text(" - Total gain from packet compression: %lld", aznumeric_cast<AZ::s64>(metrics.m_sendBytesCompressedDelta));
+                    ImGui::Text(" - Total packets resent: %llu", aznumeric_cast<AZ::u64>(metrics.m_resentPackets));
+                    ImGui::Text(" - Total receive time in milliseconds: %lld", aznumeric_cast<AZ::s64>(metrics.m_recvTimeMs));
+                    ImGui::Text(" - Total received packets: %llu", aznumeric_cast<AZ::u64>(metrics.m_recvPackets));
+                    ImGui::Text(" - Total received bytes after compression: %llu", aznumeric_cast<AZ::u64>(metrics.m_recvBytes));
+                    ImGui::Text(" - Total received bytes before compression: %llu", aznumeric_cast<AZ::u64>(metrics.m_recvBytesUncompressed));
+                    ImGui::Text(" - Total packets discarded due to load: %llu", aznumeric_cast<AZ::u64>(metrics.m_discardedPackets));
+                }
+            }
+        }
 
         if (m_displayMultiplayerStats)
         {

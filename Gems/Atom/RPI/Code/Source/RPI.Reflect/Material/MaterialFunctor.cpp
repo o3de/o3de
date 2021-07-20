@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
@@ -142,25 +137,24 @@ namespace AZ
         MaterialFunctor::EditorContext::EditorContext(
             const AZStd::vector<MaterialPropertyValue>& propertyValues,
             RHI::ConstPtr<MaterialPropertiesLayout> materialPropertiesLayout,
-            AZStd::unordered_map<Name, MaterialPropertyDynamicMetadata>& metadata,
-            AZStd::unordered_set<Name>& outChangedProperties,
+            AZStd::unordered_map<Name, MaterialPropertyDynamicMetadata>& propertyMetadata,
+            AZStd::unordered_map<Name, MaterialPropertyGroupDynamicMetadata>& propertyGroupMetadata,
+            AZStd::unordered_set<Name>& updatedPropertiesOut,
+            AZStd::unordered_set<Name>& updatedPropertyGroupsOut,
             const MaterialPropertyFlags* materialPropertyDependencies
         )
             : m_materialPropertyValues(propertyValues)
             , m_materialPropertiesLayout(materialPropertiesLayout)
-            , m_metadata(metadata)
-            , m_outChangedProperties(outChangedProperties)
+            , m_propertyMetadata(propertyMetadata)
+            , m_propertyGroupMetadata(propertyGroupMetadata)
+            , m_updatedPropertiesOut(updatedPropertiesOut)
+            , m_updatedPropertyGroupsOut(updatedPropertyGroupsOut)
             , m_materialPropertyDependencies(materialPropertyDependencies)
         {}
 
         const MaterialPropertyDynamicMetadata* MaterialFunctor::EditorContext::GetMaterialPropertyMetadata(const Name& propertyName) const
         {
-            auto it = QueryMaterialMetadata(propertyName);
-            if (it == m_metadata.end())
-            {
-                return nullptr;
-            }
-            return &(it->second);
+            return QueryMaterialPropertyMetadata(propertyName);
         }
 
         const MaterialPropertyDynamicMetadata* MaterialFunctor::EditorContext::GetMaterialPropertyMetadata(const MaterialPropertyIndex& index) const
@@ -168,19 +162,41 @@ namespace AZ
             const Name& name = m_materialPropertiesLayout->GetPropertyDescriptor(index)->GetName();
             return GetMaterialPropertyMetadata(name);
         }
-
-        bool MaterialFunctor::EditorContext::SetMaterialPropertyVisibility(const Name& propertyName, MaterialPropertyVisibility visibility)
+        
+        const MaterialPropertyGroupDynamicMetadata* MaterialFunctor::EditorContext::GetMaterialPropertyGroupMetadata(const Name& propertyName) const
         {
-            auto it = QueryMaterialMetadata(propertyName);
-            if (it == m_metadata.end())
+            return QueryMaterialPropertyGroupMetadata(propertyName);
+        }
+        
+        bool MaterialFunctor::EditorContext::SetMaterialPropertyGroupVisibility(const Name& propertyGroupName, MaterialPropertyGroupVisibility visibility)
+        {
+            MaterialPropertyGroupDynamicMetadata* metadata = QueryMaterialPropertyGroupMetadata(propertyGroupName);
+            if (!metadata)
             {
                 return false;
             }
-            MaterialPropertyVisibility originValue = it->second.m_visibility;
-            it->second.m_visibility = visibility;
-            if (originValue != visibility)
+
+            if (metadata->m_visibility != visibility)
             {
-                m_outChangedProperties.insert(propertyName);
+                metadata->m_visibility = visibility;
+                m_updatedPropertyGroupsOut.insert(propertyGroupName);
+            }
+
+            return true;
+        }
+
+        bool MaterialFunctor::EditorContext::SetMaterialPropertyVisibility(const Name& propertyName, MaterialPropertyVisibility visibility)
+        {
+            MaterialPropertyDynamicMetadata* metadata = QueryMaterialPropertyMetadata(propertyName);
+            if (!metadata)
+            {
+                return false;
+            }
+
+            if (metadata->m_visibility != visibility)
+            {
+                metadata->m_visibility = visibility;
+                m_updatedPropertiesOut.insert(propertyName);
             }
 
             return true;
@@ -194,17 +210,16 @@ namespace AZ
 
         bool MaterialFunctor::EditorContext::SetMaterialPropertyDescription(const Name& propertyName, AZStd::string description)
         {
-            auto it = QueryMaterialMetadata(propertyName);
-            if (it == m_metadata.end())
+            MaterialPropertyDynamicMetadata* metadata = QueryMaterialPropertyMetadata(propertyName);
+            if (!metadata)
             {
                 return false;
             }
 
-            AZStd::string origin = it->second.m_description;
-            it->second.m_description = description;
-            if (origin != description)
+            if (metadata->m_description != description)
             {
-                m_outChangedProperties.insert(propertyName);
+                metadata->m_description = description;
+                m_updatedPropertiesOut.insert(propertyName);
             }
 
             return true;
@@ -218,18 +233,16 @@ namespace AZ
 
         bool MaterialFunctor::EditorContext::SetMaterialPropertyMinValue(const Name& propertyName, const MaterialPropertyValue& min)
         {
-            auto it = QueryMaterialMetadata(propertyName);
-            if (it == m_metadata.end())
+            MaterialPropertyDynamicMetadata* metadata = QueryMaterialPropertyMetadata(propertyName);
+            if (!metadata)
             {
                 return false;
             }
 
-            MaterialPropertyValue origin = it->second.m_propertyRange.m_min;
-            it->second.m_propertyRange.m_min = min;
-
-            if(origin != min)
+            if(metadata->m_propertyRange.m_min != min)
             {
-                m_outChangedProperties.insert(propertyName);
+                metadata->m_propertyRange.m_min = min;
+                m_updatedPropertiesOut.insert(propertyName);
             }
 
             return true;
@@ -243,18 +256,16 @@ namespace AZ
 
         bool MaterialFunctor::EditorContext::SetMaterialPropertyMaxValue(const Name& propertyName, const MaterialPropertyValue& max)
         {
-            auto it = QueryMaterialMetadata(propertyName);
-            if (it == m_metadata.end())
+            MaterialPropertyDynamicMetadata* metadata = QueryMaterialPropertyMetadata(propertyName);
+            if (!metadata)
             {
                 return false;
             }
 
-            MaterialPropertyValue origin = it->second.m_propertyRange.m_max;
-            it->second.m_propertyRange.m_max = max;
-
-            if (origin != max)
+            if (metadata->m_propertyRange.m_max != max)
             {
-                m_outChangedProperties.insert(propertyName);
+                metadata->m_propertyRange.m_max = max;
+                m_updatedPropertiesOut.insert(propertyName);
             }
 
             return true;
@@ -268,18 +279,16 @@ namespace AZ
 
         bool MaterialFunctor::EditorContext::SetMaterialPropertySoftMinValue(const Name& propertyName, const MaterialPropertyValue& min)
         {
-            auto it = QueryMaterialMetadata(propertyName);
-            if (it == m_metadata.end())
+            MaterialPropertyDynamicMetadata* metadata = QueryMaterialPropertyMetadata(propertyName);
+            if (!metadata)
             {
                 return false;
             }
 
-            MaterialPropertyValue origin = it->second.m_propertyRange.m_softMin;
-            it->second.m_propertyRange.m_softMin = min;
-
-            if (origin != min)
+            if (metadata->m_propertyRange.m_softMin != min)
             {
-                m_outChangedProperties.insert(propertyName);
+                metadata->m_propertyRange.m_softMin = min;
+                m_updatedPropertiesOut.insert(propertyName);
             }
 
             return true;
@@ -293,18 +302,16 @@ namespace AZ
 
         bool MaterialFunctor::EditorContext::SetMaterialPropertySoftMaxValue(const Name& propertyName, const MaterialPropertyValue& max)
         {
-            auto it = QueryMaterialMetadata(propertyName);
-            if (it == m_metadata.end())
+            MaterialPropertyDynamicMetadata* metadata = QueryMaterialPropertyMetadata(propertyName);
+            if (!metadata)
             {
                 return false;
             }
 
-            MaterialPropertyValue origin = it->second.m_propertyRange.m_softMax;
-            it->second.m_propertyRange.m_softMax = max;
-
-            if (origin != max)
+            if (metadata->m_propertyRange.m_softMax != max)
             {
-                m_outChangedProperties.insert(propertyName);
+                metadata->m_propertyRange.m_softMax = max;
+                m_updatedPropertiesOut.insert(propertyName);
             }
 
             return true;
@@ -316,15 +323,28 @@ namespace AZ
             return SetMaterialPropertySoftMaxValue(name, max);
         }
 
-        AZStd::list_iterator<AZStd::pair<AZ::Name, AZ::RPI::MaterialPropertyDynamicMetadata>> MaterialFunctor::EditorContext::QueryMaterialMetadata(const Name& propertyName) const
+        MaterialPropertyDynamicMetadata* MaterialFunctor::EditorContext::QueryMaterialPropertyMetadata(const Name& propertyName) const
         {
-            auto it = m_metadata.find(propertyName);
-            if (it == m_metadata.end())
+            auto it = m_propertyMetadata.find(propertyName);
+            if (it == m_propertyMetadata.end())
             {
                 AZ_Error("MaterialFunctor", false, "Couldn't find metadata for material property: %s.", propertyName.GetCStr());
+                return nullptr;
             }
 
-            return it;
+            return &it->second;
+        }
+        
+        MaterialPropertyGroupDynamicMetadata* MaterialFunctor::EditorContext::QueryMaterialPropertyGroupMetadata(const Name& propertyGroupName) const
+        {
+            auto it = m_propertyGroupMetadata.find(propertyGroupName);
+            if (it == m_propertyGroupMetadata.end())
+            {
+                AZ_Error("MaterialFunctor", false, "Couldn't find metadata for material property group: %s.", propertyGroupName.GetCStr());
+                return nullptr;
+            }
+
+            return &it->second;
         }
 
         template<typename Type>

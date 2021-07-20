@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #pragma once
 
@@ -18,22 +13,41 @@
 
 struct IConsoleCmdArgs;
 
-namespace Audio
+namespace Audio::CVars
 {
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    // AZ CVars (new)
+    AZ_CVAR_EXTERNED(AZ::u64, s_ATLMemorySize);
+    AZ_CVAR_EXTERNED(AZ::u64, s_FileCacheManagerMemorySize);
+    AZ_CVAR_EXTERNED(AZ::u64, s_AudioObjectPoolSize);
+    AZ_CVAR_EXTERNED(AZ::u64, s_AudioEventPoolSize);
+
     AZ_CVAR_EXTERNED(bool, s_EnableRaycasts);
     AZ_CVAR_EXTERNED(float, s_RaycastMinDistance);
     AZ_CVAR_EXTERNED(float, s_RaycastMaxDistance);
     AZ_CVAR_EXTERNED(float, s_RaycastCacheTimeMs);
     AZ_CVAR_EXTERNED(float, s_RaycastSmoothFactor);
 
+    AZ_CVAR_EXTERNED(float, s_PositionUpdateThreshold);
+    AZ_CVAR_EXTERNED(float, s_VelocityTrackingThreshold);
+    AZ_CVAR_EXTERNED(AZ::u32, s_AudioProxiesInitType);
+
+#if !defined(AUDIO_RELEASE)
+    AZ_CVAR_EXTERNED(bool, s_IgnoreWindowFocus);
+    AZ_CVAR_EXTERNED(bool, s_ShowActiveAudioObjectsOnly);
+    AZ_CVAR_EXTERNED(AZ::CVarFixedString, s_AudioTriggersDebugFilter);
+    AZ_CVAR_EXTERNED(AZ::CVarFixedString, s_AudioObjectsDebugFilter);
+#endif // !AUDIO_RELEASE
+
+} // namespace Audio::CVars
+
+namespace Audio
+{
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     class CSoundCVars
     {
     public:
         CSoundCVars();
-        ~CSoundCVars();
+        ~CSoundCVars() = default;
 
         CSoundCVars(const CSoundCVars&) = delete;           // Copy protection
         CSoundCVars& operator=(const CSoundCVars&) = delete; // Copy protection
@@ -41,27 +55,10 @@ namespace Audio
         void RegisterVariables();
         void UnregisterVariables();
 
-        int m_nATLPoolSize;
-        int m_nFileCacheManagerSize;
-        int m_nAudioObjectPoolSize;
-        int m_nAudioEventPoolSize;
-        int m_nAudioProxiesInitType;
-
-
-        float m_fPositionUpdateThreshold;
-        float m_fVelocityTrackingThreshold;
-
-        float m_audioListenerTranslationZOffset;
-        float m_audioListenerTranslationPercentage;
-
     #if !defined(AUDIO_RELEASE)
-        int m_nIgnoreWindowFocus;
         int m_nDrawAudioDebug;
         int m_nFileCacheManagerDebugFilter;
         int m_nAudioLoggingOptions;
-        int m_nShowActiveAudioObjectsOnly;
-        ICVar* m_pAudioTriggersDebugFilter;
-        ICVar* m_pAudioObjectsDebugFilter;
 
     private:
         static void CmdExecuteTrigger(IConsoleCmdArgs* pCmdArgs);

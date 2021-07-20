@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
@@ -98,7 +94,44 @@ ly_add_target(
             Gem::Atom_RPI.Edit
     RUNTIME_DEPENDENCIES
         3rdParty::DirectXShaderCompilerDxc
-        3rdParty::DirectXShaderCompilerDxcAz
         3rdParty::SPIRVCross
         3rdParty::azslc
 )
+
+# The Atom_Asset_Shader is a required gem for Builders in order to process the assets that come WITHOUT
+# the Atom_Feature_Common required gem
+ly_enable_gems(GEMS Atom_Asset_Shader VARIANTS Builders
+    TARGETS AssetBuilder AssetProcessor AssetProcessorBatch)
+
+################################################################################
+# Tests
+################################################################################
+if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+
+    ly_add_target(
+        NAME Atom_Asset_Shader.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAMESPACE Gem
+        FILES_CMAKE
+            atom_asset_shader_builders_tests_files.cmake
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                .
+                Source/Editor
+                Tests
+        BUILD_DEPENDENCIES
+            PRIVATE
+                AZ::AtomCore
+                AZ::AzTest
+                AZ::AzFramework
+                AZ::AzToolsFramework
+                Legacy::CryCommon
+                Gem::Atom_RPI.Public
+                Gem::Atom_RHI.Public
+                Gem::Atom_RPI.Edit
+                Gem::Atom_Asset_Shader.Static
+    )
+    ly_add_googletest(
+        NAME Gem::Atom_Asset_Shader.Tests
+    )
+
+endif()

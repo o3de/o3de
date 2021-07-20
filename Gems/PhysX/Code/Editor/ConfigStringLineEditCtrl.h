@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #ifndef CONFIG_STRINGLINEEDIT_CTRL
 #define CONFIG_STRINGLINEEDIT_CTRL
@@ -47,7 +42,7 @@ namespace PhysX
 
         void OnEditStart(AZ::Crc32 stringGroupId
             , const AZStd::string& stringToEdit
-            , const AZStd::unordered_set<AZStd::string>& forbiddenStrings
+            , const UniqueStringContainer::StringSet& forbiddenStrings
             , int stringMaxLength
             , bool removeEditedString = true);
 
@@ -62,7 +57,7 @@ namespace PhysX
     private:
         AZ::Crc32 m_currStringGroup = s_groupStringNotUnique; ///< Group of string field undergoing edit.
         int m_currStringMaxLen = s_qtLineEditMaxLen; ///< Max length of string field undergoing edit.
-        AZStd::unordered_set<AZStd::string> m_forbiddenStrings; ///< Value of string edit widget cannot be any of these strings.
+        UniqueStringContainer::StringSet m_forbiddenStrings; ///< Value of string edit widget cannot be any of these strings.
         UniqueStringContainer m_uniqueStringContainer; ///< Collection of groups of unique strings. Serves for validation and fixing of string input.
     };
 
@@ -79,7 +74,7 @@ namespace PhysX
             , ConfigStringLineEditValidator* validator = nullptr);
         virtual ~ConfigStringLineEditCtrl();
 
-        void SetForbiddenStrings(const AZStd::unordered_set<AZStd::string>& forbiddenStrings);
+        void SetForbiddenStrings(const UniqueStringContainer::StringSet& forbiddenStrings);
         void SetUniqueGroup(AZ::Crc32 uniqueGroup);
         AZStd::string Value() const;
 
@@ -92,7 +87,7 @@ namespace PhysX
     protected:
         void ConnectWidgets() override;
 
-        AZStd::unordered_set<AZStd::string> m_forbiddenStrings; ///< Value of this line edit ctrl cannot be any of these forbidden strings.
+        UniqueStringContainer::StringSet m_forbiddenStrings; ///< Value of this line edit ctrl cannot be any of these forbidden strings.
         ConfigStringLineEditValidator* m_pValidator = nullptr; ///< Validator for line edit widget.
         AZ::Crc32 m_uniqueGroup = ConfigStringLineEditValidator::s_groupStringNotUnique; ///< String group in which line edit value must remain unique.
     };

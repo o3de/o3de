@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 ly_add_target(
@@ -24,12 +20,13 @@ ly_add_target(
         PUBLIC
             Include
     BUILD_DEPENDENCIES
-        PUBLIC
-            Legacy::CryCommon
+        PRIVATE
             Gem::LmbrCentral
-            Gem::GradientSignal
-            Gem::SurfaceData.Static
+            Gem::SurfaceData
+        PUBLIC
             Gem::AtomLyIntegration_CommonFeatures.Static
+    RUNTIME_DEPENDENCIES
+        Gem::GradientSignal
 )
 
 ly_add_target(
@@ -50,6 +47,10 @@ ly_add_target(
         Gem::GradientSignal
         Gem::SurfaceData
 )
+
+# the above module is for use in clients and server type applications
+ly_create_alias(NAME Vegetation.Servers NAMESPACE Gem TARGETS Gem::Vegetation)
+ly_create_alias(NAME Vegetation.Clients NAMESPACE Gem TARGETS Gem::Vegetation)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
@@ -75,6 +76,10 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         Gem::GradientSignal.Editor
         Gem::SurfaceData.Editor
     )
+    # the above module is for use in dev tools
+    ly_create_alias(NAME Vegetation.Builders NAMESPACE Gem TARGETS Gem::Vegetation.Editor)
+    ly_create_alias(NAME Vegetation.Tools    NAMESPACE Gem TARGETS Gem::Vegetation.Editor)
+
 endif()
 
 ################################################################################
@@ -95,6 +100,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzTest
+                AZ::AzFrameworkTestShared
                 Gem::Vegetation.Static
     )
     ly_add_googletest(

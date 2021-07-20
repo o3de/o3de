@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -17,6 +12,8 @@
 #include <Multiplayer/EntityDomains/IEntityDomain.h>
 #include <Multiplayer/NetworkEntity/INetworkEntityManager.h>
 #include <Multiplayer/NetworkEntity/NetworkEntityHandle.h>
+#include <Multiplayer/NetworkEntity/NetworkEntityUpdateMessage.h>
+#include <Multiplayer/NetworkEntity/NetworkEntityRpcMessage.h>
 #include <Multiplayer/ReplicationWindows/IReplicationWindow.h>
 #include <AzNetworking/DataStructures/TimeoutQueue.h>
 #include <AzNetworking/PacketLayer/IPacketHeader.h>
@@ -26,7 +23,6 @@
 #include <AzCore/std/limits.h>
 #include <AzCore/EBus/Event.h>
 #include <AzCore/EBus/ScheduledEvent.h>
-#include <Source/AutoGen/Multiplayer.AutoPackets.h>
 
 namespace AzNetworking
 {
@@ -38,7 +34,9 @@ namespace Multiplayer
 {
     class IEntityDomain;
     class EntityReplicator;
-
+    
+    //! @class EntityReplicationManager
+    //! @brief Handles replication of relevant entities for one connection.
     class EntityReplicationManager final
     {
     public:
@@ -82,7 +80,7 @@ namespace Multiplayer
 
         void AddAutonomousEntityReplicatorCreatedHandle(AZ::Event<NetEntityId>::Handler& handler);
 
-        bool HandleMessage(AzNetworking::IConnection* invokingConnection, MultiplayerPackets::EntityMigration& message);
+        bool HandleEntityMigration(AzNetworking::IConnection* invokingConnection, EntityMigrationMessage& message);
         bool HandleEntityDeleteMessage(EntityReplicator* entityReplicator, const AzNetworking::IPacketHeader& packetHeader, const NetworkEntityUpdateMessage& updateMessage);
         bool HandleEntityUpdateMessage(AzNetworking::IConnection* invokingConnection, const AzNetworking::IPacketHeader& packetHeader, const NetworkEntityUpdateMessage& updateMessage);
         bool HandleEntityRpcMessage(AzNetworking::IConnection* invokingConnection, NetworkEntityRpcMessage& message);

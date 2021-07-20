@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -14,6 +9,7 @@
 
 #include <AWSCoreBus.h>
 #include <AWSCoreEditor_Traits_Platform.h>
+#include <Editor/Constants/AWSCoreEditorMenuNames.h>
 #include <Editor/UI/AWSCoreEditorMenu.h>
 #include <Editor/UI/AWSCoreEditorUIFixture.h>
 #include <TestFramework/AWSCoreFixture.h>
@@ -35,6 +31,7 @@ class AWSCoreEditorMenuTest
     {
         AWSCoreEditorUIFixture::SetUp();
         AWSCoreFixture::SetUp();
+        m_localFileIO->SetAlias("@devroot@", "dummy engine root");
     }
 
     void TearDown() override
@@ -77,12 +74,12 @@ TEST_F(AWSCoreEditorMenuTest, AWSCoreEditorMenu_BroadcastFeatureGemsAreEnabled_C
     QList<QAction*> actualActions = testMenu.actions();
     for (QList<QAction*>::iterator itr = actualActions.begin(); itr != actualActions.end(); itr++)
     {
-        if (QString::compare((*itr)->text(), AWSCoreEditorMenu::AWSClientAuthActionText) == 0)
+        if (QString::compare((*itr)->text(), AWSClientAuthActionText) == 0)
         {
             EXPECT_TRUE((*itr)->isEnabled());
         }
 
-        if (QString::compare((*itr)->text(), AWSCoreEditorMenu::AWSMetricsActionText) == 0)
+        if (QString::compare((*itr)->text(), AWSMetricsActionText) == 0)
         {
             EXPECT_TRUE((*itr)->isEnabled());
         }

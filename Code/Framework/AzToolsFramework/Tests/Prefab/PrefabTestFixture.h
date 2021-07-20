@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -31,6 +26,16 @@ namespace UnitTest
     using namespace AzToolsFramework::Prefab;
     using namespace PrefabTestUtils;
 
+    class PrefabTestToolsApplication
+        : public ToolsTestApplication
+    {
+    public:
+        PrefabTestToolsApplication(AZStd::string appName);
+
+        // Make sure our prefab tests always run with prefabs enabled
+        bool IsPrefabSystemEnabled() const override;
+    };
+
     class PrefabTestFixture
         : public ToolsApplicationFixture,
           public UnitTest::TraceBusRedirector
@@ -45,6 +50,8 @@ namespace UnitTest
 
         void SetUpEditorFixtureImpl() override;
 
+        AZStd::unique_ptr<ToolsTestApplication> CreateTestApplication() override;
+
         AZ::Entity* CreateEntity(const char* entityName, const bool shouldActivate = true);
 
         void CompareInstances(const Instance& instanceA, const Instance& instanceB, bool shouldCompareLinkIds = true,
@@ -57,6 +64,7 @@ namespace UnitTest
 
         PrefabSystemComponent* m_prefabSystemComponent = nullptr;
         PrefabLoaderInterface* m_prefabLoaderInterface = nullptr;
+        PrefabPublicInterface* m_prefabPublicInterface = nullptr;
         InstanceUpdateExecutorInterface* m_instanceUpdateExecutorInterface = nullptr;
         InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
     };

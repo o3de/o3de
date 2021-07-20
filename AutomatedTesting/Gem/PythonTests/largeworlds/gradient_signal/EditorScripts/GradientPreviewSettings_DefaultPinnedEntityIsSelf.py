@@ -1,12 +1,7 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 import os
@@ -44,7 +39,21 @@ class TestGradientPreviewSettings(EditorTestHelper):
     def run_test(self):
         """
         Summary:
-        Verify if the current entity is set to the pin preview to shape entity by default for several components.
+        This test verifies default values for the pinned entity for Gradient Preview settings.
+
+        Expected Behavior:
+        Pinned entity is self for all gradient generator/modifiers.
+
+        Test Steps:
+         1) Create a new level
+         2) Create a new entity in the level
+         3) Add each Gradient Generator component to an entity, and verify the Pin Preview to Shape property is set to
+         self
+
+        Note:
+        - This test file must be called from the Open 3D Engine Editor command terminal
+        - Any passed and failed tests are written to the Editor.log file.
+                Parsing the file or running a log_monitor are required to observe the test results.
 
         :return: None
         """

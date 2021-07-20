@@ -1,12 +1,7 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 
 Basic interface to interact with lumberyard launcher
 """
@@ -123,7 +118,6 @@ class Launcher(object):
         """
         backup_path = self.workspace.settings.get_temp_path()
         log.debug(f"Performing automatic backup of bootstrap, platform and user settings in path {backup_path}")
-        self.workspace.settings.backup_bootstrap_settings(backup_path)
         self.workspace.settings.backup_platform_settings(backup_path)
         self.workspace.settings.backup_shader_compiler_settings(backup_path)
 
@@ -185,7 +179,7 @@ class Launcher(object):
         """
         raise NotImplementedError("There is no binary file for this launcher")
 
-    def start(self, backupFiles=True, launch_ap=None):
+    def start(self, backupFiles=True, launch_ap=None, configure_settings=True):
         """
         Automatically prepare and launch the application
         When called using "with launcher.start():" it will automatically call stop() when block exits
@@ -193,16 +187,16 @@ class Launcher(object):
 
         :return: Application wrapper for context management, not intended to be called directly
         """
-        return _Application(self, backupFiles, launch_ap=launch_ap)
+        return _Application(self, backupFiles, launch_ap=launch_ap, configure_settings=configure_settings)
 
-    def _start_impl(self, backupFiles = True, launch_ap=None):
+    def _start_impl(self, backupFiles = True, launch_ap=None, configure_settings=True):
         """
         Implementation of start(), intended to be called via context manager in _Application
 
         :param backupFiles: Bool to backup settings files
         :return None:
         """
-        self.setup(backupFiles=backupFiles, launch_ap=launch_ap)
+        self.setup(backupFiles=backupFiles, launch_ap=launch_ap, configure_settings=configure_settings)
         self.launch()
 
     def stop(self):
@@ -318,7 +312,7 @@ class _Application(object):
     """
     Context-manager for opening an application, enables using both "launcher.start()" and "with launcher.start()"
     """
-    def __init__(self, launcher, backupFiles = True, launch_ap=None):
+    def __init__(self, launcher, backupFiles = True, launch_ap=None, configure_settings=True):
         """
         Called during both "launcher.start()" and "with launcher.start()"
 
@@ -326,7 +320,7 @@ class _Application(object):
         :return None:
         """
         self.launcher = launcher
-        launcher._start_impl(backupFiles, launch_ap)
+        launcher._start_impl(backupFiles, launch_ap, configure_settings)
 
     def __enter__(self):
         """

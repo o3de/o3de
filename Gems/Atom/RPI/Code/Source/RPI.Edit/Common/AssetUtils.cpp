@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright(c) Amazon.com, Inc.or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution(the "License").All use of this software is governed by the License,
-*or, if provided, by the license below or the license accompanying this file.Do not
-* remove or modify any license notices.This file is distributed on an "AS IS" BASIS,
-*WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -21,12 +16,6 @@ namespace AZ
     {
         namespace AssetUtils
         {
-            uint32_t CalcSrgProductSubId(const Name& srgName)
-            {
-                //[GFX TODO] Make SrgLayoutBuilder share this code after the gems reorg is complete
-                return static_cast<uint32_t>(AZStd::hash<AZStd::string>()(srgName.GetStringView()) & 0xFFFFFFFF);
-            }
-
             AZStd::string GetProductPathByAssetId(const AZ::Data::AssetId& assetId)
             {
                 AZStd::string productPath;
@@ -109,31 +98,16 @@ namespace AZ
 
             AZStd::vector<AZStd::string> GetPossibleDepenencyPaths(const AZStd::string& originatingSourceFilePath, const AZStd::string& referencedSourceFilePath)
             {
-                // We potentially add the parent dependency as both a direct path and a relative path rather than use AssetUtils::ResolvePathReference
-                // because there is no guarantee that the Asset Processor has seen the parent file yet (which ResolvePathReference requires).
-                // In that case, we have to add both possible locations because we don't know where it will show up.
-
                 AZStd::vector<AZStd::string> results;
 
-                // The first dependency we add is using the referencedSourceFilePath as a relative path. This gives relative paths priority over asset-root paths.
+                // Use the referencedSourceFilePath as a relative path starting at originatingSourceFilePath
                 AZStd::string combinedPath = originatingSourceFilePath;
                 AzFramework::StringFunc::Path::StripFullName(combinedPath);
                 AzFramework::StringFunc::Path::Join(combinedPath.c_str(), referencedSourceFilePath.c_str(), combinedPath);
                 results.push_back(combinedPath);
 
-                // If the parent file exists at the relative path, then there is no need to report a dependency on the asset-root path.
-                bool assetFound = false;
-                AZ::Data::AssetInfo sourceInfo;
-                AZStd::string watchFolder;
-                AzToolsFramework::AssetSystemRequestBus::BroadcastResult(assetFound, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath, combinedPath.c_str(), sourceInfo, watchFolder);
-
-                if (!assetFound)
-                {
-                    // The parent file wasn't found at the relative path, so we need a dependency on the asset-root path in case the file
-                    // exists there. Note, we still keep the relative path dependency above because we don't know whether it's missing because
-                    // it doesn't exist, or just because the AP hasn't found it yet.
-                    results.push_back(referencedSourceFilePath);
-                }
+                // Use the referencedSourceFilePath as a standard asset path
+                results.push_back(referencedSourceFilePath);
 
                 return results;
             }

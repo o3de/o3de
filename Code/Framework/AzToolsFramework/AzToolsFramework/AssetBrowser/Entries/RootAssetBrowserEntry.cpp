@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Asset/AssetTypeInfoBus.h>
 
@@ -286,6 +281,9 @@ namespace AzToolsFramework
             product->m_assetType = productWithUuidDatabaseEntry.second.m_assetType;
             product->m_assetType.ToString(product->m_assetTypeString);
             AZ::Data::AssetCatalogRequestBus::BroadcastResult(product->m_relativePath, &AZ::Data::AssetCatalogRequests::GetAssetPathById, assetId);
+            QString displayPath = QString::fromUtf8(product->m_relativePath.c_str());
+            displayPath.remove(QString(AZ_CORRECT_DATABASE_SEPARATOR + QString::fromUtf8(product->m_name.c_str())));
+            product->m_displayPath = displayPath;
             EntryCache::GetInstance()->m_productAssetIdMap[assetId] = product;
 
             if (needsAdd)

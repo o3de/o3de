@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 
@@ -32,10 +27,6 @@ namespace AZ
             auto buffer = Data::InstanceDatabase<Buffer>::Instance().FindOrCreate(
                 Data::InstanceId::CreateFromAssetId(bufferAsset.GetId()),
                 bufferAsset);
-            if (buffer && buffer->m_rhiBuffer)
-            {
-                buffer->m_rhiBuffer->SetName(Name(bufferAsset.GetHint()));
-            }
             return buffer;
         }
         
@@ -169,6 +160,16 @@ namespace AZ
                         AZ_Error("Buffer", false, "Buffer::Init() failed to stream buffer contents to GPU.");
                         return resultCode;
                     }
+                }
+                
+                m_rhiBuffer->SetName(Name(bufferAsset.GetName()));
+
+                // Only generate buffer's attachment id if the buffer is writable 
+                if (RHI::CheckBitsAny(m_rhiBuffer->GetDescriptor().m_bindFlags,
+                        RHI::BufferBindFlags::ShaderWrite | RHI::BufferBindFlags::CopyWrite | RHI::BufferBindFlags::DynamicInputAssembly))
+                {
+                    // attachment id = bufferName_bufferInstanceId
+                    m_attachmentId = Name(bufferAsset.GetName() + "_" + bufferAsset.GetId().m_guid.ToString<AZStd::string>(false, false));
                 }
 
                 return RHI::ResultCode::Success;
@@ -312,7 +313,8 @@ namespace AZ
 
         const RHI::AttachmentId& Buffer::GetAttachmentId() const
         {
-            return m_rhiBuffer->GetName();
+            AZ_Assert(!m_attachmentId.GetStringView().empty(), "Read-only buffer doesn't need attachment id");
+            return m_attachmentId;
         }
         
         const RHI::BufferViewDescriptor& Buffer::GetBufferViewDescriptor() const

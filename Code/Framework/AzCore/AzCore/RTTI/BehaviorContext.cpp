@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/RTTI/AttributeReader.h>
@@ -165,7 +160,7 @@ namespace AZ
 
         if (HasResult() != overload->HasResult())
         {
-            AZ_Error("Reflection", false, "Overload failure, all methods must have the same result, or none at all");
+            AZ_Error("Reflection", false, "Overload failure, all methods must have the same result, or none at all: %s", m_name.c_str());
             return false;
         }
 
@@ -176,7 +171,7 @@ namespace AZ
 
             if (!(methodResult->m_typeId == overloadResult->m_typeId && methodResult->m_traits == overloadResult->m_traits))
             {
-                AZ_Error("Reflection", false, "Overload failure, all methods must have the same result, or none at all");
+                AZ_Error("Reflection", false, "Overload failure, all methods must have the same result, or none at all: %s", m_name.c_str());
                 return false;
             }
         }
@@ -575,7 +570,7 @@ namespace AZ
                 }
                 else
                 {
-                    AZ_Error("BehaviorContext", false, "safety check declared for method %s but it was not found in the class");
+                    AZ_Error("BehaviorContext", false, "Method: %s, declared safety check: %s, but it was not found in class: %s", method.m_name.c_str(), m_name.c_str(), checkedOperationInfo.m_safetyCheckName.c_str());
                 }
             }
         }

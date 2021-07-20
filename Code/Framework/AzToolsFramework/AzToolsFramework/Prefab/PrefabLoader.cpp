@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 
 #include <AzToolsFramework/Prefab/PrefabLoader.h>
@@ -18,7 +13,9 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
+#include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/FileFunc/FileFunc.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
@@ -41,7 +38,7 @@ namespace AzToolsFramework
             
             [[maybe_unused]] bool result =
                 settingsRegistry->Get(m_projectPathWithOsSeparator.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath);
-            AZ_Assert(result, "Couldn't retrieve project root path");
+            AZ_Warning("Prefab", result, "Couldn't retrieve project root path");
             m_projectPathWithSlashSeparator = AZ::IO::Path(m_projectPathWithOsSeparator.Native(), '/').MakePreferred();
 
             AZ::Interface<PrefabLoaderInterface>::Register(this);
@@ -72,7 +69,7 @@ namespace AzToolsFramework
                 return InvalidTemplateId;
             }
 
-            auto readResult = AZ::Utils::ReadFile(GetFullPath(filePath).Native(), MaxPrefabFileSize);
+            auto readResult = AZ::Utils::ReadFile(GetFullPath(filePath).Native(), AZStd::numeric_limits<size_t>::max());
             if (!readResult.IsSuccess())
             {
                 AZ_Error(
@@ -112,7 +109,7 @@ namespace AzToolsFramework
                 return InvalidTemplateId;
             }
 
-            AZ::IO::Path relativePath = GetRelativePathToProject(originPath);
+            AZ::IO::Path relativePath = GenerateRelativePath(originPath);
 
             // Cyclical dependency detected if the prefab file is already part of the progressed
             // file path set.
@@ -148,6 +145,10 @@ namespace AzToolsFramework
 
                 return InvalidTemplateId;
             }
+
+            // Add or replace the Source parameter in the dom
+            PrefabDomPath sourcePath = PrefabDomPath((AZStd::string("/") + PrefabDomUtils::SourceName).c_str());
+            sourcePath.Set(readPrefabFileResult.GetValue(), relativePath.Native().c_str());
 
             // Create new Template with the Prefab DOM.
             TemplateId newTemplateId = m_prefabSystemComponentInterface->AddTemplate(relativePath, readPrefabFileResult.TakeValue());
@@ -301,6 +302,45 @@ namespace AzToolsFramework
             return true;
         }
 
+        bool PrefabLoader::SaveTemplateToFile(TemplateId templateId, AZ::IO::PathView absolutePath)
+        {
+            AZ_Assert(absolutePath.IsAbsolute(), "SaveTemplateToFile requires an absolute path for saving the initial prefab file.");
+
+            const auto& domAndFilepath = StoreTemplateIntoFileFormat(templateId);
+            if (!domAndFilepath)
+            {
+                return false;
+            }
+
+            // Verify that the absolute path provided to this matches the relative path saved in the template.
+            // Otherwise, the saved prefab won't be able to be loaded.
+            auto relativePath = GenerateRelativePath(absolutePath);
+            if (relativePath != domAndFilepath->second)
+            {
+                AZ_Error(
+                    "Prefab", false,
+                    "PrefabLoader::SaveTemplateToFile - "
+                    "Failed to save template '%s' to location '%.*s'."
+                    "Error: Relative path '%.*s' for location didn't match template name.",
+                    domAndFilepath->second.c_str(), AZ_STRING_ARG(absolutePath.Native()), AZ_STRING_ARG(relativePath.Native()));
+                return false;
+            }
+
+            auto outcome = AzFramework::FileFunc::WriteJsonFile(domAndFilepath->first, absolutePath);
+            if (!outcome.IsSuccess())
+            {
+                AZ_Error(
+                    "Prefab", false,
+                    "PrefabLoader::SaveTemplateToFile - "
+                    "Failed to save template '%s' to location '%.*s'."
+                    "Error: %s",
+                    domAndFilepath->second.c_str(), AZ_STRING_ARG(absolutePath.Native()), outcome.GetError().c_str());
+                return false;
+            }
+            m_prefabSystemComponentInterface->SetTemplateDirtyFlag(templateId, false);
+            return true;
+        }
+
         bool PrefabLoader::SaveTemplateToString(TemplateId templateId, AZStd::string& output)
         {
             const auto& domAndFilepath = StoreTemplateIntoFileFormat(templateId);
@@ -385,21 +425,100 @@ namespace AzToolsFramework
             AZ::IO::Path pathWithOSSeparator = AZ::IO::Path(path).MakePreferred();
             if (pathWithOSSeparator.IsAbsolute())
             {
+                // If an absolute path was passed in, just return it as-is.
                 return path;
             }
 
-            return AZ::IO::Path(m_projectPathWithOsSeparator).Append(pathWithOSSeparator);
+            // A relative path was passed in, so try to turn it back into an absolute path.
+
+            AZ::IO::Path fullPath;
+
+            bool pathFound = false;
+            AZ::Data::AssetInfo assetInfo;
+            AZStd::string rootFolder;
+            AZStd::string inputPath(path.Native());
+
+            // Given an input path that's expected to exist, try to look it up.
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                pathFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath,
+                inputPath.c_str(), assetInfo, rootFolder);
+
+            if (pathFound)
+            {
+                // The asset system provided us with a valid root folder and relative path, so return it.
+                fullPath = AZ::IO::Path(rootFolder) / assetInfo.m_relativePath;
+            }
+            else
+            {
+                // If for some reason the Asset system couldn't provide a relative path, provide some fallback logic.
+
+                // Check to see if the AssetProcessor is ready.  If it *is* and we didn't get a path, print an error then follow
+                // the fallback logic.  If it's *not* ready, we're probably either extremely early in a tool startup flow or inside
+                // a unit test, so just execute the fallback logic without an error.
+                [[maybe_unused]] bool assetProcessorReady = false;
+                AzFramework::AssetSystemRequestBus::BroadcastResult(
+                    assetProcessorReady, &AzFramework::AssetSystemRequestBus::Events::AssetProcessorIsReady);
+
+                AZ_Error(
+                    "Prefab", !assetProcessorReady, "Full source path for '%.*s' could not be determined. Using fallback logic.",
+                    AZ_STRING_ARG(path.Native()));
+
+                // If a relative path was passed in, make it relative to the project root.
+                fullPath = AZ::IO::Path(m_projectPathWithOsSeparator).Append(pathWithOSSeparator);
+            }
+
+            return fullPath;
         }
 
-        AZ::IO::Path PrefabLoader::GetRelativePathToProject(AZ::IO::PathView path)
+        AZ::IO::Path PrefabLoader::GenerateRelativePath(AZ::IO::PathView path)
         {
-            AZ::IO::Path pathWithOSSeparator = AZ::IO::Path(path.Native()).MakePreferred();
-            if (!pathWithOSSeparator.IsAbsolute())
+            bool pathFound = false;
+
+            AZStd::string relativePath;
+            AZStd::string rootFolder;
+            AZ::IO::Path finalPath;
+
+            // The asset system allows for paths to be relative to multiple root folders, using a priority system.
+            // This request will make the input path relative to the most appropriate, highest-priority root folder.
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                pathFound, &AzToolsFramework::AssetSystemRequestBus::Events::GenerateRelativeSourcePath, path.Native(),
+                relativePath, rootFolder);
+
+            if (pathFound && !relativePath.empty())
             {
-                return path;
+                // A relative path was generated successfully, so return it.
+                finalPath = relativePath;
+            }
+            else
+            {
+                // If for some reason the Asset system couldn't provide a relative path, provide some fallback logic.
+
+                // Check to see if the AssetProcessor is ready.  If it *is* and we didn't get a path, print an error then follow
+                // the fallback logic.  If it's *not* ready, we're probably either extremely early in a tool startup flow or inside
+                // a unit test, so just execute the fallback logic without an error.
+                [[maybe_unused]] bool assetProcessorReady = false;
+                AzFramework::AssetSystemRequestBus::BroadcastResult(
+                    assetProcessorReady, &AzFramework::AssetSystemRequestBus::Events::AssetProcessorIsReady);
+
+                AZ_Error("Prefab", !assetProcessorReady,
+                    "Relative source path for '%.*s' could not be determined. Using project path as relative root.",
+                    AZ_STRING_ARG(path.Native()));
+
+                AZ::IO::Path pathWithOSSeparator = AZ::IO::Path(path.Native()).MakePreferred();
+
+                if (pathWithOSSeparator.IsAbsolute())
+                {
+                    // If an absolute path was passed in, make it relative to the project path.
+                    finalPath = AZ::IO::Path(path.Native(), '/').MakePreferred().LexicallyRelative(m_projectPathWithSlashSeparator);
+                }
+                else
+                {
+                    // If a relative path was passed in, just return it.
+                    finalPath = path;
+                }
             }
 
-            return AZ::IO::Path(path.Native(), '/').MakePreferred().LexicallyRelative(m_projectPathWithSlashSeparator);
+            return finalPath;
         }
 
         AZ::IO::Path PrefabLoaderInterface::GeneratePath()

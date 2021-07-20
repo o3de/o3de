@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 ly_add_target(
@@ -51,7 +47,6 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
 
     ly_add_target(
         NAME GraphCanvas.Editor GEM_MODULE
-
         NAMESPACE Gem
         AUTOMOC
         AUTORCC
@@ -75,4 +70,10 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
             3rdParty::Qt::Xml
             AZ::AzQtComponents
     )
+
+    # Load the "Gem::GraphCanvas" module in Builders and Tools
+    ly_create_alias(NAME GraphCanvas.Builders NAMESPACE Gem TARGETS Gem::GraphCanvas.Editor)
+    ly_create_alias(NAME GraphCanvas.Tools    NAMESPACE Gem TARGETS Gem::GraphCanvas.Editor)
+
+
 endif ()

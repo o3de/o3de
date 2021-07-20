@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #define AZ_TRAIT_AZTEST_ATTACH_RESULT_LISTENER 0
@@ -22,7 +17,7 @@
 
 #define AZ_TRAIT_DISABLE_FAILED_AP_CONNECTION_TESTS true
 #define AZ_TRAIT_DISABLE_FAILED_ASSET_LOAD_TESTS true
-#define AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS true
+
 #define AZ_TRAIT_DISABLE_FAILED_ATOM_RPI_TESTS true
 #define AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS true
 #define AZ_TRAIT_DISABLE_FAILED_ZERO_COLOR_CONVERSION_TEST true
@@ -39,4 +34,3 @@
 #define AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS true
 #define AZ_TRAIT_DISABLE_FAILED_METRICS_TESTS true
 
-#define AZ_TRAIT_DISABLE_ASSET_JOB_PARALLEL_TESTS true

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzNetworking/TcpTransport/TcpNetworkInterface.h>
 #include <AzNetworking/Framework/NetworkingSystemComponent.h>
@@ -129,7 +124,7 @@ namespace UnitTest
     #if AZ_TRAIT_DISABLE_FAILED_NETWORKING_TESTS
     TEST_F(TcpTransportTests, DISABLED_TestSingleClient)
     #else
-    TEST_F(TcpTransportTests, TestSingleClient)
+    TEST_F(TcpTransportTests, SUITE_sandbox_TestSingleClient)
     #endif // AZ_TRAIT_DISABLE_FAILED_NETWORKING_TESTS
     {
         TestTcpServer testServer;
@@ -157,7 +152,7 @@ namespace UnitTest
     #if AZ_TRAIT_DISABLE_FAILED_NETWORKING_TESTS
     TEST_F(TcpTransportTests, DISABLED_TestMultipleClients)
     #else
-    TEST_F(TcpTransportTests, TestMultipleClients)
+    TEST_F(TcpTransportTests, SUITE_sandbox_TestMultipleClients)
     #endif // AZ_TRAIT_DISABLE_FAILED_NETWORKING_TESTS
     {
         constexpr uint32_t NumTestClients = 50;

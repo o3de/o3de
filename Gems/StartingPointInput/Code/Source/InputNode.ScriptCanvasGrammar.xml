@@ -6,8 +6,10 @@
 	       PreferredClassName="Input Handler"
            Uuid="{0B0AC61B-4BBA-42BF-BDCD-DAF2D3CA41A8}"
            Base="ScriptCanvas::Node"
-           Icon="Icons/ScriptCanvas/Bus.png"
+           Icon="Editor/Icons/ScriptCanvas/Bus.png"
            EditAttributes="AZ::Edit::Attributes::Category@Gameplay/Input"
+           DeprecationUUID="{0A2EB488-5A6A-E166-BB62-23FF81499E33}"
+           Deprecated="This node has been deprecated in favor of the nodeable form"
            GraphEntryPoint="True"
            GeneratePropertyFriend="True"
            Description="Handle processed input events found in input binding assets">

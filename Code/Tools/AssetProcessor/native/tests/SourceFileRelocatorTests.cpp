@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AssetManager/SourceFileRelocator.h>
 #include <AzCore/Component/TickBus.h>
@@ -112,7 +107,6 @@ namespace UnitTests
             SourceDatabaseEntry sourceFile8 = { m_data->m_scanFolder1.m_scanFolderID, "test.txt", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
             SourceDatabaseEntry sourceFile9 = { m_data->m_scanFolder1.m_scanFolderID, "duplicate/folder/file1.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
             SourceDatabaseEntry sourceFile10 = { m_data->m_scanFolder1.m_scanFolderID, "folder/file.foo", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
-            SourceDatabaseEntry sourceFile11 = { m_data->m_scanFolder1.m_scanFolderID, "testfolder/file.foo", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
             ASSERT_TRUE(m_data->m_connection->SetSource(sourceFile1));
             ASSERT_TRUE(m_data->m_connection->SetSource(sourceFile2));
             ASSERT_TRUE(m_data->m_connection->SetSource(sourceFile3));
@@ -123,7 +117,6 @@ namespace UnitTests
             ASSERT_TRUE(m_data->m_connection->SetSource(sourceFile8));
             ASSERT_TRUE(m_data->m_connection->SetSource(sourceFile9));
             ASSERT_TRUE(m_data->m_connection->SetSource(sourceFile10));
-            ASSERT_TRUE(m_data->m_connection->SetSource(sourceFile11));
 
             SourceFileDependencyEntry dependency1 = { AZ::Uuid::CreateRandom(), "subfolder1/somefile.tif", "subfolder1/otherfile.tif", SourceFileDependencyEntry::TypeOfDependency::DEP_SourceToSource, false };
             SourceFileDependencyEntry dependency2 = { AZ::Uuid::CreateRandom(), "subfolder1/otherfile.tif", "otherfile.tif", SourceFileDependencyEntry::TypeOfDependency::DEP_JobToJob, false };
@@ -176,8 +169,6 @@ namespace UnitTests
             ASSERT_TRUE(UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("dev/dummy/foo.metadataextension")));
             ASSERT_TRUE(UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("dev/folder/file.foo")));
             ASSERT_TRUE(UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("dev/folder/file.bar")));
-            ASSERT_TRUE(UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("dev/testfolder/file.foo")));
-            ASSERT_TRUE(UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("dev/testfolder/File.bar")));
 
             if (AZ::IO::FileIOBase::GetInstance() == nullptr)
             {
@@ -487,20 +478,12 @@ namespace UnitTests
         TestGetSourcesByPath("dev/", { }, false);
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
-    TEST_F(SourceFileRelocatorTest, DISABLED_GetSources_MultipleScanFolders_Fails)
-#else
     TEST_F(SourceFileRelocatorTest, GetSources_MultipleScanFolders_Fails)
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
     {
         TestGetSourcesByPath("*", { }, false);
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
-    TEST_F(SourceFileRelocatorTest, DISABLED_GetSources_PartialPath_FailsWithNoResults)
-#else
     TEST_F(SourceFileRelocatorTest, GetSources_PartialPath_FailsWithNoResults)
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
     {
         TestGetSourcesByPath("older/*", { }, false);
     }
@@ -545,18 +528,6 @@ namespace UnitTests
 
         auto filePath = QDir(tempPath.absoluteFilePath(m_data->m_scanFolder1.m_scanFolder.c_str())).absoluteFilePath("folder/file.foo");
         TestGetSourcesByPath(filePath.toUtf8().constData(), { "folder/file.foo" }, true, true);
-    }
-
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
-    TEST_F(SourceFileRelocatorTest, DISABLED_GetSources_HaveMetadataDifferentFileCase_AbsolutePath_Succeeds)
-#else
-    TEST_F(SourceFileRelocatorTest, GetSources_HaveMetadataDifferentFileCase_AbsolutePath_Succeeds)
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
-    {
-        QDir tempPath(m_tempDir.path());
-
-        auto filePath = QDir(tempPath.absoluteFilePath(m_data->m_scanFolder1.m_scanFolder.c_str())).absoluteFilePath("testfolder/file.foo");
-        TestGetSourcesByPath(filePath.toUtf8().constData(), { "testfolder/file.foo", "testfolder/File.bar" }, true, false);
     }
 
     TEST_F(SourceFileRelocatorTest, GetMetaDataFile_SingleFileWildcard_Succeeds)
@@ -921,32 +892,46 @@ namespace UnitTests
         ASSERT_FALSE(AZ::IO::FileIOBase::GetInstance()->Exists(filePath.toUtf8().constData()));
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
-    TEST_F(SourceFileRelocatorTest, DISABLED_Delete_Real_Readonly_Fails)
-#else
     TEST_F(SourceFileRelocatorTest, Delete_Real_Readonly_Fails)
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
     {
+        struct AutoResetDirectoryReadOnlyState
+        {
+            AutoResetDirectoryReadOnlyState(QString dirName)
+                : m_dirName(AZStd::move(dirName))
+            {
+                AZ::IO::SystemFile::SetWritable(m_dirName.toUtf8().constData(), false);
+            }
+            ~AutoResetDirectoryReadOnlyState()
+            {
+                AZ::IO::SystemFile::SetWritable(m_dirName.toUtf8().constData(), true);
+            }
+            AZ_DISABLE_COPY_MOVE(AutoResetDirectoryReadOnlyState)
+        private:
+            QString m_dirName;
+        };
+
         QDir tempPath(m_tempDir.path());
 
         auto filePath = QDir(tempPath.absoluteFilePath(m_data->m_scanFolder1.m_scanFolder.c_str())).absoluteFilePath("duplicate/file1.tif");
 
         ASSERT_TRUE(AZ::IO::FileIOBase::GetInstance()->Exists(filePath.toUtf8().constData()));
 
+        AutoResetDirectoryReadOnlyState readOnlyResetter(QFileInfo(filePath).absoluteDir().absolutePath());
+
         AZ::IO::SystemFile::SetWritable(filePath.toUtf8().constData(), false);
 
         auto result = m_data->m_reporter->Delete(filePath.toUtf8().constData(), false);
 
-        ASSERT_TRUE(result.IsSuccess());
+        EXPECT_TRUE(result.IsSuccess());
 
         RelocationSuccess successResult = result.TakeValue();
 
-        ASSERT_EQ(successResult.m_moveSuccessCount, 0);
-        ASSERT_EQ(successResult.m_moveFailureCount, 1);
-        ASSERT_EQ(successResult.m_moveTotalCount, 1);
-        ASSERT_EQ(successResult.m_updateTotalCount, 0);
+        EXPECT_EQ(successResult.m_moveSuccessCount, 0);
+        EXPECT_EQ(successResult.m_moveFailureCount, 1);
+        EXPECT_EQ(successResult.m_moveTotalCount, 1);
+        EXPECT_EQ(successResult.m_updateTotalCount, 0);
 
-        ASSERT_TRUE(AZ::IO::FileIOBase::GetInstance()->Exists(filePath.toUtf8().constData()));
+        EXPECT_TRUE(AZ::IO::FileIOBase::GetInstance()->Exists(filePath.toUtf8().constData()));
     }
 
     TEST_F(SourceFileRelocatorTest, Delete_Real_WithDependencies_Fails)

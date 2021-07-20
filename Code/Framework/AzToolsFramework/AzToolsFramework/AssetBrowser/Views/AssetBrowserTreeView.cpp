@@ -1,19 +1,15 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <API/EditorAssetSystemAPI.h>
 
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Math/Crc.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/StringFunc/StringFunc.h>
 
 #include <AzFramework/StringFunc/StringFunc.h>
 
@@ -52,6 +48,7 @@ namespace AzToolsFramework
             setSortingEnabled(true);
             setItemDelegate(m_delegate);
             header()->hide();
+
             setContextMenuPolicy(Qt::CustomContextMenu);
 
             setMouseTracking(true);
@@ -98,8 +95,9 @@ namespace AzToolsFramework
 
         AZStd::vector<AssetBrowserEntry*> AssetBrowserTreeView::GetSelectedAssets() const
         {
+            const QModelIndexList& selectedIndexes = selectionModel()->selectedRows();
             QModelIndexList sourceIndexes;
-            for (const auto& index : selectedIndexes())
+            for (const auto& index : selectedIndexes)
             {
                 sourceIndexes.push_back(m_assetBrowserSortFilterProxyModel->mapToSource(index));
             }
@@ -171,6 +169,7 @@ namespace AzToolsFramework
 
         void AssetBrowserTreeView::OnAssetBrowserComponentReady()
         {
+            hideColumn(aznumeric_cast<int>(AssetBrowserEntry::Column::Path));
             if (!m_name.isEmpty())
             {
                 auto crc = AZ::Crc32(m_name.toUtf8().data());
@@ -181,10 +180,11 @@ namespace AzToolsFramework
 
         void AssetBrowserTreeView::rowsAboutToBeRemoved(const QModelIndex& parent, int start, int end)
         {
-            // if selected entry is being removed, clear selection so not to select (and attempt to preview) other entries potentially marked for deletion
-            if (selectionModel() && selectionModel()->selectedIndexes().size() == 1)
+            // if selected entry is being removed, clear selection so not to select (and attempt to preview) other entries potentially
+            // marked for deletion
+            if (selectionModel() && selectedIndexes().size() == 1)
             {
-                QModelIndex selectedIndex = selectionModel()->selectedIndexes().first();
+                QModelIndex selectedIndex = selectedIndexes().first();
                 QModelIndex parentSelectedIndex = selectedIndex.parent();
                 if (parentSelectedIndex == parent && selectedIndex.row() >= start && selectedIndex.row() <= end)
                 {
@@ -192,6 +192,14 @@ namespace AzToolsFramework
                 }
             }
             QTreeView::rowsAboutToBeRemoved(parent, start, end);
+        }
+
+        // Item data for hidden columns normally isn't copied by Qt during drag-and-drop (see QTBUG-30242).
+        // However, for the AssetBrowser, the hidden columns should get copied. By overriding selectedIndexes() to
+        // include all selected indices, not just the visible ones, we can get the behavior we're looking for.
+        QModelIndexList AssetBrowserTreeView::selectedIndexes() const
+        {
+            return selectionModel()->selectedIndexes();
         }
 
         void AssetBrowserTreeView::SetThumbnailContext(const char* thumbnailContext) const
@@ -270,7 +278,20 @@ namespace AzToolsFramework
             return false;
         }
 
-        bool AssetBrowserTreeView::SelectEntry(const QModelIndex& idxParent, const AZStd::vector<AZStd::string>& entries, const uint32_t entryPathIndex)
+        void AssetBrowserTreeView::SelectFolder(AZStd::string_view folderPath)
+        {
+            if (folderPath.size() == 0)
+            {
+                return;
+            }
+
+            AZStd::vector<AZStd::string> entries;
+            AZ::StringFunc::Tokenize(folderPath, entries, "/");
+
+            SelectEntry(QModelIndex(), entries, 0, true);
+        }
+
+        bool AssetBrowserTreeView::SelectEntry(const QModelIndex& idxParent, const AZStd::vector<AZStd::string>& entries, const uint32_t entryPathIndex, bool useDisplayName)
         {
             if (entries.empty())
             {
@@ -285,30 +306,43 @@ namespace AzToolsFramework
                 auto rowIdx = model()->index(idx, 0, idxParent);
                 auto rowEntry = GetEntryFromIndex<AssetBrowserEntry>(rowIdx);
 
-                // Check if this entry name matches the query
-                if (rowEntry && AzFramework::StringFunc::Equal(entry.c_str(), rowEntry->GetName().c_str(), true))
+                if (rowEntry)
                 {
-                    // Final entry found - set it as the selected element
-                    if (entryPathIndex == entries.size() - 1)
-                    {
-                        selectionModel()->clear();
-                        selectionModel()->select(rowIdx, QItemSelectionModel::Select);
-                        setCurrentIndex(rowIdx);
-                        return true;
-                    }
+                    // Check if this entry name matches the query
+                    AZStd::string_view compareName = useDisplayName ? (const char*)(rowEntry->GetDisplayName().toUtf8()) : rowEntry->GetName().c_str();
 
-                    // If this isn't the final entry, it needs to be a folder for the path to be valid (otherwise, early out)
-                    if (rowEntry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder)
+                    if (AzFramework::StringFunc::Equal(entry.c_str(), compareName, true))
                     {
-                        // Folder found - if the final entry is found, expand this folder so the final entry is viewable in the Asset Browser (otherwise, early out)
-                        if (SelectEntry(rowIdx, entries, entryPathIndex + 1))
+                        // Final entry found - set it as the selected element
+                        if (entryPathIndex == entries.size() - 1)
                         {
-                            expand(rowIdx);
+                            if (rowEntry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder)
+                            {
+                                // Expand the item itself if it is a folder
+                                expand(rowIdx);
+                            }
+
+                            selectionModel()->clear();
+                            selectionModel()->select(rowIdx, QItemSelectionModel::Select);
+                            setCurrentIndex(rowIdx);
+
                             return true;
                         }
+
+                        // If this isn't the final entry, it needs to be a folder for the path to be valid (otherwise, early out)
+                        if (rowEntry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder)
+                        {
+                            // Folder found - if the final entry is found, expand this folder so the final entry is viewable in the Asset
+                            // Browser (otherwise, early out)
+                            if (SelectEntry(rowIdx, entries, entryPathIndex + 1, useDisplayName))
+                            {
+                                expand(rowIdx);
+                                return true;
+                            }
+                        }
+
+                        return false;
                     }
-                    
-                    return false;
                 }
             }
 

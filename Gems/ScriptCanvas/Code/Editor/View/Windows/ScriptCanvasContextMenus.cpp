@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "precompiled.h"
 
 #include <QVBoxLayout>
@@ -563,13 +558,13 @@ namespace ScriptCanvasEditor
         else if (slotType == GraphCanvas::SlotTypes::DataSlot)
         {
             const AZ::EntityId& slotId2 = GetTargetId();
-            const GraphCanvas::GraphId& graphId = GetGraphId();
+            const GraphCanvas::GraphId& graphId2 = GetGraphId();
 
             GraphCanvas::Endpoint endpoint;
             GraphCanvas::SlotRequestBus::EventResult(endpoint, slotId2, &GraphCanvas::SlotRequests::GetEndpoint);
 
             bool promotedElement = false;
-            GraphCanvas::GraphModelRequestBus::EventResult(promotedElement, graphId, &GraphCanvas::GraphModelRequests::PromoteToVariableAction, endpoint);
+            GraphCanvas::GraphModelRequestBus::EventResult(promotedElement, graphId2, &GraphCanvas::GraphModelRequests::PromoteToVariableAction, endpoint);
 
             if (promotedElement)
             {

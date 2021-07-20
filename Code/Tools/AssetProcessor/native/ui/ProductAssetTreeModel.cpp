@@ -1,23 +1,21 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "ProductAssetTreeModel.h"
 #include "ProductAssetTreeItemData.h"
 
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <AzCore/Console/IConsole.h>
 
 namespace AssetProcessor
 {
+    AZ_CVAR_EXTERNED(bool, ap_disableAssetTreeView);
 
     ProductAssetTreeModel::ProductAssetTreeModel(AZStd::shared_ptr<AzToolsFramework::AssetDatabase::AssetDatabaseConnection> sharedDbConnection, QObject *parent) :
         AssetTreeModel(sharedDbConnection, parent)
@@ -30,6 +28,11 @@ namespace AssetProcessor
 
     void ProductAssetTreeModel::ResetModel()
     {
+        if (ap_disableAssetTreeView)
+        {
+            return;
+        }
+
         m_productToTreeItem.clear();
         m_productIdToTreeItem.clear();
         AZStd::string databaseLocation;
@@ -50,6 +53,11 @@ namespace AssetProcessor
 
     void ProductAssetTreeModel::OnProductFileChanged(const AzToolsFramework::AssetDatabase::ProductDatabaseEntry& entry)
     {
+        if (ap_disableAssetTreeView)
+        {
+            return;
+        }
+
         // Model changes need to be run on the main thread.
         AZ::SystemTickBus::QueueFunction([&, entry]()
         {
@@ -111,6 +119,11 @@ namespace AssetProcessor
 
     void ProductAssetTreeModel::OnProductFileRemoved(AZ::s64 productId)
     {
+        if (ap_disableAssetTreeView)
+        {
+            return;
+        }
+
         // UI changes need to be done on the main thread.
         AZ::SystemTickBus::QueueFunction([&, productId]()
         {
@@ -120,6 +133,11 @@ namespace AssetProcessor
 
     void ProductAssetTreeModel::OnProductFilesRemoved(const AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer& products)
     {
+        if (ap_disableAssetTreeView)
+        {
+            return;
+        }
+
         // UI changes need to be done on the main thread.
         AZ::SystemTickBus::QueueFunction([&, products]()
         {
@@ -132,6 +150,11 @@ namespace AssetProcessor
 
     QModelIndex ProductAssetTreeModel::GetIndexForProduct(const AZStd::string& product)
     {
+        if (ap_disableAssetTreeView)
+        {
+            return QModelIndex();
+        }
+
         auto productItem = m_productToTreeItem.find(product);
         if (productItem == m_productToTreeItem.end())
         {
@@ -159,31 +182,33 @@ namespace AssetProcessor
             return;
         }
 
+        AZ::IO::Path productNamePath(product.m_productName, AZ::IO::PosixPathSeparator);
 
-        AZStd::vector<AZStd::string> tokens;
-        AzFramework::StringFunc::Tokenize(product.m_productName.c_str(), tokens, AZ_CORRECT_DATABASE_SEPARATOR, false, true);
-
-        if (tokens.empty())
+        if (productNamePath.empty())
         {
             AZ_Warning("AssetProcessor", false, "Product id %d has an invalid name: %s", product.m_productID, product.m_productName.c_str());
             return;
         }
 
         AssetTreeItem* parentItem = m_root.get();
-        AZStd::string fullFolderName;
-        for (int i = 0; i < tokens.size() - 1; ++i)
+        AZ::IO::Path currentFullFolderPath;
+        const AZ::IO::PathView filename = productNamePath.Filename();
+        const AZ::IO::PathView fullPathWithoutFilename = productNamePath.RemoveFilename();
+        AZStd::fixed_string<AZ::IO::MaxPathLength> currentPath;
+        for (auto pathIt = fullPathWithoutFilename.begin(); pathIt != fullPathWithoutFilename.end(); ++pathIt)
         {
-            AzFramework::StringFunc::AssetDatabasePath::Join(fullFolderName.c_str(), tokens[i].c_str(), fullFolderName);
-            AssetTreeItem* nextParent = parentItem->GetChildFolder(tokens[i].c_str());
+            currentPath = pathIt->FixedMaxPathString();
+            currentFullFolderPath /= currentPath;
+            AssetTreeItem* nextParent = parentItem->GetChildFolder(currentPath.c_str());
             if (!nextParent)
             {
                 if (!modelIsResetting)
                 {
-                    QModelIndex parentIndex = parentItem == m_root.get() ? QModelIndex() : createIndex(parentItem->GetRow(), 0, parentItem);
+                    QModelIndex parentIndex = createIndex(parentItem->GetRow(), 0, parentItem);
                     beginInsertRows(parentIndex, parentItem->getChildCount(), parentItem->getChildCount());
                 }
-                nextParent = parentItem->CreateChild(ProductAssetTreeItemData::MakeShared(nullptr, fullFolderName, tokens[i].c_str(), true, AZ::Uuid::CreateNull()));
-                m_productToTreeItem[fullFolderName] = nextParent;
+                nextParent = parentItem->CreateChild(ProductAssetTreeItemData::MakeShared(nullptr, currentFullFolderPath.Native(), currentPath.c_str(), true, AZ::Uuid::CreateNull()));
+                m_productToTreeItem[currentFullFolderPath.Native()] = nextParent;
                 // m_productIdToTreeItem is not used for folders, folders don't have product IDs.
 
                 if (!modelIsResetting)
@@ -205,12 +230,12 @@ namespace AssetProcessor
 
         if (!modelIsResetting)
         {
-            QModelIndex parentIndex = parentItem == m_root.get() ? QModelIndex() : createIndex(parentItem->GetRow(), 0, parentItem);
+            QModelIndex parentIndex = createIndex(parentItem->GetRow(), 0, parentItem);
             beginInsertRows(parentIndex, parentItem->getChildCount(), parentItem->getChildCount());
         }
 
         AZStd::shared_ptr<ProductAssetTreeItemData> productItemData =
-            ProductAssetTreeItemData::MakeShared(&product, product.m_productName, tokens[tokens.size() - 1].c_str(), false, sourceId);
+            ProductAssetTreeItemData::MakeShared(&product, product.m_productName, AZStd::fixed_string<AZ::IO::MaxPathLength>(filename.Native()).c_str(), false, sourceId);
         m_productToTreeItem[product.m_productName] =
             parentItem->CreateChild(productItemData);
         m_productIdToTreeItem[product.m_productID] = m_productToTreeItem[product.m_productName];

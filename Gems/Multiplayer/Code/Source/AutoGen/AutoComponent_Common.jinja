@@ -175,7 +175,7 @@ void Handle{{ PropertyName }}(AzNetworking::IConnection* invokingConnection, {{ 
 //! {{ PropertyName }} Handler
 //! {{ Property.attrib['Description'] }}
 //! HandleOn {{ HandleOn }}
-virtual void Handle{{ PropertyName }}(AzNetworking::IConnection* invokingConnection, {{ ', '.join(paramDefines) }}) = 0;
+virtual void Handle{{ PropertyName }}([[maybe_unused]] AzNetworking::IConnection* invokingConnection, [[maybe_unused]] {{ ', [[maybe_unused]] '.join(paramDefines) }}) {}
 {% endif %}
 {% endmacro %}
 {#
@@ -184,6 +184,69 @@ virtual void Handle{{ PropertyName }}(AzNetworking::IConnection* invokingConnect
 {% macro DeclareRpcHandlers(Component, InvokeFrom, HandleOn, IsOverride) %}
 {% call(Property) ParseRemoteProcedures(Component, InvokeFrom, HandleOn) %}
 {{- DeclareRpcHandler(Property, HandleOn, IsOverride) -}}
+{% endcall %}
+{% endmacro %}
+{#
+
+#}
+{% macro DeclareRpcEventGetter(Property, HandleOn) %}
+{%     set paramNames   = [] %}
+{%     set paramTypes   = [] %}
+{%     set paramDefines = [] %}
+{%     set PropertyName = UpperFirst(Property.attrib['Name']) %}
+{{     ParseRpcParams(Property, paramNames, paramTypes, paramDefines) }}
+AZ::Event<{{ ', '.join(paramTypes) }}>& Get{{ PropertyName }}Event() { return m_{{ PropertyName }}Event; }
+{% endmacro %}
+{#
+
+#}
+{% macro DeclareRpcEventGetters(Component, InvokeFrom, HandleOn) %}
+{% call(Property) ParseRemoteProcedures(Component, InvokeFrom, HandleOn) %}
+{%    if Property.attrib['GenerateEventBindings']|booleanTrue == true %}
+{{- DeclareRpcEventGetter(Property, HandleOn) -}}
+{% endif %}
+{% endcall %}
+{% endmacro %}
+{#
+
+#}
+{% macro DeclareRpcEvent(Property, HandleOn) %}
+{%     set paramNames   = [] %}
+{%     set paramTypes   = [] %}
+{%     set paramDefines = [] %}
+{%     set PropertyName = UpperFirst(Property.attrib['Name']) %}
+{{     ParseRpcParams(Property, paramNames, paramTypes, paramDefines) }}
+AZ::Event<{{ ', '.join(paramTypes) }}> m_{{ PropertyName }}Event;
+{% endmacro %}
+{#
+
+#}
+{% macro DeclareRpcEvents(Component, InvokeFrom, HandleOn) %}
+{% call(Property) ParseRemoteProcedures(Component, InvokeFrom, HandleOn) %}
+{%    if Property.attrib['GenerateEventBindings']|booleanTrue == true %}
+{{- DeclareRpcEvent(Property, HandleOn) -}}
+{% endif %}
+{% endcall %}
+{% endmacro %}
+{#
+
+#}
+{% macro DeclareRpcSignal(Property, HandleOn) %}
+{%     set paramNames   = [] %}
+{%     set paramTypes   = [] %}
+{%     set paramDefines = [] %}
+{%     set PropertyName = UpperFirst(Property.attrib['Name']) %}
+{{     ParseRpcParams(Property, paramNames, paramTypes, paramDefines) }}
+void Signal{{ PropertyName }}({{ ', '.join(paramDefines) }});
+{% endmacro %}
+{#
+
+#}
+{% macro DeclareRpcSignals(Component, InvokeFrom, HandleOn) %}
+{% call(Property) ParseRemoteProcedures(Component, InvokeFrom, HandleOn) %}
+{%    if Property.attrib['GenerateEventBindings']|booleanTrue == true %}
+{{- DeclareRpcSignal(Property, HandleOn) -}}
+{% endif %}
 {% endcall %}
 {% endmacro %}
 {#
@@ -214,6 +277,10 @@ namespace {{ Component.attrib['Namespace'] }}
         void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
 
         {{ DeclareRpcHandlers(Component, 'Authority', 'Client', true)|indent(8) }}
+        {{ DeclareRpcSignals(Component, 'Authority', 'Client')|indent(8) }}
+        {{ DeclareRpcEventGetters(Component, 'Authority', 'Client')|indent(8) }}
+    protected:
+        {{ DeclareRpcEvents(Component, 'Authority', 'Client')|indent(8) }}
     };
 {% endif %}
 
@@ -236,6 +303,20 @@ namespace {{ Component.attrib['Namespace'] }}
         {{ DeclareRpcHandlers(Component, 'Client', 'Authority', true)|indent(8) }}
         {{ DeclareRpcHandlers(Component, 'Autonomous', 'Authority', true)|indent(8) }}
         {{ DeclareRpcHandlers(Component, 'Authority', 'Autonomous', true)|indent(8) }}
+        {{ DeclareRpcSignals(Component, 'Server', 'Authority')|indent(8) }}
+        {{ DeclareRpcSignals(Component, 'Client', 'Authority')|indent(8) }}
+        {{ DeclareRpcSignals(Component, 'Autonomous', 'Authority')|indent(8) }}
+        {{ DeclareRpcSignals(Component, 'Authority', 'Autonomous')|indent(8) }}
+        {{ DeclareRpcEventGetters(Component, 'Server', 'Authority')|indent(8) }}
+        {{ DeclareRpcEventGetters(Component, 'Client', 'Authority')|indent(8) }}
+        {{ DeclareRpcEventGetters(Component, 'Autonomous', 'Authority')|indent(8) }}
+        {{ DeclareRpcEventGetters(Component, 'Authority', 'Autonomous')|indent(8) }}
+
+    protected:
+        {{ DeclareRpcEvents(Component, 'Server', 'Authority')|indent(8) }}
+        {{ DeclareRpcEvents(Component, 'Client', 'Authority')|indent(8) }}
+        {{ DeclareRpcEvents(Component, 'Autonomous', 'Authority')|indent(8) }}
+        {{ DeclareRpcEvents(Component, 'Authority', 'Autonomous')|indent(8) }}
     };
 {% endif %}
 }

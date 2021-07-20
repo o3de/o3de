@@ -1,21 +1,15 @@
 /*
-* All or portions of this file Copyright(c) Amazon.com, Inc.or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution(the "License").All use of this software is governed by the License,
-*or, if provided, by the license below or the license accompanying this file.Do not
-* remove or modify any license notices.This file is distributed on an "AS IS" BASIS,
-*WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/JSON/document.h>
 
-#include <Atom/RPI.Reflect/Shader/ShaderResourceGroupAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 
 namespace AZ
@@ -42,8 +36,6 @@ namespace AZ
             template<typename AssetDataT>
             Outcome<AZ::Data::Asset<AssetDataT>> LoadAsset(const AZ::Data::AssetId& assetId);
 
-            uint32_t CalcSrgProductSubId(const Name& srgName);
-
             //! Attempts to resolve the full path to a product asset given its ID
             AZStd::string GetProductPathByAssetId(const AZ::Data::AssetId& assetId);
 
@@ -66,6 +58,7 @@ namespace AZ
             //! it's possible that b.json could be found in either MyGem/Assets/Foo/Bar/a.json or in MyGem/Assets/Bar/a.json.
             //! @param originatingSourceFilePath  Path to a file that references referencedSourceFilePath. May be absolute or relative to asset-root.
             //! @param referencedSourceFilePath   The referenced path as it appears in the originating file. May be relative to the originating file location or relative to asset-root.
+            //! @return the list of possible paths, ordered from highest priority to lowest priority
             AZStd::vector<AZStd::string> GetPossibleDepenencyPaths(const AZStd::string& originatingSourceFilePath, const AZStd::string& referencedSourceFilePath);
 
             // Definitions...

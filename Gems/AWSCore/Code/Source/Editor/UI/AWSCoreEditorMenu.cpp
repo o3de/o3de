@@ -1,22 +1,20 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Jobs/JobFunction.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AWSCoreEditor_Traits_Platform.h>
+#include <Editor/Constants/AWSCoreEditorMenuLinks.h>
+#include <Editor/Constants/AWSCoreEditorMenuNames.h>
 #include <Editor/UI/AWSCoreEditorMenu.h>
 #include <Editor/UI/AWSCoreResourceMappingToolAction.h>
 
@@ -32,14 +30,18 @@
 
 namespace AWSCore
 {
+
+    static constexpr int IconSize = 16;
+
     AWSCoreEditorMenu::AWSCoreEditorMenu(const QString& text)
         : QMenu(text)
         , m_resourceMappingToolWatcher(nullptr)
     {
-        InitializeResourceMappingToolAction();
         InitializeAWSDocActions();
+        InitializeResourceMappingToolAction();
         this->addSeparator();
         InitializeAWSFeatureGemActions();
+        AddSpaceForIcon(this);
 
         AWSCoreEditorRequestBus::Handler::BusConnect();
     }
@@ -56,6 +58,21 @@ namespace AWSCore
             m_resourceMappingToolWatcher.reset();
         }
         this->clear();
+    }
+
+    QAction* AWSCoreEditorMenu::AddExternalLinkAction(
+        const AZStd::string& name, const AZStd::string& url, const AZStd::string& icon)
+    {
+        QAction* linkAction = new QAction(QObject::tr(name.c_str()));
+        QObject::connect(linkAction, &QAction::triggered, this,
+            [url]() {
+                QDesktopServices::openUrl(QUrl(url.c_str()));
+            });
+        if (!icon.empty())
+        {
+            linkAction->setIcon(QIcon(icon.c_str()));
+        }
+        return linkAction;
     }
 
     void AWSCoreEditorMenu::InitializeResourceMappingToolAction()
@@ -103,21 +120,28 @@ namespace AWSCore
 
     void AWSCoreEditorMenu::InitializeAWSDocActions()
     {
-        QAction* credentialConfiguration = new QAction(QObject::tr(CredentialConfigurationActionText));
-        QObject::connect(credentialConfiguration, &QAction::triggered, this, []() {
-            QDesktopServices::openUrl(QUrl(CredentialConfigurationUrl));
-        });
-        this->addAction(credentialConfiguration);
+        this->addAction(AddExternalLinkAction(NewToAWSActionText, NewToAWSUrl, ":/Notifications/link.svg"));
 
-        QAction* newToAWS = new QAction(QObject::tr(NewToAWSActionText));
-        QObject::connect(newToAWS, &QAction::triggered, this, []() {
-            QDesktopServices::openUrl(QUrl(NewToAWSUrl)); });
-        this->addAction(newToAWS);
+        InitializeAWSGlobalDocsSubMenu();
 
-        QAction* awsAndScriptCanvas = new QAction(QObject::tr(AWSAndScriptCanvasActionText));
-        QObject::connect(awsAndScriptCanvas, &QAction::triggered, this, []() {
-            QDesktopServices::openUrl(QUrl(AWSAndScriptCanvasUrl)); });
-        this->addAction(awsAndScriptCanvas);
+        this->addAction(AddExternalLinkAction(
+            AWSCredentialConfigurationActionText, AWSCredentialConfigurationUrl, ":/Notifications/link.svg"));
+    }
+
+    void AWSCoreEditorMenu::InitializeAWSGlobalDocsSubMenu()
+    {
+        QMenu* globalDocsMenu = this->addMenu(QObject::tr(AWSAndO3DEGlobalDocsText));
+
+        globalDocsMenu->addAction(
+            AddExternalLinkAction(AWSAndO3DEGettingStartedActionText, AWSAndGettingStartedUrl, ":/Notifications/link.svg"));
+        globalDocsMenu->addAction(
+            AddExternalLinkAction(AWSAndO3DEMappingsFileActionText, AWSAndResourceMappingsUrl, ":/Notifications/link.svg"));
+        globalDocsMenu->addAction(
+            AddExternalLinkAction(AWSAndO3DEResourceToolActionText, AWSAndResourceMappingToolUrl, ":/Notifications/link.svg"));
+        globalDocsMenu->addAction(
+            AddExternalLinkAction(AWSAndO3DEScriptingActionText, AWSAndScriptingUrl, ":/Notifications/link.svg"));
+
+        AddSpaceForIcon(globalDocsMenu);
     }
 
     void AWSCoreEditorMenu::InitializeAWSFeatureGemActions()
@@ -135,25 +159,79 @@ namespace AWSCore
 
     void AWSCoreEditorMenu::SetAWSClientAuthEnabled()
     {
-        SetAWSFeatureActionsEnabled(AWSClientAuthActionText);
+        // TODO: instead of creating submenu in core editor, aws feature gem should return submenu component directly
+        QMenu* subMenu = SetAWSFeatureSubMenu(AWSClientAuthActionText);
+
+        subMenu->addAction(AddExternalLinkAction(
+            AWSClientAuthGemOverviewActionText, AWSClientAuthGemOverviewUrl, ":/Notifications/link.svg"));
+        subMenu->addAction(AddExternalLinkAction(
+            AWSClientAuthGemSetupActionText, AWSClientAuthGemSetupUrl, ":/Notifications/link.svg"));
+        subMenu->addAction(AddExternalLinkAction(
+            AWSClientAuthCDKAndResourcesActionText, AWSClientAuthCDKAndResourcesUrl, ":/Notifications/link.svg"));
+        subMenu->addAction(AddExternalLinkAction(
+            AWSClientAuthScriptCanvasAndLuaActionText, AWSClientAuthScriptCanvasAndLuaUrl, ":/Notifications/link.svg"));
+        subMenu->addAction(AddExternalLinkAction(
+            AWSClientAuth3rdPartyAuthProviderActionText, AWSClientAuth3rdPartyAuthProviderUrl, ":/Notifications/link.svg"));
+        subMenu->addAction(AddExternalLinkAction(
+            AWSClientAuthCustomAuthProviderActionText, AWSClientAuthCustomAuthProviderUrl, ":/Notifications/link.svg"));
+        subMenu->addAction(AddExternalLinkAction(
+            AWSClientAuthAPIReferenceActionText, AWSClientAuthAPIReferenceUrl, ":/Notifications/link.svg"));
+
+        AddSpaceForIcon(subMenu);
     }
 
     void AWSCoreEditorMenu::SetAWSMetricsEnabled()
     {
-        SetAWSFeatureActionsEnabled(AWSMetricsActionText);
+        // TODO: instead of creating submenu in core editor, aws feature gem should return submenu component directly
+        QMenu* subMenu = SetAWSFeatureSubMenu(AWSMetricsActionText);
+
+        subMenu->addAction(AddExternalLinkAction(
+            AWSMetricsGemOverviewActionText, AWSMetricsGemOverviewUrl, ":/Notifications/link.svg"));
+        subMenu->addAction(AddExternalLinkAction(
+            AWSMetricsSetupGemActionText, AWSMetricsSetupGemUrl, ":/Notifications/link.svg"));
+        subMenu->addAction(AddExternalLinkAction(
+            AWSMetricsScriptingActionText, AWSMetricsScriptingUrl, ":/Notifications/link.svg"));
+        subMenu->addAction(AddExternalLinkAction(
+            AWSMetricsAPIReferenceActionText, AWSMetricsAPIReferenceUrl, ":/Notifications/link.svg"));
+        subMenu->addAction(AddExternalLinkAction(
+            AWSMetricsAdvancedTopicsActionText, AWSMetricsAdvancedTopicsUrl, ":/Notifications/link.svg"));
+
+        AZStd::string priorAlias = AZ::IO::FileIOBase::GetInstance()->GetAlias("@devroot@");
+        AZStd::string configFilePath = priorAlias + "\\Gems\\AWSMetrics\\Code\\" + AZ::SettingsRegistryInterface::RegistryFolder;
+        AzFramework::StringFunc::Path::Normalize(configFilePath);
+
+        QAction* settingsAction = new QAction(QObject::tr(AWSMetricsSettingsActionText));
+        QObject::connect(settingsAction, &QAction::triggered, this,
+            [configFilePath](){
+                QDesktopServices::openUrl(QUrl::fromLocalFile(configFilePath.c_str()));
+            });
+
+        subMenu->addAction(settingsAction);
+        AddSpaceForIcon(subMenu);
     }
 
-    void AWSCoreEditorMenu::SetAWSFeatureActionsEnabled(const AZStd::string actionText)
+    QMenu* AWSCoreEditorMenu::SetAWSFeatureSubMenu(const AZStd::string& menuText)
     {
         auto actionList = this->actions();
         for (QList<QAction*>::iterator itr = actionList.begin(); itr != actionList.end(); itr++)
         {
-            if (QString::compare((*itr)->text(), actionText.c_str()) == 0)
+            if (QString::compare((*itr)->text(), menuText.c_str()) == 0)
             {
-                (*itr)->setIcon(QIcon(QString(":/Notifications/checkmark.svg")));
-                (*itr)->setEnabled(true);
-                break;
+                QMenu* subMenu = new QMenu(QObject::tr(menuText.c_str()));
+                subMenu->setIcon(QIcon(QString(":/Notifications/checkmark.svg")));
+                subMenu->setProperty("noHover", true);
+                this->insertMenu(*itr, subMenu);
+                this->removeAction(*itr);
+                return subMenu;
             }
         }
+        return nullptr;
+    }
+
+    void AWSCoreEditorMenu::AddSpaceForIcon(QMenu *menu)
+    {
+        QSize size = menu->sizeHint();
+        size.setWidth(size.width() + IconSize);
+        menu->setFixedSize(size);
     }
 } // namespace AWSCore

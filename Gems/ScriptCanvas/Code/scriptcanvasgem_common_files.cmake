@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 set(FILES
@@ -454,6 +450,11 @@ set(FILES
     Include/ScriptCanvas/Libraries/Time/TimerNodeable.h
     Include/ScriptCanvas/Libraries/Time/TimerNodeable.cpp
     Include/ScriptCanvas/Libraries/Time/TimerNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Spawning/Spawning.cpp
+    Include/ScriptCanvas/Libraries/Spawning/Spawning.h
+    Include/ScriptCanvas/Libraries/Spawning/SpawnNodeable.cpp
+    Include/ScriptCanvas/Libraries/Spawning/SpawnNodeable.h
+    Include/ScriptCanvas/Libraries/Spawning/SpawnNodeable.ScriptCanvasNodeable.xml
     Include/ScriptCanvas/Libraries/String/Contains.cpp
     Include/ScriptCanvas/Libraries/String/Contains.h
     Include/ScriptCanvas/Libraries/String/Contains.ScriptCanvasGrammar.xml
@@ -587,6 +588,8 @@ set(FILES
     Include/ScriptCanvas/Profiler/Aggregator.cpp
     Include/ScriptCanvas/Profiler/DrillerEvents.h
     Include/ScriptCanvas/Profiler/DrillerEvents.cpp
+    Include/ScriptCanvas/Serialization/ScriptUserDataSerializer.h
+    Include/ScriptCanvas/Serialization/ScriptUserDataSerializer.cpp
     Include/ScriptCanvas/Data/DataTrait.cpp
     Include/ScriptCanvas/Data/DataTrait.h
     Include/ScriptCanvas/Data/PropertyTraits.cpp
@@ -619,5 +622,4 @@ set(SKIP_UNITY_BUILD_INCLUSION_FILES
     Include/ScriptCanvas/Libraries/Core/FunctionCallNode.h
     Include/ScriptCanvas/Libraries/Core/FunctionCallNodeIsOutOfDate.h
     Include/ScriptCanvas/Libraries/Core/FunctionCallNodeIsOutOfDate.cpp
-
 )

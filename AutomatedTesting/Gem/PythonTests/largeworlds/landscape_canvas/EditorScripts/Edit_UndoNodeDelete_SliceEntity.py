@@ -1,23 +1,7 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-"""
-
-
-"""
-C30813586 - Editor remains stable after Undoing deletion of a node on a slice entity
-
-1. Open level with instantiated slice.
-2. Open the graph.
-3. Find the BushSpawner's Vegetation Layer Spawner node.
-4. Delete the node.
-5. Undo to restore the node.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 import os
@@ -44,7 +28,26 @@ class TestUndoNodeDeleteSlice(EditorTestHelper):
         EditorTestHelper.__init__(self, log_prefix="UndoNodeDeleteSlice", args=["level"])
 
     def run_test(self):
+        """
+        Summary:
+        This test verifies Editor stability after undoing the deletion of nodes on a slice entity.
 
+        Expected Behavior:
+        Editor remains stable and free of crashes.
+
+        Test Steps:
+         1) Create a new level
+         2) Instantiate a slice with a Landscape Canvas setup
+         3) Find a specific node on the graph, and delete it
+         4) Restore the node with Undo
+
+        Note:
+        - This test file must be called from the Open 3D Engine Editor command terminal
+        - Any passed and failed tests are written to the Editor.log file.
+                Parsing the file or running a log_monitor are required to observe the test results.
+
+        :return: None
+        """
         # Create a new empty level and instantiate LC_BushFlowerBlender.slice
         self.test_success = self.create_level(
             self.args["level"],

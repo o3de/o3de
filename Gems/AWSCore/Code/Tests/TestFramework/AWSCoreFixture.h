@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -14,6 +9,7 @@
 
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzFramework/IO/LocalFileIO.h>
 
 #include <Framework/JsonObjectHandler.h>
@@ -122,20 +118,56 @@ public:
         m_otherFileIO = AZ::IO::FileIOBase::GetInstance();
         AZ::IO::FileIOBase::SetInstance(nullptr);
         AZ::IO::FileIOBase::SetInstance(m_localFileIO);
+
+        m_settingsRegistry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
+        AZ::SettingsRegistry::Register(m_settingsRegistry.get());
     }
 
     void TearDown() override
     {
+        AZ::SettingsRegistry::Unregister(m_settingsRegistry.get());
+        m_settingsRegistry.reset();
+
         AZ::IO::FileIOBase::SetInstance(nullptr);
-        delete m_localFileIO;
-        AZ::IO::FileIOBase::SetInstance(m_otherFileIO);
+        
+        if (m_otherFileIO)
+        {
+            delete m_localFileIO;
+            AZ::IO::FileIOBase::SetInstance(m_otherFileIO);
+        }
 
         AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
         AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
+    }
+
+    bool CreateFile(const AZStd::string& filePath, const AZStd::string& content)
+    {
+        AZ::IO::HandleType fileHandle;
+        if (!m_localFileIO->Open(filePath.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeText, fileHandle))
+        {
+            return false;
+        }
+
+        m_localFileIO->Write(fileHandle, content.c_str(), content.size());
+        m_localFileIO->Close(fileHandle);
+        return true;
+    }
+
+    bool RemoveFile(const AZStd::string& filePath)
+    {
+        if (m_localFileIO->Exists(filePath.c_str()))
+        {
+            return m_localFileIO->Remove(filePath.c_str());
+        }
+
+        return true;
     }
 
     AZ::IO::FileIOBase* m_localFileIO = nullptr;
 
 private:
     AZ::IO::FileIOBase* m_otherFileIO = nullptr;
+
+protected:
+    AZStd::unique_ptr<AZ::SettingsRegistryImpl> m_settingsRegistry;
 };

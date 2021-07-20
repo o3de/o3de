@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -20,13 +15,13 @@ namespace AzToolsFramework
 {
     class ManipulatorView;
 
-    /// Represents a sphere that can be clicked on to trigger a particular behavior
-    /// For example clicking a preview point to create a translation manipulator.
+    //! Represents a sphere that can be clicked on to trigger a particular behavior.
+    //! For example clicking a preview point to create a translation manipulator.
     class SelectionManipulator
         : public BaseManipulator
         , public ManipulatorSpaceWithLocalPosition
     {
-        /// Private constructor.
+        //! Private constructor.
         SelectionManipulator(const AZ::Transform& worldFromLocal, const AZ::Vector3& nonUniformScale = AZ::Vector3::CreateOne());
 
     public:
@@ -39,12 +34,12 @@ namespace AzToolsFramework
 
         ~SelectionManipulator() = default;
 
-        /// A Manipulator must only be created and managed through a shared_ptr.
-        static AZStd::shared_ptr<SelectionManipulator> MakeShared(const AZ::Transform& worldFromLocal,
-            const AZ::Vector3& nonUniformScale = AZ::Vector3::CreateOne());
+        //! A Manipulator must only be created and managed through a shared_ptr.
+        static AZStd::shared_ptr<SelectionManipulator> MakeShared(
+            const AZ::Transform& worldFromLocal, const AZ::Vector3& nonUniformScale = AZ::Vector3::CreateOne());
 
-        /// This is the function signature of callbacks that will be invoked
-        /// whenever a selection manipulator is clicked on.
+        //! This is the function signature of callbacks that will be invoked
+        //! whenever a selection manipulator is clicked on.
         using MouseActionCallback = AZStd::function<void(const ViewportInteraction::MouseInteraction&)>;
 
         void InstallLeftMouseDownCallback(const MouseActionCallback& onMouseDownCallback);
@@ -58,10 +53,25 @@ namespace AzToolsFramework
             const AzFramework::CameraState& cameraState,
             const ViewportInteraction::MouseInteraction& mouseInteraction) override;
 
-        bool Selected() const { return m_selected; }
-        void Select() { m_selected = true; }
-        void Deselect() { m_selected = false; }
-        void ToggleSelected() { m_selected = !m_selected; }
+        bool Selected() const
+        {
+            return m_selected;
+        }
+
+        void Select()
+        {
+            m_selected = true;
+        }
+
+        void Deselect()
+        {
+            m_selected = false;
+        }
+
+        void ToggleSelected()
+        {
+            m_selected = !m_selected;
+        }
 
         template<typename Views>
         void SetViews(Views&& views)
@@ -70,13 +80,9 @@ namespace AzToolsFramework
         }
 
     private:
-        void OnLeftMouseDownImpl(
-            const ViewportInteraction::MouseInteraction& interaction,
-            float rayIntersectionDistance) override;
+        void OnLeftMouseDownImpl(const ViewportInteraction::MouseInteraction& interaction, float rayIntersectionDistance) override;
         void OnLeftMouseUpImpl(const ViewportInteraction::MouseInteraction& interaction) override;
-        void OnRightMouseDownImpl(
-            const ViewportInteraction::MouseInteraction& interaction,
-            float rayIntersectionDistance) override;
+        void OnRightMouseDownImpl(const ViewportInteraction::MouseInteraction& interaction, float rayIntersectionDistance) override;
         void OnRightMouseUpImpl(const ViewportInteraction::MouseInteraction& interaction) override;
 
         void InvalidateImpl() override;
@@ -89,6 +95,6 @@ namespace AzToolsFramework
         MouseActionCallback m_onRightMouseDownCallback = nullptr;
         MouseActionCallback m_onRightMouseUpCallback = nullptr;
 
-        ManipulatorViews m_manipulatorViews; ///< Look of manipulator.
+        ManipulatorViews m_manipulatorViews; //!< Look of manipulator.
     };
 } // namespace AzToolsFramework

@@ -31,8 +31,7 @@
     },
 
     "CompilerHints" : { 
-        "DisableOptimizations" : true,
-        "DxcGenerateDebugInfo" : true
+        "DisableOptimizations" : false
     },
 
     "ProgramSettings":

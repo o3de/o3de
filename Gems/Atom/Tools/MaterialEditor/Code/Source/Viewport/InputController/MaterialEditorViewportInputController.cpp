@@ -1,14 +1,12 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <QApplication>
+#include <QWidget>
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/TransformBus.h>
@@ -112,6 +110,11 @@ namespace MaterialEditor
     {
         distanceMin = m_distanceMin;
         distanceMax = m_distanceMax;
+    }
+
+    float MaterialEditorViewportInputController::GetRadius() const
+    {
+        return m_radius;
     }
 
     void MaterialEditorViewportInputController::UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event)
@@ -218,7 +221,12 @@ namespace MaterialEditor
             }
             else if (inputChannelId == InputDeviceKeyboard::Key::AlphanumericZ && (m_keys & Ctrl) == None)
             {
-                Reset();
+                // only reset camera if no other widget besides viewport is in focus
+                const auto focus = QApplication::focusWidget();
+                if (!focus || focus->objectName() == "Viewport")
+                {
+                    Reset();
+                }
             }
             break;
         case InputChannel::State::Updated:
@@ -306,11 +314,10 @@ namespace MaterialEditor
             if (modelAsset.IsReady())
             {
                 const AZ::Aabb& aabb = modelAsset->GetAabb();
-                float radius;
-                aabb.GetAsSphere(m_modelCenter, radius);
+                aabb.GetAsSphere(m_modelCenter, m_radius);
 
                 m_distanceMin = 0.5f * AZ::GetMin(AZ::GetMin(aabb.GetExtents().GetX(), aabb.GetExtents().GetY()), aabb.GetExtents().GetZ()) + DepthNear;
-                m_distanceMax = radius * MaxDistanceMultiplier;
+                m_distanceMax = m_radius * MaxDistanceMultiplier;
             }
         }
     }

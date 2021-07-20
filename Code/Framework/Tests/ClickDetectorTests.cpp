@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -138,5 +133,22 @@ namespace UnitTest
         EXPECT_THAT(initialUpOutcome, Eq(ClickDetector::ClickOutcome::Click));
         EXPECT_THAT(secondaryDownOutcome, Eq(ClickDetector::ClickOutcome::Nil)); // ignored double click
         EXPECT_THAT(secondaryUpOutcome, Eq(ClickDetector::ClickOutcome::Nil)); // click not registered
+    }
+
+    // if the click detector registers a mouse down event, but then all intermediate calls are ignored
+    // (another system may start intercepting events and swallowing them) then when we do receive a mouse
+    // up event we should ensure we take into account the current delta - if the delta is large, then the
+    // outcome will be release
+    TEST_F(ClickDetectorFixture, ClickIsNotRegisteredAfterIgnoringMouseMovesBeforeMouseUpWithLargeDelta)
+    {
+        using ::testing::Eq;
+
+        const ClickDetector::ClickOutcome downOutcome =
+            m_clickDetector.DetectClick(ClickDetector::ClickEvent::Down, ScreenVector(0, 0));
+        const ClickDetector::ClickOutcome upOutcome =
+            m_clickDetector.DetectClick(ClickDetector::ClickEvent::Up, ScreenVector(50, 50));
+
+        EXPECT_THAT(downOutcome, Eq(ClickDetector::ClickOutcome::Nil));
+        EXPECT_THAT(upOutcome, Eq(ClickDetector::ClickOutcome::Release));
     }
 } // namespace UnitTest

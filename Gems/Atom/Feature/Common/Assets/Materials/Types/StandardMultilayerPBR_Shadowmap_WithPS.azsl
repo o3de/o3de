@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
  
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
@@ -83,7 +78,7 @@ VertexOutput MainVS(VertexInput IN)
     }
     else
     {
-        OUT.m_blendMask = float3(1,1,1);
+        OUT.m_blendMask = float3(0,0,0);
     }
 
     return OUT;
@@ -102,12 +97,12 @@ PSDepthOutput MainPS(VertexOutput IN, bool isFrontFace : SV_IsFrontFace)
 
     if(ShouldHandleParallaxInDepthShaders())
     {
-        // We support two UV streams, but only a single stream of tangent/bitangent. So for UV[1+] we generated the tangent/bitangent in screen-space.
-        float3 tangents[UvSetCount] = { IN.m_tangent.xyz, float3(0, 0, 0) };
-        float3 bitangents[UvSetCount] = { IN.m_bitangent.xyz, float3(0, 0, 0) };
-        PrepareGeneratedTangent(IN.m_normal, IN.m_worldPosition, isFrontFace, IN.m_uv, UvSetCount, tangents, bitangents, 1);
+        float3 tangents[UvSetCount] = { IN.m_tangent.xyz, IN.m_tangent.xyz };
+        float3 bitangents[UvSetCount] = { IN.m_bitangent.xyz, IN.m_bitangent.xyz };
+
+        PrepareGeneratedTangent(IN.m_normal, IN.m_worldPosition, isFrontFace, IN.m_uv, UvSetCount, tangents, bitangents);
              
-        GetDepth_Setup(IN.m_blendMask);
+        s_blendMaskFromVertexStream = IN.m_blendMask;
         
         float depthNDC;
 

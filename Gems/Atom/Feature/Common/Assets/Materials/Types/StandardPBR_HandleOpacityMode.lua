@@ -1,13 +1,9 @@
 --------------------------------------------------------------------------------------
 --
--- All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
--- its licensors.
+-- Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+-- 
+-- SPDX-License-Identifier: Apache-2.0 OR MIT
 --
--- For complete copyright and license terms please see the LICENSE at the root of this
--- distribution (the "License"). All use of this software is governed by the License,
--- or, if provided, by the license below or the license accompanying this file. Do not
--- remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
--- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 --
 --
 ----------------------------------------------------------------------------------------------------
@@ -24,8 +20,6 @@ OpacityMode_TintedTransparent = 3
 AlphaSource_Packed = 0
 AlphaSource_Split = 1
 AlphaSource_None = 2
-
-ForwardPassIndex = 1
 
 function ConfigureAlphaBlending(shaderItem) 
     shaderItem:GetRenderStatesOverride():SetDepthEnabled(true)
@@ -58,12 +52,17 @@ end
 function Process(context)
     local opacityMode = context:GetMaterialPropertyValue_enum("opacity.mode")
 
+    local forwardPassEDS = context:GetShaderByTag("ForwardPass_EDS")
+
     if(opacityMode == OpacityMode_Blended) then
-        ConfigureAlphaBlending(context:GetShader(ForwardPassIndex))
+        ConfigureAlphaBlending(forwardPassEDS)
+        forwardPassEDS:SetDrawListTagOverride("transparent")
     elseif(opacityMode == OpacityMode_TintedTransparent) then
-        ConfigureDualSourceBlending(context:GetShader(ForwardPassIndex))
+        ConfigureDualSourceBlending(forwardPassEDS)
+        forwardPassEDS:SetDrawListTagOverride("transparent")
     else
-        ResetAlphaBlending(context:GetShader(ForwardPassIndex))
+        ResetAlphaBlending(forwardPassEDS)
+        forwardPassEDS:SetDrawListTagOverride("") -- reset to default draw list
     end
 end
 
@@ -83,6 +82,12 @@ function ProcessEditor(context)
     context:SetMaterialPropertyVisibility("opacity.factor", mainVisibility)
     context:SetMaterialPropertyVisibility("opacity.doubleSided", mainVisibility)
 
+    if(opacityMode == OpacityMode_Blended or opacityMode == OpacityMode_TintedTransparent) then
+        context:SetMaterialPropertyVisibility("opacity.alphaAffectsSpecular", MaterialPropertyVisibility_Enabled)
+    else
+        context:SetMaterialPropertyVisibility("opacity.alphaAffectsSpecular", MaterialPropertyVisibility_Hidden)
+    end
+
     if(mainVisibility == MaterialPropertyVisibility_Enabled) then
         local alphaSource = context:GetMaterialPropertyValue_enum("opacity.alphaSource")
 
@@ -90,7 +95,7 @@ function ProcessEditor(context)
             context:SetMaterialPropertyVisibility("opacity.textureMap", MaterialPropertyVisibility_Hidden)
             context:SetMaterialPropertyVisibility("opacity.textureMapUv", MaterialPropertyVisibility_Hidden)
         else
-            local textureMap = context:GetMaterialPropertyValue_image("opacity.textureMap")
+            local textureMap = context:GetMaterialPropertyValue_Image("opacity.textureMap")
 
             if(nil == textureMap) then
                 context:SetMaterialPropertyVisibility("opacity.textureMapUv", MaterialPropertyVisibility_Disabled)

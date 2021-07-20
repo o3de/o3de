@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Serialization/SerializeContext.h>
 
@@ -576,6 +571,29 @@ namespace AZ::AtomBridge
         }
     }
 
+    void AtomDebugDisplayViewportInterface::DrawWireOBB(
+        const AZ::Vector3& center, 
+        const AZ::Vector3& axisX, 
+        const AZ::Vector3& axisY, 
+        const AZ::Vector3& axisZ, 
+        const AZ::Vector3& halfExtents)
+    {
+        if (m_auxGeomPtr)
+        {
+            AZ::Quaternion rotation = AZ::Quaternion::CreateFromMatrix3x3(AZ::Matrix3x3::CreateFromColumns(axisX, axisY, axisZ));
+            AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(center, rotation, halfExtents);
+            m_auxGeomPtr->DrawObb(
+                obb,
+                AZ::Vector3::CreateZero(), 
+                m_rendState.m_color, 
+                AZ::RPI::AuxGeomDraw::DrawStyle::Line,
+                m_rendState.m_depthTest,
+                m_rendState.m_depthWrite,
+                m_rendState.m_faceCullMode,
+                m_rendState.m_viewProjOverrideIndex);
+        }
+    }
+
     void AtomDebugDisplayViewportInterface::DrawSolidOBB(
         const AZ::Vector3& center, 
         const AZ::Vector3& axisX, 
@@ -881,7 +899,7 @@ namespace AZ::AtomBridge
         {
             // Draw circle with single radius.
             const float step = DegToRad(10.0f);
-            const float maxAngle = DegToRad(360.0f) + step;
+            const float maxAngle = DegToRad(360.0f);
             SingleColorStaticSizeLineHelper<40> lines; // hard code 40 lines until DegToRad is constexpr.
 
             AZ::Vector3 radiusV3 = AZ::Vector3(radius);
@@ -906,7 +924,28 @@ namespace AZ::AtomBridge
         }
     }
 
-    void AtomDebugDisplayViewportInterface::DrawCone(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius, float height, bool drawShaded)
+    void AtomDebugDisplayViewportInterface::DrawWireCone(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius, float height)
+    {
+        if (m_auxGeomPtr)
+        {
+            const AZ::Vector3 worldPos = ToWorldSpacePosition(pos);
+            const AZ::Vector3 worldDir = ToWorldSpaceVector(dir);
+            m_auxGeomPtr->DrawCone(
+                worldPos, 
+                worldDir, 
+                radius, 
+                height, 
+                m_rendState.m_color, 
+                AZ::RPI::AuxGeomDraw::DrawStyle::Line,
+                m_rendState.m_depthTest,
+                m_rendState.m_depthWrite,
+                m_rendState.m_faceCullMode,
+                m_rendState.m_viewProjOverrideIndex
+            );
+        }
+    }
+
+    void AtomDebugDisplayViewportInterface::DrawSolidCone(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius, float height, bool drawShaded)
     {
         if (m_auxGeomPtr)
         {
@@ -1090,7 +1129,7 @@ namespace AZ::AtomBridge
             // This matches Cry behavior, the DrawWireSphere above may need modifying to use the same approach.
             // Draw 3 axis aligned circles
             const float step = DegToRad(10.0f);
-            const float maxAngle = DegToRad(360.0f) + step;
+            const float maxAngle = DegToRad(360.0f);
             SingleColorStaticSizeLineHelper<40*3> lines; // hard code to 40 lines * 3 circles until DegToRad is constexpr.
 
             // Z Axis
@@ -1116,8 +1155,8 @@ namespace AZ::AtomBridge
             // Draw 3 axis aligned circles
             const float stepAngle  = DegToRad(11.25f);
             const float startAngle = DegToRad(0.0f);
-            const float stopAngle  = DegToRad(360.0f) + startAngle;
-            SingleColorDynamicSizeLineHelper lines(2+static_cast<int>(360.0f/11.25f)); // num disk segments + 1 for azis line + 1 for spare
+            const float stopAngle = DegToRad(360.0f);
+            SingleColorDynamicSizeLineHelper lines(2 + static_cast<int>(360.0f / 11.25f)); // num disk segments + 1 for axis line + 1 for spare
             const AZ::Vector3 radiusV3 = AZ::Vector3(radius);
             CreateArbitraryAxisArc(
                 lines, 
@@ -1129,7 +1168,7 @@ namespace AZ::AtomBridge
                 dir
             );
 
-            lines.AddLineSegment(ToWorldSpacePosition(pos), ToWorldSpacePosition(pos + dir * (radius * 0.2f))); // 0.2f comes from Code\Sandbox\Editor\Objects\DisplayContextShared.inl DisplayContext::DrawWireDisk
+            lines.AddLineSegment(ToWorldSpacePosition(pos), ToWorldSpacePosition(pos + dir * (radius * 0.2f))); // 0.2f comes from Code\Editor\Objects\DisplayContextShared.inl DisplayContext::DrawWireDisk
             lines.Draw(m_auxGeomPtr, m_rendState);
         }
     }
@@ -1284,7 +1323,7 @@ namespace AZ::AtomBridge
         params.m_hAlign = center ? AzFramework::TextHorizontalAlignment::Center : AzFramework::TextHorizontalAlignment::Left; //! Horizontal text alignment
         params.m_monospace = false; //! disable character proportional spacing
         params.m_depthTest = false; //! Test character against the depth buffer
-        params.m_virtual800x600ScreenSize = true; //! Text placement and size are scaled relative to a virtual 800x600 resolution
+        params.m_virtual800x600ScreenSize = false; //! Text placement and size are scaled in viewport pixel coordinates
         params.m_scaleWithWindow = false; //! Font gets bigger as the window gets bigger
         params.m_multiline = true; //! text respects ascii newline characters
 
@@ -1320,7 +1359,7 @@ namespace AZ::AtomBridge
         params.m_hAlign = center ? AzFramework::TextHorizontalAlignment::Center : AzFramework::TextHorizontalAlignment::Left; //! Horizontal text alignment
         params.m_monospace = false; //! disable character proportional spacing
         params.m_depthTest = false; //! Test character against the depth buffer
-        params.m_virtual800x600ScreenSize = true; //! Text placement and size are scaled relative to a virtual 800x600 resolution
+        params.m_virtual800x600ScreenSize = false; //! Text placement and size are scaled in viewport pixel coordinates
         params.m_scaleWithWindow = false; //! Font gets bigger as the window gets bigger
         params.m_multiline = true; //! text respects ascii newline characters
 
@@ -1336,8 +1375,6 @@ namespace AZ::AtomBridge
     {
         AZ_Assert(false, "Unexpected use of legacy api, please file a feature request with the rendering team to get this implemented!");
     }
-    // unhandledled on Atom - virtual void DrawTextureLabel(ITexture* texture, const AZ::Vector3& pos, float sizeX, float sizeY, int texIconFlags) override;
-    // void AtomDebugDisplayViewportInterface::DrawTextureLabel(int textureId, const AZ::Vector3& pos, float sizeX, float sizeY, int texIconFlags) override;
 
     void AtomDebugDisplayViewportInterface::SetLineWidth(float width)
     {

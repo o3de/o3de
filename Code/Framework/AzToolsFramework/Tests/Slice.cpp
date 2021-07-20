@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 
 #include <AzCore/UnitTest/TestTypes.h>
@@ -482,6 +477,9 @@ namespace UnitTest
     TEST_F(SliceActivationOrderTest, ActivationOrderShouldNotAffectUndoCache)
     {
         AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
+        // Swallow deprecation warnings from the Transform component as they are not relevant to this test
+        UnitTest::ErrorHandler errorHandler("GetScale is deprecated");
 
         // Create a parent entity with a transform component
         AZ::Entity* parentEntity = aznew AZ::Entity("TestParentEntity");

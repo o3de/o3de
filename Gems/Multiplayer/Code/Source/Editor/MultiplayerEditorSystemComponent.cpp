@@ -1,17 +1,13 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <Multiplayer/IMultiplayer.h>
 #include <Multiplayer/IMultiplayerTools.h>
+#include <Multiplayer/INetworkSpawnableLibrary.h>
 #include <Multiplayer/MultiplayerConstants.h>
 
 #include <MultiplayerSystemComponent.h>
@@ -113,6 +109,16 @@ namespace Multiplayer
             {
                 editorNetworkInterface->Disconnect(m_editorConnId, AzNetworking::DisconnectReason::TerminatedByClient);
             }
+            if (auto console = AZ::Interface<AZ::IConsole>::Get(); console)
+            {
+                console->PerformCommand("disconnect");
+            }
+
+            AZ::Interface<INetworkEntityManager>::Get()->ClearAllEntities();
+
+            // Rebuild the library to clear temporary in-memory spawnable assets
+            AZ::Interface<INetworkSpawnableLibrary>::Get()->BuildSpawnablesList();
+
             break;
         }
     }
@@ -161,7 +167,7 @@ namespace Multiplayer
 
         // BeginGameMode and Prefab Processing have completed at this point
         IMultiplayerTools* mpTools = AZ::Interface<IMultiplayerTools>::Get();
-        if (editorsv_enabled && mpTools != nullptr && mpTools->DidProcessNetworkPrefabs())
+        if (editorsv_enabled && mpTools != nullptr)
         {
             const AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& assetData = prefabEditorEntityOwnershipInterface->GetPlayInEditorAssetData();
         
@@ -187,6 +193,9 @@ namespace Multiplayer
                 m_serverProcess = LaunchEditorServer();
             }
 
+            // Spawnable library needs to be rebuilt since now we have newly registered in-memory spawnable assets
+            AZ::Interface<INetworkSpawnableLibrary>::Get()->BuildSpawnablesList();
+
             // Now that the server has launched, attempt to connect the NetworkInterface         
             INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MPEditorInterfaceName));
             AZ_Assert(editorNetworkInterface, "MP Editor Network Interface was unregistered before Editor could connect.");
@@ -207,10 +216,10 @@ namespace Multiplayer
             while (byteStream.GetCurPos() < byteStream.GetLength())
             {
                 MultiplayerEditorPackets::EditorServerInit packet;
-                AzNetworking::TcpPacketEncodingBuffer& outBuffer = packet.ModifyAssetData();
+                auto& outBuffer = packet.ModifyAssetData();
 
                 // Size the packet's buffer appropriately
-                size_t readSize = TcpPacketEncodingBuffer::GetCapacity();
+                size_t readSize = outBuffer.GetCapacity();
                 size_t byteStreamSize = byteStream.GetLength() - byteStream.GetCurPos();
                 if (byteStreamSize < readSize)
                 {
@@ -228,6 +237,9 @@ namespace Multiplayer
                 editorNetworkInterface->SendReliablePacket(m_editorConnId, packet);
             }
         }
+    }
 
+    void MultiplayerEditorSystemComponent::OnGameEntitiesReset()
+    {
     }
 }

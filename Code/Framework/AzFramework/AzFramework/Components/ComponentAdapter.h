@@ -1,22 +1,17 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/RTTI/RTTI.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace AzFramework
 {
@@ -64,15 +59,13 @@ namespace AzFramework
         the EditContext. TController can friend itself to the editor component to make this work if required.
     */
         template<typename TController, typename TConfiguration = AZ::ComponentConfig>
-        class ComponentAdapter
-            : public AZ::Component
+        class ComponentAdapter : public AZ::Component
         {
         public:
-
             AZ_RTTI((ComponentAdapter, "{644A9187-4FDB-42C1-9D59-DD75304B551A}", TController, TConfiguration), AZ::Component);
 
             ComponentAdapter() = default;
-            ComponentAdapter(const TConfiguration& configuration);
+            explicit ComponentAdapter(const TConfiguration& configuration);
 
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services);
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services);
@@ -85,7 +78,6 @@ namespace AzFramework
             void Deactivate() override;
 
         protected:
-
             static void Reflect(AZ::ReflectContext* context);
 
             // AZ::Component overrides ...

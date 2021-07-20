@@ -1,0 +1,43 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+ShaderResourceGroup RayTracingMaterialSrg : SRG_RayTracingMaterial
+{
+    Sampler LinearSampler
+    {
+        AddressU = Wrap;
+        AddressV = Wrap;
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        MaxAnisotropy = 16;
+    };
+
+    // material info structured buffer
+    struct MaterialInfo
+    {
+        float4 m_baseColor;
+        float m_metallicFactor;
+        float m_roughnessFactor;
+        uint m_textureFlags;
+        uint m_textureStartIndex;
+    };
+    
+    // hit shaders can retrieve the MaterialInfo for a mesh hit using: RayTracingMaterialSrg::m_materialInfo[InstanceIndex()]   
+    StructuredBuffer<MaterialInfo> m_materialInfo;
+      
+    // texture flag bits indicating if optional textures are present
+    #define TEXTURE_FLAG_BASECOLOR      1
+    #define TEXTURE_FLAG_NORMAL         2
+    #define TEXTURE_FLAG_METALLIC       4
+    #define TEXTURE_FLAG_ROUGHNESS      8
+
+    // unbounded array of Material textures
+    Texture2D m_materialTextures[];
+}

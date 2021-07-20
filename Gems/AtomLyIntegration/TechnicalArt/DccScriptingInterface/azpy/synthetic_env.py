@@ -1,14 +1,10 @@
 # coding:utf-8
 #!/usr/bin/python
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 # -- This line is 75 characters -------------------------------------------
 from __future__ import unicode_literals
@@ -384,8 +380,7 @@ def stash_env(_SYNTH_ENV_DICT = OrderedDict()):
     # changed to just make the fallback what is set in boostrap
     # so now it's less of a fallnack and more correct if not
     # explicitly set
-    _LY_PROJECT = os.getenv(ENVAR_LY_PROJECT,
-                            get_current_project(_LY_DEV))
+    _LY_PROJECT = os.getenv(ENVAR_LY_PROJECT)
     _SYNTH_ENV_DICT[ENVAR_LY_PROJECT] = _LY_PROJECT
     
     _LY_BUILD_DIR_NAME = os.getenv(ENVAR_LY_BUILD_DIR_NAME,

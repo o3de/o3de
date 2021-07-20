@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "TranslationManipulators.h"
 
@@ -77,8 +72,7 @@ namespace AzToolsFramework
         }
     }
 
-    void TranslationManipulators::InstallLinearManipulatorMouseUpCallback(
-        const LinearManipulator::MouseActionCallback& onMouseUpCallback)
+    void TranslationManipulators::InstallLinearManipulatorMouseUpCallback(const LinearManipulator::MouseActionCallback& onMouseUpCallback)
     {
         for (AZStd::shared_ptr<LinearManipulator>& manipulator : m_linearManipulators)
         {
@@ -104,8 +98,7 @@ namespace AzToolsFramework
         }
     }
 
-    void TranslationManipulators::InstallPlanarManipulatorMouseUpCallback(
-        const PlanarManipulator::MouseActionCallback& onMouseUpCallback)
+    void TranslationManipulators::InstallPlanarManipulatorMouseUpCallback(const PlanarManipulator::MouseActionCallback& onMouseUpCallback)
     {
         for (AZStd::shared_ptr<PlanarManipulator>& manipulator : m_planarManipulators)
         {
@@ -122,8 +115,7 @@ namespace AzToolsFramework
         }
     }
 
-    void TranslationManipulators::InstallSurfaceManipulatorMouseUpCallback(
-        const SurfaceManipulator::MouseActionCallback& onMouseUpCallback)
+    void TranslationManipulators::InstallSurfaceManipulatorMouseUpCallback(const SurfaceManipulator::MouseActionCallback& onMouseUpCallback)
     {
         if (m_surfaceManipulator)
         {
@@ -242,7 +234,9 @@ namespace AzToolsFramework
     }
 
     void TranslationManipulators::ConfigureLinearView(
-        float axisLength, const AZ::Color& axis1Color, const AZ::Color& axis2Color,
+        float axisLength,
+        const AZ::Color& axis1Color,
+        const AZ::Color& axis2Color,
         const AZ::Color& axis3Color /*= AZ::Color(0.0f, 0.0f, 1.0f, 0.5f)*/)
     {
         const float coneLength = 0.28f;
@@ -251,15 +245,13 @@ namespace AzToolsFramework
 
         const AZ::Color axesColor[] = { axis1Color, axis2Color, axis3Color };
 
-        const auto configureLinearView = [lineWidth, coneLength, axisLength, coneRadius](
-            LinearManipulator* linearManipulator, const AZ::Color& color)
+        const auto configureLinearView =
+            [lineWidth, coneLength, axisLength, coneRadius](LinearManipulator* linearManipulator, const AZ::Color& color)
         {
             ManipulatorViews views;
-            views.emplace_back(CreateManipulatorViewLine(
-                *linearManipulator, color, axisLength, lineWidth));
+            views.emplace_back(CreateManipulatorViewLine(*linearManipulator, color, axisLength, lineWidth));
             views.emplace_back(CreateManipulatorViewCone(
-                *linearManipulator, color, linearManipulator->GetAxis() * (axisLength - coneLength),
-                coneLength, coneRadius));
+                *linearManipulator, color, linearManipulator->GetAxis() * (axisLength - coneLength), coneLength, coneRadius));
             linearManipulator->SetViews(AZStd::move(views));
         };
 
@@ -270,7 +262,8 @@ namespace AzToolsFramework
     }
 
     void TranslationManipulators::ConfigurePlanarView(
-        const AZ::Color& plane1Color, const AZ::Color& plane2Color /*= AZ::Color(0.0f, 1.0f, 0.0f, 0.5f)*/,
+        const AZ::Color& plane1Color,
+        const AZ::Color& plane2Color /*= AZ::Color(0.0f, 1.0f, 0.0f, 0.5f)*/,
         const AZ::Color& plane3Color /*= AZ::Color(0.0f, 0.0f, 1.0f, 0.5f)*/)
     {
         const float planeSize = 0.6f;
@@ -278,34 +271,29 @@ namespace AzToolsFramework
 
         for (size_t manipulatorIndex = 0; manipulatorIndex < m_planarManipulators.size(); ++manipulatorIndex)
         {
-            const AZStd::shared_ptr<ManipulatorViewQuad> manipulatorView =
-                CreateManipulatorViewQuad(
-                    *m_planarManipulators[manipulatorIndex], planesColor[manipulatorIndex],
-                    planesColor[(manipulatorIndex + 1) % 3],
-                    planeSize);
+            const AZStd::shared_ptr<ManipulatorViewQuad> manipulatorView = CreateManipulatorViewQuad(
+                *m_planarManipulators[manipulatorIndex], planesColor[manipulatorIndex], planesColor[(manipulatorIndex + 1) % 3], planeSize);
 
-            m_planarManipulators[manipulatorIndex]->SetViews(ManipulatorViews{manipulatorView});
+            m_planarManipulators[manipulatorIndex]->SetViews(ManipulatorViews{ manipulatorView });
         }
     }
 
-    void TranslationManipulators::ConfigureSurfaceView(
-        const float radius, const AZ::Color& color)
+    void TranslationManipulators::ConfigureSurfaceView(const float radius, const AZ::Color& color)
     {
         if (m_surfaceManipulator)
         {
-            m_surfaceManipulator->SetView(CreateManipulatorViewSphere(color, radius,
-                [](const ViewportInteraction::MouseInteraction& /*mouseInteraction*/,
-                    bool mouseOver, const AZ::Color& defaultColor) -> AZ::Color
-            {
-                const AZ::Color color[2] =
+            m_surfaceManipulator->SetView(CreateManipulatorViewSphere(
+                color, radius,
+                [](const ViewportInteraction::MouseInteraction& /*mouseInteraction*/, bool mouseOver,
+                   const AZ::Color& defaultColor) -> AZ::Color
                 {
-                    defaultColor,
-                    Vector3ToVector4(
-                        BaseManipulator::s_defaultMouseOverColor.GetAsVector3(), s_surfaceManipulatorTransparency)
-                };
+                    const AZ::Color color[2] = {
+                        defaultColor,
+                        Vector3ToVector4(BaseManipulator::s_defaultMouseOverColor.GetAsVector3(), s_surfaceManipulatorTransparency)
+                    };
 
-                return color[mouseOver];
-            }));
+                    return color[mouseOver];
+                }));
         }
     }
 
@@ -327,27 +315,17 @@ namespace AzToolsFramework
         }
     }
 
-    void ConfigureTranslationManipulatorAppearance3d(
-        TranslationManipulators* translationManipulators)
+    void ConfigureTranslationManipulatorAppearance3d(TranslationManipulators* translationManipulators)
     {
-        translationManipulators->SetAxes(
-            AZ::Vector3::CreateAxisX(),
-            AZ::Vector3::CreateAxisY(),
-            AZ::Vector3::CreateAxisZ());
-        translationManipulators->ConfigurePlanarView(
-            s_xAxisColor, s_yAxisColor, s_zAxisColor);
-        translationManipulators->ConfigureLinearView(
-            s_axisLength, s_xAxisColor, s_yAxisColor, s_zAxisColor);
-        translationManipulators->ConfigureSurfaceView(
-            s_surfaceManipulatorRadius, s_surfaceManipulatorColor);
+        translationManipulators->SetAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ());
+        translationManipulators->ConfigurePlanarView(s_xAxisColor, s_yAxisColor, s_zAxisColor);
+        translationManipulators->ConfigureLinearView(s_axisLength, s_xAxisColor, s_yAxisColor, s_zAxisColor);
+        translationManipulators->ConfigureSurfaceView(s_surfaceManipulatorRadius, s_surfaceManipulatorColor);
     }
 
-    void ConfigureTranslationManipulatorAppearance2d(
-        TranslationManipulators* translationManipulators)
+    void ConfigureTranslationManipulatorAppearance2d(TranslationManipulators* translationManipulators)
     {
-        translationManipulators->SetAxes(
-            AZ::Vector3::CreateAxisX(),
-            AZ::Vector3::CreateAxisY());
+        translationManipulators->SetAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY());
         translationManipulators->ConfigurePlanarView(s_xAxisColor);
         translationManipulators->ConfigureLinearView(s_axisLength, s_xAxisColor, s_yAxisColor);
     }

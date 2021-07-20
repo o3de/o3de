@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Math/Vector2.h>
@@ -124,7 +119,7 @@ namespace AZ
 
         template<typename VectorType, size_t ElementCount>
         JsonSerializationResult::Result Load(void* outputValue, const Uuid& outputValueTypeId, const rapidjson::Value& inputValue,
-            JsonDeserializerContext& context)
+            JsonDeserializerContext& context, bool isExplicitDefault)
         {
             namespace JSR = JsonSerializationResult; // Used remove name conflicts in AzCore in uber builds.
 
@@ -138,6 +133,12 @@ namespace AZ
             VectorType* vector = reinterpret_cast<VectorType*>(outputValue);
             AZ_Assert(vector, "Output value for JsonVector%iSerializer can't be null.", ElementCount);
 
+            if (isExplicitDefault)
+            {
+                *vector = VectorType::CreateZero();
+                return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::DefaultsUsed, "Math vector value set to default of zero.");
+            }
+
             switch (inputValue.GetType())
             {
             case rapidjson::kArrayType:
@@ -145,10 +146,14 @@ namespace AZ
             case rapidjson::kObjectType:
                 return LoadObject<VectorType, ElementCount>(*vector, inputValue, context);
 
-            case rapidjson::kStringType: // fall through
-            case rapidjson::kNumberType: // fall through
-            case rapidjson::kNullType:   // fall through
-            case rapidjson::kFalseType:  // fall through
+            case rapidjson::kStringType:
+                [[fallthrough]];
+            case rapidjson::kNumberType:
+                [[fallthrough]];
+            case rapidjson::kNullType:
+                [[fallthrough]];
+            case rapidjson::kFalseType:
+                [[fallthrough]];
             case rapidjson::kTrueType:
                 return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Unsupported,
                     "Unsupported type. Math vectors can only be read from arrays or objects.");
@@ -189,6 +194,16 @@ namespace AZ
         }
     }
 
+
+    // BaseJsonVectorSerializer
+
+    AZ_CLASS_ALLOCATOR_IMPL(BaseJsonVectorSerializer, SystemAllocator, 0);
+
+    auto BaseJsonVectorSerializer::GetOperationsFlags() const -> OperationFlags
+    {
+        return OperationFlags::InitializeNewInstance;
+    }
+
     
     // Vector2
 
@@ -197,7 +212,8 @@ namespace AZ
     JsonSerializationResult::Result JsonVector2Serializer::Load(void* outputValue, const Uuid& outputValueTypeId,
         const rapidjson::Value& inputValue, JsonDeserializerContext& context)
     {
-        return JsonMathVectorSerializerInternal::Load<Vector2, 2>(outputValue, outputValueTypeId, inputValue, context);
+        return JsonMathVectorSerializerInternal::Load<Vector2, 2>(
+            outputValue, outputValueTypeId, inputValue, context, IsExplicitDefault(inputValue));
     }
 
     JsonSerializationResult::Result JsonVector2Serializer::Store(rapidjson::Value& outputValue, const void* inputValue,
@@ -214,7 +230,8 @@ namespace AZ
     JsonSerializationResult::Result JsonVector3Serializer::Load(void* outputValue, const Uuid& outputValueTypeId,
         const rapidjson::Value& inputValue, JsonDeserializerContext& context)
     {
-        return JsonMathVectorSerializerInternal::Load<Vector3, 3>(outputValue, outputValueTypeId, inputValue, context);
+        return JsonMathVectorSerializerInternal::Load<Vector3, 3>(
+            outputValue, outputValueTypeId, inputValue, context, IsExplicitDefault(inputValue));
     }
 
     JsonSerializationResult::Result JsonVector3Serializer::Store(rapidjson::Value& outputValue, const void* inputValue,
@@ -231,7 +248,8 @@ namespace AZ
     JsonSerializationResult::Result JsonVector4Serializer::Load(void* outputValue, const Uuid& outputValueTypeId,
         const rapidjson::Value& inputValue, JsonDeserializerContext& context)
     {
-        return JsonMathVectorSerializerInternal::Load<Vector4, 4>(outputValue, outputValueTypeId, inputValue, context);
+        return JsonMathVectorSerializerInternal::Load<Vector4, 4>(
+            outputValue, outputValueTypeId, inputValue, context, IsExplicitDefault(inputValue));
     }
 
     JsonSerializationResult::Result JsonVector4Serializer::Store(rapidjson::Value& outputValue, const void* inputValue,
@@ -252,7 +270,7 @@ namespace AZ
         // check for "yaw, pitch, roll" object
         if (inputValue.IsObject())
         {
-            if (inputValue.GetObject().ObjectEmpty())
+            if (IsExplicitDefault(inputValue))
             {
                 Quaternion* outQuaternion = reinterpret_cast<Quaternion*>(outputValue);
                 *outQuaternion = Quaternion::CreateIdentity();
@@ -283,7 +301,7 @@ namespace AZ
             return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Success, "Successfully read quaternion.");
         }
 
-        return JsonMathVectorSerializerInternal::Load<Quaternion, 4>(outputValue, outputValueTypeId, inputValue, context);
+        return JsonMathVectorSerializerInternal::Load<Quaternion, 4>(outputValue, outputValueTypeId, inputValue, context, false);
     }
 
     JsonSerializationResult::Result JsonQuaternionSerializer::Store(rapidjson::Value& outputValue, const void* inputValue,

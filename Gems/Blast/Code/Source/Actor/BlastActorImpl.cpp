@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #include "StdAfx.h"
@@ -45,6 +40,7 @@ namespace Blast
         , m_parentLinearVelocity(desc.m_parentLinearVelocity)
         , m_parentCenterOfMass(desc.m_parentCenterOfMass)
         , m_bodyConfiguration(desc.m_bodyConfiguration)
+        , m_scale(desc.m_scale)
     {
         // Store pointer to ourselves in the blast toolkit actor's userData
         m_tkActor.userData = this;
@@ -67,7 +63,7 @@ namespace Blast
 
         auto transform = AZ::Transform::CreateFromQuaternionAndTranslation(
             m_bodyConfiguration.m_orientation, m_bodyConfiguration.m_position);
-        transform.MultiplyByScale(m_bodyConfiguration.m_scale);
+        transform.MultiplyByUniformScale(m_scale);
 
         AZ::TransformBus::Event(m_entity->GetId(), &AZ::TransformInterface::SetWorldTM, transform);
 
@@ -130,7 +126,7 @@ namespace Blast
                 Physics::NativeShapeConfiguration shapeConfiguration;
                 shapeConfiguration.m_nativeShapePtr =
                     reinterpret_cast<void*>(const_cast<physx::PxConvexMeshGeometry*>(&subchunk.geometry)->convexMesh);
-                shapeConfiguration.m_nativeShapeScale = m_bodyConfiguration.m_scale;
+                shapeConfiguration.m_nativeShapeScale = AZ::Vector3(m_scale);
 
                 AZStd::shared_ptr<Physics::Shape> shape = AZ::Interface<Physics::SystemRequests>::Get()->CreateShape(
                     colliderConfiguration, shapeConfiguration);
@@ -150,8 +146,6 @@ namespace Blast
         colliderConfiguration.m_position = transform.GetTranslation();
         colliderConfiguration.m_rotation = transform.GetRotation();
         colliderConfiguration.m_isExclusive = true;
-        colliderConfiguration.m_materialSelection.SetMaterialLibrary(
-            AZ::Interface<AzPhysics::SystemInterface>::Get()->GetDefaultMaterialLibrary()->GetId());
         colliderConfiguration.m_materialSelection.SetMaterialId(material);
         colliderConfiguration.m_collisionGroupId = actorConfiguration.m_collisionGroupId;
         colliderConfiguration.m_collisionLayer = actorConfiguration.m_collisionLayer;

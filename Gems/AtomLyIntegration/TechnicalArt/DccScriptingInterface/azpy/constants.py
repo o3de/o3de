@@ -1,14 +1,10 @@
 # coding:utf-8
 #!/usr/bin/python
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 # -- This line is 75 characters -------------------------------------------
 
@@ -26,6 +22,7 @@ So we can make an update here once that is used elsewhere.
 import os
 import sys
 import site
+from os.path import expanduser
 import logging as _logging
 
 # for this module to perform standalone
@@ -90,6 +87,9 @@ TAG_DIR_DCCSI_AZPY = str('azpy')
 TAG_DIR_DCCSI_SDK = str('SDK')
 TAG_DIR_LY_BUILD = str('build')
 TAG_QT_PLUGIN_PATH = str('QT_PLUGIN_PATH')
+
+TAG_O3DE_FOLDER = str('.o3de')
+TAG_O3DE_BOOTSTRAP = str('bootstrap.setreg')
 
 # filesystem markers, stub file names.
 STUB_LY_DEV = str('engine.json')
@@ -221,10 +221,28 @@ TAG_DEFAULT_PY = str('Launch_pyBASE.bat')
 # config file stuff
 FILENAME_DEFAULT_CONFIG = str('DCCSI_config.json')
 
+# new o3de related paths
+# os.path.expanduser("~") returns different values in py2.7 vs 3
+PATH_USER_HOME = expanduser("~")
+_LOGGER.debug('user home: {}'.format(PATH_USER_HOME))
+
+# special case, make sure didn't return <user>\documents
+parts = os.path.split(PATH_USER_HOME)
+
+if str(parts[1].lower()) == 'documents':
+    PATH_USER_HOME = parts[0]
+    _LOGGER.debug('user home CORRECTED: {}'.format(PATH_USER_HOME))
+
+PATH_USER_O3DE = str('{home}\\{o3de}').format(home=PATH_USER_HOME,
+                                              o3de=TAG_O3DE_FOLDER)
+PATH_USER_O3DE_REGISTRY = str('{0}\\Registry').format(PATH_USER_O3DE)
+PATH_USER_O3DE_BOOTSTRAP = str('{reg}\\{file}').format(reg=PATH_USER_O3DE_REGISTRY,
+                                                       file=TAG_O3DE_BOOTSTRAP)
+
 #python and site-dir
 TAG_DCCSI_PY_VERSION_MAJOR = str(3)
 TAG_DCCSI_PY_VERSION_MINOR = str(7)
-TAG_DCCSI_PY_VERSION_RELEASE = str(5)
+TAG_DCCSI_PY_VERSION_RELEASE = str(10)
 TAG_PYTHON_EXE = str('python.exe')
 TAG_TOOLS_DIR = str('Tools\\Python')
 TAG_PLATFORM = str('windows')
@@ -314,6 +332,7 @@ if __name__ == '__main__':
     _stash_dict['QTFORPYTHON_PATH'] = Path(PATH_QTFORPYTHON_PATH)
     _stash_dict['QT_PLUGIN_PATH'] = Path(PATH_QT_PLUGIN_PATH)
     _stash_dict['SAT_INSTALL_PATH'] = Path(PATH_SAT_INSTALL_PATH)
+    _stash_dict['PATH_USER_O3DE_BOOTSTRAP'] = Path(PATH_USER_O3DE_BOOTSTRAP)
 
     # ---------------------------------------------------------------------
     # py 2 and 3 compatible iter    

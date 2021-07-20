@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "LmbrCentral_precompiled.h"
 #include "TubeShape.h"
@@ -187,7 +182,7 @@ namespace LmbrCentral
 
     static AZ::Aabb CalculateTubeBounds(const TubeShape& tubeShape, const AZ::Transform& transform)
     {
-        const auto maxScale = transform.GetScale().GetMaxElement();
+        const auto maxScale = transform.GetUniformScale();
         const auto scaledRadiusFn =
             [&tubeShape, maxScale](const AZ::SplineAddress& splineAddress)
         {
@@ -217,8 +212,7 @@ namespace LmbrCentral
         }
 
         AZ::Transform worldFromLocalUniformScale = m_currentTransform;
-        const float maxScale = worldFromLocalUniformScale.ExtractScale().GetMaxElement();
-        worldFromLocalUniformScale *= AZ::Transform::CreateScale(AZ::Vector3(maxScale));
+        worldFromLocalUniformScale.SetUniformScale(worldFromLocalUniformScale.GetUniformScale());
 
         return CalculateTubeBounds(*this, worldFromLocalUniformScale);
     }
@@ -237,45 +231,43 @@ namespace LmbrCentral
         }
 
         AZ::Transform worldFromLocalNormalized = m_currentTransform;
-        const AZ::Vector3 scale = AZ::Vector3(worldFromLocalNormalized.ExtractScale().GetMaxElement());
+        const float scale = worldFromLocalNormalized.ExtractUniformScale();
         const AZ::Transform localFromWorldNormalized = worldFromLocalNormalized.GetInverse();
-        const AZ::Vector3 localPoint = localFromWorldNormalized.TransformPoint(point) * scale.GetReciprocal();
+        const AZ::Vector3 localPoint = localFromWorldNormalized.TransformPoint(point) / scale;
 
         const auto address = m_spline->GetNearestAddressPosition(localPoint).m_splineAddress;
         const float radiusSq = powf(m_radius, 2.0f);
         const float variableRadiusSq =
             powf(m_variableRadius.GetElementInterpolated(address, Lerpf), 2.0f);
 
-        return (m_spline->GetPosition(address) - localPoint).GetLengthSq() < (radiusSq + variableRadiusSq) *
-            scale.GetMaxElement();
+        return (m_spline->GetPosition(address) - localPoint).GetLengthSq() < (radiusSq + variableRadiusSq) * scale;
     }
 
     float TubeShape::DistanceSquaredFromPoint(const AZ::Vector3& point)
     {
         AZ::Transform worldFromLocalNormalized = m_currentTransform;
-        const AZ::Vector3 maxScale = AZ::Vector3(worldFromLocalNormalized.ExtractScale().GetMaxElement());
+        const float uniformScale = worldFromLocalNormalized.ExtractUniformScale();
         const AZ::Transform localFromWorldNormalized = worldFromLocalNormalized.GetInverse();
-        const AZ::Vector3 localPoint = localFromWorldNormalized.TransformPoint(point) * maxScale.GetReciprocal();
+        const AZ::Vector3 localPoint = localFromWorldNormalized.TransformPoint(point) / uniformScale;
 
         const auto splineQueryResult = m_spline->GetNearestAddressPosition(localPoint);
         const float variableRadius =
             m_variableRadius.GetElementInterpolated(splineQueryResult.m_splineAddress, Lerpf);
 
-        return powf((sqrtf(splineQueryResult.m_distanceSq) - (m_radius + variableRadius)) * maxScale.GetMaxElement(), 2.0f);
+        return powf((sqrtf(splineQueryResult.m_distanceSq) - (m_radius + variableRadius)) * uniformScale, 2.0f);
     }
 
     bool TubeShape::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
     {
         AZ::Transform transformUniformScale = m_currentTransform;
-        const float maxScale = transformUniformScale.ExtractScale().GetMaxElement();
-        transformUniformScale *= AZ::Transform::CreateScale(AZ::Vector3(maxScale));
+        transformUniformScale.SetUniformScale(transformUniformScale.GetUniformScale());
 
         const auto splineQueryResult = IntersectSpline(transformUniformScale, src, dir, *m_spline);
         const float variableRadius = m_variableRadius.GetElementInterpolated(
             splineQueryResult.m_splineAddress, Lerpf);
 
         const float totalRadius = m_radius + variableRadius;
-        distance = (splineQueryResult.m_rayDistance - totalRadius) * m_currentTransform.GetScale().GetMaxElement();
+        distance = (splineQueryResult.m_rayDistance - totalRadius) * m_currentTransform.GetUniformScale();
 
         return static_cast<float>(sqrtf(splineQueryResult.m_distanceSq)) < totalRadius;
     }

@@ -1,4 +1,8 @@
 @ECHO off
+REM Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+REM 
+REM SPDX-License-Identifier: Apache-2.0 OR MIT
+
 setlocal enabledelayedexpansion
 
 :: TAB equals 4 spaces
@@ -12,14 +16,9 @@ set OUTPUT_FILE=atom_rpi_asset_files.cmake
 
 :: Write copyright header to top of file
 echo # > %OUTPUT_FILE%
-echo # All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or >> %OUTPUT_FILE%
-echo # its licensors. >> %OUTPUT_FILE%
+echo # Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution. >> %OUTPUT_FILE%
 echo # >> %OUTPUT_FILE%
-echo # For complete copyright and license terms please see the LICENSE at the root of this >> %OUTPUT_FILE%
-echo # distribution (the "License"). All use of this software is governed by the License, >> %OUTPUT_FILE%
-echo # or, if provided, by the license below or the license accompanying this file. Do not >> %OUTPUT_FILE%
-echo # remove or modify any license notices. This file is distributed on an "AS IS" BASIS, >> %OUTPUT_FILE%
-echo # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. >> %OUTPUT_FILE%
+echo # SPDX-License-Identifier: Apache-2.0 OR MIT >> %OUTPUT_FILE%
 echo # >> %OUTPUT_FILE%
 echo.>> %OUTPUT_FILE%
 

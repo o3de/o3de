@@ -1,12 +1,7 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 from unittest import TestCase
@@ -25,6 +20,9 @@ class TestControllerManager(TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
+        error_controller_patcher: patch = patch("manager.controller_manager.ErrorController")
+        cls._mock_error_controller = error_controller_patcher.start()
+
         import_resources_controller_patcher: patch = patch("manager.controller_manager.ImportResourcesController")
         cls._mock_import_resources_controller = import_resources_controller_patcher.start()
 
@@ -52,8 +50,14 @@ class TestControllerManager(TestCase):
         mocked_import_resources_controller: MagicMock = \
             TestControllerManager._mock_import_resources_controller.return_value
 
-        TestControllerManager._expected_controller_manager.setup()
+        TestControllerManager._expected_controller_manager.setup(False)
         mocked_view_edit_controller.setup.assert_called_once()
         mocked_import_resources_controller.setup.assert_called_once()
         mocked_import_resources_controller.add_import_resources_sender.connect.assert_called_once_with(
             mocked_view_edit_controller.add_import_resources_receiver)
+
+    def test_setup_error_controller_setup_gets_invoked(self) -> None:
+        mocked_error_controller: MagicMock = TestControllerManager._mock_error_controller.return_value
+
+        TestControllerManager._expected_controller_manager.setup(True)
+        mocked_error_controller.setup.assert_called_once()

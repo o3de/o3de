@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #ifndef LUAEDITORCONTEXTINTERFACE_H
 #define LUAEDITORCONTEXTINTERFACE_H
@@ -70,6 +65,52 @@ namespace LUAEditor
             , m_bIsModified(false)
             , m_bIsBeingSaved(false)
             , m_PresetLineAtOpen(1){}
+
+        // Copy constructor does not copy over open file handle
+        DocumentInfo(const DocumentInfo& other)
+            : m_assetId(other.m_assetId)
+            , m_scriptAsset(other.m_scriptAsset)
+            , m_assetName(other.m_assetName)
+            , m_displayName(other.m_displayName)
+            , m_lastKnownModTime(other.m_lastKnownModTime)
+            , m_sourceControlInfo(other.m_sourceControlInfo)
+            , m_bSourceControl_Ready(other.m_bSourceControl_Ready)
+            , m_bSourceControl_BusyGettingStats(other.m_bSourceControl_BusyGettingStats)
+            , m_bSourceControl_BusyRequestingEdit(other.m_bSourceControl_BusyRequestingEdit)
+            , m_bSourceControl_CanWrite(other.m_bSourceControl_CanWrite)
+            , m_bSourceControl_CanCheckOut(other.m_bSourceControl_CanCheckOut)
+            , m_bDataIsLoaded(other.m_bDataIsLoaded)
+            , m_bDataIsWritten(other.m_bDataIsWritten)
+            , m_bCloseAfterSave(other.m_bCloseAfterSave)
+            , m_bUntitledDocument(other.m_bUntitledDocument)
+            , m_bIsModified(other.m_bIsModified)
+            , m_bIsBeingSaved(other.m_bIsBeingSaved)
+            , m_PresetLineAtOpen(other.m_PresetLineAtOpen)
+        {}
+
+        DocumentInfo& operator=(const DocumentInfo& other)
+        {
+            m_assetId = other.m_assetId;
+            m_scriptAsset = other.m_scriptAsset;
+            m_assetName = other.m_assetName;
+            m_displayName = other.m_displayName;
+            m_lastKnownModTime = other.m_lastKnownModTime;
+            m_sourceControlInfo = other.m_sourceControlInfo;
+            m_bSourceControl_Ready = other.m_bSourceControl_Ready;
+            m_bSourceControl_BusyGettingStats = other.m_bSourceControl_BusyGettingStats;
+            m_bSourceControl_BusyRequestingEdit = other.m_bSourceControl_BusyRequestingEdit;
+            m_bSourceControl_CanWrite = other.m_bSourceControl_CanWrite;
+            m_bSourceControl_CanCheckOut = other.m_bSourceControl_CanCheckOut;
+            m_bDataIsLoaded = other.m_bDataIsLoaded;
+            m_bDataIsWritten = other.m_bDataIsWritten;
+            m_bCloseAfterSave = other.m_bCloseAfterSave;
+            m_bUntitledDocument = other.m_bUntitledDocument;
+            m_bIsModified = other.m_bIsModified;
+            m_bIsBeingSaved = other.m_bIsBeingSaved;
+            m_PresetLineAtOpen = other.m_PresetLineAtOpen;
+
+            return *this;
+        }
     };
 
     class ContextInterface

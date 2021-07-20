@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "EnhancedPBR_Common.azsli"
 
@@ -117,19 +112,12 @@ VSOutput EnhancedPbr_ForwardPassVS(VSInput IN)
 PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float depth)
 {
     // ------- Tangents & Bitangets -------
+    float3 tangents[UvSetCount] = { IN.m_tangent.xyz, IN.m_tangent.xyz };
+    float3 bitangents[UvSetCount] = { IN.m_bitangent.xyz, IN.m_bitangent.xyz };
 
-    // We support two UV streams, but only a single stream of tangent/bitangent. So for UV[1+] we generated the tangent/bitangent in screen-space.
-    float3 tangents[UvSetCount] = { IN.m_tangent.xyz, float3(0, 0, 0) };
-    float3 bitangents[UvSetCount] = { IN.m_bitangent.xyz, float3(0, 0, 0) };
-
-    if ((o_parallax_feature_enabled && !o_enableSubsurfaceScattering && MaterialSrg::m_parallaxUvIndex != 0)
-        || (o_normal_useTexture && MaterialSrg::m_normalMapUvIndex != 0)
-        || (o_clearCoat_enabled && o_clearCoat_normal_useTexture && MaterialSrg::m_clearCoatNormalMapUvIndex != 0)
-        || (o_detail_normal_useTexture && MaterialSrg::m_detail_allMapsUvIndex != 0))
+    if ((o_parallax_feature_enabled && !o_enableSubsurfaceScattering) || o_normal_useTexture || (o_clearCoat_enabled && o_clearCoat_normal_useTexture) || o_detail_normal_useTexture)
     {
-        // Generate the tangent/bitangent for UV[1+]
-        const int startIndex = 1;
-        PrepareGeneratedTangent(IN.m_normal, IN.m_worldPosition, isFrontFace, IN.m_uv, UvSetCount, tangents, bitangents, startIndex);
+        PrepareGeneratedTangent(IN.m_normal, IN.m_worldPosition, isFrontFace, IN.m_uv, UvSetCount, tangents, bitangents);
     }
 
     // ------- Depth & Parallax -------
@@ -148,7 +136,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
         float3x3 uvMatrix = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3();
         float3x3 uvMatrixInverse = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrixInverse : CreateIdentity3x3();
 
-        GetParallaxInput(IN.m_normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex], MaterialSrg::m_depthFactor, MaterialSrg::m_depthOffset,
+        GetParallaxInput(IN.m_normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex], MaterialSrg::m_heightmapScale, MaterialSrg::m_heightmapOffset,
                          ObjectSrg::GetWorldMatrix(), uvMatrix, uvMatrixInverse,
                          IN.m_uv[MaterialSrg::m_parallaxUvIndex], IN.m_worldPosition, depth, IN.m_position.w, displacementIsClipped);
 
@@ -260,7 +248,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
         // Convert the angle from [0..1] = [0 .. 180 degrees] to radians [0 .. PI]
         const float anisotropyAngle = MaterialSrg::m_anisotropicAngle * PI;
         const float anisotropyFactor = MaterialSrg::m_anisotropicFactor;
-        surface.anisotropy.Init(surface.normal, tangents[0], bitangents[0], anisotropyAngle, anisotropyFactor, surface.roughnessA);
+        surface.anisotropy.Init(surface.normal, IN.m_tangent, IN.m_bitangent, anisotropyAngle, anisotropyFactor, surface.roughnessA);
     }
 
     // ------- Lighting Data -------
@@ -274,15 +262,15 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     // Directional light shadow coordinates
     lightingData.shadowCoords = IN.m_shadowCoords;
 
-    // ------- Occlusion -------
-    
-    lightingData.diffuseAmbientOcclusion = GetOcclusionInput(MaterialSrg::m_diffuseOcclusionMap, MaterialSrg::m_sampler, IN.m_uv[MaterialSrg::m_diffuseOcclusionMapUvIndex], MaterialSrg::m_diffuseOcclusionFactor, o_diffuseOcclusion_useTexture);
-    lightingData.specularOcclusion = GetOcclusionInput(MaterialSrg::m_specularOcclusionMap, MaterialSrg::m_sampler, IN.m_uv[MaterialSrg::m_specularOcclusionMapUvIndex], MaterialSrg::m_specularOcclusionFactor, o_specularOcclusion_useTexture);
-
     // ------- Emissive -------
 
     float2 emissiveUv = IN.m_uv[MaterialSrg::m_emissiveMapUvIndex];
     lightingData.emissiveLighting = GetEmissiveInput(MaterialSrg::m_emissiveMap, MaterialSrg::m_sampler, emissiveUv, MaterialSrg::m_emissiveIntensity, MaterialSrg::m_emissiveColor.rgb, o_emissiveEnabled, o_emissive_useTexture);
+
+    // ------- Occlusion -------
+    
+    lightingData.diffuseAmbientOcclusion = GetOcclusionInput(MaterialSrg::m_diffuseOcclusionMap, MaterialSrg::m_sampler, IN.m_uv[MaterialSrg::m_diffuseOcclusionMapUvIndex], MaterialSrg::m_diffuseOcclusionFactor, o_diffuseOcclusion_useTexture);
+    lightingData.specularOcclusion = GetOcclusionInput(MaterialSrg::m_specularOcclusionMap, MaterialSrg::m_sampler, IN.m_uv[MaterialSrg::m_specularOcclusionMapUvIndex], MaterialSrg::m_specularOcclusionFactor, o_specularOcclusion_useTexture);
 
     // ------- Clearcoat -------
     
@@ -336,14 +324,20 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     // Finalize Lighting
     lightingData.FinalizeLighting(surface.transmission.tint);
 
-    if (o_opacity_mode == OpacityMode::Blended || o_opacity_mode == OpacityMode::TintedTransparent)
-    {
-        alpha = FresnelSchlickWithRoughness(lightingData.NdotV, alpha, surface.roughnessLinear).x; // Increase opacity at grazing angles.
-    }
-
     PbrLightingOutput lightingOutput = GetPbrLightingOutput(surface, lightingData, alpha);
 
     // ------- Opacity -------
+
+    if (o_opacity_mode == OpacityMode::Blended || o_opacity_mode == OpacityMode::TintedTransparent)
+    {
+        // Increase opacity at grazing angles for surfaces with a low m_opacityAffectsSpecularFactor.
+        // For m_opacityAffectsSpecularFactor values close to 0, that indicates a transparent surface
+        // like glass, so it becomes less transparent at grazing angles. For m_opacityAffectsSpecularFactor
+        // values close to 1.0, that indicates the absence of a surface entirely, so this effect should
+        // not apply.
+        float fresnelAlpha = FresnelSchlickWithRoughness(lightingData.NdotV, alpha, surface.roughnessLinear).x;
+        alpha = lerp(fresnelAlpha, alpha, MaterialSrg::m_opacityAffectsSpecularFactor);
+    }
 
     // Note: lightingOutput rendertargets are not always used as named, particularly m_diffuseColor (target 0) and
     // m_specularColor (target 1). Comments below describe the differences when appropriate.
@@ -356,8 +350,15 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
         // For blended mode, we do (dest * alpha) + (source * 1.0). This allows the specular
         // to be added on top of the diffuse, but then the diffuse must be pre-multiplied.
         // It's done this way because surface transparency doesn't really change specular response (eg, glass).
+
         lightingOutput.m_diffuseColor.rgb *= lightingOutput.m_diffuseColor.w; // pre-multiply diffuse
-        lightingOutput.m_diffuseColor.rgb += lightingOutput.m_specularColor.rgb; // add specular
+        
+        // Add specular. m_opacityAffectsSpecularFactor controls how much the alpha masks out specular contribution.
+        float3 specular = lightingOutput.m_specularColor.rgb;
+        specular = lerp(specular, specular * lightingOutput.m_diffuseColor.w, MaterialSrg::m_opacityAffectsSpecularFactor);
+        lightingOutput.m_diffuseColor.rgb += specular;
+
+        lightingOutput.m_diffuseColor.w = alpha;
     }
     else if (o_opacity_mode == OpacityMode::TintedTransparent)
     {
@@ -374,8 +375,13 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
         // m_diffuseColor.rgb (source) is added to that, and the final result is stored in render target 0.
 
         lightingOutput.m_diffuseColor.rgb *= lightingOutput.m_diffuseColor.w; // pre-multiply diffuse
-        lightingOutput.m_diffuseColor.rgb += lightingOutput.m_specularColor.rgb; // add specular
-        lightingOutput.m_specularColor.rgb = baseColor * (1.0 - lightingOutput.m_diffuseColor.w); 
+
+        // Add specular. m_opacityAffectsSpecularFactor controls how much the alpha masks out specular contribution.
+        float3 specular = lightingOutput.m_specularColor.rgb;
+        specular = lerp(specular, specular * lightingOutput.m_diffuseColor.w, MaterialSrg::m_opacityAffectsSpecularFactor);
+        lightingOutput.m_diffuseColor.rgb += specular;
+
+        lightingOutput.m_specularColor.rgb = baseColor * (1.0 - alpha); 
     }
     else
     {
@@ -422,4 +428,3 @@ ForwardPassOutput EnhancedPbr_ForwardPassPS_EDS(VSOutput IN, bool isFrontFace : 
 
     return OUT;
 }
-

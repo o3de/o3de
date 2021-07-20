@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
@@ -66,6 +62,10 @@ ly_add_target(
         Gem::AtomViewportDisplayInfo
 )
 
+# Any 'runtime-like' applications should use Gem::Atom_AtomBridge:
+ly_create_alias(NAME Atom_AtomBridge.Clients NAMESPACE Gem TARGETS Gem::Atom_AtomBridge)
+ly_create_alias(NAME Atom_AtomBridge.Servers NAMESPACE Gem TARGETS Gem::Atom_AtomBridge)
+
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME Atom_AtomBridge.Editor ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
@@ -106,5 +106,12 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::AtomFont
             Gem::AtomToolsFramework.Editor
             Gem::AtomViewportDisplayInfo
+            Gem::AtomViewportDisplayIcons.Editor
+            Gem::MaterialEditor.Builders
     )
+
+
+    # Any 'tool' and 'builder' type applications should use Gem::Atom_AtomBridge.Editor:
+    ly_create_alias(NAME Atom_AtomBridge.Builders NAMESPACE Gem TARGETS Gem::Atom_AtomBridge.Editor)
+    ly_create_alias(NAME Atom_AtomBridge.Tools    NAMESPACE Gem TARGETS Gem::Atom_AtomBridge.Editor)
 endif()

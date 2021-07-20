@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <AzCore/RTTI/RTTI.h>
@@ -274,7 +269,7 @@ namespace AZ
     {
         using Callable = AZStd::conditional_t<AZStd::function_traits<Invocable>::value, AZStd::function<typename AZStd::function_traits<Invocable>::function_type>, Invocable>;
     public:
-        AZ_RTTI((AttributeInvocable<Invocable>, "{60D5804F-9AF4-4EB1-8F5A-62AFB4883F9D}"), AZ::Attribute);
+        AZ_RTTI((AttributeInvocable<Invocable>, "{60D5804F-9AF4-4EB1-8F5A-62AFB4883F9D}", Invocable), AZ::Attribute);
         AZ_CLASS_ALLOCATOR(AttributeInvocable<Invocable>, SystemAllocator, 0);
         template<typename CallableType>
         explicit AttributeInvocable(CallableType&& invocable)

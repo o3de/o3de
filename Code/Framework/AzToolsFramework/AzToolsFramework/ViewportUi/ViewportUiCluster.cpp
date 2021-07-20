@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "AzToolsFramework_precompiled.h"
 
@@ -106,6 +101,72 @@ namespace AzToolsFramework::ViewportUi::Internal
     void ViewportUiCluster::Update()
     {
         m_widgetCallbacks.Update();
+    }
+
+    void ViewportUiCluster::SetButtonLocked(const ButtonId buttonId, const bool isLocked)
+    {
+        const auto& buttons = m_buttonGroup->GetButtons();
+
+        // unlocked previously locked button
+        if (m_lockedButtonId.has_value() && isLocked)
+        {
+            // find the button to extract the old icon (without overlay)
+            auto findLocked = [this](const Button* button) { return (button->m_buttonId == m_lockedButtonId); };
+            if (auto lockedButtonIt = AZStd::find_if(buttons.begin(), buttons.end(), findLocked); lockedButtonIt != buttons.end())
+            {
+                // get the action corresponding to the lockedButtonId 
+                if (auto actionEntry = m_buttonActionMap.find(m_lockedButtonId.value()); actionEntry != m_buttonActionMap.end())
+                {
+                    // remove the overlay
+                    auto action = actionEntry->second;
+                    action->setIcon(QIcon(QString((*lockedButtonIt)->m_icon.c_str())));
+                }
+            }
+        }
+
+        auto found = [buttonId](Button* button) { return (button->m_buttonId == buttonId); };
+        if (auto buttonIt = AZStd::find_if(buttons.begin(), buttons.end(), found); buttonIt != buttons.end())
+        {
+            QIcon newIcon;
+
+            if (isLocked)
+            {
+                // overlay the locked icon ontop of the button's icon
+                QPixmap comboPixmap(24, 24);
+                comboPixmap.fill(Qt::transparent);
+                QPixmap firstImage(QString((*buttonIt)->m_icon.c_str()));
+                QPixmap secondImage(QString(":/stylesheet/img/UI20/toolbar/Locked_Status.svg"));
+
+                QPainter painter(&comboPixmap);
+                painter.drawPixmap(0, 0, firstImage);
+                painter.drawPixmap(0, 0, secondImage);
+                newIcon.addPixmap(comboPixmap);
+                m_lockedButtonId = buttonId;
+            }
+            else
+            {
+                // remove the overlay
+                newIcon = QIcon(QString((*buttonIt)->m_icon.c_str()));
+                m_lockedButtonId = AZStd::nullopt;
+            }
+
+            if (auto actionEntry = m_buttonActionMap.find(buttonId); actionEntry != m_buttonActionMap.end())
+            {
+                auto action = actionEntry->second;
+                action->setIcon(newIcon);
+            }
+        }
+    }
+
+    void ViewportUiCluster::SetButtonTooltip(const ButtonId buttonId, const AZStd::string& tooltip)
+    {
+        // get the action corresponding to the buttonId
+        if (auto actionEntry = m_buttonActionMap.find(buttonId); actionEntry != m_buttonActionMap.end())
+        {
+            // update the tooltip
+            auto action = actionEntry->second;
+            action->setToolTip(QString((tooltip).c_str()));
+        }
     }
 
     ViewportUiWidgetCallbacks ViewportUiCluster::GetWidgetCallbacks()

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzTest/AzTest.h>
 #include <AzCore/base.h>
@@ -36,14 +31,14 @@ namespace CustomMocks
             : m_levelName(levelName)
         {}
 
-        AZ::IO::ArchiveFileIterator FindFirst([[maybe_unused]] AZStd::string_view dir, [[maybe_unused]] unsigned int flags, [[maybe_unused]] bool allowUseFileSystem) override
+        AZ::IO::ArchiveFileIterator FindFirst([[maybe_unused]] AZStd::string_view dir, AZ::IO::IArchive::EFileSearchType) override
         {
             AZ::IO::FileDesc fileDesc;
             fileDesc.nSize = sizeof(AZ::IO::FileDesc);
             // Add a filename and file description reference to the TestFindData map to make sure the file iterator is valid
-            AZStd::intrusive_ptr<TestFindData> findData = new TestFindData{};
-            findData->m_mapFiles.emplace(m_levelName, fileDesc);
-            return findData->Fetch();
+            m_findData = new TestFindData();
+            m_findData->m_fileStack.emplace_back(AZ::IO::ArchiveFileIterator{ static_cast<AZ::IO::FindData*>(m_findData.get()), m_levelName, fileDesc });
+            return m_findData->Fetch();
         }
 
         AZ::IO::ArchiveFileIterator FindNext(AZ::IO::ArchiveFileIterator iter) override
@@ -54,13 +49,14 @@ namespace CustomMocks
         // public: for easy resetting...
         AZStd::string m_levelName;
 
-
         // Add an inherited FindData class to control the adding of a mapfile which indicates that a FileIterator is valid
         struct TestFindData
             : AZ::IO::FindData
         {
-            using AZ::IO::FindData::m_mapFiles;
+            using AZ::IO::FindData::m_fileStack;
         };
+
+        AZStd::intrusive_ptr<TestFindData> m_findData;
     };
 
 } // namespace CustomMocks

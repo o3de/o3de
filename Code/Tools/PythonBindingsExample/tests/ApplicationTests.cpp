@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/UnitTest/TestTypes.h>
@@ -63,9 +58,9 @@ namespace PythonBindingsExample
 
     AZStd::unique_ptr<PythonBindingsExample::Application> PythonBindingsExampleTest::s_application;
 
-    TEST_F(PythonBindingsExampleTest, Application_Run_Fails)
+    TEST_F(PythonBindingsExampleTest, Application_Run_Succeeds)
     {
-        EXPECT_FALSE(s_application->Run());
+        EXPECT_TRUE(s_application->Run());
     }
 
     TEST_F(PythonBindingsExampleTest, Application_RunWithParameters_Works)
@@ -95,4 +90,37 @@ namespace PythonBindingsExample
         EXPECT_TRUE(s_application->RunWithParameters(params));
     }
 
+    TEST_F(PythonBindingsExampleTest, Application_SystemExit_Blocked)
+    {
+        int exceptions = 0;
+        int errors = 0;
+
+        s_application->GetErrorCount(exceptions, errors);
+        ASSERT_EQ(exceptions, 0);
+        ASSERT_EQ(errors, 0);
+
+        // expects a clean "error" from this statement
+        // the whole program should not exit()
+        {
+            ApplicationParameters params;
+            params.m_pythonStatement = "import sys; sys.exit(0)";
+            EXPECT_FALSE(s_application->RunWithParameters(params));
+
+            s_application->GetErrorCount(exceptions, errors);
+            EXPECT_EQ(exceptions, 0);
+            EXPECT_GE(errors, 1);
+        }
+        s_application->ResetErrorCount();
+
+        // should be able to run more statements
+        {
+            ApplicationParameters params;
+            params.m_pythonStatement = "import sys";
+            EXPECT_TRUE(s_application->RunWithParameters(params));
+
+            s_application->GetErrorCount(exceptions, errors);
+            EXPECT_EQ(exceptions, 0);
+            EXPECT_EQ(errors, 0);
+        }
+    }
 }

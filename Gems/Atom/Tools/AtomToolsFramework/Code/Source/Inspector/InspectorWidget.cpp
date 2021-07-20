@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <QMenu>
 #include <QScrollArea>
@@ -74,7 +69,7 @@ namespace AtomToolsFramework
         groupWidget->setParent(m_ui->m_propertyContent);
         m_layout->addWidget(groupWidget);
 
-        m_groups[groupNameId] = AZStd::make_pair(groupHeader, groupWidget);
+        m_groups[groupNameId] = {groupHeader, groupWidget};
 
         connect(groupHeader, &InspectorGroupHeaderWidget::clicked, this, [this, groupNameId](QMouseEvent* event) {
             OnHeaderClicked(groupNameId, event);
@@ -90,6 +85,38 @@ namespace AtomToolsFramework
         {
             CollapseGroup(groupNameId);
         }
+    }
+    
+    void InspectorWidget::SetGroupVisible(const AZStd::string& groupNameId, bool visible)
+    {
+        auto groupItr = m_groups.find(groupNameId);
+        if (groupItr != m_groups.end())
+        {
+            groupItr->second.m_header->setVisible(visible);
+            groupItr->second.m_panel->setVisible(visible && groupItr->second.m_header->IsExpanded());
+        }
+    }
+    
+    bool InspectorWidget::IsGroupVisible(const AZStd::string& groupNameId) const
+    {
+        auto groupItr = m_groups.find(groupNameId);
+        if (groupItr != m_groups.end())
+        {
+            return groupItr->second.m_header->isVisible();
+        }
+
+        return false;
+    }
+    
+    bool InspectorWidget::IsGroupHidden(const AZStd::string& groupNameId) const
+    {
+        auto groupItr = m_groups.find(groupNameId);
+        if (groupItr != m_groups.end())
+        {
+            return groupItr->second.m_header->isHidden();
+        }
+
+        return false;
     }
 
     void InspectorWidget::RefreshGroup(const AZStd::string& groupNameId)
@@ -129,8 +156,8 @@ namespace AtomToolsFramework
         auto groupItr = m_groups.find(groupNameId);
         if (groupItr != m_groups.end())
         {
-            groupItr->second.first->SetExpanded(true);
-            groupItr->second.second->setVisible(true);
+            groupItr->second.m_header->SetExpanded(true);
+            groupItr->second.m_panel->setVisible(true);
         }
     }
 
@@ -139,23 +166,23 @@ namespace AtomToolsFramework
         auto groupItr = m_groups.find(groupNameId);
         if (groupItr != m_groups.end())
         {
-            groupItr->second.first->SetExpanded(false);
-            groupItr->second.second->setVisible(false);
+            groupItr->second.m_header->SetExpanded(false);
+            groupItr->second.m_panel->setVisible(false);
         }
     }
 
     bool InspectorWidget::IsGroupExpanded(const AZStd::string& groupNameId) const
     {
         auto groupItr = m_groups.find(groupNameId);
-        return groupItr != m_groups.end() ? groupItr->second.first->IsExpanded() : false;
+        return groupItr != m_groups.end() ? groupItr->second.m_header->IsExpanded() : false;
     }
 
     void InspectorWidget::ExpandAll()
     {
         for (auto& groupPair : m_groups)
         {
-            groupPair.second.first->SetExpanded(true);
-            groupPair.second.second->setVisible(true);
+            groupPair.second.m_header->SetExpanded(true);
+            groupPair.second.m_panel->setVisible(true);
         }
     }
 
@@ -163,8 +190,8 @@ namespace AtomToolsFramework
     {
         for (auto& groupPair : m_groups)
         {
-            groupPair.second.first->SetExpanded(false);
-            groupPair.second.second->setVisible(false);
+            groupPair.second.m_header->SetExpanded(false);
+            groupPair.second.m_panel->setVisible(false);
         }
     }
 

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -20,12 +15,12 @@ namespace AzToolsFramework
 {
     class ManipulatorView;
 
-    /// A manipulator to expose where on a line a user is moving their mouse.
+    //! A manipulator to expose where on a line a user is moving their mouse.
     class LineSegmentSelectionManipulator
         : public BaseManipulator
         , public ManipulatorSpace
     {
-        /// Private constructor.
+        //! Private constructor.
         LineSegmentSelectionManipulator();
 
     public:
@@ -37,10 +32,10 @@ namespace AzToolsFramework
 
         ~LineSegmentSelectionManipulator();
 
-        /// A Manipulator must only be created and managed through a shared_ptr.
+        //! A Manipulator must only be created and managed through a shared_ptr.
         static AZStd::shared_ptr<LineSegmentSelectionManipulator> MakeShared();
 
-        /// Mouse action data used by MouseActionCallback.
+        //! Mouse action data used by MouseActionCallback.
         struct Action
         {
             AZ::Vector3 m_localLineHitPosition;
@@ -57,18 +52,31 @@ namespace AzToolsFramework
             const AzFramework::CameraState& cameraState,
             const ViewportInteraction::MouseInteraction& mouseInteraction) override;
 
-        void SetStart(const AZ::Vector3& startLocal) { m_localStart = startLocal; }
-        void SetEnd(const AZ::Vector3& endLocal) { m_localEnd = endLocal; }
-        const AZ::Vector3& GetStart() const { return m_localStart; }
-        const AZ::Vector3& GetEnd() const { return m_localEnd; }
+        void SetStart(const AZ::Vector3& startLocal)
+        {
+            m_localStart = startLocal;
+        }
+
+        void SetEnd(const AZ::Vector3& endLocal)
+        {
+            m_localEnd = endLocal;
+        }
+
+        const AZ::Vector3& GetStart() const
+        {
+            return m_localStart;
+        }
+
+        const AZ::Vector3& GetEnd() const
+        {
+            return m_localEnd;
+        }
 
         void SetView(AZStd::unique_ptr<ManipulatorView>&& view);
 
     private:
-        void OnLeftMouseDownImpl(
-            const ViewportInteraction::MouseInteraction& interaction, float rayIntersectionDistance) override;
-        void OnLeftMouseUpImpl(
-            const ViewportInteraction::MouseInteraction& interaction) override;
+        void OnLeftMouseDownImpl(const ViewportInteraction::MouseInteraction& interaction, float rayIntersectionDistance) override;
+        void OnLeftMouseUpImpl(const ViewportInteraction::MouseInteraction& interaction) override;
 
         void InvalidateImpl() override;
         void SetBoundsDirtyImpl() override;
@@ -79,12 +87,18 @@ namespace AzToolsFramework
         MouseActionCallback m_onLeftMouseDownCallback = nullptr;
         MouseActionCallback m_onLeftMouseUpCallback = nullptr;
 
-        ViewportInteraction::KeyboardModifiers m_keyboardModifiers; ///< What modifier keys are pressed when interacting with this manipulator.
+        ViewportInteraction::KeyboardModifiers
+            m_keyboardModifiers; //!< What modifier keys are pressed when interacting with this manipulator.
 
-        AZStd::unique_ptr<ManipulatorView> m_manipulatorView = nullptr; ///< Look of manipulator.
+        AZStd::unique_ptr<ManipulatorView> m_manipulatorView = nullptr; //!< Look of manipulator.
     };
 
     LineSegmentSelectionManipulator::Action CalculateManipulationDataAction(
-        const AZ::Transform& worldFromLocal, const AZ::Vector3& nonUniformScale, const AZ::Vector3& rayOrigin,
-        const AZ::Vector3& rayDirection, float rayLength, const AZ::Vector3& localStart, const AZ::Vector3& localEnd);
+        const AZ::Transform& worldFromLocal,
+        const AZ::Vector3& nonUniformScale,
+        const AZ::Vector3& rayOrigin,
+        const AZ::Vector3& rayDirection,
+        float rayLength,
+        const AZ::Vector3& localStart,
+        const AZ::Vector3& localEnd);
 } // namespace AzToolsFramework

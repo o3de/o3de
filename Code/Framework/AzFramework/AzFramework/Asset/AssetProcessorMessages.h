@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -166,7 +161,7 @@ namespace AzFramework
         {
         public:
             AZ_CLASS_ALLOCATOR(RequestEscalateAsset, AZ::OSAllocator, 0);
-            AZ_RTTI(RequestAssetStatus, "{E95C5422-5F00-478B-A984-C041DE70484F}", BaseAssetProcessorMessage);
+            AZ_RTTI(RequestEscalateAsset, "{E95C5422-5F00-478B-A984-C041DE70484F}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
             static constexpr unsigned int MessageType = AZ_CRC("AssetSystem::RequestEscalateAsset", 0x1894d94e);
 
@@ -285,6 +280,45 @@ namespace AzFramework
             unsigned int GetMessageType() const override;
 
             AZ::OSString m_relativeProductPath;
+            bool m_resolved;
+        };
+
+        //////////////////////////////////////////////////////////////////////////
+        class GenerateRelativeSourcePathRequest : public BaseAssetProcessorMessage
+        {
+        public:
+            AZ_CLASS_ALLOCATOR(GenerateRelativeSourcePathRequest, AZ::OSAllocator, 0);
+            AZ_RTTI(GenerateRelativeSourcePathRequest, "{B3865033-F5A3-4749-8147-7B1AB04D5F6D}",
+                BaseAssetProcessorMessage);
+            static void Reflect(AZ::ReflectContext* context);
+
+            // For people that are debugging the network messages and just see MessageType as a value,
+            // the CRC value below is 739777771 (0x2C181CEB)
+            static constexpr unsigned int MessageType =
+                AZ_CRC_CE("AssetSystem::GenerateRelativeSourcePathRequest");
+
+            GenerateRelativeSourcePathRequest() = default;
+            GenerateRelativeSourcePathRequest(const AZ::OSString& sourcePath);
+            unsigned int GetMessageType() const override;
+
+            AZ::OSString m_sourcePath;
+        };
+
+        class GenerateRelativeSourcePathResponse : public BaseAssetProcessorMessage
+        {
+        public:
+            AZ_CLASS_ALLOCATOR(GenerateRelativeSourcePathResponse, AZ::OSAllocator, 0);
+            AZ_RTTI(GenerateRelativeSourcePathResponse, "{938D33DB-C8F6-4FA4-BC81-2F139A9BE1D7}",
+                BaseAssetProcessorMessage);
+            static void Reflect(AZ::ReflectContext* context);
+
+            GenerateRelativeSourcePathResponse() = default;
+            GenerateRelativeSourcePathResponse(
+                bool resolved, const AZ::OSString& relativeSourcePath, const AZ::OSString& rootFolder);
+            unsigned int GetMessageType() const override;
+
+            AZ::OSString m_relativeSourcePath;
+            AZ::OSString m_rootFolder; ///< This is the folder it was found in (the watched/scanned folder, such as gems /assets/ folder)
             bool m_resolved;
         };
 

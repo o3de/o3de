@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -24,14 +19,12 @@ namespace Multiplayer
         ReplicationRecordStats() = default;
         ReplicationRecordStats
         (
-            uint32_t authorityToAuthorityCount,
             uint32_t authorityToClientCount,
             uint32_t authorityToServerCount,
             uint32_t authorityToAutonomousCount,
             uint32_t autonomousToAuthorityCount
         );
 
-        uint32_t m_authorityToAuthorityCount = 0;
         uint32_t m_authorityToClientCount = 0;
         uint32_t m_authorityToServerCount = 0;
         uint32_t m_authorityToAutonomousCount = 0;
@@ -47,10 +40,10 @@ namespace Multiplayer
         static constexpr uint32_t MaxRecordBits = 2048;
 
         ReplicationRecord() = default;
-        ReplicationRecord(NetEntityRole netEntityRole);
+        ReplicationRecord(NetEntityRole remoteNetEntityRole);
 
-        void SetNetworkRole(NetEntityRole netEntityRole);
-        NetEntityRole GetNetworkRole() const;
+        void SetRemoteNetworkRole(NetEntityRole remoteNetEntityRole);
+        NetEntityRole GetRemoteNetworkRole() const;
 
         bool AreAllBitsConsumed() const;
         void ResetConsumedBits();
@@ -63,19 +56,16 @@ namespace Multiplayer
 
         bool Serialize(AzNetworking::ISerializer& serializer);
 
-        void ConsumeAuthorityToAuthorityBits(uint32_t consumedBits);
         void ConsumeAuthorityToClientBits(uint32_t consumedBits);
         void ConsumeAuthorityToServerBits(uint32_t consumedBits);
         void ConsumeAuthorityToAutonomousBits(uint32_t consumedBits);
         void ConsumeAutonomousToAuthorityBits(uint32_t consumedBits);
 
-        bool ContainsAuthorityToAuthorityBits() const;
         bool ContainsAuthorityToClientBits() const;
         bool ContainsAuthorityToServerBits() const;
         bool ContainsAuthorityToAutonomousBits() const;
         bool ContainsAutonomousToAuthorityBits() const;
 
-        uint32_t GetRemainingAuthorityToAuthorityBits() const;
         uint32_t GetRemainingAuthorityToClientBits() const;
         uint32_t GetRemainingAuthorityToServerBits() const;
         uint32_t GetRemainingAuthorityToAutonomousBits() const;
@@ -84,13 +74,11 @@ namespace Multiplayer
         ReplicationRecordStats GetStats() const;
 
         using RecordBitset = AzNetworking::FixedSizeVectorBitset<MaxRecordBits>;
-        RecordBitset m_authorityToAuthority;
         RecordBitset m_authorityToClient;
         RecordBitset m_authorityToServer;
         RecordBitset m_authorityToAutonomous;
         RecordBitset m_autonomousToAuthority;
 
-        uint32_t m_authorityToAuthorityConsumedBits = 0;
         uint32_t m_authorityToClientConsumedBits = 0;
         uint32_t m_authorityToServerConsumedBits = 0;
         uint32_t m_authorityToAutonomousConsumedBits = 0;
@@ -99,6 +87,6 @@ namespace Multiplayer
         // Sequence number this ReplicationRecord was sent on
         AzNetworking::PacketId m_sentPacketId = AzNetworking::InvalidPacketId;
 
-        NetEntityRole m_netEntityRole = NetEntityRole::InvalidRole;;
+        NetEntityRole m_remoteNetEntityRole = NetEntityRole::InvalidRole;;
     };
 }

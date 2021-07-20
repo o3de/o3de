@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzFramework/Physics/SystemBus.h>
 #include <EMotionFX/Source/ActorManager.h>
@@ -514,7 +509,7 @@ namespace EMotionFX
 
             if (renderJointLimits && jointSelected)
             {
-                const AZStd::shared_ptr<Physics::JointLimitConfiguration>& jointLimitConfig = ragdollNode.m_jointLimit;
+                const AZStd::shared_ptr<AzPhysics::JointConfiguration>& jointLimitConfig = ragdollNode.m_jointConfig;
                 if (jointLimitConfig)
                 {
                     const Node* ragdollParentNode = physicsSetup->FindRagdollParentNode(joint);
@@ -528,7 +523,8 @@ namespace EMotionFX
         }
     }
 
-    void RagdollNodeInspectorPlugin::RenderJointLimit(const Physics::JointLimitConfiguration& configuration,
+    void RagdollNodeInspectorPlugin::RenderJointLimit(
+        const AzPhysics::JointConfiguration& configuration,
         const ActorInstance* actorInstance,
         const Node* node,
         const Node* parentNode,
@@ -549,9 +545,12 @@ namespace EMotionFX
         m_indexBuffer.clear();
         m_lineBuffer.clear();
         m_lineValidityBuffer.clear();
-        Physics::SystemRequestBus::Broadcast(&Physics::SystemRequests::GenerateJointLimitVisualizationData,
-            configuration, parentOrientation, childOrientation, s_scale, s_angularSubdivisions, s_radialSubdivisions,
-            m_vertexBuffer, m_indexBuffer, m_lineBuffer, m_lineValidityBuffer);
+        if(auto* jointHelpers = AZ::Interface<AzPhysics::JointHelpersInterface>::Get())
+        {
+            jointHelpers->GenerateJointLimitVisualizationData(
+                configuration, parentOrientation, childOrientation, s_scale, s_angularSubdivisions, s_radialSubdivisions, m_vertexBuffer,
+                m_indexBuffer, m_lineBuffer, m_lineValidityBuffer);
+        }           
 
         Transform jointModelSpaceTransform = currentPose->GetModelSpaceTransform(parentNodeIndex);
         jointModelSpaceTransform.mPosition = currentPose->GetModelSpaceTransform(nodeIndex).mPosition;
@@ -572,7 +571,8 @@ namespace EMotionFX
         }
     }
 
-    void RagdollNodeInspectorPlugin::RenderJointFrame(const Physics::JointLimitConfiguration& configuration,
+    void RagdollNodeInspectorPlugin::RenderJointFrame(
+        const AzPhysics::JointConfiguration& configuration,
         const ActorInstance* actorInstance,
         const Node* node,
         const Node* parentNode,

@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 include_guard()
@@ -81,7 +77,7 @@ function(update_pip_requirements requirements_file_path unique_name)
 
     set(ENV{PYTHONNOUSERSITE} 1)
     execute_process(COMMAND 
-        ${LY_PYTHON_CMD} -m pip install --no-deps -r "${requirements_file_path}" --disable-pip-version-check --no-warn-script-location
+        ${LY_PYTHON_CMD} -m pip install -r "${requirements_file_path}" --disable-pip-version-check --no-warn-script-location
         WORKING_DIRECTORY ${Python_BINFOLDER}
         RESULT_VARIABLE PIP_RESULT
         OUTPUT_VARIABLE PIP_OUT 
@@ -265,10 +261,13 @@ if (NOT CMAKE_SCRIPT_MODE_FILE)
 
         # we also need to make sure any custom packages are installed.
         # this costs a moment of time though, so we'll only do it based on stamp files.
+        if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND NOT INSTALLED_ENGINE)
+            ly_pip_install_local_package_editable(${LY_ROOT_FOLDER}/Tools/LyTestTools ly-test-tools)
+            ly_pip_install_local_package_editable(${LY_ROOT_FOLDER}/Tools/RemoteConsole/ly_remote_console ly-remote-console)
+            ly_pip_install_local_package_editable(${LY_ROOT_FOLDER}/AutomatedTesting/Gem/PythonTests/EditorPythonTestTools editor-python-test-tools)
+        endif()
 
-        ly_pip_install_local_package_editable(${LY_ROOT_FOLDER}/Tools/LyTestTools ly-test-tools)
-        ly_pip_install_local_package_editable(${LY_ROOT_FOLDER}/Tools/RemoteConsole/ly_remote_console ly-remote-console)
-        ly_pip_install_local_package_editable(${LY_ROOT_FOLDER}/AutomatedTesting/Gem/PythonTests/EditorPythonTestTools editor-python-test-tools)
+        ly_pip_install_local_package_editable(${LY_ROOT_FOLDER}/scripts/o3de o3de)
     endif()
 endif()
 

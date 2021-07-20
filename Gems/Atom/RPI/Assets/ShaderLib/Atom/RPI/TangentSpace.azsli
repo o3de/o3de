@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -52,6 +47,12 @@ float3 GetTangentSpaceNormal_Unnormalized(float2 normalMapSample, float normalSt
     // The image build pipeline drops the B channel so we have to reconstruct it here.
     surfaceNormal.z = sqrt(1 - dot(surfaceNormal.xy, surfaceNormal.xy));
     
+    // Don't allow z to be zero just in case normalStrength approaches 0, to avoid a 0-length normal.
+    // It doesn't make sense anyway to have a surface with a normal map completely tangential.
+    // This also addresses the possibility of z being NaN, in the case where x^2+y^2 > 1, so we don't need to call saturate in the sqrt operation above.
+    // (Note this edge case would be particularly evident in multilayer material types, where the normal map is masked out using normalStrength).
+    surfaceNormal.z = max(surfaceNormal.z, 0.01);
+
     surfaceNormal.xy *= normalStrength;
 
     return surfaceNormal;
@@ -190,12 +191,22 @@ void SurfaceGradientNormalMapping_GenerateTB(float2 uv, out float3 tangentWS, ou
 }
 
 //! Utility macro to nest SGBNM setup processes.
-#define PrepareGeneratedTangent(normal, worldPos, isFrontFace, uvSets, uvSetCount, outTangents, outBitangents, startIndex)  \
+//! We support two UV streams, but only a single stream of tangent/bitangent.
+//! By default, the first UV stream is applied and the default tangent/bitangent are used.
+//! If anything uses the second UV stream, and it is not a duplication of the first stream,
+//! generated tangent/bitangent will be applied.
+//! (As it implies, cases may occur where all/none of the UV steams use the default TB.)
+//! What tangent/bitangent a UV stream uses is encoded in DrawSrg.
+#define PrepareGeneratedTangent(normal, worldPos, isFrontFace, uvSets, uvSetCount, outTangents, outBitangents)              \
 {                                                                                                                           \
     SurfaceGradientNormalMapping_Init(normal, worldPos, !isFrontFace);                                                      \
     [unroll]                                                                                                                \
-    for (int i = startIndex; i < uvSetCount; ++i)                                                                           \
+    for (uint i = 0; i < uvSetCount; ++i)                                                                                   \
     {                                                                                                                       \
+        if (DrawSrg::GetTangentAtUv(i) == 0)                                                                                \
+        {                                                                                                                   \
+            continue;                                                                                                       \
+        }                                                                                                                   \
         SurfaceGradientNormalMapping_GenerateTB(uvSets[i], outTangents[i], outBitangents[i]);                               \
     }                                                                                                                       \
 }

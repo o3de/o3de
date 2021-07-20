@@ -1,15 +1,10 @@
 #!/usr/bin/env groovy
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 PIPELINE_CONFIG_FILE = 'scripts/build/Jenkins/lumberyard.json'
 INCREMENTAL_BUILD_SCRIPT_PATH = 'scripts/build/bootstrap/incremental_build_util.py'
@@ -17,6 +12,18 @@ INCREMENTAL_BUILD_SCRIPT_PATH = 'scripts/build/bootstrap/incremental_build_util.
 EMPTY_JSON = readJSON text: '{}'
 
 ENGINE_REPOSITORY_NAME = 'o3de'
+
+// Branches with build snapshots
+BUILD_SNAPSHOTS = ['development', 'stabilization/2106']
+
+// Build snapshots with empty snapshot (for use with 'SNAPSHOT' pipeline paramater)
+BUILD_SNAPSHOTS_WITH_EMPTY = BUILD_SNAPSHOTS + ''
+
+// The default build snapshot to be selected in the 'SNAPSHOT' pipeline paramater
+DEFAULT_BUILD_SNAPSHOT = BUILD_SNAPSHOTS_WITH_EMPTY.get(0)
+
+// Branches with build snapshots as comma separated value string
+env.BUILD_SNAPSHOTS = BUILD_SNAPSHOTS.join(",")
 
 def pipelineProperties = []
 
@@ -256,9 +263,18 @@ def CheckoutRepo(boolean disableSubmodules = false) {
     env.CHANGE_ID = readFile file: 'commitid'
     env.CHANGE_ID = env.CHANGE_ID.trim()
     palRm('commitid')
+
+    // CHANGE_DATE is used by the installer to provide some ability to sort tagged builds in addition to BRANCH_NAME and CHANGE_ID
+    commitDateFmt = '%%cI'
+    if (env.IS_UNIX) commitDateFmt = '%cI'
+
+    palSh("git show -s --format=${commitDateFmt} ${env.CHANGE_ID} > commitdate", 'Getting commit date')
+    env.CHANGE_DATE = readFile file: 'commitdate'
+    env.CHANGE_DATE = env.CHANGE_DATE.trim()
+    palRm('commitdate')
 }
 
-def PreBuildCommonSteps(Map pipelineConfig, String repositoryName, String projectName, String pipeline, String branchName, String platform, String buildType, String workspace, boolean mount = true, boolean disableSubmodules = false) {
+def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryName, String projectName, String pipeline, String branchName, String platform, String buildType, String workspace, boolean mount = true, boolean disableSubmodules = false) {
     echo 'Starting pre-build common steps...'
 
     if (mount) {
@@ -272,7 +288,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String repositoryName, String projec
             palSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action delete --repository_name ${repositoryName} --project ${projectName} --pipeline ${pipeline} --branch ${branchName} --platform ${platform} --build_type ${buildType}", 'Deleting volume', winSlashReplacement=false)
         }
         timeout(5) {
-            palSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action mount --repository_name ${repositoryName} --project ${projectName} --pipeline ${pipeline} --branch ${branchName} --platform ${platform} --build_type ${buildType}", 'Mounting volume', winSlashReplacement=false)
+            palSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action mount --snapshot ${snapshot} --repository_name ${repositoryName} --project ${projectName} --pipeline ${pipeline} --branch ${branchName} --platform ${platform} --build_type ${buildType}", 'Mounting volume', winSlashReplacement=false)
         }
 
         if(env.IS_UNIX) {
@@ -313,13 +329,13 @@ def PreBuildCommonSteps(Map pipelineConfig, String repositoryName, String projec
                 script: 'python/get_python.bat'
         }
 
-        if(env.CLEAN_OUTPUT_DIRECTORY?.toBoolean() || env.CLEAN_ASSETS?.toBoolean()) {
-            def command = "${pipelineConfig.PYTHON_DIR}/python"
-            if(env.IS_UNIX) command += '.sh'
-            else command += '.cmd'
-            command += " -u ${pipelineConfig.BUILD_ENTRY_POINT} --platform ${platform} --type clean"
-            palSh(command, "Running ${platform} clean")
-        }
+        // Always run the clean step, the scripts detect what variables were set, but it also cleans if
+        // the NODE_LABEL has changed
+        def command = "${pipelineConfig.PYTHON_DIR}/python"
+        if(env.IS_UNIX) command += '.sh'
+        else command += '.cmd'
+        command += " -u ${pipelineConfig.BUILD_ENTRY_POINT} --platform ${platform} --type clean"
+        palSh(command, "Running ${platform} clean")
     }
 }
 
@@ -352,7 +368,7 @@ def TestMetrics(Map pipelineConfig, String workspace, String branchName, String 
                 def command = "${pipelineConfig.PYTHON_DIR}/python.cmd -u mars/scripts/python/ctest_test_metric_scraper.py " +
                               '-e jenkins.creds.user %username% -e jenkins.creds.pass %apitoken% ' +
                               "-e jenkins.base_url ${env.JENKINS_URL} " +
-                              "${cmakeBuildDir} ${branchName} %BUILD_NUMBER% AR ${configuration} ${repoName} "
+                              "${cmakeBuildDir} ${branchName} %BUILD_NUMBER% AR ${configuration} ${repoName} --url ${env.BUILD_URL}"
                 bat label: "Publishing ${buildJobName} Test Metrics",
                     script: command
             }
@@ -366,6 +382,9 @@ def ExportTestResults(Map options, String platform, String type, String workspac
         dir("${o3deroot}/${params.OUTPUT_DIRECTORY}") {
             junit testResults: "Testing/**/*.xml"
             palRmDir("Testing")
+            // Recreate test runner xml directories that need to be pre generated
+            palMkdir("Testing/Pytest")
+            palMkdir("Testing/Gtest")
         }
     }
 }
@@ -388,10 +407,10 @@ def PostBuildCommonSteps(String workspace, boolean mount = true) {
     }
 }
 
-def CreateSetupStage(Map pipelineConfig, String repositoryName, String projectName, String pipelineName, String branchName, String platformName, String jobName, Map environmentVars) {
+def CreateSetupStage(Map pipelineConfig, String snapshot, String repositoryName, String projectName, String pipelineName, String branchName, String platformName, String jobName, Map environmentVars) {
     return {
         stage('Setup') {
-            PreBuildCommonSteps(pipelineConfig, repositoryName, projectName, pipelineName, branchName, platformName, jobName,  environmentVars['WORKSPACE'], environmentVars['MOUNT_VOLUME'])
+            PreBuildCommonSteps(pipelineConfig, snapshot, repositoryName, projectName, pipelineName, branchName, platformName, jobName,  environmentVars['WORKSPACE'], environmentVars['MOUNT_VOLUME'])
         }
     }
 }
@@ -446,17 +465,33 @@ try {
                     repositoryUrl = scm.getUserRemoteConfigs()[0].getUrl()
                     // repositoryName is the full repository name
                     repositoryName = (repositoryUrl =~ /https:\/\/github.com\/(.*)\.git/)[0][1]
+                    env.REPOSITORY_NAME = repositoryName
                     (projectName, pipelineName) = GetRunningPipelineName(env.JOB_NAME) // env.JOB_NAME is the name of the job given by Jenkins
-
+                    env.PIPELINE_NAME = pipelineName
                     if(env.BRANCH_NAME) {
                         branchName = env.BRANCH_NAME
                     } else {
                         branchName = scm.branches[0].name // for non-multibranch pipelines
-                        env.BRANCH_NAME = branchName // so scripts that read this environment have it (e.g. incremental_build_util.py)
+                        env.BRANCH_NAME = branchName // so scripts that read this environment have it (e.g. incremental_build_util.py)                        
+                    }
+                    if(env.CHANGE_TARGET) {
+                        // PR builds
+                        if(BUILD_SNAPSHOTS.contains(env.CHANGE_TARGET)) {
+                            snapshot = env.CHANGE_TARGET
+                            echo "Snapshot for destination branch \"${env.CHANGE_TARGET}\" found."
+                        } else { 
+                            snapshot = DEFAULT_BUILD_SNAPSHOT
+                            echo "Snapshot for destination branch \"${env.CHANGE_TARGET}\" does not exist, defaulting to snapshot \"${snapshot}\""
+                        }
+                    } else {
+                        // Non-PR builds
+                        pipelineParameters.add(choice(defaultValue: DEFAULT_BUILD_SNAPSHOT, name: 'SNAPSHOT', choices: BUILD_SNAPSHOTS_WITH_EMPTY, description: 'Selects the build snapshot to use. A more diverted snapshot will cause longer build times, but will not cause build failures.'))
+                        snapshot = env.SNAPSHOT
+                        echo "Snapshot \"${snapshot}\" selected."
                     }
                     pipelineProperties.add(disableConcurrentBuilds())
 
-                    echo "Running \"${pipelineName}\" for \"${branchName}\"..."
+                    echo "Running repository: \"${repositoryName}\", pipeline: \"${pipelineName}\", branch: \"${branchName}\"..."
 
                     CheckoutBootstrapScripts(branchName)
 
@@ -511,7 +546,7 @@ try {
                         withEnv(GetEnvStringList(envVars)) {
                             def build_job_name = build_job.key
                             try {
-                                CreateSetupStage(pipelineConfig, repositoryName, projectName, pipelineName, branchName, platform.key, build_job.key, envVars).call()
+                                CreateSetupStage(pipelineConfig, snapshot, repositoryName, projectName, pipelineName, branchName, platform.key, build_job.key, envVars).call()
 
                                 if(build_job.value.steps) { //this is a pipe with many steps so create all the build stages
                                     build_job.value.steps.each { build_step ->
@@ -578,14 +613,12 @@ finally {
             )
         }
         node('controller') {
-            emailRecipients = [[$class: 'RequesterRecipientProvider']]
-            if (env.WATCHED_BRANCHES.tokenize(',').contains(branchName)) {
-                emailRecipients.add([$class: 'CulpritsRecipientProvider'])
-            }
             step([
-                $class: 'Mailer', 
-                notifyEveryUnstableBuild: true, 
-                recipients: emailextrecipients(emailRecipients)
+                $class: 'Mailer',
+                notifyEveryUnstableBuild: true,
+                recipients: emailextrecipients([
+                    [$class: 'RequesterRecipientProvider']
+                ])
             ])
         }
     } catch(Exception e) {

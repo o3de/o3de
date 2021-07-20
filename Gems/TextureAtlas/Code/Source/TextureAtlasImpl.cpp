@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "TextureAtlas_precompiled.h"
 #include "TextureAtlasImpl.h"
@@ -120,14 +115,14 @@ namespace TextureAtlasNamespace
     }
 
     // Links this atlas to an image pointer
-    void TextureAtlasImpl::SetTexture(ITexture* image)
+    void TextureAtlasImpl::SetTexture(AZ::Data::Instance<AZ::RPI::Image> image)
     {
         // We don't need to delete the old value because the pointer is handled elsewhere
         m_image = image;
     }
     
     // Returns the image linked to this atlas
-    ITexture* TextureAtlasImpl::GetTexture() const
+    AZ::Data::Instance<AZ::RPI::Image> TextureAtlasImpl::GetTexture() const
     {
         return m_image;
     }

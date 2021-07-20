@@ -1,17 +1,12 @@
 {
-    "gem_name": "EditorPythonBindings",
-    "GemFormatVersion": 4,
-    "Uuid": "b658359393884c4381c2fe2952b1472a",
-    "Name": "EditorPythonBindings",
-    "DisplayName": "EditorPythonBindings",
-    "Version": "0.1.0",
-    "Summary": "A gem to bind Editor commands via Python scripts.",
-    "Tags": ["Editor", "Assets", "Asset Pipeline", "Python"],
-    "IconPath": "preview.png",
-    "Modules": [
-      {
-        "Name": "Editor",
-        "Type": "EditorModule"
-      }
-    ]
+  "gem_name": "EditorPythonBindings",
+  "display_name": "Editor Python Bindings",
+  "license": "Apache-2.0 Or MIT",
+  "origin": "Open 3D Engine - o3de.org",
+  "type": "Tool",
+  "summary": "The Editor Python Bindings Gem provides Python commands for Open 3D Engine Editor functions.",
+  "canonical_tags": ["Gem"],
+  "user_tags": ["Scripting", "Utility"],
+  "icon_path": "preview.png",
+  "requirements": ""
 }

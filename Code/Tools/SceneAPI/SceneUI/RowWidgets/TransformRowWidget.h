@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -21,11 +16,17 @@
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <SceneAPI/SceneUI/SceneUIConfiguration.h>
+
 #endif
 
 namespace AzQtComponents
 {
     class VectorInput;
+}
+
+namespace AzToolsFramework
+{
+    class PropertyDoubleSpinCtrl;
 }
 
 namespace AZ
@@ -51,14 +52,14 @@ namespace AZ
                 const AZ::Vector3& GetRotation() const;
                 void SetRotation(const AZ::Vector3& translation);
 
-                const AZ::Vector3& GetScale() const;
-                void SetScale(const AZ::Vector3& scale);
+                const float GetScale() const;
+                void SetScale(const float scale);
 
             private:
                 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
                 AZ::Vector3 m_translation;
                 AZ::Vector3 m_rotation;
-                AZ::Vector3 m_scale;
+                float m_scale;
                 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
             };
 
@@ -78,7 +79,7 @@ namespace AZ
 
                 AzQtComponents::VectorInput* GetTranslationWidget();
                 AzQtComponents::VectorInput* GetRotationWidget();
-                AzQtComponents::VectorInput* GetScaleWidget();
+                AzToolsFramework::PropertyDoubleSpinCtrl* GetScaleWidget();
 
             protected:
                 ExpandedTransform m_transform;
@@ -87,7 +88,7 @@ namespace AZ
 
                 AzQtComponents::VectorInput* m_translationWidget;
                 AzQtComponents::VectorInput* m_rotationWidget;
-                AzQtComponents::VectorInput* m_scaleWidget;
+                AzToolsFramework::PropertyDoubleSpinCtrl* m_scaleWidget;
             };
         } // namespace SceneUI
     } // namespace SceneAPI

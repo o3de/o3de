@@ -1,0 +1,81 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardMultilayerPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "blend": {
+            "blendSource": "Displacement",
+            "displacementBlendDistance": 0.008999999612569809,
+            "enableLayer2": true,
+            "enableLayer3": true
+        },
+        "layer1_baseColor": {
+            "textureMap": "TestData/Textures/cc0/Ground033_1K_Color.jpg"
+        },
+        "layer1_normal": {
+            "textureMap": "TestData/Textures/cc0/Ground033_1K_Normal.jpg"
+        },
+        "layer1_occlusion": {
+            "diffuseTextureMap": "TestData/Textures/cc0/Ground033_1K_AmbientOcclusion.jpg"
+        },
+        "layer1_parallax": {
+            "factor": 0.017000000923871995,
+            "offset": -0.006000000052154064,
+            "textureMap": "TestData/Textures/cc0/Ground033_1K_Displacement.jpg"
+        },
+        "layer1_roughness": {
+            "textureMap": "TestData/Textures/cc0/Ground033_1K_Roughness.jpg"
+        },
+        "layer2_baseColor": {
+            "textureMap": "TestData/Textures/cc0/Rock030_2K_Color.jpg"
+        },
+        "layer2_normal": {
+            "textureMap": "TestData/Textures/cc0/Rock030_2K_Normal.jpg"
+        },
+        "layer2_occlusion": {
+            "diffuseTextureMap": "TestData/Textures/cc0/Rocks002_1K_AmbientOcclusion.jpg"
+        },
+        "layer2_parallax": {
+            "factor": 0.03099999949336052,
+            "offset": 0.0020000000949949028,
+            "textureMap": "TestData/Textures/cc0/Rock030_2K_Displacement.jpg"
+        },
+        "layer2_roughness": {
+            "textureMap": "TestData/Textures/cc0/Rock030_2K_Roughness.jpg"
+        },
+        "layer2_uv": {
+            "center": [
+                0.0,
+                0.0
+            ],
+            "offsetU": 0.1599999964237213,
+            "offsetV": 0.07999999821186066,
+            "rotateDegrees": 90.0
+        },
+        "layer3_baseColor": {
+            "textureMap": "TestData/Textures/cc0/Rocks002_1K_Color.jpg"
+        },
+        "layer3_normal": {
+            "textureMap": "TestData/Textures/cc0/Rocks002_1K_Normal.jpg"
+        },
+        "layer3_parallax": {
+            "factor": 0.027000000700354577,
+            "textureMap": "TestData/Textures/cc0/Rocks002_1K_Displacement.jpg"
+        },
+        "layer3_roughness": {
+            "textureMap": "TestData/Textures/cc0/Rocks002_1K_Roughness.jpg"
+        },
+        "layer3_uv": {
+            "center": [
+                0.0,
+                0.0
+            ],
+            "scale": 3.4999988079071047
+        },
+        "parallax": {
+            "algorithm": "Relief",
+            "pdo": true
+        }
+    }
+}

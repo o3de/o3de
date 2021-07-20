@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <PhysX_precompiled.h>
 
@@ -201,9 +196,8 @@ namespace PhysX
             AZ::Quaternion newRotation = AZ::Quaternion::CreateIdentity();
             m_interpolator->GetInterpolated(newPosition, newRotation, deltaTime);
 
-            AZ::Transform interpolatedTransform = AZ::Transform::CreateFromQuaternionAndTranslation(newRotation, newPosition);
-            interpolatedTransform.MultiplyByScale(m_initialScale);
-            AZ::TransformBus::Event(GetEntityId(), &AZ::TransformInterface::SetWorldTM, interpolatedTransform);
+            AZ::TransformBus::Event(GetEntityId(), &AZ::TransformInterface::SetWorldRotationQuaternion, newRotation);
+            AZ::TransformBus::Event(GetEntityId(), &AZ::TransformInterface::SetWorldTranslation, newPosition);
         }
     }
 
@@ -257,12 +251,8 @@ namespace PhysX
         }
         else
         {
-            // Maintain scale (this must be precise).
-            AZ::Transform entityTransform = AZ::Transform::Identity();
-            AZ::TransformBus::EventResult(entityTransform, GetEntityId(), &AZ::TransformInterface::GetWorldTM);
-            transform.MultiplyByScale(m_initialScale);
-
-            AZ::TransformBus::Event(GetEntityId(), &AZ::TransformInterface::SetWorldTM, transform);
+            AZ::TransformBus::Event(GetEntityId(), &AZ::TransformInterface::SetWorldRotationQuaternion, rigidBody->GetOrientation());
+            AZ::TransformBus::Event(GetEntityId(), &AZ::TransformInterface::SetWorldTranslation, rigidBody->GetPosition());
         }
         m_isLastMovementFromKinematicSource = false;
     }
@@ -352,8 +342,6 @@ namespace PhysX
 
         m_interpolator = std::make_unique<TransformForwardTimeInterpolator>();
         m_interpolator->Reset(transform.GetTranslation(), rotation);
-
-        m_initialScale = transform.ExtractScale();
 
         Physics::RigidBodyNotificationBus::Event(GetEntityId(), &Physics::RigidBodyNotificationBus::Events::OnPhysicsEnabled);
     }

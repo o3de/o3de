@@ -1,12 +1,7 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 # -------------------------------------------------------------------------
 
@@ -109,11 +104,11 @@ def init_ly_pyside(LY_DEV=None):
                                     'bin',
                                     'profile').resolve()
 
-    # allows to retreive from settings.QTFORPYTHON_PATH
-    from azpy.constants import STR_QTFORPYTHON_PATH  # a path string constructor
-    QTFORPYTHON_PATH = Path(STR_QTFORPYTHON_PATH.format(LY_DEV)).resolve()
-    os.environ["DYNACONF_QTFORPYTHON_PATH"] = str(QTFORPYTHON_PATH)
-    site.addsitedir(str(QTFORPYTHON_PATH))  # PYTHONPATH
+    # # allows to retreive from settings.QTFORPYTHON_PATH
+    # from azpy.constants import STR_QTFORPYTHON_PATH  # a path string constructor
+    # QTFORPYTHON_PATH = Path(STR_QTFORPYTHON_PATH.format(LY_DEV)).resolve()
+    # os.environ["DYNACONF_QTFORPYTHON_PATH"] = str(QTFORPYTHON_PATH)
+    # site.addsitedir(str(QTFORPYTHON_PATH))  # PYTHONPATH
 
     QT_PLUGIN_PATH = Path.joinpath(LY_BIN_PATH,
                                    'EditorPlugins').resolve()
@@ -131,15 +126,15 @@ def init_ly_pyside(LY_DEV=None):
 
     # add Qt binaries to the Windows path to handle findings DLL file dependencies
     if sys.platform.startswith('win'):
-        path = os.environ['PATH']
-        newPath = ''
-        newPath += str(LY_BIN_PATH) + os.pathsep
-        newPath += str(Path.joinpath(QTFORPYTHON_PATH,
-                                     'shiboken2').resolve()) + os.pathsep
-        newPath += str(Path.joinpath(QTFORPYTHON_PATH,
-                                     'PySide2').resolve()) + os.pathsep
-        newPath += path
-        os.environ['PATH']=newPath
+        # path = os.environ['PATH']
+        # newPath = ''
+        # newPath += str(LY_BIN_PATH) + os.pathsep
+        # newPath += str(Path.joinpath(QTFORPYTHON_PATH,
+        #                              'shiboken2').resolve()) + os.pathsep
+        # newPath += str(Path.joinpath(QTFORPYTHON_PATH,
+        #                              'PySide2').resolve()) + os.pathsep
+        # newPath += path
+        # os.environ['PATH']=newPath
         _LOGGER.debug('PySide2 bootstrapped PATH for Windows.')
 
     try:
@@ -223,8 +218,8 @@ os.environ["DYNACONF_DCCSI_DEV_MODE"] = str(_DCCSI_DEV_MODE)
 _LY_DEV = azpy.config_utils.get_stub_check_path(in_path=_DCCSIG_PATH,
                                                 check_stub='engine.json')
 os.environ["DYNACONF_LY_DEV"] = str(_LY_DEV.resolve())
-_LY_PROJECT = azpy.config_utils.get_current_project(_LY_DEV)
-os.environ["DYNACONF_LY_PROJECT"] = _LY_PROJECT
+_LY_PROJECT = azpy.config_utils.get_current_project()
+os.environ["DYNACONF_LY_PROJECT"] = str(_LY_PROJECT.resolve())
 _LY_PROJECT_PATH = Path(_LY_DEV, _LY_PROJECT)
 os.environ["DYNACONF_LY_PROJECT_PATH"] = str(_LY_PROJECT_PATH)
 os.environ["DYNACONF_DCCSIG_PATH"] = str(_DCCSIG_PATH)
@@ -319,7 +314,7 @@ if __name__ == '__main__':
 
     settings.setenv()  # doing this will add/set the additional DYNACONF_ envars
 
-    _LOGGER.info('QTFORPYTHON_PATH: {}'.format(settings.QTFORPYTHON_PATH))
+    #_LOGGER.info('QTFORPYTHON_PATH: {}'.format(settings.QTFORPYTHON_PATH))
     _LOGGER.info('LY_BIN_PATH: {}'.format(settings.LY_BIN_PATH))
     _LOGGER.info('QT_PLUGIN_PATH: {}'.format(settings.QT_PLUGIN_PATH))
     _LOGGER.info('QT_QPA_PLATFORM_PLUGIN_PATH: {}'.format(settings.QT_QPA_PLATFORM_PLUGIN_PATH))

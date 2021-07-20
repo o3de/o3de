@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -68,6 +63,7 @@ namespace AzToolsFramework
         // This is meant to be used with the "EditCallback" Attribute
         using EditCallbackType = AZ::Edit::AttributeFunction<void(const AZ::Data::AssetId&, const AZ::Data::AssetType&)>;
         using ClearCallbackType = AZ::Edit::AttributeFunction<void()>;
+        using DefaultDirectoryCallbackType = AZ::Edit::AttributeFunction<void(AZStd::string&)>;
 
         PropertyAssetCtrl(QWidget *pParent = NULL, QString optionalValidDragDropExtensions = QString());
         virtual ~PropertyAssetCtrl();
@@ -119,6 +115,7 @@ namespace AzToolsFramework
         EditCallbackType* m_editNotifyCallback = nullptr;
         ClearCallbackType* m_clearNotifyCallback = nullptr;
         QString m_optionalValidDragDropExtensions;
+        DefaultDirectoryCallbackType* m_defaultDirectoryCallback = nullptr;
 
         //! The number of characters after which the autocompleter dropdown will be shown.
         //  Prevents showing too many options.
@@ -155,6 +152,10 @@ namespace AzToolsFramework
 
         //! Assets can be either source or product assets generated from source assets. By default, source assets are shown in the property asset. You can override that with this flag.
         bool m_showProductAssetName = true;
+
+        //! Assets can be either source or product assets generated from source assets.
+        //! By default the asset picker shows both on an AZ::Asset<> property. You can hide product assets with this flag.
+        bool m_hideProductFilesInAssetPicker = false;
 
         bool m_showThumbnail = false;
         bool m_showThumbnailDropDownButton = false;
@@ -196,17 +197,23 @@ namespace AzToolsFramework
         void SetEditNotifyTarget(void* editNotifyTarget);
         void SetEditNotifyCallback(EditCallbackType* editNotifyCallback); // This is meant to be used with the "EditCallback" Attribute
         void SetClearNotifyCallback(ClearCallbackType* clearNotifyCallback); // This is meant to be used with the "ClearNotify" Attribute
+        void SetDefaultDirectoryCallback(DefaultDirectoryCallbackType* callback); // This is meant to be used with the "DefaultStartingDirectoryCallback" Attribute
         void SetEditButtonEnabled(bool enabled);
         void SetEditButtonVisible(bool visible);
         void SetEditButtonIcon(const QIcon& icon);
         void SetEditButtonTooltip(QString tooltip);
         void SetBrowseButtonIcon(const QIcon& icon);
+        void SetBrowseButtonEnabled(bool enabled);
+        void SetBrowseButtonVisible(bool visible);
         void SetClearButtonEnabled(bool enable);
         void SetClearButtonVisible(bool visible);
 
         // Otherwise source asset name will shown.
         void SetShowProductAssetName(bool enable);
         bool GetShowProductAssetName() const;
+
+        void SetHideProductFilesInAssetPicker(bool hide);
+        bool GetHideProductFilesInAssetPicker() const;
 
         void SetShowThumbnail(bool enable);
         bool GetShowThumbnail() const;

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "LmbrCentral_precompiled.h"
 #include <AzTest/AzTest.h>
@@ -188,7 +183,7 @@ namespace UnitTest
         AZ::Entity entity;
         AZ::Transform transformIn = AZ::Transform::CreateFromQuaternionAndTranslation(
             AZ::Quaternion(0.46f, 0.34f, 0.02f, 0.82f), AZ::Vector3(1.7f, -0.4f, 2.3f));
-        transformIn.MultiplyByScale(AZ::Vector3(2.2f));
+        transformIn.MultiplyByUniformScale(2.2f);
         const AZ::Vector3 nonUniformScale(0.8f, 0.6f, 1.3f);
         const float width = 0.7f;
         const float height = 1.3f;
@@ -327,7 +322,7 @@ namespace UnitTest
         AZ::Entity entity;
         AZ::Transform transform = AZ::Transform::CreateFromQuaternionAndTranslation(
             AZ::Quaternion(0.64f, 0.16f, 0.68f, 0.32f), AZ::Vector3(0.4f, -2.3f, -0.9f));
-        transform.MultiplyByScale(AZ::Vector3(1.3f));
+        transform.MultiplyByUniformScale(1.3f);
         const AZ::Vector3 nonUniformScale(0.7f, 0.5f, 1.3f);
         const float width = 0.9f;
         const float height = 1.3f;
@@ -384,7 +379,7 @@ namespace UnitTest
         AZ::Entity entity;
         CreateQuad(
             AZ::Transform::CreateTranslation(AZ::Vector3(100.0f, 200.0f, 300.0f)) *
-            AZ::Transform::CreateScale(AZ::Vector3(2.5f)),
+            AZ::Transform::CreateUniformScale(2.5f),
             1.0f, 2.0f, entity);
 
         AZ::Aabb aabb;
@@ -425,7 +420,7 @@ namespace UnitTest
         AZ::Entity entity;
         AZ::Transform transform = AZ::Transform::CreateFromQuaternionAndTranslation(
             AZ::Quaternion(0.44f, 0.24f, 0.48f, 0.72f), AZ::Vector3(3.4f, 1.2f, -2.8f));
-        transform.MultiplyByScale(AZ::Vector3(1.5f));
+        transform.MultiplyByUniformScale(1.5f);
         const AZ::Vector3 nonUniformScale(1.2f, 1.1f, 0.8f);
         const float width = 1.2f;
         const float height = 1.7f;
@@ -518,7 +513,7 @@ namespace UnitTest
         AZ::Entity entity;
         AZ::Transform transform = AZ::Transform::CreateFromQuaternionAndTranslation(
             AZ::Quaternion(0.24f, 0.72f, 0.44f, 0.48f), AZ::Vector3(2.7f, 2.3f, -1.8f));
-        transform.MultiplyByScale(AZ::Vector3(1.2f));
+        transform.MultiplyByUniformScale(1.2f);
         const AZ::Vector3 nonUniformScale(0.4f, 2.2f, 1.3f);
         const float width = 1.6f;
         const float height = 0.7f;
@@ -546,7 +541,7 @@ namespace UnitTest
         AZ::Entity entity;
         AZ::Transform transform = AZ::Transform::CreateFromQuaternionAndTranslation(
             AZ::Quaternion(0.70f, 0.10f, 0.34f, 0.62f), AZ::Vector3(3.0f, -1.0f, 2.0f));
-        transform.MultiplyByScale(AZ::Vector3(2.0f));
+        transform.MultiplyByUniformScale(2.0f);
         const AZ::Vector3 nonUniformScale(2.4f, 1.3f, 1.8f);
         const float width = 0.8f;
         const float height = 1.4f;

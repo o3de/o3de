@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <RayTracing/RayTracingFeatureProcessor.h>
 #include <AzCore/Debug/EventTrace.h>
@@ -65,12 +60,22 @@ namespace AZ
             // create the TLAS object
             m_tlas = AZ::RHI::RayTracingTlas::CreateRHIRayTracingTlas();
 
-            // load the RayTracingSceneSrg asset
-            Data::Asset<RPI::ShaderResourceGroupAsset> rayTracingSceneSrgAsset =
-                RPI::AssetUtils::LoadAssetByProductPath<RPI::ShaderResourceGroupAsset>("shaderlib/atom/features/raytracing/raytracingscenesrg_raytracingscenesrg.azsrg", RPI::AssetUtils::TraceLevel::Error);
-            AZ_Assert(rayTracingSceneSrgAsset.IsReady(), "Failed to load RayTracingSceneSrg asset");
+            // load the RayTracingSrg asset asset
+            m_rayTracingSrgAsset = RPI::AssetUtils::LoadCriticalAsset<RPI::ShaderAsset>("shaderlib/atom/features/rayTracing/raytracingsrgs.azshader");
+            if (!m_rayTracingSrgAsset.IsReady())
+            {
+                AZ_Assert(false, "Failed to load RayTracingSrg asset");
+                return;
+            }
 
-            m_rayTracingSceneSrg = RPI::ShaderResourceGroup::Create(rayTracingSceneSrgAsset);
+            // create the RayTracingSceneSrg
+            m_rayTracingSceneSrg = RPI::ShaderResourceGroup::Create(m_rayTracingSrgAsset, Name("RayTracingSceneSrg"));
+            AZ_Assert(m_rayTracingSceneSrg, "Failed to create RayTracingSceneSrg");
+
+            // create the RayTracingMaterialSrg
+            const AZ::Name rayTracingMaterialSrgName("RayTracingMaterialSrg");
+            m_rayTracingMaterialSrg = RPI::ShaderResourceGroup::Create(m_rayTracingSrgAsset, Name("RayTracingMaterialSrg"));
+            AZ_Assert(m_rayTracingMaterialSrg, "Failed to create RayTracingMaterialSrg");
         }
 
         void RayTracingFeatureProcessor::SetMesh(const ObjectId objectId, const SubMeshVector& subMeshes)
@@ -104,7 +109,7 @@ namespace AZ
                 RHI::RayTracingBlasDescriptor blasDescriptor;
                 blasDescriptor.Build()
                     ->Geometry()
-                        ->VertexFormat(subMesh.m_vertexFormat)
+                        ->VertexFormat(subMesh.m_positionFormat)
                         ->VertexBuffer(subMesh.m_positionVertexBufferView)
                         ->IndexBuffer(subMesh.m_indexBufferView)
                 ;
@@ -124,6 +129,7 @@ namespace AZ
             m_subMeshCount += aznumeric_cast<uint32_t>(subMeshes.size());
 
             m_meshInfoBufferNeedsUpdate = true;
+            m_materialInfoBufferNeedsUpdate = true;
         }
 
         void RayTracingFeatureProcessor::RemoveMesh(const ObjectId objectId)
@@ -142,6 +148,7 @@ namespace AZ
             }
 
             m_meshInfoBufferNeedsUpdate = true;
+            m_materialInfoBufferNeedsUpdate = true;
         }
 
         void RayTracingFeatureProcessor::SetMeshTransform(const ObjectId objectId, const AZ::Transform transform, const AZ::Vector3 nonUniformScale)
@@ -162,14 +169,14 @@ namespace AZ
             m_meshInfoBufferNeedsUpdate = true;
         }
 
-        void RayTracingFeatureProcessor::UpdateRayTracingSceneSrg()
+        void RayTracingFeatureProcessor::UpdateRayTracingSrgs()
         {
             if (!m_tlas->GetTlasBuffer())
             {
                 return;
             }
 
-            if (m_rayTracingSceneSrg->IsQueuedForCompile())
+            if (m_rayTracingSceneSrg->IsQueuedForCompile() || m_rayTracingMaterialSrg->IsQueuedForCompile())
             {
                 //[GFX TODO][ATOM-14792] AtomSampleViewer: Reset scene and feature processors before switching to sample
                 return;
@@ -178,7 +185,152 @@ namespace AZ
             // update the mesh info buffer with the latest ray tracing enabled meshes
             UpdateMeshInfoBuffer();
 
+            // update the material info buffer with the latest ray tracing enabled meshes
+            UpdateMaterialInfoBuffer();
+
             // update the RayTracingSceneSrg
+            UpdateRayTracingSceneSrg();
+
+            // update the RayTracingMaterialSrg
+            UpdateRayTracingMaterialSrg();
+        }
+
+        void RayTracingFeatureProcessor::UpdateMeshInfoBuffer()
+        {
+            if (m_meshInfoBufferNeedsUpdate && (m_subMeshCount > 0))
+            {
+                TransformServiceFeatureProcessor* transformFeatureProcessor = GetParentScene()->GetFeatureProcessor<TransformServiceFeatureProcessor>();
+
+                AZStd::vector<MeshInfo> meshInfos;
+                meshInfos.reserve(m_subMeshCount);
+
+                uint32_t newMeshByteCount = m_subMeshCount * sizeof(MeshInfo);
+
+                if (m_meshInfoBuffer == nullptr)
+                {
+                    // allocate the MeshInfo structured buffer
+                    RPI::CommonBufferDescriptor desc;
+                    desc.m_poolType = RPI::CommonBufferPoolType::ReadOnly;
+                    desc.m_bufferName = "RayTracingMeshInfo";
+                    desc.m_byteCount = newMeshByteCount;
+                    desc.m_elementSize = sizeof(MeshInfo);
+                    m_meshInfoBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+                }
+                else if (m_meshInfoBuffer->GetBufferSize() < newMeshByteCount)
+                {
+                    // resize for the new sub-mesh count
+                    m_meshInfoBuffer->Resize(newMeshByteCount);
+                }
+
+                // keep track of the start index of the buffers for each mesh, this is put into the MeshInfo
+                // entry for each mesh so it knows where to find the start of its buffers in the unbounded array
+                uint32_t bufferStartIndex = 0;
+
+                for (const auto& mesh : m_meshes)
+                {
+                    AZ::Transform meshTransform = transformFeatureProcessor->GetTransformForId(TransformServiceFeatureProcessorInterface::ObjectId(mesh.first));
+                    AZ::Transform noScaleTransform = meshTransform;
+                    noScaleTransform.ExtractUniformScale();
+                    AZ::Matrix3x3 rotationMatrix = Matrix3x3::CreateFromTransform(noScaleTransform);
+                    rotationMatrix = rotationMatrix.GetInverseFull().GetTranspose();
+
+                    const RayTracingFeatureProcessor::SubMeshVector& subMeshes = mesh.second.m_subMeshes;
+                    for (const auto& subMesh : subMeshes)
+                    {
+                        MeshInfo meshInfo;
+                        meshInfo.m_indexOffset = subMesh.m_indexBufferView.GetByteOffset();
+                        meshInfo.m_positionOffset = subMesh.m_positionVertexBufferView.GetByteOffset();
+                        meshInfo.m_normalOffset = subMesh.m_normalVertexBufferView.GetByteOffset();
+
+                        if (RHI::CheckBitsAll(subMesh.m_bufferFlags, RayTracingSubMeshBufferFlags::Tangent))
+                        {
+                            meshInfo.m_tangentOffset = subMesh.m_tangentVertexBufferView.GetByteOffset();
+                        }
+
+                        if (RHI::CheckBitsAll(subMesh.m_bufferFlags, RayTracingSubMeshBufferFlags::Bitangent))
+                        {
+                            meshInfo.m_bitangentOffset = subMesh.m_bitangentVertexBufferView.GetByteOffset();
+                        }
+
+                        if (RHI::CheckBitsAll(subMesh.m_bufferFlags, RayTracingSubMeshBufferFlags::UV))
+                        {
+                            meshInfo.m_uvOffset = subMesh.m_uvVertexBufferView.GetByteOffset();
+                        }
+
+                        subMesh.m_irradianceColor.StoreToFloat4(meshInfo.m_irradianceColor.data());
+                        rotationMatrix.StoreToRowMajorFloat9(meshInfo.m_worldInvTranspose.data());
+                        meshInfo.m_bufferFlags = subMesh.m_bufferFlags;
+                        meshInfo.m_bufferStartIndex = bufferStartIndex;
+
+                        // add the count of buffers present in this subMesh to the start index for the next subMesh
+                        // note that the Index, Position, and Normal buffers are always counted since they are guaranteed
+                        static const uint32_t RayTracingSubMeshFixedStreamCount = 3;
+                        bufferStartIndex += (RayTracingSubMeshFixedStreamCount + RHI::CountBitsSet(aznumeric_cast<uint32_t>(meshInfo.m_bufferFlags)));
+
+                        meshInfos.emplace_back(meshInfo);
+                    }
+                }
+
+                m_meshInfoBuffer->UpdateData(meshInfos.data(), newMeshByteCount);
+                m_meshInfoBufferNeedsUpdate = false;
+            }
+        }
+
+        void RayTracingFeatureProcessor::UpdateMaterialInfoBuffer()
+        {
+            if (m_materialInfoBufferNeedsUpdate && (m_subMeshCount > 0))
+            {
+                AZStd::vector<MaterialInfo> materialInfos;
+                materialInfos.reserve(m_subMeshCount);
+
+                uint32_t newMaterialByteCount = m_subMeshCount * sizeof(MaterialInfo);
+
+                if (m_materialInfoBuffer == nullptr)
+                {
+                    // allocate the MaterialInfo structured buffer
+                    RPI::CommonBufferDescriptor desc;
+                    desc.m_poolType = RPI::CommonBufferPoolType::ReadOnly;
+                    desc.m_bufferName = "RayTracingMaterialInfo";
+                    desc.m_byteCount = newMaterialByteCount;
+                    desc.m_elementSize = sizeof(MaterialInfo);
+                    m_materialInfoBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+                }
+                else if (m_materialInfoBuffer->GetBufferSize() < newMaterialByteCount)
+                {
+                    // resize for the new sub-mesh count
+                    m_materialInfoBuffer->Resize(newMaterialByteCount);
+                }
+
+                // keep track of the start index of the textures for each mesh, this is put into the MaterialInfo
+                // entry for each mesh so it knows where to find the start of its textures in the unbounded array
+                uint32_t textureStartIndex = 0;
+
+                for (const auto& mesh : m_meshes)
+                {
+                    const RayTracingFeatureProcessor::SubMeshVector& subMeshes = mesh.second.m_subMeshes;
+                    for (const auto& subMesh : subMeshes)
+                    {
+                        MaterialInfo materialInfo;
+                        subMesh.m_baseColor.StoreToFloat4(materialInfo.m_baseColor.data());
+                        materialInfo.m_metallicFactor = subMesh.m_metallicFactor;
+                        materialInfo.m_roughnessFactor = subMesh.m_roughnessFactor;
+                        materialInfo.m_textureFlags = subMesh.m_textureFlags;
+                        materialInfo.m_textureStartIndex = textureStartIndex;
+
+                        // add the count of textures present in this subMesh to the start index for the next subMesh
+                        textureStartIndex += RHI::CountBitsSet(aznumeric_cast<uint32_t>(materialInfo.m_textureFlags));
+
+                        materialInfos.emplace_back(materialInfo);
+                    }
+                }
+
+                m_materialInfoBuffer->UpdateData(materialInfos.data(), newMaterialByteCount);
+                m_materialInfoBufferNeedsUpdate = false;
+            }
+        }
+
+        void RayTracingFeatureProcessor::UpdateRayTracingSceneSrg()
+        {
             const RHI::ShaderResourceGroupLayout* srgLayout = m_rayTracingSceneSrg->GetLayout();
             RHI::ShaderInputImageIndex imageIndex;
             RHI::ShaderInputBufferIndex bufferIndex;
@@ -272,11 +424,26 @@ namespace AZ
                     const SubMeshVector& subMeshes = mesh.second.m_subMeshes;
                     for (const auto& subMesh : subMeshes)
                     {
-                        // add the index, position, and normal buffers for this sub-mesh to the mesh buffer list, this will
-                        // go into the shader as an unbounded array in the Srg
+                        // add the stream buffers for this sub-mesh to the mesh buffer list,
+                        // this is sent to the shader as an unbounded array in the Srg
                         meshBuffers.push_back(subMesh.m_indexShaderBufferView.get());
                         meshBuffers.push_back(subMesh.m_positionShaderBufferView.get());
                         meshBuffers.push_back(subMesh.m_normalShaderBufferView.get());
+
+                        if (RHI::CheckBitsAll(subMesh.m_bufferFlags, RayTracingSubMeshBufferFlags::Tangent))
+                        {
+                            meshBuffers.push_back(subMesh.m_tangentShaderBufferView.get());
+                        }
+
+                        if (RHI::CheckBitsAll(subMesh.m_bufferFlags, RayTracingSubMeshBufferFlags::Bitangent))
+                        {
+                            meshBuffers.push_back(subMesh.m_bitangentShaderBufferView.get());
+                        }
+
+                        if (RHI::CheckBitsAll(subMesh.m_bufferFlags, RayTracingSubMeshBufferFlags::UV))
+                        {
+                            meshBuffers.push_back(subMesh.m_uvShaderBufferView.get());
+                        }
                     }
                 }
 
@@ -287,58 +454,53 @@ namespace AZ
             m_rayTracingSceneSrg->Compile();
         }
 
-        void RayTracingFeatureProcessor::UpdateMeshInfoBuffer()
+        void RayTracingFeatureProcessor::UpdateRayTracingMaterialSrg()
         {
-            if (m_meshInfoBufferNeedsUpdate && (m_subMeshCount > 0))
+            const RHI::ShaderResourceGroupLayout* srgLayout = m_rayTracingMaterialSrg->GetLayout();
+            RHI::ShaderInputImageIndex imageIndex;
+            RHI::ShaderInputBufferIndex bufferIndex;
+            RHI::ShaderInputConstantIndex constantIndex;
+
+            bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_materialInfo"));
+            m_rayTracingMaterialSrg->SetBufferView(bufferIndex, m_materialInfoBuffer->GetBufferView());
+
+            if (m_subMeshCount)
             {
-                TransformServiceFeatureProcessor* transformFeatureProcessor = GetParentScene()->GetFeatureProcessor<TransformServiceFeatureProcessor>();
-
-                AZStd::vector<MeshInfo> meshInfos;
-                meshInfos.reserve(m_subMeshCount);
-
-                uint32_t newMeshByteCount = m_subMeshCount * sizeof(MeshInfo);
-
-                if (m_meshInfoBuffer == nullptr)
-                {
-                    // allocate the MeshInfo structured buffer
-                    RPI::CommonBufferDescriptor desc;
-                    desc.m_poolType = RPI::CommonBufferPoolType::ReadOnly;
-                    desc.m_bufferName = "RayTracingMeshInfo";
-                    desc.m_byteCount = newMeshByteCount;
-                    desc.m_elementSize = sizeof(MeshInfo);
-                    m_meshInfoBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
-                }
-                else if (m_meshInfoBuffer->GetBufferSize() < newMeshByteCount)
-                {
-                    // resize for the new sub-mesh count
-                    m_meshInfoBuffer->Resize(newMeshByteCount);
-                }
-
+                AZStd::vector<const RHI::ImageView*> materialTextures;
                 for (const auto& mesh : m_meshes)
                 {
-                    AZ::Transform meshTransform = transformFeatureProcessor->GetTransformForId(TransformServiceFeatureProcessorInterface::ObjectId(mesh.first));
-                    AZ::Transform noScaleTransform = meshTransform;
-                    noScaleTransform.ExtractScale();
-                    AZ::Matrix3x3 rotationMatrix = Matrix3x3::CreateFromTransform(noScaleTransform);
-                    rotationMatrix = rotationMatrix.GetInverseFull().GetTranspose();
-
-                    const RayTracingFeatureProcessor::SubMeshVector& subMeshes = mesh.second.m_subMeshes;
+                    const SubMeshVector& subMeshes = mesh.second.m_subMeshes;
                     for (const auto& subMesh : subMeshes)
                     {
-                        MeshInfo meshInfo;
-                        meshInfo.m_indexOffset = subMesh.m_indexBufferView.GetByteOffset();
-                        meshInfo.m_positionOffset = subMesh.m_positionVertexBufferView.GetByteOffset();
-                        meshInfo.m_normalOffset = subMesh.m_normalVertexBufferView.GetByteOffset();
-                        subMesh.m_irradianceColor.StoreToFloat4(meshInfo.m_irradianceColor.data());
-                        rotationMatrix.StoreToRowMajorFloat9(meshInfo.m_worldInvTranspose.data());
+                        // add the baseColor, normal, metallic, and roughness images for this sub-mesh to the material texture list,
+                        // this is sent to the shader as an unbounded array in the Srg
+                        if (RHI::CheckBitsAll(subMesh.m_textureFlags, RayTracingSubMeshTextureFlags::BaseColor))
+                        {
+                            materialTextures.push_back(subMesh.m_baseColorImageView.get());
+                        }
 
-                        meshInfos.emplace_back(meshInfo);
+                        if (RHI::CheckBitsAll(subMesh.m_textureFlags, RayTracingSubMeshTextureFlags::Normal))
+                        {
+                            materialTextures.push_back(subMesh.m_normalImageView.get());
+                        }
+
+                        if (RHI::CheckBitsAll(subMesh.m_textureFlags, RayTracingSubMeshTextureFlags::Metallic))
+                        {
+                            materialTextures.push_back(subMesh.m_metallicImageView.get());
+                        }
+
+                        if (RHI::CheckBitsAll(subMesh.m_textureFlags, RayTracingSubMeshTextureFlags::Roughness))
+                        {
+                            materialTextures.push_back(subMesh.m_roughnessImageView.get());
+                        }
                     }
                 }
 
-                m_meshInfoBuffer->UpdateData(meshInfos.data(), newMeshByteCount);
-                m_meshInfoBufferNeedsUpdate = false;
+                RHI::ShaderInputImageUnboundedArrayIndex textureUnboundedArrayIndex = srgLayout->FindShaderInputImageUnboundedArrayIndex(AZ::Name("m_materialTextures"));
+                m_rayTracingMaterialSrg->SetImageViewUnboundedArray(textureUnboundedArrayIndex, materialTextures);
             }
+
+            m_rayTracingMaterialSrg->Compile();
         }
     }        
 }

@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -128,12 +123,12 @@ namespace AzFramework
             worldPosition, CameraView(cameraState), CameraProjection(cameraState), cameraState.m_viewportSize);
     }
 
-    AZ::Vector3 ScreenToWorld(
-        const ScreenPoint& screenPosition, const AZ::Matrix4x4& inverseCameraView,
-        const AZ::Matrix4x4& inverseCameraProjection, const AZ::Vector2& viewportSize)
+    AZ::Vector3 ScreenNDCToWorld(
+        const AZ::Vector2& normalizedScreenPosition, const AZ::Matrix4x4& inverseCameraView,
+        const AZ::Matrix4x4& inverseCameraProjection)
     {
         // convert screen space coordinates from <0, 1> to <-1,1> range
-        const auto ndcPosition = NDCFromScreenPoint(screenPosition, viewportSize) * 2.0f - AZ::Vector2::CreateOne();
+        const auto ndcPosition = normalizedScreenPosition * 2.0f - AZ::Vector2::CreateOne();
 
         // transform ndc space position to clip space
         const auto clipSpacePosition = inverseCameraProjection * Vector2ToVector4(ndcPosition, -1.0f, 1.0f);
@@ -143,6 +138,15 @@ namespace AzFramework
         const auto worldPosition = inverseCameraView * cameraSpacePosition;
 
         return worldPosition;
+    }
+
+    AZ::Vector3 ScreenToWorld(
+        const ScreenPoint& screenPosition, const AZ::Matrix4x4& inverseCameraView,
+        const AZ::Matrix4x4& inverseCameraProjection, const AZ::Vector2& viewportSize)
+    {
+        const auto normalizedScreenPosition = NDCFromScreenPoint(screenPosition, viewportSize);
+
+        return ScreenNDCToWorld(normalizedScreenPosition, inverseCameraView, inverseCameraProjection);
     }
 
     AZ::Vector3 ScreenToWorld(const ScreenPoint& screenPosition, const CameraState& cameraState)

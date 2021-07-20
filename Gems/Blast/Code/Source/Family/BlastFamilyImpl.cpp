@@ -1,13 +1,8 @@
 
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #include "StdAfx.h"
@@ -202,7 +197,7 @@ namespace Blast
             if (parentBody)
             {
                 parentTransform = parentBody->GetTransform();
-                parentTransform.MultiplyByScale(m_initialTransform.GetScale());
+                parentTransform.MultiplyByUniformScale(m_initialTransform.GetUniformScale());
             }
             else
             {
@@ -239,7 +234,6 @@ namespace Blast
         AzPhysics::RigidBodyConfiguration configuration;
         configuration.m_position = transform.GetTranslation();
         configuration.m_orientation = transform.GetRotation();
-        configuration.m_scale = transform.GetScale();
         configuration.m_ccdEnabled = m_actorConfiguration.m_isCcdEnabled;
         configuration.m_startSimulationEnabled = m_actorConfiguration.m_isSimulated;
         configuration.m_initialAngularVelocity = AZ::Vector3::CreateZero();
@@ -255,6 +249,7 @@ namespace Blast
         actorDesc.m_parentCenterOfMass = transform.GetTranslation();
         actorDesc.m_parentLinearVelocity = AZ::Vector3::CreateZero();
         actorDesc.m_bodyConfiguration = configuration;
+        actorDesc.m_scale = transform.GetUniformScale();
 
         return actorDesc;
     }

@@ -1,0 +1,6 @@
+{
+    "PackageName": "Masked Occlusion Culling",
+    "URL": "https://software.intel.com/content/www/us/en/develop/articles/masked-software-occlusion-culling.html",
+    "License": "Apache 2.0",
+    "LicenseFile": "LICENSE.txt"
+}

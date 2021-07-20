@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -19,8 +14,21 @@
 
 namespace AzNetworking
 {
+    using NetworkInterfaces = AZStd::unordered_map<AZ::Name, AZStd::unique_ptr<INetworkInterface>>;
+
     //! @class INetworking
     //! @brief The interface for creating and working with network interfaces.
+    //!
+    //! INetworking is an Az::Interface<T> that provides applications access to higher level networking abstractions.
+    //! AzNetworking::INetworking can be used to instantiate new INetworkInterfaces that can be configured to operate over
+    //! either TCP or UDP, enable or disable encryption, and be assigned a trust level.
+    //! 
+    //! INetworking is also responsible for registering ICompressorFactory implementations. This allows a developer to have
+    //! access to multiple ICompressorFactory implementations by name.  The [MultiplayerCompressor
+    //! Gem](http://o3de.org/docs/user-guide/gems/reference/multiplayer-compression) is an example of this using the
+    //! [LZ4](https://wikipedia.org/wiki/LZ4_%28compression_algorithm%29) algorithm.
+    //! 
+
     class INetworking
     {
     public:
@@ -60,5 +68,25 @@ namespace AzNetworking
         //! @param name The name of the Compressor factory to unregister, must match result of factory->GetFactoryName()
         //! @return Whether the factory was found and unregistered
         virtual bool UnregisterCompressorFactory(AZ::Name name) = 0;
+
+        //! Returns the raw network interfaces owned by the networking instance.
+        //! @return the raw network interfaces owned by the networking instance
+        virtual const NetworkInterfaces& GetNetworkInterfaces() const = 0;
+
+        //! Returns the number of sockets monitored by our TcpListenThread.
+        //! @return the number of sockets monitored by our TcpListenThread
+        virtual uint32_t GetTcpListenThreadSocketCount() const = 0;
+
+        //! Returns the total time spent updating our TcpListenThread.
+        //! @return the total time spent updating our TcpListenThread
+        virtual AZ::TimeMs GetTcpListenThreadUpdateTime() const = 0;
+
+        //! Returns the number of sockets monitored by our UdpReaderThread.
+        //! @return the number of sockets monitored by our UdpReaderThread
+        virtual uint32_t GetUdpReaderThreadSocketCount() const = 0;
+
+        //! Returns the total time spent updating our UdpReaderThread.
+        //! @return the total time spent updating our UdpReaderThread
+        virtual AZ::TimeMs GetUdpReaderThreadUpdateTime() const = 0;
     };
 }

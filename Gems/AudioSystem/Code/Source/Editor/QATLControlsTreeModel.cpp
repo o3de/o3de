@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #include <QATLControlsTreeModel.h>
 
@@ -287,9 +282,9 @@ namespace AudioControls
                     QDataStream stream(&encoded, QIODevice::ReadOnly);
                     while (!stream.atEnd())
                     {
-                        int row, col;
+                        int streamRow, streamCol;
                         QMap<int, QVariant> roleDataMap;
-                        stream >> row >> col >> roleDataMap;
+                        stream >> streamRow >> streamCol >> roleDataMap;
                         if (!roleDataMap.isEmpty())
                         {
                             // If dropping a folder, make sure that folder name doesn't already exist where it is being dropped
@@ -341,9 +336,9 @@ namespace AudioControls
             {
                 QByteArray data = mimeData->data(format);
                 QDataStream stream(&data, QIODevice::ReadOnly);
-                int row, col;
+                int streamRow, streamCol;
                 QMap<int, QVariant> roleDataMap;
-                stream >> row >> col >> roleDataMap;
+                stream >> streamRow >> streamCol >> roleDataMap;
                 if (!roleDataMap.isEmpty() && roleDataMap[eDR_TYPE] != eIT_FOLDER)
                 {
                     return false;

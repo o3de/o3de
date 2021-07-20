@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
@@ -27,12 +23,12 @@ ly_add_target(
         PRIVATE
             Legacy::CryCommon
             Gem::LmbrCentral
-            Gem::TextureAtlas
         PUBLIC
             Gem::Atom_RPI.Public
             Gem::Atom_Utils.Static
             Gem::Atom_Bootstrap.Headers
             Gem::AtomFont
+            Gem::TextureAtlas       
 )
 
 ly_add_target(
@@ -50,11 +46,13 @@ ly_add_target(
             Gem::LyShine.Static
             Legacy::CryCommon
             Gem::LmbrCentral
-            Gem::TextureAtlas
     RUNTIME_DEPENDENCIES
         Gem::LmbrCentral
         Gem::TextureAtlas
 )
+
+# by default, load the above "Gem::LyShine" module in Client applications:
+ly_create_alias(NAME LyShine.Clients NAMESPACE Gem TARGETS Gem::LyShine)
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
@@ -85,8 +83,8 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Legacy::EditorCore
                 Gem::LyShine.Static
                 Legacy::CryCommon
-                Gem::LmbrCentral
-                Gem::TextureAtlas
+                Gem::LmbrCentral.Editor
+                Gem::TextureAtlas.Editor
                 Gem::AtomToolsFramework.Static
                 Gem::AtomToolsFramework.Editor
                 ${additional_dependencies}
@@ -94,6 +92,8 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::Atom_RPI.Public
                 Gem::Atom_Utils.Static
                 Gem::Atom_Bootstrap.Headers
+        RUNTIME_DEPENDENCIES
+            Gem::TextureAtlas.Editor
     )
 
     ly_add_target(
@@ -117,12 +117,16 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Legacy::CryCommon
                 AZ::AssetBuilderSDK
                 Gem::LyShine.Editor.Static
-                Gem::LmbrCentral
-                Gem::TextureAtlas
+                Gem::LmbrCentral.Editor
+                Gem::TextureAtlas.Editor
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral.Editor
-            Gem::TextureAtlas
+            Gem::TextureAtlas.Editor
 )
+
+    # by default, load the above "Gem::LyShine.Editor" module in dev tools:
+    ly_create_alias(NAME LyShine.Builders NAMESPACE Gem TARGETS Gem::LyShine.Editor)
+    ly_create_alias(NAME LyShine.Tools NAMESPACE Gem TARGETS Gem::LyShine.Editor)
 endif()
 
 ################################################################################
@@ -146,7 +150,9 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 Gem::LyShine.Static
                 Legacy::CryCommon
                 Gem::LmbrCentral
-                Gem::TextureAtlas
+        RUNTIME_DEPENDENCIES
+            Gem::LmbrCentral
+            Gem::TextureAtlas
     )
     ly_add_googletest(
         NAME Gem::LyShine.Tests
@@ -175,9 +181,12 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     AZ::AzTest
                     Legacy::CryCommon
                     AZ::AssetBuilderSDK
-                    Gem::LmbrCentral
-                    Gem::TextureAtlas
                     Gem::LyShine.Editor.Static
+                    Gem::LmbrCentral.Editor
+                    Gem::TextureAtlas
+            RUNTIME_DEPENDENCIES
+                Gem::LmbrCentral.Editor
+                Gem::TextureAtlas.Editor
         )
         ly_add_googletest(
             NAME Gem::LyShine.Editor.Tests

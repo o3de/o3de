@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <QRegExp>
 
 #include <GraphCanvas/Widgets/GraphCanvasTreeModel.h>
@@ -147,16 +142,17 @@ namespace GraphCanvas
             return true;
         }
 
-        QString test = model->data(index).toString();
 
+        QString test = model->data(index).toString();
+        
         bool showRow = false;
-        int regexIndex = test.lastIndexOf(m_filterRegex);
+        int regexIndex = m_filterRegex.indexIn(test);
 
         if (regexIndex >= 0)
         {
             showRow = true;
-
-            AZStd::pair<int, int> highlight(regexIndex, m_filter.size());
+            
+            AZStd::pair<int, int> highlight(regexIndex, m_filterRegex.matchedLength());
             currentItem->SetHighlight(highlight);
         }
         else
@@ -283,8 +279,20 @@ namespace GraphCanvas
 
     void NodePaletteSortFilterProxyModel::SetFilter(const QString& filter)
     {
-        m_filter = QRegExp::escape(filter);
-        m_filterRegex = QRegExp(m_filter, Qt::CaseInsensitive);
+        // Remove whitespace and escape() so every regexp special character is escaped with a backslash
+        // Then ignore all whitespace by adding \s* (regex optional whitespace match) in between every other character.
+        // We use \s* instead of simply removing all whitespace from the filter and node-names in order to preserve the node-name and accurately highlight the matching portion.
+        // Example: "OnGraphStart" or "On Graph Start"
+        m_filter = QRegExp::escape(filter.simplified().replace(" ", ""));
+        
+        QString regExIgnoreWhitespace(m_filter[0]);
+        for (int i = 1; i < m_filter.size(); ++i)
+        {
+            regExIgnoreWhitespace.append("\\s*");
+            regExIgnoreWhitespace.append(m_filter[i]);
+        }
+        
+        m_filterRegex = QRegExp(regExIgnoreWhitespace, Qt::CaseInsensitive);
     }
 
     void NodePaletteSortFilterProxyModel::ClearFilter()

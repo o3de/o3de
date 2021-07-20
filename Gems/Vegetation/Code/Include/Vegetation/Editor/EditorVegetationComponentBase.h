@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -17,7 +12,6 @@
 #include <GradientSignal/Editor/EditorGradientComponentBase.h>
 #include <Vegetation/Editor/EditorVegetationComponentTypeIds.h>
 #include <LmbrCentral/Component/EditorWrappedComponentBase.h>
-#include <CrySystemBus.h>
 
 namespace Vegetation
 {
@@ -28,7 +22,6 @@ namespace Vegetation
     template<typename TComponent, typename TConfiguration>
     class EditorVegetationComponentBase
         : public LmbrCentral::EditorWrappedComponentBase<TComponent, TConfiguration>
-        , private CrySystemEventBus::Handler
     {
     public:
         using BaseClassType = LmbrCentral::EditorWrappedComponentBase<TComponent, TConfiguration>;
@@ -47,11 +40,6 @@ namespace Vegetation
         void Deactivate() override;
 
         static void Reflect(AZ::ReflectContext* context);
-
-        ////////////////////////////////////////////////////////////////////////////
-        // CrySystemEvents
-        void OnCryEditorBeginLevelExport() override;
-        void OnCryEditorEndLevelExport(bool /*success*/) override;
 
     protected:
         using BaseClassType::m_configuration;

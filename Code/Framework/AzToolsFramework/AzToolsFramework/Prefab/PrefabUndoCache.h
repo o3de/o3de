@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -46,14 +41,19 @@ namespace AzToolsFramework
             void Validate(const AZ::EntityId& entityId) override;
 
             // Retrieve the last known state for an entity
-            bool Retrieve(const AZ::EntityId& entityId, PrefabDom& outDom);
+            bool Retrieve(const AZ::EntityId& entityId, PrefabDom& outDom, AZ::EntityId& parentId);
 
             // Store dom as the cached state of entityId
-            void Store(const AZ::EntityId& entityId, PrefabDom&& dom);
+            void Store(const AZ::EntityId& entityId, PrefabDom&& dom, const AZ::EntityId& parentId);
 
         private:
-            typedef AZStd::unordered_map<AZ::EntityId, PrefabDom> EntityDomMap;
-            EntityDomMap m_entitySavedStates;
+            struct PrefabUndoCacheItem
+            {
+                PrefabDom dom;
+                AZ::EntityId parentId;
+            };
+            typedef AZStd::unordered_map<AZ::EntityId, PrefabUndoCacheItem> EntityCache;
+            EntityCache m_entitySavedStates;
 
             InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
             InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;

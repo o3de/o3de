@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <AzCore/Memory/SystemAllocator.h>
@@ -81,52 +76,6 @@ namespace AZ
 
         AZStd::string GetMaterialPropertyDataTypeString(AZ::TypeId typeId);
 
-        //! Visibility for each material property.
-        //! If the data field is empty, use default as editable.
-        enum class MaterialPropertyVisibility : uint32_t
-        {
-            Enabled,  //< The property is visible and editable
-            Disabled, //< The property is visible but non-editable
-            Hidden,   //< The property is invisible
-
-            Default = Enabled
-        };
-
-        struct MaterialPropertyRange
-        {
-            MaterialPropertyRange() = default;
-            MaterialPropertyRange(
-                const MaterialPropertyValue& max,
-                const MaterialPropertyValue& min,
-                const MaterialPropertyValue& softMax,
-                const MaterialPropertyValue& softMin
-            )
-                : m_max(max)
-                , m_min(min)
-                , m_softMax(softMax)
-                , m_softMin(softMin)
-            {}
-
-            MaterialPropertyValue m_max;
-            MaterialPropertyValue m_min;
-            MaterialPropertyValue m_softMax;
-            MaterialPropertyValue m_softMin;
-        };
-
-        //! Used by material functors to dynamically control property metadata in tools.
-        //! For example, show/hide a property based on some other 'enable' flag property.
-        //! Normally we wouldn't want editor-related code mixed in with runtime code, but
-        //! since this data can be modified dynamically, keeping it in the runtime makes
-        //! the overall material functor design simpler and more user-friendly.
-        struct MaterialPropertyDynamicMetadata
-        {
-            AZ_TYPE_INFO(MaterialPropertyDynamicMetadata, "{A89F215F-3235-499F-896C-9E63ACC1D657}");
-
-            AZ::RPI::MaterialPropertyVisibility m_visibility;
-            AZStd::string m_description;
-            AZ::RPI::MaterialPropertyRange m_propertyRange;
-        };
-
         //! A material property is any data input to a material, like a bool, float, Vector, Image, Buffer, etc.
         //! This descriptor defines a single input property, including it's name ID, and how it maps
         //! to the shader system.
@@ -171,7 +120,6 @@ namespace AZ
     } // namespace RPI
 
     AZ_TYPE_INFO_SPECIALIZE(RPI::MaterialPropertyOutputType, "{42A6E5E8-0FE6-4D7B-884A-1F478E4ADD97}");
-    AZ_TYPE_INFO_SPECIALIZE(RPI::MaterialPropertyVisibility, "{318B43A2-79E3-4502-8FD0-5815209EA123}");
     AZ_TYPE_INFO_SPECIALIZE(RPI::MaterialPropertyDataType, "{3D903D5C-C6AA-452E-A2F8-8948D30833FF}");
 } // namespace AZ
 

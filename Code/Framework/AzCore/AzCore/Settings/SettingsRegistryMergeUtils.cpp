@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/IO/GenericStreams.h>
 #include <AzCore/IO/Path/Path.h>
@@ -86,6 +81,35 @@ namespace AZ::Internal
                     [[maybe_unused]] AZ::SettingsRegistryInterface::Type type, AZStd::string_view value) override
                 {
                     m_enginePaths.emplace_back(EngineInfo{AZ::IO::FixedMaxPath{value}.LexicallyNormal(), {}});
+                }
+
+                AZ::SettingsRegistryInterface::VisitResponse Traverse(
+                    [[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName,
+                    AZ::SettingsRegistryInterface::VisitAction action, AZ::SettingsRegistryInterface::Type type) override
+                {
+                    auto response = AZ::SettingsRegistryInterface::VisitResponse::Continue;
+                    if (action == AZ::SettingsRegistryInterface::VisitAction::Begin)
+                    {
+                        if (type == AZ::SettingsRegistryInterface::Type::Array)
+                        {
+                            if (valueName.compare("engines") != 0)
+                            {
+                                response = AZ::SettingsRegistryInterface::VisitResponse::Skip;
+                            }
+                        }
+                    }
+                    else if (action == AZ::SettingsRegistryInterface::VisitAction::Value)
+                    {
+                        if (type == AZ::SettingsRegistryInterface::Type::String)
+                        {
+                            if (valueName.compare("path") != 0)
+                            {
+                                response = AZ::SettingsRegistryInterface::VisitResponse::Skip;
+                            }
+                        }
+                    }
+
+                    return response;
                 }
 
                 AZStd::vector<EngineInfo> m_enginePaths{};
@@ -494,13 +518,6 @@ namespace AZ::SettingsRegistryMergeUtils
         return configFileParsed;
     }
 
-    void MergeSettingsToRegistry_Bootstrap(SettingsRegistryInterface& registry)
-    {
-        ConfigParserSettings parserSettings;
-        parserSettings.m_registryRootPointerPath = BootstrapSettingsRootKey;
-        MergeSettingsToRegistry_ConfigFile(registry, "bootstrap.cfg", parserSettings);
-    }
-
     void MergeSettingsToRegistry_AddRuntimeFilePaths(SettingsRegistryInterface& registry)
     {
         using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
@@ -543,9 +560,24 @@ namespace AZ::SettingsRegistryMergeUtils
             AZ::IO::FixedMaxPath normalizedProjectPath = path.LexicallyNormal();
             registry.Set(FilePathKey_ProjectPath, normalizedProjectPath.Native());
 
-            // Add an alias to the project "user" directory
-            AZ::IO::FixedMaxPath projectUserPath = (normalizedProjectPath / "user").LexicallyNormal();
+            // Set the user directory with the provided path or using project/user as default
+            auto projectUserPathKey = FixedValueString::format("%s/project_user_path", BootstrapSettingsRootKey);
+            AZ::IO::FixedMaxPath projectUserPath;
+            if (!registry.Get(projectUserPath.Native(), projectUserPathKey))
+            {
+                projectUserPath = (normalizedProjectPath / "user").LexicallyNormal();
+            }
             registry.Set(FilePathKey_ProjectUserPath, projectUserPath.Native());
+
+            // Set the user directory with the provided path or using project/user as default
+            auto projectLogPathKey = FixedValueString::format("%s/project_log_path", BootstrapSettingsRootKey);
+            AZ::IO::FixedMaxPath projectLogPath;
+            if (!registry.Get(projectLogPath.Native(), projectLogPathKey))
+            {
+                projectLogPath = (projectUserPath / "log").LexicallyNormal();
+            }
+            registry.Set(FilePathKey_ProjectLogPath, projectLogPath.Native());
+
             // check for a default write storage path, fall back to the project's user/ directory if not
             AZStd::optional<AZ::IO::FixedMaxPathString> devWriteStorage = Utils::GetDevWriteStoragePath();
             registry.Set(FilePathKey_DevWriteStorage, devWriteStorage.has_value()
@@ -619,6 +651,8 @@ namespace AZ::SettingsRegistryMergeUtils
         }
         else
         {
+            // Set the default ProjectUserPath to the <engine-root>/user directory
+            registry.Set(FilePathKey_ProjectUserPath, (engineRoot / "user").LexicallyNormal().Native());
             AZ_TracePrintf("SettingsRegistryMergeUtils",
                 R"(Project path isn't set in the Settings Registry at "%.*s". Project-related filepaths will not be set)" "\n",
                 aznumeric_cast<int>(projectPathKey.size()), projectPathKey.data());
@@ -792,7 +826,11 @@ namespace AZ::SettingsRegistryMergeUtils
         }
     }
 
-    void MergeSettingsToRegistry_CommandLine(SettingsRegistryInterface& registry, const AZ::CommandLine& commandLine, bool executeCommands)
+    // This function intentionally copies `commandLine`. It looks like it only uses it as a const reference, but the
+    // code in the loop makes calls that mutates the `commandLine` instance, invalidating the iterators. Making a copy
+    // ensures that the iterators remain valid.
+    // NOLINTNEXTLINE(performance-unnecessary-value-param)
+    void MergeSettingsToRegistry_CommandLine(SettingsRegistryInterface& registry, AZ::CommandLine commandLine, bool executeCommands)
     {
         // Iterate over all the command line options in order to parse the --regset and --regremove
         // arguments in the order they were supplied
@@ -807,7 +845,7 @@ namespace AZ::SettingsRegistryMergeUtils
                     continue;
                 }
             }
-            if (commandArgument.m_option == "regremove")
+            else if (commandArgument.m_option == "regremove")
             {
                 if (!registry.Remove(commandArgument.m_value))
                 {
@@ -924,7 +962,14 @@ namespace AZ::SettingsRegistryMergeUtils
             OptionKeyToRegsetKey{
                 "project-cache-path",
                 AZStd::string::format("%s/project_cache_path", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)},
-            OptionKeyToRegsetKey{"project-build-path", ProjectBuildPath} };
+            OptionKeyToRegsetKey{
+                "project-user-path",
+                AZStd::string::format("%s/project_user_path", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)},
+            OptionKeyToRegsetKey{
+                "project-log-path",
+                AZStd::string::format("%s/project_log_path", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)},
+            OptionKeyToRegsetKey{"project-build-path", ProjectBuildPath},
+        };
 
         AZStd::fixed_vector<AZStd::string, commandOptions.size()> overrideArgs;
 

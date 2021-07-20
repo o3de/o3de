@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -103,12 +98,12 @@ namespace GradientSignal
         //apply transform if set
         if (m_enableTransform && GradientSamplerUtil::AreTransformParamsSet(*this))
         {
-            const AZ::Transform transform =
-                AZ::Transform::CreateTranslation(m_translate) *
-                AZ::ConvertEulerDegreesToTransform(m_rotate) *
-                AZ::Transform::CreateScale(m_scale);
+            AZ::Matrix3x4 matrix3x4;
+            matrix3x4.SetFromEulerDegrees(m_rotate);
+            matrix3x4.MultiplyByScale(m_scale);
+            matrix3x4.SetTranslation(m_translate);
 
-            sampleParamsTransformed.m_position = transform.TransformPoint(sampleParamsTransformed.m_position);
+            sampleParamsTransformed.m_position = matrix3x4 * sampleParamsTransformed.m_position;
         }
 
         float output = 0.0f;

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "RCcontrollerUnitTests.h"
 #include <AzTest/AzTest.h>
 #include <QCoreApplication>
@@ -239,14 +234,14 @@ void RCcontrollerUnitTests::RunRCControllerTests()
         createdJobs.push_back(job);
     }
 
-    // double them up for "es3" to make sure that platform is respected
+    // double them up for "android" to make sure that platform is respected
     for (QString name : tempJobNames)
     {
         AZ::Uuid uuidOfSource = AZ::Uuid::CreateName(name.toUtf8().constData());
         RCJob* job0 = new RCJob(rcJobListModel);
         AssetProcessor::JobDetails jobDetails;
         jobDetails.m_jobEntry.m_databaseSourceName = jobDetails.m_jobEntry.m_pathRelativeToWatchFolder = name;
-        jobDetails.m_jobEntry.m_platformInfo = { "es3" ,{ "mobile", "renderer" } };
+        jobDetails.m_jobEntry.m_platformInfo = { "android" ,{ "mobile", "renderer" } };
         jobDetails.m_jobEntry.m_jobKey = "Compile Other Stuff";
         jobDetails.m_jobEntry.m_sourceFileUUID = uuidOfSource;
         job0->Init(jobDetails);
@@ -490,7 +485,7 @@ void RCcontrollerUnitTests::RunRCControllerTests()
     UNIT_TEST_EXPECT_FALSE(gotJobsInQueueCall);
 
     // submit same job but different platform:
-    details.m_jobEntry = JobEntry("d:/test", "test1.txt", "test1.txt", AZ::Uuid("{7954065D-CFD1-4666-9E4C-3F36F417C7AC}"), { "es3" ,{ "mobile", "renderer" } }, "Test Job", 1234, 3, sourceId);
+    details.m_jobEntry = JobEntry("d:/test", "test1.txt", "test1.txt", AZ::Uuid("{7954065D-CFD1-4666-9E4C-3F36F417C7AC}"), { "android" ,{ "mobile", "renderer" } }, "Test Job", 1234, 3, sourceId);
     m_rcController.JobSubmitted(details);
     QCoreApplication::processEvents(QEventLoop::AllEvents);
 
@@ -545,10 +540,13 @@ void RCcontrollerUnitTests::RunRCControllerTests()
     rcJob.SetCheckExclusiveLock(true);
     rcJob.Start();
 
+
+#if defined(AZ_PLATFORM_WINDOWS)
+    // on windows, opening a file for reading locks it
+    // but on other platforms, this is not the case.
     // we only expect work to begin when we can gain an exclusive lock on this file.
     UNIT_TEST_EXPECT_FALSE(UnitTestUtils::BlockUntil(beginWork, 5000));
 
-#if defined(AZ_PLATFORM_WINDOWS)
     // Once we release the file, it should process normally
     lockFileTest.close();
 #else

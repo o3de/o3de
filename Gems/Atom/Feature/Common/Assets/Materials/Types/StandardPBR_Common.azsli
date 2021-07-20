@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once 
 
@@ -50,6 +45,7 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
     float4 m_pad2; // [GFX TODO][ATOM-14595] This is a workaround for a data stomping bug. Remove once it's fixed.
 
     float m_opacityFactor;
+    float m_opacityAffectsSpecularFactor;
     Texture2D m_opacityMap;
     uint m_opacityMapUvIndex;
 
@@ -73,31 +69,12 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
         MagFilter = Linear;
         MipFilter = Linear;
     };
-
-    // Parameters for subsurface scattering
-    float m_subsurfaceScatteringFactor;
-    float m_subsurfaceScatteringQuality;
-    float3 m_scatterDistance;
-    Texture2D m_subsurfaceScatteringInfluenceMap;
-    uint m_subsurfaceScatteringInfluenceMapUvIndex;
-
-    // Parameters for transmission
-    
-    // Elements of m_transmissionParams:
-    // Thick object mode: (attenuation coefficient, power, distortion, scale)
-    // Thin  object mode:  (float3 scatter distance, scale)
-    float4 m_transmissionParams;
-    
-    // (float3 TintColor, thickness)
-    float4 m_transmissionTintThickness;
-    Texture2D m_transmissionThicknessMap;
-    uint m_transmissionThicknessMapUvIndex;
 }
 
 // Callback function for ParallaxMapping.azsli
 DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
 {
-    return SampleDepthOrHeightMap(MaterialSrg::m_depthInverted, MaterialSrg::m_depthMap, MaterialSrg::m_sampler, uv, uv_ddx, uv_ddy);
+    return SampleDepthFromHeightmap(MaterialSrg::m_heightmap, MaterialSrg::m_sampler, uv, uv_ddx, uv_ddy);
 }
 
 
@@ -106,7 +83,7 @@ COMMON_OPTIONS_PARALLAX()
 bool ShouldHandleParallax()
 {
     // Parallax mapping's non uniform uv transformations break screen space subsurface scattering, disable it when subsurface scattering is enabled.
-    return !o_enableSubsurfaceScattering && o_parallax_feature_enabled && o_useDepthMap;
+    return !o_enableSubsurfaceScattering && o_parallax_feature_enabled && o_useHeightmap;
 }
 
 bool ShouldHandleParallaxInDepthShaders()

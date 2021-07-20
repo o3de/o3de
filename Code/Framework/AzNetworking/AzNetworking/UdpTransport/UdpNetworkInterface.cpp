@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzNetworking/Framework/INetworking.h>
 #include <AzNetworking/UdpTransport/UdpNetworkInterface.h>
@@ -116,17 +111,29 @@ namespace AzNetworking
 
         m_port = port;
         m_allowIncomingConnections = true;
-        m_socket->Open(m_port, UdpSocket::CanAcceptConnections::True, m_trustZone);
-        m_readerThread.RegisterSocket(m_socket.get());
-        return true;
+        if (m_socket->Open(m_port, UdpSocket::CanAcceptConnections::True, m_trustZone))
+        {
+            m_readerThread.RegisterSocket(m_socket.get());
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     ConnectionId UdpNetworkInterface::Connect(const IpAddress& remoteAddress)
     {
         if (!m_socket->IsOpen())
         {
-            m_socket->Open(m_port, UdpSocket::CanAcceptConnections::False, m_trustZone);
-            m_readerThread.RegisterSocket(m_socket.get());
+            if (m_socket->Open(m_port, UdpSocket::CanAcceptConnections::False, m_trustZone))
+            {
+                m_readerThread.RegisterSocket(m_socket.get());
+            }
+            else
+            {
+                return InvalidConnectionId;
+            }
         }
 
         const ConnectionId connectionId = m_connectionSet.GetNextConnectionId();
@@ -190,6 +197,13 @@ namespace AzNetworking
             if (disconnectReason != DisconnectReason::MAX)
             {
                 connection->Disconnect(disconnectReason, TerminationEndpoint::Local);
+                continue;
+            }
+            
+            const ConnectionState connectionState = connection->GetConnectionState();
+            if (connectionState == ConnectionState::Disconnecting || connectionState == ConnectionState::Disconnected)
+            {
+                // Skip packets from disconnected connections
                 continue;
             }
 
@@ -357,6 +371,20 @@ namespace AzNetworking
             return false;
         }
         return connection->WasPacketAcked(packetId);
+    }
+
+    bool UdpNetworkInterface::StopListening()
+    {
+        if (!m_socket->IsOpen())
+        {
+            return false;
+        }
+
+        m_port = 0;
+        m_readerThread.UnregisterSocket(m_socket.get());
+        m_allowIncomingConnections = false;
+        m_socket->Close();
+        return true;
     }
 
     bool UdpNetworkInterface::Disconnect(ConnectionId connectionId, DisconnectReason reason)

@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 ly_add_target(
@@ -40,6 +36,12 @@ ly_add_target(
             AZ::AzCore
             Gem::ExpressionEvaluation.Static
 )
+
+# all types of applications use the above module
+ly_create_alias(NAME ExpressionEvaluation.Clients  NAMESPACE Gem TARGETS ExpressionEvaluation)
+ly_create_alias(NAME ExpressionEvaluation.Servers  NAMESPACE Gem TARGETS ExpressionEvaluation)
+ly_create_alias(NAME ExpressionEvaluation.Builders NAMESPACE Gem TARGETS ExpressionEvaluation)
+ly_create_alias(NAME ExpressionEvaluation.Tools    NAMESPACE Gem TARGETS ExpressionEvaluation)
 
 ################################################################################
 # Tests

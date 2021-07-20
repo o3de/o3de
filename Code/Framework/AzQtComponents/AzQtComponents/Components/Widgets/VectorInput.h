@@ -1,19 +1,15 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
+#include <AzCore/std/optional.h>
 #endif
 
 class QLabel;
@@ -23,6 +19,10 @@ namespace AzQtComponents
 
     class Style;
 
+    // 'AzQtComponents::VectorElement::m_deferredExternalValue': class 'AZStd::optional<AzQtComponents::VectorElement::DeferredSetValue>' needs to
+    // have dll-interface to be used by clients of class 'AzQtComponents::VectorElement' 
+    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
+    
     /*!
      * \class VectorElement
      * \brief All flexible vector GUI's are constructed using a number vector elements. Each Vector
@@ -103,7 +103,15 @@ namespace AzQtComponents
 
         void resizeLabel();
 
+        void onSpinBoxEditingFinished();
+
     private:
+        struct DeferredSetValue
+        {
+            double prevValue;
+            double value;
+        };
+
         // m_labelText must be initialised before m_spinBox. It is used by editFieldRect, which gets
         // called by the spin box constructor.
         QString m_labelText = {};
@@ -113,7 +121,12 @@ namespace AzQtComponents
         double m_value = 0.0;
         //! Indicates whether the value in the spin box has been edited by the user or not
         bool m_wasValueEditedByUser = false;
+        //! If a value is editing, but not by the user, and the user is currently editing the value,
+        //! avoid overwriting their work, until they finish editing
+        AZStd::optional<DeferredSetValue> m_deferredExternalValue;
     };
+
+    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
     //////////////////////////////////////////////////////////////////////////
 

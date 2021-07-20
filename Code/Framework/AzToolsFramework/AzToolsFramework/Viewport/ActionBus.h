@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -155,6 +150,8 @@ namespace AzToolsFramework
 
         /// Allow default actions to be added to the Action Manager via a Bus call.
         virtual void AddActionViaBus(int id, QAction* action) = 0;
+        /// Allow default actions to be added to the Action Manager via a Bus call and using the CRC id method.
+        virtual void AddActionViaBusCrc(AZ::Crc32 id, QAction* action) = 0;
         /// Remove default actions added to the Action Manager via a Bus Call.
         virtual void RemoveActionViaBus(QAction* action) = 0;
         /// Enable all default actions that are active during the normal Editor state.
@@ -188,7 +185,7 @@ namespace AzToolsFramework
         virtual void AddEditMenuAction(QAction* action) = 0;
 
         /// Add an action to the Editor menu.
-        virtual void AddMenuAction(AZStd::string_view categoryId, QAction* action) = 0;
+        virtual void AddMenuAction(AZStd::string_view categoryId, QAction* action, bool addToToolsToolbar) = 0;
 
         /// (Re)populate the default EditMenu.
         /// Restore the EditMenu to its default state (the options available when first opening a level).

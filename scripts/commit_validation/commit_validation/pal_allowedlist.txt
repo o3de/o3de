@@ -1,5 +1,4 @@
-*/Code/CryEngine/*
-*/Code/Deprecated/Sandbox/*
+*/Code/Legacy/*
 */Code/Framework/AzCore/AzCore/Math/Aabb.h
 */Code/Framework/AzCore/AzCore/Math/Color.h
 */Code/Framework/AzCore/AzCore/Math/Crc.h
@@ -47,7 +46,7 @@
 */Code/Framework/AzToolsFramework/AzToolsFramework/UI/LegacyFramework/Core/EditorFrameworkAPI.h
 */Code/Framework/AzToolsFramework/AzToolsFramework/UI/LegacyFramework/Core/EditorFrameworkApplication.cpp
 */Code/Framework/AzToolsFramework/AzToolsFramework/UI/LegacyFramework/UIFramework.cpp
-*/Code/Sandbox/*
+*/Code/Editor/*
 */Code/Tools/*
 */Gems/*/3rdParty/*
 */Gems/*/External/*

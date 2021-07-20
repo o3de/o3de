@@ -16,7 +16,7 @@
             }
         },
         "PlatformsPresets": {
-            "es3": {
+            "android": {
                 "UUID": "{851128B5-7454-42C4-83CE-FCFE071834C5}",
                 "Name": "ReflectanceWithSmoothness_Legacy",
                 "FileMasks": [
@@ -40,7 +40,7 @@
                     "MipGenType": "Box"
                 }
             },
-            "osx_gl": {
+            "mac": {
                 "UUID": "{851128B5-7454-42C4-83CE-FCFE071834C5}",
                 "Name": "ReflectanceWithSmoothness_Legacy",
                 "FileMasks": [

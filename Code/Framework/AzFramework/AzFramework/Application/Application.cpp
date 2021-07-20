@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/PlatformIncl.h> // This should be the first include to make sure Windows.h is defined with NOMINMAX
 #include <AzCore/IO/SystemFile.h>
@@ -260,7 +255,7 @@ namespace AzFramework
         systemEntity->Activate();
         AZ_Assert(systemEntity->GetState() == AZ::Entity::State::Active, "System Entity failed to activate.");
 
-        m_isStarted = true;
+        m_isStarted = (systemEntity->GetState() == AZ::Entity::State::Active);
     }
 
     void Application::PreModuleLoad()
@@ -679,8 +674,6 @@ namespace AzFramework
         {
             auto fileIoBase = m_archiveFileIO.get();
             // Set up the default file aliases based on the settings registry
-            fileIoBase->SetAlias("@assets@", "");
-            fileIoBase->SetAlias("@root@", GetEngineRoot());
             fileIoBase->SetAlias("@engroot@", GetEngineRoot());
             fileIoBase->SetAlias("@projectroot@", GetEngineRoot());
             fileIoBase->SetAlias("@exefolder@", GetExecutableFolder());
@@ -694,8 +687,8 @@ namespace AzFramework
                 pathAliases.clear();
                 if (m_settingsRegistry->Get(pathAliases.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
                 {
-                    fileIoBase->SetAlias("@projectplatformcache@", pathAliases.c_str());
                     fileIoBase->SetAlias("@assets@", pathAliases.c_str());
+                    fileIoBase->SetAlias("@projectplatformcache@", pathAliases.c_str());
                     fileIoBase->SetAlias("@root@", pathAliases.c_str()); // Deprecated Use @projectplatformcache@
                 }
                 pathAliases.clear();
@@ -714,15 +707,24 @@ namespace AzFramework
             }
 
             AZ::IO::FixedMaxPath projectUserPath;
-            if (m_settingsRegistry->Get(projectUserPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath))
+            if (!m_settingsRegistry->Get(projectUserPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath))
             {
-                fileIoBase->SetAlias("@user@", projectUserPath.c_str());
-                AZ::IO::FixedMaxPath projectLogPath = projectUserPath / "log";
-                fileIoBase->SetAlias("@log@", projectLogPath.c_str());
-                fileIoBase->CreatePath(projectLogPath.c_str()); // Create the log directory at this point
-
-                CreateUserCache(projectUserPath, *fileIoBase);
+                projectUserPath = GetEngineRoot();
             }
+
+            fileIoBase->SetAlias("@user@", projectUserPath.c_str());
+            fileIoBase->CreatePath(projectUserPath.c_str()); // Create the user directory at this point
+
+            CreateUserCache(projectUserPath, *fileIoBase);
+
+            AZ::IO::FixedMaxPath projectLogPath;
+            if (!m_settingsRegistry->Get(projectLogPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectLogPath))
+            {
+                projectLogPath = projectUserPath / "log";
+            }
+
+            fileIoBase->SetAlias("@log@", projectLogPath.c_str());
+            fileIoBase->CreatePath(projectLogPath.c_str()); // Create the log directory at this point
         }
     }
 

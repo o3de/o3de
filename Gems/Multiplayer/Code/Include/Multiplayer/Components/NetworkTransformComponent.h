@@ -1,18 +1,14 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
 #include <Source/AutoGen/NetworkTransformComponent.AutoComponent.h>
+#include <Multiplayer/Components/NetBindComponent.h>
 #include <AzCore/Component/TransformBus.h>
 
 namespace Multiplayer
@@ -32,13 +28,22 @@ namespace Multiplayer
         void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
 
     private:
+        void OnPreRender(float deltaTime, float blendFactor);
+
         void OnRotationChangedEvent(const AZ::Quaternion& rotation);
         void OnTranslationChangedEvent(const AZ::Vector3& translation);
-        void OnScaleChangedEvent(const AZ::Vector3& scale);
+        void OnScaleChangedEvent(float scale);
+        void OnResetCountChangedEvent();
+
+        AZ::Transform m_previousTransform = AZ::Transform::CreateIdentity();
+        AZ::Transform m_targetTransform = AZ::Transform::CreateIdentity();
 
         AZ::Event<AZ::Quaternion>::Handler m_rotationEventHandler;
         AZ::Event<AZ::Vector3>::Handler m_translationEventHandler;
-        AZ::Event<AZ::Vector3>::Handler m_scaleEventHandler;
+        AZ::Event<float>::Handler m_scaleEventHandler;
+        AZ::Event<uint8_t>::Handler m_resetCountEventHandler;
+
+        EntityPreRenderEvent::Handler m_entityPreRenderEventHandler;
     };
 
     class NetworkTransformComponentController

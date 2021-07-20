@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 import argparse
@@ -27,7 +23,7 @@ from cmake.Tools import common
 from cmake.Tools.Platform.Android import android_support
 
 GRADLE_ARGUMENT_NAME = '--gradle-install-path'
-GRADLE_MIN_VERSION = LooseVersion('4.10.1')
+GRADLE_MIN_VERSION = LooseVersion('6.5')
 GRADLE_MAX_VERSION = LooseVersion('7.0.0')
 GRADLE_VERSION_REGEX = re.compile(r"Gradle\s(\d+.\d+.?\d*)")
 GRADLE_EXECUTABLE = 'gradle.bat' if platform.system() == 'Windows' else 'gradle'
@@ -48,9 +44,9 @@ def verify_gradle(override_gradle_path=None):
 
 
 CMAKE_ARGUMENT_NAME = '--cmake-install-path'
-CMAKE_MIN_VERSION = LooseVersion('3.17.0')
+CMAKE_MIN_VERSION = LooseVersion('3.20.0')
 CMAKE_VERSION_REGEX = re.compile(r'cmake version (\d+.\d+.?\d*)')
-CMAKE_EXECUTABLE = 'cmake.exe' if platform.system() == 'Windows' else 'cmake'
+CMAKE_EXECUTABLE = 'cmake'
 
 
 def verify_cmake(override_cmake_path=None):
@@ -69,7 +65,7 @@ def verify_cmake(override_cmake_path=None):
 
 NINJA_ARGUMENT_NAME = '--ninja-install-path'
 NINJA_VERSION_REGEX = re.compile(r'(\d+.\d+.?\d*)')
-NINJA_EXECUTABLE = 'ninja.exe' if platform.system() == 'Windows' else 'ninja'
+NINJA_EXECUTABLE = 'ninja'
 
 
 def verify_ninja(override_ninja_path=None):
@@ -78,7 +74,7 @@ def verify_ninja(override_ninja_path=None):
     """
     return common.verify_tool(override_tool_path=override_ninja_path,
                               tool_name='ninja',
-                              tool_filename='ninja.exe' if platform.system() == 'Windows' else 'ninja',
+                              tool_filename='ninja',
                               argument_name=NINJA_ARGUMENT_NAME,
                               tool_version_argument='--version',
                               tool_version_regex=NINJA_VERSION_REGEX,
@@ -103,12 +99,20 @@ def build_optional_signing_profile(store_file, store_password, key_alias, key_pa
 
 
 ANDROID_SDK_ARGUMENT_NAME = '--android-sdk-path'
-ANDROID_SDK_PLATFORM_ARGUMENT_NAME = '--android-sdk-version'
+ANDROID_SDK_PLATFORM_ARGUMENT_NAME = '--android-sdk-platform'
 ANDROID_SDK_PREFERRED_TOOL_VER = '--android-sdk-build-tool-version'
 
+ANDROID_NATIVE_API_LEVEL = '--android-native-api-level'
 
-ANDROID_NDK_ARGUMENT_NAME = '--android-ndk-path'
+
+MIN_ANDROID_SDK_PLATFORM = 28   # The minimum platform/api level that is supported for the SDK Platform
+MIN_NATIVE_API_LEVEL = 24       # The minimum Native API level that is supported for the NDK
+
+
 ANDROID_NDK_PLATFORM_ARGUMENT_NAME = '--android-ndk-version'
+
+ANDROID_GRADLE_PLUGIN_ARGUMENT_NAME = '--gradle-plugin-version'
+ANDROID_GRADLE_MIN_PLUGIN_VERSION = LooseVersion("4.2.0")
 
 # Constants for asset-related options for APK generation
 INCLUDE_APK_ASSETS_ARGUMENT_NAME = "--include-apk-assets"
@@ -118,7 +122,7 @@ ASSET_MODE_LOOSE = 'LOOSE'
 ASSET_MODE_VFS = 'VFS'
 ALL_ASSET_MODES = [ASSET_MODE_PAK, ASSET_MODE_LOOSE, ASSET_MODE_VFS]
 ASSET_TYPE_ARGUMENT_NAME = '--asset-type'
-DEFAULT_ASSET_TYPE = 'es3'
+DEFAULT_ASSET_TYPE = 'android'
 
 
 def wrap_parsed_args(parsed_args):
@@ -147,6 +151,7 @@ def main(args):
 
     parser = argparse.ArgumentParser(description="Prepare the android studio subfolder")
 
+    # Required Arguments
     parser.add_argument('--engine-root',
                         help='The path to the engine root. Defaults to the current working directory.',
                         default=os.getcwd())
@@ -160,31 +165,41 @@ def main(args):
                         help='The path to the 3rd Party root directory',
                         required=True)
 
-    parser.add_argument(ANDROID_NDK_ARGUMENT_NAME,
-                        help='The path to the android NDK',
-                        required=True)
-
     parser.add_argument(ANDROID_SDK_ARGUMENT_NAME,
                         help='The path to the android SDK',
                         required=True)
 
-    parser.add_argument(ANDROID_SDK_PLATFORM_ARGUMENT_NAME,
-                        help='The android SDK version',
+    parser.add_argument('-g', '--project-path',
+                        help='The project path to generate an android project',
                         required=True)
 
+    parser.add_argument(ANDROID_SDK_PLATFORM_ARGUMENT_NAME,
+                        help=f'The android SDK platform number version to use for the APK. (Minimum {MIN_ANDROID_SDK_PLATFORM})',
+                        type=int,
+                        default=-1)
+
+    parser.add_argument(ANDROID_NATIVE_API_LEVEL,
+                        help=f'The android native API level to use for the APK. If not set, this will default to the android SDK platform. (Minimum {MIN_ANDROID_SDK_PLATFORM})',
+                        type=int,
+                        default=-1)
+
+    # Override arguments
     parser.add_argument(ANDROID_SDK_PREFERRED_TOOL_VER,
-                        help='The preferred android sdk build version (i.e. 28.0.3). Will default to the first one detected under the android sdk',
-                        default=None,
+                        help='The android SDK build tools version.',
                         required=False)
 
     parser.add_argument(ANDROID_NDK_PLATFORM_ARGUMENT_NAME,
                         help='The android NDK version',
-                        required=True)
+                        required=False)
 
     parser.add_argument(GRADLE_ARGUMENT_NAME,
                         help=f'The path to installed gradle. The version of gradle must fall in between {str(GRADLE_MIN_VERSION)} and {str(GRADLE_MAX_VERSION)}.',
                         default=None,
                         required=False)
+
+    parser.add_argument(ANDROID_GRADLE_PLUGIN_ARGUMENT_NAME,
+                        help=f'The version of the android gradle plugin to use. Defaults to the minimum version ({ANDROID_GRADLE_MIN_PLUGIN_VERSION})',
+                        default=str(ANDROID_GRADLE_MIN_PLUGIN_VERSION))
 
     parser.add_argument(CMAKE_ARGUMENT_NAME,
                         help=f'The path to cmake build tool if not installed on the system path. The version of cmake must be at least version {str(CMAKE_MIN_VERSION)}.',
@@ -196,8 +211,10 @@ def main(args):
                         default=None,
                         required=False)
 
-    parser.add_argument('-g', '--project-path',
-                        help='The project path to generate an android project')
+    parser.add_argument('--native-build-path',
+                        help='Custom path to place native build artifacts.',
+                        default=None,
+                        required=False)
 
     # Asset Options
     parser.add_argument(INCLUDE_APK_ASSETS_ARGUMENT_NAME,
@@ -207,11 +224,11 @@ def main(args):
     parser.add_argument(ASSET_MODE_ARGUMENT_NAME,
                         choices=ALL_ASSET_MODES,
                         default=ASSET_MODE_LOOSE,
-                        help='Asset Mode (vfs|pak|loose) to use when including assets into the APK')
+                        help=f'Asset Mode (vfs|pak|loose) to use when including assets into the APK. (Defaults to {ASSET_MODE_LOOSE})')
 
     parser.add_argument(ASSET_TYPE_ARGUMENT_NAME,
                         default=DEFAULT_ASSET_TYPE,
-                        help='Asset Type to use when including assets into the APK')
+                        help=f'Asset Type to use when including assets into the APK. (Defaults to {DEFAULT_ASSET_TYPE})')
 
     parser.add_argument('--debug',
                         action='store_true',
@@ -242,6 +259,10 @@ def main(args):
                         action='store_true',
                         help='Option to overwrite existing scripts in the target build folder if they exist already.')
 
+    parser.add_argument('--enable-unity-build',
+                        action='store_true',
+                        help='Enable unity build')
+
     parsed_args = parser.parse_args(args)
     wrap_parsed_args(parsed_args)
 
@@ -260,16 +281,81 @@ def main(args):
     ninja_version, override_ninja_path = verify_ninja(override_ninja_path=parsed_args.get_argument(NINJA_ARGUMENT_NAME))
     logging.info("Detected Ninja version %s", str(ninja_version))
 
-    # Verify the android sdk path and sdk version
-    verified_android_sdk_platform, verified_android_sdk_path, android_sdk_build_tool_ver = android_support.verify_android_sdk(android_sdk_platform=parsed_args.get_argument(ANDROID_SDK_PLATFORM_ARGUMENT_NAME),
-                                                                                                                              argument_name=ANDROID_SDK_ARGUMENT_NAME,
-                                                                                                                              override_android_sdk_path=parsed_args.get_argument(ANDROID_SDK_ARGUMENT_NAME),
-                                                                                                                              preferred_sdk_build_tools_ver=parsed_args.get_argument(ANDROID_SDK_PREFERRED_TOOL_VER))
+    # Get the android sdk platform version to use from the arguments, but also handle the deprecated argument name
+    android_sdk_platform_version = parsed_args.get_argument(ANDROID_SDK_PLATFORM_ARGUMENT_NAME)
 
-    # Verify the android ndk path and ndk version
-    verified_android_ndk_platform, verified_android_ndk_path = android_support.verify_android_ndk(android_ndk_platform=parsed_args.get_argument(ANDROID_NDK_PLATFORM_ARGUMENT_NAME),
-                                                                                                  argument_name=ANDROID_NDK_ARGUMENT_NAME,
-                                                                                                  override_android_ndk_path=parsed_args.get_argument(ANDROID_NDK_ARGUMENT_NAME))
+    # Get the gradle plugin details and validate against the current environment
+    android_gradle_plugin_version = parsed_args.get_argument(ANDROID_GRADLE_PLUGIN_ARGUMENT_NAME)
+    android_gradle_plugin = android_support.AndroidGradlePluginInfo(android_gradle_plugin_version)
+    logging.info(f"Generating Android Gradle Plugin version {android_gradle_plugin_version} based project")
+
+    if gradle_version < android_gradle_plugin.min_gradle_version:
+        raise common.LmbrCmdError(f"The current version of gradle ({gradle_version}) does not satisfy the minimum version "
+                                  f"({android_gradle_plugin.min_gradle_version}) needed for the android gradle plugin "
+                                  f"({android_gradle_plugin_version}). Please upgrade your gradle.")
+    if cmake_version < android_gradle_plugin.min_cmake_version:
+        raise common.LmbrCmdError(f"The current version of cmake ({cmake_version}) does not satisfy the minimum version "
+                                  f"({android_gradle_plugin.min_cmake_version}) needed for the android gradle plugin "
+                                  f"({android_gradle_plugin_version}). Please upgrade your cmake.")
+    if android_gradle_plugin.max_cmake_version and cmake_version > android_gradle_plugin.max_cmake_version:
+        raise common.LmbrCmdError(f"The current version of cmake ({cmake_version}) exceeds the maximum version "
+                                  f"({android_gradle_plugin.max_cmake_version}) of the android gradle plugin "
+                                  f"({android_gradle_plugin_version}).")
+
+    # Use the SDK Resolver to make sure the build tools and ndk
+    android_sdk = android_support.AndroidSDKResolver(android_sdk_path=parsed_args.get_argument(ANDROID_SDK_ARGUMENT_NAME))
+
+    # If no SDK platform is provided, check for any installed one
+    if android_sdk_platform_version < 0:
+        android_sdk_platform_version = MIN_ANDROID_SDK_PLATFORM
+        installed_android_sdk_platforms = android_sdk.is_package_installed('platforms;*')
+        if installed_android_sdk_platforms:
+            # If there are installed platforms, check the most recent one
+            latest_platform_version = -1
+            for installed_android_sdk_platform in installed_android_sdk_platforms:
+                platform_number_match = re.match(r'platforms;android-([0-9]*)', installed_android_sdk_platform.path)
+                if not platform_number_match:
+                    continue
+                check_platform_version = int(platform_number_match.group(1))
+                if check_platform_version > latest_platform_version:
+                    latest_platform_version = check_platform_version
+            if latest_platform_version >= MIN_ANDROID_SDK_PLATFORM:
+                android_sdk_platform_version = latest_platform_version
+    else:
+        if android_sdk_platform_version < MIN_ANDROID_SDK_PLATFORM:
+            raise common.LmbrCmdError(f"Invalid argument for {ANDROID_SDK_PLATFORM_ARGUMENT_NAME} ({android_sdk_platform_version}). Must be greater than the minimum value supported {MIN_ANDROID_SDK_PLATFORM}.")
+
+    # Get the android native api level from the arguments. Default to the sdk platform version if not provided
+    android_native_api_level = parsed_args.get_argument(ANDROID_NATIVE_API_LEVEL)
+    if android_native_api_level < 0:
+        android_native_api_level = android_sdk_platform_version
+    else:
+        if android_native_api_level < MIN_NATIVE_API_LEVEL:
+            raise common.LmbrCmdError(f"Invalid argument for {ANDROID_NATIVE_API_LEVEL} ({android_native_api_level}). Must be greater than the minimum value supported {MIN_NATIVE_API_LEVEL}.")
+
+    # Check and make sure that the requested sdk platform exists, download if necessary
+    platform_package_name = f"platforms;android-{android_sdk_platform_version}"
+    android_sdk.install_package(package_install_path=platform_package_name,
+                                package_description=f'Android SDK Platform {android_sdk_platform_version}')
+
+    # Make sure we have the extra android packages "market_apk_expansion" and "market_licensing" which is needed by the APK
+    android_sdk.install_package(package_install_path='extras;google;market_apk_expansion',
+                                package_description='Google APK Expansion Library')
+
+    android_sdk.install_package(package_install_path='extras;google;market_licensing',
+                                package_description='Google Play Licensing Library')
+
+    # Install either the requested SDK build tools or the default one for the android gradle plugin version
+    build_tools_version = parsed_args.get_argument(ANDROID_SDK_PREFERRED_TOOL_VER) or android_gradle_plugin.default_sdk_build_tools_version
+    build_tools_package_name = f'build-tools;{build_tools_version}'
+    build_tools_package = android_sdk.install_package(package_install_path=build_tools_package_name,
+                                                      package_description='Android SDK Build Tools')
+
+    # Install either the requested NDK version or the default one for the android gradle plugin version
+    android_ndk_version = parsed_args.get_argument(ANDROID_NDK_PLATFORM_ARGUMENT_NAME) or android_gradle_plugin.default_ndk_version
+    android_ndk_package_name = f'ndk;{android_ndk_version}'
+    android_ndk_package = android_sdk.install_package(package_install_path=android_ndk_package_name,
+                                                      package_description='Android NDK')
 
     # Verify the engine root path and project path
     verified_project_path, verified_engine_root = common.verify_project_and_engine_root(project_root=parsed_args.project_path,
@@ -277,10 +363,9 @@ def main(args):
     is_test_project = parsed_args.unit_test
 
     # Verify the 3rd Party Root Path
-    third_party_path = pathlib.Path(parsed_args.third_party_path) / '3rdParty.txt'
-    if not third_party_path.is_file():
-        raise common.LmbrCmdError("Invalid --third-party-path '{}'. Make sure it exists and contains "
-                                  "3rdParty.txt".format(parsed_args.third_party_path),
+    third_party_path = pathlib.Path(parsed_args.third_party_path)
+    if not third_party_path.is_dir():
+        raise common.LmbrCmdError(f"Invalid --third-party-path '{parsed_args.third_party_path}'.",
                                   common.ERROR_CODE_INVALID_PARAMETER)
     third_party_path = third_party_path.parent
 
@@ -293,29 +378,31 @@ def main(args):
 
     logging.debug("Engine Root      : %s", str(verified_engine_root.resolve()))
     logging.debug("Build Path       : %s", str(build_dir.resolve()))
-    logging.debug("Android NDK Path : %s", str(verified_android_ndk_path.resolve()))
-    logging.debug("Android SDK Path : %s", str(verified_android_sdk_path.resolve()))
 
     # Prepare the generator and execute
     generator = android_support.AndroidProjectGenerator(engine_root=verified_engine_root,
-                                                        project_path=verified_project_path,
                                                         build_dir=build_dir,
-                                                        android_sdk_path=verified_android_sdk_path,
-                                                        android_ndk_path=verified_android_ndk_path,
-                                                        android_sdk_version=verified_android_sdk_platform,
-                                                        android_ndk_platform=verified_android_ndk_platform,
+                                                        android_sdk_path=android_sdk.android_sdk_path,
+                                                        build_tool=build_tools_package,
+                                                        android_sdk_platform=android_sdk_platform_version,
+                                                        android_native_api_level=android_native_api_level,
+                                                        android_ndk=android_ndk_package,
+                                                        project_path=verified_project_path,
                                                         third_party_path=third_party_path,
                                                         cmake_version=cmake_version,
                                                         override_cmake_path=override_cmake_path,
                                                         override_gradle_path=override_gradle_path,
+                                                        gradle_version=gradle_version,
+                                                        gradle_plugin_version=android_gradle_plugin_version,
                                                         override_ninja_path=override_ninja_path,
-                                                        android_sdk_build_tool_version=android_sdk_build_tool_ver,
                                                         include_assets_in_apk=parsed_args.get_argument(INCLUDE_APK_ASSETS_ARGUMENT_NAME),
                                                         asset_mode=parsed_args.get_argument(ASSET_MODE_ARGUMENT_NAME),
                                                         asset_type=parsed_args.get_argument(ASSET_TYPE_ARGUMENT_NAME),
                                                         signing_config=signing_config,
                                                         is_test_project=is_test_project,
-                                                        overwrite_existing=parsed_args.overwrite_existing)
+                                                        overwrite_existing=parsed_args.overwrite_existing,
+                                                        unity_build_enabled=parsed_args.enable_unity_build,
+                                                        native_build_path=parsed_args.native_build_path)
     generator.execute()
 
 

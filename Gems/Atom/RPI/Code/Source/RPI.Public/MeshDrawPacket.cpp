@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RPI.Public/MeshDrawPacket.h>
 #include <Atom/RPI.Public/RPIUtils.h>
@@ -17,6 +12,7 @@
 #include <Atom/RPI.Public/Scene.h> 
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
 #include <Atom/RHI/DrawPacketBuilder.h>
+#include <Atom/RHI/RHISystemInterface.h>
 #include <AzCore/Console/Console.h>
 
 namespace AZ
@@ -159,6 +155,40 @@ namespace AZ
             auto appendShader = [&](const ShaderCollection::Item& shaderItem)
             {
                 AZ_PROFILE_SCOPE(Debug::ProfileCategory::AzRender, "appendShader()");
+
+                // Skip the shader item without creating the shader instance
+                // if the mesh is not going to be rendered based on the draw tag
+                RHI::RHISystemInterface* rhiSystem = RHI::RHISystemInterface::Get();
+                RHI::DrawListTagRegistry* drawListTagRegistry = rhiSystem->GetDrawListTagRegistry();
+
+                // Use the explicit draw list override if exists.
+                RHI::DrawListTag drawListTag = shaderItem.GetDrawListTagOverride();
+
+                if (drawListTag.IsNull())
+                {
+                    Data::Asset<RPI::ShaderAsset> shaderAsset = shaderItem.GetShaderAsset();
+                    if (!shaderAsset.IsReady())
+                    {
+                        // The shader asset needs to be loaded before we can check the draw tag.
+                        // If it's not loaded yet, the instance database will do a blocking load
+                        // when we create the instance below, so might as well load it now.
+                        shaderAsset.QueueLoad();
+
+                        if (shaderAsset.IsLoading())
+                        {
+                            shaderAsset.BlockUntilLoadComplete();
+                        }
+                    }
+
+                    drawListTag = drawListTagRegistry->FindTag(shaderAsset->GetDrawListName());
+                }
+
+                if (!parentScene.HasOutputForPipelineState(drawListTag))
+                {
+                    // drawListTag not found in this scene, so don't render this item
+                    return false;
+                }
+
                 Data::Instance<Shader> shader = RPI::Shader::FindOrCreate(shaderItem.GetShaderAsset());
                 if (!shader)
                 {
@@ -166,10 +196,8 @@ namespace AZ
                     return false;
                 }
 
-                const AZ::Data::Asset<ShaderResourceGroupAsset>& drawSrgAsset = shader->GetAsset()->GetDrawSrgAsset();
-
                 // Set all unspecified shader options to default values, so that we get the most specialized variant possible.
-                // (because FindVariantStableId treats unspecified options as a request specificlly for a variant that doesn't specify those options)
+                // (because FindVariantStableId treats unspecified options as a request specifically for a variant that doesn't specify those options)
                 // [GFX TODO][ATOM-3883] We should consider updating the FindVariantStableId algorithm to handle default values for us, and remove this step here.
                 RPI::ShaderOptionGroup shaderOptions = *shaderItem.GetShaderOptions();
                 shaderOptions.SetUnspecifiedToDefaultValues();
@@ -177,7 +205,7 @@ namespace AZ
                 // [GFX_TODO][ATOM-14476]: according to this usage, we should make the shader input contract uniform across all shader variants.
                 m_modelLod->CheckOptionalStreams(
                     shaderOptions,
-                    shader->GetVariant(ShaderAsset::RootShaderVariantStableId).GetInputContract(),
+                    shader->GetInputContract(),
                     m_modelLodMeshIndex,
                     m_materialModelUvMap,
                     m_material->GetAsset()->GetMaterialTypeAsset()->GetUvNameMap());
@@ -198,21 +226,6 @@ namespace AZ
                 const ShaderVariantId finalVariantId = shaderOptions.GetShaderVariantId();
                 const ShaderVariant& variant = r_forceRootShaderVariantUsage ? shader->GetRootVariant() : shader->GetVariant(finalVariantId);
 
-                Data::Instance<ShaderResourceGroup> drawSrg;
-                if (drawSrgAsset)
-                {
-                    AZ_PROFILE_SCOPE(Debug::ProfileCategory::AzRender, "create drawSrg");
-                    // If the DrawSrg exists we must create and bind it, otherwise the CommandList will fail validation for SRG being null
-                    drawSrg = RPI::ShaderResourceGroup::Create(drawSrgAsset);
-
-                    if (!variant.IsFullyBaked() && drawSrgAsset->GetLayout()->HasShaderVariantKeyFallbackEntry())
-                    {
-                        drawSrg->SetShaderVariantKeyFallbackValue(shaderOptions.GetShaderVariantKeyFallbackValue());
-                    }
-
-                    drawSrg->Compile();
-                }
-
                 RHI::PipelineStateDescriptorForDraw pipelineStateDescriptor;
                 variant.ConfigurePipelineState(pipelineStateDescriptor);
 
@@ -224,10 +237,13 @@ namespace AZ
                 streamBufferViewsPerShader.push_back();
                 auto& streamBufferViews = streamBufferViewsPerShader.back();
 
+                UvStreamTangentBitmask uvStreamTangentBitmask;
+
                 if (!m_modelLod->GetStreamsForMesh(
                     pipelineStateDescriptor.m_inputStreamLayout,
                     streamBufferViews,
-                    variant.GetInputContract(),
+                    &uvStreamTangentBitmask,
+                    shader->GetInputContract(),
                     m_modelLodMeshIndex,
                     m_materialModelUvMap,
                     m_material->GetAsset()->GetMaterialTypeAsset()->GetUvNameMap()))
@@ -235,21 +251,34 @@ namespace AZ
                     return false;
                 }
 
-                // Use the default draw list tag from the shader variant.
-                RHI::DrawListTag drawListTag = shader->GetDrawListTag();
-
-                // Use the explicit draw list override if exist.
-                RHI::DrawListTag runtimeTag = shaderItem.GetDrawListTagOverride();
-                if (!runtimeTag.IsNull())
+                auto drawSrgLayout = shader->GetAsset()->GetDrawSrgLayout(shader->GetSupervariantIndex());
+                Data::Instance<ShaderResourceGroup> drawSrg;
+                if (drawSrgLayout)
                 {
-                    drawListTag = runtimeTag;
+                    AZ_PROFILE_SCOPE(Debug::ProfileCategory::AzRender, "create drawSrg");
+                    // If the DrawSrg exists we must create and bind it, otherwise the CommandList will fail validation for SRG being null
+                    drawSrg = RPI::ShaderResourceGroup::Create(shader->GetAsset(), shader->GetSupervariantIndex(), drawSrgLayout->GetName());
+
+                    if (!variant.IsFullyBaked() && drawSrgLayout->HasShaderVariantKeyFallbackEntry())
+                    {
+                        drawSrg->SetShaderVariantKeyFallbackValue(shaderOptions.GetShaderVariantKeyFallbackValue());
+                    }
+
+                    // Pass UvStreamTangentBitmask to the shader if the draw SRG has it.
+                    {
+                        AZ::Name shaderUvStreamTangentBitmask = AZ::Name(UvStreamTangentBitmask::SrgName);
+                        auto index = drawSrg->FindShaderInputConstantIndex(shaderUvStreamTangentBitmask);
+
+                        if (index.IsValid())
+                        {
+                            drawSrg->SetConstant(index, uvStreamTangentBitmask.GetFullTangentBitmask());
+                        }
+                    }
+
+                    drawSrg->Compile();
                 }
 
-                if (!parentScene.ConfigurePipelineState(drawListTag, pipelineStateDescriptor))
-                {
-                    // drawListTag not found in this scene, so don't render this item
-                    return false;
-                }
+                parentScene.ConfigurePipelineState(drawListTag, pipelineStateDescriptor);
 
                 const RHI::PipelineState* pipelineState = shader->AcquirePipelineState(pipelineStateDescriptor);
                 if (!pipelineState)

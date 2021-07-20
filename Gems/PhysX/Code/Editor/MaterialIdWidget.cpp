@@ -1,19 +1,16 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <PhysX_precompiled.h>
 #include <Editor/MaterialIdWidget.h>
 
 #include <AzFramework/Physics/PropertyTypes.h>
+
+#include <QString>
 
 namespace PhysX
 {
@@ -72,8 +69,7 @@ namespace PhysX
 
             auto lockToDefault = [gui]()
             {
-                static const char* defaultLabel = "Default";
-                gui->addItem(defaultLabel);
+                gui->addItem(QLatin1String(Physics::DefaultPhysicsMaterialLabel.data(), Physics::DefaultPhysicsMaterialLabel.size()));
                 gui->setCurrentIndex(0);
                 return false;
             };
@@ -83,30 +79,31 @@ namespace PhysX
                 return lockToDefault();
             }
 
-            auto materialAsset = AZ::Data::AssetManager::Instance().GetAsset<Physics::MaterialLibraryAsset>(m_materialLibraryId, AZ::Data::AssetLoadBehavior::Default);
-            materialAsset.BlockUntilLoadComplete();
+            auto materialLibraryAsset = AZ::Data::AssetManager::Instance().GetAsset<Physics::MaterialLibraryAsset>(m_materialLibraryId, AZ::Data::AssetLoadBehavior::Default);
+            materialLibraryAsset.BlockUntilLoadComplete();
 
-            if (materialAsset.Get() == nullptr)
+            if (materialLibraryAsset.Get() == nullptr)
             {
                 return lockToDefault();
             }
 
-            const auto& materialsData = materialAsset.Get()->GetMaterialsData();
+            const auto& materials = materialLibraryAsset.Get()->GetMaterialsData();
 
-            if (materialsData.size() == 0)
+            if (materials.empty())
             {
                 return lockToDefault();
             }
 
-            m_libraryIds.reserve(materialsData.size());
+            m_libraryIds.reserve(materials.size() + 1); // Plus one to reserve the first element for default physics material
 
+            // Add default physics material first
             m_libraryIds.push_back(Physics::MaterialId());
-            gui->addItem("Default");
+            gui->addItem(QLatin1String(Physics::DefaultPhysicsMaterialLabel.data(), Physics::DefaultPhysicsMaterialLabel.size()));
 
-            for (const auto& materialData : materialAsset.Get()->GetMaterialsData())
+            for (const auto& material : materials)
             {
-                gui->addItem(materialData.m_configuration.m_surfaceType.c_str());
-                m_libraryIds.push_back(materialData.m_id);
+                gui->addItem(material.m_configuration.m_surfaceType.c_str());
+                m_libraryIds.push_back(material.m_id);
             }
 
             gui->setCurrentIndex(GetIndexForId(instance));
@@ -116,7 +113,7 @@ namespace PhysX
 
         Physics::MaterialId MaterialIdWidget::GetIdForIndex(size_t index)
         {
-            if (m_libraryIds.size() <= index)
+            if (index >= m_libraryIds.size())
             {
                 return Physics::MaterialId();
             }

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "MethodOverloadContract.h"
 
@@ -33,7 +28,7 @@ namespace ScriptCanvas
     {
         if (m_availableIndexes.empty())
         {
-            return -1;
+            return std::numeric_limits<AZ::u32>::max();
         }
 
         return (*m_availableIndexes.begin());
@@ -151,19 +146,22 @@ namespace ScriptCanvas
 
             for (const AZ::BehaviorParameter* behaviorParameter : paramTypes.second)
             {
-                ScriptCanvas::Data::Type dataType = ScriptCanvas::Data::FromAZType(behaviorParameter->m_typeId);
-                if (ScriptCanvas::Data::IsValueType(dataType))
+                if (behaviorParameter)
                 {
-                    isValueType = true;
-                }
-                else if (ScriptCanvas::Data::IsContainerType(dataType))
-                {
-                    isContainerType = true;
-                }
+                    ScriptCanvas::Data::Type dataType = ScriptCanvas::Data::FromAZType(behaviorParameter->m_typeId);
+                    if (ScriptCanvas::Data::IsValueType(dataType))
+                    {
+                        isValueType = true;
+                    }
+                    else if (ScriptCanvas::Data::IsContainerType(dataType))
+                    {
+                        isContainerType = true;
+                    }
 
-                if (isValueType && isContainerType)
-                {
-                    break;
+                    if (isValueType && isContainerType)
+                    {
+                        break;
+                    }
                 }
             }
 

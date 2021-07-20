@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/IO/FileIO.h>
@@ -101,7 +96,7 @@ bool SystemFile::PlatformOpen(int mode, int platformFlags)
         createPath = (mode & SF_OPEN_CREATE_PATH) == SF_OPEN_CREATE_PATH;
     }
 
-    bool isApkFile = AZ::Android::Utils::IsApkPath(m_fileName);
+    bool isApkFile = AZ::Android::Utils::IsApkPath(m_fileName.c_str());
 
     if (createPath)
     {
@@ -111,19 +106,19 @@ bool SystemFile::PlatformOpen(int mode, int platformFlags)
             return false;
         }
 
-        CreatePath(m_fileName);
+        CreatePath(m_fileName.c_str());
     }
 
     int errorCode = 0;
     if (isApkFile)
     {
         AZ::u64 size = 0;
-        m_handle = AZ::Android::APKFileHandler::Open(m_fileName, openMode, size);
+        m_handle = AZ::Android::APKFileHandler::Open(m_fileName.c_str(), openMode, size);
         errorCode = EACCES; // general error when a file can't be opened from inside the APK
     }
     else
     {
-        m_handle = fopen(m_fileName, openMode);
+        m_handle = fopen(m_fileName.c_str(), openMode);
         errorCode = errno;
     }
 
@@ -233,7 +228,7 @@ namespace Platform
         }
     }
 
-    void Seek(FileHandleType handle, const SystemFile* systemFile, SizeType offset, SystemFile::SeekMode mode)
+    void Seek(FileHandleType handle, const SystemFile* systemFile, SystemFile::SeekSizeType offset, SystemFile::SeekMode mode)
     {
         if (handle != PlatformSpecificInvalidHandle)
         {

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzFramework/Physics/Configuration/SimulatedBodyConfiguration.h>
 
@@ -30,6 +25,16 @@ namespace AzPhysics
             classElement.AddElementWithData(context, "name", name);
             return true;
         }
+
+        bool SimulatedBodyVersionConverter([[maybe_unused]] AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
+        {
+            if (classElement.GetVersion() <= 1)
+            {
+                classElement.RemoveElementByName(AZ_CRC_CE("scale"));
+            }
+
+            return true;
+        }
     }
 
     AZ_CLASS_ALLOCATOR_IMPL(SimulatedBodyConfiguration, AZ::SystemAllocator, 0);
@@ -40,11 +45,10 @@ namespace AzPhysics
         {
             serializeContext->ClassDeprecate("WorldBodyConfiguration", "{6EEB377C-DC60-4E10-AF12-9626C0763B2D}", &Internal::DeprecateWorldBodyConfiguration);
             serializeContext->Class<SimulatedBodyConfiguration>()
-                ->Version(1)
+                ->Version(2, &Internal::SimulatedBodyVersionConverter)
                 ->Field("name", &SimulatedBodyConfiguration::m_debugName)
                 ->Field("position", &SimulatedBodyConfiguration::m_position)
                 ->Field("orientation", &SimulatedBodyConfiguration::m_orientation)
-                ->Field("scale", &SimulatedBodyConfiguration::m_scale)
                 ->Field("entityId", &SimulatedBodyConfiguration::m_entityId)
                 ->Field("startSimulationEnabled", &SimulatedBodyConfiguration::m_startSimulationEnabled)
                 ;

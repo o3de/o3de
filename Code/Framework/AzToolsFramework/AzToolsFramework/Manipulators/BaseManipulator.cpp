@@ -1,33 +1,25 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "BaseManipulator.h"
 
 #include <AzCore/Math/IntersectSegment.h>
-#include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 namespace AzToolsFramework
 {
-    AZ_CVAR(
-        bool, cl_manipulatorDrawDebug, false, nullptr, AZ::ConsoleFunctorFlags::Null,
-        "Enable debug drawing for Manipulators");
+    AZ_CVAR(bool, cl_manipulatorDrawDebug, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Enable debug drawing for Manipulators");
 
     const AZ::Color BaseManipulator::s_defaultMouseOverColor = AZ::Color(1.0f, 1.0f, 0.0f, 1.0f); // yellow
 
     AZ_CLASS_ALLOCATOR_IMPL(BaseManipulator, AZ::SystemAllocator, 0)
 
-        static bool EntityIdAndEntityComponentIdComparison(
-            const AZ::EntityId entityId, const AZ::EntityComponentIdPair& entityComponentId)
+    static bool EntityIdAndEntityComponentIdComparison(const AZ::EntityId entityId, const AZ::EntityComponentIdPair& entityComponentId)
     {
         return entityId == entityComponentId.GetEntityId();
     }
@@ -38,8 +30,7 @@ namespace AzToolsFramework
         EndUndoBatch();
     }
 
-    bool BaseManipulator::OnLeftMouseDown(
-        const ViewportInteraction::MouseInteraction& interaction, const float rayIntersectionDistance)
+    bool BaseManipulator::OnLeftMouseDown(const ViewportInteraction::MouseInteraction& interaction, const float rayIntersectionDistance)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
@@ -57,8 +48,7 @@ namespace AzToolsFramework
 
             (*this.*m_onLeftMouseDownImpl)(interaction, rayIntersectionDistance);
 
-            ToolsApplicationNotificationBus::Broadcast(
-                &ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay, Refresh_Values);
+            ToolsApplicationNotificationBus::Broadcast(&ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay, Refresh_Values);
 
             return true;
         }
@@ -66,8 +56,7 @@ namespace AzToolsFramework
         return false;
     }
 
-    bool BaseManipulator::OnRightMouseDown(
-        const ViewportInteraction::MouseInteraction& interaction, const float rayIntersectionDistance)
+    bool BaseManipulator::OnRightMouseDown(const ViewportInteraction::MouseInteraction& interaction, const float rayIntersectionDistance)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
@@ -85,8 +74,7 @@ namespace AzToolsFramework
 
             (*this.*m_onRightMouseDownImpl)(interaction, rayIntersectionDistance);
 
-            ToolsApplicationNotificationBus::Broadcast(
-                &ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay, Refresh_Values);
+            ToolsApplicationNotificationBus::Broadcast(&ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay, Refresh_Values);
 
             return true;
         }
@@ -118,8 +106,7 @@ namespace AzToolsFramework
         EndUndoBatch();
     }
 
-    bool BaseManipulator::OnMouseOver(
-        const ManipulatorId manipulatorId, const ViewportInteraction::MouseInteraction& interaction)
+    bool BaseManipulator::OnMouseOver(const ManipulatorId manipulatorId, const ViewportInteraction::MouseInteraction& interaction)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
@@ -132,8 +119,7 @@ namespace AzToolsFramework
     {
         OnMouseWheelImpl(interaction);
 
-        ToolsApplicationNotificationBus::Broadcast(
-            &ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay, Refresh_Values);
+        ToolsApplicationNotificationBus::Broadcast(&ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay, Refresh_Values);
     }
 
     void BaseManipulator::OnMouseMove(const ViewportInteraction::MouseInteraction& interaction)
@@ -142,16 +128,13 @@ namespace AzToolsFramework
 
         if (!m_performingAction)
         {
-            AZ_Warning(
-                "Manipulators", false,
-                "MouseMove action received, but this manipulator is not performing an action");
+            AZ_Warning("Manipulators", false, "MouseMove action received, but this manipulator is not performing an action");
 
             return;
         }
 
         // ensure property grid (entity inspector) values are refreshed
-        ToolsApplicationNotificationBus::Broadcast(
-            &ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay, Refresh_Values);
+        ToolsApplicationNotificationBus::Broadcast(&ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay, Refresh_Values);
 
         OnMouseMoveImpl(interaction);
     }
@@ -170,16 +153,14 @@ namespace AzToolsFramework
             Unregister();
         }
 
-        ManipulatorManagerRequestBus::Event(managerId,
-            &ManipulatorManagerRequestBus::Events::RegisterManipulator, shared_from_this());
+        ManipulatorManagerRequestBus::Event(managerId, &ManipulatorManagerRequestBus::Events::RegisterManipulator, shared_from_this());
     }
 
     void BaseManipulator::Unregister()
     {
         // if the manipulator has already been unregistered, the m_manipulatorManagerId
         // should be invalid which makes the call below a no-op.
-        ManipulatorManagerRequestBus::Event(m_manipulatorManagerId,
-            &ManipulatorManagerRequestBus::Events::UnregisterManipulator, this);
+        ManipulatorManagerRequestBus::Event(m_manipulatorManagerId, &ManipulatorManagerRequestBus::Events::UnregisterManipulator, this);
     }
 
     void BaseManipulator::Invalidate()
@@ -197,8 +178,7 @@ namespace AzToolsFramework
         if (m_performingAction)
         {
             AZ_Warning(
-                "Manipulators", false,
-                "MouseDown action received, but the manipulator (id: %d) is still performing an action",
+                "Manipulators", false, "MouseDown action received, but the manipulator (id: %d) is still performing an action",
                 GetManipulatorId());
 
             return;
@@ -214,8 +194,7 @@ namespace AzToolsFramework
         if (!m_performingAction)
         {
             AZ_Warning(
-                "Manipulators", false,
-                "MouseUp action received, but this manipulator (id: %d) didn't receive MouseDown action before",
+                "Manipulators", false, "MouseUp action received, but this manipulator (id: %d) didn't receive MouseDown action before",
                 GetManipulatorId());
             return;
         }
@@ -263,13 +242,13 @@ namespace AzToolsFramework
             if (entityComponentIdPair.GetComponentId() != AZ::InvalidComponentId)
             {
                 PropertyEditorEntityChangeNotificationBus::Event(
-                    entityComponentIdPair.GetEntityId(),
-                    &PropertyEditorEntityChangeNotifications::OnEntityComponentPropertyChanged,
+                    entityComponentIdPair.GetEntityId(), &PropertyEditorEntityChangeNotifications::OnEntityComponentPropertyChanged,
                     entityComponentIdPair.GetComponentId());
             }
             else
             {
-                AZ_Warning("Manipulators", false,
+                AZ_Warning(
+                    "Manipulators", false,
                     "This Manipulator was only registered with an EntityId and not an EntityComponentIdPair. "
                     "Please use AddEntityComponentIdPair() instead of AddEntityId() when registering what this "
                     "Manipulator is changing.");
@@ -280,8 +259,7 @@ namespace AzToolsFramework
                 for (const AZ::Component* component : entity->GetComponents())
                 {
                     PropertyEditorEntityChangeNotificationBus::Event(
-                        entity->GetId(), &PropertyEditorEntityChangeNotifications::OnEntityComponentPropertyChanged,
-                        component->GetId());
+                        entity->GetId(), &PropertyEditorEntityChangeNotifications::OnEntityComponentPropertyChanged, component->GetId());
                 }
             }
         }
@@ -298,9 +276,7 @@ namespace AzToolsFramework
         {
             // look for a match (keep looking in case we have several entity ids with different component ids)
             const auto entityComponentPairId =
-                m_entityComponentIdPairs.find_as(
-                    entityId, AZStd::hash<AZ::EntityId>(),
-                    &EntityIdAndEntityComponentIdComparison);
+                m_entityComponentIdPairs.find_as(entityId, AZStd::hash<AZ::EntityId>(), &EntityIdAndEntityComponentIdComparison);
 
             // update the afterErased variable so we can return an iterator
             // to the correct position in the container.
@@ -334,9 +310,8 @@ namespace AzToolsFramework
 
     bool BaseManipulator::HasEntityId(const AZ::EntityId entityId) const
     {
-        return m_entityComponentIdPairs.find_as(
-            entityId, AZStd::hash<AZ::EntityId>(),
-            &EntityIdAndEntityComponentIdComparison) != m_entityComponentIdPairs.end();
+        return m_entityComponentIdPairs.find_as(entityId, AZStd::hash<AZ::EntityId>(), &EntityIdAndEntityComponentIdComparison) !=
+            m_entityComponentIdPairs.end();
     }
 
     bool BaseManipulator::HasEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair) const
@@ -346,7 +321,8 @@ namespace AzToolsFramework
 
     void Manipulators::Register(const ManipulatorManagerId manipulatorManagerId)
     {
-        ProcessManipulators([manipulatorManagerId](BaseManipulator* manipulator)
+        ProcessManipulators(
+            [manipulatorManagerId](BaseManipulator* manipulator)
             {
                 manipulator->Register(manipulatorManagerId);
             });
@@ -354,7 +330,8 @@ namespace AzToolsFramework
 
     void Manipulators::Unregister()
     {
-        ProcessManipulators([](BaseManipulator* manipulator)
+        ProcessManipulators(
+            [](BaseManipulator* manipulator)
             {
                 if (manipulator->Registered())
                 {
@@ -365,7 +342,8 @@ namespace AzToolsFramework
 
     void Manipulators::SetBoundsDirty()
     {
-        ProcessManipulators([](BaseManipulator* manipulator)
+        ProcessManipulators(
+            [](BaseManipulator* manipulator)
             {
                 manipulator->SetBoundsDirty();
             });
@@ -373,7 +351,8 @@ namespace AzToolsFramework
 
     void Manipulators::AddEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
-        ProcessManipulators([&entityComponentIdPair](BaseManipulator* manipulator)
+        ProcessManipulators(
+            [&entityComponentIdPair](BaseManipulator* manipulator)
             {
                 manipulator->AddEntityComponentIdPair(entityComponentIdPair);
             });
@@ -381,7 +360,8 @@ namespace AzToolsFramework
 
     void Manipulators::RemoveEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
-        ProcessManipulators([&entityComponentIdPair](BaseManipulator* manipulator)
+        ProcessManipulators(
+            [&entityComponentIdPair](BaseManipulator* manipulator)
             {
                 manipulator->RemoveEntityComponentIdPair(entityComponentIdPair);
             });
@@ -389,7 +369,8 @@ namespace AzToolsFramework
 
     void Manipulators::RemoveEntityId(const AZ::EntityId entityId)
     {
-        ProcessManipulators([entityId](BaseManipulator* manipulator)
+        ProcessManipulators(
+            [entityId](BaseManipulator* manipulator)
             {
                 manipulator->RemoveEntityId(entityId);
             });
@@ -398,7 +379,8 @@ namespace AzToolsFramework
     bool Manipulators::PerformingAction()
     {
         bool performingAction = false;
-        ProcessManipulators([&performingAction](BaseManipulator* manipulator)
+        ProcessManipulators(
+            [&performingAction](BaseManipulator* manipulator)
             {
                 if (manipulator->PerformingAction())
                 {
@@ -412,7 +394,8 @@ namespace AzToolsFramework
     bool Manipulators::Registered()
     {
         bool registered = false;
-        ProcessManipulators([&registered](BaseManipulator* manipulator)
+        ProcessManipulators(
+            [&registered](BaseManipulator* manipulator)
             {
                 if (manipulator->Registered())
                 {
@@ -431,6 +414,11 @@ namespace AzToolsFramework
     const AZ::Transform& Manipulators::GetSpace() const
     {
         return m_manipulatorSpaceWithLocalTransform.GetSpace();
+    }
+
+    const AZ::Vector3& Manipulators::GetNonUniformScale() const
+    {
+        return m_manipulatorSpaceWithLocalTransform.GetNonUniformScale();
     }
 
     void Manipulators::SetSpace(const AZ::Transform& worldFromLocal)
@@ -465,8 +453,12 @@ namespace AzToolsFramework
 
     namespace Internal
     {
-        bool CalculateRayPlaneIntersectingPoint(const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection,
-            const AZ::Vector3& pointOnPlane, const AZ::Vector3& planeNormal, AZ::Vector3& resultIntersectingPoint)
+        bool CalculateRayPlaneIntersectingPoint(
+            const AZ::Vector3& rayOrigin,
+            const AZ::Vector3& rayDirection,
+            const AZ::Vector3& pointOnPlane,
+            const AZ::Vector3& planeNormal,
+            AZ::Vector3& resultIntersectingPoint)
         {
             float t = 0.0f;
             if (AZ::Intersect::IntersectRayPlane(rayOrigin, rayDirection, pointOnPlane, planeNormal, t) > 0)
@@ -479,11 +471,12 @@ namespace AzToolsFramework
         }
 
         AZ::Vector3 TryConstrainHitPositionToView(
-            const AZ::Vector3& currentLocalHitPosition, const AZ::Vector3& startLocalHitPosition,
-            const AZ::Transform& localFromWorld, const AzFramework::CameraState& cameraState)
+            const AZ::Vector3& currentLocalHitPosition,
+            const AZ::Vector3& startLocalHitPosition,
+            const AZ::Transform& localFromWorld,
+            const AzFramework::CameraState& cameraState)
         {
-            if (currentLocalHitPosition.GetDistance(localFromWorld.TransformPoint(cameraState.m_position))
-                > cameraState.m_farClip)
+            if (currentLocalHitPosition.GetDistance(localFromWorld.TransformPoint(cameraState.m_position)) > cameraState.m_farClip)
             {
                 return startLocalHitPosition;
             }

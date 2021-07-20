@@ -1,0 +1,113 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include "EditorAssetImporter_precompiled.h"
+#include <AssetImporterDocument.h>
+#include <AzToolsFramework/Debug/TraceContext.h>
+#include <SceneAPI/SceneCore/Export/MtlMaterialExporter.h>
+#include <Util/PathUtil.h>
+#include <GFxFramework/MaterialIO/IMaterial.h>
+#include <SceneAPI/SceneCore/Containers/Views/PairIterator.h>
+#include <SceneAPI/SceneCore/Containers/Views/FilterIterator.h>
+#include <SceneAPI/SceneCore/DataTypes/DataTypeUtilities.h>
+#include <SceneAPI/SceneCore/DataTypes/Rules/IMaterialRule.h>
+#include <SceneAPI/SceneCore/DataTypes/Groups/IMeshGroup.h>
+#include <SceneAPI/SceneCore/DataTypes/Groups/ISkeletonGroup.h>
+#include <SceneAPI/SceneCore/DataTypes/Groups/ISkinGroup.h>
+#include <SceneAPI/SceneCore/DataTypes/Groups/IAnimationGroup.h>
+#include <SceneAPI/SceneCore/DataTypes/ManifestBase/ISceneNodeSelectionList.h>
+#include <SceneAPI/SceneCore/Events/SceneSerializationBus.h>
+#include <SceneAPI/SceneCore/Utilities/SceneGraphSelector.h>
+#include <SceneAPI/SceneCore/Utilities/FileUtilities.h>
+#include <SceneAPI/SceneCore/Utilities/Reporting.h>
+#include <IEditor.h>
+#include <ISourceControl.h>
+#include <QFile>
+#include <QWidget>
+#include <QMessageBox>
+#include <QPushButton>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzCore/std/string/conversions.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
+
+#include <ActionOutput.h>
+#include <AzToolsFramework/SourceControl/SourceControlAPI.h>
+
+AssetImporterDocument::AssetImporterDocument()
+{
+}
+
+bool AssetImporterDocument::LoadScene(const AZStd::string& sceneFullPath)
+{
+    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    namespace SceneEvents = AZ::SceneAPI::Events;
+    SceneEvents::SceneSerializationBus::BroadcastResult(m_scene, &SceneEvents::SceneSerializationBus::Events::LoadScene, sceneFullPath, AZ::Uuid::CreateNull());
+    return !!m_scene;
+}
+
+void AssetImporterDocument::SaveScene(AZStd::shared_ptr<AZ::ActionOutput>& output, AZ::SaveCompleteCallback onSaveComplete)
+{
+    if (!m_scene)
+    {
+        if (output)
+        {
+            output->AddError("No scene file was loaded.");
+        }
+
+        if (onSaveComplete)
+        {
+            onSaveComplete(false);
+        }
+
+        return;
+    }
+
+    m_saveRunner = AZStd::make_shared<AZ::AsyncSaveRunner>();
+
+    // Add a no-op saver to put the FBX into source control. The benefit of doing it this way
+    //  rather than invoking the SourceControlCommands bus directly is that we enable ourselves
+    //  to have a single callback point for fbx & the manifest.
+    auto fbxNoOpSaver = m_saveRunner->GenerateController();
+    fbxNoOpSaver->AddSaveOperation(m_scene->GetSourceFilename(), nullptr);
+
+    // Save the manifest
+    SaveManifest();
+
+    m_saveRunner->Run(output,
+        [this, onSaveComplete](bool success)
+        {
+            if (onSaveComplete)
+            {
+                onSaveComplete(success);
+            }
+
+            m_saveRunner = nullptr;
+    }, AZ::AsyncSaveRunner::ControllerOrder::Sequential);
+}
+
+void AssetImporterDocument::ClearScene()
+{
+    m_scene.reset();
+}
+
+void AssetImporterDocument::SaveManifest()
+{
+    // Create the save controller and add the save operation for the manifest job to it
+    AZStd::shared_ptr<AZ::SaveOperationController> saveController = m_saveRunner->GenerateController();
+
+    saveController->AddSaveOperation(m_scene->GetManifestFilename(),
+        [this](const AZStd::string& fullPath, const AZStd::shared_ptr<AZ::ActionOutput>& actionOutput) -> bool
+        {
+            AZ_UNUSED(actionOutput);
+            return m_scene->GetManifest().SaveToFile(fullPath.c_str());
+        });
+}
+
+AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene>& AssetImporterDocument::GetScene()
+{
+    return m_scene;
+}

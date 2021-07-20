@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
@@ -30,11 +25,11 @@ TEST_F(PlatformHelperTest, SinglePlatformFlags_PlatformId_Valid)
 
 TEST_F(PlatformHelperTest, MultiplePlatformFlags_PlatformId_Valid)
 {
-    AzFramework::PlatformFlags platformFlags = AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_ES3;
+    AzFramework::PlatformFlags platformFlags = AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_ANDROID;
     auto platforms = AzFramework::PlatformHelper::GetPlatforms(platformFlags);
     EXPECT_EQ(platforms.size(), 2);
     EXPECT_EQ(platforms[0], "pc");
-    EXPECT_EQ(platforms[1], "es3");
+    EXPECT_EQ(platforms[1], "android");
 }
 
 TEST_F(PlatformHelperTest, SpecialAllFlag_PlatformId_Valid)
@@ -42,7 +37,7 @@ TEST_F(PlatformHelperTest, SpecialAllFlag_PlatformId_Valid)
     AzFramework::PlatformFlags platformFlags = AzFramework::PlatformFlags::Platform_ALL;
     auto platforms = AzFramework::PlatformHelper::GetPlatformsInterpreted(platformFlags);
     EXPECT_EQ(platforms.size(), AzFramework::NumPlatforms);
-    EXPECT_THAT(platforms, testing::UnorderedElementsAre("pc", "es3", "ios", "osx_gl", "provo", "salem", "jasper", "server"));
+    EXPECT_THAT(platforms, testing::UnorderedElementsAre("pc", "android", "ios", "mac", "provo", "salem", "jasper", "server"));
 }
 
 TEST_F(PlatformHelperTest, SpecialAllClientFlag_PlatformId_Valid)
@@ -50,7 +45,7 @@ TEST_F(PlatformHelperTest, SpecialAllClientFlag_PlatformId_Valid)
     AzFramework::PlatformFlags platformFlags = AzFramework::PlatformFlags::Platform_ALL_CLIENT;
     auto platforms = AzFramework::PlatformHelper::GetPlatformsInterpreted(platformFlags);
     EXPECT_EQ(platforms.size(), AzFramework::NumClientPlatforms);
-    EXPECT_THAT(platforms, testing::UnorderedElementsAre("pc", "es3", "ios", "osx_gl", "provo", "salem", "jasper"));
+    EXPECT_THAT(platforms, testing::UnorderedElementsAre("pc", "android", "ios", "mac", "provo", "salem", "jasper"));
 }
 
 TEST_F(PlatformHelperTest, InvalidPlatformFlags_PlatformId_Empty)

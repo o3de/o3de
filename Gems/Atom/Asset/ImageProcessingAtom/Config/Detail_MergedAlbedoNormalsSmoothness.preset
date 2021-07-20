@@ -18,7 +18,7 @@
             }
         },
         "PlatformsPresets": {
-            "es3": {
+            "android": {
                 "UUID": "{5096FC7B-0B2D-4466-9943-AD59922968E8}",
                 "Name": "Detail_MergedAlbedoNormalsSmoothness",
                 "SourceColor": "Linear",
@@ -46,7 +46,7 @@
                     "MipGenType": "Box"
                 }
             },
-            "osx_gl": {
+            "mac": {
                 "UUID": "{5096FC7B-0B2D-4466-9943-AD59922968E8}",
                 "Name": "Detail_MergedAlbedoNormalsSmoothness",
                 "SourceColor": "Linear",

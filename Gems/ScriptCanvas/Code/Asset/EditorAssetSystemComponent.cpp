@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "precompiled.h"
 #include <Asset/EditorAssetSystemComponent.h>
@@ -24,7 +19,7 @@
 #include <Builder/ScriptCanvasBuilderWorker.h>
 #include <LyViewPaneNames.h>
 
-// Undo this
+ // Undo this
 AZ_PUSH_DISABLE_WARNING(4251 4800 4244, "-Wunknown-warning-option")
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
@@ -95,8 +90,8 @@ namespace ScriptCanvasEditor
     void EditorAssetSystemComponent::Deactivate()
     {
         ScriptCanvas::Translation::RequestBus::Handler::BusDisconnect();
-        ScriptCanvas::Grammar::RequestBus::Handler::BusDisconnect(); 
-        
+        ScriptCanvas::Grammar::RequestBus::Handler::BusDisconnect();
+
         EditorAssetConversionBus::Handler::BusDisconnect();
         AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
         m_editorAssetRegistry.Unregister();
@@ -124,8 +119,8 @@ namespace ScriptCanvasEditor
 
     AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset> EditorAssetSystemComponent::LoadAsset(AZStd::string_view graphPath)
     {
-        auto outcome = ScriptCanvasBuilder::LoadEditorAsset(graphPath);
-        
+        auto outcome = ScriptCanvasBuilder::LoadEditorAsset(graphPath, AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
+
         if (outcome.IsSuccess())
         {
             return outcome.GetValue();

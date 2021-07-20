@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Prefab/PrefabTestFixture.h>
 
@@ -40,7 +35,8 @@ namespace UnitTest
 
         //Create Spawnable
         auto& prefabDom = m_prefabSystemComponent->FindTemplateDom(instance->GetTemplateId());
-        auto spawnable = ::AzToolsFramework::Prefab::SpawnableUtils::CreateSpawnable(prefabDom);
+        AzFramework::Spawnable spawnable;
+        AzToolsFramework::Prefab::SpawnableUtils::CreateSpawnable(spawnable, prefabDom);
 
         EXPECT_EQ(spawnable.GetEntities().size() - 1, normalEntityCount); // 1 for container entity
         const auto& spawnableEntities = spawnable.GetEntities();
@@ -70,23 +66,29 @@ namespace UnitTest
             m_prefabSystemComponent->CreatePrefab({ entitiesCreated[0] }, {}, "test/path1"));
         ASSERT_TRUE(firstInstance);
 
+        ASSERT_TRUE(firstInstance->HasContainerEntity());
+        expectedEntityNameSet.insert(firstInstance->GetContainerEntity()->get().GetName());
+
         AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> secondInstance(
             m_prefabSystemComponent->CreatePrefab({ entitiesCreated[1] }, MakeInstanceList(AZStd::move(firstInstance)), "test/path2"));
         ASSERT_TRUE(secondInstance);
+
+        ASSERT_TRUE(secondInstance->HasContainerEntity());
+        expectedEntityNameSet.insert(secondInstance->GetContainerEntity()->get().GetName());
 
         AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> thirdInstance(
             m_prefabSystemComponent->CreatePrefab({ entitiesCreated[2] }, MakeInstanceList(AZStd::move(secondInstance)), "test/path3"));
         ASSERT_TRUE(thirdInstance);
 
         ASSERT_TRUE(thirdInstance->HasContainerEntity());
-        auto& containerEntity = thirdInstance->GetContainerEntity()->get();
-        expectedEntityNameSet.insert(containerEntity.GetName());
+        expectedEntityNameSet.insert(thirdInstance->GetContainerEntity()->get().GetName());
 
         //Create Spawnable
         auto& prefabDom = m_prefabSystemComponent->FindTemplateDom(thirdInstance->GetTemplateId());
-        auto spawnable = ::AzToolsFramework::Prefab::SpawnableUtils::CreateSpawnable(prefabDom);
+        AzFramework::Spawnable spawnable;
+        AzToolsFramework::Prefab::SpawnableUtils::CreateSpawnable(spawnable, prefabDom);
 
-        EXPECT_EQ(spawnable.GetEntities().size() - 1, normalEntityCount); // 1 for container entity
+        EXPECT_EQ(spawnable.GetEntities().size(), normalEntityCount + 3); // +1 for each container entity
         const auto& spawnableEntities = spawnable.GetEntities();
         AZStd::unordered_set<AZStd::string> actualEntityNameSet;
 
@@ -95,6 +97,6 @@ namespace UnitTest
             actualEntityNameSet.insert(spawnableEntity->GetName());
         }
 
-        EXPECT_EQ(expectedEntityNameSet, actualEntityNameSet);
+        EXPECT_EQ(actualEntityNameSet, expectedEntityNameSet);
     }
 }

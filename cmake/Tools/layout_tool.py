@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 
@@ -78,19 +74,19 @@ def verify_layout(layout_dir, platform_name, project_path, asset_mode, asset_typ
         if remote_on_check is None:
             # Validate that if '<platform>_connect_to_remote is enabled, that the 'input_remote_ip' is not set to local host
             if input_remote_connect == '1' and input_remote_ip == LOCAL_HOST:
-                return _warn("'bootstrap.cfg' is configured to connect to Asset Processor remotely, but the 'remote_ip' "
+                return _warn("'bootstrap.setreg' is configured to connect to Asset Processor remotely, but the 'remote_ip' "
                              " is configured for LOCAL HOST")
         else:
             if remote_on_check:
                 # Verify we are set for remote AP connection
                 if input_remote_ip == LOCAL_HOST:
-                    return _warn(f"'bootstrap.cfg' is not configured for a remote Asset Processor connection (remote_ip={input_remote_ip})")
+                    return _warn(f"'bootstrap.setreg' is not configured for a remote Asset Processor connection (remote_ip={input_remote_ip})")
                 if input_remote_connect != '1':
-                    return _warn(f"'bootstrap.cfg' is not configured for a remote Asset Processor connection ({platform_name}_connect_to_remote={input_remote_connect}")
+                    return _warn(f"'bootstrap.setreg' is not configured for a remote Asset Processor connection ({platform_name}_connect_to_remote={input_remote_connect}")
             else:
                 # Verify we are disabled for remote AP connection
                 if input_remote_connect != '0':
-                    return _warn(f"'bootstrap.cfg' is not configured for a remote Asset Processor connection ({platform_name}_connect_to_remote={input_remote_connect}")
+                    return _warn(f"'bootstrap.setreg' is not configured for a remote Asset Processor connection ({platform_name}_connect_to_remote={input_remote_connect}")
 
         return 0
 
@@ -107,20 +103,15 @@ def verify_layout(layout_dir, platform_name, project_path, asset_mode, asset_typ
     project_name_lower = project_path.lower()
     layout_path = pathlib.Path(layout_dir)
 
-    # Validate bootstrap.cfg exists
-    bootstrap_file = layout_path / 'bootstrap.cfg'
-    if not bootstrap_file.is_file():
-        warning_count += _warn(f"'bootstrap.cfg' is missing from {str(layout_path)}")
-        bootstrap_values = None
-    else:
-        bootstrap_values = common.get_config_file_values(str(bootstrap_file), [f'{platform_name_lower}_remote_filesystem',
-                                                                               f'{platform_name_lower}_connect_to_remote',
-                                                                               f'{platform_name_lower}_wait_for_connect',
-                                                                               f'{platform_name_lower}_assets',
-                                                                               f'assets',
-                                                                               f'{platform_name_lower}_remote_ip',
-                                                                               f'remote_ip'
-                                                                               ])
+    bootstrap_path = pathlib.Path(ROOT_ENGINE_PATH) / 'Registry'
+    bootstrap_values = common.get_bootstrap_values(str(bootstrap_path), [f'{platform_name_lower}_remote_filesystem',
+                                                                         f'{platform_name_lower}_connect_to_remote',
+                                                                         f'{platform_name_lower}_wait_for_connect',
+                                                                         f'{platform_name_lower}_assets',
+                                                                         f'assets',
+                                                                         f'{platform_name_lower}_remote_ip',
+                                                                         f'remote_ip'
+                                                                         ])
 
     # Validate the system_{platform}_{asset type}.cfg exists
     platform_system_cfg_file = layout_path / f'system_{platform_name_lower}_{asset_type}.cfg'
@@ -141,9 +132,9 @@ def verify_layout(layout_dir, platform_name, project_path, asset_mode, asset_typ
         # Validate that the asset type for the platform matches the one set for the build
         bootstrap_asset_type = bootstrap_values.get(f'{platform_name_lower}_assets') or bootstrap_values.get('assets')
         if not bootstrap_asset_type:
-            warning_count += _warn("'bootstrap.cfg' is missing specifications for asset type.")
+            warning_count += _warn("'bootstrap.setreg' is missing specifications for asset type.")
         elif bootstrap_asset_type != asset_type:
-            warning_count += _warn(f"The asset type specified in bootstrap.cfg ({bootstrap_asset_type}) does not match the asset type specified for this deployment({asset_type}).")
+            warning_count += _warn(f"The asset type specified in bootstrap.setreg ({bootstrap_asset_type}) does not match the asset type specified for this deployment({asset_type}).")
 
         # Validate that if '<platform>_connect_to_remote is enabled, that the 'remote_ip' is not set to local host
         warning_count += _validate_remote_ap(remote_ip, remote_connect, None)
@@ -211,7 +202,7 @@ def verify_layout(layout_dir, platform_name, project_path, asset_mode, asset_typ
             elif asset_mode == ASSET_MODE_VFS:
                 remote_file_system = bootstrap_values.get(f'{platform_name_lower}_remote_filesystem') or '0'
                 if not remote_file_system != '1':
-                    warning_count += _warn("Remote file system is not configured in bootstrap.cfg for VFS mode.")
+                    warning_count += _warn("Remote file system is not configured in bootstrap.setreg for VFS mode.")
                 else:
                     warning_count += _validate_remote_ap(remote_ip, remote_connect, True)
 

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "Camera_precompiled.h"
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Component/TransformBus.h>
@@ -31,22 +26,13 @@ namespace Camera
 
     void EditorCameraComponent::Activate()
     {
-        auto controllerConfig = m_controller.GetConfiguration();
+        // Ensure our Editor Entity ID is up-to-date to sync camera configurations between Edit & Game mode.
+        CameraComponentConfig controllerConfig = m_controller.GetConfiguration();
         controllerConfig.m_editorEntityId = GetEntityId().operator AZ::u64();
-
-        // The Editor manages active camera state, so while we're in Editor we explicitly
-        // disable the request to make this the active view at edit component activation time.
-        bool prevShouldActivateViewOnActivation = controllerConfig.m_makeActiveViewOnActivation;
-        controllerConfig.m_makeActiveViewOnActivation = false; 
-
         m_controller.SetConfiguration(controllerConfig);
 
         // Call base class activate, which in turn calls Activate on our controller.
         EditorCameraComponentBase::Activate();
-
-        // Reset the original `m_makeActiveViewOnActivation' setting, so that the intended value is serialized, used in BuildGameEntity, etc.
-        controllerConfig.m_makeActiveViewOnActivation = prevShouldActivateViewOnActivation;
-        m_controller.SetConfiguration(controllerConfig);
 
         AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(GetEntityId());
         EditorCameraNotificationBus::Handler::BusConnect();
@@ -122,7 +108,7 @@ namespace Camera
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/Camera.png")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://docs.aws.amazon.com/lumberyard/latest/userguide/component-camera.html")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/camera/")
                     ->UIElement(AZ::Edit::UIHandlers::Button,"", "Sets the view to this camera")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorCameraComponent::OnPossessCameraButtonClicked)
                         ->Attribute(AZ::Edit::Attributes::ButtonText, &EditorCameraComponent::GetCameraViewButtonText)

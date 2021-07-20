@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "EntityOutlinerSearchWidget.h"
 
@@ -41,18 +36,29 @@ namespace AzToolsFramework
     {
     }
 
-    bool EntityOutlinerSearchTypeSelector::filterItemOut(int unfilteredDataIndex, bool itemMatchesFilter, bool categoryMatchesFilter)
+    bool EntityOutlinerSearchTypeSelector::filterItemOut(const QModelIndex& sourceIndex, bool filteredByBase)
     {
-        bool unfilteredIndexInvalid = (unfilteredDataIndex >= aznumeric_cast<int>(EntityOutlinerSearchWidget::GlobalSearchCriteria::FirstRealFilter));
-        return SearchTypeSelector::filterItemOut(unfilteredDataIndex, itemMatchesFilter, categoryMatchesFilter) && unfilteredIndexInvalid;
+        auto* currItem = m_model->itemFromIndex(sourceIndex);
+        if (currItem != nullptr)
+        {
+            int unfilteredIndex = getUnfilteredDataIndex(currItem);
+            if (unfilteredIndex >= 0 && unfilteredIndex < aznumeric_cast<int>(EntityOutlinerSearchWidget::GlobalSearchCriteria::FirstRealFilter))
+            {
+                // never filter out the categories before FirstRealFilter (unlocked/locked, visible/hidden, etc.)
+                return false;
+            }
+        }
+        // no special case, return the result of the base filter
+        return filteredByBase;
     }
 
     void EntityOutlinerSearchTypeSelector::initItem(QStandardItem* item, const AzQtComponents::SearchTypeFilter& filter, int unfilteredDataIndex)
     {
-        if (filter.displayName != "--------")
+        SearchTypeSelector::initItem(item, filter, unfilteredDataIndex);
+        if (filter.displayName == "--------")
         {
-            item->setCheckable(true);
-            item->setCheckState(filter.enabled ? Qt::Checked : Qt::Unchecked);
+            SearchTypeSelector::initItem(item, filter, unfilteredDataIndex);
+            item->setCheckable(false);
         }
 
         if (unfilteredDataIndex < aznumeric_cast<int>(EntityOutlinerSearchWidget::GlobalSearchCriteria::FirstRealFilter))

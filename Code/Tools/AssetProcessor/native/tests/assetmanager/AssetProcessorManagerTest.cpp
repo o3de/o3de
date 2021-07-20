@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "AssetProcessorManagerTest.h"
 #include "native/AssetManager/PathDependencyManager.h"
@@ -30,11 +25,7 @@ public:
     friend class GTEST_TEST_CLASS_NAME_(MultiplatformPathDependencyTest, AssetProcessed_Impl_MultiplatformDependencies);
     friend class GTEST_TEST_CLASS_NAME_(MultiplatformPathDependencyTest, AssetProcessed_Impl_MultiplatformDependencies_DeferredResolution);
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
-    friend class GTEST_TEST_CLASS_NAME_(MultiplatformPathDependencyTest, DISABLED_AssetProcessed_Impl_MultiplatformDependencies_SourcePath);
-#else
     friend class GTEST_TEST_CLASS_NAME_(MultiplatformPathDependencyTest, AssetProcessed_Impl_MultiplatformDependencies_SourcePath);
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
 
     friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, DeleteFolder_SignalsDeleteOfContainedFiles);
 
@@ -70,19 +61,11 @@ public:
     friend class GTEST_TEST_CLASS_NAME_(AbsolutePathProductDependencyTest, UnresolvedProductPathDependency_AssetProcessedTwice_ValidatePathDependenciesMap);
     friend class GTEST_TEST_CLASS_NAME_(AbsolutePathProductDependencyTest, UnresolvedSourceFileTypeProductPathDependency_DependencyHasNoProductOutput_ValidatePathDependenciesMap);
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
-    friend class GTEST_TEST_CLASS_NAME_(ModtimeScanningTest, DISABLED_ModtimeSkipping_FileUnchanged_WithoutModtimeSkipping);
-#else
     friend class GTEST_TEST_CLASS_NAME_(ModtimeScanningTest, ModtimeSkipping_FileUnchanged_WithoutModtimeSkipping);
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
 
     friend class GTEST_TEST_CLASS_NAME_(ModtimeScanningTest, ModtimeSkipping_FileUnchanged);
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
-    friend class GTEST_TEST_CLASS_NAME_(ModtimeScanningTest, DISABLED_ModtimeSkipping_EnablePlatform_ShouldProcessFilesForPlatform);
-#else
     friend class GTEST_TEST_CLASS_NAME_(ModtimeScanningTest, ModtimeSkipping_EnablePlatform_ShouldProcessFilesForPlatform);
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
 
     friend class GTEST_TEST_CLASS_NAME_(ModtimeScanningTest, ModtimeSkipping_ModifyFile);
     friend class GTEST_TEST_CLASS_NAME_(ModtimeScanningTest, ModtimeSkipping_ModifyFile_AndThenRevert_ProcessesAgain);
@@ -204,6 +187,9 @@ void AssetProcessorManagerTest::SetUp()
     auto cacheRootKey =
         AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_cache_path";
     registry->Set(cacheRootKey, tempPath.absoluteFilePath("Cache").toUtf8().constData());
+    auto projectPathKey =
+        AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
+    registry->Set(projectPathKey, "AutomatedTesting");
     AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
     m_data->m_databaseLocationListener.BusConnect();
@@ -2359,11 +2345,7 @@ TEST_F(PathDependencyTest, ChangeDependencies_Existing_ResolveCorrectly)
     );
 }
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
-TEST_F(PathDependencyTest, DISABLED_MixedPathDependencies_Existing_ResolveCorrectly)
-#else
 TEST_F(PathDependencyTest, MixedPathDependencies_Existing_ResolveCorrectly)
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
 {
     using namespace AssetProcessor;
     using namespace AssetBuilderSDK;
@@ -2658,11 +2640,7 @@ TEST_F(MultiplatformPathDependencyTest, AssetProcessed_Impl_MultiplatformDepende
     ASSERT_NE(SearchDependencies(dependencyContainer, asset1.m_products[0]), SearchDependencies(dependencyContainer, asset1.m_products[1]));
 }
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
-TEST_F(MultiplatformPathDependencyTest, DISABLED_AssetProcessed_Impl_MultiplatformDependencies_SourcePath)
-#else
 TEST_F(MultiplatformPathDependencyTest, AssetProcessed_Impl_MultiplatformDependencies_SourcePath)
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
 {
     // One product will be pc, one will be console (order is non-deterministic)
     TestAsset asset1("testAsset1");
@@ -3891,7 +3869,7 @@ void ModtimeScanningTest::ProcessAssetJobs()
 
     for (const auto& processResult : m_data->m_processResults)
     {
-        auto file = QDir(processResult.m_destinationPath).absoluteFilePath(processResult.m_jobEntry.m_databaseSourceName + ".arc1");
+        auto file = QDir(processResult.m_destinationPath).absoluteFilePath(processResult.m_jobEntry.m_databaseSourceName.toLower() + ".arc1");
         m_data->m_productPaths.emplace(
             QDir(processResult.m_jobEntry.m_watchFolderPath)
                 .absoluteFilePath(processResult.m_jobEntry.m_databaseSourceName)
@@ -3940,11 +3918,11 @@ void ModtimeScanningTest::ExpectWork(int createJobs, int processJobs)
 {
     ASSERT_TRUE(BlockUntilIdle(5000));
 
-    ASSERT_EQ(m_data->m_mockBuilderInfoHandler.m_createJobsCount, createJobs);
-    ASSERT_EQ(m_data->m_processResults.size(), processJobs);
-    ASSERT_FALSE(m_data->m_processResults[0].m_autoFail);
-    ASSERT_FALSE(m_data->m_processResults[1].m_autoFail);
-    ASSERT_EQ(m_data->m_deletedSources.size(), 0);
+    EXPECT_EQ(m_data->m_mockBuilderInfoHandler.m_createJobsCount, createJobs);
+    EXPECT_EQ(m_data->m_processResults.size(), processJobs);
+    EXPECT_FALSE(m_data->m_processResults[0].m_autoFail);
+    EXPECT_FALSE(m_data->m_processResults[1].m_autoFail);
+    EXPECT_EQ(m_data->m_deletedSources.size(), 0);
 
     m_isIdling = false;
 }
@@ -3972,11 +3950,7 @@ void ModtimeScanningTest::SetFileContents(QString filePath, QString contents)
     file.close();
 }
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
-TEST_F(ModtimeScanningTest, DISABLED_ModtimeSkipping_FileUnchanged_WithoutModtimeSkipping)
-#else
 TEST_F(ModtimeScanningTest, ModtimeSkipping_FileUnchanged_WithoutModtimeSkipping)
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
 {
     using namespace AzToolsFramework::AssetSystem;
 
@@ -4005,11 +3979,7 @@ TEST_F(ModtimeScanningTest, ModtimeSkipping_FileUnchanged)
     ExpectNoWork();
 }
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
-TEST_F(ModtimeScanningTest, DISABLED_ModtimeSkipping_EnablePlatform_ShouldProcessFilesForPlatform)
-#else
 TEST_F(ModtimeScanningTest, ModtimeSkipping_EnablePlatform_ShouldProcessFilesForPlatform)
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
 {
     using namespace AzToolsFramework::AssetSystem;
 
@@ -4017,15 +3987,15 @@ TEST_F(ModtimeScanningTest, ModtimeSkipping_EnablePlatform_ShouldProcessFilesFor
     m_assetProcessorManager->m_allowModtimeSkippingFeature = true;
     AssetUtilities::SetUseFileHashOverride(true, true);
 
-    // Enable es3 platform after the initial SetUp has already processed the files for pc
+    // Enable android platform after the initial SetUp has already processed the files for pc
     QDir tempPath(m_tempDir.path());
-    AssetBuilderSDK::PlatformInfo es3Platform("es3", { "host", "renderer" });
-    m_config->EnablePlatform(es3Platform, true);
+    AssetBuilderSDK::PlatformInfo androidPlatform("android", { "host", "renderer" });
+    m_config->EnablePlatform(androidPlatform, true);
 
     // There's no way to remove scanfolders and adding a new one after enabling the platform will cause the pc assets to build as well, which we don't want
     // Instead we'll just const cast the vector and modify the enabled platforms for the scanfolder
     auto& platforms = const_cast<AZStd::vector<AssetBuilderSDK::PlatformInfo>&>(m_config->GetScanFolderAt(0).GetPlatforms());
-    platforms.push_back(es3Platform);
+    platforms.push_back(androidPlatform);
 
     // We need the builder fingerprints to be updated to reflect the newly enabled platform
     m_assetProcessorManager->ComputeBuilderDirty();
@@ -4033,10 +4003,10 @@ TEST_F(ModtimeScanningTest, ModtimeSkipping_EnablePlatform_ShouldProcessFilesFor
     QSet<AssetFileInfo> filePaths = BuildFileSet();
     SimulateAssetScanner(filePaths);
 
-    ExpectWork(4, 2); // CreateJobs = 4, 2 files * 2 platforms.  ProcessJobs = 2, just the es3 platform jobs (pc is already processed)
+    ExpectWork(4, 2); // CreateJobs = 4, 2 files * 2 platforms.  ProcessJobs = 2, just the android platform jobs (pc is already processed)
 
-    ASSERT_TRUE(m_data->m_processResults[0].m_destinationPath.contains("es3"));
-    ASSERT_TRUE(m_data->m_processResults[1].m_destinationPath.contains("es3"));
+    ASSERT_TRUE(m_data->m_processResults[0].m_destinationPath.contains("android"));
+    ASSERT_TRUE(m_data->m_processResults[1].m_destinationPath.contains("android"));
 }
 
 TEST_F(ModtimeScanningTest, ModtimeSkipping_ModifyTimestamp)
@@ -4630,11 +4600,7 @@ TEST_F(AssetProcessorManagerTest, UpdateSourceFileDependenciesDatabase_WildcardM
     dependList.clear();
 }
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
-TEST_F(AssetProcessorManagerTest, DISABLED_RemoveSource_RemoveCacheFolderIfEmpty_Ok)
-#else
 TEST_F(AssetProcessorManagerTest, RemoveSource_RemoveCacheFolderIfEmpty_Ok)
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
 {
     using namespace AssetProcessor;
     using namespace AssetBuilderSDK;

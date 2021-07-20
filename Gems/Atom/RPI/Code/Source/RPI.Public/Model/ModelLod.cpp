@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RPI.Public/Model/ModelLod.h>
 #include <Atom/RPI.Public/Material/Material.h>
@@ -117,6 +112,17 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
+        ModelLod::StreamInfoList::const_iterator ModelLod::FindFirstUvStreamFromMesh(size_t meshIndex) const
+        {
+            const Mesh& mesh = m_meshes[meshIndex];
+
+            auto firstUv = AZStd::find_if(mesh.m_streamInfo.begin(), mesh.m_streamInfo.end(), [](const StreamBufferInfo& info) {
+                return info.m_semantic.m_name.GetStringView().starts_with(RHI::ShaderSemantic::UvStreamSemantic);
+            });
+
+            return firstUv;
+        }
+
         ModelLod::StreamInfoList::const_iterator ModelLod::FindDefaultUvStream(size_t meshIndex, const MaterialUvNameMap& materialUvNameMap) const
         {
             const Mesh& mesh = m_meshes[meshIndex];
@@ -160,7 +166,9 @@ namespace AZ
             const MaterialModelUvOverrideMap& materialModelUvMap,
             const MaterialUvNameMap& materialUvNameMap,
             const ShaderInputContract::StreamChannelInfo& contractStreamChannel,
-            StreamInfoList::const_iterator defaultUv) const
+            StreamInfoList::const_iterator defaultUv,
+            StreamInfoList::const_iterator firstUv,
+            UvStreamTangentBitmask* uvStreamTangentBitmaskOut) const
         {
             const Mesh& mesh = m_meshes[meshIndex];
             auto iter = mesh.m_streamInfo.end();
@@ -184,8 +192,8 @@ namespace AZ
                     // Cost of linear search UV names is low because the size is extremely limited.
                     return uvNamePair.m_shaderInput == contractStreamChannel.m_semantic;
                 });
-            const bool IsUv = materialUvIter != materialUvNameMap.end();
-            if (IsUv)
+            const bool isUv = materialUvIter != materialUvNameMap.end();
+            if (isUv)
             {
                 const AZ::Name& materialUvName = materialUvIter->m_uvName;
                 auto modelUvMapIter = materialModelUvMap.find(materialUvIter->m_shaderInput);
@@ -224,9 +232,14 @@ namespace AZ
                     });
             }
 
-            if (iter == mesh.m_streamInfo.end() && IsUv)
+            if (iter == mesh.m_streamInfo.end() && isUv)
             {
                 iter = defaultUv;
+            }
+
+            if (isUv && uvStreamTangentBitmaskOut)
+            {
+                uvStreamTangentBitmaskOut->ApplyTangent(iter == firstUv ? 0 : UvStreamTangentBitmask::UnassignedTangent);
             }
 
             return iter;
@@ -235,6 +248,7 @@ namespace AZ
         bool ModelLod::GetStreamsForMesh(
             RHI::InputStreamLayout& layoutOut,
             StreamBufferViewList& streamBufferViewsOut,
+            UvStreamTangentBitmask* uvStreamTangentBitmaskOut,
             const ShaderInputContract& contract,
             size_t meshIndex,
             const MaterialModelUvOverrideMap& materialModelUvMap,
@@ -250,20 +264,27 @@ namespace AZ
 
             bool success = true;
 
+            // Searching for the first UV in the mesh, so it can be used to paired with tangent/bitangent stream
+            auto firstUv = FindFirstUvStreamFromMesh(meshIndex);
             auto defaultUv = FindDefaultUvStream(meshIndex, materialUvNameMap);
+            if (uvStreamTangentBitmaskOut)
+            {
+                uvStreamTangentBitmaskOut->Reset();
+            }
 
             for (auto& contractStreamChannel : contract.m_streamChannels)
             {
-                auto iter = FindMatchingStream(meshIndex, materialModelUvMap, materialUvNameMap, contractStreamChannel, defaultUv);
+                auto iter = FindMatchingStream(meshIndex, materialModelUvMap, materialUvNameMap, contractStreamChannel, defaultUv, firstUv, uvStreamTangentBitmaskOut);
 
                 if (iter == mesh.m_streamInfo.end())
                 {
                     if (contractStreamChannel.m_isOptional)
                     {
-                        RHI::Format formatDoesntReallyMatter = RHI::Format::R8_UNORM;
-                        layoutBuilder.AddBuffer()->Channel(contractStreamChannel.m_semantic, formatDoesntReallyMatter);
+                        //We are using R8G8B8A8_UINT as on Metal mesh stream formats need to be atleast 4 byte aligned.
+                        RHI::Format dummyStreamFormat = RHI::Format::R8G8B8A8_UINT;
+                        layoutBuilder.AddBuffer()->Channel(contractStreamChannel.m_semantic, dummyStreamFormat);
                         // We can't just use a null buffer pointer here because vulkan will occasionally crash. So we bind some valid non-null buffer and view it with length 0.
-                        RHI::StreamBufferView dummyBuffer{*mesh.m_indexBufferView.GetBuffer(), 0, 0, 1};
+                        RHI::StreamBufferView dummyBuffer{*mesh.m_indexBufferView.GetBuffer(), 0, 0, 4};
                         streamBufferViewsOut.push_back(dummyBuffer);
 
                         // Note that all of the below scenarios seem to work find on PC, for both dx12 and vulkan. If the above approach proves to be incompatible
@@ -340,6 +361,7 @@ namespace AZ
             const Mesh& mesh = m_meshes[meshIndex];
 
             auto defaultUv = FindDefaultUvStream(meshIndex, materialUvNameMap);
+            auto firstUv = FindFirstUvStreamFromMesh(meshIndex);
 
             for (auto& contractStreamChannel : contract.m_streamChannels)
             {
@@ -350,7 +372,7 @@ namespace AZ
 
                 AZ_Assert(contractStreamChannel.m_streamBoundIndicatorIndex.IsValid(), "m_streamBoundIndicatorIndex was invalid for an optional shader input stream");
 
-                auto iter = FindMatchingStream(meshIndex, materialModelUvMap, materialUvNameMap, contractStreamChannel, defaultUv);
+                auto iter = FindMatchingStream(meshIndex, materialModelUvMap, materialUvNameMap, contractStreamChannel, defaultUv, firstUv, nullptr);
 
                 ShaderOptionValue isStreamBound = (iter == mesh.m_streamInfo.end()) ? ShaderOptionValue{0} : ShaderOptionValue{1};
                 shaderOptions.SetValue(contractStreamChannel.m_streamBoundIndicatorIndex, isStreamBound);

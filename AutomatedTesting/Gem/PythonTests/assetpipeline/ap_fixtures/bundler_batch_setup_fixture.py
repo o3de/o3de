@@ -1,12 +1,7 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 
 Fixture for helping Asset Bundler Batch tests
 """
@@ -54,7 +49,7 @@ def bundler_batch_setup_fixture(request, workspace, asset_processor, timeout) ->
         platforms = [platform.strip() for platform in platforms.split(",")]
     else:
         # No commandline argument provided, default to mac and pc
-        platforms = ["pc", "osx_gl"]
+        platforms = ["pc", "mac"]
 
     class BundlerBatchFixture:
         """
@@ -162,7 +157,7 @@ def bundler_batch_setup_fixture(request, workspace, asset_processor, timeout) ->
                 else:
                     cmd.append(f"--{key}")
             if append_defaults:
-                cmd.append(f"--project={workspace.project}")
+                cmd.append(f"--project-path={workspace.project}")
             return cmd
 
         # ******
@@ -241,11 +236,11 @@ def bundler_batch_setup_fixture(request, workspace, asset_processor, timeout) ->
         def get_platform_flag(self, platform_name: str) -> int:
             if (platform_name == "pc"):
                 return 1
-            elif (platform_name == "es3"):
+            elif (platform_name == "android"):
                 return 2
             elif (platform_name == "ios"):
                 return 4
-            elif (platform_name == "osx_gl"):
+            elif (platform_name == "mac"):
                 return 8
             elif (platform_name == "server"):
                 return 128
@@ -300,9 +295,9 @@ def bundler_batch_setup_fixture(request, workspace, asset_processor, timeout) ->
                 workspace.paths.engine_root(),
                 "Code",
                 "Framework",
-                "AzFramework",
-                "AzFramework",
-                "Platform",
+                "AzCore",
+                "AzCore",
+                "PlatformId",
                 "PlatformDefaults.h",
             )
 
@@ -318,7 +313,7 @@ def bundler_batch_setup_fixture(request, workspace, asset_processor, timeout) ->
                     if start_gathering:
                         result = get_platform.match(line)  # Try the regex
                         if result:
-                            platform_values[result.group(1).lower()] = counter
+                            platform_values[result.group(1).replace("_ID", "").lower()] = counter
                             counter = counter << 1
                     elif "(Invalid, -1)" in line:  # The line right before the first platform
                         start_gathering = True

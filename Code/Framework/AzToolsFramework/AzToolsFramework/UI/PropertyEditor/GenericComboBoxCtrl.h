@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -83,7 +78,7 @@ namespace AzToolsFramework
     protected:
         QWidget* GetFirstInTabOrder() override;
         QWidget* GetLastInTabOrder() override;
-        void UpdateTabOrder() override;        
+        void UpdateTabOrder() override;
 
         void onChildComboBoxValueChange(int comboBoxIndex) override;
 
@@ -93,7 +88,7 @@ namespace AzToolsFramework
 
         void addElementImpl(const AZStd::pair<T, AZStd::string>& genericValue);
 
-        QLabel*    m_warningLabel = nullptr;
+        QLabel* m_warningLabel = nullptr;
         DHQComboBox* m_pComboBox;
         AZStd::vector<AZStd::pair<T, AZStd::string>> m_values;
         AZ::AttributeFunction <void(const T&)>* m_postChangeNotifyCB{};
@@ -131,6 +126,11 @@ namespace AzToolsFramework
     template<typename T>
     AzToolsFramework::PropertyHandlerBase* RegisterGenericComboBoxHandler()
     {
+        if (!AzToolsFramework::PropertyTypeRegistrationMessages::Bus::FindFirstHandler())
+        {
+            return nullptr;
+        }
+
         auto propertyHandler = aznew GenericComboBoxHandler<T>();
         AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(&AzToolsFramework::PropertyTypeRegistrationMessages::RegisterPropertyType, propertyHandler);
         return propertyHandler;

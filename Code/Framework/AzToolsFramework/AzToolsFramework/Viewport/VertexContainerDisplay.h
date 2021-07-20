@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -22,22 +17,23 @@ namespace AzFramework
 
 namespace AzToolsFramework
 {
-    /// Utility functions for rendering vertex container indices.
+    //! Utility functions for rendering vertex container indices.
     namespace VertexContainerDisplay
     {
         extern const float DefaultVertexTextSize;
         extern const AZ::Color DefaultVertexTextColor;
         extern const AZ::Vector3 DefaultVertexTextOffset;
 
-        /// Displays all vertex container indices as text at the position of each vertex when selected
+        //! Displays all vertex container indices as text at the position of each vertex when selected
         template<typename Vertex>
         void DisplayVertexContainerIndices(
             AzFramework::DebugDisplayRequests& debugDisplay,
             const AZ::FixedVertices<Vertex>& vertices,
             const AZ::Transform& transform,
             const AZ::Vector3& nonUniformScale,
-            bool selected, float textSize = DefaultVertexTextSize,
+            bool selected,
+            float textSize = DefaultVertexTextSize,
             const AZ::Color& textColor = DefaultVertexTextColor,
             const AZ::Vector3& textOffset = DefaultVertexTextOffset);
-    }
+    } // namespace VertexContainerDisplay
 } // namespace AzToolsFramework

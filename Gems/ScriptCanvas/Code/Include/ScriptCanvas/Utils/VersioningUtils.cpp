@@ -1,20 +1,32 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "VersioningUtils.h"
 
 #include <ScriptCanvas/Core/Graph.h>
+#include <ScriptCanvas/Core/Connection.h>
 
 namespace ScriptCanvas
 {
+    AZStd::vector<Endpoint> GraphUpdateSlotReport::Convert(const Endpoint& oldEndpoint) const
+    {
+        auto iter = m_oldSlotsToNewSlots.find(oldEndpoint);
+        return iter != m_oldSlotsToNewSlots.end() ? iter->second : AZStd::vector<Endpoint>{ oldEndpoint };
+    }
+
+    bool GraphUpdateSlotReport::IsEmpty() const
+    {
+        return m_deletedOldSlots.empty() && m_oldSlotsToNewSlots.empty();
+    }
+
+    bool NodeUpdateSlotReport::IsEmpty() const
+    {
+        return m_deletedOldSlots.empty() && m_oldSlotsToNewSlots.empty();
+    }
+
     void VersioningUtils::CopyOldValueToDataSlot(Slot* newSlot, const VariableId& oldVariableReference, const Datum* oldDatum)
     {
         if (oldVariableReference.IsValid())
@@ -34,6 +46,99 @@ namespace ScriptCanvas
                 datumView.RelabelDatum(newDatumLabel);
             }
         }
+    }
+
+    void MergeUpdateSlotReport(const AZ::EntityId& scriptCanvasNodeId, GraphUpdateSlotReport& report, const NodeUpdateSlotReport& source)
+    {
+        report.m_deletedOldSlots.reserve(source.m_deletedOldSlots.size());
+
+        for (auto& slotId : source.m_deletedOldSlots)
+        {
+            report.m_deletedOldSlots.insert({ scriptCanvasNodeId, slotId });
+        }
+
+        report.m_oldSlotsToNewSlots.reserve(source.m_oldSlotsToNewSlots.size());
+
+        for (auto& oldToNewIter : source.m_oldSlotsToNewSlots)
+        {
+            AZStd::vector<Endpoint> newEndpoints;
+            newEndpoints.reserve(oldToNewIter.second.size());
+
+            for (auto& targetSlotId : oldToNewIter.second)
+            {
+                newEndpoints.push_back({ scriptCanvasNodeId, targetSlotId });
+            }
+
+            report.m_oldSlotsToNewSlots[{ scriptCanvasNodeId, oldToNewIter.first}] = AZStd::move(newEndpoints);
+        }
+    }
+
+    AZStd::vector<AZStd::pair<Endpoint, Endpoint>> CollectEndpoints(const AZStd::vector<AZ::Entity*>& connections, bool logEntityNames)
+    {
+        AZStd::vector<AZStd::string> names;
+        AZStd::vector<AZStd::pair<Endpoint, Endpoint>> endpoints;
+
+        for (auto& connectionEntity : connections)
+        {
+            if (logEntityNames)
+            {
+                names.push_back(connectionEntity->GetName());
+            }
+
+            if (auto connection = AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Connection>(connectionEntity->GetId()))
+            {
+                endpoints.push_back(AZStd::make_pair(connection->GetSourceEndpoint(), connection->GetTargetEndpoint()));
+            }
+        }
+
+        if (logEntityNames)
+        {
+            AZStd::sort(names.begin(), names.end());
+
+            AZStd::string result = "\nConnection Name list:\n";
+            for (auto& name : names)
+            {
+                result += "\n";
+                result += name;
+            }
+
+            AZ_TracePrintf("ScriptCanvas", result.c_str());
+        }
+
+        return endpoints;
+    }
+
+    void UpdateConnectionStatus(Graph& graph, const GraphUpdateSlotReport& report)
+    {
+         GraphData* graphData = graph.GetGraphData();
+         if (!graphData)
+         {
+             AZ_Error("ScriptCanvas", false, "Graph was missing graph data to update");
+             return;
+         }
+ 
+         AZStd::unordered_set<SlotId> oldConnectedSlots;
+         AZ_TracePrintf("ScriptCanvas", "Connections list before: ");
+         auto endpoints = CollectEndpoints(graphData->m_connections, true);
+         graph.RemoveAllConnections();
+
+         for (auto& iter : endpoints)
+         {
+             const AZStd::vector<Endpoint>& sources = report.Convert(iter.first);
+             const AZStd::vector<Endpoint>& targets = report.Convert(iter.second);
+
+             for (const auto& source : sources)
+             {
+                 for (const auto& target : targets)
+                 {
+                     graph.ConnectByEndpoint(source, target);
+                 }
+             }
+         }
+
+         graphData->BuildEndpointMap();
+         AZ_TracePrintf("ScriptCanvas", "Connections list after: ");
+         CollectEndpoints(graphData->m_connections, true);
     }
 
     void VersioningUtils::CreateRemapConnectionsForSourceEndpoint(const Graph& graph, const Endpoint& oldSourceEndpoint, const Endpoint& newSourceEndpoint,

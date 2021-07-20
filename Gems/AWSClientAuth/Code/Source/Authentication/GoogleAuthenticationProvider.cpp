@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <Authentication/GoogleAuthenticationProvider.h>
@@ -35,11 +30,18 @@ namespace AWSClientAuth
         m_settings.reset();
     }
 
-    bool GoogleAuthenticationProvider::Initialize(AZStd::weak_ptr<AZ::SettingsRegistryInterface> settingsRegistry)
+    bool GoogleAuthenticationProvider::Initialize()
     {
-        if (!settingsRegistry.lock()->GetObject(m_settings.get(), azrtti_typeid(m_settings.get()), GoogleSettingsPath))
+        AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get();
+        if (!settingsRegistry)
         {
-            AZ_Warning("AWSCognitoAuthenticationProvider", true, "Failed to get Google settings object for path %s", GoogleSettingsPath);
+            AZ_Warning("AWSCognitoAuthenticationProvider", false, "Failed to load the setting registry");
+            return false;
+        }
+
+        if (!settingsRegistry->GetObject(m_settings.get(), azrtti_typeid(m_settings.get()), GoogleSettingsPath))
+        {
+            AZ_Warning("AWSCognitoAuthenticationProvider", false, "Failed to get Google settings object for path %s", GoogleSettingsPath);
             return false;
         }
         return true;
@@ -49,21 +51,21 @@ namespace AWSClientAuth
     {
         AZ_UNUSED(username);
         AZ_UNUSED(password);
-        AZ_Assert(true, "Not supported");
+        AZ_Assert(false, "Not supported");
     }
 
     void GoogleAuthenticationProvider::PasswordGrantMultiFactorSignInAsync(const AZStd::string& username, const AZStd::string& password)
     {
         AZ_UNUSED(username);
         AZ_UNUSED(password);
-        AZ_Assert(true, "Not supported");
+        AZ_Assert(false, "Not supported");
     }
 
     void GoogleAuthenticationProvider::PasswordGrantMultiFactorConfirmSignInAsync(const AZStd::string& username, const AZStd::string& confirmationCode)
     {
         AZ_UNUSED(username);
         AZ_UNUSED(confirmationCode);
-        AZ_Assert(true, "Not supported");
+        AZ_Assert(false, "Not supported");
     }
 
     // Call Google authentication provider device code end point.

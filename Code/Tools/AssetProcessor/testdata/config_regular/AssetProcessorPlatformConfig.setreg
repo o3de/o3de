@@ -5,17 +5,17 @@
                 "Platform pc": {
                     "tags": "tools,renderer"
                 },
-                "Platform es3": {
+                "Platform android": {
                     "tags": "android,mobile,renderer"
                 },
-                "Platform osx_gl": {
+                "Platform mac": {
                     "tags": "tools,renderer"
                 },
                 "Platform server": {
                     "tags": "server"
                 },
                 "Platforms": {
-                    "es3": "enabled",
+                    "android": "enabled",
                     "server": "enabled"
                 },
                 "Jobs": {
@@ -56,7 +56,7 @@
                     "glob": "*.i_caf",
                     "params": "defaultparams",
                     "server": "skip",
-                    "es3": "mobile",
+                    "android": "mobile",
                     "priority": 5,
                     "checkServer": true
                 },
@@ -68,7 +68,7 @@
                 "RC mov": {
                     "glob": "*.mov",
                     "params": "copy",
-                    "es3": "platformspecificoverride",
+                    "android": "platformspecificoverride",
                     "renderer": "rendererparams"
                 },
                 "RC rend": {

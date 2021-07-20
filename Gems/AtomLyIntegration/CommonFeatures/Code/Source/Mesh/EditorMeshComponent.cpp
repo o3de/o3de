@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Mesh/EditorMeshComponent.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -25,12 +20,16 @@ namespace AZ
         void EditorMeshComponent::Reflect(AZ::ReflectContext* context)
         {
             BaseClass::Reflect(context);
+            EditorMeshStats::Reflect(context);
 
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
+                serializeContext->RegisterGenericType<EditorMeshStats>();
+
                 serializeContext->Class<EditorMeshComponent, BaseClass>()
                     ->Version(2, ConvertToEditorRenderComponentAdapter<1>)
                     ->Field("addMaterialComponentFlag", &EditorMeshComponent::m_addMaterialComponentFlag)
+                    ->Field("meshStats", &EditorMeshComponent::m_stats)
                     ;
 
                 // This shouldn't be registered here, but is required to make a vector from EditorMeshComponentTypeId. This can be removed when one of the following happens:
@@ -48,13 +47,15 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.png")
                             ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                            ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://docs.aws.amazon.com/lumberyard/latest/userguide/component-mesh.html")
+                            ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/atom/")
                             ->Attribute(AZ::Edit::Attributes::PrimaryAssetType, AZ::AzTypeInfo<RPI::ModelAsset>::Uuid())
                         ->DataElement(AZ::Edit::UIHandlers::Button, &EditorMeshComponent::m_addMaterialComponentFlag, "Add Material Component", "Add Material Component")
                             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
                             ->Attribute(AZ::Edit::Attributes::ButtonText, "Add Material Component")
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorMeshComponent::AddEditorMaterialComponent)
                             ->Attribute(AZ::Edit::Attributes::Visibility, &EditorMeshComponent::GetEditorMaterialComponentVisibility)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMeshComponent::m_stats, "Mesh Stats", "")
+                            ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                         ;
 
                     editContext->Class<MeshComponentController>(
@@ -140,9 +141,16 @@ namespace AZ
             AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
             AZ::NonUniformScaleRequestBus::EventResult(nonUniformScale, GetEntityId(), &AZ::NonUniformScaleRequests::GetScale);
 
+            float t;
             AZ::Vector3 ignoreNormal;
+            constexpr float rayLength = 1000.0f;
+            if (m_controller.GetModel()->RayIntersection(transform, nonUniformScale, src, dir * rayLength, t, ignoreNormal))
+            {
+                distance = rayLength * t;
+                return true;
+            }
 
-            return m_controller.GetModel()->RayIntersection(transform, nonUniformScale, src, dir, distance, ignoreNormal);
+            return false;
         }
 
         bool EditorMeshComponent::SupportsEditorRayIntersect()
@@ -197,11 +205,28 @@ namespace AZ
 
         void EditorMeshComponent::OnModelReady(const Data::Asset<RPI::ModelAsset>& /*modelAsset*/, const Data::Instance<RPI::Model>& /*model*/)
         {
+            const auto& lodAssets = m_controller.GetConfiguration().m_modelAsset->GetLodAssets();
+            m_stats.m_meshStatsForLod.clear();
+            m_stats.m_meshStatsForLod.reserve(lodAssets.size());
+            for (const auto& lodAsset : lodAssets)
+            {
+                EditorMeshStatsForLod stats;
+                const auto& meshes = lodAsset->GetMeshes();
+                stats.m_meshCount = meshes.size();
+                for (const auto& mesh : meshes)
+                {
+                    stats.m_vertCount += mesh.GetVertexCount();
+                    stats.m_triCount += mesh.GetIndexCount() / 3;
+                }
+                m_stats.m_meshStatsForLod.emplace_back(AZStd::move(stats));
+            }
+
             // Refresh the tree when the model loads to update UI based on the model.
             AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
                 &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay,
                 AzToolsFramework::Refresh_EntireTree);
         }
+
         AZ::u32 EditorMeshComponent::OnConfigurationChanged()
         {
             // temp variable is needed to hold reference to m_modelAsset while it's being loaded.
@@ -209,7 +234,24 @@ namespace AZ
             // places it in a bad state, which happens in OnConfigurationChanged base function.
             // This is a bug with AssetManager [LYN-2249]
             auto temp = m_controller.m_configuration.m_modelAsset;
+
+            m_stats.m_meshStatsForLod.swap({});
+            SetDirty();
+
             return BaseClass::OnConfigurationChanged();
+        }
+
+        void EditorMeshComponent::OnEntityVisibilityChanged(bool visibility)
+        {
+            m_controller.SetVisibility(visibility);
+        }
+
+        bool EditorMeshComponent::ShouldActivateController() const
+        {
+            // By default, components using the EditorRenderComponentAdapter will only activate if the component is visible
+            // Since the mesh component handles visibility changes by not rendering the mesh, rather than deactivating the component entirely,
+            // it can be activated even if it is not visible
+            return true;
         }
     } // namespace Render
 } // namespace AZ

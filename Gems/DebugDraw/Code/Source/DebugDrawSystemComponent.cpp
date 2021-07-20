@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "DebugDraw_precompiled.h"
 
@@ -18,11 +13,6 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/parallel/lock.h>
-
-#include <IRenderAuxGeom.h>
-
-#include <Cry_Camera.h>
-#include <MathConversion.h>
 
 #include "DebugDrawSystemComponent.h"
 
@@ -36,6 +26,9 @@
 #include "EditorDebugDrawTextComponent.h"
 #include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
 #endif // DEBUGDRAW_GEM_EDITOR
+
+#include <Atom/RPI.Public/RPISystemInterface.h>
+#include <Atom/RPI.Public/Scene.h>
 
 namespace DebugDraw
 {
@@ -96,7 +89,7 @@ namespace DebugDraw
 
     void DebugDrawSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        (void)required;
+        required.push_back(AZ_CRC("RPISystem", 0xf2add773));
     }
 
     void DebugDrawSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -112,7 +105,7 @@ namespace DebugDraw
     {
         DebugDrawInternalRequestBus::Handler::BusConnect();
         DebugDrawRequestBus::Handler::BusConnect();
-        AZ::TickBus::Handler::BusConnect();
+        AZ::Render::Bootstrap::NotificationBus::Handler::BusConnect();
 
         #ifdef DEBUGDRAW_GEM_EDITOR
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
@@ -125,7 +118,7 @@ namespace DebugDraw
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
         #endif // DEBUGDRAW_GEM_EDITOR
 
-        AZ::TickBus::Handler::BusDisconnect();
+        AZ::RPI::SceneNotificationBus::Handler::BusDisconnect();
         DebugDrawRequestBus::Handler::BusDisconnect();
         DebugDrawInternalRequestBus::Handler::BusDisconnect();
 
@@ -153,6 +146,13 @@ namespace DebugDraw
             AZStd::lock_guard<AZStd::mutex> locker(m_activeTextsMutex);
             m_activeTexts.clear();
         }
+    }
+
+    void DebugDrawSystemComponent::OnBootstrapSceneReady(AZ::RPI::Scene* scene)
+    {
+        AZ_Assert(scene, "Invalid scene received in OnBootstrapSceneReady");
+        AZ::RPI::SceneNotificationBus::Handler::BusConnect(scene->GetId());
+        AZ::Render::Bootstrap::NotificationBus::Handler::BusDisconnect();
     }
 
     #ifdef DEBUGDRAW_GEM_EDITOR
@@ -255,16 +255,29 @@ namespace DebugDraw
     }
     #endif // DEBUGDRAW_GEM_EDITOR
 
-    void DebugDrawSystemComponent::OnTick([[maybe_unused]] float deltaTime, AZ::ScriptTimePoint time)
+    void DebugDrawSystemComponent::OnBeginPrepareRender()
     {
+        AZ::ScriptTimePoint time;
+        AZ::TickRequestBus::BroadcastResult(time, &AZ::TickRequestBus::Events::GetTimeAtCurrentTick);
         m_currentTime = time.GetSeconds();
 
-        OnTickAabbs();
-        OnTickLines();
-        OnTickObbs();
-        OnTickRays();
-        OnTickSpheres();
-        OnTickText();
+        AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
+        AzFramework::DebugDisplayRequestBus::Bind(
+            debugDisplayBus, AzFramework::g_defaultSceneEntityDebugDisplayId);
+        AZ_Assert(debugDisplayBus, "Invalid DebugDisplayRequestBus.");
+
+        AzFramework::DebugDisplayRequests* debugDisplay =
+            AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
+
+        if (debugDisplay)
+        {
+            OnTickAabbs(*debugDisplay);
+            OnTickLines(*debugDisplay);
+            OnTickObbs(*debugDisplay);
+            OnTickRays(*debugDisplay);
+            OnTickSpheres(*debugDisplay);
+            OnTickText(*debugDisplay);
+        }
     }
 
     template <typename F>
@@ -277,7 +290,7 @@ namespace DebugDraw
         vectorToExpire.erase(removalCondition, std::end(vectorToExpire));
     }
 
-    void DebugDrawSystemComponent::OnTickAabbs()
+    void DebugDrawSystemComponent::OnTickAabbs(AzFramework::DebugDisplayRequests& debugDisplay)
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_activeAabbsMutex);
 
@@ -295,17 +308,14 @@ namespace DebugDraw
                 AZ::Vector3 currentCenter = transformedAabb.GetCenter();
                 transformedAabb.Set(transformedAabb.GetMin() - currentCenter + aabbElement.m_worldLocation, transformedAabb.GetMax() - currentCenter + aabbElement.m_worldLocation);
             }
-
-            ColorB lyColor(aabbElement.m_color.ToU32());
-            Vec3 worldLocation(AZVec3ToLYVec3(aabbElement.m_worldLocation));
-            AABB lyAABB(AZAabbToLyAABB(transformedAabb));
-            gEnv->pRenderer->GetIRenderAuxGeom()->DrawAABB(lyAABB, false, lyColor, EBoundingBoxDrawStyle::eBBD_Extremes_Color_Encoded);
+            debugDisplay.SetColor(aabbElement.m_color);
+            debugDisplay.DrawSolidBox(transformedAabb.GetMin(), transformedAabb.GetMax());
         }
 
         removeExpiredDebugElementsFromVector(m_activeAabbs);
     }
 
-    void DebugDrawSystemComponent::OnTickLines()
+    void DebugDrawSystemComponent::OnTickLines(AzFramework::DebugDisplayRequests& debugDisplay)
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_activeLinesMutex);
         size_t numActiveLines = m_activeLines.size();
@@ -339,26 +349,14 @@ namespace DebugDraw
                     &AZ::TransformBus::Events::GetWorldTranslation);
             }
 
-            Vec3 start(AZVec3ToLYVec3(lineElement.m_startWorldLocation));
-            Vec3 end(AZVec3ToLYVec3(lineElement.m_endWorldLocation));
-            ColorB lyColor(lineElement.m_color.ToU32());
-
-            m_batchPoints.push_back(start);
-            m_batchPoints.push_back(end);
-
-            m_batchColors.push_back(lyColor);
-            m_batchColors.push_back(lyColor);
-        }
-
-        if (!m_batchPoints.empty())
-        {
-            gEnv->pRenderer->GetIRenderAuxGeom()->DrawLines(m_batchPoints.begin(), m_batchPoints.size(), m_batchColors.begin(), 1.0f);
+            debugDisplay.SetColor(lineElement.m_color);
+            debugDisplay.DrawLine(lineElement.m_startWorldLocation, lineElement.m_endWorldLocation);
         }
 
         removeExpiredDebugElementsFromVector(m_activeLines);
     }
 
-    void DebugDrawSystemComponent::OnTickObbs()
+    void DebugDrawSystemComponent::OnTickObbs(AzFramework::DebugDisplayRequests& debugDisplay)
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_activeObbsMutex);
 
@@ -382,20 +380,18 @@ namespace DebugDraw
                     transformedObb.SetHalfLength(i, obbElement.m_scale.GetElement(i));
                 }
             }
-
-            obbElement.m_worldLocation = transformedObb.GetPosition();
-
-            ColorB lyColor(obbElement.m_color.ToU32());
-            Vec3 worldLocation(AZVec3ToLYVec3(obbElement.m_worldLocation));
-            OBB lyOBB(AZObbToLyOBB(transformedObb));
-            lyOBB.c = Vec3(0.f);
-            gEnv->pRenderer->GetIRenderAuxGeom()->DrawOBB(lyOBB, worldLocation, false, lyColor, EBoundingBoxDrawStyle::eBBD_Extremes_Color_Encoded);
+            else
+            {
+                obbElement.m_worldLocation = transformedObb.GetPosition();
+            }
+            debugDisplay.SetColor(obbElement.m_color);
+            debugDisplay.DrawSolidOBB(obbElement.m_worldLocation, transformedObb.GetAxisX(), transformedObb.GetAxisY(), transformedObb.GetAxisZ(), transformedObb.GetHalfLengths());
         }
 
         removeExpiredDebugElementsFromVector(m_activeObbs);
     }
 
-    void DebugDrawSystemComponent::OnTickRays()
+    void DebugDrawSystemComponent::OnTickRays(AzFramework::DebugDisplayRequests& debugDisplay)
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_activeRaysMutex);
 
@@ -415,22 +411,20 @@ namespace DebugDraw
                 rayElement.m_worldDirection = (endWorldLocation - rayElement.m_worldLocation);
             }
 
-            ColorB lyColor(rayElement.m_color.ToU32());
-            Vec3 start(AZVec3ToLYVec3(rayElement.m_worldLocation));
-            Vec3 end(AZVec3ToLYVec3(endWorldLocation));
-            Vec3 direction(AZVec3ToLYVec3(rayElement.m_worldDirection));
             float conePercentHeight = 0.5f;
-            float coneHeight = direction.GetLength() * conePercentHeight;
-            Vec3 coneBaseLocation = end - direction * conePercentHeight;
+            float coneHeight = rayElement.m_worldDirection.GetLength() * conePercentHeight;
+            AZ::Vector3 coneBaseLocation = endWorldLocation - rayElement.m_worldDirection * conePercentHeight;
             float coneRadius = AZ::GetClamp(coneHeight * 0.07f, 0.05f, 0.2f);
-            gEnv->pRenderer->GetIRenderAuxGeom()->DrawLine(start, lyColor, coneBaseLocation, lyColor, 5.0f);
-            gEnv->pRenderer->GetIRenderAuxGeom()->DrawCone(coneBaseLocation, direction, coneRadius, coneHeight, lyColor, false);
+            debugDisplay.SetColor(rayElement.m_color);
+            debugDisplay.SetLineWidth(5.0f);
+            debugDisplay.DrawLine(rayElement.m_worldLocation, coneBaseLocation);
+            debugDisplay.DrawSolidCone(coneBaseLocation, rayElement.m_worldDirection, coneRadius, coneHeight, false);
         }
 
         removeExpiredDebugElementsFromVector(m_activeRays);
     }
 
-    void DebugDrawSystemComponent::OnTickSpheres()
+    void DebugDrawSystemComponent::OnTickSpheres(AzFramework::DebugDisplayRequests& debugDisplay)
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_activeSpheresMutex);
 
@@ -442,19 +436,14 @@ namespace DebugDraw
             {
                 AZ::TransformBus::EventResult(sphereElement.m_worldLocation, sphereElement.m_targetEntityId, &AZ::TransformBus::Events::GetWorldTranslation);
             }
-
-            if (gEnv->pRenderer)
-            {
-                ColorB lyColor(sphereElement.m_color.ToU32());
-                Vec3 worldLocation(AZVec3ToLYVec3(sphereElement.m_worldLocation));
-                gEnv->pRenderer->GetIRenderAuxGeom()->DrawSphere(worldLocation, sphereElement.m_radius, lyColor, true);
-            }
+            debugDisplay.SetColor(sphereElement.m_color);
+            debugDisplay.DrawBall(sphereElement.m_worldLocation, sphereElement.m_radius, true);
         }
 
         removeExpiredDebugElementsFromVector(m_activeSpheres);
     }
 
-    void DebugDrawSystemComponent::OnTickText()
+    void DebugDrawSystemComponent::OnTickText(AzFramework::DebugDisplayRequests& debugDisplay)
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_activeTextsMutex);
 
@@ -471,30 +460,20 @@ namespace DebugDraw
         #endif // DEBUGDRAW_GEM_EDITOR
 
         // Draw text elements and remove any that are expired
-        AZStd::unordered_map<AZ::EntityId, AZ::u32> textPerEntityCount;
         int numScreenTexts = 0;
         AZ::EntityId lastTargetEntityId;
 
         for (auto& textElement : m_activeTexts)
         {
+            const AZ::Color textColor = needsGammaConversion ? textElement.m_color.GammaToLinear() : textElement.m_color;
+            debugDisplay.SetColor(textColor);
             if (textElement.m_drawMode == DebugDrawTextElement::DrawMode::OnScreen)
             {
-                const AZ::Color textColor = needsGammaConversion ? textElement.m_color.GammaToLinear() : textElement.m_color;
-                gEnv->pRenderer->GetIRenderAuxGeom()->Draw3dLabel(Vec3(20.f, 20.f + ((float)numScreenTexts * 15.0f), 0.5f), 1.4f, AZColorToLYColorF(textColor), textElement.m_text.c_str());
+                debugDisplay.Draw2dTextLabel(100.0f, 20.f + ((float)numScreenTexts * 15.0f), 1.4f, textElement.m_text.c_str() );
                 ++numScreenTexts;
             }
             else if (textElement.m_drawMode == DebugDrawTextElement::DrawMode::InWorld)
             {
-                SDrawTextInfo ti;
-                ti.xscale = ti.yscale = 1.4f;
-                ti.flags = eDrawText_2D | eDrawText_FixedSize | eDrawText_Monospace | eDrawText_Center;
-
-                const AZ::Color textColor = needsGammaConversion ? textElement.m_color.GammaToLinear() : textElement.m_color;
-                ti.color[0] = textColor.GetR();
-                ti.color[1] = textColor.GetG();
-                ti.color[2] = textColor.GetB();
-                ti.color[3] = textColor.GetA();
-
                 AZ::Vector3 worldLocation;
                 if (textElement.m_targetEntityId.IsValid())
                 {
@@ -507,32 +486,7 @@ namespace DebugDraw
                     worldLocation = textElement.m_worldLocation;
                 }
 
-                const CCamera& camera = gEnv->pSystem->GetViewCamera();
-                const AZ::Vector3 cameraTranslation = LYVec3ToAZVec3(camera.GetPosition());
-                Vec3 lyWorldLoc = AZVec3ToLYVec3(worldLocation);
-                Vec3 screenPos(0.f);
-                if (camera.Project(lyWorldLoc, screenPos, Vec2i(0, 0), Vec2i(0, 0)))
-                {
-                    // Handle spacing for world text so it doesn't draw on top of each other
-                    // This works for text drawing on entities (considered one block), but not for world text.
-                    // World text will get handled when we have screen-aware positioning of text elements
-                    if (textElement.m_targetEntityId.IsValid())
-                    {
-                        auto iter = textPerEntityCount.find(textElement.m_targetEntityId);
-                        if (iter != textPerEntityCount.end())
-                        {
-                            AZ::u32 count = iter->second;
-                            screenPos.y += ((float)count * 15.0f);
-                            iter->second = count + 1;
-                        }
-                        else
-                        {
-                            auto newEntry = textPerEntityCount.insert_key(textElement.m_targetEntityId);
-                            newEntry.first->second = 1;
-                        }
-                    }
-                    gEnv->pRenderer->GetIRenderAuxGeom()->Draw3dLabel(Vec3(screenPos.x, screenPos.y, 0.5f), 1.4f, AZColorToLYColorF(textColor), textElement.m_text.c_str());
-                }
+                debugDisplay.DrawTextLabel(worldLocation, 1.4f, textElement.m_text.c_str() );
             }
         }
 
@@ -550,9 +504,9 @@ namespace DebugDraw
             CreateLineEntryForComponent(lineComponent->GetEntityId(), lineComponent->m_element);
         }
         #ifdef DEBUGDRAW_GEM_EDITOR
-        else if (EditorDebugDrawLineComponent* lineComponent = azrtti_cast<EditorDebugDrawLineComponent*>(component))
+        else if (EditorDebugDrawLineComponent* editorLineComponent = azrtti_cast<EditorDebugDrawLineComponent*>(component))
         {
-            CreateLineEntryForComponent(lineComponent->GetEntityId(), lineComponent->m_element);
+            CreateLineEntryForComponent(editorLineComponent->GetEntityId(), editorLineComponent->m_element);
         }
         #endif // DEBUGDRAW_GEM_EDITOR
         else if (DebugDrawRayComponent* rayComponent = azrtti_cast<DebugDrawRayComponent*>(component))
@@ -560,9 +514,9 @@ namespace DebugDraw
             CreateRayEntryForComponent(rayComponent->GetEntityId(), rayComponent->m_element);
         }
         #ifdef DEBUGDRAW_GEM_EDITOR
-        else if (EditorDebugDrawRayComponent* rayComponent = azrtti_cast<EditorDebugDrawRayComponent*>(component))
+        else if (EditorDebugDrawRayComponent* editorRayComponent = azrtti_cast<EditorDebugDrawRayComponent*>(component))
         {
-            CreateRayEntryForComponent(rayComponent->GetEntityId(), rayComponent->m_element);
+            CreateRayEntryForComponent(editorRayComponent->GetEntityId(), editorRayComponent->m_element);
         }
         #endif // DEBUGDRAW_GEM_EDITOR
         else if (DebugDrawSphereComponent* sphereComponent = azrtti_cast<DebugDrawSphereComponent*>(component))
@@ -570,9 +524,9 @@ namespace DebugDraw
             CreateSphereEntryForComponent(sphereComponent->GetEntityId(), sphereComponent->m_element);
         }
         #ifdef DEBUGDRAW_GEM_EDITOR
-        else if (EditorDebugDrawSphereComponent* sphereComponent = azrtti_cast<EditorDebugDrawSphereComponent*>(component))
+        else if (EditorDebugDrawSphereComponent* editorSphereComponent = azrtti_cast<EditorDebugDrawSphereComponent*>(component))
         {
-            CreateSphereEntryForComponent(sphereComponent->GetEntityId(), sphereComponent->m_element);
+            CreateSphereEntryForComponent(editorSphereComponent->GetEntityId(), editorSphereComponent->m_element);
         }
         #endif // DEBUGDRAW_GEM_EDITOR
         else if (DebugDrawObbComponent* obbComponent = azrtti_cast<DebugDrawObbComponent*>(component))
@@ -581,9 +535,9 @@ namespace DebugDraw
         }
 
         #ifdef DEBUGDRAW_GEM_EDITOR
-        else if (EditorDebugDrawObbComponent* obbComponent = azrtti_cast<EditorDebugDrawObbComponent*>(component))
+        else if (EditorDebugDrawObbComponent* editorObbComponent = azrtti_cast<EditorDebugDrawObbComponent*>(component))
         {
-            CreateObbEntryForComponent(obbComponent->GetEntityId(), obbComponent->m_element);
+            CreateObbEntryForComponent(editorObbComponent->GetEntityId(), editorObbComponent->m_element);
         }
         #endif // DEBUGDRAW_GEM_EDITOR
 
@@ -593,9 +547,9 @@ namespace DebugDraw
         }
 
         #ifdef DEBUGDRAW_GEM_EDITOR
-        else if (EditorDebugDrawTextComponent* textComponent = azrtti_cast<EditorDebugDrawTextComponent*>(component))
+        else if (EditorDebugDrawTextComponent* editorTextComponent = azrtti_cast<EditorDebugDrawTextComponent*>(component))
         {
-            CreateTextEntryForComponent(textComponent->GetEntityId(), textComponent->m_element);
+            CreateTextEntryForComponent(editorTextComponent->GetEntityId(), editorTextComponent->m_element);
         }
         #endif // DEBUGDRAW_GEM_EDITOR
     }

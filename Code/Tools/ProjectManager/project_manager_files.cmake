@@ -1,17 +1,15 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 
 set(FILES
-    project_manager.qrc
-    Source/main.cpp
+    Source/Application.h
+    Source/Application.cpp
+    Source/ProjectManagerDefs.h
     Source/ScreenDefs.h
     Source/ScreenFactory.h
     Source/ScreenFactory.cpp
@@ -20,37 +18,61 @@ set(FILES
     Source/ScreenWidget.h
     Source/EngineInfo.h
     Source/EngineInfo.cpp
-    Source/FirstTimeUseScreen.h
-    Source/FirstTimeUseScreen.cpp
+    Source/FormLineEditWidget.h
+    Source/FormLineEditWidget.cpp
+    Source/FormBrowseEditWidget.h
+    Source/FormBrowseEditWidget.cpp
+    Source/FormFolderBrowseEditWidget.h
+    Source/FormFolderBrowseEditWidget.cpp
+    Source/FormImageBrowseEditWidget.h
+    Source/FormImageBrowseEditWidget.cpp
+    Source/PathValidator.h
+    Source/PathValidator.cpp
     Source/ProjectManagerWindow.h
     Source/ProjectManagerWindow.cpp
     Source/ProjectTemplateInfo.h
     Source/ProjectTemplateInfo.cpp
-    Source/ProjectManagerWindow.ui
     Source/PythonBindings.h
     Source/PythonBindings.cpp
     Source/PythonBindingsInterface.h
     Source/ProjectInfo.h
     Source/ProjectInfo.cpp
+    Source/ProjectUtils.h
+    Source/ProjectUtils.cpp
+    Source/ProjectBuilderWorker.h
+    Source/ProjectBuilderWorker.cpp
+    Source/ProjectBuilderController.h
+    Source/ProjectBuilderController.cpp
+    Source/UpdateProjectSettingsScreen.h
+    Source/UpdateProjectSettingsScreen.cpp
     Source/NewProjectSettingsScreen.h
     Source/NewProjectSettingsScreen.cpp
-    Source/ProjectSettingsCtrl.h
-    Source/ProjectSettingsCtrl.cpp
-    Source/ProjectsHomeScreen.h
-    Source/ProjectsHomeScreen.cpp
-    Source/ProjectsHomeScreen.ui
+    Source/CreateProjectCtrl.h
+    Source/CreateProjectCtrl.cpp
+    Source/UpdateProjectCtrl.h
+    Source/UpdateProjectCtrl.cpp
+    Source/ProjectsScreen.h
+    Source/ProjectsScreen.cpp
     Source/ProjectSettingsScreen.h
     Source/ProjectSettingsScreen.cpp
-    Source/ProjectSettingsScreen.ui
     Source/EngineSettingsScreen.h
     Source/EngineSettingsScreen.cpp
-    Source/EngineSettingsScreen.ui
+    Source/ProjectButtonWidget.h
+    Source/ProjectButtonWidget.cpp
+    Source/ScreenHeaderWidget.h
+    Source/ScreenHeaderWidget.cpp
     Source/LinkWidget.h
     Source/LinkWidget.cpp
     Source/TagWidget.h
     Source/TagWidget.cpp
+    Source/TemplateButtonWidget.h
+    Source/TemplateButtonWidget.cpp
+    Source/GemCatalog/GemCatalogHeaderWidget.h
+    Source/GemCatalog/GemCatalogHeaderWidget.cpp
     Source/GemCatalog/GemCatalogScreen.h
     Source/GemCatalog/GemCatalogScreen.cpp
+    Source/GemCatalog/GemFilterWidget.h
+    Source/GemCatalog/GemFilterWidget.cpp
     Source/GemCatalog/GemInfo.h
     Source/GemCatalog/GemInfo.cpp
     Source/GemCatalog/GemInspector.h
@@ -59,6 +81,18 @@ set(FILES
     Source/GemCatalog/GemItemDelegate.cpp
     Source/GemCatalog/GemListView.h
     Source/GemCatalog/GemListView.cpp
+    Source/GemCatalog/GemListHeaderWidget.h
+    Source/GemCatalog/GemListHeaderWidget.cpp
     Source/GemCatalog/GemModel.h
     Source/GemCatalog/GemModel.cpp
+    Source/GemCatalog/GemRequirementDialog.h
+    Source/GemCatalog/GemRequirementDialog.cpp
+    Source/GemCatalog/GemRequirementDelegate.h
+    Source/GemCatalog/GemRequirementDelegate.cpp
+    Source/GemCatalog/GemRequirementFilterProxyModel.h
+    Source/GemCatalog/GemRequirementFilterProxyModel.cpp
+    Source/GemCatalog/GemRequirementListView.h
+    Source/GemCatalog/GemRequirementListView.cpp
+    Source/GemCatalog/GemSortFilterProxyModel.h
+    Source/GemCatalog/GemSortFilterProxyModel.cpp
 )

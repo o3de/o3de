@@ -1,12 +1,7 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 import os
@@ -31,11 +26,21 @@ class TestGradientSurfaceTagEmitterDependencies(EditorTestHelper):
     def run_test(self):
         """
         Summary:
-        Component has a dependency on a Gradient component
+        This test verifies that the Gradient Surface Tag Emitter component is dependent on a gradient component.
 
         Expected Result:
-        Component is disabled until a Gradient Generator, Modifier or Gradient Reference component
-        (and any sub-dependencies) is added to the entity.
+        Gradient Surface Tag Emitter component is disabled until a Gradient Generator, Modifier or Gradient Reference
+        component (and any sub-dependencies) is added to the entity.
+
+        Test Steps:
+         1) Open level
+         2) Create a new entity with a Gradient Surface Tag Emitter component
+         3) Verify the component is disabled until a dependent component is also added to the entity
+
+        Note:
+        - This test file must be called from the Open 3D Engine Editor command terminal
+        - Any passed and failed tests are written to the Editor.log file.
+                Parsing the file or running a log_monitor are required to observe the test results.
 
         :return: None
         """

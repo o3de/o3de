@@ -1,12 +1,7 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 from PySide2 import QtWidgets
 
@@ -63,8 +58,11 @@ class TestFileMenuDefaultNewOpen:
         sc_main = sc.findChild(QtWidgets.QMainWindow)
         sc_tabs = sc_main.findChild(QtWidgets.QTabWidget, "ScriptCanvasTabs")
 
-        # 3) Trigger File->New action
+        # wait for the intial tab count
+        general.idle_wait(GENERAL_WAIT)
         initial_tabs_count = sc_tabs.count()
+
+        # 3) Trigger File->New action
         action = pyside_utils.find_child_by_pattern(
             sc_main, {"objectName": "action_New_Script", "type": QtWidgets.QAction}
         )
