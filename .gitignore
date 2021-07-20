@@ -1,4 +1,5 @@
 .idea/
+.vs
 .vscode/
 __pycache__
 AssetProcessorTemp/**
