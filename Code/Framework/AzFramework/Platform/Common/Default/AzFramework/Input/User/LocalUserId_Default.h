@@ -9,7 +9,12 @@
 #pragma once
 
 #include <AzCore/base.h>
-#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/std/string/string.h>
+
+namespace AZ
+{
+    class ReflectContext;
+} // namespace Az
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework

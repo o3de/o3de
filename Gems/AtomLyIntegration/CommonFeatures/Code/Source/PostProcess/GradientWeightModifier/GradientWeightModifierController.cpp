@@ -6,7 +6,9 @@
  *
  */
 
+
 #include <PostProcess/GradientWeightModifier/GradientWeightModifierController.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ
 {

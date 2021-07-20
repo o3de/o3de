@@ -12,6 +12,7 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 #include <LyShine/Bus/UiGameEntityContextBus.h>
 #include <LyShine/Bus/UiElementBus.h>
@@ -131,6 +132,29 @@ public:
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+static bool UiFlipbookAnimationComponentVersionConverter(AZ::SerializeContext& context,
+    AZ::SerializeContext::DataElementNode& classElement)
+{
+    // conversion from version 2:
+    // - Rename "frame delay" to "framerate"
+    // - Set "framerate unit" to seconds (default moving forward is FPS, but we use seconds for legacy compatibility)
+    if (classElement.GetVersion() <= 2)
+    {
+        if (!ConvertFrameDelayToFramerate(context, classElement))
+        {
+            return false;
+        }
+
+        if (!ConvertFramerateUnitToSeconds(context, classElement))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void UiFlipbookAnimationComponent::Reflect(AZ::ReflectContext* context)
 {
@@ -138,7 +162,7 @@ void UiFlipbookAnimationComponent::Reflect(AZ::ReflectContext* context)
     if (serializeContext)
     {
         serializeContext->Class<UiFlipbookAnimationComponent, AZ::Component>()
-            ->Version(3, &VersionConverter)
+            ->Version(3, &UiFlipbookAnimationComponentVersionConverter)
             ->Field("Start Frame", &UiFlipbookAnimationComponent::m_startFrame)
             ->Field("End Frame", &UiFlipbookAnimationComponent::m_endFrame)
             ->Field("Loop Start Frame", &UiFlipbookAnimationComponent::m_loopStartFrame)
@@ -266,29 +290,6 @@ void UiFlipbookAnimationComponent::Reflect(AZ::ReflectContext* context)
             ->Enum<(int)UiFlipbookAnimationInterface::FramerateUnits::SecondsPerFrame>("eUiFlipbookAnimationFramerateUnits_SecondsPerFrame")
             ;
     }
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-bool UiFlipbookAnimationComponent::VersionConverter(AZ::SerializeContext& context,
-    AZ::SerializeContext::DataElementNode& classElement)
-{
-    // conversion from version 2:
-    // - Rename "frame delay" to "framerate"
-    // - Set "framerate unit" to seconds (default moving forward is FPS, but we use seconds for legacy compatibility)
-    if (classElement.GetVersion() <= 2)
-    {
-        if (!ConvertFrameDelayToFramerate(context, classElement))
-        {
-            return false;
-        }
-
-        if (!ConvertFramerateUnitToSeconds(context, classElement))
-        {
-            return false;
-        }
-    }
-
-    return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
