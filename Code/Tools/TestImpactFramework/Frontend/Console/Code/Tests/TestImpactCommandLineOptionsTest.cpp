@@ -120,7 +120,7 @@ namespace UnitTest
 
     //
 
-    TEST_F(CommandLineOptionsTestFixture, UnifiedDiffFileHasEmptyPath_ExpectCommandLineOptionsException)
+    TEST_F(CommandLineOptionsTestFixture, ChangeListFileHasEmptyPath_ExpectCommandLineOptionsException)
     {
         m_args.push_back("-changelist");
 
@@ -143,7 +143,7 @@ namespace UnitTest
         }
     }
 
-    TEST_F(CommandLineOptionsTestFixture, UnifiedDiffFileHasSpecifiedPath_ExpectPath)
+    TEST_F(CommandLineOptionsTestFixture, ChangeListFileHasSpecifiedPath_ExpectPath)
     {
         m_args.push_back("-changelist");
         m_args.push_back("Foo\\Bar");
@@ -152,7 +152,7 @@ namespace UnitTest
         EXPECT_STREQ(m_options->GetChangeListFile()->c_str(), "Foo\\Bar");
     }
 
-    TEST_F(CommandLineOptionsTestFixture, UnifiedDiffFileHasMultiplePaths_ExpectCommandLineOptionsException)
+    TEST_F(CommandLineOptionsTestFixture, ChangeListFileHasMultiplePaths_ExpectCommandLineOptionsException)
     {
         m_args.push_back("-changelist");
         m_args.push_back("value1,value2");
@@ -178,9 +178,9 @@ namespace UnitTest
 
     //
 
-    TEST_F(CommandLineOptionsTestFixture, OutputChangeListHasEmptyOption_ExpectCommandLineOptionsException)
+    TEST_F(CommandLineOptionsTestFixture, SequenceReportFileHasEmptyPath_ExpectCommandLineOptionsException)
     {
-        m_args.push_back("-ochangelist");
+        m_args.push_back("-report");
 
         try
         {
@@ -201,10 +201,19 @@ namespace UnitTest
         }
     }
 
-    TEST_F(CommandLineOptionsTestFixture, OutputChangeListHasMultipleValues_ExpectCommandLineOptionsException)
+    TEST_F(CommandLineOptionsTestFixture, SequenceReportFileHasSpecifiedPath_ExpectPath)
     {
-        m_args.push_back("-ochangelist");
-        m_args.push_back("value1,value2,value3");
+        m_args.push_back("-report");
+        m_args.push_back("Foo\\Bar");
+        InitOptions();
+        EXPECT_TRUE(m_options->HasSequenceReportFile());
+        EXPECT_STREQ(m_options->HasSequenceReportFile()->c_str(), "Foo\\Bar");
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, SequenceReportFileHasMultiplePaths_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-report");
+        m_args.push_back("value1,value2");
 
         try
         {

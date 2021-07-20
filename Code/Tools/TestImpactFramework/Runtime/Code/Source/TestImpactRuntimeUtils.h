@@ -46,39 +46,51 @@ namespace TestImpact
     //! @returns The subset of test targets in the specified list that are not on the target exclude list.
     AZStd::pair<AZStd::vector<const TestTarget*>, AZStd::vector<const TestTarget*>> SelectTestTargetsByExcludeList(
         const TestTargetExclusionList& testTargetExcludeList,
-        AZStd::vector<const TestTarget*> testTargets);
+        const AZStd::vector<const TestTarget*>& testTargets);
 
     //! Extracts the name information from the specified test targets.
-    AZStd::vector<AZStd::string> ExtractTestTargetNames(const AZStd::vector<const TestTarget*> testTargets);
+    AZStd::vector<AZStd::string> ExtractTestTargetNames(const AZStd::vector<const TestTarget*>& testTargets);
 
-    //! Generates a test run failure report from the specified test engine job information.
+    //! Generates the test suites from the specified test engine job information.
     //! @tparam TestJob The test engine job type.
     template<typename TestJob>
-    AZStd::vector<Client::TestCaseFailure> GenerateTestCaseFailures(const TestJob& testJob)
+    AZStd::vector<Client::TestSuite> GenerateTestSuites(const TestJob& testJob)
     {
-        AZStd::vector<Client::TestCaseFailure> testCaseFailures;
+        AZStd::vector<Client::TestSuite> testSuites;
 
         if (testJob.GetTestRun().has_value())
         {
             for (const auto& testSuite : testJob.GetTestRun()->GetTestSuites())
             {
-                AZStd::vector<Client::TestFailure> testFailures;
+                AZStd::vector<Client::TestCase> testCases;
                 for (const auto& testCase : testSuite.m_tests)
                 {
-                    if (testCase.m_result.value_or(TestRunResult::Passed) == TestRunResult::Failed)
+                    auto result = Client::TestCaseResult::NotRun;
+                    if (testCase.m_result.has_value())
                     {
-                        testFailures.push_back(Client::TestFailure(testCase.m_name, "No error message retrieved"));
+                        if (testCase.m_result.value() == TestRunResult::Passed)
+                        {
+                            result = Client::TestCaseResult::Passed;
+                        }
+                        else if (testCase.m_result.value() == TestRunResult::Failed)
+                        {
+                            result = Client::TestCaseResult::Failed;
+                        }
+                        else
+                        {
+                            throw RuntimeException(AZStd::string::format(
+                                "Unexpected test run result: %u", aznumeric_cast<AZ::u32>(testCase.m_result.value())));
+                        }
                     }
+
+                    testCases.push_back(Client::TestCase(testCase.m_name, result));
                 }
     
-                if (!testFailures.empty())
-                {
-                    testCaseFailures.push_back(Client::TestCaseFailure(testSuite.m_name, AZStd::move(testFailures)));
-                }
+                testSuites.push_back(Client::TestSuite(testSuite.m_name, AZStd::move(testCases)));
             }
         }
 
-        return testCaseFailures;
+        return testSuites;
     }
 
     template<typename TestJob>
@@ -88,16 +100,19 @@ namespace TestImpact
         AZStd::chrono::milliseconds duration,
         const AZStd::vector<TestJob>& testJobs)
     {
-        AZStd::vector<Client::TestRun> passingTests;
-        AZStd::vector<Client::TestRunWithTestFailures> failingTests;
-        AZStd::vector<Client::TestRun> executionFailureTests;
-        AZStd::vector<Client::TestRun> timedOutTests;
-        AZStd::vector<Client::TestRun> unexecutedTests;
+        AZStd::vector<Client::CompletedTestRun> passingTests;
+        AZStd::vector<Client::CompletedTestRun> failingTests;
+        AZStd::vector<Client::TestRunWithExecutonFailure> executionFailureTests;
+        AZStd::vector<Client::TimedOutTestRun> timedOutTests;
+        AZStd::vector<Client::UnexecutedTestRun> unexecutedTests;
         
         for (const auto& testJob : testJobs)
         {
+            // Test job start time relative to start time
             const auto relativeStartTime =
-                testJob.GetStartTime() + AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(testJob.GetStartTime() - startTime);
+                AZStd::chrono::high_resolution_clock::time_point() +
+                AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(testJob.GetStartTime() - startTime);
+
             Client::TestRun clientTestRun(
                 testJob.GetTestTarget()->GetName(), testJob.GetCommandString(), relativeStartTime, testJob.GetDuration(),
                 testJob.GetTestResult());
@@ -106,27 +121,27 @@ namespace TestImpact
             {
             case Client::TestRunResult::FailedToExecute:
             {
-                executionFailureTests.push_back(clientTestRun);
+                executionFailureTests.emplace_back(AZStd::move(clientTestRun));
                 break;
             }
             case Client::TestRunResult::NotRun:
             {
-                unexecutedTests.push_back(clientTestRun);
+                unexecutedTests.emplace_back(AZStd::move(clientTestRun));
                 break;
             }
             case Client::TestRunResult::Timeout:
             {
-                timedOutTests.push_back(clientTestRun);
+                timedOutTests.emplace_back(AZStd::move(clientTestRun));
                 break;
             }
             case Client::TestRunResult::AllTestsPass:
             {
-                passingTests.push_back(clientTestRun);
+                passingTests.emplace_back(AZStd::move(clientTestRun), GenerateTestSuites(testJob));
                 break;
             }
             case Client::TestRunResult::TestFailures:
             {
-                failingTests.emplace_back(AZStd::move(clientTestRun), GenerateTestCaseFailures(testJob));
+                failingTests.emplace_back(AZStd::move(clientTestRun), GenerateTestSuites(testJob));
                 break;
             }
             default:

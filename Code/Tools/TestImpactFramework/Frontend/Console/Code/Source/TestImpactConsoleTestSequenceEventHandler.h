@@ -25,26 +25,33 @@ namespace TestImpact
 {
     namespace Console
     {
+        //! Handler for TestSequenceStartCallback event.
         void TestSequenceStartCallback(SuiteType suiteType, const Client::TestRunSelection& selectedTests);
 
+        //! Handler for TestSequenceStartCallback event.
         void ImpactAnalysisTestSequenceStartCallback(
             SuiteType suiteType,
             const Client::TestRunSelection& selectedTests,
             const AZStd::vector<AZStd::string>& discardedTests,
             const AZStd::vector<AZStd::string>& draftedTests);
 
+        //! Handler for SafeImpactAnalysisTestSequenceStartCallback event.
         void SafeImpactAnalysisTestSequenceStartCallback(
             SuiteType suiteType,
             const Client::TestRunSelection& selectedTests,
             const Client::TestRunSelection& discardedTests,
             const AZStd::vector<AZStd::string>& draftedTests);
 
+        //! Handler for TestSequenceCompleteCallback event.
         void TestSequenceCompleteCallback(const Client::SequenceReport& sequenceReport);
 
+        //! Handler for ImpactAnalysisTestSequenceCompleteCallback event.
         void ImpactAnalysisTestSequenceCompleteCallback(const Client::ImpactAnalysisSequenceReport& sequenceReport);
 
+        //! Handler for SafeImpactAnalysisTestSequenceCompleteCallback event.
         void SafeImpactAnalysisTestSequenceCompleteCallback(const Client::SafeImpactAnalysisSequenceReport& sequenceReport);
 
+        //! Handler for TestRunCompleteCallback event.
         void TestRunCompleteCallback(const Client::TestRun& testRun, size_t numTestRunsCompleted, size_t totalNumTestRuns);
     } // namespace Console
 } // namespace TestImpact

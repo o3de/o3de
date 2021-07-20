@@ -10,12 +10,12 @@
  *
  */
 
-#include <TestImpactFramework/TestImpactException.h>
-#include <TestImpactFramework/TestImpactRuntime.h>
+#include <TestImpactFramework/TestImpactRepoPath.h>
+#include <TestImpactFramework/TestImpactTestSequence.h>
+#include <TestImpactFramework/TestImpactClientSequenceReport.h>
 
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/std/string/string.h>
 
 #pragma once
 
@@ -63,23 +63,35 @@ namespace TestImpact
     //! Delete the files that match the pattern from the specified directory.
     //! @param path The path to the directory to pattern match the files for deletion.
     //! @param pattern The pattern to match files for deletion.
-    inline void DeleteFiles(const RepoPath& path, const AZStd::string& pattern)
-    {
-        AZ::IO::SystemFile::FindFiles(AZStd::string::format("%s/%s", path.c_str(), pattern.c_str()).c_str(),
-            [&path](const char* file, bool isFile)
-        {
-            if (isFile)
-            {
-                AZ::IO::SystemFile::Delete(AZStd::string::format("%s/%s", path.c_str(), file).c_str());
-            }
-
-            return true;
-        });
-    }
+    void DeleteFiles(const RepoPath& path, const AZStd::string& pattern);
 
     //! Deletes the specified file.
-    inline void DeleteFile(const RepoPath& file)
-    {
-        DeleteFiles(file.ParentPath(), file.Filename().Native());
-    }
+    void DeleteFile(const RepoPath& file);
+
+    //! User-friendly names for the test suite types.
+    AZStd::string SuiteTypeAsString(SuiteType suiteType);
+
+    AZStd::string SequenceReportTypeAsString(Client::SequenceReportType type);
+
+    AZStd::string TestSequenceResultAsString(TestSequenceResult result);
+
+    AZStd::string TestRunResultAsString(Client::TestRunResult result);
+
+    AZStd::string ExecutionFailurePolicyAsString(Policy::ExecutionFailure executionFailurePolicy);
+
+    AZStd::string FailedTestCoveragePolicyAsString(Policy::FailedTestCoverage failedTestCoveragePolicy);
+
+    AZStd::string TestPrioritizationPolicyAsString(Policy::TestPrioritization testPrioritizationPolicy);
+
+     AZStd::string TestFailurePolicyAsString(Policy::TestFailure testFailurePolicy);
+
+    AZStd::string IntegrityFailurePolicyAsString(Policy::IntegrityFailure integrityFailurePolicy);
+
+    AZStd::string DynamicDependencyMapPolicyAsString(Policy::DynamicDependencyMap dynamicDependencyMapPolicy);
+
+    AZStd::string TestShardingPolicyAsString(Policy::TestSharding testShardingPolicy);
+
+    AZStd::string TargetOutputCapturePolicyAsString(Policy::TargetOutputCapture targetOutputCapturePolicy);
+
+    AZStd::string ClientTestCaseResultAsString(Client::TestCaseResult result);
 } // namespace TestImpact

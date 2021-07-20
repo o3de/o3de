@@ -13,7 +13,7 @@
 #pragma once
 
 #include <TestImpactFramework/TestImpactChangeList.h>
-#include <TestImpactFramework/TestImpactTestSequence.h>
+#include <TestImpactFramework/TestImpactPolicy.h>
 
 #include <Artifact/Static/TestImpactProductionTargetDescriptor.h>
 #include <Artifact/Static/TestImpactTestTargetDescriptor.h>

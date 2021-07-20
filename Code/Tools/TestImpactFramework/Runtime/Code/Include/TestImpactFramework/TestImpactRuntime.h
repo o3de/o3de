@@ -200,6 +200,15 @@ namespace TestImpact
         //! Updates the dynamic dependency map and serializes the entire map to disk.
         void UpdateAndSerializeDynamicDependencyMap(const AZStd::vector<TestEngineInstrumentedRun>& jobs);
 
+        PolicyStateBase GeneratePolicyStateBase();
+
+        SequencePolicyState GenerateSequencePolicyState();
+
+        SafeImpactAnalysisSequencePolicyState GenerateSafeImpactAnalysisSequencePolicyState(Policy::TestPrioritization testPrioritizationPolicy);
+
+        ImpactAnalysisSequencePolicyState GenerateImpactAnalysisSequencePolicyState(
+            Policy::TestPrioritization testPrioritizationPolicy, Policy::DynamicDependencyMap dynamicDependencyMapPolicy);
+
         RuntimeConfig m_config;
         RepoPath m_sparTIAFile;
         SuiteType m_suiteFilter;

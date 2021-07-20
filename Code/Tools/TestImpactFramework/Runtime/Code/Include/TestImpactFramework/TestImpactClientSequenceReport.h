@@ -15,6 +15,16 @@ namespace TestImpact
 {
     namespace Client
     {
+        enum class SequenceReportType : AZ::u8
+        {
+            Sequence,
+            ImpactAnalysisSequence,
+            SafeImpactAnalysisSequence
+        };
+
+        //! Calculates the final sequence result for a composite of multiple sequences.
+        TestSequenceResult CalculateMultiTestSequenceResult(const AZStd::vector<TestSequenceResult>& results);
+
         //! Report detailing the result and duration of a given set of test runs along with the details of each individual test run.
         class TestRunReport
         {
@@ -23,20 +33,20 @@ namespace TestImpact
             //! @param result The result of this set of test runs.
             //! @param startTime The time point his set of test runs started.
             //! @param duration The duration this set of test runs took to complete.
-            //! @param passingTests The set of test runs that executed successfully with no failing tests.
-            //! @param failing tests The set of test runs that executed successfully but had one or more failing tests.
-            //! @param executionFailureTests The set of test runs that failed to execute.
-            //! @param timedOutTests The set of test runs that executed successfully but were terminated prematurely due to timing out.
-            //! @param unexecutedTests The set of test runs that were queued up for execution but did not get the opportunity to execute.
+            //! @param passingTestRuns The set of test runs that executed successfully with no failing testRuns.
+            //! @param failing testRuns The set of test runs that executed successfully but had one or more failing tests.
+            //! @param executionFailureTestRuns The set of test runs that failed to execute.
+            //! @param timedOutTestRuns The set of test runs that executed successfully but were terminated prematurely due to timing out.
+            //! @param unexecutedTestRuns The set of test runs that were queued up for execution but did not get the opportunity to execute.
             TestRunReport(
                 TestSequenceResult result,
                 AZStd::chrono::high_resolution_clock::time_point startTime,
                 AZStd::chrono::milliseconds duration,
-                AZStd::vector<TestRun>&& passingTests,
-                AZStd::vector<TestRunWithTestFailures>&& failingTests,
-                AZStd::vector<TestRun>&& executionFailureTests,
-                AZStd::vector<TestRun>&& timedOutTests,
-                AZStd::vector<TestRun>&& unexecutedTests);
+                AZStd::vector<CompletedTestRun>&& passingTestRuns,
+                AZStd::vector<CompletedTestRun>&& failingTestRuns,
+                AZStd::vector<TestRunWithExecutonFailure>&& executionFailureTestRuns,
+                AZStd::vector<TimedOutTestRun>&& timedOutTestRuns,
+                AZStd::vector<UnexecutedTestRun>&& unexecutedTestRuns);
 
             //! Returns the result of this sequence of test runs.
             TestSequenceResult GetResult() const;
@@ -50,136 +60,388 @@ namespace TestImpact
             //! Returns the duration this sequence of test runs took to complete.
             AZStd::chrono::milliseconds GetDuration() const;
 
+            //! Returns the total number of test runs.
+            size_t GetTotalNumTestRuns() const;
+
             //! Returns the number of passing test runs.
-            size_t GetNumPassingTests() const;
+            size_t GetNumPassingTestRuns() const;
 
             //! Returns the number of failing test runs.
-            size_t GetNumFailingTests() const;
+            size_t GetNumFailingTestRuns() const;
+
+            //! Returns the number of test runs that failed to execute.
+            size_t GetNumExecutionFailureTestRuns() const;
 
             //! Returns the number of timed out test runs.
-            size_t GetNumTimedOutTests() const;
+            size_t GetNumTimedOutTestRuns() const;
 
             //! Returns the number of unexecuted test runs.
-            size_t GetNumUnexecutedTests() const;
+            size_t GetNumUnexecutedTestRuns() const;
+
+            //! Returns the total number of passing tests across all test runs in the report.
+            size_t GetTotalNumPassingTests() const;
+
+            //! Returns the total number of failing tests across all test runs in the report.
+            size_t GetTotalNumFailingTests() const;
 
             //! Returns the set of test runs that executed successfully with no failing tests.
-            AZStd::vector<TestRun> GetPassingTests() const;
+            const AZStd::vector<CompletedTestRun>& GetPassingTestRuns() const;
 
             //! Returns the set of test runs that executed successfully but had one or more failing tests.
-            AZStd::vector<TestRunWithTestFailures> GetFailingTests() const;
+            const AZStd::vector<CompletedTestRun>& GetFailingTestRuns() const;
 
             //! Returns the set of test runs that failed to execute.
-            AZStd::vector<TestRun> GetExecutionFailureTests() const;
+            const AZStd::vector<TestRunWithExecutonFailure>& GetExecutionFailureTestRuns() const;
 
             //! Returns the set of test runs that executed successfully but were terminated prematurely due to timing out.
-            AZStd::vector<TestRun> GetTimedOutTests() const;
+            const AZStd::vector<TimedOutTestRun>& GetTimedOutTestRuns() const;
 
             //! Returns the set of test runs that were queued up for execution but did not get the opportunity to execute.
-            AZStd::vector<TestRun> GetUnexecutedTests() const;
+            const AZStd::vector<UnexecutedTestRun>& GetUnexecutedTestRuns() const;
         private:
-            TestSequenceResult m_result;
+            TestSequenceResult m_result = TestSequenceResult::Success;
             AZStd::chrono::high_resolution_clock::time_point m_startTime;
-            AZStd::chrono::milliseconds m_duration;
-            AZStd::vector<TestRun> m_passingTests;
-            AZStd::vector<TestRunWithTestFailures> m_failingTests;
-            AZStd::vector<TestRun> m_executionFailureTests;
-            AZStd::vector<TestRun> m_timedOutTests;
-            AZStd::vector<TestRun> m_unexecutedTests;
+            AZStd::chrono::milliseconds m_duration = AZStd::chrono::milliseconds{ 0 };
+            AZStd::vector<CompletedTestRun> m_passingTestRuns;
+            AZStd::vector<CompletedTestRun> m_failingTestRuns;
+            AZStd::vector<TestRunWithExecutonFailure> m_executionFailureTestRuns;
+            AZStd::vector<TimedOutTestRun> m_timedOutTestRuns;
+            AZStd::vector<UnexecutedTestRun> m_unexecutedTestRuns;
+            size_t m_totalNumPassingTests = 0;
+            size_t m_totalNumFailingTests = 0;
         };
 
-        //! Report detailing the test selection and test run report of a typical test run sequence.
-        class SequenceReport
+        template<typename PolicyStateType>
+        class SequenceReportBase
         {
         public:
-            SequenceReport(SuiteType suiteType, const TestRunSelection& selectedTests, TestRunReport&& selectedTestRunReport);
+            //! Constructs the report for a sequence of selected tests.
+            //! @param maxConcurrency The maximum number of concurrent test targets in flight at any given time.
+            //! @param suiteType The suite from which the tests have been selected from.
+            //! @param policyState The policy state this sequence was executed under.
+            //! @param selectedTestRuns The target names of the selected test runs.
+            //! @param selectedTestRunReport The report for the set of selected test runs.
+            SequenceReportBase(
+                SequenceReportType type,
+                size_t maxConcurrency,
+                const PolicyStateType& policyState,
+                SuiteType suiteType,
+                const TestRunSelection& selectedTestRuns,
+                TestRunReport&& selectedTestRunReport)
+                : m_type(type)
+                , m_maxConcurrency(maxConcurrency)
+                , m_policyState(policyState)
+                , m_suite(suiteType)
+                , m_selectedTestRuns(selectedTestRuns)
+                , m_selectedTestRunReport(AZStd::move(selectedTestRunReport))
+            {
+            }
 
-            TestRunSelection GetSelectedTests() const;
-            TestRunReport GetSelectedTestRunReport() const;
+            virtual ~SequenceReportBase() = default;
 
-            AZStd::chrono::high_resolution_clock::time_point GetStartTime() const;
-            AZStd::chrono::high_resolution_clock::time_point GetEndTime() const;
+            //! Returns the identifying type for this sequence report.
+            SequenceReportType GetType() const
+            {
+                return m_type;
+            }
 
-            virtual TestSequenceResult GetResult() const;
-            virtual AZStd::chrono::milliseconds GetDuration() const;
-            virtual size_t GetTotalNumPassingTests() const;
-            virtual size_t GetTotalNumFailingTests() const;
-            virtual size_t GetTotalNumTimedOutTests() const;
-            virtual size_t GetTotalNumUnexecutedTests() const;
+            //! Returns the maximum concurrency for this sequence.
+            size_t GetMaxConcurrency() const
+            {
+                return m_maxConcurrency;
+            }
+
+            //! Returns the policy state for this sequence.
+            const PolicyStateType& GetPolicyState() const
+            {
+                return m_policyState;
+            }
+
+            //! Returns the suite for this sequence.
+            SuiteType GetSuite() const
+            {
+                return m_suite;
+            }
+
+             //! Returns the result of the sequence.
+            virtual TestSequenceResult GetResult() const
+            {
+                return m_selectedTestRunReport.GetResult();
+            }
+
+            //! Returns the tests selected for running in the sequence.
+            TestRunSelection GetSelectedTestRuns() const
+            {
+                return m_selectedTestRuns;
+            }
+
+            //! Returns the report for the selected test runs.
+            TestRunReport GetSelectedTestRunReport() const
+            {
+                return m_selectedTestRunReport;
+            }
+
+            //! Returns the start time of the sequence.
+            AZStd::chrono::high_resolution_clock::time_point GetStartTime() const
+            {
+                return m_selectedTestRunReport.GetStartTime();
+            }
+
+            //! Returns the end time of the sequence.
+            AZStd::chrono::high_resolution_clock::time_point GetEndTime() const
+            {
+                return GetStartTime() + GetDuration();
+            }
+
+            //! Returns the entire duration the sequence took from start to finish.
+            virtual AZStd::chrono::milliseconds GetDuration() const
+            {
+                return m_selectedTestRunReport.GetDuration();
+            }
+                       
+
+            //! Returns the total number of test runs across all test run reports.
+            virtual size_t GetTotalNumTestRuns() const
+            {
+                return m_selectedTestRunReport.GetTotalNumTestRuns();
+            }
+
+            //! Returns the total number of passing tests across all test targets in all test run reports.
+            virtual size_t GetTotalNumPassingTests() const
+            {
+                return m_selectedTestRunReport.GetTotalNumPassingTests();
+            }
+
+            //! Returns the total number of failing tests across all test targets in all test run reports.
+            virtual size_t GetTotalNumFailingTests() const
+            {
+                return m_selectedTestRunReport.GetTotalNumFailingTests();
+            }
+
+            //! Get the total number of test runs in the sequence that passed.
+            virtual size_t GetTotalNumPassingTestRuns() const
+            {
+                return m_selectedTestRunReport.GetNumPassingTestRuns();
+            }
+
+            //! Get the total number of test runs in the sequence that contain one or more test failures.
+            virtual size_t GetTotalNumFailingTestRuns() const
+            {
+                return m_selectedTestRunReport.GetNumFailingTestRuns();
+            }
+
+            //! Returns the total number of test runs that failed to execute.
+            virtual size_t GetTotalNumExecutionFailureTestRuns() const
+            {
+                return m_selectedTestRunReport.GetNumExecutionFailureTestRuns();
+            }
+
+            //! Get the total number of test runs in the sequence that timed out whilst in flight.
+            virtual size_t GetTotalNumTimedOutTestRuns() const
+            {
+                return m_selectedTestRunReport.GetNumTimedOutTestRuns();
+            }
+
+            //! Get the total number of test runs in the sequence that were queued for execution but did not get the opportunity to execute.
+            virtual size_t GetTotalNumUnexecutedTestRuns() const
+            {
+                return m_selectedTestRunReport.GetNumUnexecutedTestRuns();
+            }
 
         private:
-            SuiteType m_suite;
-            TestRunSelection m_selectedTests;
+            SequenceReportType m_type;
+            size_t m_maxConcurrency = 0;
+            PolicyStateType m_policyState;
+            SuiteType m_suite = SuiteType::Main;
+            TestRunSelection m_selectedTestRuns;
             TestRunReport m_selectedTestRunReport;
         };
 
-        class DraftingSequenceReport
-            : public SequenceReport
+        //! Report detailing a test run sequence of selected tests.
+        class SequenceReport
+            : public SequenceReportBase<SequencePolicyState>
         {
         public:
-            DraftingSequenceReport(
+            //! Constructs the report for a sequence of selected tests.
+            //! @param maxConcurrency The maximum number of concurrent test targets in flight at any given time.
+            //! @param suiteType The suite from which the tests have been selected from.
+            //! @param policyState The policy state this sequence was executed under.
+            //! @param selectedTestRuns The target names of the selected test runs.
+            //! @param selectedTestRunReport The report for the set of selected test runs.
+            SequenceReport(
+                size_t maxConcurrency,
+                const SequencePolicyState& policyState,
                 SuiteType suiteType,
-                const TestRunSelection& selectedTests,
-                const AZStd::vector<AZStd::string>& draftedTests,
+                const TestRunSelection& selectedTestRuns,
+                TestRunReport&& selectedTestRunReport);
+        };
+
+        //! Report detailing a test run sequence of selected and drafted tests.
+        template<typename PolicyStateType>
+        class DraftingSequenceReport
+            : public SequenceReportBase<PolicyStateType>
+        {
+        public:
+            //! Constructs the report for a sequence of selected and drafted tests.
+            //! @param suiteType The suite from which the tests have been selected from.
+            //! @param selectedTestRuns The target names of the selected test runs.
+            //! @param draftedTestRuns The target names of the drafted test runs.
+            //! @param selectedTestRunReport The report for the set of selected test runs.
+            //! @param draftedTestRunReport The report for the set of drafted test runs.
+            DraftingSequenceReport(
+                SequenceReportType type,
+                size_t maxConcurrency,
+                const PolicyStateType& policyState,
+                SuiteType suiteType,
+                const TestRunSelection& selectedTestRuns,
+                const AZStd::vector<AZStd::string>& draftedTestRuns,
                 TestRunReport&& selectedTestRunReport,
-                TestRunReport&& draftedTestRunReport);
+                TestRunReport&& draftedTestRunReport)
+                : SequenceReportBase(type, maxConcurrency, policyState, suiteType, selectedTestRuns, AZStd::move(selectedTestRunReport))
+                , m_draftedTestRuns(draftedTestRuns)
+                , m_draftedTestRunReport(AZStd::move(draftedTestRunReport))
+            {
+            }
 
-            TestSequenceResult GetResult() const override;
-            AZStd::chrono::milliseconds GetDuration() const override;
-            size_t GetTotalNumPassingTests() const override;
-            size_t GetTotalNumFailingTests() const override;
-            size_t GetTotalNumTimedOutTests() const override;
-            size_t GetTotalNumUnexecutedTests() const override;
+            //! Returns the tests drafted for running in the sequence.
+            const AZStd::vector<AZStd::string>& GetDraftedTestRuns() const
+            {
+                return m_draftedTestRuns;
+            }
 
-            const AZStd::vector<AZStd::string>& GetDraftedTests() const;
-            TestRunReport GetDraftedTestRunReport() const;
+            //! Returns the report for the drafted test runs.
+            TestRunReport GetDraftedTestRunReport() const
+            {
+                return m_draftedTestRunReport;
+            }
 
+            // SequenceReport overrides ...
+            AZStd::chrono::milliseconds GetDuration() const override
+            {
+                return SequenceReportBase::GetDuration() + m_draftedTestRunReport.GetDuration();
+            }
+
+            TestSequenceResult GetResult() const override
+            {
+                return CalculateMultiTestSequenceResult({ SequenceReportBase::GetResult(), m_draftedTestRunReport.GetResult() });
+            }
+
+            size_t GetTotalNumTestRuns() const override
+            {
+                return SequenceReportBase::GetTotalNumTestRuns() + m_draftedTestRunReport.GetTotalNumTestRuns();
+            }
+
+            size_t GetTotalNumPassingTests() const override
+            {
+                return SequenceReportBase::GetTotalNumPassingTests() + m_draftedTestRunReport.GetTotalNumPassingTests();
+            }
+
+            size_t GetTotalNumFailingTests() const override
+            {
+                return SequenceReportBase::GetTotalNumFailingTests() + m_draftedTestRunReport.GetTotalNumFailingTests();
+            }
+
+            size_t GetTotalNumPassingTestRuns() const override
+            {
+                return SequenceReportBase::GetTotalNumPassingTestRuns() + m_draftedTestRunReport.GetNumPassingTestRuns();
+            }
+
+            size_t GetTotalNumFailingTestRuns() const override
+            {
+                return SequenceReportBase::GetTotalNumFailingTestRuns() + m_draftedTestRunReport.GetNumFailingTestRuns();
+            }
+
+            size_t GetTotalNumExecutionFailureTestRuns() const override
+            {
+                return SequenceReportBase::GetTotalNumExecutionFailureTestRuns() + m_draftedTestRunReport.GetNumExecutionFailureTestRuns();
+            }
+
+            size_t GetTotalNumTimedOutTestRuns() const override
+            {
+                return SequenceReportBase::GetTotalNumTimedOutTestRuns() + m_draftedTestRunReport.GetNumTimedOutTestRuns();
+            }
+
+            size_t GetTotalNumUnexecutedTestRuns() const override
+            {
+                return SequenceReportBase::GetTotalNumUnexecutedTestRuns() + m_draftedTestRunReport.GetNumUnexecutedTestRuns();
+            }
         private:
-            AZStd::vector<AZStd::string> m_draftedTests;
+            AZStd::vector<AZStd::string> m_draftedTestRuns;
             TestRunReport m_draftedTestRunReport;
         };
 
+        //! Report detailing an impact analysis sequence of selected, discarded and drafted tests.
         class ImpactAnalysisSequenceReport
-            : public DraftingSequenceReport
+            : public DraftingSequenceReport<ImpactAnalysisSequencePolicyState>
         {
         public:
+            //! Constructs the report for a sequence of selected and drafted tests.
+            //! @param suiteType The suite from which the tests have been selected from.
+            //! @param selectedTestRuns The target names of the selected test runs.
+            //! @param discardedTestRuns The target names of the discarded test runs.
+            //! @param draftedTestRuns The target names of the drafted test runs.
+            //! @param selectedTestRunReport The report for the set of selected test runs.
+            //! @param draftedTestRunReport The report for the set of drafted test runs.
             ImpactAnalysisSequenceReport(
+                size_t maxConcurrency,
+                const ImpactAnalysisSequencePolicyState& policyState,
                 SuiteType suiteType,
-                const TestRunSelection& selectedTests,
-                const AZStd::vector<AZStd::string>& discardedTests,
-                const AZStd::vector<AZStd::string>& draftedTests,
+                const TestRunSelection& selectedTestRuns,
+                const AZStd::vector<AZStd::string>& discardedTestRuns,
+                const AZStd::vector<AZStd::string>& draftedTestRuns,
                 TestRunReport&& selectedTestRunReport,
                 TestRunReport&& draftedTestRunReport);
 
-            const AZStd::vector<AZStd::string>& GetDiscardedTests() const;
+            //! Returns the test runs discarded from running in the sequence.
+            const AZStd::vector<AZStd::string>& GetDiscardedTestRuns() const;
         private:
-            AZStd::vector<AZStd::string> m_discardedTests;
+            AZStd::vector<AZStd::string> m_discardedTestRuns;
         };
 
+        //! Report detailing an impact analysis sequence of selected, discarded and drafted test runs.
         class SafeImpactAnalysisSequenceReport
-            : public DraftingSequenceReport
+            : public DraftingSequenceReport<SafeImpactAnalysisSequencePolicyState>
         {
         public:
+            //! Constructs the report for a sequence of selected and drafted test runs.
+            //! @param suiteType The suite from which the tests have been selected from.
+            //! @param selectedTestRuns The target names of the selected test runs.
+            //! @param discardedTestRuns The target names of the discarded test runs.
+            //! @param draftedTestRuns The target names of the drafted test runs.
+            //! @param selectedTestRunReport The report for the set of selected test runs.
+            //! @param discardedTestRunReport The report for the set of discarded test runs.
+            //! @param draftedTestRunReport The report for the set of drafted test runs.
             SafeImpactAnalysisSequenceReport(
+                size_t maxConcurrency,
+                const SafeImpactAnalysisSequencePolicyState& policyState,
                 SuiteType suiteType,
-                const TestRunSelection& selectedTests,
-                const TestRunSelection& discardedTests,
-                const AZStd::vector<AZStd::string>& draftedTests,
+                const TestRunSelection& selectedTestRuns,
+                const TestRunSelection& discardedTestRuns,
+                const AZStd::vector<AZStd::string>& draftedTestRuns,
                 TestRunReport&& selectedTestRunReport,
                 TestRunReport&& discardedTestRunReport,
                 TestRunReport&& draftedTestRunReport);
 
-            TestSequenceResult GetResult() const override;
+            // SequenceReport overrides ...
             AZStd::chrono::milliseconds GetDuration() const override;
+            TestSequenceResult GetResult() const override;
+            size_t GetTotalNumTestRuns() const override;
             size_t GetTotalNumPassingTests() const override;
             size_t GetTotalNumFailingTests() const override;
-            size_t GetTotalNumTimedOutTests() const override;
-            size_t GetTotalNumUnexecutedTests() const override;
+            size_t GetTotalNumPassingTestRuns() const override;
+            size_t GetTotalNumFailingTestRuns() const override;
+            size_t GetTotalNumExecutionFailureTestRuns() const override;
+            size_t GetTotalNumTimedOutTestRuns() const override;
+            size_t GetTotalNumUnexecutedTestRuns() const override;
 
-            const TestRunSelection GetDiscardedTests() const;
+            //! Returns the report for the discarded test runs.
+            const TestRunSelection GetDiscardedTestRuns() const;
+
+            //! Returns the report for the discarded test runs.
             TestRunReport GetDiscardedTestRunReport() const;
 
         private:
-            TestRunSelection m_discardedTests;
+            TestRunSelection m_discardedTestRuns;
             TestRunReport m_discardedTestRunReport;
         };
     } // namespace Client

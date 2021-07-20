@@ -472,18 +472,18 @@ try {
                     if(env.CHANGE_TARGET) {
                         // PR builds
                         if(BUILD_SNAPSHOTS.contains(env.CHANGE_TARGET)) {
-                            snapshot = env.CHANGE_TARGET
+                            env.SNAPSHOT = env.CHANGE_TARGET
                             echo "Snapshot for destination branch \"${env.CHANGE_TARGET}\" found."
                         } else { 
-                            snapshot = DEFAULT_BUILD_SNAPSHOT
-                            echo "Snapshot for destination branch \"${env.CHANGE_TARGET}\" does not exist, defaulting to snapshot \"${snapshot}\""
+                            env.SNAPSHOT = DEFAULT_BUILD_SNAPSHOT
+                            echo "Snapshot for destination branch \"${env.CHANGE_TARGET}\" does not exist, defaulting to snapshot \"${env.SNAPSHOT}\""
                         }
                     } else {
                         // Non-PR builds
                         pipelineParameters.add(choice(defaultValue: DEFAULT_BUILD_SNAPSHOT, name: 'SNAPSHOT', choices: BUILD_SNAPSHOTS_WITH_EMPTY, description: 'Selects the build snapshot to use. A more diverted snapshot will cause longer build times, but will not cause build failures.'))
-                        snapshot = env.SNAPSHOT
-                        echo "Snapshot \"${snapshot}\" selected."
+                        echo "Snapshot \"${env.SNAPSHOT}\" selected."
                     }
+                    snapshot = env.SNAPSHOT
                     pipelineProperties.add(disableConcurrentBuilds())
 
                     echo "Running \"${pipelineName}\" for \"${branchName}\"..."

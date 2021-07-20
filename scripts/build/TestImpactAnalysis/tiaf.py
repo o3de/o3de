@@ -15,7 +15,7 @@ import subprocess
 import re
 import git_utils
 from git_utils import Repo
-from enum import Enum
+import uuid
 
 # Returns True if the specified child path is a child of the specified parent path, otherwise False
 def is_child_path(parent_path, child_path):
@@ -24,19 +24,19 @@ def is_child_path(parent_path, child_path):
     return os.path.commonpath([os.path.abspath(parent_path)]) == os.path.commonpath([os.path.abspath(parent_path), os.path.abspath(child_path)])
 
 class TestImpact:
-    def __init__(self, config_file, dst_commit, dst_branch, pipeline, branches_of_truth, pipelines_of_truth):
+    def __init__(self, config_file, dst_commit, src_branch, pipeline, seeding_branches, seeding_pipelines):
         # Commit
         self.__dst_commit = dst_commit
         print(f"Commit: '{self.__dst_commit}'.")
         self.__src_commit = None
         self.__has_src_commit = False
+        self.__commit_distance = None
         # Branch
-        self.__dst_branch = dst_branch
-        print(f"Destination branch: '{self.__dst_branch}'.")
-        self.__branches_of_truth = branches_of_truth
-        print(f"Branches of truth: '{self.__branches_of_truth}'.")
-        if self.__dst_branch in self.__branches_of_truth:
-            self.__is_branch_of_truth = True
+        self.__src_branch = src_branch
+        print(f"Branch: '{self.__src_branch}'.")
+        print(f"Seeding branches: '{seeding_branches}'.")
+        if self.__src_branch in seeding_branches:
+            self.__is_seeding_branch = True
         else:
             self.__is_branch_of_truth = False
         print(f"Is branch of truth: '{self.__is_branch_of_truth}'.")
@@ -108,9 +108,10 @@ class TestImpact:
         # Check whether or not a previous commit hash exists (no hash is not a failure)
         self.__read_last_run_hash()
         if self.__has_src_commit == True:
-            if git_utils.is_descendent(self.__src_commit, self.__dst_commit) == False:
+            if self.__repo.is_descendent(self.__src_commit, self.__dst_commit) == False:
                 print(f"Source commit '{self.__src_commit}' and destination commit '{self.__dst_commit}' are not related.")
                 return
+            self.__commit_distance = self.__repo.commit_distance(self.__src_commit, self.__dst_commit)
             diff_path = os.path.join(self.__temp_workspace, "changelist.diff")
             try:
                 git_utils.create_diff_file(self.__src_commit, self.__dst_commit, diff_path)
@@ -163,10 +164,50 @@ class TestImpact:
             self.__has_change_list = False
             return
 
+    @property
+    def src_commit(self):
+        return self.__src_commit
+
+    @property
+    def dst_commit(self):
+        return self.__dst_commit
+
+    @property
+    def commit_distance(self):
+        return self.__commit_distance
+
+    @property
+    def src_branch(self):
+        return self.__src_branch
+
+    @property
+    def pipeline(self):
+        return self.__pipeline
+
+    @property
+    def is_seeding_branch(self):
+        return self.__is_seeding_branch
+
+    @property
+    def is_seeding_pipeline(self):
+        return self.__is_seeding_pipeline
+
+    @property
+    def use_test_impact_analysis(self):
+        return self.__use_test_impact_analysis
+
+    @property
+    def has_change_list(self):
+        return self.__has_change_list
+
     # Runs the specified test sequence
     def run(self, suite, test_failure_policy, safe_mode, test_timeout, global_timeout):
         args = []
         seed_sequence_test_failure_policy = "continue"
+        # Sequence report
+        report_file = os.path.join(self.__temp_workspace, f"report.{uuid.uuid4().hex}.json")
+        args.append(f"--report={report_file}")
+        print(f"Sequence report file is set to '{report_file}'.")
         # Suite
         args.append(f"--suite={suite}")
         print(f"Test suite is set to '{suite}'.")
@@ -231,14 +272,17 @@ class TestImpact:
         print("Args: ", end='')
         print(*args)
         result = subprocess.run([self.__tiaf_bin] + args)
+        report = None
         # If the sequence completed (with or without failures) we will update the historical meta-data
         if result.returncode == 0 or result.returncode == 7:
             print("Test impact analysis runtime returned successfully.")
+            with open(report_file) as json_file:
+                report = json.load(json_file)
             if self.__is_seeding:
                 print("Writing historical meta-data...")
                 self.__write_last_run_hash(self.__dst_commit)
             print("Complete!")
         else:
             print(f"The test impact analysis runtime returned with error: '{result.returncode}'.")
-        return result.returncode
+        return result.returncode, report, args
         

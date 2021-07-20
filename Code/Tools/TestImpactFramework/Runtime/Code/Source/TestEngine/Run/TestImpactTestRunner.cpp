@@ -10,7 +10,7 @@
  *
  */
 
-#include <TestImpactFramework/TestImpactFileUtils.h>
+#include <TestImpactFramework/TestImpactUtils.h>
 
 #include <Artifact/Factory/TestImpactTestRunSuiteFactory.h>
 #include <TestEngine/TestImpactTestEngineException.h>

@@ -10,8 +10,9 @@
  *
  */
 
-#include <TestImpactConsoleTestSequenceEventHandler.h>
+#include <TestImpactFramework/TestImpactUtils.h>
 
+#include <TestImpactConsoleTestSequenceEventHandler.h>
 #include <TestImpactConsoleUtils.h>
 
 #include <iostream>
@@ -24,7 +25,7 @@ namespace TestImpact
         {
             void TestSuiteFilter(SuiteType filter)
             {
-                std::cout << "Test suite filter: " << GetSuiteTypeName(filter).c_str() << "\n";
+                std::cout << "Test suite filter: " << SuiteTypeAsString(filter).c_str() << "\n";
             }
 
             void ImpactAnalysisTestSelection(size_t numSelectedTests, size_t numDiscardedTests, size_t numExcludedTests, size_t numDraftedTests)
@@ -40,68 +41,70 @@ namespace TestImpact
             {
                 std::cout << "Sequence completed in " << (testRunReport.GetDuration().count() / 1000.f) << "s with";
 
-                if (!testRunReport.GetExecutionFailureTests().empty() ||
-                    !testRunReport.GetFailingTests().empty() ||
-                    !testRunReport.GetTimedOutTests().empty() ||
-                    !testRunReport.GetUnexecutedTests().empty())
+                if (!testRunReport.GetExecutionFailureTestRuns().empty() ||
+                    !testRunReport.GetFailingTestRuns().empty() ||
+                    !testRunReport.GetTimedOutTestRuns().empty() ||
+                    !testRunReport.GetUnexecutedTestRuns().empty())
                 {
                     std::cout << ":\n";
                     std::cout << SetColor(Foreground::White, Background::Red).c_str()
-                        << testRunReport.GetFailingTests().size()
+                        << testRunReport.GetFailingTestRuns().size()
                         << ResetColor().c_str() << " test failures\n";
 
                     std::cout << SetColor(Foreground::White, Background::Red).c_str()
-                        << testRunReport.GetExecutionFailureTests().size()
+                        << testRunReport.GetExecutionFailureTestRuns().size()
                         << ResetColor().c_str() << " execution failures\n";
 
                     std::cout << SetColor(Foreground::White, Background::Red).c_str()
-                        << testRunReport.GetTimedOutTests().size()
+                        << testRunReport.GetTimedOutTestRuns().size()
                         << ResetColor().c_str() << " test timeouts\n";
 
                     std::cout << SetColor(Foreground::White, Background::Red).c_str()
-                        << testRunReport.GetUnexecutedTests().size()
+                        << testRunReport.GetUnexecutedTestRuns().size()
                         << ResetColor().c_str() << " unexecuted tests\n";
 
-                    if (!testRunReport.GetFailingTests().empty())
+                    if (!testRunReport.GetFailingTestRuns().empty())
                     {
                         std::cout << "\nTest failures:\n";
-                        for (const auto& testRunFailure : testRunReport.GetFailingTests())
+                        for (const auto& testRunFailure : testRunReport.GetFailingTestRuns())
                         {
-                            std::cout << "  " << testRunFailure.GetTargetName().c_str();
-                            for (const auto& testCaseFailure : testRunFailure.GetTestCaseFailures())
+                            for (const auto& testSuite : testRunFailure.GetTestSuites())
                             {
-                                std::cout << "." << testCaseFailure.GetName().c_str();
-                                for (const auto& testFailure : testCaseFailure.GetTestFailures())
+                                for (const auto& testCase : testSuite.GetTestCases())
                                 {
-                                    std::cout << "." << testFailure.GetName().c_str() << "\n";
+                                    if (testCase.GetResult() == Client::TestCaseResult::Failed)
+                                    std::cout << "  "
+                                        << testRunFailure.GetTargetName().c_str()
+                                        << "." << testSuite.GetName().c_str()
+                                        << "." << testCase.GetName().c_str() << "\n";
                                 }
                             }
                         }
                     }
 
-                    if (!testRunReport.GetExecutionFailureTests().empty())
+                    if (!testRunReport.GetExecutionFailureTestRuns().empty())
                     {
                         std::cout << "\nExecution failures:\n";
-                        for (const auto& executionFailure : testRunReport.GetExecutionFailureTests())
+                        for (const auto& executionFailure : testRunReport.GetExecutionFailureTestRuns())
                         {
                             std::cout << "  " << executionFailure.GetTargetName().c_str() << "\n";
                             std::cout << executionFailure.GetCommandString().c_str() << "\n";
                         }
                     }
 
-                    if (!testRunReport.GetTimedOutTests().empty())
+                    if (!testRunReport.GetTimedOutTestRuns().empty())
                     {
                         std::cout << "\nTimed out tests:\n";
-                        for (const auto& testTimeout : testRunReport.GetTimedOutTests())
+                        for (const auto& testTimeout : testRunReport.GetTimedOutTestRuns())
                         {
                             std::cout << "  " << testTimeout.GetTargetName().c_str() << "\n";
                         }
                     }
 
-                    if (!testRunReport.GetUnexecutedTests().empty())
+                    if (!testRunReport.GetUnexecutedTestRuns().empty())
                     {
                         std::cout << "\nUnexecuted tests:\n";
-                        for (const auto& unexecutedTest : testRunReport.GetUnexecutedTests())
+                        for (const auto& unexecutedTest : testRunReport.GetUnexecutedTestRuns())
                         {
                             std::cout << "  " << unexecutedTest.GetTargetName().c_str() << "\n";
                         }
@@ -109,7 +112,7 @@ namespace TestImpact
                 }
                 else
                 {
-                    std::cout << SetColor(Foreground::White, Background::Green).c_str() << " \100% passes!\n" << ResetColor().c_str();
+                    std::cout << " " << SetColor(Foreground::White, Background::Green).c_str() << "100% passes!\n" << ResetColor().c_str() << "\n";
                 }
             }
         }
@@ -222,6 +225,10 @@ namespace TestImpact
             {
                 result = SetColorForString(Foreground::White, Background::Magenta, "TIME");
                 break;
+            }
+            default:
+            {
+                AZ_Error("TestRunCompleteCallback", false, "Unexpected test result to handle: %u", aznumeric_cast<AZ::u32>(testRun.GetResult()));
             }
             }
 

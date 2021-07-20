@@ -10,7 +10,7 @@
  *
  */
 
-#include <TestImpactFramework/TestImpactFileUtils.h>
+#include <TestImpactFramework/TestImpactUtils.h>
 #include <TestImpactFramework/TestImpactRuntimeException.h>
 
 #include <TestImpactRuntimeUtils.h>
@@ -74,7 +74,7 @@ namespace TestImpact
     }
 
     AZStd::pair<AZStd::vector<const TestTarget*>, AZStd::vector<const TestTarget*>> SelectTestTargetsByExcludeList(
-    const TestTargetExclusionList& testTargetExcludeList, AZStd::vector<const TestTarget*> testTargets)
+    const TestTargetExclusionList& testTargetExcludeList, const AZStd::vector<const TestTarget*>& testTargets)
     {
         AZStd::vector<const TestTarget*> includedTestTargets;
         AZStd::vector<const TestTarget*> excludedTestTargets;
@@ -87,24 +87,21 @@ namespace TestImpact
         for (const auto& testTarget : testTargets)
         {
             if (const auto* excludedTests = testTargetExcludeList.GetExcludedTestsForTarget(testTarget);
-                excludedTests != nullptr)
+                excludedTests != nullptr && excludedTests->empty())
             {
                 // If the test filter is empty, the entire suite is excluded
-                if (excludedTests->empty())
-                {
-                    includedTestTargets.push_back(testTarget);
-                }
+                excludedTestTargets.push_back(testTarget);
             }
             else
             {
-                excludedTestTargets.push_back(testTarget);
+                includedTestTargets.push_back(testTarget);
             }
         }
 
         return { includedTestTargets, excludedTestTargets };
     }
 
-    AZStd::vector<AZStd::string> ExtractTestTargetNames(const AZStd::vector<const TestTarget*> testTargets)
+    AZStd::vector<AZStd::string> ExtractTestTargetNames(const AZStd::vector<const TestTarget*>& testTargets)
     {
         AZStd::vector<AZStd::string> testNames;
         AZStd::transform(testTargets.begin(), testTargets.end(), AZStd::back_inserter(testNames), [](const TestTarget* testTarget)

@@ -13,14 +13,16 @@
 #include <TestImpactFramework/TestImpactException.h>
 #include <TestImpactFramework/TestImpactChangeListException.h>
 #include <TestImpactFramework/TestImpactConfigurationException.h>
+#include <TestImpactFramework/TestImpactSequenceReportException.h>
 #include <TestImpactFramework/TestImpactRuntimeException.h>
 #include <TestImpactFramework/TestImpactConsoleMain.h>
 #include <TestImpactFramework/TestImpactChangeListSerializer.h>
 #include <TestImpactFramework/TestImpactChangeList.h>
 #include <TestImpactFramework/TestImpactRuntime.h>
-#include <TestImpactFramework/TestImpactFileUtils.h>
+#include <TestImpactFramework/TestImpactUtils.h>
 #include <TestImpactFramework/TestImpactClientTestSelection.h>
 #include <TestImpactFramework/TestImpactRuntime.h>
+#include <TestImpactFramework/TestImpactClientSequenceReportSerializer.h>
 
 #include <TestImpactConsoleTestSequenceEventHandler.h>
 #include <TestImpactCommandLineOptions.h>
@@ -37,31 +39,6 @@ namespace TestImpact
 {
     namespace Console
     {
-        //! Generates a string to be used for printing to the console for the specified change list.
-        AZStd::string GenerateChangeListString(const ChangeList& changeList)
-        {
-            AZStd::string output;
-
-            const auto& outputFiles = [&output](const AZStd::vector<RepoPath>& files)
-            {
-                for (const auto& file : files)
-                {
-                    output += AZStd::string::format("\t%s\n", file.c_str());
-                }
-            };
-
-            output += AZStd::string::format("Created files (%u):\n", changeList.m_createdFiles.size());
-            outputFiles(changeList.m_createdFiles);
-
-            output += AZStd::string::format("Updated files (%u):\n", changeList.m_updatedFiles.size());
-            outputFiles(changeList.m_updatedFiles);
-
-            output += AZStd::string::format("Deleted files (%u):\n", changeList.m_deletedFiles.size());
-            outputFiles(changeList.m_deletedFiles);
-
-            return output;
-        }
-
         //! Gets the appropriate console return code for the specified test sequence result.
         ReturnCode GetReturnCodeForTestSequenceResult(TestSequenceResult result)
         {
@@ -79,6 +56,20 @@ namespace TestImpact
             }
         }
 
+        //! Wrapper around sequence reports to optionally serialize them and transform the result into a return code.
+        template<typename SequenceReportType>
+        ReturnCode ConsumeSequenceReportAndGetReturnCode(const SequenceReportType& sequenceReport, const CommandLineOptions& options)
+        {
+            if (options.HasSequenceReportFile())
+            {
+                std::cout << "Exporting sequence report '" << options.GetSequenceReportFile().value().c_str() << "'" << std::endl;
+                const auto sequenceReportJson = SerializeSequenceReport(sequenceReport);
+                WriteFileContents<SequenceReportException>(sequenceReportJson, options.GetSequenceReportFile().value());
+            }
+
+            return GetReturnCodeForTestSequenceResult(sequenceReport.GetResult());
+        }
+
         //! Wrapper around impact analysis sequences to handle the case where the safe mode option is active.
         ReturnCode WrappedImpactAnalysisTestSequence(
             TestSequenceEventHandler& sequenceEventHandler,
@@ -93,35 +84,34 @@ namespace TestImpact
                 CommandLineOptionsException,
                 "Expected a change list for impact analysis but none was provided");
 
-            TestSequenceResult result = TestSequenceResult::Failure;
             if (options.HasSafeMode())
             {
                 if (options.GetTestSequenceType() == TestSequenceType::ImpactAnalysis)
                 {
-                    auto safeImpactAnalysisSequenceReport = runtime.SafeImpactAnalysisTestSequence(
-                        changeList.value(),
-                        options.GetTestPrioritizationPolicy(),
-                        options.GetTestTargetTimeout(),
-                        options.GetGlobalTimeout(),
-                        SafeImpactAnalysisTestSequenceStartCallback,
-                        SafeImpactAnalysisTestSequenceCompleteCallback,
-                        TestRunCompleteCallback);
-        
-                    result = safeImpactAnalysisSequenceReport.GetResult();
+                    return ConsumeSequenceReportAndGetReturnCode(
+                        runtime.SafeImpactAnalysisTestSequence(
+                            changeList.value(),
+                            options.GetTestPrioritizationPolicy(),
+                            options.GetTestTargetTimeout(),
+                            options.GetGlobalTimeout(),
+                            SafeImpactAnalysisTestSequenceStartCallback,
+                            SafeImpactAnalysisTestSequenceCompleteCallback,
+                            TestRunCompleteCallback),
+                        options);
                 }
                 else if (options.GetTestSequenceType() == TestSequenceType::ImpactAnalysisNoWrite)
                 {
                     // A no-write impact analysis sequence with safe mode enabled is functionally identical to a regular sequence type
                     // due to a) the selected tests being run without instrumentation and b) the discarded tests also being run without
                     // instrumentation
-                    auto sequenceReport = runtime.RegularTestSequence(
-                        options.GetTestTargetTimeout(),
-                        options.GetGlobalTimeout(),
-                        TestSequenceStartCallback,
-                        TestSequenceCompleteCallback,
-                        TestRunCompleteCallback);
-
-                    result = sequenceReport.GetResult();
+                    return ConsumeSequenceReportAndGetReturnCode(
+                        runtime.RegularTestSequence(
+                            options.GetTestTargetTimeout(),
+                            options.GetGlobalTimeout(),
+                            TestSequenceStartCallback,
+                            TestSequenceCompleteCallback,
+                            TestRunCompleteCallback),
+                        options);
                 }
                 else
                 {
@@ -144,20 +134,18 @@ namespace TestImpact
                     throw(Exception("Unexpected sequence type"));
                 }
         
-                auto impactAnalysisSequenceReport = runtime.ImpactAnalysisTestSequence(
-                    changeList.value(),
-                    options.GetTestPrioritizationPolicy(),
-                    dynamicDependencyMapPolicy,
-                    options.GetTestTargetTimeout(),
-                    options.GetGlobalTimeout(),
-                    ImpactAnalysisTestSequenceStartCallback,
-                    ImpactAnalysisTestSequenceCompleteCallback,
-                    TestRunCompleteCallback);
-
-                result = impactAnalysisSequenceReport.GetResult();
+                return ConsumeSequenceReportAndGetReturnCode(
+                    runtime.ImpactAnalysisTestSequence(
+                        changeList.value(),
+                        options.GetTestPrioritizationPolicy(),
+                        dynamicDependencyMapPolicy,
+                        options.GetTestTargetTimeout(),
+                        options.GetGlobalTimeout(),
+                        ImpactAnalysisTestSequenceStartCallback,
+                        ImpactAnalysisTestSequenceCompleteCallback,
+                        TestRunCompleteCallback),
+                    options);
             }
-        
-            return GetReturnCodeForTestSequenceResult(result);
         };
 
         //! Entry point for the test impact analysis framework console front end application.
@@ -172,23 +160,16 @@ namespace TestImpact
                 if (options.HasChangeListFile())
                 {
                     changeList = DeserializeChangeList(ReadFileContents<CommandLineOptionsException>(*options.GetChangeListFile()));
-                    if (options.HasOutputChangeList())
-                    {
-                        std::cout << "Change List:\n";
-                        std::cout << GenerateChangeListString(*changeList).c_str();
-
-                        if (options.GetTestSequenceType() == TestSequenceType::None)
-                        {
-                            return ReturnCode::Success;
-                        }
-                    }
                 }
 
-                // As of now, there are no other non-test operations other than printing a change list so getting this far is considered an error
-                AZ_TestImpact_Eval(options.GetTestSequenceType() != TestSequenceType::None, CommandLineOptionsException, "No action specified");
+                // As of now, there are no non-test operations but leave this door open for the future
+                if (options.GetTestSequenceType() == TestSequenceType::None)
+                {
+                    return ReturnCode::Success;
+                }
 
                 std::cout << "Constructing in-memory model of source tree and test coverage for test suite ";
-                std::cout << GetSuiteTypeName(options.GetSuiteFilter()).c_str() << ", this may take a moment...\n";
+                std::cout << SuiteTypeAsString(options.GetSuiteFilter()).c_str() << ", this may take a moment...\n";
                 Runtime runtime(
                     RuntimeConfigurationFactory(ReadFileContents<CommandLineOptionsException>(options.GetConfigurationFile())),
                     options.GetSuiteFilter(),
@@ -215,25 +196,25 @@ namespace TestImpact
                 {
                 case TestSequenceType::Regular:
                 {
-                    const auto sequenceReport = runtime.RegularTestSequence(
-                        options.GetTestTargetTimeout(),
-                        options.GetGlobalTimeout(),
-                        AZStd::ref(sequenceEventHandler),
-                        AZStd::ref(sequenceEventHandler),
-                        AZStd::ref(sequenceEventHandler));
-
-                    return GetReturnCodeForTestSequenceResult(sequenceReport.GetResult());
+                    return ConsumeSequenceReportAndGetReturnCode(
+                        runtime.RegularTestSequence(
+                            options.GetTestTargetTimeout(),
+                            options.GetGlobalTimeout(),
+                            TestSequenceStartCallback,
+                            TestSequenceCompleteCallback,
+                            TestRunCompleteCallback),
+                        options);
                 }
                 case TestSequenceType::Seed:
                 {
-                        const auto sequenceReport = runtime.SeededTestSequence(
-                        options.GetTestTargetTimeout(),
-                        options.GetGlobalTimeout(),
-                        AZStd::ref(sequenceEventHandler),
-                        AZStd::ref(sequenceEventHandler),
-                        AZStd::ref(sequenceEventHandler));
-
-                    return GetReturnCodeForTestSequenceResult(sequenceReport.GetResult());
+                    return ConsumeSequenceReportAndGetReturnCode(
+                        runtime.SeededTestSequence(
+                            options.GetTestTargetTimeout(),
+                            options.GetGlobalTimeout(),
+                            TestSequenceStartCallback,
+                            TestSequenceCompleteCallback,
+                            TestRunCompleteCallback),
+                        options);
                 }
                 case TestSequenceType::ImpactAnalysisNoWrite:
                 case TestSequenceType::ImpactAnalysis:
@@ -248,14 +229,14 @@ namespace TestImpact
                     }
                     else
                     {
-                        const auto sequenceReport = runtime.SeededTestSequence(
-                            options.GetTestTargetTimeout(),
-                            options.GetGlobalTimeout(),
-                            AZStd::ref(sequenceEventHandler),
-                            AZStd::ref(sequenceEventHandler),
-                            AZStd::ref(sequenceEventHandler));
-
-                        return GetReturnCodeForTestSequenceResult(sequenceReport.GetResult());
+                        return ConsumeSequenceReportAndGetReturnCode(
+                            runtime.SeededTestSequence(
+                                options.GetTestTargetTimeout(),
+                                options.GetGlobalTimeout(),
+                                TestSequenceStartCallback,
+                                TestSequenceCompleteCallback,
+                                TestRunCompleteCallback),
+                            options);
                     }
                 }
                 default:

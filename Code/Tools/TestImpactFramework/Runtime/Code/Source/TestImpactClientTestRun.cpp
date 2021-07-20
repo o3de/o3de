@@ -12,7 +12,7 @@
 
 #include <TestImpactFramework/TestImpactClientTestRun.h>
 
-#include <AzCore/std/containers/array.h>
+#include <AzCore/std/tuple.h>
 
 namespace TestImpact
 {
@@ -63,77 +63,122 @@ namespace TestImpact
             return m_result;
         }
 
-        TestFailure::TestFailure(const AZStd::string& testName, const AZStd::string& errorMessage)
+        TestRunWithExecutonFailure::TestRunWithExecutonFailure(TestRun&& testRun)
+            : TestRun(AZStd::move(testRun))
+        {
+        }
+
+        TimedOutTestRun::TimedOutTestRun(TestRun&& testRun)
+            : TestRun(AZStd::move(testRun))
+        {
+        }
+
+        UnexecutedTestRun::UnexecutedTestRun(TestRun&& testRun)
+            : TestRun(AZStd::move(testRun))
+        {
+        }
+
+        TestCase::TestCase(const AZStd::string& testName, TestCaseResult result)
             : m_name(testName)
-            , m_errorMessage(errorMessage)
+            , m_result(result)
         {
         }
 
-        const AZStd::string& TestFailure::GetName() const
+        const AZStd::string& TestCase::GetName() const
         {
             return m_name;
         }
 
-        const AZStd::string& TestFailure::GetErrorMessage() const
+        TestCaseResult TestCase::GetResult() const
         {
-            return m_errorMessage;
+            return m_result;
         }
 
-        TestCaseFailure::TestCaseFailure(const AZStd::string& testCaseName, AZStd::vector<TestFailure>&& testFailures)
+        TestSuite::TestSuite(const AZStd::string& testCaseName, AZStd::vector<TestCase>&& testCases)
             : m_name(testCaseName)
-            , m_testFailures(AZStd::move(testFailures))
+            , m_testCases(AZStd::move(testCases))
         {
+            for (const auto& testCase : m_testCases)
+            {
+                if (auto result = testCase.GetResult();
+                    result == TestCaseResult::Passed)
+                {
+                    m_numPassingTests++;
+                }
+                else if (result == TestCaseResult::Failed)
+                {
+                    m_numFailingTests++;
+                }
+            }
         }
 
-        const AZStd::string& TestCaseFailure::GetName() const
+        const AZStd::string& TestSuite::GetName() const
         {
             return m_name;
         }
 
-        const AZStd::vector<TestFailure>& TestCaseFailure::GetTestFailures() const
+        const AZStd::vector<TestCase>& TestSuite::GetTestCases() const
         {
-            return m_testFailures;
+            return m_testCases;
         }
 
-        static size_t CalculateNumTestRunFailures(const AZStd::vector<TestCaseFailure>& testFailures)
+        size_t TestSuite::GetNumPassingTests() const
         {
-            size_t numTestFailures = 0;
-            for (const auto& testCase : testFailures)
+            return m_numPassingTests;
+        }
+
+        size_t TestSuite::GetNumFailingTests() const
+        {
+            return m_numFailingTests;
+        }
+
+        AZStd::tuple<size_t, size_t> CalculateNumPassingAndFailingTestCases(const AZStd::vector<TestSuite>& testSuites)
+        {
+            size_t totalNumPassingTests = 0;
+            size_t totalNumFailingTests = 0;
+
+            for (const auto& testSuite : testSuites)
             {
-                numTestFailures += testCase.GetTestFailures().size();
+                totalNumPassingTests += testSuite.GetNumPassingTests();
+                totalNumPassingTests += testSuite.GetNumFailingTests();
             }
 
-            return numTestFailures;
+            return { totalNumPassingTests, totalNumFailingTests };
         }
 
-        TestRunWithTestFailures::TestRunWithTestFailures(
+        CompletedTestRun::CompletedTestRun(
             const AZStd::string& name,
             const AZStd::string& commandString,
             AZStd::chrono::high_resolution_clock::time_point startTime,
             AZStd::chrono::milliseconds duration,
             TestRunResult result,
-            AZStd::vector<TestCaseFailure>&& testFailures)
+            AZStd::vector<TestSuite>&& testSuites)
             : TestRun(name, commandString, startTime, duration, result)
-            , m_testCaseFailures(AZStd::move(testFailures))
+            , m_testSuites(AZStd::move(testSuites))
         {
-            m_numTestFailures = CalculateNumTestRunFailures(m_testCaseFailures);
+            AZStd::tie(m_totalNumPassingTests, m_totalNumFailingTests) = CalculateNumPassingAndFailingTestCases(m_testSuites);
         }
 
-        TestRunWithTestFailures::TestRunWithTestFailures(TestRun&& testRun, AZStd::vector<TestCaseFailure>&& testFailures)
+        CompletedTestRun::CompletedTestRun(TestRun&& testRun, AZStd::vector<TestSuite>&& testSuites)
             : TestRun(AZStd::move(testRun))
-            , m_testCaseFailures(AZStd::move(testFailures))
+            , m_testSuites(AZStd::move(testSuites))
         {
-            m_numTestFailures = CalculateNumTestRunFailures(m_testCaseFailures);
+            AZStd::tie(m_totalNumPassingTests, m_totalNumFailingTests) = CalculateNumPassingAndFailingTestCases(m_testSuites);
         }
 
-        size_t TestRunWithTestFailures::GetNumTestFailures() const
+        size_t CompletedTestRun::GetTotalNumPassingTests() const
         {
-            return m_numTestFailures;
+            return m_totalNumPassingTests;
         }
 
-        const AZStd::vector<TestCaseFailure>& TestRunWithTestFailures::GetTestCaseFailures() const
+        size_t CompletedTestRun::GetTotalNumFailingTests() const
         {
-            return m_testCaseFailures;
+            return m_totalNumFailingTests;
+        }
+
+        const AZStd::vector<TestSuite>& CompletedTestRun::GetTestSuites() const
+        {
+            return m_testSuites;
         }
     } // namespace Client
 } // namespace TestImpact

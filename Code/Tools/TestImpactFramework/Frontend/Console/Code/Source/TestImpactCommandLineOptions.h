@@ -43,17 +43,20 @@ namespace TestImpact
         //! Returns true if a change list file path has been supplied, otherwise false.
         bool HasChangeListFile() const;
 
+        //! Returns true if a sequence report file path has been supplied, otherwise false.
+        bool HasSequenceReportFile() const;
+
         //! Returns true if the safe mode option has been enabled, otherwise false.
         bool HasSafeMode() const;
-
-        //! Returns true if the output change list option has been enabled, otherwise false.
-        bool HasOutputChangeList() const;
 
         //! Returns the path to the runtime configuration file.
         const RepoPath& GetConfigurationFile() const;
 
         //! Returns the path to the change list file (if any).
         const AZStd::optional<RepoPath>& GetChangeListFile() const;
+
+        //! Returns the path to the sequence report file (if any).
+        const AZStd::optional<RepoPath>& GetSequenceReportFile() const;
 
         //! Returns the test sequence type to run.
         TestSequenceType GetTestSequenceType() const;
@@ -94,7 +97,7 @@ namespace TestImpact
     private:
         RepoPath m_configurationFile;
         AZStd::optional<RepoPath> m_changeListFile;
-        bool m_outputChangeList = false;
+        AZStd::optional<RepoPath> m_sequenceReportFile;
         TestSequenceType m_testSequenceType;
         Policy::TestPrioritization m_testPrioritizationPolicy = Policy::TestPrioritization::None;
         Policy::ExecutionFailure m_executionFailurePolicy = Policy::ExecutionFailure::Continue;
