@@ -22,7 +22,7 @@ namespace CommandSystem
     // adjust a node group
     MCORE_DEFINECOMMAND_START(CommandAdjustNodeGroup, "Adjust node group", true)
     bool                    mOldDirtyFlag;
-    EMotionFX::NodeGroup*   mOldNodeGroup;
+    EMotionFX::NodeGroup*   mOldNodeGroup = nullptr;
     MCORE_DEFINECOMMAND_END
 
 

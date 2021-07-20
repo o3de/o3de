@@ -24,7 +24,6 @@ namespace CommandSystem
     // constructor
     CommandAdjustNodeGroup::CommandAdjustNodeGroup(MCore::Command* orgCommand)
         : MCore::Command("AdjustNodeGroup", orgCommand)
-        , mOldNodeGroup(nullptr)
     {
     }
 
@@ -32,10 +31,7 @@ namespace CommandSystem
     // destructor
     CommandAdjustNodeGroup::~CommandAdjustNodeGroup()
     {
-        if (mOldNodeGroup)
-        {
-            mOldNodeGroup->Destroy();
-        }
+        delete mOldNodeGroup;
     }
 
 
@@ -65,10 +61,7 @@ namespace CommandSystem
         }
 
         // copy the old node group for undo
-        if (mOldNodeGroup)
-        {
-            mOldNodeGroup->Destroy();
-        }
+        delete mOldNodeGroup;
 
         mOldNodeGroup = aznew EMotionFX::NodeGroup(*nodeGroup);
 
@@ -235,11 +228,8 @@ namespace CommandSystem
             }
         }
 
-        // delete the old node group
-        if (mOldNodeGroup)
-        {
-            mOldNodeGroup->Destroy();
-        }
+        delete mOldNodeGroup;
+
         mOldNodeGroup = nullptr;
 
         // set the dirty flag back to the old value
@@ -304,7 +294,7 @@ namespace CommandSystem
         }
 
         // add new node group to the actor
-        EMotionFX::NodeGroup* nodeGroup = EMotionFX::NodeGroup::Create(name.c_str());
+        EMotionFX::NodeGroup* nodeGroup = aznew EMotionFX::NodeGroup(name);
         actor->AddNodeGroup(nodeGroup);
 
         // save the current dirty flag and tell the actor that something got changed
@@ -374,10 +364,7 @@ namespace CommandSystem
     // destructor
     CommandRemoveNodeGroup::~CommandRemoveNodeGroup()
     {
-        if (mOldNodeGroup)
-        {
-            mOldNodeGroup->Destroy();
-        }
+        delete mOldNodeGroup;
     }
 
 
@@ -407,11 +394,7 @@ namespace CommandSystem
         }
 
         // copy the old node group for undo
-        if (mOldNodeGroup)
-        {
-            mOldNodeGroup->Destroy();
-        }
-
+        delete mOldNodeGroup;
         mOldNodeGroup = aznew EMotionFX::NodeGroup(*nodeGroup);
 
         // remove the node group
