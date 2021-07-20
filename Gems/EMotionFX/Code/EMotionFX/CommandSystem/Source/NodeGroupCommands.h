@@ -25,12 +25,33 @@ namespace CommandSystem
     // adjust a node group
     class CommandAdjustNodeGroup
         : public MCore::Command
+        , public EMotionFX::ParameterMixinActorId
     {
     public:
-        CommandAdjustNodeGroup(MCore::Command* orgCommand = nullptr);
+        AZ_CLASS_ALLOCATOR_DECL
+
+        enum class NodeAction
+        {
+            Add,
+            Remove,
+            Replace
+        };
+
+        static constexpr inline AZStd::string_view s_commandName = "AdjustNodeGroup";
+
+        CommandAdjustNodeGroup(
+            MCore::Command* orgCommand = nullptr,
+            uint32 actorId = MCORE_INVALIDINDEX32,
+            const AZStd::string& name = {},
+            AZStd::optional<AZStd::string> newName = AZStd::nullopt,
+            AZStd::optional<bool> enabledOnDefault = AZStd::nullopt,
+            AZStd::optional<AZStd::vector<AZStd::string>> nodeNames = AZStd::nullopt,
+            AZStd::optional<NodeAction> nodeAction = AZStd::nullopt
+        );
         bool Execute(const MCore::CommandLine& parameters, AZStd::string& outResult) override;
         bool Undo(const MCore::CommandLine& parameters, AZStd::string& outResult) override;
         void InitSyntax() override;
+        bool SetCommandParameters(const MCore::CommandLine& parameters) override;
         bool GetIsUndoable() const override
         {
             return true;
@@ -45,9 +66,15 @@ namespace CommandSystem
             return new CommandAdjustNodeGroup(this);
         }
 
-    protected:
-        bool mOldDirtyFlag = false;
-        AZStd::unique_ptr<EMotionFX::NodeGroup> mOldNodeGroup = nullptr;
+    private:
+        AZStd::string m_name;
+        AZStd::optional<AZStd::string> m_newName;
+        AZStd::optional<bool> m_enabledOnDefault;
+        AZStd::optional<AZStd::vector<AZStd::string>> m_nodeNames;
+        AZStd::optional<NodeAction> m_nodeAction;
+
+        bool m_oldDirtyFlag = false;
+        AZStd::unique_ptr<EMotionFX::NodeGroup> m_oldNodeGroup = nullptr;
     };
 
     // add node group
