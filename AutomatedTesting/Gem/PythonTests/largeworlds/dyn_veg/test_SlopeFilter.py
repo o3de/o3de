@@ -68,7 +68,7 @@ class TestSlopeFilter(object):
     @pytest.mark.test_case_id("C4814464", "C4874096")
     @pytest.mark.SUITE_periodic
     @pytest.mark.dynveg_filter
-    @pytest.mark.xfail      # LYN-3275
+    @pytest.mark.xfail(reason="https://github.com/o3de/o3de/issues/2303")
     def test_SlopeFilter_ComponentAndOverrides_InstancesPlantOnValidSlopes(self, request, editor, level,
                                                                            launcher_platform):
 
