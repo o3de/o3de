@@ -94,7 +94,7 @@ namespace AZ
             inline static AZStd::string GetImageBindStrings(AZ::RHI::ImageBindFlags imageBindFlags)
             {
                 AZStd::string imageBindStrings;
-                for (auto& flag : AZ::RHI::ImageBindFlagsMembers)
+                for (const auto& flag : AZ::RHI::ImageBindFlagsMembers)
                 {
                     if (flag.m_value != AZ::RHI::ImageBindFlags::None && AZ::RHI::CheckBitsAll(imageBindFlags, flag.m_value))
                     {
@@ -108,7 +108,7 @@ namespace AZ
             inline static AZStd::string GetBufferBindStrings(AZ::RHI::BufferBindFlags bufferBindFlags)
             {
                 AZStd::string bufferBindStrings;
-                for (auto& flag : AZ::RHI::BufferBindFlagsMembers)
+                for (const auto& flag : AZ::RHI::BufferBindFlagsMembers)
                 {
                     if (flag.m_value != AZ::RHI::BufferBindFlags::None && AZ::RHI::CheckBitsAll(bufferBindFlags, flag.m_value))
                     {
@@ -1142,7 +1142,7 @@ namespace AZ
         {
             // Update the table according to the latest filters applied
             m_tableRows.clear();
-            for (auto& pool : m_savedPools)
+            for (const auto& pool : m_savedPools)
             {
                 Name poolName = pool.m_name.IsEmpty() ? Name("Unnamed pool") : pool.m_name;
 
@@ -1154,27 +1154,21 @@ namespace AZ
 
                 if (m_includeBuffers)
                 {
-                    for (auto& buf : pool.m_buffers)
+                    for (const auto& buf : pool.m_buffers)
                     {
-                        if (buf.m_name.IsEmpty())
-                        {
-                            buf.m_name = Name("Unnamed Buffer");
-                        }
+                        const Name bufName = buf.m_name.IsEmpty() ? Name("Unnamed Buffer") : buf.m_name;
                         const AZStd::string flags = GpuProfilerImGuiHelper::GetBufferBindStrings(buf.m_bindFlags);
-                        m_tableRows.push_back({ poolName, buf.m_name, buf.m_sizeInBytes, flags });
+                        m_tableRows.push_back({ poolName, bufName, buf.m_sizeInBytes, flags });
                     }
                 }
 
                 if (m_includeImages)
                 {
-                    for (auto& img : pool.m_images)
+                    for (const auto& img : pool.m_images)
                     {
-                        if (img.m_name.IsEmpty())
-                        {
-                            img.m_name = Name("Unnamed Image");
-                        }
+                        const Name imgName = img.m_name.IsEmpty() ? Name("Unnamed Image") : img.m_name;
                         const AZStd::string flags = GpuProfilerImGuiHelper::GetImageBindStrings(img.m_bindFlags);
-                        m_tableRows.push_back({ poolName, img.m_name, img.m_sizeInBytes, flags });
+                        m_tableRows.push_back({ poolName, imgName, img.m_sizeInBytes, flags });
                     }
                 }
             }

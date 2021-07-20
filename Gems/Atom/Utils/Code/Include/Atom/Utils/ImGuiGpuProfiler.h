@@ -259,6 +259,7 @@ namespace AZ
             // Draw the overall GPU memory profiling window.
             void DrawGpuMemoryWindow(bool& draw);
 
+        private:
             // Draw the heap usage pie chart
             void DrawPieChart(const AZ::RHI::MemoryStatistics::Heap& heap);
 
@@ -269,7 +270,7 @@ namespace AZ
 
             // Sort the table according to the appropriate column.
             void SortTable(ImGuiTableSortSpecs* sortSpecs);
-        private:
+
             struct TableRow {
                 Name m_parentPoolName;
                 Name m_bufImgName;
