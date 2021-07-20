@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#include <Atom/RHI.Reflect/Handle.h>
 #include <Atom/RHI.Reflect/Limits.h>
 #include <Atom/RHI/StreamBufferView.h>
 #include <Atom/RHI/IndexBufferView.h>
@@ -23,6 +22,10 @@ namespace AZ
         class ShaderResourceGroup;
         struct Scissor;
         struct Viewport;
+        struct DefaultNamespaceType;
+        // Forward declaration to
+        template <typename T , typename NamespaceType>
+        struct Handle;
 
         struct DrawLinear
         {
@@ -149,13 +152,13 @@ namespace AZ
         };
 
         using DrawItemSortKey = int64_t;
-                
+
         // A filter associate to a DrawItem which can be used to filter the DrawItem when submitting to command list
-        using DrawFilterTag = Handle<uint8_t>;
+        using DrawFilterTag = Handle<uint8_t, DefaultNamespaceType>;
         using DrawFilterMask = uint32_t; // AZStd::bitset's impelmentation is too expensive.
         constexpr uint32_t DrawFilterMaskDefaultValue = uint32_t(-1);  // Default all bit to 1.
         static_assert(sizeof(DrawFilterMask) * 8 >= Limits::Pipeline::DrawFilterTagCountMax, "DrawFilterMask doesn't have enough bits for maximum tag count");
-     
+
         struct DrawItemProperties
         {
             DrawItemProperties() = default;
