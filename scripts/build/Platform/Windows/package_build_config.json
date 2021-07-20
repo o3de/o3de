@@ -1,15 +1,4 @@
 {
-  "profile_vs2017_atom": {
-    "COMMAND": "build_windows.cmd",
-    "PARAMETERS": {
-      "CONFIGURATION": "profile",
-      "OUTPUT_DIRECTORY": "windows_vs2017",
-      "CMAKE_OPTIONS": "-G \"Visual Studio 15 2017\" -A x64 -T host=x64 -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE",
-      "CMAKE_LY_PROJECTS": "AtomTest;AtomSampleViewer",
-      "CMAKE_TARGET": "ALL_BUILD",
-      "CMAKE_NATIVE_BUILD_ARGS": "/m:4 /p:CL_MPCount=!HALF_PROCESSORS! /nologo"
-    }
-  },
   "profile_vs2019_atom": {
     "COMMAND":"build_windows.cmd",
     "PARAMETERS": {
