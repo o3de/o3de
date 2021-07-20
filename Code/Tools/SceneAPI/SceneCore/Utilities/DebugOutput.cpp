@@ -7,6 +7,7 @@
  */
 
 #include "DebugOutput.h"
+#include <AzCore/std/optional.h>
 
 namespace AZ::SceneAPI::Utilities
 {

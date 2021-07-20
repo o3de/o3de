@@ -6,9 +6,11 @@
  *
  */
 
+
 #include <AudioAllocators.h>
 #include <AudioLogger.h>
 #include <SoundCVars.h>
+#include <AzCore/Memory/OSAllocator.h>
 
 namespace Audio::Platform
 {

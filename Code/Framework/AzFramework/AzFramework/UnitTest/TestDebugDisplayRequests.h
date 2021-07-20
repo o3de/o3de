@@ -7,6 +7,8 @@
  */
 
 #pragma once
+
+#include <AzCore/std/containers/stack.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 
 namespace UnitTest

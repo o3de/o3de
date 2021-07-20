@@ -12,6 +12,7 @@
 #include "AzCore/Asset/AssetManager.h"
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Jobs/JobFunction.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace LmbrCentral
 {
