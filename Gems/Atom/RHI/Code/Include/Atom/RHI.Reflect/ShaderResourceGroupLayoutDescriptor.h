@@ -9,7 +9,6 @@
 
 #include <Atom/RHI.Reflect/SamplerState.h>
 #include <Atom/RHI.Reflect/Interval.h>
-#include <Atom/RHI.Reflect/Handle.h>
 #include <AzCore/Utils/TypeHash.h>
 
 namespace AZ
@@ -18,6 +17,8 @@ namespace AZ
 
     namespace RHI
     {
+        template <typename T, typename NamespaceType>
+        struct Handle;
         /**
          * A "ShaderInput" describes an input into a ShaderResourceGroup. Shader inputs are comprised of
          * Buffers, Images, Samplers, and Constants. The former three shader inputs each contain an array

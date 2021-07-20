@@ -10,6 +10,7 @@
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/SerializeContextEnum.inl>
 #include <AzCore/Serialization/Utils.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>

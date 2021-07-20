@@ -10,6 +10,7 @@
 
 #ifdef IMGUI_ENABLED
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/std/string/conversions.h>

@@ -7,12 +7,11 @@
  */
 #pragma once
 
-#include <Atom/RHI.Reflect/Handle.h>
-
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Utils/TypeHash.h>
 #include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/unordered_map.h>
 
 namespace AZ
 {
@@ -20,6 +19,9 @@ namespace AZ
 
     namespace RHI
     {
+        template <typename T, typename NamespaceType>
+        struct Handle;
+
         //! Command types that can be used when doing Indirect Rendering.
         enum class IndirectCommandType : uint32_t
         {

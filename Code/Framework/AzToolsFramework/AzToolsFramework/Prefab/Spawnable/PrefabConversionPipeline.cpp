@@ -6,9 +6,11 @@
  *
  */
 
+#include <AzToolsFramework/Prefab/Spawnable/PrefabConversionPipeline.h>
+
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Settings/SettingsRegistry.h>
-#include <AzToolsFramework/Prefab/Spawnable/PrefabConversionPipeline.h>
 
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {

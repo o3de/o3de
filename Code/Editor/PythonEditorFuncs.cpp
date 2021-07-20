@@ -21,6 +21,9 @@
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
+// AzCore
+#include <AzCore/RTTI/BehaviorContext.h>
+
 // Editor
 #include "CryEdit.h"
 #include "GameEngine.h"

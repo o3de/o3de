@@ -25,6 +25,7 @@
 #include <AzCore/Math/ShapeIntersection.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManagerBus.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/Components/CameraBus.h>
 #include <AzFramework/Session/ISessionRequests.h>

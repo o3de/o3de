@@ -10,6 +10,7 @@
 #include <AzCore/UserSettings/UserSettings.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/AZStdContainers.inl>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Math/Sfmt.h>
 #include <AzToolsFramework/Slice/SliceUtilities.h>

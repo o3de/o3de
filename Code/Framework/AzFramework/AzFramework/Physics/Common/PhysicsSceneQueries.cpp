@@ -13,6 +13,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 
 #include <AzFramework/Physics/CollisionBus.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>

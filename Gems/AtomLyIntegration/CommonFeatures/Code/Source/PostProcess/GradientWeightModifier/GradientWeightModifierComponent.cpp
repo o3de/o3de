@@ -8,6 +8,8 @@
 
 #include <PostProcess/GradientWeightModifier/GradientWeightModifierComponent.h>
 
+#include <AzCore/RTTI/BehaviorContext.h>
+
 namespace AZ
 {
     namespace Render

@@ -10,6 +10,18 @@
 
 #include <ScriptEvents/Internal/VersionedProperty.h>
 
+namespace AZ
+{
+    class BehaviorClass;
+    class BehaviorMethod;
+    namespace Script
+    {
+        namespace Attributes
+        {
+            enum class OperatorType : int;
+        }
+    }
+}
 namespace ScriptEvents
 {
     namespace Types

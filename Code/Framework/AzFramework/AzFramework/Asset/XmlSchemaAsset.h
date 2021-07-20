@@ -12,6 +12,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Asset/AssetCommon.h>
 
 namespace AzFramework
 {

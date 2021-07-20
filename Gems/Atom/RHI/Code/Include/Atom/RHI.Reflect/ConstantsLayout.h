@@ -9,6 +9,7 @@
 
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 #include <Atom/RHI.Reflect/NameIdReflectionMap.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AtomCore/std/containers/array_view.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 #include <AzCore/Utils/TypeHash.h>

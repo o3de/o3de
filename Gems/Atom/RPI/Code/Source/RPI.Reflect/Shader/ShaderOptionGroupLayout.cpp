@@ -8,6 +8,8 @@
 
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroupLayout.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
+#include <Atom/RHI.Reflect/NameIdReflectionMapReflectImpl.inl>
+#include <Atom/RHI.Reflect/HandleReflectImpl.inl>
 
 #include <Atom/RHI.Reflect/Bits.h>
 
@@ -15,6 +17,7 @@
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/Utils/TypeHash.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 
 #include <AzFramework/StringFunc/StringFunc.h>
 

@@ -12,6 +12,12 @@
 #include <AssetBuilderSDK/AssetBuilderBusses.h>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 
+
+namespace AZ
+{
+    class ScriptContext;
+} // namespace AZ
+
 namespace LuaBuilder
 {
     class LuaBuilderWorker

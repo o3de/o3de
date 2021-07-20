@@ -8,9 +8,10 @@
 
 #pragma once
 
-#include <AzCore/std/containers/vector.h>
 #include <Atom/RHI/Buffer.h>
 #include <Atom/RHI/BufferPool.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/Asset/AssetCommon.h>
 
 //! This file holds useful utility functions for working with the RPI.
 

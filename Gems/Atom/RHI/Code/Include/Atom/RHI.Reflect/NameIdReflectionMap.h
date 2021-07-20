@@ -7,12 +7,12 @@
  */
 
 #pragma once
-
 #include <Atom/RHI.Reflect/Handle.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/sort.h>
+#include <AzCore/std/containers/vector.h>
 
 namespace AZ
 {
@@ -88,23 +88,6 @@ namespace AZ
 
             AZStd::vector<ReflectionPair> m_reflectionMap;
         };
-
-        template <typename IndexType>
-        void NameIdReflectionMap<IndexType>::Reflect(AZ::ReflectContext* context)
-        {
-            if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
-            {
-                serializeContext->Class<typename NameIdReflectionMap<IndexType>::ReflectionPair>()
-                    ->Version(2)
-                    ->Field("Name", &ReflectionPair::m_name)
-                    ->Field("Index", &ReflectionPair::m_index);
-
-                serializeContext->Class<NameIdReflectionMap<IndexType>>()
-                    ->Version(0)
-                    ->template EventHandler<typename NameIdReflectionMap<IndexType>::NameIdReflectionMapSerializationEvents>()
-                    ->Field("ReflectionMap", &NameIdReflectionMap<IndexType>::m_reflectionMap);
-            }
-        }
 
         template <typename IndexType>
         void NameIdReflectionMap<IndexType>::Clear()

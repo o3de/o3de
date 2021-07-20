@@ -8,9 +8,11 @@
 
 #include <math.h>
 
-#include <AzFramework/StringFunc/StringFunc.h>
 #include <Atom/RPI.Reflect/Pass/PassAttachmentReflect.h>
 #include <Atom/RPI.Reflect/Pass/PassName.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/SerializeContextEnum.inl>
+#include <AzFramework/StringFunc/StringFunc.h>
 
 namespace AZ
 {

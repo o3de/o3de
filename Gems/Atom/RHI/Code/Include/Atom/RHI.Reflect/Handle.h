@@ -8,10 +8,12 @@
 #pragma once
 
 #include <AzCore/base.h>
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/RTTI/TypeInfo.h>
 
 namespace AZ
 {
+    class ReflectContext;
+
     namespace RHI
     {
         struct DefaultNamespaceType {
@@ -87,27 +89,6 @@ namespace AZ
 
             T m_index = NullIndex;
         };
-
-        template <typename T, typename NamespaceType>
-        void Handle<T, NamespaceType>::Reflect(AZ::ReflectContext* context)
-        {
-            if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
-            {
-                serializeContext->Class<Handle<T, NamespaceType>>()
-                    ->Version(1)
-                    ->Field("m_index", &Handle<T, NamespaceType>::m_index);
-            }
-
-            if (BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context))
-            {
-                behaviorContext->Class<Handle<T, NamespaceType>>()
-                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
-                    ->Attribute(AZ::Script::Attributes::Category, "RHI")
-                    ->Attribute(AZ::Script::Attributes::Module, "rhi")
-                    ->Method("IsValid", &Handle<T, NamespaceType>::IsValid)
-                    ;
-            }
-        }
 
         template <typename HandleType, typename NamespaceType>
         const Handle<HandleType, NamespaceType> Handle<HandleType, NamespaceType>::Null(

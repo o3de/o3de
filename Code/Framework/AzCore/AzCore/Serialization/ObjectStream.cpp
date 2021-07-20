@@ -13,6 +13,7 @@
 #include <AzCore/Serialization/DynamicSerializableField.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Slice/SliceAsset.h>
 #include <AzCore/std/functional.h>

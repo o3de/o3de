@@ -8,6 +8,8 @@
 
 #include <PostProcessing/SMAAConfigurationDescriptor.h>
 
+#include <AzCore/Serialization/SerializeContext.h>
+
 namespace AZ
 {
     namespace Render

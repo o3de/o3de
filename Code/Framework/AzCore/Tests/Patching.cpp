@@ -9,6 +9,7 @@
 #include "FileIOBaseTestTypes.h"
 
 #include <AzCore/Serialization/DataPatch.h>
+#include <AzCore/Serialization/Internal/AddressTypeSerializer.h>
 #include <AzCore/Serialization/DynamicSerializableField.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/UnitTest/TestTypes.h>

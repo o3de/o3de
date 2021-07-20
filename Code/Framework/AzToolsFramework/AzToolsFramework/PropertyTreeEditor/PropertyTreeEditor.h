@@ -7,8 +7,10 @@
  */
 #pragma once
 
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Component/EntityId.h>
+#include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/unordered_map.h>
 

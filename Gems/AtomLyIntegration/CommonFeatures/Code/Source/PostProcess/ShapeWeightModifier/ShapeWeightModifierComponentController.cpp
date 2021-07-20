@@ -8,6 +8,7 @@
 
 #include <PostProcess/ShapeWeightModifier/ShapeWeightModifierComponentController.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ
@@ -77,7 +78,7 @@ namespace AZ
             float distance = 0.0f;
             LmbrCentral::ShapeComponentRequestsBus::EventResult(distance, m_entityId, &LmbrCentral::ShapeComponentRequestsBus::Events::DistanceFromPoint, influencerPosition);
 
-            // In the special case of 0 falloff, make sure that all points inside the shape (0 distance) return 
+            // In the special case of 0 falloff, make sure that all points inside the shape (0 distance) return
             // 1.0, and all points outside the shape return 0.
             if (m_configuration.m_falloffDistance == 0.0f)
             {

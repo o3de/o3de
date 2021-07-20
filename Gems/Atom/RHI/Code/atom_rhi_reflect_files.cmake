@@ -17,8 +17,10 @@ set(FILES
     Include/Atom/RHI.Reflect/ClearValue.h
     Include/Atom/RHI.Reflect/Format.h
     Include/Atom/RHI.Reflect/Handle.h
+    Include/Atom/RHI.Reflect/HandleReflectImpl.inl
     Include/Atom/RHI.Reflect/Interval.h
     Include/Atom/RHI.Reflect/NameIdReflectionMap.h
+    Include/Atom/RHI.Reflect/NameIdReflectionMapReflectImpl.inl
     Include/Atom/RHI.Reflect/Origin.h
     Include/Atom/RHI.Reflect/Size.h
     Source/RHI.Reflect/Base.cpp

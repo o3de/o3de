@@ -9,6 +9,7 @@
 #include <Atom/RPI.Edit/Shader/ShaderVariantListSourceData.h>
 #include <Atom/RPI.Edit/Common/JsonUtils.h>
 
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ

@@ -9,6 +9,7 @@
 
 #include <iostream> // Used for pretty printing.
 #include <AzCore/Serialization/Json/RegistrationContext.h>
+#include <AzCore/Serialization/AZStdContainers.inl>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>

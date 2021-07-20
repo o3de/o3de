@@ -19,6 +19,8 @@
 #include <Atom/RPI.Reflect/Shader/ShaderVariantTreeAsset.h>
 #include <Atom/RPI.Reflect/Shader/PrecompiledShaderAssetSourceData.h>
 
+#include <Atom/RHI.Reflect/HandleReflectImpl.inl>
+
 #include <AtomCore/Instance/InstanceDatabase.h>
 
 namespace AZ

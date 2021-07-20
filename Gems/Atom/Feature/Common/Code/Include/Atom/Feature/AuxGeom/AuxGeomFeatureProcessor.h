@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
+#include <AzCore/std/containers/map.h>
 
 namespace AZ
 {

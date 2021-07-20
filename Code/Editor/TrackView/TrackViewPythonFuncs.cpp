@@ -19,6 +19,8 @@
 // Editor
 #include "AnimationContext.h"
 
+#include <AzCore/RTTI/BehaviorContext.h>
+
 
 namespace
 {

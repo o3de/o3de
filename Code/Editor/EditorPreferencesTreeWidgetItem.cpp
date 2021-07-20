@@ -12,6 +12,9 @@
 // AzToolsFramework
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 
+// AzCore
+#include <AzCore/Component/ComponentApplicationBus.h>
+
 // Editor
 #include "IPreferencesPage.h"
 

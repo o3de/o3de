@@ -41,6 +41,7 @@
 
 #include <AzCore/std/algorithm.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING

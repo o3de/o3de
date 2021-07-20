@@ -10,6 +10,7 @@
 
 #include <Atom/RHI/RHIUtils.h>
 
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/algorithm.h>
 
 namespace AZ

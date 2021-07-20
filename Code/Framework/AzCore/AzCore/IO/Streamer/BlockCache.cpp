@@ -11,6 +11,7 @@
 #include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/IO/Streamer/StreamerContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/SerializeContextEnum.inl>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 

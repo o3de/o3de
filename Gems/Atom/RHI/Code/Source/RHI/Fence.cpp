@@ -8,6 +8,8 @@
 
 #include <Atom/RHI/Fence.h>
 
+#include <AzCore/std/functional.h>
+
 namespace AZ
 {
     namespace RHI

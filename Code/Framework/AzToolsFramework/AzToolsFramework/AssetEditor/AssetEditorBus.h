@@ -8,10 +8,10 @@
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/UserSettings/UserSettings.h>
-#include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/UserSettings/UserSettings.h>
+#include <AzCore/std/containers/unordered_map.h>
 
 namespace AZ { namespace Data { class AssetData; } }
 

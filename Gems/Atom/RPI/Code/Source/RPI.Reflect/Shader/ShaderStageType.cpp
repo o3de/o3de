@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/SerializeContextEnum.inl>
 #include <Atom/RPI.Reflect/Shader/ShaderCommonTypes.h>
 
 namespace AZ

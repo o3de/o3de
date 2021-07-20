@@ -11,6 +11,7 @@
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Preprocessor/EnumReflectUtils.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContextEnum.inl>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>

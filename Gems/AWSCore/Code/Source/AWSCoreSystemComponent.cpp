@@ -13,6 +13,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 
 #include <AWSNativeSDKInit/AWSNativeSDKInit.h>
 

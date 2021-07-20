@@ -9,6 +9,7 @@
 #include <Atom/RHI.Reflect/ClearValue.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/SerializeContextEnum.inl>
 #include <AzCore/Utils/TypeHash.h>
 
 namespace AZ

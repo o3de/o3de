@@ -10,6 +10,8 @@
 
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Component/EntityId.h>
 
 namespace ScriptCanvasEditor
 {

@@ -17,6 +17,7 @@
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
+#include <AzCore/Serialization/AZStdContainers.inl>
 #include <AzCore/Serialization/ObjectStream.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/UnitTest/TestTypes.h>

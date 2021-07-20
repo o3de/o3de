@@ -82,7 +82,7 @@ namespace AZ
             };
 
             static constexpr AZ::Crc32 Operator = AZ_CRC_CE("ScriptOperator");
-            enum class OperatorType
+            enum class OperatorType : int // specifying underlying type to allow using this enum in declarations.
             {
                 // note storage policy can be T*,T (only if we store raw pointers), shared_ptr<T>, intrusive pointer<T>
                 Add,       // '+'      StoragePolicy<T> add(const StoragePolicy<T>& rhs)

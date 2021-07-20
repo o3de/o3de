@@ -16,6 +16,7 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/AZStdContainers.inl>
 
 namespace EMotionFX
 {

@@ -8,6 +8,7 @@
 
 #include <AzCore/IO/FileIO.h>
 
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzFramework/Asset/AssetProcessorMessages.h>
 #include <AzFramework/Network/AssetProcessorConnection.h>
 

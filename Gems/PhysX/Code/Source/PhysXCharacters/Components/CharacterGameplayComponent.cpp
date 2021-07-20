@@ -10,6 +10,7 @@
 #include <AzFramework/Physics/CharacterBus.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <PhysX/PhysXLocks.h>
 #include <PhysX/Utils.h>
 #include <PhysX/Debug/PhysXDebugConfiguration.h>

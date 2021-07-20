@@ -7,10 +7,13 @@
  */
 
 
-#include <AzCore/Serialization/SerializeContext.h>
 
 #include <Atom/Feature/DisplayMapper/DisplayMapperConfigurationDescriptor.h>
+
 #include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
+
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 
 namespace AZ
 {

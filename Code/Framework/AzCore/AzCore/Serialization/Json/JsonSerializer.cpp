@@ -6,12 +6,16 @@
  *
  */
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/Serialization/Json/JsonSerializer.h>
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/Json/StackedString.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/SerializeContextEnum.inl>
+
 #include <AzCore/std/any.h>
 #include <AzCore/std/utils.h>
 #include <AzCore/std/string/string.h>

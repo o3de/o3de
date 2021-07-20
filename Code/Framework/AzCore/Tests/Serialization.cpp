@@ -19,6 +19,8 @@
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Serialization/ObjectStream.h>
 #include <AzCore/Serialization/DataPatch.h>
+#include <AzCore/Serialization/AZStdContainers.inl>
+#include <AzCore/Serialization/SerializeContextEnum.inl>
 
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/fixed_vector.h>

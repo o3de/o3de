@@ -8,6 +8,10 @@
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Utils/TypeHash.h>
+#include <Atom/RHI.Reflect/Handle.h>
+#include <Atom/RHI.Reflect/HandleReflectImpl.inl>
+#include <Atom/RHI.Reflect/NameIdReflectionMap.h>
+#include <Atom/RHI.Reflect/NameIdReflectionMapReflectImpl.inl>
 
 namespace AZ
 {

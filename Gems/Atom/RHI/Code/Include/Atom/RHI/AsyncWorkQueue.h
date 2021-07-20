@@ -15,6 +15,7 @@
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/containers/deque.h>
+#include <AzCore/std/functional.h>
 
 namespace AZ
 {

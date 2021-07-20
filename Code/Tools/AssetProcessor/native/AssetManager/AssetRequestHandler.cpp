@@ -11,6 +11,7 @@
 #include <QDir>
 #include <QTimer>
 #include <AzToolsFramework/ToolsComponents/ToolsAssetCatalogBus.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
 
 using namespace AssetProcessor;
 

@@ -10,6 +10,9 @@
 
 #include <ScriptCanvas/Core/Attributes.h>
 
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
+
 namespace ScriptCanvasTestingNodes
 {
     //! This object is used to test the use of BehaviorContext classes

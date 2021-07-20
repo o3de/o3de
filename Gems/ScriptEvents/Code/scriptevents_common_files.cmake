@@ -21,8 +21,10 @@ set(FILES
     Include/ScriptEvents/ScriptEventDefinition.cpp
     Include/ScriptEvents/ScriptEvent.h
     Include/ScriptEvents/ScriptEventMethod.h
+    Include/ScriptEvents/ScriptEventMethod.cpp
     Include/ScriptEvents/ScriptEvent.cpp
     Include/ScriptEvents/ScriptEventParameter.h
+    Include/ScriptEvents/ScriptEventParameter.cpp
     Include/ScriptEvents/ScriptEventSystem.h
     Include/ScriptEvents/ScriptEventSystem.cpp
     Include/ScriptEvents/ScriptEventTypes.h

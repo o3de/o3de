@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Asset/AssetManagerBus.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>

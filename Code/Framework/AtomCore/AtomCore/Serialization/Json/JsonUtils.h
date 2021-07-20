@@ -13,6 +13,7 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/JSON/document.h>
 #include <AzCore/JSON/writer.h>
+#include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Serialization/Json/JsonSerializationResult.h>
 
 namespace AZ

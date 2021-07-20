@@ -12,6 +12,11 @@
 
 namespace AZ
 {
+
+    class BehaviorClass;
+    struct BehaviorParameter;
+    struct BehaviorValueParameter;
+
     namespace Python
     {
         class PythonBehaviorInfo;

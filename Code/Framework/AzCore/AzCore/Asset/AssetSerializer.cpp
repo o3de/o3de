@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/IO/SystemFile.h>

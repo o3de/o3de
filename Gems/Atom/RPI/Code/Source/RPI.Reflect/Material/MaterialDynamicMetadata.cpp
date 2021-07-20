@@ -8,6 +8,7 @@
 
 #include <Atom/RPI.Reflect/Material/MaterialDynamicMetadata.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/SerializeContextEnum.inl>
 
 namespace AZ
 {

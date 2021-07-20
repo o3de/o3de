@@ -115,32 +115,6 @@ namespace AZ
 
         template<typename... Types>
         using has_common_type = has_common_type_helper<void, Types...>;
-
-        /**
-        * Custom serializer for our address type, as we want to be more space efficient and not store every element of the container
-        * separately.
-        */
-        class AddressTypeSerializer
-            : public AZ::Internal::AZBinaryData
-        {
-        public:
-
-            AddressTypeElement LoadAddressElementFromPath(const AZStd::string& pathElement) const;
-
-        private:
-            bool Load(void* classPtr, IO::GenericStream& stream, unsigned int version, bool isDataBigEndian = false) override;
-
-            void LoadElementFinalize(AddressTypeElement& addressElement, const AZStd::string& pathElement, const AZStd::string& version) const;
-            void LoadLegacyElement(AddressTypeElement& addressElement, const AZStd::string& pathElement, const size_t pathDelimLength) const;
-
-            size_t Save(const void* classPtr, IO::GenericStream& stream, bool isDataBigEndian = false) override;
-
-            size_t DataToText(IO::GenericStream& in, IO::GenericStream& out, bool isDataBigEndian) override;
-
-            size_t TextToData(const char* text, unsigned int textVersion, IO::GenericStream& stream, bool isDataBigEndian = false) override;
-
-            bool CompareValueData(const void* lhs, const void* rhs) override;
-        };
     }
 }
 

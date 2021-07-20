@@ -8,6 +8,8 @@
 #pragma once
 
 #include <AzCore/std/containers/bitset.h>
+#include <AzCore/RTTI/RTTI.h>
+#include <AzCore/Memory/SystemAllocator.h>
 
 #include <Atom/RHI.Reflect/Handle.h>
 

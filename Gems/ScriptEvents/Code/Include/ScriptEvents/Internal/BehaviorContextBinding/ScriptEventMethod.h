@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Math/Crc.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
 

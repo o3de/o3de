@@ -19,6 +19,7 @@
 #include <AzCore/Component/Entity.h> // so we can have the entity UUID type.
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Slice/SliceAsset.h> // For slice asset sub ids
 //////////////////////////////////////////////////////////////////////////
 

@@ -10,6 +10,7 @@
 #include <AWSGameLiftServerMocks.h>
 
 #include <AzCore/Component/Entity.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/UnitTest/TestTypes.h>

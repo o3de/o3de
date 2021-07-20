@@ -7,6 +7,7 @@
  */
 #include <Atom/RHI.Reflect/RenderStates.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/SerializeContextEnum.inl>
 #include <AzCore/Preprocessor/EnumReflectUtils.h>
 #include <AzCore/Utils/TypeHash.h>
 

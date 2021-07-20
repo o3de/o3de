@@ -15,7 +15,6 @@
 #include <AzFramework/Physics/Character.h>
 #include <AzFramework/Physics/Ragdoll.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
-#include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Physics/CollisionBus.h>
 #include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
 #include <AzFramework/Physics/WindBus.h>
@@ -31,6 +30,8 @@
 #include <AzFramework/Physics/Configuration/SimulatedBodyConfiguration.h>
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 #include <AzFramework/Physics/Common/PhysicsJoint.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 
 namespace Physics
 {

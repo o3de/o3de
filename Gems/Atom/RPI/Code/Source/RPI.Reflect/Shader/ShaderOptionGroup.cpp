@@ -8,6 +8,7 @@
 
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
 
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ

@@ -9,7 +9,9 @@
 #include "native/AssetManager/AssetCatalog.h"
 
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/std/string/wildcard.h>
+#include <AzCore/std/string/tokenize.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/FileTag/FileTagBus.h>
 #include <AzFramework/FileTag/FileTag.h>

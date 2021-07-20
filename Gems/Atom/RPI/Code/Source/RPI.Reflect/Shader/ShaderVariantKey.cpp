@@ -8,6 +8,9 @@
 
 #include <Atom/RPI.Reflect/Shader/ShaderVariantKey.h>
 
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
+
 namespace AZ
 {
     namespace RPI

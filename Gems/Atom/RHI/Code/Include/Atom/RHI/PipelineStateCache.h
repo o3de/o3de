@@ -11,6 +11,7 @@
 #include <Atom/RHI/PipelineLibrary.h>
 #include <Atom/RHI/ThreadLocalContext.h>
 #include <AzCore/std/containers/bitset.h>
+#include <AzCore/std/containers/variant.h>
 #include <AzCore/Utils/TypeHash.h>
 
 namespace UnitTest

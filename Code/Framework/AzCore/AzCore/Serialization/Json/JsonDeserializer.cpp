@@ -14,6 +14,9 @@
 #include <AzCore/Serialization/Json/JsonStringConversionUtils.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/Json/StackedString.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/SerializeContextEnum.inl>
+
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/fixed_string.h>
 #include <AzCore/std/string/string.h>

@@ -10,6 +10,7 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 
 namespace AzPhysics

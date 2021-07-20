@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#include <Atom/RHI.Reflect/ConstantsLayout.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 #include <Atom/RHI.Reflect/NameIdReflectionMap.h>
 #include <AtomCore/std/containers/array_view.h>
@@ -22,6 +21,7 @@ namespace AZ
 
     namespace RHI
     {
+        class ConstantsLayout;
         /**
          * ShaderResourceGroupLayout defines a set of valid shader inputs to a ShaderResourceGroup.
          *

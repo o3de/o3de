@@ -11,6 +11,7 @@
 #include <AzCore/Serialization/DataOverlay.h>
 #include <AzCore/Serialization/DynamicSerializableField.h>
 #include <AzCore/Serialization/Utils.h>
+#include <AzCore/Serialization/AZStdContainers.inl>
 #include <AzCore/Asset/AssetSerializer.h>
 
 /// include AZStd any serializer support

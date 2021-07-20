@@ -8,6 +8,7 @@
 
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Serialization/ObjectStream.h>
+#include <AzCore/Serialization/AZStdContainers.inl>
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 

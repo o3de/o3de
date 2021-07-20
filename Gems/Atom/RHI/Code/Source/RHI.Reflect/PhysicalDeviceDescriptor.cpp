@@ -6,10 +6,13 @@
  *
  */
 #include <Atom/RHI.Reflect/PhysicalDeviceDescriptor.h>
+
 #include <Atom/RHI.Reflect/PhysicalDeviceDriverInfoSerializer.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/SerializeContextEnum.inl>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Preprocessor/EnumReflectUtils.h>
+
 #include <sstream>
 
 namespace AZ

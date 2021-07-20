@@ -8,6 +8,7 @@
 
 #include <Atom/RHI.Reflect/ShaderSemantic.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/Utils/TypeHash.h>
 

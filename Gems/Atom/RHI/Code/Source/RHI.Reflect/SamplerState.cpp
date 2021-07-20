@@ -7,6 +7,7 @@
  */
 #include <Atom/RHI.Reflect/SamplerState.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/SerializeContextEnum.inl>
 #include <AzCore/Utils/TypeHash.h>
 
 namespace AZ

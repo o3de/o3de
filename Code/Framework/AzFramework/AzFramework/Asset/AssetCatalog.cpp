@@ -12,6 +12,7 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetTypeInfoBus.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/IO/FileIO.h>

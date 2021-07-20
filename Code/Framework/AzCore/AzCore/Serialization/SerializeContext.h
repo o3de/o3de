@@ -2558,15 +2558,5 @@ namespace AZ
     template <typename, bool, bool> \
     friend struct AZ::Serialize::InstanceFactory;
 
-/// include AZStd containers generics
-#include <AzCore/Serialization/AZStdContainers.inl>
-#include <AzCore/Serialization/std/VariantReflection.inl>
-
-/// include asset generics
-#include <AzCore/Asset/AssetSerializer.h>
-
-/// include implementation of SerializeContext::EnumBuilder
-#include <AzCore/Serialization/SerializeContextEnum.inl>
-
 #endif // AZCORE_SERIALIZE_CONTEXT_H
 #pragma once

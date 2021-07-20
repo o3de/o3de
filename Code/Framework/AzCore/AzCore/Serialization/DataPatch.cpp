@@ -6,12 +6,17 @@
  *
  */
 
+
 #include <cinttypes>
 
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/AZStdContainers.inl>
 #include <AzCore/Serialization/DataPatch.h>
 #include <AzCore/Serialization/DataPatchBus.h>
 #include <AzCore/Serialization/DataPatchUpgradeManager.h>
 #include <AzCore/Serialization/Utils.h>
+#include <AzCore/Asset/AssetSerializer.h>
+
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Debug/Profiler.h>
@@ -19,6 +24,8 @@
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/std/containers/unordered_map.h>
+
+#include <AzCore/Serialization/Internal/AddressTypeSerializer.h>
 
 namespace AZ
 {
