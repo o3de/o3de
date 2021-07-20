@@ -370,7 +370,6 @@ namespace AzToolsFramework::ViewportUi::Internal
     void ViewportUiDisplay::PrepareWidgetForViewportUi(QPointer<QWidget> widget)
     {
         widget->setAttribute(Qt::WA_ShowWithoutActivating);
-        // widget->setWindowFlags(Qt::WindowDoesNotAcceptFocus);
         widget->setParent(&m_uiOverlay);
         widget->setStyleSheet("border: none;");
     }
