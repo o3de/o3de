@@ -1528,13 +1528,30 @@ void CCryEditApp::RunInitPythonScript(CEditCommandLineInfo& cmdInfo)
 
             if (cmdInfo.m_bRunPythonTestScript)
             {
-                AZStd::string pythonTestCase;
-                if (!cmdInfo.m_pythontTestCase.isEmpty())
+                // Multiple testcases can be specified them with ';', these should match the files to run
+                AZStd::vector<AZStd::string_view> testcaseList;
+                testcaseList.resize(fileList.size());
                 {
-                    pythonTestCase = cmdInfo.m_pythontTestCase.toUtf8().constData();
+                    int i = 0;
+                    AzFramework::StringFunc::TokenizeVisitor(
+                        fileStr.constData(),
+                        [&i, &testcaseList](AZStd::string_view elem)
+                        {
+                            testcaseList[i++] = (elem);
+                        }, ';', false /* keepEmptyStrings */
+                    );
                 }
 
-                EditorPythonRunnerRequestBus::Broadcast(&EditorPythonRunnerRequestBus::Events::ExecuteByFilenameAsTest, cmdInfo.m_strFileName.toUtf8().constData(), pythonTestCase, pythonArgs);
+                bool success = true;
+                auto ExecuteByFilenamesTests = [&pythonArgs, &fileList, &testcaseList, &success](EditorPythonRunnerRequests* pythonRunnerRequests)
+                {
+                    for (int i = 0; i < fileList.size(); ++i)
+                    {
+                        bool cur_success = pythonRunnerRequests->ExecuteByFilenameAsTest(fileList[i], testcaseList[i], pythonArgs);
+                        success = success && cur_success;
+                    }
+                };
+                EditorPythonRunnerRequestBus::Broadcast(ExecuteByFilenamesTests);
 
                 if (success)
                 {

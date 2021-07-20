@@ -650,8 +650,9 @@ namespace EditorPythonBindings
         ExecuteByFilenameWithArgs(filename, args);
     }
 
-    void PythonSystemComponent::ExecuteByFilenameAsTest(AZStd::string_view filename, AZStd::string_view testCase, const AZStd::vector<AZStd::string_view>& args)
+    bool PythonSystemComponent::ExecuteByFilenameAsTest(AZStd::string_view filename, AZStd::string_view testCase, const AZStd::vector<AZStd::string_view>& args)
     {
+        AZ_TracePrintf("python", "Running automated test: %.*s (testcase %.*s)", AZ_STRING_ARG(filename), AZ_STRING_ARG(testCase))
         AzToolsFramework::EditorPythonScriptNotificationsBus::Broadcast(
             &AzToolsFramework::EditorPythonScriptNotificationsBus::Events::OnStartExecuteByFilenameAsTest, filename, testCase, args);
         const Result evalResult = EvaluateFile(filename, args);

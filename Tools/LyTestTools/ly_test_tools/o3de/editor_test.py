@@ -479,21 +479,29 @@ class EditorTestSuite():
         editor.configure_settings()
 
     # Utility function for parsing the output information from the editor.
-    # It deserializes the JSON content printed in the output for every test and returns that information
+    # It deserializes the JSON content printed in the output for every test and returns that information.
     @staticmethod
-    def _get_results_using_output(test_spec_list, editor_log_content, output):
+    def _get_results_using_output(test_spec_list, output, editor_log_content):
         results = {}
         pattern = re.compile(r"JSON_START\((.+?)\)JSON_END")
         out_matches = pattern.finditer(output)
         found_jsons = {}
         for m in out_matches:
-            elem = json.loads(m.groups()[0])
-            found_jsons[elem["name"]] = elem
+            try:
+                elem = json.loads(m.groups()[0])
+                found_jsons[elem["name"]] = elem
+            except Exception:
+                continue # Avoid to fail if the output data is corrupt
         
+        # Try to find the element in the log, this is used for cutting the log contents later
         log_matches = pattern.finditer(editor_log_content)
         for m in log_matches:
-            elem = json.loads(m.groups()[0])
-            found_jsons[elem["name"]]["log_match"] = m
+            try:
+                elem = json.loads(m.groups()[0])
+                if elem["name"] in found_jsons:
+                    found_jsons[elem["name"]]["log_match"] = m
+            except Exception:
+                continue # Avoid to fail if the log data is corrupt
 
         log_start = 0
         for test_spec in test_spec_list:
@@ -572,7 +580,7 @@ class EditorTestSuite():
             test_result = Result.Timeout.create(output, test_spec.timeout, editor_log_content)
     
         editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
-        results = self._get_results_using_output([test_spec], editor_log_content, output)
+        results = self._get_results_using_output([test_spec], output, editor_log_content)
         results[test_spec.__name__] = test_result
         return results
 
@@ -611,7 +619,7 @@ class EditorTestSuite():
                 for test_spec in test_spec_list:
                     results[test_spec.__name__] = Result.Pass.create(output, editor_log_content)
             else:
-                results = self._get_results_using_output(test_spec_list, editor_log_content, output)
+                results = self._get_results_using_output(test_spec_list, output, editor_log_content)
                 has_crashed = return_code != EditorTestSuite._TEST_FAIL_RETCODE
                 if has_crashed:
                     crashed_test = None
@@ -626,7 +634,7 @@ class EditorTestSuite():
                                 results[key] = Result.Unknown.create(output, f"This test has unknown result, test '{crashed_test.__name__}' crashed before this test could be executed", result.editor_log)
 
         except WaitTimeoutError:
-            results = self._get_results_using_output(test_spec_list, editor_log_content, output)
+            results = self._get_results_using_output(test_spec_list, output, editor_log_content)
             editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
             editor.kill()
             for key, result in results.items():
