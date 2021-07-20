@@ -5,8 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "UiCanvasEditor_precompiled.h"
-
 #include "EditorCommon.h"
 #include "FeedbackDialog.h"
 #include <AzQtComponents/Buses/ShortcutDispatch.h>
@@ -18,6 +16,7 @@
 #include "CanvasHelpers.h"
 #include "GuideHelpers.h"
 #include <LyShine/Bus/UiEditorCanvasBus.h>
+#include <Util/PathUtil.h>
 
 #include <QFileDialog>
 #include <QMenuBar>

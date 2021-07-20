@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    AzToolsFramework_precompiled.h
     AssetEditor/AssetEditorBus.h
     AssetEditor/AssetEditorToolbar.ui
     AssetEditor/AssetEditorStatusBar.ui

@@ -7,7 +7,6 @@
  */
 
 
-#include "UiCanvasEditor_precompiled.h"
 #include "UiAVEventsDialog.h"
 #include <Editor/Animation/ui_UiAVEventsDialog.h>
 #include "UiAnimViewUndo.h"

@@ -6,10 +6,9 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include <Editor/PolygonPrismMeshUtils.h>
 #include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/Math/Vector3.h>
 
 namespace PolygonPrismMeshUtils
 {

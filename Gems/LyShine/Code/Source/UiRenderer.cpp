@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "LyShine_precompiled.h"
 #include "UiRenderer.h"
 
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>

@@ -6,8 +6,6 @@
  *
  */
 
-#include "PhysX_precompiled.h"
-
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzTest/GemTestEnvironment.h>

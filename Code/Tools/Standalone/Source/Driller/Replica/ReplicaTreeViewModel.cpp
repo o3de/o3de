@@ -6,8 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "Source/Driller/Replica/ReplicaTreeViewModel.hxx"
 #include <Source/Driller/Replica/moc_ReplicaTreeViewModel.cpp>
 

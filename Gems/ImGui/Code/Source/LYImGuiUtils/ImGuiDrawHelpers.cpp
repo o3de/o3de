@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "ImGui_precompiled.h"
 
 #ifdef IMGUI_ENABLED
 #include "LYImGuiUtils/ImGuiDrawHelpers.h"

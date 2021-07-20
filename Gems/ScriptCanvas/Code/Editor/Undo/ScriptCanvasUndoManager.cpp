@@ -6,8 +6,6 @@
  *
  */
 
-#include <precompiled.h>
-
 #include <Editor/Undo/ScriptCanvasUndoManager.h>
 #include <AzCore/Serialization/ObjectStream.h>
 

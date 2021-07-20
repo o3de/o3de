@@ -14,6 +14,8 @@ namespace AZ
 {
     namespace Render
     {
+        class DiffuseProbeGrid;
+
         //! This pass renders the diffuse global illumination in the area covered by
         //! each DiffuseProbeGrid.
         class DiffuseProbeGridRenderPass final
@@ -39,6 +41,9 @@ namespace AZ
             // Scope producer functions...
             void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;
+
+            // helper function to determine if a DiffuseProbeGrid should be rendered based on its state
+            bool ShouldRender(const AZStd::shared_ptr<DiffuseProbeGrid>& diffuseProbeGrid);
 
             Data::Instance<RPI::Shader> m_shader;
             RHI::Ptr<RHI::ShaderResourceGroupLayout> m_srgLayout;

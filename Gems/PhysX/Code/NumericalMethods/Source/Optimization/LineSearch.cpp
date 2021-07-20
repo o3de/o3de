@@ -6,7 +6,6 @@
  *
  */
 
-#include <NumericalMethods_precompiled.h>
 #include <Optimization/LineSearch.h>
 #include <Optimization/Utilities.h>
 #include <Optimization/Constants.h>

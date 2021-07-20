@@ -7,7 +7,6 @@
  */
 
 
-#include <ImageProcessing_precompiled.h>
 
 #include <Processing/ImageObjectImpl.h>
 #include <Processing/ImageFlags.h>

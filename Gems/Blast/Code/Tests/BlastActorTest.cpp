@@ -6,8 +6,6 @@
  *
  */
 
-#include <StdAfx.h>
-
 #include <gmock/gmock.h>
 
 #include <Actor/BlastActorImpl.h>

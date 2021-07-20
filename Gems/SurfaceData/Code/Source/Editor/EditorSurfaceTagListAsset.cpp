@@ -6,7 +6,6 @@
  *
  */
 
-#include "SurfaceData_precompiled.h"
 #include "EditorSurfaceTagListAsset.h"
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>

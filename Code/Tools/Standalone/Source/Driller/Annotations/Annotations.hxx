@@ -14,6 +14,7 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/smart_ptr/intrusive_ptr.h>
 #include <AzCore/Math/Crc.h>
 #include <QObject>
 

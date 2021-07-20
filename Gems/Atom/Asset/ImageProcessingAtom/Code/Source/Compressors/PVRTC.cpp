@@ -6,7 +6,6 @@
  *
  */
 
-#include <ImageProcessing_precompiled.h>
 #include <ImageProcessing_Traits_Platform.h>
 #include <Atom/ImageProcessing/ImageObject.h>
 #include <Processing/ImageFlags.h>

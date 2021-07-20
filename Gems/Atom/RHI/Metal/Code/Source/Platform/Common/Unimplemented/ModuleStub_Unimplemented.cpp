@@ -6,7 +6,6 @@
  *
  */
 
-#include "Atom_RHI_Metal_precompiled.h"
 #include <AzCore/Module/Module.h>
 
 namespace AZ

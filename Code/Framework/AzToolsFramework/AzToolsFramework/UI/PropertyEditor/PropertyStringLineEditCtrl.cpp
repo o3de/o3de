@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "AzToolsFramework_precompiled.h"
 #include "PropertyStringLineEditCtrl.hxx"
 #include "PropertyQTConstants.h"
 #include <AzQtComponents/Components/StyledLineEdit.h>

@@ -6,7 +6,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include <AzTest/AzTest.h>
 
 #include <AzCore/Component/ComponentApplication.h>

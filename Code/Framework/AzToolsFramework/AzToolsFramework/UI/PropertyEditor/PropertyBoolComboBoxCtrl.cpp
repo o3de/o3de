@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "AzToolsFramework_precompiled.h"
 #include "PropertyBoolComboBoxCtrl.hxx"
 #include "PropertyQTConstants.h"
 #include "DHQComboBox.hxx"

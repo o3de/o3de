@@ -6,7 +6,6 @@
  *
  */
 
-#include <ImageProcessing_precompiled.h>
 
 #include <Atom/ImageProcessing/PixelFormats.h>
 #include <Atom/ImageProcessing/ImageObject.h>

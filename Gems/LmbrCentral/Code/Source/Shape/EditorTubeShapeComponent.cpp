@@ -6,7 +6,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "EditorTubeShapeComponent.h"
 
 #include "EditorSplineComponent.h"

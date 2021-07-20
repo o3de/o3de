@@ -660,6 +660,7 @@ namespace Multiplayer
 
             AZStd::unique_ptr<IReplicationWindow> window = AZStd::make_unique<NullReplicationWindow>();
             reinterpret_cast<ClientToServerConnectionData*>(connection->GetUserData())->GetReplicationManager().SetEntityActivationTimeSliceMs(cl_defaultNetworkEntityActivationTimeSliceMs);
+            reinterpret_cast<ClientToServerConnectionData*>(connection->GetUserData())->GetReplicationManager().SetReplicationWindow(AZStd::move(window));
         }
     }
 

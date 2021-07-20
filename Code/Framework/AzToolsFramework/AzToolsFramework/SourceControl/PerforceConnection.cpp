@@ -6,7 +6,6 @@
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 
 #include <AzToolsFramework/SourceControl/PerforceConnection.h>
 #include <AzFramework/Process/ProcessWatcher.h>

@@ -6,7 +6,6 @@
  *
  */
 
-#include "precompiled.h"
 
 #include <Editor/Include/ScriptCanvas/Components/GraphUpgrade.h>
 #include <Editor/Include/ScriptCanvas/Components/EditorGraph.h>

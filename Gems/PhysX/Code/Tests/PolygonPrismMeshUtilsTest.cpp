@@ -6,12 +6,11 @@
  *
  */
 
-#include "PhysX_precompiled.h"
-
 #include <AzCore/UnitTest/TestTypes.h>
 #include <Editor/PolygonPrismMeshUtils.h>
 #include <poly2tri.h>
 #include <AzCore/Math/Geometry2DUtils.h>
+#include <AzCore/Math/Vector3.h>
 
 namespace PolygonPrismMeshUtils
 {

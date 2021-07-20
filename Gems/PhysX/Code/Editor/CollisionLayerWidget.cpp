@@ -6,8 +6,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include <Editor/CollisionLayerWidget.h>
 #include <Editor/ConfigurationWindowBus.h>
 #include <AzFramework/Physics/CollisionBus.h>

@@ -6,8 +6,6 @@
  *
  */
 
-#include "GradientSignal_precompiled.h"
-
 #include <GradientSignal/GradientImageConversion.h>
 #include <Atom/ImageProcessing/PixelFormats.h>
 

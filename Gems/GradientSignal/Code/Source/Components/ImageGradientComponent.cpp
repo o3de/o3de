@@ -6,7 +6,6 @@
  *
  */
 
-#include "GradientSignal_precompiled.h"
 #include "ImageGradientComponent.h"
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Debug/Profiler.h>

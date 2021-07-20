@@ -6,7 +6,6 @@
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 #include "LogControl.h"
 #include "LoggingCommon.h"
 
@@ -20,6 +19,7 @@ AZ_POP_DISABLE_WARNING
 #include <QScrollBar>
 #include <QTableView>
 #include <QHeaderView>
+#include <QtWidgets/QApplication>
 
 #include "LogPanel_Panel.h"
 

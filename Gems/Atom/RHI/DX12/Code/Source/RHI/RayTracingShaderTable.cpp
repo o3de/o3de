@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "RHI/Atom_RHI_DX12_precompiled.h"
 #include <RHI/RayTracingPipelineState.h>
 #include <RHI/RayTracingShaderTable.h>
 #include <Atom/RHI.Reflect/DX12/ShaderStageFunction.h>

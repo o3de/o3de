@@ -10,6 +10,7 @@
 
 #include "Viewport/WhiteBoxViewportConstants.h"
 
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/Component/ComponentBus.h>
 #include <WhiteBox/WhiteBoxToolApi.h>
 

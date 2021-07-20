@@ -6,8 +6,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include <MathConversion.h>
 
 #include <AzTest/AzTest.h>

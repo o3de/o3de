@@ -24,10 +24,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/Debug/TraceMessageBus.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Component/TickBus.h>
-
-#if defined(AZ_PLATFORM_WINDOWS)
-#include <windows.h>
-#endif
+#include <AzCore/PlatformIncl.h>
 #endif
 
 namespace AZ

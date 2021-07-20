@@ -6,8 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "UnsupportedDataParser.h"
 #include "UnsupportedDataAggregator.hxx"
 #include "UnsupportedEvents.h"

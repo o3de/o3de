@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Atom_RHI_Null_precompiled.h"
 #include <AzCore/Module/Module.h>
 #include <Source/RHI/SystemComponent.h>
 #include <Atom/RHI.Reflect/Null/ReflectSystemComponent.h>

@@ -6,7 +6,6 @@
  *
  */
 
-#include "ProjectSettingsTool_precompiled.h"
 #include "PlatformSettings_Android.h"
 
 #include "PlatformSettings_common.h"

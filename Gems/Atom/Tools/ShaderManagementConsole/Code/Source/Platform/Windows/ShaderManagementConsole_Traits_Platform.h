@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <windows.h>
+#include <AzCore/PlatformIncl.h>
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Windows.h>
 #include <AzFramework/Windowing/WindowBus.h>
 

@@ -6,7 +6,6 @@
  *
  */
 
-#include "GradientSignal_precompiled.h"
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Debug/Profiler.h>

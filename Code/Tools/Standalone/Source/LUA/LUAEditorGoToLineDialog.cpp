@@ -6,8 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "LUAEditorGoToLineDialog.hxx"
 #include <Source/LUA/moc_LUAEditorGoToLineDialog.cpp>
 

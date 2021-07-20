@@ -6,7 +6,6 @@
  *
  */
 
-#include "Atom_RHI_Metal_precompiled.h"
 
 #import <QuartzCore/CAMetalLayer.h>
 #include <RHI/Buffer.h>

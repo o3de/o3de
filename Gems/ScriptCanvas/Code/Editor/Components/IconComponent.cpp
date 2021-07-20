@@ -7,7 +7,6 @@
  *
  */
 
-#include "precompiled.h"
 
 #include "IconComponent.h"
 

@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "GradientSignal_precompiled.h"
 #include "GradientSignalSystemComponent.h"
 
 #include <AzCore/RTTI/BehaviorContext.h>

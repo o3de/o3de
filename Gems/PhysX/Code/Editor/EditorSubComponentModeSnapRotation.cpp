@@ -6,8 +6,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <PhysX_precompiled.h>
-
 #include <Editor/EditorJointComponentMode.h>
 #include <Editor/EditorSubComponentModeSnapRotation.h>
 #include <PhysX/EditorJointBus.h>

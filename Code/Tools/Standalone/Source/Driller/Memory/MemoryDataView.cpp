@@ -6,8 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "MemoryDataView.hxx"
 #include <Source/Driller/Memory/moc_MemoryDataView.cpp>
 

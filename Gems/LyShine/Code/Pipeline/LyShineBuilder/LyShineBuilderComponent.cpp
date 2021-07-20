@@ -6,8 +6,6 @@
  *
  */
 
-#include "LyShine_precompiled.h"
-
 #include <Pipeline/LyShineBuilder/LyShineBuilderComponent.h>
 
 #include <AzCore/Component/ComponentApplication.h>

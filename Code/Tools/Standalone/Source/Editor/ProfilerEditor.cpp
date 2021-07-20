@@ -6,7 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
 #include "ProfilerEditor.h"
 #include <Source/ProfilerApplication.h>
 

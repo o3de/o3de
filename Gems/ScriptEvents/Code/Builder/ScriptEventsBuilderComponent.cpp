@@ -6,7 +6,6 @@
  *
  */
 
-#include <precompiled.h>
 #include <Builder/ScriptEventsBuilderComponent.h>
 
 #include <AssetBuilderSDK/AssetBuilderBusses.h>

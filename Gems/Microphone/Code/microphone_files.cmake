@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    Source/Microphone_precompiled.h
     Source/MicrophoneSystemComponent.cpp
     Source/MicrophoneSystemComponent.h
     Source/SimpleDownsample.cpp

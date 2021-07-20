@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "PhysXDebug_precompiled.h"
 #include <AzCore/Memory/SystemAllocator.h>
 #include "SystemComponent.h"
 

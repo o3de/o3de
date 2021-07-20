@@ -6,9 +6,6 @@
  *
  */
 
-
-#include "EMotionFX_precompiled.h"
-
 #include <Integration/System/SystemComponent.h>
 #include <Integration/Components/ActorComponent.h>
 #include <Integration/Components/AnimAudioComponent.h>

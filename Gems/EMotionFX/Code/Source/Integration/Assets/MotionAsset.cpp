@@ -6,10 +6,10 @@
  *
  */
 
-
-#include "EMotionFX_precompiled.h"
-
 #include <Integration/Assets/MotionAsset.h>
+#include <EMotionFX/Source/EMotionFXManager.h>
+#include <EMotionFX/Source/Importer/Importer.h>
+#include <EMotionFX/Source/Motion.h>
 
 namespace EMotionFX
 {

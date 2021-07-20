@@ -6,7 +6,6 @@
  *
  */
 
-#include "precompiled.h"
 
 #include <Tests/Framework/ScriptCanvasUnitTestFixture.h>
 #include <Tests/Mocks/RuntimeRequestsMock.h>
