@@ -9,7 +9,7 @@
 // include the required headers
 #include "NodeGroupCommands.h"
 #include "CommandManager.h"
-#include <EMotionFX/Source/NodeGroup.h>
+#include <EMotionFX/Source/Allocators.h>
 #include <EMotionFX/Source/ActorManager.h>
 #include <MCore/Source/LogManager.h>
 #include <MCore/Source/StringConversions.h>
@@ -25,13 +25,6 @@ namespace CommandSystem
     CommandAdjustNodeGroup::CommandAdjustNodeGroup(MCore::Command* orgCommand)
         : MCore::Command("AdjustNodeGroup", orgCommand)
     {
-    }
-
-
-    // destructor
-    CommandAdjustNodeGroup::~CommandAdjustNodeGroup()
-    {
-        delete mOldNodeGroup;
     }
 
 
@@ -60,10 +53,7 @@ namespace CommandSystem
             return false;
         }
 
-        // copy the old node group for undo
-        delete mOldNodeGroup;
-
-        mOldNodeGroup = aznew EMotionFX::NodeGroup(*nodeGroup);
+        mOldNodeGroup = AZStd::make_unique<EMotionFX::NodeGroup>(*nodeGroup);
 
         // check if newName is set and apply new name
         if (parameters.CheckIfHasParameter("newName"))
@@ -227,8 +217,6 @@ namespace CommandSystem
                 nodeGroup->SetNode(static_cast<uint16>(i), mOldNodeGroup->GetNode(static_cast<uint16>(i)));
             }
         }
-
-        delete mOldNodeGroup;
 
         mOldNodeGroup = nullptr;
 
