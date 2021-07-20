@@ -38,7 +38,7 @@ namespace AZ
 
             static Name GetLightCullingTilePreparePassTemplateName()
             {
-                return AZ::Name("LightCullingTilePrepareTemplate");
+                return AZ::Name("LightCullingTilePrepareMSAATemplate");
             }
 
         private:
