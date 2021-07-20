@@ -6,8 +6,6 @@
  *
  */
 
-#include "LyShine_precompiled.h"
-
 #include "LyShineTest.h"
 #include <Mocks/ISystemMock.h>
 #include <Mocks/ITimerMock.h>

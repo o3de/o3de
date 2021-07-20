@@ -5,8 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <PhysX_precompiled.h>
-
 #include <Tests/PhysXTestCommon.h>
 
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>

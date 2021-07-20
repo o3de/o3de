@@ -6,7 +6,6 @@
  *
  */
 
-#include "precompiled.h"
 #include "CommandLine.h"
 
 #include <QString>

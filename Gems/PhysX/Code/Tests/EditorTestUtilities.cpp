@@ -6,8 +6,6 @@
  *
  */
 
-#include "PhysX_precompiled.h"
-
 #include <Tests/EditorTestUtilities.h>
 
 #include <EditorShapeColliderComponent.h>

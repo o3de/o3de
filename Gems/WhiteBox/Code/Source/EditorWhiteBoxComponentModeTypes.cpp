@@ -6,8 +6,6 @@
  *
  */
 
-#include "WhiteBox_precompiled.h"
-
 #include "EditorWhiteBoxComponentModeTypes.h"
 
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>

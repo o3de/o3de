@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Atom_RHI_Metal_precompiled.h"
 #include <Atom/RHI.Reflect/CpuTimingStatistics.h>
 #include <AzCore/Debug/EventTrace.h>
 #include <RHI/CommandQueue.h>

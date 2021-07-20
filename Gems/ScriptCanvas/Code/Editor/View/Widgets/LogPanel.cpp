@@ -6,7 +6,6 @@
  *
  */
 
-#include "precompiled.h"
 #include "LogPanel.h"
 
 #include <QDateTime>

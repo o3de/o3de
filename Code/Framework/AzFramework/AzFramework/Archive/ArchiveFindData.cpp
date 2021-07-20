@@ -15,6 +15,11 @@
 
 namespace AZ::IO
 {
+    size_t ArchiveFileIteratorHash::operator()(const AZ::IO::ArchiveFileIterator& iter) const
+    {
+        return iter.GetHash();
+    }
+
     bool AZStdStringLessCaseInsensitive::operator()(AZStd::string_view left, AZStd::string_view right) const
     {
         // If one or both strings are 0-length, return true if the left side is smaller, false if they're equal or left is larger.
@@ -68,9 +73,19 @@ namespace AZ::IO
         return operator++();
     }
 
+    bool ArchiveFileIterator::operator==(const AZ::IO::ArchiveFileIterator& rhs) const
+    {
+        return GetHash() == rhs.GetHash();
+    }
+
     ArchiveFileIterator::operator bool() const
     {
         return m_findData && m_lastFetchValid;
+    }
+
+    size_t ArchiveFileIterator::GetHash() const
+    {
+        return AZStd::hash<AZ::IO::PathView>{}(m_filename.c_str());
     }
 
     void FindData::Scan(IArchive* archive, AZStd::string_view szDir, bool bAllowUseFS, bool bScanZips)
@@ -113,14 +128,12 @@ namespace AZ::IO
         }
         AZ::IO::FileIOBase::GetDirectInstance()->FindFiles(searchDirectory.c_str(), pattern.c_str(), [&](const char* filePath) -> bool
         {
-            AZ::IO::ArchiveFileIterator fileIterator;
-            fileIterator.m_filename = AZ::IO::PathView(filePath).Filename().Native();
-            fileIterator.m_fileDesc.nAttrib = {};
+            AZ::IO::ArchiveFileIterator fileIterator{ nullptr, AZ::IO::PathView(filePath).Filename().Native(), {} };
 
             if (AZ::IO::FileIOBase::GetDirectInstance()->IsDirectory(filePath))
             {
                 fileIterator.m_fileDesc.nAttrib = fileIterator.m_fileDesc.nAttrib | AZ::IO::FileDesc::Attribute::Subdirectory;
-                m_fileStack.emplace_back(AZStd::move(fileIterator));
+                m_fileSet.emplace(AZStd::move(fileIterator));
             }
             else
             {
@@ -136,7 +149,7 @@ namespace AZ::IO
                 // These times are not supported by our file interface
                 fileIterator.m_fileDesc.tAccess = fileIterator.m_fileDesc.tWrite;
                 fileIterator.m_fileDesc.tCreate = fileIterator.m_fileDesc.tWrite;
-                m_fileStack.emplace_back(AZStd::move(fileIterator));
+                m_fileSet.emplace(AZStd::move(fileIterator));
             }
             return true;
         });
@@ -167,7 +180,7 @@ namespace AZ::IO
                 fileDesc.nAttrib = AZ::IO::FileDesc::Attribute::ReadOnly | AZ::IO::FileDesc::Attribute::Archive;
                 fileDesc.nSize = fileEntry->desc.lSizeUncompressed;
                 fileDesc.tWrite = fileEntry->GetModificationTime();
-                m_fileStack.emplace_back(AZ::IO::ArchiveFileIterator{ this, fname, fileDesc });
+                m_fileSet.emplace(AZ::IO::ArchiveFileIterator{ this, fname, fileDesc });
             }
 
             ZipDir::FindDir findDirectoryEntry(zipCache);
@@ -180,7 +193,7 @@ namespace AZ::IO
                 }
                 AZ::IO::FileDesc fileDesc;
                 fileDesc.nAttrib = AZ::IO::FileDesc::Attribute::ReadOnly | AZ::IO::FileDesc::Attribute::Archive | AZ::IO::FileDesc::Attribute::Subdirectory;
-                m_fileStack.emplace_back(AZ::IO::ArchiveFileIterator{ this, fname, fileDesc });
+                m_fileSet.emplace(AZ::IO::ArchiveFileIterator{ this, fname, fileDesc });
             }
         };
 
@@ -249,7 +262,7 @@ namespace AZ::IO
                 if (!bindRootIter->empty() && AZStd::wildcard_match(sourcePathRemainder.Native(), bindRootIter->Native()))
                 {
                     AZ::IO::FileDesc fileDesc{ AZ::IO::FileDesc::Attribute::ReadOnly | AZ::IO::FileDesc::Attribute::Archive | AZ::IO::FileDesc::Attribute::Subdirectory };
-                    m_fileStack.emplace_back(AZ::IO::ArchiveFileIterator{ this, bindRootIter->Native(), fileDesc });
+                    m_fileSet.emplace(AZ::IO::ArchiveFileIterator{ this, bindRootIter->Native(), fileDesc });
                 }
             }
             else
@@ -265,7 +278,7 @@ namespace AZ::IO
 
     AZ::IO::ArchiveFileIterator FindData::Fetch()
     {
-        if (m_fileStack.empty())
+        if (m_fileSet.empty())
         {
             AZ::IO::ArchiveFileIterator emptyFileIterator;
             emptyFileIterator.m_lastFetchValid = false;
@@ -274,10 +287,10 @@ namespace AZ::IO
         }
 
         // Remove Fetched item from the FindData map so that the iteration continues
-        AZ::IO::ArchiveFileIterator fileIterator{ m_fileStack.back() };
+        AZ::IO::ArchiveFileIterator fileIterator{ *m_fileSet.begin() };
         fileIterator.m_lastFetchValid = true;
         fileIterator.m_findData = this;
-        m_fileStack.pop_back();
+        m_fileSet.erase(m_fileSet.begin());
         return fileIterator;
     }
 }

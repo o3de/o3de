@@ -10,6 +10,7 @@
 #include <AzFramework/Physics/Configuration/JointConfiguration.h>
 
 #include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
+#include <PhysX/Debug/PhysXDebugConfiguration.h>
 
 namespace PhysX
 {

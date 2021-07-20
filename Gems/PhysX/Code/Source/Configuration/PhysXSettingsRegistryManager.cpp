@@ -5,8 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <PhysX_precompiled.h>
-
 #include <Configuration/PhysXSettingsRegistryManager.h>
 
 #include <AzCore/Settings/SettingsRegistry.h>

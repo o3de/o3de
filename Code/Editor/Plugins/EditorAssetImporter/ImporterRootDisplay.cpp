@@ -6,7 +6,6 @@
  *
  */
 
-#include "EditorAssetImporter_precompiled.h"
 #include <ImporterRootDisplay.h>
 #include <ui_ImporterRootDisplay.h>
 

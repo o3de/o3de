@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "FastNoise_precompiled.h"
 
 #include <AzTest/AzTest.h>
 #include <Mocks/ITimerMock.h>

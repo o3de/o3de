@@ -6,8 +6,6 @@
  *
  */
 
-#include "StdAfx.h"
-
 #include <Asset/BlastSliceAsset.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 

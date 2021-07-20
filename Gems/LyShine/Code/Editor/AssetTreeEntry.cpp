@@ -5,8 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "UiCanvasEditor_precompiled.h"
-
 #include "AssetTreeEntry.h"
 #include "EditorCommon.h"
 

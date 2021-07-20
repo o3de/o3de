@@ -6,7 +6,6 @@
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 #include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
 
 #include <sqlite3.h>

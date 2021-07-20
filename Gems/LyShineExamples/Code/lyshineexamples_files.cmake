@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    Source/LyShineExamples_precompiled.h
     Include/LyShineExamples/LyShineExamplesBus.h
     Include/LyShineExamples/LyShineExamplesCppExampleBus.h
     Include/LyShineExamples/UiCustomImageBus.h

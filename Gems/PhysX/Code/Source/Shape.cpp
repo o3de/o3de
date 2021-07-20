@@ -6,7 +6,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
 #include <Source/Shape.h>
 
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
@@ -17,6 +16,7 @@
 #include <Source/Collision.h>
 #include <Source/Material.h>
 #include <Source/Utils.h>
+#include <PhysX/MathConversion.h>
 
 namespace PhysX
 {

@@ -6,7 +6,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/parallel/scoped_lock.h>
@@ -17,6 +16,7 @@
 #include <PhysXCharacters/API/CharacterUtils.h>
 #include <PhysX/NativeTypeIdentifiers.h>
 #include <PhysX/PhysXLocks.h>
+#include <PhysX/MathConversion.h>
 #include <Scene/PhysXScene.h>
 
 namespace PhysX

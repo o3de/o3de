@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#include "precompiled.h"
 
 #include <GraphCanvas/Types/Endpoint.h>
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>

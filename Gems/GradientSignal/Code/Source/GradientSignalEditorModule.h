@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include "GradientSignal_precompiled.h"
 #include <GradientSignalModule.h>
 
 namespace GradientSignal

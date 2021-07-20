@@ -6,7 +6,6 @@
  *
  */
 
-#include "GradientSignal_precompiled.h"
 #include "GradientTransformComponent.h"
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/RTTI/BehaviorContext.h>

@@ -8,6 +8,13 @@
 
 #pragma once
 
+namespace AZ
+{
+    class Quaternion;
+    class Transform;
+    class Vector3;
+}
+
 namespace WhiteBox
 {
     //! Intersect a segment with a cylinder

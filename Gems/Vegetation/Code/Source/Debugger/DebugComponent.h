@@ -13,6 +13,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <AzFramework/Visibility/BoundsBus.h>
 #include <AzCore/PlatformDef.h>
 #include <Vegetation/Ebuses/InstanceSystemRequestBus.h>
 #include <Vegetation/Ebuses/SystemConfigurationBus.h>
@@ -56,6 +57,7 @@ namespace Vegetation
     class DebugComponent
         : public AZ::Component
         , private AzFramework::EntityDebugDisplayEventBus::Handler
+        , private AzFramework::BoundsRequestBus::Handler
         , private DebugRequestBus::Handler
         , private DebugNotificationBus::Handler
         , private SystemConfigurationRequestBus::Handler
@@ -80,6 +82,9 @@ namespace Vegetation
 
         //////////////////////////////////////////////////////////////////////////
         // EntityDebugDisplayEventBus
+
+        // Ideally this would use ViewportDebugDisplayEventBus::DisplayViewport, but that doesn't currently work in game mode,
+        // so instead we use this plus the BoundsRequestBus with a large AABB to get ourselves rendered.
         void DisplayEntityViewport(
             const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay) override;
 
@@ -110,6 +115,20 @@ namespace Vegetation
         void UpdateSystemConfig(const AZ::ComponentConfig* config) override;
         void GetSystemConfig([[maybe_unused]] AZ::ComponentConfig* config) const override {}; // ignore this call
 
+        //////////////////////////////////////////////////////////////////////////
+        // BoundsRequestBus
+        AZ::Aabb GetWorldBounds() override
+        {
+            // DisplayEntityViewport relies on the BoundsRequestBus to get the entity bounds to determine when to call debug drawing
+            // for that entity.  Since this is a level component that can draw infinitely far in every direction, we return an
+            // effectively infinite AABB so that it always draws.
+            return AZ::Aabb::CreateFromMinMax(AZ::Vector3(-AZ::Constants::FloatMax), AZ::Vector3(AZ::Constants::FloatMax));
+        }
+        AZ::Aabb GetLocalBounds() override
+        {
+            // The local and world bounds will be the same for this component.
+            return GetWorldBounds();
+        }
 
     protected:
         void PrepareNextReport();

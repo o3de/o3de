@@ -6,8 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "MemoryDataParser.h"
 #include "MemoryDataAggregator.hxx"
 #include "MemoryEvents.h"

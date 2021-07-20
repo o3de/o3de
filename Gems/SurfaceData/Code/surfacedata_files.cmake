@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    Source/SurfaceData_precompiled.h
     Include/SurfaceData/SurfaceDataConstants.h
     Include/SurfaceData/SurfaceDataTypes.h
     Include/SurfaceData/SurfaceDataSystemRequestBus.h

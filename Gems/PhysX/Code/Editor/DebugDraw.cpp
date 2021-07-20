@@ -6,7 +6,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
 #include <Editor/DebugDraw.h>
 #include <Editor/ConfigurationWindowBus.h>
 #include <AzCore/Component/TransformBus.h>
@@ -21,6 +20,7 @@
 #include <Source/Utils.h>
 
 #include <PhysX/Debug/PhysXDebugInterface.h>
+#include <PhysX/MathConversion.h>
 
 namespace PhysX
 {

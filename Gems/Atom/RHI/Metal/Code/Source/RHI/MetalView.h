@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Atom_RHI_Metal_precompiled_Platform.h>
+#include <Atom_RHI_Metal_Platform.h>
 #import <QuartzCore/CAMetalLayer.h>
 
 

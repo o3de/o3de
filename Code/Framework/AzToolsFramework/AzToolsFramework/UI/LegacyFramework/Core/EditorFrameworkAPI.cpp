@@ -6,11 +6,12 @@
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/ComponentApplication.h>
 
 #include "EditorFrameworkAPI.h"
+
+#include <QtCore/QString>
 
 namespace LegacyFramework
 {

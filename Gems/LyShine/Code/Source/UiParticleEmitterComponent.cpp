@@ -5,8 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "LyShine_precompiled.h"
-
 #include "UiParticleEmitterComponent.h"
 #include "EditorPropertyTypes.h"
 #include "Sprite.h"

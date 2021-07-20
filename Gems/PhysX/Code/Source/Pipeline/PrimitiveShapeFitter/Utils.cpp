@@ -6,8 +6,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Math/Matrix3x3.h>
 

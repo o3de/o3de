@@ -6,7 +6,6 @@
  *
  */
 
-#include "GradientSignal_precompiled.h"
 
 #include <AzTest/AzTest.h>
 #include <AzCore/std/smart_ptr/make_shared.h>

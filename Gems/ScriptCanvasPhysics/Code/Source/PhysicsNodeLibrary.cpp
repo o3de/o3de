@@ -6,8 +6,6 @@
  *
  */
 
-#include "ScriptCanvasPhysics_precompiled.h"
-
 #include "PhysicsNodeLibrary.h"
 #include "WorldNodes.h"
 

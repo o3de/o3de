@@ -6,7 +6,6 @@
  *
  */
 
-#include <LmbrCentral_precompiled.h>
 #include <Builders/BenchmarkAssetBuilder/BenchmarkAssetBuilderComponent.h>
 
 #include <AzCore/Serialization/SerializeContext.h>

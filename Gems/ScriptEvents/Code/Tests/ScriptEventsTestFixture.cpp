@@ -6,7 +6,6 @@
  *
  */
 
-#include "precompiled.h"
 #include "ScriptEventsTestFixture.h"
 #include "ScriptEventsTestApplication.h"
 

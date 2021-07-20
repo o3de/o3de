@@ -6,7 +6,6 @@
  *
  */
 
-#include "Atom_RHI_Vulkan_precompiled.h"
 #include <AzCore/Debug/EventTrace.h>
 #include <RHI/RayTracingBlas.h>
 #include <RHI/Buffer.h>

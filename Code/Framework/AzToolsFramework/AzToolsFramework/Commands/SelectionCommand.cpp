@@ -6,7 +6,6 @@
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 #include "SelectionCommand.h"
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 

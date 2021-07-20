@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#include <CryCommon/BaseTypes.h>
+
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawContext.h>
 #include <Atom/RPI.Public/WindowContext.h>
 #include <Atom/RPI.Public/ViewportContext.h>

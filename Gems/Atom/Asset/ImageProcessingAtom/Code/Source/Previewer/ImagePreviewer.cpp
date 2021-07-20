@@ -5,10 +5,9 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <ImageProcessing_precompiled.h>
 
+#include <AzCore/PlatformDef.h>
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
-
 #include <Source/Previewer/ImagePreviewer.h>
 #include <Source/Previewer/ui_ImagePreviewer.h>
 #include <Editor/EditorCommon.h>

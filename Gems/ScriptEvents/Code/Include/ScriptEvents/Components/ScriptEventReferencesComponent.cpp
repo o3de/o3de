@@ -6,7 +6,6 @@
  *
  */
 
-#include "precompiled.h"
 #include "ScriptEventReferencesComponent.h"
 
 namespace ScriptEvents

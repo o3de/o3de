@@ -6,7 +6,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "ShapeGeometryUtil.h"
 
 #include <AzCore/Math/IntersectPoint.h>

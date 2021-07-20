@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "SurfaceData_precompiled.h"
+
 #include "TerrainSurfaceDataSystemComponent.h"
 #include <AzCore/Debug/Profiler.h> 
 #include <AzCore/Math/MathUtils.h>

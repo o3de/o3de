@@ -6,7 +6,6 @@
  *
  */
 
-#include <ImageProcessing_precompiled.h>
 #include "ResolutionSettingItemWidget.h"
 #include <Source/Editor/ui_ResolutionSettingItemWidget.h>
 #include <BuilderSettings/PresetSettings.h>

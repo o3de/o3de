@@ -6,8 +6,6 @@
  *
  */
 
-#include "ScriptCanvasPhysics_precompiled.h"
-
 #include <AzTest/GemTestEnvironment.h>
 #include <gmock/gmock.h>
 #include <AzFramework/Physics/Material.h>

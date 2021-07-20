@@ -6,8 +6,6 @@
  *
  */
 
-#include "ComponentEntityEditorPlugin_precompiled.h"
-
 #include "ComponentDataModel.h"
 #include "FavoriteComponentList.h"
 #include "FilteredComponentList.h"

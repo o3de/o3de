@@ -6,7 +6,6 @@
  *
  */
 
-#include "ImageProcessing_precompiled.h"
 
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 

@@ -10,7 +10,6 @@
 // Purpose:
 //  - Manage and cache glyphs, retrieving them from the renderer as needed
 
-#include <AtomLyIntegration/AtomFont/AtomFont_precompiled.h>
 
 #if !defined(USE_NULLFONT_ALWAYS)
 

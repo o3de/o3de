@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "ComponentEntityEditorPlugin_precompiled.h"
 
+#include <CryCommon/platform.h>
 #include "MainWindow.h"                     // for MainWindow
 
 #include "OutlinerListModel.hxx"

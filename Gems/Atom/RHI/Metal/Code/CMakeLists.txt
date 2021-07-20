@@ -72,7 +72,6 @@ ly_add_target(
     NAME Atom_RHI_Metal.Private.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
-        atom_rhi_metal_common_files.cmake
         atom_rhi_metal_private_common_files.cmake
         Source/Platform/${PAL_PLATFORM_NAME}/platform_private_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     PLATFORM_INCLUDE_FILES

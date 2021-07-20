@@ -7,7 +7,6 @@
  */
 
 
-#include "Maestro_precompiled.h"
 #include <AzCore/Component/Entity.h>
 #include <AzFramework/Components/CameraBus.h>
 #include <Maestro/Bus/SequenceComponentBus.h>

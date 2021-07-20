@@ -6,7 +6,6 @@
  *
  */
 
-#include <NumericalMethods_precompiled.h>
 #include <NumericalMethods/Eigenanalysis.h>
 #include <NumericalMethods/Optimization.h>
 #include <Optimization/SolverBFGS.h>

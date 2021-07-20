@@ -6,8 +6,6 @@
  *
  */
 
-#include "LyShine_precompiled.h"
-
 #include "LyShineModule.h"
 #include "LyShineSystemComponent.h"
 #if defined(LYSHINE_EDITOR)
