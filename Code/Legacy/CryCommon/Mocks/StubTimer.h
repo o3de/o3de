@@ -1,12 +1,14 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #pragma once
 
-#include <ITimer.h>
+#include <CryCommon/ITimer.h>
+#include <CryCommon/ISerialize.h>
 
 //! Simple stub timer that exposes a single simple interface for setting the current time.
 class StubTimer

@@ -1,13 +1,14 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 // windows include must be first so we get the full version (AZCore bring the trimmed one)
 #ifdef _WIN32
-#include <Windows.h>
+#include <AzCore/PlatformIncl.h>
 #include <winnls.h>
 #include <shobjidl.h>
 #include <objbase.h>
