@@ -96,7 +96,7 @@ namespace AZ
                         skinnedSubMesh.m_vertexCount = aznumeric_cast<uint32_t>(subMeshVertexCount);
                         lodVertexCount += aznumeric_cast<uint32_t>(subMeshVertexCount);
 
-                        skinnedSubMesh.m_materialSlot = lodAsset->GetMaterialSlot(modelMesh.GetMaterialSlotIndex());
+                        skinnedSubMesh.m_materialSlot = actor->GetMeshAsset()->FindMaterialSlot(modelMesh.GetMaterialSlotId());
 
                         // Queue the material asset - the ModelLod seems to handle delayed material loads
                         skinnedSubMesh.m_materialSlot.m_defaultMaterialAsset.QueueLoad();

@@ -46,10 +46,9 @@ namespace AZ
             //! Begin and BeginMesh must be called first.
             void SetMeshAabb(AZ::Aabb&& aabb);
 
-            //! Sets the material slot data for the current SubMesh.
-            //! Adds a new material slot to the ModelLodAsset if it doesn't already exist.
+            //! Sets the ID of the model's material slot that this mesh uses.
             //! Begin and BeginMesh must be called first
-            void SetMeshMaterialSlot(const ModelMaterialSlot& materialSlot);
+            void SetMeshMaterialSlot(ModelMaterialSlot::StableId id);
 
             //! Sets the given BufferAssetView to the current SubMesh as the index buffer.
             //! Begin and BeginMesh must be called first

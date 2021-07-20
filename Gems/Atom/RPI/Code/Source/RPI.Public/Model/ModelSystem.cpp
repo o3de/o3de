@@ -41,9 +41,9 @@ namespace AZ
         {
             //Create Lod Database
             AZ::Data::InstanceHandler<ModelLod> lodInstanceHandler;
-            lodInstanceHandler.m_createFunction = [](Data::AssetData* modelLodAsset)
+            lodInstanceHandler.m_createFunctionWithParam = [](Data::AssetData* modelLodAsset, const AZStd::any* modelAsset)
             {
-                return ModelLod::CreateInternal(*(azrtti_cast<ModelLodAsset*>(modelLodAsset)));
+                return ModelLod::CreateInternal(Data::Asset<ModelLodAsset>{modelLodAsset, AZ::Data::AssetLoadBehavior::PreLoad}, modelAsset);
             };
             Data::InstanceDatabase<ModelLod>::Create(azrtti_typeid<ModelLodAsset>(), lodInstanceHandler);
 
@@ -51,7 +51,7 @@ namespace AZ
             AZ::Data::InstanceHandler<Model> modelInstanceHandler;
             modelInstanceHandler.m_createFunction = [](Data::AssetData* modelAsset)
             {
-                return Model::CreateInternal(*(azrtti_cast<ModelAsset*>(modelAsset)));
+                return Model::CreateInternal(Data::Asset<ModelAsset>{modelAsset, AZ::Data::AssetLoadBehavior::PreLoad});
             };
             Data::InstanceDatabase<Model>::Create(azrtti_typeid<ModelAsset>(), modelInstanceHandler);
         }

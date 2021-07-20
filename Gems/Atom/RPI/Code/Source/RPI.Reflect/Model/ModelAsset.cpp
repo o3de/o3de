@@ -29,9 +29,10 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<ModelAsset, Data::AssetData>()
-                    ->Version(0)
+                    ->Version(1)
                     ->Field("Name", &ModelAsset::m_name)
                     ->Field("Aabb", &ModelAsset::m_aabb)
+                    ->Field("MaterialSlots", &ModelAsset::m_materialSlots)
                     ->Field("LodAssets", &ModelAsset::m_lodAssets)
                     ;
             }
@@ -57,28 +58,23 @@ namespace AZ
             return m_aabb;
         }
         
-        RPI::ModelMaterialSlotMap ModelAsset::GetModelMaterialSlots() const
+        const ModelMaterialSlotMap& ModelAsset::GetMaterialSlots() const
         {
-            RPI::ModelMaterialSlotMap slotMap;
+            return m_materialSlots;
+        }
             
-            for (const Data::Asset<AZ::RPI::ModelLodAsset>& lod : GetLodAssets())
-            {
-                for (const AZ::RPI::ModelMaterialSlot& materialSlot : lod->GetMaterialSlots())
-                {
-                    auto iter = slotMap.find(materialSlot.m_stableId);
-                    if (iter == slotMap.end())
-                    {
-                        slotMap.emplace(materialSlot.m_stableId, materialSlot);
-                    }
-                    else
-                    {
-                        AZ_Assert(materialSlot.m_displayName == iter->second.m_displayName && materialSlot.m_defaultMaterialAsset.GetId() == iter->second.m_defaultMaterialAsset.GetId(),
-                            "Multiple LODs have mismatched data for the same material slot.");
-                    }
-                }
-            }
+        const ModelMaterialSlot& ModelAsset::FindMaterialSlot(uint32_t stableId) const
+        {
+            auto iter = m_materialSlots.find(stableId);
 
-            return slotMap;
+            if (iter == m_materialSlots.end())
+            {
+                return m_fallbackSlot;
+            }
+            else
+            {
+                return iter->second;
+            }
         }
 
         size_t ModelAsset::GetLodCount() const

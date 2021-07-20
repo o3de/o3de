@@ -294,6 +294,7 @@ namespace AZ
                 const ProductMeshView& meshView,
                 const BufferAssetView& lodIndexBuffer,
                 const AZStd::vector<ModelLodAsset::Mesh::StreamBufferInfo>& lodStreamBuffers,
+                ModelAssetCreator& modelAssetCreator,
                 ModelLodAssetCreator& lodAssetCreator,
                 const MaterialAssetsByUid& materialAssetsByUid);
 

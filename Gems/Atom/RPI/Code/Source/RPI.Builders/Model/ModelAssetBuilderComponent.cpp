@@ -367,6 +367,9 @@ namespace AZ
 
             MorphTargetMetaAssetCreator morphTargetMetaCreator;
             morphTargetMetaCreator.Begin(MorphTargetMetaAsset::ConstructAssetId(modelAssetId, modelAssetName));
+            
+            ModelAssetCreator modelAssetCreator;
+            modelAssetCreator.Begin(modelAssetId);
 
             uint32_t lodIndex = 0;
             for (const SourceMeshContentList& sourceMeshContentList : sourceMeshContentListsByLod)
@@ -429,7 +432,7 @@ namespace AZ
 
                     for (const ProductMeshView& meshView : lodMeshViews)
                     {
-                        if (!CreateMesh(meshView, indexBuffer, streamBuffers, lodAssetCreator, context.m_materialsByUid))
+                        if (!CreateMesh(meshView, indexBuffer, streamBuffers, modelAssetCreator, lodAssetCreator, context.m_materialsByUid))
                         {
                             return AZ::SceneAPI::Events::ProcessingResult::Failure;
                         }
@@ -468,10 +471,6 @@ namespace AZ
                 lodIndex++;
             }
             sourceMeshContentListsByLod.clear();
-
-            // Build the final asset structure
-            ModelAssetCreator modelAssetCreator;
-            modelAssetCreator.Begin(modelAssetId);
 
             // Finalize all LOD assets
             for (auto& lodAsset : lodAssets)
@@ -1796,6 +1795,7 @@ namespace AZ
             const ProductMeshView& meshView,
             const BufferAssetView& lodIndexBuffer,
             const AZStd::vector<ModelLodAsset::Mesh::StreamBufferInfo>& lodStreamBuffers,
+            ModelAssetCreator& modelAssetCreator,
             ModelLodAssetCreator& lodAssetCreator,
             const MaterialAssetsByUid& materialAssetsByUid)
         {
@@ -1811,7 +1811,8 @@ namespace AZ
                     materialSlot.m_displayName = iter->second.m_name;
                     materialSlot.m_defaultMaterialAsset = iter->second.m_asset;
 
-                    lodAssetCreator.SetMeshMaterialSlot(materialSlot);
+                    modelAssetCreator.AddMaterialSlot(materialSlot);
+                    lodAssetCreator.SetMeshMaterialSlot(materialSlot.m_stableId);
                 }
             }
 
