@@ -56,7 +56,7 @@ class TestPositionModifier(object):
         )
 
     @pytest.mark.test_case_id("C4874100")
-    @pytest.mark.SUITE_sandbox
+    @pytest.mark.SUITE_periodic
     @pytest.mark.dynveg_modifier
     def test_PositionModifier_AutoSnapToSurfaceWorks(self, request, editor, level, launcher_platform):
 
