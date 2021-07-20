@@ -1081,7 +1081,8 @@ namespace AZ
                 break;
             case (1): // Sort by buffer/image name
                 AZStd::sort(m_tableRows.begin(), m_tableRows.end(),
-                    [ascending](const TableRow& lhs, const TableRow& rhs){
+                    [ascending](const TableRow& lhs, const TableRow& rhs)
+                    {
                         const auto lhsName = lhs.m_bufImgName.GetStringView();
                         const auto rhsName = rhs.m_bufImgName.GetStringView();
                         return ascending ? lhsName < rhsName : lhsName > rhsName;
@@ -1089,7 +1090,8 @@ namespace AZ
                 break;
             case (2): // Sort by memory usage
                 AZStd::sort(m_tableRows.begin(), m_tableRows.end(),
-                    [ascending](const TableRow& lhs, const TableRow& rhs){
+                    [ascending](const TableRow& lhs, const TableRow& rhs)
+                    {
                         const float lhsSize = lhs.m_sizeInBytes;
                         const float rhsSize = rhs.m_sizeInBytes;
                         return ascending ? lhsSize < rhsSize : lhsSize > rhsSize;
@@ -1111,12 +1113,14 @@ namespace AZ
                 ImGui::TableNextColumn();
 
                 ImGuiTableSortSpecs* sortSpecs = ImGui::TableGetSortSpecs();
-                if (sortSpecs && sortSpecs->SpecsDirty){
+                if (sortSpecs && sortSpecs->SpecsDirty)
+                {
                     SortTable(sortSpecs);
                 }
 
                 // Draw each row in the table
-                for (const auto& tableRow : m_tableRows) {
+                for (const auto& tableRow : m_tableRows)
+                {
                     // Don't draw the row if none of the row's text fields pass the filter
                     if (!m_nameFilter.PassFilter(tableRow.m_parentPoolName.GetCStr())
                         && !m_nameFilter.PassFilter(tableRow.m_bufImgName.GetCStr())

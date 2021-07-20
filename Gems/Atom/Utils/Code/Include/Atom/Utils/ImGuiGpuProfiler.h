@@ -271,7 +271,8 @@ namespace AZ
             // Sort the table according to the appropriate column.
             void SortTable(ImGuiTableSortSpecs* sortSpecs);
 
-            struct TableRow {
+            struct TableRow
+            {
                 Name m_parentPoolName;
                 Name m_bufImgName;
                 size_t m_sizeInBytes = 0;
