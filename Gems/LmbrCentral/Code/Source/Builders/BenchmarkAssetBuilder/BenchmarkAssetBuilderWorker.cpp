@@ -6,15 +6,17 @@
  *
  */
 
-#include <LmbrCentral_precompiled.h>
 #include <Builders/BenchmarkAssetBuilder/BenchmarkAssetBuilderWorker.h>
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Math/Random.h>
 #include <AzCore/Casting/lossy_cast.h>
 #include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/Debug/Trace.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AssetBuilderSDK/SerializationDependencies.h>
+
+#include <CryCommon/platform.h>
 
 namespace BenchmarkAssetBuilder
 {

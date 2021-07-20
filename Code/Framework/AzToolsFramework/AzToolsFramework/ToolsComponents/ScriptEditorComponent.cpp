@@ -7,7 +7,6 @@
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 #include <AzToolsFramework/ToolsComponents/ScriptEditorComponent.h>
 #include <AzCore/Script/ScriptSystemBus.h>
 #include <AzCore/EBus/Results.h>

@@ -7,7 +7,6 @@
  */
 
 
-#include "LyShine_precompiled.h"
 #include <AzCore/Serialization/SerializeContext.h>
 #include "EventNode.h"
 #include "AnimTrack.h"

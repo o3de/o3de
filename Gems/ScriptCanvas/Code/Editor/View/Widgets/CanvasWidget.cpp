@@ -6,7 +6,6 @@
  *
  */
 
-#include "precompiled.h"
 
 #include "CanvasWidget.h"
 

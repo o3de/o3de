@@ -7,10 +7,12 @@
  */
 
 #pragma once
+
 #include <AzFramework/Physics/Ragdoll.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <PhysXCharacters/API/Ragdoll.h>
 #include <AzCore/Outcome/Outcome.h>
+#include <PxPhysicsAPI.h>
 
 namespace Physics
 {

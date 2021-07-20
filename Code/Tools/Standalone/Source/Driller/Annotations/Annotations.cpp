@@ -6,7 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
 #include "Annotations.hxx"
 #include <Source/Driller/Workspaces/Workspace.h>
 #include <AzCore/std/sort.h>

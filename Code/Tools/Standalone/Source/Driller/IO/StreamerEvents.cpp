@@ -6,8 +6,6 @@
  *
  */
 
-#include "Woodpecker_precompiled.h"
-
 #include "StreamerEvents.h"
 
 #include "StreamerDataAggregator.hxx"

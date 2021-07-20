@@ -19,6 +19,7 @@
 #if !defined(DEFINED_QMETATYPE_UUID)
 #define DEFINED_QMETATYPE_UUID
 
+#include <AzCore/Math/Uuid.h>
 Q_DECLARE_METATYPE(AZ::Uuid);
 #endif
 

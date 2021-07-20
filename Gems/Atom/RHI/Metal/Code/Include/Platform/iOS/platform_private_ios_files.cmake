@@ -7,7 +7,7 @@
 #
 
 set(FILES
-    Atom_RHI_Metal_precompiled_iOS.h
-    Atom_RHI_Metal_precompiled_Platform.h
+    Atom_RHI_Metal_iOS.h
+    Atom_RHI_Metal_Platform.h
 )
 

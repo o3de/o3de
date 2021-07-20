@@ -6,7 +6,6 @@
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 #include "IPCComponent.h"
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/Component/TickBus.h>

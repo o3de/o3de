@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <StartingPointInput_precompiled.h>
+
 #include <InputLibrary.h>
 
 #include <AzCore/Serialization/EditContext.h>

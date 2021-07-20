@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    Source/VirtualGamepad_precompiled.h
     Include/VirtualGamepad/VirtualGamepadBus.h
     Source/InputDeviceVirtualGamepad.cpp
     Source/InputDeviceVirtualGamepad.h

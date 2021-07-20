@@ -9,12 +9,10 @@
 
 #ifndef _CRY_WINDOW_MESSAGE_HANDLER_H_
 #define _CRY_WINDOW_MESSAGE_HANDLER_H_
-#include "platform.h"
+
 #if defined(WIN32)
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#include <windows.h>
+#include "platform.h"
+#include <AzCore/PlatformIncl.h>
 
 // Summary:
 //      Window message handler for Windows OS

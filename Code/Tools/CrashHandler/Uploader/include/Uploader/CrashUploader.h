@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include <AzCore/PlatformIncl.h>
 #include <client/crash_report_database.h>
 #include <util/net/http_multipart_builder.h>
 #include <util/net/http_transport.h>

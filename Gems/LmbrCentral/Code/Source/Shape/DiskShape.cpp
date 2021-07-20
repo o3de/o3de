@@ -6,7 +6,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "DiskShape.h"
 
 #include <AzCore/Math/Aabb.h>

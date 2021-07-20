@@ -6,7 +6,6 @@
  *
  */
 
-#include "LyShine_precompiled.h"
 #include "LyShineLoadScreen.h"
 
 #if AZ_LOADSCREENCOMPONENT_ENABLED

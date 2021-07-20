@@ -15,6 +15,10 @@
 #include "UiAnimUndoObject.h"
 #include "UiAnimUndo.h"
 
+#include <QtCore/QString>
+
+class QWidget;
+
 class CUiAnimViewNode;
 class CUiAnimViewSequence;
 class CUiAnimViewAnimNode;

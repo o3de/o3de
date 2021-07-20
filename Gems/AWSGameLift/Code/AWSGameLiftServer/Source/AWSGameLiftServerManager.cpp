@@ -145,7 +145,7 @@ namespace AWSGameLift
         Aws::GameLift::GenericOutcome processEndingOutcome = m_gameLiftServerSDKWrapper->ProcessEnding();
         AZ_TracePrintf(AWSGameLiftServerManagerName, "ProcessEnding request against Amazon GameLift service is complete.");
 
-        bool processEndingIsSuccess = processEndingOutcome.IsSuccess();
+        [[maybe_unused]] bool processEndingIsSuccess = processEndingOutcome.IsSuccess();
 
         AZ_Error(AWSGameLiftServerManagerName, processEndingIsSuccess, AWSGameLiftServerProcessEndingErrorMessage,
             processEndingOutcome.GetError().GetErrorMessage().c_str());

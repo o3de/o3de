@@ -10,6 +10,7 @@
 #include <QString>
 
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/std/any.h>
 
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationAction.h>
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationModelIds.h>

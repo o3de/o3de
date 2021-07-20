@@ -237,7 +237,6 @@ namespace AzToolsFramework
 
             if (m_containerEntity)
             {
-                m_instanceEntityMapper->UnregisterEntity(m_containerEntity->GetId());
                 m_containerEntity.reset(aznew AZ::Entity());
                 RegisterEntity(m_containerEntity->GetId(), GenerateEntityAlias());
             }
@@ -265,6 +264,11 @@ namespace AzToolsFramework
 
         void Instance::ClearEntities()
         {
+            if (m_containerEntity)
+            {
+                m_instanceEntityMapper->UnregisterEntity(m_containerEntity->GetId());
+            }
+
             for (const auto&[entityAlias, entity] : m_entities)
             {
                 if (entity)

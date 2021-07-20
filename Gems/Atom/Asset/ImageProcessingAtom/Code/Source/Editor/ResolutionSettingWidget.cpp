@@ -6,7 +6,6 @@
  *
  */
 
-#include <ImageProcessing_precompiled.h>
 #include "ResolutionSettingWidget.h"
 #include <Source/Editor/ui_ResolutionSettingWidget.h>
 #include <QVBoxLayout>

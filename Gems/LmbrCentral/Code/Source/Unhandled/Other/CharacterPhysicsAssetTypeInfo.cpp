@@ -6,7 +6,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "CharacterPhysicsAssetTypeInfo.h"
 
 #include <LmbrCentral/Rendering/MaterialAsset.h>

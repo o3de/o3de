@@ -65,6 +65,7 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
                         PATTERN *.h
                         PATTERN *.hpp
                         PATTERN *.inl
+                        PATTERN *.hxx
                 )
             endif()
         endforeach()

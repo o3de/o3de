@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "AzToolsFramework_precompiled.h"
 #include "PropertyCRCCtrl.h"
 #include "PropertyQTConstants.h"
 #include <QRegExp>
@@ -15,6 +14,7 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'QLayoutItem:
 #include <QHBoxLayout>
 AZ_POP_DISABLE_WARNING
 #include <QString>
+#include <QtCore/QEvent>
 
 namespace AzToolsFramework
 {

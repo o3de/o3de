@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <ImageBuilderBaseType.h>
+
 namespace ImageProcessingAtom
 {
     // note: O3DE is right hand Z up coordinate

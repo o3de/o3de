@@ -30,5 +30,4 @@ set(FILES
     Source/CameraTransformBehaviors/OffsetCameraPosition.cpp
     Source/CameraTransformBehaviors/Rotate.h
     Source/CameraTransformBehaviors/Rotate.cpp
-    Source/StartingPointCamera_precompiled.h
 )

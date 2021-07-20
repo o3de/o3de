@@ -6,8 +6,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include <AzFramework/Physics/SystemBus.h>
 #include <QBoxLayout>
 #include <QCheckBox>

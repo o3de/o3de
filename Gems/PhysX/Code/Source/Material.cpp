@@ -6,8 +6,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include "Material.h"
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <PxPhysicsAPI.h>

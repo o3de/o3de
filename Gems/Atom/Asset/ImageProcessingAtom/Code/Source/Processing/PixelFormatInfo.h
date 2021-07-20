@@ -15,6 +15,8 @@
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/string/string.h>
 
+#include <ImageBuilderBaseType.h>
+
 namespace ImageProcessingAtom
 {
     //The original implementation was from cryhalf's CryConvertFloatToHalf and CryConvertHalfToFloat function

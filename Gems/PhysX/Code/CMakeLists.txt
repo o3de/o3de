@@ -31,6 +31,7 @@ ly_add_target(
     COMPILE_DEFINITIONS
         PUBLIC
             PHYSX_ENABLE_MULTI_THREADING
+            $<$<NOT:$<CONFIG:release>>:AZ_PHYSICS_DEBUG_ENABLED>
     INCLUDE_DIRECTORIES
         PUBLIC
             .

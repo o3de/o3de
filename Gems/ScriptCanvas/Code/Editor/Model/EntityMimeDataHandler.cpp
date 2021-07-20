@@ -6,7 +6,6 @@
  *
  */
 
-#include "precompiled.h"
 #include "EntityMimeDataHandler.h"
 
 #include <QMimeData>

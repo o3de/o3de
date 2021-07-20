@@ -7,7 +7,6 @@
  */
 
 
-#include "UiCanvasEditor_precompiled.h"
 #include "UiAVSequenceProps.h"
 #include <LyShine/Animation/IUiAnimation.h>
 #include "UiEditorAnimationBus.h"
@@ -44,7 +43,7 @@ CUiAVSequenceProps::~CUiAVSequenceProps()
 }
 
 // CUiAVSequenceProps message handlers
-BOOL CUiAVSequenceProps::OnInitDialog()
+bool CUiAVSequenceProps::OnInitDialog()
 {
     QString name = m_pSequence->GetName();
     ui->NAME->setText(name);
@@ -76,7 +75,7 @@ BOOL CUiAVSequenceProps::OnInitDialog()
         ui->ORT_ONCE->setChecked(true);
     }
 
-    return TRUE;  // return TRUE unless you set the focus to a control
+    return true;  // return TRUE unless you set the focus to a control
     // EXCEPTION: OCX Property Pages should return FALSE
 }
 

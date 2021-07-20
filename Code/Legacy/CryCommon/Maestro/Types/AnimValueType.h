@@ -11,10 +11,6 @@
 #define CRYINCLUDE_CRYCOMMON_MAESTRO_TYPES_ANIMVALUETYPE_H
 #pragma once
 
-// **NOTES**: Do not include into the precompiled header hierarchy!
-//            There are a couple legacy defines in IMovieSystem.h that
-//            correspond to these values. Unknown and Float.
-
 //! Values that animation track can hold.
 // Do not change values! they are serialized
 //

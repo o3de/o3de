@@ -6,7 +6,6 @@
  *
  */
 
-#include <NumericalMethods_precompiled.h>
 #include <LinearAlgebra.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Math/MathUtils.h>

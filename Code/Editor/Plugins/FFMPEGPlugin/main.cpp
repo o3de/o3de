@@ -6,8 +6,6 @@
  *
  */
 
-
-#include "FFMPEGPlugin_precompiled.h"
 #include "FFMPEGPlugin.h"
 #include "Include/IEditorClassFactory.h"
 

@@ -6,8 +6,6 @@
  *
  */
 
-#include "LyShine_precompiled.h"
-
 #include "LyShineTest.h"
 #include <UiSerialize.h>
 

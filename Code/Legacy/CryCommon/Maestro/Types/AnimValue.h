@@ -11,8 +11,6 @@
 #define CRYINCLUDE_CRYCOMMON_MAESTRO_TYPES_ANIMVALUE_H
 #pragma once
 
-// **NOTE**: Do not include into the precompiled header hierarchy!
-
 //! Values that animation track can hold.
 // Do not change values! they are serialized
 //

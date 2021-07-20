@@ -6,7 +6,6 @@
  *
  */
 
-#include "precompiled.h"
 
 #if defined (SCRIPTCANVAS_EDITOR)
 

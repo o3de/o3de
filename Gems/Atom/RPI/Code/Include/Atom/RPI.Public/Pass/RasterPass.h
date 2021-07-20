@@ -55,6 +55,9 @@ namespace AZ
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;
             void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
 
+            // Retrieve draw lists from view and dynamic draw system and generate final draw list
+            void UpdateDrawList();
+
             // The draw list tag used to fetch the draw list from the views
             RHI::DrawListTag m_drawListTag;
 
@@ -62,8 +65,12 @@ namespace AZ
             // This is the index of the pipeline state data that corresponds to this pass in the array of pipeline state data
             RHI::Handle<> m_pipelineStateDataIndex;
 
-            // The draw list returned from the view
+            // The reference of the draw list to be drawn
             RHI::DrawListView m_drawListView;
+
+            // If there are more than one draw lists from different source: View, DynamicDrawSystem,
+            // we need to creates a combined draw list which combines all the draw lists to one and cache it until they are submitted. 
+            RHI::DrawList m_combinedDrawList;
             
             RHI::Scissor m_scissorState;
             RHI::Viewport m_viewportState;

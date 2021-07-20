@@ -17,5 +17,4 @@ set(FILES
     PerforceSourceControl.cpp
     PerforceSourceControl.h
     resource.h
-    PerforcePlugin_precompiled.h
 )

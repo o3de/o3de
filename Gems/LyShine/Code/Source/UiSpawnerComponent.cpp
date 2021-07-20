@@ -5,8 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "LyShine_precompiled.h"
-
 #include "UiSpawnerComponent.h"
 
 #include <AzCore/Serialization/EditContext.h>

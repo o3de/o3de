@@ -6,8 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "StackPanel.hxx"
 #include <Source/LUA/moc_StackPanel.cpp>
 

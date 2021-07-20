@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Atom_RHI_Metal_precompiled.h"
 
 #include <AzCore/Casting/lossy_cast.h>
 #include <RHI/BufferMemoryAllocator.h>

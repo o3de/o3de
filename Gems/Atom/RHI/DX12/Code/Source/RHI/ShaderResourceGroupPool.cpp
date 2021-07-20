@@ -6,7 +6,6 @@
  *
  */
 
-#include "RHI/Atom_RHI_DX12_precompiled.h"
 #include <RHI/ShaderResourceGroupPool.h>
 #include <RHI/Buffer.h>
 #include <RHI/BufferView.h>

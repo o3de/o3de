@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "AzToolsFramework_precompiled.h"
 #include <AzToolsFramework/UI/PropertyEditor/PropertyBoolRadioButtonsCtrl.hxx>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyQTConstants.h>
 

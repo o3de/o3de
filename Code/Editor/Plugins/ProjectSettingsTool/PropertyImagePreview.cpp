@@ -6,7 +6,6 @@
  *
  */
 
-#include "ProjectSettingsTool_precompiled.h"
 #include "PropertyImagePreview.h"
 
 #include "DefaultImageValidator.h"

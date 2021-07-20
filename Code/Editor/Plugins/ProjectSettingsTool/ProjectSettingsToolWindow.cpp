@@ -6,7 +6,7 @@
  *
  */
 
-#include "ProjectSettingsTool_precompiled.h"
+#include <EditorDefs.h>
 #include "ProjectSettingsToolWindow.h"
 #include "ui_ProjectSettingsToolWidget.h"
 

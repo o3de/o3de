@@ -7,7 +7,6 @@
  */
 
 
-#include "LyShine_precompiled.h"
 #include "AzEntityNode.h"
 #include "AnimSplineTrack.h"
 #include "BoolTrack.h"

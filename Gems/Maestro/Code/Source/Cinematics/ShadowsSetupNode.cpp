@@ -9,7 +9,6 @@
 
 // Description : CryMovie animation node for shadow settings
 
-#include "Maestro_precompiled.h"
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include "ShadowsSetupNode.h"

@@ -15,10 +15,12 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #if !defined(Q_MOC_RUN)
+#include <AzCore/PlatformIncl.h>
 #include <QMainWindow>
 #include <AssetImporterDocument.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/Math/Guid.h>
 #endif
 
 namespace AZStd

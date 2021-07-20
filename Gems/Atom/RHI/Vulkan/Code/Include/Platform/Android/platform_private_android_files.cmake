@@ -7,6 +7,6 @@
 #
 
 set(FILES
-    Atom_RHI_Vulkan_precompiled_Platform.h
-    Atom_RHI_Vulkan_precompiled_Android.h
+    Atom_RHI_Vulkan_Platform.h
+    Atom_RHI_Vulkan_Android.h
 )

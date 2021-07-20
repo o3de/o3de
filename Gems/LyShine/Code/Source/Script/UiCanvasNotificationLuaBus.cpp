@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "LyShine_precompiled.h"
 #include "UiCanvasNotificationLuaBus.h"
 #include <LyShine/Bus/UiElementBus.h>
 #include <AzCore/Component/ComponentApplicationBus.h>

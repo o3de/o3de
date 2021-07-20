@@ -16,6 +16,7 @@
 #include <QSortFilterProxyModel>
 #include <QAbstractTableModel>
 
+#include <AzCore/EBus/EBus.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/SystemAllocator.h>

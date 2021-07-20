@@ -9,6 +9,9 @@
 
 #include <AzCore/Debug/AssetTrackingTypes.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/Debug/AssetTrackingTypes.h>
 
 namespace AssetMemoryAnalyzer
 {

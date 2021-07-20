@@ -6,8 +6,6 @@
  *
  */
 
-#include <StdAfx.h>
-
 #include <Asset/BlastSliceAsset.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Editor/EditorSystemComponent.h>

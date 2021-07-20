@@ -6,7 +6,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "PolygonPrismShapeComponent.h"
 
 #include <AzCore/RTTI/BehaviorContext.h>

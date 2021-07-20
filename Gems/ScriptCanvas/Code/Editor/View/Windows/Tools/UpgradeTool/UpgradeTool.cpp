@@ -6,8 +6,6 @@
  *
  */
 
-#include <precompiled.h>
-
 #include <QMessageBox>
 #include <QDateTime>
 

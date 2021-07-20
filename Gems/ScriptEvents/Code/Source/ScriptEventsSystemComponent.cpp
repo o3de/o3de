@@ -6,7 +6,6 @@
  *
  */
 
-#include "precompiled.h"
 #include "ScriptEventsSystemComponent.h"
 
 #include <AzCore/Component/ComponentApplicationBus.h>
