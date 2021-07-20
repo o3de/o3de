@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,6 +9,7 @@
 
 #include <AzCore/std/string/string.h>
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/Math/Uuid.h>
 
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
@@ -77,12 +79,15 @@ namespace AzToolsFramework
         private:
             AZ_DISABLE_COPY_MOVE(RootAssetBrowserEntry);
 
-            AZStd::string m_enginePath;
+            AZ::IO::Path m_enginePath;
 
             //! Create folder entry child
-            FolderAssetBrowserEntry* CreateFolder(const char* folderName, AssetBrowserEntry* parent);
-            //! Recursively create folder structure leading to relative path from parent
-            AssetBrowserEntry* CreateFolders(const char* relativePath, AssetBrowserEntry* parent);
+            FolderAssetBrowserEntry* CreateFolder(AZStd::string_view folderName, AssetBrowserEntry* parent);
+            //! Recursively create folder structure leading to  path from parent
+            AssetBrowserEntry* CreateFolders(AZStd::string_view absolutePath, AssetBrowserEntry* parent);
+            // Retrieves the nearest ancestor AssetBrowserEntry from the absolutePath
+            static AssetBrowserEntry* GetNearestAncestor(AZ::IO::PathView absolutePath, AssetBrowserEntry* parent,
+                AZStd::unordered_set<AssetBrowserEntry*>& visitedSet);
 
             bool m_isInitialUpdate = false;
         };

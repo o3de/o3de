@@ -1,17 +1,17 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include "StandaloneTools_precompiled.h"
 
 #include "Source/Driller/FilteredListView.hxx"
 #include <Source/Driller/moc_FilteredListView.cpp>
 #include <Source/Driller/ui_FilteredListView.h>
 
 #include <AzCore/std/containers/set.h>
+#include <AzCore/std/containers/unordered_set.h>
 
 #include <qtextdocument.h>
 

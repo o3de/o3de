@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 #include "LogControl.h"
 #include "LoggingCommon.h"
 
@@ -19,6 +19,7 @@ AZ_POP_DISABLE_WARNING
 #include <QScrollBar>
 #include <QTableView>
 #include <QHeaderView>
+#include <QtWidgets/QApplication>
 
 #include "LogPanel_Panel.h"
 

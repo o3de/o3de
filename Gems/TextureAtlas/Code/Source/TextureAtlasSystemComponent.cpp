@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include "TextureAtlas_precompiled.h"
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -239,7 +238,11 @@ namespace TextureAtlasNamespace
                         temp.m_atlas->GetTexture().reset();
                     }
                     // Delete the atlas
-                    SAFE_DELETE(temp.m_atlas);
+                    if (temp.m_atlas)
+                    {
+                        delete temp.m_atlas;
+                        temp.m_atlas = NULL;
+                    }
                 }
                 return;
             }
