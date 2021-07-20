@@ -827,10 +827,13 @@ namespace ScriptCanvas
 
         for (const auto& contract : m_contracts)
         {
-            failureReason = contract->EvaluateForType(dataType);
-            if (!failureReason)
+            if (contract)
             {
-                return failureReason;
+                failureReason = contract->EvaluateForType(dataType);
+                if (!failureReason)
+                {
+                    return failureReason;
+                }
             }
         }
 
