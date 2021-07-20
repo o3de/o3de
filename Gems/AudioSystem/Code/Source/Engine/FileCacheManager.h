@@ -100,16 +100,4 @@ namespace Audio
         size_t m_currentByteTotal;
         size_t m_maxByteTotal;
     };
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////
-    // Filter for drawing debug info to the screen
-    enum EAudioFileCacheManagerDebugFilter
-    {
-        eAFCMDF_ALL = 0,
-        eAFCMDF_GLOBALS         = AUDIO_BIT(6),   // a
-        eAFCMDF_LEVEL_SPECIFICS = AUDIO_BIT(7),   // b
-        eAFCMDF_USE_COUNTED     = AUDIO_BIT(8),   // c
-        eAFCMDF_LOADED          = AUDIO_BIT(9),   // d
-    };
-
 } // namespace Audio

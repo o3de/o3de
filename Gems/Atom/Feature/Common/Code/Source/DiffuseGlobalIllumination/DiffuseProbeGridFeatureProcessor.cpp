@@ -607,13 +607,6 @@ namespace AZ
                 {
                     pass->SetEnabled(false);
                 }
-
-                RPI::PassHierarchyFilter renderPassFilter(AZ::Name("DiffuseProbeGridRenderPass"));
-                const AZStd::vector<RPI::Pass*>& renderPasses = RPI::PassSystemInterface::Get()->FindPasses(renderPassFilter);
-                for (RPI::Pass* pass : renderPasses)
-                {
-                    pass->SetEnabled(false);
-                }
             }
         }
 
