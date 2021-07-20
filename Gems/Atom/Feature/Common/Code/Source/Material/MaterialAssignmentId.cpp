@@ -33,7 +33,14 @@ namespace AZ
                     // No need to early-return, the object will still load successfully, it will just report more errors about the unrecognized element.
                 }
 
-                classElement.AddElementWithData(context, "materialSlotStableId", materialAssetId.m_subId);
+                if (materialAssetId.IsValid())
+                {
+                    classElement.AddElementWithData(context, "materialSlotStableId", materialAssetId.m_subId);
+                }
+                else
+                {
+                    classElement.AddElementWithData(context, "materialSlotStableId", RPI::ModelMaterialSlot::InvalidStableId);
+                }
             }
 
             return true;
