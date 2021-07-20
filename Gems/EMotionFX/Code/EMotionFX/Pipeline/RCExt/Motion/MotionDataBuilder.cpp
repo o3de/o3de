@@ -171,26 +171,27 @@ namespace EMotionFX
             const SceneDataTypes::ITransform* transform,
             const SceneDataTypes::IBoneData* bone) const
         {
+            AZ::SceneAPI::DataTypes::MatrixType nodeTransform = AZ::SceneAPI::DataTypes::MatrixType::CreateIdentity();
+            if (bone)
+            {
+                nodeTransform = bone->GetWorldTransform();
+            }
+            else if (transform)
+            {
+                nodeTransform = transform->GetMatrix();
+            }
+
             if (nodeIndex != rootBoneNodeIndex)
             {
                 const SceneContainers::SceneGraph::NodeIndex parentNodeIndex = sceneGraph.GetNodeParent(nodeIndex);
                 const SceneDataTypes::IGraphObject* parentNode = sceneGraph.GetNodeContent(parentNodeIndex).get();
                 if (const SceneDataTypes::IBoneData* parentBone = azrtti_cast<const SceneDataTypes::IBoneData*>(parentNode))
                 {
-                    return parentBone->GetWorldTransform().GetInverseFull() * bone->GetWorldTransform();
+                    return parentBone->GetWorldTransform().GetInverseFull() * nodeTransform;
                 }
             }
 
-            if (bone)
-            {
-                return bone->GetWorldTransform();
-            }
-            else if (transform)
-            {
-                return transform->GetMatrix();
-            }
-
-            return AZ::SceneAPI::DataTypes::MatrixType::CreateIdentity();
+            return nodeTransform;
         }
 
         AZ::SceneAPI::Events::ProcessingResult MotionDataBuilder::BuildMotionData(MotionDataBuilderContext& context)
