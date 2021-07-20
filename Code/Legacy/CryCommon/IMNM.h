@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,6 +11,8 @@
 #define __IMNM_H__
 
 #pragma once
+
+#include <CryCommon/BaseTypes.h>
 
 namespace MNM
 {
@@ -62,7 +65,7 @@ namespace MNM
         GlobalIslandID(const uint64 defaultValue = MNM::Constants::eGlobalIsland_InvalidIslandID)
             : id(defaultValue)
         {
-            STATIC_ASSERT(sizeof(StaticIslandID) <= 4, "The maximum supported size for StaticIslandIDs is 4 bytes.");
+            static_assert(sizeof(StaticIslandID) <= 4, "The maximum supported size for StaticIslandIDs is 4 bytes.");
         }
 
         GlobalIslandID(const uint32 navigationMeshID, const MNM::StaticIslandID islandID)

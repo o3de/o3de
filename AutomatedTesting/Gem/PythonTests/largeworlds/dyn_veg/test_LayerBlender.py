@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -68,7 +69,6 @@ class TestLayerBlender(object):
             "Entity has a Box Shape component",
             "Blender Configuration|Vegetation Areas: SUCCESS",
             "Blender Box Shape|Box Configuration|Dimensions: SUCCESS",
-            "Camera entity created",
             "LayerBlender_E2E_Editor:  result=SUCCESS"
         ]
 
@@ -85,12 +85,11 @@ class TestLayerBlender(object):
     @pytest.mark.BAT
     @pytest.mark.SUITE_periodic
     @pytest.mark.dynveg_area
-    @pytest.mark.xfail
     @pytest.mark.parametrize("launcher_platform", ['windows'])
     def test_LayerBlender_E2E_Launcher(self, workspace, project, launcher, level, remote_console_instance,
                                        launcher_platform):
 
-        launcher.args.extend(["-NullRenderer"])
+        launcher.args.extend(["-rhi=Null"])
         launcher.start()
         assert launcher.is_alive(), "Launcher failed to start"
 

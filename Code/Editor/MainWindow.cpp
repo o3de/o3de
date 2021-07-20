@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -41,6 +42,7 @@ AZ_POP_DISABLE_WARNING
 
 // AzToolsFramework
 #include <AzToolsFramework/Application/Ticker.h>
+#include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <AzToolsFramework/API/EditorAnimationSystemRequestBus.h>
 #include <AzToolsFramework/SourceControl/QtSourceControlNotificationHandler.h>
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
@@ -92,6 +94,8 @@ AZ_POP_DISABLE_WARNING
 #include "AzAssetBrowser/AzAssetBrowserWindow.h"
 #include "AssetEditor/AssetEditorWindow.h"
 #include "ActionManager.h"
+
+#include <ImGuiBus.h>
 
 using namespace AZ;
 using namespace AzQtComponents;
@@ -489,6 +493,16 @@ void MainWindow::Initialize()
     ActionOverrideRequestBus::Event(
         GetEntityContextId(), &ActionOverrideRequests::SetupActionOverrideHandler, this);
 
+    if (auto imGuiManager = AZ::Interface<ImGui::IImGuiManager>::Get())
+    {
+        auto handleImGuiStateChangeFn = [](bool enabled)
+        {
+            EditorWindowUIRequestBus::Broadcast(&EditorWindowUIRequests::SetEditorUiEnabled, enabled);
+        };
+        m_handleImGuiStateChangeHandler = ImGui::IImGuiManager::ImGuiSetEnabledEvent::Handler(handleImGuiStateChangeFn);
+        imGuiManager->ConnectImGuiSetEnabledChangedHandler(m_handleImGuiStateChangeHandler);
+    }
+
     AzToolsFramework::EditorEventsBus::Broadcast(&AzToolsFramework::EditorEvents::NotifyMainWindowInitialized, this);
 }
 
@@ -674,49 +688,6 @@ void MainWindow::InitActions()
     am->AddAction(ID_FILE_PROJECT_MANAGER_SETTINGS, tr("Edit Project Settings..."));
     am->AddAction(ID_FILE_PROJECT_MANAGER_NEW, tr("New Project..."));
     am->AddAction(ID_FILE_PROJECT_MANAGER_OPEN, tr("Open Project..."));
-    am->AddAction(ID_GAME_PC_ENABLEVERYHIGHSPEC, tr("Very High")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_PC_ENABLEHIGHSPEC, tr("High")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_PC_ENABLEMEDIUMSPEC, tr("Medium")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_PC_ENABLELOWSPEC, tr("Low")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_OSXMETAL_ENABLEVERYHIGHSPEC, tr("Very High")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_OSXMETAL_ENABLEHIGHSPEC, tr("High")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_OSXMETAL_ENABLEMEDIUMSPEC, tr("Medium")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_OSXMETAL_ENABLELOWSPEC, tr("Low")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_ANDROID_ENABLEVERYHIGHSPEC, tr("Very High")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_ANDROID_ENABLEHIGHSPEC, tr("High")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_ANDROID_ENABLEMEDIUMSPEC, tr("Medium")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_ANDROID_ENABLELOWSPEC, tr("Low")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_IOS_ENABLEVERYHIGHSPEC, tr("Very High")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_IOS_ENABLEHIGHSPEC, tr("High")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_IOS_ENABLEMEDIUMSPEC, tr("Medium")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_IOS_ENABLELOWSPEC, tr("Low")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-#if defined(AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS)
-#if defined(TOOLS_SUPPORT_JASPER)
-#include AZ_RESTRICTED_FILE_EXPLICIT(MainWindow_cpp, jasper)
-#endif
-#if defined(TOOLS_SUPPORT_PROVO)
-#include AZ_RESTRICTED_FILE_EXPLICIT(MainWindow_cpp, provo)
-#endif
-#if defined(TOOLS_SUPPORT_SALEM)
-#include AZ_RESTRICTED_FILE_EXPLICIT(MainWindow_cpp, salem)
-#endif
-#endif
     am->AddAction(ID_TOOLS_CUSTOMIZEKEYBOARD, tr("Customize &Keyboard..."))
         .Connect(&QAction::triggered, this, &MainWindow::ShowKeyboardCustomization);
     am->AddAction(ID_TOOLS_EXPORT_SHORTCUTS, tr("&Export Keyboard Settings..."))
@@ -724,7 +695,6 @@ void MainWindow::InitActions()
     am->AddAction(ID_TOOLS_IMPORT_SHORTCUTS, tr("&Import Keyboard Settings..."))
         .Connect(&QAction::triggered, this, &MainWindow::ImportKeyboardShortcuts);
     am->AddAction(ID_TOOLS_PREFERENCES, tr("Global Preferences..."));
-    am->AddAction(ID_GRAPHICS_SETTINGS, tr("&Graphics Settings..."));
 
     for (int i = ID_FILE_MRU_FIRST; i <= ID_FILE_MRU_LAST; ++i)
     {

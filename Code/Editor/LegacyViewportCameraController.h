@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -69,7 +70,7 @@ namespace SandboxEditor
 
         AZ::RPI::ViewportContextPtr GetViewportContext();
 
-        bool HandleMouseMove(const AzFramework::ScreenPoint& currentMousePos, const AzFramework::ScreenPoint& previousMousePos);
+        bool HandleMouseMove(int dx, int dy);
         bool HandleMouseWheel(float zDelta);
         bool IsKeyDown(Qt::Key key) const;
         void UpdateCursorCapture(bool shouldCaptureCursor);

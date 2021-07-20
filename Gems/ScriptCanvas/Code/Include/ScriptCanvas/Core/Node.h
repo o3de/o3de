@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -479,7 +480,10 @@ namespace ScriptCanvas
         Node(const Node&); // Needed just for DLL linkage. Does not perform a copy
         Node& operator=(const Node&); // Needed just for DLL linkage. Does not perform a copy        
 
+        virtual bool CanAcceptNullInput(const Slot& executionSlot, const Slot& inputSlot) const;
+
         virtual void CollectVariableReferences(AZStd::unordered_set< ScriptCanvas::VariableId >& variableIds) const;
+
         virtual bool ContainsReferencesToVariables(const AZStd::unordered_set< ScriptCanvas::VariableId >& variableIds) const;        
 
         Graph* GetGraph() const;
@@ -841,9 +845,6 @@ namespace ScriptCanvas
 
         void SignalSlotsReordered();
 
-        static void SetInput(Node& node, const SlotId& id, const Datum& input);
-        static void SetInput(Node& node, const SlotId& id, Datum&& input);
-
         // Will ignore any references and return the Datum that the slot represents.
         void ModifyUnderlyingSlotDatum(const SlotId& id, ModifiableDatumView& datumView);
 
@@ -994,9 +995,6 @@ protected:
 
         void SetOwningScriptCanvasId(ScriptCanvasId scriptCanvasId);
         void SetGraphEntityId(AZ::EntityId graphEntityId);
-
-        virtual void SetInput(const Datum& input, const SlotId& id);
-        virtual void SetInput(Datum&& input, const SlotId& id);
 
         bool SlotExists(AZStd::string_view name, const SlotDescriptor& slotDescriptor) const;
 

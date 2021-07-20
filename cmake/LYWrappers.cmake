@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -380,12 +381,14 @@ function(ly_delayed_target_link_libraries)
             cmake_parse_arguments(ly_delayed_target_link_libraries "" "" "${visibilities}" ${delayed_link})
 
             foreach(visibility ${visibilities})
-                foreach(item ${ly_delayed_target_link_libraries_${visibility}})
+                foreach(alias_item ${ly_delayed_target_link_libraries_${visibility}})
 
-                    if(TARGET ${item})
-                        get_target_property(item_type ${item} TYPE)
+                    if(TARGET ${alias_item})
+                        get_target_property(item_type ${alias_item} TYPE)
+                        ly_de_alias_target(${alias_item} item)
                     else()
                         unset(item_type)
+                        set(item ${alias_item})
                     endif()
 
                     if(item_type STREQUAL MODULE_LIBRARY)

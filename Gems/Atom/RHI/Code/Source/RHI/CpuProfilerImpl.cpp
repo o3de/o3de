@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -79,8 +80,7 @@ namespace AZ
         {
             Interface<CpuProfiler>::Register(this);
             m_initialized = true;
-            Device* rhiDevice = GetRHIDevice().get();
-            FrameEventBus::Handler::BusConnect(rhiDevice);
+            SystemTickBus::Handler::BusConnect();
         }
 
         void CpuProfilerImpl::Shutdown()
@@ -101,7 +101,7 @@ namespace AZ
             m_registeredThreads.clear();
             m_timeRegionMap.clear();
             m_initialized = false;
-            FrameEventBus::Handler::BusDisconnect();
+            SystemTickBus::Handler::BusDisconnect();
         }
 
         void CpuProfilerImpl::BeginTimeRegion(TimeRegion& timeRegion)
@@ -173,7 +173,7 @@ namespace AZ
             return m_enabled;
         }
 
-        void CpuProfilerImpl::OnFrameBegin()
+        void CpuProfilerImpl::OnSystemTick()
         {
             if (!m_enabled)
             {
@@ -198,7 +198,6 @@ namespace AZ
             // Update our saved time regions to the last frame's collected data
             m_timeRegionMap = AZStd::move(newMap);
         }
-
 
         void CpuProfilerImpl::RegisterThreadStorage()
         {

@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "ImGui_precompiled.h"
 #include "ImGuiManager.h"
 #include <ImGuiContextScope.h>
 #include <AzCore/PlatformIncl.h>
@@ -738,7 +738,14 @@ void ImGuiManager::ToggleThroughImGuiVisibleState(int controllerIndex)
     }
 
     m_menuBarStatusChanged = true;
+    m_setEnabledEvent.Signal(m_clientMenuBarState == DisplayState::Hidden);
 }
+
+void ImGuiManager::ToggleThroughImGuiVisibleState()
+{
+    ToggleThroughImGuiVisibleState(-1);
+}
+
 
 void ImGuiManager::RenderImGuiBuffers(const ImVec2& scaleRects)
 {

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -161,6 +162,7 @@ public:
     testing::NiceMock<AWSClientAuthUnitTest::AWSClientAuthSystemComponentMock> *m_awsClientAuthSystemsComponent;
     testing::NiceMock<AWSClientAuthUnitTest::AWSCoreSystemComponentMock> *m_awsCoreSystemsComponent;
     testing::NiceMock<AWSClientAuthUnitTest::AWSResourceMappingRequestBusMock> m_awsResourceMappingRequestBusMock;
+    testing::NiceMock<AWSClientAuthUnitTest::AWSCoreRequestBusMock> m_awsCoreRequestBusMock;
     AZ::Entity* m_entity = nullptr;
 };
 
@@ -176,6 +178,7 @@ TEST_F(AWSClientAuthSystemComponentTest, ActivateDeactivate_Success)
     EXPECT_CALL(*m_awsCoreSystemsComponent, Init()).Times(1).InSequence(s1);
     EXPECT_CALL(*m_awsClientAuthSystemsComponent, Init()).Times(1).InSequence(s1);
     EXPECT_CALL(*m_awsCoreSystemsComponent, Activate()).Times(1).InSequence(s1);
+    EXPECT_CALL(m_awsCoreRequestBusMock, GetDefaultConfig()).Times(1).InSequence(s1);
     EXPECT_CALL(m_awsResourceMappingRequestBusMock, GetDefaultRegion()).Times(1).InSequence(s1);
     EXPECT_CALL(*m_awsClientAuthSystemsComponent, Activate()).Times(1).InSequence(s1);
 

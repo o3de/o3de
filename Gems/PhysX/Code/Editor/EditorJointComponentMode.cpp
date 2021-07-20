@@ -1,12 +1,11 @@
 
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <PhysX_precompiled.h>
-
 #include <Editor/EditorJointConfiguration.h>
 #include <Editor/EditorJointComponentMode.h>
 #include <Editor/EditorSubComponentModeAngleCone.h>
@@ -23,8 +22,8 @@ namespace PhysX
     namespace
     {
         //! Uri's for shortcut actions.
-        const AZ::Crc32 GoToNextModeActionUri = AZ_CRC("com.amazon.action.physx.joint.nextmode", 0xe9cf4ed6);
-        const AZ::Crc32 GoToPrevModeActionUri = AZ_CRC("com.amazon.action.physx.joint.prevmode", 0xe70f8daa);
+        const AZ::Crc32 GoToNextModeActionUri = AZ_CRC("com.o3de.action.physx.joint.nextmode", 0xe9cf4ed6);
+        const AZ::Crc32 GoToPrevModeActionUri = AZ_CRC("com.o3de.action.physx.joint.prevmode", 0xe70f8daa);
     }
 
     const AZStd::string EditorJointComponentMode::s_parameterAngularPair = "Twist Limits";

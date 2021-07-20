@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -111,7 +112,6 @@ AZ_POP_DISABLE_WARNING
 #include "ToolBox.h"
 #include "LevelInfo.h"
 #include "EditorPreferencesDialog.h"
-#include "GraphicsSettingsDialog.h"
 #include "AnimationContext.h"
 
 #include "GotoPositionDlg.h"
@@ -440,7 +440,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_CLEAR_REGISTRY, OnClearRegistryData)
     ON_COMMAND(ID_VALIDATELEVEL, OnValidatelevel)
     ON_COMMAND(ID_TOOLS_PREFERENCES, OnToolsPreferences)
-    ON_COMMAND(ID_GRAPHICS_SETTINGS, OnGraphicsSettings)
     ON_COMMAND(ID_SWITCHCAMERA_DEFAULTCAMERA, OnSwitchToDefaultCamera)
     ON_COMMAND(ID_SWITCHCAMERA_SEQUENCECAMERA, OnSwitchToSequenceCamera)
     ON_COMMAND(ID_SWITCHCAMERA_SELECTEDCAMERA, OnSwitchToSelectedcamera)
@@ -452,14 +451,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_DISPLAY_SHOWHELPERS, OnShowHelpers)
     ON_COMMAND(ID_OPEN_TRACKVIEW, OnOpenTrackView)
     ON_COMMAND(ID_OPEN_UICANVASEDITOR, OnOpenUICanvasEditor)
-
-    ON_COMMAND_RANGE(ID_GAME_PC_ENABLELOWSPEC, ID_GAME_PC_ENABLEVERYHIGHSPEC, OnChangeGameSpec)
-
-    ON_COMMAND_RANGE(ID_GAME_OSXMETAL_ENABLELOWSPEC, ID_GAME_OSXMETAL_ENABLEVERYHIGHSPEC, OnChangeGameSpec)
-
-    ON_COMMAND_RANGE(ID_GAME_ANDROID_ENABLELOWSPEC, ID_GAME_ANDROID_ENABLEVERYHIGHSPEC, OnChangeGameSpec)
-
-    ON_COMMAND_RANGE(ID_GAME_IOS_ENABLELOWSPEC, ID_GAME_IOS_ENABLEVERYHIGHSPEC, OnChangeGameSpec)
 
 #if defined(AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS)
 #define AZ_RESTRICTED_PLATFORM_EXPANSION(CodeName, CODENAME, codename, PrivateName, PRIVATENAME, privatename, PublicName, PUBLICNAME, publicname, PublicAuxName1, PublicAuxName2, PublicAuxName3)\
@@ -3675,13 +3666,6 @@ void CCryEditApp::OnToolsPreferences()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnGraphicsSettings()
-{
-    GraphicsSettingsDialog dlg(MainWindow::instance());
-    dlg.exec();
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnSwitchToDefaultCamera()
 {
     CViewport* vp = GetIEditor()->GetViewManager()->GetSelectedViewport();
@@ -3813,91 +3797,6 @@ void CCryEditApp::OnOpenAudioControlsEditor()
 void CCryEditApp::OnOpenUICanvasEditor()
 {
     QtViewPaneManager::instance()->OpenPane(LyViewPane::UiEditor);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::SetGameSpecCheck(ESystemConfigSpec spec, ESystemConfigPlatform platform, int &nCheck, bool &enable)
-{
-    if (GetIEditor()->GetEditorConfigSpec() == spec && GetIEditor()->GetEditorConfigPlatform() == platform)
-    {
-        nCheck = 1;
-    }
-    enable = spec <= GetIEditor()->GetSystem()->GetMaxConfigSpec();
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnUpdateGameSpec(QAction* action)
-{
-    Q_ASSERT(action->isCheckable());
-    int nCheck = 0;
-    bool enable = true;
-    switch (action->data().toInt())
-    {
-    case ID_GAME_PC_ENABLELOWSPEC:
-        SetGameSpecCheck(CONFIG_LOW_SPEC, CONFIG_PC, nCheck, enable);
-        break;
-    case ID_GAME_PC_ENABLEMEDIUMSPEC:
-        SetGameSpecCheck(CONFIG_MEDIUM_SPEC, CONFIG_PC, nCheck, enable);
-        break;
-    case ID_GAME_PC_ENABLEHIGHSPEC:
-        SetGameSpecCheck(CONFIG_HIGH_SPEC, CONFIG_PC, nCheck, enable);
-        break;
-    case ID_GAME_PC_ENABLEVERYHIGHSPEC:
-        SetGameSpecCheck(CONFIG_VERYHIGH_SPEC, CONFIG_PC, nCheck, enable);
-        break;
-    case ID_GAME_OSXMETAL_ENABLELOWSPEC:
-        SetGameSpecCheck(CONFIG_LOW_SPEC, CONFIG_OSX_METAL, nCheck, enable);
-        break;
-    case ID_GAME_OSXMETAL_ENABLEMEDIUMSPEC:
-        SetGameSpecCheck(CONFIG_MEDIUM_SPEC, CONFIG_OSX_METAL, nCheck, enable);
-        break;
-    case ID_GAME_OSXMETAL_ENABLEHIGHSPEC:
-        SetGameSpecCheck(CONFIG_HIGH_SPEC, CONFIG_OSX_METAL, nCheck, enable);
-        break;
-    case ID_GAME_OSXMETAL_ENABLEVERYHIGHSPEC:
-        SetGameSpecCheck(CONFIG_VERYHIGH_SPEC, CONFIG_OSX_METAL, nCheck, enable);
-        break;
-    case ID_GAME_ANDROID_ENABLELOWSPEC:
-        SetGameSpecCheck(CONFIG_LOW_SPEC, CONFIG_ANDROID, nCheck, enable);
-        break;
-    case ID_GAME_ANDROID_ENABLEMEDIUMSPEC:
-        SetGameSpecCheck(CONFIG_MEDIUM_SPEC, CONFIG_ANDROID, nCheck, enable);
-        break;
-    case ID_GAME_ANDROID_ENABLEHIGHSPEC:
-        SetGameSpecCheck(CONFIG_HIGH_SPEC, CONFIG_ANDROID, nCheck, enable);
-        break;
-    case ID_GAME_ANDROID_ENABLEVERYHIGHSPEC:
-        SetGameSpecCheck(CONFIG_VERYHIGH_SPEC, CONFIG_ANDROID, nCheck, enable);
-        break;
-    case ID_GAME_IOS_ENABLELOWSPEC:
-        SetGameSpecCheck(CONFIG_LOW_SPEC, CONFIG_IOS, nCheck, enable);
-        break;
-    case ID_GAME_IOS_ENABLEMEDIUMSPEC:
-        SetGameSpecCheck(CONFIG_MEDIUM_SPEC, CONFIG_IOS, nCheck, enable);
-        break;
-    case ID_GAME_IOS_ENABLEHIGHSPEC:
-        SetGameSpecCheck(CONFIG_HIGH_SPEC, CONFIG_IOS, nCheck, enable);
-        break;
-    case ID_GAME_IOS_ENABLEVERYHIGHSPEC:
-        SetGameSpecCheck(CONFIG_VERYHIGH_SPEC, CONFIG_IOS, nCheck, enable);
-        break;
-#if defined(AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS)
-#define AZ_RESTRICTED_PLATFORM_EXPANSION(CodeName, CODENAME, codename, PrivateName, PRIVATENAME, privatename, PublicName, PUBLICNAME, publicname, PublicAuxName1, PublicAuxName2, PublicAuxName3)\
-    case ID_GAME_##CODENAME##_ENABLELOWSPEC:\
-        SetGameSpecCheck(CONFIG_LOW_SPEC, CONFIG_##CODENAME, nCheck, enable);\
-        break;\
-    case ID_GAME_##CODENAME##_ENABLEMEDIUMSPEC:\
-        SetGameSpecCheck(CONFIG_MEDIUM_SPEC, CONFIG_##CODENAME, nCheck, enable);\
-        break;\
-    case ID_GAME_##CODENAME##_ENABLEHIGHSPEC:\
-        SetGameSpecCheck(CONFIG_HIGH_SPEC, CONFIG_##CODENAME, nCheck, enable);\
-        break;
-        AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS
-#undef AZ_RESTRICTED_PLATFORM_EXPANSION
-#endif
-    }
-    action->setChecked(nCheck);
-    action->setEnabled(enable);
 }
 
 //////////////////////////////////////////////////////////////////////////

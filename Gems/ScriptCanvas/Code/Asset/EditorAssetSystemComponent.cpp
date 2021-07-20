@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "precompiled.h"
 #include <Asset/EditorAssetSystemComponent.h>
 
 #include <AzCore/Asset/AssetManager.h>
@@ -58,16 +58,6 @@ namespace ScriptCanvasEditor
         required.push_back(AZ_CRC("ScriptCanvasService", 0x41fd58f3));
     }
 
-    ScriptCanvas::Grammar::Context* EditorAssetSystemComponent::GetGrammarContext()
-    {
-        return &m_grammarContext;
-    }
-
-    ScriptCanvas::Translation::Context* EditorAssetSystemComponent::GetTranslationContext()
-    {
-        return &m_translationContext;
-    }
-
     void EditorAssetSystemComponent::Init()
     {
     }
@@ -79,16 +69,10 @@ namespace ScriptCanvasEditor
 
         AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
         EditorAssetConversionBus::Handler::BusConnect();
-
-        ScriptCanvas::Translation::RequestBus::Handler::BusConnect();
-        ScriptCanvas::Grammar::RequestBus::Handler::BusConnect();
     }
 
     void EditorAssetSystemComponent::Deactivate()
     {
-        ScriptCanvas::Translation::RequestBus::Handler::BusDisconnect();
-        ScriptCanvas::Grammar::RequestBus::Handler::BusDisconnect();
-
         EditorAssetConversionBus::Handler::BusDisconnect();
         AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
         m_editorAssetRegistry.Unregister();

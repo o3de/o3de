@@ -1,7 +1,8 @@
 
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -199,7 +200,7 @@ namespace ScriptCanvas
 
             bool IsPure() const;
 
-            bool IsStart() const;
+            bool IsStartCall() const;
 
             void MarkDebugEmptyStatement();
 
@@ -215,7 +216,7 @@ namespace ScriptCanvas
 
             void MarkRootLatent();
 
-            void MarkStart();
+            void MarkStartCall();
 
             ExecutionChild& ModChild(size_t index);
 
@@ -286,7 +287,7 @@ namespace ScriptCanvas
 
             bool m_isPure = false;
 
-            bool m_isStart = false;
+            bool m_isStartCall = false;
 
             bool m_hasExplicitUserOutCalls = false;
 

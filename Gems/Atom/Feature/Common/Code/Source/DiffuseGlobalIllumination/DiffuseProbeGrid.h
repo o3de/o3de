@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -102,6 +103,9 @@ namespace AZ
             uint32_t GetRemainingRelocationIterations() const { return aznumeric_cast<uint32_t>(m_remainingRelocationIterations); }
             void DecrementRemainingRelocationIterations() { m_remainingRelocationIterations = AZStd::max(0, m_remainingRelocationIterations - 1); }
             void ResetRemainingRelocationIterations() { m_remainingRelocationIterations = DefaultNumRelocationIterations; }
+
+            void ResetCullingVisibility();
+            bool GetIsVisible() const;
 
             // compute total number of probes in the grid
             uint32_t GetTotalProbeCount() const;

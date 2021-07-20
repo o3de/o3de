@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -649,7 +650,10 @@ namespace AZ
             // End ticks are sorted in increasing order, find the first frame bound to draw
             auto endTickItr = AZStd::lower_bound(m_frameEndTicks.begin(), m_frameEndTicks.end(), m_viewportStartTick);
 
-            while (endTickItr != m_frameEndTicks.end() && *endTickItr < m_viewportEndTick)
+            // Draw to one element before the last collected boundary if possible to avoid empty frame at the end
+            auto drawToItr = m_frameEndTicks.size() > 1 ? m_frameEndTicks.end() - 1 : m_frameEndTicks.end();
+
+            while (endTickItr != drawToItr && *endTickItr < m_viewportEndTick)
             {
                 const float horizontalPixel = ConvertTickToPixelSpace(*endTickItr);
                 drawList->AddLine({ horizontalPixel, wy }, { horizontalPixel, wy + windowHeight }, red);
@@ -670,7 +674,9 @@ namespace AZ
             const auto [wx, wy] = ImGui::GetWindowPos();
             ImDrawList* drawList = ImGui::GetWindowDrawList();
 
-            while (nextFrameBoundaryItr != m_frameEndTicks.end())
+            auto drawToItr = m_frameEndTicks.size() > 1 ? m_frameEndTicks.end() - 1 : m_frameEndTicks.end();
+
+            while (nextFrameBoundaryItr != drawToItr && *lastFrameBoundaryItr <= m_viewportEndTick)
             {
                 const AZStd::sys_time_t lastFrameBoundaryTick = *lastFrameBoundaryItr;
                 const AZStd::sys_time_t nextFrameBoundaryTick = *nextFrameBoundaryItr;
@@ -750,7 +756,10 @@ namespace AZ
         // System tick bus overrides
         inline void ImGuiCpuProfiler::OnSystemTick()
         {
-            m_frameEndTicks.push_back(AZStd::GetTimeNowTicks());
+            if (!m_paused)
+            {
+                m_frameEndTicks.push_back(AZStd::GetTimeNowTicks());
+            }
 
             if (!m_showVisualizer || m_paused)
             {

@@ -1,5 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -207,8 +208,10 @@ namespace ScriptCanvas
 
             bool CheckCreateRoot(const Node& node);
 
+            void CheckForKnownNullDereference(ExecutionTreeConstPtr parent, const ExecutionInput& input, const Slot& inputSlot);
+
             AZStd::string CheckUniqueInterfaceNames
-            (AZStd::string_view candidate
+                ( AZStd::string_view candidate
                 , AZStd::string_view defaultName
                 , AZStd::unordered_set<AZStd::string>& uniqueNames
                 , const AZStd::unordered_set<const ScriptCanvas::Nodes::Core::FunctionDefinitionNode*>& nodelingsOut);

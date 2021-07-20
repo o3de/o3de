@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -45,8 +46,8 @@ namespace EMotionFX
 
                 // IActorGroup overrides
                 const AZStd::string& GetSelectedRootBone() const override;
-
                 void SetSelectedRootBone(const AZStd::string& selectedRootBone)  override;
+                void SetBestMatchingRootBone(const AZ::SceneAPI::Containers::SceneGraph& sceneGraph) override;
 
                 static void Reflect(AZ::ReflectContext* context);
                 static bool IActorGroupVersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);

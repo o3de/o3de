@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -44,6 +45,8 @@ namespace ScriptCanvas
                 bool BranchesOnResult() const;
 
                 size_t GenerateFingerprint() const override;
+
+                bool CanAcceptNullInput(const Slot& executionSlot, const Slot& inputSlot) const override;
 
                 bool GetBranchOnResultCheckName(AZStd::string& exposedName, Grammar::LexicalScope& lexicalScope) const;
 
@@ -149,8 +152,6 @@ namespace ScriptCanvas
 
                 bool IsExpectingResult() const;
 
-                AZ_INLINE AZStd::vector<SlotId>& ModResultSlotIds() { return m_resultSlotIDs; }
-
                 virtual void OnInitializeOutputPost(const MethodOutputConfig&) {}
 
                 virtual void OnInitializeOutputPre(MethodOutputConfig&) {}
@@ -176,6 +177,7 @@ namespace ScriptCanvas
                 NamespacePath m_namespaces;
                 const AZ::BehaviorMethod* m_method = nullptr;
                 const AZ::BehaviorClass* m_class = nullptr;
+                AZStd::vector<SlotId> m_inputSlots;
                 AZStd::vector<SlotId> m_resultSlotIDs;
                 AZStd::recursive_mutex m_mutex; // post-serialization
                 bool m_warnOnMissingFunction = true;

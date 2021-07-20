@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "Atom_RHI_Metal_precompiled.h"
 
 #import <QuartzCore/CAMetalLayer.h>
 #include <RHI/Buffer.h>
@@ -29,13 +29,19 @@ namespace Platform
         return physicalDeviceList;
     }
 
-    void PresentInternal(id <MTLCommandBuffer> mtlCommandBuffer, id<CAMetalDrawable> drawable, float syncInterval)
+    float GetRefreshRate()
     {
-        bool hasPresentAfterMinimumDuration = [drawable respondsToSelector:@selector(presentAfterMinimumDuration:)];
-                
-        if (hasPresentAfterMinimumDuration && syncInterval > 0.0f)
+        NativeScreenType* nativeScreen = [NativeScreenType mainScreen];
+        return [nativeScreen maximumFramesPerSecond];
+    }
+
+    void PresentInternal(id <MTLCommandBuffer> mtlCommandBuffer, id<CAMetalDrawable> drawable, float syncInterval, float refreshRate)
+    {
+        //seconds per frame (1/refreshrate) * num frames (sync interval)
+        float presentAfterMinimumDuration = syncInterval / refreshRate;
+        if (presentAfterMinimumDuration > 0.0f)
         {
-            [mtlCommandBuffer presentDrawable:drawable afterMinimumDuration:syncInterval];
+            [mtlCommandBuffer presentDrawable:drawable afterMinimumDuration:presentAfterMinimumDuration];
         }
         else
         {

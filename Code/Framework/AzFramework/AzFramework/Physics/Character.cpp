@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -84,7 +85,7 @@ namespace Physics
         if (serializeContext)
         {
             serializeContext->Class<CharacterConfiguration, AzPhysics::SimulatedBodyConfiguration>()
-                ->Version(2)
+                ->Version(3)
                 ->Field("CollisionLayer", &CharacterConfiguration::m_collisionLayer)
                 ->Field("CollisionGroupId", &CharacterConfiguration::m_collisionGroupId)
                 ->Field("Material", &CharacterConfiguration::m_materialSelection)
@@ -94,6 +95,7 @@ namespace Physics
                 ->Field("MinDistance", &CharacterConfiguration::m_minimumMovementDistance)
                 ->Field("MaxSpeed", &CharacterConfiguration::m_maximumSpeed)
                 ->Field("ColliderTag", &CharacterConfiguration::m_colliderTag)
+                ->Field("ApplyMoveOnPhysicsTick", &CharacterConfiguration::m_applyMoveOnPhysicsTick)
             ;
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
@@ -127,6 +129,9 @@ namespace Physics
                         ->Attribute(AZ::Edit::Attributes::Step, 1.0f)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CharacterConfiguration::m_colliderTag,
                         "Collider Tag", "Used to identify the collider associated with the character controller")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &CharacterConfiguration::m_applyMoveOnPhysicsTick,
+                        "Apply Move On Tick", "Requests to add velocity will be accumulated and applied once on the physics pre-simulation tick "
+                        "If unticked, explicit call to apply requested velocity is required")
                 ;
             }
         }

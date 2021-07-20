@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -104,9 +105,6 @@ namespace ScriptCanvasBuilder
         m_sharedHandlers = HandleAssetTypes();
         AssetHandlers workerHandlers(m_sharedHandlers);
         m_scriptCanvasBuilder.Activate(workerHandlers);
-
-        ScriptCanvas::Translation::RequestBus::Handler::BusConnect();
-        ScriptCanvas::Grammar::RequestBus::Handler::BusConnect();
     }
 
     void PluginComponent::Deactivate()
@@ -116,18 +114,6 @@ namespace ScriptCanvasBuilder
         AzToolsFramework::ToolsAssetSystemBus::Broadcast(&AzToolsFramework::ToolsAssetSystemRequests::UnregisterSourceAssetType, azrtti_typeid<ScriptCanvasEditor::ScriptCanvasAsset>());
         m_scriptCanvasBuilder.BusDisconnect();
         m_sharedHandlers.DeleteOwnedHandlers();
-        ScriptCanvas::Translation::RequestBus::Handler::BusDisconnect();
-        ScriptCanvas::Grammar::RequestBus::Handler::BusDisconnect();
-    }
-
-    ScriptCanvas::Grammar::Context* PluginComponent::GetGrammarContext()
-    {
-        return &m_grammarContext;
-    }
-
-    ScriptCanvas::Translation::Context* PluginComponent::GetTranslationContext()
-    {
-        return &m_translationContext;
     }
 
     void PluginComponent::Reflect(AZ::ReflectContext* context)

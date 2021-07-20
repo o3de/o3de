@@ -1,7 +1,8 @@
 #!/usr/bin/env groovy
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -216,8 +217,6 @@ def CheckoutRepo(boolean disableSubmodules = false) {
     if (!fileExists(ENGINE_REPOSITORY_NAME)) {
         palMkdir(ENGINE_REPOSITORY_NAME)
     }
-    
-    palSh('git lfs uninstall', 'Git LFS Uninstall') // Prevent git from pulling lfs objects during checkout
 
     if(fileExists('.git')) {
         // If the repository after checkout is locked, likely we took a snapshot while git was running,
@@ -250,13 +249,6 @@ def CheckoutRepo(boolean disableSubmodules = false) {
             userRemoteConfigs: scm.userRemoteConfigs
        ]
     }
-
-    // Run lfs in a separate step. Jenkins is unable to load the credentials for the custom LFS endpoint
-    withCredentials([usernamePassword(credentialsId: "${env.GITHUB_USER}", passwordVariable: 'accesstoken', usernameVariable: 'username')]) {
-        palSh("git config -f .lfsconfig lfs.url https://${username}:${accesstoken}@${env.LFS_URL}", 'Set credentials', false)
-    }
-    palSh('git lfs install', 'Git LFS Install')
-    palSh('git lfs pull', 'Git LFS Pull')
 
     // CHANGE_ID is used by some scripts to identify uniquely the current change (usually metric jobs)
     palSh('git rev-parse HEAD > commitid', 'Getting commit id')

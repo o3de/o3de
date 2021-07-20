@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -28,8 +29,6 @@
 #include <ScriptCanvas/Debugger/API.h>
 #include <ScriptCanvas/Utils/NodeUtils.h>
 #include <ScriptCanvas/Grammar/Primitives.h>
-#include <ScriptCanvas/Grammar/GrammarContext.h>
-#include <ScriptCanvas/Grammar/GrammarContextBus.h>
 #include <ScriptCanvas/Debugger/ValidationEvents/DataValidation/DataValidationEvents.h>
 
 // Version Conversion includes
@@ -2335,6 +2334,11 @@ namespace ScriptCanvas
         }
     }
 
+    bool Node::CanAcceptNullInput([[maybe_unused]] const Slot& executionSlot, [[maybe_unused]] const Slot& inputSlot) const
+    {
+        return true;
+    }
+
     void Node::CollectVariableReferences(AZStd::unordered_set< ScriptCanvas::VariableId >& variableIds) const
     {
         for (const Slot& slot : m_slots)
@@ -2947,45 +2951,6 @@ namespace ScriptCanvas
                 callable(*nodeSlotPair.first, nodeSlotPair.second);
             }
         }
-    }
-
-    void Node::SetInput(const Datum& newInput, const SlotId& slotId)
-    {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::ScriptCanvas);
-
-        ModifiableDatumView datumView;
-        FindModifiableDatumView(slotId, datumView);
-
-        if (datumView.IsValid())
-        {
-            datumView.AssignToDatum(newInput);
-        }
-    }
-
-    void Node::SetInput(Datum&& newInput, const SlotId& slotId)
-    {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::ScriptCanvas);
-
-        ModifiableDatumView datumView;
-        FindModifiableDatumView(slotId, datumView);
-
-        if (datumView.IsValid())
-        {
-            datumView.AssignToDatum(newInput);
-        }
-    }
-
-    void Node::SetInput(Node& node, const SlotId& id, const Datum& input)
-    {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::ScriptCanvas);
-        node.SetInput(input, id);
-    }
-
-    void Node::SetInput(Node& node, const SlotId& id, Datum&& input)
-    {
-        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "ScriptCanvas::Node::SetInput");
-
-        node.SetInput(AZStd::move(input), id);
     }
 
     AZStd::string Node::GetDebugName() const
