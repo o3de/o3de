@@ -17,6 +17,17 @@ else()
     set(MASKED_OCCLUSION_CULLING_FILES "")
 endif()
 
+ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
+
+#for PAL_TRAIT_BUILD_ATOM_RPI_ASSETS_SUPPORTED and PAL_TRAIT_BUILD_ATOM_RPI_MASKED_OCCLUSION_CULLING_SUPPORTED
+include(${pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+
+if(PAL_TRAIT_BUILD_ATOM_RPI_MASKED_OCCLUSION_CULLING_SUPPORTED)
+    set(MASKED_OCCLUSION_CULLING_FILES "atom_rpi_masked_occlusion_files.cmake")
+else()
+    set(MASKED_OCCLUSION_CULLING_FILES "")
+endif()
+
 ly_add_target(
     NAME Atom_RPI.Public STATIC
     NAMESPACE Gem

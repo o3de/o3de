@@ -53,4 +53,18 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedT
             AutomatedTesting.Assets
             COMPONENT TestTools
     )
+
+    # Example tests.
+    ly_add_pytest(
+        NAME LyTestTools_ExampleTests_periodic_no_gpu
+        PATH ${CMAKE_CURRENT_LIST_DIR}/example/test_system_example.py
+        TEST_SERIAL
+        TEST_SUITE periodic
+        RUNTIME_DEPENDENCIES
+            Legacy::Editor
+            AssetProcessor
+            AutomatedTesting.GameLauncher
+            AutomatedTesting.Assets
+            COMPONENT TestTools
+    )
 endif()

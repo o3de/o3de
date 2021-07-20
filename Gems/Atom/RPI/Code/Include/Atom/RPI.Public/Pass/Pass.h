@@ -462,6 +462,7 @@ namespace AZ
             AZStd::shared_ptr<AttachmentReadback> m_attachmentReadback;
             PassAttachmentReadbackOption m_readbackOption;
 
+
         private:
             // Return the Timestamp result of this pass
             virtual TimestampResult GetTimestampResultInternal() const;

@@ -25,6 +25,24 @@ ly_add_target(
 )
 
 ly_add_target(
+    NAME TestImpact.Frontend.Console.Static STATIC
+    NAMESPACE AZ
+    FILES_CMAKE
+        testimpactframework_frontend_console_static_files.cmake
+    INCLUDE_DIRECTORIES
+        PUBLIC
+            Include
+        PRIVATE
+            Source
+    COMPILE_DEFINITIONS
+        PRIVATE
+            ${LY_TEST_IMPACT_CONFIG_FILE_PATH_DEFINITION}
+    BUILD_DEPENDENCIES
+        PUBLIC
+            AZ::TestImpact.Runtime.Static
+)
+
+ly_add_target(
     NAME TestImpact.Frontend.Console EXECUTABLE
     OUTPUT_NAME tiaf
     NAMESPACE AZ

@@ -655,16 +655,7 @@ namespace EditorPythonBindings
         AzToolsFramework::EditorPythonScriptNotificationsBus::Broadcast(
             &AzToolsFramework::EditorPythonScriptNotificationsBus::Events::OnStartExecuteByFilenameAsTest, filename, testCase, args);
         const Result evalResult = EvaluateFile(filename, args);
-        if (evalResult == Result::Okay)
-        {
-            // all good, the test script will need to exit the application now
-            return;
-        }
-        else
-        {
-            // something went wrong with executing the test script
-            AZ::Debug::Trace::Terminate(0xF);
-        }
+        return evalResult == Result::Okay;
     }
 
     void PythonSystemComponent::ExecuteByFilenameWithArgs(AZStd::string_view filename, const AZStd::vector<AZStd::string_view>& args)

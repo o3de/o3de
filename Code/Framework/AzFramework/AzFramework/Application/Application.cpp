@@ -710,12 +710,18 @@ namespace AzFramework
             if (AZ::IO::FixedMaxPath projectUserPath;
                 m_settingsRegistry->Get(projectUserPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath))
             {
-                fileIoBase->SetAlias("@user@", projectUserPath.c_str());
-                AZ::IO::FixedMaxPath projectLogPath = projectUserPath / "log";
-                fileIoBase->SetAlias("@log@", projectLogPath.c_str());
-                fileIoBase->CreatePath(projectLogPath.c_str()); // Create the log directory at this point
+                projectUserPath = GetEngineRoot();
+            }
 
-                CreateUserCache(projectUserPath, *fileIoBase);
+            fileIoBase->SetAlias("@user@", projectUserPath.c_str());
+            fileIoBase->CreatePath(projectUserPath.c_str()); // Create the user directory at this point
+
+            CreateUserCache(projectUserPath, *fileIoBase);
+
+            AZ::IO::FixedMaxPath projectLogPath;
+            if (!m_settingsRegistry->Get(projectLogPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectLogPath))
+            {
+                projectLogPath = projectUserPath / "log";
             }
             else
             {

@@ -10,6 +10,10 @@ if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
     return()
 endif()
 
+if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
+    return()
+endif()
+
 ly_add_target(
     NAME DccScriptingInterface.Static STATIC
     NAMESPACE Gem

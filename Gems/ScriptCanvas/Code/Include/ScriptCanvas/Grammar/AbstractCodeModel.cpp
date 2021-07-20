@@ -720,7 +720,7 @@ namespace ScriptCanvas
         }
 
         AZStd::string AbstractCodeModel::CheckUniqueInterfaceNames
-            ( AZStd::string_view candidate
+        (AZStd::string_view candidate
             , AZStd::string_view defaultName
             , AZStd::unordered_set<AZStd::string>& uniqueNames
             , const AZStd::unordered_set<const ScriptCanvas::Nodes::Core::FunctionDefinitionNode*>& nodelingsOut)
@@ -4363,7 +4363,7 @@ namespace ScriptCanvas
                     for (auto sourceNodeAndSlot : nodes)
                     {
                         AddError(nullptr, aznew ScopedDataConnectionEvent
-                            ( execution->GetNodeId()
+                        (execution->GetNodeId()
                             , targetNode
                             , targetSlot
                             , *sourceNodeAndSlot.first
