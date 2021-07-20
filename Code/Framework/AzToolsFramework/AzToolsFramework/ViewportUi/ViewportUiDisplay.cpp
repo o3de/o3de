@@ -12,8 +12,8 @@
 #include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
-#include <AzToolsFramework/ViewportUi/ViewportUiDisplay.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiCluster.h>
+#include <AzToolsFramework/ViewportUi/ViewportUiDisplay.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiSwitcher.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiTextField.h>
 #include <QWidget>
@@ -35,9 +35,9 @@ namespace AzToolsFramework::ViewportUi::Internal
         }
     }
 
-    static Qt::Alignment GetQtAlignment(Alignment align)
+    static Qt::Alignment GetQtAlignment(const Alignment alignment)
     {
-        switch (align)
+        switch (alignment)
         {
         case Alignment::TopRight:
             return Qt::AlignTop | Qt::AlignRight;
@@ -53,7 +53,7 @@ namespace AzToolsFramework::ViewportUi::Internal
             return Qt::AlignBottom;
         }
 
-        AZ_Assert(false, "ViewportUI", "Unhandled ViewportUI Alignment %d", static_cast<int>(align));
+        AZ_Assert(false, "ViewportUI", "Unhandled ViewportUI Alignment %d", static_cast<int>(alignment));
         return Qt::AlignTop;
     }
 
@@ -72,7 +72,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         UnparentWidgets(m_viewportUiElements);
     }
 
-    void ViewportUiDisplay::AddCluster(AZStd::shared_ptr<ButtonGroup> buttonGroup, const Alignment align)
+    void ViewportUiDisplay::AddCluster(AZStd::shared_ptr<ButtonGroup> buttonGroup, const Alignment alignment)
     {
         if (!buttonGroup.get())
         {
@@ -82,11 +82,10 @@ namespace AzToolsFramework::ViewportUi::Internal
         auto viewportUiCluster = AZStd::make_shared<ViewportUiCluster>(buttonGroup);
         auto id = AddViewportUiElement(viewportUiCluster);
         buttonGroup->SetViewportUiElementId(id);
-        PositionViewportUiElementAnchored(id, GetQtAlignment(align));
+        PositionViewportUiElementAnchored(id, GetQtAlignment(alignment));
     }
 
-    void ViewportUiDisplay::AddClusterButton(
-        const ViewportUiElementId clusterId, Button* button)
+    void ViewportUiDisplay::AddClusterButton(const ViewportUiElementId clusterId, Button* button)
     {
         if (auto viewportUiCluster = qobject_cast<ViewportUiCluster*>(GetViewportUiElement(clusterId).get()))
         {
@@ -102,7 +101,8 @@ namespace AzToolsFramework::ViewportUi::Internal
         }
     }
 
-    void ViewportUiDisplay::SetClusterButtonTooltip(const ViewportUiElementId clusterId, const ButtonId buttonId, const AZStd::string& tooltip)
+    void ViewportUiDisplay::SetClusterButtonTooltip(
+        const ViewportUiElementId clusterId, const ButtonId buttonId, const AZStd::string& tooltip)
     {
         if (auto viewportUiCluster = qobject_cast<ViewportUiCluster*>(GetViewportUiElement(clusterId).get()))
         {
@@ -126,7 +126,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         }
     }
 
-    void ViewportUiDisplay::AddSwitcher(AZStd::shared_ptr<ButtonGroup> buttonGroup, const Alignment align)
+    void ViewportUiDisplay::AddSwitcher(AZStd::shared_ptr<ButtonGroup> buttonGroup, const Alignment alignment)
     {
         if (!buttonGroup.get())
         {
@@ -136,7 +136,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         auto viewportUiSwitcher = AZStd::make_shared<ViewportUiSwitcher>(buttonGroup);
         auto id = AddViewportUiElement(viewportUiSwitcher);
         buttonGroup->SetViewportUiElementId(id);
-        PositionViewportUiElementAnchored(id, GetQtAlignment(align));
+        PositionViewportUiElementAnchored(id, GetQtAlignment(alignment));
     }
 
     void ViewportUiDisplay::AddSwitcherButton(const ViewportUiElementId clusterId, Button* button)
@@ -199,11 +199,12 @@ namespace AzToolsFramework::ViewportUi::Internal
             const ViewportUiElementInfo& elementInfo = element.second;
             if (!elementInfo.m_anchored)
             {
-                const auto screenPoint = AzFramework::WorldToScreen(
-                    elementInfo.m_worldPosition, AzToolsFramework::GetCameraState(m_viewportId));
+                const auto screenPoint =
+                    AzFramework::WorldToScreen(elementInfo.m_worldPosition, AzToolsFramework::GetCameraState(m_viewportId));
                 elementInfo.m_widget->move(screenPoint.m_x, screenPoint.m_y);
             }
         }
+
         PositionUiOverlayOverRenderViewport();
     }
 
@@ -217,7 +218,6 @@ namespace AzToolsFramework::ViewportUi::Internal
         ViewportUiElementId newId = ViewportUiElementId(++m_numViewportElements);
         ViewportUiElementInfo newElement{ widget, newId, true };
         m_viewportUiElements.insert({ newId, newElement });
-        SetUiOverlayContents(widget.get());
         return newId;
     }
 
@@ -234,8 +234,11 @@ namespace AzToolsFramework::ViewportUi::Internal
     ViewportUiElementId ViewportUiDisplay::GetViewportUiElementId(QPointer<QWidget> widget)
     {
         if (auto element = AZStd::find_if(
-            m_viewportUiElements.begin(), m_viewportUiElements.end(),
-            [widget](const auto& it) { return it.second.m_widget.get() == widget; });
+                m_viewportUiElements.begin(), m_viewportUiElements.end(),
+                [widget](const auto& it)
+                {
+                    return it.second.m_widget.get() == widget;
+                });
             element != m_viewportUiElements.end())
         {
             return element->second.m_viewportUiElementId;
@@ -246,7 +249,8 @@ namespace AzToolsFramework::ViewportUi::Internal
 
     void ViewportUiDisplay::RemoveViewportUiElement(ViewportUiElementId elementId)
     {
-        AZ_Assert(elementId != AzToolsFramework::ViewportUi::InvalidViewportUiElementId,
+        AZ_Assert(
+            elementId != AzToolsFramework::ViewportUi::InvalidViewportUiElementId,
             "Tried to remove a Viewport UI element using an invalid or removed ViewportUiElementId.");
 
         auto viewportUiMapElement = m_viewportUiElements.find(elementId);
@@ -265,8 +269,7 @@ namespace AzToolsFramework::ViewportUi::Internal
 
     void ViewportUiDisplay::ShowViewportUiElement(ViewportUiElementId elementId)
     {
-        if (ViewportUiElementInfo element = GetViewportUiElementInfo(elementId);
-            element.m_widget)
+        if (ViewportUiElementInfo element = GetViewportUiElementInfo(elementId); element.m_widget)
         {
             element.m_widget->setVisible(true);
         }
@@ -274,8 +277,7 @@ namespace AzToolsFramework::ViewportUi::Internal
 
     void ViewportUiDisplay::HideViewportUiElement(ViewportUiElementId elementId)
     {
-        if (ViewportUiElementInfo element = GetViewportUiElementInfo(elementId);
-            element.m_widget)
+        if (ViewportUiElementInfo element = GetViewportUiElementInfo(elementId); element.m_widget)
         {
             element.m_widget->setVisible(false);
         }
@@ -283,8 +285,7 @@ namespace AzToolsFramework::ViewportUi::Internal
 
     bool ViewportUiDisplay::IsViewportUiElementVisible(ViewportUiElementId elementId)
     {
-        if (ViewportUiElementInfo element = GetViewportUiElementInfo(elementId);
-            element.m_widget)
+        if (ViewportUiElementInfo element = GetViewportUiElementInfo(elementId); element.m_widget)
         {
             return element.IsValid() && element.m_widget->isVisible();
         }
@@ -294,12 +295,12 @@ namespace AzToolsFramework::ViewportUi::Internal
     void ViewportUiDisplay::CreateComponentModeBorder(const AZStd::string& borderTitle)
     {
         AZStd::string styleSheet = AZStd::string::format(
-            "border: %dpx solid %s; border-top: %dpx solid %s;", HighlightBorderSize,
-            HighlightBorderColor, TopHighlightBorderSize, HighlightBorderColor);
+            "border: %dpx solid %s; border-top: %dpx solid %s;", HighlightBorderSize, HighlightBorderColor, TopHighlightBorderSize,
+            HighlightBorderColor);
         m_uiOverlay.setStyleSheet(styleSheet.c_str());
-        m_uiOverlayLayout.setContentsMargins(HighlightBorderSize + ViewportUiOverlayMargin,
-            TopHighlightBorderSize + ViewportUiOverlayMargin, HighlightBorderSize + ViewportUiOverlayMargin,
-            HighlightBorderSize + ViewportUiOverlayMargin);
+        m_uiOverlayLayout.setContentsMargins(
+            HighlightBorderSize + ViewportUiOverlayMargin, TopHighlightBorderSize + ViewportUiOverlayMargin,
+            HighlightBorderSize + ViewportUiOverlayMargin, HighlightBorderSize + ViewportUiOverlayMargin);
         m_componentModeBorderText.setVisible(true);
         m_componentModeBorderText.setText(borderTitle.c_str());
     }
@@ -315,8 +316,7 @@ namespace AzToolsFramework::ViewportUi::Internal
     {
         auto viewportUiMapElement = m_viewportUiElements.find(elementId);
 
-        if (viewportUiMapElement != m_viewportUiElements.end() &&
-            viewportUiMapElement->second.m_widget)
+        if (viewportUiMapElement != m_viewportUiElements.end() && viewportUiMapElement->second.m_widget)
         {
             viewportUiMapElement->second.m_anchored = false;
             viewportUiMapElement->second.m_worldPosition = pos;
@@ -329,48 +329,25 @@ namespace AzToolsFramework::ViewportUi::Internal
     {
         auto viewportUiMapElement = m_viewportUiElements.find(elementId);
 
-        if (viewportUiMapElement != m_viewportUiElements.end() &&
-            viewportUiMapElement->second.m_widget)
+        if (viewportUiMapElement != m_viewportUiElements.end() && viewportUiMapElement->second.m_widget)
         {
             viewportUiMapElement->second.m_anchored = true;
             SetUiOverlayContentsAnchored(viewportUiMapElement->second.m_widget.get(), alignment);
         }
     }
 
-    void ViewportUiDisplay::AddMaximumSizeViewportUiElement(QPointer<QWidget> widget)
-    {
-        if (widget)
-        {
-            return;
-        }
-
-        if (m_fullScreenWidget)
-        {
-            AZ_Warning(
-                "ViewportUi", false,
-                "Attaching a maximum size element when one already exists. Removing the previously attached element.");
-            RemoveViewportUiElement(GetViewportUiElementId(m_fullScreenWidget));
-        }
-
-        widget->setAttribute(Qt::WA_ShowWithoutActivating);
-        widget->setParent(&m_uiOverlay);
-        m_fullScreenWidget = widget;
-        m_fullScreenLayout.addWidget(m_fullScreenWidget, 0, 0, 1, 1);
-        m_renderOverlay->setFocus();
-    }
-
     // disables system background for widget and gives a transparent background
-    static void ConfigureWidgetForViewportUi(QPointer<QWidget> widget)
+    static void ConfigureWindowForViewportUi(QPointer<QMainWindow> mainWindow)
     {
-        // no background for the widget else each set of buttons/textfields/etc would have a black box around them
-        SetTransparentBackground(widget);
-        widget->setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
+        // no background for the widget else each set of buttons/text-fields/etc would have a black box around them
+        SetTransparentBackground(mainWindow);
+        mainWindow->setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::WindowDoesNotAcceptFocus);
     }
 
     void ViewportUiDisplay::InitializeUiOverlay()
     {
         m_uiMainWindow.setObjectName(m_uiMainWindow.windowTitle());
-        ConfigureWidgetForViewportUi(&m_uiMainWindow);
+        ConfigureWindowForViewportUi(&m_uiMainWindow);
         m_uiMainWindow.setVisible(false);
 
         m_uiOverlay.setObjectName(m_uiOverlay.windowTitle());
@@ -383,8 +360,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         m_fullScreenLayout.addLayout(&m_uiOverlayLayout, 0, 0, 1, 1);
 
         // format the label which will appear on top of the highlight border
-        AZStd::string styleSheet = AZStd::string::format(
-            "background-color: %s; border: none;", HighlightBorderColor);
+        AZStd::string styleSheet = AZStd::string::format("background-color: %s; border: none;", HighlightBorderColor);
         m_componentModeBorderText.setStyleSheet(styleSheet.c_str());
         m_componentModeBorderText.setFixedHeight(TopHighlightBorderSize);
         m_componentModeBorderText.setVisible(false);
@@ -394,6 +370,7 @@ namespace AzToolsFramework::ViewportUi::Internal
     void ViewportUiDisplay::PrepareWidgetForViewportUi(QPointer<QWidget> widget)
     {
         widget->setAttribute(Qt::WA_ShowWithoutActivating);
+        // widget->setWindowFlags(Qt::WindowDoesNotAcceptFocus);
         widget->setParent(&m_uiOverlay);
         widget->setStyleSheet("border: none;");
     }
@@ -409,7 +386,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         m_renderOverlay->setFocus();
     }
 
-    void ViewportUiDisplay::SetUiOverlayContentsAnchored(QPointer<QWidget> widget, Qt::Alignment alignment)
+    void ViewportUiDisplay::SetUiOverlayContentsAnchored(QPointer<QWidget> widget, const Qt::Alignment alignment)
     {
         if (!widget)
         {
@@ -430,13 +407,8 @@ namespace AzToolsFramework::ViewportUi::Internal
             // get the border region by taking the entire region and subtracting the non-border area
             region += m_uiOverlay.rect();
             region -= QRect(
-                QPoint(
-                    m_uiOverlay.rect().left() + HighlightBorderSize,
-                    m_uiOverlay.rect().top() + TopHighlightBorderSize),
-                QPoint(
-                    m_uiOverlay.rect().right() - HighlightBorderSize,
-                    m_uiOverlay.rect().bottom() - HighlightBorderSize)
-            );
+                QPoint(m_uiOverlay.rect().left() + HighlightBorderSize, m_uiOverlay.rect().top() + TopHighlightBorderSize),
+                QPoint(m_uiOverlay.rect().right() - HighlightBorderSize, m_uiOverlay.rect().bottom() - HighlightBorderSize));
         }
 
         // add all children widget regions
@@ -466,8 +438,7 @@ namespace AzToolsFramework::ViewportUi::Internal
 
     ViewportUiElementInfo ViewportUiDisplay::GetViewportUiElementInfo(const ViewportUiElementId elementId)
     {
-        if (auto element = m_viewportUiElements.find(elementId);
-            element != m_viewportUiElements.end())
+        if (auto element = m_viewportUiElements.find(elementId); element != m_viewportUiElements.end())
         {
             return element->second;
         }
@@ -489,7 +460,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         return &m_uiOverlayLayout;
     }
 
-    void SetTransparentBackground(QWidget * widget)
+    void SetTransparentBackground(QWidget* widget)
     {
         widget->setAttribute(Qt::WA_TranslucentBackground);
         widget->setAutoFillBackground(false);

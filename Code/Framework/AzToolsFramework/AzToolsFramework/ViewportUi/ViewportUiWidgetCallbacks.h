@@ -29,7 +29,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         //! Must call ViewportUiWidgetCallbacks::Update to execute the callback.
         void RegisterUpdateCallback(QPointer<QObject> widget, const AZStd::function<void(QPointer<QObject>)>& callback);
         void Update();
-        const AZStd::vector<QPointer<QObject>> GetWidgets() const { return m_widgets; }
+        const AZStd::vector<QPointer<QObject>>& GetWidgets() const { return m_widgets; }
 
     protected:
         //! A map of all update callbacks and their respective widgets.
