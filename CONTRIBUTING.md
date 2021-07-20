@@ -8,7 +8,7 @@ To contribute, please review our [Code of Conduct](https://github.com/o3de/o3de/
 
 ## Making contributions with the Developer Certificate of Origin (DCO)
 
-When contributing, your pull requests will require that you have agreed to our DCO found here: [Devloper Certificate of Origin](https://developercertificate.org/)
+When contributing, your pull requests will require that you have agreed to our DCO found here: [Developer Certificate of Origin](https://developercertificate.org/).  All commits require the --signoff flag to show DCO compliance.
 
 You can do this by using the -s option in git. 
 Example: ```git commit -s -m 'my commit message'```
