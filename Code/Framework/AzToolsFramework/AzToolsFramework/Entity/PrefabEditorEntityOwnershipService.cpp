@@ -151,8 +151,6 @@ namespace AzToolsFramework
     {
         AZ_Assert(IsInitialized(), "Tried to destroy an entity without initializing the Entity Ownership Service");
         AZ_Assert(m_entitiesRemovedCallback, "Callback function for DestroyEntityById has not been set.");
-        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
-            &AzToolsFramework::ToolsApplicationRequestBus::Events::RemoveDirtyEntity, entityId);
         OnEntityRemoved(entityId);
         return true;
     }
