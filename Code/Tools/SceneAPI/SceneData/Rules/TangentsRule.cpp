@@ -27,112 +27,12 @@ namespace AZ
             TangentsRule::TangentsRule()
                 : DataTypes::IRule()
                 , m_tangentSpace(AZ::SceneAPI::DataTypes::TangentSpace::MikkT)
-                , m_bitangentMethod(AZ::SceneAPI::DataTypes::BitangentMethod::Orthogonal)
-                , m_uvSetIndex(0)
-                , m_normalize(true)
             {
             }
-
 
             AZ::SceneAPI::DataTypes::TangentSpace TangentsRule::GetTangentSpace() const
             {
                 return m_tangentSpace;
-            }
-
-
-            AZ::SceneAPI::DataTypes::BitangentMethod TangentsRule::GetBitangentMethod() const
-            {
-                return m_bitangentMethod;
-            }
-
-
-            AZ::u64 TangentsRule::GetUVSetIndex() const
-            {
-                return m_uvSetIndex;
-            }
-
-
-            bool TangentsRule::GetNormalizeVectors() const
-            {
-                return m_normalize;
-            }
-
-
-            // Find UV data.
-            AZ::SceneAPI::DataTypes::IMeshVertexUVData* TangentsRule::FindUVData(AZ::SceneAPI::Containers::SceneGraph& graph, const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex, AZ::u64 uvSet)
-            {
-                const auto nameContentView = AZ::SceneAPI::Containers::Views::MakePairView(graph.GetNameStorage(), graph.GetContentStorage());
-
-                AZ::u64 uvSetIndex = 0;
-                auto meshChildView = AZ::SceneAPI::Containers::Views::MakeSceneGraphChildView<AZ::SceneAPI::Containers::Views::AcceptEndPointsOnly>(graph, nodeIndex, nameContentView.begin(), true);
-                for (auto child = meshChildView.begin(); child != meshChildView.end(); ++child)
-                {
-                    AZ::SceneAPI::DataTypes::IMeshVertexUVData* data = azrtti_cast<AZ::SceneAPI::DataTypes::IMeshVertexUVData*>(child->second.get());
-                    if (data)
-                    {
-                        if (uvSetIndex == uvSet)
-                        {
-                            return data;
-                        }
-                        uvSetIndex++;
-                    }
-                }
-
-                return nullptr;
-            }
-
-
-            // Find tangent data.
-            AZ::SceneAPI::DataTypes::IMeshVertexTangentData* TangentsRule::FindTangentData(AZ::SceneAPI::Containers::SceneGraph& graph, const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex, AZ::u64 setIndex, AZ::SceneAPI::DataTypes::TangentSpace tangentSpace)
-            {
-                const auto nameContentView = AZ::SceneAPI::Containers::Views::MakePairView(graph.GetNameStorage(), graph.GetContentStorage());
-
-                auto meshChildView = AZ::SceneAPI::Containers::Views::MakeSceneGraphChildView<AZ::SceneAPI::Containers::Views::AcceptEndPointsOnly>(graph, nodeIndex, nameContentView.begin(), true);
-                for (auto child = meshChildView.begin(); child != meshChildView.end(); ++child)
-                {
-                    AZ::SceneAPI::DataTypes::IMeshVertexTangentData* data = azrtti_cast<AZ::SceneAPI::DataTypes::IMeshVertexTangentData*>(child->second.get());
-                    if (data)
-                    {
-                        if (setIndex == data->GetTangentSetIndex() && tangentSpace == data->GetTangentSpace())
-                        {
-                            return data;
-                        }
-                    }
-                }
-
-                return nullptr;
-            }
-
-
-            // Find bitangent data.
-            AZ::SceneAPI::DataTypes::IMeshVertexBitangentData* TangentsRule::FindBitangentData(AZ::SceneAPI::Containers::SceneGraph& graph, const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex, AZ::u64 setIndex, AZ::SceneAPI::DataTypes::TangentSpace tangentSpace)
-            {
-                const auto nameContentView = AZ::SceneAPI::Containers::Views::MakePairView(graph.GetNameStorage(), graph.GetContentStorage());
-
-                auto meshChildView = AZ::SceneAPI::Containers::Views::MakeSceneGraphChildView<AZ::SceneAPI::Containers::Views::AcceptEndPointsOnly>(graph, nodeIndex, nameContentView.begin(), true);
-                for (auto child = meshChildView.begin(); child != meshChildView.end(); ++child)
-                {
-                    AZ::SceneAPI::DataTypes::IMeshVertexBitangentData* data = azrtti_cast<AZ::SceneAPI::DataTypes::IMeshVertexBitangentData*>(child->second.get());
-                    if (data)
-                    {
-                        if (setIndex == data->GetBitangentSetIndex() && tangentSpace == data->GetTangentSpace())
-                        {
-                            return data;
-                        }
-                    }
-                }
-
-                return nullptr;
-            }
-
-            AZ::Crc32 TangentsRule::GetNormalizeVisibility() const
-            {
-                return (m_tangentSpace == AZ::SceneAPI::DataTypes::TangentSpace::EMotionFX) ? AZ::Edit::PropertyVisibility::Hide : AZ::Edit::PropertyVisibility::Show;
-            }
-
-            AZ::Crc32 TangentsRule::GetOrthogonalVisibility() const
-            {
-                return (m_tangentSpace == AZ::SceneAPI::DataTypes::TangentSpace::EMotionFX) ? AZ::Edit::PropertyVisibility::Hide : AZ::Edit::PropertyVisibility::Show;
             }
 
             void TangentsRule::Reflect(AZ::ReflectContext* context)
@@ -143,11 +43,8 @@ namespace AZ
                     return;
                 }
 
-                serializeContext->Class<TangentsRule, DataTypes::IRule>()->Version(2)
-                    ->Field("tangentSpace", &TangentsRule::m_tangentSpace)
-                    ->Field("bitangentMethod", &TangentsRule::m_bitangentMethod)
-                    ->Field("normalize", &TangentsRule::m_normalize)
-                    ->Field("uvSetIndex", &TangentsRule::m_uvSetIndex);
+                serializeContext->Class<TangentsRule, DataTypes::IRule>()->Version(3)
+                    ->Field("tangentSpace", &TangentsRule::m_tangentSpace);
 
                 AZ::EditContext* editContext = serializeContext->GetEditContext();
                 if (editContext)
@@ -159,17 +56,7 @@ namespace AZ
                         ->DataElement(AZ::Edit::UIHandlers::ComboBox, &AZ::SceneAPI::SceneData::TangentsRule::m_tangentSpace, "Tangent space", "Specify the tangent space used for normal map baking. Choose 'From Fbx' to extract the tangents and bitangents directly from the Fbx file. When there is no tangents rule or the Fbx has no tangents stored inside it, the 'MikkT' option will be used with orthogonal tangents of unit length, so with the normalize option enabled, using the first UV set.")
                         ->EnumAttribute(AZ::SceneAPI::DataTypes::TangentSpace::FromSourceScene, "From Source Scene")
                         ->EnumAttribute(AZ::SceneAPI::DataTypes::TangentSpace::MikkT, "MikkT")
-                        ->EnumAttribute(AZ::SceneAPI::DataTypes::TangentSpace::EMotionFX, "EMotion FX")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &AZ::SceneAPI::SceneData::TangentsRule::m_bitangentMethod, "Bitangents", "Set to 'use from tangent space' to use the bitangents generated by the algorithm used or inside the fbx file. This can result in non-orthogonal tangents. Set to 'orthogonal' to skip storing the bitangents and let the engine calculate the bitangents in a way it will be perpendicular to both the normal and tangent.")
-                        ->EnumAttribute(AZ::SceneAPI::DataTypes::BitangentMethod::UseFromTangentSpace, "Use from tangent space")
-                        ->EnumAttribute(AZ::SceneAPI::DataTypes::BitangentMethod::Orthogonal, "Orthogonal")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &TangentsRule::GetOrthogonalVisibility)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &TangentsRule::m_uvSetIndex, "Uv set", "The UV set index to generate the tangents from. A value of 0 means the first uv set, while 1 means the second uv set.")
-                        ->Attribute(AZ::Edit::Attributes::Min, 0)
-                        ->Attribute(AZ::Edit::Attributes::Max, 1)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &TangentsRule::m_normalize, "Normalize", "Normalize the tangents and bitangents? When disabled the vectors might no be unit length, which can be useful for relief mapping.")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &TangentsRule::GetNormalizeVisibility)
                     ;
                 }
             }
