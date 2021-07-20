@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -20,6 +21,7 @@ namespace AZ
         enum class DiffuseProbeGridReadbackState
         {
             Idle,
+            Initializing,
             Irradiance,
             Distance,
             Relocation,
@@ -39,6 +41,8 @@ namespace AZ
             void Update(const AZ::Name& passName);
             void FrameBegin(AZ::RPI::Pass::FramePrepareParams& params);
 
+            bool IsIdle() const { return m_readbackState == DiffuseProbeGridReadbackState::Idle; }
+
         private:
 
             DiffuseProbeGrid* m_diffuseProbeGrid = nullptr;
@@ -50,6 +54,10 @@ namespace AZ
             AZ::RPI::AttachmentReadback::ReadbackResult m_distanceReadbackResult;
             AZ::RPI::AttachmentReadback::ReadbackResult m_relocationReadbackResult;
             AZ::RPI::AttachmentReadback::ReadbackResult m_classificationReadbackResult;
+
+            // number of frames to delay before starting the texture readbacks, this allows the textures to settle
+            static constexpr int32_t DefaultNumInitializationFrames = 50;
+            int32_t m_remainingInitializationFrames = DefaultNumInitializationFrames;
         };
     }   // namespace Render
 }   // namespace AZ

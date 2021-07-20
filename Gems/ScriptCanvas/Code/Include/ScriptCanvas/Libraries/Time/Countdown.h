@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -36,10 +37,8 @@ namespace ScriptCanvas
 
                 TimeDelay() = default;
 
-                void OnInputSignal(const SlotId&) override;
 
                 bool AllowInstantResponse() const override;
-                void OnTimeElapsed() override;
 
                 const char* GetBaseTimeSlotToolTip() const override { return "The amount of time to delay before the Out is signalled."; }
 
@@ -48,8 +47,6 @@ namespace ScriptCanvas
             // Deprecated: see TimeDelayNodeableNode
             class TickDelay
                 : public Node
-                , AZ::TickBus::Handler
-                , AZ::SystemTickBus::Handler
             {
             public:
 
@@ -59,18 +56,6 @@ namespace ScriptCanvas
 
                 void CustomizeReplacementNode(Node* replacementNode, AZStd::unordered_map<SlotId, AZStd::vector<SlotId>>& outSlotIdMap) const override;
 
-                void OnDeactivate() override;
-                void OnInputSignal(const SlotId&) override;
-
-                // SystemTickBus...
-                void OnSystemTick() override;
-                ////
-
-                // TickBus...
-                void OnTick(float deltaTime, AZ::ScriptTimePoint timePoint) override;
-                int GetTickOrder() override;
-                ////
-
             protected:
 
                 int m_tickCounter;
@@ -78,9 +63,8 @@ namespace ScriptCanvas
             };
 
             //! Deprecated: see DelayNodeableNode
-            class Countdown 
+            class Countdown
                 : public Node
-                , AZ::TickBus::Handler
             {
 
             public:
@@ -101,8 +85,6 @@ namespace ScriptCanvas
                 //! Internal counter to track time elapsed
                 float m_currentTime;
 
-                void OnInputSignal(const SlotId&) override;
-
                 bool ShowHoldTime() const
                 {
                     // TODO: This only works on the property grid. If a true value is connected to the "SetLoop" slot,
@@ -113,12 +95,6 @@ namespace ScriptCanvas
                 bool IsOutOfDate(const VersionData& graphVersion) const override;
 
             protected:
-
-                void OnDeactivate() override;
-
-                // AZ::TickBus
-                void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
-                ////
 
                 UpdateResult OnUpdateNode() override;
 

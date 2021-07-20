@@ -1,0 +1,15 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+// This shader is not used for rendering.
+// The only purpose of this shader is to have a shader asset that can be used
+// at runtime to find the RayTracingSceneSrg and RayTracingMaterialSrg layouts.
+
+#include <Atom/Features/RayTracing/RayTracingSceneSrg.azsli>
+#include <Atom/Features/RayTracing/RayTracingMaterialSrg.azsli>
+#include <Atom/RPI/DummyEntryFunctions.azsli>

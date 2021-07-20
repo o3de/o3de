@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,8 +10,6 @@
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/string/string.h>
-
-#include <ScriptCanvas/AWSScriptBehaviorBase.h>
 
 namespace AWSCore
 {
@@ -68,11 +67,10 @@ namespace AWSCore
     };
 
     class AWSScriptBehaviorS3
-        : public AWSScriptBehaviorBase
     {
         static constexpr const char AWSScriptBehaviorS3Name[] = "AWSScriptBehaviorS3";
         static constexpr const char OutputFileIsEmptyErrorMessage[] = "Request validation failed, output file is empty.";
-        static constexpr const char OutputFileMissFullPathErrorMessage[] = "Request validation failed, output file miss full path.";
+        static constexpr const char OutputFileFailedToResolveErrorMessage[] = "Request validation failed, cannot resolve the output file path.";
         static constexpr const char OutputFileIsDirectoryErrorMessage[] = "Request validation failed, output file is a directory.";
         static constexpr const char OutputFileDirectoryNotExistErrorMessage[] = "Request validation failed, output file directory doesn't exist.";
         static constexpr const char OutputFileIsReadOnlyErrorMessage[] = "Request validation failed, output file is read-only.";
@@ -81,7 +79,12 @@ namespace AWSCore
         static constexpr const char RegionNameIsEmptyErrorMessage[] = "Request validation failed, region name is empty.";
 
     public:
-        AWS_SCRIPT_BEHAVIOR_DEFINITION(AWSScriptBehaviorS3, "{7F4E956C-7463-4236-B320-C992D36A9C6E}");
+        AZ_RTTI(AWSScriptBehaviorS3, "{7F4E956C-7463-4236-B320-C992D36A9C6E}");
+
+        AWSScriptBehaviorS3() = default;
+        virtual ~AWSScriptBehaviorS3() = default;
+
+        static void Reflect(AZ::ReflectContext* context);
 
         static void GetObject(const AZStd::string& bucketResourceKey, const AZStd::string& objectKey, const AZStd::string& outFile);
         static void GetObjectRaw(const AZStd::string& bucket, const AZStd::string& objectKey, const AZStd::string& region, const AZStd::string& outFile);

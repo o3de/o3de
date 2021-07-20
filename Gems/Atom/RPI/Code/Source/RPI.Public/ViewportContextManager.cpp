@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -55,16 +56,28 @@ namespace AZ
                 auto onSizeChanged = [this, viewportId](AzFramework::WindowSize size)
                 {
                     // Ensure we emit OnViewportSizeChanged with the correct name.
-                    auto viewportContext = this->GetViewportContextById(viewportId);
+                    auto viewportContext = GetViewportContextById(viewportId);
                     if (viewportContext)
                     {
                         ViewportContextNotificationBus::Event(viewportContext->GetName(), &ViewportContextNotificationBus::Events::OnViewportSizeChanged, size);
                     }
                     ViewportContextIdNotificationBus::Event(viewportId, &ViewportContextIdNotificationBus::Events::OnViewportSizeChanged, size);
                 };
+                auto onDpiScalingChanged = [this, viewportId](float dpiScalingFactor)
+                {
+                    // Ensure we emit OnViewportDpiScalingChanged with the correct name.
+                    auto viewportContext = GetViewportContextById(viewportId);
+                    if (viewportContext)
+                    {
+                        ViewportContextNotificationBus::Event(viewportContext->GetName(), &ViewportContextNotificationBus::Events::OnViewportDpiScalingChanged, dpiScalingFactor);
+                    }
+                    ViewportContextIdNotificationBus::Event(viewportId, &ViewportContextIdNotificationBus::Events::OnViewportDpiScalingChanged, dpiScalingFactor);
+                };
                 viewportContext->m_name = contextName;
                 viewportData.sizeChangedHandler = ViewportContext::SizeChangedEvent::Handler(onSizeChanged);
+                viewportData.dpiScalingChangedHandler = ViewportContext::ScalarChangedEvent::Handler(onDpiScalingChanged);
                 viewportContext->ConnectSizeChangedHandler(viewportData.sizeChangedHandler);
+                viewportContext->ConnectDpiScalingFactorChangedHandler(viewportData.dpiScalingChangedHandler);
                 ViewPtrStack& associatedViews = GetOrCreateViewStackForContext(contextName);
                 viewportContext->SetDefaultView(associatedViews.back());
                 onSizeChanged(viewportContext->GetViewportSize());
@@ -176,6 +189,7 @@ namespace AZ
             UpdateViewForContext(newContextName);
             // Ensure anyone listening on per-name viewport size updates gets notified.
             ViewportContextNotificationBus::Event(newContextName, &ViewportContextNotificationBus::Events::OnViewportSizeChanged, viewportContext->GetViewportSize());
+            ViewportContextNotificationBus::Event(newContextName, &ViewportContextNotificationBus::Events::OnViewportDpiScalingChanged, viewportContext->GetDpiScalingFactor());
         }
 
         void ViewportContextManager::EnumerateViewportContexts(AZStd::function<void(ViewportContextPtr)> visitorFunction)

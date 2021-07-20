@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -699,7 +700,7 @@ Please note that only those seed files will get updated that are active for your
                 {
                     report.append(AZStd::string::format(
                         "SOURCEID: %" PRId64 ", CURRENT PATH: %s, NEW PATH: %s, CURRENT GUID: %s, NEW GUID: %s\n",
-                        static_cast<int64_t>(relocationInfo.m_sourceEntry.m_sourceID),
+                        relocationInfo.m_sourceEntry.m_sourceID,
                         relocationInfo.m_oldRelativePath.c_str(),
                         relocationInfo.m_newRelativePath.c_str(),
                         relocationInfo.m_sourceEntry.m_sourceGuid.ToString<AZStd::string>().c_str(),
@@ -709,7 +710,7 @@ Please note that only those seed files will get updated that are active for your
                 {
                     report.append(AZStd::string::format(
                         "SOURCEID: %" PRId64 ", CURRENT PATH: %s, CURRENT GUID: %s\n",
-                        static_cast<int64_t>(relocationInfo.m_sourceEntry.m_sourceID),
+                        relocationInfo.m_sourceEntry.m_sourceID,
                         relocationInfo.m_oldRelativePath.c_str(),
                         relocationInfo.m_sourceEntry.m_sourceGuid.ToString<AZStd::string>().c_str()));
                 }

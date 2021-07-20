@@ -9,10 +9,6 @@
         [
             "pc"
         ],
-        "ShaderResourceGroupAssets":
-        [
-            "diffuseprobegridrelocation_passsrg.azsrg"
-        ],
         "RootShaderVariantAssets":
         [
             {

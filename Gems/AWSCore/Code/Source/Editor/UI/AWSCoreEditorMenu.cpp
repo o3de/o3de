@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -30,6 +31,7 @@
 
 namespace AWSCore
 {
+
     static constexpr int IconSize = 16;
 
     AWSCoreEditorMenu::AWSCoreEditorMenu(const QString& text)
@@ -204,6 +206,7 @@ namespace AWSCore
             [configFilePath](){
                 QDesktopServices::openUrl(QUrl::fromLocalFile(configFilePath.c_str()));
             });
+
         subMenu->addAction(settingsAction);
         AddSpaceForIcon(subMenu);
     }
@@ -226,7 +229,7 @@ namespace AWSCore
         return nullptr;
     }
 
-    void AWSCoreEditorMenu::AddSpaceForIcon(QMenu* menu)
+    void AWSCoreEditorMenu::AddSpaceForIcon(QMenu *menu)
     {
         QSize size = menu->sizeHint();
         size.setWidth(size.width() + IconSize);

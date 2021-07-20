@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -19,7 +20,6 @@
 
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Public/PipelineState.h>
-#include <Atom/RPI.Reflect/Shader/ShaderResourceGroupAsset.h>
 #include <AzCore/std/containers/fixed_vector.h>
 
 #include "AuxGeomBase.h"
@@ -89,7 +89,7 @@ namespace AZ
 
             struct ShaderData
             {
-                AZ::Data::Asset<AZ::RPI::ShaderResourceGroupAsset> m_perDrawSrgAsset;
+                RHI::Ptr<RHI::ShaderResourceGroupLayout> m_perDrawSrgLayout;
                 Data::Instance<RPI::ShaderResourceGroup> m_defaultSRG; // default SRG for draws not overriding the view projection matrix
                 AZ::RHI::DrawListTag m_drawListTag; // The draw list tag from our shader variant (determines which views primitives are in and which pass)
 

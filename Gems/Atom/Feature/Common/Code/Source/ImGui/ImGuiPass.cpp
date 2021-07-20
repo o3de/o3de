@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -461,19 +462,14 @@ namespace AZ
 
             // Get shader resource group
             {
-                auto perObjectSrgAsset = m_shader->FindShaderResourceGroupAsset(Name{"ObjectSrg"});
-                if (!perObjectSrgAsset.GetId().IsValid())
+                auto perObjectSrgLayout = m_shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Object);
+                if (!perObjectSrgLayout)
                 {
-                    AZ_Error(PassName, false, "Failed to get shader resource group asset");
-                    return;
-                }
-                else if (!perObjectSrgAsset.IsReady())
-                {
-                    AZ_Error(PassName, false, "Shader resource group asset is not loaded");
+                    AZ_Error(PassName, false, "Failed to get shader resource group layout");
                     return;
                 }
 
-                m_resourceGroup = RPI::ShaderResourceGroup::Create(perObjectSrgAsset);
+                m_resourceGroup = RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(), perObjectSrgLayout->GetName());
                 if (!m_resourceGroup)
                 {
                     AZ_Error(PassName, false, "Failed to create shader resource group");

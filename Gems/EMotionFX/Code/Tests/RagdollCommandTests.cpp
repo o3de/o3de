@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,11 +14,47 @@
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/CommandSystem/Source/RagdollCommands.h>
 #include <EMotionFX/CommandSystem/Source/ColliderCommands.h>
-
+#include <Tests/D6JointLimitConfiguration.h>
+#include <Tests/Mocks/PhysicsSystem.h>
 
 namespace EMotionFX
 {
-    using RagdollCommandTests = ActorFixture;
+    class RagdollCommandTests : public ActorFixture
+    {
+    public:
+        void SetUp() override
+        {
+            using ::testing::_;
+
+            ActorFixture::SetUp();
+
+            D6JointLimitConfiguration::Reflect(GetSerializeContext());
+
+            EXPECT_CALL(m_jointHelpers, GetSupportedJointTypeIds)
+                .WillRepeatedly(testing::Return(AZStd::vector<AZ::TypeId>{ azrtti_typeid<D6JointLimitConfiguration>() }));
+
+            EXPECT_CALL(m_jointHelpers, GetSupportedJointTypeId(_))
+                .WillRepeatedly(
+                    [](AzPhysics::JointType jointType) -> AZStd::optional<const AZ::TypeId>
+                    {
+                        if (jointType == AzPhysics::JointType::D6Joint)
+                        {
+                            return azrtti_typeid<D6JointLimitConfiguration>();
+                        }
+                        return AZStd::nullopt;
+                    });
+
+            EXPECT_CALL(m_jointHelpers, ComputeInitialJointLimitConfiguration(_, _, _, _, _))
+                .WillRepeatedly([]([[maybe_unused]] const AZ::TypeId& jointLimitTypeId,
+                                   [[maybe_unused]] const AZ::Quaternion& parentWorldRotation,
+                                   [[maybe_unused]] const AZ::Quaternion& childWorldRotation,
+                                   [[maybe_unused]] const AZ::Vector3& axis,
+                                   [[maybe_unused]] const AZStd::vector<AZ::Quaternion>& exampleLocalRotations)
+                                { return AZStd::make_unique<D6JointLimitConfiguration>(); });
+        }
+    protected:
+        Physics::MockJointHelpersInterface m_jointHelpers;
+    };
 
     AZStd::vector<AZStd::string> GetRagdollJointNames(const Actor* actor)
     {

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -96,26 +97,6 @@ namespace ScriptCanvas
                 ++m_numOutputs;
 
                 return AddSlot(executionConfiguration);
-            }
-
-            void  Cycle::OnInputSignal(const SlotId& slot)
-            {
-                if (slot != CycleProperty::GetInSlotId(this))
-                {
-                    return;
-                }
-
-                if (!m_orderedOutputSlots.empty())
-                {
-                    const SlotId& slotId = m_orderedOutputSlots[m_executionSlot];
-                    SignalOutput(slotId);
-
-                    if (++m_executionSlot >= m_orderedOutputSlots.size())
-                    {
-                        m_executionSlot = 0;
-                    }
-                }
-                
             }
 
             void Cycle::OnSlotRemoved([[maybe_unused]] const SlotId& slotId)

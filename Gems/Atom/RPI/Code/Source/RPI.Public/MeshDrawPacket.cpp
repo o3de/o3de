@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -196,8 +197,6 @@ namespace AZ
                     return false;
                 }
 
-                const AZ::Data::Asset<ShaderResourceGroupAsset>& drawSrgAsset = shader->GetAsset()->GetDrawSrgAsset();
-
                 // Set all unspecified shader options to default values, so that we get the most specialized variant possible.
                 // (because FindVariantStableId treats unspecified options as a request specifically for a variant that doesn't specify those options)
                 // [GFX TODO][ATOM-3883] We should consider updating the FindVariantStableId algorithm to handle default values for us, and remove this step here.
@@ -207,7 +206,7 @@ namespace AZ
                 // [GFX_TODO][ATOM-14476]: according to this usage, we should make the shader input contract uniform across all shader variants.
                 m_modelLod->CheckOptionalStreams(
                     shaderOptions,
-                    shader->GetVariant(ShaderAsset::RootShaderVariantStableId).GetInputContract(),
+                    shader->GetInputContract(),
                     m_modelLodMeshIndex,
                     m_materialModelUvMap,
                     m_material->GetAsset()->GetMaterialTypeAsset()->GetUvNameMap());
@@ -245,7 +244,7 @@ namespace AZ
                     pipelineStateDescriptor.m_inputStreamLayout,
                     streamBufferViews,
                     &uvStreamTangentBitmask,
-                    variant.GetInputContract(),
+                    shader->GetInputContract(),
                     m_modelLodMeshIndex,
                     m_materialModelUvMap,
                     m_material->GetAsset()->GetMaterialTypeAsset()->GetUvNameMap()))
@@ -253,14 +252,15 @@ namespace AZ
                     return false;
                 }
 
+                auto drawSrgLayout = shader->GetAsset()->GetDrawSrgLayout(shader->GetSupervariantIndex());
                 Data::Instance<ShaderResourceGroup> drawSrg;
-                if (drawSrgAsset)
+                if (drawSrgLayout)
                 {
                     AZ_PROFILE_SCOPE(Debug::ProfileCategory::AzRender, "create drawSrg");
                     // If the DrawSrg exists we must create and bind it, otherwise the CommandList will fail validation for SRG being null
-                    drawSrg = RPI::ShaderResourceGroup::Create(drawSrgAsset);
+                    drawSrg = RPI::ShaderResourceGroup::Create(shader->GetAsset(), shader->GetSupervariantIndex(), drawSrgLayout->GetName());
 
-                    if (!variant.IsFullyBaked() && drawSrgAsset->GetLayout()->HasShaderVariantKeyFallbackEntry())
+                    if (!variant.IsFullyBaked() && drawSrgLayout->HasShaderVariantKeyFallbackEntry())
                     {
                         drawSrg->SetShaderVariantKeyFallbackValue(shaderOptions.GetShaderVariantKeyFallbackValue());
                     }

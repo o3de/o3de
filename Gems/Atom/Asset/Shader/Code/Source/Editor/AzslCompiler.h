@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -33,9 +34,8 @@ namespace AZ
             //! @param inputFilePath      The target input file to compile. Should be a valid AZSL file with no preprocessing directives.
             AzslCompiler(const AZStd::string& inputFilePath);
 
-            //! [GFX TODO] Remove @addSuffix when [ATOM-15472]
             //! compile with --full and generate all .json files
-            Outcome<ShaderBuilderUtility::AzslSubProducts::Paths> EmitFullData(const AZStd::string& parameters, const AZStd::string& outputFile = "", const char * addSuffix = nullptr) const;
+            Outcome<ShaderBuilderUtility::AzslSubProducts::Paths> EmitFullData(const AZStd::string& parameters, const AZStd::string& outputFile = "") const;
             //! compile to HLSL independently
             bool EmitShader(AZ::IO::GenericStream& outputStream, const AZStd::string& extraCompilerParams) const;
             //! compile with --ia independently and populate document @output

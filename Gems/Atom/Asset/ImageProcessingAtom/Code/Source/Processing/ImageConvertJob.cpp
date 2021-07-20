@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include <ImageProcessing_precompiled.h>
 
 #include <Processing/ImageConvertJob.h>
 #include <Processing/PixelFormatInfo.h>
@@ -104,14 +104,7 @@ namespace ImageProcessingAtom
         while (!m_process->IsFinished() && !IsJobCancelled())
         {
             m_process->UpdateProcess();
-            if (m_isPreview)
-            {
-                m_output->SetProgress(m_process->GetProgress() / static_cast<float>(m_previewProcessStep));
-            }
-            else
-            {
-                m_output->SetProgress(m_process->GetProgress());
-            }
+            m_output->SetProgress(m_process->GetProgress() / static_cast<float>(m_previewProcessStep));
         }
 
         IImageObjectPtr outputImage = m_process->GetOutputImage();
@@ -120,7 +113,7 @@ namespace ImageProcessingAtom
         m_output->SetOutputImage(outputImage, ImageConvertOutput::Base);
         m_output->SetOutputImage(outputImageAlpha, ImageConvertOutput::Alpha);
 
-        if (m_isPreview && !IsJobCancelled())
+        if (!IsJobCancelled())
         {
             // For preview, combine image output with alpha if any
             m_output->SetProgress(1.0f / static_cast<float>(m_previewProcessStep));

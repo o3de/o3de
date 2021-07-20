@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "UiCanvasEditor_precompiled.h"
-
 #include "EditorCommon.h"
 #include "FeedbackDialog.h"
 #include <AzQtComponents/Buses/ShortcutDispatch.h>
@@ -17,6 +16,7 @@
 #include "CanvasHelpers.h"
 #include "GuideHelpers.h"
 #include <LyShine/Bus/UiEditorCanvasBus.h>
+#include <Util/PathUtil.h>
 
 #include <QFileDialog>
 #include <QMenuBar>
@@ -140,19 +140,6 @@ void EditorWindow::AddMenu_File()
     // Save all the canvases
     {
         QAction* action = CreateSaveAllCanvasesAction();
-        menu->addAction(action);
-        addAction(action); // Also add the action to the window until the shortcut dispatcher can find the menu action
-    }
-
-    menu->addSeparator();
-
-    // "Save as Prefab..." file menu option
-    {
-        HierarchyWidget* widget = GetHierarchy();
-        QAction* action = PrefabHelpers::CreateSavePrefabAction(widget);
-        action->setEnabled(canvasLoaded);
-
-        // This menu option is always available to the user
         menu->addAction(action);
         addAction(action); // Also add the action to the window until the shortcut dispatcher can find the menu action
     }

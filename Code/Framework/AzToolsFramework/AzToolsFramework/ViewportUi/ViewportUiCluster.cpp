@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 
 #include <AzToolsFramework/ViewportUi/ButtonGroup.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiCluster.h>
@@ -155,6 +155,17 @@ namespace AzToolsFramework::ViewportUi::Internal
                 auto action = actionEntry->second;
                 action->setIcon(newIcon);
             }
+        }
+    }
+
+    void ViewportUiCluster::SetButtonTooltip(const ButtonId buttonId, const AZStd::string& tooltip)
+    {
+        // get the action corresponding to the buttonId
+        if (auto actionEntry = m_buttonActionMap.find(buttonId); actionEntry != m_buttonActionMap.end())
+        {
+            // update the tooltip
+            auto action = actionEntry->second;
+            action->setToolTip(QString((tooltip).c_str()));
         }
     }
 

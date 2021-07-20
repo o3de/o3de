@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -36,7 +37,6 @@ ly_append_configurations_options(
         -Wno-unused-private-field
         -Wno-unused-value
         -Wno-unused-variable
-        -Wno-non-pod-varargs
         -Wno-unused-lambda-capture
         # Workaround for compiler seeing file case differently from what OS show in console.
         -Wno-nonportable-include-path

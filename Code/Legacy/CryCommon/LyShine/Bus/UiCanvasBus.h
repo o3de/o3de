@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -20,14 +21,6 @@ struct IUiAnimationSystem;
 class UiCanvasInterface
     : public AZ::ComponentBus
 {
-public: // types
-
-    enum class ErrorCode
-    {
-        NoError,
-        PrefabContainsExternalEntityRefs
-    };
-
 public: // member functions
 
     //! Deleting a canvas will delete all its child elements recursively and all of their components
@@ -109,23 +102,6 @@ public: // member functions
     //! Save this canvas to the given path in XML
     //! \return true if no error
     virtual bool SaveToXml(const string& assetIdPathname, const string& sourceAssetPathname) = 0;
-
-    //! Save the given UI element entity to the given path as a prefab
-    //! \param pathname the path to save the prefab to
-    //! \param entity   pointer to the entity to save as a prefab
-    //! \return true if no error
-    virtual bool SaveAsPrefab(const string& pathname, AZ::Entity* entity) = 0;
-
-    //! Check if it is OK to save the given UI element entity to the given path as a prefab
-    //! \param entity   pointer to the entity to save as a prefab
-    //! \return errorCode which is NoError if OK to save
-    virtual ErrorCode CheckElementValidToSaveAsPrefab(AZ::Entity* entity) = 0;
-
-    //! Load a prefab element from the given file and optionally insert as child of given entity
-    //! \return the top level entity created
-    virtual AZ::Entity* LoadFromPrefab(const string& pathname,
-        bool makeUniqueName,
-        AZ::Entity* optionalInsertionPoint) = 0;
 
     //! Initialize a set of entities that have been added to the canvas
     //! Used when instantiating a slice or for undo/redo, copy/paste

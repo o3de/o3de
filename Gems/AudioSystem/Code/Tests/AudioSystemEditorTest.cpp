@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -37,7 +38,7 @@ namespace CustomMocks
             fileDesc.nSize = sizeof(AZ::IO::FileDesc);
             // Add a filename and file description reference to the TestFindData map to make sure the file iterator is valid
             m_findData = new TestFindData();
-            m_findData->m_fileStack.emplace_back(AZ::IO::ArchiveFileIterator{ static_cast<AZ::IO::FindData*>(m_findData.get()), m_levelName, fileDesc });
+            m_findData->m_fileSet.emplace(AZ::IO::ArchiveFileIterator{ static_cast<AZ::IO::FindData*>(m_findData.get()), m_levelName, fileDesc });
             return m_findData->Fetch();
         }
 
@@ -53,7 +54,7 @@ namespace CustomMocks
         struct TestFindData
             : AZ::IO::FindData
         {
-            using AZ::IO::FindData::m_fileStack;
+            using AZ::IO::FindData::m_fileSet;
         };
 
         AZStd::intrusive_ptr<TestFindData> m_findData;

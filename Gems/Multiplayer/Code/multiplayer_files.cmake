@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -21,6 +22,7 @@ set(FILES
     Include/Multiplayer/EntityDomains/IEntityDomain.h
     Include/Multiplayer/NetworkEntity/INetworkEntityManager.h
     Include/Multiplayer/INetworkSpawnableLibrary.h
+    Include/Multiplayer/NetworkEntity/IFilterEntityManager.h
     Include/Multiplayer/NetworkEntity/NetworkEntityRpcMessage.h
     Include/Multiplayer/NetworkEntity/NetworkEntityUpdateMessage.h
     Include/Multiplayer/NetworkEntity/NetworkEntityHandle.h
@@ -37,7 +39,6 @@ set(FILES
     Include/Multiplayer/NetworkTime/RewindableObject.inl
     Include/Multiplayer/Physics/PhysicsUtils.h
     Include/Multiplayer/ReplicationWindows/IReplicationWindow.h
-    Source/Multiplayer_precompiled.h
     Source/MultiplayerSystemComponent.cpp
     Source/MultiplayerSystemComponent.h
     Source/MultiplayerStats.cpp

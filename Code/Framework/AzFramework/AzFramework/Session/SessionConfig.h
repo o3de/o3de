@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -24,10 +25,10 @@ namespace AzFramework
         virtual ~SessionConfig() = default;
 
         // A time stamp indicating when this session was created. Format is a number expressed in Unix time as milliseconds.
-        uint64_t m_creationTime;
+        uint64_t m_creationTime = 0;
         
         // A time stamp indicating when this data object was terminated. Same format as creation time.
-        uint64_t m_terminationTime;
+        uint64_t m_terminationTime = 0;
         
         // A unique identifier for a player or entity creating the session.
         AZStd::string m_creatorId;
@@ -48,13 +49,13 @@ namespace AzFramework
         AZStd::string m_ipAddress;
         
         // The port number for the session.
-        uint16_t m_port;
+        uint16_t m_port = 0;
         
         // The maximum number of players that can be connected simultaneously to the session.
-        uint64_t m_maxPlayer;
+        uint64_t m_maxPlayer = 0;
 
         // Number of players currently in the session.
-        uint64_t m_currentPlayer;
+        uint64_t m_currentPlayer = 0;
 
         // Current status of the session.
         AZStd::string m_status;

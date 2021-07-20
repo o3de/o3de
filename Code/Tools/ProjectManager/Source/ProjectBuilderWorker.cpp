@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -14,8 +15,6 @@
 
 namespace O3DE::ProjectManager
 {
-    const QString ProjectBuilderWorker::BuildCancelled = ProjectBuilderWorker::tr("Build Cancelled.");
-
     ProjectBuilderWorker::ProjectBuilderWorker(const ProjectInfo& projectInfo)
         : QObject()
         , m_projectInfo(projectInfo)
@@ -64,7 +63,7 @@ namespace O3DE::ProjectManager
         return logFilePath.filePath(ProjectBuildErrorLogName);
     }
 
-    void ProjectBuilderWorker::QStringToAZTracePrint(const QString& error)
+    void ProjectBuilderWorker::QStringToAZTracePrint([[maybe_unused]] const QString& error)
     {
         AZ_TracePrintf("Project Manager", error.toStdString().c_str());
     }

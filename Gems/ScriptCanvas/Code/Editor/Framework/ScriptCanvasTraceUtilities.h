@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -20,10 +21,8 @@
 #include <ScriptCanvas/Core/ScriptCanvasBus.h>
 #include <ScriptCanvas/Data/Data.h>
 #include <ScriptCanvas/Libraries/Comparison/Comparison.h>
-#include <ScriptCanvas/Libraries/Core/BehaviorContextObjectNode.h>
 #include <ScriptCanvas/Libraries/Core/BinaryOperator.h>
 #include <ScriptCanvas/Libraries/Core/CoreNodes.h>
-#include <ScriptCanvas/Libraries/Entity/EntityRef.h>
 #include <ScriptCanvas/Libraries/Libraries.h>
 #include <ScriptCanvas/Libraries/Logic/Logic.h>
 #include <ScriptCanvas/Libraries/Math/Math.h>
@@ -43,17 +42,6 @@ namespace ScriptCanvas
 namespace ScriptCanvasEditor
 {
     class ScriptCanvasAsset;
-
-    struct LoadTestFunctionResult
-    {
-        AZStd::string_view m_graphPath;
-        AZStd::unique_ptr<AZ::Entity> m_entity;
-        ScriptCanvas::RuntimeComponent* m_runtimeComponent = nullptr;
-        bool m_nativeFunctionFound = false;
-        AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasFunctionAsset> m_editorAsset;
-        AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset> m_runtimeAsset;
-        AZ::Data::Asset<AZ::ScriptAsset> m_scriptAsset;
-    };
 
     struct LoadTestGraphResult
     {

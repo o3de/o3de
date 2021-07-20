@@ -1,37 +1,12 @@
 {
     "gem_name": "FastNoise",
-    "GemFormatVersion": 4,
-    "Uuid": "c5f23032407f49ca8d8de1733423565c",
-    "Name": "FastNoise",
-    "DisplayName": "Fast Noise Gradient [PREVIEW]",
-    "Version": "0.1.0",
-    "Summary": "A Lumberyard Gem that provides a Gradient Signal component for FastNoise.  FastNoise is a realtime noise generation library with a large collection of different noise algorithms.",
-    "Tags": ["Gradient"],
-    "IconPath": "preview.png",
-    "Modules": [
-        {
-            "Type": "GameModule"
-        },
-        {
-            "Name": "Editor",
-            "Type": "EditorModule",
-            "Extends": "GameModule"
-        }
-    ],
-    "Dependencies": [
-        {
-            "Uuid": "8825563d9d964ec3be3bab681f3bd9f2",
-            "VersionConstraints": [
-                "~>0.1"
-            ],
-            "_comment": "GradientSignal"
-        },
-        {
-          "Uuid": "5de82d29d6094bfe97c1a4d35fcd5fbe",
-          "VersionConstraints": [
-              "~>0.1"
-          ],
-          "_comment": "SurfaceData"
-        }
-    ]
+    "display_name": "Fast Noise",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Open 3D Engine - o3de.org",
+    "type": "Code",
+    "summary": "The FastNoise Gradient Gem uses the third-party, open source FastNoise library to provide a variety of high-performance noise generation algorithms.",
+    "canonical_tags": ["Gem"],
+    "user_tags": ["Utility", "Tools", "Design"],
+    "icon_path": "preview.png",
+    "requirements": ""
 }

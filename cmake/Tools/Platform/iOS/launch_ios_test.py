@@ -1,22 +1,28 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
 
 import argparse
 import glob
+import json
 import logging
 import os
 import pathlib
 import plistlib
+import re
 import sys
+import time
 
 TEST_TARGET_NAME = 'TestLauncherTarget'
 TEST_STARTED_STRING = 'TEST STARTED'
 TEST_SUCCESS_STRING = 'TEST SUCCEEDED'
 TEST_FAILURE_STRING = 'TEST FAILED'
+
+TEST_RUN_SEARCH_PATTERN=re.compile(r'^\[\s*([a-zA-Z0-9]*\s*)\]\s*([a-zA-Z0-9\.\s]*)(\(.*\))')
 
 # Resolve the common python module
 ROOT_DEV_PATH = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))
@@ -25,7 +31,7 @@ if ROOT_DEV_PATH not in sys.path:
 
 from cmake.Tools import common
 
-def launch_ios_test(build_dir, target_dev_name, test_target, timeout_secs, test_filter, xctestrun_file):
+def launch_ios_test(build_dir, target_dev_name, test_target, timeout_secs, test_filter, xctestrun_file, test_report_json_file):
     
     build_path = pathlib.Path(build_dir) if os.path.isabs(build_dir) else pathlib.Path(ROOT_DEV_PATH) / build_dir
     if not build_path.is_dir():
@@ -53,6 +59,11 @@ def launch_ios_test(build_dir, target_dev_name, test_target, timeout_secs, test_
     test_targets = common.get_validated_test_modules(test_modules=test_target, build_dir_path=build_path)
 
     test_run_contents = []
+    test_case_successes = []
+    test_case_fails = []
+    crashed_test_modules = []
+    test_case_count = 0
+
     with open(test_run_file, 'rb') as fp:
         test_run_contents = plistlib.load(fp)
         
@@ -70,7 +81,7 @@ def launch_ios_test(build_dir, target_dev_name, test_target, timeout_secs, test_
         with open(test_run_file, 'wb') as fp:
             plistlib.dump(test_run_contents, fp, sort_keys=False)
         
-        xcode_args = ['test-without-building', '-xctestrun', test_run_file, '-destination', f'platform=iOS,name={target_dev_name}']
+        xcode_args = ['test-without-building', '-xctestrun', test_run_file, '-destination', f'platform=iOS,name={target_dev_name}', '-allowProvisioningUpdates', '-allowProvisioningDeviceRegistration']
         if timeout_secs < 0:
             xcode_args.extend(['-test-timeouts-enabled', 'NO'])
         else:
@@ -85,6 +96,22 @@ def launch_ios_test(build_dir, target_dev_name, test_target, timeout_secs, test_
         test_output = False
         while xcode_out.poll() is None:
             line = xcode_out.stdout.readline()
+            if line.startswith('** TEST EXECUTE FAILED **'):
+                # The test run crashed, so we need to track the failed test module
+                crashed_test_modules.append(target)
+            else:
+                matched = TEST_RUN_SEARCH_PATTERN.search(line)
+                if matched:
+                    test_case_action = matched.group(1).strip()
+                    test_case_name = matched.group(2).strip()
+                    test_case_elapsed = matched.group(3).strip() if len(matched.groups()) > 2 else ''
+                    if test_case_action == 'OK':
+                        test_case_successes.append(f'{test_case_name} {test_case_elapsed}')
+                        test_case_count += 1
+                    elif test_case_action == 'FAILED' and 'listed below:' not in test_case_name:
+                        test_case_fails.append(f'{test_case_name} {test_case_elapsed}')
+                        test_case_count += 1
+
             if TEST_STARTED_STRING in line:
                 test_output = True
             
@@ -95,11 +122,32 @@ def launch_ios_test(build_dir, target_dev_name, test_target, timeout_secs, test_
                 test_output = False
                 
             if test_output:
-                print(line)
+                print(line, end='')
             else:
                 logging.debug(line)
             
-        print(f'{target} Succeeded') if test_success else print(f'{target} Failed')
+        logging.info(f'{target} Succeeded') if test_success else print(f'{target} Failed')
+
+    if test_report_json_file:
+        test_report_json_path = pathlib.Path(test_report_json_file)
+        test_timestamp = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.localtime())
+        result_dict = {
+            'index': 'ly_platforms.test',
+            'payload': {
+                'Git Success': True,
+                'Build Success': True,
+                'Passed': test_case_successes,
+                'Failed': test_case_fails,
+                'CrashedModules': crashed_test_modules,
+                'Count': test_case_count
+            },
+            'pipeline': 'filebeat',
+            'timestamp': test_timestamp
+        }
+        result_json = json.dumps(result_dict, indent=4)
+        test_report_json_path.write_text(result_json, encoding='UTF-8', errors='ignore')
+        logging.info(f'MARS report saved to {test_report_json_path}')
+        logging.info(f"MARS report:\n{result_json}")
 
 
 def main(args):
@@ -136,19 +184,23 @@ def main(args):
                         help='Enable debug logging',
                         action='store_true')
 
+    parser.add_argument('--test-report-json',
+                        help='The optional path to the test report json file that will be generated for MARS reporting',
+                        default=None)
+
     parsed_args = parser.parse_args(args)
 
     logging.basicConfig(format='%(levelname)s: %(message)s',
                         level=logging.DEBUG if parsed_args.debug else logging.INFO)
 
     result = launch_ios_test(build_dir=parsed_args.build_dir,
-                                 target_dev_name=parsed_args.device_name,
-                                 test_target=parsed_args.test_module,
-                                 timeout_secs=int(parsed_args.timeout),
-                                 test_filter=parsed_args.test_filter,
-                                 xctestrun_file=parsed_args.xctestrun_file)
+                             target_dev_name=parsed_args.device_name,
+                             test_target=parsed_args.test_module,
+                             timeout_secs=int(parsed_args.timeout),
+                             test_filter=parsed_args.test_filter,
+                             xctestrun_file=parsed_args.xctestrun_file,
+                             test_report_json_file=parsed_args.test_report_json)
     return 0 if result else 1
-
 
 if __name__ == '__main__':
 

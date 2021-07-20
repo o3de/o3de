@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -34,6 +35,7 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
+#include <AzToolsFramework/API/EditorPythonScriptNotificationsBus.h>
 
 namespace Platform
 {
@@ -236,8 +238,8 @@ namespace EditorPythonBindings
             {
                 ec->Class<PythonSystemComponent>("PythonSystemComponent", "The Python interpreter")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
         }
@@ -283,10 +285,10 @@ namespace EditorPythonBindings
             ReleaseFunction m_releaseFunction;
         };
         ReleaseInitalizeWaiterScope scope([this]()
-        {
-            m_initalizeWaiter.release(m_initalizeWaiterCount);
-            m_initalizeWaiterCount = 0;
-        });
+            {
+                m_initalizeWaiter.release(m_initalizeWaiterCount);
+                m_initalizeWaiterCount = 0;
+            });
 
         if (Py_IsInitialized())
         {
@@ -324,6 +326,11 @@ namespace EditorPythonBindings
         result = StopPythonInterpreter();
         EditorPythonBindingsNotificationBus::Broadcast(&EditorPythonBindingsNotificationBus::Events::OnPostFinalize);
         return result;
+    }
+
+    bool PythonSystemComponent::IsPythonActive()
+    {
+        return Py_IsInitialized() != 0;
     }
 
     void PythonSystemComponent::WaitForInitialization()
@@ -575,6 +582,9 @@ namespace EditorPythonBindings
 
         if (!script.empty())
         {
+            AzToolsFramework::EditorPythonScriptNotificationsBus::Broadcast(
+                &AzToolsFramework::EditorPythonScriptNotificationsBus::Events::OnStartExecuteByString, script);
+
             // Acquire GIL before calling Python code
             AZStd::lock_guard<decltype(m_lock)> lock(m_lock);
             pybind11::gil_scoped_acquire acquire;
@@ -635,11 +645,15 @@ namespace EditorPythonBindings
     void PythonSystemComponent::ExecuteByFilename(AZStd::string_view filename)
     {
         AZStd::vector<AZStd::string_view> args;
+        AzToolsFramework::EditorPythonScriptNotificationsBus::Broadcast(
+            &AzToolsFramework::EditorPythonScriptNotificationsBus::Events::OnStartExecuteByFilename, filename);
         ExecuteByFilenameWithArgs(filename, args);
     }
 
-    void PythonSystemComponent::ExecuteByFilenameAsTest(AZStd::string_view filename, const AZStd::vector<AZStd::string_view>& args)
+    void PythonSystemComponent::ExecuteByFilenameAsTest(AZStd::string_view filename, AZStd::string_view testCase, const AZStd::vector<AZStd::string_view>& args)
     {
+        AzToolsFramework::EditorPythonScriptNotificationsBus::Broadcast(
+            &AzToolsFramework::EditorPythonScriptNotificationsBus::Events::OnStartExecuteByFilenameAsTest, filename, testCase, args);
         const Result evalResult = EvaluateFile(filename, args);
         if (evalResult == Result::Okay)
         {
@@ -655,6 +669,8 @@ namespace EditorPythonBindings
 
     void PythonSystemComponent::ExecuteByFilenameWithArgs(AZStd::string_view filename, const AZStd::vector<AZStd::string_view>& args)
     {
+        AzToolsFramework::EditorPythonScriptNotificationsBus::Broadcast(
+            &AzToolsFramework::EditorPythonScriptNotificationsBus::Events::OnStartExecuteByFilenameWithArgs, filename, args);
         EvaluateFile(filename, args);
     }
 

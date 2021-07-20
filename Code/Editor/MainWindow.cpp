@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -41,6 +42,7 @@ AZ_POP_DISABLE_WARNING
 
 // AzToolsFramework
 #include <AzToolsFramework/Application/Ticker.h>
+#include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <AzToolsFramework/API/EditorAnimationSystemRequestBus.h>
 #include <AzToolsFramework/SourceControl/QtSourceControlNotificationHandler.h>
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
@@ -92,6 +94,8 @@ AZ_POP_DISABLE_WARNING
 #include "AzAssetBrowser/AzAssetBrowserWindow.h"
 #include "AssetEditor/AssetEditorWindow.h"
 #include "ActionManager.h"
+
+#include <ImGuiBus.h>
 
 using namespace AZ;
 using namespace AzQtComponents;
@@ -489,6 +493,16 @@ void MainWindow::Initialize()
     ActionOverrideRequestBus::Event(
         GetEntityContextId(), &ActionOverrideRequests::SetupActionOverrideHandler, this);
 
+    if (auto imGuiManager = AZ::Interface<ImGui::IImGuiManager>::Get())
+    {
+        auto handleImGuiStateChangeFn = [](bool enabled)
+        {
+            EditorWindowUIRequestBus::Broadcast(&EditorWindowUIRequests::SetEditorUiEnabled, enabled);
+        };
+        m_handleImGuiStateChangeHandler = ImGui::IImGuiManager::ImGuiSetEnabledEvent::Handler(handleImGuiStateChangeFn);
+        imGuiManager->ConnectImGuiSetEnabledChangedHandler(m_handleImGuiStateChangeHandler);
+    }
+
     AzToolsFramework::EditorEventsBus::Broadcast(&AzToolsFramework::EditorEvents::NotifyMainWindowInitialized, this);
 }
 
@@ -674,49 +688,6 @@ void MainWindow::InitActions()
     am->AddAction(ID_FILE_PROJECT_MANAGER_SETTINGS, tr("Edit Project Settings..."));
     am->AddAction(ID_FILE_PROJECT_MANAGER_NEW, tr("New Project..."));
     am->AddAction(ID_FILE_PROJECT_MANAGER_OPEN, tr("Open Project..."));
-    am->AddAction(ID_GAME_PC_ENABLEVERYHIGHSPEC, tr("Very High")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_PC_ENABLEHIGHSPEC, tr("High")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_PC_ENABLEMEDIUMSPEC, tr("Medium")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_PC_ENABLELOWSPEC, tr("Low")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_OSXMETAL_ENABLEVERYHIGHSPEC, tr("Very High")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_OSXMETAL_ENABLEHIGHSPEC, tr("High")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_OSXMETAL_ENABLEMEDIUMSPEC, tr("Medium")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_OSXMETAL_ENABLELOWSPEC, tr("Low")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_ANDROID_ENABLEVERYHIGHSPEC, tr("Very High")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_ANDROID_ENABLEHIGHSPEC, tr("High")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_ANDROID_ENABLEMEDIUMSPEC, tr("Medium")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_ANDROID_ENABLELOWSPEC, tr("Low")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_IOS_ENABLEVERYHIGHSPEC, tr("Very High")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_IOS_ENABLEHIGHSPEC, tr("High")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_IOS_ENABLEMEDIUMSPEC, tr("Medium")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_IOS_ENABLELOWSPEC, tr("Low")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-#if defined(AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS)
-#if defined(TOOLS_SUPPORT_JASPER)
-#include AZ_RESTRICTED_FILE_EXPLICIT(MainWindow_cpp, jasper)
-#endif
-#if defined(TOOLS_SUPPORT_PROVO)
-#include AZ_RESTRICTED_FILE_EXPLICIT(MainWindow_cpp, provo)
-#endif
-#if defined(TOOLS_SUPPORT_SALEM)
-#include AZ_RESTRICTED_FILE_EXPLICIT(MainWindow_cpp, salem)
-#endif
-#endif
     am->AddAction(ID_TOOLS_CUSTOMIZEKEYBOARD, tr("Customize &Keyboard..."))
         .Connect(&QAction::triggered, this, &MainWindow::ShowKeyboardCustomization);
     am->AddAction(ID_TOOLS_EXPORT_SHORTCUTS, tr("&Export Keyboard Settings..."))
@@ -724,7 +695,6 @@ void MainWindow::InitActions()
     am->AddAction(ID_TOOLS_IMPORT_SHORTCUTS, tr("&Import Keyboard Settings..."))
         .Connect(&QAction::triggered, this, &MainWindow::ImportKeyboardShortcuts);
     am->AddAction(ID_TOOLS_PREFERENCES, tr("Global Preferences..."));
-    am->AddAction(ID_GRAPHICS_SETTINGS, tr("&Graphics Settings..."));
 
     for (int i = ID_FILE_MRU_FIRST; i <= ID_FILE_MRU_LAST; ++i)
     {
@@ -825,12 +795,6 @@ void MainWindow::InitActions()
     am->AddAction(ID_SWITCHCAMERA_NEXT, tr("Cycle Camera"))
         .SetShortcut(tr("Ctrl+`"))
         .SetToolTip(tr("Cycle Camera (Ctrl+`)"));
-    am->AddAction(ID_CHANGEMOVESPEED_INCREASE, tr("Increase"))
-        .SetStatusTip(tr("Increase Flycam Movement Speed"));
-    am->AddAction(ID_CHANGEMOVESPEED_DECREASE, tr("Decrease"))
-        .SetStatusTip(tr("Decrease Flycam Movement Speed"));
-    am->AddAction(ID_CHANGEMOVESPEED_CHANGESTEP, tr("Change Step"))
-        .SetStatusTip(tr("Change Flycam Movement Step"));
     am->AddAction(ID_DISPLAY_GOTOPOSITION, tr("Go to Position..."));
     am->AddAction(ID_MODIFY_GOTO_SELECTION, tr("Center on Selection"))
         .SetShortcut(tr("Z"))
@@ -938,6 +902,12 @@ void MainWindow::InitActions()
         .SetApplyHoverEffect()
         .SetCheckable(true)
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdatePlayGame);
+    am->AddAction(ID_VIEW_SWITCHTOGAME_FULLSCREEN, tr("Play &Game (Maximized)"))
+        .SetShortcut(tr("Ctrl+Shift+G"))
+        .SetStatusTip(tr("Activate the game input mode (maximized)"))
+        .SetIcon(Style::icon("Play"))
+        .SetApplyHoverEffect()
+        .SetCheckable(true);
     am->AddAction(ID_TOOLBAR_WIDGET_PLAYCONSOLE_LABEL, tr("Play Controls"))
         .SetText(tr("Play Controls"));
     am->AddAction(ID_SWITCH_PHYSICS, tr("Simulate"))
@@ -1247,10 +1217,25 @@ void MainWindow::OnGameModeChanged(bool inGameMode)
 {
     menuBar()->setDisabled(inGameMode);
     m_toolbarManager->SetEnabled(!inGameMode);
-    QAction* action = m_actionManager->GetAction(ID_VIEW_SWITCHTOGAME);
-    action->blockSignals(true); // avoid a loop
-    action->setChecked(inGameMode);
-    action->blockSignals(false);
+
+    // block signals on the switch to game actions before setting the checked state, as
+    // setting the checked state triggers the action, which will re-enter this function
+    // and result in an infinite loop
+    AZStd::vector<QAction*> actions = { m_actionManager->GetAction(ID_VIEW_SWITCHTOGAME), m_actionManager->GetAction(ID_VIEW_SWITCHTOGAME_FULLSCREEN) };
+    for (auto action : actions)
+    {
+        action->blockSignals(true);
+    }
+
+    for (auto action : actions)
+    {
+        action->setChecked(inGameMode);
+    }
+
+    for (auto action : actions)
+    {
+        action->blockSignals(false);
+    }
 }
 
 void MainWindow::OnEditorNotifyEvent(EEditorNotifyEvent ev)

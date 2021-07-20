@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 
@@ -28,8 +29,7 @@ include(cmake/LySet.cmake)
 # also allowed:
 # "s3://bucketname" (it will use LYPackage_S3Downloader.cmake to download it from a s3 bucket)
 
-# https://d2c171ws20a1rv.cloudfront.net will be the current "production" CDN until formally moved to the public O3DE repo
-set(LY_PACKAGE_SERVER_URLS "https://d2c171ws20a1rv.cloudfront.net" CACHE STRING "Server URLS to fetch packages from")
+set(LY_PACKAGE_SERVER_URLS "https://d3t6xeg4fgfoum.cloudfront.net" CACHE STRING "Server URLS to fetch packages from")
 # Note: if you define the "LY_PACKAGE_SERVER_URLS" environment variable
 # it will be added to this value in the front, so that users can set
 # an env var and use that as an "additional" set of servers beyond the default set.
@@ -529,6 +529,12 @@ function(ly_force_download_package package_name)
     ly_package_message(STATUS "ly_package:    - unpacking package...")
     execute_process(COMMAND ${CMAKE_COMMAND} -E tar xf ${temp_download_target} 
          WORKING_DIRECTORY ${final_folder} COMMAND_ECHO STDOUT OUTPUT_VARIABLE unpack_result)
+
+    # For the runtime dependencies cases, we need the timestamps of the files coming from 3rdParty to be newer than the ones
+    # from the output so the new versions get copied over. The untar from the previous step preserves timestamps so they
+    # can produce binaries with older timestamps to the ones that are in the build output.
+    file(GLOB_RECURSE package_files LIST_DIRECTORIES false ${final_folder}/*)
+    file(TOUCH_NOCREATE ${package_files})
 
     if (NOT ${unpack_result} EQUAL 0)
         message(SEND_ERROR "ly_package: required package {package_name} could not be unpacked.  Compile may fail!  Enable LY_PACKAGE_DEBUG to debug.")

@@ -1,12 +1,12 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 // UiClipboard is responsible setting and getting clipboard data for the UI elements in a platform-independent way.
 
-#include "LyShine_precompiled.h"
 #include "UiClipboard.h"
 #include <AzCore/PlatformIncl.h>
 #include <StringUtils.h>

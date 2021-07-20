@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -77,16 +78,28 @@ namespace AZ
             Data::AssetBus::MultiHandler::BusConnect(m_visualizationMaterialAsset.GetId());
 
             // reflection render Srgs
-            m_stencilSrg = RPI::ShaderResourceGroup::Create(m_reflectionRenderData->m_stencilSrgAsset);
+            m_stencilSrg = RPI::ShaderResourceGroup::Create(
+                m_reflectionRenderData->m_stencilShader->GetAsset(),
+                m_reflectionRenderData->m_stencilShader->GetSupervariantIndex(),
+                m_reflectionRenderData->m_stencilSrgLayout->GetName());
             AZ_Error("ReflectionProbeFeatureProcessor", m_stencilSrg.get(), "Failed to create stencil shader resource group");
 
-            m_blendWeightSrg = RPI::ShaderResourceGroup::Create(m_reflectionRenderData->m_blendWeightSrgAsset);
+            m_blendWeightSrg = RPI::ShaderResourceGroup::Create(
+                m_reflectionRenderData->m_blendWeightShader->GetAsset(),
+                m_reflectionRenderData->m_blendWeightShader->GetSupervariantIndex(),
+                m_reflectionRenderData->m_blendWeightSrgLayout->GetName());
             AZ_Error("ReflectionProbeFeatureProcessor", m_blendWeightSrg.get(), "Failed to create blend weight shader resource group");
 
-            m_renderOuterSrg = RPI::ShaderResourceGroup::Create(m_reflectionRenderData->m_renderOuterSrgAsset);
+            m_renderOuterSrg = RPI::ShaderResourceGroup::Create(
+                m_reflectionRenderData->m_renderOuterShader->GetAsset(),
+                m_reflectionRenderData->m_renderOuterShader->GetSupervariantIndex(),
+                m_reflectionRenderData->m_renderOuterSrgLayout->GetName());
             AZ_Error("ReflectionProbeFeatureProcessor", m_renderOuterSrg.get(), "Failed to create render outer reflection shader resource group");
 
-            m_renderInnerSrg = RPI::ShaderResourceGroup::Create(m_reflectionRenderData->m_renderInnerSrgAsset);
+            m_renderInnerSrg = RPI::ShaderResourceGroup::Create(
+                m_reflectionRenderData->m_renderInnerShader->GetAsset(),
+                m_reflectionRenderData->m_renderInnerShader->GetSupervariantIndex(),
+                m_reflectionRenderData->m_renderInnerSrgLayout->GetName());
             AZ_Error("ReflectionProbeFeatureProcessor", m_renderInnerSrg.get(), "Failed to create render inner reflection shader resource group");
 
             // setup culling

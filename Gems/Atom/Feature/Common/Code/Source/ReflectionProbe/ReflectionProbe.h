@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -16,7 +17,6 @@
 #include <Atom/RPI.Public/Pass/Specific/EnvironmentCubeMapPass.h>
 #include <Atom/RPI.Public/PipelineState.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
-#include <Atom/RPI.Reflect/Shader/ShaderResourceGroupAsset.h>
 #include <Atom/RPI.Public/Scene.h>
 
 namespace AZ
@@ -38,10 +38,17 @@ namespace AZ
             RPI::Ptr<RPI::PipelineStateForDraw> m_renderOuterPipelineState;
             RPI::Ptr<RPI::PipelineStateForDraw> m_renderInnerPipelineState;
 
-            Data::Asset<RPI::ShaderResourceGroupAsset> m_stencilSrgAsset;
-            Data::Asset<RPI::ShaderResourceGroupAsset> m_blendWeightSrgAsset;
-            Data::Asset<RPI::ShaderResourceGroupAsset> m_renderOuterSrgAsset;
-            Data::Asset<RPI::ShaderResourceGroupAsset> m_renderInnerSrgAsset;
+            Data::Instance<RPI::Shader> m_stencilShader;
+            RHI::Ptr<RHI::ShaderResourceGroupLayout> m_stencilSrgLayout;
+
+            Data::Instance<RPI::Shader> m_blendWeightShader;
+            RHI::Ptr<RHI::ShaderResourceGroupLayout> m_blendWeightSrgLayout;
+
+            Data::Instance<RPI::Shader> m_renderOuterShader;
+            RHI::Ptr<RHI::ShaderResourceGroupLayout> m_renderOuterSrgLayout;
+
+            Data::Instance<RPI::Shader> m_renderInnerShader;
+            RHI::Ptr<RHI::ShaderResourceGroupLayout> m_renderInnerSrgLayout;
 
             RHI::DrawListTag m_stencilDrawListTag;
             RHI::DrawListTag m_blendWeightDrawListTag;

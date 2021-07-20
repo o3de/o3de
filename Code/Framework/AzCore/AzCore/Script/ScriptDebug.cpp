@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -24,7 +25,6 @@ namespace AZ
         //=========================================================================
         AZStd::string ExtractUserMessage(const ScriptDataContext& dc)
         {
-            AZStd::string userMessage = "Condition failed";
             const int argCount = dc.GetNumArguments();
             if (argCount > 0 && dc.IsString(argCount - 1))
             {
@@ -33,12 +33,12 @@ namespace AZ
                 {
                     if (value)
                     {
-                        userMessage = value;
+                        return value;
                     }
                 }
             }
 
-            return userMessage;
+            return "ExtractUserMessage from print/Debug.Log/Warn/Error/Assert failed. Consider wrapping your argument in tostring().";
         }
 
         //=========================================================================

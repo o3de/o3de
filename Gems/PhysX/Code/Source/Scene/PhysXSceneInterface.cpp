@@ -1,11 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #include <Scene/PhysXSceneInterface.h>
 
+#include <AzFramework/Physics/Common/PhysicsJoint.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/Configuration/SceneConfiguration.h>
 #include <System/PhysXSystem.h>
@@ -136,6 +138,36 @@ namespace PhysX
         if (AzPhysics::Scene* scene = m_physxSystem->GetScene(sceneHandle))
         {
             scene->DisableSimulationOfBody(bodyHandle);
+        }
+    }
+
+    AzPhysics::JointHandle PhysXSceneInterface::AddJoint(
+        AzPhysics::SceneHandle sceneHandle, const AzPhysics::JointConfiguration* jointConfig, 
+        AzPhysics::SimulatedBodyHandle parentBody, AzPhysics::SimulatedBodyHandle childBody) 
+    {
+        if (AzPhysics::Scene* scene = m_physxSystem->GetScene(sceneHandle))
+        {
+            return scene->AddJoint(jointConfig, parentBody, childBody);
+        }
+
+        return AzPhysics::InvalidJointHandle;
+    }
+
+    AzPhysics::Joint* PhysXSceneInterface::GetJointFromHandle(AzPhysics::SceneHandle sceneHandle, AzPhysics::JointHandle jointHandle) 
+    {
+        if (AzPhysics::Scene* scene = m_physxSystem->GetScene(sceneHandle))
+        {
+            return scene->GetJointFromHandle(jointHandle);
+        }
+
+        return nullptr;
+    }
+
+    void PhysXSceneInterface::RemoveJoint(AzPhysics::SceneHandle sceneHandle, AzPhysics::JointHandle jointHandle) 
+    {
+        if (AzPhysics::Scene* scene = m_physxSystem->GetScene(sceneHandle))
+        {
+            scene->RemoveJoint(jointHandle);
         }
     }
 

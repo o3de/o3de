@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -202,10 +203,9 @@ namespace AZ
             // ray tracing acceleration structure (TLAS)
             RHI::Ptr<RHI::RayTracingTlas> m_tlas;
 
-            // ray tracing scene Srg
+            // RayTracingScene and RayTracingMaterial asset and Srgs
+            Data::Asset<RPI::ShaderAsset> m_rayTracingSrgAsset;
             Data::Instance<RPI::ShaderResourceGroup> m_rayTracingSceneSrg;
-
-            // ray tracing material Srg
             Data::Instance<RPI::ShaderResourceGroup> m_rayTracingMaterialSrg;
 
             // current revision number of ray tracing data

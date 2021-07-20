@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -67,7 +68,6 @@ namespace ImageProcessingAtom
         static const int m_previewProcessStep = 2;
 
         AZStd::unique_ptr<ImageConvertProcess> m_process;
-        bool m_isPreview;
         AZStd::atomic_bool m_isCancelled;
         ImageConvertOutput* m_output;
     };

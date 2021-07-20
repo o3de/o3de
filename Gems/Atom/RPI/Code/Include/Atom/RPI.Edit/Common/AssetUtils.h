@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,7 +11,6 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/JSON/document.h>
 
-#include <Atom/RPI.Reflect/Shader/ShaderResourceGroupAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 
 namespace AZ
@@ -36,8 +36,6 @@ namespace AZ
 
             template<typename AssetDataT>
             Outcome<AZ::Data::Asset<AssetDataT>> LoadAsset(const AZ::Data::AssetId& assetId);
-
-            uint32_t CalcSrgProductSubId(const Name& srgName);
 
             //! Attempts to resolve the full path to a product asset given its ID
             AZStd::string GetProductPathByAssetId(const AZ::Data::AssetId& assetId);

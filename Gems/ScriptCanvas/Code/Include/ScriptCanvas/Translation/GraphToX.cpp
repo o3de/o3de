@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -75,7 +76,7 @@ namespace ScriptCanvas
         {
             return m_model.GetSource().m_name;
         }
-        
+
         AZStd::string_view GraphToX::GetFullPath() const
         {
             return m_model.GetSource().m_path;
@@ -120,7 +121,7 @@ namespace ScriptCanvas
                     resolution += Grammar::ToIdentifier(namespaces[index]);
                 }
             }
-            
+
             return resolution;
         }
 
@@ -128,13 +129,13 @@ namespace ScriptCanvas
         {
             writer.Write(m_configuration.m_singleLineComment);
         }
-        
+
         void GraphToX::OpenBlockComment(Writer& writer)
         {
             writer.WriteIndent();
             writer.WriteLine(m_configuration.m_blockCommentOpen);
         }
-        
+
         void GraphToX::OpenFunctionBlock(Writer& writer)
         {
             writer.WriteLineIndented(m_configuration.m_functionBlockOpen);
@@ -162,7 +163,7 @@ namespace ScriptCanvas
         void GraphToX::WriteCopyright(Writer& writer)
         {
             OpenBlockComment(writer);
-            writer.WriteLine(GetAmazonCopyright());
+            writer.WriteLine(GetCopyright());
             CloseBlockComment(writer);
         }
 
@@ -206,5 +207,5 @@ namespace ScriptCanvas
             writer.Write("Last written: ");
             writer.WriteLine(buffer);
         }
-    } 
-} 
+    }
+}

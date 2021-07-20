@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include "WhiteBox_precompiled.h"
 
 #include "EditorWhiteBoxComponentModeCommon.h"
 #include "EditorWhiteBoxDefaultMode.h"
@@ -34,8 +33,8 @@ namespace WhiteBox
         AZ::Color, cl_whiteBoxVertexIndicatorColor, AZ::Color::CreateFromRgba(0, 0, 0, 102), nullptr,
         AZ::ConsoleFunctorFlags::Null, "The color of the vertex indicator");
 
-    static const AZ::Crc32 HideEdge = AZ_CRC("com.amazon.action.whitebox.hide_edge", 0x6a60ae23);
-    static const AZ::Crc32 HideVertex = AZ_CRC("com.amazon.action.whitebox.hide_vertex", 0x4a4bd092);
+    static const AZ::Crc32 HideEdge = AZ_CRC("com.o3de.action.whitebox.hide_edge", 0x6a60ae23);
+    static const AZ::Crc32 HideVertex = AZ_CRC("com.o3de.action.whitebox.hide_vertex", 0x4a4bd092);
 
     static const char* const HideEdgeTitle = "Hide Edge";
     static const char* const HideEdgeDesc = "Hide the selected edge to merge the two connected polygons";

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -107,20 +108,19 @@ namespace AZ
             AZ_Assert(m_globalPipelineState, "Failed to acquire ray tracing global pipeline state");
 
             // create global srg
-            Data::Asset<RPI::ShaderResourceGroupAsset> globalSrgAsset = m_rayGenerationShader->FindShaderResourceGroupAsset(RayTracingGlobalSrgBindingSlot);
-            AZ_Error("PassSystem", globalSrgAsset.GetId().IsValid(), "RayTracingPass [%s] Failed to find RayTracingGlobalSrg asset", GetPathName().GetCStr());
-            AZ_Error("PassSystem", globalSrgAsset.IsReady(), "RayTracingPass [%s] asset is not loaded for shader", GetPathName().GetCStr());
+            const auto& globalSrgLayout = m_rayGenerationShader->FindShaderResourceGroupLayout(RayTracingGlobalSrgBindingSlot);
+            AZ_Error("PassSystem", globalSrgLayout != nullptr, "RayTracingPass [%s] Failed to find RayTracingGlobalSrg layout", GetPathName().GetCStr());
 
-            m_shaderResourceGroup = RPI::ShaderResourceGroup::Create(globalSrgAsset);
+            m_shaderResourceGroup = RPI::ShaderResourceGroup::Create(  m_rayGenerationShader->GetAsset(), m_rayGenerationShader->GetSupervariantIndex(), globalSrgLayout->GetName());
             AZ_Assert(m_shaderResourceGroup, "RayTracingPass [%s]: Failed to create RayTracingGlobalSrg", GetPathName().GetCStr());
             RPI::PassUtils::BindDataMappingsToSrg(m_passDescriptor, m_shaderResourceGroup.get());
 
             // check to see if the shader requires the View and RayTracingMaterial Srgs
-            Data::Asset<RPI::ShaderResourceGroupAsset> viewSrgAsset = m_rayGenerationShader->FindShaderResourceGroupAsset(RPI::SrgBindingSlot::View);
-            m_requiresViewSrg = viewSrgAsset.GetId().IsValid();
+            const auto& viewSrgLayout = m_rayGenerationShader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::View);
+            m_requiresViewSrg = (viewSrgLayout != nullptr);
 
-            Data::Asset<RPI::ShaderResourceGroupAsset> rayTracingMaterialSrgAsset = m_rayGenerationShader->FindShaderResourceGroupAsset(RayTracingMaterialSrgBindingSlot);
-            m_requiresRayTracingMaterialSrg = rayTracingMaterialSrgAsset.GetId().IsValid();
+            const auto& rayTracingMaterialSrgLayout = m_rayGenerationShader->FindShaderResourceGroupLayout(RayTracingMaterialSrgBindingSlot);
+            m_requiresRayTracingMaterialSrg = (rayTracingMaterialSrgLayout != nullptr);
 
             // build the ray tracing pipeline state descriptor
             RHI::RayTracingPipelineStateDescriptor descriptor;

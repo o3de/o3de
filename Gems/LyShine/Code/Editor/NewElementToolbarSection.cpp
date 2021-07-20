@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "UiCanvasEditor_precompiled.h"
-
 #include "EditorCommon.h"
 
 NewElementToolbarSection::NewElementToolbarSection(QToolBar* parent, bool addSeparator)
@@ -21,7 +20,6 @@ NewElementToolbarSection::NewElementToolbarSection(QToolBar* parent, bool addSep
             {
                 HierarchyMenu contextMenu(editorWindow->GetHierarchy(),
                     (HierarchyMenu::Show::kNew_EmptyElementAtRoot |
-                     HierarchyMenu::Show::kNew_ElementFromPrefabsAtRoot |
                      HierarchyMenu::Show::kNew_InstantiateSliceAtRoot),
                     false);
 

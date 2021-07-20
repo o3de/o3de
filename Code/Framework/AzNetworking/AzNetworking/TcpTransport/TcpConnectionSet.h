@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -44,6 +45,7 @@ namespace AzNetworking
         IConnection* GetConnection(ConnectionId connectionId) const override;
         ConnectionId GetNextConnectionId() override;
         uint32_t GetConnectionCount() const override;
+        uint32_t GetActiveConnectionCount() const override;
         //! @}
 
         //! Retrieves a connection from this connection list instance by socket fd.

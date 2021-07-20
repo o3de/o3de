@@ -1,61 +1,12 @@
 {
     "gem_name": "LandscapeCanvas",
-    "GemFormatVersion": 4,
-    "Uuid": "19c2b2d5018940108baf252934b8e6bf",
-    "Name": "LandscapeCanvas",
-    "DisplayName": "LandscapeCanvas",
-    "Version": "0.1.0",
-    "Summary": "A node-based Editor for authoring Dynamic Vegetation.",
-    "Tags": ["Vegetation"],
-    "IconPath": "landscapeCanvasIcon.svg",
-    "Modules": [
-        {
-            "Name": "Editor",
-            "Type": "EditorModule"
-        }
-    ],
-    "Dependencies": [
-        {
-            "Uuid": "ff06785f7145416b9d46fde39098cb0c",
-            "VersionConstraints": [
-                "~>0.1"
-            ],
-            "_comment": "LmbrCentral"
-        },
-        {
-            "Uuid": "f394e7cf54424bba89615381bba9511b",
-            "VersionConstraints": [
-                "~>0.1"
-            ],
-            "_comment": "Vegetation"
-        },
-        {
-            "Uuid": "875b6fcbdeea44deaae7984ad9bb6cdc",
-            "VersionConstraints": [
-                "~>0.1"
-            ],
-            "_comment": "GraphCanvas"
-        },
-        {
-            "Uuid" : "0844f64a3acf4f5abf3a535dc9b63bc9",
-            "VersionConstraints": [
-                "~>0.1"
-            ],
-            "_comment" : "GraphModel"
-        },
-        {
-          "Uuid": "8825563d9d964ec3be3bab681f3bd9f2",
-          "VersionConstraints": [
-              "~>0.1"
-          ],
-          "_comment": "GradientSignal"
-        },
-        {
-          "Uuid": "5de82d29d6094bfe97c1a4d35fcd5fbe",
-          "VersionConstraints": [
-              "~>0.1"
-          ],
-          "_comment": "SurfaceData"
-        }
-    ]
+    "display_name": "Landscape Canvas",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Open 3D Engine - o3de.org",
+    "type": "Tool",
+    "summary": "The Landscape Canvas Gem provides the Landscape Canvas editor, a node-based graph tool for authoring workflows to populate landscape with dynamic vegetation.",
+    "canonical_tags": ["Gem"],
+    "user_tags": ["Environment", "Design", "Tools"],
+    "icon_path": "preview.png",
+    "requirements": ""
 }

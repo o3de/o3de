@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,6 +9,7 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 
+#include <Atom/RPI.Reflect/Shader/ShaderCommonTypes.h>
 #include <Atom/RPI.Reflect/Shader/ShaderVariantKey.h>
 
 namespace AZ
@@ -26,7 +28,7 @@ namespace AZ
         class IShaderVariantFinder
         {
         public:
-            AZ_TYPE_INFO(IShaderVariantFinder, "{B39F7407-BA4E-4F2F-810A-8B57D8080A04}");
+            AZ_TYPE_INFO(IShaderVariantFinder, "{4E041C2C-F158-412E-8961-76987EC75692}");
 
             static constexpr const char* LogName = "IShaderVariantFinder";
 
@@ -39,7 +41,8 @@ namespace AZ
             //! from the given ShaderVariantId. If a valid ShaderVariantStableId is found, it will be queued for loading.
             //! Eventually the caller will be notified via ShaderVariantFinderNotificationBus::OnShaderVariantAssetReady()
             //! The notification will occur on the Main Thread.
-            virtual bool QueueLoadShaderVariantAssetByVariantId(Data::Asset<ShaderAsset> shaderAsset, const ShaderVariantId& shaderVariantId) = 0;
+            virtual bool QueueLoadShaderVariantAssetByVariantId(
+                Data::Asset<ShaderAsset> shaderAsset, const ShaderVariantId& shaderVariantId, SupervariantIndex supervariantIndex) = 0;
 
             //! This function does the first half of the work. It simply queues the loading of the ShaderVariantTreeAsset.
             //! Given the AssetId of a ShaderAsset it will try to find and load its corresponding ShaderVariantTreeAsset from
@@ -57,15 +60,16 @@ namespace AZ
             //! ShaderVariantAsset is fully loaded.
             //! Returns true if the request was queued successfully.
             virtual bool QueueLoadShaderVariantAsset(
-                const Data::AssetId& shaderVariantTreeAssetId, ShaderVariantStableId variantStableId) = 0;
+                const Data::AssetId& shaderVariantTreeAssetId, ShaderVariantStableId variantStableId,
+                SupervariantIndex supervariantIndex) = 0;
 
             //! This is a quick blocking call that will return a valid asset only if it's been fully loaded already,
             //! Otherwise it returns an invalid asset and the caller is supposed to call QueueLoadShaderVariantAssetByVariantId().
             virtual Data::Asset<ShaderVariantAsset> GetShaderVariantAssetByVariantId(
-                Data::Asset<ShaderAsset> shaderAsset, const ShaderVariantId& shaderVariantId) = 0;
+                Data::Asset<ShaderAsset> shaderAsset, const ShaderVariantId& shaderVariantId, SupervariantIndex supervariantIndex) = 0;
 
             virtual Data::Asset<ShaderVariantAsset> GetShaderVariantAssetByStableId(
-                Data::Asset<ShaderAsset> shaderAsset, ShaderVariantStableId shaderVariantStableId) = 0;
+                Data::Asset<ShaderAsset> shaderAsset, ShaderVariantStableId shaderVariantStableId, SupervariantIndex supervariantIndex) = 0;
 
             //! This is a quick blocking call that will return a valid asset only if it's been fully loaded already,
             //! Otherwise it returns an invalid asset and the caller is supposed to call QueueLoadShaderVariantTreeAsset().
@@ -74,7 +78,8 @@ namespace AZ
             //! This is a quick blocking call that will return a valid asset only if i's been fully loaded already,
             //! Otherwise it returns an invalid asset and the caller is supposed to call QueueLoadShaderVariantAsset().
             virtual Data::Asset<ShaderVariantAsset> GetShaderVariantAsset(
-                const Data::AssetId& shaderVariantTreeAssetId, ShaderVariantStableId variantStableId) = 0;
+                const Data::AssetId& shaderVariantTreeAssetId, ShaderVariantStableId variantStableId,
+                SupervariantIndex supervariantIndex) = 0;
 
             //! Clears the cache of loaded ShaderVariantTreeAsset and ShaderVariantAsset objects.
             //! This is intended for testing.

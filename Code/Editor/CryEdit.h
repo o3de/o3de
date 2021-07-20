@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -364,7 +365,6 @@ private:
     friend struct PythonTestOutputHandler;
 
     void OpenProjectManager(const AZStd::string& screen);
-    void OnWireframe();
     void OnUpdateWireframe(QAction* action);
     void OnViewConfigureLayout();
 
@@ -400,14 +400,10 @@ private:
     void OnToolsScriptHelp();
     void OnViewCycle2dviewport();
     void OnDisplayGotoPosition();
-    void OnChangemovespeedIncrease();
-    void OnChangemovespeedDecrease();
-    void OnChangemovespeedChangestep();
     void OnFileSavelevelresources();
     void OnClearRegistryData();
     void OnValidatelevel();
     void OnToolsPreferences();
-    void OnGraphicsSettings();
     void OnSwitchToDefaultCamera();
     void OnUpdateSwitchToDefaultCamera(QAction* action);
     void OnSwitchToSequenceCamera();
@@ -420,9 +416,6 @@ private:
     void OnOpenTrackView();
     void OnOpenAudioControlsEditor();
     void OnOpenUICanvasEditor();
-    void OnChangeGameSpec(UINT nID);
-    void SetGameSpecCheck(ESystemConfigSpec spec, ESystemConfigPlatform platform, int &nCheck, bool &enable);
-    void OnUpdateGameSpec(QAction* action);
     void OnOpenQuickAccessBar();
 
 public:

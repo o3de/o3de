@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -86,19 +87,6 @@ namespace GraphCanvas
             ConnectionValidationTooltip result;
 
             result.m_isValid = IsValidConnection(sourcePoint, targetPoint);
-
-            return result;
-        }
-
-        //! This is sent to confirm whether or not a variable assignment can take place.
-        virtual bool IsValidVariableAssignment(const AZ::EntityId& variableId, const Endpoint& targetPoint) const = 0;
-
-        //! This will return the structure needed to display why a variable could not be assigned to a specific reference inside of GraphCanvas.
-        virtual ConnectionValidationTooltip GetVariableAssignmentValidityTooltip(const AZ::EntityId& variableId, const Endpoint& targetPoint) const
-        {
-            ConnectionValidationTooltip result;
-
-            result.m_isValid = IsValidVariableAssignment(variableId, targetPoint);
 
             return result;
         }

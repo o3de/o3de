@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -99,7 +100,10 @@ typedef float FLOAT;
 #define STDMETHODCALLTYPE
 #endif
 
-#define _ALIGN(num) __attribute__ ((aligned(num)))
+#define _ALIGN(num) \
+    __attribute__ ((aligned(num))) \
+    AZ_POP_DISABLE_WARNING
+
 #define _PACK __attribute__ ((packed))
 
 // Safe memory freeing

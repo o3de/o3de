@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -142,7 +143,7 @@ namespace AZ
                     Data::Instance<RPI::ShaderResourceGroup> srg;
                     if (useManualViewProjectionOverride || primitive.m_primitiveType == PrimitiveType_PointList)
                     {
-                        srg = RPI::ShaderResourceGroup::Create(m_shaderData.m_perDrawSrgAsset);
+                        srg = RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(), m_shaderData.m_perDrawSrgLayout->GetName());
                         if (!srg)
                         {
                             AZ_Warning("AuxGeom", false, "Failed to create a shader resource group for an AuxGeom draw, Ignoring the draw");
@@ -329,10 +330,10 @@ namespace AZ
             }
 
             // Get the per-object SRG and store the indices of the data we need to set per object
-            m_shaderData.m_perDrawSrgAsset = m_shader->FindShaderResourceGroupAsset(Name{ "PerDrawSrg" });
-            if (!m_shaderData.m_perDrawSrgAsset.GetId().IsValid())
+            m_shaderData.m_perDrawSrgLayout = m_shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Draw); 
+            if (!m_shaderData.m_perDrawSrgLayout)
             {
-                AZ_Error("DynamicPrimitiveProcessor", false, "Failed to get shader resource group asset");
+                AZ_Error("DynamicPrimitiveProcessor", false, "Failed to get shader resource group layout");
                 return;
             }
 
@@ -343,7 +344,7 @@ namespace AZ
             m_shaderData.m_drawListTag = m_shader->GetDrawListTag();
 
             // Create a default SRG for draws that don't use a manual view projection override
-            m_shaderData.m_defaultSRG = RPI::ShaderResourceGroup::Create(m_shaderData.m_perDrawSrgAsset);
+            m_shaderData.m_defaultSRG = RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(), m_shaderData.m_perDrawSrgLayout->GetName());
             AZ_Assert(m_shaderData.m_defaultSRG != nullptr, "Creating the default SRG unexpectedly failed");
             m_shaderData.m_defaultSRG->SetConstant(m_shaderData.m_pointSizeIndex, 10.0f);
             m_shaderData.m_defaultSRG->Compile();

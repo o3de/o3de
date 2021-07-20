@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -25,6 +26,8 @@ ly_add_target(
         ../Assets/atom_rpi_asset_files.cmake
         ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
         ${MASKED_OCCLUSION_CULLING_FILES}
+    PLATFORM_INCLUDE_FILES
+        ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common/${PAL_TRAIT_COMPILER_ID}/atom_rpi_public_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             Source

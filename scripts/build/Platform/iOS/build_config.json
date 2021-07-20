@@ -99,5 +99,24 @@
       "CMAKE_TARGET": "ALL_BUILD",
       "CMAKE_NATIVE_BUILD_ARGS": "-destination generic/platform=iOS"
     }
+  },
+  "device_test_profile": {
+    "TAGS": [
+    ],
+    "PIPELINE_ENV":{
+      "NODE_LABEL":"Catalina_DeviceFarm_1",
+      "LY_3RDPARTY_PATH": "/Volumes/Data/jenkins/3rdParty",
+      "WORKSPACE": "/Volumes/Data/jenkins/workspace"
+    },
+    "COMMAND": "./build_ios_test.sh",
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build/ios_test",
+      "CMAKE_OPTIONS": "-G Xcode -DCMAKE_TOOLCHAIN_FILE=cmake/Platform/iOS/Toolchain_ios.cmake -DLY_MONOLITHIC_GAME=FALSE -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED=TRUE -DLY_IOS_CODE_SIGNING_IDENTITY=\"\"  -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGN_ENTITLEMENTS=\"\" -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=TRUE -DLY_UNITY_BUILD=TRUE -DO3DE_HOME_PATH=\"${WORKSPACE}/home\" -DO3DE_REGISTER_ENGINE_PATH=\"${WORKSPACE}/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
+      "CMAKE_TARGET": "ALL_BUILD",
+      "CMAKE_NATIVE_BUILD_ARGS": "",
+      "TARGET_DEVICE_NAME": "Lumberyard",
+      "TEST_MODULE_TIMEOUT": "600"
+    }
   }
 }

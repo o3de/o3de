@@ -15,5 +15,14 @@
                 "type" : "Compute"
             }
         ] 
-    }       
+    },
+
+    "Supervariants":
+    [
+        {
+            "Name": "NoMSAA",
+            "PlusArguments": "--no-ms",
+            "MinusArguments": ""
+        }
+    ]
 }

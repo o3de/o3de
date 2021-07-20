@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -69,34 +70,34 @@ namespace AzToolsFramework
                 QPoint iconTopLeft(remainingRect.x(), remainingRect.y() + (remainingRect.height() / 2) - (m_iconSize / 2));
 
                 auto sourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(entry);
-
-                int thumbX = DrawThumbnail(painter, iconTopLeft, iconSize, entry->GetThumbnailKey());
-
                 QPalette actualPalette(option.palette);
-
-                if (sourceEntry)
+                if (index.column() == aznumeric_cast<int>(AssetBrowserEntry::Column::Name))
                 {
-                    if (m_showSourceControl)
+                    int thumbX = DrawThumbnail(painter, iconTopLeft, iconSize, entry->GetThumbnailKey());
+                    if (sourceEntry)
                     {
-                        DrawThumbnail(painter, iconTopLeft, iconSize, sourceEntry->GetSourceControlThumbnailKey());
+                        if (m_showSourceControl)
+                        {
+                            DrawThumbnail(painter, iconTopLeft, iconSize, sourceEntry->GetSourceControlThumbnailKey());
+                        }
+                        // sources with no children should be greyed out.
+                        if (sourceEntry->GetChildCount() == 0)
+                        {
+                            isEnabled = false; // draw in disabled style.
+                            actualPalette.setCurrentColorGroup(QPalette::Disabled);
+                        }
                     }
-                    // sources with no children should be greyed out.
-                    if (sourceEntry->GetChildCount() == 0)
-                    {
-                        isEnabled = false; // draw in disabled style.
-                        actualPalette.setCurrentColorGroup(QPalette::Disabled);
-                    }
+
+                    remainingRect.adjust(thumbX, 0, 0, 0); // bump it to the right by the size of the thumbnail
+                    remainingRect.adjust(ENTRY_SPACING_LEFT_PIXELS, 0, 0, 0); // bump it to the right by the spacing.
                 }
+                QString displayString = index.column() == aznumeric_cast<int>(AssetBrowserEntry::Column::Name)
+                    ? qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::Name)))
+                    : qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::Path)));
 
-                remainingRect.adjust(thumbX, 0, 0, 0); // bump it to the right by the size of the thumbnail
-                remainingRect.adjust(ENTRY_SPACING_LEFT_PIXELS, 0, 0, 0); // bump it to the right by the spacing.
-
-                style->drawItemText(painter,
-                    remainingRect,
-                    option.displayAlignment,
-                    actualPalette,
-                    isEnabled,
-                    entry->GetDisplayName(),
+                style->drawItemText(
+                    painter, remainingRect, option.displayAlignment, actualPalette, isEnabled,
+                    displayString,
                     isSelected ? QPalette::HighlightedText : QPalette::Text);
             }
         }

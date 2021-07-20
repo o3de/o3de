@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -19,7 +20,8 @@ namespace Multiplayer
         ClientToServerConnectionData
         (
             AzNetworking::IConnection* connection,
-            AzNetworking::IConnectionListener& connectionListener
+            AzNetworking::IConnectionListener& connectionListener,
+            const AZStd::string& providerTicket = ""
         );
         ~ClientToServerConnectionData() override;
 
@@ -33,8 +35,12 @@ namespace Multiplayer
         void SetCanSendUpdates(bool canSendUpdates) override;
         //! @}
 
+        const AZStd::string& GetProviderTicket() const;
+        void SetProviderTicket(const AZStd::string&);
+
     private:
         EntityReplicationManager m_entityReplicationManager;
+        AZStd::string m_providerTicket;
         AzNetworking::IConnection* m_connection = nullptr;
         bool m_canSendUpdates = true;
     };

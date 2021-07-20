@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -19,9 +20,9 @@ namespace ScriptCanvas
 #define DIVIDABLE_TYPES { Data::Type::Number(), Data::Type::Vector2(), Data::Type::Vector3(), Data::Type::Vector4() }
 
             //! Deprecated: see MethodOverloaded for "Divide by Number (/)"
-            class OperatorDivideByNumber 
+            class OperatorDivideByNumber
                 : public Node
-            {                
+            {
             public:
 
                 SCRIPTCANVAS_NODE(OperatorDivideByNumber);
@@ -42,7 +43,6 @@ namespace ScriptCanvas
 
                 // Nodes...
                 void OnInit() override;
-                void OnInputSignal(const SlotId& slotId) override;
                 ////
 
             protected:

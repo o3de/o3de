@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -20,7 +21,6 @@
 #include <Atom/RPI.Public/RPIUtils.h>
 
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
-#include <Atom/RPI.Reflect/Shader/ShaderResourceGroupAsset.h>
 
 namespace AZ
 {
@@ -254,10 +254,10 @@ namespace AZ
             }
 
             // Load SRG
-            const Data::Asset<ShaderResourceGroupAsset>& srgAsset = m_shader->FindShaderResourceGroupAsset(Name{ "PassSrg" });
-            if (srgAsset)
+            const auto srgLayout = m_shader->FindShaderResourceGroupLayout(SrgBindingSlot::Pass);
+            if (srgLayout)
             {
-                m_passSrg = ShaderResourceGroup::Create(srgAsset);
+                m_passSrg = ShaderResourceGroup::Create(shaderAsset, m_shader->GetSupervariantIndex(), srgLayout->GetName());
 
                 if (!m_passSrg)
                 {
@@ -334,22 +334,16 @@ namespace AZ
                 m_passSrg->Compile();
                 m_passSrgChanged = false;
             }
-
-            // Read preview output
-            if (m_readback)
-            {
-                m_readback->FrameBegin(params);
-                m_readback = nullptr;
-            }
         }
 
         bool ImageAttachmentPreviewPass::ReadbackOutput(AZStd::shared_ptr<AttachmentReadback> readback)
         {
             if (m_outputColorAttachment)
             {
-                m_readback = readback;
+                m_readbackOption = PassAttachmentReadbackOption::Output;
+                m_attachmentReadback = readback;
                 AZStd::string readbackName = AZStd::string::format("%s_%s", m_outputColorAttachment->GetAttachmentId().GetCStr(), GetName().GetCStr());
-                return m_readback->ReadPassAttachment(m_outputColorAttachment.get(), AZ::Name(readbackName));
+                return m_attachmentReadback->ReadPassAttachment(m_outputColorAttachment.get(), AZ::Name(readbackName));
             }
             return false;
         }

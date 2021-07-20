@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -108,8 +109,9 @@ namespace AZ
         void RPISystem::Shutdown()
         {
             m_viewportContextManager.Shutdown();
-            m_viewSrgAsset.Reset();
-            m_sceneSrgAsset.Reset();
+            m_viewSrgLayout = nullptr;
+            m_sceneSrgLayout = nullptr;
+            m_commonShaderAssetForSrgs.Reset();
 
 #if AZ_RPI_PRINT_GLOBAL_STATE_ON_ASSERT
             Debug::TraceMessageBus::Handler::BusDisconnect();
@@ -208,16 +210,22 @@ namespace AZ
             return nullptr;
         }
 
-        Data::Asset<ShaderResourceGroupAsset> RPISystem::GetSceneSrgAsset() const
+        Data::Asset<ShaderAsset> RPISystem::GetCommonShaderAssetForSrgs() const
         {
             AZ_Assert(m_systemAssetsInitialized, "InitializeSystemAssets() should be called once when asset catalog loaded'");
-            return m_sceneSrgAsset;
+            return m_commonShaderAssetForSrgs;
         }
 
-        Data::Asset<ShaderResourceGroupAsset> RPISystem::GetViewSrgAsset() const
+        RHI::Ptr<RHI::ShaderResourceGroupLayout> RPISystem::GetSceneSrgLayout() const
         {
             AZ_Assert(m_systemAssetsInitialized, "InitializeSystemAssets() should be called once when asset catalog loaded'");
-            return m_viewSrgAsset;
+            return m_sceneSrgLayout;
+        }
+
+        RHI::Ptr<RHI::ShaderResourceGroupLayout> RPISystem::GetViewSrgLayout() const
+        {
+            AZ_Assert(m_systemAssetsInitialized, "InitializeSystemAssets() should be called once when asset catalog loaded'");
+            return m_viewSrgLayout;
         }
 
         void RPISystem::OnSystemTick()
@@ -354,14 +362,23 @@ namespace AZ
                 m_descriptor.m_rhiSystemDescriptor.m_platformLimits = RPI::GetDataFromAnyAsset<RHI::PlatformLimits>(platformLimitsAsset);
             }
 
-            m_viewSrgAsset = AssetUtils::LoadCriticalAsset<ShaderResourceGroupAsset>( m_descriptor.m_viewSrgAssetPath.c_str());
-            if (!m_viewSrgAsset.IsReady())
+            m_commonShaderAssetForSrgs = AssetUtils::LoadCriticalAsset<ShaderAsset>( m_descriptor.m_commonSrgsShaderAssetPath.c_str());
+            if (!m_commonShaderAssetForSrgs.IsReady())
             {
                 return;
             }
-            m_sceneSrgAsset = AssetUtils::LoadCriticalAsset<ShaderResourceGroupAsset>(m_descriptor.m_sceneSrgAssetPath.c_str());
-            if (!m_sceneSrgAsset.IsReady())
+            m_sceneSrgLayout = m_commonShaderAssetForSrgs->FindShaderResourceGroupLayout(SrgBindingSlot::Scene);
+            if (!m_sceneSrgLayout)
             {
+                AZ_Error("RPISystem", false, "Failed to find SceneSrg by slot=<%u> from shader asset at path <%s>", SrgBindingSlot::Scene,
+                    m_descriptor.m_commonSrgsShaderAssetPath.c_str());
+                return;
+            }
+            m_viewSrgLayout = m_commonShaderAssetForSrgs->FindShaderResourceGroupLayout(SrgBindingSlot::View);
+            if (!m_viewSrgLayout)
+            {
+                AZ_Error("RPISystem", false, "Failed to find ViewSrg by slot=<%u> from shader asset at path <%s>", SrgBindingSlot::View,
+                    m_descriptor.m_commonSrgsShaderAssetPath.c_str());
                 return;
             }
 

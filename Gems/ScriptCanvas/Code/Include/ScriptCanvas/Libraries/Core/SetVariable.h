@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -61,13 +62,12 @@ namespace ScriptCanvas
                 PropertyFields GetPropertyFields() const override;
                 // Translation
                 //////////////////////////////////////////////////////////////////////////
-                
+
 
             protected:
 
                 void OnInit() override;
-                void OnPostActivate() override;                
-                void OnInputSignal(const SlotId&) override;
+                void OnPostActivate() override;
 
                 void AddSlots();
                 void RemoveSlots();
@@ -85,8 +85,6 @@ namespace ScriptCanvas
                 // VariableNotificationBus
                 void OnVariableRemoved() override;
                 ////
-
-                AnnotateNodeSignal CreateAnnotationData();
 
                 VariableId m_variableId;
 

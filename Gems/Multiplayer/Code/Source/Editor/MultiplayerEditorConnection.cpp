@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -143,13 +144,7 @@ namespace Multiplayer
                     console->GetCvarValue("sv_port", remotePort) != AZ::GetValueResult::ConsoleVarNotFound)
                     {
                         // Connect the Editor to the editor server for Multiplayer simulation
-                        AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(MultiplayerAgentType::Client);
-                        INetworkInterface* networkInterface =
-                            AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MPNetworkInterfaceName));
-
-                        const IpAddress ipAddress(remoteAddress.c_str(), remotePort, networkInterface->GetType());
-                        networkInterface->Connect(ipAddress);
-
+                        AZ::Interface<IMultiplayer>::Get()->Connect(remoteAddress.c_str(), remotePort);
                         AZ::Interface<IMultiplayer>::Get()->SendReadyForEntityUpdates(true);
                     }
             }
@@ -184,6 +179,18 @@ namespace Multiplayer
 
     void MultiplayerEditorConnection::OnDisconnect([[maybe_unused]] AzNetworking::IConnection* connection, [[maybe_unused]] DisconnectReason reason, [[maybe_unused]] TerminationEndpoint endpoint)
     {
-        ;
+        bool editorLaunch = false;
+        if (auto console = AZ::Interface<AZ::IConsole>::Get(); console)
+        {
+            console->GetCvarValue("editorsv_launch", editorLaunch);
+        }
+
+        if (editorsv_isDedicated && editorLaunch && m_networkEditorInterface->GetConnectionSet().GetConnectionCount() == 1)
+        {
+            if (m_networkEditorInterface->GetPort() != 0)
+            {
+                m_networkEditorInterface->StopListening();
+            }
+        }
     }
 }

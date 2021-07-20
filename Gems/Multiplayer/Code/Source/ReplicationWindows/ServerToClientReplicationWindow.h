@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -54,7 +55,6 @@ namespace Multiplayer
         void OnEntityDeactivated(AZ::Entity* entity);
 
         //void CollectControlledEntitiesRecursive(ReplicationSet& replicationSet, EntityHierarchyComponent::Authority& hierarchyController);
-        //void OnAddFilteredEntity(NetEntityId filteredEntityId);
 
         void EvaluateConnection();
         void AddEntityToReplicationSet(ConstNetworkEntityHandle& entityHandle, float priority, float distanceSquared);
@@ -73,7 +73,6 @@ namespace Multiplayer
         AZ::EntityActivatedEvent::Handler m_entityActivatedEventHandler;
         AZ::EntityDeactivatedEvent::Handler m_entityDeactivatedEventHandler;
 
-        //FilteredEntityComponent::Authority* m_controlledFilteredEntityComponent = nullptr;
         //NetBindComponent* m_controlledNetBindComponent = nullptr;
 
         const AzNetworking::IConnection* m_connection = nullptr;

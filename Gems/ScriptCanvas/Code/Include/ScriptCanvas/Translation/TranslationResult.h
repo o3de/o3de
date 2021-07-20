@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -41,7 +42,7 @@ namespace ScriptCanvas
             Cpp = 1 << 1,
             Hpp = 1 << 2,
         };
-        
+
         // information required at runtime begin execution of the compiled graph from the host 
         struct RuntimeInputs
         {
@@ -51,10 +52,13 @@ namespace ScriptCanvas
             static void Reflect(AZ::ReflectContext* reflectContext);
 
             Grammar::ExecutionStateSelection m_executionSelection = Grammar::ExecutionStateSelection::InterpretedPure;
+
             AZStd::vector<Nodeable*> m_nodeables;
             AZStd::vector<AZStd::pair<VariableId, Datum>> m_variables;
+
             // either the entityId was a (member) variable in the source graph, or it got promoted to one during parsing
             AZStd::vector<AZStd::pair<VariableId, Data::EntityIDType>> m_entityIds;
+
             // Statics required for internal, local values that need non-code constructible initialization,
             // when the system can't pass in the input from C++.
             AZStd::vector<AZStd::pair<VariableId, AZStd::any>> m_staticVariables;
@@ -84,7 +88,7 @@ namespace ScriptCanvas
         using ErrorList = AZStd::vector<AZStd::string>;
         using Errors = AZStd::unordered_map<TargetFlags, ErrorList>;
         using Translations = AZStd::unordered_map<TargetFlags, TargetResult>;
-        
+
         AZStd::sys_time_t SumDurations(const Translations& translation);
 
         class Result
@@ -98,6 +102,7 @@ namespace ScriptCanvas
             const AZStd::sys_time_t m_translationDuration;
 
             Result(AZStd::string invalidSourceInfo);
+            Result(Result&& source);
             Result(Grammar::AbstractCodeModelConstPtr model);
             Result(Grammar::AbstractCodeModelConstPtr model, Translations&& translations, Errors&& errors);
 
@@ -107,7 +112,7 @@ namespace ScriptCanvas
             AZ::Outcome<void, AZStd::string> IsSuccess(TargetFlags flag) const;
             bool TranslationSucceed(TargetFlags flag) const;
         };
-       
+
         struct LuaAssetResult
         {
             AZ::Data::Asset<AZ::ScriptAsset> m_scriptAsset;
@@ -117,7 +122,5 @@ namespace ScriptCanvas
             AZStd::sys_time_t m_parseDuration;
             AZStd::sys_time_t m_translationDuration;
         };
-
-    } 
-
-} 
+    }
+}

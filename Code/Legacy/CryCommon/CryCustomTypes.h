@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -277,11 +278,9 @@ struct TIntTraits
     static const size_t nPOS_BITS
         = sizeof(T) * 8 - bSIGNED;
 
-    static const T nMIN
-        = bSIGNED ? T (T(1) << (T(sizeof(T) * 8 - 1))) : T(0);
+    static const T nMIN = std::numeric_limits<T>::min();
 
-    static const T nMAX
-        = ~nMIN;
+    static const T nMAX = std::numeric_limits<T>::max();
 };
 
 template<uint S>

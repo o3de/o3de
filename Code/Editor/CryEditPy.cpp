@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -27,6 +28,7 @@
 #include "GameEngine.h"
 #include "UndoConfigSpec.h"
 #include "ViewManager.h"
+#include "EditorViewportCamera.h"
 
 // Atom
 #include <Atom/RPI.Public/ViewportContextBus.h>
@@ -262,7 +264,7 @@ namespace
         }
     }
 
-    void PySetCurrentViewRotation(float x, float y, float z)
+    void PySetCurrentViewRotation(float x, [[maybe_unused]] float y, float z)
     {
         auto viewportContextRequests = AZ::RPI::ViewportContextRequests::Get();
         if (viewportContextRequests)
@@ -274,7 +276,6 @@ namespace
         }
     }
 }
-
 
 namespace
 {
@@ -407,78 +408,6 @@ inline namespace Commands
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnChangeGameSpec(UINT nID)
-{
-    switch (nID)
-    {
-    case ID_GAME_PC_ENABLELOWSPEC:
-        Commands::PySetConfigSpec(CONFIG_LOW_SPEC, CONFIG_PC);
-        break;
-    case ID_GAME_PC_ENABLEMEDIUMSPEC:
-        Commands::PySetConfigSpec(CONFIG_MEDIUM_SPEC, CONFIG_PC);
-        break;
-    case ID_GAME_PC_ENABLEHIGHSPEC:
-        Commands::PySetConfigSpec(CONFIG_HIGH_SPEC, CONFIG_PC);
-        break;
-    case ID_GAME_PC_ENABLEVERYHIGHSPEC:
-        Commands::PySetConfigSpec(CONFIG_VERYHIGH_SPEC, CONFIG_PC);
-        break;
-    case ID_GAME_OSXMETAL_ENABLELOWSPEC:
-        Commands::PySetConfigSpec(CONFIG_LOW_SPEC, CONFIG_OSX_METAL);
-        break;
-    case ID_GAME_OSXMETAL_ENABLEMEDIUMSPEC:
-        Commands::PySetConfigSpec(CONFIG_MEDIUM_SPEC, CONFIG_OSX_METAL);
-        break;
-    case ID_GAME_OSXMETAL_ENABLEHIGHSPEC:
-        Commands::PySetConfigSpec(CONFIG_HIGH_SPEC, CONFIG_OSX_METAL);
-        break;
-    case ID_GAME_OSXMETAL_ENABLEVERYHIGHSPEC:
-        Commands::PySetConfigSpec(CONFIG_VERYHIGH_SPEC, CONFIG_OSX_METAL);
-        break;
-    case ID_GAME_ANDROID_ENABLELOWSPEC:
-        Commands::PySetConfigSpec(CONFIG_LOW_SPEC, CONFIG_ANDROID);
-        break;
-    case ID_GAME_ANDROID_ENABLEMEDIUMSPEC:
-        Commands::PySetConfigSpec(CONFIG_MEDIUM_SPEC, CONFIG_ANDROID);
-        break;
-    case ID_GAME_ANDROID_ENABLEHIGHSPEC:
-        Commands::PySetConfigSpec(CONFIG_HIGH_SPEC, CONFIG_ANDROID);
-        break;
-    case ID_GAME_ANDROID_ENABLEVERYHIGHSPEC:
-        Commands::PySetConfigSpec(CONFIG_VERYHIGH_SPEC, CONFIG_ANDROID);
-        break;
-    case ID_GAME_IOS_ENABLELOWSPEC:
-        Commands::PySetConfigSpec(CONFIG_LOW_SPEC, CONFIG_IOS);
-        break;
-    case ID_GAME_IOS_ENABLEMEDIUMSPEC:
-        Commands::PySetConfigSpec(CONFIG_MEDIUM_SPEC, CONFIG_IOS);
-        break;
-    case ID_GAME_IOS_ENABLEHIGHSPEC:
-        Commands::PySetConfigSpec(CONFIG_HIGH_SPEC, CONFIG_IOS);
-        break;
-    case ID_GAME_IOS_ENABLEVERYHIGHSPEC:
-        Commands::PySetConfigSpec(CONFIG_VERYHIGH_SPEC, CONFIG_IOS);
-        break;
-#if defined(AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS)
-#define AZ_RESTRICTED_PLATFORM_EXPANSION(CodeName, CODENAME, codename, PrivateName, PRIVATENAME, privatename, PublicName, PUBLICNAME, publicname, PublicAuxName1, PublicAuxName2, PublicAuxName3)\
-    case ID_GAME_##CODENAME##_ENABLELOWSPEC:\
-        Commands::PySetConfigSpec(CONFIG_LOW_SPEC, CONFIG_##CODENAME);\
-        break;\
-    case ID_GAME_##CODENAME##_ENABLEMEDIUMSPEC:\
-        Commands::PySetConfigSpec(CONFIG_MEDIUM_SPEC, CONFIG_##CODENAME);\
-        break;\
-    case ID_GAME_##CODENAME##_ENABLEHIGHSPEC:\
-        Commands::PySetConfigSpec(CONFIG_HIGH_SPEC, CONFIG_##CODENAME);\
-        break;
-    AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS
-#undef AZ_RESTRICTED_PLATFORM_EXPANSION
-#endif
-    }
-}
-
-
-
 namespace AzToolsFramework
 {
     void CryEditPythonHandler::Reflect(AZ::ReflectContext* context)
@@ -503,9 +432,9 @@ namespace AzToolsFramework
 
             addLegacyGeneral(behaviorContext->Method("load_all_plugins", ::Command_LoadPlugins, nullptr, "Loads all available plugins."));
             addLegacyGeneral(behaviorContext->Method("get_current_view_position", PyGetCurrentViewPosition, nullptr, "Returns the position of the current view as a Vec3."));
-            addLegacyGeneral(behaviorContext->Method("get_current_view_rotation", PyGetCurrentViewRotation, nullptr, "Returns the rotation of the current view as a Vec3 of Euler angles."));
+            addLegacyGeneral(behaviorContext->Method("get_current_view_rotation", PyGetCurrentViewRotation, nullptr, "Returns the rotation of the current view as a Vec3 of Euler angles in degrees."));
             addLegacyGeneral(behaviorContext->Method("set_current_view_position", PySetCurrentViewPosition, nullptr, "Sets the position of the current view as given x, y, z coordinates."));
-            addLegacyGeneral(behaviorContext->Method("set_current_view_rotation", PySetCurrentViewRotation, nullptr, "Sets the rotation of the current view as given x, y, z Euler angles."));
+            addLegacyGeneral(behaviorContext->Method("set_current_view_rotation", PySetCurrentViewRotation, nullptr, "Sets the rotation of the current view as given x, y, z Euler angles in degrees."));
 
             addLegacyGeneral(behaviorContext->Method("export_to_engine", CCryEditApp::Command_ExportToEngine, nullptr, "Exports the current level to the engine."));
             addLegacyGeneral(behaviorContext->Method("set_config_spec", PySetConfigSpec, nullptr, "Sets the system config spec and platform."));

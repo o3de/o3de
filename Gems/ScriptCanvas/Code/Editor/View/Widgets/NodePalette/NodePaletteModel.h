@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -22,7 +23,6 @@
 
 #include <Editor/View/Widgets/NodePalette/NodePaletteModelBus.h>
 
-#include <ScriptCanvas/Asset/Functions/ScriptCanvasFunctionAsset.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Core/Core.h>
 
@@ -87,7 +87,6 @@ namespace ScriptCanvasEditor
 
         // Asset Based Registrations
         AZStd::vector<ScriptCanvas::NodeTypeIdentifier> RegisterScriptEvent(ScriptEvents::ScriptEventsAsset* scriptEventAsset);
-        AZStd::vector<ScriptCanvas::NodeTypeIdentifier> RegisterFunctionInformation(ScriptCanvasFunctionAsset* functionAsset);
 
         void RegisterCategoryInformation(const AZStd::string& category, const CategoryInformation& categoryInformation);
         const CategoryInformation* FindCategoryInformation(const AZStd::string& categoryStyle) const;

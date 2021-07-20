@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -96,10 +97,10 @@ namespace AZ
             }
 
             // Load Pass SRG
-            const Data::Asset<ShaderResourceGroupAsset>& passSrgAsset = m_shader->FindShaderResourceGroupAsset(Name{ "PassSrg" });
-            if (passSrgAsset)
+            const auto passSrgLayout = m_shader->FindShaderResourceGroupLayout(SrgBindingSlot::Pass);
+            if (passSrgLayout)
             {
-                m_shaderResourceGroup = ShaderResourceGroup::Create(passSrgAsset);
+                m_shaderResourceGroup = ShaderResourceGroup::Create(shaderAsset, m_shader->GetSupervariantIndex(), passSrgLayout->GetName());
 
                 AZ_Assert(m_shaderResourceGroup, "[FullscreenTrianglePass '%s']: Failed to create SRG from shader asset '%s'",
                     GetPathName().GetCStr(),
@@ -110,10 +111,10 @@ namespace AZ
 
             // Load Draw SRG
             // this is necessary since the shader may have options, which require a default draw SRG
-            const Data::Asset<ShaderResourceGroupAsset>& drawSrgAsset = m_shader->FindShaderResourceGroupAsset(Name{ "DrawSrg" });
-            if (drawSrgAsset)
+            const auto drawSrgLayout = m_shader->FindShaderResourceGroupLayout(SrgBindingSlot::Draw);
+            if (drawSrgLayout)
             {
-                m_drawShaderResourceGroup = ShaderResourceGroup::Create(drawSrgAsset);
+                m_drawShaderResourceGroup = ShaderResourceGroup::Create(shaderAsset, m_shader->GetSupervariantIndex(), drawSrgLayout->GetName());
             }
 
             // Store stencil reference value for the draw call

@@ -1,10 +1,12 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
 #include <QPushButton>
@@ -24,6 +26,7 @@
 #include <Tests/UI/ModalPopupHandler.h>
 #include <Tests/UI/UIFixture.h>
 #include <Tests/D6JointLimitConfiguration.h>
+#include <Tests/Mocks/PhysicsSystem.h>
 
 namespace EMotionFX
 {
@@ -135,6 +138,31 @@ namespace EMotionFX
 
     TEST_F(CanAddToSimulatedObjectFixture, CanAddCollidersfromRagdoll)
     {
+        using ::testing::_;
+        Physics::MockJointHelpersInterface jointHelpers;
+        EXPECT_CALL(jointHelpers, GetSupportedJointTypeIds)
+            .WillRepeatedly(testing::Return(AZStd::vector<AZ::TypeId>{ azrtti_typeid<D6JointLimitConfiguration>() }));
+
+        EXPECT_CALL(jointHelpers, GetSupportedJointTypeId(_))
+            .WillRepeatedly(
+                [](AzPhysics::JointType jointType) -> AZStd::optional<const AZ::TypeId>
+                {
+                    if (jointType == AzPhysics::JointType::D6Joint)
+                    {
+                        return azrtti_typeid<D6JointLimitConfiguration>();
+                    }
+                    return AZStd::nullopt;
+                });
+
+        EXPECT_CALL(jointHelpers, ComputeInitialJointLimitConfiguration(_, _, _, _, _))
+            .WillRepeatedly(
+                []([[maybe_unused]] const AZ::TypeId& jointLimitTypeId, [[maybe_unused]] const AZ::Quaternion& parentWorldRotation,
+                   [[maybe_unused]] const AZ::Quaternion& childWorldRotation, [[maybe_unused]] const AZ::Vector3& axis,
+                   [[maybe_unused]] const AZStd::vector<AZ::Quaternion>& exampleLocalRotations)
+                {
+                    return AZStd::make_unique<D6JointLimitConfiguration>();
+                });
+
         RecordProperty("test_case_id", "C13291807");
         AutoRegisteredActor actor = ActorFactory::CreateAndInit<SimpleJointChainActor>(7, "CanAddToSimulatedObjectActor");
 

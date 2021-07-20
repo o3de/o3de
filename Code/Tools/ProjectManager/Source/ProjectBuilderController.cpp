@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -70,8 +71,9 @@ namespace O3DE::ProjectManager
         m_lastProgress = progress;
         if (m_projectButton)
         {
-            m_projectButton->SetButtonOverlayText(QString("%1 (%2%)\n\n").arg(tr("Building Project..."), QString::number(progress)));
+            m_projectButton->SetButtonOverlayText(QString("%1 (%2%)<br>%3<br>").arg(tr("Building Project..."), QString::number(progress), tr("Click to <a href=\"logs\">view logs</a>.")));
             m_projectButton->SetProgressBarValue(progress);
+            m_projectButton->SetBuildLogsLink(m_worker->GetLogFilePath());
         }
     }
 
@@ -92,10 +94,18 @@ namespace O3DE::ProjectManager
                     // Open application assigned to this file type
                     QDesktopServices::openUrl(QUrl("file:///" + m_worker->GetLogFilePath()));
                 }
+
+                m_projectInfo.m_buildFailed = true;
+                m_projectInfo.m_logUrl = QUrl("file:///" + m_worker->GetLogFilePath());
+                emit NotifyBuildProject(m_projectInfo);
             }
             else
             {
                 QMessageBox::critical(m_parent, tr("Project Failed to Build!"), result);
+
+                m_projectInfo.m_buildFailed = true;
+                m_projectInfo.m_logUrl = QUrl();
+                emit NotifyBuildProject(m_projectInfo);
             }
 
             emit Done(false);

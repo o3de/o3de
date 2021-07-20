@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -64,23 +65,9 @@ namespace AZ
                 // Set up read back attachment before children prepare
                 if (m_readback->IsReady())
                 {
-                    AZ::RPI::RenderPass* renderPass = azrtti_cast<AZ::RPI::RenderPass*>(m_renderTargetPass.get());
-                    if (renderPass)
+                    if (m_renderTargetPass)
                     {
-                        RPI::PassAttachment* attachment = nullptr;
-                        for (auto& binding : renderPass->GetAttachmentBindings())
-                        {
-                            if (binding.m_slotType == RPI::PassSlotType::Output)
-                            {
-                                attachment = binding.m_attachment.get();
-                                break;
-                            }
-                        }
-                        if (attachment)
-                        {
-                            renderPass->ReadbackAttachment(m_readback, attachment);
-                            m_attachmentReadbackComplete = true;
-                        }
+                        m_attachmentReadbackComplete = m_renderTargetPass->ReadbackAttachment(m_readback, AZ::Name("RenderTargetOutput"));                           
                     }
                 }
             }

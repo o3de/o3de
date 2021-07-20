@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -24,9 +25,5 @@ namespace O3DE::ProjectManager
 
     protected slots:
         void onToggled();
-
-    private:
-        inline constexpr static int s_templateImageWidth = 92;
-        inline constexpr static int s_templateImageHeight = 122;
     };
 } // namespace O3DE::ProjectManager

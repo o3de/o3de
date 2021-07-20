@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -301,6 +302,8 @@ void CLevelSystem::ScanFolder(const char* subfolder, bool modFolder)
 
     AZStd::unordered_set<AZStd::string> pakList;
 
+    const bool allowFileSystem = true;
+    const uint32_t skipPakFiles = 1;
     AZ::IO::ArchiveFileIterator handle = pPak->FindFirst(search.c_str(), AZ::IO::IArchive::eFileSearchType_AllowOnDiskOnly);
 
     if (handle)

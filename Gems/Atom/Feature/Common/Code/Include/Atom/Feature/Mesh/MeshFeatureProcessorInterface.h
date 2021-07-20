@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -85,6 +86,10 @@ namespace AZ
             virtual Transform GetTransform(const MeshHandle& meshHandle) = 0;
             //! Gets the non-uniform scale for a given mesh handle.
             virtual Vector3 GetNonUniformScale(const MeshHandle& meshHandle) = 0;
+            //! Sets the local space bbox for a given mesh handle. You don't need to call this for static models, only skinned/animated models
+            virtual void SetLocalAabb(const MeshHandle& meshHandle, const AZ::Aabb& localAabb) = 0;
+            //! Gets the local space bbox for a given mesh handle. Unless SetLocalAabb has been called before, this will be the bbox of the model asset
+            virtual AZ::Aabb GetLocalAabb(const MeshHandle& meshHandle) const = 0;
             //! Sets the sort key for a given mesh handle.
             virtual void SetSortKey(const MeshHandle& meshHandle, RHI::DrawItemSortKey sortKey) = 0;
             //! Gets the sort key for a given mesh handle.

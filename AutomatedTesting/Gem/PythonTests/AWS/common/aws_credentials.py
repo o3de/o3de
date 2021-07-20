@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -107,24 +108,3 @@ class AwsCredentials:
         else:
             self._credentials[self._profile_name][attribute_name] = attribute_value
 
-
-@pytest.fixture(scope='function')
-def aws_credentials(request: pytest.fixture, aws_utils: pytest.fixture, profile_name: str):
-    """
-    Fixture for setting up temporary AWS credentials from assume role.
-
-    :param request: _pytest.fixtures.SubRequest class that handles getting
-        a pytest fixture from a pytest function/fixture.
-    :param aws_utils: aws_utils fixture.
-    :param profile_name: Named AWS profile to store temporary credentials.
-    """
-    aws_credentials_obj = AwsCredentials(profile_name)
-    original_access_key, original_secret_access_key, original_token = aws_credentials_obj.get_aws_credentials()
-    aws_credentials_obj.set_aws_credentials_by_session(aws_utils.assume_session())
-
-    def teardown():
-        # Reset to the named profile using the original AWS credentials
-        aws_credentials_obj.set_aws_credentials(original_access_key, original_secret_access_key, original_token)
-    request.addfinalizer(teardown)
-
-    return aws_credentials_obj

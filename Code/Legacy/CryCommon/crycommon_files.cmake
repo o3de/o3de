@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -65,7 +66,6 @@ set(FILES
     CryRandomInternal.h
     Random.h
     LCGRandom.h
-    MTPseudoRandom.cpp
     CryTypeInfo.cpp
     BaseTypes.h
     CompileTimeAssert.h
@@ -98,7 +98,6 @@ set(FILES
     LegacyAllocator.h
     MetaUtils.h
     MiniQueue.h
-    MTPseudoRandom.h
     MultiThread.h
     MultiThread_Containers.h
     NullAudioSystem.h

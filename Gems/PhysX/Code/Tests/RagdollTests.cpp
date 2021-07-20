@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include <PhysX_precompiled.h>
 
 #include "RagdollTestData.h"
 #include <AzTest/Utils.h>
@@ -203,8 +202,8 @@ namespace PhysX
             }
             else
             {
-                EXPECT_EQ(joint->GetChildBody(), &node->GetRigidBody());
-                EXPECT_EQ(joint->GetParentBody(), &ragdoll->GetNode(parentIndex)->GetRigidBody());
+                EXPECT_EQ(joint->GetChildBodyHandle(), node->GetRigidBody().m_bodyHandle);
+                EXPECT_EQ(joint->GetParentBodyHandle(), ragdoll->GetNode(parentIndex)->GetRigidBody().m_bodyHandle);
             }
         }
     }

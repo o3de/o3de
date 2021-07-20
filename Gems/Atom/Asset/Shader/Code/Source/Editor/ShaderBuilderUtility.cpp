@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -81,68 +82,6 @@ namespace AZ
                 AzFramework::StringFunc::Path::ReplaceExtension(absoluteAzslPath, "azsl");
             }
 
-            static bool LoadShaderResourceGroupAssets(
-                [[maybe_unused]] const char* builderName,
-                const SrgDataContainer& resourceGroups,
-                ShaderResourceGroupAssets& srgAssets)
-            {
-                bool readSRGsSuccessfuly = true;
-
-                // Load all SRGs included in source file 
-                for (const SrgData& srgData : resourceGroups)
-                {
-                    Data::AssetId assetId = {};
-                    AZStd::string srgFilePath = "";
-
-                    srgFilePath = srgData.m_containingFileName;
-                    AzFramework::StringFunc::Path::Normalize(srgFilePath);
-
-                    bool assetFound = false;
-                    Data::AssetInfo sourceInfo;
-                    AZStd::string watchFolder;
-                    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(assetFound, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath, srgFilePath.c_str(), sourceInfo, watchFolder);
-
-                    if (!assetFound)
-                    {
-                        AZ_Error(builderName, false, "Could not find asset identified by path '%s'", srgFilePath.c_str());
-                        readSRGsSuccessfuly = false;
-                        continue;
-                    }
-
-                    assetId.m_guid = sourceInfo.m_assetId.m_guid;
-                    assetId.m_subId = static_cast<uint32_t>(AZStd::hash<AZStd::string>()(srgData.m_name) & 0xFFFFFFFF);
-
-                    Data::Asset<RPI::ShaderResourceGroupAsset> asset = Data::AssetManager::Instance().GetAsset<RPI::ShaderResourceGroupAsset>(
-                        assetId, AZ::Data::AssetLoadBehavior::PreLoad);
-                    asset.BlockUntilLoadComplete();
-                    if (!asset.IsReady())
-                    {
-                        using Status = Data::AssetData::AssetStatus;
-                        AZStd::string statusString = asset.GetStatus() == Status::Loading ? "loading"
-                            : asset.GetStatus() == Status::ReadyPreNotify ? "ready-pre-notify"
-                            : asset.GetStatus() == Status::Error ? "error" : "not-loaded/ready/unknown";
-
-                        AZ_Error(builderName, false, "Searching SRG [%s]: Could not load SRG asset. (asset status [%s]) AssetId='%s' Path='%s'",
-                            srgData.m_name.c_str(),
-                            statusString.c_str(),
-                            assetId.ToString<AZStd::string>().c_str(), srgFilePath.c_str());
-                        readSRGsSuccessfuly = false;
-                        continue;
-                    }
-                    else if (!asset->IsValid())
-                    {
-                        AZ_Error(builderName, false, "SRG asset has no layout information. AssetId='%s' Path='%s'",
-                            assetId.ToString<AZStd::string>().c_str(), srgFilePath.c_str());
-                        readSRGsSuccessfuly = false;
-                        continue;
-                    }
-
-                    srgAssets.push_back(asset);
-                }
-
-                return readSRGsSuccessfuly;
-            }
-
             AZStd::shared_ptr<ShaderFiles> PrepareSourceInput(
                 [[maybe_unused]] const char* builderName,
                 const AZStd::string& shaderAssetSourcePath,
@@ -164,87 +103,6 @@ namespace AZ
                 AzFramework::StringFunc::Path::GetFileName(specifiedAzslName.c_str(), files->m_azslFileName);
                 return files;
             }
-
-
-            //! [GFX TODO] [ATOM-15472] Deprecated, remove when this ticket is addressed.
-            AssetBuilderSDK::ProcessJobResultCode PopulateAzslDataFromJsonFiles(
-                const char* builderName,
-                const AzslSubProducts::Paths& pathOfJsonFiles,
-                AzslData& azslData,
-                ShaderResourceGroupAssets& srgAssets,
-                RPI::Ptr<RPI::ShaderOptionGroupLayout> shaderOptionGroupLayout,
-                BindingDependencies& bindingDependencies,
-                RootConstantData& rootConstantData)
-            {
-                AzslCompiler azslc(azslData.m_preprocessedFullPath);  // set the input file for eventual error messages, but the compiler won't be called on it.
-                bool allReadSuccess = true;
-                // read: input assembly reflection
-                //       shader resource group reflection
-                //       options reflection
-                //       binding dependencies reflection
-                int indicesOfInterest[] = { AzslSubProducts::ia, AzslSubProducts::srg, AzslSubProducts::options, AzslSubProducts::bindingdep };
-                AZStd::unordered_map<int, Outcome<rapidjson::Document, AZStd::string>> outcomes;
-                for (int i : indicesOfInterest)
-                {
-                    outcomes[i] = JsonSerializationUtils::ReadJsonFile(pathOfJsonFiles[i]);
-                    if (!outcomes[i].IsSuccess())
-                    {
-                        AZ_Error(builderName, false, "%s", outcomes[i].GetError().c_str());
-                        allReadSuccess = false;
-                    }
-                }
-                if (!allReadSuccess)
-                {
-                    return AssetBuilderSDK::ProcessJobResult_Failed;
-                }
-                
-                // Get full list of functions eligible for vertex shader entry points
-                // along with metadata for constructing the InputAssembly for each of them
-                if (!azslc.ParseIaPopulateFunctionData(outcomes[AzslSubProducts::ia].GetValue(), azslData.m_functions))
-                {
-                    return AssetBuilderSDK::ProcessJobResult_Failed;
-                }
-                
-                // Each SRG is built as a separate asset in the SrgLayoutBuilder, here we just
-                // build the list and load the data from multiple dependency assets.
-                if (!azslc.ParseSrgPopulateSrgData(outcomes[AzslSubProducts::srg].GetValue(), azslData.m_srgData))
-                {
-                    return AssetBuilderSDK::ProcessJobResult_Failed;
-                }
-
-                // Add all Shader Resource Group Assets that were defined in the shader code to the shader asset
-                if (!LoadShaderResourceGroupAssets(builderName, azslData.m_srgData, srgAssets))
-                {
-                    AZ_Error(builderName, false, "Failed to obtain shader resource group assets");
-                    return AssetBuilderSDK::ProcessJobResult_Failed;
-                }
-
-                // The shader options define what options are available, what are the allowed values/range
-                // for each option and what is its default value.
-                if (!azslc.ParseOptionsPopulateOptionGroupLayout(outcomes[AzslSubProducts::options].GetValue(), shaderOptionGroupLayout))
-                {
-                    AZ_Error(builderName, false, "Failed to find a valid list of shader options!");
-                    return AssetBuilderSDK::ProcessJobResult_Failed;
-                }
-
-                // It analyzes the shader external bindings (all SRG contents)
-                // and informs us on register indexes and shader stages using these resources
-                if (!azslc.ParseBindingdepPopulateBindingDependencies(outcomes[AzslSubProducts::bindingdep].GetValue(), bindingDependencies))   // consuming data from binding-dep
-                {
-                    AZ_Error(builderName, false, "Failed to obtain shader resource binding reflection");
-                    return AssetBuilderSDK::ProcessJobResult_Failed;
-                }
-
-                // access the root constants reflection
-                if (!azslc.ParseSrgPopulateRootConstantData(outcomes[AzslSubProducts::srg].GetValue(), rootConstantData))    // consuming data from --srg ("InlineConstantBuffer" subjson section)
-                {
-                    AZ_Error(builderName, false, "Failed to obtain root constant data reflection");
-                    return AssetBuilderSDK::ProcessJobResult_Failed;
-                }
-
-                return AssetBuilderSDK::ProcessJobResult_Success;
-            }
-
 
             AssetBuilderSDK::ProcessJobResultCode PopulateAzslDataFromJsonFiles(
                 const char* builderName,
@@ -355,7 +213,8 @@ namespace AZ
             }
 
             //! the binding dependency structure may store lots of high level function names which are not entry points
-            static void PruneNonEntryFunctions(BindingDependencies& bindingDependencies /*inout*/, const MapOfStringToStageType& shaderEntryPoints)
+            static void PruneNonEntryFunctions(
+                BindingDependencies& bindingDependencies /*inout*/, const MapOfStringToStageType& shaderEntryPoints)
             {
                 auto cleaner = [&shaderEntryPoints](BindingDependencies::FunctionsNameVector& functionVector)
                 {
@@ -380,120 +239,6 @@ namespace AZ
                             cleaner(nameResourcePair.second.m_dependentFunctions);
                         });
                 }
-            }
-    
-            RHI::Ptr<RHI::PipelineLayoutDescriptor> BuildPipelineLayoutDescriptorForApi(
-                [[maybe_unused]] const char* builderName,
-                RHI::ShaderPlatformInterface* shaderPlatformInterface,
-                BindingDependencies& bindingDependencies /*inout*/,
-                const ShaderResourceGroupAssets& srgAssets,
-                const MapOfStringToStageType& shaderEntryPoints,
-                const RHI::ShaderCompilerArguments& shaderCompilerArguments,
-                const RootConstantData* rootConstantData /*= nullptr*/)
-            {        
-                PruneNonEntryFunctions(bindingDependencies, shaderEntryPoints);
-            
-                // Translates from a list of function names that use a resource to a shader stage mask.
-                auto getRHIShaderStageMask = [&shaderEntryPoints](const BindingDependencies::FunctionsNameVector& functions)
-                {
-                    RHI::ShaderStageMask mask = RHI::ShaderStageMask::None;
-                    // Iterate through all the functions that are using the resource.
-                    for (const auto& functionName : functions)
-                    {
-                        // Search the function name into the list of valid entry points into the shader.
-                        auto findId = AZStd::find_if(shaderEntryPoints.begin(), shaderEntryPoints.end(), [&functionName, &mask](const auto& item)
-                            {
-                                return item.first == functionName;
-                            });
-        
-                        if (findId != shaderEntryPoints.end())
-                        {
-                            // Use the entry point shader stage type to calculate the mask.
-                            RHI::ShaderHardwareStage hardwareStage = ToAssetBuilderShaderType(findId->second);
-                            mask |= static_cast<RHI::ShaderStageMask>(AZ_BIT(static_cast<uint32_t>(RHI::ToRHIShaderStage(hardwareStage))));
-                        }
-                    }
-        
-                    return mask;
-                };
-            
-                // Build general PipelineLayoutDescriptor data that is provided for all platforms
-                RHI::Ptr<RHI::PipelineLayoutDescriptor> pipelineLayoutDescriptor = shaderPlatformInterface->CreatePipelineLayoutDescriptor();
-                RHI::ShaderPlatformInterface::ShaderResourceGroupInfoList srgInfos;
-                for (const auto& srgAsset : srgAssets)
-                {
-                    // Search the binding info for a Shader Resource Group.
-                    AZStd::string_view srgName = srgAsset->GetName().GetStringView();
-                    const BindingDependencies::SrgResources* srgResources = bindingDependencies.GetSrg(srgName);
-                    if (!srgResources)
-                    {
-                        AZ_Error(builderName, false, "SRG %s not found in the dependency dataset", srgName.data());
-                        return nullptr;
-                    }
-        
-                    RHI::ShaderResourceGroupBindingInfo srgBindingInfo;
-                    srgBindingInfo.m_spaceId = srgResources->m_registerSpace;
-                    const RHI::ShaderResourceGroupLayout* layout = srgAsset->GetLayout(shaderPlatformInterface->GetAPIType());
-                    // Calculate the binding in for the constant data. All constant data share the same binding info.
-                    srgBindingInfo.m_constantDataBindingInfo = {
-                        getRHIShaderStageMask(srgResources->m_srgConstantsDependencies.m_binding.m_dependentFunctions),
-                        srgResources->m_srgConstantsDependencies.m_binding.m_registerId };
-                    // Calculate the binding info for each resource of the Shader Resource Group.
-                    for (auto const& resource : srgResources->m_resources)
-                    {
-                        auto const& resourceInfo = resource.second;
-                        srgBindingInfo.m_resourcesRegisterMap.insert(
-                            { AZ::Name(resourceInfo.m_selfName),
-                            RHI::ResourceBindingInfo(getRHIShaderStageMask(resourceInfo.m_dependentFunctions), resourceInfo.m_registerId) });
-                    }
-                    pipelineLayoutDescriptor->AddShaderResourceGroupLayoutInfo(*layout, srgBindingInfo);
-                    srgInfos.push_back(RHI::ShaderPlatformInterface::ShaderResourceGroupInfo{ layout, srgBindingInfo });
-                }
-        
-                RHI::Ptr<RHI::ConstantsLayout> rootConstantsLayout = RHI::ConstantsLayout::Create();
-                if (rootConstantData)
-                {
-                    for (const auto& constantData : rootConstantData->m_constants)
-                    {
-                        RHI::ShaderInputConstantDescriptor rootConstantDesc(
-                            constantData.m_nameId, constantData.m_constantByteOffset, constantData.m_constantByteSize,
-                            rootConstantData->m_bindingInfo.m_registerId);
-
-                        rootConstantsLayout->AddShaderInput(rootConstantDesc);
-                    }
-                }
-
-                if (!rootConstantsLayout->Finalize())
-                {
-                    AZ_Error(builderName, false, "Failed to finalize root constants layout");
-                    return nullptr;
-                }
-
-                pipelineLayoutDescriptor->SetRootConstantsLayout(*rootConstantsLayout);
-
-                RHI::ShaderPlatformInterface::RootConstantsInfo rootConstantInfo;
-                if (rootConstantData)
-                {
-                    rootConstantInfo.m_spaceId = rootConstantData->m_bindingInfo.m_space;
-                    rootConstantInfo.m_registerId = rootConstantData->m_bindingInfo.m_registerId;
-                }
-                else
-                {
-                    RootConstantData dummyRootConstantData;
-                    rootConstantInfo.m_spaceId = dummyRootConstantData.m_bindingInfo.m_space;
-                    rootConstantInfo.m_registerId = dummyRootConstantData.m_bindingInfo.m_registerId;
-                }
-                rootConstantInfo.m_totalSizeInBytes = rootConstantsLayout->GetDataSize();
-
-                // Build platform-specific PipelineLayoutDescriptor data, and finalize
-                if (!shaderPlatformInterface->BuildPipelineLayoutDescriptor(
-                        pipelineLayoutDescriptor, srgInfos, rootConstantInfo, shaderCompilerArguments))
-                {
-                    AZ_Error(builderName, false, "Failed to build pipeline layout descriptor");
-                    return nullptr;
-                }
-
-                return pipelineLayoutDescriptor;
             }
 
             static AZStd::string DumpCode(
@@ -533,14 +278,8 @@ namespace AZ
                 return finalFilePath;
             }
 
-            // [GFX TODO] Remove 'add2' when [ATOM-15472]
-            AZStd::string DumpPreprocessedCode(const char* builderName, const AZStd::string& preprocessedCode, const AZStd::string& tempDirPath, const AZStd::string& stemName, const AZStd::string& apiTypeString, bool add2)
+            AZStd::string DumpPreprocessedCode(const char* builderName, const AZStd::string& preprocessedCode, const AZStd::string& tempDirPath, const AZStd::string& stemName, const AZStd::string& apiTypeString)
             {
-                if (add2)
-                {
-                    return DumpCode(builderName, preprocessedCode, tempDirPath, stemName, apiTypeString, "azslin2");
-                }
-
                 return DumpCode(builderName, preprocessedCode, tempDirPath, stemName, apiTypeString, "azslin");
             }
 
@@ -578,8 +317,7 @@ namespace AZ
                     AZStd::remove_if(AZ_BEGIN_END(platformInterfaces),
                         [&](const RHI::ShaderPlatformInterface* shaderPlatformInterface) {
                             return !shaderPlatformInterface ||
-                                   shaderSourceData.IsRhiBackendDisabled(shaderPlatformInterface->GetAPIName()) ||
-                                   (shaderPlatformInterface->GetAPIUniqueIndex() == static_cast<uint32_t>(AZ::RHI::APIIndex::Null));
+                                   shaderSourceData.IsRhiBackendDisabled(shaderPlatformInterface->GetAPIName());
                         }),
                     platformInterfaces.end());
                 return platformInterfaces;
@@ -712,119 +450,56 @@ namespace AZ
 #endif
             }
 
-            uint32_t MakeAzslBuildProductSubId(RPI::ShaderAssetSubId subId, RHI::APIType apiType)
+            Outcome<AZStd::string, AZStd::string> ObtainBuildArtifactPathFromShaderAssetBuilder(
+                const uint32_t rhiUniqueIndex, const AZStd::string& platformIdentifier, const AZStd::string& shaderJsonPath,
+                const uint32_t supervariantIndex, RPI::ShaderAssetSubId shaderAssetSubId)
             {
-                auto subIdMaxEnumerator = RPI::ShaderAssetSubId::GeneratedHlslSource;
-                // separate bit space between subid enum, and api-type:
-                int shiftLeft = static_cast<uint32_t>(log2(static_cast<uint32_t>(subIdMaxEnumerator))) + 1;
-                return static_cast<uint32_t>(subId) + (apiType << shiftLeft);
-            }
-
-            Outcome<AzslSubProducts::Paths> ObtainBuildArtifactsFromAzslBuilder([[maybe_unused]] const char* builderName, const AZStd::string& sourceFullPath, RHI::APIType apiType, const AZStd::string& platform)
-            {
-                AzslSubProducts::Paths products;
-
                 // platform id from identifier
                 AzFramework::PlatformId platformId = AzFramework::PlatformId::PC;
-                if (platform == "pc")
+                if (platformIdentifier == "pc")
                 {
                     platformId = AzFramework::PlatformId::PC;
                 }
-                else if (platform == "mac")
+                else if (platformIdentifier == "mac")
                 {
                     platformId = AzFramework::PlatformId::MAC_ID;
                 }
-                else if (platform == "android")
+                else if (platformIdentifier == "android")
                 {
                     platformId = AzFramework::PlatformId::ANDROID_ID;
                 }
-                else if (platform == "ios")
+                else if (platformIdentifier == "ios")
                 {
                     platformId = AzFramework::PlatformId::IOS;
                 }
 
-                for (RPI::ShaderAssetSubId sub : AzslSubProducts::SubList)
+                uint32_t assetSubId = RPI::ShaderAsset::MakeProductAssetSubId(rhiUniqueIndex, supervariantIndex, aznumeric_cast<uint32_t>(shaderAssetSubId));
+                auto assetIdOutcome = RPI::AssetUtils::MakeAssetId(shaderJsonPath, assetSubId);
+                if (!assetIdOutcome.IsSuccess())
                 {
-                    uint32_t assetSubId = MakeAzslBuildProductSubId(sub, apiType);
-                    auto assetIdOutcome = RPI::AssetUtils::MakeAssetId(sourceFullPath, assetSubId);
-                    AZ_Error(builderName, assetIdOutcome.IsSuccess(), "Missing AZSL product %s, for sub %d", sourceFullPath.c_str(), (uint32_t)sub);
-                    if (!assetIdOutcome.IsSuccess())
-                    {
-                        return Failure();
-                    }
-                    Data::AssetId assetId = assetIdOutcome.TakeValue();
-                    // get the relative path:
-                    AZStd::string assetPath;
-                    Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &Data::AssetCatalogRequests::GetAssetPathById, assetId);
-
-                    // get the root:
-                    AZStd::string assetRoot = AzToolsFramework::PlatformAddressedAssetCatalog::GetAssetRootForPlatform(platformId);
-                    // join
-                    AZStd::string assetFullPath;
-                    AzFramework::StringFunc::Path::Join(assetRoot.c_str(), assetPath.c_str(), assetFullPath);
-                    bool fileExists = IO::FileIOBase::GetInstance()->Exists(assetFullPath.c_str()) && !IO::FileIOBase::GetInstance()->IsDirectory(assetFullPath.c_str());
-                    if (!fileExists)
-                    {
-                        return Failure();
-                    }
-                    products.push_back(assetFullPath);
-                }
-                return AZ::Success(products);
-            }
-
-            // DEPRECATED [ATOM-15472]
-            // See header for info.
-            // REMARK: The approach to string searching and matching done in this function is kind of naive
-            // because the strings can match text within a comment block, etc. So it is not 100% fool proof.
-            // We would need proper grammar parsing to reach 100% confidence.
-            // [GFX TODO][ATOM-5302][ATOM-5308] The following function will be removed once, both, [ATOM-5302] & [ATOM-5308] are addressed, and
-            // azslc allows redundant SrgSemantics for "partial" qualified SRGs.
-            SrgSkipFileResult ShouldSkipFileForSrgProcessing([[maybe_unused]] const char* builderName, const AZStd::string_view fullPath)
-            {
-                AZ::IO::FileIOStream stream(fullPath.data(), AZ::IO::OpenMode::ModeRead);
-                if (!stream.IsOpen())
-                {
-                    AZ_Warning(builderName, false, "\"%s\" source file could not be opened.", fullPath.data());
-                    return SrgSkipFileResult::Error;
+                    return Failure(AZStd::string::format(
+                        "Missing ShaderAssetBuilder product %s, for sub %d", shaderJsonPath.c_str(), (uint32_t)shaderAssetSubId));
                 }
 
-                if (!stream.CanRead())
+                Data::AssetId assetId = assetIdOutcome.TakeValue();
+                // get the relative path:
+                AZStd::string assetPath;
+                Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &Data::AssetCatalogRequests::GetAssetPathById, assetId);
+
+                // get the root:
+                AZStd::string assetRoot = AzToolsFramework::PlatformAddressedAssetCatalog::GetAssetRootForPlatform(platformId);
+                // join
+                AZStd::string assetFullPath;
+                AzFramework::StringFunc::Path::Join(assetRoot.c_str(), assetPath.c_str(), assetFullPath);
+                bool fileExists = IO::FileIOBase::GetInstance()->Exists(assetFullPath.c_str()) &&
+                    !IO::FileIOBase::GetInstance()->IsDirectory(assetFullPath.c_str());
+                if (!fileExists)
                 {
-                    AZ_Warning(builderName, false, "\"%s\" source file could not be read.", fullPath.data());
-                    return SrgSkipFileResult::Error;
+                    return Failure(AZStd::string::format(
+                        "asset [%s] from shader source %s and subId %d doesn't exist", assetFullPath.c_str(), shaderJsonPath.c_str(),
+                        (uint32_t)shaderAssetSubId));
                 }
-
-                // Do a quick check for "ShaderResourceGroup" to determine if this file might even have a ShaderResourceGroup to parse.
-                AZStd::string fileContents;
-                fileContents.resize(stream.GetLength());
-                stream.Read(stream.GetLength(), fileContents.data());
-
-                static const AZStd::regex partialSrgRegex("\n\\s*partial\\s+ShaderResourceGroup\\s+", AZStd::regex::ECMAScript);
-                if (AZStd::regex_search(fileContents.data(), partialSrgRegex))
-                {
-                    // It is considered a programmer's error if a file declares both, non-partial and partial SRGs.
-                    static const AZStd::regex srgRegex("\n\\s*ShaderResourceGroup\\s+", AZStd::regex::ECMAScript);
-                    if (AZStd::regex_search(fileContents.data(), srgRegex))
-                    {
-                        AZ_Error(builderName, false, "\"%s\" defines both partial and non-partial SRGs.", fullPath.data());
-                        return SrgSkipFileResult::Error;
-                    }
-                    // We should skip files that define partial Srgs because an srgi file will eventually
-                    // include it.
-                    return SrgSkipFileResult::SkipFile;
-                }
-
-                // This is an optimization to avoid unnecessary preprocessing a whole tree of azsli files; we can detect when a
-                // ShaderResourceGroupAsset wouldn't be produced and return early. Note, we could remove this early-return check
-                // if the preprocessing code below is updated to not follow include paths [ATOM-5302].
-                // (Note this optimization is not valid for srgi files because those do require scanning all include paths)"
-                if (fileContents.find("ShaderResourceGroup") == AZStd::string::npos)
-                {
-                    // No ShaderResourceGroup in this file, so there's nothing to do. Create no jobs and report success.
-                    return SrgSkipFileResult::SkipFile;
-                }
-
-                return SrgSkipFileResult::ContinueProcess;
+                return AZ::Success(assetFullPath);
             }
 
             RHI::Ptr<RHI::PipelineLayoutDescriptor> BuildPipelineLayoutDescriptorForApi(

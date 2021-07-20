@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -728,12 +729,12 @@ enum ETriState
 
 // Fallback for Alignment macro of GCC/CLANG (must be after the class definition)
 #if !defined(_ALIGN)
-        #define _ALIGN(num)
+        #define _ALIGN(num) AZ_POP_DISABLE_WARNING
 #endif
 
 // Fallback for Alignment macro of MSVC (must be before the class definition)
 #if !defined(_MS_ALIGN)
-        #define _MS_ALIGN(num)
+        #define _MS_ALIGN(num) AZ_PUSH_DISABLE_WARNING(4324, "-Wunknown-warning-option")
 #endif
 
 #if defined(WIN32) || defined(WIN64)

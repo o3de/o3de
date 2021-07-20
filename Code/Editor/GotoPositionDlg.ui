@@ -1,226 +1,166 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>GotoPositionDlg</class>
- <widget class="QDialog" name="GotoPositionDlg">
+ <class>GotoPositionDialog</class>
+ <widget class="QDialog" name="GotoPositionDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>290</width>
-    <height>180</height>
+    <width>182</width>
+    <height>174</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Go to Position</string>
   </property>
-   <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>6</number>
+   </property>
+   <item>
+    <layout class="QGridLayout" name="gridLayout" columnstretch="0,0,0,0,0,0,0">
+     <property name="sizeConstraint">
+      <enum>QLayout::SetDefaultConstraint</enum>
+     </property>
+     <property name="horizontalSpacing">
+      <number>6</number>
+     </property>
+     <item row="2" column="3" colspan="2">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Angles:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QDoubleSpinBox" name="m_dymZ"/>
+     </item>
+     <item row="3" column="1">
+      <widget class="QDoubleSpinBox" name="m_dymX"/>
+     </item>
+     <item row="0" column="0" colspan="7">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Enter position here:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0" colspan="2">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Position:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="label_8">
+       <property name="text">
+        <string>Z:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="label_6">
+       <property name="text">
+        <string>Y:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="3">
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>Pitch:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="3">
+      <widget class="QLabel" name="label_7">
+       <property name="text">
+        <string>Yaw:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="2">
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Fixed</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>10</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="4" column="4">
+      <widget class="QDoubleSpinBox" name="m_dymAngleYaw"/>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>X:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QDoubleSpinBox" name="m_dymY"/>
+     </item>
+     <item row="1" column="0" colspan="7">
+      <widget class="QLineEdit" name="m_posEdit">
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="4">
+      <widget class="QDoubleSpinBox" name="m_dymAnglePitch"/>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="buttonLayout">
      <item>
-       <layout class="QGridLayout" name="gridLayout" columnstretch="0,1,0,0,1,0,0,1">
-         <item row="5" column="6" colspan="2">
-           <spacer name="horizontalSpacer">
-             <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-               <size>
-                 <width>40</width>
-                 <height>20</height>
-               </size>
-             </property>
-           </spacer>
-         </item>
-         <item row="3" column="2">
-           <spacer name="horizontalSpacer_2">
-             <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeType">
-               <enum>QSizePolicy::Fixed</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-               <size>
-                 <width>22</width>
-                 <height>20</height>
-               </size>
-             </property>
-           </spacer>
-         </item>
-         <item row="5" column="1">
-           <widget class="QDoubleSpinBox" name="m_dymZ"/>
-         </item>
-         <item row="4" column="1">
-           <widget class="QDoubleSpinBox" name="m_dymY"/>
-         </item>
-         <item row="3" column="1">
-           <widget class="QDoubleSpinBox" name="m_dymX"/>
-         </item>
-         <item row="4" column="4">
-           <widget class="QDoubleSpinBox" name="m_dymAngleY"/>
-         </item>
-         <item row="3" column="4">
-           <widget class="QDoubleSpinBox" name="m_dymAngleX"/>
-         </item>
-         <item row="5" column="0">
-           <widget class="QLabel" name="label_8">
-             <property name="text">
-               <string>Z:</string>
-             </property>
-           </widget>
-         </item>
-         <item row="4" column="3">
-           <widget class="QLabel" name="label_7">
-             <property name="text">
-               <string>Y:</string>
-             </property>
-           </widget>
-         </item>
-         <item row="0" column="0" colspan="8">
-           <widget class="QLabel" name="label">
-             <property name="text">
-               <string>Enter position here:</string>
-             </property>
-           </widget>
-         </item>
-         <item row="3" column="0">
-           <widget class="QLabel" name="label_4">
-             <property name="text">
-               <string>X:</string>
-             </property>
-           </widget>
-         </item>
-         <item row="1" column="0" colspan="8">
-           <widget class="QLineEdit" name="m_posEdit">
-             <property name="alignment">
-               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-             </property>
-           </widget>
-         </item>
-         <item row="2" column="0" colspan="2">
-           <widget class="QLabel" name="label_2">
-             <property name="text">
-               <string>Position:</string>
-             </property>
-           </widget>
-         </item>
-         <item row="3" column="3">
-           <widget class="QLabel" name="label_5">
-             <property name="text">
-               <string>X:</string>
-             </property>
-           </widget>
-         </item>
-         <item row="3" column="6">
-           <widget class="QLabel" name="m_labelSegX">
-             <property name="text">
-               <string>X:</string>
-             </property>
-           </widget>
-         </item>
-         <item row="5" column="4">
-           <widget class="QDoubleSpinBox" name="m_dymAngleZ"/>
-         </item>
-         <item row="4" column="0">
-           <widget class="QLabel" name="label_6">
-             <property name="text">
-               <string>Y:</string>
-             </property>
-           </widget>
-         </item>
-         <item row="4" column="6">
-           <widget class="QLabel" name="m_labelSegY">
-             <property name="text">
-               <string>Y:</string>
-             </property>
-           </widget>
-         </item>
-         <item row="5" column="3">
-           <widget class="QLabel" name="label_9">
-             <property name="text">
-               <string>Z:</string>
-             </property>
-           </widget>
-         </item>
-         <item row="3" column="5">
-           <spacer name="horizontalSpacer_3">
-             <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeType">
-               <enum>QSizePolicy::Fixed</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-               <size>
-                 <width>22</width>
-                 <height>20</height>
-               </size>
-             </property>
-           </spacer>
-         </item>
-         <item row="2" column="3" colspan="2">
-           <widget class="QLabel" name="label_3">
-             <property name="text">
-               <string>Angles:</string>
-             </property>
-           </widget>
-         </item>
-         <item row="2" column="6" colspan="2">
-           <widget class="QLabel" name="m_labelSeg">
-             <property name="text">
-               <string>Segments:</string>
-             </property>
-           </widget>
-         </item>
-         <item row="3" column="7">
-           <widget class="QSpinBox" name="m_dymSegX"/>
-         </item>
-         <item row="4" column="7">
-           <widget class="QSpinBox" name="m_dymSegY"/>
-         </item>
-       </layout>
+      <spacer name="horizontalSpacer_1">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+      </spacer>
      </item>
      <item>
-       <layout class="QHBoxLayout" name="buttonLayout">
-         <item>
-           <spacer name="horizontalSpacer_1">
-             <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-               <size>
-                 <width>0</width>
-                 <height>0</height>
-               </size>
-             </property>
-           </spacer>
-         </item>
-         <item>
-           <widget class="QPushButton" name="pushButton">
-             <property name="text">
-               <string>Go To</string>
-             </property>
-           </widget>
-         </item>
-         <item>
-           <widget class="QPushButton" name="pushButton_2">
-             <property name="text">
-               <string>Cancel</string>
-             </property>
-           </widget>
-         </item>
-       </layout>
+      <widget class="QPushButton" name="pushButton">
+       <property name="text">
+        <string>Go To</string>
+       </property>
+      </widget>
      </item>
-   </layout>
+     <item>
+      <widget class="QPushButton" name="pushButton_2">
+       <property name="text">
+        <string>Cancel</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
  </widget>
  <tabstops>
   <tabstop>m_posEdit</tabstop>
   <tabstop>m_dymX</tabstop>
   <tabstop>m_dymY</tabstop>
   <tabstop>m_dymZ</tabstop>
-  <tabstop>m_dymAngleX</tabstop>
-  <tabstop>m_dymAngleY</tabstop>
-  <tabstop>m_dymAngleZ</tabstop>
-  <tabstop>m_dymSegX</tabstop>
-  <tabstop>m_dymSegY</tabstop>
+  <tabstop>m_dymAnglePitch</tabstop>
+  <tabstop>m_dymAngleYaw</tabstop>
   <tabstop>pushButton_2</tabstop>
   <tabstop>pushButton</tabstop>
  </tabstops>
@@ -229,7 +169,7 @@
   <connection>
    <sender>pushButton</sender>
    <signal>clicked()</signal>
-   <receiver>GotoPositionDlg</receiver>
+   <receiver>GotoPositionDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -245,7 +185,7 @@
   <connection>
    <sender>pushButton_2</sender>
    <signal>clicked()</signal>
-   <receiver>GotoPositionDlg</receiver>
+   <receiver>GotoPositionDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

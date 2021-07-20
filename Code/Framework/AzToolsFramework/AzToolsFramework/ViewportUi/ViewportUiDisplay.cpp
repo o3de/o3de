@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
@@ -98,6 +98,14 @@ namespace AzToolsFramework::ViewportUi::Internal
         if (auto viewportUiCluster = qobject_cast<ViewportUiCluster*>(GetViewportUiElement(clusterId).get()))
         {
             viewportUiCluster->SetButtonLocked(buttonId, isLocked);
+        }
+    }
+
+    void ViewportUiDisplay::SetClusterButtonTooltip(const ViewportUiElementId clusterId, const ButtonId buttonId, const AZStd::string& tooltip)
+    {
+        if (auto viewportUiCluster = qobject_cast<ViewportUiCluster*>(GetViewportUiElement(clusterId).get()))
+        {
+            viewportUiCluster->SetButtonTooltip(buttonId, tooltip);
         }
     }
 
@@ -266,7 +274,7 @@ namespace AzToolsFramework::ViewportUi::Internal
     void ViewportUiDisplay::HideViewportUiElement(ViewportUiElementId elementId)
     {
         if (ViewportUiElementInfo element = GetViewportUiElementInfo(elementId);
-            element.m_widget && UiDisplayEnabled())
+            element.m_widget)
         {
             element.m_widget->setVisible(false);
         }

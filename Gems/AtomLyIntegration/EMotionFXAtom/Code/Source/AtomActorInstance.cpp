@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -80,12 +81,20 @@ namespace AZ
         void AtomActorInstance::UpdateBounds()
         {
             // Update RenderActorInstance world bounding box
-            // The bounding box is moving with the actor instance. It is static in the way that it does not change shape.
+            // The bounding box is moving with the actor instance.
             // The entity and actor transforms are kept in sync already.
             m_worldAABB = AZ::Aabb::CreateFromMinMax(m_actorInstance->GetAABB().GetMin(), m_actorInstance->GetAABB().GetMax());
 
             // Update RenderActorInstance local bounding box
-            m_localAABB = AZ::Aabb::CreateFromMinMax(m_actorInstance->GetStaticBasedAABB().GetMin(), m_actorInstance->GetStaticBasedAABB().GetMax());
+            // NB: computing the local bbox from the world bbox makes the local bbox artifically larger than it should be
+            // instead EMFX should support getting the local bbox from the actor instance directly
+            m_localAABB = m_worldAABB.GetTransformedAabb(m_transformInterface->GetWorldTM().GetInverse());
+
+            // Update bbox on mesh instance if it exists
+            if (m_meshFeatureProcessor && m_meshHandle && m_meshHandle->IsValid() && m_skinnedMeshInstance)
+            {
+                m_meshFeatureProcessor->SetLocalAabb(*m_meshHandle, m_localAABB);
+            }
 
             AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(m_entityId);
         }
@@ -525,6 +534,20 @@ namespace AZ
             }
         }
 
+        template<class X>
+        void swizzle_unique(AZStd::vector<X>& values, const AZStd::vector<size_t>& indices)
+        {
+            AZStd::vector<X> out;
+            out.reserve(indices.size());
+
+            for (size_t i : indices)
+            {
+                out.push_back(AZStd::move(values[i]));
+            }
+
+            values = AZStd::move(out);
+        }
+
         void AtomActorInstance::OnUpdateSkinningMatrices()
         {
             if (m_skinnedMeshRenderProxy.IsValid())
@@ -583,6 +606,30 @@ namespace AZ
                                 }
                             }
                         }
+
+                        AZ_Assert(m_wrinkleMasks.size() == m_wrinkleMaskWeights.size(), "Must have equal # of masks and weights");
+
+                        // If there's too many masks, truncate
+                        if (m_wrinkleMasks.size() > s_maxActiveWrinkleMasks)
+                        {
+                            // Build a remapping of indices (because we want to sort two vectors)
+                            AZStd::vector<size_t> remapped;
+                            remapped.resize_no_construct(m_wrinkleMasks.size());
+                            std::iota(remapped.begin(), remapped.end(), 0);
+
+                            // Sort index remapping by weight (highest first)
+                            std::sort(remapped.begin(), remapped.end(), [&](size_t ia, size_t ib) {
+                                return m_wrinkleMaskWeights[ia] > m_wrinkleMaskWeights[ib];
+                            });
+
+                            // Truncate indices list
+                            remapped.resize(s_maxActiveWrinkleMasks);
+
+                            // Remap wrinkle masks list and weights list
+                            swizzle_unique(m_wrinkleMasks, remapped);
+                            swizzle_unique(m_wrinkleMaskWeights, remapped);
+                        }
+
                         m_skinnedMeshRenderProxy->SetMorphTargetWeights(lodIndex, m_morphTargetWeights);
 
                         // Until EMotionFX and Atom lods are synchronized [ATOM-13564] we don't know which EMotionFX lod to pull the weights from

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -28,6 +29,8 @@ namespace UnitTest
         MOCK_METHOD2(SetMaterialAssignmentMap, void(const MeshHandle&, const AZ::Render::MaterialAssignmentMap&));
         MOCK_METHOD1(GetTransform, AZ::Transform(const MeshHandle&));
         MOCK_METHOD1(GetNonUniformScale, AZ::Vector3(const MeshHandle&));
+        MOCK_METHOD2(SetLocalAabb, void(const MeshHandle&, const AZ::Aabb&));
+        MOCK_CONST_METHOD1(GetLocalAabb, AZ::Aabb(const MeshHandle&));
         MOCK_METHOD2(SetSortKey, void (const MeshHandle&, AZ::RHI::DrawItemSortKey));
         MOCK_METHOD1(GetSortKey, AZ::RHI::DrawItemSortKey(const MeshHandle&));
         MOCK_METHOD2(SetLodOverride, void(const MeshHandle&, AZ::RPI::Cullable::LodOverride));

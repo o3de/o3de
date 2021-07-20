@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -54,6 +55,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         void AddCluster(AZStd::shared_ptr<ButtonGroup> buttonGroup, Alignment align);
         void AddClusterButton(ViewportUiElementId clusterId, Button* button);
         void SetClusterButtonLocked(ViewportUiElementId clusterId, ButtonId buttonId, bool isLocked);
+        void SetClusterButtonTooltip(ViewportUiElementId clusterId, ButtonId buttonId, const AZStd::string& tooltip);
         void RemoveClusterButton(ViewportUiElementId clusterId, ButtonId buttonId);
         void UpdateCluster(const ViewportUiElementId clusterId);
 

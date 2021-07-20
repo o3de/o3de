@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "Atom_RHI_Vulkan_precompiled.h"
 #include <Atom/RHI.Loader/FunctionLoader.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/TransientAttachmentPool.h>
@@ -61,30 +61,7 @@ namespace AZ
             RawStringList requiredLayers = GetRequiredLayers();
             RawStringList requiredExtensions = GetRequiredExtensions();
 
-            StringList deviceExtensions = physicalDevice.GetDeviceExtensionNames();
-            RawStringList optionalDeviceExtensions = { {
-                VK_EXT_SAMPLE_LOCATIONS_EXTENSION_NAME,
-                VK_EXT_CONDITIONAL_RENDERING_EXTENSION_NAME,
-                VK_EXT_MEMORY_BUDGET_EXTENSION_NAME,
-                VK_EXT_DEPTH_CLIP_ENABLE_EXTENSION_NAME,
-                VK_EXT_CONSERVATIVE_RASTERIZATION_EXTENSION_NAME,
-                VK_KHR_DRAW_INDIRECT_COUNT_EXTENSION_NAME,
-                VK_KHR_RELAXED_BLOCK_LAYOUT_EXTENSION_NAME,
-                VK_EXT_MEMORY_BUDGET_EXTENSION_NAME,
-                VK_EXT_ROBUSTNESS_2_EXTENSION_NAME,
-                VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME,
-
-                // ray tracing extensions
-                VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
-                VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
-                VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
-                VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
-                VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
-                VK_KHR_SPIRV_1_4_EXTENSION_NAME,
-                VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME
-            } };
-
-            RawStringList optionalExtensions = FilterList(optionalDeviceExtensions, deviceExtensions);
+            RawStringList optionalExtensions = physicalDevice.FilterSupportedOptionalExtensions();
             requiredExtensions.insert(requiredExtensions.end(), optionalExtensions.begin(), optionalExtensions.end());
 
             //We now need to find the queues that the physical device has available and make sure 
@@ -159,7 +136,7 @@ namespace AZ
 
             // unbounded array functionality
             VkPhysicalDeviceDescriptorIndexingFeaturesEXT descriptorIndexingFeatures = {};
-            descriptorIndexingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES;
+            descriptorIndexingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT;
             const VkPhysicalDeviceDescriptorIndexingFeaturesEXT& physicalDeviceDescriptorIndexingFeatures =
                 physicalDevice.GetPhysicalDeviceDescriptorIndexingFeatures();
             descriptorIndexingFeatures.shaderInputAttachmentArrayDynamicIndexing = physicalDeviceDescriptorIndexingFeatures.shaderInputAttachmentArrayDynamicIndexing;
@@ -176,10 +153,19 @@ namespace AZ
             descriptorIndexingFeatures.descriptorBindingVariableDescriptorCount = physicalDeviceDescriptorIndexingFeatures.descriptorBindingVariableDescriptorCount;
             descriptorIndexingFeatures.runtimeDescriptorArray = physicalDeviceDescriptorIndexingFeatures.runtimeDescriptorArray;
 
+            VkPhysicalDeviceBufferDeviceAddressFeaturesEXT bufferDeviceAddressFeatures = {};
+            bufferDeviceAddressFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES_EXT;
+            const VkPhysicalDeviceBufferDeviceAddressFeaturesEXT& physicalDeviceBufferDeviceAddressFeatures =
+                physicalDevice.GetPhysicalDeviceBufferDeviceAddressFeatures();
+            bufferDeviceAddressFeatures.bufferDeviceAddress = physicalDeviceBufferDeviceAddressFeatures.bufferDeviceAddress;
+            bufferDeviceAddressFeatures.bufferDeviceAddressCaptureReplay = physicalDeviceBufferDeviceAddressFeatures.bufferDeviceAddressCaptureReplay;
+            bufferDeviceAddressFeatures.bufferDeviceAddressMultiDevice = physicalDeviceBufferDeviceAddressFeatures.bufferDeviceAddressMultiDevice;
+            descriptorIndexingFeatures.pNext = &bufferDeviceAddressFeatures;
+
             VkPhysicalDeviceDepthClipEnableFeaturesEXT depthClipEnabled = {};
             depthClipEnabled.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT;
             depthClipEnabled.depthClipEnable = physicalDevice.GetPhysicalDeviceDepthClipEnableFeatures().depthClipEnable;
-            descriptorIndexingFeatures.pNext = &depthClipEnabled;
+            bufferDeviceAddressFeatures.pNext = &depthClipEnabled;
 
             VkPhysicalDeviceRobustness2FeaturesEXT robustness2 = {};
             robustness2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT;
@@ -195,6 +181,7 @@ namespace AZ
             if (majorVersion >= 1 && minorVersion >= 2)
             {
                 vulkan12Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+                VkPhysicalDeviceVulkan12Features physicalDeviceVulkan12Features = physicalDevice.GetPhysicalDeviceVulkan12Features();
                 vulkan12Features.drawIndirectCount = physicalDevice.GetPhysicalDeviceVulkan12Features().drawIndirectCount;
                 vulkan12Features.shaderFloat16 = physicalDevice.GetPhysicalDeviceVulkan12Features().shaderFloat16;
                 vulkan12Features.shaderInt8 = physicalDevice.GetPhysicalDeviceVulkan12Features().shaderInt8;
@@ -795,6 +782,27 @@ namespace AZ
             return *m_nullDescriptorManager;
         }
 
+        VkBufferUsageFlags Device::GetBufferUsageFlagBitsUnderRestrictions(RHI::BufferBindFlags bindFlags) const
+        {
+            VkBufferUsageFlags bufferUsageFlags = GetBufferUsageFlagBits(bindFlags);
+
+            const auto& physicalDevice = static_cast<const PhysicalDevice&>(GetPhysicalDevice());
+
+            // VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT require bufferDeviceAddress enabled.
+            if (!physicalDevice.GetPhysicalDeviceBufferDeviceAddressFeatures().bufferDeviceAddress)
+            {
+                bufferUsageFlags &= ~VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
+            }
+            // VK_KHR_acceleration_structure provides VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR
+            // Otherwise unrecognized flag.
+            if (!physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::AccelerationStructure))
+            {
+                bufferUsageFlags &= ~VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR;
+            }
+
+            return bufferUsageFlags;
+        }
+
         VkBuffer Device::CreateBufferResouce(const RHI::BufferDescriptor& descriptor) const
         {
             AZ_Assert(descriptor.m_sharedQueueMask != RHI::HardwareQueueClassMask::None, "Invalid shared queue mask");
@@ -805,9 +813,14 @@ namespace AZ
             createInfo.pNext = nullptr;
             createInfo.flags = 0;
             createInfo.size = descriptor.m_byteCount;
-            createInfo.usage = GetBufferUsageFlagBits(descriptor.m_bindFlags);
+            createInfo.usage = GetBufferUsageFlagBitsUnderRestrictions(descriptor.m_bindFlags);
             // Trying to guess here if the buffers are going to be used as attachments. Maybe it would be better to add an explicit flag in the descriptor.
-            createInfo.sharingMode = RHI::CheckBitsAny(descriptor.m_bindFlags, RHI::BufferBindFlags::ShaderWrite | RHI::BufferBindFlags::Predication | RHI::BufferBindFlags::Indirect) ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT;
+            createInfo.sharingMode =
+                RHI::CheckBitsAny(
+                    descriptor.m_bindFlags,
+                    RHI::BufferBindFlags::ShaderWrite | RHI::BufferBindFlags::Predication | RHI::BufferBindFlags::Indirect)
+                ? VK_SHARING_MODE_EXCLUSIVE
+                : VK_SHARING_MODE_CONCURRENT;
             createInfo.queueFamilyIndexCount = static_cast<uint32_t>(queueFamilies.size());
             createInfo.pQueueFamilyIndices = queueFamilies.empty() ? nullptr : queueFamilies.data();
 

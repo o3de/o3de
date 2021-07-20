@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,7 +9,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzTest/AzTest.h>
@@ -87,12 +87,8 @@ namespace AWSCoreUnitTest
             m_componentDescriptor->Reflect(m_serializeContext.get());
             m_componentDescriptor->Reflect(m_behaviorContext.get());
 
-            m_settingsRegistry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
-
             m_settingsRegistry->SetContext(m_serializeContext.get());
             m_settingsRegistry->SetContext(m_registrationContext.get());
-
-            AZ::SettingsRegistry::Register(m_settingsRegistry.get());
 
             m_entity = aznew AZ::Entity();
             m_awsCoreSystemComponentMock = aznew testing::NiceMock<AWSCoreSystemComponentMock>();
@@ -113,7 +109,6 @@ namespace AWSCoreUnitTest
             m_awsCoreComponentDescriptor.reset();
             m_componentDescriptor.reset();
             m_behaviorContext.reset();
-            m_settingsRegistry.reset();
             m_registrationContext.reset();
             m_serializeContext.reset();
             AWSCoreFixture::TearDown();
@@ -130,7 +125,6 @@ namespace AWSCoreUnitTest
         AZStd::unique_ptr<AZ::JsonRegistrationContext> m_registrationContext;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_componentDescriptor;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_awsCoreComponentDescriptor;
-        AZStd::shared_ptr<AZ::SettingsRegistryImpl> m_settingsRegistry;
     };
 
     TEST_F(AWSAttributionSystemComponentTest, SystemComponentInitActivate_Success)

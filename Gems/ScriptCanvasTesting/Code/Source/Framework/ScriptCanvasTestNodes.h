@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -32,7 +33,6 @@ namespace TestNodes
     protected:
 
         void OnInit() override;
-        void OnInputSignal(const ScriptCanvas::SlotId&) override;
 
     private:
 
@@ -49,9 +49,6 @@ namespace TestNodes
 
         void OnInit() override;
 
-    protected:
-
-        void OnInputSignal(const ScriptCanvas::SlotId&) override;
     };
 
     //////////////////////////////////////////////////////////////////////////////
@@ -64,9 +61,6 @@ namespace TestNodes
         static void Reflect(AZ::ReflectContext* reflection);
 
     protected:
-
-        void OnInputSignal(const ScriptCanvas::SlotId&) override;
-
         void OnInit() override;
 
     };
@@ -84,8 +78,6 @@ namespace TestNodes
 
         void OnInit() override;
 
-        void OnInputSignal(const ScriptCanvas::SlotId&) override;
-
     };
 
     //////////////////////////////////////////////////////////////////////////////
@@ -101,8 +93,6 @@ namespace TestNodes
         bool RemoveSlot(const ScriptCanvas::SlotId& slotId, bool emitWarning = true);
 
     protected:
-        void OnInputSignal(const ScriptCanvas::SlotId& slotId) override;
-
         void OnInit() override;
 
         AZStd::vector<ScriptCanvas::SlotId> m_dynamicSlotIds;
@@ -119,8 +109,6 @@ namespace TestNodes
     protected:
 
         void OnInit() override;
-
-        void OnInputSignal(const ScriptCanvas::SlotId&) override;
 
     public:
 
@@ -141,9 +129,7 @@ namespace TestNodes
         ScriptCanvas::SlotId InsertSlot(AZ::s64 index, AZStd::string_view slotName);
 
     protected:
-        void OnInputSignal(const ScriptCanvas::SlotId& slotId) override;
-
-        void OnInit() override;
+       void OnInit() override;
     };
     
     //////////////////////////////////////////////////////////////////////////////

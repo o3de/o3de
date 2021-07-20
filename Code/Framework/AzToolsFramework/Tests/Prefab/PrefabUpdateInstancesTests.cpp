@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -428,8 +429,7 @@ namespace UnitTest
         ASSERT_TRUE(PrefabDomUtils::StoreInstanceInPrefabDom(*newInstance, updatedDom));
         newTemplateDom.CopyFrom(updatedDom, newTemplateDom.GetAllocator());
 
-        // Validate that the prefabTestComponent in the Template's DOM doesn't have a BoolProperty.
-        // Even though we changed the property to false, it won't be serialized out because it's a default value.
+        // Validate that the value of the BoolProperty of the prefabTestComponent in the Template's DOM has changed.
         entityComponents = PrefabTestDomUtils::GetPrefabDomComponents(newTemplateDom, newTemplateEntityAliases.front());
         ASSERT_TRUE(entityComponents != nullptr && entityComponents->IsObject());
         EXPECT_EQ(entityComponents->MemberCount(), 2);
@@ -440,7 +440,7 @@ namespace UnitTest
 
         PrefabDomValueConstReference wheelEntityComponentBoolPropertyValue =
             PrefabDomUtils::FindPrefabDomValue(wheelEntityComponentValue->get(), PrefabTestDomUtils::BoolPropertyName);
-        ASSERT_FALSE(wheelEntityComponentBoolPropertyValue.has_value());
+        ASSERT_TRUE(wheelEntityComponentBoolPropertyValue.has_value() && wheelEntityComponentBoolPropertyValue->get() == false);
 
         // Update Template's Instances and validate if all Instances have no BoolProperty under their prefabTestComponents in entities.
         m_instanceUpdateExecutorInterface->AddTemplateInstancesToQueue(newTemplateId);

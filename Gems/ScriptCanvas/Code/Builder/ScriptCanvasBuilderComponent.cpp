@@ -1,22 +1,21 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include <precompiled.h>
-
 #include <AssetBuilderSDK/AssetBuilderBusses.h>
 #include <AzCore/std/containers/map.h>
 #include <AzToolsFramework/ToolsComponents/ToolsAssetCatalogBus.h>
+#include <Builder/ScriptCanvasBuilder.h>
 #include <Builder/ScriptCanvasBuilderComponent.h>
 #include <Builder/ScriptCanvasBuilderWorker.h>
-#include <ScriptCanvas/Asset/Functions/RuntimeFunctionAssetHandler.h>
-#include <ScriptCanvas/Asset/Functions/ScriptCanvasFunctionAsset.h>
 #include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
-#include <ScriptCanvas/Assets/Functions/ScriptCanvasFunctionAssetHandler.h>
+#include <ScriptCanvas/Asset/SubgraphInterfaceAssetHandler.h>
 #include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
+#include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
 #include <ScriptCanvas/Utils/BehaviorContextUtils.h>
 
 namespace ScriptCanvasBuilder
@@ -49,7 +48,6 @@ namespace ScriptCanvasBuilder
     SharedHandlers HandleAssetTypes()
     {
         SharedHandlers handlers;
-        handlers.m_editorFunctionAssetHandler = RegisterHandler<ScriptCanvasEditor::ScriptCanvasFunctionAsset, ScriptCanvasEditor::ScriptCanvasFunctionAssetHandler>("scriptcanvas_fn", false);
         handlers.m_editorAssetHandler = RegisterHandler<ScriptCanvasEditor::ScriptCanvasAsset, ScriptCanvasEditor::ScriptCanvasAssetHandler>("scriptcanvas", false);
         handlers.m_subgraphInterfaceHandler = RegisterHandler<ScriptCanvas::SubgraphInterfaceAsset, ScriptCanvas::SubgraphInterfaceAssetHandler>("scriptcanvas_fn_compiled", true);
         handlers.m_runtimeAssetHandler = RegisterHandler<ScriptCanvas::RuntimeAsset, JobDependencyVerificationHandler>("scriptcanvas_compiled", true);
@@ -104,65 +102,24 @@ namespace ScriptCanvasBuilder
             AzToolsFramework::ToolsAssetSystemBus::Broadcast(&AzToolsFramework::ToolsAssetSystemRequests::RegisterSourceAssetType, azrtti_typeid<ScriptCanvasEditor::ScriptCanvasAsset>(), ScriptCanvasEditor::ScriptCanvasAsset::Description::GetFileFilter<ScriptCanvasEditor::ScriptCanvasAsset>());
         }
 
-        {
-            AssetBuilderSDK::AssetBuilderDesc builderDescriptor;
-            builderDescriptor.m_name = "Script Canvas Function Builder";
-            builderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.scriptcanvas_fn", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
-            builderDescriptor.m_busId = ScriptCanvasBuilder::FunctionWorker::GetUUID();
-            builderDescriptor.m_createJobFunction = AZStd::bind(&FunctionWorker::CreateJobs, &m_scriptCanvasFunctionBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
-            builderDescriptor.m_processJobFunction = AZStd::bind(&FunctionWorker::ProcessJob, &m_scriptCanvasFunctionBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
-            // changing the version number invalidates all assets and will rebuild everything.
-            builderDescriptor.m_version = m_scriptCanvasFunctionBuilder.GetVersionNumber();
-            // changing the analysis fingerprint just invalidates analysis (ie, not the assets themselves)
-            // which will cause the "CreateJobs" function to be called, for each asset, even if the
-            // source file has not changed, but won't actually do the jobs unless the source file has changed
-            // or the fingerprint of the individual job is different.
-            builderDescriptor.m_analysisFingerprint = m_scriptCanvasFunctionBuilder.GetFingerprintString();
-            builderDescriptor.AddFlags(AssetBuilderSDK::AssetBuilderDesc::BF_DeleteLastKnownGoodProductOnFailure, s_scriptCanvasProcessJobKey);
-            builderDescriptor.m_productsToKeepOnFailure[s_scriptCanvasProcessJobKey] = { AZ_CRC("SubgraphInterface", 0xdfe6dc72) };
-            AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBus::Handler::RegisterBuilderInformation, builderDescriptor);
-            ScriptCanvas::Grammar::RequestBus::Handler::BusConnect();
-            AzToolsFramework::ToolsAssetSystemBus::Broadcast(&AzToolsFramework::ToolsAssetSystemRequests::RegisterSourceAssetType, azrtti_typeid<ScriptCanvasEditor::ScriptCanvasFunctionAsset>(), ScriptCanvasEditor::ScriptCanvasFunctionAsset::Description::GetFileFilter<ScriptCanvasEditor::ScriptCanvasFunctionAsset>());
-        }
-
         m_sharedHandlers = HandleAssetTypes();
         AssetHandlers workerHandlers(m_sharedHandlers);
         m_scriptCanvasBuilder.Activate(workerHandlers);
-        m_scriptCanvasFunctionBuilder.Activate(workerHandlers);
-
-        ScriptCanvas::Translation::RequestBus::Handler::BusConnect();
-        ScriptCanvas::Grammar::RequestBus::Handler::BusConnect();
     }
 
     void PluginComponent::Deactivate()
     {
         // Finish all queued work
         AZ::Data::AssetBus::ExecuteQueuedEvents();
-        
         AzToolsFramework::ToolsAssetSystemBus::Broadcast(&AzToolsFramework::ToolsAssetSystemRequests::UnregisterSourceAssetType, azrtti_typeid<ScriptCanvasEditor::ScriptCanvasAsset>());
-        AzToolsFramework::ToolsAssetSystemBus::Broadcast(&AzToolsFramework::ToolsAssetSystemRequests::UnregisterSourceAssetType, azrtti_typeid<ScriptCanvasEditor::ScriptCanvasFunctionAsset>());
-
         m_scriptCanvasBuilder.BusDisconnect();
-        m_scriptCanvasFunctionBuilder.BusDisconnect();
-
         m_sharedHandlers.DeleteOwnedHandlers();
-
-        ScriptCanvas::Translation::RequestBus::Handler::BusDisconnect();
-        ScriptCanvas::Grammar::RequestBus::Handler::BusDisconnect();
-    }
-
-    ScriptCanvas::Grammar::Context* PluginComponent::GetGrammarContext()
-    {
-        return &m_grammarContext;
-    }
-
-    ScriptCanvas::Translation::Context* PluginComponent::GetTranslationContext()
-    {
-        return &m_translationContext;
     }
 
     void PluginComponent::Reflect(AZ::ReflectContext* context)
     {
+        BuildVariableOverrides::Reflect(context);
+
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<PluginComponent, AZ::Component>()

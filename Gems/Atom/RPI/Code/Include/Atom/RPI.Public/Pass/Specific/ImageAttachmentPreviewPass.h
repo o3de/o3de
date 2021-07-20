@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -166,9 +167,6 @@ namespace AZ
             AZ::Vector2 m_position = AZ::Vector2(0, 0.6f);
             AZ::Vector2 m_size = AZ::Vector2(0.4f, 0.4f);
             bool m_keepAspectRatio = true;
-
-            // For readback the output image attachment 
-            AZStd::shared_ptr<AttachmentReadback> m_readback;
         };
     }   // namespace RPI
 }   // namespace AZ

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -239,7 +240,9 @@ namespace AZ
 
             struct ShaderData
             {
-                AZ::Data::Asset<AZ::RPI::ShaderResourceGroupAsset> m_perObjectSrgAsset;
+                AZ::Data::Asset<AZ::RPI::ShaderAsset> m_shaderAsset; // For @m_perObjectSrgLayout.
+                AZ::RPI::SupervariantIndex m_supervariantIndex; // For @m_perObjectSrgLayout.
+                AZ::RHI::Ptr<AZ::RHI::ShaderResourceGroupLayout> m_perObjectSrgLayout; // Comes from @m_shaderAsset
                 AZ::RHI::DrawListTag m_drawListTag;
                 AZ::RHI::ShaderInputNameIndex m_colorIndex = "m_color";
                 AZ::RHI::ShaderInputNameIndex m_modelToWorldIndex = "m_modelToWorld";

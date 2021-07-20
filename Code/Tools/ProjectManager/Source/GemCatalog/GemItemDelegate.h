@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -57,12 +58,19 @@ namespace O3DE::ProjectManager
         inline constexpr static int s_buttonCircleRadius = s_buttonBorderRadius - 2;
         inline constexpr static qreal s_buttonFontSize = 10.0;
 
+        // Feature tags
+        inline constexpr static int s_featureTagFontSize = 10;
+        inline constexpr static int s_featureTagBorderMarginX = 3;
+        inline constexpr static int s_featureTagBorderMarginY = 3;
+        inline constexpr static int s_featureTagSpacing = 7;
+
     protected:
         void CalcRects(const QStyleOptionViewItem& option, QRect& outFullRect, QRect& outItemRect, QRect& outContentRect) const;
         QRect GetTextRect(QFont& font, const QString& text, qreal fontSize) const;
         QRect CalcButtonRect(const QRect& contentRect) const;
         void DrawPlatformIcons(QPainter* painter, const QRect& contentRect, const QModelIndex& modelIndex) const;
         void DrawButton(QPainter* painter, const QRect& contentRect, const QModelIndex& modelIndex) const;
+        void DrawFeatureTags(QPainter* painter, const QRect& contentRect, const QStringList& featureTags, const QFont& standardFont, const QRect& summaryRect) const;
 
         QAbstractItemModel* m_model = nullptr;
 

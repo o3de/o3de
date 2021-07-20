@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -54,10 +55,10 @@ def edit_project_props(proj_path: pathlib.Path,
     if new_icon:
         proj_json['icon_path'] = new_icon
     if new_tags:
-        tag_list = [new_tags] if isinstance(new_tags, str) else new_tags
+        tag_list = new_tags.split() if isinstance(new_tags, str) else new_tags
         proj_json.setdefault('user_tags', []).extend(tag_list)
     if delete_tags:
-        removal_list = [delete_tags] if isinstance(delete_tags, str) else delete_tags
+        removal_list = delete_tags.split() if isinstance(delete_tags, str) else delete_tags
         if 'user_tags' in proj_json:
             for tag in removal_list:
                 if tag in proj_json['user_tags']:
@@ -65,9 +66,9 @@ def edit_project_props(proj_path: pathlib.Path,
                 else:
                     logger.warning(f'{tag} not found in user_tags for removal.')
         else:
-            logger.warning('user_tags property not found.')
+            logger.warning(f'user_tags property not found for removal of {delete_tags}.')
     if replace_tags:
-        tag_list = [replace_tags] if isinstance(replace_tags, str) else replace_tags
+        tag_list = replace_tags.split() if isinstance(replace_tags, str) else replace_tags
         proj_json['user_tags'] = tag_list
 
     manifest.save_o3de_manifest(proj_json, pathlib.Path(proj_path) / 'project.json')

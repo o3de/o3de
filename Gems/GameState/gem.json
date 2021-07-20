@@ -1,16 +1,12 @@
 {
     "gem_name": "GameState",
-    "GemFormatVersion": 4,
-    "Uuid": "1a557ac19dc34f5697fe03f30be5b6e4",
-    "Name": "GameState",
-    "DisplayName": "GameState",
-    "Version": "0.1.0",
-    "Summary": "Provides a generic framework for managing game states and the transitions between them. Some sample game states are provided in the GameStateSamples Gem.",
-    "Tags": ["Game State"],
-    "IconPath": "preview.png",
-    "Modules": [
-        {
-            "Type": "GameModule"
-        }
-    ]
+    "display_name": "Game State",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Open 3D Engine - o3de.org",
+    "type": "Code",
+    "summary": "The Game State Gem provides a generic framework to determine and manage game states and game state transitions in Open 3D Engine.",
+    "canonical_tags": ["Gem"],
+    "user_tags": ["Gameplay", "Framework", "Scripting"],
+    "icon_path": "preview.png",
+    "requirements": ""
 }

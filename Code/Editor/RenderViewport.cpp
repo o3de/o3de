@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -4083,7 +4084,12 @@ void CRenderViewport::RestoreViewportAfterGameMode()
 {
     Matrix34 preGameModeViewTM = m_preGameModeViewTM;
 
-    QString text = QString("You are exiting Game Mode. Would you like to restore the camera in the viewport to where it was before you entered Game Mode?<br/><br/><small>This option can always be changed in the General Preferences tab of the Editor Settings, by toggling the \"%1\" option.</small><br/><br/>").arg(EditorPreferencesGeneralRestoreViewportCameraSettingName);
+    QString text =
+        QString(
+            tr("When leaving \" Game Mode \" the engine will automatically restore your camera position to the default position before you "
+            "had entered Game mode.<br/><br/><small>If you dislike this setting you can always change this anytime in the global "
+            "preferences.</small><br/><br/>"))
+            .arg(EditorPreferencesGeneralRestoreViewportCameraSettingName);
     QString restoreOnExitGameModePopupDisabledRegKey("Editor/AutoHide/ViewportCameraRestoreOnExitGameMode");
 
     // Read the popup disabled registry value
@@ -4098,6 +4104,7 @@ void CRenderViewport::RestoreViewportAfterGameMode()
         messageBox.setDefaultButton(QMessageBox::Yes);
 
         QCheckBox* checkBox = new QCheckBox(QStringLiteral("Do not show this message again"));
+        checkBox->setChecked(true);
         messageBox.setCheckBox(checkBox);
 
         // Unconstrain the system cursor and make it visible before we show the dialog box, otherwise the user can't see the cursor.

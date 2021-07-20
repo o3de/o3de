@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -19,6 +20,7 @@
 #include "Objects/DisplayContext.h"
 #include "Undo/Undo.h"
 #include "Util/PredefinedAspectRatios.h"
+#include "EditorViewportSettings.h"
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/std/optional.h>
@@ -323,11 +325,6 @@ protected:
 
     void SetViewTM(const Matrix34& tm, bool bMoveOnly);
 
-    virtual float GetCameraMoveSpeed() const;
-    virtual float GetCameraRotateSpeed() const;
-    virtual bool  GetCameraInvertYRotation() const;
-    virtual float GetCameraInvertPan() const;
-
     // Called to render stuff.
     virtual void OnRender();
 
@@ -385,6 +382,11 @@ protected:
     };
     void ResetToViewSourceType(const ViewSourceType& viewSourType);
 
+    bool ShouldPreviewFullscreen() const;
+    void StartFullscreenPreview();
+    void StopFullscreenPreview();
+
+    bool m_inFullscreenPreview = false;
     bool m_bRenderContextCreated = false;
     bool m_bInRotateMode = false;
     bool m_bInMoveMode = false;
@@ -505,7 +507,6 @@ protected:
 
     CPredefinedAspectRatios m_predefinedAspectRatios;
 
-    IVariable* m_pCameraFOVVariable = nullptr;
     bool m_bCursorHidden = false;
 
     void OnMenuResolutionCustom();
@@ -565,6 +566,9 @@ private:
     void UpdateScene();
 
     AzFramework::EntityVisibilityQuery m_entityVisibilityQuery;
+
+    SandboxEditor::GridSnappingChangedEvent::Handler m_gridSnappingHandler;
+    AZStd::unique_ptr<SandboxEditor::EditorViewportSettingsCallbacks> m_editorViewportSettingsCallbacks;
 
     QSet<int> m_keyDown;
 

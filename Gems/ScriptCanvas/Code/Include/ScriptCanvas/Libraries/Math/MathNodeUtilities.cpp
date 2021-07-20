@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -58,7 +59,7 @@ namespace ScriptCanvas
             AZ_Assert(randomEngineVar.IsConstructed(), "random engine is not initialized");
             return dis(randomEngineVar->m_randomEngine);
         }
-        
+
         AZ::s64 GetRandom(AZ::s64 lhs, AZ::s64 rhs)
         {
             if (lhs == rhs)
@@ -74,5 +75,5 @@ namespace ScriptCanvas
         }
 
     }
-} 
+}
 
