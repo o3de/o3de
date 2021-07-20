@@ -271,9 +271,6 @@ namespace AZ
             MaterialComponentConfig config = m_controller.GetConfiguration();
             config.m_materials.clear();
             
-            RPI::ModelMaterialSlotMap modelMaterialSlots;
-            MaterialReceiverRequestBus::EventResult(modelMaterialSlots, GetEntityId(), &MaterialReceiverRequestBus::Events::GetModelMaterialSlots);
-
             for (const auto& materialSlotPair : GetMaterialSlots())
             {
                 const EditorMaterialComponentSlot* materialSlot = materialSlotPair.second;
@@ -295,15 +292,10 @@ namespace AZ
                 }
                 else if (!materialSlot->m_propertyOverrides.empty() || !materialSlot->m_matModUvOverrides.empty())
                 {
-                    auto materialSlotIter = modelMaterialSlots.find(materialSlot->m_id.m_materialSlotStableId);
-
-                    if (materialSlotIter != modelMaterialSlots.end())
-                    {
-                        MaterialAssignment& materialAssignment = config.m_materials[materialSlot->m_id];
-                        materialAssignment.m_materialAsset = materialSlotIter->second.m_defaultMaterialAsset;
-                        materialAssignment.m_propertyOverrides = materialSlot->m_propertyOverrides;
-                        materialAssignment.m_matModUvOverrides = materialSlot->m_matModUvOverrides;
-                    }
+                    MaterialAssignment& materialAssignment = config.m_materials[materialSlot->m_id];
+                    materialAssignment.m_materialAsset = materialSlot->m_defaultMaterialAsset;
+                    materialAssignment.m_propertyOverrides = materialSlot->m_propertyOverrides;
+                    materialAssignment.m_matModUvOverrides = materialSlot->m_matModUvOverrides;
                 }
             }
 
@@ -442,18 +434,15 @@ namespace AZ
             Data::AssetId modelAssetId;
             MeshComponentRequestBus::EventResult(modelAssetId, GetEntityId(), &MeshComponentRequestBus::Events::GetModelAssetId);
 
-            RPI::ModelMaterialSlotMap modelMaterialSlots;
-            MaterialReceiverRequestBus::EventResult(modelMaterialSlots, GetEntityId(), &MaterialReceiverRequestBus::Events::GetModelMaterialSlots);
-            
             EditorMaterialComponentExporter::ExportItemsContainer exportItems;
 
             // Generate a list of export items for the set of unique default material assets from the model.
-            for (auto& materialSlotPair : modelMaterialSlots)
+            for (auto& materialSlotPair : GetMaterialSlots())
             {
                 // We only care about material assets that were generated from the model source file, since those are the
                 // ones that would need conversion (other materials already have their own source file). This can be detected
                 // by matching GUID component of the AssetId.
-                Data::AssetId defaultMaterialAssetId = materialSlotPair.second.m_defaultMaterialAsset.GetId();
+                Data::AssetId defaultMaterialAssetId = materialSlotPair.second->m_defaultMaterialAsset.GetId();
                 bool materialWasGeneratedFromModel = defaultMaterialAssetId.IsValid() && defaultMaterialAssetId.m_guid == modelAssetId.m_guid;
                 if (materialWasGeneratedFromModel)
                 {
@@ -467,7 +456,7 @@ namespace AZ
                     // exported material file name will be based on the first relevant material slot's name.
                     if (duplicateAssetIter == exportItems.end())
                     {                        
-                        EditorMaterialComponentExporter::ExportItem exportItem{defaultMaterialAssetId, materialSlotPair.second.m_displayName.GetStringView()};
+                        EditorMaterialComponentExporter::ExportItem exportItem{defaultMaterialAssetId, materialSlotPair.second->GetLabel()};
                         exportItems.push_back(exportItem);
                     }
                 }
@@ -499,16 +488,10 @@ namespace AZ
 
                             if (editorMaterialSlot)
                             {
-                                // Only update the slot of it was originally empty, having no override material.
-                                // We need to check whether replaced material corresponds to this slot's default material.
-                                if (!editorMaterialSlot->m_materialAsset.GetId().IsValid())
+                                if (!editorMaterialSlot->m_materialAsset.GetId().IsValid() &&                               //< Only update the slot of it was originally empty, having no override material.
+                                    editorMaterialSlot->m_defaultMaterialAsset.GetId() == exportItem.GetOriginalAssetId())  //< We need to check whether replaced material corresponds to this slot's default material.
                                 {
-                                    auto materialSlot = modelMaterialSlots.find(editorMaterialSlot->m_id.m_materialSlotStableId);
-                                    if (materialSlot != modelMaterialSlots.end() &&
-                                        materialSlot->second.m_defaultMaterialAsset.GetId() == exportItem.GetOriginalAssetId())
-                                    {
-                                        editorMaterialSlot->m_materialAsset.Create(assetIdOutcome.GetValue());
-                                    }
+                                    editorMaterialSlot->m_materialAsset.Create(assetIdOutcome.GetValue());
                                 }
                             }
                         }
