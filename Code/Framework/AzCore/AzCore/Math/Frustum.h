@@ -14,6 +14,7 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Plane.h>
 #include <AzCore/Math/SimdMath.h>
+#include <AzCore/std/containers/array.h>
 
 namespace AZ
 {

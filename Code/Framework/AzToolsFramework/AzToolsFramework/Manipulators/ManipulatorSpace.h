@@ -8,6 +8,7 @@
 
 #pragma once
 #include <AzCore/Math/Transform.h>
+#include <AzCore/Memory/SystemAllocator.h>
 
 namespace AZ
 {
