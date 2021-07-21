@@ -23,19 +23,17 @@
 #include <Atom/Window/ShaderManagementConsoleWindowNotificationBus.h>
 
 #include <AzQtComponents/Application/AzQtApplication.h>
+#include <AtomToolsFramework/Application/AtomToolsApplication.h>
 
 #include <QTimer>
 
 namespace ShaderManagementConsole
 {
     class ShaderManagementConsoleApplication
-        : public AzFramework::Application
-        , public AzQtComponents::AzQtApplication
-        , private AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler
+        : public AtomToolsFramework::AtomToolsApplication
         , private ShaderManagementConsoleWindowNotificationBus::Handler
         , private AzFramework::AssetSystemStatusBus::Handler
-        , private AZ::UserSettingsOwnerRequestBus::Handler
-        , private AZ::Debug::TraceMessageBus::Handler
+        , private AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler
         , private AzToolsFramework::EditorPythonConsoleNotificationBus::Handler
     {
     public:
@@ -113,18 +111,5 @@ namespace ShaderManagementConsole
         void StartInternal();
 
         static void PyIdleWaitFrames(uint32_t frames);
-
-        AzToolsFramework::TraceLogger m_traceLogger;
-
-        //! Local user settings are used to store asset browser tree expansion state
-        AZ::UserSettingsProvider m_localUserSettings;
-
-        //! Are local settings loaded
-        bool m_activatedLocalUserSettings = false;
-
-        QTimer m_timer;
-
-        bool m_started = false;
-        bool m_closing = false;
     };
 } // namespace ShaderManagementConsole

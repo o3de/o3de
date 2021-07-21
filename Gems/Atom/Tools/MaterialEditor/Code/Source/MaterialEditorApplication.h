@@ -22,6 +22,7 @@
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 #include <AzToolsFramework/Logger/TraceLogger.h>
 #include <AzQtComponents/Application/AzQtApplication.h>
+#include <AtomToolsFramework/Application/AtomToolsApplication.h>
 
 #include <QTimer>
 
@@ -30,29 +31,19 @@ namespace MaterialEditor
     class MaterialThumbnailRenderer;
 
     class MaterialEditorApplication
-        : public AzFramework::Application
-        , public AzQtComponents::AzQtApplication
-        , private AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler
+        : public AtomToolsFramework::AtomToolsApplication
         , private MaterialEditorWindowNotificationBus::Handler
-        , private AzFramework::AssetSystemStatusBus::Handler
-        , private AZ::UserSettingsOwnerRequestBus::Handler
-        , private AZ::Debug::TraceMessageBus::Handler
-        , private AzToolsFramework::EditorPythonConsoleNotificationBus::Handler
     {
     public:
         AZ_TYPE_INFO(MaterialEditor::MaterialEditorApplication, "{30F90CA5-1253-49B5-8143-19CEE37E22BB}");
 
-        using Base = AzFramework::Application;
+        using Base = AtomToolsFramework::AtomToolsApplication;
 
         MaterialEditorApplication(int* argc, char*** argv);
         virtual ~MaterialEditorApplication();
 
         //////////////////////////////////////////////////////////////////////////
         // AzFramework::Application
-        void CreateReflectionManager() override;
-        void Reflect(AZ::ReflectContext* context) override;
-        void RegisterCoreComponents() override;
-        AZ::ComponentTypeList GetRequiredSystemComponents() const override;
         void CreateStaticModules(AZStd::vector<AZ::Module*>& outModules) override;
         const char* GetCurrentConfigurationName() const override;
         void StartCommon(AZ::Entity* systemEntity) override;
@@ -60,11 +51,6 @@ namespace MaterialEditor
         void Stop() override;
 
     private:
-        //////////////////////////////////////////////////////////////////////////
-        // AssetDatabaseRequestsBus::Handler overrides...
-        bool GetAssetDatabaseLocation(AZStd::string& result) override;
-        //////////////////////////////////////////////////////////////////////////
-
         //////////////////////////////////////////////////////////////////////////
         // MaterialEditorWindowNotificationBus::Handler overrides...
         void OnMaterialEditorWindowClosing() override;
@@ -93,27 +79,13 @@ namespace MaterialEditor
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
-        // AZ::UserSettingsOwnerRequestBus::Handler overrides...
-        void SaveSettings() override;
-        //////////////////////////////////////////////////////////////////////////
-
-        //////////////////////////////////////////////////////////////////////////
         // AZ::Debug::TraceMessageBus::Handler overrides...
         bool OnOutput(const char* window, const char* message) override;
         ////////////////////////////////////////////////////////////////////////// 
 
-        void CompileCriticalAssets();
-
-        void ProcessCommandLine(const AZ::CommandLine& commandLine);
-
-        void LoadSettings();
-        void UnloadSettings();
-
-        bool LaunchDiscoveryService();
-
-        void StartInternal();
-
-        static void PyIdleWaitFrames(uint32_t frames);
+        void CompileCriticalAssets() override;
+        void ProcessCommandLine(const AZ::CommandLine& commandLine) override;
+        void StartInternal() override;
 
         struct LogMessage
         {
@@ -123,18 +95,5 @@ namespace MaterialEditor
 
         AZStd::vector<LogMessage> m_startupLogSink;
         AZStd::unique_ptr<AzFramework::LogFile> m_logFile;
-
-        AzToolsFramework::TraceLogger m_traceLogger;
-
-        //! Local user settings are used to store material browser tree expansion state
-        AZ::UserSettingsProvider m_localUserSettings;
-
-        //! Are local settings loaded
-        bool m_activatedLocalUserSettings = false;
-
-        QTimer m_timer;
-
-        AtomToolsFramework::LocalSocket m_socket;
-        AtomToolsFramework::LocalServer m_server;
     };
 } // namespace MaterialEditor

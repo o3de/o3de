@@ -71,8 +71,8 @@ namespace MaterialEditor
     }
 
     MaterialEditorApplication::MaterialEditorApplication(int* argc, char*** argv)
-        : Application(argc, argv)
-        , AzQtApplication(*argc, *argv)
+        : AtomToolsApplication(argc, argv)
+
     {
         QApplication::setApplicationName("O3DE Material Editor");
 
@@ -91,63 +91,6 @@ namespace MaterialEditor
         AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusDisconnect();
         MaterialEditorWindowNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();
-    }
-
-    void MaterialEditorApplication::CreateReflectionManager()
-    {
-        Application::CreateReflectionManager();
-        GetSerializeContext()->CreateEditContext();
-    }
-
-    void MaterialEditorApplication::Reflect(AZ::ReflectContext* context)
-    {
-        Application::Reflect(context);
-
-        AzToolsFramework::AssetBrowser::AssetBrowserEntry::Reflect(context);
-        AzToolsFramework::AssetBrowser::RootAssetBrowserEntry::Reflect(context);
-        AzToolsFramework::AssetBrowser::FolderAssetBrowserEntry::Reflect(context);
-        AzToolsFramework::AssetBrowser::SourceAssetBrowserEntry::Reflect(context);
-        AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry::Reflect(context);
-
-        AzToolsFramework::QTreeViewWithStateSaving::Reflect(context);
-        AzToolsFramework::QWidgetSavedState::Reflect(context);
-
-        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-        {
-            // this will put these methods into the 'azlmbr.materialeditor.general' module
-            auto addGeneral = [](AZ::BehaviorContext::GlobalMethodBuilder methodBuilder)
-            {
-                methodBuilder->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
-                    ->Attribute(AZ::Script::Attributes::Category, "Editor")
-                    ->Attribute(AZ::Script::Attributes::Module, "materialeditor.general");
-            };
-            // The reflection here is based on patterns in CryEditPythonHandler::Reflect
-            addGeneral(behaviorContext->Method("idle_wait_frames", &MaterialEditorApplication::PyIdleWaitFrames, nullptr, "Waits idling for a frames. Primarily used for auto-testing."));
-        }
-    }
-
-    void MaterialEditorApplication::RegisterCoreComponents()
-    {
-        Application::RegisterCoreComponents();
-        RegisterComponentDescriptor(AzToolsFramework::AssetBrowser::AssetBrowserComponent::CreateDescriptor());
-        RegisterComponentDescriptor(AzToolsFramework::Thumbnailer::ThumbnailerComponent::CreateDescriptor());
-        RegisterComponentDescriptor(AzToolsFramework::Components::PropertyManagerComponent::CreateDescriptor());
-        RegisterComponentDescriptor(AzToolsFramework::AssetSystem::AssetSystemComponent::CreateDescriptor());
-        RegisterComponentDescriptor(AzToolsFramework::PerforceComponent::CreateDescriptor());
-    }
-
-    AZ::ComponentTypeList MaterialEditorApplication::GetRequiredSystemComponents() const
-    {
-        AZ::ComponentTypeList components = Application::GetRequiredSystemComponents();
-
-        components.insert(components.end(), {
-                azrtti_typeid<AzToolsFramework::AssetBrowser::AssetBrowserComponent>(),
-                azrtti_typeid<AzToolsFramework::Thumbnailer::ThumbnailerComponent>(),
-                azrtti_typeid<AzToolsFramework::Components::PropertyManagerComponent>(),
-                azrtti_typeid<AzToolsFramework::PerforceComponent>(),
-            });
-
-        return components;
     }
 
     void MaterialEditorApplication::CreateStaticModules(AZStd::vector<AZ::Module*>& outModules)
@@ -269,20 +212,6 @@ namespace MaterialEditor
         }
     }
 
-    void MaterialEditorApplication::SaveSettings()
-    {
-        if (m_activatedLocalUserSettings)
-        {
-            AZ::SerializeContext* context = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationRequests::GetSerializeContext);
-            AZ_Assert(context, "No serialize context");
-
-            char resolvedPath[AZ_MAX_PATH_LEN] = "";
-            AZ::IO::FileIOBase::GetInstance()->ResolvePath("@user@/MaterialEditorUserSettings.xml", resolvedPath, AZ_ARRAY_SIZE(resolvedPath));
-            m_localUserSettings.Save(resolvedPath, context);
-        }
-    }
-
     bool MaterialEditorApplication::OnOutput(const char* window, const char* message)
     {
         // Suppress spam from the Source Control system
@@ -355,86 +284,6 @@ namespace MaterialEditor
         }
     }
 
-    void MaterialEditorApplication::LoadSettings()
-    {
-        AZ::SerializeContext* context = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationRequests::GetSerializeContext);
-        AZ_Assert(context, "No serialize context");
-
-        char resolvedPath[AZ_MAX_PATH_LEN] = "";
-        AZ::IO::FileIOBase::GetInstance()->ResolvePath("@user@/EditorUserSettings.xml", resolvedPath, AZ_MAX_PATH_LEN);
-
-        m_localUserSettings.Load(resolvedPath, context);
-        m_localUserSettings.Activate(AZ::UserSettings::CT_LOCAL);
-        AZ::UserSettingsOwnerRequestBus::Handler::BusConnect(AZ::UserSettings::CT_LOCAL);
-        m_activatedLocalUserSettings = true;
-    }
-
-    void MaterialEditorApplication::UnloadSettings()
-    {
-        if (m_activatedLocalUserSettings)
-        {
-            SaveSettings();
-            m_localUserSettings.Deactivate();
-            AZ::UserSettingsOwnerRequestBus::Handler::BusDisconnect();
-            m_activatedLocalUserSettings = false;
-        }
-    }
-
-    bool MaterialEditorApplication::LaunchDiscoveryService()
-    {
-        // Determine if this is the first launch of the tool by attempting to connect to a running server
-        if (m_socket.Connect(QApplication::applicationName()))
-        {
-            // If the server was located, the application is already running.
-            // Forward commandline options to other application instance.
-            QByteArray buffer;
-            buffer.append("ProcessCommandLine:");
-
-            // Add the command line options from this process to the message, skipping the executable path
-            for (int argi = 1; argi < m_argC; ++argi)
-            {
-                buffer.append(QString(m_argV[argi]).append("\n").toUtf8());
-            }
-
-            // Inject command line option to always bring the main window to the foreground
-            buffer.append("--activatewindow\n");
-
-            m_socket.Send(buffer);
-            m_socket.Disconnect();
-            return false;
-        }
-
-        // Setup server to handle basic commands
-        m_server.SetReadHandler([this](const QByteArray& buffer) {
-            // Handle commmand line params from connected socket
-            if (buffer.startsWith("ProcessCommandLine:"))
-            {
-                // Remove header and parse commands
-                AZStd::string params(buffer.data(), buffer.size());
-                params = params.substr(strlen("ProcessCommandLine:"));
-
-                AZStd::vector<AZStd::string> tokens;
-                AZ::StringFunc::Tokenize(params, tokens, "\n");
-
-                if (!tokens.empty())
-                {
-                    AZ::CommandLine commandLine;
-                    commandLine.Parse(tokens);
-                    ProcessCommandLine(commandLine);
-                }
-            }
-        });
-
-        // Launch local server
-        if (!m_server.Connect(QApplication::applicationName()))
-        {
-            return false;
-        }
-
-        return true;
-    }
-
     void MaterialEditorApplication::StartInternal()
     {
         if (WasExitMainLoopRequested())
@@ -474,20 +323,6 @@ namespace MaterialEditor
 
         // Delay execution of commands and scripts post initialization
         QTimer::singleShot(0, [this]() { ProcessCommandLine(m_commandLine); });
-    }
-
-    bool MaterialEditorApplication::GetAssetDatabaseLocation(AZStd::string& result)
-    {
-        AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get();
-        AZ::IO::FixedMaxPath assetDatabaseSqlitePath;
-        if (settingsRegistry && settingsRegistry->Get(assetDatabaseSqlitePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder))
-        {
-            assetDatabaseSqlitePath /= "assetdb.sqlite";
-            result = AZStd::string_view(assetDatabaseSqlitePath.Native());
-            return true;
-        }
-
-        return false;
     }
 
     void MaterialEditorApplication::Tick(float deltaOverride)
@@ -545,38 +380,4 @@ namespace MaterialEditor
     {
         AZ_Error("MaterialEditor", false, "Python: " AZ_STRING_FORMAT, AZ_STRING_ARG(message));
     }
-
-    // Copied from PyIdleWaitFrames in CryEdit.cpp
-    void MaterialEditorApplication::PyIdleWaitFrames(uint32_t frames)
-    {
-        struct Ticker : public AZ::TickBus::Handler
-        {
-            Ticker(QEventLoop* loop, uint32_t targetFrames) : m_loop(loop), m_targetFrames(targetFrames)
-            {
-                AZ::TickBus::Handler::BusConnect();
-            }
-            ~Ticker()
-            {
-                AZ::TickBus::Handler::BusDisconnect();
-            }
-
-            void OnTick(float deltaTime, AZ::ScriptTimePoint time) override
-            {
-                AZ_UNUSED(deltaTime);
-                AZ_UNUSED(time);
-                if (++m_elapsedFrames == m_targetFrames)
-                {
-                    m_loop->quit();
-                }
-            }
-            QEventLoop* m_loop = nullptr;
-            uint32_t m_elapsedFrames = 0;
-            uint32_t m_targetFrames = 0;
-        };
-
-        QEventLoop loop;
-        Ticker ticker(&loop, frames);
-        loop.exec();
-    }
-
 } // namespace MaterialEditor

@@ -67,77 +67,13 @@ namespace ShaderManagementConsole
     }
 
     ShaderManagementConsoleApplication::ShaderManagementConsoleApplication(int* argc, char*** argv)
-        : Application(argc, argv)
-        , AzQtApplication(*argc, *argv)
+        : AtomToolsApplication(argc, argv)
     {
         QApplication::setApplicationName("O3DE Shader Management Console");
 
         // The settings registry has been created at this point, so add the CMake target
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(
             *AZ::SettingsRegistry::Get(), GetBuildTargetName());
-
-        connect(&m_timer, &QTimer::timeout, this, [&]()
-        {
-            this->PumpSystemEventLoopUntilEmpty();
-            this->Tick();
-        });
-    }
-
-    void ShaderManagementConsoleApplication::CreateReflectionManager()
-    {
-        Application::CreateReflectionManager();
-        GetSerializeContext()->CreateEditContext();
-    }
-
-    void ShaderManagementConsoleApplication::Reflect(AZ::ReflectContext* context)
-    {
-        Application::Reflect(context);
-
-        AzToolsFramework::AssetBrowser::AssetBrowserEntry::Reflect(context);
-        AzToolsFramework::AssetBrowser::RootAssetBrowserEntry::Reflect(context);
-        AzToolsFramework::AssetBrowser::FolderAssetBrowserEntry::Reflect(context);
-        AzToolsFramework::AssetBrowser::SourceAssetBrowserEntry::Reflect(context);
-        AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry::Reflect(context);
-
-        AzToolsFramework::QTreeViewWithStateSaving::Reflect(context);
-        AzToolsFramework::QWidgetSavedState::Reflect(context);
-
-        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-        {
-            // this will put these methods into the 'azlmbr.shadermanagementconsole.general' module
-            auto addGeneral = [](AZ::BehaviorContext::GlobalMethodBuilder methodBuilder)
-            {
-                methodBuilder->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
-                    ->Attribute(AZ::Script::Attributes::Category, "Editor")
-                    ->Attribute(AZ::Script::Attributes::Module, "shadermanagementconsole.general");
-            };
-            // The reflection here is based on patterns in CryEditPythonHandler::Reflect
-            addGeneral(behaviorContext->Method("idle_wait_frames", &ShaderManagementConsoleApplication::PyIdleWaitFrames, nullptr, "Waits idling for a frames. Primarily used for auto-testing."));
-        }
-    }
-
-    void ShaderManagementConsoleApplication::RegisterCoreComponents()
-    {
-        Application::RegisterCoreComponents();
-        RegisterComponentDescriptor(AzToolsFramework::AssetBrowser::AssetBrowserComponent::CreateDescriptor());
-        RegisterComponentDescriptor(AzToolsFramework::Thumbnailer::ThumbnailerComponent::CreateDescriptor());
-        RegisterComponentDescriptor(AzToolsFramework::Components::PropertyManagerComponent::CreateDescriptor());
-        RegisterComponentDescriptor(AzToolsFramework::AssetSystem::AssetSystemComponent::CreateDescriptor());
-        RegisterComponentDescriptor(AzToolsFramework::PerforceComponent::CreateDescriptor());
-    }
-
-    AZ::ComponentTypeList ShaderManagementConsoleApplication::GetRequiredSystemComponents() const
-    {
-        AZ::ComponentTypeList components = Application::GetRequiredSystemComponents();
-
-        components.insert(components.end(), {
-                azrtti_typeid<AzToolsFramework::AssetBrowser::AssetBrowserComponent>(),
-                azrtti_typeid<AzToolsFramework::Thumbnailer::ThumbnailerComponent>(),
-                azrtti_typeid<AzToolsFramework::Components::PropertyManagerComponent>(),
-                azrtti_typeid<AzToolsFramework::PerforceComponent>(),
-            });
-
-        return components;
     }
 
     void ShaderManagementConsoleApplication::CreateStaticModules(AZStd::vector<AZ::Module*>& outModules)
@@ -146,18 +82,6 @@ namespace ShaderManagementConsole
         outModules.push_back(aznew AzToolsFramework::AzToolsFrameworkModule);
         outModules.push_back(aznew ShaderManagementConsoleDocumentModule);
         outModules.push_back(aznew ShaderManagementConsoleWindowModule);
-    }
-
-    void ShaderManagementConsoleApplication::StartCommon(AZ::Entity* systemEntity)
-    {
-        AzFramework::AssetSystemStatusBus::Handler::BusConnect();
-        AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusConnect();
-
-        AzFramework::Application::StartCommon(systemEntity);
-
-        StartInternal();
-
-        m_timer.start();
     }
 
     void ShaderManagementConsoleApplication::OnShaderManagementConsoleWindowClosing()
@@ -174,6 +98,7 @@ namespace ShaderManagementConsole
 
         ShaderManagementConsoleWindowNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusDisconnect();
+        m_traceLogger.~TraceLogger();
 
         AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::StartDisconnectingAssetProcessor);
 
@@ -254,20 +179,6 @@ namespace ShaderManagementConsole
         }
     }
 
-    void ShaderManagementConsoleApplication::SaveSettings()
-    {
-        if (m_activatedLocalUserSettings)
-        {
-            AZ::SerializeContext* context = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationRequests::GetSerializeContext);
-            AZ_Assert(context, "No serialize context");
-
-            char resolvedPath[AZ_MAX_PATH_LEN] = "";
-            AZ::IO::FileIOBase::GetInstance()->ResolvePath("@user@/EditorUserSettings.xml", resolvedPath, AZ_ARRAY_SIZE(resolvedPath));
-            m_localUserSettings.Save(resolvedPath, context);
-        }
-    }
-
     bool ShaderManagementConsoleApplication::OnPrintf(const char* window, const char* /*message*/)
     {
         // Suppress spam from the Source Control system
@@ -300,32 +211,6 @@ namespace ShaderManagementConsole
         {
             const AZStd::string openDocumentPath = m_commandLine.GetMiscValue(openDocumentIndex);
             ShaderManagementConsoleDocumentSystemRequestBus::Broadcast(&ShaderManagementConsoleDocumentSystemRequestBus::Events::OpenDocument, openDocumentPath);
-        }
-    }
-
-    void ShaderManagementConsoleApplication::LoadSettings()
-    {
-        AZ::SerializeContext* context = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationRequests::GetSerializeContext);
-        AZ_Assert(context, "No serialize context");
-
-        char resolvedPath[AZ_MAX_PATH_LEN] = "";
-        AZ::IO::FileIOBase::GetInstance()->ResolvePath("@user@/EditorUserSettings.xml", resolvedPath, AZ_MAX_PATH_LEN);
-
-        m_localUserSettings.Load(resolvedPath, context);
-        m_localUserSettings.Activate(AZ::UserSettings::CT_LOCAL);
-        AZ::UserSettingsOwnerRequestBus::Handler::BusConnect(AZ::UserSettings::CT_LOCAL);
-        m_activatedLocalUserSettings = true;
-    }
-
-    void ShaderManagementConsoleApplication::UnloadSettings()
-    {
-        if (m_activatedLocalUserSettings)
-        {
-            SaveSettings();
-            m_localUserSettings.Deactivate();
-            AZ::UserSettingsOwnerRequestBus::Handler::BusDisconnect();
-            m_activatedLocalUserSettings = false;
         }
     }
 
@@ -398,17 +283,6 @@ namespace ShaderManagementConsole
         }
     }
 
-    void ShaderManagementConsoleApplication::Stop()
-    {
-        UnloadSettings();
-        AzFramework::Application::Stop();
-    }
-
-    void ShaderManagementConsoleApplication::QueryApplicationType(AZ::ApplicationTypeQuery& appType) const
-    {
-        appType.m_maskValue = AZ::ApplicationTypeQuery::Masks::Game;
-    }
-
     void ShaderManagementConsoleApplication::OnTraceMessage([[maybe_unused]] AZStd::string_view message)
     {
 #if defined(AZ_ENABLE_TRACING)
@@ -428,48 +302,8 @@ namespace ShaderManagementConsole
 #endif
     }
 
-    void ShaderManagementConsoleApplication::OnErrorMessage(AZStd::string_view message)
-    {
-        // Use AZ_TracePrintf instead of AZ_Error or AZ_Warning to avoid all the metadata noise
-        OnTraceMessage(message);
-    }
-
     void ShaderManagementConsoleApplication::OnExceptionMessage([[maybe_unused]] AZStd::string_view message)
     {
         AZ_Error("Shader Management Console", false, "Python: " AZ_STRING_FORMAT, AZ_STRING_ARG(message));
     }
-
-    // Copied from PyIdleWaitFrames in CryEdit.cpp
-    void ShaderManagementConsoleApplication::PyIdleWaitFrames(uint32_t frames)
-    {
-        struct Ticker : public AZ::TickBus::Handler
-        {
-            Ticker(QEventLoop* loop, uint32_t targetFrames) : m_loop(loop), m_targetFrames(targetFrames)
-            {
-                AZ::TickBus::Handler::BusConnect();
-            }
-            ~Ticker()
-            {
-                AZ::TickBus::Handler::BusDisconnect();
-            }
-
-            void OnTick(float deltaTime, AZ::ScriptTimePoint time) override
-            {
-                AZ_UNUSED(deltaTime);
-                AZ_UNUSED(time);
-                if (++m_elapsedFrames == m_targetFrames)
-                {
-                    m_loop->quit();
-                }
-            }
-            QEventLoop* m_loop = nullptr;
-            uint32_t m_elapsedFrames = 0;
-            uint32_t m_targetFrames = 0;
-        };
-
-        QEventLoop loop;
-        Ticker ticker(&loop, frames);
-        loop.exec();
-    }
-
 } // namespace ShaderManagementConsole
