@@ -17,10 +17,6 @@
 #include <RHI/Scope.h>
 #include <Atom/RHI/SwapChainFrameAttachment.h>
 
-namespace Platform
-{
-    void ApplyTileDimentions(MTLRenderPassDescriptor* mtlRenderPassDescriptor);
-}
 
 namespace AZ
 {
@@ -88,7 +84,6 @@ namespace AZ
             {
                 AZ_Assert(m_renderPassDescriptor == nil, "m_renderPassDescriptor should be null");
                 m_renderPassDescriptor = [MTLRenderPassDescriptor renderPassDescriptor];
-                Platform::ApplyTileDimentions(m_renderPassDescriptor);
             }
 
             if(GetEstimatedItemCount())

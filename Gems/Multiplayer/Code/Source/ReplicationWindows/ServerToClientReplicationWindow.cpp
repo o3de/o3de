@@ -85,7 +85,7 @@ namespace Multiplayer
         return m_replicationSet;
     }
 
-    uint32_t ServerToClientReplicationWindow::GetMaxEntityReplicatorSendCount() const
+    uint32_t ServerToClientReplicationWindow::GetMaxProxyEntityReplicatorSendCount() const
     {
         return m_isPoorConnection ? sv_MinEntitiesToReplicate : sv_MaxEntitiesToReplicate;
     }
