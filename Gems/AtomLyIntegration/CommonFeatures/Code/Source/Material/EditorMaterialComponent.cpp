@@ -45,64 +45,15 @@ namespace AZ
 
             if (classElement.GetVersion() < 3)
             {
-                // The default material was changed from an asset to an EditorMaterialComponentSlot and old data must be converted
-                constexpr AZ::u32 defaultMaterialAssetDataCrc = AZ_CRC("defaultMaterialAsset", 0x736fc071);
-
-                Data::Asset<RPI::MaterialAsset> oldDefaultMaterialData;
-                if (!classElement.GetChildData(defaultMaterialAssetDataCrc, oldDefaultMaterialData))
-                {
-                    AZ_Error("AZ::Render::EditorMaterialComponent::ConvertVersion", false, "Failed to get defaultMaterialAsset element");
-                    return false;
-                }
-
-                if (!classElement.RemoveElementByName(defaultMaterialAssetDataCrc))
-                {
-                    AZ_Error("AZ::Render::EditorMaterialComponent::ConvertVersion", false, "Failed to remove defaultMaterialAsset element");
-                    return false;
-                }
-
-                EditorMaterialComponentSlot newDefaultMaterialData;
-                newDefaultMaterialData.m_id = DefaultMaterialAssignmentId;
-                newDefaultMaterialData.m_materialAsset = oldDefaultMaterialData;
-                classElement.AddElementWithData(context, "defaultMaterialSlot", newDefaultMaterialData);
-
-                // Slots now support and display the default material asset when empty
-                // The old placeholder assignments are irrelevant and must be cleared
-                constexpr AZ::u32 materialSlotsByLodDataCrc = AZ_CRC("materialSlotsByLod", 0xb1498db6);
-
-                EditorMaterialComponentSlotsByLodContainer lodSlotData;
-                if (!classElement.GetChildData(materialSlotsByLodDataCrc, lodSlotData))
-                {
-                    AZ_Error("AZ::Render::EditorMaterialComponent::ConvertVersion", false, "Failed to get materialSlotsByLod element");
-                    return false;
-                }
-
-                if (!classElement.RemoveElementByName(materialSlotsByLodDataCrc))
-                {
-                    AZ_Error("AZ::Render::EditorMaterialComponent::ConvertVersion", false, "Failed to remove materialSlotsByLod element");
-                    return false;
-                }
-
-                // Find and clear all slots that are assigned to the slot's default value
-                for (auto& lodSlots : lodSlotData)
-                {
-                    for (auto& slot : lodSlots)
-                    {
-                        if (slot.m_materialAsset.GetId() == slot.m_defaultMaterialAsset.GetId())
-                        {
-                            slot.m_materialAsset = {};
-                        }
-                    }
-                }
-
-                classElement.AddElementWithData(context, "materialSlotsByLod", lodSlotData);
+                AZ_Error("EditorMaterialComponent", false, "Material Component version < 3 is no longer supported");
+                return false;
             }
 
             if (classElement.GetVersion() < 4)
             {
                 classElement.AddElementWithData(context, "materialSlotsByLodEnabled", true);
             }
-
+            
             return true;
         }
 
@@ -414,7 +365,11 @@ namespace AZ
 
                 // if material is present in controller configuration, assign its data
                 const MaterialAssignment& materialFromController = GetMaterialAssignmentFromMap(config.m_materials, slot.m_id);
-                slot.m_materialAsset = materialFromController.m_materialAsset;
+                if (materialFromController.m_materialAsset != slot.m_defaultMaterialAsset) // Prevents the default material from showing up as a filled-in value in the property field
+                {
+                    slot.m_materialAsset = materialFromController.m_materialAsset;
+                }
+
                 slot.m_propertyOverrides = materialFromController.m_propertyOverrides;
                 slot.m_matModUvOverrides = materialFromController.m_matModUvOverrides;
 
@@ -629,3 +584,4 @@ namespace AZ
         }
     } // namespace Render
 } // namespace AZ
+
