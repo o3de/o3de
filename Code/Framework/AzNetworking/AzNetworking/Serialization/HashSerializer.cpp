@@ -93,14 +93,11 @@ namespace AzNetworking
         // This hashing serializer is used to detect desyncs between the predicted and authoritative state of all predictive values
         // If either of these asserts triggers, it means desyncs *will not* be detected for the value being serialized
         // You should consider using a quantized float for the failing value, or potentially adjust the min/max quantized values
-        //AZ_Assert(value > FloatHashMinValue, "Out of range float value passed to hashing serializer, this will clamp the float value");
-        //AZ_Assert(value < FloatHashMaxValue, "Out of range float value passed to hashing serializer, this will clamp the float value");
-        //QuantizedValues<1, 4, FloatHashMinValue, FloatHashMaxValue> quantizedValue(value);
-        //const int32_t hashableValue = quantizedValue.GetQuantizedIntegralValues()[0];
-        //m_hash = AZ::TypeHash64(hashableValue, m_hash);
-        //return true;
-
-        m_hash = AZ::TypeHash64(value, m_hash);
+        AZ_Assert(value > FloatHashMinValue, "Out of range float value passed to hashing serializer, this will clamp the float value");
+        AZ_Assert(value < FloatHashMaxValue, "Out of range float value passed to hashing serializer, this will clamp the float value");
+        QuantizedValues<1, 4, FloatHashMinValue, FloatHashMaxValue> quantizedValue(value);
+        const int32_t hashableValue = quantizedValue.GetQuantizedIntegralValues()[0];
+        m_hash = AZ::TypeHash64(hashableValue, m_hash);
         return true;
     }
 
