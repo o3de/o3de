@@ -346,11 +346,6 @@ namespace MaterialEditor
         AzFramework::Application::Stop();
     }
 
-    void MaterialEditorApplication::QueryApplicationType(AZ::ApplicationTypeQuery& appType) const
-    {
-        appType.m_maskValue = AZ::ApplicationTypeQuery::Masks::Game;
-    }
-
     void MaterialEditorApplication::OnTraceMessage([[maybe_unused]] AZStd::string_view message)
     {
 #if defined(AZ_ENABLE_TRACING)

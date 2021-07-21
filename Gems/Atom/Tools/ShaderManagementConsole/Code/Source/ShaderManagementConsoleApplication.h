@@ -32,9 +32,6 @@ namespace ShaderManagementConsole
     class ShaderManagementConsoleApplication
         : public AtomToolsFramework::AtomToolsApplication
         , private ShaderManagementConsoleWindowNotificationBus::Handler
-        , private AzFramework::AssetSystemStatusBus::Handler
-        , private AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler
-        , private AzToolsFramework::EditorPythonConsoleNotificationBus::Handler
     {
     public:
         AZ_TYPE_INFO(ShaderManagementConsole::ShaderManagementConsoleApplication, "{30F90CA5-1253-49B5-8143-19CEE37E22BB}");
@@ -46,15 +43,9 @@ namespace ShaderManagementConsole
 
         //////////////////////////////////////////////////////////////////////////
         // AzFramework::Application
-        void CreateReflectionManager() override;
-        void Reflect(AZ::ReflectContext* context) override;
-        void RegisterCoreComponents() override;
-        AZ::ComponentTypeList GetRequiredSystemComponents() const override;
         void CreateStaticModules(AZStd::vector<AZ::Module*>& outModules) override;
         const char* GetCurrentConfigurationName() const override;
-        void StartCommon(AZ::Entity* systemEntity) override;
         void Tick(float deltaOverride = -1.f) override;
-        void Stop() override;
 
     private:
         //////////////////////////////////////////////////////////////////////////
@@ -72,11 +63,6 @@ namespace ShaderManagementConsole
         void Destroy() override;
         //////////////////////////////////////////////////////////////////////////
 
-        //////////////////////////////////////////////////////////////////////////
-        // AzFramework::ApplicationRequests::Bus overrides...
-        void QueryApplicationType(AZ::ApplicationTypeQuery& appType) const override;
-        //////////////////////////////////////////////////////////////////////////
-
         ////////////////////////////////////////////////////////////////////////
         // EditorPythonConsoleNotificationBus::Handler overrides...
         void OnTraceMessage(AZStd::string_view message) override;
@@ -90,26 +76,12 @@ namespace ShaderManagementConsole
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
-        // AZ::UserSettingsOwnerRequestBus::Handler overrides...
-        void SaveSettings() override;
-        //////////////////////////////////////////////////////////////////////////
-
-        //////////////////////////////////////////////////////////////////////////
         // AZ::Debug::TraceMessageBus::Handler overrides...
         bool OnPrintf(const char* window, const char* message) override;
         //////////////////////////////////////////////////////////////////////////
 
-        void CompileCriticalAssets();
-
+        void CompileCriticalAssets() override;
         void ProcessCommandLine();
-
-        void LoadSettings();
-        void UnloadSettings();
-
-        bool LaunchDiscoveryService();
-
-        void StartInternal();
-
-        static void PyIdleWaitFrames(uint32_t frames);
+        void StartInternal() override;
     };
 } // namespace ShaderManagementConsole

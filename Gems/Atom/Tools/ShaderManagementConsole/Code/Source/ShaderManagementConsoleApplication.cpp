@@ -98,7 +98,7 @@ namespace ShaderManagementConsole
 
         ShaderManagementConsoleWindowNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusDisconnect();
-        m_traceLogger.~TraceLogger();
+        AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
 
         AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::StartDisconnectingAssetProcessor);
 
@@ -175,7 +175,7 @@ namespace ShaderManagementConsole
                 QString("Failed to compile the following critical assets:\n%1\n%2")
                 .arg(failedAssets.join(",\n"))
                 .arg("Make sure this is an Atom project."));
-            m_closing = true;
+            ExitMainLoop();
         }
     }
 
@@ -214,16 +214,9 @@ namespace ShaderManagementConsole
         }
     }
 
-    bool ShaderManagementConsoleApplication::LaunchDiscoveryService()
-    {
-        const QStringList arguments = { "-fail_silently" };
-
-        return AtomToolsFramework::LaunchTool("GridHub", AZ_TRAIT_SHADER_MANAGEMENT_CONSOLE_EXT, arguments);
-    }
-
     void ShaderManagementConsoleApplication::StartInternal()
     {
-        if (m_closing)
+        if (WasExitMainLoopRequested())
         {
             return;
         }
@@ -276,7 +269,7 @@ namespace ShaderManagementConsole
         TickSystem();
         Application::Tick(deltaOverride);
 
-        if (m_closing)
+        if (WasExitMainLoopRequested())
         {
             m_timer.disconnect();
             quit();
@@ -300,6 +293,12 @@ namespace ShaderManagementConsole
             AZ_TracePrintf("Shader Management Console", "Python: %s\n", line.c_str());
         }
 #endif
+    }
+
+    void ShaderManagementConsoleApplication::OnErrorMessage(AZStd::string_view message)
+    {
+        // Use AZ_TracePrintf instead of AZ_Error or AZ_Warning to avoid all the metadata noise
+        OnTraceMessage(message);
     }
 
     void ShaderManagementConsoleApplication::OnExceptionMessage([[maybe_unused]] AZStd::string_view message)

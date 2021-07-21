@@ -154,9 +154,6 @@ namespace AtomToolsFramework
         AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusDisconnect();
         AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
 
-        m_logFile = {};
-        m_startupLogSink = {};
-
         AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::StartDisconnectingAssetProcessor);
         Application::Destroy();
     }
