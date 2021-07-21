@@ -18,16 +18,11 @@
 #include <AzCore/std/sort.h>
 #include <AzCore/std/time.h>
 
-#pragma optimize("", off)
-
-#include "../../../Gems/ImGui/External/ImGui/v1.82/imgui/imgui.h"
 
 namespace AZ
 {
     namespace Render
     {
-        inline u64 ImGuiCpuProfiler::ms_framesActive = 0;
-
         namespace CpuProfilerImGuiHelper
         {
             // NOTE: Fix build error in case AZStd::thread_id is not of an arithmetic type, and instead a pointer
@@ -145,14 +140,15 @@ namespace AZ
         {
             const auto flags =
                 ImGuiTableFlags_Borders | ImGuiTableFlags_Sortable | ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable;
-            if (ImGui::BeginTable("FunctionStatisticsTable", 5, flags))
+            if (ImGui::BeginTable("FunctionStatisticsTable", 6, flags))
             {
                 // Table header setup
                 ImGui::TableSetupColumn("Group");
                 ImGui::TableSetupColumn("Region");
                 ImGui::TableSetupColumn("MTPC (ms)");
                 ImGui::TableSetupColumn("Max (ms)");
-                ImGui::TableSetupColumn("Invocations/frame");
+                ImGui::TableSetupColumn("Invocations");
+                ImGui::TableSetupColumn("Total (ms)");
                 ImGui::TableHeadersRow();
                 ImGui::TableNextColumn();
 
@@ -184,13 +180,16 @@ namespace AZ
                     ImGui::Text("%.2f", CpuProfilerImGuiHelper::TicksToMs(statistics->m_maxTicks));
                     ImGui::TableNextColumn();
 
-                    ImGui::Text("%.1f", statistics->GetAverageInvocationsPerFrame());
+                    ImGui::Text("%ld", statistics->m_invocationsLastFrame);
+                    ImGui::TableNextColumn();
+
+                    ImGui::Text("%.2f", CpuProfilerImGuiHelper::TicksToMs(statistics->m_lastFrameTotalTicks));
                     const ImVec2 botRightBound = ImGui::GetItemRectMax();
                     ImGui::TableNextColumn();
 
                     // NOTE: we are manually checking the bounds rather than using ImGui::IsItemHovered + Begin/EndGroup because
                     // ImGui reports incorrect bounds when using Begin/End group in the Tables API.
-                    if (ImGui::IsMouseHoveringRect(topLeftBound, botRightBound, false))
+                    if (ImGui::IsWindowHovered() && ImGui::IsMouseHoveringRect(topLeftBound, botRightBound, false))
                     {
                         ImGui::BeginTooltip();
                         ImGui::Text(statistics->GetExecutingThreadsLabel().c_str());
@@ -215,23 +214,32 @@ namespace AZ
                 break;
             case (1): // Sort by region name
                 AZStd::sort(m_tableData.begin(), m_tableData.end(),[ascending](const TableRow* lhs, const TableRow* rhs){
-                    return ascending ? lhs->m_regionName < rhs->m_regionName : lhs->m_regionName > rhs->m_regionName;
+                    return ascending ? lhs->m_regionName < rhs->m_regionName
+                                     : lhs->m_regionName > rhs->m_regionName;
                 });
                 break;
             case (2): // Sort by average time
                 AZStd::sort(m_tableData.begin(), m_tableData.end(), [ascending](const TableRow* lhs, const TableRow* rhs){
                     return ascending ? lhs->m_runningAverageTicks < rhs->m_runningAverageTicks
-                        : lhs->m_runningAverageTicks > rhs->m_runningAverageTicks;
+                                     : lhs->m_runningAverageTicks > rhs->m_runningAverageTicks;
                 });
                 break;
             case (3): // Sort by max time
                 AZStd::sort(m_tableData.begin(), m_tableData.end(), [ascending](const TableRow* lhs, const TableRow* rhs){
-                    return ascending ? lhs->m_maxTicks < rhs->m_maxTicks : lhs->m_maxTicks > rhs->m_maxTicks;
+                    return ascending ? lhs->m_maxTicks < rhs->m_maxTicks
+                                     : lhs->m_maxTicks > rhs->m_maxTicks;
                 });
                 break;
             case (4): // Sort by invocations
                 AZStd::sort(m_tableData.begin(), m_tableData.end(), [ascending](const TableRow* lhs, const TableRow* rhs){
-                    return ascending ? lhs->m_invocations < rhs->m_invocations : lhs->m_invocations > rhs->m_invocations;
+                    return ascending ? lhs->m_invocationsLastFrame < rhs->m_invocationsLastFrame
+                                     : lhs->m_invocationsLastFrame > rhs->m_invocationsLastFrame;
+                });
+                break;
+            case (5): // Sort by total time 
+                AZStd::sort(m_tableData.begin(), m_tableData.end(), [ascending](const TableRow* lhs, const TableRow* rhs){
+                    return ascending ? lhs->m_lastFrameTotalTicks < rhs->m_lastFrameTotalTicks
+                                     : lhs->m_lastFrameTotalTicks > rhs->m_lastFrameTotalTicks;
                 });
                 break;
             }
@@ -288,7 +296,6 @@ namespace AZ
                 {
                     m_tableData.clear();
                     m_groupRegionMap.clear();
-                    ImGuiCpuProfiler::ms_framesActive = 0;
                 }
 
                 DrawTable();
@@ -855,7 +862,14 @@ namespace AZ
             else
             {
                 m_frameEndTicks.push_back(AZStd::GetTimeNowTicks());
-                ImGuiCpuProfiler::ms_framesActive++;
+
+                for (auto& [groupName, regionMap] : m_groupRegionMap)
+                {
+                    for (auto& [regionName, row] : regionMap)
+                    {
+                        row.ResetPerFrameStatistics();
+                    }
+                }
             }
         }
 
@@ -863,28 +877,34 @@ namespace AZ
 
         inline void TableRow::RecordRegion(const AZ::RHI::CachedTimeRegion& region, AZStd::thread_id threadId)
         {
-            m_invocations++;
-            const AZStd::sys_time_t deltaTime = AZStd::abs(region.m_endTick - region.m_startTick);
+            const AZStd::sys_time_t deltaTime = region.m_endTick - region.m_startTick;
+
+            // Update per frame statistics
+            m_invocationsLastFrame++;
+            m_executingThreads.insert(threadId);
+            m_lastFrameTotalTicks += deltaTime;
             m_maxTicks = AZStd::max(m_maxTicks, deltaTime);
 
-            // Standard running average algorithm
-            const auto newMean = m_runningAverageTicks + aznumeric_cast<AZStd::sys_time_t>((deltaTime - m_runningAverageTicks) * 1.0 / m_invocations);
-            m_runningAverageTicks = newMean;
-
-            m_executingThreads.insert(threadId);
+            // Update aggregate statistics
+            m_runningAverageTicks =
+                aznumeric_cast<AZStd::sys_time_t>((1.0 * (deltaTime + m_invocationsTotal * m_runningAverageTicks)) / (m_invocationsTotal + 1));
+            ++m_invocationsTotal;
         }
 
-        inline double TableRow::GetAverageInvocationsPerFrame() const
+        inline void TableRow::ResetPerFrameStatistics()
         {
-            return 1.0 * m_invocations / ImGuiCpuProfiler::ms_framesActive;
+            m_invocationsLastFrame = 0;
+            m_executingThreads.clear();
+            m_lastFrameTotalTicks = 0;
+            m_maxTicks = 0;
         }
 
         inline AZStd::string TableRow::GetExecutingThreadsLabel() const 
         {
-            AZStd::string threadString;
+            auto threadString = AZStd::string::format("Executed in %zu threads\n", m_executingThreads.size());
             for (const auto& threadId : m_executingThreads)
             {
-                threadString.append(CpuProfilerImGuiHelper::TextThreadId(threadId.m_id) + ", ");
+                threadString.append(CpuProfilerImGuiHelper::TextThreadId(threadId.m_id) + "\n");
             }
             return threadString;
         }
