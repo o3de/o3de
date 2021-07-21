@@ -8,6 +8,7 @@
 
 #include <Asset/BlastSliceAsset.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace Blast
 {

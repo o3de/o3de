@@ -9,6 +9,7 @@
 #pragma once
 
 #include "EditorWhiteBoxComponentModeTypes.h"
+#include "AzCore/std/containers/variant.h"
 #include "SubComponentModes/EditorWhiteBoxDefaultModeBus.h"
 
 #include <EditorWhiteBoxEdgeModifierBus.h>

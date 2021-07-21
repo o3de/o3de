@@ -7,6 +7,7 @@
  */
 
 #include "WhiteBoxTestUtil.h"
+#include <AzCore/std/string/string.h>
 
 namespace WhiteBox
 {

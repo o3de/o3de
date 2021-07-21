@@ -197,7 +197,7 @@ namespace AZ
         // Deprecate a previously reflected class so that on load any instances will be silently dropped without the need
         // to keep the original class around.
         // Use of this function should be considered temporary and should be removed as soon as possible.
-        void            ClassDeprecate(const char* name, const AZ::Uuid& typeUuid, VersionConverter converter = nullptr);
+        void ClassDeprecate(const char* name, const AZ::Uuid& typeUuid, VersionConverter converter = nullptr);
         // @}
 
         /**
@@ -2558,5 +2558,6 @@ namespace AZ
     template <typename, bool, bool> \
     friend struct AZ::Serialize::InstanceFactory;
 
+#include <AzCore/Serialization/SerializeContextEnum.inl>
 #endif // AZCORE_SERIALIZE_CONTEXT_H
 #pragma once

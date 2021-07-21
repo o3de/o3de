@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Math/Transform.h>
+#include <AzCore/std/string/string.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzTest/AzTest.h>

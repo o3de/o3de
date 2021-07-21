@@ -15,6 +15,7 @@
 #include <Atom/RHI.Reflect/ClearValue.h>
 #include <Atom/RHI.Reflect/Format.h>
 #include <Atom/RHI.Reflect/Handle.h>
+#include <Atom/RHI.Reflect/HandleReflectImpl.inl>
 #include <Atom/RHI.Reflect/ImageDescriptor.h>
 #include <Atom/RHI.Reflect/ImagePoolDescriptor.h>
 #include <Atom/RHI.Reflect/ImageScopeAttachmentDescriptor.h>
