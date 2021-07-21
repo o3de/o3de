@@ -403,6 +403,19 @@ bool EditorViewportWidget::event(QEvent* event)
         m_keyDown.clear();
         break;
 
+    case QEvent::ShortcutOverride:
+    {
+        // Ensure we exit game mode on escape, even if something else would eat our escape key event.
+        if (static_cast<QKeyEvent*>(event)->key() == Qt::Key_Escape && GetIEditor()->IsInGameMode())
+        {
+            GetIEditor()->SetInGameMode(false);
+            event->accept();
+            return true;
+        }
+        break;
+    }
+
+
     case QEvent::Shortcut:
         // a shortcut should immediately clear us, otherwise the release event never gets sent
         m_keyDown.clear();
