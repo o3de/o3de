@@ -66,7 +66,7 @@ class Launcher(object):
 
         return config_dict
 
-    def setup(self, backupFiles=True, launch_ap=True):
+    def setup(self, backupFiles=True, launch_ap=True, configure_settings=True):
         """
         Perform setup of this launcher, must be called before launching.
         Subclasses should call its parent's setup() before calling its own code, unless it changes configuration files
