@@ -659,7 +659,12 @@ function(ly_get_vs_folder_directory absolute_target_source_dir output_source_dir
     if(is_target_prefix_of_engine_root)
         cmake_path(RELATIVE_PATH absolute_target_source_dir BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE relative_target_source_dir)
     else()
-        cmake_path(RELATIVE_PATH absolute_target_source_dir BASE_DIRECTORY ${CMAKE_SOURCE_DIR} OUTPUT_VARIABLE relative_target_source_dir)
+        cmake_path(IS_PREFIX CMAKE_SOURCE_DIR ${absolute_target_source_dir} is_target_prefix_of_source_dir)
+        if(is_target_prefix_of_source_dir)
+            cmake_path(RELATIVE_PATH absolute_target_source_dir BASE_DIRECTORY ${CMAKE_SOURCE_DIR} OUTPUT_VARIABLE relative_target_source_dir)
+        else()
+            cmake_path(GET absolute_target_source_dir RELATIVE_PART relative_target_source_dir)
+        endif()
     endif()
 
     set(${output_source_dir} ${relative_target_source_dir} PARENT_SCOPE)
