@@ -37,7 +37,7 @@ class TestEditorTest:
         TestEditorTest.args = sys.argv.copy()
         build_dir_arg_index = TestEditorTest.args.index("--build-directory")
         if build_dir_arg_index < 0:
-            print("Must pass --build-directory argument")
+            print("Error: Must pass --build-directory argument in order to run this test")
             sys.exit(-2)
 
         TestEditorTest.args[build_dir_arg_index+1] = os.path.abspath(TestEditorTest.args[build_dir_arg_index+1])
