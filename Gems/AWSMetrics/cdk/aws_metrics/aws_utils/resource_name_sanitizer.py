@@ -26,6 +26,9 @@ MAX_RESOURCE_NAME_LENGTH_MAPPING = {
 def sanitize_resource_name(resource_name: str, resource_type: str) -> str:
     """
     Truncate the resource name if its length exceeds the limit.
+    This is the best effort for sanitizing resource names based on the AWS documents since each AWS service
+    has its unique restrictions. Customers can extend this function for validation or sanitization.
+
     :param resource_name: Original name of the resource.
     :param resource_type: Type of the resource.
     :return Sanitized resource name that can be deployed with AWS.
