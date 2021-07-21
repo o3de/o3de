@@ -369,11 +369,11 @@ namespace AzToolsFramework::ViewportUi::Internal
 
     void ViewportUiDisplay::InitializeUiOverlay()
     {
-        m_uiMainWindow.setObjectName(m_uiMainWindow.windowTitle());
+        m_uiMainWindow.setObjectName(QString("ViewportUiWindow"));
         ConfigureWidgetForViewportUi(&m_uiMainWindow);
         m_uiMainWindow.setVisible(false);
 
-        m_uiOverlay.setObjectName(m_uiOverlay.windowTitle());
+        m_uiOverlay.setObjectName(QString("ViewportUiOverlay"));
         m_uiMainWindow.setCentralWidget(&m_uiOverlay);
         m_uiOverlay.setVisible(false);
 
