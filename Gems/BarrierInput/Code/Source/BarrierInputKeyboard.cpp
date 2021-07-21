@@ -179,7 +179,6 @@ namespace BarrierInput
         // of UTF-8 text input, that is beyond the scope of this debug/development only class. Note
         // that this function assumes an ANSI mechanical keyboard layout with a standard QWERTY key
         // mapping, and will not produce correct results if used with other key layouts or mappings.
-        // Using std::unordered_map/pair instead of AZStd::unordered_map to avoid allocator issues.
         static const AZStd::fixed_unordered_map<AZ::u32, AZStd::pair<char, char>, 16, 64> ScanCodeToASCIICharMap =
         {
             {   2, { '1', '!' } },
