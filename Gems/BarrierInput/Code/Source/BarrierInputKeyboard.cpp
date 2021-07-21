@@ -1,5 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -8,6 +9,8 @@
 #include <BarrierInputKeyboard.h>
 
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboardWindowsScanCodes.h>
+
+#include <AzCore/std/containers/fixed_unordered_map.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace BarrierInput
@@ -68,7 +71,7 @@ namespace BarrierInput
     {
         {
             // Queue all key events that were received in the other thread
-            AZStd::lock_guard<AZStd::mutex> lock(m_threadAwareRawKeyEventQueuesByIdMutex);
+            AZStd::scoped_lock lock(m_threadAwareRawKeyEventQueuesByIdMutex);
             for (const auto& keyEventQueuesById : m_threadAwareRawKeyEventQueuesById)
             {
                 const InputChannelId& inputChannelId = keyEventQueuesById.first;
@@ -82,7 +85,7 @@ namespace BarrierInput
 
         {
             // Queue all text events that were received in the other thread
-            AZStd::lock_guard<AZStd::mutex> lock(m_threadAwareRawTextEventQueueMutex);
+            AZStd::scoped_lock lock(m_threadAwareRawTextEventQueueMutex);
             for (const AZStd::string& rawTextEvent : m_threadAwareRawTextEventQueue)
             {
             #if !defined(ALWAYS_DISPATCH_KEYBOARD_TEXT_INPUT)
@@ -151,7 +154,7 @@ namespace BarrierInput
 
         if (inputChannelId)
         {
-            AZStd::lock_guard<AZStd::mutex> lock(m_threadAwareRawKeyEventQueuesByIdMutex);
+            AZStd::scoped_lock lock(m_threadAwareRawKeyEventQueuesByIdMutex);
             m_threadAwareRawKeyEventQueuesById[*inputChannelId].push_back(rawKeyState);
         }
     }
@@ -159,7 +162,7 @@ namespace BarrierInput
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void InputDeviceKeyboardBarrier::ThreadSafeQueueRawTextEvent(const AZStd::string& textUTF8)
     {
-        AZStd::lock_guard<AZStd::mutex> lock(m_threadAwareRawTextEventQueueMutex);
+        AZStd::scoped_lock lock(m_threadAwareRawTextEventQueueMutex);
         m_threadAwareRawTextEventQueue.push_back(textUTF8);
     }
 
@@ -177,7 +180,7 @@ namespace BarrierInput
         // that this function assumes an ANSI mechanical keyboard layout with a standard QWERTY key
         // mapping, and will not produce correct results if used with other key layouts or mappings.
         // Using std::unordered_map/pair instead of AZStd::unordered_map to avoid allocator issues.
-        static const std::unordered_map<AZ::u32, std::pair<char, char>> ScanCodeToASCIICharMap =
+        static const AZStd::fixed_unordered_map<AZ::u32, AZStd::pair<char, char>, 16, 64> ScanCodeToASCIICharMap =
         {
             {   2, { '1', '!' } },
             {   3, { '2', '@' } },

@@ -1,5 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -81,7 +82,7 @@ namespace BarrierInput
     {
         {
             // Queue all mouse button events that were received in the other thread
-            AZStd::lock_guard<AZStd::mutex> lock(m_threadAwareRawButtonEventQueuesByIdMutex);
+            AZStd::scoped_lock lock(m_threadAwareRawButtonEventQueuesByIdMutex);
             for (const auto& buttonEventQueuesById : m_threadAwareRawButtonEventQueuesById)
             {
                 const InputChannelId& inputChannelId = buttonEventQueuesById.first;
@@ -96,7 +97,7 @@ namespace BarrierInput
         bool receivedRawMovementEvents = false;
         {
             // Queue all mouse movement events that were received in the other thread
-            AZStd::lock_guard<AZStd::mutex> lock(m_threadAwareRawMovementEventQueuesByIdMutex);
+            AZStd::scoped_lock lock(m_threadAwareRawMovementEventQueuesByIdMutex);
             for (const auto& movementEventQueuesById : m_threadAwareRawMovementEventQueuesById)
             {
                 const InputChannelId& inputChannelId = movementEventQueuesById.first;
@@ -119,7 +120,7 @@ namespace BarrierInput
             const float windowHeight = static_cast<float>(windowSize.m_height);
             const AZ::Vector2 oldSystemCursorPositionNormalized = m_systemCursorPositionNormalized;
 
-            AZStd::lock_guard<AZStd::mutex> lock(m_threadAwareSystemCursorPositionMutex);
+            AZStd::scoped_lock lock(m_threadAwareSystemCursorPositionMutex);
             {
                 const AZ::Vector2 normalizedPosition(m_threadAwareSystemCursorPosition.GetX() / windowWidth,
                                                      m_threadAwareSystemCursorPosition.GetY() / windowHeight);
@@ -160,7 +161,7 @@ namespace BarrierInput
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void InputDeviceMouseBarrier::OnRawMouseMovementEvent(float movementX, float movementY)
     {
-        AZStd::lock_guard<AZStd::mutex> lock(m_threadAwareRawMovementEventQueuesByIdMutex);
+        AZStd::scoped_lock lock(m_threadAwareRawMovementEventQueuesByIdMutex);
         m_threadAwareRawMovementEventQueuesById[InputDeviceMouse::Movement::X].push_back(movementX);
         m_threadAwareRawMovementEventQueuesById[InputDeviceMouse::Movement::Y].push_back(movementY);
     }
@@ -169,7 +170,7 @@ namespace BarrierInput
     void InputDeviceMouseBarrier::OnRawMousePositionEvent(float positionX,
                                                           float positionY)
     {
-        AZStd::lock_guard<AZStd::mutex> lock(m_threadAwareSystemCursorPositionMutex);
+        AZStd::scoped_lock lock(m_threadAwareSystemCursorPositionMutex);
         m_threadAwareSystemCursorPosition = AZ::Vector2(positionX, positionY);
     }
 
@@ -187,7 +188,7 @@ namespace BarrierInput
 
         if (inputChannelId)
         {
-            AZStd::lock_guard<AZStd::mutex> lock(m_threadAwareRawButtonEventQueuesByIdMutex);
+            AZStd::scoped_lock lock(m_threadAwareRawButtonEventQueuesByIdMutex);
             m_threadAwareRawButtonEventQueuesById[*inputChannelId].push_back(rawButtonState);
         }
     }
