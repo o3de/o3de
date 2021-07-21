@@ -38,8 +38,7 @@ namespace PrefabDependencyViewer
 
             while (!stack.empty())
             {
-                // Get the current TemplateId we are looking at
-                // and it's parent.
+                // Get the current TemplateId we are looking at and it's parent.
                 pair tidAndParent = stack.top();
                 stack.pop();
 
@@ -57,12 +56,13 @@ namespace PrefabDependencyViewer
 
                 // Get the source file of the current Template
                 auto sourceIterator = prefabDom.FindMember(AzToolsFramework::Prefab::PrefabDomUtils::SourceName);
-                const char* sourceFileName = "";
-                if (sourceIterator != prefabDom.MemberEnd())
+                if (sourceIterator == prefabDom.MemberEnd() || !sourceIterator->value.IsString())
                 {
-                    auto&& source = sourceIterator->value;
-                    sourceFileName = source.IsString() ? source.GetString() : "";
+                    return AZ::Failure("PrefabDependencyTree - Source Attribute missing or it's not a String");
                 }
+
+                auto&& source = sourceIterator->value;
+                const char* sourceFileName = source.GetString();
 
                 // Create a new node for the current Template and
                 // Connect it to it's parent.
@@ -88,15 +88,13 @@ namespace PrefabDependencyViewer
                             sourceFileName = "";
                             if (sourceIterator != instance.value.MemberEnd())
                             {
-                                auto&& source = sourceIterator->value;
+                                source = sourceIterator->value;
                                 sourceFileName = source.IsString() ? source.GetString() : "";
                             }
 
+                            // Checks for InvalidTemplateId when we pop the element off of the stack above.
                             TemplateId childtid = s_prefabSystemComponentInterface->GetTemplateIdFromFilePath(sourceFileName);
-                            if (childtid != AzToolsFramework::Prefab::InvalidTemplateId)
-                            {
-                                stack.push(AZStd::make_pair(childtid, node));
-                            }
+                            stack.push(AZStd::make_pair(childtid, node));
                         }
                     }
                 }

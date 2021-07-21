@@ -146,6 +146,10 @@ namespace PrefabDependencyViewer
             PrefabDependencyTree tree = outcome.GetValue();
             window->DisplayTree(tree); // prefabInstance);
         }
+        else
+        {
+            AZ_Assert(false, outcome.GetError());
+        }
         
         /*
          AZStd::vector<AZ::Entity&> entities;
