@@ -70,16 +70,21 @@ namespace LyShine
         QueueForBuildAndInitialization();
     }
 
-    AZ::RPI::Pass* LyShinePass::GetRttPass(const AZStd::string& name)
+    AZ::RPI::RasterPass* LyShinePass::GetRttPass(const AZStd::string& name)
     {
         for (auto child:m_children)
         {
             if (child->GetName() == AZ::Name(name))
             {
-                return child.get();
+                return azrtti_cast<AZ::RPI::RasterPass*>(child.get());
             }
         }
         return nullptr;
+    }
+
+    AZ::RPI::RasterPass* LyShinePass::GetUiCanvasPass()
+    {
+        return m_uiCanvasChildPass.get();
     }
 
     void LyShinePass::AddRttChildPasses(LyShine::AttachmentImagesAndDependencies attachmentImagesAndDependencies)
@@ -126,7 +131,7 @@ namespace LyShine
 
         // Pass data
         AZStd::shared_ptr<AZ::RPI::RasterPassData> passData = AZStd::make_shared<AZ::RPI::RasterPassData>();
-        passData->m_drawListTag = attachmentImage->GetRHIImage()->GetName();
+        passData->m_drawListTag = AZ::Name("uicanvas");
         passData->m_pipelineViewTag = AZ::Name("MainCamera");
         auto size = attachmentImage->GetRHIImage()->GetDescriptor().m_size;
         passData->m_overrideScissor = AZ::RHI::Scissor(0, 0, size.m_width, size.m_height);
@@ -234,9 +239,12 @@ namespace LyShine
                 frameGraph.GetAttachmentDatabase().ImportImage(attachmentImageId, attachmentImage->GetRHIImage());
             }
 
-            frameGraph.UseAttachment(AZ::RHI::ImageScopeAttachmentDescriptor{ attachmentImage->GetAttachmentId() },
-                AZ::RHI::ScopeAttachmentAccess::Read,
-                AZ::RHI::ScopeAttachmentUsage::Shader);
+            AZ::RHI::ImageScopeAttachmentDescriptor desc;
+            desc.m_attachmentId = attachmentImageId;
+            desc.m_imageViewDescriptor = attachmentImage->GetImageView()->GetDescriptor();
+            desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
+
+            frameGraph.UseShaderAttachment(desc, AZ::RHI::ScopeAttachmentAccess::Read);
         }
     }
 
