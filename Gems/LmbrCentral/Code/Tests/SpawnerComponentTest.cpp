@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "LmbrCentral_precompiled.h"
 #include "LmbrCentralReflectionTest.h"
 
 #include <AzCore/Asset/AssetManager.h>

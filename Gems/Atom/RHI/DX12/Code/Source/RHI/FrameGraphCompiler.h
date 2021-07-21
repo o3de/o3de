@@ -10,6 +10,7 @@
 #include <Atom/RHI/FrameGraphCompiler.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/optional.h>
+#include <RHI/DX12.h>
 
 namespace AZ
 {

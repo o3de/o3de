@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "PhysXDebug_precompiled.h"
+
 #include "SystemComponent.h"
 
 #include <AzCore/Serialization/SerializeContext.h>
@@ -18,6 +18,7 @@
 #include <PhysX/UserDataTypes.h>
 #include <PhysX/Utils.h>
 #include <PhysX/PhysXLocks.h>
+#include <PhysX/Debug/PhysXDebugConfiguration.h>
 
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/PhysicsSystem.h>

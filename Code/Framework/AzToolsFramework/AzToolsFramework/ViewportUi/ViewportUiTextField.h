@@ -17,6 +17,8 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
 #include <QVBoxLayout>
 AZ_POP_DISABLE_WARNING
 
+#include <AzCore/std/smart_ptr/shared_ptr.h>
+
 namespace AzToolsFramework::ViewportUi::Internal
 {
     //! Helper class for a widget that holds and manages multiple LabelTextFields.

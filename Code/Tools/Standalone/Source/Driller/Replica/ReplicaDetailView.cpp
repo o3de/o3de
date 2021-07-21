@@ -6,8 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/sort.h>
 

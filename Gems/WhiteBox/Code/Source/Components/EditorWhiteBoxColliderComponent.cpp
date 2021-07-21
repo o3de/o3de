@@ -6,8 +6,6 @@
  *
  */
 
-#include "WhiteBox_precompiled.h"
-
 #include "EditorWhiteBoxColliderComponent.h"
 #include "EditorWhiteBoxComponent.h"
 #include "WhiteBoxColliderComponent.h"

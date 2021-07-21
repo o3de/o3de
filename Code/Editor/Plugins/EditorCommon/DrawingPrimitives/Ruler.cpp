@@ -7,7 +7,6 @@
  */
 
 
-#include "EditorCommon_precompiled.h"
 #include "Ruler.h"
 
 #include <QPainter>
@@ -44,7 +43,7 @@ namespace DrawingPrimitives
         const float ticksMinPower = log10f(RULER_MIN_PIXELS_PER_TICK);
         const float ticksPowerDelta = ticksMinPower - log10f(pixelsPerUnit);
 
-        const int digitsAfterPoint = max(-int(ceil(ticksPowerDelta)) - 1, 0);
+        const int digitsAfterPoint = AZStd::max(-int(ceil(ticksPowerDelta)) - 1, 0);
         if (pRulerPrecision)
         {
             *pRulerPrecision = digitsAfterPoint;
@@ -160,7 +159,7 @@ namespace DrawingPrimitives
 
 
         char format[16] = "";
-        sprintf_s(format, "%%.%df", rulerPrecision);
+        azsprintf(format, "%%.%df", rulerPrecision);
 
         const int height = options.m_rect.height();
         const int top = options.m_rect.top();

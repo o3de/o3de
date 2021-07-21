@@ -5,10 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "ImageProcessing_precompiled.h"
 
 #include <ImageLoader/ImageLoaders.h>
 #include <Atom/ImageProcessing/ImageObject.h>
+#include <ImageBuilderBaseType.h>
 
 //  warning C4251: class QT_Type needs to have dll-interface to be used by clients of class 'QT_Type'
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")

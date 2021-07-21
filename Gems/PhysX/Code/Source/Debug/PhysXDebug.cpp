@@ -6,13 +6,14 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
+#include <AzCore/std/functional.h>
 #include <Debug/PhysXDebug.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <AzCore/std/string/conversions.h>
 #include <PxPhysicsAPI.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
 
 namespace PhysX
 {

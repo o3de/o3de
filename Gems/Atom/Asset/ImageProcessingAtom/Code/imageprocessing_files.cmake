@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    Source/ImageProcessing_precompiled.h
     Source/Compressors/CryTextureSquisher/CryTextureSquisher.cpp
     Source/Compressors/CryTextureSquisher/CryTextureSquisher.h
     Include/Atom/ImageProcessing/ImageProcessingBus.h

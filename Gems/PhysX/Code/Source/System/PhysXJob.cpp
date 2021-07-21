@@ -6,7 +6,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
 #include <System/PhysXJob.h>
 #include <AzCore/Debug/Profiler.h>
 

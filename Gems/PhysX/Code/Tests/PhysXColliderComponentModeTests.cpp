@@ -6,8 +6,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include "TestColliderComponent.h"
 
 #include <AZTestShared/Math/MathTestHelpers.h>

@@ -6,8 +6,6 @@
  *
  */
 
-#include "LyShine_precompiled.h"
-
 #include "UiGameEntityContext.h"
 #include <AzCore/Serialization/Utils.h>
 #include <LyShine/Bus/UiCanvasBus.h>

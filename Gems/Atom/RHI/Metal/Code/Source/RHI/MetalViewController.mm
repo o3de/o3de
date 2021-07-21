@@ -6,7 +6,6 @@
  *
  */
 
-#include "Atom_RHI_Metal_precompiled.h"
 #import <RHI/MetalViewController.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Windowing/WindowBus.h>

@@ -6,7 +6,6 @@
  *
  */
 
-#include "RHI/Atom_RHI_DX12_precompiled.h"
 #include <RHI/FrameGraphCompiler.h>
 #include <Atom/RHI/BufferFrameAttachment.h>
 #include <Atom/RHI/BufferScopeAttachment.h>

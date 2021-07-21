@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "StartingPointInput_precompiled.h"
+
 #include "InputConfigurationComponent.h"
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/IO/SystemFile.h>

@@ -6,8 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Math/Random.h>

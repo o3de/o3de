@@ -6,7 +6,6 @@
  *
  */
 
-#include "Atom_RHI_Metal_precompiled.h"
 
 #import <QuartzCore/CAMetalLayer.h>
 #include <RHI/Buffer.h>
@@ -87,17 +86,6 @@ namespace Platform
     RHIMetalView* GetMetalView(NativeWindowType* nativeWindow)
     {
         return reinterpret_cast<RHIMetalView*>([nativeWindow.rootViewController view]);
-    }
-
-    void ApplyTileDimentions(MTLRenderPassDescriptor* mtlRenderPassDescriptor)
-    {
-        //Metal driver has a bug where if the tile dimensions changes between passes it will
-        //generate incorrect vertex positions (possible vertex invariance). For example vertex invariance was
-        //observed between Depth pass and forward pass. Hence for now we are setting global tile dimentions across all passes.
-        //For performance sake we should eventually remove this once this bug is addressed.
-        //[GFX_TODO][ATOM-13440] - Remove once driver bug is addressed.
-        mtlRenderPassDescriptor.tileWidth = 16;
-        mtlRenderPassDescriptor.tileHeight = 16;
     }
 
     void SynchronizeBufferOnCPU(id<MTLBuffer> mtlBuffer, size_t bufferOffset, size_t bufferSize)

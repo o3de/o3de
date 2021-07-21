@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "AzToolsFramework_precompiled.h"
 #include "PropertyVectorCtrl.hxx"
 #include "PropertyQTConstants.h"
 #include <AzQtComponents/Components/Widgets/SpinBox.h>

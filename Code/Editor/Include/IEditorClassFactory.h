@@ -15,6 +15,7 @@
 #pragma once
 
 #include <vector>
+#include <QtCore/QString>
 
 #define DEFINE_UUID(l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
 static const GUID uuid() { return { l, w1, w2, { b1, b2,  b3,  b4,  b5,  b6,  b7,  b8 } }; }
@@ -69,7 +70,6 @@ enum
 #include "SandboxAPI.h"
 
 class QObject;
-class QString;
 
 
 //! System class IDs
@@ -121,19 +121,9 @@ struct IClassDesc
     //! create panel.
     virtual QString Category() = 0;
 
-#ifdef QSTRING_H
     virtual QString MenuSuggestion() { return QString(); }
     virtual QString Tooltip() { return QString(); }
     virtual QString Description() { return QString(); }
-#else
-    //! This method returns the desired menu in which this plugin class would like to be placed in the editor.
-    //! It is up to the editor to determine if it can and wants to fulfill this request.
-    virtual QString MenuSuggestion();
-    //! This method returns the tooltip for the pane
-    virtual QString Tooltip();
-    //! This method returns the description for the pane
-    virtual QString Description();
-#endif
 
     //! This method returns if the plugin should have a menu item for its pane.
     virtual bool ShowInMenu() const { return true; }

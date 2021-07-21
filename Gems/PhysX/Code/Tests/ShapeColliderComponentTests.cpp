@@ -6,7 +6,6 @@
  *
  */
 
-#include "PhysX_precompiled.h"
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>

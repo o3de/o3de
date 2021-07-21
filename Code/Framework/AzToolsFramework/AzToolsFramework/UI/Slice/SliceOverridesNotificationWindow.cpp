@@ -5,7 +5,9 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "AzToolsFramework_precompiled.h"
+
+#include <AzCore/PlatformDef.h>
+
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'QLayoutItem::align': class 'QFlags<Qt::AlignmentFlag>' needs to have dll-interface to be used by clients of class 'QLayoutItem'
 #include <AzToolsFramework/UI/Slice/ui_NotificationWindow.h>
 AZ_POP_DISABLE_WARNING

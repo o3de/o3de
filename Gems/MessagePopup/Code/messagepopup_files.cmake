@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    Source/MessagePopup_precompiled.h
     Include/MessagePopup/MessagePopupBus.h
     Source/MessagePopupSystemComponent.cpp
     Source/MessagePopupSystemComponent.h

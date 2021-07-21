@@ -6,8 +6,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include "ColliderOffsetMode.h"
 #include <PhysX/EditorColliderComponentRequestBus.h>
 

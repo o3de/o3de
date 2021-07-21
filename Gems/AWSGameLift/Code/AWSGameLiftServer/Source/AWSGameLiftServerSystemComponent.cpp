@@ -110,7 +110,7 @@ namespace AWSGameLift
 
         if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
         {
-            AZ::GetValueResult getCvarResult = console->GetCvarValue("sv_port", serverProcessDesc.m_port);
+            [[maybe_unused]] AZ::GetValueResult getCvarResult = console->GetCvarValue("sv_port", serverProcessDesc.m_port);
             AZ_Error(
                 "AWSGameLift", getCvarResult == AZ::GetValueResult::Success, "Lookup of 'sv_port' console variable failed with error %s",
                 AZ::GetEnumString(getCvarResult));

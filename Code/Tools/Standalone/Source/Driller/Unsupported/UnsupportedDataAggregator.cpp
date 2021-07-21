@@ -6,8 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "UnsupportedDataAggregator.hxx"
 #include <Source/Driller/Unsupported/moc_UnsupportedDataAggregator.cpp>
 

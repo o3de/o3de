@@ -6,10 +6,10 @@
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 
 #include <AzCore/Console/IConsole.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiDisplayLayout.h>
+#include <QtWidgets/QWidget>
 
 namespace AzToolsFramework::ViewportUi::Internal
 {

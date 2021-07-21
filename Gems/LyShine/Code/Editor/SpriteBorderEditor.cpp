@@ -5,11 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "UiCanvasEditor_precompiled.h"
 #include "SpriteBorderEditorCommon.h"
 
 #include <QMessageBox>
 #include <QApplication>
+#include <Util/PathUtil.h>
 //-------------------------------------------------------------------------------
 
 namespace

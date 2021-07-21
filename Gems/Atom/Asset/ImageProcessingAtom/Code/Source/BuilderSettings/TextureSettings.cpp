@@ -6,7 +6,6 @@
  *
  */
 
-#include "ImageProcessing_precompiled.h"
 #include <BuilderSettings/TextureSettings.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/EditContext.h>

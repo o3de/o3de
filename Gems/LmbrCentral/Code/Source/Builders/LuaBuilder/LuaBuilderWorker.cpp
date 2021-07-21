@@ -6,7 +6,6 @@
  *
  */
 
-#include <LmbrCentral_precompiled.h>
 #include "LuaBuilderWorker.h"
 #include "LuaHelpers.h"
 

@@ -6,7 +6,6 @@
  *
  */
 
-#include <ImageProcessing_precompiled.h>
 #include "TexturePresetSelectionWidget.h"
 #include <Source/Editor/ui_TexturePresetSelectionWidget.h>
 

@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RHI/PhysicalDevice.h>
+#include <RHI/DX12.h>
 
 namespace AZ
 {

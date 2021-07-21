@@ -6,8 +6,7 @@
  *
  */
 
-#include "ComponentEntityEditorPlugin_precompiled.h"
-
+#include <EditorDefs.h>
 #include "CryEdit.h"
 #include "UI/QComponentEntityEditorOutlinerWindow.h"
 #include "UI/Outliner/OutlinerWidget.hxx"

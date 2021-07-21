@@ -17,6 +17,9 @@ class QString;
 
 namespace AzToolsFramework::AssetUtils
 {
+    static constexpr const char* AssetImporterSettingsKey{ "/O3DE/SceneAPI/AssetImporter" };
+    static constexpr const char* AssetImporterSupportedFileTypeKey{ "SupportedFileTypeExtensions" };
+
     //! Reads the "/Amazon/AssetProcessor/Settings/Platforms" entry from the settings registry
     //! to retrieve all enabled platforms
     void ReadEnabledPlatformsFromSettingsRegistry(AZ::SettingsRegistryInterface& settingsRegistry,

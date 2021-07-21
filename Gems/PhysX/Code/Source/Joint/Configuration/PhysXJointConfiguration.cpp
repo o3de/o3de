@@ -6,7 +6,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
 #include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>

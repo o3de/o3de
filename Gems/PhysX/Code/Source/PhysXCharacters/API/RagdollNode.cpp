@@ -6,12 +6,15 @@
  *
  */
 
-#include <PhysX_precompiled.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 #include <PhysXCharacters/API/RagdollNode.h>
 #include <PhysX/NativeTypeIdentifiers.h>
+#include <PhysX/Debug/PhysXDebugConfiguration.h>
+#include <PhysX/MathConversion.h>
+
+#include <PxPhysicsAPI.h>
 
 namespace PhysX
 {

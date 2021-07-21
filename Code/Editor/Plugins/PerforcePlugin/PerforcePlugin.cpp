@@ -6,8 +6,6 @@
  *
  */
 
-
-#include "PerforcePlugin_precompiled.h"
 #include "PerforcePlugin.h"
 #include "PerforceSourceControl.h"
 #include "Include/ISourceControl.h"

@@ -6,8 +6,6 @@
  *
  */
 
-#include "Woodpecker_precompiled.h"
-
 #include "StreamerDataView.hxx"
 #include <Woodpecker/Driller/IO/moc_StreamerDataView.cpp>
 

@@ -13,6 +13,8 @@
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Component/EntityId.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzQtComponents/Components/FilteredSearchWidget.h>
 
 #include <QWidget>

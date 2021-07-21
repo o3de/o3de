@@ -10,6 +10,7 @@
 #include <Atom/RHI/IndirectBufferSignature.h>
 #include <Atom/RHI.Reflect/IndirectBufferLayout.h>
 #include <AzCore/Memory/PoolAllocator.h>
+#include <RHI/DX12.h>
 
 namespace AZ
 {

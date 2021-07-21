@@ -238,6 +238,14 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         OUTPUT_SUBDIRECTORY
             testdata/DummyProject
     )
+    ly_add_target_files(
+        TARGETS
+            AssetProcessor.Tests
+        FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/testdata/config_metadata/AssetProcessorPlatformConfig.setreg
+        OUTPUT_SUBDIRECTORY
+            testdata/config_metadata
+    )
 
     # Have the AssetProcessorTest use the LY_CMAKE_TARGET define of AssetProcessorBatch for the purpose
     # of looking up the generated cmake build dependencies settings registry .setreg file

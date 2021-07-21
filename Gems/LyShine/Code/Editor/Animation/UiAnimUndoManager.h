@@ -10,6 +10,7 @@
 #pragma once
 
 #include <AzCore/std/string/string.h>
+#include <AzCore/std/containers/vector.h>
 
 struct UiAnimUndoObject;
 class UiAnimUndoStep;

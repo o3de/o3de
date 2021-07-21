@@ -5,12 +5,13 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "EditorCommon_precompiled.h"
 
 #include <platform.h>
 #include "EditorCommon.h"
 
 #include "EditorCommonAPI.h"
+
+#include <CryCommon/ISystem.h>
 
 CEditorCommonApp::CEditorCommonApp()
 {

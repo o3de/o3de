@@ -6,8 +6,6 @@
  *
  */
 
-#include "WhiteBox_precompiled.h"
-
 #include "WhiteBoxColliderComponent.h"
 
 #include <AzCore/Component/Entity.h>

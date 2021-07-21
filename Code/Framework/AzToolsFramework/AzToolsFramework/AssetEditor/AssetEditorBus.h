@@ -11,6 +11,7 @@
 #include <AzCore/UserSettings/UserSettings.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ { namespace Data { class AssetData; } }
 

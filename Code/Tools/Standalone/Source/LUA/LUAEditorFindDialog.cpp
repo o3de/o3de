@@ -6,7 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
 #include <AzCore/Script/ScriptAsset.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzCore/Casting/numeric_cast.h>

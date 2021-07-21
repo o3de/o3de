@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    Source/EMotionFX_precompiled.h
     Include/Integration/AnimationBus.h
     Include/Integration/MotionExtractionBus.h
     Source/Integration/System/SystemComponent.cpp

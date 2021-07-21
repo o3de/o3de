@@ -7,8 +7,6 @@
  */
 
 
-#include "UiCanvasEditor_precompiled.h"
-
 //----- UI_ANIMATION_REVISIT - this is required to compile since something we include still uses MFC
 
 // prevent inclusion of conflicting definitions of INT8_MIN etc

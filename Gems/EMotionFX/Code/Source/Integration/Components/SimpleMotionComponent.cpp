@@ -6,9 +6,6 @@
  *
  */
 
-
-#include "EMotionFX_precompiled.h"
-
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -17,6 +14,9 @@
 
 #include <Integration/Components/SimpleMotionComponent.h>
 #include <MCore/Source/AttributeString.h>
+#include <EMotionFX/Source/ActorInstance.h>
+#include <EMotionFX/Source/MotionSystem.h>
+#include <EMotionFX/Source/MotionInstance.h>
 
 namespace EMotionFX
 {

@@ -5,8 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "StandaloneTools_precompiled.h"
-
 #include "TelemetryEvent.h"
 
 #include "TelemetryBus.h"

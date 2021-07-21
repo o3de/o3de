@@ -6,8 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "DoubleListSelector.hxx"
 #include <Source/Driller/moc_DoubleListSelector.cpp>
 #include <Source/Driller/ui_DoubleListSelector.h>

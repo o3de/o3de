@@ -6,7 +6,6 @@
  *
  */
 
-#include "precompiled.h"
 #include "UnsavedChangesDialog.h"
 
 #include <QPushButton>

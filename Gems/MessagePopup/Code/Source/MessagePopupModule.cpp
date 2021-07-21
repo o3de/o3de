@@ -6,8 +6,6 @@
  *
  */
 
-#include <MessagePopup_precompiled.h>
-
 #include <AzCore/Memory/SystemAllocator.h>
 #include <MessagePopupSystemComponent.h>
 #include <LyShineMessagePopup.h>

@@ -6,7 +6,6 @@
  *
  */
 
-#include "LyShine_precompiled.h"
 #include "UiInteractableComponent.h"
 
 #include <AzCore/Math/Crc.h>

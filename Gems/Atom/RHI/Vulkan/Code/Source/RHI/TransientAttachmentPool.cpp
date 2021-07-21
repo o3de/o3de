@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Atom_RHI_Vulkan_precompiled.h"
 #include <Atom/RHI.Reflect/TransientBufferDescriptor.h>
 #include <Atom/RHI.Reflect/TransientImageDescriptor.h>
 #include <RHI/Buffer.h>
