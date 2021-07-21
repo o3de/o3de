@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -17,7 +18,6 @@
 #include <AudioLogger.h>
 #include <AudioSystem.h>
 #include <NullAudioSystem.h>
-#include <SoundCVars.h>
 
 #if defined(AUDIO_SYSTEM_EDITOR)
     #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -29,9 +29,7 @@
 namespace Audio
 {
     // Module globals/statics
-    CSoundCVars g_audioCVars;
     CAudioLogger g_audioLogger;
-    AZ::EnvironmentVariable<int*> g_audioVerbosityVar;
 
     namespace Platform
     {
@@ -134,13 +132,6 @@ namespace AudioSystemGem
             return CreateNullAudioSystem();
         }
 
-        g_audioCVars.RegisterVariables();
-
-    #if !defined(AUDIO_RELEASE)
-        g_audioVerbosityVar = AZ::Environment::CreateVariable<int*>("AudioLogVerbosity");
-        g_audioVerbosityVar.Set(&g_audioCVars.m_nAudioLoggingOptions);
-    #endif // !AUDIO_RELEASE
-
         bool success = false;
 
         if (CreateAudioSystem())
@@ -190,9 +181,6 @@ namespace AudioSystemGem
         // Delete the Audio System
         // It should be the last object that is freed from the audio system memory pool before the allocator is destroyed.
         m_audioSystem.reset();
-
-        g_audioVerbosityVar.Reset();
-        g_audioCVars.UnregisterVariables();
 
         GetISystem()->GetISystemEventDispatcher()->RemoveListener(this);
     }

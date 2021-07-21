@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -41,6 +42,7 @@ namespace UnitTest
         AZ::Aabb unitBox = AZ::Aabb::CreateCenterHalfExtents(AZ::Vector3::CreateZero(), AZ::Vector3(1.f, 1.f, 1.f));
         AZ::Aabb aabb = AZ::Aabb::CreateCenterHalfExtents(AZ::Vector3(10.f, 10.f, 10.f), AZ::Vector3(1.f, 1.f, 1.f));
         AZ::Aabb aabb1 = AZ::Aabb::CreateCenterHalfExtents(AZ::Vector3(10.f, 10.f, 10.f), AZ::Vector3(100.f, 100.f, 100.f));
+        AZ::Aabb maxSizeAabb = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-AZ::Constants::FloatMax), AZ::Vector3(AZ::Constants::FloatMax));
 
         AZ::Vector3 point(0.f, 0.f, 0.f);
         AZ::Vector3 point1(10.f, 10.f, 10.f);
@@ -71,6 +73,10 @@ namespace UnitTest
         EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(frustum, unitBox));
         EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(frustum, aabb1));
         EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(sphere1, far_value));
+
+        // Verify that an AABB that covers the max floating point range successfully overlaps with a frustum and doesn't hit any
+        // floating-point math overflows.
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(frustum, maxSizeAabb));
 
         EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(frustum, aabb));
         EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(unitSphere, aabb));

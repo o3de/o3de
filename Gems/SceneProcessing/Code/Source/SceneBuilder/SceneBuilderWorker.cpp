@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -73,6 +74,8 @@ namespace SceneBuilder
             {
                 m_cachedFingerprint.append(element);
             }
+            // A general catch all version fingerprint. Update this to force all FBX files to recompile.
+            m_cachedFingerprint.append("Version 1");
         }
 
         return m_cachedFingerprint.c_str();

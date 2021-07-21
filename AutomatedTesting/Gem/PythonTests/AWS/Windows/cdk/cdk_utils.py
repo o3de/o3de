@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -71,15 +72,14 @@ class Cdk:
                                f'\nError:{error.stderr}')
 
     def setup(self, cdk_path: str, project: str, account_id: str,
-                 workspace: pytest.fixture, session: boto3.session.Session, bootstrap_required: bool):
+              workspace: pytest.fixture, session: boto3.session.Session):
         """
         :param cdk_path: Path where cdk app.py is stored.
         :param project: Project name used for cdk project name env variable.
         :param account_id: AWS account id to use with cdk application.
         :param workspace: ly_test_tools workspace fixture.
-        :param workspace: bootstrap_required deploys bootstrap stack.
+        :param session: Current boto3 session, provides credentials and region.
         """
-
         self._cdk_env = os.environ.copy()
         unique_id = uuid.uuid4().hex[-4:]
         self._cdk_env['O3DE_AWS_PROJECT_NAME'] = project[:4] + unique_id if len(project) > 4 else project + unique_id
@@ -103,8 +103,7 @@ class Cdk:
 
         logger.info(f'Installing cdk python dependencies: {output}')
 
-        if bootstrap_required:
-            self.bootstrap()
+        self.bootstrap()
 
     def bootstrap(self) -> None:
         """
@@ -123,15 +122,19 @@ class Cdk:
             logger.warning(f'Failed creating Bootstrap stack {BOOTSTRAP_STACK_NAME} not found. '
                            f'\nError:{clientError["Error"]["Message"]}')
 
-    def list(self) -> List[str]:
+    def list(self, deployment_params: List[str] = None) -> List[str]:
         """
-        lists cdk stack names
-        :return List of cdk stack names
+        lists cdk stack names.
+        :param deployment_params: Deployment parameters like --all can be passed in this way.
+        :return List of cdk stack names.
         """
         if not self._cdk_path:
             return []
 
         list_cdk_application_cmd = ['cdk', 'list']
+        if deployment_params:
+            list_cdk_application_cmd.extend(deployment_params)
+
         output = process_utils.check_output(
             list_cdk_application_cmd,
             cwd=self._cdk_path,
@@ -140,36 +143,36 @@ class Cdk:
 
         return output.splitlines()
 
-    def synthesize(self) -> None:
+    def synthesize(self, deployment_params: List[str] = None) -> None:
         """
-        Synthesizes all cdk stacks
+        Synthesizes all cdk stacks.
+        :param deployment_params: Deployment parameters like --all can be passed in this way.
         """
         if not self._cdk_path:
             return
 
-        list_cdk_application_cmd = ['cdk', 'synth']
+        synth_cdk_application_cmd = ['cdk', 'synth']
+        if deployment_params:
+            synth_cdk_application_cmd.extend(deployment_params)
 
         process_utils.check_output(
-            list_cdk_application_cmd,
+            synth_cdk_application_cmd,
             cwd=self._cdk_path,
             env=self._cdk_env,
             shell=True)
 
-    def deploy(self, context_variable: str = '', additonal_params: List[str] = None) -> List[str]:
+    def deploy(self, deployment_params: List[str] = None) -> List[str]:
         """
         Deploys all the CDK stacks.
-        :param context_variable: Context variable for enabling optional features.
-        :param additonal_params: Additonal parameters like --all can be passed in this way.
+        :param deployment_params: Deployment parameters like --all can be passed in this way.
         :return List of deployed stack arns.
         """
         if not self._cdk_path:
             return []
 
         deploy_cdk_application_cmd = ['cdk', 'deploy', '--require-approval', 'never']
-        if additonal_params:
-            deploy_cdk_application_cmd.extend(additonal_params)
-        if context_variable:
-            deploy_cdk_application_cmd.extend(['-c', f'{context_variable}'])
+        if deployment_params:
+            deploy_cdk_application_cmd.extend(deployment_params)
 
         output = process_utils.check_output(
             deploy_cdk_application_cmd,
@@ -177,21 +180,23 @@ class Cdk:
             env=self._cdk_env,
             shell=True)
 
-        stacks = []
         for line in output.splitlines():
             line_sections = line.split('/')
             assert len(line_sections), 3
-            stacks.append(line.split('/')[-2])
+            self._stacks.append(line.split('/')[-2])
 
-        return stacks
+        return self._stacks
 
-    def destroy(self) -> None:
+    def destroy(self, deployment_params: List[str] = None) -> None:
         """
         Destroys the cdk application.
+        :param deployment_params: Deployment parameters like --all can be passed in this way.
         """
 
         logger.info(f'CDK Path {self._cdk_path}')
-        destroy_cdk_application_cmd = ['cdk', 'destroy', '--all', '-f']
+        destroy_cdk_application_cmd = ['cdk', 'destroy', '-f']
+        if deployment_params:
+            destroy_cdk_application_cmd.extend(deployment_params)
 
         try:
             process_utils.check_output(
@@ -237,3 +242,7 @@ class Cdk:
         # self._session.client('cloudformation').delete_stack(
         #     StackName=BOOTSTRAP_STACK_NAME
         # )
+
+    @property
+    def stacks(self):
+        return self._stacks
