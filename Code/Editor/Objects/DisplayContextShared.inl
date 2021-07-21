@@ -13,6 +13,7 @@
 #include "IEditor.h"
 #include "Include/IIconManager.h"
 #include "Include/IDisplayViewport.h"
+#include <Editor/Util/EditorUtils.h>
 
 #include <QDateTime>
 #include <QPoint>

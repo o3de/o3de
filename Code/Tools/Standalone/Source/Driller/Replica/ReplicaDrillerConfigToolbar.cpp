@@ -6,8 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "ReplicaDrillerConfigToolbar.hxx"
 #include <Source/Driller/Replica/moc_ReplicaDrillerConfigToolbar.cpp>
 #include <Source/Driller/Replica/ui_ReplicaDrillerConfigToolbar.h>

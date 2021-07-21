@@ -6,8 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "ChannelControl.hxx"
 #include <Source/Driller/moc_ChannelControl.cpp>
 

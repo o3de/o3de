@@ -6,8 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "CollapsiblePanel.hxx"
 #include <Source/Driller/ui_CollapsiblePanel.h>
 #include <Source/Driller/moc_CollapsiblePanel.cpp>

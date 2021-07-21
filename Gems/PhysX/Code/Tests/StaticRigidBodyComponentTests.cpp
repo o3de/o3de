@@ -6,8 +6,6 @@
  *
  */
 
-#include "PhysX_precompiled.h"
-
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <LmbrCentral/Shape/BoxShapeComponentBus.h>
 #include <PhysX/PhysXLocks.h>

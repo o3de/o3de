@@ -6,8 +6,6 @@
  *
  */
 
-#include <MessagePopup_precompiled.h>
-
 #include <MessagePopupManager.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>

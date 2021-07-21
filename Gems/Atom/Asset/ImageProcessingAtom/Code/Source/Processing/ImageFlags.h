@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzCore/base.h>
+
 namespace ImageProcessingAtom
 {
     // flags to propagate from the RC to the engine through GetImageFlags()

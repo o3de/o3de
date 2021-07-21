@@ -6,8 +6,6 @@
  *
  */
 
-#include "WhiteBox_precompiled.h"
-
 #include "Viewport/WhiteBoxManipulatorBounds.h"
 #include "Viewport/WhiteBoxViewportConstants.h"
 #include "WhiteBoxManipulatorViews.h"

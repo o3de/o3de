@@ -6,7 +6,6 @@
  *
  */
 
-#include "ProjectSettingsTool_precompiled.h"
 #include "PlatformSettings_Base.h"
 
 #include "PlatformSettings_common.h"

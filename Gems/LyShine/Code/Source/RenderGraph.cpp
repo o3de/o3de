@@ -6,8 +6,6 @@
  *
  */
 
-#include "LyShine_precompiled.h"
-
 #include "RenderGraph.h"
 #include "UiRenderer.h"
 

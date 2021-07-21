@@ -6,7 +6,6 @@
  *
  */
 
-#include "EditorCommon_precompiled.h"
 #include <WinWidget/WinWidgetManager.h>
 
 namespace WinWidget

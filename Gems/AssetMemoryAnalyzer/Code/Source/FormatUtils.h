@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#include <AzCore/base.h>
+
 namespace AssetMemoryAnalyzer
 {
     namespace Data

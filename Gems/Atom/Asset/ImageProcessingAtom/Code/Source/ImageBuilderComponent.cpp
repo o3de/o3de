@@ -6,7 +6,6 @@
  *
  */
 
-#include "ImageProcessing_precompiled.h"
 #include <ImageBuilderComponent.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/Serialization/SerializeContext.h>

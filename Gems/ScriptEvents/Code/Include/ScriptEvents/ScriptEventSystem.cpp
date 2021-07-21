@@ -6,7 +6,6 @@
  *
  */
 
-#include "precompiled.h"
 #include "ScriptEventSystem.h"
 #include "ScriptEventDefinition.h"
 #include "ScriptEventsAsset.h"

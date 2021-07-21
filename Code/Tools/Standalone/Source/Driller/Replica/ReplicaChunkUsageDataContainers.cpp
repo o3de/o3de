@@ -6,8 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "ReplicaChunkUsageDataContainers.h"
 
 #include "Source/Driller/StripChart.hxx"

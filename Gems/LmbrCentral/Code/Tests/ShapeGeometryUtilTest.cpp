@@ -6,7 +6,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Math/Vector3.h>

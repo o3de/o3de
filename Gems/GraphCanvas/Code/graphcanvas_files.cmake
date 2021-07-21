@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    precompiled.h
     Include/GraphCanvas/Widgets/RootGraphicsItem.h
     Include/GraphCanvas/tools.h
     Include/GraphCanvas/Components/Connections/ConnectionFilters/ConnectionFilterBus.h

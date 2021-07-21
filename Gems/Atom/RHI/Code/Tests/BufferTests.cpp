@@ -10,10 +10,10 @@
 #include <Tests/Factory.h>
 #include <Tests/Device.h>
 
-using namespace AZ;
-
 namespace UnitTest
 {
+    using namespace AZ;
+
     class BufferTests
         : public RHITestFixture
     {

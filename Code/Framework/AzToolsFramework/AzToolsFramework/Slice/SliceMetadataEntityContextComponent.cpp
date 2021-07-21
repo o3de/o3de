@@ -6,7 +6,6 @@
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Slice/SliceMetadataInfoBus.h>

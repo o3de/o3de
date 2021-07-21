@@ -6,7 +6,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "EditorSplineComponentMode.h"
 
 #include <AzToolsFramework/Manipulators/SplineHoverSelection.h>

@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    Source/LmbrCentral_precompiled.h
     include/LmbrCentral/Ai/NavigationComponentBus.h
     include/LmbrCentral/Ai/NavigationAreaBus.h
     include/LmbrCentral/Ai/NavigationSystemBus.h

@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    Source/ImGui_precompiled.h
     Include/LYImGuiUtils/HistogramContainer.h
     Include/LYImGuiUtils/ImGuiDrawHelpers.h
     Source/LYImGuiUtils/HistogramContainer.cpp

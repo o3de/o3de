@@ -6,8 +6,6 @@
  *
  */
 
-#include "Woodpecker_precompiled.h"
-
 #include "StreamerDataAggregator.hxx"
 #include <Woodpecker/Driller/IO/moc_StreamerDataAggregator.cpp>
 

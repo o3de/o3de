@@ -6,7 +6,6 @@
  *
  */
 
-#include "ImageProcessing_precompiled.h"
 #include <BuilderSettings/PresetSettings.h>
 #include <Processing/PixelFormatInfo.h>
 

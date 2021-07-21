@@ -13,7 +13,6 @@ set(FILES
     Source/LyShine.h
     Source/LyShineDebug.cpp
     Source/LyShineDebug.h
-    Source/LyShine_precompiled.h
     Source/StringUtfUtils.h
     Source/UiImageComponent.cpp
     Source/UiImageComponent.h

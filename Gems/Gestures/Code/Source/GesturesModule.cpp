@@ -6,8 +6,6 @@
  *
  */
 
-#include "Gestures_precompiled.h"
-
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include "GesturesSystemComponent.h"

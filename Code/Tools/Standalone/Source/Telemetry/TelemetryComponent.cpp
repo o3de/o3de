@@ -5,9 +5,9 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "StandaloneTools_precompiled.h"
-
 #include "TelemetryComponent.h"
+
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace Telemetry
 {

@@ -6,8 +6,6 @@
  *
  */
 
-#include "EMotionFX_precompiled.h"
-
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -27,6 +25,12 @@
 #include <EMotionFX/Source/Transform.h>
 #include <EMotionFX/Source/RagdollInstance.h>
 #include <EMotionFX/Source/DebugDraw.h>
+#include <EMotionFX/Source/AttachmentSkin.h>
+#include <EMotionFX/Source/Node.h>
+#include <EMotionFX/Source/TransformData.h>
+#include <EMotionFX/Source/AttachmentNode.h>
+
+#include <MCore/Source/AzCoreConversions.h>
 
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 

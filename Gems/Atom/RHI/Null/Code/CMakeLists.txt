@@ -29,7 +29,6 @@ ly_add_target(
     NAME Atom_RHI_Null.Private.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
-        atom_rhi_null_common_files.cmake
         atom_rhi_null_private_common_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE

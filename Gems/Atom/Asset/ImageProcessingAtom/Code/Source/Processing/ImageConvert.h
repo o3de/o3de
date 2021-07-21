@@ -21,6 +21,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
+#include <ImageBuilderBaseType.h>
 
 namespace ImageProcessingAtom
 {

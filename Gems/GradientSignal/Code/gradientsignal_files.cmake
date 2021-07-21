@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    Source/GradientSignal_precompiled.h
     Include/GradientSignal/GradientSampler.h
     Include/GradientSignal/SmoothStep.h
     Include/GradientSignal/ImageAsset.h

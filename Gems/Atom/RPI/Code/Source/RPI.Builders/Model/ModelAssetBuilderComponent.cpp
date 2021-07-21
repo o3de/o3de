@@ -540,7 +540,9 @@ namespace AZ
                 }
                 else
                 {
-                    AZ_Warning(s_builderName, false, "Found multiple tangent data sets. Only the first will be used.");
+                    AZ_Warning(s_builderName, false,
+                        "Found multiple tangent data sets for mesh '%s'. Only the first will be used.",
+                        content.m_name.GetCStr());
                 }
             }
             else if (azrtti_istypeof<BitangentData>(data.get()))
@@ -552,7 +554,9 @@ namespace AZ
                 }
                 else
                 {
-                    AZ_Warning(s_builderName, false, "Found multiple bitangent data sets. Only the first will be used.");
+                    AZ_Warning(s_builderName, false,
+                        "Found multiple bitangent data sets for mesh '%s'. Only the first will be used.",
+                        content.m_name.GetCStr());
                 }
             }
             else if (azrtti_istypeof<MaterialData>(data.get()))

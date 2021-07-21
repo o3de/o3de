@@ -6,7 +6,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "EditorPolygonPrismShapeComponentMode.h"
 
 #include <AzToolsFramework/Manipulators/LineHoverSelection.h>

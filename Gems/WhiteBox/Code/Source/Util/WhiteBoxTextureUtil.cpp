@@ -6,8 +6,6 @@
  *
  */
 
-#include "WhiteBox_precompiled.h"
-
 #include "WhiteBoxTextureUtil.h"
 
 #include <AzCore/Casting/lossy_cast.h>

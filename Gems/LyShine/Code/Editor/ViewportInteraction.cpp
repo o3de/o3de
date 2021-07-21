@@ -5,8 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "UiCanvasEditor_precompiled.h"
-
 #include "EditorCommon.h"
 #include "ViewportNudge.h"
 #include "ViewportElement.h"
@@ -27,6 +25,7 @@
 #include <QSettings>
 
 #include <Editor/Resource.h>
+#include <Editor/Util/EditorUtils.h>
 
 static const float g_elementEdgeForgiveness = 10.0f;
 

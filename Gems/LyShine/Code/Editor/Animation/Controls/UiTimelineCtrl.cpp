@@ -7,7 +7,6 @@
  */
 
 
-#include "UiCanvasEditor_precompiled.h"
 #include <Animation/Controls/UiTimelineCtrl.h>
 #include "EditorDefs.h"
 //#include "MemDC.h"

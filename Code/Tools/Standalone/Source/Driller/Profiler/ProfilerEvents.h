@@ -10,6 +10,7 @@
 #define DRILLER_PROFILER_EVENTS_H
 
 #include "Source/Driller/DrillerEvent.h"
+#include <AzCore/Memory/SystemAllocator.h>
 
 namespace Driller
 {

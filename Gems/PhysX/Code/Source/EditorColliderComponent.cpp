@@ -6,8 +6,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include <AzCore/Script/ScriptTimePoint.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>

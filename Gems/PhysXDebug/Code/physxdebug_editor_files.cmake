@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    Source/PhysXDebug_precompiled.h
     Source/EditorSystemComponent.cpp
     Source/EditorSystemComponent.h
     Source/Module.cpp

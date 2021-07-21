@@ -7,8 +7,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include <AzFramework/Physics/RigidBodyBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/TransformBus.h>
@@ -23,6 +21,7 @@
 #include <Source/StaticRigidBodyComponent.h>
 #include <Source/SystemComponent.h>
 #include <Source/Utils.h>
+#include <PhysX/MathConversion.h>
 #include <PhysX/PhysXLocks.h>
 #include <Scene/PhysXScene.h>
 

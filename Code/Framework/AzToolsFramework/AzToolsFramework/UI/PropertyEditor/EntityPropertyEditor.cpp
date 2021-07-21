@@ -8,7 +8,6 @@
 
 #include <AzCore/PlatformDef.h>
 AZ_PUSH_DISABLE_WARNING(4127, "-Wunknown-warning-option") // conditional expression is constant
-#include "AzToolsFramework_precompiled.h"
 #include "EntityPropertyEditor.hxx"
 AZ_POP_DISABLE_WARNING
 
@@ -4966,21 +4965,29 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::SetEditorUiEnabled(bool enable)
     {
-        if (enable)
+        if (!m_selectedEntityIds.empty())
         {
-            EnableComponentActions(this, m_entityComponentActions);
+            if (enable)
+            {
+                EnableComponentActions(this, m_entityComponentActions);
+            }
+            else
+            {
+                DisableComponentActions(this, m_entityComponentActions);
+            }
+            SetPropertyEditorState(m_gui, enable);
+
+            for (auto componentEditor : m_componentEditors)
+            {
+                AzQtComponents::SetWidgetInteractEnabled(componentEditor, enable);
+            }
         }
         else
         {
-            DisableComponentActions(this, m_entityComponentActions);
+            AzQtComponents::SetWidgetInteractEnabled(m_gui->m_entityDetailsLabel, enable);
         }
         m_disabled = !enable;
-        SetPropertyEditorState(m_gui, enable);
 
-        for (auto componentEditor : m_componentEditors)
-        {
-            AzQtComponents::SetWidgetInteractEnabled(componentEditor, enable);
-        }
         // record the selected state after entering/leaving component mode
         SaveComponentEditorState();
     }

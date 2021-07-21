@@ -6,7 +6,6 @@
  *
  */
 
-#include <NumericalMethods_precompiled.h>
 #include <AzTest/AzTest.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/utils.h>

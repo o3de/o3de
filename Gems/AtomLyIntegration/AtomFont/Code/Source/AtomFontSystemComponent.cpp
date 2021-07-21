@@ -6,7 +6,8 @@
  *
  */
 
-#include <AtomLyIntegration/AtomFont/AtomFont_precompiled.h>
+#define USE_NULLFONT
+
 #include "AtomFontSystemComponent.h"
 
 #include <AzCore/Serialization/SerializeContext.h>
@@ -96,8 +97,8 @@ namespace AZ
         #else
                 // The NULL font implementation must be present for all platforms
                 // supporting running as a pure dedicated server.
-                system->GetILog()->LogError("Missing NULL font implementation for dedicated server");
-                env.pCryFont = NULL;
+                system.GetILog()->LogError("Missing NULL font implementation for dedicated server");
+                gEnv->pCryFont = NULL;
         #endif
             }
             else

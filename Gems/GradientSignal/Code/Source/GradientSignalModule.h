@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include "GradientSignal_precompiled.h"
 #include <AzCore/Module/Module.h>
 
 namespace GradientSignal

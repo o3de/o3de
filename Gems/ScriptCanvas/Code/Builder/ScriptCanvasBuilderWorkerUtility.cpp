@@ -6,7 +6,6 @@
  *
  */
 
-#include "precompiled.h"
 
 #include <Asset/AssetDescription.h>
 #include <AssetBuilderSDK/SerializationDependencies.h>

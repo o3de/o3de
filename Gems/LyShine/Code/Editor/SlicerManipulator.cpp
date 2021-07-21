@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "UiCanvasEditor_precompiled.h"
 #include "SpriteBorderEditorCommon.h"
 
 #define UICANVASEDITOR_DRAW_SELECTABLE_AREA_OF_SLICERMANIPULATOR    (0)

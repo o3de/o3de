@@ -6,8 +6,6 @@
  *
  */
 
-#include "ProjectSettingsTool_precompiled.h"
-
 #include "ValidationHandler.h"
 
 #include "PropertyFuncValLineEdit.h"

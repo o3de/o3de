@@ -6,7 +6,6 @@
  *
  */
 
-#include "GradientSignal_precompiled.h"
 #include "EditorSurfaceAltitudeGradientComponent.h"
 
 namespace GradientSignal

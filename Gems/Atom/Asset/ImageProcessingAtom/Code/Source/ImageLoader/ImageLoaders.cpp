@@ -6,7 +6,6 @@
  *
  */
 
-#include <ImageProcessing_precompiled.h>
 
 #include <ImageLoader/ImageLoaders.h>
 #include <Atom/ImageProcessing/ImageObject.h>

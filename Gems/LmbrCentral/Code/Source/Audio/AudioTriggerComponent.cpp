@@ -6,7 +6,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "AudioTriggerComponent.h"
 
 #include <ISystem.h>

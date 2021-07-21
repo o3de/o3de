@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "LyShine_precompiled.h"
 #include "UiLayoutColumnComponent.h"
 
 #include <AzCore/Serialization/SerializeContext.h>

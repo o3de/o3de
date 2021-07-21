@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    Source/ScriptedEntityTweener_precompiled.h
     Include/ScriptedEntityTweener/ScriptedEntityTweenerBus.h
     Include/ScriptedEntityTweener/ScriptedEntityTweenerEnums.h
     Source/ScriptedEntityTweenerMath.h

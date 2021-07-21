@@ -6,7 +6,6 @@
  *
  */
 
-#include "LyShine_precompiled.h"
 #include "UiInteractableState.h"
 
 #include <AzCore/Math/Crc.h>
@@ -22,6 +21,7 @@
 #include <LyShine/Bus/UiElementBus.h>
 #include <LyShine/Bus/UiVisualBus.h>
 #include <LyShine/Bus/UiIndexableImageBus.h>
+#include <CryCommon/LyShine/ILyShine.h>
 
 #include <IRenderer.h>
 #include "EditorPropertyTypes.h"

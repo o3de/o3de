@@ -7,6 +7,7 @@
  */
 
 #include <Prefab/PrefabTestComponent.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace UnitTest
 {

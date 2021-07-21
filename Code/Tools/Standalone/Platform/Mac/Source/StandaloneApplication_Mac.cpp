@@ -6,7 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
 #include <Source/StandaloneToolsApplication.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 

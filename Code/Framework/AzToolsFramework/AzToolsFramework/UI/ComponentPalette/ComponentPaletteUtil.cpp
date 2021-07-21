@@ -6,7 +6,6 @@
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 #include "ComponentPaletteUtil.hxx"
 
 #include <AzCore/Debug/Profiler.h>

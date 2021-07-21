@@ -44,7 +44,7 @@ namespace Multiplayer
         //! @{
         bool ReplicationSetUpdateReady() override;
         const ReplicationSet& GetReplicationSet() const override;
-        uint32_t GetMaxEntityReplicatorSendCount() const override;
+        uint32_t GetMaxProxyEntityReplicatorSendCount() const override;
         bool IsInWindow(const ConstNetworkEntityHandle& entityPtr, NetEntityRole& outNetworkRole) const override;
         void UpdateWindow() override;
         void DebugDraw() const override;

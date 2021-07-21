@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "AssetMemoryAnalyzer_precompiled.h"
+
 #include <CryCommon/IConsole.h>
 
 #include <AzCore/Memory/SystemAllocator.h>

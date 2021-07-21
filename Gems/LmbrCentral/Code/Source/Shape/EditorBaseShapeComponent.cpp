@@ -6,7 +6,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "EditorBaseShapeComponent.h"
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/EditContext.h>
