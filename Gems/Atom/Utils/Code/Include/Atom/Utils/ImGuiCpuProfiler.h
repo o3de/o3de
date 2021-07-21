@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Math/Random.h>
+#include <AzCore/std/containers/set.h>
 
 #include <Atom/RHI.Reflect/CpuTimingStatistics.h>
 #include <Atom/RHI/CpuProfiler.h>
@@ -33,16 +34,17 @@ namespace AZ
 
         struct TableRow
         {
-            void RecordRegion(const AZ::RHI::CachedTimeRegion& region);
+            void RecordRegion(const AZ::RHI::CachedTimeRegion& region, AZStd::thread_id threadId);
             double GetAverageInvocationsPerFrame() const;
-
-            static u64 ms_frames;
+            AZStd::string TableRow::GetExecutingThreadsLabel() const;
                
             AZStd::string m_groupName;
             AZStd::string m_regionName;
             AZStd::sys_time_t m_maxTicks;
             AZStd::sys_time_t m_runningAverageTicks;
             u64 m_invocations;
+
+            AZStd::set<AZStd::thread_id> m_executingThreads;
         };
 
         //! Visual profiler for Cpu statistics.
@@ -52,6 +54,8 @@ namespace AZ
         class ImGuiCpuProfiler
             : SystemTickBus::Handler
         {
+            friend struct TableRow;
+
             // Region Name -> Array of ThreadRegion entries
             using RegionEntryMap = AZStd::map<AZStd::string, TableRow>;
             // Group Name -> RegionEntryMap
@@ -78,6 +82,8 @@ namespace AZ
             static constexpr int DefaultFramesToCollect = 50;
             static constexpr float MediumFrameTimeLimit = 16.6; // 60 fps
             static constexpr float HighFrameTimeLimit = 33.3; // 30 fps
+
+            static u64 ms_framesActive;
 
             // Draw the shared header between the two windows
             void DrawCommonHeader();

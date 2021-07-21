@@ -14,6 +14,7 @@
 #include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/set.h>
+#include <AzCore/std/limits.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/std/time.h>
 
@@ -25,7 +26,7 @@ namespace AZ
 {
     namespace Render
     {
-        inline u64 TableRow::ms_frames = 0;
+        inline u64 ImGuiCpuProfiler::ms_framesActive = 0;
 
         namespace CpuProfilerImGuiHelper
         {
@@ -41,6 +42,7 @@ namespace AZ
             {
                 return AZStd::string::format("Thread: %zu", static_cast<size_t>(threadId));
             }
+
             inline float TicksToMs(AZStd::sys_time_t ticks)
             {
                 // Note: converting to microseconds integer before converting to milliseconds float
@@ -170,6 +172,7 @@ namespace AZ
                     }
 
                     ImGui::Text(statistics->m_groupName.c_str());
+                    const ImVec2 topLeftBound = ImGui::GetItemRectMin();
                     ImGui::TableNextColumn();
 
                     ImGui::Text(statistics->m_regionName.c_str());
@@ -182,7 +185,17 @@ namespace AZ
                     ImGui::TableNextColumn();
 
                     ImGui::Text("%.1f", statistics->GetAverageInvocationsPerFrame());
+                    const ImVec2 botRightBound = ImGui::GetItemRectMax();
                     ImGui::TableNextColumn();
+
+                    // NOTE: we are manually checking the bounds rather than using ImGui::IsItemHovered + Begin/EndGroup because
+                    // ImGui reports incorrect bounds when using Begin/End group in the Tables API.
+                    if (ImGui::IsMouseHoveringRect(topLeftBound, botRightBound, false))
+                    {
+                        ImGui::BeginTooltip();
+                        ImGui::Text(statistics->GetExecutingThreadsLabel().c_str());
+                        ImGui::EndTooltip();
+                    }
                 }
             }
             ImGui::EndTable();
@@ -275,7 +288,7 @@ namespace AZ
                 {
                     m_tableData.clear();
                     m_groupRegionMap.clear();
-                    TableRow::ms_frames = 0;
+                    ImGuiCpuProfiler::ms_framesActive = 0;
                 }
 
                 DrawTable();
@@ -446,8 +459,8 @@ namespace AZ
             // Get the latest TimeRegionMap
             const RHI::CpuProfiler::TimeRegionMap& timeRegionMap = RHI::CpuProfiler::Get()->GetTimeRegionMap();
 
-            m_viewportStartTick = INT64_MAX;
-            m_viewportEndTick = INT64_MIN;
+            m_viewportStartTick = AZStd::numeric_limits<s64>::max();
+            m_viewportEndTick = AZStd::numeric_limits<s64>::lowest();
 
             // Iterate through the entire TimeRegionMap and copy the data since it will get deleted on the next frame
             for (const auto& [threadId, singleThreadRegionMap] : timeRegionMap)
@@ -477,7 +490,7 @@ namespace AZ
                             m_tableData.push_back(&m_groupRegionMap[groupName][regionName]);
                         }
 
-                        m_groupRegionMap[groupName][regionName].RecordRegion(region);
+                        m_groupRegionMap[groupName][regionName].RecordRegion(region, threadId);
                     }
                 }
 
@@ -842,13 +855,13 @@ namespace AZ
             else
             {
                 m_frameEndTicks.push_back(AZStd::GetTimeNowTicks());
-                TableRow::ms_frames++;
+                ImGuiCpuProfiler::ms_framesActive++;
             }
         }
 
         // ---- TableRow impl ----
 
-        inline void TableRow::RecordRegion(const AZ::RHI::CachedTimeRegion& region)
+        inline void TableRow::RecordRegion(const AZ::RHI::CachedTimeRegion& region, AZStd::thread_id threadId)
         {
             m_invocations++;
             const AZStd::sys_time_t deltaTime = AZStd::abs(region.m_endTick - region.m_startTick);
@@ -857,11 +870,23 @@ namespace AZ
             // Standard running average algorithm
             const auto newMean = m_runningAverageTicks + aznumeric_cast<AZStd::sys_time_t>((deltaTime - m_runningAverageTicks) * 1.0 / m_invocations);
             m_runningAverageTicks = newMean;
+
+            m_executingThreads.insert(threadId);
         }
 
         inline double TableRow::GetAverageInvocationsPerFrame() const
         {
-            return 1.0 * m_invocations / ms_frames;
+            return 1.0 * m_invocations / ImGuiCpuProfiler::ms_framesActive;
+        }
+
+        inline AZStd::string TableRow::GetExecutingThreadsLabel() const 
+        {
+            AZStd::string threadString;
+            for (const auto& threadId : m_executingThreads)
+            {
+                threadString.append(CpuProfilerImGuiHelper::TextThreadId(threadId.m_id) + ", ");
+            }
+            return threadString;
         }
     } // namespace Render
 } // namespace AZ
