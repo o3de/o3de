@@ -315,7 +315,7 @@ namespace AssetProcessor
                             }
                         }
 
-                        for (const AZ::IO::Path& sourcePath : sourcePaths)
+                        for (const AZ::IO::PathView& sourcePath : sourcePaths)
                         {
                             // Use JSON Pointer to append elements to the SourcePaths array
                             registry.Set(FixedValueString::format("%s/SourcePaths/%zu", PlaceholderGemKey.c_str(), pathIndex++),
