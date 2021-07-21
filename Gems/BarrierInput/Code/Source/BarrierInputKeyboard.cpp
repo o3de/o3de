@@ -5,23 +5,23 @@
  *
  */
 
-#include <SynergyInputKeyboard.h>
+#include <BarrierInputKeyboard.h>
 
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboardWindowsScanCodes.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-namespace SynergyInput
+namespace BarrierInput
 {
     using namespace AzFramework;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceKeyboard::Implementation* InputDeviceKeyboardSynergy::Create(InputDeviceKeyboard& inputDevice)
+    InputDeviceKeyboard::Implementation* InputDeviceKeyboardBarrier::Create(InputDeviceKeyboard& inputDevice)
     {
-        return aznew InputDeviceKeyboardSynergy(inputDevice);
+        return aznew InputDeviceKeyboardBarrier(inputDevice);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceKeyboardSynergy::InputDeviceKeyboardSynergy(InputDeviceKeyboard& inputDevice)
+    InputDeviceKeyboardBarrier::InputDeviceKeyboardBarrier(InputDeviceKeyboard& inputDevice)
         : InputDeviceKeyboard::Implementation(inputDevice)
         , m_threadAwareRawKeyEventQueuesById()
         , m_threadAwareRawKeyEventQueuesByIdMutex()
@@ -29,42 +29,42 @@ namespace SynergyInput
         , m_threadAwareRawTextEventQueueMutex()
         , m_hasTextEntryStarted(false)
     {
-        RawInputNotificationBusSynergy::Handler::BusConnect();
+        RawInputNotificationBusBarrier::Handler::BusConnect();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceKeyboardSynergy::~InputDeviceKeyboardSynergy()
+    InputDeviceKeyboardBarrier::~InputDeviceKeyboardBarrier()
     {
-        RawInputNotificationBusSynergy::Handler::BusDisconnect();
+        RawInputNotificationBusBarrier::Handler::BusDisconnect();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    bool InputDeviceKeyboardSynergy::IsConnected() const
+    bool InputDeviceKeyboardBarrier::IsConnected() const
     {
-        // We could check the validity of the socket connection to the synergy server
+        // We could check the validity of the socket connection to the Barrier server
         return true;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    bool InputDeviceKeyboardSynergy::HasTextEntryStarted() const
+    bool InputDeviceKeyboardBarrier::HasTextEntryStarted() const
     {
         return m_hasTextEntryStarted;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void InputDeviceKeyboardSynergy::TextEntryStart(const InputTextEntryRequests::VirtualKeyboardOptions&)
+    void InputDeviceKeyboardBarrier::TextEntryStart(const InputTextEntryRequests::VirtualKeyboardOptions&)
     {
         m_hasTextEntryStarted = true;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void InputDeviceKeyboardSynergy::TextEntryStop()
+    void InputDeviceKeyboardBarrier::TextEntryStop()
     {
         m_hasTextEntryStarted = false;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void InputDeviceKeyboardSynergy::TickInputDevice()
+    void InputDeviceKeyboardBarrier::TickInputDevice()
     {
         {
             // Queue all key events that were received in the other thread
@@ -101,7 +101,7 @@ namespace SynergyInput
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void InputDeviceKeyboardSynergy::OnRawKeyboardKeyDownEvent(uint32_t scanCode,
+    void InputDeviceKeyboardBarrier::OnRawKeyboardKeyDownEvent(uint32_t scanCode,
                                                                ModifierMask activeModifiers)
     {
         // Queue key events and text events
@@ -114,7 +114,7 @@ namespace SynergyInput
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void InputDeviceKeyboardSynergy::OnRawKeyboardKeyUpEvent(uint32_t scanCode,
+    void InputDeviceKeyboardBarrier::OnRawKeyboardKeyUpEvent(uint32_t scanCode,
                                                              [[maybe_unused]]ModifierMask activeModifiers)
     {
         // Queue key events, not text events
@@ -122,7 +122,7 @@ namespace SynergyInput
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void InputDeviceKeyboardSynergy::OnRawKeyboardKeyRepeatEvent(uint32_t scanCode,
+    void InputDeviceKeyboardBarrier::OnRawKeyboardKeyRepeatEvent(uint32_t scanCode,
                                                                  ModifierMask activeModifiers)
     {
         // Don't queue key events, only text events
@@ -134,9 +134,9 @@ namespace SynergyInput
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void InputDeviceKeyboardSynergy::ThreadSafeQueueRawKeyEvent(uint32_t scanCode, bool rawKeyState)
+    void InputDeviceKeyboardBarrier::ThreadSafeQueueRawKeyEvent(uint32_t scanCode, bool rawKeyState)
     {
-        // From observation, synergy scan codes in the:
+        // From observation, Barrier scan codes in the:
         // - Range 0x0-0x7F (0-127) correspond to windows scan codes without the extended bit set
         // - Range 0x100-0x17F (256-383) correspond to windows scan codes with the extended bit set
         const InputChannelId* inputChannelId = nullptr;
@@ -157,21 +157,21 @@ namespace SynergyInput
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void InputDeviceKeyboardSynergy::ThreadSafeQueueRawTextEvent(const AZStd::string& textUTF8)
+    void InputDeviceKeyboardBarrier::ThreadSafeQueueRawTextEvent(const AZStd::string& textUTF8)
     {
         AZStd::lock_guard<AZStd::mutex> lock(m_threadAwareRawTextEventQueueMutex);
         m_threadAwareRawTextEventQueue.push_back(textUTF8);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    char InputDeviceKeyboardSynergy::TranslateRawKeyEventToASCIIChar(uint32_t scanCode,
+    char InputDeviceKeyboardBarrier::TranslateRawKeyEventToASCIIChar(uint32_t scanCode,
                                                                      ModifierMask activeModifiers)
     {
         // Map ASCII character pairs keyed by their keyboard scan code, assuming an ANSI mechanical
         // keyboard layout with a standard QWERTY key mapping. The first element of the pair is the
         // character that should be produced if the key is pressed while no shift or caps modifiers
         // are active, while the second element is the character that should be produced if the key
-        // is pressed while a shift or caps modifier is active. Required because synergy only sends
+        // is pressed while a shift or caps modifier is active. Required because Barrier only sends
         // raw key events, not translated text input. While we would ideally support the full range
         // of UTF-8 text input, that is beyond the scope of this debug/development only class. Note
         // that this function assumes an ANSI mechanical keyboard layout with a standard QWERTY key
@@ -255,4 +255,4 @@ namespace SynergyInput
                                            (activeModifiers & ModifierMask_CapsLock);
         return shiftOrCapsLockActive ? it->second.second : it->second.first;
     }
-} // namespace SynergyInput
+} // namespace BarrierInput

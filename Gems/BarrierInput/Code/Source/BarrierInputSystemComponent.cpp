@@ -5,9 +5,9 @@
  *
  */
 
-#include <SynergyInputSystemComponent.h>
-#include <SynergyInputKeyboard.h>
-#include <SynergyInputMouse.h>
+#include <BarrierInputSystemComponent.h>
+#include <BarrierInputKeyboard.h>
+#include <BarrierInputMouse.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -16,41 +16,50 @@
 #include <AzCore/Console/IConsole.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-namespace SynergyInput
+namespace BarrierInput
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void OnSynergyConnectionCVarChanged(const AZ::CVarFixedString&)
+    template<class T>
+    void OnBarrierConnectionCVarChanged(const T&)
     {
-        SynergyInputConnectionNotificationBus::Broadcast(&SynergyInputConnectionNotifications::OnSynergyConnectionCVarChanged);
+        BarrierInputConnectionNotificationBus::Broadcast(&BarrierInputConnectionNotifications::OnBarrierConnectionCVarChanged);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     AZ_CVAR(AZ::CVarFixedString,
-            synergy_clientScreenName,
+            barrier_clientScreenName,
             "",
-            OnSynergyConnectionCVarChanged,
+            OnBarrierConnectionCVarChanged<AZ::CVarFixedString>,
             AZ::ConsoleFunctorFlags::DontReplicate,
-            "The Synergy screen name assigned to this client.");
+            "The Barrier screen name assigned to this client.");
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     AZ_CVAR(AZ::CVarFixedString,
-            synergy_serverHostName,
+            barrier_serverHostName,
             "",
-            OnSynergyConnectionCVarChanged,
+            OnBarrierConnectionCVarChanged<AZ::CVarFixedString>,
             AZ::ConsoleFunctorFlags::DontReplicate,
-            "The IP or hostname of the Synergy server to connect to.");
+            "The IP or hostname of the Barrier server to connect to.");
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void SynergyInputSystemComponent::Reflect(AZ::ReflectContext* context)
+    AZ_CVAR(AZ::u32,
+            barrier_connectionPort,
+            BarrierClient::DEFAULT_BARRIER_CONNECTION_PORT_NUMBER,
+            OnBarrierConnectionCVarChanged<AZ::u32>,
+            AZ::ConsoleFunctorFlags::DontReplicate,
+            "The port number over which to connect to the Barrier server.");
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void BarrierInputSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<SynergyInputSystemComponent, AZ::Component>()
+            serialize->Class<BarrierInputSystemComponent, AZ::Component>()
                 ->Version(0);
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<SynergyInputSystemComponent>("SynergyInput", "Provides functionality related to Synergy input.")
+                ec->Class<BarrierInputSystemComponent>("BarrierInput", "Provides functionality related to Barrier input.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
@@ -60,69 +69,70 @@ namespace SynergyInput
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void SynergyInputSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+    void BarrierInputSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("SynergyInputService"));
+        provided.push_back(AZ_CRC("BarrierInputService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void SynergyInputSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    void BarrierInputSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("SynergyInputService"));
+        incompatible.push_back(AZ_CRC("BarrierInputService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void SynergyInputSystemComponent::Activate()
+    void BarrierInputSystemComponent::Activate()
     {
-        TryCreateSynergyClientAndInputDeviceImplementations();
-        SynergyInputConnectionNotificationBus::Handler::BusConnect();
+        TryCreateBarrierClientAndInputDeviceImplementations();
+        BarrierInputConnectionNotificationBus::Handler::BusConnect();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void SynergyInputSystemComponent::Deactivate()
+    void BarrierInputSystemComponent::Deactivate()
     {
-        SynergyInputConnectionNotificationBus::Handler::BusDisconnect();
-        DestroySynergyClientAndInputDeviceImplementations();
+        BarrierInputConnectionNotificationBus::Handler::BusDisconnect();
+        DestroyBarrierClientAndInputDeviceImplementations();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void SynergyInputSystemComponent::OnSynergyConnectionCVarChanged()
+    void BarrierInputSystemComponent::OnBarrierConnectionCVarChanged()
     {
-        TryCreateSynergyClientAndInputDeviceImplementations();
+        TryCreateBarrierClientAndInputDeviceImplementations();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void SynergyInputSystemComponent::TryCreateSynergyClientAndInputDeviceImplementations()
+    void BarrierInputSystemComponent::TryCreateBarrierClientAndInputDeviceImplementations()
     {
-        // Destroy any existing Synergy client and input device implementations.
-        DestroySynergyClientAndInputDeviceImplementations();
+        // Destroy any existing Barrier client and input device implementations.
+        DestroyBarrierClientAndInputDeviceImplementations();
         
-        const AZ::CVarFixedString synergyClientScreenNameCVar = static_cast<AZ::CVarFixedString>(synergy_clientScreenName);
-        const AZ::CVarFixedString synergyServerHostNameCVar = static_cast<AZ::CVarFixedString>(synergy_serverHostName);
-        if (!synergyClientScreenNameCVar.empty() && !synergyServerHostNameCVar.empty())
+        const AZ::CVarFixedString barrierClientScreenNameCVar = static_cast<AZ::CVarFixedString>(barrier_clientScreenName);
+        const AZ::CVarFixedString barrierServerHostNameCVar = static_cast<AZ::CVarFixedString>(barrier_serverHostName);
+        const AZ::u32 barrierConnectionPort = static_cast<AZ::u32>(barrier_connectionPort);
+        if (!barrierClientScreenNameCVar.empty() && !barrierServerHostNameCVar.empty() && barrierConnectionPort)
         {
-            // Enable the Synergy keyboard/mouse input device implementations.
+            // Enable the Barrier keyboard/mouse input device implementations.
             AzFramework::InputDeviceImplementationRequest<AzFramework::InputDeviceKeyboard>::Bus::Event(
                 AzFramework::InputDeviceKeyboard::Id,
                 &AzFramework::InputDeviceImplementationRequest<AzFramework::InputDeviceKeyboard>::SetCustomImplementation,
-                SynergyInput::InputDeviceKeyboardSynergy::Create);
+                BarrierInput::InputDeviceKeyboardBarrier::Create);
             AzFramework::InputDeviceImplementationRequest<AzFramework::InputDeviceMouse>::Bus::Event(
                 AzFramework::InputDeviceMouse::Id,
                 &AzFramework::InputDeviceImplementationRequest<AzFramework::InputDeviceMouse>::SetCustomImplementation,
-                SynergyInput::InputDeviceMouseSynergy::Create);
+                BarrierInput::InputDeviceMouseBarrier::Create);
 
-            // Create the Synergy client instance.
-            m_synergyClient = AZStd::make_unique<SynergyClient>(synergyClientScreenNameCVar.c_str(), synergyServerHostNameCVar.c_str());
+            // Create the Barrier client instance.
+            m_barrierClient = AZStd::make_unique<BarrierClient>(barrierClientScreenNameCVar.c_str(), barrierServerHostNameCVar.c_str(), barrierConnectionPort);
         }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void SynergyInputSystemComponent::DestroySynergyClientAndInputDeviceImplementations()
+    void BarrierInputSystemComponent::DestroyBarrierClientAndInputDeviceImplementations()
     {
-        if (m_synergyClient)
+        if (m_barrierClient)
         {
-            // Destroy the Synergy client instance.
-            m_synergyClient.reset();
+            // Destroy the Barrier client instance.
+            m_barrierClient.reset();
 
             // Reset to the default keyboard/mouse input device implementations.
             AzFramework::InputDeviceImplementationRequest<AzFramework::InputDeviceKeyboard>::Bus::Event(
@@ -135,4 +145,4 @@ namespace SynergyInput
                 AzFramework::InputDeviceMouse::Implementation::Create);
         }
     }
-} // namespace SynergyInput
+} // namespace BarrierInput

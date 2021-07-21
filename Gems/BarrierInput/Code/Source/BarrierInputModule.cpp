@@ -8,23 +8,23 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Module/Module.h>
 
-#include <SynergyInputSystemComponent.h>
+#include <BarrierInputSystemComponent.h>
 
-namespace SynergyInput
+namespace BarrierInput
 {
-    class SynergyInputModule
+    class BarrierInputModule
         : public AZ::Module
     {
     public:
-        AZ_RTTI(SynergyInputModule, "{C338BB3B-EA09-4FC8-AD49-840F8A22837F}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(SynergyInputModule, AZ::SystemAllocator, 0);
+        AZ_RTTI(BarrierInputModule, "{C338BB3B-EA09-4FC8-AD49-840F8A22837F}", AZ::Module);
+        AZ_CLASS_ALLOCATOR(BarrierInputModule, AZ::SystemAllocator, 0);
 
-        SynergyInputModule()
+        BarrierInputModule()
             : AZ::Module()
         {
             // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
             m_descriptors.insert(m_descriptors.end(), {
-                SynergyInputSystemComponent::CreateDescriptor(),
+                BarrierInputSystemComponent::CreateDescriptor(),
             });
         }
 
@@ -34,7 +34,7 @@ namespace SynergyInput
         AZ::ComponentTypeList GetRequiredSystemComponents() const override
         {
             return AZ::ComponentTypeList{
-                azrtti_typeid<SynergyInputSystemComponent>(),
+                azrtti_typeid<BarrierInputSystemComponent>(),
             };
         }
     };
@@ -43,4 +43,4 @@ namespace SynergyInput
 // DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
 // The first parameter should be GemName_GemIdLower
 // The second should be the fully qualified name of the class above
-AZ_DECLARE_MODULE_CLASS(Gem_SynergyInput, SynergyInput::SynergyInputModule)
+AZ_DECLARE_MODULE_CLASS(Gem_BarrierInput, BarrierInput::BarrierInputModule)

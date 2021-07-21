@@ -6,5 +6,5 @@
 #
 
 set(FILES
-    Source/SynergyInputModule.cpp
+    Source/BarrierInputModule.cpp
 )

@@ -7,25 +7,24 @@
 
 #pragma once
 
-#include <SynergyInput/RawInputNotificationBus_Synergy.h>
+#include <BarrierInput/RawInputNotificationBus_Barrier.h>
 
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 
 #include <AzCore/std/parallel/mutex.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-namespace SynergyInput
+namespace BarrierInput
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    //! Synergy specific implementation for mouse input devices. This should eventually be moved to
-    //! a Gem, with InputDeviceKeyboardSynergy and RawInputNotificationsSynergy they both depend on.
-    class InputDeviceMouseSynergy : public AzFramework::InputDeviceMouse::Implementation
-                                  , public RawInputNotificationBusSynergy::Handler
+    //! Barrier specific implementation for mouse input devices.
+    class InputDeviceMouseBarrier : public AzFramework::InputDeviceMouse::Implementation
+                                  , public RawInputNotificationBusBarrier::Handler
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
-        AZ_CLASS_ALLOCATOR(InputDeviceMouseSynergy, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InputDeviceMouseBarrier, AZ::SystemAllocator, 0);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Custom factory create function
@@ -35,11 +34,11 @@ namespace SynergyInput
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor
         //! \param[in] inputDevice Reference to the input device being implemented
-        InputDeviceMouseSynergy(AzFramework::InputDeviceMouse& inputDevice);
+        InputDeviceMouseBarrier(AzFramework::InputDeviceMouse& inputDevice);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Destructor
-        ~InputDeviceMouseSynergy() override;
+        ~InputDeviceMouseBarrier() override;
 
     private:
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -67,19 +66,19 @@ namespace SynergyInput
         void TickInputDevice() override;
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        //! \ref RawInputNotificationsSynergy::OnRawMouseButtonDownEvent
+        //! \ref RawInputNotificationsBarrier::OnRawMouseButtonDownEvent
         void OnRawMouseButtonDownEvent(uint32_t buttonIndex) override;
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        //! \ref RawInputNotificationsSynergy::OnRawMouseButtonUpEvent
+        //! \ref RawInputNotificationsBarrier::OnRawMouseButtonUpEvent
         void OnRawMouseButtonUpEvent(uint32_t buttonIndex) override;
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        //! \ref RawInputNotificationsSynergy::OnRawMouseMovementEvent
+        //! \ref RawInputNotificationsBarrier::OnRawMouseMovementEvent
         void OnRawMouseMovementEvent(float movementX, float movementY) override;
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        //! \ref RawInputNotificationsSynergy::OnRawMousePositionEvent
+        //! \ref RawInputNotificationsBarrier::OnRawMousePositionEvent
         void OnRawMousePositionEvent(float positionX, float positionY) override;
 
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -102,4 +101,4 @@ namespace SynergyInput
         AZ::Vector2                    m_threadAwareSystemCursorPosition;
         AZStd::mutex                   m_threadAwareSystemCursorPositionMutex;
     };
-} // namespace SynergyInput
+} // namespace BarrierInput

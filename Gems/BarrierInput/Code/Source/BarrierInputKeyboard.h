@@ -7,25 +7,24 @@
 
 #pragma once
 
-#include <SynergyInput/RawInputNotificationBus_Synergy.h>
+#include <BarrierInput/RawInputNotificationBus_Barrier.h>
 
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 
 #include <AzCore/std/parallel/mutex.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-namespace SynergyInput
+namespace BarrierInput
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    //! Synergy specific implementation for keyboard input devices. This should eventually be moved
-    //! to a Gem, with InputDeviceMouseSynergy and RawInputNotificationsSynergy they both depend on.
-    class InputDeviceKeyboardSynergy : public AzFramework::InputDeviceKeyboard::Implementation
-                                     , public RawInputNotificationBusSynergy::Handler
+    //! Barrier specific implementation for keyboard input devices.
+    class InputDeviceKeyboardBarrier : public AzFramework::InputDeviceKeyboard::Implementation
+                                     , public RawInputNotificationBusBarrier::Handler
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
-        AZ_CLASS_ALLOCATOR(InputDeviceKeyboardSynergy, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InputDeviceKeyboardBarrier, AZ::SystemAllocator, 0);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Custom factory create function
@@ -35,11 +34,11 @@ namespace SynergyInput
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor
         //! \param[in] inputDevice Reference to the input device being implemented
-        InputDeviceKeyboardSynergy(AzFramework::InputDeviceKeyboard& inputDevice);
+        InputDeviceKeyboardBarrier(AzFramework::InputDeviceKeyboard& inputDevice);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Destructor
-        ~InputDeviceKeyboardSynergy() override;
+        ~InputDeviceKeyboardBarrier() override;
 
     private:
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -63,15 +62,15 @@ namespace SynergyInput
         void TickInputDevice() override;
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        //! \ref RawInputNotificationsSynergy::OnRawKeyboardKeyDownEvent
+        //! \ref RawInputNotificationsBarrier::OnRawKeyboardKeyDownEvent
         virtual void OnRawKeyboardKeyDownEvent(uint32_t scanCode, ModifierMask activeModifiers);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        //! \ref RawInputNotificationsSynergy::OnRawKeyboardKeyUpEvent
+        //! \ref RawInputNotificationsBarrier::OnRawKeyboardKeyUpEvent
         virtual void OnRawKeyboardKeyUpEvent(uint32_t scanCode, ModifierMask activeModifiers);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        //! \ref RawInputNotificationsSynergy::OnRawKeyboardKeyRepeatEvent
+        //! \ref RawInputNotificationsBarrier::OnRawKeyboardKeyRepeatEvent
         virtual void OnRawKeyboardKeyRepeatEvent(uint32_t scanCode, ModifierMask activeModifiers);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -86,7 +85,7 @@ namespace SynergyInput
         void ThreadSafeQueueRawTextEvent(const AZStd::string& textUTF8);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        //! Translate a key event to an ASCII character. This is required because synergy only sends
+        //! Translate a key event to an ASCII character. This is required because Barrier only sends
         //! raw key events, not translated text input. While we would ideally support the full range
         //! of UTF-8 text input, that is beyond the scope of this debug/development only class. Note
         //! that this function assumes an ANSI mechanical keyboard layout with a standard QWERTY key
@@ -106,4 +105,4 @@ namespace SynergyInput
 
         bool                         m_hasTextEntryStarted;
     };
-} // namespace SynergyInput
+} // namespace BarrierInput

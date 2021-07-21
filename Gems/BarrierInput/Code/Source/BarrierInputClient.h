@@ -14,40 +14,46 @@
 #include <AzCore/std/string/string.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-namespace SynergyInput
+namespace BarrierInput
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    //! Synergy client that manages a connection with a Synergy server.
-    class SynergyClient
+    //! Barrier client that manages a connection with a Barrier server.
+    class BarrierClient
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
+        static constexpr AZ::u32 DEFAULT_BARRIER_CONNECTION_PORT_NUMBER = 24800;
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
-        AZ_CLASS_ALLOCATOR(SynergyClient, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BarrierClient, AZ::SystemAllocator, 0);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor
-        //! \param[in] clientScreenName Name of the Synergy client screen this class implements
-        //! \param[in] serverHostName Name of the Synergy server host this client connects to
-        SynergyClient(const char* clientScreenName, const char* serverHostName);
+        //! \param[in] clientScreenName Name of the Barrier client screen this class implements
+        //! \param[in] serverHostName Name of the Barrier server host this client connects to
+        //! \param[in] connectionPort Port number over which to connect to the Barrier server
+        BarrierClient(const char* clientScreenName,
+                      const char* serverHostName,
+                      AZ::u32 connectionPort = DEFAULT_BARRIER_CONNECTION_PORT_NUMBER);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Destructor
-        ~SynergyClient();
+        ~BarrierClient();
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        //! Access to the synergy client screen this class implements
-        //! \return Name of the synergy client screen this class implements
+        //! Access to the Barrier client screen this class implements
+        //! \return Name of the Barrier client screen this class implements
         const AZStd::string& GetClientScreenName() const { return m_clientScreenName; }
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        //! Access to the synergy server host this client connects to
-        //! \return Name of the synergy server host this client connects to
+        //! Access to the Barrier server host this client connects to
+        //! \return Name of the Barrier server host this client connects to
         const AZStd::string& GetServerHostName() const { return m_serverHostName; }
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        //! Access to the socket the Synergy client is communicating over
-        //! \return The socket the Synergy client is communicating over
+        //! Access to the socket the Barrier client is communicating over
+        //! \return The socket the Barrier client is communicating over
         const AZSOCKET& GetSocket() const { return m_socket; }
 
     protected:
@@ -56,8 +62,8 @@ namespace SynergyInput
         void Run();
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        //! Try to connect to the Synergy server
-        //! \return True if we're connected to the Synergy server, false otherwise
+        //! Try to connect to the Barrier server
+        //! \return True if we're connected to the Barrier server, false otherwise
         bool ConnectToServer();
 
     private:
@@ -65,8 +71,10 @@ namespace SynergyInput
         // Variables
         AZStd::string       m_clientScreenName;
         AZStd::string       m_serverHostName;
+        AZ::u32             m_connectionPort;
         AZStd::thread       m_threadHandle;
         AZStd::atomic_bool  m_threadQuit;
+    public:
         AZSOCKET            m_socket;
     };
-} // namespace SynergyInput
+} // namespace BarrierInput

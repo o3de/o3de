@@ -20,6 +20,7 @@
         "Gems/AWSCore",
         "Gems/AWSGameLift",
         "Gems/AWSMetrics",
+        "Gems/BarrierInput",
         "Gems/Blast",
         "Gems/Camera",
         "Gems/CameraFramework",

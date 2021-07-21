@@ -5,26 +5,24 @@
  *
  */
 
-#include <SynergyInputMouse.h>
+#include <BarrierInputMouse.h>
 
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
 
-#define CONTROL_RELATIVE_INPUT_WITH_MIDDLE_BUTTON
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-namespace SynergyInput
+namespace BarrierInput
 {
     using namespace AzFramework;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceMouse::Implementation* InputDeviceMouseSynergy::Create(InputDeviceMouse& inputDevice)
+    InputDeviceMouse::Implementation* InputDeviceMouseBarrier::Create(InputDeviceMouse& inputDevice)
     {
-        return aznew InputDeviceMouseSynergy(inputDevice);
+        return aznew InputDeviceMouseBarrier(inputDevice);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceMouseSynergy::InputDeviceMouseSynergy(InputDeviceMouse& inputDevice)
+    InputDeviceMouseBarrier::InputDeviceMouseBarrier(InputDeviceMouse& inputDevice)
         : InputDeviceMouse::Implementation(inputDevice)
         , m_systemCursorState(SystemCursorState::Unknown)
         , m_systemCursorPositionNormalized(0.5f, 0.5f)
@@ -35,51 +33,51 @@ namespace SynergyInput
         , m_threadAwareSystemCursorPosition(0.0f, 0.0f)
         , m_threadAwareSystemCursorPositionMutex()
     {
-        RawInputNotificationBusSynergy::Handler::BusConnect();
+        RawInputNotificationBusBarrier::Handler::BusConnect();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceMouseSynergy::~InputDeviceMouseSynergy()
+    InputDeviceMouseBarrier::~InputDeviceMouseBarrier()
     {
-        RawInputNotificationBusSynergy::Handler::BusDisconnect();
+        RawInputNotificationBusBarrier::Handler::BusDisconnect();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    bool InputDeviceMouseSynergy::IsConnected() const
+    bool InputDeviceMouseBarrier::IsConnected() const
     {
-        // We could check the validity of the socket connection to the synergy server
+        // We could check the validity of the socket connection to the Barrier server
         return true;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void InputDeviceMouseSynergy::SetSystemCursorState(SystemCursorState systemCursorState)
+    void InputDeviceMouseBarrier::SetSystemCursorState(SystemCursorState systemCursorState)
     {
-        // This doesn't apply when using synergy, but we'll store it so it can be queried
+        // This doesn't apply when using Barrier, but we'll store it so it can be queried
         m_systemCursorState = systemCursorState;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    SystemCursorState InputDeviceMouseSynergy::GetSystemCursorState() const
+    SystemCursorState InputDeviceMouseBarrier::GetSystemCursorState() const
     {
         return m_systemCursorState;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void InputDeviceMouseSynergy::SetSystemCursorPositionNormalized(AZ::Vector2 positionNormalized)
+    void InputDeviceMouseBarrier::SetSystemCursorPositionNormalized(AZ::Vector2 positionNormalized)
     {
         // This will simply get overridden by the next call to OnRawMousePositionEvent, but there's
-        // not much we can do about it, and Synergy mouse input is only for debug purposes anyway.
+        // not much we can do about it, and Barrier mouse input is only for debug purposes anyway.
         m_systemCursorPositionNormalized = positionNormalized;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    AZ::Vector2 InputDeviceMouseSynergy::GetSystemCursorPositionNormalized() const
+    AZ::Vector2 InputDeviceMouseBarrier::GetSystemCursorPositionNormalized() const
     {
         return m_systemCursorPositionNormalized;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void InputDeviceMouseSynergy::TickInputDevice()
+    void InputDeviceMouseBarrier::TickInputDevice()
     {
         {
             // Queue all mouse button events that were received in the other thread
@@ -95,6 +93,7 @@ namespace SynergyInput
             m_threadAwareRawButtonEventQueuesById.clear();
         }
 
+        bool receivedRawMovementEvents = false;
         {
             // Queue all mouse movement events that were received in the other thread
             AZStd::lock_guard<AZStd::mutex> lock(m_threadAwareRawMovementEventQueuesByIdMutex);
@@ -104,23 +103,41 @@ namespace SynergyInput
                 for (float rawMovementDelta : movementEventQueuesById.second)
                 {
                     QueueRawMovementEvent(inputChannelId, rawMovementDelta);
+                    receivedRawMovementEvents = true;
                 }
             }
             m_threadAwareRawMovementEventQueuesById.clear();
         }
 
+        // Update the system cursor position
+        auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+        AZ::RPI::ViewportContextPtr viewportContext = atomViewportRequests->GetDefaultViewportContext();
+        if (viewportContext)
         {
-            // Update the system cursor position
-            AZStd::lock_guard<AZStd::mutex> lock(m_threadAwareSystemCursorPositionMutex);
+            const AzFramework::WindowSize windowSize = viewportContext->GetViewportSize();
+            const float windowWidth = static_cast<float>(windowSize.m_width);
+            const float windowHeight = static_cast<float>(windowSize.m_height);
+            const AZ::Vector2 oldSystemCursorPositionNormalized = m_systemCursorPositionNormalized;
 
-            auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-            AZ::RPI::ViewportContextPtr viewportContext = atomViewportRequests->GetDefaultViewportContext();
-            if (viewportContext)
+            AZStd::lock_guard<AZStd::mutex> lock(m_threadAwareSystemCursorPositionMutex);
             {
-                const AzFramework::WindowSize windowSize = viewportContext->GetViewportSize();
-                const AZ::Vector2 normalizedPosition(m_threadAwareSystemCursorPosition.GetX() / static_cast<float>(windowSize.m_width),
-                                                     m_threadAwareSystemCursorPosition.GetY() / static_cast<float>(windowSize.m_height));
+                const AZ::Vector2 normalizedPosition(m_threadAwareSystemCursorPosition.GetX() / windowWidth,
+                                                     m_threadAwareSystemCursorPosition.GetY() / windowHeight);
                 m_systemCursorPositionNormalized = normalizedPosition;
+            }
+
+            // In theory Barrier should send relative mouse movement events as 'DMRM' messages, which are
+            // forwarded to InputDeviceMouseBarrier::OnRawMouseMovementEvent, but this does not appear to
+            // be happening, so if we didn't receive any relative mouse movement events this frame we can
+            // just approximate the movement ourselves. Unlike other mouse implementations where movement
+            // events are sent 'raw' before any operating system ballistics/smoothing is applied, Barrier
+            // seems to calculate relative mouse movement events by taking the delta between the previous
+            // system cursor position and the current one, so we should obtain the same result regardless.
+            if (!receivedRawMovementEvents)
+            {
+                const AZ::Vector2 mouseMovementDelta = m_systemCursorPositionNormalized - oldSystemCursorPositionNormalized;
+                QueueRawMovementEvent(InputDeviceMouse::Movement::X, mouseMovementDelta.GetX() * windowWidth);
+                QueueRawMovementEvent(InputDeviceMouse::Movement::Y, mouseMovementDelta.GetY() * windowHeight);
             }
         }
 
@@ -129,19 +146,19 @@ namespace SynergyInput
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void InputDeviceMouseSynergy::OnRawMouseButtonDownEvent(uint32_t buttonIndex)
+    void InputDeviceMouseBarrier::OnRawMouseButtonDownEvent(uint32_t buttonIndex)
     {
         ThreadSafeQueueRawButtonEvent(buttonIndex, true);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void InputDeviceMouseSynergy::OnRawMouseButtonUpEvent(uint32_t buttonIndex)
+    void InputDeviceMouseBarrier::OnRawMouseButtonUpEvent(uint32_t buttonIndex)
     {
         ThreadSafeQueueRawButtonEvent(buttonIndex, false);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void InputDeviceMouseSynergy::OnRawMouseMovementEvent(float movementX, float movementY)
+    void InputDeviceMouseBarrier::OnRawMouseMovementEvent(float movementX, float movementY)
     {
         AZStd::lock_guard<AZStd::mutex> lock(m_threadAwareRawMovementEventQueuesByIdMutex);
         m_threadAwareRawMovementEventQueuesById[InputDeviceMouse::Movement::X].push_back(movementX);
@@ -149,7 +166,7 @@ namespace SynergyInput
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void InputDeviceMouseSynergy::OnRawMousePositionEvent(float positionX,
+    void InputDeviceMouseBarrier::OnRawMousePositionEvent(float positionX,
                                                           float positionY)
     {
         AZStd::lock_guard<AZStd::mutex> lock(m_threadAwareSystemCursorPositionMutex);
@@ -157,7 +174,7 @@ namespace SynergyInput
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void InputDeviceMouseSynergy::ThreadSafeQueueRawButtonEvent(uint32_t buttonIndex,
+    void InputDeviceMouseBarrier::ThreadSafeQueueRawButtonEvent(uint32_t buttonIndex,
                                                                 bool rawButtonState)
     {
         const InputChannelId* inputChannelId = nullptr;
@@ -174,4 +191,4 @@ namespace SynergyInput
             m_threadAwareRawButtonEventQueuesById[*inputChannelId].push_back(rawButtonState);
         }
     }
-} // namespace SynergyInput
+} // namespace BarrierInput

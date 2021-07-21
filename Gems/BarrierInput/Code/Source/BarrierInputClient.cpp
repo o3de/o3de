@@ -5,8 +5,8 @@
  *
  */
 
-#include <SynergyInputClient.h>
-#include <SynergyInput/RawInputNotificationBus_Synergy.h>
+#include <BarrierInputClient.h>
+#include <BarrierInput/RawInputNotificationBus_Barrier.h>
 
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
@@ -15,8 +15,8 @@
 #include <AzCore/Socket/AzSocket.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// The majority of this file was resurrected from legacy code, and could use some love, but it used to work at least...
-namespace SynergyInput
+// The majority of this file was resurrected from legacy code, and could use some love, but it works.
+namespace BarrierInput
 {
     struct Stream
     {
@@ -70,7 +70,7 @@ namespace SynergyInput
     };
     constexpr int MAX_ARGS = 16;
 
-    typedef bool (*packetCallback)(SynergyClient* pContext, int* pArgs, Stream* pStream, int streamLeft);
+    typedef bool (*packetCallback)(BarrierClient* pContext, int* pArgs, Stream* pStream, int streamLeft);
 
     struct Packet
     {
@@ -79,26 +79,26 @@ namespace SynergyInput
         packetCallback callback;
     };
 
-    static bool synergySendFunc(SynergyClient* pContext, const char* buffer, int length)
+    static bool barrierSendFunc(BarrierClient* pContext, const char* buffer, int length)
     {
         int ret = AZ::AzSock::Send(pContext->GetSocket(), buffer, length, 0);
         return (ret == length) ? true : false;
     }
 
-    static bool synergyPacket(SynergyClient* pContext, [[maybe_unused]]int* pArgs, [[maybe_unused]]Stream* pStream, [[maybe_unused]]int streamLeft)
+    static bool barrierPacket(BarrierClient* pContext, [[maybe_unused]]int* pArgs, [[maybe_unused]]Stream* pStream, [[maybe_unused]]int streamLeft)
     {
         Stream stream(256);
         stream.OpenPacket();
-        stream.InsertString("Synergy");
+        stream.InsertString("Barrier");
         stream.InsertU16(1);
         stream.InsertU16(4);
         stream.InsertU32(pContext->GetClientScreenName().length());
         stream.InsertString(pContext->GetClientScreenName().c_str());
         stream.ClosePacket();
-        return synergySendFunc(pContext, stream.GetBuffer(), stream.GetLength());
+        return barrierSendFunc(pContext, stream.GetBuffer(), stream.GetLength());
     }
 
-    static bool synergyQueryInfo(SynergyClient* pContext, [[maybe_unused]]int* pArgs, [[maybe_unused]]Stream* pStream, [[maybe_unused]]int streamLeft)
+    static bool barrierQueryInfo(BarrierClient* pContext, [[maybe_unused]]int* pArgs, [[maybe_unused]]Stream* pStream, [[maybe_unused]]int streamLeft)
     {
         Stream stream(256);
         stream.OpenPacket();
@@ -123,92 +123,92 @@ namespace SynergyInput
         stream.InsertU16(0);
         stream.InsertU16(0);
         stream.ClosePacket();
-        return synergySendFunc(pContext, stream.GetBuffer(), stream.GetLength());
+        return barrierSendFunc(pContext, stream.GetBuffer(), stream.GetLength());
     }
 
-    static bool synergyKeepAlive(SynergyClient* pContext, [[maybe_unused]]int* pArgs, [[maybe_unused]]Stream* pStream, [[maybe_unused]]int streamLeft)
+    static bool barrierKeepAlive(BarrierClient* pContext, [[maybe_unused]]int* pArgs, [[maybe_unused]]Stream* pStream, [[maybe_unused]]int streamLeft)
     {
         Stream stream(256);
         stream.OpenPacket();
         stream.InsertString("CALV");
         stream.ClosePacket();
-        return synergySendFunc(pContext, stream.GetBuffer(), stream.GetLength());
+        return barrierSendFunc(pContext, stream.GetBuffer(), stream.GetLength());
     }
 
-    static bool synergyEnterScreen([[maybe_unused]]SynergyClient* pContext, int* pArgs, [[maybe_unused]]Stream* pStream, [[maybe_unused]]int streamLeft)
+    static bool barrierEnterScreen([[maybe_unused]]BarrierClient* pContext, int* pArgs, [[maybe_unused]]Stream* pStream, [[maybe_unused]]int streamLeft)
     {
         const float positionX = static_cast<float>(pArgs[0]);
         const float positionY = static_cast<float>(pArgs[1]);
-        RawInputNotificationBusSynergy::Broadcast(&RawInputNotificationsSynergy::OnRawMousePositionEvent,
+        RawInputNotificationBusBarrier::Broadcast(&RawInputNotificationsBarrier::OnRawMousePositionEvent,
                                                   positionX,
                                                   positionY);
         return true;
     }
 
-    static bool synergyExitScreen([[maybe_unused]]SynergyClient* pContext, [[maybe_unused]]int* pArgs, [[maybe_unused]]Stream* pStream, [[maybe_unused]]int streamLeft)
+    static bool barrierExitScreen([[maybe_unused]]BarrierClient* pContext, [[maybe_unused]]int* pArgs, [[maybe_unused]]Stream* pStream, [[maybe_unused]]int streamLeft)
     {
         return true;
     }
 
-    static bool synergyMouseMove([[maybe_unused]]SynergyClient* pContext, int* pArgs, [[maybe_unused]]Stream* pStream, [[maybe_unused]]int streamLeft)
+    static bool barrierMouseMove([[maybe_unused]]BarrierClient* pContext, int* pArgs, [[maybe_unused]]Stream* pStream, [[maybe_unused]]int streamLeft)
     {
         const float positionX = static_cast<float>(pArgs[0]);
         const float positionY = static_cast<float>(pArgs[1]);
-        RawInputNotificationBusSynergy::Broadcast(&RawInputNotificationsSynergy::OnRawMousePositionEvent,
+        RawInputNotificationBusBarrier::Broadcast(&RawInputNotificationsBarrier::OnRawMousePositionEvent,
                                                   positionX,
                                                   positionY);
         return true;
     }
 
-    static bool synergyMouseMoveRelative([[maybe_unused]]SynergyClient* pContext, int* pArgs, [[maybe_unused]]Stream* pStream, [[maybe_unused]]int streamLeft)
+    static bool barrierMouseMoveRelative([[maybe_unused]]BarrierClient* pContext, int* pArgs, [[maybe_unused]]Stream* pStream, [[maybe_unused]]int streamLeft)
     {
         const float movementX = static_cast<float>(pArgs[0]);
         const float movementY = static_cast<float>(pArgs[1]);
-        RawInputNotificationBusSynergy::Broadcast(&RawInputNotificationsSynergy::OnRawMouseMovementEvent,
+        RawInputNotificationBusBarrier::Broadcast(&RawInputNotificationsBarrier::OnRawMouseMovementEvent,
                                                   movementX,
                                                   movementY);
         return true;
     }
 
-    static bool synergyMouseButtonDown([[maybe_unused]]SynergyClient* pContext, int* pArgs, [[maybe_unused]]Stream* pStream, [[maybe_unused]]int streamLeft)
+    static bool barrierMouseButtonDown([[maybe_unused]]BarrierClient* pContext, int* pArgs, [[maybe_unused]]Stream* pStream, [[maybe_unused]]int streamLeft)
     {
         const uint32_t buttonIndex = pArgs[0];
-        RawInputNotificationBusSynergy::Broadcast(&RawInputNotificationsSynergy::OnRawMouseButtonDownEvent, buttonIndex);
+        RawInputNotificationBusBarrier::Broadcast(&RawInputNotificationsBarrier::OnRawMouseButtonDownEvent, buttonIndex);
         return true;
     }
 
-    static bool synergyMouseButtonUp([[maybe_unused]]SynergyClient* pContext, int* pArgs, [[maybe_unused]]Stream* pStream, [[maybe_unused]]int streamLeft)
+    static bool barrierMouseButtonUp([[maybe_unused]]BarrierClient* pContext, int* pArgs, [[maybe_unused]]Stream* pStream, [[maybe_unused]]int streamLeft)
     {
         const uint32_t buttonIndex = pArgs[0];
-        RawInputNotificationBusSynergy::Broadcast(&RawInputNotificationsSynergy::OnRawMouseButtonUpEvent, buttonIndex);
+        RawInputNotificationBusBarrier::Broadcast(&RawInputNotificationsBarrier::OnRawMouseButtonUpEvent, buttonIndex);
         return true;
     }
 
-    static bool synergyKeyboardDown([[maybe_unused]]SynergyClient* pContext, int* pArgs, [[maybe_unused]]Stream* pStream, [[maybe_unused]]int streamLeft)
+    static bool barrierKeyboardDown([[maybe_unused]]BarrierClient* pContext, int* pArgs, [[maybe_unused]]Stream* pStream, [[maybe_unused]]int streamLeft)
     {
         const uint32_t scanCode = pArgs[2];
         const ModifierMask activeModifiers = static_cast<ModifierMask>(pArgs[1]);
-        RawInputNotificationBusSynergy::Broadcast(&RawInputNotificationsSynergy::OnRawKeyboardKeyDownEvent, scanCode, activeModifiers);
+        RawInputNotificationBusBarrier::Broadcast(&RawInputNotificationsBarrier::OnRawKeyboardKeyDownEvent, scanCode, activeModifiers);
         return true;
     }
 
-    static bool synergyKeyboardUp([[maybe_unused]]SynergyClient* pContext, int* pArgs, [[maybe_unused]]Stream* pStream, [[maybe_unused]]int streamLeft)
+    static bool barrierKeyboardUp([[maybe_unused]]BarrierClient* pContext, int* pArgs, [[maybe_unused]]Stream* pStream, [[maybe_unused]]int streamLeft)
     {
         const uint32_t scanCode = pArgs[2];
         const ModifierMask activeModifiers = static_cast<ModifierMask>(pArgs[1]);
-        RawInputNotificationBusSynergy::Broadcast(&RawInputNotificationsSynergy::OnRawKeyboardKeyUpEvent, scanCode, activeModifiers);
+        RawInputNotificationBusBarrier::Broadcast(&RawInputNotificationsBarrier::OnRawKeyboardKeyUpEvent, scanCode, activeModifiers);
         return true;
     }
 
-    static bool synergyKeyboardRepeat([[maybe_unused]]SynergyClient* pContext, int* pArgs, [[maybe_unused]]Stream* pStream, [[maybe_unused]]int streamLeft)
+    static bool barrierKeyboardRepeat([[maybe_unused]]BarrierClient* pContext, int* pArgs, [[maybe_unused]]Stream* pStream, [[maybe_unused]]int streamLeft)
     {
         const uint32_t scanCode = pArgs[2];
         const ModifierMask activeModifiers = static_cast<ModifierMask>(pArgs[1]);
-        RawInputNotificationBusSynergy::Broadcast(&RawInputNotificationsSynergy::OnRawKeyboardKeyRepeatEvent, scanCode, activeModifiers);
+        RawInputNotificationBusBarrier::Broadcast(&RawInputNotificationsBarrier::OnRawKeyboardKeyRepeatEvent, scanCode, activeModifiers);
         return true;
     }
 
-    static bool synergyClipboard([[maybe_unused]]SynergyClient* pContext, int* pArgs, Stream* pStream, [[maybe_unused]]int streamLeft)
+    static bool barrierClipboard([[maybe_unused]]BarrierClient* pContext, int* pArgs, Stream* pStream, [[maybe_unused]]int streamLeft)
     {
         for (int i = 0; i < pArgs[3]; i++)
         {
@@ -219,7 +219,7 @@ namespace SynergyInput
                 char* clipboardContents = new char[size];
                 memcpy(clipboardContents, pStream->GetData(), size);
                 clipboardContents[size] = '\0';
-                RawInputNotificationBusSynergy::Broadcast(&RawInputNotificationsSynergy::OnRawClipboardEvent, clipboardContents);
+                RawInputNotificationBusBarrier::Broadcast(&RawInputNotificationsBarrier::OnRawClipboardEvent, clipboardContents);
                 delete[] clipboardContents;
             }
             pStream->Eat(size);
@@ -227,30 +227,30 @@ namespace SynergyInput
         return true;
     }
 
-    static bool synergyBye([[maybe_unused]]SynergyClient* pContext, [[maybe_unused]]int* pArgs, [[maybe_unused]]Stream* pStream, [[maybe_unused]]int streamLeft)
+    static bool barrierBye([[maybe_unused]]BarrierClient* pContext, [[maybe_unused]]int* pArgs, [[maybe_unused]]Stream* pStream, [[maybe_unused]]int streamLeft)
     {
-        AZLOG_INFO("SynergyClient: Server said bye. Disconnecting\n");
+        AZLOG_INFO("BarrierClient: Server said bye. Disconnecting\n");
         return false;
     }
 
     static Packet s_packets[] = {
-        { "Synergy", { ARG_UINT16, ARG_UINT16 }, synergyPacket },
-        { "QINF", {}, synergyQueryInfo },
-        { "CALV", {}, synergyKeepAlive },
-        { "CINN", { ARG_UINT16, ARG_UINT16, ARG_UINT32, ARG_UINT16 }, synergyEnterScreen },
-        { "COUT", { }, synergyExitScreen },
-        { "CBYE", { }, synergyBye },
-        { "DMMV", { ARG_UINT16, ARG_UINT16 }, synergyMouseMove },
-        { "DMRM", { ARG_UINT16, ARG_UINT16 }, synergyMouseMoveRelative },
-        { "DMDN", { ARG_UINT8 }, synergyMouseButtonDown },
-        { "DMUP", { ARG_UINT8 }, synergyMouseButtonUp },
-        { "DKDN", { ARG_UINT16, ARG_UINT16, ARG_UINT16 }, synergyKeyboardDown },
-        { "DKUP", { ARG_UINT16, ARG_UINT16, ARG_UINT16 }, synergyKeyboardUp },
-        { "DKRP", { ARG_UINT16, ARG_UINT16, ARG_UINT16, ARG_UINT16 }, synergyKeyboardRepeat },
-        { "DCLP", { ARG_UINT8, ARG_UINT32, ARG_UINT32, ARG_UINT32 }, synergyClipboard }
+        { "Barrier", { ARG_UINT16, ARG_UINT16 }, barrierPacket },
+        { "QINF", {}, barrierQueryInfo },
+        { "CALV", {}, barrierKeepAlive },
+        { "CINN", { ARG_UINT16, ARG_UINT16, ARG_UINT32, ARG_UINT16 }, barrierEnterScreen },
+        { "COUT", { }, barrierExitScreen },
+        { "CBYE", { }, barrierBye },
+        { "DMMV", { ARG_UINT16, ARG_UINT16 }, barrierMouseMove },
+        { "DMRM", { ARG_UINT16, ARG_UINT16 }, barrierMouseMoveRelative },
+        { "DMDN", { ARG_UINT8 }, barrierMouseButtonDown },
+        { "DMUP", { ARG_UINT8 }, barrierMouseButtonUp },
+        { "DKDN", { ARG_UINT16, ARG_UINT16, ARG_UINT16 }, barrierKeyboardDown },
+        { "DKUP", { ARG_UINT16, ARG_UINT16, ARG_UINT16 }, barrierKeyboardUp },
+        { "DKRP", { ARG_UINT16, ARG_UINT16, ARG_UINT16, ARG_UINT16 }, barrierKeyboardRepeat },
+        { "DCLP", { ARG_UINT8, ARG_UINT32, ARG_UINT32, ARG_UINT32 }, barrierClipboard }
     };
 
-    static bool ProcessPackets(SynergyClient* pContext, Stream& stream)
+    static bool ProcessPackets(BarrierClient* pContext, Stream& stream)
     {
         while (stream.data < stream.end)
         {
@@ -259,7 +259,7 @@ namespace SynergyInput
             const char* packetStart = stream.GetData();
             if (packetLength > streamLength)
             {
-                AZLOG_INFO("SynergyClient: Packet overruns buffer (Packet Length: %d Buffer Length: %d), probably lots of data on clipboard?\n", packetLength, streamLength);
+                AZLOG_INFO("BarrierClient: Packet overruns buffer (Packet Length: %d Buffer Length: %d), probably lots of data on clipboard?\n", packetLength, streamLength);
                 return false;
             }
 
@@ -312,20 +312,21 @@ namespace SynergyInput
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    SynergyClient::SynergyClient(const char* clientScreenName, const char* serverHostName)
+    BarrierClient::BarrierClient(const char* clientScreenName, const char* serverHostName, AZ::u32 connectionPort)
         : m_clientScreenName(clientScreenName)
         , m_serverHostName(serverHostName)
+        , m_connectionPort(connectionPort)
         , m_socket(AZ_SOCKET_INVALID)
         , m_threadHandle()
         , m_threadQuit(false)
     {
         AZStd::thread_desc threadDesc;
-        threadDesc.m_name = "SynergyInputClientThread";
-        m_threadHandle = AZStd::thread(AZStd::bind(&SynergyClient::Run, this), &threadDesc);
+        threadDesc.m_name = "BarrierInputClientThread";
+        m_threadHandle = AZStd::thread(AZStd::bind(&BarrierClient::Run, this), &threadDesc);
     }
     
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    SynergyClient::~SynergyClient()
+    BarrierClient::~BarrierClient()
     {
         if (AZ::AzSock::IsAzSocketValid(m_socket))
         {
@@ -336,7 +337,7 @@ namespace SynergyInput
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void SynergyClient::Run()
+    void BarrierClient::Run()
     {
         Stream stream(4 * 1024);
         bool connected = false;
@@ -351,7 +352,7 @@ namespace SynergyInput
             const int lengthReceived = AZ::AzSock::Recv(m_socket, stream.GetBuffer(), stream.GetBufferSize(), 0);
             if (lengthReceived <= 0)
             {
-                AZLOG_INFO("SynergyClient: Receive failed, reconnecting.\n");
+                AZLOG_INFO("BarrierClient: Receive failed, reconnecting.\n");
                 connected = false;
                 continue;
             }
@@ -360,7 +361,7 @@ namespace SynergyInput
             stream.SetLength(lengthReceived);
             if (!ProcessPackets(this, stream))
             {
-                AZLOG_INFO("SynergyClient: Packet processing failed, reconnecting.\n");
+                AZLOG_INFO("BarrierClient: Packet processing failed, reconnecting.\n");
                 connected = false;
                 continue;
             }
@@ -368,7 +369,7 @@ namespace SynergyInput
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    bool SynergyClient::ConnectToServer()
+    bool BarrierClient::ConnectToServer()
     {
         if (AZ::AzSock::IsAzSocketValid(m_socket))
         {
@@ -379,7 +380,7 @@ namespace SynergyInput
         if (AZ::AzSock::IsAzSocketValid(m_socket))
         {
             AZ::AzSock::AzSocketAddress socketAddress;
-            if (socketAddress.SetAddress(m_serverHostName.c_str(), 24800))
+            if (socketAddress.SetAddress(m_serverHostName.c_str(), m_connectionPort))
             {
                 const int result = AZ::AzSock::Connect(m_socket, socketAddress);
                 if (!AZ::AzSock::SocketErrorOccured(result))
@@ -393,4 +394,4 @@ namespace SynergyInput
 
         return false;
     }
-} // namespace SynergyInput
+} // namespace BarrierInput

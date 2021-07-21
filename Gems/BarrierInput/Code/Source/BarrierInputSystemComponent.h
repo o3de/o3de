@@ -6,35 +6,35 @@
  */
 #pragma once
 
-#include <SynergyInputClient.h>
+#include <BarrierInputClient.h>
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-namespace SynergyInput
+namespace BarrierInput
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    //! EBus interface used to listen for changes to Synergy connection related CVars.
-    class SynergyInputConnectionNotifications : public AZ::EBusTraits
+    //! EBus interface used to listen for changes to Barrier connection related CVars.
+    class BarrierInputConnectionNotifications : public AZ::EBusTraits
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
-        //! Called when a CVar relating to the Synergy input connection changes.
-        virtual void OnSynergyConnectionCVarChanged() {}
+        //! Called when a CVar relating to the Barrier input connection changes.
+        virtual void OnBarrierConnectionCVarChanged() {}
     };
-    using SynergyInputConnectionNotificationBus = AZ::EBus<SynergyInputConnectionNotifications>;
+    using BarrierInputConnectionNotificationBus = AZ::EBus<BarrierInputConnectionNotifications>;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    //! A system component providing functionality related to Synergy input.
-    class SynergyInputSystemComponent : public AZ::Component
-                                      , public SynergyInputConnectionNotificationBus::Handler
+    //! A system component providing functionality related to Barrier input.
+    class BarrierInputSystemComponent : public AZ::Component
+                                      , public BarrierInputConnectionNotificationBus::Handler
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         // AZ::Component Setup
-        AZ_COMPONENT(SynergyInputSystemComponent, "{720B6420-8A76-46F9-80C7-0DBF0CD467C2}");
+        AZ_COMPONENT(BarrierInputSystemComponent, "{720B6420-8A76-46F9-80C7-0DBF0CD467C2}");
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! \ref AZ::ComponentDescriptor::Reflect
@@ -50,11 +50,11 @@ namespace SynergyInput
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Default constructor
-        SynergyInputSystemComponent() = default;
+        BarrierInputSystemComponent() = default;
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Default destructor
-        ~SynergyInputSystemComponent() override = default;
+        ~BarrierInputSystemComponent() override = default;
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! \ref AZ::Component::Activate
@@ -66,20 +66,20 @@ namespace SynergyInput
 
     protected:
         ////////////////////////////////////////////////////////////////////////////////////////////
-        //! \ref SynergyInput::SynergyInputConnectionNotifications::OnSynergyConnectionCVarChanged
-        void OnSynergyConnectionCVarChanged() override;
+        //! \ref BarrierInput::BarrierInputConnectionNotifications::OnBarrierConnectionCVarChanged
+        void OnBarrierConnectionCVarChanged() override;
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        //! Try to create the Synergy client and input device implementations.
-        void TryCreateSynergyClientAndInputDeviceImplementations();
+        //! Try to create the Barrier client and input device implementations.
+        void TryCreateBarrierClientAndInputDeviceImplementations();
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        //! Destroy the Synergy client and input device implementations (if they've been created).
-        void DestroySynergyClientAndInputDeviceImplementations();
+        //! Destroy the Barrier client and input device implementations (if they've been created).
+        void DestroyBarrierClientAndInputDeviceImplementations();
 
     private:
         ////////////////////////////////////////////////////////////////////////////////////////////
-        //! The synergy client instance.
-        AZStd::unique_ptr<SynergyClient> m_synergyClient;
+        //! The Barrier client instance.
+        AZStd::unique_ptr<BarrierClient> m_barrierClient;
     };
-} // namespace SynergyInput
+} // namespace BarrierInput

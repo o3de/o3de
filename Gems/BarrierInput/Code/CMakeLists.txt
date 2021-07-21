@@ -6,10 +6,10 @@
 #
 
 ly_add_target(
-    NAME SynergyInput.Static STATIC
+    NAME BarrierInput.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
-        synergyinput_files.cmake
+        barrierinput_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
@@ -24,10 +24,10 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME SynergyInput ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME BarrierInput ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
-        synergyinput_shared_files.cmake
+        barrierinput_shared_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
@@ -35,8 +35,8 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::SynergyInput.Static
+            Gem::BarrierInput.Static
 )
 
-# Synergy Input is only needed for the client:
-ly_create_alias(NAME SynergyInput.Clients  NAMESPACE Gem TARGETS Gem::SynergyInput)
+# Barrier Input is only needed for the client:
+ly_create_alias(NAME BarrierInput.Clients  NAMESPACE Gem TARGETS Gem::BarrierInput)

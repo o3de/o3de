@@ -10,10 +10,10 @@
 #include <AzCore/EBus/EBus.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-namespace SynergyInput
+namespace BarrierInput
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    //! Synergy keyboard modifier bit mask
+    //! Barrier keyboard modifier bit mask
     enum ModifierMask
     {
         ModifierMask_None       = 0x0000,
@@ -28,16 +28,16 @@ namespace SynergyInput
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    //! EBus interface used to listen for raw Synergy input as broadcast by the SynergyClient.
+    //! EBus interface used to listen for raw Barrier input as broadcast by the BarrierClient.
     //!
     //! It's possible to receive multiple events per button/key per frame, and it's very likely that
-    //! Synergy input events will not be dispatched from the main thread, so care should be taken to
-    //! ensure thread safety when implementing event handlers that connect to this Synergy event bus.
+    //! Barrier input events will not be dispatched from the main thread, so care should be taken to
+    //! ensure thread safety when implementing event handlers that connect to this Barrier event bus.
     //!
-    //! This EBus is intended primarily for the SynergyClient to send raw input to Synergy devices.
+    //! This EBus is intended primarily for the BarrierClient to send raw input to Barrier devices.
     //! Most systems that need to process input should use the generic AzFramework input interfaces,
-    //! but if necessary it is perfectly valid to connect directly to this EBus for Synergy events.
-    class RawInputNotificationsSynergy : public AZ::EBusTraits
+    //! but if necessary it is perfectly valid to connect directly to this EBus for Barrier events.
+    class RawInputNotificationsBarrier : public AZ::EBusTraits
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -50,7 +50,7 @@ namespace SynergyInput
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Default destructor
-        virtual ~RawInputNotificationsSynergy() = default;
+        virtual ~RawInputNotificationsBarrier() = default;
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Process raw mouse button down events (assumed to be dispatched from any thread)
@@ -97,5 +97,5 @@ namespace SynergyInput
         //! \param[in] clipboardContents The contents of the clipboard
         virtual void OnRawClipboardEvent([[maybe_unused]]const char* clipboardContents) {}
     };
-    using RawInputNotificationBusSynergy = AZ::EBus<RawInputNotificationsSynergy>;
-} // namespace SynergyInput
+    using RawInputNotificationBusBarrier = AZ::EBus<RawInputNotificationsBarrier>;
+} // namespace BarrierInput
