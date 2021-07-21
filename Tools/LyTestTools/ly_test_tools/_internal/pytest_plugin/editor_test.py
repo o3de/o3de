@@ -9,6 +9,8 @@ Utility for specifying an Editor test, supports seamless parallelization and/or 
 import pytest
 import inspect
 
+__test__ = False
+
 def pytest_addoption(parser):
     parser.addoption("--no-editor-batch", action="store_true", help="Don't batch multiple tests in single editor")
     parser.addoption("--no-editor-parallel", action="store_true", help="Don't run multiple editors in parallel")

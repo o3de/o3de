@@ -25,7 +25,30 @@ from ly_test_tools.o3de.asset_processor import AssetProcessor
 from ly_test_tools.launchers.exceptions import WaitTimeoutError
 from . import editor_test_utils as editor_utils
 
-# Abstract base class for an editor test
+# This file provides editor testing functionality to easily write automated editor tests for O3DE.
+# For using these utilities, you can subclass your test suite from EditorTestSuite, this allows an easy way of specifying 
+# python test scripts that the editor will run without needing to write any boilerplace code.
+# It supports out of the box parallelization(running multiple editor instances at once), batching(running multiple tests in the same editor instance) and
+# crash detection.
+# Usage example:
+#    class MyTestSuite(EditorTestSuite):
+#   
+#        class MyFirstTest(EditorSingleTest):
+#            from . import script_to_be_run_by_editor as test_module
+#   
+#        class MyTestInParallel_1(EditorParallelTest):
+#            from . import another_script_to_be_run_by_editor as test_module
+#        
+#        class MyTestInParallel_2(EditorParallelTest):
+#            from . import yet_another_script_to_be_run_by_editor as test_module
+#
+#
+# EditorTestSuite does introspection of the defined classes inside of it and automatically prepares the tests, parallelizing/batching as required
+
+# This file contains no tests, but with this we make sure it won't be picked up by the runner since the file ends with _test
+__test__ = False
+
+# Abstract base class for an editor test.
 class EditorTestBase(ABC):
     # Maximum time for run, in seconds
     timeout = 180
@@ -52,7 +75,7 @@ class EditorSingleTest(EditorTestBase):
     def teardown(instance, request, workspace, editor, editor_test_results, launcher_platform):
         pass
 
-# Test that will be run in parallel and batched with other in a single editor.
+# Test that will be both be run in parallel and batched with eachother in a single editor.
 # Does not support per test setup/teardown for avoiding any possible race conditions
 class EditorSharedTest(EditorTestBase):
     # Specifies if the test can be batched in the same editor
@@ -60,12 +83,12 @@ class EditorSharedTest(EditorTestBase):
     # Specifies if the test can be run in multiple editors in parallel
     is_parallelizable = True
 
-# Test that will be run in parallel editors.
+# Test that will be only run in parallel editors.
 class EditorParallelTest(EditorSharedTest):
     is_batchable = False
     is_parallelizable = True
 
-# Test that will be run along other tests in the same editor.
+# Test that will be batched along with the other batched tests in the same editor.
 class EditorBatchedTest(EditorSharedTest):
     is_batchable = True
     is_parallelizable = False
