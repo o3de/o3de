@@ -47,3 +47,15 @@ ly_append_configurations_options(
         NDEBUG
         AZ_BUILD_CONFIGURATION_TYPE="${LY_BUILD_CONFIGURATION_TYPE_RELEASE}"
 )
+
+# Ninja: parallel compile and link pool settings
+if(CMAKE_GENERATOR MATCHES "Ninja")
+    if(LY_PARALLEL_COMPILE_JOBS)
+        set_property(GLOBAL APPEND PROPERTY JOB_POOLS compile_job_pool=${LY_PARALLEL_COMPILE_JOBS})
+        ly_set(CMAKE_JOB_POOL_COMPILE compile_job_pool)
+    endif()
+    if(LY_PARALLEL_LINK_JOBS)
+        set_property(GLOBAL APPEND PROPERTY JOB_POOLS link_job_pool=${LY_PARALLEL_LINK_JOBS})
+        ly_set(CMAKE_JOB_POOL_LINK link_job_pool)
+    endif()
+endif()
