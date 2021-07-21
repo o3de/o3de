@@ -416,7 +416,7 @@
                             }
                         }
                     ]
-                },             
+                },
                 {
                     "Name": "UIPass",
                     "TemplateName": "UIParentTemplate",
