@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -55,21 +50,6 @@ namespace ScriptCanvas
                     ScriptCanvas::NodeConfiguration nodeConfig{};
                     nodeConfig.m_type = AZ::Uuid("DC17E19F-3829-410D-9A0B-AD60C6066DAA");
                     return nodeConfig;
-                }
-
-            protected:
-                Datum Evaluate(const Datum& lhs, const Datum& rhs) override
-                {
-                    const Data::NumberType lhsValue = *lhs.GetAs<Data::NumberType>();
-                    const Data::NumberType rhsValue = *rhs.GetAs<Data::NumberType>();
-
-                    if (AZ::IsClose(rhsValue, 0.0, 0.0001))
-                    {
-                        SCRIPTCANVAS_REPORT_ERROR((*this), "Divide by zero");
-                        return Datum();
-                    }
-
-                    return Datum(lhsValue / rhsValue);
                 }
             };
 

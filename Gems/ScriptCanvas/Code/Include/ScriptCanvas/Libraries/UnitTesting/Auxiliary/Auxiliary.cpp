@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "Auxiliary.h"
 
@@ -42,8 +37,8 @@ namespace ScriptCanvas
             }
 
             const char* StringConversion::CStyleToCStyle(const char* input)
-            { 
-                return input; 
+            {
+                return input;
             }
 
             void StringConversion::Reflect(AZ::ReflectContext* reflection)
@@ -74,17 +69,17 @@ namespace ScriptCanvas
                         ->Field("outcomeVector3Void", &TypeExposition::m_outcomeVector3Void)
                         ;
                 }
-                
+
                 if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(reflection))
                 {
                     behaviorContext->Class<TypeExposition>("TypeExposition")
                         ->Method("Reflect_AZStd::array<AZ::Vector3, 2>", [](AZStd::array<AZ::Vector3, 2>& vector) {  return vector.size();  })
-                            ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+                        ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                         ->Method("Reflect_AZ::Outcome<AZ::Vector3, void>", [](AZ::Outcome<AZ::Vector3>& vector) { return vector.IsSuccess();  })
-                            ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+                        ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                         ;
                 }
             }
         }
-    } 
-} 
+    }
+}

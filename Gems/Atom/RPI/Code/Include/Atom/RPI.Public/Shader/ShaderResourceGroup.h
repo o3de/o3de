@@ -1,20 +1,14 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <Atom/RPI.Reflect/Base.h>
 #include <Atom/RPI.Reflect/Shader/ShaderResourceGroupAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
-#include <Atom/RPI.Reflect/Shader/ShaderAsset2.h>
 #include <Atom/RPI.Reflect/Shader/ShaderVariantKey.h>
 
 #include <Atom/RPI.Public/Shader/ShaderResourceGroupPool.h>
@@ -64,10 +58,6 @@ namespace AZ
 
             /// Instantiates a unique shader resource group instance using its paired asset.
             static Data::Instance<ShaderResourceGroup> Create(const Data::Asset<ShaderResourceGroupAsset>& srgAsset);
-
-            /// [GFX TODO] [ATOM-15472] Shader Build Pipeline: Remove Deprecated Files And Functions That Predate The Shader Supervariants
-            /// This is a temporary hack to enable integration of the new supervariant system.
-            bool ReplaceSrgLayoutUsingShaderAsset(Data::Asset<ShaderAsset2> shaderAsset, const Name& supervariantName, const Name& srgName);
 
             /// Queues a request that the underlying hardware shader resource group be compiled.
             void Compile();
@@ -307,9 +297,6 @@ namespace AZ
 
             /// A reference to the SRG asset used to initialize and manipulate this group.
             AZ::Data::Asset<ShaderResourceGroupAsset> m_asset;
-
-            /// A reference to the shader asset used to initialize and manipulate this group.
-            AZ::Data::Asset<ShaderAsset2> m_shaderAsset;
 
             /// A pointer to the layout inside of m_srgAsset
             const RHI::ShaderResourceGroupLayout* m_layout = nullptr;

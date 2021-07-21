@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "ProfilingCaptureSystemComponent.h"
 
@@ -139,7 +134,7 @@ namespace AZ
             static void Reflect(AZ::ReflectContext* context);
 
             CpuProfilingStatisticsSerializer() = default;
-            CpuProfilingStatisticsSerializer(RHI::CpuProfiler::TimeRegionMap& timeRegionMap);
+            CpuProfilingStatisticsSerializer(const RHI::CpuProfiler::TimeRegionMap& timeRegionMap);
 
             AZStd::vector<CpuProfilingStatisticsSerializerEntry> m_cpuProfilingStatisticsSerializerEntries;
         };
@@ -256,14 +251,17 @@ namespace AZ
 
         // --- CpuProfilingStatisticsSerializer ---
 
-        CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializer(RHI::CpuProfiler::TimeRegionMap& timeRegionMap)
+        CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializer(const RHI::CpuProfiler::TimeRegionMap& timeRegionMap)
         {
             // Create serializable entries
-            for (auto& treadEntry : timeRegionMap)
+            for (auto& threadEntry : timeRegionMap)
             {
-                for (auto& cachedRegionEntry : treadEntry.second)
+                for (auto& cachedRegionEntry : threadEntry.second)
                 {
-                    m_cpuProfilingStatisticsSerializerEntries.emplace_back(cachedRegionEntry.second);
+                    m_cpuProfilingStatisticsSerializerEntries.insert(
+                        m_cpuProfilingStatisticsSerializerEntries.end(),
+                        cachedRegionEntry.second.begin(),
+                        cachedRegionEntry.second.end());
                 }
             }
         }
@@ -458,16 +456,19 @@ namespace AZ
         bool ProfilingCaptureSystemComponent::CaptureCpuProfilingStatistics(const AZStd::string& outputFilePath)
         {
             // Start the cpu profiling
-            RHI::CpuProfiler::Get()->SetProfilerEnabled(true);
+            bool wasEnabled = RHI::CpuProfiler::Get()->IsProfilerEnabled();
+            if (!wasEnabled)
+            {
+                RHI::CpuProfiler::Get()->SetProfilerEnabled(true);
+            }
 
-            const bool captureStarted = m_cpuProfilingStatisticsCapture.StartCapture([this, outputFilePath]()
+            const bool captureStarted = m_cpuProfilingStatisticsCapture.StartCapture([this, outputFilePath, wasEnabled]()
             {
                 JsonSerializerSettings serializationSettings;
                 serializationSettings.m_keepDefaults = true;
 
                 // Get time Cpu profiled time regions
-                RHI::CpuProfiler::TimeRegionMap timeRegionMap;
-                RHI::CpuProfiler::Get()->FlushTimeRegionMap(timeRegionMap);
+                const RHI::CpuProfiler::TimeRegionMap& timeRegionMap = RHI::CpuProfiler::Get()->GetTimeRegionMap();
 
                 CpuProfilingStatisticsSerializer serializer(timeRegionMap);
                 const auto saveResult = JsonSerializationUtils::SaveObjectToFile(&serializer,
@@ -481,14 +482,22 @@ namespace AZ
                         saveResult.GetError().c_str());
                     AZ_Warning("ProfilingCaptureSystemComponent", false, captureInfo.c_str());
                 }
+                else
+                {
+                    AZ_Printf("ProfilingCaptureSystemComponent", "Cpu profiling statistics was saved to file [%s]\n", outputFilePath.c_str());
+                }
 
                 // Disable the profiler again
-                RHI::CpuProfiler::Get()->SetProfilerEnabled(false);
+                if (!wasEnabled)
+                {
+                    RHI::CpuProfiler::Get()->SetProfilerEnabled(false);
+                }
 
                 // Notify listeners that the pass' PipelineStatistics queries capture has finished.
                 ProfilingCaptureNotificationBus::Broadcast(&ProfilingCaptureNotificationBus::Events::OnCaptureCpuProfilingStatisticsFinished,
                     saveResult.IsSuccess(),
                     captureInfo);
+
             });
 
             // Start the TickBus.

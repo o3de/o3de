@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "ShaderBuilderUtility.h"
 
 #include <AzFramework/API/ApplicationAPI.h>
@@ -29,8 +24,7 @@
 
 #include <Atom/RPI.Edit/Common/JsonReportingHelper.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
-#include <Atom/RPI.Reflect/Shader/ShaderAsset.h> // DEPRECATED - [ATOM-15472]
-#include <Atom/RPI.Reflect/Shader/ShaderAsset2.h>
+#include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
 
 #include <Atom/RHI.Edit/Utils.h>
@@ -724,58 +718,6 @@ namespace AZ
                 // separate bit space between subid enum, and api-type:
                 int shiftLeft = static_cast<uint32_t>(log2(static_cast<uint32_t>(subIdMaxEnumerator))) + 1;
                 return static_cast<uint32_t>(subId) + (apiType << shiftLeft);
-            }
-
-            Outcome<AZStd::string, AZStd::string> ObtainBuildArtifactPathFromShaderAssetBuilder2(
-                const uint32_t rhiUniqueIndex, const AZStd::string& platformIdentifier, const AZStd::string& shaderJsonPath,
-                const uint32_t supervariantIndex, RPI::ShaderAssetSubId shaderAssetSubId)
-            {
-                // platform id from identifier
-                AzFramework::PlatformId platformId = AzFramework::PlatformId::PC;
-                if (platformIdentifier == "pc")
-                {
-                    platformId = AzFramework::PlatformId::PC;
-                }
-                else if (platformIdentifier == "mac")
-                {
-                    platformId = AzFramework::PlatformId::MAC_ID;
-                }
-                else if (platformIdentifier == "android")
-                {
-                    platformId = AzFramework::PlatformId::ANDROID_ID;
-                }
-                else if (platformIdentifier == "ios")
-                {
-                    platformId = AzFramework::PlatformId::IOS;
-                }
-
-                uint32_t assetSubId = RPI::ShaderAsset2::MakeProductAssetSubId(rhiUniqueIndex, supervariantIndex, aznumeric_cast<uint32_t>(shaderAssetSubId));
-                auto assetIdOutcome = RPI::AssetUtils::MakeAssetId(shaderJsonPath, assetSubId);
-                if (!assetIdOutcome.IsSuccess())
-                {
-                    return Failure(AZStd::string::format(
-                        "Missing ShaderAssetBuilder2 product %s, for sub %d", shaderJsonPath.c_str(), (uint32_t)shaderAssetSubId));
-                }
-
-                Data::AssetId assetId = assetIdOutcome.TakeValue();
-                // get the relative path:
-                AZStd::string assetPath;
-                Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &Data::AssetCatalogRequests::GetAssetPathById, assetId);
-
-                // get the root:
-                AZStd::string assetRoot = AzToolsFramework::PlatformAddressedAssetCatalog::GetAssetRootForPlatform(platformId);
-                // join
-                AZStd::string assetFullPath;
-                AzFramework::StringFunc::Path::Join(assetRoot.c_str(), assetPath.c_str(), assetFullPath);
-                bool fileExists = IO::FileIOBase::GetInstance()->Exists(assetFullPath.c_str()) &&
-                    !IO::FileIOBase::GetInstance()->IsDirectory(assetFullPath.c_str());
-                if (!fileExists)
-                {
-                    return Failure(AZStd::string::format(
-                        "asset [%s] from shader source %s and subId %d doesn't exist", assetFullPath.c_str(), shaderJsonPath.c_str(),
-                        (uint32_t)shaderAssetSubId));
-                }
-                return AZ::Success(assetFullPath);
             }
 
             Outcome<AzslSubProducts::Paths> ObtainBuildArtifactsFromAzslBuilder([[maybe_unused]] const char* builderName, const AZStd::string& sourceFullPath, RHI::APIType apiType, const AZStd::string& platform)

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/base.h>
 
@@ -175,6 +170,16 @@ namespace AssetProcessor
         UNIT_TEST_EXPECT_FALSE(gameName.isEmpty());
         // should create cache folder in the root, and read everything from there.
 
+        // There is a sub-case of handling mixed cases, but is only supported on case-insensitive filesystems. 
+#if defined(AZ_PLATFORM_LINUX)
+        // Linux is case-sensitive, so 'basefile.txt' will stay the same case as the other subfolder versions
+        constexpr const char* subfolder3BaseFilePath = "subfolder3/basefile.txt";
+        constexpr int expectedLegacyAssetIdCount = 1;
+#else
+        constexpr const char* subfolder3BaseFilePath = "subfolder3/BaseFile.txt";
+        constexpr int expectedLegacyAssetIdCount = 2;
+#endif
+
         QSet<QString> expectedFiles;
         // set up some interesting files:
         expectedFiles << tempPath.absoluteFilePath("rootfile2.txt");
@@ -185,7 +190,9 @@ namespace AssetProcessor
         expectedFiles << tempPath.absoluteFilePath("subfolder2/aaa/bbb/basefile.txt");
         expectedFiles << tempPath.absoluteFilePath("subfolder2/aaa/bbb/ccc/basefile.txt");
         expectedFiles << tempPath.absoluteFilePath("subfolder2/aaa/bbb/ccc/ddd/basefile.txt");
-        expectedFiles << tempPath.absoluteFilePath("subfolder3/BaseFile.txt"); // note the case upper here
+
+        expectedFiles << tempPath.absoluteFilePath(subfolder3BaseFilePath); 
+
         expectedFiles << tempPath.absoluteFilePath("subfolder8/a/b/c/test.txt");
 
         // subfolder3 is not recursive so none of these should show up in any scan or override check
@@ -1521,7 +1528,8 @@ namespace AssetProcessor
 
         // -------------- override test -----------------
         // set up by letting it compile basefile.txt from 3:
-        absolutePath = AssetUtilities::NormalizeFilePath(tempPath.absoluteFilePath("subfolder3/BaseFile.txt"));
+
+        absolutePath = AssetUtilities::NormalizeFilePath(tempPath.absoluteFilePath(subfolder3BaseFilePath));
         QMetaObject::invokeMethod(&apm, "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, absolutePath));
         UNIT_TEST_EXPECT_TRUE(BlockUntil(idling, 5000));
 
@@ -1583,8 +1591,7 @@ namespace AssetProcessor
         UNIT_TEST_EXPECT_TRUE(assetMessages.size() == 4);
         for (auto element : assetMessages)
         {
-            // because the source asset had UPPER CASE in it, we should have multiple legacy IDs
-            UNIT_TEST_EXPECT_TRUE(element.m_legacyAssetIds.size() == 2);
+            UNIT_TEST_EXPECT_TRUE(element.m_legacyAssetIds.size() == expectedLegacyAssetIdCount);
         }
 
         // ------------- setup complete, now do the test...
@@ -1607,7 +1614,7 @@ namespace AssetProcessor
 
         // delete the highest priority override file and ensure that it generates tasks
         // for the next highest priority!  Basically, deleting this file should "reveal" the file underneath it in the other subfolder
-        QString deletedFile = tempPath.absoluteFilePath("subfolder3/BaseFile.txt");
+        QString deletedFile = tempPath.absoluteFilePath(subfolder3BaseFilePath);
         QString expectedReplacementInputFile = AssetUtilities::NormalizeFilePath(tempPath.absoluteFilePath("subfolder2/basefile.txt"));
 
         UNIT_TEST_EXPECT_TRUE(QFile::remove(deletedFile));
@@ -1621,6 +1628,11 @@ namespace AssetProcessor
 
         sortAssetToProcessResultList(processResults);
 
+#if defined(AZ_PLATFORM_LINUX)
+        // On Linux, because of we cannot change the case of the source file, the job fingerprint is not updated due the case-switch so
+        // there will be actually nothing to process
+        UNIT_TEST_EXPECT_TRUE(processResults.size() == 0);
+#else
         // --------- same result as above ----------
         UNIT_TEST_EXPECT_TRUE(processResults.size() == 4); // 2 each for pc and android,since we have two recognizer for .txt file
         UNIT_TEST_EXPECT_TRUE(processResults[0].m_jobEntry.m_platformInfo.m_identifier == processResults[1].m_jobEntry.m_platformInfo.m_identifier);
@@ -1641,7 +1653,7 @@ namespace AssetProcessor
             UNIT_TEST_EXPECT_TRUE(processFile1.startsWith(platformFolder));
             UNIT_TEST_EXPECT_TRUE(processResults[checkIdx].m_jobEntry.m_computedFingerprint != 0);
         }
-
+#endif // defined(AZ_PLATFORM_LINUX)
         relativePathFromWatchFolder = "somefile.xxx";
         watchFolderPath = tempPath.absoluteFilePath("subfolder3");
         absolutePath = watchFolderPath + "/" + relativePathFromWatchFolder;
@@ -2721,7 +2733,12 @@ namespace AssetProcessor
                 {
                     AssetBuilderSDK::JobDescriptor secondDescriptor = descriptor;
                     secondDescriptor.m_jobKey = "yyy";
+                    #if defined(AZ_PLATFORM_WINDOWS)
                     sourceFileDependency.m_sourceFileDependencyPath = "some\\random/Folders/FILEa.TxT";
+                    #else
+                    sourceFileDependency.m_sourceFileDependencyPath = "some/random/folders/FileA.txt";
+                    #endif // defined(AZ_PLATFORM_WINDOWS)
+
                     // ... declare a job dependency on job A ('FileA.txt', 'xxx', platform)
                     AssetBuilderSDK::JobDependency jobDependency("xxx", platformInfo.m_identifier.c_str(), AssetBuilderSDK::JobDependencyType::Fingerprint, sourceFileDependency);
                     secondDescriptor.m_jobDependencyList.push_back(jobDependency);
@@ -2805,11 +2822,11 @@ namespace AssetProcessor
         QDir cacheRoot;
         UNIT_TEST_EXPECT_TRUE(AssetUtilities::ComputeProjectCacheRoot(cacheRoot));
 
-        QString productFileAPath = cacheRoot.filePath(QString("pc/FileAProduct.txt"));
-        QString productFileBPath = cacheRoot.filePath(QString("pc/FileBProduct1.txt"));
-        QString product2FileBPath = cacheRoot.filePath(QString("pc/FileBProduct2.txt"));
-        QString productFileCPath = cacheRoot.filePath(QString("pc/FileCProduct.txt"));
-        QString product2FileCPath = cacheRoot.filePath(QString("pc/FileCProduct2.txt"));
+        QString productFileAPath = cacheRoot.filePath(QString("pc/fileaproduct.txt"));
+        QString productFileBPath = cacheRoot.filePath(QString("pc/filebproduct1.txt"));
+        QString product2FileBPath = cacheRoot.filePath(QString("pc/filebproduct2.txt"));
+        QString productFileCPath = cacheRoot.filePath(QString("pc/filecproduct.txt"));
+        QString product2FileCPath = cacheRoot.filePath(QString("pc/filecproduct2.txt"));
 
         UNIT_TEST_EXPECT_TRUE(CreateDummyFile(sourceFileAPath, ""));
         UNIT_TEST_EXPECT_TRUE(CreateDummyFile(sourceFileBPath, ""));

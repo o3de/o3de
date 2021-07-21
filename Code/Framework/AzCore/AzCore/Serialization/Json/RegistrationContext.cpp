@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
@@ -33,34 +28,31 @@ namespace AZ
         , m_serializerIter(serializerMapIter)
     {}
 
-    JsonRegistrationContext::SerializerBuilder* JsonRegistrationContext::SerializerBuilder::HandlesTypeId(const Uuid& uuid)
+    JsonRegistrationContext::SerializerBuilder* JsonRegistrationContext::SerializerBuilder::HandlesTypeId(
+        const Uuid& uuid, bool overwriteExisting)
     {
         if (!m_context->IsRemovingReflection())
         {
             auto serializer = m_serializerIter->second.get();
             if (uuid.IsNull())
             {
-                AZ_Error("Serialization", false,
-                    "Could not register Json serializer %s. Its Uuid is null.",
-                    serializer->RTTI_GetTypeName()
-                    );
+                AZ_Assert(false, "Could not register Json serializer %s. Its Uuid is null.", serializer->RTTI_GetTypeName());
                 return this;
             }
 
-            auto serializerIter = m_context->m_handledTypesMap.find(uuid);
-
-            if (serializerIter == m_context->m_handledTypesMap.end())
+            if (!overwriteExisting)
             {
-                m_context->m_handledTypesMap.emplace(uuid, serializer);
-                return this;
+                auto emplaceResult = m_context->m_handledTypesMap.try_emplace(uuid, serializer);
+                AZ_Assert(
+                    emplaceResult.second,
+                    "Couldn't register Json serializer %s. Another serializer (%s) has already been registered for the same Uuid (%s).",
+                    serializer->RTTI_GetTypeName(), emplaceResult.first->second->RTTI_GetTypeName(),
+                    uuid.ToString<AZStd::string>().c_str());
             }
-
-            AZ_Error("Serialization", false,
-                "Couldn't register Json serializer %s. Another serializer (%s) has already been registered for the same Uuid (%s).",
-                serializer->RTTI_GetTypeName(),
-                serializerIter->second->RTTI_GetTypeName(),
-                serializerIter->first.ToString<OSString>().c_str()
-                );
+            else
+            {
+                m_context->m_handledTypesMap.insert_or_assign(uuid, serializer);
+            }
         }
         else
         {

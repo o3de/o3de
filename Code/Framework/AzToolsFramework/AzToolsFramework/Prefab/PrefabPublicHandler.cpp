@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/JSON/stringbuffer.h>
@@ -592,21 +587,21 @@ namespace AzToolsFramework
             return AZ::Success(entityId);
         }
 
-        void PrefabPublicHandler::GenerateUndoNodesForEntityChangeAndUpdateCache(
+        PrefabOperationResult PrefabPublicHandler::GenerateUndoNodesForEntityChangeAndUpdateCache(
             AZ::EntityId entityId, UndoSystem::URSequencePoint* parentUndoBatch)
         {
             // Create Undo node on entities if they belong to an instance
             InstanceOptionalReference owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
             if (!owningInstance.has_value())
             {
-                return;
+                return AZ::Success();
             }
 
             AZ::Entity* entity = GetEntityById(entityId);
             if (!entity)
             {
                 m_prefabUndoCache.PurgeCache(entityId);
-                return;
+                return AZ::Success();
             }
 
             PrefabDom beforeState;
@@ -638,6 +633,41 @@ namespace AzToolsFramework
                         (&beforeOwningInstance->get() != &afterOwningInstance->get()))
                     {
                         isNewParentOwnedByDifferentInstance = true;
+
+                        // Detect loops. Assert if an instance has been reparented in such a way to generate circular dependencies.
+                        AZStd::vector<Instance*> instancesInvolved;
+
+                        if (isInstanceContainerEntity)
+                        {
+                            instancesInvolved.push_back(&owningInstance->get());
+                        }
+                        else
+                        {
+                            // Retrieve all nested instances that are part of the subtree under the current entity.
+                            EntityList entities;
+                            RetrieveAndSortPrefabEntitiesAndInstances({ entity }, beforeOwningInstance->get(), entities, instancesInvolved);
+                        }
+
+                        for (Instance* instance : instancesInvolved)
+                        {
+                            const PrefabDom& templateDom =
+                                m_prefabSystemComponentInterface->FindTemplateDom(instance->GetTemplateId());
+                            AZStd::unordered_set<AZ::IO::Path> templatePaths;
+                            PrefabDomUtils::GetTemplateSourcePaths(templateDom, templatePaths);
+
+                            if (IsCyclicalDependencyFound(afterOwningInstance->get(), templatePaths))
+                            {
+                                // Cancel the operation by restoring the previous parent
+                                AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetParent, beforeParentId);
+                                m_prefabUndoCache.UpdateCache(entityId);
+
+                                // Skip the creation of an undo node
+                                return AZ::Failure(AZStd::string::format(
+                                    "Reparent Prefab operation aborted - Cyclical dependency detected\n(%s depends on %s).",
+                                    instance->GetTemplateSourcePath().Native().c_str(),
+                                    afterOwningInstance->get().GetTemplateSourcePath().Native().c_str()));
+                            }
+                        }
                     }
                 }
 
@@ -678,6 +708,8 @@ namespace AzToolsFramework
             }
 
             m_prefabUndoCache.UpdateCache(entityId);
+
+            return AZ::Success();
         }
 
         void PrefabPublicHandler::Internal_HandleContainerOverride(
@@ -901,7 +933,13 @@ namespace AzToolsFramework
                 return AZ::Failure(AZStd::string("No entities to duplicate."));
             }
 
-            if (!EntitiesBelongToSameInstance(entityIds))
+            const EntityIdList entityIdsNoLevelInstance = GenerateEntityIdListWithoutLevelInstance(entityIds);
+            if (entityIdsNoLevelInstance.empty())
+            {
+                return AZ::Failure(AZStd::string("No entities to duplicate because only instance selected is the level instance."));
+            }
+
+            if (!EntitiesBelongToSameInstance(entityIdsNoLevelInstance))
             {
                 return AZ::Failure(AZStd::string("Cannot duplicate multiple entities belonging to different instances with one operation."
                     "Change your selection to contain entities in the same instance."));
@@ -909,15 +947,15 @@ namespace AzToolsFramework
 
             // We've already verified the entities are all owned by the same instance,
             // so we can just retrieve our instance from the first entity in the list.
-            AZ::EntityId firstEntityIdToDuplicate = entityIds[0];
+            AZ::EntityId firstEntityIdToDuplicate = entityIdsNoLevelInstance[0];
             InstanceOptionalReference commonOwningInstance = GetOwnerInstanceByEntityId(firstEntityIdToDuplicate);
             if (!commonOwningInstance.has_value())
             {
                 return AZ::Failure(AZStd::string("Failed to duplicate : Couldn't get a valid owning instance for the common root entity of the entities provided."));
             }
 
-            // If the first entity id is a container entity id, then we need to mark its parent as the common owning instance because you
-            // cannot duplicate an instance from itself.
+            // If the first entity id is a container entity id, then we need to mark its parent as the common owning instance
+            // This is because containers, despite representing the nested instance in the parent, are owned by the child.
             if (commonOwningInstance->get().GetContainerEntityId() == firstEntityIdToDuplicate)
             {
                 commonOwningInstance = commonOwningInstance->get().GetParentInstance();
@@ -929,7 +967,7 @@ namespace AzToolsFramework
 
             // This will cull out any entities that have ancestors in the list, since we will end up duplicating
             // the full nested hierarchy with what is returned from RetrieveAndSortPrefabEntitiesAndInstances
-            AzToolsFramework::EntityIdSet duplicationSet = AzToolsFramework::GetCulledEntityHierarchy(entityIds);
+            AzToolsFramework::EntityIdSet duplicationSet = AzToolsFramework::GetCulledEntityHierarchy(entityIdsNoLevelInstance);
 
             AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
@@ -961,16 +999,17 @@ namespace AzToolsFramework
 
                 // Duplicate any nested entities and instances as requested
                 AZStd::unordered_map<InstanceAlias, Instance*> newInstanceAliasToOldInstanceMap;
+                AZStd::unordered_map<EntityAlias, EntityAlias> duplicateEntityAliasMap;
                 DuplicateNestedEntitiesInInstance(commonOwningInstance->get(),
-                    entities, instanceDomAfter, duplicatedEntityAndInstanceIds);
-                DuplicateNestedInstancesInInstance(commonOwningInstance->get(),
-                    instances, instanceDomAfter, duplicatedEntityAndInstanceIds,
-                    newInstanceAliasToOldInstanceMap);
+                    entities, instanceDomAfter, duplicatedEntityAndInstanceIds, duplicateEntityAliasMap);
 
                 PrefabUndoInstance* command = aznew PrefabUndoInstance("Entity/Instance duplication");
                 command->SetParent(undoBatch.GetUndoBatch());
                 command->Capture(instanceDomBefore, instanceDomAfter, commonOwningInstance->get().GetTemplateId());
                 command->Redo();
+
+                DuplicateNestedInstancesInInstance(commonOwningInstance->get(),
+                    instances, instanceDomAfter, duplicatedEntityAndInstanceIds, newInstanceAliasToOldInstanceMap);
 
                 // Create links for our duplicated instances (if any were duplicated)
                 for (auto [newInstanceAlias, oldInstance] : newInstanceAliasToOldInstanceMap)
@@ -989,8 +1028,35 @@ namespace AzToolsFramework
                     PrefabDom linkPatchesCopy;
                     linkPatchesCopy.CopyFrom(linkPatches->get(), linkPatchesCopy.GetAllocator());
 
-                    m_prefabSystemComponentInterface->CreateLink(
-                        commonOwningInstance->get().GetTemplateId(), oldInstance->GetTemplateId(), newInstanceAlias, linkPatchesCopy);
+                    // If the instance was duplicated as part of an ancestor's nested hierarchy, the container's parent patch
+                    // will need to be refreshed to point to the new duplicated parent entity
+                    auto oldInstanceContainerEntityId = oldInstance->GetContainerEntityId();
+                    AZ_Assert(oldInstanceContainerEntityId.IsValid(), "Instance returned invalid Container Entity Id");
+
+                    AZ::EntityId previousParentEntityId;
+                    AZ::TransformBus::EventResult(previousParentEntityId, oldInstanceContainerEntityId, &AZ::TransformBus::Events::GetParentId);
+
+                    if (previousParentEntityId.IsValid() && AZStd::find(duplicatedEntityAndInstanceIds.begin(), duplicatedEntityAndInstanceIds.end(), previousParentEntityId))
+                    {
+                        auto oldParentAlias = commonOwningInstance->get().GetEntityAlias(previousParentEntityId);
+                        if (oldParentAlias.has_value() && duplicateEntityAliasMap.contains(oldParentAlias->get()))
+                        {
+                            // Get the dom into a QString for search/replace purposes
+                            rapidjson::StringBuffer buffer;
+                            rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+                            linkPatchesCopy.Accept(writer);
+
+                            QString linkPatchesString(buffer.GetString());
+
+                            ReplaceOldAliases(linkPatchesString, oldParentAlias->get(), duplicateEntityAliasMap[oldParentAlias->get()]);
+
+                            linkPatchesCopy.Parse(linkPatchesString.toUtf8().constData());
+                        }
+                    }
+
+                    PrefabUndoHelpers::CreateLink(
+                        oldInstance->GetTemplateId(), commonOwningInstance->get().GetTemplateId(),
+                        AZStd::move(linkPatchesCopy), newInstanceAlias, undoBatch.GetUndoBatch());
                 }
 
                 // Select the duplicated entities/instances
@@ -1004,17 +1070,19 @@ namespace AzToolsFramework
 
         PrefabOperationResult PrefabPublicHandler::DeleteFromInstance(const EntityIdList& entityIds, bool deleteDescendants)
         {
-            if (entityIds.empty())
+            const EntityIdList entityIdsNoLevelInstance = GenerateEntityIdListWithoutLevelInstance(entityIds);
+
+            if (entityIdsNoLevelInstance.empty())
             {
                 return AZ::Success();
             }
 
-            if (!EntitiesBelongToSameInstance(entityIds))
+            if (!EntitiesBelongToSameInstance(entityIdsNoLevelInstance))
             {
                 return AZ::Failure(AZStd::string("Cannot delete multiple entities belonging to different instances with one operation."));
             }
 
-            AZ::EntityId firstEntityIdToDelete = entityIds[0];
+            AZ::EntityId firstEntityIdToDelete = entityIdsNoLevelInstance[0];
             InstanceOptionalReference commonOwningInstance = GetOwnerInstanceByEntityId(firstEntityIdToDelete);
 
             // If the first entity id is a container entity id, then we need to mark its parent as the common owning instance because you
@@ -1025,7 +1093,7 @@ namespace AzToolsFramework
             }
 
             // Retrieve entityList from entityIds
-            EntityList inputEntityList = EntityIdListToEntityList(entityIds);
+            EntityList inputEntityList = EntityIdListToEntityList(entityIdsNoLevelInstance);
 
             AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
@@ -1081,7 +1149,7 @@ namespace AzToolsFramework
                 }
                 else
                 {
-                    for (AZ::EntityId entityId : entityIds)
+                    for (AZ::EntityId entityId : entityIdsNoLevelInstance)
                     {
                         InstanceOptionalReference owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
                         // If this is the container entity, it actually represents the instance so get its owner
@@ -1203,25 +1271,23 @@ namespace AzToolsFramework
 
                     const auto instanceTemplateId = instancePtr->GetTemplateId();
                     auto parentContainerEntityId = parentInstance.GetContainerEntityId();
-                    instancePtr->GetNestedInstances(
-                        [&](AZStd::unique_ptr<Instance>& nestedInstancePtr)
+
+                    instancePtr->DetachNestedInstances(
+                        [&](AZStd::unique_ptr<Instance> detachedNestedInstance)
                     {
-                        //get previous link patch
-                        auto linkRef = m_prefabSystemComponentInterface->FindLink(nestedInstancePtr->GetLinkId());
-                        PrefabDomValueReference linkPatches = linkRef->get().GetLinkPatches();
-                        AZ_Assert(
-                            linkPatches.has_value(), "Unable to get patches on link with id '%llu' during prefab creation.",
-                            nestedInstancePtr->GetLinkId());
+                        PrefabDom& nestedInstanceTemplateDom =
+                            m_prefabSystemComponentInterface->FindTemplateDom(detachedNestedInstance->GetTemplateId());
 
-                        PrefabDom linkPatchesCopy;
-                        linkPatchesCopy.CopyFrom(linkPatches->get(), linkPatchesCopy.GetAllocator());
-
-                        RemoveLink(nestedInstancePtr, instanceTemplateId, undoBatch.GetUndoBatch());
-
-                        UpdateLinkPatchesWithNewEntityAliases(linkPatchesCopy, oldEntityAliases, parentInstance);
+                        Instance& nestedInstanceUnderNewParent = parentInstance.AddInstance(AZStd::move(detachedNestedInstance));
                         
-                        CreateLink(*nestedInstancePtr, parentTemplateId, undoBatch.GetUndoBatch(),
-                            AZStd::move(linkPatchesCopy), true);
+                        PrefabDom nestedInstanceDomUnderNewParent;
+                        m_instanceToTemplateInterface->GenerateDomForInstance(
+                            nestedInstanceDomUnderNewParent, nestedInstanceUnderNewParent);
+                        PrefabDom reparentPatch;
+                        m_instanceToTemplateInterface->GeneratePatch(
+                            reparentPatch, nestedInstanceTemplateDom, nestedInstanceDomUnderNewParent);
+                        
+                        CreateLink(nestedInstanceUnderNewParent, parentTemplateId, undoBatch.GetUndoBatch(), AZStd::move(reparentPatch), true);
                     });
                 }
 
@@ -1437,6 +1503,22 @@ namespace AzToolsFramework
             return (outEntities.size() + outInstances.size()) > 0;
         }
 
+        EntityIdList PrefabPublicHandler::GenerateEntityIdListWithoutLevelInstance(
+            const EntityIdList& entityIds) const
+        {
+            EntityIdList outEntityIds;
+            outEntityIds.reserve(entityIds.size()); // Actual size could be smaller.
+
+            for (const AZ::EntityId& entityId : entityIds)
+            {
+                if (!IsLevelInstanceContainerEntity(entityId))
+                {
+                    outEntityIds.emplace_back(entityId);
+                }
+            }
+            return outEntityIds;
+        }
+
         bool PrefabPublicHandler::EntitiesBelongToSameInstance(const EntityIdList& entityIds) const
         {
             if (entityIds.size() <= 1)
@@ -1485,14 +1567,13 @@ namespace AzToolsFramework
 
         void PrefabPublicHandler::DuplicateNestedEntitiesInInstance(Instance& commonOwningInstance,
             const AZStd::vector<AZ::Entity*>& entities, PrefabDom& domToAddDuplicatedEntitiesUnder,
-            EntityIdList& duplicatedEntityIds)
+            EntityIdList& duplicatedEntityIds, AZStd::unordered_map<EntityAlias, EntityAlias>& oldAliasToNewAliasMap)
         {
             if (entities.empty())
             {
                 return;
             }
 
-            AZStd::unordered_map<EntityAlias, EntityAlias> oldAliasToNewAliasMap;
             AZStd::unordered_map<EntityAlias, QString> aliasToEntityDomMap;
 
             for (AZ::Entity* entity : entities)

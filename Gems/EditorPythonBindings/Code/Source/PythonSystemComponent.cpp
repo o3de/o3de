@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -501,6 +496,7 @@ namespace EditorPythonBindings
             // ignore system location for sites site-packages
             Py_IsolatedFlag = 1; // -I - Also sets Py_NoUserSiteDirectory.  If removed PyNoUserSiteDirectory should be set.
             Py_IgnoreEnvironmentFlag = 1; // -E
+            Py_InspectFlag = 1; // unhandled SystemExit will terminate the process unless Py_InspectFlag is set
 
             const bool initializeSignalHandlers = true;
             pybind11::initialize_interpreter(initializeSignalHandlers);
@@ -718,7 +714,8 @@ namespace EditorPythonBindings
 
             for (int arg = 0; arg < args.size(); arg++)
             {
-                argv[arg + 1] = Py_DecodeLocale(args[arg].data(), nullptr);
+                AZStd::string argString(args[arg]);
+                argv[arg + 1] = Py_DecodeLocale(argString.c_str(), nullptr);
             }
             // Tell Python the command-line args.
             // Note that this has a side effect of adding the script's path to the set of directories checked for "import" commands.

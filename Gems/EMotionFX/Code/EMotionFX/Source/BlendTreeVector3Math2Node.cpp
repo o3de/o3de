@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -259,8 +254,6 @@ namespace EMotionFX
                 ->EnumAttribute(MATHFUNCTION_DIVIDE,       "Divide")
                 ->EnumAttribute(MATHFUNCTION_ANGLEDEGREES, "AngleDegrees")
             ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeVector3Math2Node::m_defaultValue, "Default Value", "The default value for x or y when one of them has no incomming connection.")
-                ->Attribute(AZ::Edit::Attributes::Min, AZ::Vector3(-std::numeric_limits<float>::max()))
-                ->Attribute(AZ::Edit::Attributes::Max, AZ::Vector3(std::numeric_limits<float>::max()))
             ;
     }
 } // namespace EMotionFX

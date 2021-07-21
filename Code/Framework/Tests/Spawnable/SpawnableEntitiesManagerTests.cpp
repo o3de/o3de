@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
@@ -32,6 +27,33 @@ namespace UnitTest
         }
     };
 
+    // Test component that has a reference to a different entity for use in validating per-instance entity id fixups.
+    class ComponentWithEntityReference : public AZ::Component
+    {
+    public:
+        AZ_COMPONENT(ComponentWithEntityReference, "{CF5FDE59-86E5-40B6-9272-BBC1C4AFD061}");
+
+        void Activate() override
+        {
+        }
+
+        void Deactivate() override
+        {
+        }
+
+        static void Reflect(AZ::ReflectContext* reflection)
+        {
+            if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection))
+            {
+                serializeContext->Class<ComponentWithEntityReference, AZ::Component>()
+                    ->Field("EntityReference", &ComponentWithEntityReference::m_entityReference)
+                    ;
+            }
+        }
+
+        AZ::EntityId m_entityReference;
+    };
+
     class SpawnableEntitiesManagerTest : public AllocatorsFixture
     {
     public:
@@ -42,6 +64,8 @@ namespace UnitTest
             m_application = new TestApplication();
             AZ::ComponentApplication::Descriptor descriptor;
             m_application->Start(descriptor);
+            m_application->RegisterComponentDescriptor(ComponentWithEntityReference::CreateDescriptor());
+
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
             // in the unit tests.
@@ -80,6 +104,7 @@ namespace UnitTest
         void FillSpawnable(size_t numElements)
         {
             AzFramework::Spawnable::EntityList& entities = m_spawnable->GetEntities();
+            entities.clear();
             entities.reserve(numElements);
             for (size_t i=0; i<numElements; ++i)
             {
@@ -122,6 +147,94 @@ namespace UnitTest
                 }
             }
         }
+
+        enum class EntityReferenceScheme
+        {
+            AllReferenceFirst,
+            AllReferenceLast,
+            AllReferenceThemselves,
+            AllReferenceNextCircular,
+            AllReferencePreviousCircular
+        };
+
+        void CreateEntityReferences(EntityReferenceScheme refScheme)
+        {
+            AzFramework::Spawnable::EntityList& entities = m_spawnable->GetEntities();
+            size_t numElements = entities.size();
+            for (size_t i = 0; i < numElements; ++i)
+            {
+                AZStd::unique_ptr<AZ::Entity>& entity = entities[i];
+                auto component = entity->CreateComponent<ComponentWithEntityReference>();
+                switch (refScheme)
+                {
+                case EntityReferenceScheme::AllReferenceFirst :
+                    component->m_entityReference = entities[0]->GetId();
+                    break;
+                case EntityReferenceScheme::AllReferenceLast:
+                    component->m_entityReference = entities[numElements - 1]->GetId();
+                    break;
+                case EntityReferenceScheme::AllReferenceThemselves:
+                    component->m_entityReference = entities[i]->GetId();
+                    break;
+                case EntityReferenceScheme::AllReferenceNextCircular:
+                    component->m_entityReference = entities[(i + 1) % numElements]->GetId();
+                    break;
+                case EntityReferenceScheme::AllReferencePreviousCircular:
+                    component->m_entityReference = entities[(i + numElements - 1) % numElements]->GetId();
+                    break;
+                }
+            }
+        }
+
+        // Verify that the entity references are pointing to the correct other entities within the same spawn batch.
+        // A "spawn batch" is the set of entities produced for each SpawnAllEntities command.
+        void ValidateEntityReferences(
+            EntityReferenceScheme refScheme, size_t entitiesPerBatch, AzFramework::SpawnableConstEntityContainerView entities)
+        {
+            size_t numElements = entities.size();
+
+            for (size_t i = 0; i < numElements; ++i)
+            {
+                // Calculate the element offset that's the start of each batch of entities spawned.
+                size_t curSpawnBatch = i / entitiesPerBatch;
+                size_t curBatchOffset = curSpawnBatch * entitiesPerBatch;
+                size_t curBatchIndex = i - curBatchOffset;
+
+                const AZ::Entity* const entity = *(entities.begin() + i);
+
+                auto component = entity->FindComponent<ComponentWithEntityReference>();
+                ASSERT_NE(nullptr, component);
+                AZ::EntityId comparisonId;
+                // Ids should be local to a batch, so each of these will be compared within a batch of entities, not globally across
+                // the entire set.
+                switch (refScheme)
+                {
+                case EntityReferenceScheme::AllReferenceFirst:
+                    // Compare against the first entity in each batch
+                    comparisonId = (*(entities.begin() + curBatchOffset))->GetId();
+                    break;
+                case EntityReferenceScheme::AllReferenceLast:
+                    // Compare against the last entity in each batch
+                    comparisonId = (*(entities.begin() + curBatchOffset + (entitiesPerBatch - 1)))->GetId();
+                    break;
+                case EntityReferenceScheme::AllReferenceThemselves:
+                    // Compare against itself
+                    comparisonId = entity->GetId();
+                    break;
+                case EntityReferenceScheme::AllReferenceNextCircular:
+                    // Compare against the next entity in each batch, looping around so that the last entity in the batch should refer
+                    // to the first entity in the batch.
+                    comparisonId = (*(entities.begin() + curBatchOffset + ((curBatchIndex + 1) % entitiesPerBatch)))->GetId();
+                    break;
+                case EntityReferenceScheme::AllReferencePreviousCircular:
+                    // Compare against the previous entity in each batch, looping around so that the first entity in the batch should refer
+                    // to the last entity in the batch.
+                    comparisonId = (*(entities.begin() + curBatchOffset + ((curBatchIndex + numElements - 1) % entitiesPerBatch)))->GetId();
+                    break;
+                }
+                EXPECT_EQ(comparisonId, component->m_entityReference);
+            }
+        };
 
     protected:
         AZ::Data::Asset<AzFramework::Spawnable>* m_spawnableAsset { nullptr };
@@ -183,6 +296,73 @@ namespace UnitTest
         optionalArgs.m_completionCallback = AZStd::move(callback);
         m_manager->SpawnAllEntities(*m_ticket, AZStd::move(optionalArgs));
         m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+    }
+
+    TEST_F(SpawnableEntitiesManagerTest, SpawnAllEntities_AllEntitiesReferenceOtherEntities_EntityIdsAreMappedCorrectly)
+    {
+        // This tests that entity id references get mapped correctly in a SpawnAllEntities call whether they're forward referencing
+        // in the list, backwards referencing, or self-referencing.  The circular tests are to ensure the implementation works regardless
+        // of entity ordering.
+        for (EntityReferenceScheme refScheme : {
+                EntityReferenceScheme::AllReferenceFirst, EntityReferenceScheme::AllReferenceLast, 
+                EntityReferenceScheme::AllReferenceThemselves, EntityReferenceScheme::AllReferenceNextCircular,
+                EntityReferenceScheme::AllReferencePreviousCircular })
+        {
+            constexpr size_t NumEntities = 4;
+            FillSpawnable(NumEntities);
+            CreateEntityReferences(refScheme);
+
+            auto callback = [this, refScheme, NumEntities]
+                (AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
+            {
+                ValidateEntityReferences(refScheme, NumEntities, entities);
+            };
+            AzFramework::SpawnAllEntitiesOptionalArgs optionalArgs;
+            optionalArgs.m_completionCallback = AZStd::move(callback);
+            m_manager->SpawnAllEntities(*m_ticket, AZStd::move(optionalArgs));
+            m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        }
+    }
+
+    TEST_F(SpawnableEntitiesManagerTest, SpawnAllEntities_AllEntitiesReferenceOtherEntities_EntityIdsOnlyReferWithinASingleCall)
+    {
+        // This tests that entity id references get mapped correctly with multiple SpawnAllEntities calls.  Each call should only map
+        // the entities to other entities within the same call, regardless of forward or backward mapping.
+        // For example, suppose entities 1, 2, and 3 refer to 4.  In the first SpawnAllEntities call, entities 1-3 will refer to 4.
+        // In the second SpawnAllEntities call, entities 1-3 will refer to the second 4, not the previously-spawned 4.
+        for (EntityReferenceScheme refScheme :
+            { EntityReferenceScheme::AllReferenceFirst, EntityReferenceScheme::AllReferenceLast,
+               EntityReferenceScheme::AllReferenceThemselves, EntityReferenceScheme::AllReferenceNextCircular,
+               EntityReferenceScheme::AllReferencePreviousCircular
+            })
+        {
+            // Make sure we start with a fresh ticket each time, or else each iteration through this loop would continue to build up
+            // more and more entities.
+            delete m_ticket;
+            m_ticket = new AzFramework::EntitySpawnTicket(*m_spawnableAsset);
+
+            constexpr size_t NumEntities = 4;
+            FillSpawnable(NumEntities);
+            CreateEntityReferences(refScheme);
+
+            auto callback = [this, refScheme, NumEntities]
+                (AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
+            {
+                ValidateEntityReferences(refScheme, NumEntities, entities);
+            };
+
+            // Spawn twice.
+            constexpr size_t NumSpawnAllCalls = 2;
+            for (int spawns = 0; spawns < NumSpawnAllCalls; spawns++)
+            {
+                AzFramework::SpawnAllEntitiesOptionalArgs optionalArgs;
+                optionalArgs.m_completionCallback = AZStd::move(callback);
+                m_manager->SpawnAllEntities(*m_ticket, AZStd::move(optionalArgs));
+            }
+
+            m_manager->ListEntities(*m_ticket, callback);
+            m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        }
     }
 
     TEST_F(SpawnableEntitiesManagerTest, SpawnAllEntities_DeleteTicketBeforeCall_NoCrash)
@@ -360,6 +540,180 @@ namespace UnitTest
         optionalArgsSecondBatch.m_referencePreviouslySpawnedEntities = true;
         m_manager->SpawnEntities(*m_ticket, {1, 2, 3}, AZStd::move(optionalArgsSecondBatch));
 
+        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+    }
+
+    TEST_F(SpawnableEntitiesManagerTest, SpawnEntities_AllEntitiesReferenceOtherEntities_ForwardReferencesWorkInSingleCall)
+    {
+        constexpr EntityReferenceScheme refScheme = EntityReferenceScheme::AllReferenceNextCircular;
+        constexpr size_t NumEntities = 4;
+        FillSpawnable(NumEntities);
+        CreateEntityReferences(refScheme);
+
+        auto callback =
+            [this, refScheme, NumEntities](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
+        {
+            ValidateEntityReferences(refScheme, NumEntities, entities);
+        };
+
+        // Verify that by default, entities that refer to other entities that haven't been spawned yet have the correct references
+        // when the spawning all occurs in the same call
+        m_manager->SpawnEntities(*m_ticket, { 0, 1, 2, 3 });
+        m_manager->ListEntities(*m_ticket, callback);
+        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+    }
+
+    TEST_F(SpawnableEntitiesManagerTest, SpawnEntities_AllEntitiesReferenceOtherEntities_ForwardReferencesWorkAcrossCalls)
+    {
+        constexpr EntityReferenceScheme refScheme = EntityReferenceScheme::AllReferenceNextCircular;
+        constexpr size_t NumEntities = 4;
+        FillSpawnable(NumEntities);
+        CreateEntityReferences(refScheme);
+
+        auto callback =
+            [this, refScheme, NumEntities](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
+        {
+            ValidateEntityReferences(refScheme, NumEntities, entities);
+        };
+
+        // Verify that by default, entities that refer to other entities that haven't been spawned yet have the correct references
+        // even when the spawning is across multiple calls
+        m_manager->SpawnEntities(*m_ticket, { 0 });
+        m_manager->SpawnEntities(*m_ticket, { 1 });
+        m_manager->SpawnEntities(*m_ticket, { 2 });
+        m_manager->SpawnEntities(*m_ticket, { 3 });
+        m_manager->ListEntities(*m_ticket, callback);
+        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+    }
+
+    TEST_F(SpawnableEntitiesManagerTest, SpawnEntities_AllEntitiesReferenceOtherEntities_ReferencesPointToFirstOrLatest)
+    {
+        // With SpawnEntities, entity references should either refer to the first entity that *will* be spawned, or the last entity
+        // that *has* been spawned.  This test will create entities 0 1 2 3 that all refer to entity 3, and it will create two batches
+        // of those.  In the first batch, they'll forward-reference.  In the second batch, they should backward-reference, except for
+        // the second entity 3, which will now refer to itself as the last one that's been spawned.
+        constexpr EntityReferenceScheme refScheme = EntityReferenceScheme::AllReferenceLast;
+        constexpr size_t NumEntities = 4;
+        FillSpawnable(NumEntities);
+        CreateEntityReferences(refScheme);
+
+        auto callback =
+            [this, refScheme, NumEntities](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
+        {
+            size_t numElements = entities.size();
+
+            for (size_t i = 0; i < numElements; ++i)
+            {
+                const AZ::Entity* const entity = *(entities.begin() + i);
+
+                auto component = entity->FindComponent<ComponentWithEntityReference>();
+                ASSERT_NE(nullptr, component);
+                AZ::EntityId comparisonId;
+                if (i < (numElements - 1))
+                {
+                    // There are two batches of NumEntities elements.  Every entity should either forward-reference or backward-reference
+                    // to the last entity of the first batch, except for the very last entity of the second batch, which should reference
+                    // itself.
+                    comparisonId = (*(entities.begin() + (NumEntities- 1)))->GetId();
+                }
+                else
+                {
+                    // The very last entity of the second batch should reference itself because it's now the latest instance of that
+                    // entity to be spawned.
+                    comparisonId = entity->GetId();
+                }
+
+                EXPECT_EQ(comparisonId, component->m_entityReference);
+            }
+        };
+
+        // Create 2 batches of forward references.  In the first batch, entities 0 1 2 will point forward to 3.  In the second batch,
+        // entities 0 1 2 will point *backward* to the first 3, and the second entity 3 will point to itself.
+        m_manager->SpawnEntities(*m_ticket, { 0, 1, 2, 3 });
+        m_manager->SpawnEntities(*m_ticket, { 0, 1, 2, 3 });
+        m_manager->ListEntities(*m_ticket, callback);
+        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+    }
+
+    TEST_F(SpawnableEntitiesManagerTest, SpawnEntities_AllEntitiesReferenceOtherEntities_MultipleSpawnsInSameCallReferenceCorrectly)
+    {
+        // With SpawnEntities, entity references should either refer to the first entity that *will* be spawned, or the last entity
+        // that *has* been spawned.  This test will create entities 0 1 2 3 that all refer to entity 3, and it will create three sets
+        // of those in the same call, with the following results:
+        // - The first 0 1 2 will forward-reference to the first 3
+        // - The first 3 will reference itself
+        // - The second 0 1 2 will backwards-reference to the first 3
+        // - The second 3 will reference itself
+        // - The third 0 1 2 will backwards-reference to the second 3
+        // - The third 3 will reference itself
+        constexpr EntityReferenceScheme refScheme = EntityReferenceScheme::AllReferenceLast;
+        constexpr size_t NumEntities = 4;
+        FillSpawnable(NumEntities);
+        CreateEntityReferences(refScheme);
+
+        auto callback =
+            [this, refScheme, NumEntities](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
+        {
+            size_t numElements = entities.size();
+
+            for (size_t i = 0; i < numElements; ++i)
+            {
+                const AZ::Entity* const entity = *(entities.begin() + i);
+
+                auto component = entity->FindComponent<ComponentWithEntityReference>();
+                ASSERT_NE(nullptr, component);
+                AZ::EntityId comparisonId;
+
+                if (i < ((NumEntities * 2) - 1))
+                {
+                    // The first 7 entities (0 1 2 3 0 1 2) will all refer to the 4th one (1st '3').
+                    comparisonId = (*(entities.begin() + (NumEntities - 1)))->GetId();
+                }
+                else if (i < (numElements - 1))
+                {
+                    // The next 4 entities (3 0 1 2) will all refer to the 8th one (2nd '3').
+                    comparisonId = (*(entities.begin() + ((NumEntities * 2) - 1)))->GetId();
+                }
+                else
+                {
+                    // The very last entity (3) will reference itself (3rd '3').
+                    comparisonId = entity->GetId();
+                }
+
+                EXPECT_EQ(comparisonId, component->m_entityReference);
+            }
+        };
+
+        // Create the 3 batches of entities 0, 1, 2, 3.  The entity references should work as described at the top of the test.
+        m_manager->SpawnEntities(*m_ticket, { 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3 });
+        m_manager->ListEntities(*m_ticket, callback);
+        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+    }
+
+    TEST_F(SpawnableEntitiesManagerTest, SpawnEntities_AllEntitiesReferenceOtherEntities_OptionalFlagClearsReferenceMap)
+    {
+        constexpr EntityReferenceScheme refScheme = EntityReferenceScheme::AllReferenceLast;
+        constexpr size_t NumEntities = 4;
+        FillSpawnable(NumEntities);
+        CreateEntityReferences(refScheme);
+
+        auto callback =
+            [this, refScheme, NumEntities](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
+        {
+            ValidateEntityReferences(refScheme, NumEntities, entities);
+        };
+
+        // By setting the "referencePreviouslySpawnedEntities" flag to false, the map will get cleared on each call, so in both batches
+        // the entities will forward-reference to the last entity in the batch.  If the flag were true, entities 0 1 2 in the second
+        // batch would refer backwards to the first entity 3.
+
+        AzFramework::SpawnEntitiesOptionalArgs optionalArgsSecondBatch;
+        optionalArgsSecondBatch.m_completionCallback = AZStd::move(callback);
+        optionalArgsSecondBatch.m_referencePreviouslySpawnedEntities = false;
+
+        m_manager->SpawnEntities(*m_ticket, { 0, 1, 2, 3 }, optionalArgsSecondBatch);
+        m_manager->SpawnEntities(*m_ticket, { 0, 1, 2, 3 }, AZStd::move(optionalArgsSecondBatch));
+        m_manager->ListEntities(*m_ticket, callback);
         m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
     }
 

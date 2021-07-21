@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <precompiled.h>
 
 #include <qaction.h>
@@ -36,7 +31,6 @@
 #include <Editor/View/Widgets/ScriptCanvasNodePaletteDockWidget.h>
 #include <Editor/View/Widgets/NodePalette/VariableNodePaletteTreeItemTypes.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
-#include <ScriptCanvas/Execution/RuntimeBus.h>
 #include <ScriptCanvas/Bus/RequestBus.h>
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 
@@ -727,7 +721,7 @@ namespace ScriptCanvasEditor
         ScriptCanvas::GraphVariableManagerNotificationBus::Handler::BusDisconnect();
 
         m_assetType = AZ::Data::AssetType::CreateNull();
-        ScriptCanvas::RuntimeRequestBus::EventResult(m_assetType, scriptCanvasId, &ScriptCanvas::RuntimeRequests::GetAssetType);
+        ScriptCanvas::GraphRequestBus::EventResult(m_assetType, scriptCanvasId, &ScriptCanvas::GraphRequests::GetAssetType);
 
         m_scriptCanvasId = scriptCanvasId;
 
@@ -1058,9 +1052,6 @@ namespace ScriptCanvasEditor
 
         AZ::SerializeContext* serializeContext = AZ::EntityUtils::GetApplicationSerializeContext();
         AZ::Utils::LoadObjectFromBufferInPlace(byteArray.constData(), static_cast<AZStd::size_t>(byteArray.size()), copiedVariableData, serializeContext);
-
-        bool isRuntimeGraph = false;
-        EditorGraphRequestBus::EventResult(isRuntimeGraph, scriptCanvasId, &EditorGraphRequests::IsRuntimeGraph);
 
         ScriptCanvas::GraphVariableManagerRequests* requests = ScriptCanvas::GraphVariableManagerRequestBus::FindFirstHandler(scriptCanvasId);
 

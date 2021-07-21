@@ -322,7 +322,14 @@
                                 "Pass": "AuxGeomPass",
                                 "Attachment": "ColorInputOutput"
                             }
-                        }
+                        },
+                        {
+                            "LocalSlot": "DepthInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "DepthPrePass",
+                                "Attachment": "Depth"
+                            }
+                        }                    
                     ]
                 },
                 {

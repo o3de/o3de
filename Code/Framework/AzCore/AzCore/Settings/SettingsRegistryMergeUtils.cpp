@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/IO/GenericStreams.h>
 #include <AzCore/IO/Path/Path.h>
@@ -816,7 +811,11 @@ namespace AZ::SettingsRegistryMergeUtils
         }
     }
 
-    void MergeSettingsToRegistry_CommandLine(SettingsRegistryInterface& registry, const AZ::CommandLine& commandLine, bool executeCommands)
+    // This function intentionally copies `commandLine`. It looks like it only uses it as a const reference, but the
+    // code in the loop makes calls that mutates the `commandLine` instance, invalidating the iterators. Making a copy
+    // ensures that the iterators remain valid.
+    // NOLINTNEXTLINE(performance-unnecessary-value-param)
+    void MergeSettingsToRegistry_CommandLine(SettingsRegistryInterface& registry, AZ::CommandLine commandLine, bool executeCommands)
     {
         // Iterate over all the command line options in order to parse the --regset and --regremove
         // arguments in the order they were supplied
@@ -831,7 +830,7 @@ namespace AZ::SettingsRegistryMergeUtils
                     continue;
                 }
             }
-            if (commandArgument.m_option == "regremove")
+            else if (commandArgument.m_option == "regremove")
             {
                 if (!registry.Remove(commandArgument.m_value))
                 {

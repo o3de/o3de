@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -67,7 +62,7 @@ namespace Blast
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->Attribute(
                         AZ::Edit::Attributes::HelpPageURL,
-                        "https://docs.aws.amazon.com/lumberyard/latest/userguide/component-blast-actor.html")
+                        "https://o3de.org/docs/user-guide/components/reference/blast-family-mesh-data/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
                         AZ::Edit::UIHandlers::CheckBox, &EditorBlastMeshDataComponent::m_showMeshAssets,
@@ -187,7 +182,7 @@ namespace Blast
                 materials, GetEntityId(), &AZ::Render::MaterialComponentRequests::GetMaterialOverrides);
 
             m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
-            m_meshHandle = m_meshFeatureProcessor->AcquireMesh(m_meshAssets[0], materials);
+            m_meshHandle = m_meshFeatureProcessor->AcquireMesh(AZ::Render::MeshHandleDescriptor{ m_meshAssets[0] }, materials);
             m_meshFeatureProcessor->ConnectModelChangeEventHandler(m_meshHandle, m_changeEventHandler);
 
             HandleModelChange(m_meshFeatureProcessor->GetModel(m_meshHandle));

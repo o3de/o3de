@@ -1,26 +1,12 @@
 {
     "gem_name": "GraphModel",
-    "GemFormatVersion": 4,
-    "Uuid": "0844f64a3acf4f5abf3a535dc9b63bc9",
-    "Name": "GraphModel",
-    "DisplayName": "GraphModel",
-    "Version": "0.1.0",
-    "Summary": "A generic node graph data model framework.",
-    "Tags": ["GraphModel", "Scripting", "Vegetation"],
-    "IconPath": "graphModelIcon.svg",
-    "Modules": [
-        {
-            "Name": "Editor",
-            "Type": "EditorModule"
-        }
-    ],
-    "Dependencies": [
-        {
-            "Uuid": "875b6fcbdeea44deaae7984ad9bb6cdc",
-            "VersionConstraints": [
-                "~>0.1"
-            ],
-            "_comment": "GraphCanvas"
-        }
-    ]
+    "display_name": "Graph Model",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Open 3D Engine - o3de.org",
+    "type": "Code",
+    "summary": "The Graph Model Gem provides a generic node graph data model framework for Open 3D Engine.",
+    "canonical_tags": ["Gem"],
+    "user_tags": ["Framework", "Tools", "Utility"],
+    "icon_path": "preview.png",
+    "requirements": ""
 }

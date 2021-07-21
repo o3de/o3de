@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #ifndef __IMGUI_MANAGER_H__
@@ -62,7 +57,10 @@ namespace ImGui
         void SetImGuiRenderResolution(const ImVec2& res) override { m_renderResolution = res; }
         void OverrideRenderWindowSize(uint32_t width, uint32_t height) override;
         void RestoreRenderWindowSizeToDefault() override;
+        void SetDpiScalingFactor(float dpiScalingFactor) override;
+        float GetDpiScalingFactor() const override;
         void Render() override;
+        void ToggleThroughImGuiVisibleState() override;
         // -- ImGuiManagerBus Interface -------------------------------------------------------------------
 
         // -- AzFramework::InputChannelEventListener and AzFramework::InputTextEventListener Interface ------------
@@ -87,7 +85,7 @@ namespace ImGui
         DisplayState m_editorWindowState = DisplayState::Hidden;
 
         // ImGui Resolution Settings
-        ImGuiResolutionMode m_resolutionMode = ImGuiResolutionMode::MatchToMaxRenderResolution;
+        ImGuiResolutionMode m_resolutionMode = ImGuiResolutionMode::MatchRenderResolution;
         ImVec2 m_renderResolution = ImVec2(1920.0f, 1080.0f);
         ImVec2 m_lastRenderResolution;
         AzFramework::WindowSize m_windowSize = AzFramework::WindowSize(1920, 1080);

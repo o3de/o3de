@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -22,6 +17,7 @@
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/Commands/EntityManipulatorCommand.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
+#include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Manipulators/BaseManipulator.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
@@ -126,11 +122,13 @@ namespace AzToolsFramework
     //! Provide a suite of functionality for manipulating entities, primarily through their TransformComponent.
     class EditorTransformComponentSelection
         : public ViewportInteraction::ViewportSelectionRequests
+        , public EditorContextMenuBus::Handler
         , private EditorEventsBus::Handler
         , private EditorTransformComponentSelectionRequestBus::Handler
         , private ToolsApplicationNotificationBus::Handler
         , private Camera::EditorCameraNotificationBus::Handler
         , private ComponentModeFramework::EditorComponentModeNotificationBus::Handler
+        , private EditorEntityContextNotificationBus::Handler
         , private EditorEntityVisibilityNotificationBus::Router
         , private EditorEntityLockComponentNotificationBus::Router
         , private EditorManipulatorCommandUndoRedoRequestBus::Handler
@@ -238,8 +236,12 @@ namespace AzToolsFramework
         void UndoRedoEntityManipulatorCommand(
             AZ::u8 pivotOverride, const AZ::Transform& transform, AZ::EntityId entityId) override;
 
+        // EditorContextMenuBus...
+        void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2 & point, int flags) override;
+        int GetMenuPosition() const override;
+        AZStd::string GetMenuIdentifier() const override;
+
         // EditorEventsBus ...
-        void PopulateEditorGlobalContextMenu(QMenu *menu, const AZ::Vector2& point, int flags) override;
         void OnEscape() override;
 
         // ToolsApplicationNotificationBus ...
@@ -263,6 +265,10 @@ namespace AzToolsFramework
         void EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
         void LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
 
+        // EditorEntityContextNotificationBus overrides ...
+        void OnStartPlayInEditor() override;
+        void OnStopPlayInEditor() override;
+
         // Helpers to safely interact with the TransformBus (requests).
         void SetEntityWorldTranslation(AZ::EntityId entityId, const AZ::Vector3& worldTranslation);
         void SetEntityLocalTranslation(AZ::EntityId entityId, const AZ::Vector3& localTranslation);
@@ -270,8 +276,11 @@ namespace AzToolsFramework
         void SetEntityLocalScale(AZ::EntityId entityId, float localScale);
         void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Vector3& localRotation);
 
-        // Responsible for keeping the space cluster in sync with the current reference frame.
+        //! Responsible for keeping the space cluster in sync with the current reference frame.
         void UpdateSpaceCluster(ReferenceFrame referenceFrame);
+
+        //! Hides/Shows all viewportUi toolbars.
+        void SetAllViewportUiVisible(bool visible);
 
         AZ::EntityId m_hoveredEntityId; //!< What EntityId is the mouse currently hovering over (if any).
         AZ::EntityId m_cachedEntityIdUnderCursor; //!< Store the EntityId on each mouse move for use in Display.

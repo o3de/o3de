@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -76,7 +71,7 @@ namespace ScriptCanvas
             AZStd::optional<AZStd::pair<size_t, Grammar::DependencyInfo>> CheckUserNodeableDependencyConstructionIndex(VariableConstPtr nodeable) const;
 
             AZStd::vector<VariableConstPtr> CombineVariableLists
-                ( const AZStd::vector<Nodeable*>& constructionNodeables
+            (const AZStd::vector<Nodeable*>& constructionNodeables
                 , const AZStd::vector<AZStd::pair<VariableId, Datum>>& constructionInputVariableIds
                 , const AZStd::vector<AZStd::pair<VariableId, Data::EntityIDType>>& entityIds) const;
 
@@ -125,7 +120,7 @@ namespace ScriptCanvas
             const ParsedRuntimeInputs& GetRuntimeInputs() const;
 
             const Source& GetSource() const;
-             
+
             const AZStd::string& GetSourceString() const;
 
             ExecutionTreeConstPtr GetStart() const;
@@ -155,21 +150,19 @@ namespace ScriptCanvas
 
             bool IsUserNodeable(VariableConstPtr variable) const;
 
-            bool HasUserNodeableDependenciesInVariables() const;
-
             template<typename T>
             AZStd::vector<Grammar::VariableConstPtr> ToVariableList(const AZStd::vector<AZStd::pair<VariableId, T>>& source) const;
 
         private:
-        //////////////////////////////////////////////////////////////////////////
-        // Internal parsing
-        //////////////////////////////////////////////////////////////////////////
+            //////////////////////////////////////////////////////////////////////////
+            // Internal parsing
+            //////////////////////////////////////////////////////////////////////////
             struct ReturnValueConnections
             {
                 bool m_hasOtherConnections = false;
                 AZStd::vector<VariableConstPtr> m_returnValuesOrReferences;
             };
-            
+
             void AddAllVariablesPreParse();
 
             void AddAllVariablesPreParse_LegacyFunctions();
@@ -213,6 +206,8 @@ namespace ScriptCanvas
             void CheckConversions(OutputAssignmentPtr output);
 
             bool CheckCreateRoot(const Node& node);
+
+            void CheckForKnownNullDereference(ExecutionTreeConstPtr parent, const ExecutionInput& input, const Slot& inputSlot);
 
             AZStd::string CheckUniqueInterfaceNames
                 ( AZStd::string_view candidate
@@ -345,7 +340,7 @@ namespace ScriptCanvas
             void ParseExecutionLogicalExpression(ExecutionTreePtr execution, Symbol symbol);
 
             void ParseExecutionLoop(ExecutionTreePtr execution);
-                        
+
             void ParseExecutionMultipleOutSyntaxSugar(ExecutionTreePtr execution, const EndpointsResolved& executionOutNodes, const AZStd::vector<const Slot*>& outSlots);
 
             void ParseExecutionMultipleOutSyntaxSugarOfSequencNode(ExecutionTreePtr sequence);
@@ -372,6 +367,8 @@ namespace ScriptCanvas
             void ParseExecutionTreeRoots(const Node& node);
 
             void ParseExecutionWhileLoop(ExecutionTreePtr execution);
+
+            void ParseFunctionLocalStaticUseage();
 
             void ParseImplicitVariables(const Node& node);
 
@@ -433,7 +430,7 @@ namespace ScriptCanvas
             void PruneNoOpChildren(const ExecutionTreePtr& execution);
 
             AZ::Outcome<AZStd::pair<size_t, ExecutionChild>> RemoveChild(const ExecutionTreePtr& execution, const ExecutionTreeConstPtr& child);
-            
+
             void RemoveFromTree(ExecutionTreePtr execution);
 
             struct ConnectionInPreviouslyExecutedScope
@@ -478,7 +475,7 @@ namespace ScriptCanvas
             }
 
             void AddExecutionMapIn
-                ( UserInParseTopologyResult result
+            (UserInParseTopologyResult result
                 , ExecutionTreeConstPtr root
                 , const AZStd::vector<ExecutionTreeConstPtr>& outCalls
                 , AZStd::string_view defaultOutName
@@ -510,6 +507,7 @@ namespace ScriptCanvas
             static UserInParseTopologyResult ParseUserInTolopology(size_t nodelingsOutCount, size_t leavesWithoutNodelingsCount);
 
             size_t m_outIndexCount = 0;
+            size_t m_generatedIdCount = 0;
             ExecutionTreePtr m_start;
             AZStd::vector<const Nodes::Core::Start*> m_startNodes;
             ScopePtr m_graphScope;
@@ -518,7 +516,7 @@ namespace ScriptCanvas
             AZStd::unordered_set<VariableConstPtr> m_userNodeables;
 
             AZStd::unordered_map<VariableConstPtr, DependencyInfo> m_dependencyByVariable;
-            
+
             AZStd::vector<VariableConstPtr> m_variables;
             AZStd::vector<const Node*> m_possibleExecutionRoots;
 
@@ -598,24 +596,6 @@ namespace ScriptCanvas
             void ParseExecutionIfStatementBooleanExpression(ExecutionTreePtr booleanExpressionExecution, AZStd::string executionName, LexicalScope lexicalScope);
 
             void ParseExecutionIfStatementInternalFunction(ExecutionTreePtr internalFunctionExecution);
-
-#if defined(FUNCTION_LEGACY_SUPPORT_ENABLED)
-        public:
-            AZStd::vector<VariablePtr> FindAllVariablesInVariableFlagScope(VariableFlags::Scope scope) const;
-
-            // scrape variables for scope, every Scope::In and InOut 
-            AZStd::vector<VariablePtr> FindSubGraphInputValues() const;
-
-            // scrape variables for scope, every Scope::Out and InOut
-            AZStd::vector<VariablePtr> FindSubGraphOutputValues() const;
-
-            AZStd::vector<VariableConstPtr> GetLocalVariablesUser() const;
-
-            VariableScopeMeaning_LegacyFunctions GetVariableScopeMeaning() const;
-
-        private:
-            VariableScopeMeaning_LegacyFunctions m_variableScopeMeaning = VariableScopeMeaning_LegacyFunctions::ValueInitialization;
-#endif 
         }; // class AbstractCodeModel
 
         template<typename T>
@@ -626,7 +606,7 @@ namespace ScriptCanvas
             for (const auto& variable : source)
             {
                 auto iter = AZStd::find_if
-                    ( m_variables.begin()
+                (m_variables.begin()
                     , m_variables.end()
                     , [&](const auto& candidate) { return candidate->m_sourceVariableId == variable.first; });
 
@@ -638,7 +618,5 @@ namespace ScriptCanvas
 
             return variables;
         }
-
-    } 
-
-} 
+    }
+}

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <DiffuseGlobalIllumination/EditorDiffuseProbeGridComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -58,18 +53,21 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->Attribute(AZ::Edit::Attributes::PrimaryAssetType, AZ::AzTypeInfo<RPI::ModelAsset>::Uuid())
-                        ->ClassElement(AZ::Edit::ClassElements::Group, "Probe Spacing (meters between probes)")
+                        ->ClassElement(AZ::Edit::ClassElements::Group, "Probe Spacing")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &EditorDiffuseProbeGridComponent::m_probeSpacingX, "X", "Probe spacing on the X-axis, in meters")
-                                ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &EditorDiffuseProbeGridComponent::m_probeSpacingX, "X-Axis", "Meters between probes on the X-axis")
+                                ->Attribute(AZ::Edit::Attributes::Min, 0.1f)
+                                ->Attribute(AZ::Edit::Attributes::Suffix, " meters")
                                 ->Attribute(AZ::Edit::Attributes::ChangeValidate, &EditorDiffuseProbeGridComponent::OnProbeSpacingValidateX)
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::OnProbeSpacingChanged)
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &EditorDiffuseProbeGridComponent::m_probeSpacingY, "Y", "Probe spacing on the Y-axis, in meters")
-                                ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &EditorDiffuseProbeGridComponent::m_probeSpacingY, "Y-Axis", "Meters between probes on the Y-axis")
+                                ->Attribute(AZ::Edit::Attributes::Min, 0.1f)
+                                ->Attribute(AZ::Edit::Attributes::Suffix, " meters")
                                 ->Attribute(AZ::Edit::Attributes::ChangeValidate, &EditorDiffuseProbeGridComponent::OnProbeSpacingValidateY)
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::OnProbeSpacingChanged)
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &EditorDiffuseProbeGridComponent::m_probeSpacingZ, "Z", "Probe spacing on the Z-axis, in meters")
-                                ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &EditorDiffuseProbeGridComponent::m_probeSpacingZ, "Z-Axis", "Meters between probes on the Z-axis")
+                                ->Attribute(AZ::Edit::Attributes::Min, 0.1f)
+                                ->Attribute(AZ::Edit::Attributes::Suffix, " meters")
                                 ->Attribute(AZ::Edit::Attributes::ChangeValidate, &EditorDiffuseProbeGridComponent::OnProbeSpacingValidateZ)
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::OnProbeSpacingChanged)
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Grid Settings")
@@ -149,6 +147,9 @@ namespace AZ
             AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusConnect(GetEntityId());
             AZ::TickBus::Handler::BusConnect();
             AzToolsFramework::EditorEntityInfoNotificationBus::Handler::BusConnect();
+
+            AZ::u64 entityId = (AZ::u64)GetEntityId();
+            m_controller.m_configuration.m_entityId = entityId;
         }
 
         void EditorDiffuseProbeGridComponent::Deactivate()

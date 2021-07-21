@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -438,12 +433,12 @@ namespace EMotionFX
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
             ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeLookAtNode::m_limitMin, "Yaw/pitch min", "The minimum rotational yaw and pitch angle limits, in degrees.")
             ->Attribute(AZ::Edit::Attributes::Visibility, &BlendTreeLookAtNode::GetLimitWidgetsVisibility)
-            ->Attribute(AZ::Edit::Attributes::Min, AZ::Vector2(-90.0f, -90.0f))
-            ->Attribute(AZ::Edit::Attributes::Max, AZ::Vector2(90.0f, 90.0f))
+            ->Attribute(AZ::Edit::Attributes::Min, -90.0f)
+            ->Attribute(AZ::Edit::Attributes::Max, 90.0f)
             ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeLookAtNode::m_limitMax, "Yaw/pitch max", "The maximum rotational yaw and pitch angle limits, in degrees.")
             ->Attribute(AZ::Edit::Attributes::Visibility, &BlendTreeLookAtNode::GetLimitWidgetsVisibility)
-            ->Attribute(AZ::Edit::Attributes::Min, AZ::Vector2(-90.0f, -90.0f))
-            ->Attribute(AZ::Edit::Attributes::Max, AZ::Vector2(90.0f, 90.0f))
+            ->Attribute(AZ::Edit::Attributes::Min, -90.0f)
+            ->Attribute(AZ::Edit::Attributes::Max, 90.0f)
             ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeLookAtNode::m_constraintRotation, "Constraint rotation", "A rotation that rotates the constraint space.")
             ->Attribute(AZ::Edit::Attributes::Visibility, &BlendTreeLookAtNode::GetLimitWidgetsVisibility)
             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &BlendTreeLookAtNode::m_twistAxis, "Roll axis", "The axis used for twist/roll.")

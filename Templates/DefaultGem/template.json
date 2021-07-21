@@ -157,6 +157,12 @@
             "isOptional": false
         },
         {
+            "file": "Code/Source/${Name}EditorModule.cpp",
+            "origin": "Code/Source/${Name}EditorModule.cpp",
+            "isTemplated": true,
+            "isOptional": false
+        },
+        {
             "file": "Code/Source/${Name}EditorSystemComponent.cpp",
             "origin": "Code/Source/${Name}EditorSystemComponent.cpp",
             "isTemplated": true,
@@ -171,6 +177,12 @@
         {
             "file": "Code/Source/${Name}Module.cpp",
             "origin": "Code/Source/${Name}Module.cpp",
+            "isTemplated": true,
+            "isOptional": false
+        },
+        {
+            "file": "Code/Source/${Name}ModuleInterface.h",
+            "origin": "Code/Source/${Name}ModuleInterface.h",
             "isTemplated": true,
             "isOptional": false
         },

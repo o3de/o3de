@@ -1,22 +1,14 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
 #include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
 #include <Atom/Features/Shadow/ProjectedShadow.azsli>
-
-// The order should match m_pointShadowTransforms in PointLightFeatureProcessor.h/.cpp
-static const float3 PointLightShadowCubemapDirections[6] = {float3(-1,0,0), float3(1,0,0), float3(0,-1,0), float3(0,1,0), float3(0,0,-1), float3(0,0,1)};                  
 
 int GetPointLightShadowCubemapFace(const float3 targetPos, const float3 lightPos)
 {
@@ -83,12 +75,13 @@ void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingD
         {
             const int shadowCubemapFace = GetPointLightShadowCubemapFace(surface.position, light.m_position);
             const int shadowIndex = UnpackPointLightShadowIndex(light, shadowCubemapFace);
-
+            const float3 lightDir = normalize(light.m_position - surface.position);
+             
             litRatio *= ProjectedShadow::GetVisibility(
                     shadowIndex,
                     light.m_position,
                     surface.position,
-                    PointLightShadowCubemapDirections[shadowCubemapFace],
+                    lightDir,
                     surface.normal);
                         
             // Use backShadowRatio to carry thickness from shadow map for thick mode
@@ -104,7 +97,7 @@ void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingD
         // Diffuse contribution
         lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, normalize(posToLight)) * litRatio;
 
-        // Tranmission contribution
+        // Transmission contribution
         lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, lightIntensity, normalize(posToLight), backShadowRatio);
 
         // Adjust the light direcion for specular based on bulb size

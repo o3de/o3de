@@ -1,13 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <ShaderVariantAssetBuilder.h>
 
@@ -72,22 +68,43 @@ namespace AZ
         static constexpr uint32_t ShaderVariantJobVariantParam = 3;
         static constexpr uint32_t ShouldExitEarlyFromProcessJobParam = 4;
 
-        static void AddShaderAssetJobDependency(
-            AssetBuilderSDK::JobDescriptor& jobDescriptor,
-            const AssetBuilderSDK::PlatformInfo& platformInfo,
-            const AZStd::string& shaderVariantListFilePath,
-            const AZStd::string& shaderFilePath)
+        //! Adds source file dependencies for every place a referenced file may appear, and detects if one of
+        //! those possible paths resolves to the expected file.
+        //! @param currentFilePath - the full path to the file being processed
+        //! @param referencedParentPath - the path to a reference file, which may be relative to the @currentFilePath, or may be a full asset path.
+        //! @param sourceFileDependencies - new source file dependencies will be added to this list
+        //! @param foundSourceFile - if one of the source file dependencies is found, the highest priority one will be indicated here, otherwise this will be empty.
+        //! @return true if the referenced file was found and @foundSourceFile was set
+        bool LocateReferencedSourceFile(
+            AZStd::string_view currentFilePath, AZStd::string_view referencedParentPath,
+            AZStd::vector<AssetBuilderSDK::SourceFileDependency>& sourceFileDependencies,
+            AZStd::string& foundSourceFile)
         {
-            AZStd::vector<AZStd::string> possibleDependencies = AZ::RPI::AssetUtils::GetPossibleDepenencyPaths(shaderVariantListFilePath, shaderFilePath);
+            foundSourceFile.clear();
+
+            bool found = false;
+
+            AZStd::vector<AZStd::string> possibleDependencies = RPI::AssetUtils::GetPossibleDepenencyPaths(currentFilePath, referencedParentPath);
             for (auto& file : possibleDependencies)
             {
-                AssetBuilderSDK::JobDependency jobDependency;
-                jobDependency.m_jobKey = ShaderAssetBuilder::ShaderAssetBuilderJobKey;
-                jobDependency.m_platformIdentifier = platformInfo.m_identifier;
-                jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
-                jobDependency.m_sourceFile.m_sourceFileDependencyPath = file;
-                jobDescriptor.m_jobDependencyList.push_back(jobDependency);
+                AssetBuilderSDK::SourceFileDependency sourceFileDependency;
+                sourceFileDependency.m_sourceFileDependencyPath = file;
+                sourceFileDependencies.push_back(sourceFileDependency);
+
+                if (!found)
+                {
+                    AZ::Data::AssetInfo sourceInfo;
+                    AZStd::string watchFolder;
+                    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(found, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath, file.c_str(), sourceInfo, watchFolder);
+
+                    if (found)
+                    {
+                        foundSourceFile = file;
+                    }
+                }
             }
+
+            return found;
         }
 
         //! Returns true if @sourceFileFullPath starts with a valid asset processor scan folder, false otherwise.
@@ -334,6 +351,9 @@ namespace AZ
                 response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
                 return;
             }
+            
+            AZStd::string foundShaderFile;
+            LocateReferencedSourceFile(variantListFullPath, shaderVariantList.m_shaderFilePath, response.m_sourceFileDependencyList, foundShaderFile);
 
             for (const AssetBuilderSDK::PlatformInfo& info : request.m_enabledPlatforms)
             {
@@ -349,8 +369,16 @@ namespace AZ
                 
                     jobDescriptor.m_jobKey = GetShaderVariantTreeAssetJobKey();
                     jobDescriptor.SetPlatformIdentifier(info.m_identifier.data());
-                
-                    AddShaderAssetJobDependency(jobDescriptor, info, variantListFullPath, shaderVariantList.m_shaderFilePath);
+
+                    if (!foundShaderFile.empty())
+                    {
+                        AssetBuilderSDK::JobDependency jobDependency;
+                        jobDependency.m_jobKey = ShaderAssetBuilder::ShaderAssetBuilderJobKey;
+                        jobDependency.m_platformIdentifier = info.m_identifier;
+                        jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
+                        jobDependency.m_sourceFile.m_sourceFileDependencyPath = foundShaderFile;
+                        jobDescriptor.m_jobDependencyList.push_back(jobDependency);
+                    }
                 
                     jobDescriptor.m_jobParameters.emplace(ShaderSourceFilePathJobParam, shaderSourceFileFullPath);
                 
@@ -400,16 +428,16 @@ namespace AZ
         {
             const auto& jobParameters = request.m_jobDescription.m_jobParameters;
 
-            if (jobParameters.find(ShaderVariantLoadErrorParam) != jobParameters.end())
+            if (jobParameters.contains(ShaderVariantLoadErrorParam))
             {
                 AZ_Error(ShaderVariantAssetBuilderName, false, "Error during CreateJobs: %s", jobParameters.at(ShaderVariantLoadErrorParam).c_str());
                 response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
                 return;
             }
             
-            if (jobParameters.find(ShouldExitEarlyFromProcessJobParam) != jobParameters.end())
+            if (jobParameters.contains(ShouldExitEarlyFromProcessJobParam))
             {
-                AZ_TracePrintf(ShaderVariantAssetBuilderName, "Doing nothing on behalf of [%s] because it's been overridden by game project.", jobParameters.at(ShaderVariantLoadErrorParam).c_str());
+                AZ_TracePrintf(ShaderVariantAssetBuilderName, "Doing nothing on behalf of [%s] because it's been overridden by game project.", jobParameters.at(ShouldExitEarlyFromProcessJobParam).c_str());
                 response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
                 return;
             }

@@ -4,9 +4,8 @@
     "restricted_platform_relative_path": "Templates",
     "origin": "The primary repo for DefaultProject goes here: i.e. http://www.mydomain.com",
     "license": "What license DefaultProject uses goes here: i.e. https://opensource.org/licenses/MIT",
-    "display_name": "Default",
-    "summary": "A short description of DefaultProject.",
-    "included_gems": ["Atom","Camera","EMotionFX","UI","Maestro","Input","ImGui"],
+    "display_name": "Standard",
+    "summary": "This template has everything you need to build a full online 3D game or application.",
     "canonical_tags": [],
     "user_tags": [
         "DefaultProject"
@@ -26,12 +25,6 @@
             "isOptional": false
         },
         {
-            "file": "EngineFinder.cmake",
-            "origin": "EngineFinder.cmake",
-            "isTemplated": false,
-            "isOptional": false
-        },
-        {
             "file": "Code/${NameLower}_files.cmake",
             "origin": "Code/${NameLower}_files.cmake",
             "isTemplated": true,
@@ -48,12 +41,6 @@
             "origin": "Code/CMakeLists.txt",
             "isTemplated": true,
             "isOptional": false
-        },
-        {
-            "file": "Code/gem.json",
-            "origin": "Code/gem.json",
-            "isTemplated": true,
-            "isOptional": true
         },
         {
             "file": "Code/Include/${Name}/${Name}Bus.h",
@@ -176,8 +163,20 @@
             "isOptional": false
         },
         {
+            "file": "Code/gem.json",
+            "origin": "Code/gem.json",
+            "isTemplated": true,
+            "isOptional": true
+        },
+        {
             "file": "Config/shader_global_build_options.json",
             "origin": "Config/shader_global_build_options.json",
+            "isTemplated": false,
+            "isOptional": false
+        },
+        {
+            "file": "EngineFinder.cmake",
+            "origin": "EngineFinder.cmake",
             "isTemplated": false,
             "isOptional": false
         },
@@ -248,8 +247,8 @@
             "isOptional": false
         },
         {
-            "file": "Resources/CryEngineLogoLauncher.bmp",
-            "origin": "Resources/CryEngineLogoLauncher.bmp",
+            "file": "Resources/LegacyLogoLauncher.bmp",
+            "origin": "Resources/LegacyLogoLauncher.bmp",
             "isTemplated": false,
             "isOptional": false
         },
@@ -272,8 +271,8 @@
             "isOptional": false
         },
         {
-            "file": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/icon_128 _2x.png",
-            "origin": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/icon_128 _2x.png",
+            "file": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/icon_128_2x.png",
+            "origin": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/icon_128_2x.png",
             "isTemplated": false,
             "isOptional": false
         },
@@ -296,8 +295,8 @@
             "isOptional": false
         },
         {
-            "file": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/icon_256 _2x.png",
-            "origin": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/icon_256 _2x.png",
+            "file": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/icon_256_2x.png",
+            "origin": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/icon_256_2x.png",
             "isTemplated": false,
             "isOptional": false
         },
@@ -478,7 +477,7 @@
         {
             "file": "ShaderLib/README.md",
             "origin": "ShaderLib/README.md",
-            "isTemplated": true,
+            "isTemplated": false,
             "isOptional": true
         },
         {
@@ -514,7 +513,7 @@
         {
             "file": "game.cfg",
             "origin": "game.cfg",
-            "isTemplated": true,
+            "isTemplated": false,
             "isOptional": false
         },
         {
@@ -650,6 +649,10 @@
         {
             "dir": "Shaders",
             "origin": "Shaders"
+        },
+        {
+            "dir": "Shaders/ShaderResourceGroups",
+            "origin": "Shaders/ShaderResourceGroups"
         }
     ]
 }

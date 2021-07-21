@@ -1,12 +1,7 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 from typing import List
@@ -33,6 +28,7 @@ class TestConfigurationManager(TestCase):
     def test_get_instance_raise_exception(self) -> None:
         self.assertRaises(Exception, ConfigurationManager)
 
+    @patch("utils.aws_utils.setup_default_session")
     @patch("utils.aws_utils.get_default_region", return_value=_expected_region)
     @patch("utils.aws_utils.get_default_account_id", return_value=_expected_account_id)
     @patch("utils.file_utils.find_files_with_suffix_under_directory", return_value=_expected_config_files)
@@ -42,8 +38,10 @@ class TestConfigurationManager(TestCase):
                                                        mock_check_path_exists: MagicMock,
                                                        mock_find_files_with_suffix_under_directory: MagicMock,
                                                        mock_get_default_account_id: MagicMock,
-                                                       mock_get_default_region: MagicMock) -> None:
-        TestConfigurationManager._expected_configuration_manager.setup("")
+                                                       mock_get_default_region: MagicMock,
+                                                       mock_setup_default_session: MagicMock) -> None:
+        TestConfigurationManager._expected_configuration_manager.setup("", "")
+        mock_setup_default_session.assert_called_once()
         mock_get_current_directory_path.assert_called_once()
         mock_check_path_exists.assert_called_once_with(TestConfigurationManager._expected_directory_path)
         mock_find_files_with_suffix_under_directory.assert_called_once_with(
@@ -59,6 +57,7 @@ class TestConfigurationManager(TestCase):
         assert TestConfigurationManager._expected_configuration_manager.configuration.region == \
                TestConfigurationManager._expected_region
 
+    @patch("utils.aws_utils.setup_default_session")
     @patch("utils.aws_utils.get_default_region", return_value=_expected_region)
     @patch("utils.aws_utils.get_default_account_id", return_value=_expected_account_id)
     @patch("utils.file_utils.find_files_with_suffix_under_directory", return_value=_expected_config_files)
@@ -68,8 +67,11 @@ class TestConfigurationManager(TestCase):
                                                                  mock_check_path_exists: MagicMock,
                                                                  mock_find_files_with_suffix_under_directory: MagicMock,
                                                                  mock_get_default_account_id: MagicMock,
-                                                                 mock_get_default_region: MagicMock) -> None:
-        TestConfigurationManager._expected_configuration_manager.setup(TestConfigurationManager._expected_directory_path)
+                                                                 mock_get_default_region: MagicMock,
+                                                                 mock_setup_default_session: MagicMock) -> None:
+        TestConfigurationManager._expected_configuration_manager.setup(
+            "", TestConfigurationManager._expected_directory_path)
+        mock_setup_default_session.assert_called_once()
         mock_normalize_file_path.assert_called_once()
         mock_check_path_exists.assert_called_once_with(TestConfigurationManager._expected_directory_path)
         mock_find_files_with_suffix_under_directory.assert_called_once_with(

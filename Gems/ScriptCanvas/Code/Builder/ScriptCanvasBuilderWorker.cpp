@@ -1,19 +1,13 @@
 /*
-* All or portions of this file Copyright(c) Amazon.com, Inc.or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-*or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-*WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "precompiled.h"
 
 #include <Asset/AssetDescription.h>
-#include <Asset/Functions/ScriptCanvasFunctionAsset.h>
 #include <AssetBuilderSDK/SerializationDependencies.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/IO/FileIO.h>
@@ -23,9 +17,8 @@
 #include <AzFramework/Script/ScriptComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
-#include <ScriptCanvas/Asset/Functions/RuntimeFunctionAssetHandler.h>
+#include <ScriptCanvas/Asset/SubgraphInterfaceAssetHandler.h>
 #include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
-#include <ScriptCanvas/Assets/Functions/ScriptCanvasFunctionAssetHandler.h>
 #include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
 #include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
@@ -75,6 +68,7 @@ namespace ScriptCanvasBuilder
                 AZ_Warning(s_scriptCanvasBuilder, false, "CreateJobs for \"%s\" failed because the source file could not be opened.", fullPath.data());
                 return;
             }
+
             AZStd::vector<AZ::u8> fileBuffer(ioStream.GetLength());
             size_t bytesRead = ioStream.Read(fileBuffer.size(), fileBuffer.data());
             if (bytesRead != ioStream.GetLength())
@@ -92,15 +86,15 @@ namespace ScriptCanvasBuilder
         {
             // force load these before processing
             if (filterInfo.m_assetType == azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>()
-            || filterInfo.m_assetType == azrtti_typeid<ScriptEvents::ScriptEventsAsset>())
+                || filterInfo.m_assetType == azrtti_typeid<ScriptEvents::ScriptEventsAsset>())
             {
                 this->m_processEditorAssetDependencies.push_back(filterInfo);
             }
 
             // these trigger re-processing
             if (filterInfo.m_assetType == azrtti_typeid<ScriptCanvasEditor::ScriptCanvasAsset>()
-            || filterInfo.m_assetType == azrtti_typeid<ScriptEvents::ScriptEventsAsset>()
-            || filterInfo.m_assetType == azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>())
+                || filterInfo.m_assetType == azrtti_typeid<ScriptEvents::ScriptEventsAsset>()
+                || filterInfo.m_assetType == azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>())
             {
                 AssetBuilderSDK::SourceFileDependency dependency;
                 dependency.m_sourceFileDependencyUUID = filterInfo.m_assetId.m_guid;
@@ -215,7 +209,7 @@ namespace ScriptCanvasBuilder
         bool pathFound = false;
         AZStd::string relativePath;
         AzToolsFramework::AssetSystemRequestBus::BroadcastResult
-            ( pathFound
+        (pathFound
             , &AzToolsFramework::AssetSystem::AssetSystemRequest::GetRelativeProductPathFromFullSourceOrProductPath
             , request.m_fullPath.c_str(), relativePath);
 

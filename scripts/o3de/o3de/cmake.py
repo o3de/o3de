@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 """
 Contains methods for query CMake gem target information
@@ -40,26 +36,52 @@ def add_gem_dependency(cmake_file: pathlib.Path,
     # on a line by basis, see if there already is {gem_name}
     # find the first occurrence of a gem, copy its formatting and replace
     # the gem name with the new one and append it
-    # if the gem is already present fail
     t_data = []
     added = False
-    line_index_to_append = None
-    with open(cmake_file, 'r') as s:
+    start_marker_line_index = None
+    end_marker_line_index = None
+    with cmake_file.open('r') as s:
+        in_gem_list = False
         line_index = 0
         for line in s:
-            if line.strip().startswith(enable_gem_start_marker):
-                line_index_to_append = line_index
-            if f'{gem_name}' == line.strip():
-                logger.warning(f'{gem_name} is already enabled in file {str(cmake_file)}.')
-                return 0
+            parsed_line = line.strip()
+            if parsed_line.startswith(enable_gem_start_marker):
+                # Skip pass the 'set(ENABLED_GEMS' marker just in case their are gems declared on the same line
+                parsed_line = parsed_line[len(enable_gem_start_marker):]
+                # Set the flag to indicate that we are in the ENABLED_GEMS variable
+                in_gem_list = True
+                start_marker_line_index = line_index
+
+            if in_gem_list:
+                # Since we are inside the ENABLED_GEMS variable determine if the line has the end_marker of ')'
+                if parsed_line.endswith(enable_gem_end_marker):
+                    # Strip away the line end marker
+                    parsed_line = parsed_line[:-len(enable_gem_end_marker)]
+                    # Set the flag to indicate that we are no longer in the ENABLED_GEMS variable after this line
+                    in_gem_list = False
+                    end_marker_line_index = line_index
+
+                # Split the rest of the line on whitespace just in case there are multiple gems in a line
+                gem_name_list = map(lambda gem_name: gem_name.strip('"'), parsed_line.split())
+                if gem_name in gem_name_list:
+                    logger.warning(f'{gem_name} is already enabled in file {str(cmake_file)}.')
+                    return 0
+
             t_data.append(line)
             line_index += 1
 
-
     indent = 4
-    if line_index_to_append:
-        # Insert the gem after the 'set(ENABLED_GEMS)...` line
-        t_data.insert(line_index_to_append + 1, f'{" "  * indent}{gem_name}\n')
+    if start_marker_line_index:
+        # Make sure if there is a enable gem start marker, there is an end marker as well
+        if not end_marker_line_index:
+            logger.error(f'The Enable Gem start marker of "{enable_gem_start_marker}" has been found, but not the'
+                         f' Enable Gem end marker of "{enable_gem_end_marker}"')
+            return 1
+
+        # Insert the gem before the ')' end marker
+        end_marker_partition = list(t_data[end_marker_line_index].rpartition(enable_gem_end_marker))
+        end_marker_partition[1] = f'{" " * indent}{gem_name}\n' + end_marker_partition[1]
+        t_data[end_marker_line_index] = ''.join(end_marker_partition)
         added = True
 
     # if we didn't add, then create a new set(ENABLED_GEMS) variable
@@ -71,7 +93,7 @@ def add_gem_dependency(cmake_file: pathlib.Path,
         t_data.append(f'{enable_gem_end_marker}\n')
 
     # write the cmake
-    with open(cmake_file, 'w') as s:
+    with cmake_file.open('w') as s:
         s.writelines(t_data)
 
     return 0
@@ -90,12 +112,44 @@ def remove_gem_dependency(cmake_file: pathlib.Path,
 
     # on a line by basis, remove any line with {gem_name}
     t_data = []
-    # Remove the gem from the enabled_gem file by skipping the gem name entry
     removed = False
-    with open(cmake_file, 'r') as s:
+
+    with cmake_file.open('r') as s:
+        in_gem_list = False
         for line in s:
-            if gem_name == line.strip():
-                removed = True
+            # Strip whitespace from both ends of the line, but keep track of the leading whitespace
+            # for indenting the result line
+            parsed_line = line.lstrip()
+            indent = line[:-len(parsed_line)]
+            parsed_line = parsed_line.rstrip()
+            result_line = indent
+            if parsed_line.startswith(enable_gem_start_marker):
+                # Skip pass the 'set(ENABLED_GEMS' marker just in case their are gems declared on the same line
+                parsed_line = parsed_line[len(enable_gem_start_marker):]
+                result_line += enable_gem_start_marker
+                # Set the flag to indicate that we are in the ENABLED_GEMS variable
+                in_gem_list = True
+
+            if in_gem_list:
+                # Since we are inside the ENABLED_GEMS variable determine if the line has the end_marker of ')'
+                if parsed_line.endswith(enable_gem_end_marker):
+                    # Strip away the line end marker
+                    parsed_line = parsed_line[:-len(enable_gem_end_marker)]
+                    # Set the flag to indicate that we are no longer in the ENABLED_GEMS variable after this line
+                    in_gem_list = False
+                # Split the rest of the line on whitespace just in case there are multiple gems in a line
+                # Strip double quotes surround any gem name
+                gem_name_list = list(map(lambda gem_name: gem_name.strip('"'), parsed_line.split()))
+                while gem_name in gem_name_list:
+                    gem_name_list.remove(gem_name)
+                    removed = True
+
+                # Append the renaming gems to the line
+                result_line += ' '.join(gem_name_list)
+                # If the in_gem_list was flipped to false, that means the currently parsed line contained the
+                # line end marker, so append that to the result_line
+                result_line += enable_gem_end_marker if not in_gem_list else ''
+                t_data.append(result_line + '\n')
             else:
                 t_data.append(line)
 
@@ -104,14 +158,14 @@ def remove_gem_dependency(cmake_file: pathlib.Path,
         return 1
 
     # write the cmake
-    with open(cmake_file, 'w') as s:
+    with cmake_file.open('w') as s:
         s.writelines(t_data)
 
     return 0
 
 
 def get_project_gems(project_path: pathlib.Path,
-                            platform: str = 'Common') -> set:
+                     platform: str = 'Common') -> set:
     return get_gems_from_cmake_file(get_enabled_gem_cmake_file(project_path=project_path, platform=platform))
 
 
@@ -145,7 +199,7 @@ def get_enabled_gems(cmake_file: pathlib.Path) -> set:
                     # Set the flag to indicate that we are no longer in the ENABLED_GEMS variable after this line
                     in_gem_list = False
                 # Split the rest of the line on whitespace just in case there are multiple gems in a line
-                gem_name_list = line.split()
+                gem_name_list = list(map(lambda gem_name: gem_name.strip('"'), line.split()))
                 gem_target_set.update(gem_name_list)
 
     return gem_target_set
@@ -156,7 +210,7 @@ def get_project_gem_paths(project_path:  pathlib.Path,
     gem_names = get_project_gems(project_path, platform)
     gem_paths = set()
     for gem_name in gem_names:
-        gem_paths.add(manifest.get_registered(gem_name=gem_name))
+        gem_paths.add(manifest.get_registered(gem_name=gem_name, project_path=project_path))
     return gem_paths
 
 

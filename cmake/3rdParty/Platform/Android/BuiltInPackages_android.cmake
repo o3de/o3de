@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 # shared by other platforms:
@@ -23,9 +19,9 @@ ly_associate_package(PACKAGE_NAME lux_core-2.2-rev5-multiplatform    TARGETS lux
 # platform-specific:
 ly_associate_package(PACKAGE_NAME freetype-2.10.4.14-android         TARGETS freetype        PACKAGE_HASH 74dd75382688323c3a2a5090f473840b5d7e9d2aed1a4fcdff05ed2a09a664f2)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.14-android              TARGETS tiff            PACKAGE_HASH a9b30a1980946390c2fad0ed94562476a1d7ba8c1f36934ae140a89c54a8efd0)
-ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev3-android  TARGETS AWSNativeSDK    PACKAGE_HASH e2192157534cc8c4e22769545d88dff03ec6c1031599716ef63de3ebbb8c9a44)
+ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev6-android  TARGETS AWSNativeSDK    PACKAGE_HASH 1624ba9aaf03d001ed0ffc57d2f945ff82590e75a7ea868de35043cf673e82fb)
 ly_associate_package(PACKAGE_NAME Lua-5.3.5-rev5-android             TARGETS Lua             PACKAGE_HASH 1f638e94a17a87fe9e588ea456d5893876094b4db191234380e4c4eb9e06c300)
-ly_associate_package(PACKAGE_NAME PhysX-4.1.0.25992954-rev1-android  TARGETS PhysX           PACKAGE_HASH 9c494576c2d4ff04dee5a9e092fcd9d5af4b2845f15ffdfcaabb0dbc5b88a7a9)
+ly_associate_package(PACKAGE_NAME PhysX-4.1.2.29882248-rev3-android  TARGETS PhysX           PACKAGE_HASH b8cb6aa46b2a21671f6cb1f6a78713a3ba88824d0447560ff5ce6c01014b9f43)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-android          TARGETS mikkelsen       PACKAGE_HASH 075e8e4940884971063b5a9963014e2e517246fa269c07c7dc55b8cf2cd99705)
 ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-android      TARGETS googletest      PACKAGE_HASH 95671be75287a61c9533452835c3647e9c1b30f81b34b43bcb0ec1997cc23894)
 ly_associate_package(PACKAGE_NAME googlebenchmark-1.5.0-rev2-android TARGETS GoogleBenchmark PACKAGE_HASH 20b46e572211a69d7d94ddad1c89ec37bb958711d6ad4025368ac89ea83078fb)

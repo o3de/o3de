@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -21,6 +16,7 @@
 #include <ScriptCanvas/Core/ScriptCanvasBus.h>
 
 #include "GraphToX.h"
+#include "TranslationContext.h"
 #include "TranslationResult.h"
 #include "TranslationUtilities.h"
 
@@ -65,7 +61,7 @@ namespace ScriptCanvas
             RuntimeInputs m_runtimeInputs;
             BuildConfiguration m_executionConfig = BuildConfiguration::Release;
             FunctionBlockConfig m_functionBlockConfig = FunctionBlockConfig::Ignored;
-            const Context* m_context = nullptr;
+            Context m_context;
             AZStd::string m_tableName;
             Writer m_dotLua;
             SystemComponentConfiguration m_systemConfiguration;
@@ -160,6 +156,7 @@ namespace ScriptCanvas
             void WriteOperatorArithmetic(Grammar::ExecutionTreeConstPtr execution);
             void WriteOutputAssignments(Grammar::ExecutionTreeConstPtr execution);
             void WriteOutputAssignments(Grammar::ExecutionTreeConstPtr execution, const AZStd::vector<AZStd::pair<const Slot*, Grammar::OutputAssignmentConstPtr>>& output);
+            void WriteResolvedScope(Grammar::ExecutionTreeConstPtr execution, const Grammar::LexicalScope& lexicalScope);
             void WriteReturnStatement(Grammar::ExecutionTreeConstPtr execution);
             void WriteReturnValueInitialization(Grammar::ExecutionTreeConstPtr execution);
             void WriteStaticInitializerInput(IsLeadingCommaRequired commaRequired);
@@ -170,7 +167,6 @@ namespace ScriptCanvas
             void WriteVariableWrite(Grammar::ExecutionTreeConstPtr execution, const AZStd::vector<AZStd::pair<const Slot*, Grammar::OutputAssignmentConstPtr>>& output);
             void WriteWrittenMathExpression(Grammar::ExecutionTreeConstPtr execution);
 
-        private:
         };
                
     } 

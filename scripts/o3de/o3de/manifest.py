@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 """
 Contains functions for data from json files such as the o3de_manifests.json, engine.json, project.json, etc...
@@ -198,9 +194,9 @@ def load_o3de_manifest(manifest_path: pathlib.Path = None) -> dict:
             return json_data
 
 
-def save_o3de_manifest(json_data: dict, manifest_path: pathlib.Path = None) -> None:
+def save_o3de_manifest(json_data: dict, manifest_path: pathlib.Path = None) -> bool:
     """
-        Save the json dictionary to the supplied manifest file or ~/.o3de/o3de_manifest.json if None
+        Save the json dictionary to the supplied manifest file or ~/.o3de/o3de_manifest.json if manifest_path is None
 
         :param json_data: dictionary to save in json format at the file path
         :param manifest_path: optional path to manifest file to save
@@ -210,8 +206,32 @@ def save_o3de_manifest(json_data: dict, manifest_path: pathlib.Path = None) -> N
     with manifest_path.open('w') as s:
         try:
             s.write(json.dumps(json_data, indent=4) + '\n')
+            return True
         except OSError as e:
             logger.error(f'Manifest json failed to save: {str(e)}')
+            return False
+
+
+
+def get_gems_from_subdirectories(external_subdirs: list) -> list:
+    '''
+    Helper Method for scanning a set of external subdirectories for gem.json files
+    '''
+    def is_gem_subdirectory(subdir_files):
+        for name in files:
+            if name == 'gem.json':
+                return True
+        return False
+
+    gem_directories = []
+    # Locate all subfolders with gem.json files within them
+    if external_subdirs:
+        for subdirectory in external_subdirs:
+            for root, dirs, files in os.walk(pathlib.Path(subdirectory).resolve()):
+                if is_gem_subdirectory(files):
+                    gem_directories.append(pathlib.PurePath(root).as_posix())
+
+    return gem_directories
 
 
 # Data query methods
@@ -232,11 +252,7 @@ def get_projects() -> list:
 
 
 def get_gems() -> list:
-    def is_gem_subdirectory(subdir):
-        return (pathlib.Path(subdir) / 'gem.json').exists()
-
-    external_subdirs = get_external_subdirectories()
-    return list(filter(is_gem_subdirectory, external_subdirs)) if external_subdirs else []
+    return get_gems_from_subdirectories(get_external_subdirectories())
 
 
 def get_external_subdirectories() -> list:
@@ -262,64 +278,70 @@ def get_repos() -> list:
 def get_engine_projects() -> list:
     engine_path = get_this_engine_path()
     engine_object = get_engine_json_data(engine_path=engine_path)
-    return list(map(lambda rel_path: (pathlib.Path(engine_path) / rel_path).as_posix(),
-                      engine_object['projects'])) if 'projects' in engine_object else []
+    if engine_object:
+        return list(map(lambda rel_path: (pathlib.Path(engine_path) / rel_path).as_posix(),
+                          engine_object['projects'])) if 'projects' in engine_object else []
+    return []
 
 
 def get_engine_gems() -> list:
-    def is_gem_subdirectory(subdir):
-        return (pathlib.Path(subdir) / 'gem.json').exists()
-
-    external_subdirs = get_engine_external_subdirectories()
-    return list(filter(is_gem_subdirectory, external_subdirs)) if external_subdirs else []
+    return get_gems_from_subdirectories(get_engine_external_subdirectories())
 
 
 def get_engine_external_subdirectories() -> list:
     engine_path = get_this_engine_path()
     engine_object = get_engine_json_data(engine_path=engine_path)
-    return list(map(lambda rel_path: (pathlib.Path(engine_path) / rel_path).as_posix(),
-                    engine_object['external_subdirectories'])) if 'external_subdirectories' in engine_object else []
+    if engine_object:
+        return list(map(lambda rel_path: (pathlib.Path(engine_path) / rel_path).as_posix(),
+                        engine_object['external_subdirectories'])) if 'external_subdirectories' in engine_object else []
+    return []
 
 
 def get_engine_templates() -> list:
     engine_path = get_this_engine_path()
     engine_object = get_engine_json_data(engine_path=engine_path)
-    return list(map(lambda rel_path: (pathlib.Path(engine_path) / rel_path).as_posix(),
-                      engine_object['templates']))
+    if engine_object:
+        return list(map(lambda rel_path: (pathlib.Path(engine_path) / rel_path).as_posix(),
+                          engine_object['templates'])) if 'templates' in engine_object else []
+    return []
 
 
 def get_engine_restricted() -> list:
     engine_path = get_this_engine_path()
     engine_object = get_engine_json_data(engine_path=engine_path)
-    return list(map(lambda rel_path: (pathlib.Path(engine_path) / rel_path).as_posix(),
-                    engine_object['restricted'])) if 'restricted' in engine_object else []
+    if engine_object:
+        return list(map(lambda rel_path: (pathlib.Path(engine_path) / rel_path).as_posix(),
+                        engine_object['restricted'])) if 'restricted' in engine_object else []
+    return []
 
 
 # project.json queries
 def get_project_gems(project_path: pathlib.Path) -> list:
-    def is_gem_subdirectory(subdir):
-        return (pathlib.Path(subdir) / 'gem.json').exists()
-
-    external_subdirs = get_project_external_subdirectories(project_path)
-    return list(filter(is_gem_subdirectory, external_subdirs)) if external_subdirs else []
+    return get_gems_from_subdirectories(get_project_external_subdirectories(project_path))
 
 
 def get_project_external_subdirectories(project_path: pathlib.Path) -> list:
     project_object = get_project_json_data(project_path=project_path)
-    return list(map(lambda rel_path: (pathlib.Path(project_path) / rel_path).as_posix(),
-               project_object['external_subdirectories'])) if 'external_subdirectories' in project_object else []
+    if project_object:
+        return list(map(lambda rel_path: (pathlib.Path(project_path) / rel_path).as_posix(),
+                   project_object['external_subdirectories'])) if 'external_subdirectories' in project_object else []
+    return []
 
 
 def get_project_templates(project_path: pathlib.Path) -> list:
     project_object = get_project_json_data(project_path=project_path)
-    return list(map(lambda rel_path: (pathlib.Path(project_path) / rel_path).as_posix(),
-                      project_object['templates']))
+    if project_object:
+        return list(map(lambda rel_path: (pathlib.Path(project_path) / rel_path).as_posix(),
+                          project_object['templates'])) if 'templates' in project_object else []
+    return []
 
 
 def get_project_restricted(project_path: pathlib.Path) -> list:
     project_object = get_project_json_data(project_path=project_path)
-    return list(map(lambda rel_path: (pathlib.Path(project_path) / rel_path).as_posix(),
-                    project_object['restricted'])) if 'restricted' in project_object else []
+    if project_object:
+        return list(map(lambda rel_path: (pathlib.Path(project_path) / rel_path).as_posix(),
+                        project_object['restricted'])) if 'restricted' in project_object else []
+    return []
 
 
 # Combined manifest queries
@@ -354,7 +376,7 @@ def get_all_templates(project_path: pathlib.Path = None) -> list:
     return list(dict.fromkeys(templates_data))
 
 
-def get_all_restricted() -> list:
+def get_all_restricted(project_path: pathlib.Path = None) -> list:
     restricted_data = get_restricted()
     restricted_data.extend(get_engine_restricted())
     if project_path:
@@ -399,13 +421,6 @@ def get_templates_for_generic_creation():  # temporary until we have a better wa
         return template_path not in templates_for_project_creation and template_path not in templates_for_gem_creation
 
     return list(filter(filter_project_and_gem_templates_out, get_all_templates()))
-
-
-def get_all_restricted() -> list:
-    engine_restricted = get_engine_restricted()
-    restricted_data = get_restricted()
-    restricted_data.extend(engine_restricted)
-    return restricted_data
 
 
 def find_engine_data(json_data: dict,
@@ -488,14 +503,14 @@ def get_project_json_data(project_name: str = None,
     return None
 
 
-def get_gem_json_data(gem_name: str = None,
-                      gem_path: str or pathlib.Path = None) -> dict or None:
+def get_gem_json_data(gem_name: str = None, gem_path: str or pathlib.Path = None,
+                      project_path: pathlib.Path = None) -> dict or None:
     if not gem_name and not gem_path:
         logger.error('Must specify either a Gem name or Gem Path.')
         return None
 
     if gem_name and not gem_path:
-        gem_path = get_registered(gem_name=gem_name)
+        gem_path = get_registered(gem_name=gem_name, project_path=project_path)
 
     if not gem_path:
         logger.error(f'Gem Path {gem_path} has not been registered.')
@@ -521,14 +536,14 @@ def get_gem_json_data(gem_name: str = None,
     return None
 
 
-def get_template_json_data(template_name: str = None,
-                           template_path: str or pathlib.Path = None) -> dict or None:
+def get_template_json_data(template_name: str = None, template_path: str or pathlib.Path = None,
+                           project_path: pathlib.Path = None) -> dict or None:
     if not template_name and not template_path:
         logger.error('Must specify either a Template name or Template Path.')
         return None
 
     if template_name and not template_path:
-        template_path = get_registered(template_name=template_name)
+        template_path = get_registered(template_name=template_name, project_path=project_path)
 
     if not template_path:
         logger.error(f'Template Path {template_path} has not been registered.')
@@ -554,14 +569,14 @@ def get_template_json_data(template_name: str = None,
     return None
 
 
-def get_restricted_json_data(restricted_name: str = None,
-                        restricted_path: str or pathlib.Path = None) -> dict or None:
+def get_restricted_json_data(restricted_name: str = None, restricted_path: str or pathlib.Path = None,
+                             project_path: pathlib.Path = None) -> dict or None:
     if not restricted_name and not restricted_path:
         logger.error('Must specify either a Restricted name or Restricted Path.')
         return None
 
     if restricted_name and not restricted_path:
-        restricted_path = get_registered(restricted_name=restricted_name)
+        restricted_path = get_registered(restricted_name=restricted_name, project_path=project_path)
 
     if not restricted_path:
         logger.error(f'Restricted Path {restricted_path} has not been registered.')
@@ -593,7 +608,32 @@ def get_registered(engine_name: str = None,
                    template_name: str = None,
                    default_folder: str = None,
                    repo_name: str = None,
-                   restricted_name: str = None) -> pathlib.Path or None:
+                   restricted_name: str = None,
+                   project_path: pathlib.Path = None) -> pathlib.Path or None:
+    """
+       Looks up a registered entry in either the  ~/.o3de/o3de_manifest.json, <this-engine-root>/engine.json
+       or the <project-path>/project.json (if the project_path parameter is supplied)
+
+       :param engine_name: Name of a registered engine to lookup in the ~/.o3de/o3de_manifest.json file
+       :param project_name: Name of a project to lookup in either the ~/.o3de/o3de_manifest.json or
+              <this-engine-root>/engine.json file
+       :param gem_name: Name of a gem to lookup in either the ~/.o3de/o3de_manifest.json, <this-engine-root>/engine.json
+            or <project-path>/project.json. NOTE: The project_path parameter must be supplied to lookup the registration
+            with the project.json
+       :param template_name: Name of a template to lookup in either the ~/.o3de/o3de_manifest.json, <this-engine-root>/engine.json
+            or <project-path>/project.json. NOTE: The project_path parameter must be supplied to lookup the registration
+            with the project.json
+       :param repo_name: Name of a repo to lookup in the ~/.o3de/o3de_manifest.json
+       :param default_folder: Type of "default" folder to lookup in the ~/.o3de/o3de_manifest.json
+              Valid values are "engines", "projects", "gems", "templates,", "restricted"
+       :param restricted_name: Name of a restricted directory object to lookup in either the ~/.o3de/o3de_manifest.json,
+            <this-engine-root>/engine.json or <project-path>/project.json.
+            NOTE: The project_path parameter must be supplied to lookup the registration with the project.json
+       :param project_path: Path to project root, which is used to examined the project.json file in order to
+              query either gems, templates or restricted directories registered with the project
+
+       :return path value associated with the registered object name if found. Otherwise None is returned
+    """
     json_data = load_o3de_manifest()
 
     # check global first then this engine
@@ -627,7 +667,7 @@ def get_registered(engine_name: str = None,
                         return project_path
 
     elif isinstance(gem_name, str):
-        gems = get_all_gems()
+        gems = get_all_gems(project_path)
         for gem_path in gems:
             gem_path = pathlib.Path(gem_path).resolve()
             gem_json = gem_path / 'gem.json'
@@ -642,7 +682,7 @@ def get_registered(engine_name: str = None,
                         return gem_path
 
     elif isinstance(template_name, str):
-        templates = get_all_templates()
+        templates = get_all_templates(project_path)
         for template_path in templates:
             template_path = pathlib.Path(template_path).resolve()
             template_json = template_path / 'template.json'
@@ -657,7 +697,7 @@ def get_registered(engine_name: str = None,
                         return template_path
 
     elif isinstance(restricted_name, str):
-        restricted = get_all_restricted()
+        restricted = get_all_restricted(project_path)
         for restricted_path in restricted:
             restricted_path = pathlib.Path(restricted_path).resolve()
             restricted_json = restricted_path / 'restricted.json'

@@ -1,12 +1,7 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 from unittest import TestCase
@@ -45,8 +40,14 @@ class TestThreadManager(TestCase):
     def test_setup_thread_pool_setup_with_expected_configuration(self) -> None:
         mocked_thread_pool: MagicMock = TestThreadManager._mock_thread_pool.return_value
 
-        TestThreadManager._expected_thread_manager.setup()
+        TestThreadManager._expected_thread_manager.setup(False)
         mocked_thread_pool.setMaxThreadCount.assert_called_once_with(1)
+
+    def test_setup_thread_pool_skip_setup(self) -> None:
+        mocked_thread_pool: MagicMock = TestThreadManager._mock_thread_pool.return_value
+
+        TestThreadManager._expected_thread_manager.setup(True)
+        mocked_thread_pool.setMaxThreadCount.asset_not_called()
 
     def test_start_thread_pool_start_expected_worker(self) -> None:
         mocked_thread_pool: MagicMock = TestThreadManager._mock_thread_pool.return_value

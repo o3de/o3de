@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 set(LY_COPY_PERMISSIONS "OWNER_READ OWNER_WRITE OWNER_EXECUTE")
@@ -34,6 +30,8 @@ function(ly_get_runtime_dependencies ly_RUNTIME_DEPENDENCIES ly_TARGET)
     if(NOT TARGET ${ly_TARGET})
         return() # Nothing to do
     endif()
+
+    ly_de_alias_target(${ly_TARGET} ly_TARGET)
 
     # To optimize the search, we are going to cache the dependencies for the targets we already walked through.
     # To do so, we will create a variable named LY_RUNTIME_DEPENDENCIES_${ly_TARGET} which will contain a list
@@ -96,15 +94,7 @@ function(ly_get_runtime_dependencies ly_RUNTIME_DEPENDENCIES ly_TARGET)
     # Add the imported locations
     get_target_property(is_imported ${ly_TARGET} IMPORTED)
     if(is_imported)
-        # Skip Qt if this is a 3rdParty
-        # Qt is deployed using qt_deploy, no need to copy the dependencies
         set(skip_imported FALSE)
-        string(REGEX MATCH "3rdParty::([^:,]*)" target_package ${ly_TARGET})
-        if(target_package)
-            if(${CMAKE_MATCH_1} STREQUAL "Qt")
-                set(skip_imported TRUE)
-            endif()
-        endif()
         if(target_type MATCHES "(STATIC_LIBRARY)")
             # No need to copy these dependencies since the outputs are not used at runtime
             set(skip_imported TRUE)
@@ -118,10 +108,35 @@ function(ly_get_runtime_dependencies ly_RUNTIME_DEPENDENCIES ly_TARGET)
             else()
                 set(imported_property IMPORTED_LOCATION)
             endif()
-            get_target_property(target_locations ${ly_TARGET} ${imported_property})
 
+            unset(target_locations)
+            get_target_property(target_locations ${ly_TARGET} ${imported_property})
             if(target_locations)
                 list(APPEND all_runtime_dependencies ${target_locations})
+            else()
+                # Check if the property exists for configurations
+                unset(target_locations)
+                foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
+                    string(TOUPPER ${conf} UCONF)
+                    unset(current_target_locations)
+                    get_target_property(current_target_locations ${ly_TARGET} ${imported_property}_${UCONF})
+                    if(current_target_locations)
+                        string(APPEND target_locations $<$<CONFIG:${conf}>:${current_target_locations}>)
+                    else()
+                        # try to use the mapping
+                        get_target_property(mapped_conf ${ly_TARGET} MAP_IMPORTED_CONFIG_${UCONF})
+                        if(mapped_conf)
+                            unset(current_target_locations)
+                            get_target_property(current_target_locations ${ly_TARGET} ${imported_property}_${mapped_conf})
+                            if(current_target_locations)
+                                string(APPEND target_locations $<$<CONFIG:${conf}>:${current_target_locations}>)
+                            endif()
+                        endif()
+                    endif()
+                endforeach()
+                if(target_locations)
+                    list(APPEND all_runtime_dependencies ${target_locations})
+                endif()
             endif()
 
         endif()
@@ -228,34 +243,24 @@ function(ly_delayed_generate_runtime_dependencies)
         endif()
 
         unset(runtime_dependencies)
-        set(runtime_commands "
-function(ly_copy source_file target_directory)
-    get_filename_component(target_filename \"\${source_file}\" NAME)
-    if(NOT \"\${source_file}\" STREQUAL \"\${target_directory}/\${target_filename}\")
-        if(NOT EXISTS \"\${target_directory}\")
-            file(MAKE_DIRECTORY \"\${target_directory}\")
-        endif()
-        if(\"\${source_file}\" IS_NEWER_THAN \"\${target_directory}/\${target_filename}\")
-            file(LOCK \"\${target_directory}/\${target_filename}.lock\" GUARD FUNCTION TIMEOUT 30)
-            file(COPY \"\${source_file}\" DESTINATION \"\${target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS})
-        endif()
-    endif()    
-endfunction()
-    \n")
+        unset(LY_COPY_COMMANDS)
 
         ly_get_runtime_dependencies(runtime_dependencies ${target})
         foreach(runtime_dependency ${runtime_dependencies})
             unset(runtime_command)
             ly_get_runtime_dependency_command(runtime_command ${runtime_dependency})
-            string(APPEND runtime_commands ${runtime_command})
+            string(APPEND LY_COPY_COMMANDS ${runtime_command})
         endforeach()
-        
+
         # Generate the output file
         set(target_file_dir "$<TARGET_FILE_DIR:${target}>")
-        string(CONFIGURE "${runtime_commands}" generated_commands @ONLY)
+        set(target_file "$<TARGET_FILE:${target}>")
+        ly_file_read(${LY_RUNTIME_DEPENDENCIES_TEMPLATE} template_file)
+        string(CONFIGURE "${LY_COPY_COMMANDS}" LY_COPY_COMMANDS @ONLY)
+        string(CONFIGURE "${template_file}" configured_template_file @ONLY)
         file(GENERATE
             OUTPUT ${CMAKE_BINARY_DIR}/runtime_dependencies/$<CONFIG>/${target}.cmake
-            CONTENT "${generated_commands}"
+            CONTENT "${configured_template_file}"
         )
 
     endforeach()

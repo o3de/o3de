@@ -1,20 +1,22 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/JSON/rapidjson.h>
+#include <AzCore/JSON/document.h>
 #include <AzCore/Serialization/ObjectStream.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/Utils.h>
+#include <AzCore/Serialization/Json/RegistrationContext.h>
+#include <AzCore/Serialization/Json/JsonSerialization.h>
+#include <AzCore/Serialization/Json/JsonSerializationResult.h>
+#include <AzFramework/FileFunc/FileFunc.h>
+
 #include <EMotionFX/Source/Parameter/GroupParameter.h>
 #include <EMotionFX/Source/Parameter/ParameterFactory.h>
 #include <MCore/Source/AttributeFactory.h>
@@ -1166,14 +1168,66 @@ namespace EMotionFX
         AZStd::vector<char> buffer(fileEventTable.m_size);
         file->Read(&buffer[0], fileEventTable.m_size);
 
-        MotionEventTable* motionEventTable = AZ::Utils::LoadObjectFromBuffer<MotionEventTable>(&buffer[0], buffer.size(), context);
+        auto motionEventTable = AZStd::unique_ptr<MotionEventTable>(AZ::Utils::LoadObjectFromBuffer<MotionEventTable>(&buffer[0], buffer.size(), context));
         if (motionEventTable)
         {
-            motionEventTable->InitAfterLoading(motion);
+            motion->SetEventTable(AZStd::move(motionEventTable));
+            motion->GetEventTable()->InitAfterLoading(motion);
             return true;
         }
 
         return false;
+    }
+
+    //=================================================================================================
+
+    bool ChunkProcessorMotionEventTrackTable3::Process(MCore::File* file, Importer::ImportParameters& importParams)
+    {
+        Motion* motion = importParams.mMotion;
+        MCORE_ASSERT(motion);
+
+        FileFormat::FileMotionEventTableSerialized fileEventTable;
+        file->Read(&fileEventTable, sizeof(FileFormat::FileMotionEventTableSerialized));
+
+        if (GetLogging())
+        {
+            MCore::LogDetailedInfo("- Motion Event Table:");
+            MCore::LogDetailedInfo("  + size = %d", fileEventTable.m_size);
+        }
+
+        AZStd::vector<char> buffer(fileEventTable.m_size);
+        file->Read(&buffer[0], fileEventTable.m_size);
+        AZStd::string_view bufferStringView(&buffer[0], buffer.size());
+
+        auto readJsonOutcome = AzFramework::FileFunc::ReadJsonFromString(bufferStringView);
+        AZStd::string errorMsg;
+        if (!readJsonOutcome.IsSuccess())
+        {
+            AZ_Error("EMotionFX", false, "Loading motion event table failed due to ReadJsonFromString. %s", readJsonOutcome.TakeError().c_str());
+            return false;
+        }
+        rapidjson::Document document = readJsonOutcome.TakeValue();
+
+        AZ::SerializeContext* context = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+        if (!context)
+        {
+            return false;
+        }
+
+        AZ::JsonDeserializerSettings settings;
+        settings.m_serializeContext = context;
+
+        MotionEventTable* motionEventTable = motion->GetEventTable();
+        AZ::JsonSerializationResult::ResultCode jsonResult = AZ::JsonSerialization::Load(*motionEventTable, document, settings);
+        if (jsonResult.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
+        {
+            AZ_Error("EMotionFX", false, "Loading motion event table failed due to AZ::JsonSerialization::Load.");
+            return false;
+        }
+
+        motionEventTable->InitAfterLoading(motion);
+        return true;
     }
 
     //=================================================================================================

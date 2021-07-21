@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #ifndef ENTITY_PROPERTY_EDITOR_H
 #define ENTITY_PROPERTY_EDITOR_H
@@ -26,6 +21,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
+#include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/EntityPropertyEditorRequestsBus.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
@@ -113,6 +109,7 @@ namespace AzToolsFramework
         , public EditorInspectorComponentNotificationBus::MultiHandler
         , private AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler
         , public AZ::EntitySystemBus::Handler
+        , private EditorWindowUIRequestBus::Handler
     {
         Q_OBJECT;
     public:
@@ -212,6 +209,9 @@ namespace AzToolsFramework
         void GetSelectedAndPinnedEntities(EntityIdList& selectedEntityIds) override;
         void GetSelectedEntities(EntityIdList& selectedEntityIds) override;
         void SetNewComponentId(AZ::ComponentId componentId) override;
+
+        // EditorWindowRequestBus overrides
+        void SetEditorUiEnabled(bool enable) override;
 
         bool IsEntitySelected(const AZ::EntityId& id) const;
         bool IsSingleEntitySelected(const AZ::EntityId& id) const;

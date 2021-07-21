@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #pragma once
 
@@ -21,6 +16,7 @@
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/smart_ptr/weak_ptr.h>
 #include <AzCore/std/parallel/shared_mutex.h>
+#include <AzCore/Asset/AssetCommon.h>
 #include <map>
 
 #include <AzFramework/Font/FontInterface.h>
@@ -43,6 +39,7 @@ namespace AZ
     class AtomFont
         : public ICryFont
         , public AzFramework::FontQueryInterface
+        , private Data::AssetBus::Handler
     {
         friend class FFont;
 
@@ -126,6 +123,9 @@ namespace AZ
         //! \param outputDirectory Path to loaded font family (no filename), may need resolving with PathUtil::MakeGamePath.
         //! \param outputFullPath Full path to loaded font family, may need resolving with PathUtil::MakeGamePath.
         XmlNodeRef LoadFontFamilyXml(const char* fontFamilyName, string& outputDirectory, string& outputFullPath);
+
+        // Data::AssetBus::Handler overrides...
+        void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
 
     private:
         AzFramework::ISceneSystem::SceneEvent::Handler m_sceneEventHandler;

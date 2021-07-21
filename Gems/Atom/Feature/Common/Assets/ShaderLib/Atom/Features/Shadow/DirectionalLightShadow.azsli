@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * move or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
  */
 
 #pragma once
@@ -360,8 +356,9 @@ float DirectionalLightShadow::GetVisibilityFromLightEsm()
         {
             const float distanceWithinCameraView = depthDiff / (1. - distanceMin);
             const float3 coord = float3(shadowCoord.xy, indexOfCascade);
-            const float expDepthInShadowmap = expShadowmap.Sample(PassSrg::LinearSampler, coord).r;
-            const float ratio = exp(-EsmExponentialShift * distanceWithinCameraView) * expDepthInShadowmap;
+            const float occluder = expShadowmap.Sample(PassSrg::LinearSampler, coord).r;                        
+            const float exponent = -EsmExponentialShift * (distanceWithinCameraView - occluder);
+            const float ratio = exp(exponent);
 
             m_debugInfo.m_cascadeIndex = indexOfCascade;
             return saturate(ratio);
@@ -389,8 +386,9 @@ float DirectionalLightShadow::GetVisibilityFromLightEsmPcf()
         {
             const float distanceWithinCameraView = depthDiff / (1. - distanceMin);
             const float3 coord = float3(shadowCoord.xy, indexOfCascade);
-            const float expDepthInShadowmap = expShadowmap.Sample(PassSrg::LinearSampler, coord).r;
-            float ratio = exp(-EsmExponentialShift * distanceWithinCameraView) * expDepthInShadowmap;
+            const float occluder = expShadowmap.Sample(PassSrg::LinearSampler, coord).r;
+            const float exponent = -EsmExponentialShift * (distanceWithinCameraView - occluder);
+            float ratio = exp(exponent);
 
             static const float pcfFallbackThreshold = 1.04;
             if (ratio > pcfFallbackThreshold)
@@ -427,6 +425,7 @@ float DirectionalLightShadow::SamplePcfBicubic()
             shadowCoord.y >= 0. && shadowCoord.y * size < size - PixelMargin && 
             shadowCoord.z < 1. - DepthMargin)
         {
+            m_debugInfo.m_cascadeIndex = indexOfCascade;
             return SamplePcfBicubic(shadowCoord, indexOfCascade);
         }
     }

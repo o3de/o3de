@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Launcher.h>
 
@@ -573,6 +568,14 @@ namespace O3DELauncher
             AZ_Assert(AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady(), "System allocator was not created or creation failed.");
             //Initialize the Debug trace instance to create necessary environment variables
             AZ::Debug::Trace::Instance().Init();
+
+            if (!IsDedicatedServer() && !systemInitParams.bToolMode && !systemInitParams.bTestMode)
+            {
+                if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI != nullptr)
+                {
+                    nativeUI->SetMode(AZ::NativeUI::Mode::ENABLED);
+                }
+            }
         }
 
         if (mainInfo.m_onPostAppStart)

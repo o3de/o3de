@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "AzToolsFramework_precompiled.h"
 #include <AzCore/Component/ComponentApplication.h>
@@ -2675,7 +2670,7 @@ namespace AzToolsFramework
                             "You can also review and update your save locations in the AssetProcessorPlatformConfig.ini file.";
                         AZ_Error("Slice", false, errorMessage.c_str());
 
-                        QString learnMoreLink(QObject::tr("https://docs.aws.amazon.com/console/lumberyard/slices/save"));
+                        QString learnMoreLink(QObject::tr(""));
                         QString learnMoreDescription(QObject::tr(" <a href='%1'>Learn more</a>").arg(learnMoreLink));
 
                         // Display a pop-up, the logs are easy to miss. This will make sure a user who encounters this error immediately knows their slice save has failed.

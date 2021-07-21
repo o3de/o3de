@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -42,7 +37,7 @@ namespace ScriptCanvas
 
         ExecutionStateConfig(AZ::Data::Asset<RuntimeAsset> asset, RuntimeComponent& component);
     };
-    
+
     class ExecutionState
         : public AZStd::enable_shared_from_this<ExecutionState>
     {
@@ -55,7 +50,7 @@ namespace ScriptCanvas
         static void Reflect(AZ::ReflectContext* reflectContext);
 
         const RuntimeComponent* m_component = nullptr;
-        
+
         ExecutionState(const ExecutionStateConfig& config);
 
         virtual ~ExecutionState() = default;
@@ -76,7 +71,7 @@ namespace ScriptCanvas
 
         AZ::EntityId GetScriptCanvasId() const;
 
-        const VariableData& GetVariableOverrides() const;
+        const RuntimeDataOverrides& GetRuntimeDataOverrides() const;
 
         virtual void Initialize() = 0;
 
@@ -93,4 +88,4 @@ namespace ScriptCanvas
         ExecutionStateWeakConstPtr WeakFromThisConst() const;
     };
 
-} 
+}

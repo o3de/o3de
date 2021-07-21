@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 set(FILES
@@ -79,8 +75,6 @@ set(FILES
     Include/Atom/RPI.Reflect/Shader/ShaderCommonTypes.h
     Include/Atom/RPI.Reflect/Shader/ShaderAsset.h
     Include/Atom/RPI.Reflect/Shader/ShaderAssetCreator.h
-    Include/Atom/RPI.Reflect/Shader/ShaderAsset2.h
-    Include/Atom/RPI.Reflect/Shader/ShaderAssetCreator2.h
     Include/Atom/RPI.Reflect/Shader/ShaderInputContract.h
     Include/Atom/RPI.Reflect/Shader/ShaderOptionGroup.h
     Include/Atom/RPI.Reflect/Shader/ShaderOptionGroupLayout.h
@@ -91,9 +85,7 @@ set(FILES
     Include/Atom/RPI.Reflect/Shader/ShaderVariantKey.h
     Include/Atom/RPI.Reflect/Shader/ShaderVariantTreeAsset.h
     Include/Atom/RPI.Reflect/Shader/ShaderVariantAsset.h
-    Include/Atom/RPI.Reflect/Shader/ShaderVariantAsset2.h
     Include/Atom/RPI.Reflect/Shader/IShaderVariantFinder.h
-    Include/Atom/RPI.Reflect/Shader/IShaderVariantFinder2.h
     Include/Atom/RPI.Reflect/Shader/PrecompiledShaderAssetSourceData.h
     Include/Atom/RPI.Reflect/System/AnyAsset.h
     Include/Atom/RPI.Reflect/System/AssetAliases.h
@@ -155,8 +147,6 @@ set(FILES
     Source/RPI.Reflect/Shader/ShaderStageType.cpp
     Source/RPI.Reflect/Shader/ShaderAsset.cpp
     Source/RPI.Reflect/Shader/ShaderAssetCreator.cpp
-    Source/RPI.Reflect/Shader/ShaderAsset2.cpp
-    Source/RPI.Reflect/Shader/ShaderAssetCreator2.cpp
     Source/RPI.Reflect/Shader/ShaderInputContract.cpp
     Source/RPI.Reflect/Shader/ShaderOptionGroup.cpp
     Source/RPI.Reflect/Shader/ShaderOptionGroupLayout.cpp
@@ -166,7 +156,6 @@ set(FILES
     Source/RPI.Reflect/Shader/ShaderVariantKey.cpp
     Source/RPI.Reflect/Shader/ShaderVariantTreeAsset.cpp
     Source/RPI.Reflect/Shader/ShaderVariantAsset.cpp
-    Source/RPI.Reflect/Shader/ShaderVariantAsset2.cpp
     Source/RPI.Reflect/Shader/PrecompiledShaderAssetSourceData.cpp
     Source/RPI.Reflect/System/AnyAsset.cpp
     Source/RPI.Reflect/System/AssetAliases.cpp

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Json/TupleSerializer.h>
@@ -34,13 +29,24 @@ namespace AZ
         switch (inputValue.GetType())
         {
         case rapidjson::kArrayType:
-            return LoadContainer(outputValue, outputValueTypeId, inputValue, context);
+            return LoadContainer(outputValue, outputValueTypeId, inputValue, false, context);
         
-        case rapidjson::kObjectType: // fall through
-        case rapidjson::kNullType: // fall through
-        case rapidjson::kStringType: // fall through
-        case rapidjson::kFalseType: // fall through
-        case rapidjson::kTrueType: // fall through
+        case rapidjson::kObjectType:
+            if (IsExplicitDefault(inputValue))
+            {
+                // Because this serializer has only the operation flag "InitializeNewInstance" set, the only time this will be called with
+                // an explicit default is when a new instance has been created.
+                return LoadContainer(outputValue, outputValueTypeId, inputValue, true, context);
+            }
+            [[fallthrough]];
+        case rapidjson::kNullType:
+            [[fallthrough]];
+        case rapidjson::kStringType:
+            [[fallthrough]];
+        case rapidjson::kFalseType:
+            [[fallthrough]];
+        case rapidjson::kTrueType:
+            [[fallthrough]];
         case rapidjson::kNumberType:
             return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Unsupported,
                 "Unsupported type. AZStd::pair or AZStd::tuple can only be read from an array.");
@@ -127,8 +133,13 @@ namespace AZ
         }
     }
 
+    auto JsonTupleSerializer::GetOperationsFlags() const -> OperationFlags
+    {
+        return OperationFlags::InitializeNewInstance;
+    }
+
     JsonSerializationResult::Result JsonTupleSerializer::LoadContainer(void* outputValue, const Uuid& outputValueTypeId,
-        const rapidjson::Value& inputValue, JsonDeserializerContext& context)
+        const rapidjson::Value& inputValue, bool isNewInstance, JsonDeserializerContext& context)
     {
         namespace JSR = JsonSerializationResult; // Used to remove name conflicts in AzCore in uber builds.
 
@@ -154,13 +165,6 @@ namespace AZ
         };
         container->EnumTypes(typeCountCallback);
 
-        rapidjson::SizeType arraySize = inputValue.Size();
-        if (arraySize < typeCount)
-        {
-            return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Unsupported,
-                "Not enough entries in array to load an AZStd::pair or AZStd::tuple from.");
-        }
-
         AZStd::vector<const SerializeContext::ClassElement*> classElements;
         classElements.reserve(typeCount);
         auto typeEnumCallback = [&classElements](const Uuid&, const SerializeContext::ClassElement* genericClassElement)
@@ -171,46 +175,80 @@ namespace AZ
         container->EnumTypes(typeEnumCallback);
 
         JSR::ResultCode retVal(JSR::Tasks::ReadField);
-        rapidjson::SizeType arrayIndex = 0;
-        size_t numElementsWritten = 0;
-        for (size_t i = 0; i < typeCount; ++i)
+        if (isNewInstance)
         {
-            ScopedContextPath subPath(context, i);
-            
-            void* elementAddress = container->GetElementByIndex(outputValue, nullptr, i);
-            AZ_Assert(elementAddress, "Address of AZStd::pair or AZStd::tuple element %zu could not be retrieved.", i);
+            rapidjson::Value explicitDefaultValue = GetExplicitDefault();
 
-            ContinuationFlags flags = classElements[i]->m_flags & SerializeContext::ClassElement::Flags::FLG_POINTER
-                ? ContinuationFlags::ResolvePointer
-                : ContinuationFlags::None;
-
-            while (arrayIndex < inputValue.Size())
+            for (size_t i = 0; i < typeCount; ++i)
             {
-                JSR::ResultCode result = ContinueLoading(elementAddress, classElements[i]->m_typeId, inputValue[arrayIndex], context, flags);
+                ScopedContextPath subPath(context, i);
+
+                void* elementAddress = container->GetElementByIndex(outputValue, nullptr, i);
+                AZ_Assert(elementAddress, "Address of AZStd::pair or AZStd::tuple element %zu could not be retrieved.", i);
+
+                ContinuationFlags flags = ContinuationFlags::LoadAsNewInstance;
+                flags |=
+                    (classElements[i]->m_flags & SerializeContext::ClassElement::Flags::FLG_POINTER ? ContinuationFlags::ResolvePointer
+                                                                                                    : ContinuationFlags::None);
+                JSR::ResultCode result = ContinueLoading(elementAddress, classElements[i]->m_typeId, explicitDefaultValue, context, flags);
                 retVal.Combine(result);
-                arrayIndex++;
                 if (result.GetProcessing() == JSR::Processing::Halted)
                 {
                     return context.Report(retVal, "Failed to read element for AZStd::pair or AZStd::tuple.");
                 }
-                else if (result.GetProcessing() != JSR::Processing::Altered)
-                {
-                    numElementsWritten++;
-                    break;
-                }
             }
-        }
 
-        if (numElementsWritten < typeCount)
-        {
-            AZStd::string_view message = numElementsWritten == 0 ?
-                "Unable to read data for AZStd::pair or AZStd::tuple." :
-                "Partially read data for AZStd::pair or AZStd::tuple.";
-            return context.Report(retVal, message);
+            return context.Report(retVal, "Initialized AZStd::pair or AZStd::tuple to defaults.");
         }
         else
         {
-            return context.Report(retVal, "Successfully read AZStd::pair or AZStd::tuple.");
+            if (inputValue.Size() < typeCount)
+            {
+                return context.Report(
+                    JSR::Tasks::ReadField, JSR::Outcomes::Unsupported,
+                    "Not enough entries in array to load an AZStd::pair or AZStd::tuple from.");
+            }
+
+            rapidjson::SizeType arrayIndex = 0;
+            size_t numElementsWritten = 0;
+            for (size_t i = 0; i < typeCount; ++i)
+            {
+                ScopedContextPath subPath(context, i);
+
+                void* elementAddress = container->GetElementByIndex(outputValue, nullptr, i);
+                AZ_Assert(elementAddress, "Address of AZStd::pair or AZStd::tuple element %zu could not be retrieved.", i);
+
+                ContinuationFlags flags =
+                    (classElements[i]->m_flags & SerializeContext::ClassElement::Flags::FLG_POINTER ? ContinuationFlags::ResolvePointer
+                                                                                                    : ContinuationFlags::None);
+                while (arrayIndex < inputValue.Size())
+                {
+                    JSR::ResultCode result =
+                        ContinueLoading(elementAddress, classElements[i]->m_typeId, inputValue[arrayIndex], context, flags);
+                    retVal.Combine(result);
+                    arrayIndex++;
+                    if (result.GetProcessing() == JSR::Processing::Halted)
+                    {
+                        return context.Report(retVal, "Failed to read element for AZStd::pair or AZStd::tuple.");
+                    }
+                    else if (result.GetProcessing() != JSR::Processing::Altered)
+                    {
+                        numElementsWritten++;
+                        break;
+                    }
+                }
+            }
+
+            if (numElementsWritten < typeCount)
+            {
+                AZStd::string_view message = numElementsWritten == 0 ? "Unable to read data for AZStd::pair or AZStd::tuple."
+                                                                     : "Partially read data for AZStd::pair or AZStd::tuple.";
+                return context.Report(retVal, message);
+            }
+            else
+            {
+                return context.Report(retVal, "Successfully read AZStd::pair or AZStd::tuple.");
+            }
         }
     }
 } // namespace AZ

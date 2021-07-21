@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -63,52 +58,50 @@ namespace AZ
             SerializerBuilder* operator->();
 
             template <typename T>
-            SerializerBuilder* HandlesType()
+            SerializerBuilder* HandlesType(bool overwriteExisting = false)
             {
-                return HandlesTypeId(azrtti_typeid<T>());
+                return HandlesTypeId(azrtti_typeid<T>(), overwriteExisting);
             }
 
             template <template<typename...> class T>
-            SerializerBuilder* HandlesType()
+            SerializerBuilder* HandlesType(bool overwriteExisting = false)
             {
-                return HandlesTypeId(azrtti_typeid<T>());
+                return HandlesTypeId(azrtti_typeid<T>(), overwriteExisting);
             }
 
             template<template<AZStd::size_t...> class T>
-            SerializerBuilder* HandlesType()
+            SerializerBuilder* HandlesType(bool overwriteExisting = false)
             {
-                return HandlesTypeId(azrtti_typeid<T>());
+                return HandlesTypeId(azrtti_typeid<T>(), overwriteExisting);
             }
 
             template<template<typename, AZStd::size_t> class T>
-            SerializerBuilder* HandlesType()
+            SerializerBuilder* HandlesType(bool overwriteExisting = false)
             {
-                return HandlesTypeId(azrtti_typeid<T>());
+                return HandlesTypeId(azrtti_typeid<T>(), overwriteExisting);
             }
 
             template<template<typename, typename, AZStd::size_t> class T>
-            SerializerBuilder* HandlesType()
+            SerializerBuilder* HandlesType(bool overwriteExisting = false)
             {
-                return HandlesTypeId(azrtti_typeid<T>());
+                return HandlesTypeId(azrtti_typeid<T>(), overwriteExisting);
             }
 
             template<template<typename, typename, typename, AZStd::size_t> class T>
-            SerializerBuilder* HandlesType()
+            SerializerBuilder* HandlesType(bool overwriteExisting = false)
             {
-                return HandlesTypeId(azrtti_typeid<T>());
+                return HandlesTypeId(azrtti_typeid<T>(), overwriteExisting);
             }
 
             template<template<typename, AZStd::size_t, typename> class T>
-            SerializerBuilder* HandlesType()
+            SerializerBuilder* HandlesType(bool overwriteExisting = false)
             {
-                return HandlesTypeId(azrtti_typeid<T>());
+                return HandlesTypeId(azrtti_typeid<T>(), overwriteExisting);
             }
 
         protected:
-            struct Placeholder { AZ_TYPE_INFO(PlaceHolder, "{4425191C-F497-411A-A7C3-52928E720B0A}"); };
-
             SerializerBuilder(JsonRegistrationContext* context, SerializerMap::const_iterator serializerMapIter);
-            SerializerBuilder* HandlesTypeId(const AZ::Uuid& uuid);
+            SerializerBuilder* HandlesTypeId(const AZ::Uuid& uuid, bool overwriteExisting);
 
             JsonRegistrationContext* m_context = nullptr;
             SerializerMap::const_iterator m_serializerIter;

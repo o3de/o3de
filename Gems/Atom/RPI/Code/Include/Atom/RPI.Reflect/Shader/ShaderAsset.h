@@ -1,20 +1,16 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/EBus/Event.h>
 
+#include <Atom/RPI.Public/AssetInitBus.h>
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroupLayout.h>
 #include <Atom/RPI.Reflect/Shader/ShaderVariantAsset.h>
@@ -36,10 +32,13 @@ namespace AZ
 {
     namespace RPI
     {
+        using ShaderResourceGroupLayoutList = AZStd::fixed_vector<RHI::Ptr<RHI::ShaderResourceGroupLayout>, RHI::Limits::Pipeline::ShaderResourceGroupCountMax>;
+
         class ShaderAsset final
             : public Data::AssetData
             , public ShaderVariantFinderNotificationBus::Handler
             , public Data::AssetBus::Handler
+            , public AssetInitBus::Handler
         {
             friend class ShaderAssetCreator;
             friend class ShaderAssetHandler;
@@ -134,7 +133,10 @@ namespace AZ
             ///////////////////////////////////////////////////////////////////
             /// AssetBus overrides
             void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
+            void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
             ///////////////////////////////////////////////////////////////////
+
+            void ReinitializeRootShaderVariant(Data::Asset<Data::AssetData> asset);
 
             ///////////////////////////////////////////////////////////////////
             /// ShaderVariantFinderNotificationBus overrides
@@ -165,8 +167,13 @@ namespace AZ
                 RHI::ShaderStageAttributeMapList m_attributeMaps;
             };
 
-            bool FinalizeAfterLoad();
+            bool PostLoadInit() override;
             void SetReady();
+
+            //! SelectShaderApiData() must be called before most other ShaderAsset functions.
+            bool SelectShaderApiData();
+
+            //! Returns the active ShaderApiDataContainer which was selected in SelectShaderApiData().
             ShaderApiDataContainer& GetCurrentShaderApiData();
             const ShaderApiDataContainer& GetCurrentShaderApiData() const;
 
@@ -216,7 +223,6 @@ namespace AZ
                 const Data::Asset<Data::AssetData>& asset,
                 AZStd::shared_ptr<Data::AssetDataStream> stream,
                 const Data::AssetFilterCB& assetLoadFilterCB) override;
-            Data::AssetHandler::LoadResult PostLoadInit(const Data::Asset<Data::AssetData>& asset);
         };
 
         //////////////////////////////////////////////////////////////////////////

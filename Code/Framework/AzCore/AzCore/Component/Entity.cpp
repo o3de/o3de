@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/EntityBus.h>
@@ -19,6 +14,7 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Component/NamedEntityId.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/NativeUI/NativeUIRequests.h>
 #include <AzCore/Casting/lossy_cast.h>
 
 #include <AzCore/Serialization/Json/RegistrationContext.h>
@@ -932,13 +928,39 @@ namespace AZ
             return candidateInfo;
         }
 
+        static constexpr AZStd::string_view GetExtendedDependencySortFailureMessage(const Entity::DependencySortResult code)
+        {
+            switch (code)
+            {
+            case Entity::DependencySortResult::MissingRequiredService:
+                return {
+                    "One or more components that provide required services are not in the list of components to activate.\n"
+                    "This can often happen when an AZ::Module containing the required service wasn't loaded, check the log for details.\n"
+                    "\n"
+                    "This can also be caused by misconfigured services on the component or related components.\n"
+                    "Check that the ccomponent's service functions ('GetProvidedServices', 'GetIncompatibleServices' etc) are accurate.\n"};
+            case Entity::DependencySortResult::HasIncompatibleServices:
+                return {
+                    "A component is incompatible with a service provided by another component.\n"
+                    "Check that the component's service functions ('GetProvidedServices', 'GetIncompatibleServices' etc) are accurate.\n"};
+            case Entity::DependencySortResult::DescriptorNotRegistered:
+                return { "A component descriptor was not registered with the ComponentApplication.\n"
+                         "Make sure the component's descriptor is registered by adding it to the appropriate\n"
+                         "AZ::Module's m_descriptors list." };
+            default:
+                return {};
+            }
+        }
+
         // Shortcut for returning a FailedSortDetails as an AZ::Failure.
         static FailureValue<Entity::FailedSortDetails> FailureCode(Entity::DependencySortResult code, const char* formatMessage, ...)
         {
             va_list args;
             va_start(args, formatMessage);
-
-            return Failure(Entity::FailedSortDetails{ code, AZStd::string::format_arg(formatMessage, args) });
+            auto failure = Failure(Entity::FailedSortDetails{ code, AZStd::string::format_arg(formatMessage, args),
+                                                              GetExtendedDependencySortFailureMessage(code) });
+            va_end(args);
+            return failure;
         }
 
         // Function that creates a nice error message when incompatible components are found.
@@ -1071,7 +1093,7 @@ namespace AZ
             ComponentDescriptorBus::EventResult(componentDescriptor, azrtti_typeid(component), &ComponentDescriptorBus::Events::GetDescriptor);
             if (!componentDescriptor)
             {
-                return FailureCode(DependencySortResult::MissingDescriptor, "No descriptor found for Component class '%s'.", component->RTTI_GetTypeName());
+                return FailureCode(DependencySortResult::DescriptorNotRegistered, "No descriptor registered for Component class '%s'.", component->RTTI_GetTypeName());
             }
 
             componentInfos.push_back();

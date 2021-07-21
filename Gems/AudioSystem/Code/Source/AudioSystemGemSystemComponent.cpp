@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AudioSystemGemSystemComponent.h>
 
@@ -37,6 +32,12 @@ namespace Audio
     CSoundCVars g_audioCVars;
     CAudioLogger g_audioLogger;
     AZ::EnvironmentVariable<int*> g_audioVerbosityVar;
+
+    namespace Platform
+    {
+        void InitializeAudioAllocators();
+        void ShutdownAudioAllocators();
+    }
 } // namespace Audio
 
 namespace AudioSystemGem
@@ -84,6 +85,16 @@ namespace AudioSystemGem
         AZ_UNUSED(dependent);
     }
 
+    AudioSystemGemSystemComponent::AudioSystemGemSystemComponent()
+    {
+        Audio::Platform::InitializeAudioAllocators();
+    }
+
+    AudioSystemGemSystemComponent::~AudioSystemGemSystemComponent()
+    {
+        Audio::Platform::ShutdownAudioAllocators();
+    }
+
     void AudioSystemGemSystemComponent::Init()
     {
         m_loseFocusRequest.nFlags = Audio::eARF_PRIORITY_HIGH;
@@ -115,48 +126,30 @@ namespace AudioSystemGem
 
     bool AudioSystemGemSystemComponent::Initialize(const SSystemInitParams* initParams)
     {
+        using namespace Audio;
+
         // When nullptr is passed, create a NullAudioSystem instead of the real thing.
         if (!initParams)
         {
             return CreateNullAudioSystem();
         }
 
-        Audio::g_audioCVars.RegisterVariables();
+        g_audioCVars.RegisterVariables();
 
     #if !defined(AUDIO_RELEASE)
-        Audio::g_audioVerbosityVar = AZ::Environment::CreateVariable<int*>("AudioLogVerbosity");
-        Audio::g_audioVerbosityVar.Set(&Audio::g_audioCVars.m_nAudioLoggingOptions);
+        g_audioVerbosityVar = AZ::Environment::CreateVariable<int*>("AudioLogVerbosity");
+        g_audioVerbosityVar.Set(&g_audioCVars.m_nAudioLoggingOptions);
     #endif // !AUDIO_RELEASE
 
         bool success = false;
 
-        // initialize audio system memory pool
-        if (!AZ::AllocatorInstance<Audio::AudioSystemAllocator>::IsReady())
-        {
-            const size_t poolSize = Audio::g_audioCVars.m_nATLPoolSize << 10;
-
-            Audio::AudioSystemAllocator::Descriptor allocDesc;
-
-            // Generic Allocator:
-            allocDesc.m_allocationRecords = true;
-            allocDesc.m_heap.m_numFixedMemoryBlocks = 1;
-            allocDesc.m_heap.m_fixedMemoryBlocksByteSize[0] = poolSize;
-
-            allocDesc.m_heap.m_fixedMemoryBlocks[0] = AZ::AllocatorInstance<AZ::OSAllocator>::Get().Allocate(
-                allocDesc.m_heap.m_fixedMemoryBlocksByteSize[0],
-                allocDesc.m_heap.m_memoryBlockAlignment
-            );
-
-            AZ::AllocatorInstance<Audio::AudioSystemAllocator>::Create(allocDesc);
-        }
-
         if (CreateAudioSystem())
         {
-            Audio::g_audioLogger.Log(Audio::eALT_ALWAYS, "AudioSystem created!");
+            g_audioLogger.Log(eALT_ALWAYS, "AudioSystem created!");
 
             // Initialize the implementation module...
             bool initImplSuccess = false;
-            Audio::Gem::AudioEngineGemRequestBus::BroadcastResult(initImplSuccess, &Audio::Gem::AudioEngineGemRequestBus::Events::Initialize);
+            Gem::AudioEngineGemRequestBus::BroadcastResult(initImplSuccess, &Gem::AudioEngineGemRequestBus::Events::Initialize);
 
             if (initImplSuccess)
             {
@@ -166,13 +159,13 @@ namespace AudioSystemGem
             }
             else
             {
-                if (Audio::Gem::AudioEngineGemRequestBus::HasHandlers())
+                if (Gem::AudioEngineGemRequestBus::HasHandlers())
                 {
-                    Audio::g_audioLogger.Log(Audio::eALT_ERROR, "The Audio Engine did not initialize correctly!");
+                    g_audioLogger.Log(eALT_ERROR, "The Audio Engine did not initialize correctly!");
                 }
                 else
                 {
-                    Audio::g_audioLogger.Log(Audio::eALT_WARNING, "Running without any AudioEngine!");
+                    g_audioLogger.Log(eALT_WARNING, "Running without any AudioEngine!");
                 }
             }
 
@@ -190,20 +183,16 @@ namespace AudioSystemGem
 
     void AudioSystemGemSystemComponent::Release()
     {
-        Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::Release);
-        Audio::Gem::AudioEngineGemRequestBus::Broadcast(&Audio::Gem::AudioEngineGemRequestBus::Events::Release);
+        using namespace Audio;
+        AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::Release);
+        Gem::AudioEngineGemRequestBus::Broadcast(&Gem::AudioEngineGemRequestBus::Events::Release);
 
         // Delete the Audio System
         // It should be the last object that is freed from the audio system memory pool before the allocator is destroyed.
         m_audioSystem.reset();
 
-        if (AZ::AllocatorInstance<Audio::AudioSystemAllocator>::IsReady())
-        {
-            AZ::AllocatorInstance<Audio::AudioSystemAllocator>::Destroy();
-        }
-
-        Audio::g_audioVerbosityVar.Reset();
-        Audio::g_audioCVars.UnregisterVariables();
+        g_audioVerbosityVar.Reset();
+        g_audioCVars.UnregisterVariables();
 
         GetISystem()->GetISystemEventDispatcher()->RemoveListener(this);
     }

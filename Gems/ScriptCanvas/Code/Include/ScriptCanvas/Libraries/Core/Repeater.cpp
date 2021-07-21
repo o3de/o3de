@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <ScriptCanvas/Libraries/Core/Repeater.h>
 #include <ScriptCanvas/Libraries/Core/RepeaterNodeable.h>
@@ -64,7 +59,7 @@ namespace ScriptCanvas
                 if (slot == nullptr)
                 {
                     // Handle older versions and improperly updated names
-                    for (auto testUnit : { BaseTimerNode::TimeUnits::Seconds, BaseTimerNode::TimeUnits::Ticks})
+                    for (auto testUnit : { BaseTimerNode::TimeUnits::Seconds, BaseTimerNode::TimeUnits::Ticks })
                     {
                         AZStd::string legacyName = BaseTimerNode::s_timeUnitNames[static_cast<int>(testUnit)];
 
@@ -77,28 +72,6 @@ namespace ScriptCanvas
                             break;
                         }
                     }
-                }
-            }
-
-            void Repeater::OnInputSignal(const SlotId&)
-            {
-                m_repetionCount = aznumeric_cast<int>(RepeaterProperty::GetRepetitions(this));
-
-                if (m_repetionCount > 0)
-                {
-                    StartTimer();
-                }
-            }
-
-            void Repeater::OnTimeElapsed()
-            {
-                m_repetionCount--;
-                SignalOutput(RepeaterProperty::GetActionSlotId(this), ScriptCanvas::ExecuteMode::UntilNodeIsFoundInStack);
-
-                if (m_repetionCount == 0)
-                {
-                    StopTimer();
-                    SignalOutput(RepeaterProperty::GetCompleteSlotId(this));
                 }
             }
         }

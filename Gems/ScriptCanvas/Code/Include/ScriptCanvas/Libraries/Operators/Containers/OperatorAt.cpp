@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "OperatorAt.h"
 
@@ -94,70 +89,6 @@ namespace ScriptCanvas
 
                         m_outputSlots.insert(AddSlot(slotConfiguration));
                     }
-                }
-            }
-
-            void OperatorAt::KeyNotFound(const Datum* containerDatum)
-            {
-                Datum defaultDatum;
-                AZStd::vector<AZ::Uuid> types = ScriptCanvas::Data::GetContainedTypes(GetSourceAZType());
-
-                int index = Data::IsMapContainerType(containerDatum->GetType()) ? 1 : 0;
-
-                Data::Type type = Data::FromAZType(types[index]);
-                defaultDatum.SetType(type);
-
-                PushOutput(defaultDatum, *GetSlot(*m_outputSlots.begin()));
-                SignalOutput(GetSlotId("Key Not Found"));
-            }
-
-            void OperatorAt::InvokeOperator()
-            {
-                Slot* inputSlot = GetFirstInputSourceSlot();
-
-                if (inputSlot)
-                {
-                    SlotId sourceSlotId = inputSlot->GetId();
-                    const Datum* containerDatum = FindDatum(sourceSlotId);
-                    
-                    if (Datum::IsValidDatum(containerDatum))
-                    {
-                        const Datum* inputKeyDatum = FindDatum(*m_inputSlots.begin());
-                        AZ::Outcome<Datum, AZStd::string> valueOutcome = BehaviorContextMethodHelper::CallMethodOnDatumUnpackOutcomeSuccess(*containerDatum, "At", *inputKeyDatum);
-                        if (!valueOutcome.IsSuccess())
-                        {
-                            KeyNotFound(containerDatum);
-                            return;
-                        }
-
-                        if (Data::IsVectorContainerType(containerDatum->GetType()))
-                        {
-                            PushOutput(valueOutcome.TakeValue(), *GetSlot(*m_outputSlots.begin()));
-                            SignalOutput(GetSlotId("Out"));
-                        }
-                        else if (Data::IsSetContainerType(containerDatum->GetType()) || Data::IsMapContainerType(containerDatum->GetType()))
-                        {
-                            Datum keyDatum = valueOutcome.TakeValue();
-                            if (keyDatum.Empty())
-                            {
-                                KeyNotFound(containerDatum);
-                            }
-                            else
-                            {
-                                PushOutput(keyDatum, *GetSlot(*m_outputSlots.begin()));
-                                SignalOutput(GetSlotId("Out"));
-                            }
-                        }
-                    }
-                }
-            }
-
-            void OperatorAt::OnInputSignal(const SlotId& slotId)
-            {
-                const SlotId inSlotId = OperatorBaseProperty::GetInSlotId(this);
-                if (slotId == inSlotId)
-                {
-                    InvokeOperator();
                 }
             }
         }

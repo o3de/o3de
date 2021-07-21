@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <GemCatalog/GemFilterWidget.h>
 #include <QButtonGroup>
@@ -19,6 +14,7 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QPushButton>
+#include <QSignalBlocker>
 
 namespace O3DE::ProjectManager
 {
@@ -26,6 +22,7 @@ namespace O3DE::ProjectManager
         const QVector<QString>& elementNames,
         const QVector<int>& elementCounts,
         bool showAllLessButton,
+        bool collapsed,
         int defaultShowCount,
         QWidget* parent)
         : QWidget(parent)
@@ -40,6 +37,7 @@ namespace O3DE::ProjectManager
         QHBoxLayout* collapseLayout = new QHBoxLayout();
         m_collapseButton = new QPushButton();
         m_collapseButton->setCheckable(true);
+        m_collapseButton->setChecked(collapsed);
         m_collapseButton->setFlat(true);
         m_collapseButton->setFocusPolicy(Qt::NoFocus);
         m_collapseButton->setFixedWidth(s_collapseButtonSize);
@@ -178,6 +176,11 @@ namespace O3DE::ProjectManager
         return m_buttonGroup;
     }
 
+    bool FilterCategoryWidget::IsCollapsed()
+    {
+        return m_collapseButton->isChecked();
+    }
+
     GemFilterWidget::GemFilterWidget(GemSortFilterProxyModel* filterProxyModel, QWidget* parent)
         : QScrollArea(parent)
         , m_filterProxyModel(filterProxyModel)
@@ -193,18 +196,104 @@ namespace O3DE::ProjectManager
         QWidget* mainWidget = new QWidget();
         setWidget(mainWidget);
 
-        m_mainLayout = new QVBoxLayout();
-        m_mainLayout->setAlignment(Qt::AlignTop);
-        mainWidget->setLayout(m_mainLayout);
+        QVBoxLayout* mainLayout = new QVBoxLayout();
+        mainLayout->setAlignment(Qt::AlignTop);
+        mainWidget->setLayout(mainLayout);
 
         QLabel* filterByLabel = new QLabel("Filter by");
         filterByLabel->setStyleSheet("font-size: 16px;");
-        m_mainLayout->addWidget(filterByLabel);
+        mainLayout->addWidget(filterByLabel);
 
+        QWidget* filterSection = new QWidget(this);
+        mainLayout->addWidget(filterSection);
+
+        m_filterLayout = new QVBoxLayout();
+        m_filterLayout->setAlignment(Qt::AlignTop);
+        m_filterLayout->setContentsMargins(0, 0, 0, 0);
+        filterSection->setLayout(m_filterLayout);
+
+        ResetGemStatusFilter();
         AddGemOriginFilter();
         AddTypeFilter();
         AddPlatformFilter();
         AddFeatureFilter();
+    }
+
+    void GemFilterWidget::ResetGemStatusFilter()
+    {
+        QVector<QString> elementNames;
+        QVector<int> elementCounts;
+        const int totalGems = m_gemModel->rowCount();
+        const int selectedGemTotal = m_gemModel->TotalAddedGems();
+
+        elementNames.push_back(GemSortFilterProxyModel::GetGemStatusString(GemSortFilterProxyModel::GemStatus::Unselected));
+        elementCounts.push_back(totalGems - selectedGemTotal);
+
+        elementNames.push_back(GemSortFilterProxyModel::GetGemStatusString(GemSortFilterProxyModel::GemStatus::Selected));
+        elementCounts.push_back(selectedGemTotal);
+
+        bool wasCollapsed = false;
+        if (m_statusFilter)
+        {
+            wasCollapsed = m_statusFilter->IsCollapsed();
+        }
+
+        FilterCategoryWidget* filterWidget =
+            new FilterCategoryWidget("Status", elementNames, elementCounts, /*showAllLessButton=*/false, /*collapsed*/wasCollapsed);
+        if (m_statusFilter)
+        {
+            m_filterLayout->replaceWidget(m_statusFilter, filterWidget);
+        }
+        else
+        {
+            m_filterLayout->addWidget(filterWidget);
+        }
+
+        m_statusFilter->deleteLater();
+        m_statusFilter = filterWidget;
+
+        const GemSortFilterProxyModel::GemStatus currentFilterState = m_filterProxyModel->GetGemStatus();
+        const QList<QAbstractButton*> buttons = m_statusFilter->GetButtonGroup()->buttons();
+        for (int statusFilterIndex = 0; statusFilterIndex < buttons.size(); ++statusFilterIndex)
+        {
+            const GemSortFilterProxyModel::GemStatus gemStatus = static_cast<GemSortFilterProxyModel::GemStatus>(statusFilterIndex);
+            QAbstractButton* button = buttons[statusFilterIndex];
+
+            if (static_cast<GemSortFilterProxyModel::GemStatus>(statusFilterIndex) == currentFilterState)
+            {
+                button->setChecked(true);
+            }
+
+            connect(
+                button, &QAbstractButton::toggled, this,
+                [=](bool checked)
+                {
+                    GemSortFilterProxyModel::GemStatus filterStatus = m_filterProxyModel->GetGemStatus();
+                    if (checked)
+                    {
+                        if (filterStatus == GemSortFilterProxyModel::GemStatus::NoFilter)
+                        {
+                            filterStatus = gemStatus;
+                        }
+                        else
+                        {
+                            filterStatus = GemSortFilterProxyModel::GemStatus::NoFilter;
+                        }
+                    }
+                    else
+                    {
+                        if (filterStatus != gemStatus)
+                        {
+                            filterStatus = static_cast<GemSortFilterProxyModel::GemStatus>(!gemStatus);
+                        }
+                        else
+                        {
+                            filterStatus = GemSortFilterProxyModel::GemStatus::NoFilter;
+                        }
+                    }
+                    m_filterProxyModel->SetGemStatus(filterStatus);
+                });
+        }
     }
 
     void GemFilterWidget::AddGemOriginFilter()
@@ -233,7 +322,7 @@ namespace O3DE::ProjectManager
         }
 
         FilterCategoryWidget* filterWidget = new FilterCategoryWidget("Provider", elementNames, elementCounts, /*showAllLessButton=*/false);
-        m_mainLayout->addWidget(filterWidget);
+        m_filterLayout->addWidget(filterWidget);
 
         const QList<QAbstractButton*> buttons = filterWidget->GetButtonGroup()->buttons();
         for (int i = 0; i < buttons.size(); ++i)
@@ -283,7 +372,7 @@ namespace O3DE::ProjectManager
         }
 
         FilterCategoryWidget* filterWidget = new FilterCategoryWidget("Type", elementNames, elementCounts, /*showAllLessButton=*/false);
-        m_mainLayout->addWidget(filterWidget);
+        m_filterLayout->addWidget(filterWidget);
 
         const QList<QAbstractButton*> buttons = filterWidget->GetButtonGroup()->buttons();
         for (int i = 0; i < buttons.size(); ++i)
@@ -333,7 +422,7 @@ namespace O3DE::ProjectManager
         }
 
         FilterCategoryWidget* filterWidget = new FilterCategoryWidget("Supported Platforms", elementNames, elementCounts, /*showAllLessButton=*/false);
-        m_mainLayout->addWidget(filterWidget);
+        m_filterLayout->addWidget(filterWidget);
 
         const QList<QAbstractButton*> buttons = filterWidget->GetButtonGroup()->buttons();
         for (int i = 0; i < buttons.size(); ++i)
@@ -388,8 +477,8 @@ namespace O3DE::ProjectManager
         }
 
         FilterCategoryWidget* filterWidget = new FilterCategoryWidget("Features", elementNames, elementCounts,
-            /*showAllLessButton=*/true, /*defaultShowCount=*/5);
-        m_mainLayout->addWidget(filterWidget);
+            /*showAllLessButton=*/true, false, /*defaultShowCount=*/5);
+        m_filterLayout->addWidget(filterWidget);
 
         const QList<QAbstractButton*> buttons = filterWidget->GetButtonGroup()->buttons();
         for (int i = 0; i < buttons.size(); ++i)
@@ -397,6 +486,7 @@ namespace O3DE::ProjectManager
             const QString& feature = elementNames[i];
             QAbstractButton* button = buttons[i];
 
+            // Adjust the proxy model and enable or disable the clicked feature used for filtering.
             connect(button, &QAbstractButton::toggled, this, [=](bool checked)
                 {
                     QSet<QString> features = m_filterProxyModel->GetFeatures();
@@ -409,6 +499,15 @@ namespace O3DE::ProjectManager
                         features.remove(feature);
                     }
                     m_filterProxyModel->SetFeatures(features);
+                });
+
+            // Sync the UI state with the proxy model filtering.
+            connect(m_filterProxyModel, &GemSortFilterProxyModel::OnInvalidated, this, [=]
+                {
+                    const QSet<QString>& filteredFeatureTags = m_filterProxyModel->GetFeatures();
+                    const bool isChecked = filteredFeatureTags.contains(button->text());
+                    QSignalBlocker signalsBlocker(button);
+                    button->setChecked(isChecked);
                 });
         }
     }

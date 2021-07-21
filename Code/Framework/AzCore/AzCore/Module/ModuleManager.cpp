@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -21,6 +16,7 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/ComponentApplication.h>
+#include <AzCore/NativeUI/NativeUIRequests.h>
 #include <AzCore/Script/ScriptSystemBus.h>
 #include <AzCore/Script/ScriptContext.h>
 
@@ -29,7 +25,7 @@
 
 namespace
 {
-    static const char* s_moduleLoggingScope = "Module";
+    static const char* s_moduleLoggingScope = "Module Manager";
 }
 
 namespace AZ
@@ -602,6 +598,25 @@ namespace AZ
     }
 
     //=========================================================================
+    // HandleDependencySortError
+    //=========================================================================
+    void ModuleManager::HandleDependencySortError(const Entity::DependencySortOutcome& outcome)
+    {
+        // Print a short message to the log, and an extended message to the nativeUI (if available)
+        auto errorMessage = AZStd::string::format("Modules Entities cannot be activated.\n\n%s", outcome.GetError().m_message.c_str());
+        AZ_Error(s_moduleLoggingScope, false, errorMessage.c_str());
+
+        auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get();
+        if (nativeUI)
+        {
+            errorMessage.append("\n\n");
+            errorMessage.append(outcome.GetError().m_extendedMessage);
+            auto choice = nativeUI->DisplayBlockingDialog(s_moduleLoggingScope, errorMessage, { "Quit", "Ignore" });
+            m_quitRequested = (choice == "Quit");
+        }
+    }
+
+    //=========================================================================
     // OnEntityActivated
     //=========================================================================
     void ModuleManager::OnEntityActivated(const AZ::EntityId& entityId)
@@ -687,15 +702,24 @@ namespace AZ
             const Entity::ComponentArrayType& systemEntityComponents = systemEntity->GetComponents();
             componentsToActivate.insert(componentsToActivate.begin(), systemEntityComponents.begin(), systemEntityComponents.end());
         }
-        
+
         // Topo sort components, activate them
         Entity::DependencySortOutcome outcome = ModuleEntity::DependencySort(componentsToActivate);
         if (!outcome.IsSuccess())
         {
-            AZ_Error(s_moduleLoggingScope, false, "Modules Entities cannot be activated. %s", outcome.GetError().m_message.c_str());
+            HandleDependencySortError(outcome);
+            if (m_quitRequested)
+            {
+                // Before letting the application quit, all the module entities should be restored back to init state
+                // because they never fully exited the activating state.
+                for (auto& moduleData : modulesToInit)
+                {
+                    moduleData->m_moduleEntity->SetState(Entity::State::Init);
+                }
+            }
             return;
         }
-        
+
         for (auto componentIt = componentsToActivate.begin(); componentIt != componentsToActivate.end(); )
         {
             Component* component = *componentIt;
@@ -711,7 +735,6 @@ namespace AZ
                 ++componentIt;
             }
         }
-        
 
         // Activate the entities in the appropriate order
         for (Component* component : componentsToActivate)

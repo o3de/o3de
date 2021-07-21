@@ -1,0 +1,21 @@
+
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+ /* correct the padding around the two main labels to give space at the borders */
+QMessageBox QLabel#qt_msgbox_label
+{
+    padding-top: 20px;
+    padding-right: 20px;
+    padding-bottom: 20px;
+}
+
+QMessageBox QLabel#qt_msgboxex_icon_label
+{
+    padding-left: 20px;
+    padding-top: 20px;
+}

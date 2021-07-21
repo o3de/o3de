@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/Feature/AuxGeom/AuxGeomFeatureProcessor.h>
 
@@ -49,7 +44,7 @@ namespace AZ
 
             // initialize the dynamic primitive processor
             m_dynamicPrimitiveProcessor = AZStd::make_unique<DynamicPrimitiveProcessor>();
-            if (!m_dynamicPrimitiveProcessor->Initialize(*rhiSystem->GetDevice(), scene))
+            if (!m_dynamicPrimitiveProcessor->Initialize(scene))
             {
                 AZ_Error(s_featureProcessorName, false, "Failed to init AuxGeom DynamicPrimitiveProcessor");
                 return;
@@ -70,11 +65,6 @@ namespace AZ
         {
             DisableSceneNotification();
 
-            // release the per view data
-            for (auto& viewDD: m_viewDrawDataMap)
-            {
-                viewDD.second.m_dynPrimProc->Release();
-            }
             m_viewDrawDataMap.clear();
 
             m_dynamicPrimitiveProcessor->Release();
@@ -89,7 +79,7 @@ namespace AZ
 
         void AuxGeomFeatureProcessor::Render(const FeatureProcessor::RenderPacket& fpPacket)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "AuxGeomFeatureProcessor: Render");
+            AZ_ATOM_PROFILE_FUNCTION("AuxGeom", "AuxGeomFeatureProcessor: Render");
 
             // Get the scene data and switch buffers so that other threads can continue to queue requests
             AuxGeomBufferData* bufferData = static_cast<AuxGeomDrawQueue*>(m_sceneDrawQueue.get())->Commit();
@@ -111,12 +101,11 @@ namespace AZ
                     auto it = m_viewDrawDataMap.find(view.get());
                     if (it != m_viewDrawDataMap.end())
                     {
-                        bufferData = static_cast<AuxGeomDrawQueue*>(it->second.m_drawQueue.get())->Commit();
+                        bufferData = static_cast<AuxGeomDrawQueue*>(it->second.get())->Commit();
                         perViewRP.m_views.push_back(view);
 
                         // Process the dynamic primitives
-                        it->second.m_dynPrimProc->PrepareFrame();
-                        it->second.m_dynPrimProc->ProcessDynamicPrimitives(bufferData, perViewRP);
+                        m_dynamicPrimitiveProcessor->ProcessDynamicPrimitives(bufferData, perViewRP);
 
                         // Process the objects (draw requests using fixed shape buffers)
                         m_fixedShapeProcessor->ProcessObjects(bufferData, perViewRP);
@@ -134,7 +123,7 @@ namespace AZ
                 auto drawDataIterator = m_viewDrawDataMap.find(view);
                 if (drawDataIterator != m_viewDrawDataMap.end())
                 {
-                    return drawDataIterator->second.m_drawQueue;
+                    return drawDataIterator->second;
                 }
             }
             AZ_Warning("AuxGeomFeatureProcessor", false, "Draw Queue requested for unknown view");
@@ -151,23 +140,12 @@ namespace AZ
 
             if (drawQueueIterator == m_viewDrawDataMap.end())
             {
-                AZ::RPI::Scene* scene = GetParentScene();
-                RHI::RHISystemInterface* rhiSystem = RHI::RHISystemInterface::Get();
-
-                // initialize the dynamic primitive processor
-                ViewDrawData viewDD;
-                viewDD.m_dynPrimProc = AZStd::make_unique<DynamicPrimitiveProcessor>();
-                if (!viewDD.m_dynPrimProc->Initialize(*rhiSystem->GetDevice(), scene))
-                {
-                    AZ_Error(s_featureProcessorName, false, "Failed to init AuxGeom DynamicPrimitiveProcessor for view (%s)", view->GetName().GetCStr());
-                    return RPI::AuxGeomDrawPtr();
-                }
-                viewDD.m_drawQueue = RPI::AuxGeomDrawPtr(aznew AuxGeomDrawQueue());
-                m_viewDrawDataMap.emplace(view, AZStd::move(viewDD));
-                return m_viewDrawDataMap[view].m_drawQueue;
+                RPI::AuxGeomDrawPtr drawQueue = RPI::AuxGeomDrawPtr(aznew AuxGeomDrawQueue());
+                m_viewDrawDataMap.emplace(view, AZStd::move(drawQueue));
+                return m_viewDrawDataMap[view];
             }
 
-            return drawQueueIterator->second.m_drawQueue;
+            return drawQueueIterator->second;
         }
 
         void AuxGeomFeatureProcessor::ReleaseDrawQueueForView(const RPI::View* view)
@@ -178,12 +156,6 @@ namespace AZ
         void AuxGeomFeatureProcessor::OnSceneRenderPipelinesChanged()
         {
             m_dynamicPrimitiveProcessor->SetUpdatePipelineStates();
-
-            for (auto& viewDrawData : m_viewDrawDataMap)
-            {
-                viewDrawData.second.m_dynPrimProc->SetUpdatePipelineStates();
-            }
-
             m_fixedShapeProcessor->SetUpdatePipelineStates();
         }
 

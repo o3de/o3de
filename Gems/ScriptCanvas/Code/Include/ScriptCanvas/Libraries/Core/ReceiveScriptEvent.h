@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -47,7 +42,6 @@ namespace ScriptCanvas
                 ~ReceiveScriptEvent() override;
 
                 void OnActivate() override;
-                void OnPostActivate() override;
                 void OnDeactivate() override;
 
                 const AZ::Data::AssetId GetAssetId() const { return m_scriptEventAssetId; }
@@ -60,11 +54,11 @@ namespace ScriptCanvas
                 AZStd::optional<size_t> GetEventIndex(AZStd::string eventName) const override;
                 AZStd::vector<SlotId> GetEventSlotIds() const override;
                 AZStd::vector<SlotId> GetNonEventSlotIds() const override;
-                
+
                 bool IsIDRequired() const;
-                
+
                 bool IsEventSlotId(const SlotId& slotId) const;
-                                
+
                 // NodeVersioning...
                 bool IsOutOfDate(const VersionData& graphVersion) const override;
                 UpdateResult OnUpdateNode() override;
@@ -92,16 +86,9 @@ namespace ScriptCanvas
 
             private:
 
-                void Connect();
-                void Disconnect(bool queueDisconnect = true);
-                void CompleteDisconnection();
-
                 bool CreateEbus();
                 bool SetupHandler();
 
-                void OnInputSignal(const SlotId& slotId) override;
-                void OnInputChanged(const Datum& input, const SlotId& slotId) override;
-                
                 AZ::BehaviorEBusHandler* m_handler = nullptr;
                 AZ::BehaviorEBus* m_ebus = nullptr;
                 AZStd::recursive_mutex m_mutex; // post-serialization
@@ -109,9 +96,6 @@ namespace ScriptCanvas
                 bool IsConfigured() const { return !m_eventMap.empty(); }
 
                 void InitializeEvent(AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> asset, int eventIndex, SlotIdMapping& populationMapping);
-
-                static void OnEventGenericHook(void* userData, const char* eventName, int eventIndex, AZ::BehaviorValueParameter* result, int numParameters, AZ::BehaviorValueParameter* parameters);
-                void OnEvent(const char* eventName, const int eventIndex, AZ::BehaviorValueParameter* result, const int numParameters, AZ::BehaviorValueParameter* parameters);
 
                 bool IsEventConnected(const Internal::ScriptEventEntry& entry) const;
 
@@ -138,6 +122,6 @@ namespace ScriptCanvas
                 bool m_connected;
 
             };
-        } 
+        }
     }
 }

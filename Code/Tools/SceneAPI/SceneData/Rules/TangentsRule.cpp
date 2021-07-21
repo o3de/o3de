@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -147,7 +142,7 @@ namespace AZ
                     return;
                 }
 
-                serializeContext->Class<TangentsRule, DataTypes::IRule>()->Version(1)
+                serializeContext->Class<TangentsRule, DataTypes::IRule>()->Version(2)
                     ->Field("tangentSpace", &TangentsRule::m_tangentSpace)
                     ->Field("bitangentMethod", &TangentsRule::m_bitangentMethod)
                     ->Field("normalize", &TangentsRule::m_normalize)
@@ -161,7 +156,7 @@ namespace AZ
                         ->Attribute("AutoExpand", true)
                         ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
                         ->DataElement(AZ::Edit::UIHandlers::ComboBox, &AZ::SceneAPI::SceneData::TangentsRule::m_tangentSpace, "Tangent space", "Specify the tangent space used for normal map baking. Choose 'From Fbx' to extract the tangents and bitangents directly from the Fbx file. When there is no tangents rule or the Fbx has no tangents stored inside it, the 'MikkT' option will be used with orthogonal tangents of unit length, so with the normalize option enabled, using the first UV set.")
-                        ->EnumAttribute(AZ::SceneAPI::DataTypes::TangentSpace::FromFbx, "From Fbx")
+                        ->EnumAttribute(AZ::SceneAPI::DataTypes::TangentSpace::FromSourceScene, "From Source Scene")
                         ->EnumAttribute(AZ::SceneAPI::DataTypes::TangentSpace::MikkT, "MikkT")
                         ->EnumAttribute(AZ::SceneAPI::DataTypes::TangentSpace::EMotionFX, "EMotion FX")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Math/ToString.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -449,6 +444,43 @@ namespace UnitTest
 
         // ensure final world positions match
         EXPECT_TRUE(finalEntityTransform.IsClose(finalTransformWorld, 0.01f));
+    }
+
+    TEST_F(EditorTransformComponentSelectionManipulatorTestFixture, TranslatingEntityWithLinearManipulatorNotifiesOnEntityTransformChanged)
+    {
+        EditorEntityComponentChangeDetector editorEntityChangeDetector(m_entity1);
+
+        // the initial starting position of the entity (in front and to the left of the camera)
+        const auto initialTransformWorld = AZ::Transform::CreateTranslation(AZ::Vector3(-10.0f, 10.0f, 0.0f));
+        // where the entity should end up (in front and to the right of the camera)
+        const auto finalTransformWorld = AZ::Transform::CreateTranslation(AZ::Vector3(10.0f, 10.0f, 0.0f));
+
+        // calculate the position in screen space of the initial position of the entity
+        const auto initialPositionScreen = AzFramework::WorldToScreen(initialTransformWorld.GetTranslation(), m_cameraState);
+        // calculate the position in screen space of the final position of the entity
+        const auto finalPositionScreen = AzFramework::WorldToScreen(finalTransformWorld.GetTranslation(), m_cameraState);
+
+        // move the entity to its starting position
+        AzToolsFramework::SetWorldTransform(m_entity1, initialTransformWorld);
+        // select the entity (this will cause the manipulators to appear in EditorTransformComponentSelection)
+        AzToolsFramework::SelectEntity(m_entity1);
+
+        // create an offset along the linear manipulator pointing along the x-axis (perpendicular to the camera view)
+        const auto mouseOffsetOnManipulator = AzFramework::ScreenVector(10, 0);
+        // store the mouse down position on the manipulator
+        const auto mouseDownPosition = initialPositionScreen + mouseOffsetOnManipulator;
+        // final position in screen space of the mouse
+        const auto mouseMovePosition = finalPositionScreen + mouseOffsetOnManipulator;
+
+        m_actionDispatcher->CameraState(m_cameraState)
+            ->MousePosition(mouseDownPosition)
+            ->MouseLButtonDown()
+            ->MousePosition(mouseMovePosition)
+            ->MouseLButtonUp();
+
+        // verify a EditorTransformChangeNotificationBus::OnEntityTransformChanged occurred
+        using ::testing::UnorderedElementsAreArray;
+        EXPECT_THAT(editorEntityChangeDetector.m_entityIds, UnorderedElementsAreArray(m_entityIds));
     }
 
     // simple widget to listen for a mouse wheel event and then forward it on to the ViewportSelectionRequestBus

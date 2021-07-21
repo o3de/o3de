@@ -1,12 +1,7 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 
 Inside this module are 2 classes used for Windows directory & workspace mappings:
 1. _WindowsResourceLocator(AbstractResourceLocator) derived class.
@@ -103,4 +98,4 @@ class WindowsWorkspaceManager(AbstractWorkspaceManager):
     def clear_settings(self):
         logger.debug("Build::setup_clear_registry")
         if sys.platform == "win32":
-            ly_test_tools.environment.reg_cleaner.clean_ly_keys(exception_list=r"SOFTWARE\Amazon\Lumberyard\Identity")
+            ly_test_tools.environment.reg_cleaner.clean_ly_keys(exception_list=r"SOFTWARE\O3DE\O3DE\Identity")

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -65,12 +60,14 @@ namespace AZ
             //!
             //! @param rayStart  The starting point of the ray.
             //! @param rayDir  The direction and length of the ray (magnitude is encoded in the direction).
+            //! @param allowBruteForce  Allow for brute force queries while the mesh is baking (remove when ATOM-4343 is complete)
             //! @param[out] distanceNormalized  If an intersection is found, will be set to the normalized distance of the intersection
             //! (in the range 0.0-1.0) - to calculate the actual distance, multiply distanceNormalized by the magnitude of rayDir.
             //! @param[out] normal If an intersection is found, will be set to the normal at the point of collision.
             //! @return  True if the ray intersects the mesh.
             virtual bool LocalRayIntersectionAgainstModel(
-                const AZ::Vector3& rayStart, const AZ::Vector3& rayDir, float& distanceNormalized, AZ::Vector3& normal) const;
+                const AZ::Vector3& rayStart, const AZ::Vector3& rayDir, bool allowBruteForce,
+                float& distanceNormalized, AZ::Vector3& normal) const;
 
         private:
             void SetReady();
@@ -103,10 +100,14 @@ namespace AZ
             AZStd::size_t CalculateTriangleCount() const;
         };
 
-        class ModelAssetHandler : public AssetHandler<ModelAsset>
+        class ModelAssetHandler
+            : public AssetHandler<ModelAsset>
         {
         public:
             AZ_RTTI(ModelAssetHandler, "{993B8CE3-1BBF-4712-84A0-285DB9AE808F}", AssetHandler<ModelAsset>);
+
+            // AZ::AssetTypeInfoBus::Handler overrides
+            bool HasConflictingProducts(const AZStd::vector<AZ::Data::AssetType>& productAssetTypes) const override;
         };
     } //namespace RPI
 } // namespace AZ

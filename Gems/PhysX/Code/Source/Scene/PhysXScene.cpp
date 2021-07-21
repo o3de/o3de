@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates, or
-* a third party where indicated.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <PhysX_precompiled.h>
 
 #include <Scene/PhysXScene.h>
@@ -339,6 +334,8 @@ namespace PhysX
             {
                 const physx::PxTransform pose = PxMathConvert(shapecastRequest->m_start);
                 const physx::PxVec3 dir = PxMathConvert(shapecastRequest->m_direction.GetNormalized());
+                AZ_Warning("PhysXScene", (static_cast<AZ::u16>(shapecastRequest->m_hitFlags & AzPhysics::SceneQuery::HitFlags::MTD) != 0),
+                    "Not having MTD set for shape scene queries may result in incorrect reporting of colliders that are in contact or intersect the initial pose of the sweep.");
                 const physx::PxHitFlags hitFlags = SceneQueryHelpers::GetPxHitFlags(shapecastRequest->m_hitFlags);
 
                 bool status = false;

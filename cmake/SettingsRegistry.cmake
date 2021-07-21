@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 # Responsible for generating a settings registry file containing the moduleload dependencies of any ly_delayed_load_targets
@@ -164,12 +160,6 @@ function(ly_delayed_generate_settings_registry)
 
             get_property(has_manually_added_dependencies TARGET ${gem_target} PROPERTY MANUALLY_ADDED_DEPENDENCIES SET)
             get_target_property(target_type ${gem_target} TYPE)
-            if (target_type STREQUAL "INTERFACE_LIBRARY" AND has_manually_added_dependencies)
-                # don't use interface libraries here, we only want ones which produce actual binaries unless the target
-                # is empty. We have still already recursed into their dependencies - they'll show up later.
-                # When the target has no dependencies however we want to add the gem root path to the generated setreg
-                continue()
-            endif()
 
 
             ly_get_gem_module_root(gem_module_root ${gem_target})
@@ -188,7 +178,14 @@ function(ly_delayed_generate_settings_registry)
 
         list(JOIN target_gem_dependencies_names ",\n" target_gem_dependencies_names)
         string(CONFIGURE ${gems_json_template} gem_json @ONLY)
-        if(prefix)
+        get_target_property(is_imported ${target} IMPORTED)
+        if(is_imported)
+            unset(target_dir)
+            foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
+                string(TOUPPER ${conf} UCONF)
+                string(APPEND target_dir $<$<CONFIG:${conf}>:${CMAKE_RUNTIME_OUTPUT_DIRECTORY_${UCONF}}>)
+            endforeach()
+        elseif(prefix)
             set(target_dir $<TARGET_FILE_DIR:${prefix}>)
         else()
             set(target_dir $<TARGET_FILE_DIR:${target}>)

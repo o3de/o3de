@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -85,6 +80,8 @@ namespace AZ
             virtual void SetFilteringSampleCount(uint32_t count) = 0;
             //! Sets the Pcf (Percentage closer filtering) method to use.
             virtual void SetPcfMethod(PcfMethod method) = 0;
+            //! Sets the Esm exponent to use. Higher values produce a steeper falloff between light and shadow.
+            virtual void SetEsmExponent(float exponent) = 0;
         };
     } //  namespace Render
 } // namespace AZ

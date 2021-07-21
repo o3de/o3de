@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "ExecutionInterpretedAPI.h"
 
@@ -181,7 +176,7 @@ namespace ExecutionInterpretedAPICpp
             // Lua: 
             AZStd::pair<void*, AZ::BehaviorContext*> multipleResults = ScriptCanvas::BehaviorContextUtils::ConstructTupleGetContext(typeId);
             AZ_Assert(multipleResults.first, "failure to construct a tuple by typeid from behavior context");
-            AZ::BehaviorValueParameter parameter; 
+            AZ::BehaviorValueParameter parameter;
             parameter.m_value = multipleResults.first;
             parameter.m_typeId = typeId;
             AZ::StackPush(lua, multipleResults.second, parameter);
@@ -258,7 +253,7 @@ namespace ScriptCanvas
                 break;
             }
         }
-                
+
         void SetInterpretedExecutionModeDebug()
         {
             AZ::ScriptContext* scriptContext{};
@@ -319,7 +314,7 @@ namespace ScriptCanvas
         {
             using namespace ExecutionInterpretedAPICpp;
             static_assert(sizeof(AZ::Uuid) == k_UuidSize, "size of uuid has changed");
-            
+
             AZStd::string fastString;
             fastString.resize(k_StringFastSize);
             char* fastDigit = fastString.begin();
@@ -343,7 +338,7 @@ namespace ScriptCanvas
             AZ_Assert(string, "string argument must not be null");
             AZ_Assert(strlen(string) == k_StringFastSize, "invalid length of string, fast format must be: 0123456789ABCDEF0123456789ABCDEF");
             const char* current = string;
-            
+
             AZ::Uuid id;
             auto data = id.begin();
             auto sentinel = id.end();
@@ -363,8 +358,7 @@ namespace ScriptCanvas
                 ++current;
 
                 *data = (value0 << 4) | value1;
-            } 
-            while ((++data) != sentinel);
+            }             while ((++data) != sentinel);
 
             return id;
         }
@@ -375,7 +369,6 @@ namespace ScriptCanvas
 
             /**
             Here is the function in Lua for easier reading
-
             function OverrideNodeableMetatable(userdata, class_mt)
                 local proxy = setmetatable({}, class_mt) -- class_mt from the user graph definition
                 local instance_mt = {
@@ -393,18 +386,16 @@ namespace ScriptCanvas
                 --]]
                 return setmetatable(userdata instance_mt) -- can't be done from Lua
             end
-
             --[[
             userdata to Nodeable before:
             getmetatable(userdata).__index == Nodeable
-            
+
             userdata to Nodeable after:
             local override_mt = getmetatable(userdata)
             local proxy = override_mt.__index
             local SubGraph = getmetatable(proxy).__index
             getmetatable(SubGraph.__index) == Nodeable)
             --]]
-
             */
 
             // \note: all other metamethods ignored for now
@@ -509,7 +500,7 @@ namespace ScriptCanvas
             AZ_Assert(argsCount >= 2, "CallExecutionOut: Error in compiled Lua file, not enough arguments");
             AZ_Assert(lua_isuserdata(lua, 1), "CallExecutionOut: Error in compiled lua file, 1st argument to SetExecutionOut is not userdata (Nodeable)");
             AZ_Assert(lua_isnumber(lua, 2), "CallExecutionOut: Error in compiled lua file, 2nd argument to SetExecutionOut is not a number");
-            Nodeable* nodeable = AZ::ScriptValue<Nodeable*>::StackRead(lua, 1); 
+            Nodeable* nodeable = AZ::ScriptValue<Nodeable*>::StackRead(lua, 1);
             size_t index = aznumeric_caster(lua_tointeger(lua, 2));
             nodeable->CallOut(index, nullptr, nullptr, argsCount - 2);
             // Lua: results...
@@ -573,7 +564,7 @@ namespace ScriptCanvas
         {
             const int handlerIndex = lua_gettop(lua) - argCount;
             lua_pushcfunction(lua, &ExecutionInterpretedAPICpp::ErrorHandler);
-            lua_insert(lua, handlerIndex); 
+            lua_insert(lua, handlerIndex);
             int result = lua_pcall(lua, argCount, returnValueCount, handlerIndex);
             lua_remove(lua, handlerIndex);
             return result;
@@ -586,7 +577,7 @@ namespace ScriptCanvas
 
             AZ_Assert(lua_isuserdata(lua, -3), "Error in compiled lua file, 1st argument to SetExecutionOut is not userdata (Nodeable)");
             AZ_Assert(lua_isnumber(lua, -2), "Error in compiled lua file, 2nd argument to SetExecutionOut is not a number");
-            AZ_Assert(lua_isfunction(lua, -1), "Error in compiled lua file, 3rd argument to SetExecutionOut is not a function (lambda need to get around atypically routed arguments)"); 
+            AZ_Assert(lua_isfunction(lua, -1), "Error in compiled lua file, 3rd argument to SetExecutionOut is not a function (lambda need to get around atypically routed arguments)");
             Nodeable* nodeable = AZ::ScriptValue<Nodeable*>::StackRead(lua, -3);
             AZ_Assert(nodeable, "Failed to read nodeable");
             size_t index = aznumeric_caster(lua_tointeger(lua, -2));
@@ -685,9 +676,9 @@ namespace ScriptCanvas
         struct DependencyConstructionPack
         {
             ExecutionStateInterpreted* executionState;
-            AZStd::vector<AZ::Data::Asset<RuntimeAsset>>* dependentAssets;
-            const size_t dependentAssetsIndex;
-            RuntimeData& runtimeData;
+            AZStd::vector<RuntimeDataOverrides>* dependencies;
+            const size_t dependenciesIndex;
+            RuntimeDataOverrides& runtimeOverrides;
         };
 
         DependencyConstructionPack UnpackDependencyConstructionArgsSanitize(lua_State* lua)
@@ -695,27 +686,26 @@ namespace ScriptCanvas
             auto executionState = AZ::ScriptValue<ExecutionStateInterpreted*>::StackRead(lua, 1);
             AZ_Assert(executionState, "Error in compiled lua file, 1st argument to UnpackDependencyArgs is not an ExecutionStateInterpreted");
             AZ_Assert(lua_islightuserdata(lua, 2), "Error in compiled lua file, 2nd argument to UnpackDependencyArgs is not userdata (AZStd::vector<AZ::Data::Asset<RuntimeAsset>>*), but a :%s", lua_typename(lua, 2));
-            auto dependentAssets = reinterpret_cast<AZStd::vector<AZ::Data::Asset<RuntimeAsset>>*>(lua_touserdata(lua, 2));
+            auto dependentOverrides = reinterpret_cast<AZStd::vector<RuntimeDataOverrides>*>(lua_touserdata(lua, 2));
             AZ_Assert(lua_isinteger(lua, 3), "Error in compiled Lua file, 3rd argument to UnpackDependencyArgs is not a number");
-            const size_t dependentAssetsIndex = aznumeric_caster(lua_tointeger(lua, 3));
-
-            return DependencyConstructionPack{ executionState, dependentAssets, dependentAssetsIndex, (*dependentAssets)[dependentAssetsIndex].Get()->m_runtimeData };
+            const size_t dependencyIndex = aznumeric_caster(lua_tointeger(lua, 3));
+            return DependencyConstructionPack{ executionState, dependentOverrides, dependencyIndex, (*dependentOverrides)[dependencyIndex] };
         }
 
         int Unpack(lua_State* lua, DependencyConstructionPack& args)
         {
             ActivationInputArray storage;
-            ActivationData data(args.executionState->GetEntityId(), args.executionState->GetVariableOverrides(), args.runtimeData, storage);
-            ActivationInputRange range = Execution::Context::CreateActivateInputRange(data);
+            ActivationData data(args.runtimeOverrides, storage);
+            ActivationInputRange range = Execution::Context::CreateActivateInputRange(data, args.executionState->GetEntityId());
             PushActivationArgs(lua, range.inputs, range.totalCount);
             return range.totalCount;
         }
 
         int UnpackDependencyConstructionArgs(lua_State* lua)
         {
-            // Lua: executionState, dependentAssets, dependentAssetsIndex
+            // Lua: executionState, dependent overrides, index into dependent overrides
             DependencyConstructionPack pack = UnpackDependencyConstructionArgsSanitize(lua);
-            lua_pushlightuserdata(lua, const_cast<void*>(reinterpret_cast<const void*>(&pack.runtimeData.m_requiredAssets)));
+            lua_pushlightuserdata(lua, const_cast<void*>(reinterpret_cast<const void*>(&pack.runtimeOverrides.m_dependencies)));
             return 1 + Unpack(lua, pack);
         }
 
@@ -725,6 +715,5 @@ namespace ScriptCanvas
             DependencyConstructionPack constructionArgs = UnpackDependencyConstructionArgsSanitize(lua);
             return Unpack(lua, constructionArgs);
         }
-    } 
-
-} 
+    }
+}

@@ -1,18 +1,12 @@
 {
     "gem_name": "AWSCore",
-    "GemFormatVersion": 4,
-    "Uuid": "c3710872891c4401b0cbdabfca066cb5",
-    "Name": "AWSCore",
-    "DisplayName": "AWS Core",
-    "Version": "0.1.0",
-    "LinkType": "Dynamic",
-    "Summary": "This Gem is automatically enabled when selecting any of the AWS Feature Gems. It provides basic shared functionalities such as AWS SDK initialization and client configuration.",
-    "Tags": [
-        "AWS",
-        "API",
-        "AWSCore",
-        "Cloud",
-        "Connected"
-    ],
-    "IconPath": "preview.png"
+    "display_name": "AWS Core",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Amazon Web Services, Inc.",
+    "type": "Code",
+    "summary": "The AWS Core Gem provides basic shared AWS functionality such as AWS SDK initialization and client configuration, and is automatically added when selecting any AWS feature Gem.",
+    "canonical_tags": ["Gem"],
+    "user_tags": ["AWS", "Network", "SDK"],
+    "icon_path": "preview.png",
+    "requirements": ""
 }

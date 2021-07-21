@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "precompiled.h"
 
@@ -52,8 +47,6 @@
 #include <AzFramework/IO/FileOperations.h>
 #include <AzCore/Serialization/Utils.h>
 
-#include <ScriptCanvas/Asset/Functions/ScriptCanvasFunctionAsset.h>
-
 namespace ScriptCanvasEditor
 {
     static const size_t cs_jobThreads = 1;
@@ -66,6 +59,7 @@ namespace ScriptCanvasEditor
     SystemComponent::~SystemComponent()
     {
         AzToolsFramework::UnregisterViewPane(LyViewPane::ScriptCanvas);
+        AzToolsFramework::EditorContextMenuBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
         AzToolsFramework::AssetSeedManagerRequests::Bus::Handler::BusDisconnect();
@@ -119,6 +113,7 @@ namespace ScriptCanvasEditor
     void SystemComponent::Init()
     {
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
+        AzToolsFramework::EditorContextMenuBus::Handler::BusConnect();
     }
 
     void SystemComponent::Activate()
@@ -165,6 +160,8 @@ namespace ScriptCanvasEditor
         options.canHaveMultipleInstances = false;
         options.isPreview = true;
         options.showInMenu = true;
+        options.showOnToolsToolbar = true;
+        options.toolbarIcon = ":/Menu/script_canvas_editor.svg";
 
         AzToolsFramework::RegisterViewPane<ScriptCanvasEditor::MainWindow>(LyViewPane::ScriptCanvas, LyViewPane::CategoryTools, options);
     }
@@ -333,12 +330,6 @@ namespace ScriptCanvasEditor
             isScriptCanvasAsset = true;
         }
 
-        ScriptCanvasFunctionDescription scriptCanvasFunctionAssetDescription;
-        if (!isScriptCanvasAsset && AZStd::wildcard_match(AZStd::string::format("*%s", scriptCanvasFunctionAssetDescription.GetExtensionImpl()).c_str(), fullSourceFileName))
-        {
-            isScriptCanvasAsset = true;
-        }
-
         if (isScriptCanvasAsset)
         {
             auto scriptCanvasEditorCallback = [this]([[maybe_unused]] const char* fullSourceFileNameInCall, const AZ::Uuid& sourceUUIDInCall)
@@ -413,7 +404,7 @@ namespace ScriptCanvasEditor
             nullptr,
             [this](const AZ::Data::AssetId, const AZ::Data::AssetInfo& assetInfo) {
 
-                if (assetInfo.m_assetType == azrtti_typeid<ScriptCanvasAsset>() || assetInfo.m_assetType == azrtti_typeid<ScriptCanvasFunctionAsset>())
+                if (assetInfo.m_assetType == azrtti_typeid<ScriptCanvasAsset>())
                 {
                     AddAssetToUpgrade(assetInfo);
                 }
@@ -457,11 +448,7 @@ namespace ScriptCanvasEditor
 
         if (query == m_assetsToConvert.end())
         {
-            if (assetInfo.m_assetType == azrtti_typeid<ScriptCanvasFunctionAsset>())
-            {
-                m_assetsToConvert.push_front(assetInfo);
-            }
-            else if (assetInfo.m_assetType == azrtti_typeid<ScriptCanvasAsset>())
+            if (assetInfo.m_assetType == azrtti_typeid<ScriptCanvasAsset>())
             {
                 m_assetsToConvert.push_back(assetInfo);
             }

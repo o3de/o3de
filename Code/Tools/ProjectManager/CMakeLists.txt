@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
@@ -20,12 +16,11 @@ if (NOT python_package_name)
     message(WARNING "Python was not found in the package assocation list.  Did someone call ly_associate_package(xxxxxxx Python) ?")
 endif()
 
+
 ly_add_target(
-    NAME ProjectManager APPLICATION
-    OUTPUT_NAME o3de
+    NAME ProjectManager.Static STATIC
     NAMESPACE AZ
     AUTOMOC
-    AUTORCC
     FILES_CMAKE
         project_manager_files.cmake
         Platform/${PAL_PLATFORM_NAME}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
@@ -47,6 +42,60 @@ ly_add_target(
             3rdParty::pybind11
             AZ::AzCore
             AZ::AzFramework
-            AZ::AzToolsFramework
             AZ::AzQtComponents
 )
+
+ly_add_target(
+    NAME ProjectManager APPLICATION
+    OUTPUT_NAME o3de
+    NAMESPACE AZ
+    AUTORCC
+    FILES_CMAKE
+        project_manager_app_files.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            Source
+    BUILD_DEPENDENCIES
+        PRIVATE
+            3rdParty::Qt::Core
+            3rdParty::Qt::Concurrent
+            3rdParty::Qt::Widgets
+            3rdParty::Python
+            3rdParty::pybind11
+            AZ::AzCore
+            AZ::AzFramework
+            AZ::AzQtComponents
+            AZ::ProjectManager.Static
+)
+
+if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+    ly_add_target(
+        NAME ProjectManager.Tests EXECUTABLE
+        NAMESPACE AZ
+        AUTORCC
+        FILES_CMAKE
+            project_manager_tests_files.cmake
+            Platform/${PAL_PLATFORM_NAME}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}_tests_files.cmake
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                Source
+                Platform/${PAL_PLATFORM_NAME}
+        BUILD_DEPENDENCIES
+            PRIVATE
+                3rdParty::Qt::Core
+                3rdParty::Qt::Concurrent
+                3rdParty::Qt::Widgets
+                3rdParty::Python
+                3rdParty::pybind11
+                AZ::AzTest
+                AZ::AzFramework
+                AZ::AzFrameworkTestShared
+                AZ::ProjectManager.Static
+    )
+
+    ly_add_googletest(
+        NAME AZ::ProjectManager.Tests
+        TEST_COMMAND $<TARGET_FILE:AZ::ProjectManager.Tests> --unittest
+    )
+
+endif()

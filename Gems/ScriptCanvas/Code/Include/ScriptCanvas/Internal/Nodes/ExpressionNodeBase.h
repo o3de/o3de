@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <AzCore/std/containers/map.h>
@@ -42,8 +37,6 @@ namespace ScriptCanvas
                 AZStd::string GetRawFormat() const;
 
                 const AZStd::unordered_map<AZStd::string, SlotId>& GetSlotsByName() const;
-
-                
                                 
             protected:
 
@@ -58,10 +51,6 @@ namespace ScriptCanvas
                 void OnInit() override;  
                 void OnPostActivate() override;
                 void ConfigureVisualExtensions() override;
-
-                void OnInputSignal(const SlotId& slotId) override;
-                void OnInputChanged(const Datum& input, const SlotId& slotId) override;
-
                 bool CanDeleteSlot(const SlotId& slotId) const override;
 
                 SlotId HandleExtension(AZ::Crc32 extensionId) override;
@@ -85,14 +74,11 @@ namespace ScriptCanvas
                 AZ::Crc32 GetPropertyId() const { return AZ_CRC("FormatStringProperty", 0x2c587efa); }
                 
             protected:
-            
-                virtual void OnResult(const ExpressionEvaluation::ExpressionResult& result);
                 virtual ExpressionEvaluation::ParseOutcome ParseExpression(const AZStd::string& formatString);
 
                 virtual AZStd::string GetExpressionSeparator() const;
 
             private:
-
                 void PushVariable(const AZStd::string& variableName, const Datum& datum);
 
                 // NodePropertyInterface...
@@ -115,7 +101,6 @@ namespace ScriptCanvas
                 bool m_isInError = false;
 
                 AZStd::unordered_map<SlotId, AZStd::string> m_slotToVariableMap;
-                AZStd::unordered_set<SlotId> m_dirtyInputs;
                 AZStd::unordered_map<AZStd::string, SlotId> m_slotsByVariables;
 
                 ExpressionEvaluation::ParsingError m_parseError;

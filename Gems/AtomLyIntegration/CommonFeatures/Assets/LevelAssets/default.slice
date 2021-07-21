@@ -960,7 +960,7 @@
 													<Class name="AZ::u64" field="id" value="4294967295" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 												</Class>
 												<Class name="float" field="ShadowFarClipDistance" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-												<Class name="Render::ShadowmapSize" field="ShadowmapSize" value="2048" type="{3EC1CE83-483D-41FD-9909-D22B03E56F4E}"/>
+												<Class name="Render::ShadowmapSize" field="ShadowmapSize" value="1024" type="{3EC1CE83-483D-41FD-9909-D22B03E56F4E}"/>
 												<Class name="unsigned int" field="CascadeCount" value="4" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 												<Class name="bool" field="SplitAutomatic" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 												<Class name="float" field="SplitRatio" value="0.9000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
@@ -968,10 +968,11 @@
 												<Class name="float" field="GroundHeight" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 												<Class name="bool" field="IsCascadeCorrectionEnabled" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 												<Class name="bool" field="IsDebugColoringEnabled" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-												<Class name="unsigned int" field="ShadowFilterMethod" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+												<Class name="unsigned int" field="ShadowFilterMethod" value="1" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 												<Class name="float" field="SofteningBoundaryWidth" value="0.0300000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 												<Class name="unsigned short" field="PcfPredictionSampleCount" value="4" type="{ECA0B403-C4F8-4B86-95FC-81688D046E40}"/>
 												<Class name="unsigned short" field="PcfFilteringSampleCount" value="32" type="{ECA0B403-C4F8-4B86-95FC-81688D046E40}"/>
+												<Class name="unsigned short" field="Pcf Method" value="1" type="{ECA0B403-C4F8-4B86-95FC-81688D046E40}"/>
 											</Class>
 										</Class>
 									</Class>
@@ -1109,4 +1110,3 @@
 		<Class name="bool" field="IsRuntimeActive" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 	</Class>
 </ObjectStream>
-

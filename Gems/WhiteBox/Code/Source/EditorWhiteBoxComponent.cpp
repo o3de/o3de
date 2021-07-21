@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -202,7 +197,7 @@ namespace WhiteBox
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/WhiteBox.png")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->Attribute(
-                        AZ::Edit::Attributes::HelpPageURL, "http://docs.aws.amazon.com/console/lumberyard/whitebox")
+                        AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/white-box/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
                         AZ::Edit::UIHandlers::ComboBox, &EditorWhiteBoxComponent::m_defaultShape, "Default Shape",
@@ -257,17 +252,18 @@ namespace WhiteBox
 
     void EditorWhiteBoxComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+        required.push_back(AZ_CRC_CE("TransformService"));
     }
 
     void EditorWhiteBoxComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("WhiteBoxService", 0x2f2f42b8));
+        provided.push_back(AZ_CRC_CE("WhiteBoxService"));
     }
 
     void EditorWhiteBoxComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
         incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
+        incompatible.push_back(AZ_CRC_CE("MeshService"));
     }
 
     EditorWhiteBoxComponent::EditorWhiteBoxComponent() = default;

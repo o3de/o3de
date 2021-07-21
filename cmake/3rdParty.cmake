@@ -1,18 +1,31 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 # Do not overcomplicate searching for the 3rdParty path, if it is not easy to find,
 # the user should define it.
 
-set(LY_3RDPARTY_PATH "" CACHE PATH "Path to the 3rdParty folder")
+#! get_default_third_party_folder: Stores the default 3rdParty directory into the supplied output variable
+#
+# \arg:output_third_party_path name of variable to set the default project directory into
+# It defaults to the ~/.o3de/3rdParty directory
+function(get_default_third_party_folder output_third_party_path)
+    cmake_path(SET home_directory "$ENV{USERPROFILE}") # Windows
+    if(NOT EXISTS ${home_directory})
+        cmake_path(SET home_directory "$ENV{HOME}") # Unix
+        if (NOT EXISTS ${home_directory})
+            return()
+        endif()
+    endif()
+
+    set(${output_third_party_path} ${home_directory}/.o3de/3rdParty PARENT_SCOPE)
+endfunction()
+
+get_default_third_party_folder(o3de_default_third_party_path)
+set(LY_3RDPARTY_PATH "${o3de_default_third_party_path}" CACHE PATH "Path to the 3rdParty folder")
 
 if(LY_3RDPARTY_PATH)
     file(TO_CMAKE_PATH ${LY_3RDPARTY_PATH} LY_3RDPARTY_PATH)

@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -160,7 +155,7 @@ namespace ImGui
             ImGui::SetCursorPosX(40.f);
 
             // Main Open 3D Engine menu
-            if (ImGui::BeginMenu("Open 3D Engine"))
+            if (ImGui::BeginMenu("O3DE"))
             {
                 // Asset Explorer
                 if (ImGui::MenuItem("Asset Explorer"))
@@ -576,7 +571,26 @@ namespace ImGui
                 // End LY Common Tools menu
                 ImGui::EndMenu();
             }
+            const int labelSize{ 100 };
+            const int buttonSize{ 40 };
             ImGuiUpdateListenerBus::Broadcast(&IImGuiUpdateListener::OnImGuiMainMenuUpdate);
+            ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - labelSize);
+            float backgroundHeight = ImGui::GetTextLineHeight() + 3;
+            ImVec2 cursorPos = ImGui::GetCursorScreenPos();
+            ImGui::GetWindowDrawList()->AddRectFilled(
+                cursorPos, ImVec2(cursorPos.x + labelSize, cursorPos.y + backgroundHeight), IM_COL32(0, 115, 187, 255));
+            ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - labelSize);
+            ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 1);
+            ImGui::Text("ImGui:ON");
+            ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - buttonSize);
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 0, 0, 255));
+            ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(255, 255, 255, 255));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(128, 128, 128, 255));
+            if (ImGui::SmallButton("home"))
+            {
+                ImGuiManagerBus::Broadcast(&IImGuiManager::ToggleThroughImGuiVisibleState);
+            }
+            ImGui::PopStyleColor(3);
             ImGui::EndMainMenuBar();
         }
 
@@ -693,7 +707,7 @@ namespace ImGui
         ImGui::TextColored(ImGui::Colors::s_PlainLabelColor, "Left Stick");
         ImGui::NextColumn();
         ImGui::Bullet();
-        ImGui::TextColored(ImGui::Colors::s_PlainLabelColor, "Mova Mouse Pointer");
+        ImGui::TextColored(ImGui::Colors::s_PlainLabelColor, "Move Mouse Pointer");
         ImGui::Separator();
         ImGui::NextColumn();
 

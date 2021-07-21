@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "Method.h"
 
@@ -30,6 +25,7 @@ namespace MethodCPP
         Unnamed2,
         PluralizeResults,
         AddedPrettyNameFieldToSerialization,
+        StoreInputSlotIdsToSupportNullCheck,
         // add your version above
         Current,
     };
@@ -91,11 +87,6 @@ namespace ScriptCanvas
 
     AZ::Outcome<void, AZStd::string> IsExposable(const AZ::BehaviorMethod& method)
     {
-        if (method.GetNumArguments() > BehaviorContextMethodHelper::MaxCount)
-        {
-            return AZ::Failure(AZStd::string("Too many arguments for a Script Canvas method"));
-        }
-
         for (size_t argIndex(0), sentinel(method.GetNumArguments()); argIndex != sentinel; ++argIndex)
         {
             if (const AZ::BehaviorParameter* argument = method.GetArgument(argIndex))
@@ -120,6 +111,37 @@ namespace ScriptCanvas
     {
         namespace Core
         {
+            bool Method::CanAcceptNullInput([[maybe_unused]] const Slot& executionSlot, const Slot& inputSlot) const
+            {
+                if (m_method)
+                {
+                    auto candidateID = inputSlot.GetId();
+                    auto slotIter = AZStd::find(m_inputSlots.begin(), m_inputSlots.end(), candidateID);
+
+                    if (slotIter != m_inputSlots.end())
+                    {
+                        const size_t index = slotIter - m_inputSlots.begin();
+                        if (index < m_method->GetNumArguments())
+                        {
+                            const auto* argument = m_method->GetArgument(index);
+                            if (argument->m_traits & (AZ::BehaviorParameter::TR_REFERENCE | AZ::BehaviorParameter::TR_THIS_PTR))
+                            {
+                                // references and this pointers cannot accept null input
+                                return false;
+                            }
+
+                            if (!(argument->m_traits & AZ::BehaviorParameter::TR_POINTER))
+                            {
+                                // values cannot accept null input
+                                return false;
+                            }
+                        }
+                    }
+                }                    
+
+                return true;
+            }
+
             const AZ::BehaviorClass* Method::GetClass() const
             {
                 return m_class;
@@ -131,7 +153,7 @@ namespace ScriptCanvas
                 {
                     return AZ::Failure();
                 }
-                
+
                 DependencyReport dependencyNames;
                 for (size_t index(0), sentinel = m_method->GetNumArguments(); index < sentinel; ++index)
                 {
@@ -141,7 +163,7 @@ namespace ScriptCanvas
 
                 return AZ::Success(dependencyNames);
             }
-            
+
             AZ::Outcome<Grammar::LexicalScope, void> Method::GetFunctionCallLexicalScope(const Slot* /*slot*/) const
             {
                 if (m_method)
@@ -149,7 +171,7 @@ namespace ScriptCanvas
                     Grammar::LexicalScope lexicalScope;
 
                     if (m_method->IsMember()
-                    || AZ::FindAttribute(AZ::Script::Attributes::TreatAsMemberFunction, m_method->m_attributes))
+                        || AZ::FindAttribute(AZ::Script::Attributes::TreatAsMemberFunction, m_method->m_attributes))
                     {
                         lexicalScope.m_type = Grammar::LexicalScopeType::Variable;
                     }
@@ -170,7 +192,7 @@ namespace ScriptCanvas
                 if (m_method)
                 {
                     if (m_method->IsMember()
-                    || AZ::FindAttribute(AZ::Script::Attributes::TreatAsMemberFunction, m_method->m_attributes))
+                        || AZ::FindAttribute(AZ::Script::Attributes::TreatAsMemberFunction, m_method->m_attributes))
                     {
                         auto name = BehaviorContextUtils::FindExposedMethodName(*m_method, m_class);
                         if (!name.empty())
@@ -182,7 +204,7 @@ namespace ScriptCanvas
 
                 return AZ::Success(m_lookupName);
             }
-                
+
             EventType Method::GetFunctionEventType(const Slot*) const
             {
                 return m_eventType;
@@ -216,7 +238,7 @@ namespace ScriptCanvas
                 m_lookupName = config.m_lookupName ? AZStd::string(*config.m_lookupName) : config.m_method.m_name;
                 m_methodType = config.m_methodType;
                 m_eventType = config.m_eventType;
-                
+
                 auto isExposableOutcome = IsExposable(config.m_method);
                 AZ_Warning("ScriptCanvas", isExposableOutcome.IsSuccess(), "BehaviorContext Method %s is no longer exposable to ScriptCanvas: %s", isExposableOutcome.GetError().data());
                 ConfigureMethod(config.m_method, config.m_class);
@@ -242,6 +264,11 @@ namespace ScriptCanvas
                     if (addedSlot.IsValid())
                     {
                         MethodHelper::SetSlotToDefaultValue(*this, addedSlot, config, argIndex);
+                        m_inputSlots.push_back(addedSlot);
+                    }
+                    else
+                    {
+                        AZ_Warning("ScriptCanvas", false, "Failed to add method input slot to Method node: %s-%s", config.m_prettyClassName.c_str(), config.m_method.m_name.c_str());
                     }
                 }
             }
@@ -332,7 +359,7 @@ namespace ScriptCanvas
                 }
             }
 
-            void Method::InitializeEvent(const NamespacePath&, AZStd::string_view ebusName,  AZStd::string_view eventName)
+            void Method::InitializeEvent(const NamespacePath&, AZStd::string_view ebusName, AZStd::string_view eventName)
             {
                 AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
 
@@ -530,8 +557,8 @@ namespace ScriptCanvas
                 if (m_method && m_method->HasResult())
                 {
                     if (branchOnResultMethod.GetNumArguments() == 1
-                        && branchOnResultMethod.HasResult()
-                        && Data::FromAZType(branchOnResultMethod.GetResult()->m_typeId) == Data::Type::Boolean())
+                    && branchOnResultMethod.HasResult()
+                    && Data::FromAZType(branchOnResultMethod.GetResult()->m_typeId) == Data::Type::Boolean())
                     {
                         AZ::Uuid methodResultType = m_method->GetResult()->m_typeId;
                         AZ::Uuid branchOnResultMethodArgType = branchOnResultMethod.GetArgument(0)->m_typeId;
@@ -708,7 +735,7 @@ namespace ScriptCanvas
                     return TupleType{ method, m_methodType, eventType, bcClass };
                 }
 
-                return TupleType{ nullptr, MethodType::Count, EventType::Count, nullptr};
+                return TupleType{ nullptr, MethodType::Count, EventType::Count, nullptr };
             }
 
             void Method::OnWriteEnd()
@@ -807,6 +834,7 @@ namespace ScriptCanvas
                         ->Field("className", &Method::m_className)
                         ->Field("namespaces", &Method::m_namespaces)
                         ->Field("resultSlotIDs", &Method::m_resultSlotIDs)
+                        ->Field("inputSlots", &Method::m_inputSlots)
                         ->Field("prettyClassName", &Method::m_classNamePretty)
                         ;
 
@@ -814,13 +842,13 @@ namespace ScriptCanvas
                     {
                         editContext->Class<Method>("Method", "Method")
                             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                                ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+                            ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                            ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                             ;
                     }
                 }
             }
 
-        } 
-    } 
-} 
+        }
+    }
+}

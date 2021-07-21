@@ -1,24 +1,19 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <Editor/Attribution/AWSCoreAttributionManager.h>
 #include <Editor/Attribution/AWSCoreAttributionMetric.h>
+#include <Credential/AWSCredentialBus.h>
 
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/base.h>
 #include <AzCore/Settings/SettingsRegistry.h>
-#include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
@@ -32,6 +27,8 @@
 #include <AzCore/Module/ModuleManagerBus.h>
 
 #include <TestFramework/AWSCoreFixture.h>
+#include <QSysInfo>
+#include <QString>
 
 
 using namespace AWSCore;
@@ -105,6 +102,30 @@ namespace AWSAttributionUnitTest
         MOCK_METHOD1(IsModuleLoaded, bool(const char* modulePath));
     };
 
+    class AWSCredentialRquestsBusMock
+        : public AWSCore::AWSCredentialRequestBus::Handler
+    {
+    public:
+        AWSCredentialRquestsBusMock()
+        {
+            m_provider = std::make_shared<Aws::Auth::SimpleAWSCredentialsProvider>("TestAccessKey", "TestSecreKey", "TestSession");
+            AWSCore::AWSCredentialRequestBus::Handler::BusConnect();
+            ON_CALL(*this, GetCredentialsProvider()).WillByDefault(testing::Return(m_provider));
+            ON_CALL(*this, GetCredentialHandlerOrder()).WillByDefault(testing::Return(CredentialHandlerOrder::DEFAULT_CREDENTIAL_HANDLER));
+        }
+
+        ~AWSCredentialRquestsBusMock()
+        {
+            AWSCore::AWSCredentialRequestBus::Handler::BusDisconnect();
+            m_provider.reset();
+        }
+
+        MOCK_CONST_METHOD0(GetCredentialHandlerOrder, int());
+        MOCK_METHOD0(GetCredentialsProvider, std::shared_ptr<Aws::Auth::AWSCredentialsProvider>());
+
+        std::shared_ptr<Aws::Auth::AWSCredentialsProvider> m_provider;
+    };
+
     class AWSAttributionManagerMock
         : public AWSAttributionManager
     {
@@ -112,7 +133,7 @@ namespace AWSAttributionUnitTest
         using AWSAttributionManager::SubmitMetric;
         using AWSAttributionManager::UpdateMetric;
         using AWSAttributionManager::SetApiEndpointAndRegion;
-
+        using AWSAttributionManager::ShowConsentDialog;
 
         AWSAttributionManagerMock()
         {
@@ -120,6 +141,7 @@ namespace AWSAttributionUnitTest
         }
 
         MOCK_METHOD1(SubmitMetric, void(AttributionMetric& metric));
+        MOCK_METHOD0(ShowConsentDialog, void());
 
         void SubmitMetricMock(AttributionMetric& metric)
         {
@@ -138,12 +160,12 @@ namespace AWSAttributionUnitTest
     protected:
         AZStd::shared_ptr<AZ::SerializeContext> m_serializeContext;
         AZStd::unique_ptr<AZ::JsonRegistrationContext> m_registrationContext;
-        AZStd::shared_ptr<AZ::SettingsRegistryImpl> m_settingsRegistry;
         AZStd::unique_ptr<AZ::JobContext> m_jobContext;
         AZStd::unique_ptr<AZ::JobCancelGroup> m_jobCancelGroup;
         AZStd::unique_ptr<AZ::JobManager> m_jobManager;
         AZStd::array<char, AZ::IO::MaxPathLength> m_resolvedSettingsPath;
         ModuleManagerRequestBusMock m_moduleManagerRequestBusMock;
+        AWSCredentialRquestsBusMock m_credentialRequestBusMock;
 
         void SetUp() override
         {
@@ -162,12 +184,8 @@ namespace AWSAttributionUnitTest
 
             AZ::JsonSystemComponent::Reflect(m_registrationContext.get());
 
-            m_settingsRegistry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
-
             m_settingsRegistry->SetContext(m_serializeContext.get());
             m_settingsRegistry->SetContext(m_registrationContext.get());
-
-            AZ::SettingsRegistry::Register(m_settingsRegistry.get());
 
             AZ::JobManagerDesc jobManagerDesc;
             AZ::JobManagerThreadDesc threadDesc;
@@ -186,9 +204,6 @@ namespace AWSAttributionUnitTest
             m_jobCancelGroup.reset();
             m_jobManager.reset();
 
-            AZ::SettingsRegistry::Unregister(m_settingsRegistry.get());
-
-            m_settingsRegistry.reset();
             m_serializeContext.reset();
             m_registrationContext.reset();
 
@@ -202,16 +217,16 @@ namespace AWSAttributionUnitTest
         }
     };
 
-    TEST_F(AttributionManagerTest, MetricsSettings_AttributionDisabled_SkipsSend)
+    TEST_F(AttributionManagerTest, MetricsSettings_ConsentShown_AttributionDisabled_SkipsSend)
     {
         // GIVEN
         AWSAttributionManagerMock manager;
-        manager.Init();
        
         CreateFile(m_resolvedSettingsPath.data(), R"({
             "Amazon": {
                 "AWS": {
                     "Preferences": {
+                        "AWSAttributionConsentShown": true,
                         "AWSAttributionEnabled": false,
                         "AWSAttributionDelaySeconds": 30
                     }
@@ -219,14 +234,16 @@ namespace AWSAttributionUnitTest
             }
         })");
 
+        manager.Init();
+
         EXPECT_CALL(manager, SubmitMetric(testing::_)).Times(0);
         EXPECT_CALL(m_moduleManagerRequestBusMock, EnumerateModules(testing::_)).Times(0);
+        EXPECT_CALL(m_credentialRequestBusMock, GetCredentialsProvider()).Times(1);
 
         // WHEN
         manager.MetricCheck();
 
         // THEN
-        m_settingsRegistry->MergeSettingsFile(m_resolvedSettingsPath.data(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "");
         AZ::u64 timeStamp = 0;
         m_settingsRegistry->Get(timeStamp, "/Amazon/AWS/Preferences/AWSAttributionLastTimeStamp");
         ASSERT_TRUE(timeStamp == 0);
@@ -234,31 +251,32 @@ namespace AWSAttributionUnitTest
         RemoveFile(m_resolvedSettingsPath.data());
     }
 
-    TEST_F(AttributionManagerTest, AttributionEnabled_NoPreviousTimeStamp_SendSuccess)
+    TEST_F(AttributionManagerTest, AttributionEnabled_ContentShown_NoPreviousTimeStamp_SendSuccess)
     {
         // GIVEN
         AWSAttributionManagerMock manager;
-        manager.Init();
 
         CreateFile(m_resolvedSettingsPath.data(), R"({
             "Amazon": {
                 "AWS": {
                     "Preferences": {
+                        "AWSAttributionConsentShown": true,
                         "AWSAttributionEnabled": true,
                         "AWSAttributionDelaySeconds": 30,
                     }
                 }
             }
         })");
+        manager.Init();
 
         EXPECT_CALL(manager, SubmitMetric(testing::_)).Times(1);
         EXPECT_CALL(m_moduleManagerRequestBusMock, EnumerateModules(testing::_)).Times(1);
+        EXPECT_CALL(m_credentialRequestBusMock, GetCredentialsProvider()).Times(1);
 
         // WHEN
         manager.MetricCheck();
 
         // THEN
-        m_settingsRegistry->MergeSettingsFile(m_resolvedSettingsPath.data(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "");
         AZ::u64 timeStamp = 0;
         m_settingsRegistry->Get(timeStamp, "/Amazon/AWS/Preferences/AWSAttributionLastTimeStamp");
         ASSERT_TRUE(timeStamp > 0);
@@ -267,16 +285,16 @@ namespace AWSAttributionUnitTest
         RemoveFile(m_resolvedSettingsPath.data());
     }
 
-    TEST_F(AttributionManagerTest, AttributionEnabled_ValidPreviousTimeStamp_SendSuccess)
+    TEST_F(AttributionManagerTest, AttributionEnabled_ContentShown_ValidPreviousTimeStamp_SendSuccess)
     {
         // GIVEN
         AWSAttributionManagerMock manager;
-        manager.Init();
 
         CreateFile(m_resolvedSettingsPath.data(), R"({
             "Amazon": {
                 "AWS": {
                     "Preferences": {
+                        "AWSAttributionConsentShown": true,
                         "AWSAttributionEnabled": true,
                         "AWSAttributionDelaySeconds": 30,
                         "AWSAttributionLastTimeStamp": 629400
@@ -285,14 +303,16 @@ namespace AWSAttributionUnitTest
             }
         })");
 
+        manager.Init();
+
         EXPECT_CALL(manager, SubmitMetric(testing::_)).Times(1);
         EXPECT_CALL(m_moduleManagerRequestBusMock, EnumerateModules(testing::_)).Times(1);
+        EXPECT_CALL(m_credentialRequestBusMock, GetCredentialsProvider()).Times(1);
 
         // WHEN
         manager.MetricCheck();
 
         // THEN
-        m_settingsRegistry->MergeSettingsFile(m_resolvedSettingsPath.data(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "");
         AZ::u64 timeStamp = 0;
         m_settingsRegistry->Get(timeStamp, "/Amazon/AWS/Preferences/AWSAttributionLastTimeStamp");
         ASSERT_TRUE(timeStamp > 0);
@@ -300,17 +320,16 @@ namespace AWSAttributionUnitTest
         RemoveFile(m_resolvedSettingsPath.data());
     }
 
-    TEST_F(AttributionManagerTest, AttributionEnabled_DelayNotSatisfied_SendFail)
+    TEST_F(AttributionManagerTest, AttributionEnabled_ContentShown_DelayNotSatisfied_SendFail)
     {
         // GIVEN
         AWSAttributionManagerMock manager;
-        manager.Init();
-
 
         CreateFile(m_resolvedSettingsPath.data(), R"({
             "Amazon": {
                 "AWS": {
                     "Preferences": {
+                        "AWSAttributionConsentShown": true,
                         "AWSAttributionEnabled": true,
                         "AWSAttributionDelaySeconds": 300,
                         "AWSAttributionLastTimeStamp": 0
@@ -319,17 +338,19 @@ namespace AWSAttributionUnitTest
             }
         })");
 
+        manager.Init();
+
         AZ::u64 delayInSeconds = AZStd::chrono::duration_cast<AZStd::chrono::seconds>(AZStd::chrono::system_clock::now().time_since_epoch()).count();
         ASSERT_TRUE(m_settingsRegistry->Set("/Amazon/AWS/Preferences/AWSAttributionLastTimeStamp", delayInSeconds));
 
-        EXPECT_CALL(manager, SubmitMetric(testing::_)).Times(1);
-        EXPECT_CALL(m_moduleManagerRequestBusMock, EnumerateModules(testing::_)).Times(1);
+        EXPECT_CALL(manager, SubmitMetric(testing::_)).Times(0);
+        EXPECT_CALL(m_moduleManagerRequestBusMock, EnumerateModules(testing::_)).Times(0);
+        EXPECT_CALL(m_credentialRequestBusMock, GetCredentialsProvider()).Times(1);
 
         // WHEN
         manager.MetricCheck();
 
         // THEN
-        m_settingsRegistry->MergeSettingsFile(m_resolvedSettingsPath.data(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "");
         AZ::u64 timeStamp = 0;
         m_settingsRegistry->Get(timeStamp, "/Amazon/AWS/Preferences/AWSAttributionLastTimeStamp");
         ASSERT_TRUE(timeStamp == delayInSeconds);
@@ -337,34 +358,54 @@ namespace AWSAttributionUnitTest
         RemoveFile(m_resolvedSettingsPath.data());
     }
 
-    TEST_F(AttributionManagerTest, AttributionEnabledNotFound_SendSuccess)
+    TEST_F(AttributionManagerTest, AttributionEnabledNotFound_ContentShown_SendFail)
     {
         // GIVEN
         AWSAttributionManagerMock manager;
-        manager.Init();
 
         CreateFile(m_resolvedSettingsPath.data(), R"({
             "Amazon": {
                 "AWS": {
                     "Preferences": {
+                        "AWSAttributionConsentShown": true
                     }
                 }
             }
         })");
 
-        EXPECT_CALL(manager, SubmitMetric(testing::_)).Times(1);
-        EXPECT_CALL(m_moduleManagerRequestBusMock, EnumerateModules(testing::_)).Times(1);
+        manager.Init();
+
+        EXPECT_CALL(manager, SubmitMetric(testing::_)).Times(0);
+        EXPECT_CALL(m_moduleManagerRequestBusMock, EnumerateModules(testing::_)).Times(0);
+        EXPECT_CALL(m_credentialRequestBusMock, GetCredentialsProvider()).Times(1);
 
         // WHEN
         manager.MetricCheck();
 
         // THEN
-        m_settingsRegistry->MergeSettingsFile(m_resolvedSettingsPath.data(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "");
         AZ::u64 timeStamp = 0;
         m_settingsRegistry->Get(timeStamp, "/Amazon/AWS/Preferences/AWSAttributionLastTimeStamp");
-        ASSERT_TRUE(timeStamp != 0);
+        ASSERT_TRUE(timeStamp == 0);
 
         RemoveFile(m_resolvedSettingsPath.data());
+    }
+
+    TEST_F(AttributionManagerTest, AttributionEnabledNotFound_ContentNotShown_SendFail)
+    {
+        // GIVEN
+        AWSAttributionManagerMock manager;
+        manager.Init();
+
+        EXPECT_CALL(manager, SubmitMetric(testing::_)).Times(0);
+        EXPECT_CALL(m_moduleManagerRequestBusMock, EnumerateModules(testing::_)).Times(0);
+        EXPECT_CALL(m_credentialRequestBusMock, GetCredentialsProvider()).Times(1);
+        EXPECT_CALL(manager, ShowConsentDialog()).Times(1);
+
+        // WHEN
+        manager.MetricCheck();
+
+        // THEN
+        ASSERT_FALSE(m_localFileIO->Exists(m_resolvedSettingsPath.data()));
     }
 
     TEST_F(AttributionManagerTest, SetApiEndpointAndRegion_Success)
@@ -377,8 +418,8 @@ namespace AWSAttributionUnitTest
         manager.SetApiEndpointAndRegion(config);
 
         // THEN
-        ASSERT_TRUE(config->region  == Aws::Region::US_WEST_2);
-        ASSERT_TRUE(config->endpointOverride->find("execute-api.us-west-2.amazonaws.com") != Aws::String::npos);
+        ASSERT_TRUE(config->region  == Aws::Region::US_EAST_1);
+        ASSERT_TRUE(config->endpointOverride->find("o3deattribution.us-east-1.amazonaws.com") != Aws::String::npos);
 
         delete config;
     }
@@ -405,6 +446,7 @@ namespace AWSAttributionUnitTest
         AZStd::string serializedMetricValue = metric.SerializeToJson();
         ASSERT_TRUE(serializedMetricValue.find("\"o3de_version\":\"1.0.0.0\"") != AZStd::string::npos);
         ASSERT_TRUE(serializedMetricValue.find(AZ::GetPlatformName(AZ::g_currentPlatform)) != AZStd::string::npos);
+        ASSERT_TRUE(serializedMetricValue.find(QSysInfo::prettyProductName().toStdString().c_str()) != AZStd::string::npos);
         ASSERT_TRUE(serializedMetricValue.find("AWSCore.Editor") != AZStd::string::npos);
         ASSERT_TRUE(serializedMetricValue.find("AWSClientAuth") != AZStd::string::npos);
 

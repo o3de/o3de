@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <limits>
 #include <AzCore/Casting/lossy_cast.h>
@@ -32,7 +27,7 @@ namespace JsonSerializationTests
 
         AZStd::shared_ptr<FloatingPointType> CreateDefaultInstance() override
         {
-            return AZStd::make_shared<FloatingPointType>(-2.0f);
+            return AZStd::make_shared<FloatingPointType>(0.0f);
         }
 
         AZStd::shared_ptr<FloatingPointType> CreateFullySetInstance() override
@@ -71,6 +66,20 @@ namespace JsonSerializationTests
         : public BaseJsonSerializerFixture
     {
     public:
+        struct DoublePointerWrapper
+        {
+            AZ_TYPE_INFO(DoublePointerWrapper, "{C2FD9E0B-2641-4D24-A3D9-A29FD1A21A81}");
+
+            double* m_double{ nullptr };
+            float* m_float{ nullptr };
+
+            ~DoublePointerWrapper()
+            {
+                azfree(m_float);
+                azfree(m_double);
+            }
+        };
+
         void SetUp() override
         {
             BaseJsonSerializerFixture::SetUp();
@@ -83,6 +92,13 @@ namespace JsonSerializationTests
             m_floatSerializer.reset();
             m_doubleSerializer.reset();
             BaseJsonSerializerFixture::TearDown();
+        }
+
+        void RegisterAdditional(AZStd::unique_ptr<AZ::SerializeContext>& serializeContext) override
+        {
+            serializeContext->Class<DoublePointerWrapper>()
+                ->Field("Double", &DoublePointerWrapper::m_double)
+                ->Field("Float", &DoublePointerWrapper::m_float);
         }
 
         void TestSerializers(rapidjson::Value& testVal, double expectedValue, AZ::JsonSerializationResult::Outcomes expectedOutcome)

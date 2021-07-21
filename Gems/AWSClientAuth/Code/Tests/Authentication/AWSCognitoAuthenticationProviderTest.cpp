@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzTest/AzTest.h>
 #include <AzCore/UnitTest/TestTypes.h>
@@ -36,7 +31,7 @@ class AWSCognitoAuthenticationProviderTest
     {
         AWSClientAuthUnitTest::AWSClientAuthGemAllocatorFixture::SetUp();
 
-        m_cognitoAuthenticationProviderMock.Initialize(m_settingsRegistry);
+        m_cognitoAuthenticationProviderMock.Initialize();
 
         AWSCore::AWSCoreRequestBus::Handler::BusConnect();
 
@@ -103,7 +98,7 @@ TEST_F(AWSCognitoAuthenticationProviderTest, Initialize_Success)
 {
     EXPECT_CALL(m_awsResourceMappingRequestBusMock, GetResourceNameId(testing::_)).Times(1);
     AWSClientAuthUnitTest::AWSCognitoAuthenticationProviderrLocalMock mock;
-    ASSERT_TRUE(mock.Initialize(m_settingsRegistry));
+    ASSERT_TRUE(mock.Initialize());
     ASSERT_EQ(mock.m_cognitoAppClientId, AWSClientAuthUnitTest::TEST_RESOURCE_NAME_ID);
 }
 
@@ -265,5 +260,5 @@ TEST_F(AWSCognitoAuthenticationProviderTest, Initialize_Fail_EmptyResourceName)
 {
     AWSClientAuthUnitTest::AWSCognitoAuthenticationProviderrLocalMock mock;
     EXPECT_CALL(m_awsResourceMappingRequestBusMock, GetResourceNameId(testing::_)).Times(1).WillOnce(testing::Return(""));
-    ASSERT_FALSE(mock.Initialize(m_settingsRegistry));
+    ASSERT_FALSE(mock.Initialize());
 }

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -63,7 +58,7 @@ namespace AZ
             ~DynamicPrimitiveProcessor() = default;
 
             //! Initialize the DynamicPrimitiveProcessor and all its buffers, shaders, stream layouts etc
-            bool Initialize(AZ::RHI::Device& rhiDevice, const AZ::RPI::Scene* scene);
+            bool Initialize(const AZ::RPI::Scene* scene);
 
             //! Releases the DynamicPrimitiveProcessor and all primitive geometry buffers
             void Release();
@@ -83,12 +78,6 @@ namespace AZ
 
             struct DynamicBufferGroup
             {
-                //! The index buffer for this set of primitives
-                AZ::RHI::Ptr<AZ::RHI::Buffer> m_indexBuffer;
-
-                //! The vertices for this set of primitives
-                AZ::RHI::Ptr<AZ::RHI::Buffer> m_vertexBuffer;
-
                 //! The view into the index buffer
                 AZ::RHI::IndexBufferView m_indexBufferView;
 
@@ -130,26 +119,11 @@ namespace AZ
                 RHI::DrawPacketBuilder& drawPacketBuilder,
                 RHI::DrawItemSortKey sortKey = 0);
 
-            // Creates the dynamic buffers
-            bool CreateBuffers();
-
-            // Destroy all the buffers
-            void DestroyBuffers();
-
-            // Creates the dynamic buffers in a group
-            bool CreateBufferGroup(DynamicBufferGroup& group);
-
-            // Destroy all the buffers in a group
-            void DestroyBufferGroup(DynamicBufferGroup& group);
-
-            // Helper function to update a buffer
-            void UpdateBuffer(const uint8_t* source, size_t sourceSize, RHI::Ptr<RHI::Buffer> buffer);
-
             // Update a dynamic index buffer, given the data from draw requests
-            void UpdateIndexBuffer(const IndexBuffer& indexSource, DynamicBufferGroup& group);
+            bool UpdateIndexBuffer(const IndexBuffer& indexSource, DynamicBufferGroup& group);
 
             // Update a dynamic vertex buffer, given the data from draw requests
-            void UpdateVertexBuffer(const VertexBuffer& source, DynamicBufferGroup& group);
+            bool UpdateVertexBuffer(const VertexBuffer& source, DynamicBufferGroup& group);
 
             // Validate the given stream buffer views for the layout used for the given prim type (uses isValidated flags to see if necessary)
             void ValidateStreamBufferViews(StreamBufferViewsForAllStreams& streamBufferViews, bool* isValidated, int primitiveType);
@@ -174,9 +148,6 @@ namespace AZ
             AZStd::list<RPI::Ptr<RPI::PipelineStateForDraw>*> m_createdPipelineStates;
 
             ShaderData m_shaderData;
-
-            // The buffer pool that manages all our dynamic index and vertex buffers
-            RHI::Ptr<AZ::RHI::BufferPool> m_hostPool;
 
             // Buffers for all primitives
             DynamicBufferGroup m_primitiveBuffers;

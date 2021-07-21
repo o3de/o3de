@@ -1,7 +1,0 @@
-{
-    "auto": {
-        "Tests": [
-            "Tests/MultiplayerCompressionTest.cpp"
-        ]
-    }
-}

@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -14,6 +9,7 @@
 #include <PythonBindingsInterface.h>
 #include <GemCatalog/GemListHeaderWidget.h>
 #include <GemCatalog/GemSortFilterProxyModel.h>
+#include <GemCatalog/GemRequirementDialog.h>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QPushButton>
@@ -82,6 +78,8 @@ namespace O3DE::ProjectManager
 
         m_headerWidget->ReinitForProject();
 
+        connect(m_gemModel, &GemModel::dataChanged, m_filterWidget, &GemFilterWidget::ResetGemStatusFilter);
+
         // Select the first entry after everything got correctly sized
         QTimer::singleShot(200, [=]{
             QModelIndex firstModelIndex = m_gemListView->model()->index(0,0);
@@ -142,11 +140,22 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void GemCatalogScreen::EnableDisableGemsForProject(const QString& projectPath)
+    bool GemCatalogScreen::EnableDisableGemsForProject(const QString& projectPath)
     {
         IPythonBindings* pythonBindings = PythonBindingsInterface::Get();
         QVector<QModelIndex> toBeAdded = m_gemModel->GatherGemsToBeAdded();
         QVector<QModelIndex> toBeRemoved = m_gemModel->GatherGemsToBeRemoved();
+
+        if (m_gemModel->DoGemsToBeAddedHaveRequirements())
+        {
+            GemRequirementDialog* confirmRequirementsDialog = new GemRequirementDialog(m_gemModel, toBeAdded, this);
+            confirmRequirementsDialog->exec();
+
+            if (confirmRequirementsDialog->GetButtonResult() != QDialogButtonBox::ApplyRole)
+            {
+                return false;
+            }
+        }
 
         for (const QModelIndex& modelIndex : toBeAdded)
         {
@@ -156,6 +165,8 @@ namespace O3DE::ProjectManager
             {
                 QMessageBox::critical(nullptr, "Operation failed",
                     QString("Cannot add gem %1 to project.\n\nError:\n%2").arg(GemModel::GetName(modelIndex), result.GetError().c_str()));
+
+                return false;
             }
         }
 
@@ -167,8 +178,12 @@ namespace O3DE::ProjectManager
             {
                 QMessageBox::critical(nullptr, "Operation failed",
                     QString("Cannot remove gem %1 from project.\n\nError:\n%2").arg(GemModel::GetName(modelIndex), result.GetError().c_str()));
+
+                return false;
             }
         }
+
+        return true;
     }
 
     ProjectManagerScreen GemCatalogScreen::GetScreenEnum()

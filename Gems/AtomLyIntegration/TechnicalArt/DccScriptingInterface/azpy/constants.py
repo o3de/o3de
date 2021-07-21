@@ -1,14 +1,10 @@
 # coding:utf-8
 #!/usr/bin/python
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 # -- This line is 75 characters -------------------------------------------
 
@@ -226,7 +222,18 @@ TAG_DEFAULT_PY = str('Launch_pyBASE.bat')
 FILENAME_DEFAULT_CONFIG = str('DCCSI_config.json')
 
 # new o3de related paths
-PATH_USER_O3DE = str('{home}\\{o3de}').format(home=expanduser("~"),
+# os.path.expanduser("~") returns different values in py2.7 vs 3
+PATH_USER_HOME = expanduser("~")
+_LOGGER.debug('user home: {}'.format(PATH_USER_HOME))
+
+# special case, make sure didn't return <user>\documents
+parts = os.path.split(PATH_USER_HOME)
+
+if str(parts[1].lower()) == 'documents':
+    PATH_USER_HOME = parts[0]
+    _LOGGER.debug('user home CORRECTED: {}'.format(PATH_USER_HOME))
+
+PATH_USER_O3DE = str('{home}\\{o3de}').format(home=PATH_USER_HOME,
                                               o3de=TAG_O3DE_FOLDER)
 PATH_USER_O3DE_REGISTRY = str('{0}\\Registry').format(PATH_USER_O3DE)
 PATH_USER_O3DE_BOOTSTRAP = str('{reg}\\{file}').format(reg=PATH_USER_O3DE_REGISTRY,

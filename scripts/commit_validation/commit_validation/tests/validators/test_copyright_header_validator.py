@@ -1,12 +1,7 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT#
 #
 
 import unittest
@@ -18,19 +13,19 @@ from commit_validation.validators.copyright_header_validator import CopyrightHea
 
 class CopyrightHeaderValidatorTests(unittest.TestCase):
     @patch('builtins.open', mock_open(read_data='This file does contain\n'
-                                                'Copyright (c) Amazon.com, so it should pass\n'))
+                                                'Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution., so it should pass\n'))
     def test_fileWithCopyrightHeader_passes(self):
         commit = MockCommit(files=['/someCppFile.cpp'])
         files = [
             'This file does contain\n'
-            'Copyright (c) Amazon.com, so it should pass\n',
+            'Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution., so it should pass\n',
 
             'This file does contain\n'
-            'Copyright(c) Amazon.com, so it should pass\n'
+            'Copyright(c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution., so it should pass\n'
             'and there\'s no space between "Copyright" and "(c)"',
 
             'This file has a upper-case C between the parenthesis\n'
-            '// Copyright (C) Amazon.com, Inc. or its affiliates.',
+            '// Copyright (C) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.',
         ]
         for file in files:
             with patch('builtins.open', mock_open(read_data=file)):
@@ -47,6 +42,38 @@ class CopyrightHeaderValidatorTests(unittest.TestCase):
     @patch('builtins.open', mock_open(read_data='This file does not contain\n'
                                                 'the copyright header\n'))
     def test_fileWithNoCopyrightHeader_fails(self):
+        commit = MockCommit(files=['/someCppFile.cpp'])
+        error_list = []
+        self.assertFalse(CopyrightHeaderValidator().run(commit, error_list))
+        self.assertNotEqual(len(error_list), 0, f"Errors were expected but none were returned.")
+
+    @patch('builtins.open', mock_open(read_data='This file does contains legacy header\n'
+                                                'this{0}file{0}Copyright{0}(c){0}Amazon.com\n'.format(' ')))
+    def test_fileWithLegacyAmazonCopyrightHeader_fails(self):
+        commit = MockCommit(files=['/someCppFile.cpp'])
+        error_list = []
+        self.assertFalse(CopyrightHeaderValidator().run(commit, error_list))
+        self.assertNotEqual(len(error_list), 0, f"Errors were expected but none were returned.")
+
+    @patch('builtins.open', mock_open(read_data='This file does contains legacy header\n'
+                                                'Modifications{0}copyright{0}Amazon.com,{0}Inc.{0}or{0}its affiliates\n'.format(' ')))
+    def test_fileWithAmazonModificationCopyrightHeader_passes(self):
+        commit = MockCommit(files=['/someCppFile.cpp'])
+        error_list = []
+        self.assertFalse(CopyrightHeaderValidator().run(commit, error_list))
+        self.assertNotEqual(len(error_list), 0, f"Errors were expected but none were returned.")
+
+    @patch('builtins.open', mock_open(read_data='Copyright (c) Contributors to the Open 3D Engine Project.\n'
+                                                '******************\n'.format(' ')))
+    def test_fileWithStaleO3DECopyrightHeader_fails(self):
+        commit = MockCommit(files=['/someCppFile.cpp'])
+        error_list = []
+        self.assertFalse(CopyrightHeaderValidator().run(commit, error_list))
+        self.assertNotEqual(len(error_list), 0, f"Errors were expected but none were returned.")
+
+    @patch('builtins.open', mock_open(read_data='This file does contains legacy header\n'
+                                                'Copyright{0}Crytek\n'.format(' ')))
+    def test_fileWithCrytekCopyrightHeader_fails(self):
         commit = MockCommit(files=['/someCppFile.cpp'])
         error_list = []
         self.assertFalse(CopyrightHeaderValidator().run(commit, error_list))
@@ -73,3 +100,4 @@ class CopyrightHeaderValidatorTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+

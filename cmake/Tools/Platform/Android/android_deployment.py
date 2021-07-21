@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 import datetime
@@ -184,11 +180,15 @@ class AndroidDeployment(object):
 
         call_arguments.extend(arg_list)
 
-        output = subprocess.check_output(call_arguments,
-                                         shell=True,
-                                         stderr=subprocess.DEVNULL).decode(common.DEFAULT_TEXT_READ_ENCODING,
-                                                                           common.ENCODING_ERROR_HANDLINGS)
-        return output
+        try:
+            output = subprocess.check_output(call_arguments,
+                                             shell=True,
+                                             stderr=subprocess.PIPE).decode(common.DEFAULT_TEXT_READ_ENCODING,
+                                                                               common.ENCODING_ERROR_HANDLINGS)
+            return output
+        except subprocess.CalledProcessError as err:
+            raise common.LmbrCmdError(err.stderr.decode(common.DEFAULT_TEXT_READ_ENCODING,
+                                                        common.ENCODING_ERROR_HANDLINGS))
 
     def adb_shell(self, command, device_id):
         """

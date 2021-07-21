@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -32,6 +27,7 @@
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAssetCreator.h>
 #include <Atom/RPI.Reflect/Image/ImageMipChainAssetCreator.h>
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/RPI.Public/Image/StreamingImagePool.h>
 
 #include <AtomBridge/PerViewportDynamicDrawInterface.h>
@@ -92,6 +88,7 @@ namespace AZ::Render
 
     void AtomViewportDisplayIconsSystemComponent::Deactivate()
     {
+        Data::AssetBus::Handler::BusDisconnect();
         Bootstrap::NotificationBus::Handler::BusDisconnect();
 
         auto perViewportDynamicDrawInterface = AtomBridge::PerViewportDynamicDraw::Get();
@@ -343,15 +340,32 @@ namespace AZ::Render
 
     void AtomViewportDisplayIconsSystemComponent::OnBootstrapSceneReady([[maybe_unused]]AZ::RPI::Scene* bootstrapScene)
     {
-        AtomBridge::PerViewportDynamicDraw::Get()->RegisterDynamicDrawContext(m_drawContextName, [](RPI::Ptr<RPI::DynamicDrawContext> drawContext)
-        {
-            auto shader = RPI::LoadShader(DrawContextShaderPath);
-            drawContext->InitShader(shader);
-            drawContext->InitVertexFormat(
-                {{"POSITION", RHI::Format::R32G32B32_FLOAT},
-                 {"COLOR", RHI::Format::R8G8B8A8_UNORM},
-                 {"TEXCOORD", RHI::Format::R32G32_FLOAT}});
-            drawContext->EndInit();
-        });
+        // Queue a load for the draw context shader, and wait for it to load
+        Data::Asset<RPI::ShaderAsset> shaderAsset = RPI::AssetUtils::GetAssetByProductPath<RPI::ShaderAsset>(DrawContextShaderPath, RPI::AssetUtils::TraceLevel::Assert);
+        shaderAsset.QueueLoad();
+        Data::AssetBus::Handler::BusConnect(shaderAsset.GetId());
+    }
+
+    void AtomViewportDisplayIconsSystemComponent::OnAssetReady(Data::Asset<Data::AssetData> asset)
+    {
+        // Once the shader is loaded, register it with the dynamic draw context
+        Data::Asset<RPI::ShaderAsset> shaderAsset = asset;
+        AtomBridge::PerViewportDynamicDraw::Get()->RegisterDynamicDrawContext(m_drawContextName, [shaderAsset](RPI::Ptr<RPI::DynamicDrawContext> drawContext)
+            {
+                AZ_Assert(shaderAsset->IsReady(), "Attempting to register the AtomViewportDisplayIconsSystemComponent"
+                    " dynamic draw context before the shader asset is loaded. The shader should be loaded first"
+                    " to avoid a blocking asset load and potential deadlock, since the DynamicDrawContext lambda"
+                    " will be executed during scene processing and there may be multiple scenes executing in parallel.");
+
+                Data::Instance<RPI::Shader> shader = RPI::Shader::FindOrCreate(shaderAsset);
+                drawContext->InitShader(shader);
+                drawContext->InitVertexFormat(
+                    { {"POSITION", RHI::Format::R32G32B32_FLOAT},
+                     {"COLOR", RHI::Format::R8G8B8A8_UNORM},
+                     {"TEXCOORD", RHI::Format::R32G32_FLOAT} });
+                drawContext->EndInit();
+            });
+
+        Data::AssetBus::Handler::BusDisconnect();
     }
 } // namespace AZ::Render

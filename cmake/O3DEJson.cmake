@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 include_guard()
@@ -30,7 +26,7 @@ endfunction()
 #! read_json_array
 #  Reads the a json array field into a cmake list variable
 function(o3de_read_json_array read_output_array input_json_path array_key)
-    file(READ ${input_json_path} manifest_json_data)
+    ly_file_read(${input_json_path} manifest_json_data)
     string(JSON array_count ERROR_VARIABLE manifest_json_error
         LENGTH ${manifest_json_data} ${array_key})
     if(manifest_json_error)
@@ -53,7 +49,7 @@ function(o3de_read_json_array read_output_array input_json_path array_key)
 endfunction()
 
 function(o3de_read_json_key output_value input_json_path key)
-    file(READ ${input_json_path} manifest_json_data)
+    ly_file_read(${input_json_path} manifest_json_data)
     string(JSON value ERROR_VARIABLE manifest_json_error GET ${manifest_json_data} ${key})
     if(manifest_json_error)
         message(FATAL_ERROR "Error reading field at key ${key} in file \"${input_json_path}\" : ${manifest_json_error}")

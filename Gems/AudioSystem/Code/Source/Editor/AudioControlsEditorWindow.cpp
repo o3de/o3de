@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #include <AudioControlsEditorWindow.h>
 
@@ -35,6 +30,11 @@
 #include <QPainter>
 #include <QMessageBox>
 
+void InitACEResources()
+{
+    Q_INIT_RESOURCE(AudioControlsEditorUI);
+}
+
 namespace AudioControls
 {
     //-------------------------------------------------------------------------------------------//
@@ -45,6 +45,8 @@ namespace AudioControls
     CAudioControlsEditorWindow::CAudioControlsEditorWindow(QWidget* parent)
         : QMainWindow(parent)
     {
+        InitACEResources();
+
         setupUi(this);
 
         m_pATLModel = CAudioControlsEditorPlugin::GetATLModel();
@@ -218,7 +220,7 @@ namespace AudioControls
         IAudioSystemEditor* pAudioSystemImpl = CAudioControlsEditorPlugin::GetAudioSystemEditorImpl();
         if (pAudioSystemImpl)
         {
-            StartWatchingFolder(pAudioSystemImpl->GetDataPath());
+            StartWatchingFolder(pAudioSystemImpl->GetDataPath().LexicallyNormal().Native());
             m_pMiddlewareDockWidget->setWindowTitle(QString(pAudioSystemImpl->GetName().c_str()) + " Controls");
         }
     }
@@ -295,6 +297,12 @@ namespace AudioControls
     //-------------------------------------------------------------------------------------------//
     void CAudioControlsEditorWindow::UpdateAudioSystemData()
     {
+        IAudioSystemEditor* audioSystemImpl = CAudioControlsEditorPlugin::GetAudioSystemEditorImpl();
+        if (!audioSystemImpl)
+        {
+            return;
+        }
+
         Audio::SAudioRequest oConfigDataRequest;
         oConfigDataRequest.nFlags = Audio::eARF_PRIORITY_HIGH;
 
@@ -315,17 +323,17 @@ namespace AudioControls
         oConfigDataRequest.pData = &oParseGlobalRequestData;
         Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequest, oConfigDataRequest);
 
-        //parse the AudioSystem level-specific config data
-        const char* levelName = GetIEditor()->GetLevelName().toUtf8().data();
+        // parse the AudioSystem level-specific config data
+        AZStd::string levelName{ GetIEditor()->GetLevelName().toUtf8().data() };
         AZ::StringFunc::Path::Join(sControlsPath.c_str(), "levels", sControlsPath);
-        AZ::StringFunc::Path::Join(sControlsPath.c_str(), levelName, sControlsPath);
+        AZ::StringFunc::Path::Join(sControlsPath.c_str(), levelName.c_str(), sControlsPath);
         Audio::SAudioManagerRequestData<Audio::eAMRT_PARSE_CONTROLS_DATA> oParseLevelRequestData(sControlsPath.c_str(), Audio::eADS_LEVEL_SPECIFIC);
         oConfigDataRequest.pData = &oParseLevelRequestData;
         Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequest, oConfigDataRequest);
 
         // inform the middleware specific plugin that the data has been saved
         // to disk (in case it needs to update something)
-        CAudioControlsEditorPlugin::GetAudioSystemEditorImpl()->DataSaved();
+        audioSystemImpl->DataSaved();
     }
 
     //-------------------------------------------------------------------------------------------//

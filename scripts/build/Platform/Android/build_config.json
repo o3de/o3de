@@ -22,7 +22,7 @@
     "COMMAND":"../Windows/python_windows.cmd",
     "PARAMETERS": {
         "SCRIPT_PATH":"scripts/build/ci_build_metrics.py",
-        "SCRIPT_PARAMETERS":"--platform Android --jobname \"!JOB_NAME!\" --jobnumber \"!BUILD_NUMBER!\" --jobnode \"!NODE_NAME!\" --changelist \"!CHANGE_ID!\""
+        "SCRIPT_PARAMETERS":"--platform=Android --repository=!REPOSITORY_NAME! --jobname=!JOB_NAME! --jobnumber=!BUILD_NUMBER! --jobnode=!NODE_LABEL! --changelist=!CHANGE_ID!"
     }
   },
   "debug": {

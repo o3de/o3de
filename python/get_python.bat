@@ -1,13 +1,9 @@
 @ECHO OFF
 REM 
-REM All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-REM its licensors.
+REM Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+REM 
+REM SPDX-License-Identifier: Apache-2.0 OR MIT
 REM
-REM For complete copyright and license terms please see the LICENSE at the root of this
-REM distribution (the "License"). All use of this software is governed by the License,
-REM or, if provided, by the license below or the license accompanying this file. Do not
-REM remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-REM WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 REM
 
 setlocal enabledelayedexpansion 
@@ -32,18 +28,15 @@ IF !ERRORLEVEL!==0 (
 
 cd /D %CMD_DIR%\..
 REM IF you update this logic, update it in scripts/build/Platform/Windows/env_windows.cmd
-REM If cmake is not found on path, try a known location, using LY_CMAKE_PATH as the first fallback
+REM If cmake is not found on path, try a known location at LY_CMAKE_PATH
 where /Q cmake
 IF NOT !ERRORLEVEL!==0 (
     IF "%LY_CMAKE_PATH%"=="" (
-        IF "%LY_3RDPARTY_PATH%"=="" (
-            ECHO ERROR: CMake was not found on the PATH and LY_3RDPARTY_PATH is not defined.
-            ECHO Please ensure CMake is on the path or set LY_3RDPARTY_PATH or LY_CMAKE_PATH.
-            EXIT /b 1
-        )
-        SET LY_CMAKE_PATH=!LY_3RDPARTY_PATH!\CMake\3.19.1\Windows\bin
-        echo CMake was not found on the path, will use known location: !LY_CMAKE_PATH!
+        ECHO ERROR: CMake was not found on the PATH and LY_CMAKE_PATH is not defined.
+        ECHO Please ensure CMake is on the path or set LY_CMAKE_PATH.
+        EXIT /b 1
     )
+
     PATH !LY_CMAKE_PATH!;!PATH!
     where /Q cmake
     if NOT !ERRORLEVEL!==0 (

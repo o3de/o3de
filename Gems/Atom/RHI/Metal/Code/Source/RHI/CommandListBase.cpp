@@ -1,13 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIInitState
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "Atom_RHI_Metal_precompiled.h"
 
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
@@ -82,6 +78,7 @@ namespace AZ
                     id<MTLRenderCommandEncoder> renderEncoder = GetEncoder<id<MTLRenderCommandEncoder>>();
                     for (id<MTLHeap> residentHeap : *m_residentHeaps)
                     {
+                        //MTLRenderStageVertex is not added to this as it was causing an immediate gpu crash on ios (first buffer commit)
                         [renderEncoder useHeap : residentHeap
                                        stages  : MTLRenderStageFragment];
                     }

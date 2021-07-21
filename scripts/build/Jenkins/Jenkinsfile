@@ -1,15 +1,10 @@
 #!/usr/bin/env groovy
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 PIPELINE_CONFIG_FILE = 'scripts/build/Jenkins/lumberyard.json'
 INCREMENTAL_BUILD_SCRIPT_PATH = 'scripts/build/bootstrap/incremental_build_util.py'
@@ -256,6 +251,15 @@ def CheckoutRepo(boolean disableSubmodules = false) {
     env.CHANGE_ID = readFile file: 'commitid'
     env.CHANGE_ID = env.CHANGE_ID.trim()
     palRm('commitid')
+
+    // CHANGE_DATE is used by the installer to provide some ability to sort tagged builds in addition to BRANCH_NAME and CHANGE_ID
+    commitDateFmt = '%%cI'
+    if (env.IS_UNIX) commitDateFmt = '%cI'
+
+    palSh("git show -s --format=${commitDateFmt} ${env.CHANGE_ID} > commitdate", 'Getting commit date')
+    env.CHANGE_DATE = readFile file: 'commitdate'
+    env.CHANGE_DATE = env.CHANGE_DATE.trim()
+    palRm('commitdate')
 }
 
 def PreBuildCommonSteps(Map pipelineConfig, String repositoryName, String projectName, String pipeline, String branchName, String platform, String buildType, String workspace, boolean mount = true, boolean disableSubmodules = false) {
@@ -265,8 +269,8 @@ def PreBuildCommonSteps(Map pipelineConfig, String repositoryName, String projec
         unstash name: 'incremental_build_script'
 
         def pythonCmd = ''
-        if(env.IS_UNIX) pythonCmd = 'sudo -E python -u '
-        else pythonCmd = 'python -u '
+        if(env.IS_UNIX) pythonCmd = 'sudo -E python3 -u '
+        else pythonCmd = 'python3 -u '
 
         if(env.RECREATE_VOLUME?.toBoolean()) {
             palSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action delete --repository_name ${repositoryName} --project ${projectName} --pipeline ${pipeline} --branch ${branchName} --platform ${platform} --build_type ${buildType}", 'Deleting volume', winSlashReplacement=false)
@@ -378,8 +382,8 @@ def PostBuildCommonSteps(String workspace, boolean mount = true) {
 
     if (mount) {
         def pythonCmd = ''
-        if(env.IS_UNIX) pythonCmd = 'sudo -E python -u '
-        else pythonCmd = 'python -u '
+        if(env.IS_UNIX) pythonCmd = 'sudo -E python3 -u '
+        else pythonCmd = 'python3 -u '
 
         try {
             timeout(5) {
@@ -449,6 +453,7 @@ try {
                     repositoryUrl = scm.getUserRemoteConfigs()[0].getUrl()
                     // repositoryName is the full repository name
                     repositoryName = (repositoryUrl =~ /https:\/\/github.com\/(.*)\.git/)[0][1]
+                    env.REPOSITORY_NAME = repositoryName
                     (projectName, pipelineName) = GetRunningPipelineName(env.JOB_NAME) // env.JOB_NAME is the name of the job given by Jenkins
 
                     if(env.BRANCH_NAME) {
@@ -459,7 +464,7 @@ try {
                     }
                     pipelineProperties.add(disableConcurrentBuilds())
 
-                    echo "Running \"${pipelineName}\" for \"${branchName}\"..."
+                    echo "Running repository: \"${repositoryName}\", pipeline: \"${pipelineName}\", branch: \"${branchName}\"..."
 
                     CheckoutBootstrapScripts(branchName)
 

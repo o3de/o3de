@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <precompiled.h>
 
 #include <QAction>
@@ -55,7 +50,6 @@
 
 #include <ScriptCanvas/Core/NodeBus.h>
 #include <ScriptCanvas/Data/DataRegistry.h>
-#include <ScriptCanvas/Execution/RuntimeBus.h>
 #include <ScriptCanvas/GraphCanvas/NodeDescriptorBus.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 
@@ -762,9 +756,9 @@ namespace ScriptCanvasEditor
 
         AZStd::vector<AZ::EntityId> selection;
 
-        ScriptCanvas::RuntimeRequests* runtimeRequests = ScriptCanvas::RuntimeRequestBus::FindFirstHandler(m_scriptCanvasId);
+        auto owningGraph = ScriptCanvas::GraphRequestBus::FindFirstHandler(m_scriptCanvasId);
 
-        if (runtimeRequests == nullptr)
+        if (owningGraph == nullptr)
         {
             return;
         }
@@ -775,7 +769,7 @@ namespace ScriptCanvasEditor
 
             if (propertiesComponent)
             {
-                ScriptCanvas::GraphVariable* graphVariable = runtimeRequests->FindVariableById(varId);;
+                ScriptCanvas::GraphVariable* graphVariable = owningGraph->FindVariableById(varId);;
                 propertiesComponent->SetVariable(graphVariable);
 
                 selection.push_back(propertiesComponent->GetEntityId());

@@ -1,19 +1,12 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <SkyBox/PhysicalSkyComponentController.h>
 #include <AzCore/RTTI/BehaviorContext.h>
-
-
 #include <Atom/RPI.Public/Scene.h>
 
 namespace AZ
@@ -34,6 +27,9 @@ namespace AZ
             if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
                 behaviorContext->EBus<PhysicalSkyRequestBus>("PhysicalSkyRequestBus")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ->Attribute(AZ::Script::Attributes::Category, "render")
+                    ->Attribute(AZ::Script::Attributes::Module, "render")
                     ->Event("SetTurbidity", &PhysicalSkyRequestBus::Events::SetTurbidity)
                     ->Event("GetTurbidity", &PhysicalSkyRequestBus::Events::GetTurbidity)
                     ->Event("SetSunRadiusFactor", &PhysicalSkyRequestBus::Events::SetSunRadiusFactor)
@@ -76,7 +72,7 @@ namespace AZ
             m_featureProcessorInterface = RPI::Scene::GetFeatureProcessorForEntity<SkyBoxFeatureProcessorInterface>(entityId);
 
             // only activate if there is no other skybox activate
-            if (!m_featureProcessorInterface->IsEnable())
+            if (!m_featureProcessorInterface->IsEnabled())
             {
                 m_featureProcessorInterface->SetSkyboxMode(SkyBoxMode::PhysicalSky);
                 m_featureProcessorInterface->Enable(true);
@@ -95,8 +91,10 @@ namespace AZ
 
                 const AZ::Transform& transform = m_transformInterface ? m_transformInterface->GetWorldTM() : Transform::Identity();
                 m_featureProcessorInterface->SetSunPosition(GetSunTransform(transform));
+                m_featureProcessorInterface->SetFogSettings(m_configuration.m_skyBoxFogSettings);
 
                 PhysicalSkyRequestBus::Handler::BusConnect(m_entityId);
+                SkyBoxFogRequestBus::Handler::BusConnect(m_entityId);
                 TransformNotificationBus::Handler::BusConnect(m_entityId);
 
                 m_isActive = true;
@@ -113,8 +111,9 @@ namespace AZ
             // Run deactivate if this skybox is activate
             if (m_isActive)
             {
-                PhysicalSkyRequestBus::Handler::BusDisconnect(m_entityId);
-                TransformNotificationBus::Handler::BusDisconnect(m_entityId);
+                PhysicalSkyRequestBus::Handler::BusDisconnect();
+                SkyBoxFogRequestBus::Handler::BusDisconnect();
+                TransformNotificationBus::Handler::BusDisconnect();
 
                 m_featureProcessorInterface->Enable(false);
                 m_featureProcessorInterface = nullptr;
@@ -228,6 +227,50 @@ namespace AZ
             sunPosition.SetZ(sunPositionAtom.GetX());
 
             return SunPosition(atan2(sunPosition.GetZ(), sunPosition.GetX()), asin(sunPosition.GetY()));
+        }
+
+        void PhysicalSkyComponentController::SetEnabled(bool enable)
+        {
+            m_configuration.m_skyBoxFogSettings.m_enable = enable;
+            m_featureProcessorInterface->SetFogEnabled(enable);
+        }
+
+        bool PhysicalSkyComponentController::IsEnabled() const
+        {
+            return m_configuration.m_skyBoxFogSettings.m_enable;
+        }
+
+        void PhysicalSkyComponentController::SetColor(const AZ::Color& color)
+        {
+            m_configuration.m_skyBoxFogSettings.m_color = color;
+            m_featureProcessorInterface->SetFogColor(color);
+        }
+
+        const AZ::Color& PhysicalSkyComponentController::GetColor() const
+        {
+            return m_configuration.m_skyBoxFogSettings.m_color;
+        }
+
+        void PhysicalSkyComponentController::SetTopHeight(float topHeight)
+        {
+            m_configuration.m_skyBoxFogSettings.m_topHeight = topHeight;
+            m_featureProcessorInterface->SetFogTopHeight(topHeight);
+        }
+
+        float PhysicalSkyComponentController::GetTopHeight() const
+        {
+            return m_configuration.m_skyBoxFogSettings.m_topHeight;
+        }
+
+        void PhysicalSkyComponentController::SetBottomHeight(float bottomHeight)
+        {
+            m_configuration.m_skyBoxFogSettings.m_bottomHeight = bottomHeight;
+            m_featureProcessorInterface->SetFogBottomHeight(bottomHeight);
+        }
+
+        float PhysicalSkyComponentController::GetBottomHeight() const
+        {
+            return m_configuration.m_skyBoxFogSettings.m_bottomHeight;
         }
     }
 }

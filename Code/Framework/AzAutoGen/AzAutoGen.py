@@ -1,13 +1,8 @@
 #!/usr/bin/python
 
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 
 import io
 import os
@@ -169,38 +164,26 @@ def ProcessTemplateConversion(dataInputSet, dataInputFiles, templateFile, output
             outputExtension = os.path.splitext(outputFile)[1]
             if outputExtension == ".xml" or outputExtension == ".xhtml" or outputExtension == ".xsd":
                 compareFD.write('<?xml version="1.0"?>\n')
-                compareFD.write('<!-- All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or its licensors. -->\n')
+                compareFD.write('<!-- Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution..                 -->\n')
                 compareFD.write('\n')
-                compareFD.write('<!-- For complete copyright and license terms please see the LICENSE at the root of this\n')
-                compareFD.write('     distribution (the "License"). All use of this software is governed by the License,\n')
-                compareFD.write('     or, if provided, by the license below or the license accompanying this file. Do not\n')
-                compareFD.write('     remove or modify any license notices. This file is distributed on an "AS IS" BASIS,\n')
-                compareFD.write('     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. -->\n')
+                compareFD.write('<!-- SPDX-License-Identifier: Apache-2.0 OR MIT                                -->\n')
                 compareFD.write('\n')
-                compareFD.write('<!-- This file is generated automatically at compile time, DO NOT EDIT BY HAND-->\n')
+                compareFD.write('<!-- This file is generated automatically at compile time, DO NOT EDIT BY HAND -->\n')
                 compareFD.write('<!-- Template Source {0}; XML Sources {1}-->\n'.format(templateFile, ', '.join(dataInputFiles)))
                 compareFD.write('\n')
             elif outputExtension == ".lua":
-                compareFD.write('-- All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or its licensors.\n')
+                compareFD.write('-- Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution..\n')
                 compareFD.write('\n')
-                compareFD.write('-- For complete copyright and license terms please see the LICENSE at the root of this\n')
-                compareFD.write('-- distribution (the "License"). All use of this software is governed by the License,\n')
-                compareFD.write('-- or, if provided, by the license below or the license accompanying this file. Do not\n')
-                compareFD.write('-- remove or modify any license notices. This file is distributed on an "AS IS" BASIS,\n')
-                compareFD.write('-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n')
+                compareFD.write('-- SPDX-License-Identifier: Apache-2.0 OR MIT\n')
                 compareFD.write('\n')
                 compareFD.write('-- This file is generated automatically at compile time, DO NOT EDIT BY HAND\n')
                 compareFD.write('-- Template Source {0}; XML Sources {1}\n'.format(templateFile, ', '.join(dataInputFiles)))
                 compareFD.write('\n')
             elif outputExtension == ".h" or outputExtension == ".hpp" or outputExtension == ".inl" or outputExtension == ".c" or outputExtension == ".cpp":
                 compareFD.write('/*\n')
-                compareFD.write(' * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or its licensors.\n')
+                compareFD.write(' * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution..\n')
                 compareFD.write(' *\n')
-                compareFD.write(' * For complete copyright and license terms please see the LICENSE at the root of this\n')
-                compareFD.write(' * distribution (the "License"). All use of this software is governed by the License,\n')
-                compareFD.write(' * or, if provided, by the license below or the license accompanying this file. Do not\n')
-                compareFD.write(' * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,\n')
-                compareFD.write(' * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n')
+                compareFD.write(' * SPDX-License-Identifier: Apache-2.0 OR MIT\n')
                 compareFD.write(' *\n')
                 compareFD.write(' * This file is generated automatically at compile time, DO NOT EDIT BY HAND\n')
                 compareFD.write(' * Template Source {0}; Data Sources {1}\n'.format(templateFile, ', '.join(dataInputFiles)))

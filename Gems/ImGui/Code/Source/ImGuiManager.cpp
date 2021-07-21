@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -280,6 +275,20 @@ void ImGui::ImGuiManager::RestoreRenderWindowSizeToDefault()
 {
     m_overridingWindowSize = false;
     InitWindowSize();
+}
+
+void ImGui::ImGuiManager::SetDpiScalingFactor(float dpiScalingFactor)
+{
+    ImGuiIO& io = ImGui::GetIO();
+    // Set the global font scale to size our UI to the scaling factor
+    // Note: Currently we use the default, 13px fixed-size IMGUI font, so this can get somewhat blurry
+    io.FontGlobalScale = dpiScalingFactor;
+}
+
+float ImGui::ImGuiManager::GetDpiScalingFactor() const
+{
+    ImGuiIO& io = ImGui::GetIO();
+    return io.FontGlobalScale;
 }
 
 void ImGuiManager::Render()
@@ -729,7 +738,14 @@ void ImGuiManager::ToggleThroughImGuiVisibleState(int controllerIndex)
     }
 
     m_menuBarStatusChanged = true;
+    m_setEnabledEvent.Signal(m_clientMenuBarState == DisplayState::Hidden);
 }
+
+void ImGuiManager::ToggleThroughImGuiVisibleState()
+{
+    ToggleThroughImGuiVisibleState(-1);
+}
+
 
 void ImGuiManager::RenderImGuiBuffers(const ImVec2& scaleRects)
 {

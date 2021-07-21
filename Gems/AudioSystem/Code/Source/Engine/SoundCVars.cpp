@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #include <SoundCVars.h>
 #include <AudioLogger.h>
@@ -22,11 +17,8 @@
 #include <MicrophoneBus.h>
 
 
-namespace Audio
+namespace Audio::CVars
 {
-    extern CAudioLogger g_audioLogger;
-
-
     // CVar: s_EnableRaycasts
     // Usage: s_EnableRaycasts=true (false)
     AZ_CVAR(bool, s_EnableRaycasts, true,
@@ -98,7 +90,7 @@ namespace Audio
     // CVar: s_RaycastSmoothFactor
     // Usage: s_RaycastSmoothFactor=5.0
     AZ_CVAR(float, s_RaycastSmoothFactor, 7.f,
-        [](const float& smoothFactor) ->void
+        [](const float& smoothFactor) -> void
         {
             static constexpr float s_absoluteMinRaycastSmoothFactor = 0.f;
             static constexpr float s_absoluteMaxRaycastSmoothFactor = 10.f;
@@ -111,104 +103,97 @@ namespace Audio
         "How slowly the smoothing of obstruction/occlusion values should smooth to target: delta / (smoothFactor^2 + 1).  "
         "Low values will smooth faster, high values will smooth slower.");
 
+    AZ_CVAR(AZ::u64, s_ATLMemorySize, AZ_TRAIT_AUDIOSYSTEM_ATL_POOL_SIZE,
+        nullptr, AZ::ConsoleFunctorFlags::Null,
+        "The size in KiB of memory to be used by the ATL/Audio System.\n"
+        "Usage: s_ATLMemorySize=" AZ_TRAIT_AUDIOSYSTEM_ATL_POOL_SIZE_DEFAULT_TEXT "\n");
+
+    AZ_CVAR(AZ::u64, s_FileCacheManagerMemorySize, AZ_TRAIT_AUDIOSYSTEM_FILE_CACHE_MANAGER_SIZE,
+        nullptr, AZ::ConsoleFunctorFlags::Null,
+        "The size in KiB the File Cache Manager will use for banks.\n"
+        "Usage: s_FileCacheManagerMemorySize=" AZ_TRAIT_AUDIOSYSTEM_FILE_CACHE_MANAGER_SIZE_DEFAULT_TEXT "\n");
+
+    AZ_CVAR(AZ::u64, s_AudioEventPoolSize, AZ_TRAIT_AUDIOSYSTEM_AUDIO_EVENT_POOL_SIZE,
+        nullptr, AZ::ConsoleFunctorFlags::Null,
+        "The number of audio events to preallocate in a pool.\n"
+        "Usage: s_AudioEventPoolSize=" AZ_TRAIT_AUDIOSYSTEM_AUDIO_EVENT_POOL_SIZE_DEFAULT_TEXT "\n");
+
+    AZ_CVAR(AZ::u64, s_AudioObjectPoolSize, AZ_TRAIT_AUDIOSYSTEM_AUDIO_OBJECT_POOL_SIZE,
+        nullptr, AZ::ConsoleFunctorFlags::Null,
+        "The number of audio objects to preallocate in a pool.\n"
+        "Usage: s_AudioObjectPoolSize=" AZ_TRAIT_AUDIOSYSTEM_AUDIO_OBJECT_POOL_SIZE_DEFAULT_TEXT "\n");
+
+    AZ_CVAR(float, s_PositionUpdateThreshold, 0.1f,
+        nullptr, AZ::ConsoleFunctorFlags::Null,
+        "An audio object needs to move by this distance in order to issue a position update to the audio system.\n"
+        "Usage: s_PositionUpdateThreshold=5.0\n");
+
+    AZ_CVAR(float, s_VelocityTrackingThreshold, 0.1f,
+        nullptr, AZ::ConsoleFunctorFlags::Null,
+        "An audio object needs to have its velocity changed by this amount in order to issue an 'object_speed' Rtpc update to the audio system.\n"
+        "Usage: s_VelocityTrackingThreshold=0.5\n");
+
+    AZ_CVAR(AZ::u32, s_AudioProxiesInitType, 0,
+        [](const AZ::u32& initType) -> void
+        {
+            static constexpr AZ::u32 s_numAudioProxyInitTypes = 3;
+            if (initType < s_numAudioProxyInitTypes)
+            {
+                s_AudioProxiesInitType = initType;
+            }
+        },
+        AZ::ConsoleFunctorFlags::Null,
+        "Overrides the initialization mode of audio proxies globally.\n"
+        "0: AudioProxy-specific initiaization (Default).\n"
+        "1: All AudioProxy's initialize synchronously.\n"
+        "2: All AudioProxy's initialize asynchronously.\n"
+        "Usage: s_AudioProxiesInitType=2\n");
+
+#if !defined(AUDIO_RELEASE)
+    AZ_CVAR(bool, s_IgnoreWindowFocus, false,
+        nullptr, AZ::ConsoleFunctorFlags::Null,
+        "Determines whether application focus should issue events to the audio system or not.\n"
+        "false: Window focus event should be issued (Default).\n"
+        "true: Ignore window focus events.\n"
+        "Usage: s_IgnoreWindowFocus=true\n");
+
+    AZ_CVAR(bool, s_ShowActiveAudioObjectsOnly, false,
+        nullptr, AZ::ConsoleFunctorFlags::Null,
+        "Determines whether active or all audio objects should be drawn when debug drawing is enabled.\n"
+        "false: Draws all audio objects (Default).\n"
+        "true: Draws only active audio objects.\n"
+        "Usage: s_ShowActiveAudioObjectsOnly=true\n");
+
+    AZ_CVAR(AZ::CVarFixedString, s_AudioTriggersDebugFilter, "",
+        nullptr, AZ::ConsoleFunctorFlags::Null,
+        "Filters debug drawing to only audio triggers that match this filter as sub-string.\n"
+        "Usage: s_AudioTriggersDebugFilter=impact_hit\n");
+
+    AZ_CVAR(AZ::CVarFixedString, s_AudioObjectsDebugFilter, "",
+        nullptr, AZ::ConsoleFunctorFlags::Null,
+        "Filters debug drawing to only audio objects whose name matches this filter as a sub-string.\n"
+        "Usage: s_AudioObjectsDebugFilter=weapon_axe\n");
+#endif // !AUDIO_RELEASE
+
+} // namespace Audio::CVars
+
+namespace Audio
+{
+    extern CAudioLogger g_audioLogger;
+
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     CSoundCVars::CSoundCVars()
-        : m_nATLPoolSize(0)
-        , m_nFileCacheManagerSize(0)
-        , m_nAudioObjectPoolSize(0)
-        , m_nAudioEventPoolSize(0)
-        , m_nAudioProxiesInitType(0)
-        , m_fPositionUpdateThreshold(0.0f)
-        , m_fVelocityTrackingThreshold(0.0f)
-        , m_audioListenerTranslationPercentage(0.f)
-        , m_audioListenerTranslationZOffset(0.f)
-
     #if !defined(AUDIO_RELEASE)
-        , m_nIgnoreWindowFocus(0)
-        , m_nDrawAudioDebug(0)
+        : m_nDrawAudioDebug(0)
         , m_nFileCacheManagerDebugFilter(0)
         , m_nAudioLoggingOptions(0)
-        , m_nShowActiveAudioObjectsOnly(0)
-        , m_pAudioTriggersDebugFilter(nullptr)
-        , m_pAudioObjectsDebugFilter(nullptr)
     #endif // !AUDIO_RELEASE
-    {
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    CSoundCVars::~CSoundCVars()
     {
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CSoundCVars::RegisterVariables()
     {
-        m_nATLPoolSize          = AZ_TRAIT_AUDIOSYSTEM_ATL_POOL_SIZE;
-        m_nAudioEventPoolSize   = AZ_TRAIT_AUDIOSYSTEM_AUDIO_EVENT_POOL_SIZE;
-        m_nAudioObjectPoolSize  = AZ_TRAIT_AUDIOSYSTEM_AUDIO_OBJECT_POOL_SIZE;
-        m_nFileCacheManagerSize = AZ_TRAIT_AUDIOSYSTEM_FILE_CACHE_MANAGER_SIZE;
-
-        // Common Cross-Platform Defaults
-        m_nAudioProxiesInitType         = 0;
-        m_fPositionUpdateThreshold      = 0.1f;
-        m_fVelocityTrackingThreshold    = 0.1f;
-
-        REGISTER_CVAR2("s_ATLPoolSize", &m_nATLPoolSize, m_nATLPoolSize, VF_REQUIRE_APP_RESTART,
-            "Specifies the size (in KiB) of the memory pool to be used by the ATL.\n"
-            "Usage: s_ATLPoolSize [0/...]\n"
-            "Default: " AZ_TRAIT_AUDIOSYSTEM_ATL_POOL_SIZE_DEFAULT_TEXT "\n");
-
-        REGISTER_CVAR2("s_AudioEventPoolSize", &m_nAudioEventPoolSize, m_nAudioEventPoolSize, VF_REQUIRE_APP_RESTART,
-            "Sets the number of preallocated audio events.\n"
-            "Usage: s_AudioEventPoolSize [0/...]\n"
-            "Default: " AZ_TRAIT_AUDIOSYSTEM_AUDIO_EVENT_POOL_SIZE_DEFAULT_TEXT "\n");
-
-        REGISTER_CVAR2("s_AudioObjectPoolSize", &m_nAudioObjectPoolSize, m_nAudioObjectPoolSize, VF_REQUIRE_APP_RESTART,
-            "Sets the number of preallocated audio objects and corresponding audio proxies.\n"
-            "Usage: s_AudioObjectPoolSize [0/...]\n"
-            "Default: " AZ_TRAIT_AUDIOSYSTEM_AUDIO_OBJECT_POOL_SIZE_DEFAULT_TEXT "\n");
-
-        REGISTER_CVAR2("s_FileCacheManagerSize", &m_nFileCacheManagerSize, m_nFileCacheManagerSize, VF_REQUIRE_APP_RESTART,
-            "Sets the size in KiB the AFCM will allocate on the heap.\n"
-            "Usage: s_FileCacheManagerSize [0/...]\n"
-            "Default: " AZ_TRAIT_AUDIOSYSTEM_FILE_CACHE_MANAGER_SIZE_DEFAULT_TEXT "\n");
-
-
-        REGISTER_CVAR2("s_PositionUpdateThreshold", &m_fPositionUpdateThreshold, m_fPositionUpdateThreshold, VF_CHEAT | VF_CHEAT_NOCHECK,
-            "An audio object has to move by at least this amount to issue a position update request to the audio system.\n"
-            "This kind of optimization should ideally be done by the parent system so this is here for convenience.\n"
-            "Usage: s_PositionUpdateThreshold [0/...]\n"
-            "Default: 0.1 (10 cm)\n");
-
-        REGISTER_CVAR2("s_VelocityTrackingThreshold", &m_fVelocityTrackingThreshold, m_fVelocityTrackingThreshold, VF_CHEAT | VF_CHEAT_NOCHECK,
-            "An audio object has to change its velocity by at least this amount to issue an \"object_speed\" RTPC update request to the audio system.\n"
-            "Usage: s_VelocityTrackingThreshold [0/...]\n"
-            "Default: 0.1 (10 cm/s)\n");
-
-        REGISTER_CVAR2("s_AudioProxiesInitType", &m_nAudioProxiesInitType, m_nAudioProxiesInitType, VF_NULL,
-            "Can override AudioProxies' init type on a global scale.\n"
-            "If set it determines whether AudioProxies initialize synchronously or asynchronously.\n"
-            "This is a performance type cvar as asynchronously initializing AudioProxies\n"
-            "will have a greatly reduced impact on the calling thread.\n"
-            "Be aware though that when set to initialize asynchronously that audio will play back delayed.\n"
-            "By how much will greatly depend on the audio thread's work load.\n"
-            "0: AudioProxy specific initialization.\n"
-            "1: All AudioProxies initialize synchronously.\n"
-            "2: All AudioProxies initialize asynchronously.\n"
-            "Usage: s_AudioProxiesInitType [0/1/2]\n"
-            "Default: 0\n");
-
-        REGISTER_CVAR2("s_AudioListenerTranslationZOffset", &m_audioListenerTranslationZOffset, 0.f, VF_NULL,
-            "Use this to specify a Z-Offset (\"Up\") for the audio listener's position.\n"
-            "Usage: s_AudioListenerTranslationZOffset 1.3\n"
-            "Default: 0.0\n");
-
-        REGISTER_CVAR2("s_AudioListenerTranslationPercentage", &m_audioListenerTranslationPercentage, 0.f, VF_NULL,
-            "Use this to specify a percentage of translation of the audio listener between two points\n"
-            "(usually these are the camera's location and player's location).\n"
-            "Usage: s_AudioListenerTranslationPercentage [0.0..1.0]\n"
-            "Default: 0.0\n");
-
 #if !defined(AUDIO_RELEASE)
         REGISTER_COMMAND("s_ExecuteTrigger", CmdExecuteTrigger, VF_CHEAT,
             "Execute an Audio Trigger.\n"
@@ -282,11 +267,6 @@ namespace Audio
             "Usage: s_SetPanningMode headphones\n"
         );
 
-        REGISTER_CVAR2("s_IgnoreWindowFocus", &m_nIgnoreWindowFocus, 0, VF_DEV_ONLY,
-            "If set to 1, the sound system will continue playing when the Editor or Game window loses focus.\n"
-            "Usage: s_IgnoreWindowFocus [0/1]\n"
-            "Default: 0 (off)\n");
-
         REGISTER_CVAR2("s_DrawAudioDebug", &m_nDrawAudioDebug, 0, VF_CHEAT | VF_CHEAT_NOCHECK | VF_BITFIELD,
             "Draws AudioTranslationLayer related debug data to the screen.\n"
             "Usage: s_DrawAudioDebug [0ab...] (flags can be combined)\n"
@@ -322,40 +302,12 @@ namespace Audio
             "a: Errors\n"
             "b: Warnings\n"
             "c: Comments\n");
-
-        REGISTER_CVAR2("s_ShowActiveAudioObjectsOnly", &m_nShowActiveAudioObjectsOnly, 1, VF_DEV_ONLY,
-            "When drawing audio object names on the screen this cvar can be used to choose between all registered audio objects or only those that reference active audio triggers.\n"
-            "Usage: s_ShowActiveAudioObjectsOnly [0/1]\n"
-            "Default: 1 (active only)\n");
-
-        m_pAudioTriggersDebugFilter = REGISTER_STRING("s_AudioTriggersDebugFilter", "", 0,
-            "Allows for filtered display of audio triggers by a search string.\n"
-            "Usage: s_AudioTriggersDebugFilter laser\n"
-            "Default: \"\" (all)\n");
-
-        m_pAudioObjectsDebugFilter = REGISTER_STRING("s_AudioObjectsDebugFilter", "", 0,
-            "Allows for filtered display of audio objects by a search string.\n"
-            "Usage: s_AudioObjectsDebugFilter spaceship.\n"
-            "Default: \"\" (all)\n");
-
 #endif // !AUDIO_RELEASE
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CSoundCVars::UnregisterVariables()
     {
-        UNREGISTER_CVAR("s_ATLPoolSize");
-
-
-        UNREGISTER_CVAR("s_PositionUpdateThreshold");
-        UNREGISTER_CVAR("s_VelocityTrackingThreshold");
-        UNREGISTER_CVAR("s_FileCacheManagerSize");
-        UNREGISTER_CVAR("s_AudioObjectPoolSize");
-        UNREGISTER_CVAR("s_AudioEventPoolSize");
-        UNREGISTER_CVAR("s_AudioProxiesInitType");
-        UNREGISTER_CVAR("s_AudioListenerTranslationYOffset");
-        UNREGISTER_CVAR("s_AudioListenerTranslationPercentage");
-
 #if !defined(AUDIO_RELEASE)
         UNREGISTER_COMMAND("s_ExecuteTrigger");
         UNREGISTER_COMMAND("s_StopTrigger");
@@ -366,19 +318,14 @@ namespace Audio
         UNREGISTER_COMMAND("s_PlayFile");
         UNREGISTER_COMMAND("s_PlayExternalSource");
         UNREGISTER_COMMAND("s_SetPanningMode");
-        UNREGISTER_CVAR("s_IgnoreWindowFocus");
         UNREGISTER_CVAR("s_DrawAudioDebug");
         UNREGISTER_CVAR("s_FileCacheManagerDebugFilter");
         UNREGISTER_CVAR("s_AudioLoggingOptions");
-        UNREGISTER_CVAR("s_ShowActiveAudioObjectsOnly");
-        UNREGISTER_CVAR("s_AudioTriggersDebugFilter");
-        UNREGISTER_CVAR("s_AudioObjectsDebugFilter");
 #endif // !AUDIO_RELEASE
     }
 
 
 #if !defined(AUDIO_RELEASE)
-
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CSoundCVars::CmdExecuteTrigger(IConsoleCmdArgs* pCmdArgs)
     {

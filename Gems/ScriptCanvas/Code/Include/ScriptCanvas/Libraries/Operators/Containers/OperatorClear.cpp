@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "OperatorClear.h"
 
@@ -71,36 +66,6 @@ namespace ScriptCanvas
                     SetDynamicGroup(slot->GetId(), AZ::Crc32("ContainerGroup"));
                 }
                 ////
-            }
-
-            void OperatorClear::OnInputSignal(const SlotId& slotId)
-            {
-                const SlotId inSlotId = OperatorBaseProperty::GetInSlotId(this);
-
-                if (slotId != inSlotId)
-                {
-                    return;
-                }
-
-                SlotId sourceSlotId = OperatorClearProperty::GetSourceSlotId(this);
-
-                if (const Datum* containerDatum = FindDatum(sourceSlotId))
-                {
-                    if (Datum::IsValidDatum(containerDatum))
-                    {
-                        AZ::Outcome<Datum, AZStd::string> clearOutcome = BehaviorContextMethodHelper::CallMethodOnDatum(*containerDatum, "Clear");
-                        if (!clearOutcome.IsSuccess())
-                        {
-                            SCRIPTCANVAS_REPORT_ERROR((*this), "Failed to call Clear on container: %s", clearOutcome.GetError().c_str());
-                            return;
-                        }
-
-                        // Push the source container as an output to support chaining
-                        PushOutput(*containerDatum, *OperatorClearProperty::GetContainerSlot(this));
-                    }
-                }
-
-                SignalOutput(GetSlotId("Out"));
             }
         }
     }

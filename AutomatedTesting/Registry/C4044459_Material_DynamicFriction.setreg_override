@@ -101,9 +101,6 @@
                             ]
                         }
                     },
-                    "DefaultMaterial": {
-                        "SurfaceType": "Default_1"
-                    },
                     "MaterialLibrary": {
                         "assetId": {
                             "guid": "{6AA79EE4-7EC3-5717-87AE-EDD7D886FD7F}"

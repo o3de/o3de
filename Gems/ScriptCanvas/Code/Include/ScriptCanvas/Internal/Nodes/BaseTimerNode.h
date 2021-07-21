@@ -1,21 +1,13 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
-#include <AzCore/Component/TickBus.h>
-
 #include <ScriptCanvas/Core/Node.h>
-
 #include <Include/ScriptCanvas/Internal/Nodes/BaseTimerNode.generated.h>
 
 namespace ScriptCanvas
@@ -28,8 +20,6 @@ namespace ScriptCanvas
             class BaseTimerNode
                 : public Node
                 , public NodePropertyInterfaceListener
-                , public AZ::TickBus::Handler
-                , public AZ::SystemTickBus::Handler
             {
             public:
 
@@ -49,32 +39,16 @@ namespace ScriptCanvas
                     "Seconds"
                 };
                 
-                virtual ~BaseTimerNode();
-
                 // Node...
                 void OnInit() override;
                 void OnConfigured() override;
-                void OnDeactivate() override;
 
                 void ConfigureVisualExtensions() override;
                 NodePropertyInterface* GetPropertyInterface(AZ::Crc32 propertyId) override;
-                ////
-                
-                // SystemTickBus...
-                void OnSystemTick() override;
-                ////
-                
-                // TickBus...
-                void OnTick(float delta, AZ::ScriptTimePoint timePoint) override;
-                int GetTickOrder() override;
-                ////
-                
+                                                
                 // Method that will handle displaying and viewing of the time slot
                 void AddTimeDataSlot();
                 
-                void StartTimer();
-                void StopTimer();
-
                 AZStd::string GetTimeSlotName() const;
 
             protected:
@@ -88,7 +62,6 @@ namespace ScriptCanvas
                 bool IsActive() const;
                 
                 virtual bool AllowInstantResponse() const;
-                virtual void OnTimeElapsed();
 
                 // Store until versioning is complete
                 virtual const char* GetTimeSlotFormat() const { return "Time (%s)";  }
@@ -110,7 +83,7 @@ namespace ScriptCanvas
                 ////
 
                 int m_timeUnits = 0;
-                int m_tickOrder = static_cast<int>(AZ::TICK_DEFAULT);
+                int m_tickOrder = 1000; // from TICK_DEFAULT
                     
                 bool m_isActive = false;
                     

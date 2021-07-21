@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 # This file contains utility wrappers for dealing with the Gems system. 
@@ -35,25 +31,29 @@ function(ly_create_alias)
                             "Make sure the target wasn't copy and pasted here or elsewhere.")
     endif()
 
-    # easy version - if its juts one target, we can directly get the target, and make both aliases, 
+    # easy version - if its just one target and it exist at the time of this call,
+    # we can directly get the target, and make both aliases,
     # the namespaced and non namespaced one, point at it.
     list(LENGTH ly_create_alias_TARGETS number_of_targets)
     if (number_of_targets EQUAL 1)
-        ly_de_alias_target(${ly_create_alias_TARGETS} de_aliased_target_name)
-        add_library(${ly_create_alias_NAMESPACE}::${ly_create_alias_NAME} ALIAS ${de_aliased_target_name})
-        if (NOT TARGET ${ly_create_alias_NAME})
-            add_library(${ly_create_alias_NAME} ALIAS ${de_aliased_target_name})
+        if(TARGET ${ly_create_alias_TARGETS})
+            ly_de_alias_target(${ly_create_alias_TARGETS} de_aliased_target_name)
+            add_library(${ly_create_alias_NAMESPACE}::${ly_create_alias_NAME} ALIAS ${de_aliased_target_name})
+            if (NOT TARGET ${ly_create_alias_NAME})
+                add_library(${ly_create_alias_NAME} ALIAS ${de_aliased_target_name})
+            endif()
+            # Store off the arguments needed used ly_create_alias into a DIRECTORY property
+            # This will be used to re-create the calls in the generated CMakeLists.txt in the INSTALL step
+            string(REPLACE ";" " " create_alias_args "${ly_create_alias_NAME},${ly_create_alias_NAMESPACE},${ly_create_alias_TARGETS}")
+            set_property(DIRECTORY APPEND PROPERTY LY_CREATE_ALIAS_ARGUMENTS "${ly_create_alias_NAME},${ly_create_alias_NAMESPACE},${ly_create_alias_TARGETS}")
+            return()
         endif()
-        # Store off the arguments needed used ly_create_alias into a DIRECTORY property
-        # This will be used to re-create the calls in the generated CMakeLists.txt in the INSTALL step
-        string(REPLACE ";" " " create_alias_args "${ly_create_alias_NAME},${ly_create_alias_NAMESPACE},${ly_create_alias_TARGETS}")
-        set_property(DIRECTORY APPEND PROPERTY LY_CREATE_ALIAS_ARGUMENTS "${ly_create_alias_NAME},${ly_create_alias_NAMESPACE},${ly_create_alias_TARGETS}")
-        return()
     endif()
 
-    # more complex version - one alias to multiple targets.  To actually achieve this
-    # we have to create an interface library with those dependencies, then we have to create an alias to that target.
-    # by convention we create one without a namespace then alias the namespaced one.
+    # more complex version - one alias to multiple targets or the alias is being made to a TARGET that doesn't exist yet.
+    # To actually achieve this we have to create an interface library with those dependencies,
+    # then we have to create an alias to that target.
+    # By convention we create one without a namespace then alias the namespaced one.
 
     if(TARGET ${ly_create_alias_NAME})
         message(FATAL_ERROR "Internal alias target already exists, cannot create an alias for it: ${ly_create_alias_NAME}\n"
@@ -84,7 +84,7 @@ function(ly_create_alias)
     # now add the final alias:
     add_library(${ly_create_alias_NAMESPACE}::${ly_create_alias_NAME} ALIAS ${ly_create_alias_NAME})
 
-    # Store off the arguments needed used ly_create_alias into a DIRECTORY property
+    # Store off the arguments used by ly_create_alias into a DIRECTORY property
     # This will be used to re-create the calls in the generated CMakeLists.txt in the INSTALL step
 
     # Replace the CMake list separator with a space to replicate the space separated TARGETS arguments
@@ -136,8 +136,8 @@ function(ly_enable_gems)
         if(NOT was_able_to_load_the_file)
             message(FATAL_ERROR "could not load the GEM_FILE ${ly_enable_gems_GEM_FILE}")
         endif()
-        if(NOT ENABLED_GEMS)
-            message(FATAL_ERROR "GEM_FILE ${ly_enable_gems_GEM_FILE} did not set the value of ENABLED_GEMS.\n"
+        if(NOT DEFINED ENABLED_GEMS)
+            message(WARNING "GEM_FILE ${ly_enable_gems_GEM_FILE} did not set the value of ENABLED_GEMS.\n"
                                 "Gem Files should contain set(ENABLED_GEMS ... <list of gem names>)")
         endif()
         set(ly_enable_gems_GEMS ${ENABLED_GEMS})
@@ -148,9 +148,25 @@ function(ly_enable_gems)
     foreach(target_name ${ly_enable_gems_TARGETS})
         foreach(variant_name ${ly_enable_gems_VARIANTS})
             set_property(GLOBAL APPEND PROPERTY LY_DELAYED_ENABLE_GEMS "${ly_enable_gems_PROJECT_NAME},${target_name},${variant_name}")
+            define_property(GLOBAL PROPERTY LY_DELAYED_ENABLE_GEMS_"${ly_enable_gems_PROJECT_NAME},${target_name},${variant_name}"
+                BRIEF_DOCS "List of gem names to evaluate variants against" FULL_DOCS "Names of gems that will be paired with the variant name
+                    to determine if it is valid target that should be added as an application dynamic load dependency")
             set_property(GLOBAL APPEND PROPERTY LY_DELAYED_ENABLE_GEMS_"${ly_enable_gems_PROJECT_NAME},${target_name},${variant_name}" ${ly_enable_gems_GEMS})
         endforeach()
     endforeach()
+
+    # Store off the arguments used by ly_enable_gems into a DIRECTORY property
+    # This will be used to re-create the ly_enable_gems call in the generated CMakeLists.txt at the INSTALL step
+
+    # Replace the CMake list separator with a space to replicate the space separated TARGETS arguments
+    if(NOT ly_enable_gems_PROJECT_NAME STREQUAL "__NOPROJECT__")
+        set(replicated_project_name ${ly_enable_gems_PROJECT_NAME})
+    endif()
+    # The GEM_FILE file is used to populate the GEMS argument via the ENABLED_GEMS variable in the file.
+    # Furthermore the GEM_FILE itself is not copied over to the install layout, so make its argument entry blank and use the list of GEMS
+    # stored in ly_enable_gems_GEMS
+    string(REPLACE ";" " " enable_gems_args "${replicated_project_name},${ly_enable_gems_GEMS},,${ly_enable_gems_VARIANTS},${ly_enable_gems_TARGETS}")
+    set_property(DIRECTORY APPEND PROPERTY LY_ENABLE_GEMS_ARGUMENTS "${enable_gems_args}")
 endfunction()
 
 # call this before runtime dependencies are used to add any relevant targets
@@ -176,6 +192,20 @@ function(ly_enable_gems_delayed)
 
         get_property(gem_dependencies GLOBAL PROPERTY LY_DELAYED_ENABLE_GEMS_"${project_target_variant}")
         if (NOT gem_dependencies)
+            get_property(gem_dependencies_defined GLOBAL PROPERTY LY_DELAYED_ENABLE_GEMS_"${project_target_variant}" DEFINED)
+            if (gem_dependencies_defined)
+                # special case, if the LY_DELAYED_ENABLE_GEMS_"${project_target_variant}" property is DEFINED
+                # but empty, add an entry to the LY_DELAYED_LOAD_DEPENDENCIES to have the
+                # cmake_dependencies.*.setreg file for the (project, target) tuple to be regenerated
+                # This is needed if the ENABLED_GEMS list for a project goes from >0 to 0. In this case
+                # the cmake_dependencies would have a stale list of gems to load unless it is regenerated
+                get_property(delayed_load_target_set GLOBAL PROPERTY LY_DELAYED_LOAD_"${project},${target}" SET)
+                if(NOT delayed_load_target_set)
+                    set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LOAD_DEPENDENCIES "${project},${target}")
+                    set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LOAD_"${project},${target}" "")
+                endif()
+            endif()
+            # Continue to the next iteration loop regardless as there are no gem dependencies
             continue()
         endif()
 

@@ -1,12 +1,7 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 
 Utility class to resolve Lumberyard directory paths & file mappings.
 """
@@ -14,11 +9,15 @@ Utility class to resolve Lumberyard directory paths & file mappings.
 import os
 import pathlib
 import warnings
+import json
+import logging
 from abc import ABCMeta, abstractmethod
+from weakref import KeyedRef
 
 import ly_test_tools._internal.pytest_plugin
 from ly_test_tools.environment.file_system import find_ancestor_file
 
+logger = logging.getLogger(__name__)
 
 def _find_engine_root(initial_path):
     # type: (str) -> str
@@ -50,11 +49,41 @@ def _find_project_json(engine_root, project):
     Find the project.json file for this project.
     :return: Full path to the project.json file
     """
-    # First check relative to defined build directory, for external projects which configure through SDK settings
-    project_json = find_ancestor_file(target_file_name='project.json',
-                                      start_path=ly_test_tools._internal.pytest_plugin.build_directory)
-    if not project_json:  # check internally for a project bundled with the engine
-        project_json = os.path.join(engine_root, project, 'project.json')
+    project_json = None
+    
+    # Check the o3de_manifest.json and for the "projects" key
+    manifest_json = os.path.join(os.path.expanduser('~'), '.o3de', 'o3de_manifest.json')
+    if os.path.isfile(manifest_json):
+        # Read the o3de_manifest.json 
+        with open(manifest_json, "r") as manifest_file:
+            json_data = json.load(manifest_file)
+            # Look at the "projects" key for registered project paths
+            try:
+                for projects_path in json_data["projects"]:
+                    check_project_json = os.path.join(projects_path, 'project.json')
+                    # Check for the project.json file inside of the project directory
+                    if os.path.isfile(check_project_json):
+                        # Check if the "project_name" key matches our project
+                        with open(check_project_json, "r") as project_json_file:
+                            project_json_data = json.load(project_json_file)
+                            if project == project_json_data["project_name"]:
+                                project_json = check_project_json
+                                break
+            except KeyError as err:
+                logger.warning(f"Project key could not be found due to error: {err}")
+
+    # Check relative to defined build directory, for external projects which configure through SDK settings
+    if not project_json:
+        project_json = find_ancestor_file(target_file_name='project.json',
+                                          start_path=ly_test_tools._internal.pytest_plugin.build_directory)
+    # Check internally for a project bundled with the engine
+    if not project_json:
+        check_project_json = os.path.join(engine_root, project, 'project.json')
+        if os.path.isfile(check_project_json):
+            project_json = check_project_json
+
+    if not project_json:
+        raise OSError(f"Unable to find the project directory for project: ${project}")
 
     return project_json
 

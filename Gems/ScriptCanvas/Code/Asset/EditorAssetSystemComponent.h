@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -17,23 +12,15 @@
 #include "EditorAssetConversionBus.h"
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <ScriptCanvas/Asset/AssetRegistry.h>
-
-#include <ScriptCanvas/Grammar/GrammarContext.h>
-#include <ScriptCanvas/Grammar/GrammarContextBus.h>
-#include <ScriptCanvas/Translation/TranslationContext.h>
-#include <ScriptCanvas/Translation/TranslationContextBus.h>
 #include <ScriptCanvas/Translation/Translation.h>
 
 namespace ScriptCanvasEditor
 {
     class ScriptCanvasAsset;
-    class ScriptCanvasFunctionAsset;
 
     class EditorAssetSystemComponent
         : public AZ::Component
         , public EditorAssetConversionBus::Handler
-        , public ScriptCanvas::Grammar::RequestBus::Handler
-        , public ScriptCanvas::Translation::RequestBus::Handler
         , private AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
     {
     public:
@@ -62,26 +49,14 @@ namespace ScriptCanvasEditor
         //////////////////////////////////////////////////////////////////////////
         // EditorAssetConversionBus::Handler...
         AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset> LoadAsset(AZStd::string_view graphPath) override;
-        AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasFunctionAsset> LoadFunctionAsset(AZStd::string_view graphPath) override;
         AZ::Outcome<AZ::Data::Asset<ScriptCanvas::RuntimeAsset>, AZStd::string> CreateRuntimeAsset(const AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>& editAsset) override;
-        AZ::Outcome<AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset>, AZStd::string> CreateFunctionRuntimeAsset(const AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasFunctionAsset>& editAsset) override;
         AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> CreateLuaAsset(const AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>& editAsset, AZStd::string_view graphPathForRawLuaFile) override;
         //////////////////////////////////////////////////////////////////////////
         
-        // ScriptCanvas::Grammar::RequestBus::Handler...
-        ScriptCanvas::Grammar::Context* GetGrammarContext() override;
-        
-        // ScriptCanvas::Translation::RequestBus::Handler...
-        ScriptCanvas::Translation::Context* GetTranslationContext() override;
-
-
         ScriptCanvas::AssetRegistry& GetAssetRegistry();
 
     private:
-        ScriptCanvas::AssetRegistry m_editorAssetRegistry;
-        ScriptCanvas::Translation::Context m_translationContext;
-        ScriptCanvas::Grammar::Context m_grammarContext;
-    
+        ScriptCanvas::AssetRegistry m_editorAssetRegistry;    
         EditorAssetSystemComponent(const EditorAssetSystemComponent&) = delete;
     };
 }

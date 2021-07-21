@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 // include the required headers
 #include "EMotionFXConfig.h"
@@ -31,28 +26,19 @@ namespace EMotionFX
 {
     AZ_CLASS_ALLOCATOR_IMPL(Motion, MotionAllocator, 0)
 
-
-    // constructor
     Motion::Motion(const char* name)
         : BaseObject()
     {
-        mCustomData             = nullptr;
-        mNameID                 = MCORE_INVALIDINDEX32;
-        mID                     = MCore::GetIDGenerator().GenerateID();
-        mEventTable             = aznew MotionEventTable();
-        mUnitType               = GetEMotionFX().GetUnitType();
-        mFileUnitType           = mUnitType;
-        mExtractionFlags        = static_cast<EMotionExtractionFlags>(0);
-        m_motionData            = nullptr;
+        mID = MCore::GetIDGenerator().GenerateID();
+        m_eventTable = AZStd::make_unique<MotionEventTable>();
+        mUnitType = GetEMotionFX().GetUnitType();
+        mFileUnitType = mUnitType;
+        mExtractionFlags = static_cast<EMotionExtractionFlags>(0);
 
         if (name)
         {
             SetName(name);
         }
-
-        mMotionFPS              = 30.0f;
-        mDirtyFlag              = false;
-        mAutoUnregister         = true;
 
 #if defined(EMFX_DEVELOPMENT_BUILD)
         mIsOwnedByRuntime       = false;
@@ -62,8 +48,6 @@ namespace EMotionFX
         GetMotionManager().AddMotion(this);
     }
 
-
-    // destructor
     Motion::~Motion()
     {
         // trigger the OnDeleteMotion event
@@ -73,11 +57,6 @@ namespace EMotionFX
         if (mAutoUnregister)
         {
             GetMotionManager().RemoveMotion(this, false);
-        }
-
-        if (mEventTable)
-        {
-            mEventTable->Destroy();
         }
 
         delete m_motionData;
@@ -213,18 +192,13 @@ namespace EMotionFX
 
     MotionEventTable* Motion::GetEventTable() const
     {
-        return mEventTable;
+        return m_eventTable.get();
     }
 
-    void Motion::SetEventTable(MotionEventTable* newTable)
+    void Motion::SetEventTable(AZStd::unique_ptr<MotionEventTable> eventTable)
     {
-        if (mEventTable && mEventTable != newTable)
-        {
-            mEventTable->Destroy();
-        }
-        mEventTable = newTable;
+        m_eventTable = AZStd::move(eventTable);
     }
-
 
     void Motion::SetID(uint32 id)
     {

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 
@@ -59,7 +54,7 @@ namespace Vegetation
 
     class DebugComponent
         : public AZ::Component
-        , private AzFramework::DebugDisplayEventBus::Handler
+        , private AzFramework::EntityDebugDisplayEventBus::Handler
         , private DebugRequestBus::Handler
         , private DebugNotificationBus::Handler
         , private SystemConfigurationRequestBus::Handler
@@ -84,7 +79,8 @@ namespace Vegetation
 
         //////////////////////////////////////////////////////////////////////////
         // EntityDebugDisplayEventBus
-        void DrawGlobalDebugInfo() override;
+        void DisplayEntityViewport(
+            const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay) override;
 
         //////////////////////////////////////////////////////////////////////////
         // DebugNotifications
@@ -117,10 +113,9 @@ namespace Vegetation
     protected:
         void PrepareNextReport();
         void CopyReportToSortedList();
-        void AddConsoleVariables();
-        void RemoveConsoleVariables();
-        void DrawDebugStats();
-        void DrawInstanceDebug();
+        void DrawSectorTimingData(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay);
+        void DrawDebugStats(AzFramework::DebugDisplayRequests& debugDisplay);
+        void DrawInstanceDebug(AzFramework::DebugDisplayRequests& debugDisplay);
 
     private:
         AZStd::atomic_bool m_exportCurrentReport{ false };
@@ -167,7 +162,7 @@ namespace Vegetation
 
         using AreaData = AZStd::vector<AreaTracker>;
         AZStd::size_t MakeAreaSectorKey(AZ::EntityId areaId, SectorId sectorId);
-        AZStd::unordered_map<uint64, AreaTracker> m_currentAreasTiming;
+        AZStd::unordered_map<uint64_t, AreaTracker> m_currentAreasTiming;
         AreaData m_areaData;
 
         AZStd::vector<SectorTiming> m_currentSortedTimingList;

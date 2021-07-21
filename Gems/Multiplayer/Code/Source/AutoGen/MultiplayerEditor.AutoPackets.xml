@@ -7,7 +7,9 @@
   
     <Packet Name="EditorServerInit" Desc="A packet that initializes a local server launched from the editor">
         <Member Type="bool" Name="lastUpdate" Init="false"/>
-        <Member Type="AzNetworking::TcpPacketEncodingBuffer" Name="assetData"/>
+
+        <!--16379 is 16384 (max TCP packet size) - 1 byte (bool lastUpdate) - 4 bytes (serialization overhead for ByteBuffer) -->
+        <Member Type="AzNetworking::ByteBuffer&lt;16379&gt;" Name="assetData"/> 
     </Packet>
 
     <Packet Name="EditorServerReady" Desc="A response packet the local server should send when ready for traffic"/>

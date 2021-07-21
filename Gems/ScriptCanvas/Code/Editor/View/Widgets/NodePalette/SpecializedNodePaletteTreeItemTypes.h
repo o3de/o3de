@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/DraggableNodePaletteTreeItem.h>
@@ -16,39 +11,6 @@
 
 namespace ScriptCanvasEditor
 {
-    // <EntityRefNode>
-    class CreateEntityRefNodeMimeEvent
-        : public CreateNodeMimeEvent
-    {
-    public:
-        AZ_RTTI(CreateEntityRefNodeMimeEvent, "{20CD5AF5-216E-4A41-9630-191C2803899B}", CreateNodeMimeEvent);
-        AZ_CLASS_ALLOCATOR(CreateEntityRefNodeMimeEvent, AZ::SystemAllocator, 0);
-
-        static void Reflect(AZ::ReflectContext* reflectContext);
-
-        CreateEntityRefNodeMimeEvent() = default;
-        CreateEntityRefNodeMimeEvent(const AZ::EntityId& entityId);
-        ~CreateEntityRefNodeMimeEvent() = default;
-
-    protected:
-        ScriptCanvasEditor::NodeIdPair CreateNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId) const override;
-
-    private:
-        AZ::EntityId m_entityId;
-    };
-
-    class EntityRefNodePaletteTreeItem
-        : public GraphCanvas::DraggableNodePaletteTreeItem
-    {
-    public:
-        AZ_CLASS_ALLOCATOR(EntityRefNodePaletteTreeItem, AZ::SystemAllocator, 0);
-        EntityRefNodePaletteTreeItem(AZStd::string_view nodeName, const QString& iconPath);
-        ~EntityRefNodePaletteTreeItem() = default;
-
-        GraphCanvas::GraphCanvasMimeEvent* CreateMimeEvent() const override;
-    };
-    // </EntityRefNode>    
-    
     // <CommentNode>
     class CreateCommentNodeMimeEvent
         : public SpecializedCreateNodeMimeEvent

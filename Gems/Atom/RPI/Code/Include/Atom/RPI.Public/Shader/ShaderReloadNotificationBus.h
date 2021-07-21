@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
@@ -22,10 +17,16 @@ namespace AZ
     {
         class Shader;
         class ShaderAsset;
+        class ShaderVariant;
 
         /**
-         * Connect to this EBus to get notifications whenever a Data::Instance<Shader> reloads its ShaderAsset.
-         * The bus address is the AssetId of the ShaderAsset.
+         * Connect to this EBus to get notifications whenever a shader system class reinitializes itself.
+         * The bus address is the AssetId of the ShaderAsset, even when the thing being reinitialized is a ShaderVariant or other shader related class.
+         *
+         * Be careful when using the parameters provided by these functions. The bus ID is an AssetId, and it's possible for the system to have
+         * both *old* versions and *new reloaded* versions of the asset in memory at the same time, and they will have the same AssetId. Therefore
+         * your bus Handlers could receive Reinitialized messages from multiple sources. It may be necessary to check the memory addresses of these
+         * parameters against local members before using this data.
          */
         class ShaderReloadNotifications
             : public EBusTraits
@@ -35,7 +36,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
             // EBusTraits overrides
             static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
-            typedef Data::AssetId                 BusIdType;
+            typedef Data::AssetId              BusIdType;
             //////////////////////////////////////////////////////////////////////////
 
             virtual ~ShaderReloadNotifications() {}
@@ -47,7 +48,7 @@ namespace AZ
             virtual void OnShaderReinitialized(const Shader& shader) { AZ_UNUSED(shader); }
 
             //! Called when a particular shader variant is reinitialized.
-            virtual void OnShaderVariantReinitialized(const Shader& shader, const ShaderVariantId& shaderVariantId, ShaderVariantStableId shaderVariantStableId) { AZ_UNUSED(shader); AZ_UNUSED(shaderVariantId); AZ_UNUSED(shaderVariantStableId); }
+            virtual void OnShaderVariantReinitialized(const ShaderVariant& shaderVariant) { AZ_UNUSED(shaderVariant); }
         };
 
         typedef EBus<ShaderReloadNotifications> ShaderReloadNotificationBus;
