@@ -32,6 +32,7 @@ namespace PrefabDependencyViewer
     {
         TemplateId tid = 10;
         EXPECT_CALL(*m_prefabSystemComponent, FindTemplateDom(tid))
+            .Times(1)
             .WillRepeatedly(::testing::ReturnRef(m_prefabDomsCases["emptyJSON"]));
 
         Outcome outcome = PrefabDependencyTree::GenerateTreeAndSetRoot(10, m_prefabSystemComponent);
@@ -42,6 +43,7 @@ namespace PrefabDependencyViewer
     {
         TemplateId tid = 2000;
         EXPECT_CALL(*m_prefabSystemComponent, FindTemplateDom(tid))
+            .Times(1)
             .WillRepeatedly(::testing::ReturnRef(m_prefabDomsCases["emptyJSONWithSource"]));
 
         Outcome outcome = PrefabDependencyTree::GenerateTreeAndSetRoot(tid, m_prefabSystemComponent);
@@ -58,15 +60,22 @@ namespace PrefabDependencyViewer
     {
         TemplateId tid = 52893;
         EXPECT_CALL(*m_prefabSystemComponent, FindTemplateDom(tid))
+            .Times(1)
             .WillRepeatedly(::testing::ReturnRef(m_prefabDomsCases["NestedPrefabWithAtleastOneInvalidNestedInstance"]));
 
         EXPECT_CALL(*m_prefabSystemComponent, GetTemplateIdFromFilePath(AZ::IO::PathView("Prefabs/goodPrefab.prefab")))
+            .Times(1)
             .WillRepeatedly(::testing::Return(5));
 
         EXPECT_CALL(*m_prefabSystemComponent, GetTemplateIdFromFilePath(AZ::IO::PathView("")))
+            .Times(1)
             .WillRepeatedly(::testing::Return(InvalidTemplateId));
 
+        // Depending on which TemplateId stack gets to first
+        // you can or can't call FindTemplateDom for GoodNestedPrefab's
+        // TemplateId
         EXPECT_CALL(*m_prefabSystemComponent, FindTemplateDom(5))
+            .Times(0)
             .WillRepeatedly(::testing::ReturnRef(m_prefabDomsCases["GoodNestedPrefab"]));
 
         Outcome outcome = PrefabDependencyTree::GenerateTreeAndSetRoot(tid, m_prefabSystemComponent);
@@ -75,6 +84,31 @@ namespace PrefabDependencyViewer
 
     TEST_F(PrefabDependencyViewerFixture, VALID_NESTED_PREFAB)
     {
+        TemplateId tid = 2022412;
+        EXPECT_CALL(*m_prefabSystemComponent, FindTemplateDom(tid))
+            .Times(1)
+            .WillRepeatedly(::testing::ReturnRef(m_prefabDomsCases["ValidPrefab"]));
 
+        EXPECT_CALL(*m_prefabSystemComponent, GetTemplateIdFromFilePath(AZ::IO::PathView("Prefabs/level11.prefab")))
+            .Times(1)
+            .WillRepeatedly(::testing::Return(10000));
+
+        EXPECT_CALL(*m_prefabSystemComponent, GetTemplateIdFromFilePath(AZ::IO::PathView("Prefabs/level12.prefab")))
+            .Times(1)
+            .WillRepeatedly(::testing::Return(121));
+
+        EXPECT_CALL(*m_prefabSystemComponent, FindTemplateDom(10000))
+            .Times(1)
+            .WillRepeatedly(::testing::ReturnRef(m_prefabDomsCases["level11Prefab"]));
+
+        EXPECT_CALL(*m_prefabSystemComponent, FindTemplateDom(121))
+            .Times(1)
+            .WillRepeatedly(::testing::ReturnRef(m_prefabDomsCases["level12Prefab"]));
+
+        Outcome outcome = PrefabDependencyTree::GenerateTreeAndSetRoot(tid, m_prefabSystemComponent);
+        EXPECT_EQ(true, outcome.IsSuccess());
+
+        PrefabDependencyTree tree = outcome.GetValue();
+        EXPECT_EQ(tid, tree.GetRoot()->GetMetaData().GetTemplateId());
     }
 }

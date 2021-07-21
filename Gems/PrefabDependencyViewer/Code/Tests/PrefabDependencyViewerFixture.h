@@ -39,6 +39,13 @@ namespace PrefabDependencyViewer
             CreatePrefabAddSourceAndValue("BadNestedPrefab", "");
             AddInstance("NestedPrefabWithAtleastOneInvalidNestedInstance", "GoodNestedPrefab");
             AddInstance("NestedPrefabWithAtleastOneInvalidNestedInstance", "BadNestedPrefab");
+
+            // Setup for valid nested Prefab
+            CreatePrefabAddSourceAndValue("ValidPrefab", "Prefabs/ValidPrefab.prefab");
+            CreatePrefabAddSourceAndValue("level11Prefab", "Prefabs/level11.prefab");
+            CreatePrefabAddSourceAndValue("level12Prefab", "Prefabs/level12.prefab");
+            AddInstance("ValidPrefab", "level11Prefab");
+            AddInstance("ValidPrefab", "level12Prefab");
         }
 
         void CreatePrefabAddSourceAndValue(AZStd::string prefabName, const char* prefabSource)
