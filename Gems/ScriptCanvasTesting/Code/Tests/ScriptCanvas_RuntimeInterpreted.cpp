@@ -641,6 +641,11 @@ TEST_F(ScriptCanvasTestFixture, InterpretedMathExpression)
     RunUnitTestGraph("LY_SC_UnitTest_MathExpression", ExecutionMode::Interpreted);
 }
 
+TEST_F(ScriptCanvasTestFixture, MathExpressionNodeVectorAddition)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_MathExpressionNodeVectorAddition", ExecutionMode::Interpreted);
+}
+
 TEST_F(ScriptCanvasTestFixture, InterpretedMultipleOut)
 {
     RunUnitTestGraph("LY_SC_UnitTest_MultipleOut", ExecutionMode::Interpreted);
