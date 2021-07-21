@@ -12,7 +12,6 @@
 #include "UiRenderer.h"
 
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
-#include <Atom/RHI/DrawListTagRegistry.h>
 #include <Atom/RHI/RHISystemInterface.h>
 
 #include <AzCore/Math/MatrixUtils.h>
@@ -490,12 +489,6 @@ namespace LyShine
         }
 
         m_childRenderNodes.clear();
-
-        if (m_drawListTag.IsValid())
-        {
-            auto* rhiSystem = AZ::RHI::RHISystemInterface::Get();
-            rhiSystem->GetDrawListTagRegistry()->ReleaseTag(m_drawListTag);
-        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -514,9 +507,7 @@ namespace LyShine
             // Use a dedicated dynamic draw context for rendering to the texture since it can only have one draw list tag
             if (!m_dynamicDraw)
             {
-                auto* rhiSystem = AZ::RHI::RHISystemInterface::Get();
-                m_drawListTag = rhiSystem->GetDrawListTagRegistry()->AcquireTag(AZ::Name(GetRenderTargetName()));
-                m_dynamicDraw = uiRenderer->CreateDynamicDrawContextForRTT(GetRenderTargetName(), m_drawListTag);
+                m_dynamicDraw = uiRenderer->CreateDynamicDrawContextForRTT(GetRenderTargetName());
             }
 
             if (m_dynamicDraw)
@@ -993,8 +984,7 @@ namespace LyShine
             SetRttPassesEnabled(uiRenderer, true);
         }
 
-        // LYSHINE_ATOM_TODO - It is currently necessary to render to the targets a few times due to drawListTags
-        // being out of sync with view
+        // LYSHINE_ATOM_TODO - It is currently necessary to render to the targets twice. Needs investigation
         constexpr int timesToRenderToRenderTargets = 2;
         if (m_renderToRenderTargetCount < timesToRenderToRenderTargets)
         {
@@ -1553,7 +1543,7 @@ namespace LyShine
         for (RenderTargetRenderNode* renderTargetRenderNode : m_renderTargetRenderNodes)
         {
             // Find the rtt pass to disable
-            AZ::RPI::Pass* rttPass = nullptr;
+            AZ::RPI::RasterPass* rttPass = nullptr;
             LyShinePassRequestBus::EventResult(rttPass, sceneId, &LyShinePassRequestBus::Events::GetRttPass, renderTargetRenderNode->GetRenderTargetName());
             if (rttPass)
             {

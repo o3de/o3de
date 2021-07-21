@@ -99,7 +99,7 @@ public: // member functions
     //! Return the dynamic draw context associated with this UI renderer
     AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> GetDynamicDrawContext();
 
-    AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> CreateDynamicDrawContextForRTT(const AZStd::string& rttName, AZ::RHI::DrawListTag drawListTag);
+    AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> CreateDynamicDrawContextForRTT(const AZStd::string& rttName);
 
     //! Return the shader data for the ui shader
     const UiShaderData& GetUiShaderData();
@@ -156,8 +156,7 @@ private: // member functions
     //! Create a dynamic draw context for this renderer
     AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> CreateDynamicDrawContext(
         AZ::RPI::ScenePtr scene,
-        AZ::Data::Instance<AZ::RPI::Shader> uiShader,
-        AZ::RHI::DrawListTag drawListTag = AZ::RHI::DrawListTag());
+        AZ::Data::Instance<AZ::RPI::Shader> uiShader);
 
     //! Bind the global white texture for all the texture units we use
     void BindNullTexture();

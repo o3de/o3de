@@ -110,9 +110,17 @@ AZ::RPI::ScenePtr UiRenderer::CreateScene(AZStd::shared_ptr<AZ::RPI::ViewportCon
 
 AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> UiRenderer::CreateDynamicDrawContext(
     AZ::RPI::ScenePtr scene,
-    AZ::Data::Instance<AZ::RPI::Shader> uiShader,
-    AZ::RHI::DrawListTag drawListTag)
+    AZ::Data::Instance<AZ::RPI::Shader> uiShader)
 {
+    // Find the pass that renders the UI canvases after the rtt passes
+    AZ::RPI::RasterPass* uiCanvasPass = nullptr;
+    AZ::RPI::SceneId sceneId = m_scene->GetId();
+    LyShinePassRequestBus::EventResult(uiCanvasPass, sceneId, &LyShinePassRequestBus::Events::GetUiCanvasPass);
+    if (!uiCanvasPass)
+    {
+        return nullptr;
+    }
+
     AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw = AZ::RPI::DynamicDrawInterface::Get()->CreateDynamicDrawContext();
 
     // Initialize the dynamic draw context
@@ -125,7 +133,7 @@ AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> UiRenderer::CreateDynamicDrawContext(
     );
     dynamicDraw->AddDrawStateOptions(AZ::RPI::DynamicDrawContext::DrawStateOptions::StencilState
         | AZ::RPI::DynamicDrawContext::DrawStateOptions::BlendMode);
-    dynamicDraw->SetOutputScope(scene.get());
+    dynamicDraw->SetOutputScope(uiCanvasPass);
     dynamicDraw->EndInit();
 
     return dynamicDraw;
@@ -229,24 +237,18 @@ AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> UiRenderer::GetDynamicDrawContext()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> UiRenderer::CreateDynamicDrawContextForRTT(const AZStd::string& rttName, AZ::RHI::DrawListTag drawListTag)
+AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> UiRenderer::CreateDynamicDrawContextForRTT(const AZStd::string& rttName)
 {
-    if (!drawListTag.IsValid())
-    {
-        return nullptr;
-    }
-
-    // find the rtt pass with this draw list tag
-    AZ::RPI::Pass* rttPass = nullptr;    
+    // find the rtt pass with the specified name
+    AZ::RPI::RasterPass* rttPass = nullptr;    
     AZ::RPI::SceneId sceneId = m_scene->GetId();
     LyShinePassRequestBus::EventResult(rttPass, sceneId, &LyShinePassRequestBus::Events::GetRttPass, rttName);
-    AZ::RPI::RenderPass* renderPass = azrtti_cast<AZ::RPI::RenderPass*>(rttPass);
-    if (!renderPass)
+    if (!rttPass)
     {
         return nullptr;
     }
 
-    AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw = AZ::RPI::DynamicDrawInterface::Get()->CreateDynamicDrawContext(m_scene.get());
+    AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw = AZ::RPI::DynamicDrawInterface::Get()->CreateDynamicDrawContext();
 
     // Initialize the dynamic draw context
     dynamicDraw->InitShader(m_dynamicDraw->GetShader());
@@ -259,11 +261,7 @@ AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> UiRenderer::CreateDynamicDrawContextFo
     dynamicDraw->AddDrawStateOptions(AZ::RPI::DynamicDrawContext::DrawStateOptions::StencilState
         | AZ::RPI::DynamicDrawContext::DrawStateOptions::BlendMode);
 
-    dynamicDraw->InitDrawListTag(drawListTag);
-
-    dynamicDraw->CustomizePipelineState([renderPass] (AZ::RHI::Ptr<AZ::RPI::PipelineStateForDraw> pipelineState) {
-            pipelineState->SetOutputFromPass(renderPass);
-        });
+    dynamicDraw->SetOutputScope(rttPass);
 
     dynamicDraw->EndInit();
 

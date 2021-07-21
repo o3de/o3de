@@ -233,9 +233,8 @@ namespace LyShine
 
         AZ::Data::Instance<AZ::RPI::AttachmentImage> m_attachmentImage;
 
-        // Each render target requires a unique draw list tag, and a DDC can only be associated with one tag
+        // Each render target requires a unique dynamic draw context to draw to the raster pass associated with the target
         AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> m_dynamicDraw;
-        AZ::RHI::DrawListTag m_drawListTag;
 
         float       m_viewportX = 0;
         float       m_viewportY = 0;

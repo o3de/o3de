@@ -39,7 +39,8 @@ namespace LyShine
 
         // LyShinePassRequestBus overrides
         void RebuildRttChildren() override;
-        AZ::RPI::Pass* GetRttPass(const AZStd::string& name) override;
+        AZ::RPI::RasterPass* GetRttPass(const AZStd::string& name) override;
+        AZ::RPI::RasterPass* GetUiCanvasPass() override;
 
     private:
         LyShinePass() = delete;

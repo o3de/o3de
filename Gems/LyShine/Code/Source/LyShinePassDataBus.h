@@ -14,6 +14,7 @@ namespace AZ
     namespace RPI
     {
         class AttachmentImage;
+        class RasterPass;
     }
 }
 
@@ -36,7 +37,10 @@ public:
     virtual void RebuildRttChildren() = 0;
 
     //! Returns a render to texture pass based on render target name
-    virtual AZ::RPI::Pass* GetRttPass(const AZStd::string& name) = 0;
+    virtual AZ::RPI::RasterPass* GetRttPass(const AZStd::string& name) = 0;
+
+    //! Returns the final pass that renders the UI canvas contents
+    virtual AZ::RPI::RasterPass* GetUiCanvasPass() = 0;
 };
 using LyShinePassRequestBus = AZ::EBus<LyShinePassRequests>;
 
