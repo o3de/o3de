@@ -4875,8 +4875,3 @@ namespace AZ
 #if defined(AZ_COMPILER_MSVC)
 #   pragma warning(pop)
 #endif
-
-// pull AzStd on demand reflection
-#include <AzCore/RTTI/AzStdOnDemandPrettyName.inl>
-#include <AzCore/RTTI/AzStdOnDemandReflection.inl>
-

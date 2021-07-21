@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/RTTI/BehaviorContextUtilities.h>
+#include <AzCore/ScriptCanvas/ScriptCanvasAttributes.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <ScriptCanvas/Core/Graph.h>
 #include <ScriptCanvas/Core/Node.h>

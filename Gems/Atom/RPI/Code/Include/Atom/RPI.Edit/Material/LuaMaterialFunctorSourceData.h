@@ -17,6 +17,8 @@ namespace UnitTest
 
 namespace AZ
 {
+    class ScriptContext;
+    
     namespace RPI
     {
         //! Builds a LuaMaterialFunctor.

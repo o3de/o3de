@@ -6,10 +6,12 @@
  *
  */
 
-#include <AzCore/Serialization/SerializeContext.h>
+#include "TagComponent.h"
+
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
-#include "TagComponent.h"
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/ScriptCanvas/ScriptCanvasAttributes.h>
 
 namespace LmbrCentral
 {

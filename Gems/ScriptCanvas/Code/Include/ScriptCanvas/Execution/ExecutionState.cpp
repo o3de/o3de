@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/ScriptCanvas/ScriptCanvasAttributes.h>
 #include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Execution/RuntimeComponent.h>
 

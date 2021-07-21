@@ -8,6 +8,7 @@
 
 #include "MethodConfiguration.h"
 
+#include <AzCore/ScriptCanvas/ScriptCanvasAttributes.h>
 #include <AzCore/RTTI/AttributeReader.h>
 #include <ScriptCanvas/Utils/BehaviorContextUtils.h>
 

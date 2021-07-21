@@ -9,6 +9,7 @@
 #include "Data.h"
 #include <ScriptCanvas/Data/DataTrait.h>
 
+#include <AzCore/ScriptCanvas/ScriptCanvasAttributes.h>
 #include <AzCore/Component/EntityBus.h>
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/RTTI/BehaviorContext.h>

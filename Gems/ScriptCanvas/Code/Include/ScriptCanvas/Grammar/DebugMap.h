@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Script/ScriptContext.h>
 
 #include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Core/Datum.h>

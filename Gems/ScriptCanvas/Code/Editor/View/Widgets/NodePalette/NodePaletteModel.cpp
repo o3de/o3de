@@ -8,6 +8,7 @@
 
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/RTTI/BehaviorContextUtilities.h>
+#include <AzCore/ScriptCanvas/ScriptCanvasAttributes.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 

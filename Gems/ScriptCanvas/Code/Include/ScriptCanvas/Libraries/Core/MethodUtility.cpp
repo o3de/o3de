@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/ScriptCanvas/ScriptCanvasAttributes.h>
 #include <AzCore/std/containers/map.h>
 #include <ScriptCanvas/Libraries/Core/MethodUtility.h>
 #include <ScriptCanvas/Libraries/Core/Method.h>

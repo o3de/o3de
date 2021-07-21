@@ -13,6 +13,8 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector4.h>
 
+#include <AzCore/ScriptCanvas/ScriptCanvasAttributes.h>
+
 namespace AZ
 {
     namespace Internal

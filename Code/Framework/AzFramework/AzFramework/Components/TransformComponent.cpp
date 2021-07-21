@@ -15,6 +15,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Quaternion.h>
+#include <AzCore/Script/ScriptContext.h>
 
 namespace AZ
 {

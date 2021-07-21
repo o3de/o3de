@@ -23,6 +23,7 @@
 
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzCore/std/string/tokenize.h>
 
 namespace
 {

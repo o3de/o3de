@@ -8,6 +8,7 @@
 
 
 #include <AzCore/std/containers/set.h>
+#include <AzCore/ScriptCanvas/ScriptCanvasAttributes.h>
 #include <Editor/Nodes/NodeUtils.h>
 #include <GraphCanvas/Components/Nodes/NodeTitleBus.h>
 #include <GraphCanvas/Components/Slots/SlotBus.h>

@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 
 namespace LmbrCentral

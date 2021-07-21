@@ -14,6 +14,8 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector3.h>
 
+#include <AzCore/ScriptCanvas/ScriptCanvasAttributes.h>
+
 namespace AZ
 {
     namespace ScriptCanvas

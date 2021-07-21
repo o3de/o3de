@@ -9,6 +9,7 @@
 #include "BehaviorContextUtils.h"
 
 #include <AzCore/std/containers/map.h>
+#include <AzCore/ScriptCanvas/ScriptCanvasAttributes.h>
 #include <AzCore/RTTI/BehaviorContextUtilities.h>
 #include <ScriptCanvas/Core/GraphData.h>
 #include <ScriptCanvas/Libraries/Core/Method.h>

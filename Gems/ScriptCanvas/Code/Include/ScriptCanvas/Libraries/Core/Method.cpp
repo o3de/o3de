@@ -9,6 +9,7 @@
 #include "Method.h"
 
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/ScriptCanvas/ScriptCanvasAttributes.h>
 #include <AzCore/Serialization/Utils.h>
 #include <Core/SlotConfigurationDefaults.h> 
 #include <Core/SlotExecutionMap.h>

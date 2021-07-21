@@ -11,6 +11,7 @@
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Script/ScriptAsset.h>
+#include <AzCore/Script/ScriptContext.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 
 namespace AZ

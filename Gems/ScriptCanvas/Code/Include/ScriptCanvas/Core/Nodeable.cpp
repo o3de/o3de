@@ -8,6 +8,7 @@
 
 #include "Nodeable.h"
 
+#include <AzCore/ScriptCanvas/ScriptCanvasAttributes.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <ScriptCanvas/Core/SubgraphInterface.h>
 

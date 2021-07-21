@@ -11,6 +11,7 @@
 #include <AzCore/Name/NameDictionary.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/RTTI/ReflectionManager.h>
+#include <AzCore/Script/ScriptContext.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>

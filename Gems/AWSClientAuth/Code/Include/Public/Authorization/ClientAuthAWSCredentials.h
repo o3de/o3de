@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/string/string.h>
 
 #include <aws/core/auth/AWSCredentialsProvider.h>

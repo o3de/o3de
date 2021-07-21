@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <AzCore/Script/ScriptContext.h>
+#include <AzCore/ScriptCanvas/ScriptCanvasAttributes.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 
 #include <AzCore/Math/Uuid.h>

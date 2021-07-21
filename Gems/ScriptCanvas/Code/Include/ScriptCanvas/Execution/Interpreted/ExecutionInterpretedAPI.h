@@ -21,6 +21,7 @@ struct lua_State;
 namespace AZ
 {
     class SerializeContext;
+    using StackVariableAllocator = AZStd::static_buffer_allocator<256, 16>;
 }
 
 namespace ScriptCanvas

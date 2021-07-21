@@ -11,6 +11,7 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Script/ScriptContext.h>
 #include <AzCore/Script/ScriptSystemBus.h>
+#include <AzCore/ScriptCanvas/ScriptCanvasAttributes.h>
 
 #include "Execution/Interpreted/ExecutionStateInterpretedUtility.h"
 #include "Execution/RuntimeComponent.h"

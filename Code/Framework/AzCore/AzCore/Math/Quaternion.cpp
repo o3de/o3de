@@ -11,6 +11,8 @@
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Math/MathScriptHelpers.h>
 
+#include <AzCore/ScriptCanvas/ScriptCanvasAttributes.h>
+
 namespace AZ
 {
     namespace Internal

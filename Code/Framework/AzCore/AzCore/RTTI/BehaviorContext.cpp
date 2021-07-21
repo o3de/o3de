@@ -9,6 +9,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/Component/EntityBus.h>
+#include <AzCore/ScriptCanvas/ScriptCanvasAttributes.h>
 
 namespace AZ
 {

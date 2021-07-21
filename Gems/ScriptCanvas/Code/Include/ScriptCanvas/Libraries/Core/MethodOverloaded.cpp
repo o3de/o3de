@@ -10,6 +10,7 @@
 
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/RTTI/BehaviorContextUtilities.h>
+#include <AzCore/ScriptCanvas/ScriptCanvasAttributes.h>
 #include <Libraries/Core/MethodUtility.h>
 #include <ScriptCanvas/Core/Contracts/MethodOverloadContract.h>
 #include <ScriptCanvas/Core/SlotConfigurations.h>

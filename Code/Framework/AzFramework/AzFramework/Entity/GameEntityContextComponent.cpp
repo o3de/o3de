@@ -8,6 +8,7 @@
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/ScriptCanvas/ScriptCanvasAttributes.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>

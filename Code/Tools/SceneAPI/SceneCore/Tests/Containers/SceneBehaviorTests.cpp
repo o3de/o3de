@@ -14,6 +14,7 @@
 #include <AzCore/RTTI/ReflectionManager.h>
 #include <AzCore/Math/MathReflection.h>
 #include <AzCore/Component/ComponentApplication.h>
+#include <AzCore/Script/ScriptContext.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>

@@ -11,8 +11,8 @@
 #include <GraphCanvas/Components/Nodes/NodeBus.h>
 #include <GraphCanvas/Components/Slots/SlotBus.h>
 #include <GraphCanvas/Components/DynamicOrderingDynamicSlotComponent.h>
-
 #include <ScriptCanvas/Core/NodeBus.h>
+#include <AzCore/std/string/tokenize.h>
 
 namespace
 {

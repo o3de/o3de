@@ -16,6 +16,7 @@
 #include <AzCore/Math/Matrix4x4.h>
 
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/ScriptCanvas/ScriptCanvasAttributes.h>
 #include <AzCore/std/sort.h>
 
 namespace ScriptEvents

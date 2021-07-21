@@ -9,6 +9,7 @@
 #include <iostream>
 
 #include <AzCore/Component/EntityUtils.h>
+#include <AzCore/ScriptCanvas/ScriptCanvasAttributes.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/SerializeContext.h>

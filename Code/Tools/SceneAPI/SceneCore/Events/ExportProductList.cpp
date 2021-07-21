@@ -9,6 +9,7 @@
 #include <SceneAPI/SceneCore/Events/ExportProductList.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/limits.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ
 {

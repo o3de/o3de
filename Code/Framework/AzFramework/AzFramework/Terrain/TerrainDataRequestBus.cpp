@@ -8,6 +8,9 @@
 
 #include "TerrainDataRequestBus.h"
 
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+
 namespace AzFramework
 {
     namespace SurfaceData

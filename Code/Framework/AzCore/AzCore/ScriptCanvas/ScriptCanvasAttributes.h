@@ -8,6 +8,8 @@
 #pragma once
 
 #include <AzCore/Math/Crc.h>
+#include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/std/containers/vector.h>
 
 namespace AZ
 {

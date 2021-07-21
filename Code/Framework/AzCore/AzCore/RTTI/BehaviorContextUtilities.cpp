@@ -10,9 +10,11 @@
 
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/RTTI/AttributeReader.h>
+#include <AzCore/ScriptCanvas/ScriptCanvasAttributes.h>
+#include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/std/string/conversions.h>
 
 namespace BehaviorContextUtilitiesCPP
 {

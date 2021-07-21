@@ -11,6 +11,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/ScriptCanvas/ScriptCanvasAttributes.h>
 #include <AzCore/std/tuple.h>
 #include <AzCore/std/typetraits/add_pointer.h>
 #include <AzCore/std/typetraits/function_traits.h>

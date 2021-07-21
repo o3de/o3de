@@ -13,6 +13,7 @@
 
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <EditorPythonBindings/CustomTypeBindingBus.h>
 #include <pybind11/embed.h>

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) Contributors to the Open 3D Engine Project.
  * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
@@ -11,11 +11,11 @@
 #include "InputEventMap.h"
 #include "InputLibrary.h"
 
-#include <AzCore/Module/Module.h>
-#include <AzCore/Serialization/SerializeContext.h>
-
-#include <AzCore/Module/Environment.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/Module/Environment.h>
+#include <AzCore/Module/Module.h>
+#include <AzCore/Script/ScriptContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 #include <AzFramework/Asset/GenericAssetHandler.h>
 
