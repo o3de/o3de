@@ -6,7 +6,6 @@
  *
  */
 
-
 #include <AzToolsFramework/ViewportUi/ButtonGroup.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiCluster.h>
 

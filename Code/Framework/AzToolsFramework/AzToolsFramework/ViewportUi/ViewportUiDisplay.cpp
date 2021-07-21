@@ -6,7 +6,6 @@
  *
  */
 
-
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
