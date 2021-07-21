@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -15,6 +16,8 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 AZ_POP_DISABLE_WARNING
+
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 
 namespace AzToolsFramework::ViewportUi::Internal
 {

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -75,8 +76,17 @@ namespace O3DE::ProjectManager
 
         m_configProjectProcess->start(
             "cmake",
-            QStringList{ "-B", QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix), "-S", m_projectInfo.m_path, "-G",
-                         "Visual Studio 16", "-DLY_3RDPARTY_PATH=" + engineInfo.m_thirdPartyPath });
+            QStringList
+            {
+                "-B",
+                QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix),
+                "-S",
+                m_projectInfo.m_path,
+                "-G",
+                "Visual Studio 16",
+                "-DLY_3RDPARTY_PATH=" + engineInfo.m_thirdPartyPath,
+                "-DLY_UNITY_BUILD=1"
+            });
 
         if (!m_configProjectProcess->waitForStarted())
         {
@@ -124,8 +134,16 @@ namespace O3DE::ProjectManager
 
         m_buildProjectProcess->start(
             "cmake",
-            QStringList{ "--build", QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix), "--target",
-                         m_projectInfo.m_projectName + ".GameLauncher", "Editor", "--config", "profile" });
+            QStringList
+            {
+                "--build",
+                QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix),
+                "--target",
+                m_projectInfo.m_projectName + ".GameLauncher",
+                "Editor",
+                "--config",
+                "profile"
+            });
 
         if (!m_buildProjectProcess->waitForStarted())
         {

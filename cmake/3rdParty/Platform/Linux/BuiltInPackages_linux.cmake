@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -40,7 +41,8 @@ ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-linux                       
 ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-linux                       TARGETS googletest                  PACKAGE_HASH 7b7ad330f369450c316a4c4592d17fbb4c14c731c95bd8f37757203e8c2bbc1b)
 ly_associate_package(PACKAGE_NAME googlebenchmark-1.5.0-rev2-linux                  TARGETS GoogleBenchmark             PACKAGE_HASH 4038878f337fc7e0274f0230f71851b385b2e0327c495fc3dd3d1c18a807928d)
 ly_associate_package(PACKAGE_NAME unwind-1.2.1-linux                                TARGETS unwind                      PACKAGE_HASH 3453265fb056e25432f611a61546a25f60388e315515ad39007b5925dd054a77)
-ly_associate_package(PACKAGE_NAME qt-5.15.2-rev4-linux                              TARGETS Qt                          PACKAGE_HASH 1122e0ec19b01cb02a11fcf34dbf884bc9049ba5ff04fb692bfb09d4e5ee1e6b)
+ly_associate_package(PACKAGE_NAME qt-5.15.2-rev5-linux                              TARGETS Qt                          PACKAGE_HASH 76b395897b941a173002845c7219a5f8a799e44b269ffefe8091acc048130f28)
 ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-linux                    TARGETS libsamplerate               PACKAGE_HASH 41643c31bc6b7d037f895f89d8d8d6369e906b92eff42b0fe05ee6a100f06261)
 ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1b-rev2-linux                         TARGETS OpenSSL                     PACKAGE_HASH b779426d1e9c5ddf71160d5ae2e639c3b956e0fb5e9fcaf9ce97c4526024e3bc)
 ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.6.2104-o3de-rev2-linux TARGETS DirectXShaderCompilerDxc    PACKAGE_HASH 235606f98512c076a1ba84a8402ad24ac21945998abcea264e8e204678efc0ba)
+ly_associate_package(PACKAGE_NAME SPIRVCross-2021.04.29-rev1-linux                  TARGETS SPIRVCross                  PACKAGE_HASH 7889ee5460a688e9b910c0168b31445c0079d363affa07b25d4c8aeb608a0b80)

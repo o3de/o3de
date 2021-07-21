@@ -1,12 +1,12 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
-
+#include <AzCore/PlatformDef.h>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QDialogButtonBox>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'QTreeWidgetItemIterator::d_ptr': class 'QScopedPointer<QTreeWidgetItemIteratorPrivate,QScopedPointerDeleter<T>>' needs to have dll-interface to be used by clients of class 'QTreeWidgetItemIterator'
@@ -19,6 +19,7 @@ AZ_POP_DISABLE_WARNING
 
 #include "SliceRelationshipWidget.hxx"
 
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Slice/SliceEntityBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>

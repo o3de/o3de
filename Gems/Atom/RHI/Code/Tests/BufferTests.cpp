@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,10 +10,10 @@
 #include <Tests/Factory.h>
 #include <Tests/Device.h>
 
-using namespace AZ;
-
 namespace UnitTest
 {
+    using namespace AZ;
+
     class BufferTests
         : public RHITestFixture
     {
