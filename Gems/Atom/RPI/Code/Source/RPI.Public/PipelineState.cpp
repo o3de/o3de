@@ -130,10 +130,6 @@ namespace AZ
         
         void PipelineStateForDraw::SetOutputFromScene(const Scene* scene, RHI::DrawListTag overrideDrawListTag)
         {
-            if (m_hasOutputData)
-            {
-                return;
-            }
             // Use overrideDrawListTag if it's valid. otherwise get DrawListTag from the shader
             RHI::DrawListTag drawListTag = overrideDrawListTag;
             if (!drawListTag.IsValid())
@@ -144,15 +140,11 @@ namespace AZ
             // The scene may or may not have the output data for this PipelineState
             // For example, if there is no render pipeline in the scene, or there is no pass in the scene with matching draw list tag
             m_hasOutputData = scene->ConfigurePipelineState(drawListTag, m_descriptor);
-            m_dirty = m_dirty | m_hasOutputData;
+            m_dirty = true;
         }
 
-        void PipelineStateForDraw::SetOutputFromPass(const RenderPass* renderPass)
+        void PipelineStateForDraw::SetOutputFromPass(RenderPass* renderPass)
         {
-            if (m_hasOutputData)
-            {
-                return;
-            }
             m_hasOutputData = true;
             m_dirty = true;
             m_descriptor.m_renderAttachmentConfiguration = renderPass->GetRenderAttachmentConfiguration();
@@ -180,10 +172,6 @@ namespace AZ
                     }
 
                     m_pipelineState = m_shader->AcquirePipelineState(descriptor);
-                }
-                else
-                {
-                    AZ_Warning("RPI", !m_hasOutputData, "PipelineStateForDraw::Finalize() failed because output layout wasn't set");
                 }
                 m_dirty = false;
             }
