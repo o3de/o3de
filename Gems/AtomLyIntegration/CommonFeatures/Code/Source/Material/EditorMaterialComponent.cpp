@@ -492,8 +492,8 @@ namespace AZ
 
                             if (editorMaterialSlot)
                             {
-                                if (!editorMaterialSlot->m_materialAsset.GetId().IsValid() &&                               //< Only update the slot of it was originally empty, having no override material.
-                                    editorMaterialSlot->m_defaultMaterialAsset.GetId() == exportItem.GetOriginalAssetId())  //< We need to check whether replaced material corresponds to this slot's default material.
+                                // We need to check whether replaced material corresponds to this slot's default material.
+                                if (editorMaterialSlot->m_defaultMaterialAsset.GetId() == exportItem.GetOriginalAssetId())  
                                 {
                                     editorMaterialSlot->m_materialAsset.Create(assetIdOutcome.GetValue());
                                 }
