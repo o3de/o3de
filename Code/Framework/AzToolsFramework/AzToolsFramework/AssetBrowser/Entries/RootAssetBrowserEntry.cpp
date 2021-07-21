@@ -403,7 +403,7 @@ namespace AzToolsFramework
         void RootAssetBrowserEntry::UpdateChildPaths(AssetBrowserEntry* child) const
         {
             child->m_relativePath = child->m_name;
-            child->m_fullPath = child->m_name;
+            child->m_fullPath = m_fullPath / child->m_name;
             AssetBrowserEntry::UpdateChildPaths(child);
         }
 

@@ -10,7 +10,6 @@
 
 #include <AzCore/Math/Internal/MathTypes.h>
 #include <AzCore/RTTI/TypeInfo.h>
-#include <AzCore/std/algorithm.h>
 
 namespace AZ
 {

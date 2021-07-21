@@ -14,6 +14,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/std/containers/map.h>
 
 namespace ImGui
 {

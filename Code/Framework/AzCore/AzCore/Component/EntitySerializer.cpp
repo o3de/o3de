@@ -90,15 +90,6 @@ namespace AZ
         }
 
         {
-            JSR::ResultCode dependencyReadyLoadResult =
-                ContinueLoadingFromJsonObjectField(&entityInstance->m_isDependencyReady,
-                    azrtti_typeid<decltype(entityInstance->m_isDependencyReady)>(),
-                    inputValue, "IsDependencyReady", context);
-
-            result.Combine(dependencyReadyLoadResult);
-        }
-
-        {
             JSR::ResultCode runtimeActiveLoadResult =
                 ContinueLoadingFromJsonObjectField(&entityInstance->m_isRuntimeActiveByDefault,
                     azrtti_typeid<decltype(entityInstance->m_isRuntimeActiveByDefault)>(),
@@ -182,20 +173,6 @@ namespace AZ
                     azrtti_typeid<decltype(componentMap)>(), context);
 
             result.Combine(resultComponents);
-        }
-
-        {
-            AZ::ScopedContextPath subPathDependencyReady(context, "m_isDependencyReady");
-            const bool* dependencyReady = &entityInstance->m_isDependencyReady;
-            const bool* dependencyReadyDefault =
-                defaultEntityInstance ? &defaultEntityInstance->m_isDependencyReady : nullptr;
-
-            JSR::ResultCode resultDependencyReady =
-                ContinueStoringToJsonObjectField(outputValue, "IsDependencyReady",
-                    dependencyReady, dependencyReadyDefault,
-                    azrtti_typeid<decltype(entityInstance->m_isDependencyReady)>(), context);
-
-            result.Combine(resultDependencyReady);
         }
 
         {
