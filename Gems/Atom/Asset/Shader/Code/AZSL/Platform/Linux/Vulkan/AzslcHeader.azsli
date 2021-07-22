@@ -11,8 +11,5 @@
 * after appending this header and pre-processing with mcpp ahead of azslc.
 */
 
-//Used for normal map sampling
-#define AZ_TRAIT_ASTC_COMPRESSION 1
-
 static const float4 s_AzslDebugColor = float4(165.0 / 255.0, 30.0 / 255.0, 36.0 / 255.0, 1);
 
