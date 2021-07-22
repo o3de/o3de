@@ -87,7 +87,7 @@ class TestsPythonAssetProcessing_APBatch(object):
         unexpected_path = os.path.join(asset_processor.project_test_source_folder(), "b_simple_box_no_script_fbx.log")
         
         # Simple check to make sure the Python script in the scene manifest ran on the file it should have ran on.
-        assert os.path.exists(expected_path), f"Did not find expected output test asset {expected_path}"'
+        assert os.path.exists(expected_path), f"Did not find expected output test asset {expected_path}"
         # If this test fails here, it means the Python script from the first processed FBX file is being run
         # on the second FBX file, when it should not be.
         assert not os.path.exists(unexpected_path), f"Found unexpected output test asset {unexpected_path}"
