@@ -118,7 +118,7 @@ namespace PrefabDependencyViewer
             .WillRepeatedly(::testing::Return(10000));
 
         EXPECT_CALL(*m_prefabSystemComponent, GetTemplateIdFromFilePath(AZ::IO::PathView("Prefabs/level12.prefab")))
-            .Times(1)
+            .Times(2)
             .WillRepeatedly(::testing::Return(121));
 
         EXPECT_CALL(*m_prefabSystemComponent, GetTemplateIdFromFilePath(AZ::IO::PathView("Prefabs/level13.prefab")))
@@ -130,7 +130,7 @@ namespace PrefabDependencyViewer
             .WillRepeatedly(::testing::ReturnRef(m_prefabDomsCases["level11Prefab"]));
 
         EXPECT_CALL(*m_prefabSystemComponent, FindTemplateDom(121))
-            .Times(1)
+            .Times(2)
             .WillRepeatedly(::testing::ReturnRef(m_prefabDomsCases["level12Prefab"]));
 
         EXPECT_CALL(*m_prefabSystemComponent, FindTemplateDom(12141))
@@ -167,7 +167,7 @@ namespace PrefabDependencyViewer
         EXPECT_EQ(tree.GetRoot(), level12Node->GetParent());
         EXPECT_EQ(tree.GetRoot(), level13Node->GetParent());
 
-        EXPECT_EQ(0, tree.GetChildren(level11Node).size());
+        EXPECT_EQ(1, tree.GetChildren(level11Node).size());
         EXPECT_EQ(0, tree.GetChildren(level12Node).size());
         EXPECT_EQ(0, tree.GetChildren(level13Node).size());
 
