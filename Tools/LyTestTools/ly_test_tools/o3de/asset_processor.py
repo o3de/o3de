@@ -419,7 +419,7 @@ class AssetProcessor(object):
         return False
 
     def batch_process(self, timeout=DEFAULT_TIMEOUT_SECONDS, fastscan=True, capture_output=False, platforms=None,
-                      extra_params=None, add_gem_scan_folders=None, add_config_scan_folders=None, decode=True,
+                      extra_params=None, add_gem_scan_folders=None, add_config_scan_folders=None,
                       expect_failure=False, scan_folder_pattern=None):
         self.create_temp_log_root()
         ap_path = self._workspace.paths.asset_processor_batch()
@@ -427,13 +427,13 @@ class AssetProcessor(object):
                                         extra_params=extra_params, add_gem_scan_folders=add_gem_scan_folders,
                                         add_config_scan_folders=add_config_scan_folders,
                                         scan_folder_pattern=scan_folder_pattern)
-        return self.run_ap_process_command(command, timeout=timeout, capture_output=capture_output, decode=decode,
+        return self.run_ap_process_command(command, timeout=timeout, capture_output=capture_output,
                                            expect_failure=expect_failure)
 
     # Start AP gui and run until idle.  Useful for asset processing tests where the assets should be seen and processed
     # by AP on startup and in the test you do not wish to continue execution until you know AP has gone idle.
     def gui_process(self, timeout=DEFAULT_TIMEOUT_SECONDS, fastscan=True, capture_output=False, platforms=None,
-                    extra_params=None, add_gem_scan_folders=None, add_config_scan_folders=None, decode=True,
+                    extra_params=None, add_gem_scan_folders=None, add_config_scan_folders=None,
                     expect_failure=False, quitonidle=False, connect_to_ap=False, accept_input=True, run_until_idle=True,
                     scan_folder_pattern=None):
         ap_path = self._workspace.paths.asset_processor()
@@ -474,7 +474,7 @@ class AssetProcessor(object):
 
         # If the AP is quitting on idle just run it like AP batch.
         if quitonidle:
-            return self.run_ap_process_command(command, timeout=timeout, capture_output=capture_output, decode=decode,
+            return self.run_ap_process_command(command, timeout=timeout, capture_output=capture_output,
                                                expect_failure=expect_failure)
 
         logger.info(f"Launching AP at path: {self._workspace.paths.asset_processor()}")
@@ -570,7 +570,7 @@ class AssetProcessor(object):
                 command.append(extra_params)
         return command
 
-    def run_ap_process_command(self, command, timeout=DEFAULT_TIMEOUT_SECONDS, decode=True, capture_output=False,
+    def run_ap_process_command(self, command, timeout=DEFAULT_TIMEOUT_SECONDS, capture_output=False,
                                expect_failure=False):
         """
         In case of a timeout, the asset processor and associated processes are killed and the function returns False.
@@ -590,15 +590,12 @@ class AssetProcessor(object):
             duration = datetime.timedelta(hours=DEFAULT_TIMEOUT_HOURS)
             timeout = duration.total_seconds()
 
-        run_result = subprocess.run(command, close_fds=True, timeout=timeout, capture_output=capture_output)
+        run_result = subprocess.run(command, close_fds=True, timeout=timeout, capture_output=capture_output, encoding='utf-8')
         output_list = None
         if capture_output:
             logger.info(f"stdout: {run_result.stdout}")
             logger.info(f"stderr: {run_result.stderr}")
-            if decode:
-                output_list = run_result.stdout.decode('utf-8').splitlines()
-            else:
-                output_list = run_result.stdout.splitlines()
+            output_list = run_result.stdout.splitlines()
 
         if run_result.returncode != 0:
             errorMessage = f"{command} returned error code: {run_result.returncode}"
