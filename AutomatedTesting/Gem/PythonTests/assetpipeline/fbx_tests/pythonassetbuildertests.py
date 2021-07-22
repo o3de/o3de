@@ -48,25 +48,47 @@ class TestsPythonAssetProcessing_APBatch(object):
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     def test_ProcessAssetWithoutScriptAfterAssetWithScript_ScriptOnlyRunsOnExpectedAsset(self, workspace, ap_setup_fixture, asset_processor):
+        # This is a regression test. The situation it's testing is, the Python script to run
+        # defined in scene manifest files was persisting in a single builder. So if
+        # that builder processed file a.fbx, then b.fbx, and a.fbx has a Python script to run,
+        # it was also running that Python script on b.fbx.
+
         asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "TwoSceneFiles_OneWithPythonOneWithout_PythonOnlyRunsOnFirstScene")
 
-        asset_processor_extra_params = ["--debugOutput", "--regset=\"/O3DE/SceneAPI/AssetImporter/SkipAtomOutput=true\""]
+        asset_processor_extra_params = [
+        # Disabling Atom assets disables most products, using the debugOutput flag ensures one product is output.
+        "--debugOutput",
+        # By default, if job priorities are equal, jobs run in an arbitrary order. This makes sure
+        # jobs are run by sorting on the database source name, so they run in the same order each time
+        # when this test is run.
+        "--sortJobsByDBSourceName",
+        # Disabling Atom products means this asset won't need a lot of source dependencies to be processed,
+        # keeping the scope of this test down.
+        "--regset=\"/O3DE/SceneAPI/AssetImporter/SkipAtomOutput=true\"",
+        # The bug this regression test happened when the same builder processed FBX files with and without Python.
+        # This flag ensures that only one builder is launched, so that situation can be replicated.
+        "--regset=\"/Amazon/AssetProcessor/Settings/Jobs/maxJobs=1\""]
 
         result, _ = asset_processor.batch_process(extra_params=asset_processor_extra_params)
         assert result, "AP Batch failed"
 
         expected_product_list = [
-            #"simple_box_no_script.dbgsg",
-            "simple_box_with_script.dbgsg"
+            "a_simple_box_with_script.dbgsg",
+            "b_simple_box_no_script.dbgsg"
         ]
 
         missing_assets, _ = utils.compare_assets_with_cache(expected_product_list,
                                                 asset_processor.project_test_cache_folder())
         assert not missing_assets, f'The following assets were expected to be in, but not found in cache: {str(missing_assets)}'
 
-        expected_path = os.path.join(asset_processor.project_test_source_folder(), "simple_box_with_script_fbx.log")
-        unexpected_path = os.path.join(asset_processor.project_test_source_folder(), "simple_box_no_script_fbx.log")
-        assert os.path.exists(expected_path), f"Did not find expected output test asset {expected_path}"
-        #assert not os.path.exists()
-        #debug_graph_path = os.path.join(asset_processor.project_test_cache_folder(), "simple_box_no_script.dbgsg")
-        #assert False, f"debug_graph_path : {debug_graph_path}"
+        # The Python script loaded in the scene manifest will write a log file with the source file's name
+        # to the temp folder. This is the easiest way to have the internal Python there communicate with this test.
+        expected_path = os.path.join(asset_processor.project_test_source_folder(), "a_simple_box_with_script_fbx.log")
+        unexpected_path = os.path.join(asset_processor.project_test_source_folder(), "b_simple_box_no_script_fbx.log")
+        
+        # Simple check to make sure the Python script in the scene manifest ran on the file it should have ran on.
+        assert os.path.exists(expected_path), f"Did not find expected output test asset {expected_path}"'
+        # If this test fails here, it means the Python script from the first processed FBX file is being run
+        # on the second FBX file, when it should not be.
+        assert not os.path.exists(unexpected_path), f"Found unexpected output test asset {unexpected_path}"
+
