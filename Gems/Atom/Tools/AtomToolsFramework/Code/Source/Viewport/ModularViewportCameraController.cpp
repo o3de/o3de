@@ -128,7 +128,7 @@ namespace AtomToolsFramework
             return AzFramework::ViewportControllerPriority::Highest;
         }
 
-        // otherwise it should also respond to normal priority events
+        // otherwise it should only respond to normal priority events
         return AzFramework::ViewportControllerPriority::Normal;
     }
 
