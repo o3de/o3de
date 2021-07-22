@@ -261,7 +261,7 @@ namespace AzQtComponents
                             geo.setWidth(screenGeometry.width());
                         }
                     }
-                    else if (geo.height() > screenGeometry.height())
+                    if (geo.height() > screenGeometry.height())
                     {
                         auto guestMinimumHeight = m_guestWidget->minimumHeight();
                         if (guestMinimumHeight && guestMinimumHeight <= screenGeometry.height())
