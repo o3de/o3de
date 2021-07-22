@@ -153,6 +153,14 @@ namespace PrefabDependencyViewer
             .Times(1)
             .WillRepeatedly(::testing::ReturnRef(m_prefabDomsCases["level23Prefab"]));
 
+        EXPECT_CALL(*m_prefabSystemComponent, GetTemplateIdFromFilePath(AZ::IO::PathView("Prefabs/level31.prefab")))
+            .Times(1)
+            .WillRepeatedly(::testing::Return(221));
+
+        EXPECT_CALL(*m_prefabSystemComponent, FindTemplateDom(221))
+            .Times(1)
+            .WillRepeatedly(::testing::ReturnRef(m_prefabDomsCases["level31Prefab"]));
+
         Outcome outcome = PrefabDependencyTree::GenerateTreeAndSetRoot(tid, m_prefabSystemComponent);
         EXPECT_EQ(true, outcome.IsSuccess());
 
@@ -189,25 +197,35 @@ namespace PrefabDependencyViewer
 
         // Check Level 2 Nodes
 
-        Utils::Node* level21Node = *tree.GetChildren(level11Node).begin();
-        EXPECT_EQ(level11Node, level21Node->GetParent());
-        EXPECT_EQ(121, level21Node->GetMetaData().GetTemplateId());
-        EXPECT_STR_EQ("Prefabs/level12.prefab", level21Node->GetMetaData().GetSource());
-
         Utils::NodeSet level13Children = tree.GetChildren(level13Node);
         auto it = level13Children.begin();
 
-        Utils::Node* level22Node = *it;
-        ++it;
+        Utils::Node* level21Node = *tree.GetChildren(level11Node).begin();
+        Utils::Node* level22Node = *it; ++it;
+        Utils::Node* level23Node = *it;
+
+        EXPECT_EQ(level11Node, level21Node->GetParent());
+        EXPECT_EQ(121, level21Node->GetMetaData().GetTemplateId());
+        EXPECT_STR_EQ("Prefabs/level12.prefab", level21Node->GetMetaData().GetSource());
 
         EXPECT_EQ(level13Node, level22Node->GetParent());
         EXPECT_EQ(240121, level22Node->GetMetaData().GetTemplateId());
         EXPECT_STR_EQ("Prefabs/level22.prefab", level22Node->GetMetaData().GetSource());
 
-        Utils::Node* level23Node = *it;
         EXPECT_EQ(level13Node, level23Node->GetParent());
         EXPECT_EQ(123, level23Node->GetMetaData().GetTemplateId());
         EXPECT_STR_EQ("Prefabs/level23.prefab", level23Node->GetMetaData().GetSource());
+
+        EXPECT_EQ(0, tree.GetChildren(level21Node).size());
+        EXPECT_EQ(0, tree.GetChildren(level22Node).size());
+        EXPECT_EQ(1, tree.GetChildren(level23Node).size());
+
+        Utils::Node* level31Node = *tree.GetChildren(level23Node).begin();
+        EXPECT_EQ(level23Node, level31Node->GetParent());
+        EXPECT_EQ(221, level31Node->GetMetaData().GetTemplateId());
+        EXPECT_STR_EQ("Prefabs/level31.prefab", level31Node->GetMetaData().GetSource());
+
+        EXPECT_EQ(0, tree.GetChildren(level31Node).size());
     }
 
 } // namespace PrefabDependencyViewer
