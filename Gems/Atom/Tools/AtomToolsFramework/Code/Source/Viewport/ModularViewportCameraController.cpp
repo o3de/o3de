@@ -68,6 +68,11 @@ namespace AtomToolsFramework
         m_cameraPropsBuilder = builder;
     }
 
+    void ModularViewportCameraController::SetCameraInputHandlerCallback(const CameraInputHandlerBuilder& builder)
+    {
+        m_cameraInputHandlerBuilder = builder;
+    }
+
     void ModularViewportCameraController::SetupCameras(AzFramework::Cameras& cameras)
     {
         if (m_cameraListBuilder)
@@ -84,12 +89,32 @@ namespace AtomToolsFramework
         }
     }
 
+    void ModularViewportCameraController::SetupCameraInputHandler(CameraInputHandler& cameraInputHandler)
+    {
+        if (m_cameraInputHandlerBuilder)
+        {
+            m_cameraInputHandlerBuilder(cameraInputHandler);
+        }
+    }
+
+    bool DefaultCameraInputHandler(AzFramework::ViewportControllerPriority priority, const AzFramework::CameraSystem& cameraSystem)
+    {
+        // ModernViewportCameraControllerInstance receives events at all priorities, it should only respond to normal priority
+        // events if it is not in 'exclusive' mode and when in 'exclusive' mode it should only respond to the highest priority
+        // events, it should also respond to highest priority events while handling events (essentially when the camera system
+        // is 'active' and responding to inputs).
+        return !cameraSystem.m_cameras.Exclusive() && priority == AzFramework::ViewportControllerPriority::Normal ||
+            cameraSystem.m_cameras.Exclusive() && priority == AzFramework::ViewportControllerPriority::Highest ||
+            cameraSystem.HandlingEvents() && priority == AzFramework::ViewportControllerPriority::Highest;
+    }
+
     ModularViewportCameraControllerInstance::ModularViewportCameraControllerInstance(
         const AzFramework::ViewportId viewportId, ModularViewportCameraController* controller)
         : MultiViewportControllerInstanceInterface<ModularViewportCameraController>(viewportId, controller)
     {
         controller->SetupCameras(m_cameraSystem.m_cameras);
         controller->SetupCameraProperies(m_cameraProps);
+        controller->SetupCameraInputHandler(m_cameraInputHandler);
 
         if (auto viewportContext = RetrieveViewportContext(GetViewportId()))
         {
