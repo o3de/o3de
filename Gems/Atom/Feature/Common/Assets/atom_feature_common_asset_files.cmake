@@ -113,7 +113,6 @@ set(FILES
     Passes/DepthUpsample.pass
     Passes/DiffuseComposite.pass
     Passes/DiffuseGlobalFullscreen.pass
-    Passes/DiffuseGlobalFullscreen_nomsaa.pass
     Passes/DiffuseGlobalIllumination.pass
     Passes/DiffuseProbeGridBlendDistance.pass
     Passes/DiffuseProbeGridBlendIrradiance.pass
@@ -152,7 +151,6 @@ set(FILES
     Passes/LightCullingHeatmap.pass
     Passes/LightCullingParent.pass
     Passes/LightCullingRemap.pass
-    Passes/LightCullingTilePrepare.pass
     Passes/LightCullingTilePrepareMSAA.pass
     Passes/LookModificationComposite.pass
     Passes/LookModificationTransform.pass
@@ -176,7 +174,6 @@ set(FILES
     Passes/ReflectionComposite.pass
     Passes/ReflectionCopyFrameBuffer.pass
     Passes/ReflectionGlobalFullscreen.pass
-    Passes/ReflectionGlobalFullscreen_nomsaa.pass
     Passes/ReflectionProbeBlendWeight.pass
     Passes/ReflectionProbeRenderInner.pass
     Passes/ReflectionProbeRenderOuter.pass
@@ -190,7 +187,6 @@ set(FILES
     Passes/ReflectionScreenSpaceComposite.pass
     Passes/ReflectionScreenSpaceMobile.pass
     Passes/ReflectionScreenSpaceTrace.pass
-    Passes/Reflections_nomsaa.pass
     Passes/ShadowParent.pass
     Passes/Skinning.pass
     Passes/SkyBox.pass
@@ -320,16 +316,10 @@ set(FILES
     Shaders/Depth/DepthPassTransparentMin.shader
     Shaders/DiffuseGlobalIllumination/DiffuseComposite.azsl
     Shaders/DiffuseGlobalIllumination/DiffuseComposite.shader
-    Shaders/DiffuseGlobalIllumination/DiffuseComposite_nomsaa.azsl
-    Shaders/DiffuseGlobalIllumination/DiffuseComposite_nomsaa.shader
     Shaders/DiffuseGlobalIllumination/DiffuseGlobalFullscreen.azsl
     Shaders/DiffuseGlobalIllumination/DiffuseGlobalFullscreen.shader
-    Shaders/DiffuseGlobalIllumination/DiffuseGlobalFullscreen_nomsaa.azsl
-    Shaders/DiffuseGlobalIllumination/DiffuseGlobalFullscreen_nomsaa.shader
     Shaders/DiffuseGlobalIllumination/DiffuseProbeGridDownsample.azsl
     Shaders/DiffuseGlobalIllumination/DiffuseProbeGridDownsample.shader
-    Shaders/DiffuseGlobalIllumination/DiffuseProbeGridDownsample_nomsaa.azsl
-    Shaders/DiffuseGlobalIllumination/DiffuseProbeGridDownsample_nomsaa.shader
     Shaders/ImGui/ImGui.azsl
     Shaders/ImGui/ImGui.shader
     Shaders/LightCulling/LightCulling.azsl
@@ -442,12 +432,8 @@ set(FILES
     Shaders/Reflections/ReflectionCommon.azsli
     Shaders/Reflections/ReflectionComposite.azsl
     Shaders/Reflections/ReflectionComposite.shader
-    Shaders/Reflections/ReflectionComposite_nomsaa.azsl
-    Shaders/Reflections/ReflectionComposite_nomsaa.shader
     Shaders/Reflections/ReflectionGlobalFullscreen.azsl
     Shaders/Reflections/ReflectionGlobalFullscreen.shader
-    Shaders/Reflections/ReflectionGlobalFullscreen_nomsaa.azsl
-    Shaders/Reflections/ReflectionGlobalFullscreen_nomsaa.shader
     Shaders/Reflections/ReflectionProbeBlendWeight.azsl
     Shaders/Reflections/ReflectionProbeBlendWeight.shader
     Shaders/Reflections/ReflectionProbeRenderCommon.azsli

@@ -11,6 +11,7 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Quaternion.h>
+#include <AzCore/RTTI/RTTI.h>
 #include <SceneAPI/SceneCore/SceneCoreConfiguration.h>
 
 namespace AZ::SceneAPI

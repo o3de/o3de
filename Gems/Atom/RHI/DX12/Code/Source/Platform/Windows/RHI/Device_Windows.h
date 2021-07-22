@@ -9,6 +9,10 @@
 
 #include <Atom/RHI/Device.h>
 
+#if defined(USE_NSIGHT_AFTERMATH)
+    #include <RHI/NsightAftermathGpuCrashTracker_Windows.h>
+#endif
+
 namespace AZ
 {
     namespace DX12

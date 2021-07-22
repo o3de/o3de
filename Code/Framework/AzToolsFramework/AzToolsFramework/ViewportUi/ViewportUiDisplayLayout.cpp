@@ -6,15 +6,19 @@
  *
  */
 
-
 #include <AzCore/Console/IConsole.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiDisplayLayout.h>
-#include <QtWidgets/QWidget>
+
+#include <QWidget>
 
 namespace AzToolsFramework::ViewportUi::Internal
 {
     AZ_CVAR(
-        int, ViewportUiDisplayLayoutSpacing, 5, nullptr, AZ::ConsoleFunctorFlags::Null,
+        int,
+        ViewportUiDisplayLayoutSpacing,
+        5,
+        nullptr,
+        AZ::ConsoleFunctorFlags::Null,
         "The spacing between elements attached to the Viewport UI Display Layout");
 
     ViewportUiDisplayLayout::ViewportUiDisplayLayout(QWidget* parent)
@@ -27,7 +31,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         setSpacing(ViewportUiDisplayLayoutSpacing);
 
         // create a 3x2 map of sub layouts which will stack widgets according to their mapped alignment
-        m_internalLayouts = AZStd::unordered_map<Qt::Alignment, QBoxLayout*> {
+        m_internalLayouts = AZStd::unordered_map<Qt::Alignment, QBoxLayout*>{
             CreateSubLayout(new QVBoxLayout(), 0, 0, Qt::AlignTop | Qt::AlignLeft),
             CreateSubLayout(new QVBoxLayout(), 1, 0, Qt::AlignBottom | Qt::AlignLeft),
             CreateSubLayout(new QVBoxLayout(), 0, 1, Qt::AlignTop),
@@ -45,8 +49,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         }
 
         // find the corresponding sub layout for the alignment and add the widget
-        if (auto layoutForAlignment = m_internalLayouts.find(alignment);
-            layoutForAlignment != m_internalLayouts.end())
+        if (auto layoutForAlignment = m_internalLayouts.find(alignment); layoutForAlignment != m_internalLayouts.end())
         {
             // place the widget before or after the invisible spacer
             // depending on the layout alignment
@@ -97,7 +100,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         // without this, alignment and resizing within the sublayouts becomes difficult
         layout->addStretch(1);
 
-        addLayout(layout, row, column, /*rowSpan=*/ 1, /*colSpan=*/ 1, alignment);
+        addLayout(layout, row, column, /*rowSpan=*/1, /*colSpan=*/1, alignment);
 
         return { alignment, layout };
     }

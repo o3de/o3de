@@ -8,11 +8,11 @@
 
 #pragma once
 
-#include <AzToolsFramework/ViewportUi/Button.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzToolsFramework/ViewportUi/Button.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiWidgetCallbacks.h>
-#include <functional>
+
 #include <QPointer>
 #include <QToolBar>
 #include <QToolButton>

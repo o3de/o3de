@@ -107,9 +107,6 @@ protected: // static functions
     static void Reflect(AZ::ReflectContext* context);
     //////////////////////////////////////////////////////////////////////////
 
-    static bool VersionConverter(AZ::SerializeContext& context,
-        AZ::SerializeContext::DataElementNode& classElement);
-
 protected: // functions
 
     //! Returns a string representation of the indices used to index sprite-sheet types.
