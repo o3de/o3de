@@ -365,10 +365,7 @@ namespace AZ
 
                 // if material is present in controller configuration, assign its data
                 const MaterialAssignment& materialFromController = GetMaterialAssignmentFromMap(config.m_materials, slot.m_id);
-                if (materialFromController.m_materialAsset != slot.m_defaultMaterialAsset) // Prevents the default material from showing up as a filled-in value in the property field
-                {
-                    slot.m_materialAsset = materialFromController.m_materialAsset;
-                }
+                slot.m_materialAsset = materialFromController.m_materialAsset;
 
                 slot.m_propertyOverrides = materialFromController.m_propertyOverrides;
                 slot.m_matModUvOverrides = materialFromController.m_matModUvOverrides;
@@ -435,9 +432,6 @@ namespace AZ
             AzToolsFramework::ScopedUndoBatch undoBatch("Generating materials.");
             SetDirty();
             
-            Data::AssetId modelAssetId;
-            MeshComponentRequestBus::EventResult(modelAssetId, GetEntityId(), &MeshComponentRequestBus::Events::GetModelAssetId);
-
             // First generating a unique set of all material asset IDs that will be used for source data generation
             AZStd::unordered_map<AZ::Data::AssetId, AZStd::string /*slot name*/> assetIdMap;
 

@@ -272,13 +272,11 @@ namespace AZ
             action = menu.addAction("Edit Source Material...", [this]() { OpenMaterialEditor(); });
             action->setEnabled(HasSourceData());
 
-            bool hasAnyMaterial = m_defaultMaterialAsset.GetId().IsValid() || m_materialAsset.GetId().IsValid();
-
             action = menu.addAction("Edit Material Instance...", [this]() { OpenMaterialInspector(); });
-            action->setEnabled(hasAnyMaterial);
+            action->setEnabled(m_materialAsset.GetId().IsValid());
 
             action = menu.addAction("Edit Material Instance UV Map...", [this]() { OpenUvNameMapInspector(); });
-            action->setEnabled(hasAnyMaterial);
+            action->setEnabled(m_materialAsset.GetId().IsValid());
 
             menu.addSeparator();
 
