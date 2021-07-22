@@ -69,6 +69,9 @@ def C12712453_ScriptCanvas_MultipleRaycastNode():
 
     :return: None
     """
+    
+    # Disabled until Script Canvas merges the new backend
+    return
 
     import os
     import sys
@@ -200,5 +203,4 @@ if __name__ == "__main__":
     imports.init()
 
     from editor_python_test_tools.utils import Report
-    # Disabled until Script Canvas merges the new backend
-    #Report.start_test(C12712453_ScriptCanvas_MultipleRaycastNode)
+    Report.start_test(C12712453_ScriptCanvas_MultipleRaycastNode)
