@@ -60,6 +60,7 @@ namespace AZ
 
                 SCENE_DATA_API const Vector3& GetPosition(unsigned int index) const override;
                 SCENE_DATA_API const Vector3& GetNormal(unsigned int index) const override;
+                SCENE_DATA_API void SetNormal(unsigned int index, const Vector3&) override;
                 SCENE_DATA_API const Vector2& GetUV(unsigned int vertexIndex, unsigned int uvSetIndex) const;
 
                 SCENE_DATA_API AZStd::vector<Vector4>& GetTangents();

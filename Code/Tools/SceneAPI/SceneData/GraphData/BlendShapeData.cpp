@@ -232,6 +232,12 @@ namespace AZ
                 return m_normals[index];
             }
 
+            void BlendShapeData::SetNormal(unsigned int index, const Vector3& normal)
+            {
+                AZ_Assert(index < m_normals.size(), "SetNormal index not in range");
+                m_normals[index] = normal;
+            };
+
             const Vector2& BlendShapeData::GetUV(unsigned int vertexIndex, unsigned int uvSetIndex) const
             {
                 AZ_Assert(uvSetIndex < MaxNumUVSets, "uvSet index out of range");

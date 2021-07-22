@@ -161,6 +161,12 @@ namespace AZ
                 return m_normals[index];
             }
 
+            SCENE_DATA_API void MeshData::SetNormal(unsigned int index, const AZ::Vector3& normal)
+            {
+                AZ_Assert(index < m_normals.size(), "GetNormal index not in range");
+                m_normals[index] = normal;
+            }
+
             unsigned int MeshData::GetFaceCount() const
             {
                 return static_cast<unsigned int>(m_faceList.size());

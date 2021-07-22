@@ -33,6 +33,13 @@ namespace AZ
             class IMeshVertexBitangentData;
         }
 
+        enum class NormalsSource
+        {
+            FromSourceScene = 0,
+            Flat,
+            Smoothed
+        };
+
         namespace SceneData
         {
             class SCENE_DATA_CLASS TangentsRule
@@ -46,11 +53,17 @@ namespace AZ
                 SCENE_DATA_API ~TangentsRule() override = default;
 
                 SCENE_DATA_API AZ::SceneAPI::DataTypes::TangentSpace GetTangentSpace() const;
+                SCENE_DATA_API NormalsSource GetNormalsSource() const;
+                SCENE_DATA_API bool GetShouldRenormalizeNormals() const;
+
+                SCENE_DATA_API static const TangentsRule& GetDefault();
 
                 static void Reflect(ReflectContext* context);
 
             protected:
                 AZ::SceneAPI::DataTypes::TangentSpace m_tangentSpace;     /**< Specifies how to handle tangents. Either generate them, or import them. */
+                NormalsSource m_normalsSource;
+                bool m_shouldRenormalizeNormals;
             };
         } // SceneData
     } // SceneAPI
