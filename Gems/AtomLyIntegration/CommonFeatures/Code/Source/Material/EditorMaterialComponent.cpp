@@ -365,7 +365,7 @@ namespace AZ
 
                 // if material is present in controller configuration, assign its data
                 const MaterialAssignment& materialFromController = GetMaterialAssignmentFromMap(config.m_materials, slot.m_id);
-                //if (materialFromController.m_materialAsset != slot.m_defaultMaterialAsset) // Prevents the default material from showing up as a filled-in value in the property field
+                if (materialFromController.m_materialAsset != slot.m_defaultMaterialAsset) // Prevents the default material from showing up as a filled-in value in the property field
                 {
                     slot.m_materialAsset = materialFromController.m_materialAsset;
                 }
