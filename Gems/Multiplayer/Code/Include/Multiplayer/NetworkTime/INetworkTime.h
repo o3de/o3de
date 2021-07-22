@@ -42,6 +42,10 @@ namespace Multiplayer
         //! @return the hosts current timeMs
         virtual AZ::TimeMs GetHostTimeMs() const = 0;
 
+        //! Retrieves the hosts current blend factor (may be rewound on the server during backward reconciliation).
+        //! @return the hosts current blend factor
+        virtual float GetHostBlendFactor() const = 0;
+
         //! Get the controlling connection that may be currently altering global game time.
         //! Note this abstraction is required at a relatively high level to allow for 'don't rewind the shooter' semantics
         //! @return the ConnectionId of the connection requesting the rewind operation
@@ -58,6 +62,10 @@ namespace Multiplayer
         //! @param timeMs the new HostTimeMs to use
         //! @param rewindConnectionId the rewinding ConnectionId 
         virtual void AlterTime(HostFrameId frameId, AZ::TimeMs timeMs, AzNetworking::ConnectionId rewindConnectionId) = 0;
+
+        //! Alters the current Host blend factor. Used to drive interpolation in rewound states.
+		//! @param blendFactor the blend factor to use
+        virtual void AlterBlendFactor(float blendFactor) = 0;
 
         //! Syncs all entities contained within a volume to the current rewind state.
         //! @param rewindVolume the volume to rewind entities within (needed for physics entities)

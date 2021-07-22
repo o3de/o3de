@@ -186,18 +186,20 @@ namespace Multiplayer
     class ScopedAlterTime final
     {
     public:
-        inline ScopedAlterTime(HostFrameId frameId, AZ::TimeMs timeMs, AzNetworking::ConnectionId connectionId)
+        inline ScopedAlterTime(HostFrameId frameId, AZ::TimeMs timeMs, float blendFactor, AzNetworking::ConnectionId connectionId)
         {
             INetworkTime* time = GetNetworkTime();
             m_previousHostFrameId = time->GetHostFrameId();
             m_previousHostTimeMs = time->GetHostTimeMs();
             m_previousRewindConnectionId = time->GetRewindingConnectionId();
             time->AlterTime(frameId, timeMs, connectionId);
+            time->AlterBlendFactor(blendFactor);
         }
         inline ~ScopedAlterTime()
         {
             INetworkTime* time = GetNetworkTime();
             time->AlterTime(m_previousHostFrameId, m_previousHostTimeMs, m_previousRewindConnectionId);
+            time->AlterBlendFactor(DefaultBlendFactor);
         }
     private:
         HostFrameId m_previousHostFrameId = InvalidHostFrameId;

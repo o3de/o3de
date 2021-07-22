@@ -59,6 +59,10 @@ namespace Multiplayer
         //! @return value in const base type form
         const BASE_TYPE& Get() const;
 
+        //! Const base type retriever for one host frame behind Get().
+        //! @return value in const base type form
+        const BASE_TYPE& GetPrevious() const;
+
         //! Base type retriever.
         //! @return value in base type form
         BASE_TYPE& Modify();
