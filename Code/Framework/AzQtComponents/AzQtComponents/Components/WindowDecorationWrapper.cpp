@@ -661,6 +661,10 @@ namespace AzQtComponents
         if (!restoreGeometryFromSettings())
         {
             show();
+
+            // If we failed to restore from settings (the first time this window is loaded),
+            // then center it on the screen by default
+            centerOnScreen(this);
         }
     }
 
