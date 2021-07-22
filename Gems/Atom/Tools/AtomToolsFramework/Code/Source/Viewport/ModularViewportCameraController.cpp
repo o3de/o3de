@@ -117,21 +117,24 @@ namespace AtomToolsFramework
         AzFramework::ViewportDebugDisplayEventBus::Handler::BusDisconnect();
     }
 
-    // should the camera system respond to this particular event
-    static bool ShouldHandle(const AzFramework::ViewportControllerPriority priority, const bool exclusive, const bool handling)
+    // what priority should the camera system respond to
+    static AzFramework::ViewportControllerPriority GetPriority(const AzFramework::CameraSystem& cameraSystem)
     {
-        // ModernViewportCameraControllerInstance receives events at all priorities, it should only respond to normal priority
-        // events if it is not in 'exclusive' mode and when in 'exclusive' mode it should only respond to the highest priority
-        // events, it should also respond to highest priority events while handling events (essentially when the camera system
-        // is 'active' and responding to inputs)
-        return !exclusive && priority == AzFramework::ViewportControllerPriority::Normal ||
-            exclusive && priority == AzFramework::ViewportControllerPriority::Highest ||
-            handling && priority == AzFramework::ViewportControllerPriority::Highest;
+        // ModernViewportCameraControllerInstance receives events at all priorities, when it is in 'exclusive' mode
+        // or it is actively handling events (essentially when the camera system is 'active' and responding to inputs)
+        // it should only respond to the highest priority
+        if (cameraSystem.m_cameras.Exclusive() || cameraSystem.HandlingEvents())
+        {
+            return AzFramework::ViewportControllerPriority::Highest;
+        }
+
+        // otherwise it should also respond to normal priority events
+        return AzFramework::ViewportControllerPriority::Normal;
     }
 
     bool ModernViewportCameraControllerInstance::HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event)
     {
-        if (ShouldHandle(event.m_priority, m_cameraSystem.m_cameras.Exclusive(), m_cameraSystem.HandlingEvents()))
+        if (event.m_priority == GetPriority(m_cameraSystem))
         {
             return m_cameraSystem.HandleEvents(AzFramework::BuildInputEvent(event.m_inputChannel));
         }
