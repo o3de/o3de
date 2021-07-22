@@ -240,15 +240,51 @@ namespace AzQtComponents
 
             // Center within the parent
             QRect geo = geometry();
+
+            // If the base size of the guest widget is larger than the screen,
+            // then we need to resize it so that it will fit by either using
+            // the minimum size (if one is set), or fallback to the screen size.
+            if (m_guestWidget)
+            {
+                if (auto screen = m_guestWidget->screen())
+                {
+                    const QRect screenGeometry = screen->availableGeometry();
+                    if (geo.width() > screenGeometry.width())
+                    {
+                        auto guestMinimumWidth = m_guestWidget->minimumWidth();
+                        if (guestMinimumWidth && guestMinimumWidth <= screenGeometry.width())
+                        {
+                            geo.setWidth(guestMinimumWidth);
+                        }
+                        else
+                        {
+                            geo.setWidth(screenGeometry.width());
+                        }
+                    }
+                    if (geo.height() > screenGeometry.height())
+                    {
+                        auto guestMinimumHeight = m_guestWidget->minimumHeight();
+                        if (guestMinimumHeight && guestMinimumHeight <= screenGeometry.height())
+                        {
+                            geo.setHeight(guestMinimumHeight);
+                        }
+                        else
+                        {
+                            geo.setHeight(screenGeometry.height());
+                        }
+                    }
+                }
+            }
+
             geo.moveCenter(parentWindowCenter);
 
-            QWindow *w = topLevelWidget->windowHandle();
+            QWindow* w = topLevelWidget->windowHandle();
             if (!w)
             {
                 return;
             }
 
-            QScreen *screen = w->screen();
+            QScreen* screen = w->screen();
             if (!screen)
             {
                 // defensive, shouldn't happen
