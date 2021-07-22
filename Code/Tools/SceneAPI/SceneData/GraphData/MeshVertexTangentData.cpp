@@ -34,7 +34,6 @@ namespace AZ
                         ->Method("GetTangent", &MeshVertexTangentData::GetTangent)
                         ->Method("GetTangentSetIndex", &MeshVertexTangentData::GetTangentSetIndex)
                         ->Method("GetTangentSpace", &MeshVertexTangentData::GetTangentSpace)
-                        ->Enum<(int)SceneAPI::DataTypes::TangentSpace::EMotionFX>("EMotionFX")
                         ->Enum<(int)SceneAPI::DataTypes::TangentSpace::FromSourceScene>("FromSourceScene")
                         ->Enum<(int)SceneAPI::DataTypes::TangentSpace::MikkT>("MikkT");
                 }

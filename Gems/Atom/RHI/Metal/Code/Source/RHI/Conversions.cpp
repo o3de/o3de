@@ -780,7 +780,25 @@ namespace AZ
             };
             return table[static_cast<uint32_t>(func)];
         }
-        
+
+#if AZ_TRAIT_ATOM_METAL_SAMPLER_BORDERCOLOR_SUPPORT
+    MTLSamplerBorderColor ConvertBorderColor(RHI::BorderColor color)
+    {
+        switch (color)
+        {
+            case RHI::BorderColor::OpaqueBlack:
+                return MTLSamplerBorderColorOpaqueBlack;
+            case RHI::BorderColor::TransparentBlack:
+                return MTLSamplerBorderColorTransparentBlack;
+            case RHI::BorderColor::OpaqueWhite:
+                return MTLSamplerBorderColorOpaqueWhite;
+            default:
+                AZ_Assert(false, "Unsupported Border Color");
+        }
+        return MTLSamplerBorderColorOpaqueBlack;
+    }
+#endif
+
         void ConvertSamplerState(const RHI::SamplerState& state, MTLSamplerDescriptor* samplerDesc)
         {
             samplerDesc.sAddressMode = ConvertAddressMode(state.m_addressU);
@@ -948,24 +966,7 @@ namespace AZ
                     return false;
             }
         }
-    
-#if AZ_TRAIT_ATOM_METAL_SAMPLER_BORDERCOLOR_SUPPORT
-        MTLSamplerBorderColor ConvertBorderColor(RHI::BorderColor color)
-        {
-            switch (color)
-            {
-                case RHI::BorderColor::OpaqueBlack:
-                    return MTLSamplerBorderColorOpaqueBlack;
-                case RHI::BorderColor::TransparentBlack:
-                    return MTLSamplerBorderColorTransparentBlack;
-                case RHI::BorderColor::OpaqueWhite:
-                    return MTLSamplerBorderColorOpaqueWhite;
-                default:
-                    AZ_Assert(false, "Unsupported Border Color");
-            }
-            return MTLSamplerBorderColorOpaqueBlack;            
-        }
-#endif
+
         void ConvertImageArgumentDescriptor(MTLArgumentDescriptor* imgArgDescriptor, const RHI::ShaderInputImageDescriptor& shaderInputImage)
         {
             imgArgDescriptor.dataType = MTLDataTypeTexture;

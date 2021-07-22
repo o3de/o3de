@@ -40,7 +40,7 @@ namespace AzToolsFramework
                         ->Attribute(AZ::Edit::Attributes::FixedComponentListIndex, 1)
                         ->Attribute(AZ::Edit::Attributes::RemoveableByUser, true)
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/NonUniformScale.svg")
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/NonUniformScale.svg")
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/NonUniformScale.svg")
                         ->DataElement(
                             AZ::Edit::UIHandlers::Default, &EditorNonUniformScaleComponent::m_scale, "Non-uniform Scale",
                             "Non-uniform scale for this entity only (does not propagate through hierarchy)")

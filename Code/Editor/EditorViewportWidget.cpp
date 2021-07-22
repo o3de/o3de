@@ -403,6 +403,19 @@ bool EditorViewportWidget::event(QEvent* event)
         m_keyDown.clear();
         break;
 
+    case QEvent::ShortcutOverride:
+    {
+        // Ensure we exit game mode on escape, even if something else would eat our escape key event.
+        if (static_cast<QKeyEvent*>(event)->key() == Qt::Key_Escape && GetIEditor()->IsInGameMode())
+        {
+            GetIEditor()->SetInGameMode(false);
+            event->accept();
+            return true;
+        }
+        break;
+    }
+
+
     case QEvent::Shortcut:
         // a shortcut should immediately clear us, otherwise the release event never gets sent
         m_keyDown.clear();
@@ -456,7 +469,6 @@ void EditorViewportWidget::Update()
         auto m = AZMatrix3x4ToLYMatrix3x4(matrix);
 
         SetViewTM(m);
-        SetFOV(cameraState.m_fovOrZoom);
         m_Camera.SetZRange(cameraState.m_nearClip, cameraState.m_farClip);
     }
 
@@ -2601,6 +2613,8 @@ void EditorViewportWidget::DestroyRenderContext()
 //////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::SetDefaultCamera()
 {
+    // Ensure the FOV matches our internally stored setting
+    SetFOV(GetFOV());
     if (IsDefaultCamera())
     {
         return;

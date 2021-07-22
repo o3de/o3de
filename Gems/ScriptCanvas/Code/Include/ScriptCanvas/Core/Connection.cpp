@@ -23,6 +23,11 @@ namespace ScriptCanvas
         AZStd::string failedContract;
         AZStd::all_of(firstSlot.GetContracts().begin(), firstSlot.GetContracts().end(), [&firstSlot, &secondSlot, &outcome](const AZStd::unique_ptr<Contract>& contract)
         {
+            if (!contract)
+            {
+                return false;
+            }
+
             outcome = contract->Evaluate(firstSlot, secondSlot);
             if (outcome.IsSuccess())
             {

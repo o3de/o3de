@@ -6,7 +6,6 @@
  *
  */
 
-
 #include "ViewportUiTextField.h"
 
 #include <AzCore/Console/IConsole.h>
@@ -16,7 +15,11 @@
 namespace AzToolsFramework::ViewportUi::Internal
 {
     AZ_CVAR(
-        int, ViewportUiTextFieldLength, 35, nullptr, AZ::ConsoleFunctorFlags::Null,
+        int,
+        ViewportUiTextFieldLength,
+        35,
+        nullptr,
+        AZ::ConsoleFunctorFlags::Null,
         "The pixel length of the text field part of a ViewportUiTextField");
 
     ViewportUiTextField::ViewportUiTextField(AZStd::shared_ptr<TextField> textField)
@@ -56,11 +59,14 @@ namespace AzToolsFramework::ViewportUi::Internal
 
         m_lineEdit.setValidator(m_validator);
 
-        connect(&m_lineEdit, &QLineEdit::textEdited, &m_lineEdit, [textField](QString text) {
-            // convert the text using toLocal8Bit().data() as recommended by Qt, then emit signal
-            textField->m_fieldText = text.toLocal8Bit().data();
-            textField->m_textEditedEvent.Signal(textField->m_fieldText);
-        });
+        connect(
+            &m_lineEdit, &QLineEdit::textEdited, &m_lineEdit,
+            [textField](QString text)
+            {
+                // convert the text using toLocal8Bit().data() as recommended by Qt, then emit signal
+                textField->m_fieldText = text.toLocal8Bit().data();
+                textField->m_textEditedEvent.Signal(textField->m_fieldText);
+            });
     }
 
     void ViewportUiTextField::Update()
