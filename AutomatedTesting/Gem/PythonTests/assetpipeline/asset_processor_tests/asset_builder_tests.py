@@ -120,4 +120,8 @@ class TestsAssetBuilder_WindowsAndMac(object):
         if 'C1569087_corrupted.slice" failed' in corrupted_slice_output.stdout:
             corrupted_slice_failed = True
 
+        if not corrupted_slice_failed:
+            logger.info(f"stdout: {corrupted_slice_output.stdout}")
+            logger.info(f"stderr: {corrupted_slice_output.stderr}")
+
         assert corrupted_slice_failed, "Corrupted slice did not produce error"

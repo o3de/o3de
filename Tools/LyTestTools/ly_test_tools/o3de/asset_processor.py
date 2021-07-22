@@ -593,6 +593,8 @@ class AssetProcessor(object):
         run_result = subprocess.run(command, close_fds=True, timeout=timeout, capture_output=capture_output)
         output_list = None
         if capture_output:
+            logger.info(f"stdout: {run_result.stdout}")
+            logger.info(f"stderr: {run_result.stderr}")
             if decode:
                 output_list = run_result.stdout.decode('utf-8').splitlines()
             else:
