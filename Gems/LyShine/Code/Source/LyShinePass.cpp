@@ -173,7 +173,7 @@ namespace LyShine
             depthInOutSlot.m_loadStoreAction.m_loadActionStencil = AZ::RHI::AttachmentLoadAction::Clear;
 
             AZ::RPI::PassSlot& inOutSlot = passTemplate->m_slots[1];
-            inOutSlot.m_name = "InputOutput";
+            inOutSlot.m_name = "ColorInputOutput";
             inOutSlot.m_slotType = AZ::RPI::PassSlotType::InputOutput;
             inOutSlot.m_scopeAttachmentUsage = AZ::RHI::ScopeAttachmentUsage::RenderTarget;
 
@@ -186,9 +186,9 @@ namespace LyShine
             depthInOutConnection.m_attachmentRef.m_attachment = "DepthInputOutput";
 
             AZ::RPI::PassConnection& inOutConnection = passTemplate->m_connections[1];
-            inOutConnection.m_localSlot = "InputOutput";
+            inOutConnection.m_localSlot = "ColorInputOutput";
             inOutConnection.m_attachmentRef.m_pass = "Parent";
-            inOutConnection.m_attachmentRef.m_attachment = "InputOutput";
+            inOutConnection.m_attachmentRef.m_attachment = "ColorInputOutput";
 
             // Pass data
             AZStd::shared_ptr<AZ::RPI::RasterPassData> passData = AZStd::make_shared<AZ::RPI::RasterPassData>();

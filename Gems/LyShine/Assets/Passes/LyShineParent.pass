@@ -8,7 +8,7 @@
             "PassClass": "LyShinePass",
             "Slots": [
                 {
-                    "Name": "InputOutput",
+                    "Name": "ColorInputOutput",
                     "SlotType": "InputOutput"
                 },
                 {

@@ -422,7 +422,7 @@
                     "TemplateName": "LyShineParentTemplate",
                     "Connections": [
                         {
-                            "LocalSlot": "InputOutput",
+                            "LocalSlot": "ColorInputOutput",
                             "AttachmentRef": {
                                 "Pass": "DebugOverlayPass",
                                 "Attachment": "InputOutput"
@@ -445,7 +445,7 @@
                             "LocalSlot": "InputOutput",
                             "AttachmentRef": {
                                 "Pass": "LyShinePass",
-                                "Attachment": "InputOutput"
+                                "Attachment": "ColorInputOutput"
                             }
                         },
                         {
