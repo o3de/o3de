@@ -1,12 +1,12 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #pragma once
-
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TickBus.h>
@@ -18,18 +18,20 @@
 
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
+#include <AzToolsFramework/Logger/TraceLogger.h>
 
 #include <Atom/Document/ShaderManagementConsoleDocumentSystemRequestBus.h>
 #include <Atom/Window/ShaderManagementConsoleWindowNotificationBus.h>
 
-#include <QApplication>
+#include <AzQtComponents/Application/AzQtApplication.h>
+
 #include <QTimer>
 
 namespace ShaderManagementConsole
 {
     class ShaderManagementConsoleApplication
         : public AzFramework::Application
-        , public QApplication
+        , public AzQtComponents::AzQtApplication
         , private AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler
         , private ShaderManagementConsoleWindowNotificationBus::Handler
         , private AzFramework::AssetSystemStatusBus::Handler
@@ -112,6 +114,8 @@ namespace ShaderManagementConsole
         void StartInternal();
 
         static void PyIdleWaitFrames(uint32_t frames);
+
+        AzToolsFramework::TraceLogger m_traceLogger;
 
         //! Local user settings are used to store asset browser tree expansion state
         AZ::UserSettingsProvider m_localUserSettings;

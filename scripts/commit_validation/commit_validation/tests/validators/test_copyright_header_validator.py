@@ -1,5 +1,6 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
 # SPDX-License-Identifier: Apache-2.0 OR MIT#
 #
@@ -13,19 +14,19 @@ from commit_validation.validators.copyright_header_validator import CopyrightHea
 
 class CopyrightHeaderValidatorTests(unittest.TestCase):
     @patch('builtins.open', mock_open(read_data='This file does contain\n'
-                                                'Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution., so it should pass\n'))
+                                                'Copyright (c) Contributors to the Open 3D Engine Project.\nFor complete copyright and license terms please see the LICENSE at the root of this distribution., so it should pass\n'))
     def test_fileWithCopyrightHeader_passes(self):
         commit = MockCommit(files=['/someCppFile.cpp'])
         files = [
             'This file does contain\n'
-            'Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution., so it should pass\n',
+            'Copyright (c) Contributors to the Open 3D Engine Project.\nFor complete copyright and license terms please see the LICENSE at the root of this distribution., so it should pass\n',
 
             'This file does contain\n'
-            'Copyright(c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution., so it should pass\n'
+            'Copyright(c) Contributors to the Open 3D Engine Project.\nFor complete copyright and license terms please see the LICENSE at the root of this distribution., so it should pass\n'
             'and there\'s no space between "Copyright" and "(c)"',
 
             'This file has a upper-case C between the parenthesis\n'
-            '// Copyright (C) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.',
+            '// Copyright (C) Contributors to the Open 3D Engine Project.\nFor complete copyright and license terms please see the LICENSE at the root of this distribution.',
         ]
         for file in files:
             with patch('builtins.open', mock_open(read_data=file)):

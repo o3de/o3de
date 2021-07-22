@@ -1,12 +1,14 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #pragma once
 
+#include <AzCore/Serialization/Json/JsonSerializationResult.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
@@ -121,6 +123,11 @@ namespace AzToolsFramework
              * @return the instances DOM value or AZStd::nullopt if it instances can't be found.
              */
             PrefabDomValueConstReference GetInstancesValue(const PrefabDomValue& prefabDom);
+
+            AZ::JsonSerializationResult::ResultCode ApplyPatches(
+                PrefabDomValue& prefabDomToApplyPatchesOn,
+                PrefabDom::AllocatorType& allocator,
+                const PrefabDomValue& patches);
 
             /**
              * Prints the contents of the given prefab DOM value to the debug output console in a readable format.

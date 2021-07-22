@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -11,6 +12,7 @@
 
 #include <AzFramework/Input/Buses/Notifications/InputChannelNotificationBus.h>
 #include <AzFramework/Input/Buses/Requests/InputChannelRequestBus.h>
+#include <AzQtComponents/Utilities/QtWindowUtilities.h>
 
 #include <QApplication>
 #include <QCursor>
@@ -187,12 +189,6 @@ namespace AzToolsFramework
 
     bool QtEventToAzInputMapper::HandlesInputEvent(const AzFramework::InputChannel& channel) const
     {
-        const AzFramework::InputChannelId& channelId = channel.GetInputChannelId();
-        if (channelId == AzFramework::InputDeviceMouse::Movement::X || channelId == AzFramework::InputDeviceMouse::Movement::Y)
-        {
-            return false;
-        }
-
         // We map keyboard and mouse events from Qt, so flag all events coming from those devices
         // as handled by our synthetic event system.
         const AzFramework::InputDeviceId& deviceId = channel.GetInputDevice().GetInputDeviceId();
@@ -207,6 +203,22 @@ namespace AzToolsFramework
         {
             // Send an internal focus change event to reset our input state to fresh if we're disabled.
             HandleFocusChange(nullptr);
+        }
+    }
+
+    void QtEventToAzInputMapper::SetCursorCaptureEnabled(bool enabled)
+    {
+        if (m_capturingCursor != enabled)
+        {
+            m_capturingCursor = enabled;
+            if (m_capturingCursor)
+            {
+                qApp->setOverrideCursor(Qt::BlankCursor);
+            }
+            else
+            {
+                qApp->restoreOverrideCursor();
+            }
         }
     }
 
@@ -284,13 +296,25 @@ namespace AzToolsFramework
     {
         auto systemCursorChannel =
             GetInputChannel<AzFramework::InputChannelDeltaWithSharedPosition2D>(AzFramework::InputDeviceMouse::SystemCursorPosition);
+        auto movementXChannel =
+            GetInputChannel<AzFramework::InputChannelDeltaWithSharedPosition2D>(AzFramework::InputDeviceMouse::Movement::X);
+        auto movementYChannel =
+            GetInputChannel<AzFramework::InputChannelDeltaWithSharedPosition2D>(AzFramework::InputDeviceMouse::Movement::Y);
         auto mouseWheelChannel =
             GetInputChannel<AzFramework::InputChannelDeltaWithSharedPosition2D>(AzFramework::InputDeviceMouse::Movement::Z);
 
         systemCursorChannel->ProcessRawInputEvent(m_cursorPosition->m_normalizedPositionDelta.GetLength());
+        // Generate movement events based on the pixel delta divided by the DPI scaling factor, to calculate a rough approximation
+        // of cursor movement velocity.
+        movementXChannel->ProcessRawInputEvent(
+            m_cursorPosition->m_normalizedPositionDelta.GetX() * aznumeric_cast<float>(m_sourceWidget->width()) / m_sourceWidget->devicePixelRatioF());
+        movementYChannel->ProcessRawInputEvent(
+            m_cursorPosition->m_normalizedPositionDelta.GetY() * aznumeric_cast<float>(m_sourceWidget->height()) / m_sourceWidget->devicePixelRatioF());
         mouseWheelChannel->ProcessRawInputEvent(0.f);
 
         NotifyUpdateChannelIfNotIdle(systemCursorChannel, nullptr);
+        NotifyUpdateChannelIfNotIdle(movementXChannel, nullptr);
+        NotifyUpdateChannelIfNotIdle(movementYChannel, nullptr);
         NotifyUpdateChannelIfNotIdle(mouseWheelChannel, nullptr);
     }
 
@@ -318,16 +342,42 @@ namespace AzToolsFramework
         }
     }
 
+    AZ::Vector2 QtEventToAzInputMapper::WidgetPositionToNormalizedPosition(QPoint position)
+    {
+        const float normalizedX = aznumeric_cast<float>(position.x()) / aznumeric_cast<float>(m_sourceWidget->width());
+        const float normalizedY = aznumeric_cast<float>(position.y()) / aznumeric_cast<float>(m_sourceWidget->height());
+        return AZ::Vector2{normalizedX, normalizedY};
+    }
+
+    QPoint QtEventToAzInputMapper::NormalizedPositionToWidgetPosition(AZ::Vector2 normalizedPosition)
+    {
+        const int denormalizedX = aznumeric_cast<int>(normalizedPosition.GetX() * m_sourceWidget->width());
+        const int denormalizedY = aznumeric_cast<int>(normalizedPosition.GetY() * m_sourceWidget->height());
+        return QPoint{denormalizedX, denormalizedY};
+    }
+
     void QtEventToAzInputMapper::HandleMouseMoveEvent(QMouseEvent* mouseEvent)
     {
+        AZ::Vector2 lastCursorPosition = m_cursorPosition->m_normalizedPosition;
+
         const QPoint mousePos = mouseEvent->pos();
-        const float normalizedX = aznumeric_cast<float>(mousePos.x()) / aznumeric_cast<float>(m_sourceWidget->width());
-        const float normalizedY = aznumeric_cast<float>(mousePos.y()) / aznumeric_cast<float>(m_sourceWidget->height());
-        const AZ::Vector2 normalizedPosition(normalizedX, normalizedY);
+        const AZ::Vector2 normalizedPosition = WidgetPositionToNormalizedPosition(mousePos);
         m_cursorPosition->m_normalizedPositionDelta = normalizedPosition - m_cursorPosition->m_normalizedPosition;
         m_cursorPosition->m_normalizedPosition = normalizedPosition;
         ProcessPendingMouseEvents();
         m_mouseChannelsNeedUpdate = true;
+
+        if (m_capturingCursor)
+        {
+            // Reset our cursor position to the previous point.
+            QPoint targetScreenPosition = m_sourceWidget->mapToGlobal(NormalizedPositionToWidgetPosition(lastCursorPosition));
+            AzQtComponents::SetCursorPos(targetScreenPosition);
+
+            // Even though we just set the cursor position, there are edge cases such as remote desktop that will leave
+            // the cursor position unchanged. For safety, we re-cache our last cursor position for delta generation.
+            QPoint actualWidgetPosition = m_sourceWidget->mapFromGlobal(QCursor::pos());
+            m_cursorPosition->m_normalizedPosition = WidgetPositionToNormalizedPosition(actualWidgetPosition);
+        }
     }
 
     void QtEventToAzInputMapper::HandleKeyEvent(QKeyEvent* keyEvent)

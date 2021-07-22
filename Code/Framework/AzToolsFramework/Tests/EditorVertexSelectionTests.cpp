@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -27,6 +28,8 @@ using namespace AzToolsFramework;
 
 namespace UnitTest
 {
+    const auto TestComponentId = AZ::ComponentId(1234);
+
     // test implementation of variable/fixed vertex request buses
     // (to be used in place of spline/polygon prism etc)
     class TestVariableVerticesVertexContainer
@@ -86,6 +89,9 @@ namespace UnitTest
 
         void TearDownEditorFixtureImpl() override
         {
+            AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+                &AzToolsFramework::EditorEntityContextRequestBus::Events::DestroyEditorEntity, m_entityId);
+
             m_vertexContainer.Disconnect();
             m_vertexSelection.Destroy();
         }
@@ -106,7 +112,7 @@ namespace UnitTest
     void EditorVertexSelectionFixture::RecreateVertexSelection()
     {
         m_vertexSelection.Create(
-            AZ::EntityComponentIdPair(m_entityId, AZ::InvalidComponentId),
+            AZ::EntityComponentIdPair(m_entityId, TestComponentId),
             g_mainManipulatorManagerId, AZStd::make_unique<NullHoverSelection>(),
             TranslationManipulators::Dimensions::Three, ConfigureTranslationManipulatorAppearance3d);
     }
@@ -116,7 +122,7 @@ namespace UnitTest
         for (size_t vertIndex = 0; vertIndex < EditorVertexSelectionFixture::VertexCount; ++vertIndex)
         {
             InsertVertexAfter(
-                AZ::EntityComponentIdPair(m_entityId, AZ::InvalidComponentId), 0, AZ::Vector3::CreateZero());
+                AZ::EntityComponentIdPair(m_entityId, TestComponentId), 0, AZ::Vector3::CreateZero());
         }
     }
     void EditorVertexSelectionFixture::ClearVertices()
@@ -124,7 +130,7 @@ namespace UnitTest
         for (size_t vertIndex = 0; vertIndex < EditorVertexSelectionFixture::VertexCount; ++vertIndex)
         {
             SafeRemoveVertex<AZ::Vector3>(
-                AZ::EntityComponentIdPair(m_entityId, AZ::InvalidComponentId), 0);
+                AZ::EntityComponentIdPair(m_entityId, TestComponentId), 0);
         }
     }
 
@@ -197,7 +203,7 @@ namespace UnitTest
     {
         using ::testing::Eq;
 
-        const auto entityComponentIdPair = AZ::EntityComponentIdPair(m_entityId, AZ::InvalidComponentId);
+        const auto entityComponentIdPair = AZ::EntityComponentIdPair(m_entityId, TestComponentId);
 
         const float horizontalPositions[] = {-1.5f, -0.5f, 0.5f, 1.5f};
         for (size_t vertIndex = 0; vertIndex < std::size(horizontalPositions); ++vertIndex)
@@ -251,5 +257,46 @@ namespace UnitTest
 
         // deleting all vertices is disallowed - size should remain the same
         EXPECT_THAT(vertexCountAfter, Eq(EditorVertexSelectionFixture::VertexCount));
+    }
+
+    TEST_F(EditorVertexSelectionManipulatorFixture, CannotDeleteLastVertexWithManipulator)
+    {
+        using ::testing::Eq;
+
+        const auto entityComponentIdPair = AZ::EntityComponentIdPair(m_entityId, TestComponentId);
+
+        // add a single vertex (in front of the camera)
+        InsertVertexAfter(entityComponentIdPair, 0, AZ::Vector3::CreateAxisY(5.0f));
+
+        // rebuild the vertex selection after adding the new verts
+        RecreateVertexSelection();
+
+        AzFramework::ScreenPoint vertexScreenPosition;
+        {
+            AZ::Vector3 localVertex;
+            bool found = false;
+            AZ::FixedVerticesRequestBus<AZ::Vector3>::EventResult(
+                found, m_entityId, &AZ::FixedVerticesRequestBus<AZ::Vector3>::Handler::GetVertex, 0, localVertex);
+
+            if (found)
+            {
+                // note: entity position is at the origin so localVertex position is equivalent to world
+                vertexScreenPosition = AzFramework::WorldToScreen(localVertex, m_cameraState);
+            }
+        }
+
+        // attempt to delete the vertex by clicking with Alt held
+        m_actionDispatcher->CameraState(m_cameraState)
+            ->MousePosition(vertexScreenPosition)
+            ->KeyboardModifierDown(AzToolsFramework::ViewportInteraction::KeyboardModifier::Alt)
+            ->MouseLButtonDown()
+            ->MouseLButtonUp();
+
+        size_t vertexCountAfter = 0;
+        AZ::VariableVerticesRequestBus<AZ::Vector3>::EventResult(
+            vertexCountAfter, m_entityId, &AZ::VariableVerticesRequestBus<AZ::Vector3>::Events::Size);
+
+        // deleting the last vertex through a manipulator is disallowed - size should remain the same
+        EXPECT_THAT(vertexCountAfter, Eq(1));
     }
 } // namespace UnitTest

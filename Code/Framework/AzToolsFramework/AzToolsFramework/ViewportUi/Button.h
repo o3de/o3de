@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -27,7 +28,7 @@ namespace AzToolsFramework::ViewportUi::Internal
 
         AZStd::string m_icon; //!< The icon for this button, string path to an image.
         AZStd::string m_name; //!< The name displayed as a label next to the button's icon.
-        State m_state = State::Deselected; 
-        ButtonId m_buttonId; 
+        State m_state = State::Deselected;
+        ButtonId m_buttonId;
     };
 } // namespace AzToolsFramework::ViewportUi::Internal

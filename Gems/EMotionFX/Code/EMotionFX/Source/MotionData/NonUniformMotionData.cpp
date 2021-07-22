@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -412,25 +413,24 @@ namespace EMotionFX
 
     void NonUniformMotionData::UpdateDuration()
     {
+        m_duration = 0.0f;
+
         for (const JointData& jointData : m_jointData)
         {
             if (!jointData.m_positionTrack.m_times.empty())
             {
-                m_duration = jointData.m_positionTrack.m_times.back();
-                return;
+                m_duration = AZ::GetMax(m_duration, jointData.m_positionTrack.m_times.back());
             }
 
             if (!jointData.m_rotationTrack.m_times.empty())
             {
-                m_duration = jointData.m_rotationTrack.m_times.back();
-                return;
+                m_duration = AZ::GetMax(m_duration, jointData.m_rotationTrack.m_times.back());
             }
 
 #ifndef EMFX_SCALE_DISABLED
             if (!jointData.m_scaleTrack.m_times.empty())
             {
-                m_duration = jointData.m_scaleTrack.m_times.back();
-                return;
+                m_duration = AZ::GetMax(m_duration, jointData.m_scaleTrack.m_times.back());
             }
 #endif
         }
@@ -439,8 +439,7 @@ namespace EMotionFX
         {
             if (!morphData.m_track.m_times.empty())
             {
-                m_duration = morphData.m_track.m_times.back();
-                return;
+                m_duration = AZ::GetMax(m_duration, morphData.m_track.m_times.back());
             }
         }
 
@@ -448,12 +447,9 @@ namespace EMotionFX
         {
             if (!floatData.m_track.m_times.empty())
             {
-                m_duration = floatData.m_track.m_times.back();
-                return;
+                m_duration = AZ::GetMax(m_duration, floatData.m_track.m_times.back());
             }
         }
-
-        m_duration = 0.0f;
     }
 
     void NonUniformMotionData::AllocateJointPositionSamples(size_t jointDataIndex, size_t numSamples)

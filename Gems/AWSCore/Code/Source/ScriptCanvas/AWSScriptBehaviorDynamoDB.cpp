@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -20,39 +21,30 @@
 
 namespace AWSCore
 {
-    AWSScriptBehaviorDynamoDB::AWSScriptBehaviorDynamoDB()
+    void AWSScriptBehaviorDynamoDB::Reflect(AZ::ReflectContext* context)
     {
-    }
-
-    void AWSScriptBehaviorDynamoDB::ReflectSerialization(AZ::SerializeContext* serializeContext)
-    {
-        if (serializeContext)
+        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<AWSScriptBehaviorDynamoDB>()
                 ->Version(0);
         }
-    }
 
-    void AWSScriptBehaviorDynamoDB::ReflectBehaviors(AZ::BehaviorContext* behaviorContext)
-    {
-        behaviorContext->Class<AWSScriptBehaviorDynamoDB>("AWSScriptBehaviorDynamoDB")
-            ->Attribute(AZ::Script::Attributes::Category, "AWSCore")
-            ->Method("GetItem", &AWSScriptBehaviorDynamoDB::GetItem,
-                {{{"Table Resource KeyName", "The name of the table containing the requested item."},
-                  {"Key Map", "A map of attribute names to AttributeValue objects, representing the primary key of the item to retrieve."}}})
-            ->Method("GetItemRaw", &AWSScriptBehaviorDynamoDB::GetItemRaw,
-                {{{"Table Name", "The name of the table containing the requested item."},
-                  {"Key Map", "A map of attribute names to AttributeValue objects, representing the primary key of the item to retrieve."},
-                  {"Region Name", "The region of the table located in."}}});
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<AWSScriptBehaviorDynamoDB>("AWSScriptBehaviorDynamoDB")
+                ->Attribute(AZ::Script::Attributes::Category, "AWSCore")
+                ->Method("GetItem", &AWSScriptBehaviorDynamoDB::GetItem,
+                    {{{"Table Resource KeyName", "The name of the table containing the requested item."},
+                      {"Key Map", "A map of attribute names to AttributeValue objects, representing the primary key of the item to retrieve."}}})
+                ->Method("GetItemRaw", &AWSScriptBehaviorDynamoDB::GetItemRaw,
+                    {{{"Table Name", "The name of the table containing the requested item."},
+                      {"Key Map", "A map of attribute names to AttributeValue objects, representing the primary key of the item to retrieve."},
+                      {"Region Name", "The region of the table located in."}}});
 
-        behaviorContext->EBus<AWSScriptBehaviorDynamoDBNotificationBus>("AWSDynamoDBBehaviorNotificationBus")
-            ->Attribute(AZ::Script::Attributes::Category, "AWSCore")
-            ->Handler<AWSScriptBehaviorDynamoDBNotificationBusHandler>();
-    }
-
-    void AWSScriptBehaviorDynamoDB::ReflectEditParameters(AZ::EditContext* editContext)
-    {
-        AZ_UNUSED(editContext);
+            behaviorContext->EBus<AWSScriptBehaviorDynamoDBNotificationBus>("AWSDynamoDBBehaviorNotificationBus")
+                ->Attribute(AZ::Script::Attributes::Category, "AWSCore")
+                ->Handler<AWSScriptBehaviorDynamoDBNotificationBusHandler>();
+        }
     }
 
     void AWSScriptBehaviorDynamoDB::GetItem(const AZStd::string& tableResourceKey, const DynamoDBAttributeValueMap& keyMap)

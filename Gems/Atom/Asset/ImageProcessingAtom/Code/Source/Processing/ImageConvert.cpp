@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include <ImageProcessing_precompiled.h>
 
 #include <Processing/PixelFormatInfo.h>
 #include <Processing/ImageToProcess.h>
@@ -23,10 +22,6 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-
-// qt has convenience functions to handle file
-#include <qfile.h>
-#include <qdir.h>
 
 // for texture splitting
 // minimum number of low level mips will be saved in the base file.

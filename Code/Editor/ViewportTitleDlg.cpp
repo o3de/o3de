@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -868,7 +869,16 @@ void CViewportTitleDlg::OnBnClickedMuteAudio()
 
 void CViewportTitleDlg::UpdateMuteActionText()
 {
-    m_audioMuteAction->setText(gSettings.bMuteAudio ? tr("Un-mute Audio") : tr("Mute Audio"));
+    if (!Audio::AudioSystemRequestBus::HasHandlers())
+    {
+        m_audioMuteAction->setEnabled(false);
+        m_audioMuteAction->setText(tr("Mute Audio: Enable Audio Gem"));
+    }
+    else
+    {
+        m_audioMuteAction->setEnabled(true);
+        m_audioMuteAction->setText(gSettings.bMuteAudio ? tr("Un-mute Audio") : tr("Mute Audio"));
+    }
 }
 
 void CViewportTitleDlg::OnHMDInitialized()

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -237,8 +238,8 @@ namespace EditorPythonBindings
             {
                 ec->Class<PythonSystemComponent>("PythonSystemComponent", "The Python interpreter")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
         }
@@ -284,10 +285,10 @@ namespace EditorPythonBindings
             ReleaseFunction m_releaseFunction;
         };
         ReleaseInitalizeWaiterScope scope([this]()
-        {
-            m_initalizeWaiter.release(m_initalizeWaiterCount);
-            m_initalizeWaiterCount = 0;
-        });
+            {
+                m_initalizeWaiter.release(m_initalizeWaiterCount);
+                m_initalizeWaiterCount = 0;
+            });
 
         if (Py_IsInitialized())
         {
@@ -325,6 +326,11 @@ namespace EditorPythonBindings
         result = StopPythonInterpreter();
         EditorPythonBindingsNotificationBus::Broadcast(&EditorPythonBindingsNotificationBus::Events::OnPostFinalize);
         return result;
+    }
+
+    bool PythonSystemComponent::IsPythonActive()
+    {
+        return Py_IsInitialized() != 0;
     }
 
     void PythonSystemComponent::WaitForInitialization()
@@ -644,21 +650,13 @@ namespace EditorPythonBindings
         ExecuteByFilenameWithArgs(filename, args);
     }
 
-    void PythonSystemComponent::ExecuteByFilenameAsTest(AZStd::string_view filename, AZStd::string_view testCase, const AZStd::vector<AZStd::string_view>& args)
+    bool PythonSystemComponent::ExecuteByFilenameAsTest(AZStd::string_view filename, AZStd::string_view testCase, const AZStd::vector<AZStd::string_view>& args)
     {
+        AZ_TracePrintf("python", "Running automated test: %.*s (testcase %.*s)", AZ_STRING_ARG(filename), AZ_STRING_ARG(testCase))
         AzToolsFramework::EditorPythonScriptNotificationsBus::Broadcast(
             &AzToolsFramework::EditorPythonScriptNotificationsBus::Events::OnStartExecuteByFilenameAsTest, filename, testCase, args);
         const Result evalResult = EvaluateFile(filename, args);
-        if (evalResult == Result::Okay)
-        {
-            // all good, the test script will need to exit the application now
-            return;
-        }
-        else
-        {
-            // something went wrong with executing the test script
-            AZ::Debug::Trace::Terminate(0xF);
-        }
+        return evalResult == Result::Okay;
     }
 
     void PythonSystemComponent::ExecuteByFilenameWithArgs(AZStd::string_view filename, const AZStd::vector<AZStd::string_view>& args)

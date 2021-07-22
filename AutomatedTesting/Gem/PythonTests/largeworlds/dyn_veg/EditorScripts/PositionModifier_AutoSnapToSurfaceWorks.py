@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -81,22 +82,7 @@ class TestPositionModifierAutoSnapToSurface(EditorTestHelper):
 
         # 3) Create a spherical planting surface and a flat surface
         flat_entity = dynveg.create_surface_entity("Flat Surface", spawner_center_point, 32.0, 32.0, 1.0)
-        hill_entity = dynveg.create_mesh_surface_entity_with_slopes("Planting Surface", spawner_center_point, 5.0, 5.0, 5.0)
-
-        # Disable/Re-enable Mesh component due to ATOM-14299
-        general.idle_wait(1.0)
-        editor.EditorComponentAPIBus(bus.Broadcast, 'DisableComponents', [hill_entity.components[0]])
-        is_enabled = editor.EditorComponentAPIBus(bus.Broadcast, 'IsComponentEnabled', hill_entity.components[0])
-        if is_enabled:
-            print("Mesh component is still enabled")
-        else:
-            print("Mesh component was disabled")
-        editor.EditorComponentAPIBus(bus.Broadcast, 'EnableComponents', [hill_entity.components[0]])
-        is_enabled = editor.EditorComponentAPIBus(bus.Broadcast, 'IsComponentEnabled', hill_entity.components[0])
-        if is_enabled:
-            print("Mesh component is now enabled")
-        else:
-            print("Mesh component is still disabled")
+        hill_entity = dynveg.create_mesh_surface_entity_with_slopes("Planting Surface", spawner_center_point, 5.0)
 
         # Disable the Flat Surface Box Shape component, and temporarily ignore initial instance counts due to LYN-2245
         editor.EditorComponentAPIBus(bus.Broadcast, 'DisableComponents', [flat_entity.components[0]])
@@ -116,14 +102,14 @@ class TestPositionModifierAutoSnapToSurface(EditorTestHelper):
         # Pin the Constant Gradient to the X axis of the spawner's Position Modifier component
         spawner_entity.get_set_test(3, 'Configuration|Position X|Gradient|Gradient Entity Id', gradient_entity.id)
 
-        # 6) Set the Position Modifier offset to 5 on the x-axis
-        spawner_entity.get_set_test(3, position_modifier_paths[0], 5)
-        spawner_entity.get_set_test(3, position_modifier_paths[1], 5)
+        # 6) Set the Position Modifier offset to 2.5 on the x-axis
+        spawner_entity.get_set_test(3, position_modifier_paths[0], 2.5)
+        spawner_entity.get_set_test(3, position_modifier_paths[1], 2.5)
 
         # 7) Validate instance count at the top of the sphere mesh and inside the sphere mesh while Auto Snap to Surface
         # is enabled
         top_point = math.Vector3(512.0, 512.0, 37.0)
-        inside_point = math.Vector3(512.0, 512.0, 33.0)
+        inside_point = math.Vector3(512.0, 512.0, 35.0)
         radius = 0.5
         num_expected = 1
         self.log(f"Checking for instances in a {radius * 2}m area at {top_point.ToString()}")

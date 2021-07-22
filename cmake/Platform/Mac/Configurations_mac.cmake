@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -28,7 +29,9 @@ else()
 endif()
 
 # Signing
-ly_set(CMAKE_XCODE_ATTRIBUTE_OTHER_CODE_SIGN_FLAGS --deep)
+# The "-o linker-signed" flag is required as a work-around for the following CMake issue:
+# https://gitlab.kitware.com/cmake/cmake/-/issues/21854
+ly_set(CMAKE_XCODE_ATTRIBUTE_OTHER_CODE_SIGN_FLAGS "--deep -o linker-signed")
 
 # Generate scheme files for Xcode
 ly_set(CMAKE_XCODE_GENERATE_SCHEME TRUE)
