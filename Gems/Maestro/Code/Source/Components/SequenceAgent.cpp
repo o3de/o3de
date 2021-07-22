@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Maestro_precompiled.h"
 #include "SequenceAgent.h"
 #include <AzCore/Math/Color.h>
 #include <AzCore/Component/ComponentApplicationBus.h>

@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#include <AzCore/PlatformIncl.h>
+
 namespace AZ
 {
     namespace DX12

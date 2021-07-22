@@ -5,9 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "precompiled.h"
 
-#include <functional>
+#include <AzCore/PlatformDef.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800 4244, "-Wunknown-warning-option")
 #include <QGraphicsItem>

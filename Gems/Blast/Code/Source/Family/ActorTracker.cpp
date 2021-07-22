@@ -6,8 +6,6 @@
  *
  */
 
-#include <StdAfx.h>
-
 #include <AzCore/Math/Transform.h>
 #include <Family/ActorTracker.h>
 #include <algorithm>

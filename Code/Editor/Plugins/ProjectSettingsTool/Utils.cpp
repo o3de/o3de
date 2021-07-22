@@ -6,7 +6,6 @@
  *
  */
 
-#include "ProjectSettingsTool_precompiled.h"
 #include "Utils.h"
 #include "LastPathBus.h"
 

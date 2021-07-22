@@ -6,8 +6,6 @@
  *
  */
 
-#include "precompiled.h"
-
 #include "ScriptEventsSystemEditorComponent.h"
 
 #include <ScriptEvents/Internal/VersionedProperty.h>

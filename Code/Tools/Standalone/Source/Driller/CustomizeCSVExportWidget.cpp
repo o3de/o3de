@@ -6,8 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "Source/Driller/CustomizeCSVExportWidget.hxx"
 #include <Source/Driller/moc_CustomizeCSVExportWidget.cpp>
 

@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <AzCore/Component/EntityId.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Memory/Memory.h>

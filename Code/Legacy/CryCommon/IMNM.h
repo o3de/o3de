@@ -12,6 +12,8 @@
 
 #pragma once
 
+#include <CryCommon/BaseTypes.h>
+
 namespace MNM
 {
     namespace Constants
@@ -63,7 +65,7 @@ namespace MNM
         GlobalIslandID(const uint64 defaultValue = MNM::Constants::eGlobalIsland_InvalidIslandID)
             : id(defaultValue)
         {
-            STATIC_ASSERT(sizeof(StaticIslandID) <= 4, "The maximum supported size for StaticIslandIDs is 4 bytes.");
+            static_assert(sizeof(StaticIslandID) <= 4, "The maximum supported size for StaticIslandIDs is 4 bytes.");
         }
 
         GlobalIslandID(const uint32 navigationMeshID, const MNM::StaticIslandID islandID)

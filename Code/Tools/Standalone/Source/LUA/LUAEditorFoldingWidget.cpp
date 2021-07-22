@@ -6,7 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
 #include "LUAEditorFoldingWidget.hxx"
 
 #include "LUAEditorBlockState.h"

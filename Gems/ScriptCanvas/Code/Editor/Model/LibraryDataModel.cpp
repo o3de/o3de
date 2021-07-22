@@ -6,7 +6,6 @@
  *
  */
 
-#include "precompiled.h"
 #include "LibraryDataModel.h"
 
 #include <QIcon>

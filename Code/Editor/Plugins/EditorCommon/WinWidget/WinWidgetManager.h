@@ -14,6 +14,8 @@
 #include <vector>
 #include <functional>
 
+class QWidget;
+
 namespace WinWidget
 {
     class EDITOR_COMMON_API WinWidgetManager

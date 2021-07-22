@@ -7,11 +7,12 @@
 #
 
 set(FILES
-    Source/EMotionFX_precompiled.h
     ../Assets/Editor/Layouts/Layouts.qrc
     ../Assets/Editor/Images/Icons/Resources.qrc
     ../Assets/Editor/Images/Icons/ActorComponent.svg
+    ../Assets/Editor/Images/Icons/Viewport/ActorComponent.svg
     ../Assets/Editor/Images/Icons/AnimGraphComponent.svg
+    ../Assets/Editor/Images/Icons/Viewport/AnimGraphComponent.svg
     Source/Integration/Editor/Components/EditorActorComponent.h
     Source/Integration/Editor/Components/EditorActorComponent.cpp
     Source/Integration/Editor/Components/EditorAnimAudioComponent.h

@@ -6,8 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "LUAEditorFindResults.hxx"
 #include "LUAEditorStyleMessages.h"
 #include "LUAEditorBlockState.h"

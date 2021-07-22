@@ -6,7 +6,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "TubeShape.h"
 
 #include <AzCore/Math/Transform.h>

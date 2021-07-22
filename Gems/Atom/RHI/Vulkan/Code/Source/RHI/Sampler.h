@@ -6,6 +6,8 @@
  *
  */
 #pragma once
+
+#include <Atom_RHI_Vulkan_Platform.h>
 #include <Atom/RHI/DeviceObject.h>
 
 namespace AZ

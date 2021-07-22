@@ -17,10 +17,10 @@
 
 #include <AzCore/Math/Random.h>
 
-using namespace AZ;
-
 namespace UnitTest
 {
+    using namespace AZ;
+
     class PipelineStateTests
         : public RHITestFixture
     {

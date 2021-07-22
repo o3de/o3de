@@ -6,7 +6,6 @@
  *
  */
 
-#include "Atom_RHI_Vulkan_precompiled.h"
 #include <RHI/RayTracingPipelineState.h>
 #include <Atom/RHI.Reflect/SamplerState.h>
 #include <Atom/RHI.Reflect/Vulkan/ShaderStageFunction.h>

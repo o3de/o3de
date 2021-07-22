@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "SurfaceData_precompiled.h"
+
 #include <SurfaceData/Utility/SurfaceDataUtility.h>
 #include <Atom/RPI.Reflect/Model/ModelAssetCreator.h>
 
@@ -34,7 +34,7 @@ namespace SurfaceData
         {
             // Transform everything back to world space
             outPosition = meshTransform.TransformPoint((rayStartLocal + (rayDirectionLocal * distance)) * clampedScale);
-            outNormal = meshTransform.TransformVector(normalLocal * clampedScale);
+            outNormal = meshTransform.TransformVector(normalLocal).GetNormalized();
             return true;
         }
 

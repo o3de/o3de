@@ -6,7 +6,6 @@
  *
  */
 
-#include "ProjectSettingsTool_precompiled.h"
 #include "FunctorValidator.h"
 
 namespace ProjectSettingsTool

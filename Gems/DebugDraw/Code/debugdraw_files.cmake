@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    Source/DebugDraw_precompiled.h
     Include/DebugDraw/DebugDrawBus.h
     Source/DebugDrawLineComponent.cpp
     Source/DebugDrawLineComponent.h

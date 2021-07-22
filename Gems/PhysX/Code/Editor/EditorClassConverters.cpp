@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <PhysX_precompiled.h>
 #include <Editor/EditorClassConverters.h>
 #include <Source/EditorColliderComponent.h>
 #include <PhysX/MeshAsset.h>

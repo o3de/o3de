@@ -6,8 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "BaseDetailViewQObject.hxx"
 #include <Source/Driller/Replica/moc_BaseDetailViewQObject.cpp>
 #include <Source/Driller/Replica/ui_basedetailview.h>

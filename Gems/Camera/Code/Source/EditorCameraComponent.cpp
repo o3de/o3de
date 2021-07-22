@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Camera_precompiled.h"
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
@@ -106,7 +105,7 @@ namespace Camera
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Camera")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/Camera.svg")
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/Camera.png")
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/Camera.svg")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/camera/")

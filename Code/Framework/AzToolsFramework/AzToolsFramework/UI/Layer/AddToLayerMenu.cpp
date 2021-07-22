@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "AzToolsFramework_precompiled.h"
 #include "AddToLayerMenu.h"
 
 #include <AzCore/Component/TransformBus.h>
@@ -22,6 +21,7 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QLayoutItem::align
 #include <QMenu>
 #include <QWidgetAction>
 AZ_POP_DISABLE_WARNING
+#include <QtWidgets/QLabel>
 
 namespace AzToolsFramework
 {

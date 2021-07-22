@@ -7,7 +7,6 @@
  */
 
 
-#include "UiCanvasEditor_precompiled.h"
 #include "UiAnimViewNodeFactories.h"
 #include "UiAnimViewAnimNode.h"
 #include "UiAnimViewEventNode.h"

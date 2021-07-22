@@ -6,7 +6,6 @@
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzFramework/IO/FileOperations.h>

@@ -6,8 +6,6 @@
  *
  */
 
-#include "precompiled.h"
-
 #include <AzTest/AzTest.h>
 
 #include <AzCore/Component/EntityUtils.h>

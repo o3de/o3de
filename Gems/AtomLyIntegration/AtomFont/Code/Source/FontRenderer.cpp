@@ -11,7 +11,6 @@
 // Purpose:
 //  - Render a glyph outline into a bitmap using FreeType 2
 
-#include <AtomLyIntegration/AtomFont/AtomFont_precompiled.h>
 
 #if !defined(USE_NULLFONT_ALWAYS)
 

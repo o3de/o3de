@@ -23,6 +23,7 @@
 #include <Atom/RHI/DrawItem.h>
 #include <Atom/RHI/Query.h>
 #include <AzCore/std/containers/vector.h>
+#include <RHI/DX12.h>
 
 namespace AZ
 {

@@ -6,16 +6,17 @@
  *
  */
 
-
-#include "EMotionFX_precompiled.h"
-
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 
 #include <MCore/Source/AttributeString.h>
+#include <MCore/Source/AzCoreConversions.h>
 #include <EMotionFX/Source/AnimGraph.h>
+#include <EMotionFX/Source/AnimGraphInstance.h>
+#include <EMotionFX/Source/ActorInstance.h>
+#include <EMotionFX/Source/MotionSet.h>
 
 #include <Integration/Components/AnimGraphComponent.h>
 

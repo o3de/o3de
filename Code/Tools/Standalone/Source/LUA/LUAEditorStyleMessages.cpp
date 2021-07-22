@@ -6,8 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "LUAEditorStyleMessages.h"
 #include <AzCore/Serialization/EditContext.h>
 #include "LUAEditorViewMessages.h"

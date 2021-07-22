@@ -7,7 +7,6 @@
  */
 
 
-#include "EditorCommon_precompiled.h"
 #include "platform.h"
 
 #pragma warning(disable: 4266) // disabled warning from afk overrides

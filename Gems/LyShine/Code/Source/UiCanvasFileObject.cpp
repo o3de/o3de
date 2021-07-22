@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "LyShine_precompiled.h"
 #include "UiCanvasFileObject.h"
 #include "UiSerialize.h"
 #include <AzCore/Serialization/Utils.h>

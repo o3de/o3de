@@ -5,14 +5,12 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "RHI/Atom_RHI_DX12_precompiled.h"
 #include <RHI/StreamingImagePool.h>
 #include <RHI/Conversions.h>
 #include <RHI/CommandList.h>
 #include <RHI/Device.h>
 #include <RHI/Image.h>
 #include <RHI/ResourcePoolResolver.h>
-#include "RHI/Atom_RHI_DX12_precompiled.h"
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 #include <AzCore/Debug/EventTrace.h>
 

@@ -14,6 +14,7 @@
 #pragma once
 #include <math.h>
 #include <ImageProcessing_Traits_Platform.h>
+#include <AzCore/Math/MathUtils.h>
 
 /* ####################################################################################################################
  */

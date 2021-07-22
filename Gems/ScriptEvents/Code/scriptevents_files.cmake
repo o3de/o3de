@@ -7,6 +7,5 @@
 #
 
 set(FILES
-    Source/precompiled.h
     Source/ScriptEventsGem.cpp
 )

@@ -21,6 +21,7 @@
 
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
+#include <AzCore/Utils/Utils.h>
 
 namespace AZ
 {

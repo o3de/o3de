@@ -6,8 +6,6 @@
  *
  */
 
-#include "WhiteBox_precompiled.h"
-
 #include "WhiteBoxMathUtil.h"
 
 #include <AzCore/Math/Matrix3x3.h>

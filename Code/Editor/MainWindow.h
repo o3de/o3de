@@ -11,6 +11,7 @@
 #if !defined(Q_MOC_RUN)
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/EBus/Event.h>
 
 #include <QComboBox>
 #include <QMainWindow>

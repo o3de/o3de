@@ -9,11 +9,12 @@
 #pragma once
 
 #include <AzCore/base.h>
+#include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/stack.h>
-#include <AzCore/std/function/function_fwd.h>
+#include <AzCore/std/function/function_template.h>
 
 namespace AZ
 {

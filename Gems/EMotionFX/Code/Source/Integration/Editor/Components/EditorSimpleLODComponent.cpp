@@ -8,7 +8,6 @@
 
 #include <AzCore/PlatformDef.h>
 
-#include "EMotionFX_precompiled.h"
 #include <MathConversion.h>
 
 #include <AzCore/Component/Entity.h>
@@ -44,7 +43,7 @@ namespace EMotionFX
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::Category, "Animation")
                             ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/SimpleLODDistance.svg")
-                            ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Mannequin.png")
+                            ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/SimpleLODDistance.svg")
                             ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(0, &EditorSimpleLODComponent::m_configuration, "LOD Configuration", "");

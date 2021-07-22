@@ -6,8 +6,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include <AzCore/Script/ScriptTimePoint.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
@@ -188,7 +186,7 @@ namespace PhysX
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXCollider.svg")
-                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/PhysXCollider.svg")
+                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/PhysXCollider.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx-collider/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)

@@ -6,7 +6,6 @@
  *
  */
 
-#include "Atom_RHI_Metal_precompiled.h"
 
 #import <QuartzCore/CAMetalLayer.h>
 #include <RHI/Buffer.h>
@@ -121,11 +120,6 @@ namespace Platform
     RHIMetalView* GetMetalView(NativeWindowType* nativeWindow)
     {
         return reinterpret_cast<RHIMetalView*>([nativeWindow.contentViewController view]);
-    }
-
-    void ApplyTileDimentions(MTLRenderPassDescriptor* mtlRenderPassDescriptor)
-    {
-        AZ_UNUSED(mtlRenderPassDescriptor);
     }
 
     void SynchronizeBufferOnCPU(id<MTLBuffer> mtlBuffer, size_t bufferOffset, size_t bufferSize)

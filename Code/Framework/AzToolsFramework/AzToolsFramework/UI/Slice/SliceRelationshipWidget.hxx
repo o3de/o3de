@@ -19,6 +19,11 @@ class QTreeWidgetItem;
 class QLabel;
 class QVBoxLayout;
 
+namespace AZ
+{
+    class EntityId;
+}
+
 namespace AzToolsFramework
 {
     /**

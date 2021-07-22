@@ -6,7 +6,6 @@
  *
  */
 
-#include "Atom_RHI_Vulkan_precompiled.h"
 #include <stdarg.h>
 #include <algorithm>
 #include <Atom/RHI.Reflect/Bits.h>

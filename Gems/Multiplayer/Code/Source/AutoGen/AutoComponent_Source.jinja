@@ -507,7 +507,7 @@ case {{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure::{{ Upp
 {% endif %}
             }
 {% else %}
-            Handle{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(rpcParamList) }});
+            Handle{{ UpperFirst(Property.attrib['Name']) }}(invokingConnection, {{ ', '.join(rpcParamList) }});
 {% endif %}
         }
         else if (paramsSerialized)
@@ -712,11 +712,7 @@ void {{ ClassName }}::NotifyChanges{{ AutoComponentMacros.GetNetPropertiesSetNam
 {% macro DefineArchetypePropertyGet(Property, ClassType, ClassName, Prefix = '') %}
 {% if ClassType == '' or Property.attrib['ExportTo'] == ClassType or Property.attrib['ExportTo'] == "Common" %}
 {%     if Property.attrib['Container'] == 'Array' %}
-{% if Property.attrib['IsRewindable']|booleanTrue %}
-const RewindableArray<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>& {{ ClassName }}::Get{{ UpperFirst(Property.attrib['Name']) }}Array() const
-{% else %}
 const AZStd::array<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>& {{ ClassName }}::Get{{ UpperFirst(Property.attrib['Name']) }}Array() const
-{% endif %}
 {
     return {{ Prefix }}m_{{ LowerFirst(Property.attrib['Name']) }};
 }
@@ -727,11 +723,7 @@ const {{ Property.attrib['Type'] }}& {{ ClassName }}::Get{{ UpperFirst(Property.
 }
 
 {%     elif Property.attrib['Container'] == 'Vector' %}
-{% if Property.attrib['IsRewindable']|booleanTrue %}
-const RewindableFixedVector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>& {{ ClassName }}::Get{{ UpperFirst(Property.attrib['Name']) }}Vector() const
-{% else %}
 const AZStd::fixed_vector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>& {{ ClassName }}::Get{{ UpperFirst(Property.attrib['Name']) }}Vector() const
-{% endif %}
 {
     return {{ Prefix }}m_{{ LowerFirst(Property.attrib['Name']) }};
 }
@@ -1548,8 +1540,10 @@ namespace {{ Component.attrib['Namespace'] }}
 
     {{ DefineNetworkPropertyGets(Component, 'Authority', 'Server', false, ComponentBaseName)|indent(4) -}}
 {{ DefineNetworkPropertyGets(Component, 'Authority', 'Client', false, ComponentBaseName)|indent(4) -}}
+{{ DefineNetworkPropertyGets(Component, 'Autonomous', 'Authority', false, ComponentBaseName)|indent(4) -}}
 {{ DefineNetworkPropertyGets(Component, 'Authority', 'Server', true, ComponentBaseName)|indent(4) -}}
 {{ DefineNetworkPropertyGets(Component, 'Authority', 'Client', true, ComponentBaseName)|indent(4) }}
+{{ DefineNetworkPropertyGets(Component, 'Autonomous', 'Authority', true, ComponentBaseName)|indent(4) }}
 {{ DefineArchetypePropertyGets(Component, ClassType, ComponentBaseName)|indent(4) -}}
 {{ DefineRpcInvocations(Component, ComponentBaseName, 'Server', 'Authority', false)|indent(4) -}}
 {{ DefineRpcInvocations(Component, ComponentBaseName, 'Server', 'Authority', true)|indent(4) }}

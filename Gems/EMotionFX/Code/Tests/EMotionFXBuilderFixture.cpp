@@ -6,13 +6,17 @@
  *
  */
 
-#include "EMotionFX_precompiled.h"
 #include "EMotionFXBuilderFixture.h"
 
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <EMotionFX/Source/Allocators.h>
 #include <EMotionFX/Source/AnimGraphObjectFactory.h>
 #include <EMotionFX/Source/Parameter/ParameterFactory.h>
+#include <EMotionFX/Source/MotionSet.h>
+#include <EMotionFX/Source/AnimGraphObject.h>
+#include <EMotionFX/Source/AnimGraph.h>
+#include <EMotionFX/Source/AnimGraphNodeGroup.h>
+#include <EMotionFX/Source/AnimGraphGameControllerSettings.h>
 #include <Integration/Assets/MotionSetAsset.h>
 #include <Integration/Assets/AnimGraphAsset.h>
 

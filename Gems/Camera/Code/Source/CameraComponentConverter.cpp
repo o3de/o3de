@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Camera_precompiled.h"
 #include <AzCore/Serialization/SerializeContext.h>
 
 #if defined(CAMERA_EDITOR)

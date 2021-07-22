@@ -6,7 +6,6 @@
  *
  */
 
-#include "Atom_RHI_Vulkan_precompiled.h"
 #include <Atom/RHI.Loader/FunctionLoader.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/TransientAttachmentPool.h>
@@ -816,11 +815,12 @@ namespace AZ
             createInfo.size = descriptor.m_byteCount;
             createInfo.usage = GetBufferUsageFlagBitsUnderRestrictions(descriptor.m_bindFlags);
             // Trying to guess here if the buffers are going to be used as attachments. Maybe it would be better to add an explicit flag in the descriptor.
-            createInfo.sharingMode =
-                RHI::CheckBitsAny(
-                    descriptor.m_bindFlags,
-                    RHI::BufferBindFlags::ShaderWrite | RHI::BufferBindFlags::Predication | RHI::BufferBindFlags::Indirect)
-                ? VK_SHARING_MODE_EXCLUSIVE
+            createInfo.sharingMode = 
+                (RHI::CheckBitsAny(
+                    descriptor.m_bindFlags, 
+                    RHI::BufferBindFlags::ShaderWrite | RHI::BufferBindFlags::Predication | RHI::BufferBindFlags::Indirect) || 
+                    (queueFamilies.size()) <= 1) 
+                ? VK_SHARING_MODE_EXCLUSIVE 
                 : VK_SHARING_MODE_CONCURRENT;
             createInfo.queueFamilyIndexCount = static_cast<uint32_t>(queueFamilies.size());
             createInfo.pQueueFamilyIndices = queueFamilies.empty() ? nullptr : queueFamilies.data();

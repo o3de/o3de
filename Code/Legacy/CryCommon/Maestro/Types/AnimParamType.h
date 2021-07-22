@@ -11,10 +11,6 @@
 #define CRYINCLUDE_CRYCOMMON_MAESTRO_TYPES_ANIMPARAMTYPE_H
 #pragma once
 
-// **NOTES**: Do not include into the precompiled header hierarchy!
-//            There are a couple legacy defines in IMovieSystem.h that
-//            correspond to these values. ByString and Invalid.
-
 // Static common parameters IDs of animation node.
 //
 // You need to register new params in Movie.cpp/RegisterParamTypes for serialization.

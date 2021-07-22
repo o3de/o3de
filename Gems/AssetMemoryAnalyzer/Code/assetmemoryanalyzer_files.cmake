@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    Source/AssetMemoryAnalyzer_precompiled.h
     Include/AssetMemoryAnalyzer/AssetMemoryAnalyzerBus.h
     Source/AssetMemoryAnalyzer.cpp
     Source/AssetMemoryAnalyzer.h

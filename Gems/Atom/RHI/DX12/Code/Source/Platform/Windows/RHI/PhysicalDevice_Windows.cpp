@@ -6,7 +6,6 @@
  *
  */
 
-#include "RHI/Atom_RHI_DX12_precompiled.h"
 #include <RHI/PhysicalDevice_Windows.h>
 #include <AzCore/std/string/conversions.h>
 

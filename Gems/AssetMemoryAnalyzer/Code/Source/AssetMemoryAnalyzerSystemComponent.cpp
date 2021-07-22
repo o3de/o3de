@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "AssetMemoryAnalyzer_precompiled.h"
 
 #include <AzCore/Debug/AssetTrackingTypesImpl.h>
 #include <AzCore/IO/SystemFile.h> // For AZ_MAX_PATH_LEN

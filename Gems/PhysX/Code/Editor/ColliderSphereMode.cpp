@@ -6,8 +6,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include "ColliderSphereMode.h"
 #include <PhysX/EditorColliderComponentRequestBus.h>
 

@@ -6,8 +6,7 @@
  *
  */
 
-#include "ComponentEntityEditorPlugin_precompiled.h"
-
+#include <EditorDefs.h>
 #include "CryEdit.h"
 #include "AssetCatalogModel.h"
 #include "Objects/ComponentEntityObject.h"

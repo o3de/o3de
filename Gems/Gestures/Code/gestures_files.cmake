@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    Source/Gestures_precompiled.h
     Include/Gestures/GestureRecognizerClickOrTap.h
     Include/Gestures/GestureRecognizerClickOrTap.inl
     Include/Gestures/GestureRecognizerDrag.h

@@ -6,7 +6,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
 #include <EditorShapeColliderComponent.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Physics/ColliderComponentBus.h>
@@ -26,6 +25,7 @@
 #include <PhysX/SystemComponentBus.h>
 #include <Source/Utils.h>
 #include <AzCore/Math/Geometry2DUtils.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <cmath>
 
 #include <RigidBodyStatic.h>
@@ -83,7 +83,7 @@ namespace PhysX
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXCollider.svg")
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/PhysXCollider.svg")
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/PhysXCollider.svg")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorShapeColliderComponent::m_colliderConfig,
