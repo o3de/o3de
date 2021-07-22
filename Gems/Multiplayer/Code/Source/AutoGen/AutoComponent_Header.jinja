@@ -459,6 +459,7 @@ namespace {{ Component.attrib['Namespace'] }}
 
         {{ DeclareNetworkPropertyGetters(Component, 'Authority', 'Server', false)|indent(8) -}}
         {{ DeclareNetworkPropertyGetters(Component, 'Authority', 'Client', false)|indent(8) -}}
+        {{ DeclareNetworkPropertyGetters(Component, 'Autonomous', 'Authority', false)|indent(8) -}}
         {{ DeclareArchetypePropertyGetters(Component)|indent(8) -}}
         {{ DeclareRpcInvocations(Component, 'Server', 'Authority', false)|indent(8) -}}
         {{ AutoComponentMacros.DeclareRpcEventGetters(Component, 'Authority', 'Client')|indent(8) -}}
@@ -483,6 +484,7 @@ namespace {{ Component.attrib['Namespace'] }}
 
         {{ DeclareNetworkPropertyGetters(Component, 'Authority', 'Server', true)|indent(8) -}}
         {{ DeclareNetworkPropertyGetters(Component, 'Authority', 'Client', true)|indent(8) -}}
+        {{ DeclareNetworkPropertyGetters(Component, 'Autonomous', 'Authority', true)|indent(8) -}}
         {{ DeclareRpcInvocations(Component, 'Server', 'Authority', true)|indent(8) -}}
         {{ AutoComponentMacros.DeclareRpcHandlers(Component, 'Authority', 'Client', false)|indent(8) -}}
         {{ AutoComponentMacros.DeclareRpcSignals(Component, 'Authority', 'Client')|indent(8) -}}

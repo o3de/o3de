@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,6 +11,7 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/Path/Path.h>
 
 #include <AzToolsFramework/AssetBrowser/Entries/RootAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/FolderAssetBrowserEntry.h>
@@ -24,8 +26,6 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
-        const char* GEMS_FOLDER_NAME = "Gems";
-
         RootAssetBrowserEntry::RootAssetBrowserEntry()
             : AssetBrowserEntry()
         {
@@ -53,13 +53,7 @@ namespace AzToolsFramework
             EntryCache::GetInstance()->Clear();
 
             m_enginePath = enginePath;
-
-            // there is no "Gems" scan folder registered in db, create one manually
-            auto gemFolder = aznew FolderAssetBrowserEntry();
-            gemFolder->m_name = m_enginePath + AZ_CORRECT_DATABASE_SEPARATOR + GEMS_FOLDER_NAME;
-            gemFolder->m_displayName = GEMS_FOLDER_NAME;
-            gemFolder->m_isGemsFolder = true;
-            AddChild(gemFolder);
+            m_fullPath = enginePath;
         }
 
         bool RootAssetBrowserEntry::IsInitialUpdate() const
@@ -80,8 +74,17 @@ namespace AzToolsFramework
 
             if (AZ::IO::FileIOBase::GetInstance()->IsDirectory(scanFolderDatabaseEntry.m_scanFolder.c_str()))
             {
-                const auto scanFolder = CreateFolders(scanFolderDatabaseEntry.m_scanFolder.c_str(), this);
-                scanFolder->m_displayName = QString::fromUtf8(scanFolderDatabaseEntry.m_displayName.c_str());
+                const auto scanFolder = CreateFolders(scanFolderDatabaseEntry.m_scanFolder, this);
+                // Append an "[External]" to the display if the Scan Folder is NOT relative to the Engine Root path
+                if (!AZ::IO::PathView(scanFolderDatabaseEntry.m_scanFolder).IsRelativeTo(m_enginePath))
+                {
+                    scanFolder->m_displayName += " [External]";
+                }
+                else
+                {
+                    scanFolder->m_displayName = QString::fromUtf8(scanFolderDatabaseEntry.m_displayName.c_str());
+                }
+
                 EntryCache::GetInstance()->m_scanFolderIdMap[scanFolderDatabaseEntry.m_scanFolderID] = scanFolder;
             }
         }
@@ -121,38 +124,34 @@ namespace AzToolsFramework
                 return;
             }
 
-            const char* filePath = fileDatabaseEntry.m_fileName.c_str();
+            AZ::IO::FixedMaxPath absoluteFilePath = AZ::IO::FixedMaxPath(AZStd::string_view{ scanFolder->GetFullPath() })
+                / fileDatabaseEntry.m_fileName.c_str();
 
             AssetBrowserEntry* file;
             // file can be either folder or actual file
             if (fileDatabaseEntry.m_isFolder)
             {
-                file = CreateFolders(filePath, scanFolder);
+                file = CreateFolders(absoluteFilePath.Native(), scanFolder);
             }
             else
             {
-                AZStd::string sourcePath;
-                AZStd::string sourceName;
-                AZStd::string sourceExtension;
-                StringFunc::Path::Split(filePath, nullptr, &sourcePath, &sourceName, &sourceExtension);
                 // if missing create folders leading to file's location and get immediate parent
                 // (we don't need to have fileIds for any folders created yet, they will be added later)
-                auto parent = CreateFolders(sourcePath.c_str(), scanFolder);
+                auto parent = CreateFolders(absoluteFilePath.ParentPath().Native(), scanFolder);
                 // for simplicity in AB, files are represented as sources, but they are missing SourceDatabaseEntry-specific information such as SourceUuid
                 auto source = aznew SourceAssetBrowserEntry();
-                source->m_name = (sourceName + sourceExtension).c_str();
+                source->m_name = absoluteFilePath.Filename().Native();
                 source->m_fileId = fileDatabaseEntry.m_fileID;
                 source->m_displayName = QString::fromUtf8(source->m_name.c_str());
                 source->m_scanFolderId = fileDatabaseEntry.m_scanFolderPK;
-                source->m_extension = sourceExtension.c_str();
+                source->m_extension = absoluteFilePath.Extension().Native();
                 parent->AddChild(source);
                 file = source;
             }
 
             EntryCache::GetInstance()->m_fileIdMap[fileDatabaseEntry.m_fileID] = file;
-            AZStd::string fullPath = file->m_fullPath;
-            AzFramework::StringFunc::Path::Normalize(fullPath);
-            EntryCache::GetInstance()->m_absolutePathToFileId[fullPath] = fileDatabaseEntry.m_fileID;
+            AZStd::string filePath = AZ::IO::PathView(file->m_fullPath).LexicallyNormal().String();
+            EntryCache::GetInstance()->m_absolutePathToFileId[filePath] = fileDatabaseEntry.m_fileID;
         }
 
         bool RootAssetBrowserEntry::RemoveFile(const AZ::s64& fileId) const
@@ -308,116 +307,95 @@ namespace AzToolsFramework
             }
         }
 
-        FolderAssetBrowserEntry* RootAssetBrowserEntry::CreateFolder(const char* folderName, AssetBrowserEntry* parent)
+        AssetBrowserEntry* RootAssetBrowserEntry::GetNearestAncestor(AZ::IO::PathView absolutePathView, AssetBrowserEntry* parent,
+            AZStd::unordered_set<AssetBrowserEntry*>& visitedSet)
+        {
+            auto IsPathRelativeToEntry = [absolutePathView](AssetBrowserEntry* assetBrowserEntry)
+            {
+                auto& childPath = assetBrowserEntry->m_fullPath;
+                return absolutePathView.IsRelativeTo(AZ::IO::PathView(childPath));
+            };
+
+            if (visitedSet.contains(parent))
+            {
+                return {};
+            }
+
+            visitedSet.insert(parent);
+
+            AssetBrowserEntry* nearestAncestor{};
+            for (AssetBrowserEntry* childBrowserEntry : parent->m_children)
+            {
+                if (IsPathRelativeToEntry(childBrowserEntry))
+                {
+                    // Walk the AssetBrowserEntry Tree looking for a nearer ancestor to the absolute path
+                    // If one is not found in the recursive call to GetNearestAncestor, then the childBrowserEntry
+                    // is the current best candidate
+                    AssetBrowserEntry* candidateAncestor = GetNearestAncestor(absolutePathView, childBrowserEntry, visitedSet);
+                    candidateAncestor = candidateAncestor != nullptr ? candidateAncestor : childBrowserEntry;
+                    AZ::IO::PathView candidatePathView(candidateAncestor->m_fullPath);
+                    // If the candidate is relative to the current nearest ancestor, then it is even nearer to the path
+                    if (!nearestAncestor || candidatePathView.IsRelativeTo(nearestAncestor->m_fullPath))
+                    {
+                        nearestAncestor = candidateAncestor;
+                        // If the full path compares equal to the AssetBrowserEntry path, then no need to proceed any further
+                        if (AZ::IO::PathView(nearestAncestor->m_fullPath) == absolutePathView)
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return nearestAncestor;
+        }
+
+        FolderAssetBrowserEntry* RootAssetBrowserEntry::CreateFolder(AZStd::string_view folderName, AssetBrowserEntry* parent)
         {
             auto it = AZStd::find_if(parent->m_children.begin(), parent->m_children.end(), [folderName](AssetBrowserEntry* entry)
-                    {
-                        if (!azrtti_istypeof<FolderAssetBrowserEntry*>(entry))
-                        {
-                            return false;
-                        }
-                        return AzFramework::StringFunc::Equal(entry->m_name.c_str(), folderName);
-                    });
+            {
+                if (!azrtti_istypeof<FolderAssetBrowserEntry*>(entry))
+                {
+                    return false;
+                }
+                return AZ::IO::PathView(entry->m_name) == AZ::IO::PathView(folderName);
+            });
             if (it != parent->m_children.end())
             {
                 return azrtti_cast<FolderAssetBrowserEntry*>(*it);
             }
             const auto folder = aznew FolderAssetBrowserEntry();
             folder->m_name = folderName;
-            folder->m_displayName = folderName;
+            folder->m_displayName = QString::fromUtf8(folderName.data(), aznumeric_caster(folderName.size()));
             parent->AddChild(folder);
             return folder;
         }
 
-        AssetBrowserEntry* RootAssetBrowserEntry::CreateFolders(const char* relativePath, AssetBrowserEntry* parent)
+        AssetBrowserEntry* RootAssetBrowserEntry::CreateFolders(AZStd::string_view absolutePath, AssetBrowserEntry* parent)
         {
-            auto children(parent->m_children);
-            int n = 0;
+            AZ::IO::PathView absolutePathView(absolutePath);
+            // Find the nearest ancestor path to the absolutePath
+            AZStd::unordered_set<AssetBrowserEntry*> visitedSet;
 
-            // check if folder with the same name already exists
-            // step through every character in relativePath and compare to each child's relative path of suggested parent
-            // if a character @n in child's rel path mismatches character at n in relativePath, remove that child from further search
-            while (!children.empty() && relativePath[n])
+            if (AssetBrowserEntry* nearestAncestor = GetNearestAncestor(absolutePathView, parent, visitedSet);
+                nearestAncestor != nullptr)
             {
-                AZStd::vector<AssetBrowserEntry*> toRemove;
-                for (auto child : children)
-                {
-                    auto& childPath = azrtti_istypeof<RootAssetBrowserEntry*>(parent) ? child->m_fullPath : child->m_relativePath;
-
-                    // child's path mismatched, remove it from search candidates
-                    if (childPath.length() == n || childPath[n] != relativePath[n])
-                    {
-                        toRemove.push_back(child);
-
-                        // it is possible that child may be a closer parent, substitute it as new potential parent
-                        // e.g. child->m_relativePath = 'Gems', relativePath = 'Gems/Assets', old parent = root, new parent = Gems
-                        if (childPath.length() == n && relativePath[n] == AZ_CORRECT_DATABASE_SEPARATOR)
-                        {
-                            parent = child;
-                            relativePath += n; // advance relative path n characters since the parent has changed
-                            n = 0; // Once the relative path pointer is advanced, reset n
-                        }
-                    }
-                }
-                for (auto entry : toRemove)
-                {
-                    children.erase(AZStd::remove(children.begin(), children.end(), entry), children.end());
-                }
-                n++;
+                parent = nearestAncestor;
             }
 
-            // filter out the remaining children that don't end with '/' or '\0'
-            // for example if folderName = "foo", while children may still remain with names like "foo123",
-            // which is not the same folder
-            AZStd::vector<AssetBrowserEntry*> toRemove;
-            for (auto child : children)
+            // If the nearest ancestor is the absolutePath, then it is already crated
+            if (absolutePathView == AZ::IO::PathView(parent->GetFullPath()))
             {
-                auto& childPath = azrtti_istypeof<RootAssetBrowserEntry*>(parent) ? child->m_fullPath : child->m_relativePath;
-                // check if there are non-null characters remaining @n
-                if (childPath.length() > n)
-                {
-                    toRemove.push_back(child);
-                }
-            }
-            for (auto entry : toRemove)
-            {
-                children.erase(AZStd::remove(children.begin(), children.end(), entry), children.end());
+                return parent;
             }
 
-            // at least one child remains, this means the folder with this name already exists, return it
-            if (!children.empty())
+            // create all missing folders
+            auto proximateToPath = absolutePathView.IsRelativeTo(parent->m_fullPath)
+                ? absolutePathView.LexicallyProximate(parent->m_fullPath)
+                : AZ::IO::FixedMaxPath(absolutePathView);
+            for (AZ::IO::FixedMaxPath scanFolderSegment : proximateToPath)
             {
-                parent = children.front();
-            }
-            // if it's a scanfolder, then do not create folders leading to it
-            // e.g. instead of 'C:\dev\SampleProject' just create 'SampleProject'
-            else if (parent->GetEntryType() == AssetEntryType::Root)
-            {
-                AZStd::string folderName;
-                AzFramework::StringFunc::Path::Split(relativePath, nullptr, nullptr, &folderName);
-                parent = CreateFolder(folderName.c_str(), parent);
-                parent->m_fullPath = relativePath;
-            }
-            // otherwise create all missing folders
-            else
-            {
-                n = 0;
-                AZStd::string folderName(strlen(relativePath) + 1, '\0');
-                // iterate through relativePath until the first '/'
-                while (relativePath[n] && relativePath[n] != AZ_CORRECT_DATABASE_SEPARATOR)
-                {
-                    folderName[n] = relativePath[n];
-                    n++;
-                }
-                if (n > 0)
-                {
-                    parent = CreateFolder(folderName.c_str(), parent);
-                }
-                // n+1 also skips the '/' character
-                if (relativePath[n] && relativePath[n + 1])
-                {
-                    parent = CreateFolders(relativePath + n + 1, parent);
-                }
+                parent = CreateFolder(scanFolderSegment.c_str(), parent);
             }
             return parent;
         }
@@ -425,7 +403,7 @@ namespace AzToolsFramework
         void RootAssetBrowserEntry::UpdateChildPaths(AssetBrowserEntry* child) const
         {
             child->m_relativePath = child->m_name;
-            child->m_fullPath = child->m_name;
+            child->m_fullPath = m_fullPath / child->m_name;
             AssetBrowserEntry::UpdateChildPaths(child);
         }
 

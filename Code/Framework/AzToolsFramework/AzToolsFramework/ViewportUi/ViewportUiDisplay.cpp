@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
@@ -363,16 +363,16 @@ namespace AzToolsFramework::ViewportUi::Internal
     {
         // no background for the widget else each set of buttons/textfields/etc would have a black box around them
         SetTransparentBackground(widget);
-        widget->setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
+        widget->setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::WindowDoesNotAcceptFocus);
     }
 
     void ViewportUiDisplay::InitializeUiOverlay()
     {
-        m_uiMainWindow.setObjectName(m_uiMainWindow.windowTitle());
+        m_uiMainWindow.setObjectName(QString("ViewportUiWindow"));
         ConfigureWidgetForViewportUi(&m_uiMainWindow);
         m_uiMainWindow.setVisible(false);
 
-        m_uiOverlay.setObjectName(m_uiOverlay.windowTitle());
+        m_uiOverlay.setObjectName(QString("ViewportUiOverlay"));
         m_uiMainWindow.setCentralWidget(&m_uiOverlay);
         m_uiOverlay.setVisible(false);
 

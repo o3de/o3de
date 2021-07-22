@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -236,6 +237,14 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             ${CMAKE_CURRENT_SOURCE_DIR}/testdata/DummyProject/AssetProcessorGamePlatformConfig.setreg
         OUTPUT_SUBDIRECTORY
             testdata/DummyProject
+    )
+    ly_add_target_files(
+        TARGETS
+            AssetProcessor.Tests
+        FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/testdata/config_metadata/AssetProcessorPlatformConfig.setreg
+        OUTPUT_SUBDIRECTORY
+            testdata/config_metadata
     )
 
     # Have the AssetProcessorTest use the LY_CMAKE_TARGET define of AssetProcessorBatch for the purpose

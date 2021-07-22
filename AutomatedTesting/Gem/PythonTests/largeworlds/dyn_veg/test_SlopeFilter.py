@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -67,7 +68,7 @@ class TestSlopeFilter(object):
     @pytest.mark.test_case_id("C4814464", "C4874096")
     @pytest.mark.SUITE_periodic
     @pytest.mark.dynveg_filter
-    @pytest.mark.skip  # LYN-2211
+    @pytest.mark.xfail(reason="https://github.com/o3de/o3de/issues/2303")
     def test_SlopeFilter_ComponentAndOverrides_InstancesPlantOnValidSlopes(self, request, editor, level,
                                                                            launcher_platform):
 
@@ -78,10 +79,10 @@ class TestSlopeFilter(object):
             "instance count validation: True (found=1720, expected=1720)",
             "Instance Spawner Configuration|Slope Min: SUCCESS",
             "Instance Spawner Configuration|Slope Max: SUCCESS",
-            "instance count validation: True (found=44, expected=44)",
+            "instance count validation: True (found=48, expected=48)",
             "Instance Spawner Configuration|Embedded Assets|[0]|Slope Filter|Min: SUCCESS",
             "Instance Spawner Configuration|Embedded Assets|[0]|Slope Filter|Max: SUCCESS",
-            "instance count validation: True (found=16, expected=16)",
+            "instance count validation: True (found=12, expected=12)",
             "SlopeFilter_InstancesPlantOnValidSlope:  result=SUCCESS"
         ]
 
