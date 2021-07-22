@@ -810,6 +810,21 @@ namespace AZ
 
                 lastFrameEndTick = frameEndTick;
             }
+
+            // Handle input
+            ImGui::InvisibleButton("HistogramInputCapture", { ImGui::GetWindowWidth(), ImGui::GetWindowHeight() });
+            ImGuiIO& io = ImGui::GetIO();
+            if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+            {
+                const float mousePixelX = io.MousePos.x;
+                const float percentWindow = (mousePixelX - wx) / ImGui::GetWindowWidth();
+                const AZStd::sys_time_t newViewportCenterTick = leftHistogramBound +
+                    aznumeric_cast<AZStd::sys_time_t>((rightHistogramBound - leftHistogramBound) * percentWindow);
+
+                const AZStd::sys_time_t viewportWidth = GetViewportTickWidth();
+                m_viewportEndTick = newViewportCenterTick + viewportWidth / 2;
+                m_viewportStartTick = newViewportCenterTick - viewportWidth / 2;
+            }
         }
 
         inline AZStd::sys_time_t ImGuiCpuProfiler::GetViewportTickWidth() const
