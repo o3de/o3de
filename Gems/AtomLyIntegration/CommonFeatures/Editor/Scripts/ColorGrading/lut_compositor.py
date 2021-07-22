@@ -36,46 +36,19 @@ _logging.basicConfig(level=_DCCSI_LOGLEVEL,
                      datefmt='%m-%d %H:%M')
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
-# ------------------------------------------------------------------------
 
-# ------------------------------------------------------------------------
-# set up access to OpenImageIO, within o3de or without
-try:
-    # running in o3de
-    import azlmbr
-    from ColorGrading.initialize import start
-    start()
-except Exception as e:
-    # running external, start this module from:
-    # Gems\AtomLyIntegration\CommonFeatures\Editor\Scripts\ColorGrading\cmdline\ColorGradinTools_CMD.bat
-    pass
-
-    try:
-        _O3DE_DEV = Path(os.getenv('O3DE_DEV'))
-        os.environ['O3DE_DEV'] = pathlib.PureWindowsPath(_O3DE_DEV).as_posix()
-        _LOGGER.debug(_O3DE_DEV)
-    except EnvironmentError as e:
-        _LOGGER.error('O3DE engineroot not set or found')
-        raise e
-
-    try:
-        _O3DE_BIN_PATH = Path(str(_O3DE_DEV))
-        _O3DE_BIN = Path(os.getenv('O3DE_BIN', _O3DE_BIN_PATH.resolve()))
-        os.environ['O3DE_BIN'] = pathlib.PureWindowsPath(_O3DE_BIN).as_posix()
-        _LOGGER.debug(_O3DE_BIN)
-        site.addsitedir(_O3DE_BIN)
-    except EnvironmentError as e:
-        _LOGGER.error('O3DE bin folder not set or found')
-        raise e
+import ColorGrading.initialize
+ColorGrading.initialize.start()
 
 try:
     import OpenImageIO as oiio
+    pass
 except ImportError as e:
-    _LOGGER.error('OpenImageIO not found')
-    raise e
+    _LOGGER.error(f"invalid import: {e}")
+    sys.exit(1)
 # ------------------------------------------------------------------------
 
-operations = {"composite":0, "extract":1}
+operations = {"composite": 0, "extract": 1}
 invalidOp = -1
 
 parser = argparse.ArgumentParser()

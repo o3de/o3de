@@ -16,6 +16,7 @@ import pathlib
 from pathlib import Path
 import logging as _logging
 from env_bool import env_bool
+import numpy as np
 
 # ------------------------------------------------------------------------
 _MODULENAME = 'ColorGrading.exr_to_3dl_azasset'
@@ -35,56 +36,29 @@ _logging.basicConfig(level=_DCCSI_LOGLEVEL,
                      datefmt='%m-%d %H:%M')
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
-# ------------------------------------------------------------------------
 
-# ------------------------------------------------------------------------
-# set up access to OpenImageIO, within o3de or without
-try:
-    # running in o3de
-    import azlmbr
-    from ColorGrading.initialize import start
-    start()
-except Exception as e:
-    # running external, start this module from:
-    # Gems\AtomLyIntegration\CommonFeatures\Editor\Scripts\ColorGrading\cmdline\O3DE_py_cmd.bat
-    pass
-
-    try:
-        _O3DE_DEV = Path(os.getenv('O3DE_DEV'))
-        os.environ['O3DE_DEV'] = pathlib.PureWindowsPath(_O3DE_DEV).as_posix()
-        _LOGGER.debug(_O3DE_DEV)
-    except EnvironmentError as e:
-        _LOGGER.error('O3DE engineroot not set or found')
-        raise e
-
-    try:
-        _O3DE_BIN_PATH = Path(str(_O3DE_DEV))
-        _O3DE_BIN = Path(os.getenv('O3DE_BIN', _O3DE_BIN_PATH.resolve()))
-        os.environ['O3DE_BIN'] = pathlib.PureWindowsPath(_O3DE_BIN).as_posix()
-        _LOGGER.debug(_O3DE_BIN)
-        site.addsitedir(_O3DE_BIN)
-    except EnvironmentError as e:
-        _LOGGER.error('O3DE bin folder not set or found')
-        raise e
+import ColorGrading.initialize
+ColorGrading.initialize.start()
 
 try:
     import OpenImageIO as oiio
+    pass
 except ImportError as e:
-    _LOGGER.error('OpenImageIO not found')
-    raise e
+    _LOGGER.error(f"invalid import: {e}")
+    sys.exit(1)
 # ------------------------------------------------------------------------
 
 
 # Transform from high dynamic range to normalized
 def ShaperInv(bias, scale, v):
-    return math.pow(2.0, (v - bias)/scale)
+    return math.pow(2.0, (v - bias) / scale)
 
 # Transform from normalized range to high dynamic range
 def Shaper(bias, scale, v):
     return math.log(v, 2.0) * scale + bias
 
 def GetUvCoord(size, r, g, b):
-    u = g * lutSize + r 
+    u = g * lutSize + r
     v = b
     return (u, v)
 
@@ -112,15 +86,23 @@ if True:
     # First line contains the vertex intervals
     dv = 1023.0 / float(lutSize-1)
     for i in range(lutSize):
-        lutIntervals.append(uint64(dv * i))
+        lutIntervals.append(np.uint64(dv * i))
     # Texels are in R G B per line with indices increasing first with blue, then green, and then red.
     for r in range(lutSize):
         for g in range(lutSize):
             for b in range(lutSize):
                 uv = GetUvCoord(lutSize, r, g, b)
                 px = buf.getpixel(uv[0], uv[1])
-                lutValues.append((uint64(px[0] * 4095), uint64(px[1] * 4095), uint64(px[2] * 4095)))
+                lutValues.append((np.uint64(px[0] * 4095), np.uint64(px[1] * 4095), np.uint64(px[2] * 4095)))
 
+# To Do: add some input file validation
+# If the input file doesn't exist, you'll get a LUT with res of 0 x 0 and result in a math error
+#Resolution is 0  x  0
+#writing C:\Depot\o3de-engine\Gems\AtomLyIntegration\CommonFeatures\Tools\ColorGrading\TestData\Nuke\HDR\Nuke_Post_grade_LUT.3dl...
+#Traceback (most recent call last):
+    #File "..\..\Editor\Scripts\ColorGrading\exr_to_3dl_azasset.py", line 103, in <module>
+        #dv = 1023.0 / float(lutSize)
+#ZeroDivisionError: float division by zero
 if True:
     lutFileName = "%s.3dl" % (args.o)
     print("writing %s..." % (lutFileName))

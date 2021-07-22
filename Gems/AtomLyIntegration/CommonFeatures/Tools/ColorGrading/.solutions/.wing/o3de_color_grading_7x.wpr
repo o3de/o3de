@@ -1,0 +1,21 @@
+#!wing
+#!version=7.0
+##################################################################
+# Wing project file                                              #
+##################################################################
+[project attributes]
+proj.directory-list = [{'dirloc': loc('../../../..'),
+                        'excludes': (),
+                        'filter': u'*',
+                        'include_hidden': False,
+                        'recursive': True,
+                        'watch_for_changes': True}]
+proj.file-type = 'shared'
+proj.launch-config = {loc('../../../../Editor/Scripts/ColorGrading/exr_to_3dl_azasset.py'): ('p'\
+        'roject',
+        (u'--i "C:\\Depot\\o3de-engine\\Gems\\AtomLyIntegration\\CommonFeatures\\Tools\\ColorGrading\\TestData\\Photoshop\\HDR_in_LDR_Log2-48nits\\Hue-Sat_LUT_32.exr" --o "C:\\Depot\\o3de-engine\\Gems\\AtomLyIntegration\\CommonFeatures\\Tools\\ColorGrading\\TestData\\Photoshop\\HDR_in_LDR_Log2-48nits\\Hue-Sat_LUT_32',
+         '')),
+                      loc('../../../../Editor/Scripts/ColorGrading/lut_helper.py'): ('p'\
+        'roject',
+        (u'--i "C:\\Depot\\o3de-engine\\Gems\\AtomLyIntegration\\CommonFeatures\\Resources\\ColorGrading\\TestData\\Photoshop\\HDR_in_LDR_Log2-48nits\\TensionGreen_LUT_32.exr" --op post-grading --shaper Log2-48nits --o "C:\\Depot\\o3de-engine\\Gems\\AtomLyIntegration\\CommonFeatures\\Resources\\ColorGrading\\TestData\\Photoshop\\HDR_in_LDR_Log2-48nits\\TensionGreen_LUT_32" -l -a',
+         ''))}

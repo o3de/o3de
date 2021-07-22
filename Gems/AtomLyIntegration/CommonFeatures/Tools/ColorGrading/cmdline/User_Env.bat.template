@@ -1,0 +1,13 @@
+@echo off
+
+REM 
+REM Copyright (c) Contributors to the Open 3D Engine Project
+REM 
+REM SPDX-License-Identifier: Apache-2.0 OR MIT
+REM
+REM
+
+:: copy this file, rename to User_Env.bat (remove .template)
+:: use this file to override any local properties that differ from base
+
+SET TAG_LY_BUILD_PATH = windows_vs2019

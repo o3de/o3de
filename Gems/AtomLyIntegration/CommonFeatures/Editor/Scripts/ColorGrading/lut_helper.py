@@ -17,6 +17,7 @@ import pathlib
 from pathlib import Path
 import logging as _logging
 from env_bool import env_bool
+import numpy as np
 
 # ------------------------------------------------------------------------
 _MODULENAME = 'ColorGrading.lut_helper'
@@ -36,53 +37,35 @@ _logging.basicConfig(level=_DCCSI_LOGLEVEL,
                      datefmt='%m-%d %H:%M')
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
-# ------------------------------------------------------------------------
 
-
-# ------------------------------------------------------------------------
-# set up access to OpenImageIO, within o3de or without
-try:
-    # running in o3de
-    import azlmbr
-    from ColorGrading.initialize import start
-    start()
-except Exception as e:
-    # running external, start this module from:
-    # Gems\AtomLyIntegration\CommonFeatures\Editor\Scripts\ColorGrading\cmdline\O3DE_py_cmd.bat
-    pass
-
-    try:
-        _O3DE_DEV = Path(os.getenv('O3DE_DEV'))
-        os.environ['O3DE_DEV'] = pathlib.PureWindowsPath(_O3DE_DEV).as_posix()
-        _LOGGER.debug(_O3DE_DEV)
-    except EnvironmentError as e:
-        _LOGGER.error('O3DE engineroot not set or found')
-        raise e
-
-    try:
-        _O3DE_BIN_PATH = Path(str(_O3DE_DEV))
-        _O3DE_BIN = Path(os.getenv('O3DE_BIN', _O3DE_BIN_PATH.resolve()))
-        os.environ['O3DE_BIN'] = pathlib.PureWindowsPath(_O3DE_BIN).as_posix()
-        _LOGGER.debug(_O3DE_BIN)
-        site.addsitedir(_O3DE_BIN)
-    except EnvironmentError as e:
-        _LOGGER.error('O3DE bin folder not set or found')
-        raise e
+import ColorGrading.initialize
+ColorGrading.initialize.start()
 
 try:
     import OpenImageIO as oiio
+    pass
 except ImportError as e:
-    _LOGGER.error('OpenImageIO not found')
-    raise e
+    _LOGGER.error(f"invalid import: {e}")
+    sys.exit(1)
 # ------------------------------------------------------------------------
 
+
+# ------------------------------------------------------------------------
 # Transform from high dynamic range to normalized
 def ShaperInv(bias, scale, v):
     return math.pow(2.0, (v - bias)/scale)
 
 # Transform from normalized range to high dynamic range
 def Shaper(bias, scale, v):
-    return math.log(v, 2.0) * scale + bias
+    
+    if v > 0.0:
+        value = math.log(v, 2.0) * scale + bias
+    
+    elif v <= 0.0:
+        value = math.log(0.002, 2.0) * scale + bias
+        _LOGGER.debug(f'Clipping a value: bias={bias}, scale={scale}, v={v}')
+
+    return value
 
 def GetUvCoord(size, r, g, b):
     u = g * lutSize + r
@@ -114,21 +97,39 @@ invalidOp = -1
 
 shaperLimits = shaperPresets.get(args.shaper, invalidShaper)
 if shaperLimits == invalidShaper:
-    print("invalid shaper")
+    _LOGGER.error("invalid shaper")
     sys.exit(1)
 op = operations.get(args.op, invalidOp)
 if op == invalidOp:
-    print("invalid operation")
+    _LOGGER.error("invalid operation")
+    sys.exit(1)
+
+# input validation
+from pathlib import Path
+input_file = Path(args.i)
+if input_file.is_file():
+    # file exists
+    pass
+else:
+    FILE_ERROR_MSG = f'File does not exist: {input_file}'
+    _LOGGER.error(FILE_ERROR_MSG)
+    #raise FileNotFoundError(FILE_ERROR_MSG)
     sys.exit(1)
 
 # Read input image
 #buf = oiio.ImageBuf("linear_lut.exr")
 buf = oiio.ImageBuf(args.i)
 inSpec = buf.spec()
-print("Resolution is ", buf.spec().width, " x ", buf.spec().height)
-if inSpec.width != inSpec.height*inSpec.height:
-    print("invalid input file dimensions. Expect lengthwise LUT with dimension W: s*s  X  H: s, where s is the size of the LUT")
+_LOGGER.info(f"Resolution is x:{buf.spec().height}, y:{buf.spec().width}")
+
+if inSpec.height <= 16:
+    _LOGGER.info("invalid input file dimensions. Expected LUT with height dimension >= 16 pixels")
     sys.exit(1)
+
+elif inSpec.width != inSpec.height * inSpec.height:
+    _LOGGER.info("invalid input file dimensions. Expect lengthwise LUT with dimension W: s*s  X  H: s, where s is the size of the LUT")
+    sys.exit(1)
+
 lutSize = inSpec.height
 
 middleGrey = 0.18
@@ -140,8 +141,8 @@ logMax = math.log(middleGrey * math.pow(2.0, upperStops), 2.0)
 scale = 1.0/(logMax - logMin)
 bias = -scale * logMin
 
-print("Shaper: range in stops  %.1f -> %.1f  (linear: %.3f -> %.3f)  logMin %.3f  logMax %.3f  scale %.3f  bias %.3f\n" %
-      (lowerStops, upperStops, middleGrey * math.pow(2.0, lowerStops), middleGrey * math.pow(2.0, upperStops),
+_LOGGER.info("Shaper: range in stops  %.1f -> %.1f  (linear: %.3f -> %.3f)  logMin %.3f  logMax %.3f  scale %.3f  bias %.3f\n" %
+             (lowerStops, upperStops, middleGrey * math.pow(2.0, lowerStops), middleGrey * math.pow(2.0, upperStops),
        logMin, logMax, scale, bias))
 
 # Create a writing image
@@ -152,6 +153,7 @@ outBuf = oiio.ImageBuf(outSpec)
 for y in range(outBuf.ybegin, outBuf.yend):
     for x in range(outBuf.xbegin, outBuf.xend):
         srcPx = buf.getpixel(x, y)
+        # _LOGGER.debug(f'srcPx is: {srcPx}')
         if op == 0:
             dstPx = (ShaperInv(bias, scale, srcPx[0]), ShaperInv(bias, scale, srcPx[1]), ShaperInv(bias, scale, srcPx[2]))
             outBuf.setpixel(x, y, dstPx)
@@ -161,7 +163,7 @@ for y in range(outBuf.ybegin, outBuf.yend):
         else:
             # Unspecified operation. Just write zeroes
             outBuf.setpixel(x, y, 0.0, 0.0, 0.0)
-print("writing %s..." % (args.o))
+_LOGGER.info("writing %s..." % (args.o))
 outBuf.write(args.o, "float")
 
 lutIntervals = []
@@ -170,18 +172,18 @@ if args.write3dl or args.writeAsset:
     # First line contains the vertex intervals
     dv = 1023.0 / float(lutSize-1)
     for i in range(lutSize):
-        lutIntervals.append(int(dv * i))
+        lutIntervals.append(np.uint64(dv * i))
     # Texels are in R G B per line with indices increasing first with blue, then green, and then red.
     for r in range(lutSize):
         for g in range(lutSize):
             for b in range(lutSize):
                 uv = GetUvCoord(lutSize, r, g, b)
                 px = outBuf.getpixel(uv[0], uv[1])
-                lutValues.append((int(px[0] * 4095), int(px[1] * 4095), int(px[2] * 4095)))
+                lutValues.append((np.uint64(px[0] * 4095), np.uint64(px[1] * 4095), np.uint64(px[2] * 4095)))
 
 if args.write3dl:
     lutFileName = "%s.3dl" % (args.o)
-    print("writing %s..." % (lutFileName))
+    _LOGGER.info("writing %s..." % (lutFileName))
     lutFile = open(lutFileName, 'w')
     # First line contains the vertex intervals
     dv = 1023.0 / float(lutSize)
@@ -194,7 +196,7 @@ if args.write3dl:
 
 if args.writeAsset:
     assetFileName = "%s.azasset" % (args.o)
-    print("writing %s...", (assetFileName))
+    _LOGGER.info("writing %s...", (assetFileName))
     assetFile = open(assetFileName, 'w')
     assetFile.write("{\n")
     assetFile.write("    \"Type\": \"JsonSerialization\",\n")
