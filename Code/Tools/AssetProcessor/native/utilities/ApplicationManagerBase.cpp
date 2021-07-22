@@ -49,8 +49,6 @@ static const qint64 s_ReservedDiskSpaceInBytes = 256 * 1024;
 //! Maximum number of temp folders allowed
 static const int s_MaximumTempFolders = 10000;
 
-const char AdditionalScanFolders[] = "additionalScanFolders";
-
 ApplicationManagerBase::ApplicationManagerBase(int* argc, char*** argv, QObject* parent)
     : ApplicationManager(argc, argv, parent)
 {
@@ -155,61 +153,90 @@ void ApplicationManagerBase::InitAssetProcessorManager()
     const AzFramework::CommandLine* commandLine = nullptr;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetCommandLine);
 
-    if (commandLine->HasSwitch("waitOnLaunch"))
+    struct APCommandLineSwitch
+    {
+        APCommandLineSwitch(const char* switchTitle, const char* helpText)
+            : m_switch(switchTitle)
+            , m_helpText(helpText)
+        {
+
+        }
+        const char* m_switch;
+        const char* m_helpText;
+    };
+
+    const APCommandLineSwitch kCommand_waitOnLaunch("waitOnLaunch", "Briefly pauses Asset Processor during initializiation. Useful if you want to attach a debugger.");
+    const APCommandLineSwitch kCommand_zeroAnalysisMode("zeroAnalysisMode", "Enables using file modification time when examining source assets for processing.");
+    const APCommandLineSwitch kCommand_enableQueryLogging("enableQueryLogging", "Enables logging database queries.");
+    const APCommandLineSwitch kCommand_dependencyScanPattern("dependencyScanPattern", "Scans assets that match the given pattern for missing product dependencies.");
+    const APCommandLineSwitch kCommand_dsp("dsp", kCommand_dependencyScanPattern.m_helpText);
+    const APCommandLineSwitch kCommand_fileDependencyScanPattern("fileDependencyScanPattern", "Used with dependencyScanPattern to farther filter the scan.");
+    const APCommandLineSwitch kCommand_fdsp("fdsp", kCommand_fileDependencyScanPattern.m_helpText);
+    const APCommandLineSwitch kCommand_additionalScanFolders("additionalScanFolders", "Used with dependencyScanPattern to farther filter the scan.");
+    const APCommandLineSwitch kCommand_dependencyScanMaxIteration("dependencyScanMaxIteration", "Used to limit the number of recursive searches per line when running dependencyScanPattern.");
+    const APCommandLineSwitch kCommand_warningLevel("warningLevel", "Configure the error and warning reporting level for AssetProcessor. Pass in 1 for fatal errors, 2 for fatal errors and warnings.");
+    const APCommandLineSwitch kCommand_acceptInput("acceptInput", "Enable external control messaging via the ControlRequestHandler, used with automated tests.");
+    const APCommandLineSwitch kCommand_debugOutput("debugOutput", "When enabled, builders that support it will output debug information as product assets. Used primarily with scene files.");
+    const APCommandLineSwitch kCommand_sortJobsByDBSourceName("sortJobsByDBSourceName", "When enabled, sorts pending jobs with equal priority and dependencies by database source name instead of job ID. Useful for automated tests to process assets in the same order each time.");
+    const APCommandLineSwitch kCommand_truncatefingerprint("truncatefingerprint", "Truncates the fingerprint used for processed assets. Useful if you plan to compress product assets to share on another machine because some compression formats like zip will truncate file mod timestamps.");
+    const APCommandLineSwitch kCommand_help("help", "Displays this message.");
+    const APCommandLineSwitch kCommand_h("h", kCommand_help.m_helpText);
+
+    if (commandLine->HasSwitch(kCommand_waitOnLaunch.m_switch))
     {
         // Useful for attaching the debugger, this forces a short pause.
         AZStd::this_thread::sleep_for(AZStd::chrono::seconds(20));
     }
 
-    if(commandLine->HasSwitch("zeroAnalysisMode"))
+    if (commandLine->HasSwitch(kCommand_zeroAnalysisMode.m_switch))
     {
         m_assetProcessorManager->SetEnableModtimeSkippingFeature(true);
     }
     
-    if(commandLine->HasSwitch("enableQueryLogging"))
+    if (commandLine->HasSwitch(kCommand_enableQueryLogging.m_switch))
     {
         m_assetProcessorManager->SetQueryLogging(true);
     }
 
-    if (commandLine->HasSwitch("dependencyScanPattern"))
+    if (commandLine->HasSwitch(kCommand_dependencyScanPattern.m_switch))
     {
-        m_dependencyScanPattern = commandLine->GetSwitchValue("dependencyScanPattern", 0).c_str();
+        m_dependencyScanPattern = commandLine->GetSwitchValue(kCommand_dependencyScanPattern.m_switch, 0).c_str();
     }
-    else if (commandLine->HasSwitch("dsp"))
+    else if (commandLine->HasSwitch(kCommand_dsp.m_switch))
     {
-        m_dependencyScanPattern = commandLine->GetSwitchValue("dsp", 0).c_str();
+        m_dependencyScanPattern = commandLine->GetSwitchValue(kCommand_dsp.m_switch, 0).c_str();
     }
     
     m_fileDependencyScanPattern = "*";
 
-    if (commandLine->HasSwitch("fileDependencyScanPattern"))
+    if (commandLine->HasSwitch(kCommand_fileDependencyScanPattern.m_switch))
     {
-        m_fileDependencyScanPattern = commandLine->GetSwitchValue("fileDependencyScanPattern", 0).c_str();
+        m_fileDependencyScanPattern = commandLine->GetSwitchValue(kCommand_fileDependencyScanPattern.m_switch, 0).c_str();
     }
-    else if (commandLine->HasSwitch("fdsp"))
+    else if (commandLine->HasSwitch(kCommand_fdsp.m_switch))
     {
-        m_fileDependencyScanPattern = commandLine->GetSwitchValue("fdsp", 0).c_str();
+        m_fileDependencyScanPattern = commandLine->GetSwitchValue(kCommand_fdsp.m_switch, 0).c_str();
     }
 
-    if (commandLine->HasSwitch(AdditionalScanFolders))
+    if (commandLine->HasSwitch(kCommand_additionalScanFolders.m_switch))
     {
-        for (size_t idx = 0; idx < commandLine->GetNumSwitchValues(AdditionalScanFolders); idx++)
+        for (size_t idx = 0; idx < commandLine->GetNumSwitchValues(kCommand_additionalScanFolders.m_switch); idx++)
         {
-            AZStd::string value = commandLine->GetSwitchValue(AdditionalScanFolders, idx);
+            AZStd::string value = commandLine->GetSwitchValue(kCommand_additionalScanFolders.m_switch, idx);
             m_dependencyAddtionalScanFolders.emplace_back(AZStd::move(value));
         }
     }
 
-    if (commandLine->HasSwitch("dependencyScanMaxIteration"))
+    if (commandLine->HasSwitch(kCommand_dependencyScanMaxIteration.m_switch))
     {
-        AZStd::string maxIterationAsString = commandLine->GetSwitchValue("dependencyScanMaxIteration", 0);
+        AZStd::string maxIterationAsString = commandLine->GetSwitchValue(kCommand_dependencyScanMaxIteration.m_switch, 0);
         m_dependencyScanMaxIteration = AZStd::stoi(maxIterationAsString);
     }
 
-    if (commandLine->HasSwitch("warningLevel"))
+    if (commandLine->HasSwitch(kCommand_warningLevel.m_switch))
     {
         using namespace AssetProcessor;
-        const AZStd::string& levelString = commandLine->GetSwitchValue("warningLevel", 0);
+        const AZStd::string& levelString = commandLine->GetSwitchValue(kCommand_warningLevel.m_switch, 0);
         WarningLevel warningLevel = WarningLevel::Default;
 
         switch(AZStd::stoi(levelString))
@@ -223,39 +250,30 @@ void ApplicationManagerBase::InitAssetProcessorManager()
         }
         AssetProcessor::JobDiagnosticRequestBus::Broadcast(&AssetProcessor::JobDiagnosticRequestBus::Events::SetWarningLevel, warningLevel);
     }
-    if (commandLine->HasSwitch("acceptInput"))
+    if (commandLine->HasSwitch(kCommand_acceptInput.m_switch))
     {
         InitControlRequestHandler();
     }
 
-    if (commandLine->HasSwitch("debugOutput"))
+    if (commandLine->HasSwitch(kCommand_debugOutput.m_switch))
     {
         m_assetProcessorManager->SetBuilderDebugFlag(true);
     }
 
-    if (commandLine->HasSwitch("sortJobsByDBSourceName"))
+    if (commandLine->HasSwitch(kCommand_sortJobsByDBSourceName.m_switch))
     {
-        m_assetProcessorManager->SetSortJobsByDBSourceName(true);
+        m_sortJobsByDBSourceName = true;
     }
 
-    if (commandLine->HasSwitch("help") || commandLine->HasSwitch("h"))
-    {
-        // TODO print out command line flags.
-        // Other O3DE tools have a more full featured system for registering command flags
-        // that includes help output, but right now the AssetProcessor just checks strings
-        // via HasSwitch. This means this help output has to be updated manually.
-    }
-
-    constexpr char truncateFingerprintSwitch[] = "truncatefingerprint";
-    if(commandLine->HasSwitch(truncateFingerprintSwitch))
+    if (commandLine->HasSwitch(kCommand_truncatefingerprint.m_switch))
     {
         // Zip archive format uses 2 second precision truncated
         const int ArchivePrecision = 2000;
         int precision = ArchivePrecision;
 
-        if(commandLine->GetNumSwitchValues(truncateFingerprintSwitch) > 0)
+        if (commandLine->GetNumSwitchValues(kCommand_truncatefingerprint.m_switch) > 0)
         {
-            precision = AZStd::stoi(commandLine->GetSwitchValue(truncateFingerprintSwitch, 0));
+            precision = AZStd::stoi(commandLine->GetSwitchValue(kCommand_truncatefingerprint.m_switch, 0));
 
             if(precision < 1)
             {
@@ -264,6 +282,31 @@ void ApplicationManagerBase::InitAssetProcessorManager()
         }
 
         AssetUtilities::SetTruncateFingerprintTimestamp(precision);
+    }
+
+    if (commandLine->HasSwitch(kCommand_help.m_switch) || commandLine->HasSwitch(kCommand_h.m_switch))
+    {
+        // Other O3DE tools have a more full featured system for registering command flags
+        // that includes help output, but right now the AssetProcessor just checks strings
+        // via HasSwitch. This means this help output has to be updated manually.
+        AZ_TracePrintf("AssetProcessor", "Asset Processor Command Line Flags:\n");
+        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", kCommand_waitOnLaunch.m_switch, kCommand_waitOnLaunch.m_helpText);
+        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", kCommand_zeroAnalysisMode.m_switch, kCommand_zeroAnalysisMode.m_helpText);
+        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", kCommand_enableQueryLogging.m_switch, kCommand_enableQueryLogging.m_helpText);
+        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", kCommand_dependencyScanPattern.m_switch, kCommand_dependencyScanPattern.m_helpText);
+        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", kCommand_dsp.m_switch, kCommand_dsp.m_helpText);
+        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", kCommand_fileDependencyScanPattern.m_switch, kCommand_fileDependencyScanPattern.m_helpText);
+        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", kCommand_fdsp.m_switch, kCommand_fdsp.m_helpText);
+        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", kCommand_additionalScanFolders.m_switch, kCommand_additionalScanFolders.m_helpText);
+        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", kCommand_dependencyScanMaxIteration.m_switch, kCommand_dependencyScanMaxIteration.m_helpText);
+        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", kCommand_warningLevel.m_switch, kCommand_warningLevel.m_helpText);
+        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", kCommand_acceptInput.m_switch, kCommand_acceptInput.m_helpText);
+        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", kCommand_debugOutput.m_switch, kCommand_debugOutput.m_helpText);
+        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", kCommand_sortJobsByDBSourceName.m_switch, kCommand_sortJobsByDBSourceName.m_helpText);
+        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", kCommand_truncatefingerprint.m_switch, kCommand_truncatefingerprint.m_helpText);
+        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", kCommand_help.m_switch, kCommand_help.m_helpText);
+        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", kCommand_h.m_switch, kCommand_h.m_helpText);
+        AZ_TracePrintf("AssetProcessor", "\tregset : set the given registry key to the given value.\n");
     }
 }
 
@@ -300,7 +343,7 @@ void ApplicationManagerBase::InitRCController()
 {
     m_rcController = new AssetProcessor::RCController(m_platformConfiguration->GetMinJobs(), m_platformConfiguration->GetMaxJobs());
 
-    if (m_assetProcessorManager->GetSortJobsByDBSourceName())
+    if (m_sortJobsByDBSourceName)
     {
         m_rcController->SetQueueSortOnDBSourceName();
     }
