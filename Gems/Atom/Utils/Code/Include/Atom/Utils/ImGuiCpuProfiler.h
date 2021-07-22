@@ -63,26 +63,36 @@ namespace AZ
             ImGuiCpuProfiler() = default;
             ~ImGuiCpuProfiler() = default;
 
-            //! Draws the provided Cpu statistics.
+            //! Draws the overall CPU profiling window, defaults to the statistical view
             void Draw(bool& keepDrawing, const AZ::RHI::CpuTimingStatistics& cpuTimingStatistics);
 
+            //! Draws the statistical view of the CPU profiling data
+            void DrawStatisticsView();
+
             //! Draws the CPU profiling visualizer in a new window. 
-            void DrawVisualizer(bool& keepDrawing, const AZ::RHI::CpuTimingStatistics& currentCpuTimingStatistics);
+            void DrawVisualizer();
 
         private:
             static constexpr float RowHeight = 50.0;
             static constexpr int DefaultFramesToCollect = 50;
 
-            // Update the GroupRegionMap with the latest cached time regions
-            void UpdateGroupRegionMap();
+            // Draw the shared header between the two windows
+            void DrawCommonHeader();
 
             // ImGui filter used to filter TimedRegions.
             ImGuiTextFilter m_timedRegionFilter;
 
+            // Saves statistical view data organized by group name -> region name -> regions
             GroupRegionMap m_groupRegionMap;
 
             // Pause cpu profiling. The profiler will show the statistics of the last frame before pause
             bool m_paused = false;
+
+            // Export the profiling data from a single frame to a local file
+            bool m_captureToFile = false;
+
+            // Toggle between the normal statistical view and the visual profiling view
+            bool m_enableVisualizer = false;
 
             // Total frames need to be saved
             int m_captureFrameCount = 1;
@@ -130,8 +140,6 @@ namespace AZ
             virtual void OnSystemTick() override;
 
             // Visualizer state
-
-            bool m_showVisualizer = false;
 
             int m_framesToCollect = DefaultFramesToCollect;
 
