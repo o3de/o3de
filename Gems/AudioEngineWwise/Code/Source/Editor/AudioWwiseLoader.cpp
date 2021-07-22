@@ -17,12 +17,6 @@
 #include <AudioFileUtils.h>
 #include <Config_wwise.h>
 
-#include <ISystem.h>
-#include <CryFile.h>
-#include <CryPath.h>
-#include <Util/PathUtil.h>
-
-using namespace PathUtil;
 
 namespace AudioControls
 {
@@ -68,8 +62,7 @@ namespace AudioControls
         for (const auto& filePath : foundFiles)
         {
             AZ_Assert(AZ::IO::FileIOBase::GetInstance()->Exists(filePath.c_str()), "FindFiles found file '%s' but FileIO says it doesn't exist!", filePath.c_str());
-            AZStd::string fileName;
-            AZ::StringFunc::Path::GetFullFileName(filePath.c_str(), fileName);
+            AZ::IO::PathView fileName = filePath.Filename();
 
             if (AZ::IO::FileIOBase::GetInstance()->IsDirectory(filePath.c_str()))
             {
@@ -79,15 +72,15 @@ namespace AudioControls
                     // we load only one as all of them should have the
                     // same content (in the future we want to have a
                     // consistency report to highlight if this is not the case)
-                    m_localizationFolder = fileName;
+                    m_localizationFolder.assign(fileName.Native().data(), fileName.Native().size());
                     LoadSoundBanks(rootFolder, m_localizationFolder, true);
                     isLocalizedLoaded = true;
                 }
             }
-            else if (AZ::StringFunc::Find(fileName.c_str(), Audio::Wwise::BankExtension) != AZStd::string::npos
-                && !AZ::StringFunc::Equal(fileName.c_str(), Audio::Wwise::InitBank))
+            else if (fileName.Extension() == Audio::Wwise::BankExtension && !AZ::StringFunc::Equal(fileName.Native(), Audio::Wwise::InitBank))
             {
-                m_audioSystemImpl->CreateControl(SControlDef(fileName, eWCT_WWISE_SOUND_BANK, isLocalized, nullptr, subPath));
+                m_audioSystemImpl->CreateControl(
+                    SControlDef(AZStd::string{ fileName.Native() }, eWCT_WWISE_SOUND_BANK, isLocalized, nullptr, subPath));
             }
         }
     }
@@ -103,14 +96,14 @@ namespace AudioControls
 
             if (AZ::IO::FileIOBase::GetInstance()->IsDirectory(filePath.c_str()))
             {
-                LoadControlsInFolder(filePath);
+                LoadControlsInFolder(filePath.Native());
             }
             else
             {
                 // Open the file, read into an xmlDoc, and call LoadControls with the root xml node...
                 AZ_TracePrintf("AudioWwiseLoader", "Loading Xml from '%s'", filePath.c_str());
 
-                Audio::ScopedXmlLoader xmlFileLoader(filePath);
+                Audio::ScopedXmlLoader xmlFileLoader(filePath.Native());
                 if (!xmlFileLoader.HasError())
                 {
                     LoadControl(xmlFileLoader.GetRootNode());

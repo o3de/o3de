@@ -10,20 +10,30 @@
 #include <AudioControlsEditorWindow.h>
 
 #include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/Utils/Utils.h>
+
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
+
 #include <ATLControlsModel.h>
 #include <ATLControlsPanel.h>
 #include <AudioControlsEditorPlugin.h>
 #include <AudioControlsEditorUndo.h>
 #include <AudioSystemPanel.h>
-#include <CryFile.h>
-#include <CryPath.h>
+
+
 #include <DockTitleBarWidget.h>
 #include <IAudioSystem.h>
 #include <ImplementationManager.h>
 #include <InspectorPanel.h>
+
+
+#include <CryFile.h>
+#include <CryPath.h>
 #include <ISystem.h>
-#include <QAudioControlEditorIcons.h>
 #include <Util/PathUtil.h>
+
+#include <QAudioControlEditorIcons.h>
+
 
 #include <QPaintEvent>
 #include <QPushButton>
@@ -318,19 +328,24 @@ namespace AudioControls
         // once we can listen to delete messages from Asset system, this can be changed to an EBus handler.
         const char* controlsPath = nullptr;
         Audio::AudioSystemRequestBus::BroadcastResult(controlsPath, &Audio::AudioSystemRequestBus::Events::GetControlsPath);
-        AZStd::string sControlsPath(Path::GetEditingGameDataFolder());
-        AZ::StringFunc::Path::Join(sControlsPath.c_str(), controlsPath, sControlsPath);
-        Audio::SAudioManagerRequestData<Audio::eAMRT_PARSE_CONTROLS_DATA> oParseGlobalRequestData(sControlsPath.c_str(), Audio::eADS_GLOBAL);
+
+        AZ::IO::FixedMaxPath controlsFolder{ controlsPath };
+
+        Audio::SAudioManagerRequestData<Audio::eAMRT_PARSE_CONTROLS_DATA> oParseGlobalRequestData(controlsFolder.c_str(), Audio::eADS_GLOBAL);
         oConfigDataRequest.pData = &oParseGlobalRequestData;
         Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequest, oConfigDataRequest);
 
         // parse the AudioSystem level-specific config data
-        AZStd::string levelName{ GetIEditor()->GetLevelName().toUtf8().data() };
-        AZ::StringFunc::Path::Join(sControlsPath.c_str(), "levels", sControlsPath);
-        AZ::StringFunc::Path::Join(sControlsPath.c_str(), levelName.c_str(), sControlsPath);
-        Audio::SAudioManagerRequestData<Audio::eAMRT_PARSE_CONTROLS_DATA> oParseLevelRequestData(sControlsPath.c_str(), Audio::eADS_LEVEL_SPECIFIC);
-        oConfigDataRequest.pData = &oParseLevelRequestData;
-        Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequest, oConfigDataRequest);
+        AZStd::string levelName;
+        AzToolsFramework::EditorRequestBus::BroadcastResult(levelName, &AzToolsFramework::EditorRequests::GetLevelName);
+        if (!levelName.empty() && levelName != "Untitled")
+        {
+            controlsFolder /= "levels";
+            controlsFolder /= levelName;
+            Audio::SAudioManagerRequestData<Audio::eAMRT_PARSE_CONTROLS_DATA> oParseLevelRequestData(controlsFolder.c_str(), Audio::eADS_LEVEL_SPECIFIC);
+            oConfigDataRequest.pData = &oParseLevelRequestData;
+            Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequest, oConfigDataRequest);
+        }
 
         // inform the middleware specific plugin that the data has been saved
         // to disk (in case it needs to update something)

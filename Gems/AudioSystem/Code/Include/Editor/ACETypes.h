@@ -13,6 +13,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/XML/rapidxml.h>
 
 namespace AudioControls
 {
@@ -38,5 +39,8 @@ namespace AudioControls
     static const TImplControlType AUDIO_IMPL_INVALID_TYPE = 0;
 
     using FilepathSet = AZStd::set<AZStd::string>;
+
+    using XmlAllocator = AZ::rapidxml::memory_pool<>;
+    inline static XmlAllocator s_xmlAllocator;
 
 } // namespace AudioControls
