@@ -31,12 +31,6 @@ namespace AZ
             AZStd::sys_time_t m_endTick = 0;
         };
 
-        struct FrameHistogramEntry
-        {
-            AZStd::sys_time_t m_endTick;
-            AZStd::sys_time_t m_frameTime;
-        };
-
         // Stores data about a region that is agreggated from all collected frames
         // Data collection can be toggled on and off through m_record. 
         struct RegionStatistics
@@ -81,6 +75,8 @@ namespace AZ
         private:
             static constexpr float RowHeight = 50.0;
             static constexpr int DefaultFramesToCollect = 50;
+            static constexpr float MediumFrameTimeLimit = 16.6; // 60 fps
+            static constexpr float HighFrameTimeLimit = 33.3; // 30 fps
 
             // Draw the shared header between the two windows
             void DrawCommonHeader();
@@ -133,11 +129,11 @@ namespace AZ
             // Draw the ruler with frame time labels
             void DrawRuler();
 
-            // Draw the frame time histogram and handle input
+            // Draw the frame time histogram 
             void DrawFrameTimeHistogram();
 
             // Converts raw ticks to a pixel value suitable to give to ImDrawList, handles window scrolling
-            float ConvertTickToPixelSpace(AZStd::sys_time_t tick) const;
+            float ConvertTickToPixelSpace(AZStd::sys_time_t tick, AZStd::sys_time_t leftBound, AZStd::sys_time_t rightBound) const;
 
             AZStd::sys_time_t GetViewportTickWidth() const;
 
@@ -172,9 +168,6 @@ namespace AZ
             // For now we default allocate for all regions on the first render frame and then use RegionStatistics.m_draw to determine
             // if we should draw the window or not. FIXME(ATOM-15948) this should be changed once RegionStatistics gets heavier. 
             AZStd::unordered_map<const GroupRegionName*, RegionStatistics> m_regionStatisticsMap;
-
-            // Keeps track of frame bounds and their tick so that we can draw the frame time histogram.
-            AZStd::vector<FrameHistogramEntry> m_frameTimes;
         };
     } // namespace Render
 } // namespace AZ

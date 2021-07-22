@@ -16,7 +16,6 @@
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/std/time.h>
-#include "../../../Gems/ImGui/External/ImGui/v1.82/imgui/imgui.h"
 
 
 namespace AZ
@@ -298,7 +297,7 @@ namespace AZ
 
             ImGui::Columns(1, "FrameTimeColumn", true);
 
-            if (ImGui::BeginChild("FrameTimeHistogram", { 0, 50 }, true))
+            if (ImGui::BeginChild("FrameTimeHistogram", { 0, 50 }, true, ImGuiWindowFlags_NoScrollbar))
             {
                 DrawFrameTimeHistogram();
             }
@@ -527,8 +526,8 @@ namespace AZ
 
             ImDrawList* drawList = ImGui::GetWindowDrawList();
 
-            const float startPixel = ConvertTickToPixelSpace(block.m_startTick);
-            const float endPixel = ConvertTickToPixelSpace(block.m_endTick);
+            const float startPixel = ConvertTickToPixelSpace(block.m_startTick, m_viewportStartTick, m_viewportEndTick);
+            const float endPixel = ConvertTickToPixelSpace(block.m_endTick, m_viewportStartTick, m_viewportEndTick);
 
             const ImVec2 startPoint = { startPixel, wy + targetRow * RowHeight };
             const ImVec2 endPoint = { endPixel, wy + targetRow * RowHeight + 40 };
@@ -664,7 +663,7 @@ namespace AZ
 
             while (endTickItr != m_frameEndTicks.end() && *endTickItr < m_viewportEndTick)
             {
-                const float horizontalPixel = ConvertTickToPixelSpace(*endTickItr);
+                const float horizontalPixel = ConvertTickToPixelSpace(*endTickItr, m_viewportStartTick, m_viewportEndTick);
                 drawList->AddLine({ horizontalPixel, wy }, { horizontalPixel, wy + windowHeight }, red);
                 ++endTickItr;
             }
@@ -692,8 +691,8 @@ namespace AZ
                     break;
                 }
 
-                const float lastFrameBoundaryPixel = ConvertTickToPixelSpace(lastFrameBoundaryTick);
-                const float nextFrameBoundaryPixel = ConvertTickToPixelSpace(nextFrameBoundaryTick);
+                const float lastFrameBoundaryPixel = ConvertTickToPixelSpace(lastFrameBoundaryTick, m_viewportStartTick, m_viewportEndTick);
+                const float nextFrameBoundaryPixel = ConvertTickToPixelSpace(nextFrameBoundaryTick, m_viewportStartTick, m_viewportEndTick);
 
                 const AZStd::string label =
                     AZStd::string::format("%.2f ms", CpuProfilerImGuiHelper::TicksToMs(nextFrameBoundaryTick - lastFrameBoundaryTick));
@@ -748,53 +747,68 @@ namespace AZ
 
         inline void ImGuiCpuProfiler::DrawFrameTimeHistogram()
         {
-            // TODO draw 60fps 30fps lines at the start
-            ImGui::BeginTooltip();
-            ImGui::Text("%f, %f", ImGui::GetMousePos().x, ImGui::GetMousePos().y);
-            ImGui::EndTooltip();
-
             ImDrawList* drawList = ImGui::GetWindowDrawList();
             const auto [wx, wy] = ImGui::GetWindowPos();
-            const auto tickDelta = AZStd::GetTimeTicksPerSecond();
-            const auto viewportCenter = m_viewportEndTick - (m_viewportEndTick - m_viewportStartTick) / 2;
-            const auto leftHistogramBound = viewportCenter - tickDelta;
-            const auto rightHistogramBound = viewportCenter + tickDelta;
+            const ImU32 orange = ImGui::GetColorU32({ 1, .7, 0, 1 });
+            const ImU32 red = ImGui::GetColorU32({ 1, 0, 0, 1 });
+
+            const AZStd::sys_time_t ticksPerSecond = AZStd::GetTimeTicksPerSecond();
+            const AZStd::sys_time_t viewportCenter = m_viewportEndTick - (m_viewportEndTick - m_viewportStartTick) / 2;
+            const AZStd::sys_time_t leftHistogramBound = viewportCenter - ticksPerSecond;
+            const AZStd::sys_time_t rightHistogramBound = viewportCenter + ticksPerSecond;
+
+            // Draw frame limit lines 
+            drawList->AddLine(
+                { wx, wy + ImGui::GetWindowHeight() - MediumFrameTimeLimit },
+                { wx + ImGui::GetWindowWidth(), wy + ImGui::GetWindowHeight() - MediumFrameTimeLimit },
+                orange);
+
+            drawList->AddLine(
+                { wx, wy + ImGui::GetWindowHeight() - HighFrameTimeLimit },
+                { wx + ImGui::GetWindowWidth(), wy + ImGui::GetWindowHeight() - HighFrameTimeLimit },
+                red);
+
+
+            // Draw viewport bound rectangle
+            const float leftViewportPixel = ConvertTickToPixelSpace(m_viewportStartTick, leftHistogramBound, rightHistogramBound);
+            const float rightViewportPixel = ConvertTickToPixelSpace(m_viewportEndTick, leftHistogramBound, rightHistogramBound);
+            const ImVec2 topLeftPos = { leftViewportPixel, wy };
+            const ImVec2 botRightPos = { rightViewportPixel, wy + ImGui::GetWindowHeight() };
+            const ImU32 gray = ImGui::GetColorU32({ 1, 1, 1, .3 });
+            drawList->AddRectFilled(topLeftPos, botRightPos, gray);
 
             // Find the first onscreen frame execution time 
-            auto frameItr = AZStd::lower_bound(
-                m_frameTimes.begin(), m_frameTimes.end(), leftHistogramBound,
-                [](const FrameHistogramEntry& entry, AZStd::sys_time_t target)
-                {
-                    return entry.m_endTick < target;
-                });
-            if (frameItr != m_frameTimes.begin())
+            auto frameEndTickItr = AZStd::lower_bound(m_frameEndTicks.begin(), m_frameEndTicks.end(), leftHistogramBound);
+            if (frameEndTickItr != m_frameEndTicks.begin())
             {
-                --frameItr;
+                --frameEndTickItr;
             }
 
-            auto convert = [leftHistogramBound, rightHistogramBound](AZStd::sys_time_t tick)
+            // Since we only store the frame end ticks, we must calculate the execution times on the fly by comparing pairs of elements. 
+            AZStd::sys_time_t lastFrameEndTick = *frameEndTickItr;
+            while (*frameEndTickItr < rightHistogramBound && ++frameEndTickItr != m_frameEndTicks.end())
             {
-                const float wx = ImGui::GetWindowPos().x;
-                const float tickSpaceShifted = aznumeric_cast<float>(tick - leftHistogramBound); // This will be close to zero, so FP inaccuracy should not be too bad
-                const float tickSpaceNormalized = tickSpaceShifted / (rightHistogramBound - leftHistogramBound);
-                const float pixelSpace = tickSpaceNormalized * ImGui::GetWindowWidth() + wx;
-                return pixelSpace;
-            };
+                const AZStd::sys_time_t frameEndTick = *frameEndTickItr;
 
-            while (frameItr->m_endTick < rightHistogramBound && ++frameItr != m_frameTimes.end())
-            {
-                const auto tick = frameItr->m_endTick;
-                const auto et = CpuProfilerImGuiHelper::TicksToMs(frameItr->m_frameTime);
+                const float framePixelPos = ConvertTickToPixelSpace(frameEndTick, leftHistogramBound, rightHistogramBound);
+                const float frameTimeMs = CpuProfilerImGuiHelper::TicksToMs(frameEndTick - lastFrameEndTick);
 
-                const float pixelX = convert(tick);
-                const auto height = et;
+                const ImVec2 lineBottom = { framePixelPos, ImGui::GetWindowHeight() + wy };
+                const ImVec2 lineTop = { framePixelPos, ImGui::GetWindowHeight() + wy - frameTimeMs };
 
-                const ImVec2 startpos = { pixelX, ImGui::GetWindowHeight() + wy };
-                const ImVec2 endpos = { pixelX, ImGui::GetWindowHeight() + wy - height };
-                drawList->AddLine(startpos, endpos, IM_COL32_WHITE, 3.0);
-                ImGui::BeginTooltip();
-                ImGui::Text("Base: %f, %f", startpos.x, startpos.y);
-                ImGui::EndTooltip();
+                ImU32 lineColor = ImGui::GetColorU32({ .3, .3, .3, 1 }); // Gray
+                if (frameTimeMs > HighFrameTimeLimit)
+                {
+                    lineColor = ImGui::GetColorU32({1, 0, 0, 1}); // Red
+                }
+                else if (frameTimeMs > MediumFrameTimeLimit)
+                {
+                    lineColor = ImGui::GetColorU32({1, .7, 0, 1}); // Orange
+                }
+
+                drawList->AddLine(lineBottom, lineTop, lineColor, 3.0);
+
+                lastFrameEndTick = frameEndTick;
             }
         }
 
@@ -803,11 +817,11 @@ namespace AZ
             return m_viewportEndTick - m_viewportStartTick;
         }
 
-        inline float ImGuiCpuProfiler::ConvertTickToPixelSpace(AZStd::sys_time_t tick) const
+        inline float ImGuiCpuProfiler::ConvertTickToPixelSpace(AZStd::sys_time_t tick, AZStd::sys_time_t leftBound, AZStd::sys_time_t rightBound) const
         {
             const float wx = ImGui::GetWindowPos().x;
-            const float tickSpaceShifted = aznumeric_cast<float>(tick - m_viewportStartTick); // This will be close to zero, so FP inaccuracy should not be too bad
-            const float tickSpaceNormalized = tickSpaceShifted / GetViewportTickWidth();
+            const float tickSpaceShifted = aznumeric_cast<float>(tick - leftBound); // This will be close to zero, so FP inaccuracy should not be too bad
+            const float tickSpaceNormalized = tickSpaceShifted / (rightBound - leftBound);
             const float pixelSpace = tickSpaceNormalized * ImGui::GetWindowWidth() + wx;
             return pixelSpace;
         }
@@ -821,8 +835,6 @@ namespace AZ
             }
             else
             {
-                const AZStd::sys_time_t lastFrameTime = AZStd::GetTimeNowTicks() - m_frameEndTicks.back();
-                m_frameTimes.push_back({ m_frameEndTicks.back(), lastFrameTime });
                 m_frameEndTicks.push_back(AZStd::GetTimeNowTicks());
             }
         }
