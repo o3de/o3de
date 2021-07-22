@@ -75,10 +75,13 @@ void UiRenderer::OnBootstrapSceneReady([[maybe_unused]] AZ::RPI::Scene* bootstra
     // Create a dynamic draw context for UI Canvas drawing for the scene
     m_dynamicDraw = CreateDynamicDrawContext(m_scene, uiShader);
 
-    // Cache shader data such as input indices for later use
-    CacheShaderData(m_dynamicDraw);
+    if (m_dynamicDraw)
+    {
+        // Cache shader data such as input indices for later use
+        CacheShaderData(m_dynamicDraw);
 
-    m_isRPIReady = true;
+        m_isRPIReady = true;
+    }
 }
 
 AZ::RPI::ScenePtr UiRenderer::CreateScene(AZStd::shared_ptr<AZ::RPI::ViewportContext> viewportContext)

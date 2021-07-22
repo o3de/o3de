@@ -495,11 +495,6 @@ void ViewportWidget::EnableCanvasRender()
 
 void ViewportWidget::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
 {
-    if (!m_uiRenderer->IsReady() || !m_canvasRenderIsEnabled)
-    {
-        return;
-    }
-
     // Update
     UiEditorMode editorMode = m_editorWindow->GetEditorMode();
     if (editorMode == UiEditorMode::Edit)
@@ -510,9 +505,6 @@ void ViewportWidget::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoin
     {
         UpdatePreviewMode(deltaTime);
     }
-
-    // Set up to render a frame to this viewport's window
-    GetViewportContext()->RenderTick();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -524,6 +516,11 @@ int ViewportWidget::GetTickOrder()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void ViewportWidget::OnRenderTick()
 {
+    if (!m_uiRenderer->IsReady() || !m_canvasRenderIsEnabled)
+    {
+        return;
+    }
+
     const float dpiScale = QtHelpers::GetHighDpiScaleFactor(*this);
     ViewportIcon::SetDpiScaleFactor(dpiScale);
 

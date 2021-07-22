@@ -98,10 +98,9 @@ void CDraw2d::OnBootstrapSceneReady([[maybe_unused]] AZ::RPI::Scene* bootstrapSc
     // Create and initialize a DynamicDrawContext for 2d drawing
 
     // Get the pass for the dynamic draw context to render to
-    AZ::RPI::Pass* uiCanvasPass = nullptr;
+    AZ::RPI::RasterPass* uiCanvasPass = nullptr;
     AZ::RPI::SceneId sceneId = scene->GetId();
     LyShinePassRequestBus::EventResult(uiCanvasPass, sceneId, &LyShinePassRequestBus::Events::GetUiCanvasPass);
-    AZ::RPI::RasterPass* rasterPass = azrtti_cast<AZ::RPI::RasterPass*>(uiCanvasPass);
     if (!uiCanvasPass)
     {
         return;
@@ -118,7 +117,7 @@ void CDraw2d::OnBootstrapSceneReady([[maybe_unused]] AZ::RPI::Scene* bootstrapSc
         {"TEXCOORD0", AZ::RHI::Format::R32G32_FLOAT} });
     m_dynamicDraw->AddDrawStateOptions(AZ::RPI::DynamicDrawContext::DrawStateOptions::PrimitiveType
         | AZ::RPI::DynamicDrawContext::DrawStateOptions::BlendMode);
-    m_dynamicDraw->SetOutputScope(rasterPass);
+    m_dynamicDraw->SetOutputScope(uiCanvasPass);
     m_dynamicDraw->EndInit();
 
     AZ::RHI::TargetBlendState targetBlendState;
@@ -503,6 +502,7 @@ bool CDraw2d::GetDeferPrimitives()
     return m_deferCalls;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
 void CDraw2d::SetSortKey(int64_t key)
 {
     m_dynamicDraw->SetSortKey(key);
