@@ -65,7 +65,7 @@ else:
     exit()
  
 # Update attachment references for the passes following LyShinePass
-renderPipeline.replace_references_after(newPassName, 'DebugOverlayPass', 'InputOutput', 'LyShinePass', 'InputOutput')
+renderPipeline.replace_references_after(newPassName, 'DebugOverlayPass', 'InputOutput', 'LyShinePass', 'ColorInputOutput')
 
 # Save the updated render pipeline
 renderPipeline.save()

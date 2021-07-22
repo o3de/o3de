@@ -909,17 +909,7 @@ LyShine::AttachmentImagesAndDependencies ViewportWidget::GetRenderTargets()
 {
     LyShine::AttachmentImagesAndDependencies canvasTargets;
 
-    AZ::EntityId canvasEntityId;
-    UiEditorMode editorMode = m_editorWindow->GetEditorMode();
-    if (editorMode == UiEditorMode::Edit)
-    {
-        canvasEntityId = m_editorWindow->GetCanvas();
-    }
-    else // if (editorMode == UiEditorMode::Preview)
-    {
-        canvasEntityId = m_editorWindow->GetPreviewModeCanvas();
-    }
-
+    AZ::EntityId canvasEntityId = m_editorWindow->GetCanvasForCurrentEditorMode();
     if (canvasEntityId.IsValid())
     {
         AZ::Entity* canvasEntity = nullptr;
