@@ -210,9 +210,9 @@ function(ly_test_impact_extract_python_test_params COMPOSITE_TEST COMPOSITE_SUIT
         list(GET suite_components 2 test_timeout)
         # Get python script path relative to repo root
         ly_test_impact_rebase_file_to_repo_root(
-            ${script_path}
+            "${script_path}"
             script_path
-            ${LY_ROOT_FOLDER}
+            "${LY_ROOT_FOLDER}"
         )
         set(suite_params "{ \"suite\": \"${test_suite}\",  \"script\": \"${script_path}\", \"timeout\": ${test_timeout} }")
         list(APPEND test_suites "${suite_params}")
