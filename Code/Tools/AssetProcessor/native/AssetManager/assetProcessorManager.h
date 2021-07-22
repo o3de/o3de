@@ -193,6 +193,13 @@ namespace AssetProcessor
 
         void SetBuilderDebugFlag(bool enabled);
 
+        // Useful for automated testing, sorts jobs by DB source name so they run in a predictive order.
+        void SetSortJobsByDBSourceName(bool enabled);
+        bool GetSortJobsByDBSourceName() const
+        {
+            return m_sortJobsByDBSourceName;
+        }
+
         //! Scans assets that match the given pattern for content that looks like a missing product dependency.
         //! Note that the database pattern is used as an SQL query, so use SQL syntax for the search (wildcard is %, not *).
         //! FilePattern is just a normal wildcard pattern that can be used to filter files in the provided scan folders.
@@ -207,6 +214,11 @@ namespace AssetProcessor
         //! or a job dependency and we can only resolve these dependencies once all the create jobs are completed.
         struct JobToProcessEntry
         {
+            bool operator<(const JobToProcessEntry& other)
+            {
+                return m_sourceFileInfo.m_pathRelativeToScanFolder < other.m_sourceFileInfo.m_pathRelativeToScanFolder;
+            }
+
             SourceFileInfo m_sourceFileInfo;
             AZStd::vector<JobDetails> m_jobsToAnalyze;
             // a vector of pairs of <builder which emitted it, the dependency>
@@ -449,6 +461,9 @@ namespace AssetProcessor
         AZ::s64 m_highestJobRunKeySoFar = 0;
         AZStd::vector<JobToProcessEntry> m_jobEntries;
         AZStd::unordered_set<JobDetails> m_jobsToProcess;
+        // Used in automated tests to stabilize job processing order.
+        AZStd::set<JobDetails, decltype(&JobDetails::DatabaseSourceLexCompare)> m_jobsToProcessSorted =
+            AZStd::set<JobDetails, decltype(&JobDetails::DatabaseSourceLexCompare)>(&JobDetails::DatabaseSourceLexCompare);
         //! This map is required to prevent multiple sourceFile modified events been send by the APM 
         AZStd::unordered_map<AZ::Uuid, qint64> m_sourceFileModTimeMap;
         AZStd::unordered_map<JobIndentifier, AZ::u32> m_jobFingerprintMap; 
@@ -548,6 +563,10 @@ namespace AssetProcessor
 
         // when true, a flag will be sent to builders process job indicating debug output/mode should be used
         bool m_builderDebugFlag = false;
+
+        // When true, jobs are sorted by the database source name.
+        // This is useful for automated tests that want jobs to process in a predictable order.
+        bool m_sortJobsByDBSourceName = false;
 
 protected Q_SLOTS:
         void FinishAnalysis(AZStd::string fileToCheck);

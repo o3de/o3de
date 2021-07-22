@@ -155,6 +155,12 @@ void ApplicationManagerBase::InitAssetProcessorManager()
     const AzFramework::CommandLine* commandLine = nullptr;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetCommandLine);
 
+    if (commandLine->HasSwitch("waitOnLaunch"))
+    {
+        // Useful for attaching the debugger, this forces a short pause.
+        AZStd::this_thread::sleep_for(AZStd::chrono::seconds(20));
+    }
+
     if(commandLine->HasSwitch("zeroAnalysisMode"))
     {
         m_assetProcessorManager->SetEnableModtimeSkippingFeature(true);
@@ -227,6 +233,19 @@ void ApplicationManagerBase::InitAssetProcessorManager()
         m_assetProcessorManager->SetBuilderDebugFlag(true);
     }
 
+    if (commandLine->HasSwitch("sortJobsByDBSourceName"))
+    {
+        m_assetProcessorManager->SetSortJobsByDBSourceName(true);
+    }
+
+    if (commandLine->HasSwitch("help") || commandLine->HasSwitch("h"))
+    {
+        // TODO print out command line flags.
+        // Other O3DE tools have a more full featured system for registering command flags
+        // that includes help output, but right now the AssetProcessor just checks strings
+        // via HasSwitch. This means this help output has to be updated manually.
+    }
+
     constexpr char truncateFingerprintSwitch[] = "truncatefingerprint";
     if(commandLine->HasSwitch(truncateFingerprintSwitch))
     {
@@ -280,6 +299,11 @@ void ApplicationManagerBase::InitAssetCatalog()
 void ApplicationManagerBase::InitRCController()
 {
     m_rcController = new AssetProcessor::RCController(m_platformConfiguration->GetMinJobs(), m_platformConfiguration->GetMaxJobs());
+
+    if (m_assetProcessorManager->GetSortJobsByDBSourceName())
+    {
+        m_rcController->SetQueueSortOnDBSourceName();
+    }
 
     QObject::connect(m_assetProcessorManager, &AssetProcessor::AssetProcessorManager::AssetToProcess, m_rcController, &AssetProcessor::RCController::JobSubmitted);
     QObject::connect(m_rcController, &AssetProcessor::RCController::FileCompiled, m_assetProcessorManager, &AssetProcessor::AssetProcessorManager::AssetProcessed, Qt::UniqueConnection);
@@ -1807,4 +1831,3 @@ void ApplicationManagerBase::OnActiveJobsCountChanged(unsigned int count)
     AssetProcessor::AssetProcessorStatusEntry entry(AssetProcessor::AssetProcessorStatus::Processing_Jobs, count);
     Q_EMIT AssetProcessorStatusChanged(entry);
 }
-

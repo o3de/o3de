@@ -3072,42 +3072,65 @@ namespace AssetProcessor
 
         QElapsedTimer elapsedTimer;
         elapsedTimer.start();
-        for (auto jobIter = m_jobsToProcess.begin(); jobIter != m_jobsToProcess.end();)
-        {
-            JobDetails& job = *jobIter;
-            if (CanAnalyzeJob(job))
-            {
-                anyJobAnalyzed = true;
-                ProcessJob(job);
-                jobIter = m_jobsToProcess.erase(jobIter);
-                m_numOfJobsToAnalyze--;
 
-                // Update the remaining job status occasionally 
-                if (elapsedTimer.elapsed() >= MILLISECONDS_BETWEEN_PROCESS_JOBS_STATUS_UPDATE)
+        auto ProcessJobsLambda = [&](auto& jobsToProcess)
+        {
+            for (auto jobIter = jobsToProcess.begin(); jobIter != jobsToProcess.end();)
+            {
+                JobDetails& job = *jobIter;
+                if (CanAnalyzeJob(job))
                 {
-                    Q_EMIT NumRemainingJobsChanged(m_activeFiles.size() + m_filesToExamine.size() + m_numOfJobsToAnalyze);
-                    elapsedTimer.restart();
+                    anyJobAnalyzed = true;
+                    ProcessJob(job);
+                    jobIter = jobsToProcess.erase(jobIter);
+                    m_numOfJobsToAnalyze--;
+
+                    // Update the remaining job status occasionally
+                    if (elapsedTimer.elapsed() >= MILLISECONDS_BETWEEN_PROCESS_JOBS_STATUS_UPDATE)
+                    {
+                        Q_EMIT NumRemainingJobsChanged(m_activeFiles.size() + m_filesToExamine.size() + m_numOfJobsToAnalyze);
+                        elapsedTimer.restart();
+                    }
+                }
+                else
+                {
+                    ++jobIter;
                 }
             }
-            else
-            {
-                ++jobIter;
-            }
-        }
+        };
+        ProcessJobsLambda(m_jobsToProcessSorted);
+        ProcessJobsLambda(m_jobsToProcess);
 
-        if (m_jobsToProcess.size())
+        if (m_jobsToProcess.size() || m_jobsToProcessSorted.size())
         {
             if (!anyJobAnalyzed)
             {
-                // Process the first job if no jobs were analyzed.
-                auto jobIter = m_jobsToProcess.begin();
-                JobDetails& job = *jobIter;
-                AZ_Warning(AssetProcessor::DebugChannel, false, " Cyclic job dependency detected. Processing job (%s, %s, %s, %s) to unblock.", 
-                    job.m_jobEntry.m_databaseSourceName.toUtf8().data(), job.m_jobEntry.m_jobKey.toUtf8().data(),
-                    job.m_jobEntry.m_platformInfo.m_identifier.c_str(), job.m_jobEntry.m_builderGuid.ToString<AZStd::string>().c_str());
-                ProcessJob(job);
-                m_jobsToProcess.erase(jobIter);
-                m_numOfJobsToAnalyze--;
+                if (m_jobsToProcess.size())
+                {
+                    // Process the first job if no jobs were analyzed.
+                    auto jobIter = m_jobsToProcess.begin();
+                    JobDetails& job = *jobIter;
+                    AZ_Warning(
+                        AssetProcessor::DebugChannel, false, " Cyclic job dependency detected. Processing job (%s, %s, %s, %s) to unblock.",
+                        job.m_jobEntry.m_databaseSourceName.toUtf8().data(), job.m_jobEntry.m_jobKey.toUtf8().data(),
+                        job.m_jobEntry.m_platformInfo.m_identifier.c_str(), job.m_jobEntry.m_builderGuid.ToString<AZStd::string>().c_str());
+                    ProcessJob(job);
+                    m_jobsToProcess.erase(jobIter);
+                    m_numOfJobsToAnalyze--;
+                }
+                if (m_jobsToProcessSorted.size())
+                {
+                    // Process the first job if no jobs were analyzed.
+                    auto jobIter = m_jobsToProcessSorted.begin();
+                    JobDetails& job = *jobIter;
+                    AZ_Warning(
+                        AssetProcessor::DebugChannel, false, " Cyclic job dependency detected. Processing job (%s, %s, %s, %s) to unblock.",
+                        job.m_jobEntry.m_databaseSourceName.toUtf8().data(), job.m_jobEntry.m_jobKey.toUtf8().data(),
+                        job.m_jobEntry.m_platformInfo.m_identifier.c_str(), job.m_jobEntry.m_builderGuid.ToString<AZStd::string>().c_str());
+                    ProcessJob(job);
+                    m_jobsToProcessSorted.erase(jobIter);
+                    m_numOfJobsToAnalyze--;
+                }
             }
 
             QMetaObject::invokeMethod(this, "ProcessJobs", Qt::QueuedConnection);
@@ -3537,7 +3560,14 @@ namespace AssetProcessor
         // entry now contains, for one given source file, all jobs, dependencies, etc, created by ALL builders.
         // now we can update the database with this new information:
         UpdateSourceFileDependenciesDatabase(entry);
-        m_jobEntries.push_back(entry);
+        if (m_sortJobsByDBSourceName)
+        {
+            m_jobEntries.insert(AZStd::lower_bound(m_jobEntries.begin(), m_jobEntries.end(), entry), entry);
+        }
+        else
+        {
+            m_jobEntries.push_back(entry);
+        }
     }
 
     bool AssetProcessorManager::ResolveSourceFileDependencyPath(const AssetBuilderSDK::SourceFileDependency& sourceDependency, QString& resultDatabaseSourceName, QStringList& resolvedDependencyList)
@@ -3966,17 +3996,35 @@ namespace AssetProcessor
             // update the job with whatever info it needs about dependencies to proceed:
             UpdateJobDependency(jobDetail);
 
-            auto jobPair = m_jobsToProcess.insert(AZStd::move(jobDetail));
-            if (!jobPair.second)
+            if (m_sortJobsByDBSourceName)
             {
-                // if we are here it means that this job was already found in the jobs to process list 
-                // and therefore insert failed, we will try to update the iterator manually here.
-                // Note that if insert fails the original object is not destroyed and therefore we can use move again. 
-                // we just replaced a job, so we have to decrement its count.
-                UpdateAnalysisTrackerForFile(jobPair.first->m_jobEntry, AnalysisTrackerUpdateType::JobFinished);
+                auto jobPair = m_jobsToProcessSorted.insert(AZStd::move(jobDetail));
+                if (!jobPair.second)
+                {
+                    // if we are here it means that this job was already found in the jobs to process list
+                    // and therefore insert failed, we will try to update the iterator manually here.
+                    // Note that if insert fails the original object is not destroyed and therefore we can use move again.
+                    // we just replaced a job, so we have to decrement its count.
+                    UpdateAnalysisTrackerForFile(jobPair.first->m_jobEntry, AnalysisTrackerUpdateType::JobFinished);
 
-                --m_numOfJobsToAnalyze;
-                *jobPair.first = AZStd::move(jobDetail);
+                    --m_numOfJobsToAnalyze;
+                    *jobPair.first = AZStd::move(jobDetail);
+                }
+            }
+            else
+            {
+                auto jobPair = m_jobsToProcess.insert(AZStd::move(jobDetail));
+                if (!jobPair.second)
+                {
+                    // if we are here it means that this job was already found in the jobs to process list 
+                    // and therefore insert failed, we will try to update the iterator manually here.
+                    // Note that if insert fails the original object is not destroyed and therefore we can use move again. 
+                    // we just replaced a job, so we have to decrement its count.
+                    UpdateAnalysisTrackerForFile(jobPair.first->m_jobEntry, AnalysisTrackerUpdateType::JobFinished);
+
+                    --m_numOfJobsToAnalyze;
+                    *jobPair.first = AZStd::move(jobDetail);
+                }
             }
         }
     }
@@ -4366,6 +4414,11 @@ namespace AssetProcessor
     void AssetProcessorManager::SetBuilderDebugFlag(bool enabled)
     {
         m_builderDebugFlag = enabled;
+    }
+
+    void AssetProcessorManager::SetSortJobsByDBSourceName(bool enabled)
+    {
+        m_sortJobsByDBSourceName = enabled;
     }
 
     void AssetProcessorManager::ScanForMissingProductDependencies(QString dbPattern, QString filePattern, const AZStd::vector<AZStd::string>& dependencyAdditionalScanFolders, int maxScanIteration)
