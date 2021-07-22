@@ -1,8 +1,10 @@
-# 
-# Copyright (c) Contributors to the Open 3D Engine Project
-# 
+#
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
-# 
+#
+#
 
 # If we are on a host platform, we want to add the host tools targets like the PrefabDependencyViewer.Editor target which
 # will also depend on PrefabDependencyViewer.Static
