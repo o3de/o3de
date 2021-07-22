@@ -9,21 +9,29 @@
 #include <Utils.h>
 #include <PrefabDependencyViewerFixture.h>
 
+#include <AzCore/std/algorithm.h>
+
 namespace PrefabDependencyViewer
 {
-    using DirectedGraph                 = Utils::DirectedGraph;
-    using TestComponent                 = PrefabDependencyViewerEditorSystemComponent;
-    using Outcome                       = AZ::Outcome<PrefabDependencyTree, const char*>;
+    using DirectedGraph = Utils::DirectedGraph;
+    using TestComponent = PrefabDependencyViewerEditorSystemComponent;
+    using Outcome       = AZ::Outcome<PrefabDependencyTree, const char*>;
+    using NodeList      = AZStd::vector<Utils::Node*>;
+
+    bool str_equal(const char* expected, const char* result)
+    {
+        return (AZStd::string)expected == (AZStd::string)result;
+    }
 
     void EXPECT_STR_EQ(const char* expected, const char* result)
     {
-        EXPECT_EQ((AZStd::string) expected, (AZStd::string) result);
+        EXPECT_EQ(true, str_equal(expected, result));
     }
 
     TEST_F(PrefabDependencyViewerFixture, INVALID_TEMPLATE_ID)
     {
-        Outcome outcome = PrefabDependencyTree::GenerateTreeAndSetRoot(InvalidTemplateId,
-                                                                m_prefabSystemComponent);
+        Outcome outcome = PrefabDependencyTree::GenerateTreeAndSetRoot(
+                            InvalidTemplateId, m_prefabSystemComponent);
 
         EXPECT_EQ(false, outcome.IsSuccess());
     }
@@ -38,7 +46,7 @@ namespace PrefabDependencyViewer
         Outcome outcome = PrefabDependencyTree::GenerateTreeAndSetRoot(10, m_prefabSystemComponent);
         EXPECT_EQ(false, outcome.IsSuccess());
     }
-    
+
     TEST_F(PrefabDependencyViewerFixture, EMPTY_PREFAB_WITH_SOURCE_TEST)
     {
         TemplateId tid = 2000;
@@ -75,12 +83,28 @@ namespace PrefabDependencyViewer
         // you can or can't call FindTemplateDom for GoodNestedPrefab's
         // TemplateId
         EXPECT_CALL(*m_prefabSystemComponent, FindTemplateDom(5))
-            .Times(0)
-            .WillRepeatedly(::testing::ReturnRef(m_prefabDomsCases["GoodNestedPrefab"]));
+            .Times(0);
 
         Outcome outcome = PrefabDependencyTree::GenerateTreeAndSetRoot(tid, m_prefabSystemComponent);
         EXPECT_EQ(false, outcome.IsSuccess());
     }
+
+    NodeList FindNodes(Utils::NodeSet& nodeSet, TemplateId tid, const char* source)
+    {
+        NodeList nodes;
+
+        for (auto it = nodeSet.begin(); it != nodeSet.end(); ++it)
+        {
+            Utils::Node* node = *it;
+            if (node->GetMetaData().GetTemplateId() == tid
+                && str_equal(node->GetMetaData().GetSource(), source))
+            {
+                nodes.push_back(node);
+            }
+        }
+        return nodes;
+    }
+
 
     TEST_F(PrefabDependencyViewerFixture, VALID_NESTED_PREFAB)
     {
@@ -97,6 +121,10 @@ namespace PrefabDependencyViewer
             .Times(1)
             .WillRepeatedly(::testing::Return(121));
 
+        EXPECT_CALL(*m_prefabSystemComponent, GetTemplateIdFromFilePath(AZ::IO::PathView("Prefabs/level13.prefab")))
+            .Times(1)
+            .WillRepeatedly(::testing::Return(12141));
+
         EXPECT_CALL(*m_prefabSystemComponent, FindTemplateDom(10000))
             .Times(1)
             .WillRepeatedly(::testing::ReturnRef(m_prefabDomsCases["level11Prefab"]));
@@ -105,10 +133,45 @@ namespace PrefabDependencyViewer
             .Times(1)
             .WillRepeatedly(::testing::ReturnRef(m_prefabDomsCases["level12Prefab"]));
 
+        EXPECT_CALL(*m_prefabSystemComponent, FindTemplateDom(12141))
+            .Times(1)
+            .WillRepeatedly(::testing::ReturnRef(m_prefabDomsCases["level13Prefab"]));
+
         Outcome outcome = PrefabDependencyTree::GenerateTreeAndSetRoot(tid, m_prefabSystemComponent);
         EXPECT_EQ(true, outcome.IsSuccess());
 
         PrefabDependencyTree tree = outcome.GetValue();
         EXPECT_EQ(tid, tree.GetRoot()->GetMetaData().GetTemplateId());
+
+        EXPECT_EQ(nullptr, tree.GetRoot()->GetParent());
+        EXPECT_EQ(3, tree.GetChildren(tree.GetRoot()).size());
+
+        // Check Level 1 Nodes
+        Utils::NodeSet level1Nodes = tree.GetChildren(tree.GetRoot());
+        NodeList level11Nodes = FindNodes(level1Nodes, 10000, "Prefabs/level11.prefab");
+        EXPECT_EQ(1, level11Nodes.size());
+
+        NodeList level12Nodes = FindNodes(level1Nodes, 121, "Prefabs/level12.prefab");
+        EXPECT_EQ(1, level12Nodes.size());
+
+        NodeList level13Nodes = FindNodes(level1Nodes, 12141, "Prefabs/level13.prefab");
+        EXPECT_EQ(1, level13Nodes.size());
+
+        EXPECT_EQ(0, FindNodes(level1Nodes, 10000, "asa.prefab").size());
+
+        Utils::Node* level11Node = level11Nodes[0];
+        Utils::Node* level12Node = level12Nodes[0];
+        Utils::Node* level13Node = level13Nodes[0];
+
+        EXPECT_EQ(tree.GetRoot(), level11Node->GetParent());
+        EXPECT_EQ(tree.GetRoot(), level12Node->GetParent());
+        EXPECT_EQ(tree.GetRoot(), level13Node->GetParent());
+
+        EXPECT_EQ(0, tree.GetChildren(level11Node).size());
+        EXPECT_EQ(0, tree.GetChildren(level12Node).size());
+        EXPECT_EQ(0, tree.GetChildren(level13Node).size());
+
+        // Check Level 2 Nodes
     }
-}
+
+} // namespace PrefabDependencyViewer
