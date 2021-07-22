@@ -40,9 +40,9 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
         add_custom_target(${project_name}.Assets
             COMMENT "Processing ${project_name} assets..."
             COMMAND "${CMAKE_COMMAND}" 
-                -DLY_LOCK_FILE=$<TARGET_FILE_DIR:AZ::AssetProcessorBatch>/project_assets.lock
+                -DLY_LOCK_FILE=$<GENEX_EVAL:$<TARGET_FILE_DIR:AZ::AssetProcessorBatch>>/project_assets.lock
                 -P ${LY_ROOT_FOLDER}/cmake/CommandExecution.cmake
-                    EXEC_COMMAND $<TARGET_FILE:AZ::AssetProcessorBatch> 
+                    EXEC_COMMAND $<GENEX_EVAL:$<TARGET_FILE:AZ::AssetProcessorBatch>>
                         --zeroAnalysisMode 
                         --project-path=${project_real_path} 
                         --platforms=${LY_ASSET_DEPLOY_ASSET_TYPE}
