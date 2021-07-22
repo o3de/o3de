@@ -12,6 +12,7 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace AZ::IO
 {
