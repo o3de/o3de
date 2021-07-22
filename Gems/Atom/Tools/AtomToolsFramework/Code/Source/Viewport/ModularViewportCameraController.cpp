@@ -118,18 +118,20 @@ namespace AtomToolsFramework
     }
 
     // should the camera system respond to this particular event
-    static bool ShouldHandle(const AzFramework::ViewportControllerPriority priority, const bool exclusive)
+    static bool ShouldHandle(const AzFramework::ViewportControllerPriority priority, const bool exclusive, const bool handling)
     {
-        // ModernViewportCameraControllerInstance receives events at all priorities, it should only respond
-        // to normal priority events if it is not in 'exclusive' mode and when in 'exclusive' mode it should
-        // only respond to the highest priority events
+        // ModernViewportCameraControllerInstance receives events at all priorities, it should only respond to normal priority
+        // events if it is not in 'exclusive' mode and when in 'exclusive' mode it should only respond to the highest priority
+        // events, it should also respond to highest priority events while handling events (essentially when the camera system
+        // is 'active' and responding to inputs)
         return !exclusive && priority == AzFramework::ViewportControllerPriority::Normal ||
-            exclusive && priority == AzFramework::ViewportControllerPriority::Highest;
+            exclusive && priority == AzFramework::ViewportControllerPriority::Highest ||
+            handling && priority == AzFramework::ViewportControllerPriority::Highest;
     }
 
     bool ModernViewportCameraControllerInstance::HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event)
     {
-        if (ShouldHandle(event.m_priority, m_cameraSystem.m_cameras.Exclusive()))
+        if (ShouldHandle(event.m_priority, m_cameraSystem.m_cameras.Exclusive(), m_cameraSystem.HandlingEvents()))
         {
             return m_cameraSystem.HandleEvents(AzFramework::BuildInputEvent(event.m_inputChannel));
         }
