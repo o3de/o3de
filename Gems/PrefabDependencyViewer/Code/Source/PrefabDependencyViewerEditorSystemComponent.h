@@ -17,7 +17,7 @@
 
 #include <AzCore/Math/Vector2.h>
 #include <Utils.h>
-#include <AzToolsFramework\Prefab\PrefabDomUtils.h>
+#include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 
 #include <PrefabDependencyTreeGenerator.h>
 

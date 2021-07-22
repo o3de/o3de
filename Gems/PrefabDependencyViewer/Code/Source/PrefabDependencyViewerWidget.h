@@ -1,4 +1,3 @@
-/*
 /* Copyright (c) Contributors to the Open 3D Engine Project
 *
 * SPDX-License-Identifier: Apache-2.0 OR MIT
@@ -32,7 +31,7 @@ namespace PrefabDependencyViewer
         , private GraphCanvas::GraphModelRequestBus::Handler
     {
         Q_OBJECT;
-	public:
+    public:
         explicit PrefabDependencyViewerWidget(QWidget* pParent = NULL);
         virtual ~PrefabDependencyViewerWidget();
 
