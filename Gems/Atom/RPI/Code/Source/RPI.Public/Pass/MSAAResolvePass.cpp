@@ -1,11 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <Atom/RPI.Public/Pass/MSAAResolvePass.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
 
 #include <Atom/RPI.Reflect/Pass/PassTemplate.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
@@ -70,6 +72,18 @@ namespace AZ
 
         void MSAAResolvePass::BuildCommandListInternal([[maybe_unused]] const RHI::FrameGraphExecuteContext& context)
         {
+        }
+
+        bool MSAAResolvePass::IsEnabled() const
+        {
+            // check Pass base class first to see if the Pass is explicitly disabled
+            if (!Pass::IsEnabled())
+            {
+                return false;
+            }
+
+            // check render pipeline MSAA sample count
+            return (m_pipeline->GetRenderSettings().m_multisampleState.m_samples > 1);
         }
     }   // namespace RPI
 }   // namespace AZ

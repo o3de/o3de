@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -37,11 +38,11 @@ namespace AZ
                 scene->EnableFeatureProcessor(FeatureProcessorId{ fpId });
             }
 
-            Data::Asset<ShaderResourceGroupAsset> sceneSrgAsset = RPISystemInterface::Get()->GetSceneSrgAsset();
-
-            if (sceneSrgAsset.IsReady())
+            auto sceneSrgLayout = RPISystemInterface::Get()->GetSceneSrgLayout();
+            if (sceneSrgLayout)
             {
-                scene->m_srg = ShaderResourceGroup::Create(sceneSrgAsset);
+                auto shaderAsset = RPISystemInterface::Get()->GetCommonShaderAssetForSrgs();
+                scene->m_srg = ShaderResourceGroup::Create(shaderAsset, sceneSrgLayout->GetName());
             }
             
             return ScenePtr(scene);

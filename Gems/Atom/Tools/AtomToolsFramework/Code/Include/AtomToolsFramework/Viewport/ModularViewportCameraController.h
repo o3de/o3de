@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -22,14 +23,20 @@ namespace AtomToolsFramework
     {
     public:
         using CameraListBuilder = AZStd::function<void(AzFramework::Cameras&)>;
+        using CameraPropsBuilder = AZStd::function<void(AzFramework::CameraProps&)>;
 
         //! Sets the camera list builder callback used to populate new ModernViewportCameraControllerInstances
         void SetCameraListBuilderCallback(const CameraListBuilder& builder);
+        //! Sets the camera props builder callback used to populate new ModernViewportCameraControllerInstances
+        void SetCameraPropsBuilderCallback(const CameraPropsBuilder& builder);
         //! Sets up a camera list based on this controller's CameraListBuilderCallback
         void SetupCameras(AzFramework::Cameras& cameras);
+        //! Sets up properties shared across all cameras
+        void SetupCameraProperies(AzFramework::CameraProps& cameraProps);
 
     private:
         CameraListBuilder m_cameraListBuilder;
+        CameraPropsBuilder m_cameraPropsBuilder;
     };
 
     class ModernViewportCameraControllerInstance final
@@ -62,6 +69,7 @@ namespace AtomToolsFramework
         AzFramework::Camera m_camera;
         AzFramework::Camera m_targetCamera;
         AzFramework::CameraSystem m_cameraSystem;
+        AzFramework::CameraProps m_cameraProps;
 
         AZ::Transform m_transformStart = AZ::Transform::CreateIdentity();
         AZ::Transform m_transformEnd = AZ::Transform::CreateIdentity();

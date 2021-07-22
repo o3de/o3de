@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -58,13 +59,13 @@ namespace AZ
             AZ_TRACE_METHOD();
 
             m_materialAsset = { &materialAsset, AZ::Data::AssetLoadBehavior::PreLoad };
-            
-            // Cache off pointers to some key data structures from the material type...
 
-            auto& srgAsset = m_materialAsset->GetMaterialSrgAsset();
-            if (srgAsset)
+            // Cache off pointers to some key data structures from the material type...
+            auto srgLayout = m_materialAsset->GetMaterialSrgLayout();
+            if (srgLayout)
             {
-                m_shaderResourceGroup = ShaderResourceGroup::Create(m_materialAsset->GetMaterialSrgAsset());
+                auto shaderAsset = m_materialAsset->GetMaterialTypeAsset()->GetShaderAssetForMaterialSrg();
+                m_shaderResourceGroup = ShaderResourceGroup::Create(shaderAsset, srgLayout->GetName());
 
                 if (m_shaderResourceGroup)
                 {

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,12 +9,12 @@
 #include <AzTest/AzTest.h>
 #include <Common/RPITestFixture.h>
 #include <Common/SerializeTester.h>
+#include <Common/ShaderAssetTestUtils.h>
 #include <Material/MaterialAssetTestUtils.h>
 
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialAssetCreator.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAssetCreator.h>
-#include <Atom/RPI.Reflect/Shader/ShaderResourceGroupAssetCreator.h>
 
 namespace UnitTest
 {
@@ -31,13 +32,13 @@ namespace UnitTest
         {
             RPITestFixture::SetUp();
 
-            Data::Asset<ShaderResourceGroupAsset> materialSrgAsset = CreateCommonTestMaterialSrgAsset();
+            auto materialSrgLayout = CreateCommonTestMaterialSrgLayout();
 
             // Since this test doesn't actually instantiate a Material, it won't need to instantiate this ImageAsset, so all we
             // need is an asset reference with a valid ID.
             m_testImageAsset = Data::Asset<ImageAsset>{ Uuid::CreateRandom(), azrtti_typeid<StreamingImageAsset>() };
 
-            Data::Asset<ShaderAsset> shaderAsset = CreateTestShaderAsset(Uuid::CreateRandom(), materialSrgAsset);
+            auto shaderAsset = CreateTestShaderAsset(Uuid::CreateRandom(), materialSrgLayout);
 
             MaterialTypeAssetCreator materialTypeCreator;
             materialTypeCreator.Begin(Uuid::CreateRandom());

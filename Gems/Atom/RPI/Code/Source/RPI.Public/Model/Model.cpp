@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -56,8 +57,6 @@ namespace AZ
         RHI::ResultCode Model::Init(ModelAsset& modelAsset)
         {
             AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
-
-            m_aabb = modelAsset.GetAabb();
 
             m_lods.resize(modelAsset.GetLodAssets().size());
 
@@ -122,11 +121,6 @@ namespace AZ
             return m_isUploadPending;
         }
 
-        const AZ::Aabb& Model::GetAabb() const
-        {
-            return m_aabb;
-        }
-
         const Data::Asset<ModelAsset>& Model::GetModelAsset() const
         {
             return m_modelAsset;
@@ -135,9 +129,16 @@ namespace AZ
         bool Model::LocalRayIntersection(const AZ::Vector3& rayStart, const AZ::Vector3& rayDir, float& distanceNormalized, AZ::Vector3& normal) const
         {
             AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            
+            if (!GetModelAsset())
+            {
+                AZ_Assert(false, "Invalid Model - not created from a ModelAsset?");
+                return false;
+            }
+            
             float start;
             float end;
-            const int result = Intersect::IntersectRayAABB2(rayStart, rayDir.GetReciprocal(), m_aabb, start, end);
+            const int result = Intersect::IntersectRayAABB2(rayStart, rayDir.GetReciprocal(), GetModelAsset()->GetAabb(), start, end);
             if (Intersect::ISECT_RAY_AABB_NONE != result)
             {
                 if (ModelAsset* modelAssetPtr = m_modelAsset.Get())

@@ -1,11 +1,13 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
 
 set(PAL_TRAIT_PHYSX_SUPPORTED TRUE)
+set(PAL_TRAIT_JOINTS_TYPED_TEST_CASE FALSE)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
      ly_associate_package(PACKAGE_NAME poly2tri-7f0487a-rev1-linux TARGETS poly2tri PACKAGE_HASH b16eef8f0bc469de0e3056d28d7484cf42659667e39b68b239f0d3a4cbb533d0) 

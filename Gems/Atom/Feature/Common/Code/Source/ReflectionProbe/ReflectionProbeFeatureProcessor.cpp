@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -54,29 +55,36 @@ namespace AZ
             // load shaders for stencil, blend weight, and render passes
             LoadShader("shaders/reflections/reflectionprobestencil.azshader",
                 m_reflectionRenderData.m_stencilPipelineState,
-                m_reflectionRenderData.m_stencilSrgAsset,
+                m_reflectionRenderData.m_stencilShader,
+                m_reflectionRenderData.m_stencilSrgLayout,
                 m_reflectionRenderData.m_stencilDrawListTag);
 
             LoadShader("shaders/reflections/reflectionprobeblendweight.azshader",
                 m_reflectionRenderData.m_blendWeightPipelineState,
-                m_reflectionRenderData.m_blendWeightSrgAsset,
+                m_reflectionRenderData.m_blendWeightShader,
+                m_reflectionRenderData.m_blendWeightSrgLayout,
                 m_reflectionRenderData.m_blendWeightDrawListTag);
 
             LoadShader("shaders/reflections/reflectionproberenderouter.azshader",
                 m_reflectionRenderData.m_renderOuterPipelineState,
-                m_reflectionRenderData.m_renderOuterSrgAsset,
+                m_reflectionRenderData.m_renderOuterShader,
+                m_reflectionRenderData.m_renderOuterSrgLayout,
                 m_reflectionRenderData.m_renderOuterDrawListTag);
 
             LoadShader("shaders/reflections/reflectionproberenderinner.azshader",
                 m_reflectionRenderData.m_renderInnerPipelineState,
-                m_reflectionRenderData.m_renderInnerSrgAsset,
+                m_reflectionRenderData.m_renderInnerShader,
+                m_reflectionRenderData.m_renderInnerSrgLayout,
                 m_reflectionRenderData.m_renderInnerDrawListTag);
 
             // create ShaderResourceGroups here so we can get the layout and cache the indices
             // Note: the SRGs are not needed beyond this method since each probe creates its own SRGs, we are just interested in the indices
 
             // cache probe stencil shader indices 
-            Data::Instance<RPI::ShaderResourceGroup> stencilSrg = RPI::ShaderResourceGroup::Create(m_reflectionRenderData.m_stencilSrgAsset);
+            Data::Instance<RPI::ShaderResourceGroup> stencilSrg = RPI::ShaderResourceGroup::Create(
+                m_reflectionRenderData.m_stencilShader->GetAsset(),
+                m_reflectionRenderData.m_stencilShader->GetSupervariantIndex(),
+                m_reflectionRenderData.m_stencilSrgLayout->GetName());
             AZ_Error("ReflectionProbeFeatureProcessor", stencilSrg.get(), "Failed to create stencil back face shader resource group");
 
             const RHI::ShaderResourceGroupLayout* stencilSrgLayout = stencilSrg->GetLayout();
@@ -86,7 +94,10 @@ namespace AZ
 
             // cache probe render shader indices
             // Note: the outer and inner render shaders use the same Srg
-            Data::Instance<RPI::ShaderResourceGroup> renderReflectionSrg = RPI::ShaderResourceGroup::Create(m_reflectionRenderData.m_renderOuterSrgAsset);
+            Data::Instance<RPI::ShaderResourceGroup> renderReflectionSrg = RPI::ShaderResourceGroup::Create(
+                m_reflectionRenderData.m_renderOuterShader->GetAsset(),
+                m_reflectionRenderData.m_renderOuterShader->GetSupervariantIndex(),
+                m_reflectionRenderData.m_renderOuterSrgLayout->GetName());
             AZ_Error("ReflectionProbeFeatureProcessor", renderReflectionSrg.get(), "Failed to create render reflection shader resource group");
 
             const RHI::ShaderResourceGroupLayout* renderReflectionSrgLayout = renderReflectionSrg->GetLayout();
@@ -471,11 +482,12 @@ namespace AZ
         void ReflectionProbeFeatureProcessor::LoadShader(
             const char* filePath,
             RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,
-            Data::Asset<RPI::ShaderResourceGroupAsset>& srgAsset,
+            Data::Instance<RPI::Shader>& shader,
+            RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout,
             RHI::DrawListTag& drawListTag)
         {
             // load shader
-            Data::Instance<RPI::Shader> shader = RPI::LoadShader(filePath);
+            shader = RPI::LoadShader(filePath);
             AZ_Error("ReflectionProbeFeatureProcessor", shader, "Failed to find asset for shader [%s]", filePath);
 
             // store drawlist tag
@@ -489,9 +501,8 @@ namespace AZ
             pipelineState->Finalize();
 
             // load object shader resource group
-            srgAsset = shader->FindShaderResourceGroupAsset(Name{ "ObjectSrg" });
-            AZ_Error("ReflectionProbeFeatureProcessor", srgAsset.GetId().IsValid(), "Failed to find ObjectSrg asset for shader [%s]", filePath);
-            AZ_Error("ReflectionProbeFeatureProcessor", srgAsset.IsReady(), "ObjectSrg asset is not loaded for shader [%s]", filePath);
+            srgLayout = shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Object);
+            AZ_Error("ReflectionProbeFeatureProcessor", srgLayout != nullptr, "Failed to find ObjectSrg layout from shader [%s]", filePath);
         }
 
         void ReflectionProbeFeatureProcessor::OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline)

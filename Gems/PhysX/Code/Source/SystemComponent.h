@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -109,28 +110,6 @@ namespace PhysX
         // Physics::SystemRequestBus::Handler
         AZStd::shared_ptr<Physics::Shape> CreateShape(const Physics::ColliderConfiguration& colliderConfiguration, const Physics::ShapeConfiguration& configuration) override;
         AZStd::shared_ptr<Physics::Material> CreateMaterial(const Physics::MaterialConfiguration& materialConfiguration) override;
-
-        AZStd::vector<AZ::TypeId> GetSupportedJointTypes() override;
-        AZStd::shared_ptr<Physics::JointLimitConfiguration> CreateJointLimitConfiguration(AZ::TypeId jointType) override;
-        AZStd::shared_ptr<Physics::Joint> CreateJoint(const AZStd::shared_ptr<Physics::JointLimitConfiguration>& configuration,
-            AzPhysics::SimulatedBody* parentBody, AzPhysics::SimulatedBody* childBody) override;
-        void GenerateJointLimitVisualizationData(
-            const Physics::JointLimitConfiguration& configuration,
-            const AZ::Quaternion& parentRotation,
-            const AZ::Quaternion& childRotation,
-            float scale,
-            AZ::u32 angularSubdivisions,
-            AZ::u32 radialSubdivisions,
-            AZStd::vector<AZ::Vector3>& vertexBufferOut,
-            AZStd::vector<AZ::u32>& indexBufferOut,
-            AZStd::vector<AZ::Vector3>& lineBufferOut,
-            AZStd::vector<bool>& lineValidityBufferOut) override;
-        AZStd::unique_ptr<Physics::JointLimitConfiguration> ComputeInitialJointLimitConfiguration(
-            const AZ::TypeId& jointLimitTypeId,
-            const AZ::Quaternion& parentWorldRotation,
-            const AZ::Quaternion& childWorldRotation,
-            const AZ::Vector3& axis,
-            const AZStd::vector<AZ::Quaternion>& exampleLocalRotations) override;
 
         void ReleaseNativeMeshObject(void* nativeMeshObject) override;
 

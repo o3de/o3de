@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -263,14 +264,12 @@ AZ_POP_DISABLE_WARNING
     m_levelExtension = EditorUtils::LevelFile::GetDefaultFileExtension();
     m_playerViewTM.SetIdentity();
     GetIEditor()->RegisterNotifyListener(this);
-    AZ::Interface<IEditorCameraController>::Register(this);
 }
 
 AZ_PUSH_DISABLE_WARNING(4273, "-Wunknown-warning-option")
 CGameEngine::~CGameEngine()
 {
 AZ_POP_DISABLE_WARNING
-    AZ::Interface<IEditorCameraController>::Unregister(this);
     GetIEditor()->UnregisterNotifyListener(this);
     m_pISystem->GetIMovieSystem()->SetCallback(NULL);
 
@@ -341,38 +340,6 @@ static void CmdGotoEditor(IConsoleCmdArgs* pArgs)
 
         tm.SetTranslation(Vec3(x, y, z));
         tm.SetRotation33(Matrix33::CreateRotationXYZ(DEG2RAD(Ang3(wx, wy, wz))));
-        pRenderViewport->SetViewTM(tm);
-    }
-}
-
-void CGameEngine::SetCurrentViewPosition(const AZ::Vector3& position)
-{
-    CViewport* pRenderViewport = GetIEditor()->GetViewManager()->GetGameViewport();
-    if (pRenderViewport)
-    {
-        CUndo undo("Set Current View Position");
-        if (CUndo::IsRecording())
-        {
-            CUndo::Record(new CUndoViewPosition());
-        }
-        Matrix34 tm = pRenderViewport->GetViewTM();
-        tm.SetTranslation(Vec3(position.GetX(), position.GetY(), position.GetZ()));
-        pRenderViewport->SetViewTM(tm);
-    }
-}
-
-void CGameEngine::SetCurrentViewRotation(const AZ::Vector3& rotation)
-{
-    CViewport* pRenderViewport = GetIEditor()->GetViewManager()->GetGameViewport();
-    if (pRenderViewport)
-    {
-        CUndo undo("Set Current View Rotation");
-        if (CUndo::IsRecording())
-        {
-            CUndo::Record(new CUndoViewRotation());
-        }
-        Matrix34 tm = pRenderViewport->GetViewTM();
-        tm.SetRotationXYZ(Ang3(DEG2RAD(rotation.GetX()), DEG2RAD(rotation.GetY()), DEG2RAD(rotation.GetZ())), tm.GetTranslation());
         pRenderViewport->SetViewTM(tm);
     }
 }

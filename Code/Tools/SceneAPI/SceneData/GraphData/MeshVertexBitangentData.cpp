@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -33,7 +34,6 @@ namespace AZ
                         ->Method("GetBitangent", &MeshVertexBitangentData::GetBitangent)
                         ->Method("GetBitangentSetIndex", &MeshVertexBitangentData::GetBitangentSetIndex)
                         ->Method("GetTangentSpace", &MeshVertexBitangentData::GetTangentSpace)
-                        ->Enum<(int)SceneAPI::DataTypes::TangentSpace::EMotionFX>("EMotionFX")
                         ->Enum<(int)SceneAPI::DataTypes::TangentSpace::FromSourceScene>("FromSourceScene")
                         ->Enum<(int)SceneAPI::DataTypes::TangentSpace::MikkT>("MikkT");
                 }

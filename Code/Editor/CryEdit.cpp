@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -48,6 +49,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzCore/Console/IConsole.h>
 
 // AzFramework
 #include <AzFramework/Components/CameraBus.h>
@@ -110,7 +112,6 @@ AZ_POP_DISABLE_WARNING
 #include "ToolBox.h"
 #include "LevelInfo.h"
 #include "EditorPreferencesDialog.h"
-#include "GraphicsSettingsDialog.h"
 #include "AnimationContext.h"
 
 #include "GotoPositionDlg.h"
@@ -350,6 +351,8 @@ CCryEditDoc* CCryDocManager::OpenDocumentFile(LPCTSTR lpszFileName, BOOL bAddToM
     for (int i = idStart; i <= idEnd; ++i) \
         ON_COMMAND(i, method);
 
+AZ_CVAR_EXTERNED(bool, ed_previewGameInFullscreen_once);
+
 void CCryEditApp::RegisterActionHandlers()
 {
     ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
@@ -366,6 +369,10 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_EDIT_FETCH, OnEditFetch)
     ON_COMMAND(ID_FILE_EXPORTTOGAMENOSURFACETEXTURE, OnFileExportToGameNoSurfaceTexture)
     ON_COMMAND(ID_VIEW_SWITCHTOGAME, OnViewSwitchToGame)
+    MainWindow::instance()->GetActionManager()->RegisterActionHandler(ID_VIEW_SWITCHTOGAME_FULLSCREEN, [this]() {
+        ed_previewGameInFullscreen_once = true;
+        OnViewSwitchToGame();
+    });
     ON_COMMAND(ID_MOVE_OBJECT, OnMoveObject)
     ON_COMMAND(ID_RENAME_OBJ, OnRenameObj)
     ON_COMMAND(ID_EDITMODE_MOVE, OnEditmodeMove)
@@ -389,8 +396,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_SWITCH_PHYSICS, OnSwitchPhysics)
     ON_COMMAND(ID_GAME_SYNCPLAYER, OnSyncPlayer)
     ON_COMMAND(ID_RESOURCES_REDUCEWORKINGSET, OnResourcesReduceworkingset)
-
-    ON_COMMAND(ID_WIREFRAME, OnWireframe)
 
     ON_COMMAND(ID_VIEW_CONFIGURELAYOUT, OnViewConfigureLayout)
 
@@ -431,14 +436,10 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_VIEW_CYCLE2DVIEWPORT, OnViewCycle2dviewport)
 #endif
     ON_COMMAND(ID_DISPLAY_GOTOPOSITION, OnDisplayGotoPosition)
-    ON_COMMAND(ID_CHANGEMOVESPEED_INCREASE, OnChangemovespeedIncrease)
-    ON_COMMAND(ID_CHANGEMOVESPEED_DECREASE, OnChangemovespeedDecrease)
-    ON_COMMAND(ID_CHANGEMOVESPEED_CHANGESTEP, OnChangemovespeedChangestep)
     ON_COMMAND(ID_FILE_SAVELEVELRESOURCES, OnFileSavelevelresources)
     ON_COMMAND(ID_CLEAR_REGISTRY, OnClearRegistryData)
     ON_COMMAND(ID_VALIDATELEVEL, OnValidatelevel)
     ON_COMMAND(ID_TOOLS_PREFERENCES, OnToolsPreferences)
-    ON_COMMAND(ID_GRAPHICS_SETTINGS, OnGraphicsSettings)
     ON_COMMAND(ID_SWITCHCAMERA_DEFAULTCAMERA, OnSwitchToDefaultCamera)
     ON_COMMAND(ID_SWITCHCAMERA_SEQUENCECAMERA, OnSwitchToSequenceCamera)
     ON_COMMAND(ID_SWITCHCAMERA_SELECTEDCAMERA, OnSwitchToSelectedcamera)
@@ -450,14 +451,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_DISPLAY_SHOWHELPERS, OnShowHelpers)
     ON_COMMAND(ID_OPEN_TRACKVIEW, OnOpenTrackView)
     ON_COMMAND(ID_OPEN_UICANVASEDITOR, OnOpenUICanvasEditor)
-
-    ON_COMMAND_RANGE(ID_GAME_PC_ENABLELOWSPEC, ID_GAME_PC_ENABLEVERYHIGHSPEC, OnChangeGameSpec)
-
-    ON_COMMAND_RANGE(ID_GAME_OSXMETAL_ENABLELOWSPEC, ID_GAME_OSXMETAL_ENABLEVERYHIGHSPEC, OnChangeGameSpec)
-
-    ON_COMMAND_RANGE(ID_GAME_ANDROID_ENABLELOWSPEC, ID_GAME_ANDROID_ENABLEVERYHIGHSPEC, OnChangeGameSpec)
-
-    ON_COMMAND_RANGE(ID_GAME_IOS_ENABLELOWSPEC, ID_GAME_IOS_ENABLEVERYHIGHSPEC, OnChangeGameSpec)
 
 #if defined(AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS)
 #define AZ_RESTRICTED_PLATFORM_EXPANSION(CodeName, CODENAME, codename, PrivateName, PRIVATENAME, privatename, PublicName, PUBLICNAME, publicname, PublicAuxName1, PublicAuxName2, PublicAuxName3)\
@@ -530,6 +523,7 @@ public:
     QString m_appRoot;
     QString m_logFile;
     QString m_pythonArgs;
+    QString m_pythontTestCase;
     QString m_execFile;
     QString m_execLineCmd;
 
@@ -576,6 +570,7 @@ public:
         const std::vector<std::pair<CommandLineStringOption, QString&> > stringOptions = {
             {{"logfile", "File name of the log file to write out to.", "logfile"}, m_logFile},
             {{"runpythonargs", "Command-line argument string to pass to the python script if --runpython or --runpythontest was used.", "runpythonargs"}, m_pythonArgs},
+            {{"pythontestcase", "Test case name of python test script if --runpythontest was used.", "pythontestcase"}, m_pythontTestCase},
             {{"exec", "cfg file to run on startup, used for systems like automation", "exec"}, m_execFile},
             {{"rhi", "Command-line argument to force which rhi to use", "dummyString"}, dummyString },
             {{"rhi-device-validation", "Command-line argument to configure rhi validation", "dummyString"}, dummyString },
@@ -586,6 +581,8 @@ public:
             {{"project-path", "Supplies the path to the project that the Editor should use", "project-path"}, dummyString},
             {{"engine-path", "Supplies the path to the engine", "engine-path"}, dummyString},
             {{"project-cache-path", "Path to the project cache", "project-cache-path"}, dummyString},
+            {{"project-user-path", "Path to the project user path", "project-user-path"}, dummyString},
+            {{"project-log-path", "Path to the project log path", "project-log-path"}, dummyString}
             // add dummy entries here to prevent QCommandLineParser error-ing out on cmd line args that will be parsed later
         };
 
@@ -1488,7 +1485,6 @@ struct PythonTestOutputHandler final
     {
         PythonOutputHandler::OnExceptionMessage(message);
         printf("EXCEPTION: %.*s\n", static_cast<int>(message.size()), message.data());
-        AZ::Debug::Trace::Terminate(1);
     }
 };
 
@@ -1506,28 +1502,91 @@ void CCryEditApp::RunInitPythonScript(CEditCommandLineInfo& cmdInfo)
     using namespace AzToolsFramework;
     if (cmdInfo.m_bRunPythonScript || cmdInfo.m_bRunPythonTestScript)
     {
+        // cmdInfo data is only available on startup, copy it
+        QByteArray fileStr = cmdInfo.m_strFileName.toUtf8();
+
+        // We support specifying multiple files in the cmdline by separating them with ';'
+        AZStd::vector<AZStd::string_view> fileList;
+        AzFramework::StringFunc::TokenizeVisitor(
+            fileStr.constData(),
+            [&fileList](AZStd::string_view elem)
+            {
+                fileList.push_back(elem);
+            }, ';', false /* keepEmptyStrings */
+        );
+
         if (cmdInfo.m_pythonArgs.length() > 0 || cmdInfo.m_bRunPythonTestScript)
         {
-            AZStd::vector<AZStd::string> tokens;
-            AzFramework::StringFunc::Tokenize(cmdInfo.m_pythonArgs.toUtf8().constData(), tokens, ' ');
+            QByteArray pythonArgsStr = cmdInfo.m_pythonArgs.toUtf8();
             AZStd::vector<AZStd::string_view> pythonArgs;
-            std::transform(tokens.begin(), tokens.end(), std::back_inserter(pythonArgs), [](auto& tokenData) { return tokenData.c_str(); });
+            AzFramework::StringFunc::TokenizeVisitor(pythonArgsStr.constData(),
+                [&pythonArgs](AZStd::string_view elem)
+                {
+                    pythonArgs.push_back(elem);
+                }, ' '
+            );
+
             if (cmdInfo.m_bRunPythonTestScript)
             {
-                EditorPythonRunnerRequestBus::Broadcast(&EditorPythonRunnerRequestBus::Events::ExecuteByFilenameAsTest, cmdInfo.m_strFileName.toUtf8().constData(), pythonArgs);
+                // Multiple testcases can be specified them with ';', these should match the files to run
+                AZStd::vector<AZStd::string_view> testcaseList;
+                testcaseList.resize(fileList.size());
+                {
+                    int i = 0;
+                    AzFramework::StringFunc::TokenizeVisitor(
+                        fileStr.constData(),
+                        [&i, &testcaseList](AZStd::string_view elem)
+                        {
+                            testcaseList[i++] = (elem);
+                        }, ';', false /* keepEmptyStrings */
+                    );
+                }
 
-                // Close the editor gracefully as the test has completed
-                GetIEditor()->GetDocument()->SetModifiedFlag(false);
-                QTimer::singleShot(0, qApp, &QApplication::closeAllWindows);
+                bool success = true;
+                auto ExecuteByFilenamesTests = [&pythonArgs, &fileList, &testcaseList, &success](EditorPythonRunnerRequests* pythonRunnerRequests)
+                {
+                    for (int i = 0; i < fileList.size(); ++i)
+                    {
+                        bool cur_success = pythonRunnerRequests->ExecuteByFilenameAsTest(fileList[i], testcaseList[i], pythonArgs);
+                        success = success && cur_success;
+                    }
+                };
+                EditorPythonRunnerRequestBus::Broadcast(ExecuteByFilenamesTests);
+
+                if (success)
+                {
+                    // Close the editor gracefully as the test has completed
+                    GetIEditor()->GetDocument()->SetModifiedFlag(false);
+                    QTimer::singleShot(0, qApp, &QApplication::closeAllWindows);
+                }
+                else
+                {
+                    // Close down the application with 0xF exit code indicating failure of the test
+                    AZ::Debug::Trace::Terminate(0xF);
+                }
             }
             else
             {
-                EditorPythonRunnerRequestBus::Broadcast(&EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs, cmdInfo.m_strFileName.toUtf8().constData(), pythonArgs);
+                auto ExecuteByFilenamesWithArgs = [&pythonArgs, &fileList](EditorPythonRunnerRequests* pythonRunnerRequests)
+                {
+                    for (AZStd::string_view filename : fileList)
+                    {
+                        pythonRunnerRequests->ExecuteByFilenameWithArgs(filename, pythonArgs);
+                    }
+                };
+                EditorPythonRunnerRequestBus::Broadcast(ExecuteByFilenamesWithArgs);
             }
         }
         else
         {
-            EditorPythonRunnerRequestBus::Broadcast(&EditorPythonRunnerRequestBus::Events::ExecuteByFilename, cmdInfo.m_strFileName.toUtf8().constData());
+            auto ExecuteByFilenames = [&fileList](EditorPythonRunnerRequests* pythonRunnerRequests)
+            {
+                for (AZStd::string_view filename : fileList)
+                {
+                    pythonRunnerRequests->ExecuteByFilename(filename);
+                }
+            };
+            EditorPythonRunnerRequestBus::Broadcast(ExecuteByFilenames);
         }
     }
 }
@@ -2270,7 +2329,9 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
     bool bIsAppWindow = IsWindowInForeground();
     bool bActive = false;
     int res = 0;
-    if (bIsAppWindow || m_bForceProcessIdle || m_bKeepEditorActive)
+    if (bIsAppWindow || m_bForceProcessIdle || m_bKeepEditorActive
+        // Automated tests must always keep the editor active, or they can get stuck
+        || m_bAutotestMode)
     {
         res = 1;
         bActive = true;
@@ -3396,7 +3457,7 @@ CCryEditDoc* CCryEditApp::OpenDocumentFile(LPCTSTR lpszFileName)
         if (ActionManager* actionManager = MainWindow::instance()->GetActionManager())
         {
             GetIEditor()->GetUndoManager()->Suspend();
-            actionManager->GetAction(ID_EDIT_SELECTALL)->trigger();
+            actionManager->GetAction(AzToolsFramework::SelectAll)->trigger();
             actionManager->GetAction(ID_GOTO_SELECTED)->trigger();
             GetIEditor()->GetUndoManager()->Resume();
         }
@@ -3413,31 +3474,6 @@ void CCryEditApp::OnResourcesReduceworkingset()
 #ifdef WIN32 // no such thing on macOS
     SetProcessWorkingSetSize(GetCurrentProcess(), -1, -1);
 #endif
-}
-
-void CCryEditApp::OnWireframe()
-{
-    int             nWireframe(R_SOLID_MODE);
-    ICVar*      r_wireframe(gEnv->pConsole->GetCVar("r_wireframe"));
-
-    if (r_wireframe)
-    {
-        nWireframe = r_wireframe->GetIVal();
-    }
-
-    if (nWireframe != R_WIREFRAME_MODE)
-    {
-        nWireframe = R_WIREFRAME_MODE;
-    }
-    else
-    {
-        nWireframe = R_SOLID_MODE;
-    }
-
-    if (r_wireframe)
-    {
-        r_wireframe->Set(nWireframe);
-    }
 }
 
 void CCryEditApp::OnUpdateWireframe(QAction* action)
@@ -3651,40 +3687,8 @@ void CCryEditApp::OnViewCycle2dviewport()
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnDisplayGotoPosition()
 {
-    CGotoPositionDlg dlg;
-    dlg.exec();
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnChangemovespeedIncrease()
-{
-    gSettings.cameraMoveSpeed += m_moveSpeedStep;
-    if (gSettings.cameraMoveSpeed < 0.01f)
-    {
-        gSettings.cameraMoveSpeed = 0.01f;
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnChangemovespeedDecrease()
-{
-    gSettings.cameraMoveSpeed -= m_moveSpeedStep;
-    if (gSettings.cameraMoveSpeed < 0.01f)
-    {
-        gSettings.cameraMoveSpeed = 0.01f;
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnChangemovespeedChangestep()
-{
-    bool ok = false;
-    int fractionalDigitCount = 5;
-    float step = aznumeric_caster(QInputDialog::getDouble(AzToolsFramework::GetActiveWindow(), QObject::tr("Change Move Increase/Decrease Step"), QStringLiteral(""), m_moveSpeedStep, std::numeric_limits<float>::lowest(), std::numeric_limits<float>::max(), fractionalDigitCount, &ok));
-    if (ok)
-    {
-        m_moveSpeedStep = step;
-    }
+    GotoPositionDialog dialog;
+    dialog.exec();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -3718,13 +3722,6 @@ void CCryEditApp::OnValidatelevel()
 void CCryEditApp::OnToolsPreferences()
 {
     EditorPreferencesDialog dlg(MainWindow::instance());
-    dlg.exec();
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnGraphicsSettings()
-{
-    GraphicsSettingsDialog dlg(MainWindow::instance());
     dlg.exec();
 }
 
@@ -3860,91 +3857,6 @@ void CCryEditApp::OnOpenAudioControlsEditor()
 void CCryEditApp::OnOpenUICanvasEditor()
 {
     QtViewPaneManager::instance()->OpenPane(LyViewPane::UiEditor);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::SetGameSpecCheck(ESystemConfigSpec spec, ESystemConfigPlatform platform, int &nCheck, bool &enable)
-{
-    if (GetIEditor()->GetEditorConfigSpec() == spec && GetIEditor()->GetEditorConfigPlatform() == platform)
-    {
-        nCheck = 1;
-    }
-    enable = spec <= GetIEditor()->GetSystem()->GetMaxConfigSpec();
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnUpdateGameSpec(QAction* action)
-{
-    Q_ASSERT(action->isCheckable());
-    int nCheck = 0;
-    bool enable = true;
-    switch (action->data().toInt())
-    {
-    case ID_GAME_PC_ENABLELOWSPEC:
-        SetGameSpecCheck(CONFIG_LOW_SPEC, CONFIG_PC, nCheck, enable);
-        break;
-    case ID_GAME_PC_ENABLEMEDIUMSPEC:
-        SetGameSpecCheck(CONFIG_MEDIUM_SPEC, CONFIG_PC, nCheck, enable);
-        break;
-    case ID_GAME_PC_ENABLEHIGHSPEC:
-        SetGameSpecCheck(CONFIG_HIGH_SPEC, CONFIG_PC, nCheck, enable);
-        break;
-    case ID_GAME_PC_ENABLEVERYHIGHSPEC:
-        SetGameSpecCheck(CONFIG_VERYHIGH_SPEC, CONFIG_PC, nCheck, enable);
-        break;
-    case ID_GAME_OSXMETAL_ENABLELOWSPEC:
-        SetGameSpecCheck(CONFIG_LOW_SPEC, CONFIG_OSX_METAL, nCheck, enable);
-        break;
-    case ID_GAME_OSXMETAL_ENABLEMEDIUMSPEC:
-        SetGameSpecCheck(CONFIG_MEDIUM_SPEC, CONFIG_OSX_METAL, nCheck, enable);
-        break;
-    case ID_GAME_OSXMETAL_ENABLEHIGHSPEC:
-        SetGameSpecCheck(CONFIG_HIGH_SPEC, CONFIG_OSX_METAL, nCheck, enable);
-        break;
-    case ID_GAME_OSXMETAL_ENABLEVERYHIGHSPEC:
-        SetGameSpecCheck(CONFIG_VERYHIGH_SPEC, CONFIG_OSX_METAL, nCheck, enable);
-        break;
-    case ID_GAME_ANDROID_ENABLELOWSPEC:
-        SetGameSpecCheck(CONFIG_LOW_SPEC, CONFIG_ANDROID, nCheck, enable);
-        break;
-    case ID_GAME_ANDROID_ENABLEMEDIUMSPEC:
-        SetGameSpecCheck(CONFIG_MEDIUM_SPEC, CONFIG_ANDROID, nCheck, enable);
-        break;
-    case ID_GAME_ANDROID_ENABLEHIGHSPEC:
-        SetGameSpecCheck(CONFIG_HIGH_SPEC, CONFIG_ANDROID, nCheck, enable);
-        break;
-    case ID_GAME_ANDROID_ENABLEVERYHIGHSPEC:
-        SetGameSpecCheck(CONFIG_VERYHIGH_SPEC, CONFIG_ANDROID, nCheck, enable);
-        break;
-    case ID_GAME_IOS_ENABLELOWSPEC:
-        SetGameSpecCheck(CONFIG_LOW_SPEC, CONFIG_IOS, nCheck, enable);
-        break;
-    case ID_GAME_IOS_ENABLEMEDIUMSPEC:
-        SetGameSpecCheck(CONFIG_MEDIUM_SPEC, CONFIG_IOS, nCheck, enable);
-        break;
-    case ID_GAME_IOS_ENABLEHIGHSPEC:
-        SetGameSpecCheck(CONFIG_HIGH_SPEC, CONFIG_IOS, nCheck, enable);
-        break;
-    case ID_GAME_IOS_ENABLEVERYHIGHSPEC:
-        SetGameSpecCheck(CONFIG_VERYHIGH_SPEC, CONFIG_IOS, nCheck, enable);
-        break;
-#if defined(AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS)
-#define AZ_RESTRICTED_PLATFORM_EXPANSION(CodeName, CODENAME, codename, PrivateName, PRIVATENAME, privatename, PublicName, PUBLICNAME, publicname, PublicAuxName1, PublicAuxName2, PublicAuxName3)\
-    case ID_GAME_##CODENAME##_ENABLELOWSPEC:\
-        SetGameSpecCheck(CONFIG_LOW_SPEC, CONFIG_##CODENAME, nCheck, enable);\
-        break;\
-    case ID_GAME_##CODENAME##_ENABLEMEDIUMSPEC:\
-        SetGameSpecCheck(CONFIG_MEDIUM_SPEC, CONFIG_##CODENAME, nCheck, enable);\
-        break;\
-    case ID_GAME_##CODENAME##_ENABLEHIGHSPEC:\
-        SetGameSpecCheck(CONFIG_HIGH_SPEC, CONFIG_##CODENAME, nCheck, enable);\
-        break;
-        AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS
-#undef AZ_RESTRICTED_PLATFORM_EXPANSION
-#endif
-    }
-    action->setChecked(nCheck);
-    action->setEnabled(enable);
 }
 
 //////////////////////////////////////////////////////////////////////////

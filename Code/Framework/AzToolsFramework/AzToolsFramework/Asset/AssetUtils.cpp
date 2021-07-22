@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -225,7 +226,7 @@ namespace AzToolsFramework::AssetUtils
             AZStd::vector<AzFramework::GemInfo> gemInfoList;
             if (!AzFramework::GetGemsInfo(gemInfoList, *settingsRegistry))
             {
-                AZ_Error("AzToolsFramework::AssetUtils", false, "Failed to read gems from project folder(%s).\n", projectPath);
+                AZ_Error("AzToolsFramework::AssetUtils", false, "Failed to read gems from project folder(%.*s).\n", AZ_STRING_ARG(projectPath));
                 return {};
             }
 

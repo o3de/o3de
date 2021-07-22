@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -30,6 +31,7 @@ ly_add_target(
     COMPILE_DEFINITIONS
         PUBLIC
             PHYSX_ENABLE_MULTI_THREADING
+            $<$<NOT:$<CONFIG:release>>:AZ_PHYSICS_DEBUG_ENABLED>
     INCLUDE_DIRECTORIES
         PUBLIC
             .
@@ -149,6 +151,8 @@ endif()
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
+    
+
     ly_add_target(
         NAME PhysX.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
@@ -167,6 +171,15 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral
     )
+
+    if(PAL_TRAIT_JOINTS_TYPED_TEST_CASE)
+        ly_add_source_properties(
+            SOURCES Tests/PhysXJointsTest.cpp
+            PROPERTY COMPILE_DEFINITIONS 
+            VALUES ENABLE_JOINTS_TYPED_TEST_CASE
+        )
+    endif()
+
     ly_add_googletest(
         NAME Gem::PhysX.Tests
     )

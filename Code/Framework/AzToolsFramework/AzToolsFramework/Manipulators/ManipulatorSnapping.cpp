@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,6 +10,7 @@
 
 #include <AzCore/Console/Console.h>
 #include <AzCore/Math/Internal/VectorConversions.inl>
+#include <AzCore/std/numeric.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzToolsFramework/Maths/TransformUtils.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
@@ -90,16 +92,34 @@ namespace AzToolsFramework
         return axis * snapAdjustment.m_nextSnapDistance;
     }
 
+    AZ::Vector3 CalculateSnappedOffset(
+        const AZ::Vector3& unsnappedPosition, const AZ::Vector3* snapAxes, const size_t snapAxesCount, const float size)
+    {
+        return AZStd::accumulate(
+            snapAxes, snapAxes + snapAxesCount, AZ::Vector3::CreateZero(),
+            [&unsnappedPosition, size](AZ::Vector3 acc, const AZ::Vector3& snapAxis)
+            {
+                acc += CalculateSnappedOffset(unsnappedPosition, snapAxis, size);
+                return acc;
+            });
+    }
+
+    AZ::Vector3 CalculateSnappedPosition(
+        const AZ::Vector3& unsnappedPosition, const AZ::Vector3* snapAxes, const size_t snapAxesCount, const float size)
+    {
+        return unsnappedPosition + CalculateSnappedOffset(unsnappedPosition, snapAxes, snapAxesCount, size);
+    }
+
     AZ::Vector3 CalculateSnappedTerrainPosition(
-        const AZ::Vector3& worldSurfacePosition, const AZ::Transform& worldFromLocal, const int viewportId, const float gridSize)
+        const AZ::Vector3& worldSurfacePosition, const AZ::Transform& worldFromLocal, const int viewportId, const float size)
     {
         const AZ::Transform localFromWorld = worldFromLocal.GetInverse();
         const AZ::Vector3 localSurfacePosition = localFromWorld.TransformPoint(worldSurfacePosition);
 
         // snap in xy plane
         AZ::Vector3 localSnappedSurfacePosition = localSurfacePosition +
-            CalculateSnappedOffset(localSurfacePosition, AZ::Vector3::CreateAxisX(), gridSize) +
-            CalculateSnappedOffset(localSurfacePosition, AZ::Vector3::CreateAxisY(), gridSize);
+            CalculateSnappedOffset(localSurfacePosition, AZ::Vector3::CreateAxisX(), size) +
+            CalculateSnappedOffset(localSurfacePosition, AZ::Vector3::CreateAxisY(), size);
 
         // find terrain height at xy snapped location
         float terrainHeight = 0.0f;

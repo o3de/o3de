@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -90,6 +91,8 @@ namespace AZ
 
             TransformServiceFeatureProcessorInterface::ObjectId m_objectId;
 
+            Aabb m_aabb = Aabb::CreateNull();
+
             bool m_cullBoundsNeedsUpdate = false;
             bool m_cullableNeedsRebuild = false;
             bool m_objectSrgNeedsUpdate = true;
@@ -145,6 +148,9 @@ namespace AZ
                 const AZ::Vector3& nonUniformScale = AZ::Vector3::CreateOne()) override;
             Transform GetTransform(const MeshHandle& meshHandle) override;
             Vector3 GetNonUniformScale(const MeshHandle& meshHandle) override;
+
+            void SetLocalAabb(const MeshHandle& meshHandle, const AZ::Aabb& localAabb) override;
+            AZ::Aabb GetLocalAabb(const MeshHandle& meshHandle) const override;
 
             void SetSortKey(const MeshHandle& meshHandle, RHI::DrawItemSortKey sortKey) override;
             RHI::DrawItemSortKey GetSortKey(const MeshHandle& meshHandle) override;

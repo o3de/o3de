@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -36,6 +37,8 @@ namespace Multiplayer
 
         NetworkEntityHandle GetPrimaryPlayerEntity();
         const NetworkEntityHandle& GetPrimaryPlayerEntity() const;
+        const AZStd::string& GetProviderTicket() const;
+        void SetProviderTicket(const AZStd::string&);
 
     private:
         void OnControlledEntityRemove();
@@ -46,6 +49,7 @@ namespace Multiplayer
         NetworkEntityHandle m_controlledEntity;
         EntityStopEvent::Handler m_controlledEntityRemovedHandler;
         EntityServerMigrationEvent::Handler m_controlledEntityMigrationHandler;
+        AZStd::string m_providerTicket;
         AzNetworking::IConnection* m_connection = nullptr;
         bool m_canSendUpdates = false;
     };

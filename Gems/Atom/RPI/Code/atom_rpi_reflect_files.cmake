@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -80,8 +81,6 @@ set(FILES
     Include/Atom/RPI.Reflect/Shader/ShaderOptionGroupLayout.h
     Include/Atom/RPI.Reflect/Shader/ShaderOutputContract.h
     Include/Atom/RPI.Reflect/Shader/ShaderOptionTypes.h
-    Include/Atom/RPI.Reflect/Shader/ShaderResourceGroupAsset.h
-    Include/Atom/RPI.Reflect/Shader/ShaderResourceGroupAssetCreator.h
     Include/Atom/RPI.Reflect/Shader/ShaderVariantKey.h
     Include/Atom/RPI.Reflect/Shader/ShaderVariantTreeAsset.h
     Include/Atom/RPI.Reflect/Shader/ShaderVariantAsset.h
@@ -151,8 +150,6 @@ set(FILES
     Source/RPI.Reflect/Shader/ShaderOptionGroup.cpp
     Source/RPI.Reflect/Shader/ShaderOptionGroupLayout.cpp
     Source/RPI.Reflect/Shader/ShaderOutputContract.cpp
-    Source/RPI.Reflect/Shader/ShaderResourceGroupAsset.cpp
-    Source/RPI.Reflect/Shader/ShaderResourceGroupAssetCreator.cpp
     Source/RPI.Reflect/Shader/ShaderVariantKey.cpp
     Source/RPI.Reflect/Shader/ShaderVariantTreeAsset.cpp
     Source/RPI.Reflect/Shader/ShaderVariantAsset.cpp

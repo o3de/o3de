@@ -1,10 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "PhysXDebug_precompiled.h"
+
 #include "SystemComponent.h"
 
 #include <AzCore/Serialization/SerializeContext.h>
@@ -17,6 +18,7 @@
 #include <PhysX/UserDataTypes.h>
 #include <PhysX/Utils.h>
 #include <PhysX/PhysXLocks.h>
+#include <PhysX/Debug/PhysXDebugConfiguration.h>
 
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
@@ -778,7 +780,7 @@ namespace PhysXDebug
                     Physics::RagdollNode* ragdollNode = actorData->GetRagdollNode();
                     if (ragdollNode)
                     {
-                        const AZStd::shared_ptr<Physics::Joint>& joint = ragdollNode->GetJoint();
+                        AzPhysics::Joint* joint = ragdollNode->GetJoint();
                         physx::PxJoint* pxJoint = static_cast<physx::PxJoint*>(joint->GetNativePointer());
                         physx::PxTransform jointPose = actor1->getGlobalPose() * pxJoint->getLocalPose(physx::PxJointActorIndex::eACTOR1);
                         if (!m_culling.m_enabled || m_cullingBox.contains(jointPose.p))

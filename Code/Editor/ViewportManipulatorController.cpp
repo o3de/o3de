@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -216,7 +217,8 @@ namespace SandboxEditor
                 interactionHandled, AzToolsFramework::GetEntityContextId(), targetInteractionEvent, mouseInteractionEvent);
         }
 
-        return interactionHandled;
+        // Only filter button/key press events, not release events
+        return interactionHandled && event.m_inputChannel.IsActive();
     }
 
     void ViewportManipulatorControllerInstance::ResetInputChannels()

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -23,10 +24,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/Debug/TraceMessageBus.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Component/TickBus.h>
-
-#if defined(AZ_PLATFORM_WINDOWS)
-#include <windows.h>
-#endif
+#include <AzCore/PlatformIncl.h>
 #endif
 
 namespace AZ

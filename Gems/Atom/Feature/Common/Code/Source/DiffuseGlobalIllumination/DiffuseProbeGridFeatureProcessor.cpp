@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -85,9 +86,9 @@ namespace AZ
                 m_probeGridRenderData.m_pipelineState->Finalize();
 
                 // load object shader resource group
-                m_probeGridRenderData.m_srgAsset = shader->FindShaderResourceGroupAsset(Name{ "ObjectSrg" });
-                AZ_Error("DiffuseProbeGridFeatureProcessor", m_probeGridRenderData.m_srgAsset.GetId().IsValid(), "Failed to find ObjectSrg asset");
-                AZ_Error("DiffuseProbeGridFeatureProcessor", m_probeGridRenderData.m_srgAsset.IsReady(), "ObjectSrg asset is not loaded");
+                m_probeGridRenderData.m_shader = shader;
+                m_probeGridRenderData.m_srgLayout = shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Object);
+                AZ_Error("DiffuseProbeGridFeatureProcessor", m_probeGridRenderData.m_srgLayout != nullptr, "Failed to find ObjectSrg layout");
             }
 
             EnableSceneNotification();
@@ -604,13 +605,6 @@ namespace AZ
                 RPI::PassHierarchyFilter updatePassFilter(AZ::Name("DiffuseProbeGridUpdatePass"));
                 const AZStd::vector<RPI::Pass*>& updatePasses = RPI::PassSystemInterface::Get()->FindPasses(updatePassFilter);
                 for (RPI::Pass* pass : updatePasses)
-                {
-                    pass->SetEnabled(false);
-                }
-
-                RPI::PassHierarchyFilter renderPassFilter(AZ::Name("DiffuseProbeGridRenderPass"));
-                const AZStd::vector<RPI::Pass*>& renderPasses = RPI::PassSystemInterface::Get()->FindPasses(renderPassFilter);
-                for (RPI::Pass* pass : renderPasses)
                 {
                     pass->SetEnabled(false);
                 }

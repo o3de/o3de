@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include "EMotionFX_precompiled.h"
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -26,6 +25,12 @@
 #include <EMotionFX/Source/Transform.h>
 #include <EMotionFX/Source/RagdollInstance.h>
 #include <EMotionFX/Source/DebugDraw.h>
+#include <EMotionFX/Source/AttachmentSkin.h>
+#include <EMotionFX/Source/Node.h>
+#include <EMotionFX/Source/TransformData.h>
+#include <EMotionFX/Source/AttachmentNode.h>
+
+#include <MCore/Source/AzCoreConversions.h>
 
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
@@ -53,13 +58,67 @@ namespace EMotionFX
         };
 
         //////////////////////////////////////////////////////////////////////////
+        void ActorComponent::BoundingBoxConfiguration::Set(ActorInstance* actor) const
+        {
+            if (m_autoUpdateBounds)
+            {
+                actor->SetupAutoBoundsUpdate(m_updateTimeFrequency, m_boundsType, m_updateItemFrequency);
+            }
+            else
+            {
+                actor->SetBoundsUpdateType(m_boundsType);
+                actor->SetBoundsUpdateEnabled(false);
+            }
+        }
+
+        void ActorComponent::BoundingBoxConfiguration::SetAndUpdate(ActorInstance* actor) const
+        {
+            Set(actor);
+            const AZ::u32 freq = actor->GetBoundsUpdateEnabled() ? actor->GetBoundsUpdateItemFrequency() : 1;
+            actor->UpdateBounds(0, actor->GetBoundsUpdateType(), freq);
+        }
+
+        void ActorComponent::BoundingBoxConfiguration::Reflect(AZ::ReflectContext * context)
+        {
+            if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+            {
+                serializeContext->Class<BoundingBoxConfiguration>()
+                    ->Version(2, [](AZ::SerializeContext& sc, AZ::SerializeContext::DataElementNode& node)
+                    {
+                        if (node.GetVersion() < 2)
+                        {
+                            // m_boundsType used to be an enum class with `int' underlying type, is now `u8'
+                            static const char* m_boundsType_name = "m_boundsType";
+                            static AZ::Crc32 m_boundsType_nameCrc(m_boundsType_name);
+
+                            int m_boundsType_as_int;
+                            if (!node.GetChildData(m_boundsType_nameCrc, m_boundsType_as_int))
+                            {
+                                return false;
+                            }
+                            if (!node.RemoveElementByName(m_boundsType_nameCrc)) return false;
+                            if (node.AddElementWithData(sc, m_boundsType_name, (AZ::u8)m_boundsType_as_int) == -1) return false;
+                        }
+                        return true;
+                    })
+                    ->Field("m_boundsType", &BoundingBoxConfiguration::m_boundsType)
+                    ->Field("m_autoUpdateBounds", &BoundingBoxConfiguration::m_autoUpdateBounds)
+                    ->Field("m_updateTimeFrequency", &BoundingBoxConfiguration::m_updateTimeFrequency)
+                    ->Field("m_updateItemFrequency", &BoundingBoxConfiguration::m_updateItemFrequency)
+                    ;
+            }
+        }
+
+        //////////////////////////////////////////////////////////////////////////
         void ActorComponent::Configuration::Reflect(AZ::ReflectContext* context)
         {
+            BoundingBoxConfiguration::Reflect(context);
+
             auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
             if (serializeContext)
             {
                 serializeContext->Class<Configuration>()
-                    ->Version(3)
+                    ->Version(4)
                     ->Field("ActorAsset", &Configuration::m_actorAsset)
                     ->Field("MaterialPerLOD", &Configuration::m_materialPerLOD)
                     ->Field("RenderSkeleton", &Configuration::m_renderSkeleton)
@@ -69,6 +128,7 @@ namespace EMotionFX
                     ->Field("AttachmentTarget", &Configuration::m_attachmentTarget)
                     ->Field("SkinningMethod", &Configuration::m_skinningMethod)
                     ->Field("LODLevel", &Configuration::m_lodLevel)
+                    ->Field("BoundingBoxConfig", &Configuration::m_bboxConfig)
                     ->Field("ForceJointsUpdateOOV", &Configuration::m_forceUpdateJointsOOV)
                 ;
             }
@@ -344,6 +404,8 @@ namespace EMotionFX
             AZ::TransformNotificationBus::MultiHandler::BusConnect(GetEntityId());
 
             m_actorInstance->UpdateWorldTransform();
+            // Set bounds update mode and compute bbox first time 
+            m_configuration.m_bboxConfig.SetAndUpdate(m_actorInstance.get());
             m_actorInstance->UpdateBounds(0, ActorInstance::EBoundsType::BOUNDS_STATIC_BASED);
 
             // Creating the render actor AFTER both actor asset and mesh asset loaded.

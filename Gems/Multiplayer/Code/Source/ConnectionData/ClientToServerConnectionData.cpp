@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -16,10 +17,12 @@ namespace Multiplayer
     ClientToServerConnectionData::ClientToServerConnectionData
     (
         AzNetworking::IConnection* connection,
-        AzNetworking::IConnectionListener& connectionListener
+        AzNetworking::IConnectionListener& connectionListener,
+        const AZStd::string& providerTicket
     )
         : m_connection(connection)
         , m_entityReplicationManager(*connection, connectionListener, EntityReplicationManager::Mode::LocalClientToRemoteServer)
+        , m_providerTicket(providerTicket)
     {
         m_entityReplicationManager.SetMaxRemoteEntitiesPendingCreationCount(cl_ClientMaxRemoteEntitiesPendingCreationCount);
         m_entityReplicationManager.SetEntityPendingRemovalMs(cl_ClientEntityReplicatorPendingRemovalTimeMs);

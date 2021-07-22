@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -110,12 +111,28 @@ namespace AzToolsFramework
         SpaceCluster(const SpaceCluster&) = delete;
         SpaceCluster& operator=(const SpaceCluster&) = delete;
 
-        ViewportUi::ClusterId m_spaceClusterId; //!< The id identifying the reference space cluster.
+        ViewportUi::ClusterId m_clusterId; //!< The id identifying the reference space cluster.
         ViewportUi::ButtonId m_localButtonId; //!< Local reference space button id.
         ViewportUi::ButtonId m_parentButtonId; //!< Parent reference space button id.
         ViewportUi::ButtonId m_worldButtonId; //!< World reference space button id.
-        AZ::Event<ViewportUi::ButtonId>::Handler m_spaceSelectionHandler; //!< Callback for when a space cluster button is pressed.
         AZStd::optional<ReferenceFrame> m_spaceLock; //!< Locked reference frame to use if set.
+        AZ::Event<ViewportUi::ButtonId>::Handler m_spaceHandler; //!< Callback for when a space cluster button is pressed.
+    };
+
+    //! Grouping of viewport ui related state for aligning transforms to a grid.
+    struct SnappingCluster
+    {
+        SnappingCluster() = default;
+        // disable copying and moving (implicit)
+        SnappingCluster(const SnappingCluster&) = delete;
+        SnappingCluster& operator=(const SnappingCluster&) = delete;
+
+        //! Attempt to show the snapping cluster (will only succeed if snapping is enabled).
+        void TrySetVisible(bool visible);
+
+        ViewportUi::ClusterId m_clusterId; //!< The cluster id for all snapping buttons.
+        ViewportUi::ButtonId m_snapToWorldButtonId; //!< The button id for snapping all axes to the world.
+        AZ::Event<ViewportUi::ButtonId>::Handler m_snappingHandler; //!< Callback for when a snapping cluster button is pressed.
     };
 
     //! Entity selection/interaction handling.
@@ -133,6 +150,7 @@ namespace AzToolsFramework
         , private EditorEntityLockComponentNotificationBus::Router
         , private EditorManipulatorCommandUndoRedoRequestBus::Handler
         , private AZ::TransformNotificationBus::MultiHandler
+        , private ViewportInteraction::ViewportSettingsNotificationBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
@@ -175,6 +193,7 @@ namespace AzToolsFramework
 
         void CreateTransformModeSelectionCluster();
         void CreateSpaceSelectionCluster();
+        void CreateSnappingCluster();
 
         void ClearManipulatorTranslationOverride();
         void ClearManipulatorOrientationOverride();
@@ -223,14 +242,15 @@ namespace AzToolsFramework
         AZStd::optional<AZ::Transform> GetManipulatorTransform() override;
         void OverrideManipulatorOrientation(const AZ::Quaternion& orientation) override;
         void OverrideManipulatorTranslation(const AZ::Vector3& translation) override;
-        void CopyTranslationToSelectedEntitiesIndividual(const AZ::Vector3& translation);
-        void CopyTranslationToSelectedEntitiesGroup(const AZ::Vector3& translation);
-        void ResetTranslationForSelectedEntitiesLocal();
-        void CopyOrientationToSelectedEntitiesIndividual(const AZ::Quaternion& orientation);
-        void CopyOrientationToSelectedEntitiesGroup(const AZ::Quaternion& orientation);
-        void ResetOrientationForSelectedEntitiesLocal();
-        void CopyScaleToSelectedEntitiesIndividualLocal(float scale);
-        void CopyScaleToSelectedEntitiesIndividualWorld(float scale);
+        void CopyTranslationToSelectedEntitiesIndividual(const AZ::Vector3& translation) override;
+        void CopyTranslationToSelectedEntitiesGroup(const AZ::Vector3& translation) override;
+        void ResetTranslationForSelectedEntitiesLocal() override;
+        void CopyOrientationToSelectedEntitiesIndividual(const AZ::Quaternion& orientation) override;
+        void CopyOrientationToSelectedEntitiesGroup(const AZ::Quaternion& orientation) override;
+        void ResetOrientationForSelectedEntitiesLocal() override;
+        void CopyScaleToSelectedEntitiesIndividualLocal(float scale) override;
+        void CopyScaleToSelectedEntitiesIndividualWorld(float scale) override;
+        void SnapSelectedEntitiesToWorldGrid(float gridSize) override;
 
         // EditorManipulatorCommandUndoRedoRequestBus ...
         void UndoRedoEntityManipulatorCommand(
@@ -269,12 +289,16 @@ namespace AzToolsFramework
         void OnStartPlayInEditor() override;
         void OnStopPlayInEditor() override;
 
+        // ViewportSettingsNotificationBus overrides ...
+        void OnGridSnappingChanged(bool enabled) override;
+
         // Helpers to safely interact with the TransformBus (requests).
         void SetEntityWorldTranslation(AZ::EntityId entityId, const AZ::Vector3& worldTranslation);
         void SetEntityLocalTranslation(AZ::EntityId entityId, const AZ::Vector3& localTranslation);
         void SetEntityWorldTransform(AZ::EntityId entityId, const AZ::Transform& worldTransform);
         void SetEntityLocalScale(AZ::EntityId entityId, float localScale);
         void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Vector3& localRotation);
+        void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Quaternion& localRotation);
 
         //! Responsible for keeping the space cluster in sync with the current reference frame.
         void UpdateSpaceCluster(ReferenceFrame referenceFrame);
@@ -315,6 +339,7 @@ namespace AzToolsFramework
         AzFramework::ClickDetector m_clickDetector; //!< Detect different types of mouse click.
         AzFramework::CursorState m_cursorState; //!< Track the mouse position and delta movement each frame.
         SpaceCluster m_spaceCluster; //!< Related viewport ui state for controlling the current reference space.
+        SnappingCluster m_snappingCluster; //!< Related viewport ui state for aligning positions to a grid or reference frame.
         bool m_viewportUiVisible = true; //!< Used to hide/show the viewport ui elements.
     };
 
@@ -353,5 +378,6 @@ namespace AzToolsFramework
         void SetEntityWorldTransform(AZ::EntityId entityId, const AZ::Transform& worldTransform, bool& internal);
         void SetEntityLocalScale(AZ::EntityId entityId, float localScale, bool& internal);
         void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Vector3& localRotation, bool& internal);
+        void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Quaternion& localRotation, bool& internal);
     } // namespace ETCS
 } // namespace AzToolsFramework

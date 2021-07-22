@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -598,6 +599,7 @@ AmazonToolbar ToolbarManager::GetPlayConsoleToolbar() const
     t.AddAction(ID_TOOLBAR_SEPARATOR, ORIGINAL_TOOLBAR_VERSION);
     t.AddAction(ID_TOOLBAR_WIDGET_PLAYCONSOLE_LABEL, ORIGINAL_TOOLBAR_VERSION);
     t.AddAction(ID_VIEW_SWITCHTOGAME, TOOLBARS_WITH_PLAY_GAME);
+    t.AddAction(ID_VIEW_SWITCHTOGAME_FULLSCREEN, TOOLBARS_WITH_PLAY_GAME);
     t.AddAction(ID_TOOLBAR_SEPARATOR, ORIGINAL_TOOLBAR_VERSION);
     t.AddAction(ID_SWITCH_PHYSICS, TOOLBARS_WITH_PLAY_GAME);    
     return t;

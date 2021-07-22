@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -101,6 +102,7 @@ namespace AzNetworking
         bool SendReliablePacket(ConnectionId connectionId, const IPacket& packet) override;
         PacketId SendUnreliablePacket(ConnectionId connectionId, const IPacket& packet) override;
         bool WasPacketAcked(ConnectionId connectionId, PacketId packetId) override;
+        bool StopListening() override;
         bool Disconnect(ConnectionId connectionId, DisconnectReason reason) override;
         //! @}
 

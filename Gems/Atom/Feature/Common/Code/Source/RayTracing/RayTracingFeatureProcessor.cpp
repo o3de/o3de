@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -60,19 +61,22 @@ namespace AZ
             // create the TLAS object
             m_tlas = AZ::RHI::RayTracingTlas::CreateRHIRayTracingTlas();
 
-            // load the RayTracingSceneSrg asset
-            Data::Asset<RPI::ShaderResourceGroupAsset> rayTracingSceneSrgAsset =
-                RPI::AssetUtils::LoadAssetByProductPath<RPI::ShaderResourceGroupAsset>("shaderlib/atom/features/raytracing/raytracingscenesrg_raytracingscenesrg.azsrg", RPI::AssetUtils::TraceLevel::Error);
-            AZ_Assert(rayTracingSceneSrgAsset.IsReady(), "Failed to load RayTracingSceneSrg asset");
+            // load the RayTracingSrg asset asset
+            m_rayTracingSrgAsset = RPI::AssetUtils::LoadCriticalAsset<RPI::ShaderAsset>("shaderlib/atom/features/rayTracing/raytracingsrgs.azshader");
+            if (!m_rayTracingSrgAsset.IsReady())
+            {
+                AZ_Assert(false, "Failed to load RayTracingSrg asset");
+                return;
+            }
 
-            m_rayTracingSceneSrg = RPI::ShaderResourceGroup::Create(rayTracingSceneSrgAsset);
+            // create the RayTracingSceneSrg
+            m_rayTracingSceneSrg = RPI::ShaderResourceGroup::Create(m_rayTracingSrgAsset, Name("RayTracingSceneSrg"));
+            AZ_Assert(m_rayTracingSceneSrg, "Failed to create RayTracingSceneSrg");
 
-            // load the RayTracingMaterialSrg asset
-            Data::Asset<RPI::ShaderResourceGroupAsset> rayTracingMaterialSrgAsset =
-                RPI::AssetUtils::LoadAssetByProductPath<RPI::ShaderResourceGroupAsset>("shaderlib/atom/features/raytracing/raytracingmaterialsrg_raytracingmaterialsrg.azsrg", RPI::AssetUtils::TraceLevel::Error);
-            AZ_Assert(rayTracingMaterialSrgAsset.IsReady(), "Failed to load RayTracingMaterialSrg asset");
-
-            m_rayTracingMaterialSrg = RPI::ShaderResourceGroup::Create(rayTracingMaterialSrgAsset);
+            // create the RayTracingMaterialSrg
+            const AZ::Name rayTracingMaterialSrgName("RayTracingMaterialSrg");
+            m_rayTracingMaterialSrg = RPI::ShaderResourceGroup::Create(m_rayTracingSrgAsset, Name("RayTracingMaterialSrg"));
+            AZ_Assert(m_rayTracingMaterialSrg, "Failed to create RayTracingMaterialSrg");
         }
 
         void RayTracingFeatureProcessor::SetMesh(const ObjectId objectId, const SubMeshVector& subMeshes)

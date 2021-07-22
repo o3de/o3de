@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -14,7 +15,7 @@ namespace EMotionFX
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<D6JointLimitConfiguration, Physics::JointLimitConfiguration>()
+            serializeContext->Class<D6JointLimitConfiguration, AzPhysics::JointConfiguration>()
                 ->Version(1)
                 ->Field("SwingLimitY", &D6JointLimitConfiguration::m_swingLimitY)
                 ->Field("SwingLimitZ", &D6JointLimitConfiguration::m_swingLimitZ)

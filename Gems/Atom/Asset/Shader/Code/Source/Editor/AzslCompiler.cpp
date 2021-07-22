@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -118,7 +119,7 @@ namespace AZ
 
         namespace SubProducts = ShaderBuilderUtility::AzslSubProducts;
 
-        Outcome<SubProducts::Paths> AzslCompiler::EmitFullData(const AZStd::string& parameters, const AZStd::string& outputFile /* = ""*/, const char * addSuffix) const
+        Outcome<SubProducts::Paths> AzslCompiler::EmitFullData(const AZStd::string& parameters, const AZStd::string& outputFile /* = ""*/) const
         {
             bool success = Compile("--full " + parameters, outputFile);
             if (!success)
@@ -134,16 +135,6 @@ namespace AZ
                 // append .json if it's one of those subs:
                 auto listOfJsons = { SubProducts::ia, SubProducts::om, SubProducts::srg, SubProducts::options, SubProducts::bindingdep };
                 subProductFilePath += AZStd::any_of(AZ_BEGIN_END(listOfJsons), [&](auto v) { return v == subProduct.m_value; }) ? ".json" : "";
-
-                // [GFX TODO] Remove when [ATOM-15472]
-                if (addSuffix)
-                {
-                    // Rename the product file.
-                    AZStd::string finalSubProductFilePath = AZStd::string::format("%s%s", subProductFilePath.c_str(), addSuffix);
-                    AZ::IO::Move(subProductFilePath.c_str(), finalSubProductFilePath.c_str());
-                    subProductFilePath = finalSubProductFilePath;
-                }
-
                 productPaths[subProduct.m_value] = subProductFilePath;
             }
             productPaths[SubProducts::azslin] = GetInputFilePath();  // post-fixup this one after the loop, because it's not an output of azslc, it's an output of the builder though.

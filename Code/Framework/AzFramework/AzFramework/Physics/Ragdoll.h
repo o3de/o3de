@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -12,10 +13,11 @@
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 #include <AzFramework/Physics/RagdollPhysicsBus.h>
-#include <AzFramework/Physics/Joint.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
+#include <AzFramework/Physics/Common/PhysicsJoint.h>
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
 #include <AzFramework/Physics/Configuration/SimulatedBodyConfiguration.h>
+#include <AzFramework/Physics/Configuration/JointConfiguration.h>
 
 namespace Physics
 {
@@ -32,7 +34,7 @@ namespace Physics
         RagdollNodeConfiguration();
         RagdollNodeConfiguration(const RagdollNodeConfiguration& settings) = default;
 
-        AZStd::shared_ptr<JointLimitConfiguration> m_jointLimit;
+        AZStd::shared_ptr<AzPhysics::JointConfiguration> m_jointConfig;
     };
 
     class RagdollConfiguration
@@ -68,7 +70,7 @@ namespace Physics
         virtual AzPhysics::RigidBody& GetRigidBody() = 0;
         virtual ~RagdollNode() = default;
 
-        virtual const AZStd::shared_ptr<Physics::Joint>& GetJoint() const = 0;
+        virtual AzPhysics::Joint* GetJoint() = 0;
         virtual bool IsSimulating() const = 0;
     };
 

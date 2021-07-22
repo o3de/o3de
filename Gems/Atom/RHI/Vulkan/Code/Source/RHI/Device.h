@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -143,6 +144,10 @@ namespace AZ
 
             template <typename ObjectType, typename... Args>
             RHI::Ptr<ObjectType> AcquireObjectFromCache(ObjectCache<ObjectType>& cache, const size_t hash, Args... args);
+
+            //! Get the vulkan buffer usage flags from buffer bind flags.
+            //! Flags will be corrected if required features or extensions are not enabled.
+            VkBufferUsageFlags GetBufferUsageFlagBitsUnderRestrictions(RHI::BufferBindFlags bindFlags) const;
 
             VkDevice m_nativeDevice = VK_NULL_HANDLE;
             VkPhysicalDeviceFeatures m_enabledDeviceFeatures{};

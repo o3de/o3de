@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -32,20 +33,20 @@ namespace AZ
             LoadShader("Shaders/DiffuseGlobalIllumination/DiffuseProbeGridBorderUpdateRow.azshader",
                        m_rowShader,
                        m_rowPipelineState,
-                       m_rowSrgAsset,
+                       m_rowSrgLayout,
                        m_rowDispatchArgs);
 
             LoadShader("Shaders/DiffuseGlobalIllumination/DiffuseProbeGridBorderUpdateColumn.azshader",
                        m_columnShader,
                        m_columnPipelineState,
-                       m_columnSrgAsset,
+                       m_columnSrgLayout,
                        m_columnDispatchArgs);
         }
 
         void DiffuseProbeGridBorderUpdatePass::LoadShader(AZStd::string shaderFilePath,
                                                           Data::Instance<RPI::Shader>& shader,
                                                           const RHI::PipelineState*& pipelineState,
-                                                          Data::Asset<RPI::ShaderResourceGroupAsset>& srgAsset,
+                                                          RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout,
                                                           RHI::DispatchDirect& dispatchArgs)
         {
             // load shader
@@ -63,7 +64,7 @@ namespace AZ
             pipelineState = shader->AcquirePipelineState(pipelineStateDescriptor);
 
             // load Pass Srg asset
-            srgAsset = shader->FindShaderResourceGroupAsset(RPI::SrgBindingSlot::Pass);
+            srgLayout = shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Pass);
 
             // retrieve the number of threads per thread group from the shader
             const auto numThreads = shader->GetAsset()->GetAttribute(RHI::ShaderStage::Compute, Name{ "numthreads" });
@@ -152,7 +153,7 @@ namespace AZ
             {
                 // the diffuse probe grid Srg must be updated in the Compile phase in order to successfully bind the ReadWrite shader inputs
                 // (see line ValidateSetImageView() in ShaderResourceGroupData.cpp)
-                diffuseProbeGrid->UpdateBorderUpdateSrgs(m_rowSrgAsset, m_columnSrgAsset);
+                diffuseProbeGrid->UpdateBorderUpdateSrgs(m_rowShader, m_rowSrgLayout, m_columnShader, m_columnSrgLayout);
 
                 diffuseProbeGrid->GetBorderUpdateRowIrradianceSrg()->Compile();
                 diffuseProbeGrid->GetBorderUpdateColumnIrradianceSrg()->Compile();

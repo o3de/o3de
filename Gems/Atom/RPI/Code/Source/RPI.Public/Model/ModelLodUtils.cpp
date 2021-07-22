@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -44,7 +45,7 @@ namespace AZ
 
                         With that percentage we can determine which Lod we want to use.
                     */
-                    Aabb modelAabb = model.GetAabb();
+                    Aabb modelAabb = model.GetModelAsset()->GetAabb();
                     modelAabb.Translate(position);
 
                     Vector3 center; 

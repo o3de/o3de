@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -46,8 +47,9 @@ namespace AZ
             // render pipeline state
             RPI::Ptr<RPI::PipelineStateForDraw> m_pipelineState;
 
-            // render Srg asset
-            Data::Asset<RPI::ShaderResourceGroupAsset> m_srgAsset;
+            // For the render Srg
+            Data::Instance<RPI::Shader> m_shader;
+            RHI::Ptr<RHI::ShaderResourceGroupLayout> m_srgLayout;
 
             // render drawlist tag
             RHI::DrawListTag m_drawListTag;
@@ -127,12 +129,13 @@ namespace AZ
             const Data::Instance<RPI::ShaderResourceGroup>& GetRenderObjectSrg() const { return m_renderObjectSrg; }
 
             // Srg updates
-            void UpdateRayTraceSrg(const Data::Asset<RPI::ShaderResourceGroupAsset>& srgAsset);
-            void UpdateBlendIrradianceSrg(const Data::Asset<RPI::ShaderResourceGroupAsset>& srgAsset);
-            void UpdateBlendDistanceSrg(const Data::Asset<RPI::ShaderResourceGroupAsset>& srgAsset);
-            void UpdateBorderUpdateSrgs(const Data::Asset<RPI::ShaderResourceGroupAsset>& rowSrgAsset, const Data::Asset<RPI::ShaderResourceGroupAsset>& columnSrgAsset);
-            void UpdateRelocationSrg(const Data::Asset<RPI::ShaderResourceGroupAsset>& srgAsset);
-            void UpdateClassificationSrg(const Data::Asset<RPI::ShaderResourceGroupAsset>& srgAsset);
+            void UpdateRayTraceSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout);
+            void UpdateBlendIrradianceSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout);
+            void UpdateBlendDistanceSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout);
+            void UpdateBorderUpdateSrgs(const Data::Instance<RPI::Shader>& rowShader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& rowSrgLayout,
+                                        const Data::Instance<RPI::Shader>& columnShader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& columnSrgLayout);
+            void UpdateRelocationSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout);
+            void UpdateClassificationSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout);
             void UpdateRenderObjectSrg();
 
             // textures

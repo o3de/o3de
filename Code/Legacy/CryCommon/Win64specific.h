@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -88,7 +89,9 @@ int64 CryGetTicksPerSec();
 }
 #endif
 
-#define _MS_ALIGN(num) __declspec(align(num))
+#define _MS_ALIGN(num) \
+    AZ_PUSH_DISABLE_WARNING(4324, "-Wunknown-warning-option") \
+    __declspec(align(num))
 
 #define DEFINE_ALIGNED_DATA(type, name, alignment) _declspec(align(alignment)) type name;
 #define DEFINE_ALIGNED_DATA_STATIC(type, name, alignment) static _declspec(align(alignment)) type name;

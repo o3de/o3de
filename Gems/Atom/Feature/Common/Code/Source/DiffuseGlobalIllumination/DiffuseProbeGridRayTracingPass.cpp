@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -81,9 +82,8 @@ namespace AZ
             m_globalPipelineState = m_rayTracingShader->AcquirePipelineState(rayGenerationShaderDescriptor);
             AZ_Assert(m_globalPipelineState, "Failed to acquire ray tracing global pipeline state");
 
-            m_globalSrgAsset = m_rayTracingShader->FindShaderResourceGroupAsset(Name{ "RayTracingGlobalSrg" });
-            AZ_Error("ReflectionProbeFeatureProcessor", m_globalSrgAsset.GetId().IsValid(), "Failed to find RayTracingGlobalSrg asset for shader [%s]", shaderFilePath.c_str());
-            AZ_Error("ReflectionProbeFeatureProcessor", m_globalSrgAsset.IsReady(), "RayTracingGlobalSrg asset is not loaded for shader [%s]", shaderFilePath.c_str());
+            m_globalSrgLayout = m_rayTracingShader->FindShaderResourceGroupLayout(Name{ "RayTracingGlobalSrg" });
+            AZ_Error( "ReflectionProbeFeatureProcessor", m_globalSrgLayout != nullptr, "Failed to find RayTracingGlobalSrg layout for shader [%s]", shaderFilePath.c_str());
 
             // build the ray tracing pipeline state descriptor
             RHI::RayTracingPipelineStateDescriptor descriptor;
@@ -259,7 +259,7 @@ namespace AZ
                 {
                     // the diffuse probe grid Srg must be updated in the Compile phase in order to successfully bind the ReadWrite shader
                     // inputs (see line ValidateSetImageView() in ShaderResourceGroupData.cpp)
-                    diffuseProbeGrid->UpdateRayTraceSrg(m_globalSrgAsset);
+                    diffuseProbeGrid->UpdateRayTraceSrg(m_rayTracingShader, m_globalSrgLayout);
                     diffuseProbeGrid->GetRayTraceSrg()->Compile();
                 }
             }

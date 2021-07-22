@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,11 +11,12 @@
 #include <AzToolsFramework/ViewportUi/Button.h>
 #include <AzToolsFramework/ViewportUi/ButtonGroup.h>
 #include <AzToolsFramework/ViewportUi/TextField.h>
-#include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiDisplayLayout.h>
+#include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
+
+#include <QLabel>
 #include <QMainWindow>
 #include <QPointer>
-#include <QLabel>
 
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
 #include <QGridLayout>
@@ -27,10 +29,10 @@ namespace AzToolsFramework::ViewportUi::Internal
     //! Used to track info for each widget in the Viewport UI.
     struct ViewportUiElementInfo
     {
-        AZStd::shared_ptr<QWidget> m_widget; //<! Reference to the widget.
-        ViewportUiElementId m_viewportUiElementId; //<! Corresponding ViewportUiElementId of the widget.
-        bool m_anchored = true; //<! Whether the widget is anchored to one position or moves with camera/entity.
-        AZ::Vector3 m_worldPosition; //<! If not anchored, use this to project widget position to screen space.
+        AZStd::shared_ptr<QWidget> m_widget; //!< Reference to the widget.
+        ViewportUiElementId m_viewportUiElementId; //!< Corresponding ViewportUiElementId of the widget.
+        bool m_anchored = true; //!< Whether the widget is anchored to one position or moves with camera/entity.
+        AZ::Vector3 m_worldPosition; //!< If not anchored, use this to project widget position to screen space.
 
         bool IsValid() const
         {
@@ -51,13 +53,14 @@ namespace AzToolsFramework::ViewportUi::Internal
         ViewportUiDisplay(QWidget* parent, QWidget* renderOverlay);
         ~ViewportUiDisplay();
 
-        void AddCluster(AZStd::shared_ptr<ButtonGroup> buttonGroup, Alignment align);
+        void AddCluster(AZStd::shared_ptr<ButtonGroup> buttonGroup, Alignment alignment);
         void AddClusterButton(ViewportUiElementId clusterId, Button* button);
         void SetClusterButtonLocked(ViewportUiElementId clusterId, ButtonId buttonId, bool isLocked);
+        void SetClusterButtonTooltip(ViewportUiElementId clusterId, ButtonId buttonId, const AZStd::string& tooltip);
         void RemoveClusterButton(ViewportUiElementId clusterId, ButtonId buttonId);
         void UpdateCluster(const ViewportUiElementId clusterId);
 
-        void AddSwitcher(AZStd::shared_ptr<ButtonGroup> buttonGroup, Alignment align);
+        void AddSwitcher(AZStd::shared_ptr<ButtonGroup> buttonGroup, Alignment alignment);
         void AddSwitcherButton(ViewportUiElementId switcherId, Button* button);
         void RemoveSwitcherButton(ViewportUiElementId switcherId, ButtonId buttonId);
         void UpdateSwitcher(ViewportUiElementId switcherId);
@@ -88,13 +91,12 @@ namespace AzToolsFramework::ViewportUi::Internal
 
         void CreateComponentModeBorder(const AZStd::string& borderTitle);
         void RemoveComponentModeBorder();
-        
+
     private:
         void PrepareWidgetForViewportUi(QPointer<QWidget> widget);
 
         ViewportUiElementId AddViewportUiElement(AZStd::shared_ptr<QWidget> widget);
         ViewportUiElementId GetViewportUiElementId(QPointer<QWidget> widget);
-        void AddMaximumSizeViewportUiElement(QPointer<QWidget> widget);
 
         void PositionViewportUiElementFromWorldSpace(ViewportUiElementId elementId, const AZ::Vector3& pos);
         void PositionViewportUiElementAnchored(ViewportUiElementId elementId, const Qt::Alignment alignment);
@@ -107,16 +109,16 @@ namespace AzToolsFramework::ViewportUi::Internal
 
         ViewportUiElementInfo GetViewportUiElementInfo(const ViewportUiElementId elementId);
 
-        QMainWindow m_uiMainWindow; //<! The window which contains the UI Overlay.
-        QWidget m_uiOverlay; //<! The UI Overlay which displays Viewport UI Elements.
-        QGridLayout m_fullScreenLayout; //<! The layout which extends across the full screen.
-        ViewportUiDisplayLayout m_uiOverlayLayout; //<! The layout used for optionally anchoring Viewport UI Elements.
-        QLabel m_componentModeBorderText; //<! The text used for the Component Mode border.
+        QMainWindow m_uiMainWindow; //!< The window which contains the UI Overlay.
+        QWidget m_uiOverlay; //!< The UI Overlay which displays Viewport UI Elements.
+        QGridLayout m_fullScreenLayout; //!< The layout which extends across the full screen.
+        ViewportUiDisplayLayout m_uiOverlayLayout; //!< The layout used for optionally anchoring Viewport UI Elements.
+        QLabel m_componentModeBorderText; //!< The text used for the Component Mode border.
 
         QWidget* m_renderOverlay;
-        QPointer<QWidget> m_fullScreenWidget; //<! Reference to the widget attached to m_fullScreenLayout if any.
-        int m_viewportId;
-        int64_t m_numViewportElements = 0; 
+        QPointer<QWidget> m_fullScreenWidget; //!< Reference to the widget attached to m_fullScreenLayout if any.
+        int64_t m_numViewportElements = 0;
+        int m_viewportId = 0;
 
         ViewportUiElementIdInfoLookup m_viewportUiElements;
     };

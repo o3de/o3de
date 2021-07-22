@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -91,6 +92,10 @@ namespace AzNetworking
         //! @param packetId   the packet id of the packet to confirm acknowledgment of
         //! @return boolean true if the packet is confirmed acknowledged, false if the packet number is out of range, lost, or still pending acknowledgment
         virtual bool WasPacketAcked(ConnectionId connectionId, PacketId packetId) = 0;
+
+        //! Closes the network interface to stop accepting new incoming connections.
+        //! @return boolean true if the operation was successful, false if it failed
+        virtual bool StopListening() = 0;
 
         //! Disconnects the specified connection.
         //! @param connectionId identifier of the connection to terminate

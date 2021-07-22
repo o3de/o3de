@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,6 +9,7 @@
 
 #include <Atom/RHI.Reflect/FrameSchedulerEnums.h>
 #include <Atom/RPI.Reflect/RPISystemDescriptor.h>
+#include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 
 #include <Atom/RPI.Public/Base.h>
 
@@ -53,9 +55,12 @@ namespace AZ
             //! Get the render pipeline created for a window
             virtual RenderPipelinePtr GetRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle) = 0;
 
-            virtual Data::Asset<ShaderResourceGroupAsset> GetSceneSrgAsset() const = 0;
+            //! Returns the shader asset that is being used as the source for the SceneSrg and ViewSrg layouts.
+            virtual Data::Asset<ShaderAsset> GetCommonShaderAssetForSrgs() const = 0;
 
-            virtual Data::Asset<ShaderResourceGroupAsset> GetViewSrgAsset() const = 0;
+            virtual RHI::Ptr<RHI::ShaderResourceGroupLayout> GetSceneSrgLayout() const = 0;
+
+            virtual RHI::Ptr<RHI::ShaderResourceGroupLayout> GetViewSrgLayout() const = 0;
             
             //! Tick for graphics simulation that runs on the CPU. 
             //! This will drive FeatureProcessor simulation activity. It should be called once per game-tick.

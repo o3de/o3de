@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -14,7 +15,7 @@ namespace AZ
 {
     namespace RPI
     {
-        //! The "builder" pattern class that creates a ShaderVariantAsset.
+        //! The "builder" pattern class that creates a ShaderVariantAsset2.
         class ShaderVariantAssetCreator final
             : public AssetCreator<ShaderVariantAsset>
         {
@@ -27,7 +28,7 @@ namespace AZ
             //!        It is still useful, because when creating the Root Variant for the ShaderAsset this assetId should
             //!        match the value that will be assigned by the asset processor because the Root Variant is serialized
             //!        as a Data::Asset<ShaderVariantAsset> inside the ShaderAsset.
-            void Begin(const AZ::Data::AssetId& assetId, const ShaderVariantId& shaderVariantId, RPI::ShaderVariantStableId stableId, const ShaderOptionGroupLayout* shaderOptionGroupLayout);
+            void Begin(const AZ::Data::AssetId& assetId, const ShaderVariantId& shaderVariantId, RPI::ShaderVariantStableId stableId, bool isFullyBaked);
 
             //! Finalizes and assigns ownership of the asset to result, if successful. 
             //! Otherwise false is returned and result is left untouched.
@@ -36,24 +37,13 @@ namespace AZ
             /////////////////////////////////////////////////////////////////////
             // Methods for all shader variant types
 
-            //! Set the timestamp value of ShaderAsset that matches this ShaderVariantAsset.
+            //! Set the timestamp value when the ProcessJob() started.
             //! This is needed to synchronize between the ShaderAsset and ShaderVariantAsset when hot-reloading shaders.
-            void SetShaderAssetBuildTimestamp(AZStd::sys_time_t shaderAssetBuildTimestamp);
+            //! The idea is that this timestamp must be greater or equal than the ShaderAsset. 
+            void SetBuildTimestamp(AZStd::sys_time_t buildTimestamp);
 
             //! Assigns a shaderStageFunction, which contains the byte code, to the slot dictated by the shader stage.
             void SetShaderFunction(RHI::ShaderStage shaderStage, RHI::Ptr<RHI::ShaderStageFunction> shaderStageFunction);
-            
-            /////////////////////////////////////////////////////////////////////
-            // Methods for PipelineStateType::Draw variants.
-            
-            //! Assigns the contract for inputs required by the shader.
-            void SetInputContract(const ShaderInputContract& contract);
-            
-            //! Assigns the contract for outputs required by the shader.
-            void SetOutputContract(const ShaderOutputContract& contract);
-            
-            //! Assigns the render states for the draw pipeline. Ignored for non-draw pipelines.
-            void SetRenderStates(const RHI::RenderStates& renderStates);
 
         };
     } // namespace RPI

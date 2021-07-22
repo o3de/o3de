@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -331,7 +332,7 @@ namespace AzToolsFramework
             {
                 // Load the template from the file
                 templateId = m_prefabLoaderInterface->LoadTemplateFromFile(filePath);
-                AZ_Assert(templateId != InvalidTemplateId, "Template with source path %s couldn't be loaded correctly.", filePath);
+                AZ_Assert(templateId != InvalidTemplateId, "Template with source path %.*s couldn't be loaded correctly.", AZ_STRING_ARG(filePath));
             }
 
             const PrefabDom& templateDom = m_prefabSystemComponentInterface->FindTemplateDom(templateId);

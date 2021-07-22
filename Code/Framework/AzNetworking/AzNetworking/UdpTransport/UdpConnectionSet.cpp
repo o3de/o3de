@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -104,6 +105,24 @@ namespace AzNetworking
     uint32_t UdpConnectionSet::GetConnectionCount() const
     {
         return aznumeric_cast<uint32_t>(m_connectionIdMap.size());
+    }
+
+    uint32_t UdpConnectionSet::GetActiveConnectionCount() const
+    {
+        uint32_t activeConnections = 0;
+        for (auto iter = m_connectionIdMap.begin(); iter != m_connectionIdMap.end(); ++iter)
+        {
+            if (iter->second.get())
+            {
+                ConnectionState state = iter->second.get()->GetConnectionState();
+                if (state == ConnectionState::Connected || state == ConnectionState::Connecting)
+                {
+                    ++activeConnections;
+                }
+            }
+        }
+
+        return activeConnections;
     }
 
     UdpConnection* UdpConnectionSet::GetConnection(const IpAddress& address) const

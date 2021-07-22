@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -129,10 +130,10 @@ namespace AZ
             }
 
             // Load SRG
-            const Data::Asset<ShaderResourceGroupAsset>& srgAsset = m_decomposeShader->FindShaderResourceGroupAsset(Name{ "ObjectSrg" });
-            if (srgAsset)
+            const auto srgLayout = m_decomposeShader->FindShaderResourceGroupLayout(SrgBindingSlot::Object);
+            if (srgLayout)
             {
-                m_decomposeSrg = ShaderResourceGroup::Create(srgAsset);
+                m_decomposeSrg = ShaderResourceGroup::Create(m_decomposeShader->GetAsset(), m_decomposeShader->GetSupervariantIndex(), srgLayout->GetName());
 
                 if (!m_decomposeSrg)
                 {

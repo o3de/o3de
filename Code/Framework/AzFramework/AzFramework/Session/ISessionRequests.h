@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -37,7 +38,7 @@ namespace AzFramework
         AZStd::string m_sessionName;
 
         // The maximum number of players that can be connected simultaneously to the session.
-        uint64_t m_maxPlayer;
+        uint64_t m_maxPlayer = 0;
     };
 
     //! SearchSessionsRequest
@@ -58,7 +59,7 @@ namespace AzFramework
         AZStd::string m_sortExpression;
 
         // The maximum number of results to return.
-        uint8_t m_maxResult;
+        uint8_t m_maxResult = 0;
 
         // A token that indicates the start of the next sequential page of results.
         AZStd::string m_nextToken;

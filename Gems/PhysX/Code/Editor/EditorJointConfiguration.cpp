@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include <PhysX_precompiled.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <Editor/EditorJointConfiguration.h>
@@ -139,11 +139,12 @@ namespace PhysX
     {
         return m_standardLimitConfig.m_isLimited;
     }
-    GenericJointLimitsConfiguration EditorJointLimitPairConfig::ToGameTimeConfig() const
+
+    JointLimitProperties EditorJointLimitPairConfig::ToGameTimeConfig() const
     {
-        return GenericJointLimitsConfiguration(m_standardLimitConfig.m_damping
-            , m_standardLimitConfig.m_isLimited
+        return JointLimitProperties(m_standardLimitConfig.m_isLimited
             , m_standardLimitConfig.m_isSoftLimit
+            , m_standardLimitConfig.m_damping
             , m_limitPositive, m_limitNegative
             , m_standardLimitConfig.m_stiffness
             , m_standardLimitConfig.m_tolerance);
@@ -188,11 +189,11 @@ namespace PhysX
         return m_standardLimitConfig.m_isLimited;
     }
 
-    GenericJointLimitsConfiguration EditorJointLimitConeConfig::ToGameTimeConfig() const
+    JointLimitProperties EditorJointLimitConeConfig::ToGameTimeConfig() const
     {
-        return GenericJointLimitsConfiguration(m_standardLimitConfig.m_damping
-            , m_standardLimitConfig.m_isLimited
+        return JointLimitProperties(m_standardLimitConfig.m_isLimited
             , m_standardLimitConfig.m_isSoftLimit
+            , m_standardLimitConfig.m_damping
             , m_limitY
             , m_limitZ
             , m_standardLimitConfig.m_stiffness
@@ -270,27 +271,31 @@ namespace PhysX
             , AzToolsFramework::Refresh_AttributesAndValues);
     }
 
-    GenericJointConfiguration EditorJointConfig::ToGameTimeConfig() const
+    JointGenericProperties EditorJointConfig::ToGenericProperties() const
     {
-        GenericJointConfiguration::GenericJointFlag flags = GenericJointConfiguration::GenericJointFlag::None;
+        JointGenericProperties::GenericJointFlag flags = JointGenericProperties::GenericJointFlag::None;
         if (m_breakable)
         {
-            flags |= GenericJointConfiguration::GenericJointFlag::Breakable;
+            flags |= JointGenericProperties::GenericJointFlag::Breakable;
         }
         if (m_selfCollide)
         {
-            flags |= GenericJointConfiguration::GenericJointFlag::SelfCollide;
+            flags |= JointGenericProperties::GenericJointFlag::SelfCollide;
         }
 
+        return JointGenericProperties(flags, m_forceMax, m_torqueMax);
+    }
+
+    JointComponentConfiguration EditorJointConfig::ToGameTimeConfig() const
+    {
         AZ::Vector3 localRotation(m_localRotation);
 
-        return GenericJointConfiguration(m_forceMax
-            , m_torqueMax
-            , AZ::Transform::CreateFromQuaternionAndTranslation(AZ::Quaternion::CreateFromEulerAnglesDegrees(localRotation),
-                m_localPosition)
-            , m_leadEntity
-            , m_followerEntity
-            , flags);
+        return JointComponentConfiguration(
+            AZ::Transform::CreateFromQuaternionAndTranslation(
+                AZ::Quaternion::CreateFromEulerAnglesDegrees(localRotation),
+                m_localPosition),
+            m_leadEntity,
+            m_followerEntity);
     }
 
     bool EditorJointConfig::IsInComponentMode() const

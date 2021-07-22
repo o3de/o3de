@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -31,8 +32,8 @@ namespace Physics
         if (serializeContext)
         {
             serializeContext->Class<RagdollNodeConfiguration, RigidBodyConfiguration>()
-                ->Version(4, &ClassConverters::RagdollNodeConfigConverter)
-                ->Field("JointLimit", &RagdollNodeConfiguration::m_jointLimit)
+                ->Version(5, &ClassConverters::RagdollNodeConfigConverter)
+                ->Field("JointConfig", &RagdollNodeConfiguration::m_jointConfig)
             ;
 
             AZ::EditContext* editContext = serializeContext->GetEditContext();

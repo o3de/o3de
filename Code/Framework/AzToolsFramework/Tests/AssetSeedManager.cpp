@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -87,10 +88,12 @@ namespace UnitTest
                 for (int idx = 0; idx < s_totalAssets; idx++)
                 {
                     AzFramework::StringFunc::Path::Join(assetRoot.c_str(), m_assetsPath[idx].c_str(), m_assetsPathFull[platformCount][idx]);
+                    AZ_TEST_START_TRACE_SUPPRESSION;
                     if (m_fileStreams[platformCount][idx].Open(m_assetsPathFull[platformCount][idx].c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeBinary | AZ::IO::OpenMode::ModeCreatePath))
                     {
                         m_fileStreams[platformCount][idx].Write(m_assetsPath[idx].size(), m_assetsPath[idx].data());
                         m_fileStreams[platformCount][idx].Close();
+                        AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT; // writing to asset cache folder, only invalid for PC, not invalid in Jenkins
                     }
                     else
                     {
@@ -112,7 +115,9 @@ namespace UnitTest
             m_testDynamicSliceAssetId = testDynamicSliceAsset;
             m_assetRegistry->RegisterAsset(testDynamicSliceAsset, dynamicSliceAssetInfo);
 
+            AZ_TEST_START_TRACE_SUPPRESSION;
             AZ::IO::FileIOStream dynamicSliceFileIOStream(TestDynamicSliceAssetPath, AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeText);
+            AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT; // writing to asset cache folder, not invalid in Jenkins
 
             AZ::Data::AssetInfo sliceAssetInfo;
             sliceAssetInfo.m_relativePath = TestSliceAssetPath;
@@ -124,7 +129,9 @@ namespace UnitTest
             secondSliceAssetInfo.m_assetId = secondTestSliceAsset;
             m_assetRegistry->RegisterAsset(secondTestSliceAsset, secondSliceAssetInfo);
 
+            AZ_TEST_START_TRACE_SUPPRESSION;
             AZ::IO::FileIOStream sliceFileIOStream(TestSliceAssetPath, AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeText);
+            AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT; // writing to asset cache folder, not invalid in Jenkins
 
             // asset0 -> asset1 -> asset2 -> asset4
             //                 --> asset3
@@ -186,7 +193,6 @@ namespace UnitTest
             AZ::IO::Path assetRoot(AZ::Utils::GetProjectPath());
             assetRoot /= "Cache";
             AZ::IO::FileIOBase::GetInstance()->SetAlias("@root@", assetRoot.c_str());
-
         }
 
         void TearDown() override
@@ -195,7 +201,9 @@ namespace UnitTest
 
             if (fileIO->Exists(s_catalogFile))
             {
+                AZ_TEST_START_TRACE_SUPPRESSION;
                 fileIO->Remove(s_catalogFile);
+                AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT; // deleting from asset cache folder, not invalid in Jenkins
             }
 
             for (size_t platformCount = 0; platformCount < s_totalTestPlatforms; ++platformCount)
@@ -206,26 +214,34 @@ namespace UnitTest
                     // we need to close the handle before we try to remove the file
                     if (fileIO->Exists(m_assetsPathFull[platformCount][idx].c_str()))
                     {
+                        AZ_TEST_START_TRACE_SUPPRESSION;
                         fileIO->Remove(m_assetsPathFull[platformCount][idx].c_str());
+                        AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT; // deleting from asset cache folder, not invalid in Jenkins
                     }
                 }
             }
 
             if (fileIO->Exists(TestSliceAssetPath))
             {
+                AZ_TEST_START_TRACE_SUPPRESSION;
                 fileIO->Remove(TestSliceAssetPath);
+                AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT; // deleting from asset cache folder, not invalid in Jenkins
             }
 
             if (fileIO->Exists(TestDynamicSliceAssetPath))
             {
+                AZ_TEST_START_TRACE_SUPPRESSION;
                 fileIO->Remove(TestDynamicSliceAssetPath);
+                AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT; // deleting from asset cache folder, not invalid in Jenkins
             }
 
             auto pcCatalogFile = AzToolsFramework::PlatformAddressedAssetCatalog::GetCatalogRegistryPathForPlatform(AzFramework::PlatformId::PC);
             auto androidCatalogFile = AzToolsFramework::PlatformAddressedAssetCatalog::GetCatalogRegistryPathForPlatform(AzFramework::PlatformId::ANDROID_ID);
             if (fileIO->Exists(pcCatalogFile.c_str()))
             {
+                AZ_TEST_START_TRACE_SUPPRESSION;
                 fileIO->Remove(pcCatalogFile.c_str());
+                AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT; // deleting from asset cache folder, not invalid in Jenkins
             }
 
             if (fileIO->Exists(androidCatalogFile.c_str()))
@@ -266,7 +282,9 @@ namespace UnitTest
             AZ::IO::SystemFile::SetWritable(filePath.c_str(), false);
 
             // Attempt to save to the same file. Should not be allowed.
+            AZ_TEST_START_TRACE_SUPPRESSION;
             EXPECT_FALSE(m_assetSeedManager->Save(filePath));
+            AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT; // writing to asset cache folder, not invalid in Jenkins
 
             // Clean up the test environment
             AZ::IO::SystemFile::SetWritable(filePath.c_str(), true);
@@ -290,7 +308,9 @@ namespace UnitTest
             AZ::IO::SystemFile::SetWritable(filePath.c_str(), false);
 
             // Attempt to save to the same file. Should not be allowed.
+            AZ_TEST_START_TRACE_SUPPRESSION;
             EXPECT_FALSE(m_assetSeedManager->SaveAssetFileInfo(filePath, AzFramework::PlatformFlags::Platform_PC, {}));
+            AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT; // writing to asset cache folder, not invalid in Jenkins
 
             // Clean up the test environment
             AZ::IO::SystemFile::SetWritable(filePath.c_str(), true);
@@ -357,7 +377,9 @@ namespace UnitTest
             m_assetSeedManager->AddSeedAsset(assets[2], AzFramework::PlatformFlags::Platform_PC);
 
             // Step we are testing
+            AZ_TEST_START_TRACE_SUPPRESSION;
             m_assetSeedManager->AddPlatformToAllSeeds(AzFramework::PlatformId::ANDROID_ID);
+            AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT; // writing to asset cache folder, not invalid in Jenkins
 
             // Verification
             AzFramework::PlatformFlags expectedPlatformFlags = AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_ANDROID;
@@ -623,11 +645,13 @@ namespace UnitTest
 
             EXPECT_EQ(assetList1.m_fileInfoList.size(), 1);
             EXPECT_TRUE(Search(assetList1, assets[fileIndex]));
+            AZ_TEST_START_TRACE_SUPPRESSION;
             if (m_fileStreams[0][fileIndex].Open(m_assetsPathFull[0][fileIndex].c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeBinary | AZ::IO::OpenMode::ModeCreatePath))
             {
                 AZStd::string fileContent = AZStd::string::format("asset%d.txt", fileIndex);
                 m_fileStreams[0][fileIndex].Write(fileContent.size(), fileContent.c_str());
                 m_fileStreams[0][fileIndex].Close();
+                AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT; // writing to asset cache folder, not invalid in Jenkins
             }
 
             AzToolsFramework::AssetFileInfoList assetList2 = m_assetSeedManager->GetDependencyList(AzFramework::PlatformId::PC);
@@ -654,11 +678,13 @@ namespace UnitTest
 
             EXPECT_EQ(assetList1.m_fileInfoList.size(), 1);
             EXPECT_TRUE(Search(assetList1, assets[fileIndex]));
+            AZ_TEST_START_TRACE_SUPPRESSION;
             if (m_fileStreams[0][fileIndex].Open(m_assetsPathFull[0][fileIndex].c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeBinary | AZ::IO::OpenMode::ModeCreatePath))
             {
                 AZStd::string fileContent = AZStd::string::format("asset%d.txt", fileIndex + 1);// changing file content
                 m_fileStreams[0][fileIndex].Write(fileContent.size(), fileContent.c_str());
                 m_fileStreams[0][fileIndex].Close();
+                AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT; // writing to asset cache folder, not invalid in Jenkins
             }
 
             AzToolsFramework::AssetFileInfoList assetList2 = m_assetSeedManager->GetDependencyList(AzFramework::PlatformId::PC);

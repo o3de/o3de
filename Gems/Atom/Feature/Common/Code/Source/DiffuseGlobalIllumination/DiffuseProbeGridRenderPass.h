@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,6 +14,8 @@ namespace AZ
 {
     namespace Render
     {
+        class DiffuseProbeGrid;
+
         //! This pass renders the diffuse global illumination in the area covered by
         //! each DiffuseProbeGrid.
         class DiffuseProbeGridRenderPass final
@@ -39,8 +42,11 @@ namespace AZ
             void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;
 
+            // helper function to determine if a DiffuseProbeGrid should be rendered based on its state
+            bool ShouldRender(const AZStd::shared_ptr<DiffuseProbeGrid>& diffuseProbeGrid);
+
             Data::Instance<RPI::Shader> m_shader;
-            Data::Asset<RPI::ShaderResourceGroupAsset> m_srgAsset;
+            RHI::Ptr<RHI::ShaderResourceGroupLayout> m_srgLayout;
         };
     } // namespace Render
 } // namespace AZ

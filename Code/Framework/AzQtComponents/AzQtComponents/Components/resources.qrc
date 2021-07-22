@@ -370,6 +370,7 @@
     <file>img/UI20/toolbar/Redo.svg</file>
     <file>img/UI20/toolbar/remove_link.svg</file>
     <file>img/UI20/toolbar/Reset_physics_state.svg</file>
+	<file>img/UI20/toolbar/RestoreMode.svg</file>
     <file>img/UI20/toolbar/Save.svg</file>
     <file>img/UI20/toolbar/Scale.svg</file>
     <file>img/UI20/toolbar/Select.svg</file>
@@ -377,9 +378,10 @@
     <file>img/UI20/toolbar/Select_terrain.svg</file>
     <file>img/UI20/toolbar/Simulate_Physics.svg</file>
     <file>img/UI20/toolbar/Simulate_Physics_on_selected_objects.svg</file>
+	<file>img/UI20/toolbar/SketchMode.svg</file>
     <file>img/UI20/toolbar/Terrain.svg</file>
     <file>img/UI20/toolbar/Terrain_Texture.svg</file>
-    <file>img/UI20/toolbar/Translate.svg</file>
+    <file>img/UI20/toolbar/Rotate.svg</file>
     <file>img/UI20/toolbar/undo.svg</file>
     <file>img/UI20/toolbar/Unlocked.svg</file>
     <file>img/UI20/toolbar/Vertex_snapping.svg</file>

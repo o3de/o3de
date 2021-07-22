@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include "WhiteBox_precompiled.h"
 
 #include "EditorWhiteBoxComponentMode.h"
 #include "SubComponentModes/EditorWhiteBoxDefaultMode.h"
@@ -460,7 +459,7 @@ namespace WhiteBox
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
             buttonId, AzToolsFramework::ViewportUi::DefaultViewportId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateClusterButton, clusterId,
-            AZStd::string::format("Icons/WhiteBox/%s.svg", iconName));
+            AZStd::string::format(":/stylesheet/img/UI20/toolbar/%s.svg", iconName));
 
         return buttonId;
     }

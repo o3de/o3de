@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -47,5 +48,9 @@ namespace AzNetworking
         //! Returns the current total connection count for this connection set
         //! @return the current total connection count for this connection set
         virtual uint32_t GetConnectionCount() const = 0;
+
+        //! Returns the current total count of connections not pending disconnect for this connection set
+        //! @return the current total count of connections not pending disconnect for this connection set
+        virtual uint32_t GetActiveConnectionCount() const = 0;
     };
 }

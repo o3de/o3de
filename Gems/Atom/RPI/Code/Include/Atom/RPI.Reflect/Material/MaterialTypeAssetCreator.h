@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -96,16 +97,17 @@ namespace AZ
 
             void AddMaterialProperty(MaterialPropertyDescriptor&& materialProperty);
 
-            //! The material type holds references to the SRGs that are supposed to be the same across all passes in the material. This function
-            //! extracts a specific SRG from a ShaderAsset, saves it in the material type, and validates that all shaders use the same one.
-            //! @srgAssetToUpdate  Points to a specific ShaderResourceGroupAsset in the MaterialTypeAsset being built. If null, this will be 
-            //!                    filled with an SRG from the newShaderAsset. If not null, this will validate that the same SRG is used by newShaderAsset.
+            //! The material type holds references to shader assets that contain SRGs that are supposed to be the same across all passes in the material.
+            //! This function searches for an SRG given a @bindingSlot. If a valid one is found it makes sure it is the same across all shaders
+            //! and records in srgShaderIndexToUpdate the index of the ShaderAsset in the ShaderCollection where it was found.
+            //! @srgShaderIndexToUpdate Previously found shader index. If Invalid, this will be filled with the index of the shader Asset
+            //!     where the bindingSlot was found. If not Invalid, this will validate that the same SRG is used by
+            //!                    newShaderAsset.
+            //! @newShaderAssetIndex Corresponding index of @newShaderAsset in m_asset->m_shaderCollection.
             //! @bindingSlot  The binding slot ID of the SRG to fetch from newShaderAsset.
-            bool UpdateShaderResourceGroup(
-                Data::Asset<ShaderResourceGroupAsset>& srgAssetToUpdate,
-                const Data::Asset<ShaderAsset>& newShaderAsset,
-                uint32_t bindingSlot,
-                const char* srgDebugName);
+            bool UpdateShaderIndexForShaderResourceGroup(
+                uint32_t& srgShaderIndexToUpdate, const Data::Asset<ShaderAsset>& newShaderAsset, const uint32_t newShaderAssetIndex,
+                const uint32_t bindingSlot, const char* srgDebugName);
 
             //! Saves the per-material SRG layout in m_shaderResourceGroupLayout for easier access
             void CacheMaterialSrgLayout();

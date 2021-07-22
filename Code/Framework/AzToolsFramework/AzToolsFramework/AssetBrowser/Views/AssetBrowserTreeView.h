@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -89,6 +90,9 @@ namespace AzToolsFramework
         protected Q_SLOTS:
             void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected) override;
             void rowsAboutToBeRemoved(const QModelIndex& parent, int start, int end) override;
+
+        protected:
+            QModelIndexList selectedIndexes() const override;
 
         private:
             QPointer<AssetBrowserModel> m_assetBrowserModel = nullptr;

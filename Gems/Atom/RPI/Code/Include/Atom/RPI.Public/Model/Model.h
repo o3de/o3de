@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -27,6 +28,7 @@ namespace AZ
             : public Data::InstanceData
         {
             friend class ModelSystem;
+
         public:
             AZ_INSTANCE_DATA(Model, "{C30F5522-B381-4B38-BBAF-6E0B1885C8B9}");
             AZ_CLASS_ALLOCATOR(Model, AZ::SystemAllocator, 0);
@@ -47,8 +49,6 @@ namespace AZ
 
             //! Returns whether a buffer upload is pending.
             bool IsUploadPending() const;
-
-            const AZ::Aabb& GetAabb() const;
 
             const Data::Asset<ModelAsset>& GetModelAsset() const;
 
@@ -100,8 +100,6 @@ namespace AZ
 
             // Tracks whether buffers have all been streamed up to the GPU.
             bool m_isUploadPending = false;
-
-            AZ::Aabb m_aabb;
         };
     } // namespace RPI
 } // namespace AZ

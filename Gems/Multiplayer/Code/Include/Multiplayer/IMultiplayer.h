@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,6 +11,7 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzNetworking/DataStructures/ByteBuffer.h>
+#include <Multiplayer/NetworkEntity/IFilterEntityManager.h>
 #include <Multiplayer/Components/MultiplayerComponentRegistry.h>
 #include <Multiplayer/NetworkEntity/INetworkEntityManager.h>
 #include <Multiplayer/NetworkTime/INetworkTime.h>
@@ -40,6 +42,7 @@ namespace Multiplayer
         AzNetworking::ByteBuffer<2048> m_userData;
     };
 
+    using ClientDisconnectedEvent = AZ::Event<>;
     using ConnectionAcquiredEvent = AZ::Event<MultiplayerAgentDatum>;
     using SessionInitEvent = AZ::Event<AzNetworking::INetworkInterface*>;
     using SessionShutdownEvent = AZ::Event<AzNetworking::INetworkInterface*>;
@@ -75,8 +78,28 @@ namespace Multiplayer
         //! @param state The state of this connection
         virtual void InitializeMultiplayer(MultiplayerAgentType state) = 0;
 
+        //! Starts hosting a server
+        //! @param port The port to listen for connection on
+        //! @param isDedicated Whether the server is dedicated or client hosted
+        //! @return if the application successfully started hosting
+        virtual bool StartHosting(uint16_t port, bool isDedicated = true) = 0;
+
+        //! Connects to the specified IP as a Client
+        //! @param remoteAddress The domain or IP to connect to
+        //! @param port The port to connect to
+        //! @result if a connection was successfully created
+        virtual bool Connect(AZStd::string remoteAddress, uint16_t port) = 0;
+
+        // Disconnects all multiplayer connections, stops listening on the server and invokes handlers appropriate to network context
+        //! @param reason The reason for terminating connections
+        virtual void Terminate(AzNetworking::DisconnectReason reason) = 0;
+
+        //! Adds a ClientDisconnectedEvent Handler which is invoked on the client when a disconnection occurs
+        //! @param handler The ClientDisconnectedEvent Handler to add
+        virtual void AddClientDisconnectedHandler(ClientDisconnectedEvent::Handler& handler) = 0;
+
         //! Adds a ConnectionAcquiredEvent Handler which is invoked when a new endpoint connects to the session.
-        //! @param handler The SessionInitEvent Handler to add
+        //! @param handler The ConnectionAcquiredEvent Handler to add
         virtual void AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler) = 0;
 
         //! Adds a SessionInitEvent Handler which is invoked when a new network session starts.
@@ -106,6 +129,15 @@ namespace Multiplayer
         //! Returns the network entity manager instance bound to this multiplayer instance.
         //! @return pointer to the network entity manager instance bound to this multiplayer instance
         virtual INetworkEntityManager* GetNetworkEntityManager() = 0;
+
+        //! Sets user-defined filtering manager for entities.
+        //! This allows selectively choosing which entities to replicate on a per client connection.
+        //! See IFilterEntityManager for details.
+        //! @param entityFilter non-owning pointer, the caller is responsible for memory management.
+        virtual void SetFilterEntityManager(IFilterEntityManager* entityFilter) = 0;
+
+        //! @return pointer to the user-defined filtering manager of entities. By default, this isn't set and returns nullptr.
+        virtual IFilterEntityManager* GetFilterEntityManager() = 0;
 
         //! Retrieve the stats object bound to this multiplayer instance.
         //! @return the stats object bound to this multiplayer instance

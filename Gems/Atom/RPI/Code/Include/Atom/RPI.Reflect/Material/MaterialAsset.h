@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -64,15 +65,33 @@ namespace AZ
             //! See MaterialFunctor.h for details.
             const MaterialFunctorList& GetMaterialFunctors() const;
 
-            //! Returns the shader resource group asset that has per-material frequency, which indicates most of the topology 
+            //! Returns the shader resource group layout that has per-material frequency, which indicates most of the topology
             //! for a material's shaders.
-            //! All shaders in a material will have the same per-material SRG asset.
-            const Data::Asset<ShaderResourceGroupAsset>& GetMaterialSrgAsset() const;
-            
-            //! Returns the shader resource group asset that has per-object frequency. What constitutes an "object" is an
+            //! All shaders in a material will have the same per-material SRG layout.
+            //! @param supervariantIndex: supervariant index to get the layout from.
+            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetMaterialSrgLayout(const SupervariantIndex& supervariantIndex) const;
+
+            //! Same as above but accepts the supervariant name. There's a minor penalty when using this function
+            //! because it will discover the index from the name.
+            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetMaterialSrgLayout(const AZ::Name& supervariantName) const;
+
+            //! Just like the original GetMaterialSrgLayout() where it uses the index of the default supervariant.
+            //! See the definition of DefaultSupervariantIndex.
+            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetMaterialSrgLayout() const;
+
+            //! Returns the shader resource group layout that has per-object frequency. What constitutes an "object" is an
             //! agreement between the FeatureProcessor and the shaders, but an example might be world-transform for a model.
-            //! All shaders in a material will have the same per-object SRG asset.
-            const Data::Asset<ShaderResourceGroupAsset>& GetObjectSrgAsset() const;
+            //! All shaders in a material will have the same per-object SRG layout.
+            //! @param supervariantIndex: supervariant index to get the layout from.
+            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetObjectSrgLayout(const SupervariantIndex& supervariantIndex) const;
+
+            //! Same as above but accepts the supervariant name. There's a minor penalty when using this function
+            //! because it will discover the index from the name.
+            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetObjectSrgLayout(const AZ::Name& supervariantName) const;
+
+            //! Just like the original GetObjectSrgLayout() where it uses the index of the default supervariant.
+            //! See the definition of DefaultSupervariantIndex.
+            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetObjectSrgLayout() const;
 
             //! Returns a layout that includes a list of MaterialPropertyDescriptors for each material property.
             const MaterialPropertiesLayout* GetMaterialPropertiesLayout() const;
