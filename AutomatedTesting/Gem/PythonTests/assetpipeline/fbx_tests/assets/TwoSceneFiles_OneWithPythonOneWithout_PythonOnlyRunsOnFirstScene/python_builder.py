@@ -17,13 +17,6 @@ def output_test_data(scene):
     log_output_folder = os.path.dirname(scene.sourceFilename)
     log_output_location = os.path.join(log_output_folder, log_output_file_name)
     
-    with open("C:/pytest/testfile.log", "w") as f:
-        f.write(f"testfile.log: {datetime.datetime.now()}\n")
-        f.write(f"source_filename: {source_filename}\n")
-        f.write(f"scene.sourceFilename: {scene.sourceFilename}\n")
-        f.write(f"log_output_folder: {log_output_folder}\n")
-        f.write(f"log_output_location: {log_output_location}\n")
-    
     # Saving a file to the temp folder is the easiest way to have this test communicate
     # with the outer python test.
     with open(log_output_location, "w") as f:
@@ -35,8 +28,6 @@ def output_test_data(scene):
 mySceneJobHandler = None
 
 def on_update_manifest(args):
-    with open("C:/pytest/testfile2.log", "w") as f:
-        f.write(f"on_update_manifest: {datetime.datetime.now()}\n")
     scene = args[0]
     result = output_test_data(scene)
     global mySceneJobHandler
