@@ -51,7 +51,10 @@ namespace AzPhysics
                 ->Method("GetOnPostsimulateEvent", getOnPostsimulateEvent)
                     ->Attribute(AZ::Script::Attributes::AzEventDescription, postsimulateEventDescription)
                 ->Method("GetSceneHandle", &SystemInterface::GetSceneHandle)
-                ->Method("GetScene", &SystemInterface::GetScene);
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+                ->Method("GetScene", &SystemInterface::GetScene)
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+                ;
 
             behaviorContext->Method(
                     "GetPhysicsSystem",

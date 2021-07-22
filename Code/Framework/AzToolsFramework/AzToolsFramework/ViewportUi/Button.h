@@ -28,7 +28,7 @@ namespace AzToolsFramework::ViewportUi::Internal
 
         AZStd::string m_icon; //!< The icon for this button, string path to an image.
         AZStd::string m_name; //!< The name displayed as a label next to the button's icon.
-        State m_state = State::Deselected; 
-        ButtonId m_buttonId; 
+        State m_state = State::Deselected;
+        ButtonId m_buttonId;
     };
 } // namespace AzToolsFramework::ViewportUi::Internal
