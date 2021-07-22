@@ -18,6 +18,7 @@
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/std/parallel/mutex.h>
 
 namespace AWSMetrics

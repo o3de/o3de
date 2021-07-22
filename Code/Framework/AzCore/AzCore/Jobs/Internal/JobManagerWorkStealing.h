@@ -18,7 +18,7 @@
 #include <AzCore/std/parallel/shared_mutex.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/semaphore.h>
-#include <AzCore/std/parallel/binary_semaphore.h>
+#include <AzCore/std/parallel/condition_variable.h>
 #include <AzCore/std/parallel/thread.h>
 
 namespace AZ
@@ -96,7 +96,8 @@ namespace AZ
                 // valid only on workers (TODO: Use some lazy initialization as we don't need that data for non worker threads)
                 AZStd::thread m_thread;
                 AZStd::atomic_bool m_isAvailable{false};
-                AZStd::binary_semaphore m_waitEvent;
+                AZStd::condition_variable m_waitEvent;
+                AZStd::mutex m_waitMutex;
                 WorkQueue m_pendingJobs;
                 unsigned int m_workerId = JobManagerBase::InvalidWorkerThreadId;
 

@@ -98,7 +98,7 @@ JobManagerWorkStealing::~JobManagerWorkStealing()
 
         for (ThreadInfo* thread : m_workerThreads)
         {
-            thread->m_waitEvent.release();
+            thread->m_waitEvent.notify_one();
             thread->m_thread.join();
         }
     }
@@ -370,7 +370,8 @@ void JobManagerWorkStealing::ProcessJobsInternal(ThreadInfo* info, Job* suspende
                 if (shouldSleep)
                 {
                     //no available work, so go to sleep (or we have already been signaled by another thread and will acquire the semaphore but not actually sleep)
-                    info->m_waitEvent.acquire();
+                    AZStd::unique_lock lock{ info->m_waitMutex };
+                    info->m_waitEvent.wait(lock);
                     AZ_PROFILE_INTERVAL_END(AZ::Debug::ProfileCategory::JobManagerDetailed, info);
 
                     if (m_quitRequested)
@@ -675,7 +676,7 @@ inline void JobManagerWorkStealing::ActivateWorker()
                 // resume the thread execution
 
                 AZ_PROFILE_INTERVAL_START(AZ::Debug::ProfileCategory::JobManagerDetailed, info, "AzCore WakeJobThread %d", info->m_workerId);
-                info->m_waitEvent.release();
+                info->m_waitEvent.notify_one();
                 return;
             }
         }

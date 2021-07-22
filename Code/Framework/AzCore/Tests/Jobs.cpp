@@ -23,6 +23,7 @@
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/fixed_list.h>
 #include <AzCore/std/containers/unordered_set.h>
+#include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/std/parallel/containers/concurrent_vector.h>
 
 #include <AzCore/Memory/SystemAllocator.h>
