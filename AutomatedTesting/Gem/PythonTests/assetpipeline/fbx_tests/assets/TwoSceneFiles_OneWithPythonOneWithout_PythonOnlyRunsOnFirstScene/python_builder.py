@@ -13,9 +13,7 @@ def output_test_data(scene):
     source_filename = source_filename.replace('.','_')
         
     log_output_file_name = f"{source_filename}.log"
-    
-    # This python script was copied to a temp directory
-    #log_output_folder = os.path.abspath(__file__) #os.path.dirname(os.path.abspath(__file__))
+
     log_output_folder = os.path.dirname(scene.sourceFilename)
     log_output_location = os.path.join(log_output_folder, log_output_file_name)
     
@@ -39,8 +37,6 @@ mySceneJobHandler = None
 def on_update_manifest(args):
     with open("C:/pytest/testfile2.log", "w") as f:
         f.write(f"on_update_manifest: {datetime.datetime.now()}\n")
-    #assert False
-    #asdf fdas asdf
     scene = args[0]
     result = output_test_data(scene)
     global mySceneJobHandler
