@@ -180,6 +180,21 @@ namespace PrefabDependencyViewer
         EXPECT_EQ(1, tree.GetChildren(level13Node).size());
 
         // Check Level 2 Nodes
+
+        Utils::Node* level21Node = *tree.GetChildren(level11Node).begin();
+        EXPECT_EQ(level11Node, level21Node->GetParent());
+        EXPECT_EQ(121, level21Node->GetMetaData().GetTemplateId());
+        EXPECT_STR_EQ("Prefabs/level12.prefab", level21Node->GetMetaData().GetSource());
+
+        Utils::NodeSet level13Children = tree.GetChildren(level13Node);
+        auto it = level13Children.begin();
+
+        Utils::Node* level22Node = *it;
+        ++it;
+
+        EXPECT_EQ(level13Node, level22Node->GetParent());
+        EXPECT_EQ(240121, level22Node->GetMetaData().GetTemplateId());
+        EXPECT_STR_EQ("Prefabs/level22.prefab", level22Node->GetMetaData().GetSource());
     }
 
 } // namespace PrefabDependencyViewer
