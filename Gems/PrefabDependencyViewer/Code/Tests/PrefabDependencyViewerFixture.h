@@ -46,6 +46,7 @@ namespace PrefabDependencyViewer
             CreatePrefabAddSourceAndValue("level12Prefab", "Prefabs/level12.prefab");
             CreatePrefabAddSourceAndValue("level13Prefab", "Prefabs/level13.prefab");
             CreatePrefabAddSourceAndValue("level22Prefab", "Prefabs/level22.prefab");
+            CreatePrefabAddSourceAndValue("level23Prefab", "Prefabs/level23.prefab");
 
             // Level 1 setup
             AddInstance("ValidPrefab", "level11Prefab");
@@ -55,6 +56,8 @@ namespace PrefabDependencyViewer
             // Level 2 setup
             AddInstance("level11Prefab", "level12Prefab");
             AddInstance("level13Prefab", "level22Prefab");
+            AddInstance("level13Prefab", "level23Prefab");
+
         }
 
         void CreatePrefabAddSourceAndValue(AZStd::string prefabName, const char* prefabSource)

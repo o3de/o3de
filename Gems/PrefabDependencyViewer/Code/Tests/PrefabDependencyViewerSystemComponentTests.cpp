@@ -141,9 +141,17 @@ namespace PrefabDependencyViewer
             .Times(1)
             .WillRepeatedly(::testing::Return(240121));
 
+        EXPECT_CALL(*m_prefabSystemComponent, GetTemplateIdFromFilePath(AZ::IO::PathView("Prefabs/level23.prefab")))
+            .Times(1)
+            .WillRepeatedly(::testing::Return(123));
+
         EXPECT_CALL(*m_prefabSystemComponent, FindTemplateDom(240121))
             .Times(1)
             .WillRepeatedly(::testing::ReturnRef(m_prefabDomsCases["level22Prefab"]));
+
+        EXPECT_CALL(*m_prefabSystemComponent, FindTemplateDom(123))
+            .Times(1)
+            .WillRepeatedly(::testing::ReturnRef(m_prefabDomsCases["level23Prefab"]));
 
         Outcome outcome = PrefabDependencyTree::GenerateTreeAndSetRoot(tid, m_prefabSystemComponent);
         EXPECT_EQ(true, outcome.IsSuccess());
@@ -177,7 +185,7 @@ namespace PrefabDependencyViewer
 
         EXPECT_EQ(1, tree.GetChildren(level11Node).size());
         EXPECT_EQ(0, tree.GetChildren(level12Node).size());
-        EXPECT_EQ(1, tree.GetChildren(level13Node).size());
+        EXPECT_EQ(2, tree.GetChildren(level13Node).size());
 
         // Check Level 2 Nodes
 
@@ -195,6 +203,11 @@ namespace PrefabDependencyViewer
         EXPECT_EQ(level13Node, level22Node->GetParent());
         EXPECT_EQ(240121, level22Node->GetMetaData().GetTemplateId());
         EXPECT_STR_EQ("Prefabs/level22.prefab", level22Node->GetMetaData().GetSource());
+
+        Utils::Node* level23Node = *it;
+        EXPECT_EQ(level13Node, level23Node->GetParent());
+        EXPECT_EQ(123, level23Node->GetMetaData().GetTemplateId());
+        EXPECT_STR_EQ("Prefabs/level23.prefab", level23Node->GetMetaData().GetSource());
     }
 
 } // namespace PrefabDependencyViewer
