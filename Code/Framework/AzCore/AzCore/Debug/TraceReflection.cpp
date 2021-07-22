@@ -103,9 +103,7 @@ namespace AZ
             void FlushMessageCalls();
 
             AZStd::list<AZStd::function<void()>> m_messageCalls;
-            AZStd::mutex m_lock;
-
-            const bool m_defaultReturnValue = false;
+            AZStd::mutex m_messageCallsLock;
         };
 
         TraceMessageBusHandler::TraceMessageBusHandler()
@@ -166,7 +164,7 @@ namespace AZ
             {
                 Call(FN_OnPreAssert, fileNameString.c_str(), line, funcString.c_str(), messageString.c_str());
             });
-            return m_defaultReturnValue;
+            return false;
         }
 
         inline bool TraceMessageBusHandler::OnPreError(const char* window, const char* fileName, int line, const char* func, const char* message)
@@ -176,7 +174,7 @@ namespace AZ
             {
                 Call(FN_OnPreError, windowString.c_str(), fileNameString.c_str(), line, funcString.c_str(), messageString.c_str());
             });
-            return m_defaultReturnValue;
+            return false;
         }
 
         inline bool TraceMessageBusHandler::OnPreWarning(const char* window, const char* fileName, int line, const char* func, const char* message)
@@ -186,7 +184,7 @@ namespace AZ
             {
                 return Call(FN_OnPreWarning, windowString.c_str(), fileNameString.c_str(), line, funcString.c_str(), messageString.c_str());
             });
-            return m_defaultReturnValue;
+            return false;
         }
 
         inline bool TraceMessageBusHandler::OnAssert(const char* message)
@@ -196,7 +194,7 @@ namespace AZ
             {
                 return Call(FN_OnAssert, messageString.c_str());
             });
-            return m_defaultReturnValue;
+            return false;
         }
 
         inline bool TraceMessageBusHandler::OnError(const char* window, const char* message)
@@ -206,7 +204,7 @@ namespace AZ
             {
                 return Call(FN_OnError, windowString.c_str(), messageString.c_str());
             });
-            return m_defaultReturnValue;
+            return false;
         }
 
         inline bool TraceMessageBusHandler::OnWarning(const char* window, const char* message)
@@ -216,7 +214,7 @@ namespace AZ
             {
                 return Call(FN_OnWarning, windowString.c_str(), messageString.c_str());
             });
-            return m_defaultReturnValue;
+            return false;
         }
 
         inline bool TraceMessageBusHandler::OnException(const char* message)
@@ -226,7 +224,7 @@ namespace AZ
             {
                 return Call(FN_OnException, messageString.c_str());
             });
-            return m_defaultReturnValue;
+            return false;
         }
 
         inline bool TraceMessageBusHandler::OnPrintf(const char* window, const char* message)
@@ -236,7 +234,7 @@ namespace AZ
             {
                 return Call(FN_OnPrintf, windowString.c_str(), messageString.c_str());
             });
-            return m_defaultReturnValue;
+            return false;
         }
 
         inline bool TraceMessageBusHandler::OnOutput(const char* window, const char* message)
@@ -246,7 +244,7 @@ namespace AZ
             {
                 return Call(FN_OnOutput, windowString.c_str(), messageString.c_str());
             });
-            return m_defaultReturnValue;
+            return false;
         }
 
         void TraceMessageBusHandler::OnTick(
@@ -263,7 +261,7 @@ namespace AZ
 
         void TraceMessageBusHandler::QueueMessageCall(AZStd::function<void()> messageCall)
         {
-            AZStd::lock_guard<decltype(m_lock)> lock(m_lock);
+            AZStd::lock_guard<decltype(m_messageCallsLock)> lock(m_messageCallsLock);
             m_messageCalls.push_back(messageCall);
         }
 
@@ -271,13 +269,8 @@ namespace AZ
         {
             AZStd::list<AZStd::function<void()>> messageCalls;
             {
-                AZStd::lock_guard<decltype(m_lock)> lock(m_lock);
-                if (m_messageCalls.empty())
-                {
-                    return;
-                }
-                messageCalls = AZStd::move(m_messageCalls); // Move calls to release the lock as soon as possible
-                m_messageCalls = AZStd::list<AZStd::function<void()>>(); // Reset list
+                AZStd::lock_guard<decltype(m_messageCallsLock)> lock(m_messageCallsLock);
+                m_messageCalls.swap(messageCalls); // Move calls to a new list to release the lock as soon as possible
             }
 
             for (auto& messageCall : messageCalls)
