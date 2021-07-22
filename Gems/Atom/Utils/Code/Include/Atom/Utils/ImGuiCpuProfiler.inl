@@ -16,6 +16,7 @@
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/std/time.h>
+#include "../../../Gems/ImGui/External/ImGui/v1.82/imgui/imgui.h"
 
 
 namespace AZ
@@ -280,7 +281,7 @@ namespace AZ
             {
                 ImGui::Columns(3, "Options", true);
                 ImGui::Text("Frames To Collect:");
-                ImGui::SliderInt("", &m_framesToCollect, 10, 100, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_Logarithmic);
+                ImGui::SliderInt("", &m_framesToCollect, 10, 10000, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_Logarithmic);
 
                 ImGui::NextColumn();
 
@@ -295,6 +296,13 @@ namespace AZ
                     "Hold the right mouse button to move around. Zoom by scrolling the mouse wheel while holding <ctrl>.");
             }
 
+            ImGui::Columns(1, "FrameTimeColumn", true);
+
+            if (ImGui::BeginChild("FrameTimeHistogram", { 0, 50 }, true))
+            {
+                DrawFrameTimeHistogram();
+            }
+            ImGui::EndChild();
 
             ImGui::Columns(1, "RulerColumn", true);
 
@@ -738,6 +746,58 @@ namespace AZ
             }
         }
 
+        inline void ImGuiCpuProfiler::DrawFrameTimeHistogram()
+        {
+            // TODO draw 60fps 30fps lines at the start
+            ImGui::BeginTooltip();
+            ImGui::Text("%f, %f", ImGui::GetMousePos().x, ImGui::GetMousePos().y);
+            ImGui::EndTooltip();
+
+            ImDrawList* drawList = ImGui::GetWindowDrawList();
+            const auto [wx, wy] = ImGui::GetWindowPos();
+            const auto tickDelta = AZStd::GetTimeTicksPerSecond();
+            const auto viewportCenter = m_viewportEndTick - (m_viewportEndTick - m_viewportStartTick) / 2;
+            const auto leftHistogramBound = viewportCenter - tickDelta;
+            const auto rightHistogramBound = viewportCenter + tickDelta;
+
+            // Find the first onscreen frame execution time 
+            auto frameItr = AZStd::lower_bound(
+                m_frameTimes.begin(), m_frameTimes.end(), leftHistogramBound,
+                [](const FrameHistogramEntry& entry, AZStd::sys_time_t target)
+                {
+                    return entry.m_endTick < target;
+                });
+            if (frameItr != m_frameTimes.begin())
+            {
+                --frameItr;
+            }
+
+            auto convert = [leftHistogramBound, rightHistogramBound](AZStd::sys_time_t tick)
+            {
+                const float wx = ImGui::GetWindowPos().x;
+                const float tickSpaceShifted = aznumeric_cast<float>(tick - leftHistogramBound); // This will be close to zero, so FP inaccuracy should not be too bad
+                const float tickSpaceNormalized = tickSpaceShifted / (rightHistogramBound - leftHistogramBound);
+                const float pixelSpace = tickSpaceNormalized * ImGui::GetWindowWidth() + wx;
+                return pixelSpace;
+            };
+
+            while (frameItr->m_endTick < rightHistogramBound && ++frameItr != m_frameTimes.end())
+            {
+                const auto tick = frameItr->m_endTick;
+                const auto et = CpuProfilerImGuiHelper::TicksToMs(frameItr->m_frameTime);
+
+                const float pixelX = convert(tick);
+                const auto height = et;
+
+                const ImVec2 startpos = { pixelX, ImGui::GetWindowHeight() + wy };
+                const ImVec2 endpos = { pixelX, ImGui::GetWindowHeight() + wy - height };
+                drawList->AddLine(startpos, endpos, IM_COL32_WHITE, 3.0);
+                ImGui::BeginTooltip();
+                ImGui::Text("Base: %f, %f", startpos.x, startpos.y);
+                ImGui::EndTooltip();
+            }
+        }
+
         inline AZStd::sys_time_t ImGuiCpuProfiler::GetViewportTickWidth() const
         {
             return m_viewportEndTick - m_viewportStartTick;
@@ -761,6 +821,8 @@ namespace AZ
             }
             else
             {
+                const AZStd::sys_time_t lastFrameTime = AZStd::GetTimeNowTicks() - m_frameEndTicks.back();
+                m_frameTimes.push_back({ m_frameEndTicks.back(), lastFrameTime });
                 m_frameEndTicks.push_back(AZStd::GetTimeNowTicks());
             }
         }
