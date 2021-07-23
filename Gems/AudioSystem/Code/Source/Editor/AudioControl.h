@@ -34,11 +34,11 @@ namespace AudioControls
         // indicates if the connection is valid for the currently loaded middleware
         bool m_isValid{ false };
 
-        // Rapid XML provides a 'copy_node' utility that will copy an entire node tree,
+        // Rapid XML provides a 'clone_node' utility that will copy an entire node tree,
         // but it only copies pointers of any strings in the node names and values.
         // This causes problems with storing raw xml nodes as this class does because strings
         // will be pointing into the memory pool of an xml document that has gone out of scope.
-        // This function is a rewritten version of 'copy_node' that does the deep copy of strings
+        // This function is a rewritten version of 'clone_node' that does the deep copy of strings
         // into the new destination tree.
         static AZ::rapidxml::xml_node<char>* DeepCopyNode(AZ::rapidxml::xml_node<char>* srcNode)
         {
