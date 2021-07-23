@@ -13,7 +13,6 @@
 namespace PrefabDependencyViewer
 {
     static const GraphCanvas::EditorId PREFAB_DEPENDENCY_VIEWER_EDITOR_ID = AZ_CRC_CE("PrefabDependencyViewerEditor");
-    static const char* SYSTEM_NAME = "Prefab Dependency Viewer";
-    static const char* MODULE_FILE_EXTENSION = ".prefabdependencyviewer";
-
+    static constexpr inline AZStd::string_view SYSTEM_NAME = "Prefab Dependency Viewer";
+    static constexpr inline AZStd::string_view MODULE_FILE_EXTENSION = ".prefabdependencyviewer";
 }
