@@ -13,6 +13,7 @@
 
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
+#include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
@@ -28,6 +29,7 @@ namespace PrefabDependencyViewer
 {
     using InstanceEntityMapperInterface  = AzToolsFramework::Prefab::InstanceEntityMapperInterface;
     using PrefabSystemComponentInterface = AzToolsFramework::Prefab::PrefabSystemComponentInterface;
+    using PrefabPublicInterface          = AzToolsFramework::Prefab::PrefabPublicInterface;
     using InstanceOptionalReference      = AzToolsFramework::Prefab::InstanceOptionalReference;
     using Instance                       = AzToolsFramework::Prefab::Instance;
     using TemplateId                     = AzToolsFramework::Prefab::TemplateId;
@@ -92,6 +94,7 @@ namespace PrefabDependencyViewer
 
         static InstanceEntityMapperInterface* s_prefabEntityMapperInterface;
         static PrefabSystemComponentInterface* s_prefabSystemComponentInterface;
+        static PrefabPublicInterface* s_prefabPublicInterface;
 
         static const char* s_prefabViewerTitle;
     };

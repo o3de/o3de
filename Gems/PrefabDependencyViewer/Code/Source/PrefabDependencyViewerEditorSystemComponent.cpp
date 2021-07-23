@@ -20,6 +20,7 @@ namespace PrefabDependencyViewer
 
     InstanceEntityMapperInterface* PrefabDependencyViewerEditorSystemComponent::s_prefabEntityMapperInterface = nullptr;
     PrefabSystemComponentInterface* PrefabDependencyViewerEditorSystemComponent::s_prefabSystemComponentInterface = nullptr;
+    PrefabPublicInterface* PrefabDependencyViewerEditorSystemComponent::s_prefabPublicInterface = nullptr;
 
     const char* PrefabDependencyViewerEditorSystemComponent::s_prefabViewerTitle = "Prefab Dependencies Viewer";
 
@@ -57,14 +58,21 @@ namespace PrefabDependencyViewer
         s_prefabEntityMapperInterface = AZ::Interface<InstanceEntityMapperInterface>::Get();
         if (nullptr == s_prefabEntityMapperInterface)
         {
-            AZ_Assert(false, "Prefab Dependency Viewer Gem - could not get PrefabEntityMapperInterface on PrefabIntegrationManager construction");
+            AZ_Assert(false, "Prefab Dependency Viewer Gem - could not get PrefabEntityMapperInterface during it's EditorSystemComponent activation.");
             return;
         }
 
         s_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
         if (nullptr == s_prefabSystemComponentInterface)
         {
-            AZ_Assert(false, "Prefab Dependency Viewer Gem - could not get PrefabSystemComponentInterface on PrefabIntergrationManager construction.");
+            AZ_Assert(false, "Prefab Dependency Viewer Gem - could not get PrefabSystemComponentInterface during it's EditorSystemComponent activation.");
+            return;
+        }
+
+        s_prefabPublicInterface = AZ::Interface<PrefabPublicInterface>::Get();
+        if (nullptr == s_prefabPublicInterface)
+        {
+            AZ_Assert(false, "Prefab Dependency Viewer Gem - could not get PrefabPublicInterface during it's EditorSystemComponent activation.");
             return;
         }
 
@@ -95,7 +103,8 @@ namespace PrefabDependencyViewer
         AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
             selectedEntities, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
 
-        if (selectedEntities.size() == 1)
+        if (selectedEntities.size() == 1 &&
+            s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntities[0]))
         {
             AZ::EntityId selectedEntity = selectedEntities[0];
             InstanceOptionalReference optionalReference = s_prefabEntityMapperInterface->FindOwningInstance(selectedEntity);
