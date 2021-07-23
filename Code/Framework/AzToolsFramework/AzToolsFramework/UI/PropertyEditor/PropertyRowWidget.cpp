@@ -142,7 +142,7 @@ namespace AzToolsFramework
         m_treeDepth = 0;
 
         delete m_dropDownArrow;
-        if (m_toggleSwitch)
+        if (m_toggleSwitch != nullptr)
         {
             m_handler->DestroyGUI(m_toggleSwitch);
             m_toggleSwitch = nullptr;
@@ -1117,12 +1117,13 @@ namespace AzToolsFramework
 
     void PropertyRowWidget::CreateGroupToggleSwitch()
     {
-        if (!m_toggleSwitch)
+        if (m_toggleSwitch == nullptr)
         {
             m_handlerName = AZ::Edit::UIHandlers::CheckBox;
             PropertyTypeRegistrationMessages::Bus::BroadcastResult(m_handler, &PropertyTypeRegistrationMessages::Bus::Events::ResolvePropertyHandler, m_handlerName, azrtti_typeid<bool>());
             m_toggleSwitch = m_handler->CreateGUI(this);
-            m_middleLayout->insertWidget(0, m_toggleSwitch, 1);
+            m_toggleSwitch->setFixedWidth(38);
+            m_middleLayout->addWidget(m_toggleSwitch, 1, Qt::AlignRight);
             auto checkBoxCtrl = static_cast<AzToolsFramework::PropertyCheckBoxCtrl*>(m_toggleSwitch);
             QObject::connect(checkBoxCtrl, &AzToolsFramework::PropertyCheckBoxCtrl::valueChanged, this, &PropertyRowWidget::OnClickedToggleButton);
         }

@@ -727,30 +727,22 @@ namespace UnitTest
 
     };
 
-    class InstanceDataHierarchyGroupTestFixture
-        : public AllocatorsFixture
-    {
-    public:
-        InstanceDataHierarchyGroupTestFixture() = default;
-    };
-
-    class GroupTestComponent
-        : public AZ::Component
+    class GroupTestComponent : public AZ::Component
     {
     public:
         AZ_COMPONENT(GroupTestComponent, "{C088C81D-D59D-43F1-85F8-B2E591BABA36}")
 
         GroupTestComponent() = default;
 
-         struct SubData
+        struct SubData
         {
             AZ_TYPE_INFO(SubData, "{983316B5-17C0-476E-9CEB-CA749B3ABE5D}");
             AZ_CLASS_ALLOCATOR(SubData, AZ::SystemAllocator, 0);
 
             SubData() {}
-            SubData(int v) : m_int(v) {}
-            SubData(bool b) : m_bool(b) {}
-            SubData(float f) : m_float(f) {}
+            explicit SubData(int v) : m_int(v) {}
+            explicit SubData(bool b) : m_bool(b) {}
+            explicit SubData(float f) : m_float(f) {}
             ~SubData() = default;
 
             float m_float = 0.f;
@@ -803,7 +795,7 @@ namespace UnitTest
             }
         }
 
-         void Activate() override
+        void Activate() override
         {
         }
 
@@ -821,6 +813,66 @@ namespace UnitTest
         SubData m_subGroupForToggle;
     };
 
+    class InstanceDataHierarchyGroupTestFixture : public AllocatorsFixture
+    {
+    public:
+        InstanceDataHierarchyGroupTestFixture() = default;
+
+        AZStd::unique_ptr<SerializeContext> m_serializeContext;
+        AZStd::unique_ptr<AZ::Entity> testEntity1;
+        AzToolsFramework::InstanceDataHierarchy* instanceDataHierarchy;
+        AzToolsFramework::InstanceDataNode* componentNode1 = nullptr;
+
+        void SetUp() override
+        {
+            AllocatorsFixture::SetUp();
+
+            using AzToolsFramework::InstanceDataHierarchy;
+            using AzToolsFramework::InstanceDataNode;
+
+            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
+
+            m_serializeContext.reset(aznew AZ::SerializeContext());
+            m_serializeContext.get()->CreateEditContext();
+            Entity::Reflect(m_serializeContext.get());
+            GroupTestComponent::Reflect(m_serializeContext.get());
+
+            testEntity1.reset(new AZ::Entity());
+            testEntity1->CreateComponent<GroupTestComponent>();
+
+            instanceDataHierarchy = aznew InstanceDataHierarchy();
+            instanceDataHierarchy->AddRootInstance(testEntity1.get());
+            instanceDataHierarchy->Build(m_serializeContext.get(), 0);
+
+            // Adding the nodes to a node stack
+            auto rootNode = instanceDataHierarchy->GetRootNode();
+            AZStd::stack<InstanceDataNode*> nodeStack;
+            nodeStack.push(rootNode);
+            while (!nodeStack.empty())
+            {
+                InstanceDataNode* node = nodeStack.top();
+                nodeStack.pop();
+                if (node->GetClassMetadata()->m_typeId == AZ::AzTypeInfo<GroupTestComponent>::Uuid())
+                {
+                    componentNode1 = node;
+                    break;
+                }
+                for (InstanceDataNode& child : node->GetChildren())
+                {
+                    nodeStack.push(&child);
+                }
+            }
+        }
+
+         void TearDown() override
+        {
+            m_serializeContext.reset();
+            testEntity1.reset();
+            delete instanceDataHierarchy;
+            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
+            AllocatorsFixture::TearDown();
+        }
+    };
 
     class InstanceDataHierarchyKeyedContainerTest
         : public AllocatorsFixture
@@ -1410,243 +1462,108 @@ namespace UnitTest
         run();
     }
 
-    TEST_F(InstanceDataHierarchyGroupTestFixture, TestNormalGroups)
+    // Test to validate that the only ClassElement::Group nodes are ToggleGroups
+    TEST_F(InstanceDataHierarchyGroupTestFixture, GroupToggleIsClassElementGroup)
     {
-        using namespace AzToolsFramework;
+        using AzToolsFramework::InstanceDataHierarchy;
+        using AzToolsFramework::InstanceDataNode;
 
-        // Setting up the data node hierarchy
-        AZ::SerializeContext serializeContext;
-        serializeContext.CreateEditContext();
-        Entity::Reflect(&serializeContext);
-        GroupTestComponent::Reflect(&serializeContext);
-
-        AZStd::unique_ptr<AZ::Entity> testEntity1(new AZ::Entity());
-        testEntity1->CreateComponent<GroupTestComponent>();
-
-        InstanceDataHierarchy instanceDataHierarchy;
-        instanceDataHierarchy.AddRootInstance(testEntity1.get());
-        instanceDataHierarchy.Build(&serializeContext, 0);
-
-        // Adding the nodes to a node stack
-        auto rootNode = instanceDataHierarchy.GetRootNode();
-        AZStd::stack<InstanceDataNode*> nodeStack;
-        nodeStack.push(rootNode);
-        InstanceDataNode* componentNode1 = nullptr;
-        while (!nodeStack.empty())
-        {
-            InstanceDataNode* node = nodeStack.top();
-            nodeStack.pop();
-            if (node->GetClassMetadata()->m_typeId == AZ::AzTypeInfo<GroupTestComponent>::Uuid())
-            {
-                componentNode1 = node;
-                break;
-            }
-            for (InstanceDataNode& child : node->GetChildren())
-            {
-                nodeStack.push(&child);
-            }
-        }
-        // Iterating through the children in the instance data hierarchy to verify their properties
-        ASSERT_TRUE(componentNode1 != nullptr);
-        for (auto child : componentNode1->GetChildren())
-        {
-            AZStd::string childName(child.GetElementMetadata()->m_name);
-            if (childName.compare("GroupFloat") == 0)
-            {
-                // False for any child node with serializable data
-                ASSERT_FALSE(child.GetElementEditMetadata()->IsClassElement());
-                // Child node should never be a ClassElement::Group, unless it is the root node of a ToggleGroup 
-                ASSERT_NE(child.GetElementEditMetadata()->m_elementId, AZ::Edit::ClassElements::Group);
-                // Ensuring that this node was assigned to the appropriate group
-                ASSERT_EQ(child.GetGroupElementMetadata()->m_description, "Normal Group");
-                // Ensuring that this node has the correct parent
-                ASSERT_EQ(child.GetParent()->GetClassMetadata()->m_name, "GroupTestComponent"); 
-            }
-        }
-    }
-
-    TEST_F(InstanceDataHierarchyGroupTestFixture, TestToggleGroups)
-    {
-        using namespace AzToolsFramework;
-
-        // Setting up the data node hierarchy
-        AZ::SerializeContext serializeContext;
-        serializeContext.CreateEditContext();
-        Entity::Reflect(&serializeContext);
-        GroupTestComponent::Reflect(&serializeContext);
-
-        AZStd::unique_ptr<AZ::Entity> testEntity1(new AZ::Entity());
-        testEntity1->CreateComponent<GroupTestComponent>();
-
-        InstanceDataHierarchy instanceDataHierarchy;
-        instanceDataHierarchy.AddRootInstance(testEntity1.get());
-        instanceDataHierarchy.Build(&serializeContext, 0);
-
-        // Adding the nodes to a node stack
-        auto rootNode = instanceDataHierarchy.GetRootNode();
-        AZStd::stack<InstanceDataNode*> nodeStack;
-        nodeStack.push(rootNode);
-        InstanceDataNode* componentNode1 = nullptr;
-        while (!nodeStack.empty())
-        {
-            InstanceDataNode* node = nodeStack.top();
-            nodeStack.pop();
-            if (node->GetClassMetadata()->m_typeId == AZ::AzTypeInfo<GroupTestComponent>::Uuid())
-            {
-                componentNode1 = node;
-                break;
-            }
-            for (InstanceDataNode& child : node->GetChildren())
-            {
-                nodeStack.push(&child);
-            }
-        }
-        // Iterating through the children in the instance data hierarchy to verify their properties
-        ASSERT_TRUE(componentNode1 != nullptr);
         for (auto child : componentNode1->GetChildren())
         {
             AZStd::string childName(child.GetElementMetadata()->m_name);
             if (childName.compare("GroupToggle") == 0)
             {
-                // False for any child node with serializable data
-                ASSERT_FALSE(child.GetElementEditMetadata()->IsClassElement());
-                // Child node is the root node of a ToggleGroup, so it should be a ClassElement::Group
-                ASSERT_EQ(child.GetElementEditMetadata()->m_elementId, AZ::Edit::ClassElements::Group);
-                // Ensuring that this node has the correct parent
-                ASSERT_EQ(child.GetParent()->GetClassMetadata()->m_name, "GroupTestComponent"); 
+                EXPECT_EQ(child.GetElementEditMetadata()->m_elementId, AZ::Edit::ClassElements::Group);
             }
-            if (childName.compare("ToggleGroupInt") == 0)
+            if ((childName.compare("SubDataNormal") == 0) || (childName.compare("SubDataToggle") == 0))
             {
-                // False for any child node with serializable data
-                ASSERT_FALSE(child.GetElementEditMetadata()->IsClassElement());
-                // Child node should never be a ClassElement::Group, unless it is the root node of a ToggleGroup
-                ASSERT_NE(child.GetElementEditMetadata()->m_elementId, AZ::Edit::ClassElements::Group);
-                // Ensuring that this node was assigned to the appropriate group
-                ASSERT_EQ(child.GetGroupElementMetadata()->m_description, "Group Toggle");
-                // Ensuring that this node has the correct parent
-                ASSERT_EQ(child.GetParent()->GetClassMetadata()->m_name, "GroupTestComponent");
+                for (auto subChild : child.GetChildren())
+                {
+                    childName = subChild.GetElementMetadata()->m_name;
+                    if (childName.compare("SubToggle") == 0)
+                    {
+                        EXPECT_EQ(subChild.GetElementEditMetadata()->m_elementId, AZ::Edit::ClassElements::Group);
+                    }
+                    else
+                    {
+                        EXPECT_NE(subChild.GetElementEditMetadata()->m_elementId, AZ::Edit::ClassElements::Group);
+                    }
+                }
             }
         }
     }
 
-    TEST_F(InstanceDataHierarchyGroupTestFixture, TestNestedGroups)
+    // Test to ensure that each node has been assigned under the proper group and the group hierarchy is structured correctly
+    TEST_F(InstanceDataHierarchyGroupTestFixture, ValidatingGroupAndSubGroupHierarchy)
     {
-        using namespace AzToolsFramework;
+        using AzToolsFramework::InstanceDataHierarchy;
+        using AzToolsFramework::InstanceDataNode;
 
-        // Setting up the data node hierarchy
-        AZ::SerializeContext serializeContext;
-        serializeContext.CreateEditContext();
-        Entity::Reflect(&serializeContext);
-        GroupTestComponent::Reflect(&serializeContext);
-
-        AZStd::unique_ptr<AZ::Entity> testEntity1(new AZ::Entity());
-        testEntity1->CreateComponent<GroupTestComponent>();
-
-        InstanceDataHierarchy instanceDataHierarchy;
-        instanceDataHierarchy.AddRootInstance(testEntity1.get());
-        instanceDataHierarchy.Build(&serializeContext, 0);
-
-        // Adding the nodes to a node stack
-        auto rootNode = instanceDataHierarchy.GetRootNode();
-        AZStd::stack<InstanceDataNode*> nodeStack;
-        nodeStack.push(rootNode);
-        InstanceDataNode* componentNode1 = nullptr;
-        while (!nodeStack.empty())
-        {
-            InstanceDataNode* node = nodeStack.top();
-            nodeStack.pop();
-            if (node->GetClassMetadata()->m_typeId == AZ::AzTypeInfo<GroupTestComponent>::Uuid())
-            {
-                componentNode1 = node;
-                break;
-            }
-            for (InstanceDataNode& child : node->GetChildren())
-            {
-                nodeStack.push(&child);
-            }
-        }
-        // Iterating through the children in the instance data hierarchy to verify their properties
-        ASSERT_TRUE(componentNode1 != nullptr);
         for (auto child : componentNode1->GetChildren())
         {
             AZStd::string childName(child.GetElementMetadata()->m_name);
-            if (childName.compare("SubDataNormal") == 0)
+            if (childName.compare("GroupFloat") == 0)
             {
-                for (InstanceDataNode& subChild : child.GetChildren())
-                {
-                    childName = subChild.GetElementMetadata()->m_name;
-                    if (childName.compare("SubInt") == 0)
-                    {
-                        // False for any child node with serializable data
-                        ASSERT_FALSE(subChild.GetElementEditMetadata()->IsClassElement());
-                        // Child node should never be a ClassElement::Group, unless it is the root node of a ToggleGroup
-                        ASSERT_NE(subChild.GetElementEditMetadata()->m_elementId, AZ::Edit::ClassElements::Group);
-                        // Ensuring that this node was assigned to the appropriate group
-                        ASSERT_EQ(subChild.GetGroupElementMetadata()->m_description, "Normal SubGroup");
-                        // Ensuring that this node has the correct parent
-                        ASSERT_EQ(subChild.GetParent()->GetClassMetadata()->m_name, "SubData");
-                    }
-                    if (childName.compare("SubToggle") == 0)
-                    {
-                        // False for any child node with serializable data
-                        ASSERT_FALSE(subChild.GetElementEditMetadata()->IsClassElement());
-                        // Child node is the root node of a ToggleGroup, so it should be a ClassElement::Group
-                        ASSERT_EQ(subChild.GetElementEditMetadata()->m_elementId, AZ::Edit::ClassElements::Group);
-                        // Ensuring that this node has the correct parent
-                        ASSERT_EQ(subChild.GetParent()->GetClassMetadata()->m_name, "SubData"); 
-                    }
-                    if (childName.compare("SubFloat") == 0)
-                    {
-                        // False for any child node with serializable data
-                        ASSERT_FALSE(subChild.GetElementEditMetadata()->IsClassElement());
-                        // Child node should never be a ClassElement::Group, unless it is the root node of a ToggleGroup
-                        ASSERT_NE(subChild.GetElementEditMetadata()->m_elementId, AZ::Edit::ClassElements::Group);
-                        // Ensuring that this node was assigned to the appropriate group
-                        ASSERT_EQ(subChild.GetGroupElementMetadata()->m_description, "SubGroup Toggle");
-                        // Ensuring that this node has the correct parent
-                        ASSERT_EQ(subChild.GetParent()->GetClassMetadata()->m_name, "SubData");
-                    }
-                }
+                EXPECT_EQ(child.GetGroupElementMetadata()->m_description, "Normal Group");
             }
-            if (childName.compare("SubDataToggle") == 0)
+            if (childName.compare("ToggleGroupInt") == 0)
             {
-                for (InstanceDataNode& subChild : child.GetChildren())
+                EXPECT_EQ(child.GetGroupElementMetadata()->m_description, "Group Toggle");
+            }
+            if ((childName.compare("SubDataNormal") == 0) || (childName.compare("SubDataToggle") == 0))
+            {
+                for (auto subChild : child.GetChildren())
                 {
                     childName = subChild.GetElementMetadata()->m_name;
                     if (childName.compare("SubInt") == 0)
                     {
-                        // False for any child node with serializable data
-                        ASSERT_FALSE(subChild.GetElementEditMetadata()->IsClassElement());
-                        // Child node should never be a ClassElement::Group, unless it is the root node of a ToggleGroup
-                        ASSERT_NE(subChild.GetElementEditMetadata()->m_elementId, AZ::Edit::ClassElements::Group);
-                        // Ensuring that this node was assigned to the appropriate group
-                        ASSERT_EQ(subChild.GetGroupElementMetadata()->m_description, "Normal SubGroup");
-                        // Ensuring that this node has the correct parent
-                        ASSERT_EQ(subChild.GetParent()->GetClassMetadata()->m_name, "SubData");
-                    }
-                    if (childName.compare("SubToggle") == 0)
-                    {
-                        // False for any child node with serializable data
-                        ASSERT_FALSE(subChild.GetElementEditMetadata()->IsClassElement());
-                        // Child node is the root node of a ToggleGroup, so it should be a ClassElement::Group
-                        ASSERT_EQ(subChild.GetElementEditMetadata()->m_elementId, AZ::Edit::ClassElements::Group);
-                        // Ensuring that this node has the correct parent
-                        ASSERT_EQ(subChild.GetParent()->GetClassMetadata()->m_name, "SubData");
+                        EXPECT_EQ(subChild.GetGroupElementMetadata()->m_description, "Normal SubGroup");
                     }
                     if (childName.compare("SubFloat") == 0)
                     {
-                        // False for any child node with serializable data
-                        ASSERT_FALSE(subChild.GetElementEditMetadata()->IsClassElement());
-                        // Child node should never be a ClassElement::Group, unless it is the root node of a ToggleGroup
-                        ASSERT_NE(subChild.GetElementEditMetadata()->m_elementId, AZ::Edit::ClassElements::Group);
-                        // Ensuring that this node was assigned to the appropriate group
-                        ASSERT_EQ(subChild.GetGroupElementMetadata()->m_description, "SubGroup Toggle");
-                        // Ensuring that this node has the correct parent
-                        ASSERT_EQ(subChild.GetParent()->GetClassMetadata()->m_name, "SubData");
+                        EXPECT_EQ(subChild.GetGroupElementMetadata()->m_description, "SubGroup Toggle");
                     }
                 }
             }
         }
     }
 
+    class InstanceDataHierarchyGroupTestFixtureParameterized
+        : public InstanceDataHierarchyGroupTestFixture
+        , public ::testing::WithParamInterface<const char*>
+    {
+    };
+
+    INSTANTIATE_TEST_CASE_P(
+        InstanceDataHierarchyGroupTestFixture,
+        InstanceDataHierarchyGroupTestFixtureParameterized,
+        ::testing::Values("GroupFloat", "GroupToggle", "ToggleGroupInt", "SubInt", "SubToggle", "SubFloat"));
+
+    // Test to validate that each node in a group and Subgroup has the correct parent
+    TEST_P(InstanceDataHierarchyGroupTestFixtureParameterized, ValidatingGroupAndSubGroupParents)
+    {
+        using AzToolsFramework::InstanceDataHierarchy;
+        using AzToolsFramework::InstanceDataNode;
+
+        const char* paramName = GetParam();
+        for (auto child : componentNode1->GetChildren())
+        {
+            AZStd::string childName(child.GetElementMetadata()->m_name);
+            if (childName.compare(paramName) == 0)
+            {
+                EXPECT_EQ(child.GetParent()->GetClassMetadata()->m_name, "GroupTestComponent");
+            }
+            if ((childName.compare("SubDataNormal") == 0) || (childName.compare("SubDataToggle") == 0))
+            {
+                for (auto subChild : child.GetChildren())
+                {
+                    childName = subChild.GetElementMetadata()->m_name;
+                    if (childName.compare(paramName) == 0)
+                    {
+                        EXPECT_EQ(subChild.GetParent()->GetClassMetadata()->m_name, "SubData");
+                    }
+                }
+            }
+        }
+    }
 }   // namespace UnitTest

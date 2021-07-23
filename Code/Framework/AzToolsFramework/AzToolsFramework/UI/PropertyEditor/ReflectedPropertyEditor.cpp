@@ -501,6 +501,7 @@ namespace AzToolsFramework
             // if the node is in a group then create the widget for the group
             if (groupElementData)
             {
+                bool isToggleGroup = false;
                 const char* groupName = groupElementData->m_description;
                 PropertyRowWidget*& widgetEntry = m_groupWidgets[{parent, groupName}];
 
@@ -526,6 +527,7 @@ namespace AzToolsFramework
                         pHandler->ConsumeAttributes_Internal(toggleSwitch, groupSourceNode);
                         pHandler->ReadValuesIntoGUI_Internal(toggleSwitch, groupSourceNode);
                         widgetEntry->OnValuesUpdated();
+                        isToggleGroup = true;
                     }
 
                     widgetEntry->SetLeafIndentation(m_leafIndentation);
@@ -534,7 +536,8 @@ namespace AzToolsFramework
 
                     for (const AZ::Edit::AttributePair& attribute : groupElementData->m_attributes)
                     {
-                        PropertyAttributeReader reader(node->GetParent()->FirstInstance(), attribute.second);
+                        InstanceDataNode* readerNode = (isToggleGroup) ? groupSourceNode : node;
+                        PropertyAttributeReader reader(readerNode->GetParent()->FirstInstance(), attribute.second);
                         QString descriptionOut;
                         bool foundDescription = false;
                         widgetEntry->ConsumeAttribute(attribute.first, reader, true, &descriptionOut, &foundDescription);
