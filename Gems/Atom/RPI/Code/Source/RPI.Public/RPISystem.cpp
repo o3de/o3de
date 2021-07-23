@@ -350,7 +350,7 @@ namespace AZ
             }
 
             //[GFX TODO][ATOM-5867] - Move file loading code within RHI to reduce coupling with RPI
-            AZStd::string platformLimitsFilePath = AZStd::string::format("config/platform/%s/%s/platformlimits.azasset", AZ_TRAIT_OS_PLATFORM_NAME, GetRenderApiName().GetCStr());
+            AZStd::string platformLimitsFilePath = AZStd::string::format("config/platform/%s/%s/PlatformLimits.azasset", AZ_TRAIT_OS_PLATFORM_NAME, GetRenderApiName().GetCStr());
             AZStd::to_lower(platformLimitsFilePath.begin(), platformLimitsFilePath.end());
             
             Data::Asset<AnyAsset> platformLimitsAsset;
