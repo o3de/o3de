@@ -42,3 +42,7 @@ class AWSCore(core.Construct):
     @property
     def properties(self):
         return self._feature_stack.properties
+
+    @property
+    def common_stack(self):
+        return self._feature_stack

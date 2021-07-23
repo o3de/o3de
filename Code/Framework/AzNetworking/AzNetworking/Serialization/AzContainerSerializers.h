@@ -303,4 +303,22 @@ namespace AzNetworking
             return serializer.IsValid();
         }
     };
+
+    template <>
+    struct SerializeObjectHelper<AZ::Transform>
+    {
+        static bool SerializeObject(ISerializer& serializer, AZ::Transform& value)
+        {
+            AZ::Vector3 translation = value.GetTranslation();
+            AZ::Quaternion rotation = value.GetRotation();
+            float uniformScale = value.GetUniformScale();
+            serializer.Serialize(translation, "Translation");
+            serializer.Serialize(rotation, "Rotation");
+            serializer.Serialize(uniformScale, "Scale");
+            value.SetTranslation(translation);
+            value.SetRotation(rotation);
+            value.SetUniformScale(uniformScale);
+            return serializer.IsValid();
+        }
+    };
 }

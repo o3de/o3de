@@ -25,7 +25,7 @@ namespace GradientSignal
         static constexpr const char* const s_componentName = "Dither Gradient Modifier";
         static constexpr const char* const s_componentDescription = "Applies ordered dithering to the input gradient";
         static constexpr const char* const s_icon = "Editor/Icons/Components/GradientModifier.svg";
-        static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/GradientModifier.png";
+        static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/GradientModifier.svg";
         static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/";
 
     protected:
