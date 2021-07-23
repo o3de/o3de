@@ -69,6 +69,8 @@ namespace SceneBuilder
                 context->EnumerateDerived(callback, azrtti_typeid<AZ::SceneAPI::SceneCore::GenerationComponent>(), azrtti_typeid<AZ::SceneAPI::SceneCore::GenerationComponent>());
                 context->EnumerateDerived(callback, azrtti_typeid<AZ::SceneAPI::SceneCore::LoadingComponent>(), azrtti_typeid<AZ::SceneAPI::SceneCore::LoadingComponent>());
             }
+            
+            AZ::SceneAPI::SceneBuilderDependencyBus::Broadcast(&AZ::SceneAPI::SceneBuilderDependencyRequests::AddFingerprintInfo, fragments);
 
             for (const AZStd::string& element : fragments)
             {

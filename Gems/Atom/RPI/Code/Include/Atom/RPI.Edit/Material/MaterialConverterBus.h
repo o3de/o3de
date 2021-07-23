@@ -29,10 +29,19 @@ namespace AZ
             : public AZ::EBusTraits
         {
         public:
-            //! Returns true if the converion was successful
+
+            virtual bool IsEnabled() const = 0;
+
+            //! Converts data from a IMaterialData object to an Atom MaterialSourceData.
+            //! Only works when IsEnabled() is true.
+            //! @return true if the MaterialSourceData output was populated with converted material data.
             virtual bool ConvertMaterial(const AZ::SceneAPI::DataTypes::IMaterialData& materialData, MaterialSourceData& out) = 0;
-            //! Returns the path to the .materialtype file that the materials are based on, such as StandardPBR.materialtype, etc.
+
+            //! Returns the path to the .materialtype file that the converted materials are based on, such as StandardPBR.materialtype, etc. Or nullptr when conversion is disabled.
             virtual const char* GetMaterialTypePath() const = 0;
+
+            //! Returns the path to a .material file to use as the default material when conversion is disabled.
+            virtual AZStd::string GetDefaultMaterialPath() const = 0;
         };
 
         using MaterialConverterBus = AZ::EBus<MaterialConverterRequests>;

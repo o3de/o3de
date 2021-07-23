@@ -12,12 +12,26 @@
 #include <AzCore/Math/Color.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+
+#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 
 namespace AZ
 {
     namespace Render
     {
+        void MaterialConverterSettings::Reflect(AZ::ReflectContext* context)
+        {
+            if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext)
+            {
+                serializeContext->Class<MaterialConverterSettings>()
+                                ->Version(1)
+                                ->Field("Enable", &MaterialConverterSettings::m_enable)
+                                ->Field("DefaultMaterial", &MaterialConverterSettings::m_defaultMaterial);
+            }
+        }
+
         void MaterialConverterSystemComponent::Reflect(AZ::ReflectContext* context)
         {
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
@@ -26,10 +40,22 @@ namespace AZ
                     ->Version(3)
                     ->Attribute(Edit::Attributes::SystemComponentTags, AZStd::vector<Crc32>({ AssetBuilderSDK::ComponentTags::AssetBuilder }));
             }
+
+            MaterialConverterSettings::Reflect(context);
+        }
+        
+        void MaterialConverterSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+        {
+            services.emplace_back(AZ_CRC_CE("FingerprintModification"));
         }
 
         void MaterialConverterSystemComponent::Activate()
         {
+            if (auto* settingsRegistry = AZ::SettingsRegistry::Get())
+            {
+                settingsRegistry->GetObject(m_settings, "/O3DE/SceneAPI/MaterialConverter");
+            }
+
             RPI::MaterialConverterBus::Handler::BusConnect();
         }
 
@@ -37,11 +63,21 @@ namespace AZ
         {
             RPI::MaterialConverterBus::Handler::BusDisconnect();
         }
+        
+        bool MaterialConverterSystemComponent::IsEnabled() const
+        {
+            return m_settings.m_enable;
+        }
 
         bool MaterialConverterSystemComponent::ConvertMaterial(
             const AZ::SceneAPI::DataTypes::IMaterialData& materialData, RPI::MaterialSourceData& sourceData)
         {
             using namespace AZ::RPI;
+            
+            if (!m_settings.m_enable)
+            {
+                return false;
+            }
 
             // The source data for generating material asset
             sourceData.m_materialType = GetMaterialTypePath();
@@ -142,7 +178,25 @@ namespace AZ
 
         const char* MaterialConverterSystemComponent::GetMaterialTypePath() const
         {
-            return "Materials/Types/StandardPBR.materialtype";
+            if (m_settings.m_enable)
+            {
+                return "Materials/Types/StandardPBR.materialtype";
+            }
+            else
+            {
+                return nullptr;
+            }
+        }
+
+        AZStd::string MaterialConverterSystemComponent::GetDefaultMaterialPath() const
+        {
+            if (m_settings.m_defaultMaterial.empty())
+            {
+                AZ_Error("MaterialConverterSystemComponent", m_settings.m_enable,
+                    "Material conversion is disabled but a default material not specified in registry /O3DE/SceneAPI/MaterialConverter/DefaultMaterial");
+            }
+
+            return m_settings.m_defaultMaterial;
         }
     }
 }
