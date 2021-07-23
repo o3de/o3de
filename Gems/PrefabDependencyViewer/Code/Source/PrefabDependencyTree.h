@@ -10,10 +10,6 @@
 
 #include <AzCore/std/containers/stack.h>
 #include <AzCore/std/utils.h>
-#include <AzToolsFramework/Prefab/PrefabDomTypes.h>
-#include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
-#include <AzToolsFramework/Prefab/PrefabDomUtils.h>
-#include <DirectedGraph.h>
 #include <AzCore/Outcome/Outcome.h>
 
 namespace PrefabDependencyViewer
