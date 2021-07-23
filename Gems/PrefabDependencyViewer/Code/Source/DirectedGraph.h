@@ -74,7 +74,6 @@ namespace PrefabDependencyViewer::Utils
             return m_parent;
         }
 
-        // In the future want to be able to edit the tree.
         void SetParent(Node* parent)
         {
             m_parent = parent;
