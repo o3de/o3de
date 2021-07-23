@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -44,11 +45,11 @@ namespace AzToolsFramework::ViewportUi::Internal
 
         if (name.empty())
         {
-            m_buttons.insert({buttonId, AZStd::make_unique<Button>(icon, buttonId)});
+            m_buttons.insert({ buttonId, AZStd::make_unique<Button>(icon, buttonId) });
         }
         else
         {
-            m_buttons.insert({buttonId, AZStd::make_unique<Button>(icon, name, buttonId)});
+            m_buttons.insert({ buttonId, AZStd::make_unique<Button>(icon, name, buttonId) });
         }
         return buttonId;
     }
@@ -72,7 +73,8 @@ namespace AzToolsFramework::ViewportUi::Internal
         return buttons;
     }
 
-    void ButtonGroup::ConnectEventHandler(AZ::Event<ButtonId>::Handler& handler) {
+    void ButtonGroup::ConnectEventHandler(AZ::Event<ButtonId>::Handler& handler)
+    {
         handler.Connect(m_buttonTriggeredEvent);
     }
 

@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
@@ -65,7 +66,7 @@ class Launcher(object):
 
         return config_dict
 
-    def setup(self, backupFiles=True, launch_ap=True):
+    def setup(self, backupFiles=True, launch_ap=True, configure_settings=True):
         """
         Perform setup of this launcher, must be called before launching.
         Subclasses should call its parent's setup() before calling its own code, unless it changes configuration files
@@ -179,7 +180,7 @@ class Launcher(object):
         """
         raise NotImplementedError("There is no binary file for this launcher")
 
-    def start(self, backupFiles=True, launch_ap=None):
+    def start(self, backupFiles=True, launch_ap=None, configure_settings=True):
         """
         Automatically prepare and launch the application
         When called using "with launcher.start():" it will automatically call stop() when block exits
@@ -187,16 +188,16 @@ class Launcher(object):
 
         :return: Application wrapper for context management, not intended to be called directly
         """
-        return _Application(self, backupFiles, launch_ap=launch_ap)
+        return _Application(self, backupFiles, launch_ap=launch_ap, configure_settings=configure_settings)
 
-    def _start_impl(self, backupFiles = True, launch_ap=None):
+    def _start_impl(self, backupFiles = True, launch_ap=None, configure_settings=True):
         """
         Implementation of start(), intended to be called via context manager in _Application
 
         :param backupFiles: Bool to backup settings files
         :return None:
         """
-        self.setup(backupFiles=backupFiles, launch_ap=launch_ap)
+        self.setup(backupFiles=backupFiles, launch_ap=launch_ap, configure_settings=configure_settings)
         self.launch()
 
     def stop(self):
@@ -312,7 +313,7 @@ class _Application(object):
     """
     Context-manager for opening an application, enables using both "launcher.start()" and "with launcher.start()"
     """
-    def __init__(self, launcher, backupFiles = True, launch_ap=None):
+    def __init__(self, launcher, backupFiles = True, launch_ap=None, configure_settings=True):
         """
         Called during both "launcher.start()" and "with launcher.start()"
 
@@ -320,7 +321,7 @@ class _Application(object):
         :return None:
         """
         self.launcher = launcher
-        launcher._start_impl(backupFiles, launch_ap)
+        launcher._start_impl(backupFiles, launch_ap, configure_settings)
 
     def __enter__(self):
         """

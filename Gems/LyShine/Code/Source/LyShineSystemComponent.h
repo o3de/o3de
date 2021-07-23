@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,7 +14,6 @@
 
 #include <LmbrCentral/Rendering/MaterialAsset.h>
 
-#include <LyShine/LyShineBus.h>
 #include <LyShine/Bus/UiSystemBus.h>
 #include <LyShine/Bus/UiCanvasManagerBus.h>
 #include <LyShine/Bus/Tools/UiSystemToolsBus.h>
@@ -28,7 +28,6 @@ namespace LyShine
 
     class LyShineSystemComponent
         : public AZ::Component
-        , protected LyShineRequestBus::Handler
         , protected UiSystemBus::Handler
         , protected UiSystemToolsBus::Handler
         , protected LyShineAllocatorScope

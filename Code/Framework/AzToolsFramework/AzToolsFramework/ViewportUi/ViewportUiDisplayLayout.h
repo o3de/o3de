@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,8 +9,9 @@
 #pragma once
 
 #include <AzCore/std/containers/unordered_map.h>
-#include <QGridLayout>
+
 #include <QBoxLayout>
+#include <QGridLayout>
 #include <QPointer>
 
 namespace AzToolsFramework::ViewportUi::Internal
@@ -32,8 +34,7 @@ namespace AzToolsFramework::ViewportUi::Internal
     private:
         //! Create a sub-layout to add to the grid of layouts.
         //! @return A pair of the new layout along with its alignment on the grid.
-        AZStd::pair<Qt::Alignment, QBoxLayout*> CreateSubLayout(
-            QBoxLayout* layout, int row, int column, Qt::Alignment alignment);
+        AZStd::pair<Qt::Alignment, QBoxLayout*> CreateSubLayout(QBoxLayout* layout, int row, int column, Qt::Alignment alignment);
 
         //! A mapping of each sub-layout to its corresponding alignment on the grid.
         AZStd::unordered_map<Qt::Alignment, QBoxLayout*> m_internalLayouts;

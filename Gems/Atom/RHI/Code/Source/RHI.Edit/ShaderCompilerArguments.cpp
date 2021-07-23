@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -159,7 +160,13 @@ namespace AZ
                 arguments += " -Zi";  // Generate debug information
                 arguments += " -Zss"; // Compute Shader Hash considering source information
             }
-            arguments += " " + m_dxcAdditionalFreeArguments;
+            // strip spaces at both sides
+            AZStd::string dxcAdditionalFreeArguments = m_dxcAdditionalFreeArguments;
+            AzFramework::StringFunc::TrimWhiteSpace(dxcAdditionalFreeArguments, true, true);
+            if (!dxcAdditionalFreeArguments.empty())
+            {
+                arguments += " " + dxcAdditionalFreeArguments;
+            }
             return arguments;
         }
     }

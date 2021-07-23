@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -44,6 +45,7 @@ namespace EditorPythonBindings
         // AzToolsFramework::EditorPythonEventsInterface
         bool StartPython(bool silenceWarnings = false) override;
         bool StopPython(bool silenceWarnings = false) override;
+        bool IsPythonActive() override;
         void WaitForInitialization() override;
         void ExecuteWithLock(AZStd::function<void()> executionCallback) override;
         ////////////////////////////////////////////////////////////////////////
@@ -53,7 +55,7 @@ namespace EditorPythonBindings
         void ExecuteByString(AZStd::string_view script, bool printResult) override;
         void ExecuteByFilename(AZStd::string_view filename) override;
         void ExecuteByFilenameWithArgs(AZStd::string_view filename, const AZStd::vector<AZStd::string_view>& args) override;
-        void ExecuteByFilenameAsTest(AZStd::string_view filename, AZStd::string_view testCase, const AZStd::vector<AZStd::string_view>& args) override;
+        bool ExecuteByFilenameAsTest(AZStd::string_view filename, AZStd::string_view testCase, const AZStd::vector<AZStd::string_view>& args) override;
         ////////////////////////////////////////////////////////////////////////
         
     private:
