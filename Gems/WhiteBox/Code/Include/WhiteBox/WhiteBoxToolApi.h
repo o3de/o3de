@@ -8,12 +8,12 @@
 
 #pragma once
 
-#include <AzCore/std/string/string.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/std/string/string.h>
 
 namespace AZ::IO
 {
