@@ -54,8 +54,7 @@ namespace PrefabDependencyViewer
         m_sceneId = CreateNewGraph();
         GraphCanvas::GraphModelRequestBus::Handler::BusConnect(m_sceneId);
 
-        int widestLevelSize = 0;
-        AZStd::vector nodeCountAtEachLevel = graph.countNodesAtEachLevel(widestLevelSize);
+        const auto [nodeCountAtEachLevel, widestLevelSize] = graph.countNodesAtEachLevel();
         DisplayNodesByLevel(graph, nodeCountAtEachLevel, widestLevelSize);
         // CreateNodeUi(AzToolsFramework::Prefab::InvalidTemplateId);
     }

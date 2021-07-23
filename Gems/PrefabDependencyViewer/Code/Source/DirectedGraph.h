@@ -159,15 +159,16 @@ namespace PrefabDependencyViewer::Utils
             AZStd::for_each(m_nodes.begin(), m_nodes.end(), delete_node);
         }
 
-        AZStd::vector<int> countNodesAtEachLevel(int& widestLevelSize) const
+        AZStd::tuple<AZStd::vector<int>, int> countNodesAtEachLevel() const
         {
             /** Directed Graph can't have cycles because of the
             non-circular nature of the Prefab. */
+            int widestLevelSize = 0;
             AZStd::vector<int> count;
+
             using pair = AZStd::pair<int, Node*>;
             AZStd::queue<pair> queue;
             queue.push(AZStd::make_pair(0, m_root));
-
 
             while (!queue.empty())
             {
@@ -201,7 +202,7 @@ namespace PrefabDependencyViewer::Utils
 
             // Check if the last level was the widest.
             widestLevelSize = AZStd::max(widestLevelSize, count[count.size() - 1]);
-            return count;
+            return AZStd::make_tuple(count, widestLevelSize);
         }
     private:
         NodeSet m_nodes {};
