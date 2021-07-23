@@ -88,12 +88,7 @@ namespace PrefabDependencyViewer
         class DirectedGraph
         {
         public:
-            DirectedGraph()
-                : m_nodes(NodeSet())
-                , m_children(ChildrenMap())
-                , m_root(nullptr)
-            {
-            }
+            DirectedGraph() {}
 
             void AddNode(Node* node)
             {
@@ -210,9 +205,9 @@ namespace PrefabDependencyViewer
                 return count;
             }
         private:
-            NodeSet m_nodes;
-            ChildrenMap m_children;
-            Node* m_root;
+            NodeSet m_nodes {};
+            ChildrenMap m_children {};
+            Node* m_root = nullptr;
         };
     } // namespace Utils
 } // namespace PrefabDependencyViewer
