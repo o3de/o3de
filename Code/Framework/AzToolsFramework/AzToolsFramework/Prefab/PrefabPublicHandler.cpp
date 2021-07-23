@@ -1452,7 +1452,7 @@ namespace AzToolsFramework
                     owningInstance.has_value(),
                     "An error occurred while retrieving entities and prefab instances : "
                     "Owning instance of entity with name '%s' and id '%llu' couldn't be found",
-                    entity->GetName(), entity->GetId());
+                    entity->GetName().c_str(), static_cast<AZ::u64>(entity->GetId()));
 
                 // Check if this entity is owned by the same instance owning the root.
                 if (&owningInstance->get() == &commonRootEntityOwningInstance)
@@ -1496,7 +1496,7 @@ namespace AzToolsFramework
                         return AZ::Failure(AZStd::string::format(
                             "Entity with name '%s' and id '%llu' has an owning instance that doesn't belong to the instance "
                             "hierarchy of the selected entities.",
-                            entity->GetName(), entity->GetId()));
+                            entity->GetName().c_str(), static_cast<AZ::u64>(entity->GetId())));
                     }
                 }
             }
