@@ -238,6 +238,7 @@ namespace AzQtComponents
         void focusInEvent(QFocusEvent* e) override;
         void focusOutEvent(QFocusEvent* e) override;
         void contextMenuEvent(QContextMenuEvent* ev) override;
+        double valueFromText(const QString& text) const override;
         QString stringValue(double value, bool truncated = false) const;
         void updateToolTip(double value);
         virtual void setLastValue(double v);

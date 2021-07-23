@@ -1481,6 +1481,26 @@ QString DoubleSpinBox::textFromValue(double value) const
     return stringValue(value, !hasFocus());
 }
 
+double DoubleSpinBox::valueFromText(const QString& text) const
+{
+    // We need to accept , and . as decimalPoint no matter what the locale is.
+    const QChar decimalPoint = locale().decimalPoint();
+    if (decimalPoint == '.' && text.contains(','))
+    {
+        QString newText = text;
+        newText.replace(',', '.');
+        return QDoubleSpinBox::valueFromText(newText);
+    }
+    if (decimalPoint == ',' && text.contains('.'))
+    {
+        QString newText = text;
+        newText.replace('.', ',');
+        return QDoubleSpinBox::valueFromText(newText);
+    }
+    return QDoubleSpinBox::valueFromText(text);
+}
+
+
 void DoubleSpinBox::focusInEvent(QFocusEvent* event)
 {
     // We need to set the special value text to an empty string, which
