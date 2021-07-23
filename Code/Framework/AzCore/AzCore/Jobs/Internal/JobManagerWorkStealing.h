@@ -15,6 +15,8 @@
 #include <AzCore/Memory/PoolAllocator.h>
 
 #include <AzCore/std/containers/queue.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/std/parallel/atomic.h>
 #include <AzCore/std/parallel/shared_mutex.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/semaphore.h>
@@ -27,23 +29,36 @@ namespace AZ
 
     namespace Internal
     {
-        class WorkQueue final
+        // The Job Queue is a lock free 4-priority queue. Its basic operation is as follows:
+        // Each priority level is associated with a different queue, corresponding to the maximum size of a uint16_t.
+        // Each queue is implemented as a ring buffer, and a 64 bit atomic maintains the following state per queue:
+        // - offset to the "head" of the ring, from where we acquire elements
+        // - offset to the "tail" of the ring, which tracks where new elements should be enqueued
+        // - offset to a tail reservation index, which is used to reserve a slot to enqueue elements
+        class JobQueue final
         {
         public:
-            void LocalInsert(Job *job);
-            Job* LocalPopFront();
-            Job* TryStealFront();
+            // Preallocating upfront allows us to reserve slots to insert jobs without locks.
+            // Each thread allocated by the job manager consumes ~2 MB.
+            constexpr static uint16_t MaxQueueSize = 0xffff;
+            constexpr static uint8_t PriorityLevelCount = 4;
+
+            JobQueue() = default;
+            JobQueue(const JobQueue&) = delete;
+            JobQueue& operator=(const JobQueue&) = delete;
+
+            void Enqueue(Job* job);
+            Job* TryDequeue();
 
         private:
-            enum
-            {
-                TryStealSpinAttemps = 16,
-            };
-            using LockType = AZStd::shared_mutex;
-            using LockGuard = AZStd::lock_guard<LockType>;
+            // NOTE: Implementation expects
+            // MSB                                                 LSB
+            // +--------------------PAYLOAD--------------------------+
+            // | unused : 2 | tail_reserve : 2 | tail : 2 | head : 2 |
+            // +-----------------------------------------------------+
+            AZStd::atomic<uint64_t> m_status[PriorityLevelCount] = {};
 
-            AZStd::deque<Job*> m_queue;
-            LockType m_lock;
+            Job* m_queues[PriorityLevelCount][MaxQueueSize] = {};
         };
 
         /**
@@ -65,6 +80,8 @@ namespace AZ
 
             void AddPendingJob(Job* job);
 
+            void QueueUnbounded(Job* job, bool shouldActivateWorker) override;
+
             void SuspendJobUntilReady(Job* job);
 
             void StartJobAndAssistUntilComplete(Job* job);
@@ -80,10 +97,9 @@ namespace AZ
 
             AZ::u32 GetWorkerThreadId() const;
 
-        private:
-
             void ActivateWorker();
 
+        private:
             struct ThreadInfo
             {
                 AZ_CLASS_ALLOCATOR(ThreadInfo, ThreadPoolAllocator, 0)
@@ -97,7 +113,8 @@ namespace AZ
                 AZStd::thread m_thread;
                 AZStd::atomic_bool m_isAvailable{false};
                 AZStd::binary_semaphore m_waitEvent;
-                WorkQueue m_pendingJobs;
+                AZStd::unique_ptr<JobQueue> m_pendingJobs;
+
                 unsigned int m_workerId = JobManagerBase::InvalidWorkerThreadId;
 
 #ifdef JOBMANAGER_ENABLE_STATS

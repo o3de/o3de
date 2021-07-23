@@ -218,7 +218,7 @@ namespace UnitTest
 
             JobCompletionSpin doneJob(m_jobContext);
 
-            //test user jobs
+            // Test user jobs
             {
                 Vector3 result;
                 Job* job = aznew Vector3SumJob(&vecArray[0], (unsigned int)vecArray.size(), &result, m_jobContext);
@@ -229,7 +229,7 @@ namespace UnitTest
                 AZ_TEST_ASSERT(result.IsClose(Vector3(100.0f, 100.0f, 100.0f)));
             }
 
-            //test function jobs
+            // Test function jobs
             {
                 Vector3 result;
                 Job* job = CreateJobFunction(AZStd::bind(Vector3Sum, &vecArray[0], (unsigned int)vecArray.size(), &result), true, m_jobContext);
@@ -240,7 +240,7 @@ namespace UnitTest
                 AZ_TEST_ASSERT(result.IsClose(Vector3(100.0f, 100.0f, 100.0f)));
             }
 
-            //test delegate jobs
+            // Test delegate jobs
             {
                 Vector3SumDelegate sumDelegate(&vecArray[0], (unsigned int)vecArray.size());
                 Job* job = CreateJobFunction(AZStd::make_delegate(&sumDelegate, &Vector3SumDelegate::Process), true, m_jobContext);
@@ -251,7 +251,7 @@ namespace UnitTest
                 AZ_TEST_ASSERT(sumDelegate.GetResult().IsClose(Vector3(100.0f, 100.0f, 100.0f)));
             }
 
-            //test generic jobs
+            // Test generic jobs
             {
                 Vector3 result;
                 Vector3SumFunctor sumFunctor(&vecArray[0], (unsigned int)vecArray.size(), &result);
@@ -276,6 +276,91 @@ namespace UnitTest
         run();
     }
     // BasicJobExample-End
+
+    // OverflowJobTest-Begin
+    bool overflowJobStatus[0xffff + 100] = {};
+
+    class OverflowJob : public Job
+    {
+    public:
+        static AZStd::atomic<bool> ready;
+        static AZStd::atomic<uint32_t> count;
+        static AZStd::atomic<uint32_t> countDone;
+        static AZStd::binary_semaphore finished;
+
+        AZ_CLASS_ALLOCATOR(OverflowJob, ThreadPoolAllocator, 0)
+
+        int m_id;
+
+        OverflowJob(int id, JobContext* context = nullptr)
+            : Job(true, context)
+            , m_id{ id }
+        {
+        }
+
+        void Process() override
+        {
+            uint32_t job_count = 0xffff + 100;
+
+            // The first job enqueues N jobs where N is greater than the preallocated range causing jobs to spill out to the
+            // overflow queue
+            if (m_id == 0)
+            {
+                for (size_t i = 0; i != job_count; ++i)
+                {
+                    Job* job = aznew OverflowJob(i + 1, GetContext());
+                    job->Start();
+                }
+                ready = true;
+            }
+            else
+            {
+                while (!ready)
+                {
+                    AZStd::this_thread::sleep_for(AZStd::chrono::microseconds{ 100 });
+                }
+                uint32_t done = ++count;
+
+                overflowJobStatus[m_id - 1] = true;
+                printf("%i done\n", done);
+
+                // After all jobs associated with this test run, the count should be zero
+                if (done == job_count)
+                {
+                    finished.release();
+                }
+            }
+
+        }
+    };
+
+    AZStd::atomic<bool> OverflowJob::ready{ false };
+    AZStd::atomic<uint32_t> OverflowJob::count{ 0 };
+    AZStd::atomic<uint32_t> OverflowJob::countDone{ 0 };
+    AZStd::binary_semaphore OverflowJob::finished;
+
+    class JobOverflowTest : public DefaultJobManagerSetupFixture
+    {
+    public:
+        void run()
+        {
+            Job* job = aznew OverflowJob(0, m_jobContext);
+            JobCompletionSpin doneJob(m_jobContext);
+            job->SetDependent(&doneJob);
+            job->Start();
+            doneJob.StartAndWaitForCompletion();
+            OverflowJob::finished.acquire();
+        }
+    };
+
+    /* TODO This test is currently disabled until missed notifications associated with the global queue are resolved
+    TEST_F(JobOverflowTest, Test)
+    {
+        run();
+        AZ_TEST_ASSERT(OverflowJob::count == OverflowJob::countDone);
+    }
+    */
+    // OverflowJobTest-End
 
     // FibonacciJobExample-Begin
     class FibonacciJobJoin
@@ -1562,7 +1647,7 @@ namespace UnitTest
 
         AZ_CLASS_ALLOCATOR(TestJobWithPriority, ThreadPoolAllocator, 0)
 
-        TestJobWithPriority(AZ::s8 priority, const char* name, JobContext* context, AZStd::binary_semaphore& binarySemaphore, AZStd::vector<AZStd::string>& namesOfProcessedJobs)
+        TestJobWithPriority(Priority priority, const char* name, JobContext* context, AZStd::binary_semaphore& binarySemaphore, AZStd::vector<AZStd::string>& namesOfProcessedJobs)
             : Job(true, context, false, priority)
             , m_name(name)
             , m_binarySemaphore(binarySemaphore)
@@ -1608,21 +1693,14 @@ namespace UnitTest
             //
             // All jobs that we start in this test have the 'isAutoDelete' param set to true, so we don't have to store them or clean up.
             AZStd::binary_semaphore binarySemaphore;
-            (aznew TestJobWithPriority(127, "FirstJobQueued", m_jobContext, binarySemaphore, namesOfProcessedJobs))->Start();
+            (aznew TestJobWithPriority(Job::Priority::CRITICAL, "FirstJobQueued", m_jobContext, binarySemaphore, namesOfProcessedJobs))->Start();
 
             // Queue a number of other jobs before releasing the semaphore that will allow "FirstJobQueued" to complete.
             // These additional jobs should be processed in order of their priority, or where the priority is equal in the order they were queued.
-            (aznew TestJobWithPriority(-128, "LowestPriority", m_jobContext, binarySemaphore, namesOfProcessedJobs))->Start();
-            (aznew TestJobWithPriority(-1, "LowPriority1", m_jobContext, binarySemaphore, namesOfProcessedJobs))->Start();
-            (aznew TestJobWithPriority(-1, "LowPriority2", m_jobContext, binarySemaphore, namesOfProcessedJobs))->Start();
-            (aznew TestJobWithPriority(-1, "LowPriority3", m_jobContext, binarySemaphore, namesOfProcessedJobs))->Start();
-            (aznew TestJobWithPriority(0, "DefaultPriority1", m_jobContext, binarySemaphore, namesOfProcessedJobs))->Start();
-            (aznew TestJobWithPriority(0, "DefaultPriority2", m_jobContext, binarySemaphore, namesOfProcessedJobs))->Start();
-            (aznew TestJobWithPriority(0, "DefaultPriority3", m_jobContext, binarySemaphore, namesOfProcessedJobs))->Start();
-            (aznew TestJobWithPriority(1, "HighPriority1", m_jobContext, binarySemaphore, namesOfProcessedJobs))->Start();
-            (aznew TestJobWithPriority(1, "HighPriority2", m_jobContext, binarySemaphore, namesOfProcessedJobs))->Start();
-            (aznew TestJobWithPriority(1, "HighPriority3", m_jobContext, binarySemaphore, namesOfProcessedJobs))->Start();
-            (aznew TestJobWithPriority(127, "HighestPriority", m_jobContext, binarySemaphore, namesOfProcessedJobs))->Start();
+            (aznew TestJobWithPriority(Job::Priority::LOW, "LowPriority", m_jobContext, binarySemaphore, namesOfProcessedJobs))->Start();
+            (aznew TestJobWithPriority(Job::Priority::MEDIUM, "DefaultPriority", m_jobContext, binarySemaphore, namesOfProcessedJobs))->Start();
+            (aznew TestJobWithPriority(Job::Priority::HIGH, "HighPriority", m_jobContext, binarySemaphore, namesOfProcessedJobs))->Start();
+            (aznew TestJobWithPriority(Job::Priority::CRITICAL, "CriticalPriority", m_jobContext, binarySemaphore, namesOfProcessedJobs))->Start();
 
             // Release the binary semaphore so the first queued job will complete. The rest of the queued jobs should now complete in order of their priority.
             binarySemaphore.release();
@@ -1634,21 +1712,112 @@ namespace UnitTest
 
             // Verify that the jobs were completed in the expected order.
             EXPECT_EQ(namesOfProcessedJobs[0], "FirstJobQueued");
-            EXPECT_EQ(namesOfProcessedJobs[1], "HighestPriority");
-            EXPECT_EQ(namesOfProcessedJobs[2], "HighPriority1");
-            EXPECT_EQ(namesOfProcessedJobs[3], "HighPriority2");
-            EXPECT_EQ(namesOfProcessedJobs[4], "HighPriority3");
-            EXPECT_EQ(namesOfProcessedJobs[5], "DefaultPriority1");
-            EXPECT_EQ(namesOfProcessedJobs[6], "DefaultPriority2");
-            EXPECT_EQ(namesOfProcessedJobs[7], "DefaultPriority3");
-            EXPECT_EQ(namesOfProcessedJobs[8], "LowPriority1");
-            EXPECT_EQ(namesOfProcessedJobs[9], "LowPriority2");
-            EXPECT_EQ(namesOfProcessedJobs[10], "LowPriority3");
-            EXPECT_EQ(namesOfProcessedJobs[11], "LowestPriority");
+            EXPECT_EQ(namesOfProcessedJobs[1], "CriticalPriority");
+            EXPECT_EQ(namesOfProcessedJobs[2], "HighPriority");
+            EXPECT_EQ(namesOfProcessedJobs[3], "DefaultPriority");
+            EXPECT_EQ(namesOfProcessedJobs[4], "LowPriority");
         }
     };
 
+    // NOTE: This test ONLY tests that jobs are dequeued in priority order from the global queue (used when jobs are queued
+    // from a non-worker thread).
     TEST_F(JobPriorityTestFixture, Test)
+    {
+        RunTest();
+    }
+
+    class TestJobWithPriority2 : public Job
+    {
+    public:
+        static AZStd::atomic<AZ::s32> s_numIncompleteJobs;
+
+        AZ_CLASS_ALLOCATOR(TestJobWithPriority2, ThreadPoolAllocator, 0)
+
+        TestJobWithPriority2(Priority priority, const char* name, JobContext* context, AZStd::binary_semaphore& binarySemaphore, AZStd::vector<AZStd::string>& namesOfProcessedJobs)
+            : Job(true, context, false, priority)
+            , m_name(name)
+            , m_binarySemaphore(binarySemaphore)
+            , m_namesOfProcessedJobs(namesOfProcessedJobs)
+        {
+        }
+
+        void Process() override
+        {
+            // Ensure the job does not complete until it is able to acquire the semaphore,
+            // then add its name to the vector of processed jobs.
+            m_binarySemaphore.acquire();
+            m_namesOfProcessedJobs.push_back(m_name);
+
+            // Submit new jobs from a work thread with varying priorities
+            if (m_namesOfProcessedJobs.size() == 1)
+            {
+                // These additional jobs should be processed in order of their priority, or where the priority is equal in the order they
+                // were queued.
+                (aznew TestJobWithPriority2(Job::Priority::LOW, "LowPriority", GetContext(), m_binarySemaphore, m_namesOfProcessedJobs))
+                    ->Start();
+                (aznew TestJobWithPriority2(Job::Priority::MEDIUM, "DefaultPriority", GetContext(), m_binarySemaphore, m_namesOfProcessedJobs))
+                    ->Start();
+                (aznew TestJobWithPriority2(Job::Priority::HIGH, "HighPriority", GetContext(), m_binarySemaphore, m_namesOfProcessedJobs))
+                    ->Start();
+                (aznew TestJobWithPriority2(
+                     Job::Priority::CRITICAL, "CriticalPriority", GetContext(), m_binarySemaphore, m_namesOfProcessedJobs))
+                    ->Start();
+            }
+
+            m_binarySemaphore.release();
+            --s_numIncompleteJobs;
+        }
+
+    private:
+        const AZStd::string m_name;
+        AZStd::binary_semaphore& m_binarySemaphore;
+        AZStd::vector<AZStd::string>& m_namesOfProcessedJobs;
+    };
+    AZStd::atomic<AZ::s32> TestJobWithPriority2::s_numIncompleteJobs = 5;
+
+    class JobPriorityTestFixture2 : public DefaultJobManagerSetupFixture
+    {
+    public:
+        JobPriorityTestFixture2() : DefaultJobManagerSetupFixture(1) // Only 1 worker to serialize job execution
+        {
+        }
+
+        void RunTest()
+        {
+            AZStd::vector<AZStd::string> namesOfProcessedJobs;
+
+            // The queue is empty, and calling 'Start' on a job inserts it into the job queue, but it won't necesarily begin processing immediately.
+            // So we need to set the priority of the first job queued to the highest available, ensuring it will get processed first even if the lone
+            // worker thread active in this test does not inspect the queue until after all the jobs below have been 'started' (this is guaranteed by
+            // the fact that jobs with equal priority values are processed in FIFO order).
+            //
+            // The binary semaphore ensures that this first job does not complete until we've finished queuing all the other jobs.
+            //
+            // All jobs that we start in this test have the 'isAutoDelete' param set to true, so we don't have to store them or clean up.
+            AZStd::binary_semaphore binarySemaphore;
+            (aznew TestJobWithPriority2(Job::Priority::MEDIUM, "FirstJobQueued", m_jobContext, binarySemaphore, namesOfProcessedJobs))->Start();
+
+            // Release the binary semaphore so the first queued job will complete. The rest of the queued jobs should now complete in order of their priority.
+            binarySemaphore.release();
+
+            // Wait until all the jobs have completed. Ideally we would start one last job (with the lowest priority so it is guaranteed to be processed last
+            // even if the jobs started above have yet to complete) and wait until it has completed, but this results in this main thread picking up jobs and
+            // thorwing all the careful scheduling on the one worker thread active in this test out the window (please see Job::StartAndAssistUntilComplete).
+            while (TestJobWithPriority2::s_numIncompleteJobs > 0) {}
+
+            // Verify that the jobs were completed in the expected order.
+            EXPECT_EQ(namesOfProcessedJobs[0], "FirstJobQueued");
+            EXPECT_EQ(namesOfProcessedJobs[1], "CriticalPriority");
+            EXPECT_EQ(namesOfProcessedJobs[2], "HighPriority");
+            EXPECT_EQ(namesOfProcessedJobs[3], "DefaultPriority");
+            EXPECT_EQ(namesOfProcessedJobs[4], "LowPriority");
+
+            TestJobWithPriority2::s_numIncompleteJobs = 5;
+        }
+    };
+
+    // NOTE: This test ONLY tests that jobs are dequeued in priority order from a local worker job queue
+    TEST_F(JobPriorityTestFixture2, Test)
     {
         RunTest();
     }
@@ -1676,7 +1845,7 @@ namespace Benchmark
 
         AZ_CLASS_ALLOCATOR(TestJobCalculatePi, ThreadPoolAllocator, 0)
 
-        TestJobCalculatePi(AZ::u32 depth, AZ::s8 priority, JobContext* context)
+        TestJobCalculatePi(AZ::u32 depth, Priority priority, JobContext* context)
             : Job(true, context, false, priority)
             , m_depth(depth)
         {
@@ -1732,8 +1901,7 @@ namespace Benchmark
             // Generate some random priorities
             m_randomPriorities.resize(LARGE_NUMBER_OF_JOBS);
             std::mt19937_64 randomPriorityGenerator(1); // Always use the same seed
-            std::uniform_int_distribution<> randomPriorityDistribution(std::numeric_limits<AZ::s8>::min(),
-                                                                       std::numeric_limits<AZ::s8>::max());
+            std::uniform_int_distribution<> randomPriorityDistribution(0, 4);
             std::generate(m_randomPriorities.begin(), m_randomPriorities.end(), [&randomPriorityDistribution, &randomPriorityGenerator]()
             {
                 return randomPriorityDistribution(randomPriorityGenerator);
@@ -1765,7 +1933,7 @@ namespace Benchmark
         }
 
     protected:
-        inline void RunCalculatePiJob(AZ::s32 depth, AZ::s8 priority)
+        inline void RunCalculatePiJob(AZ::s32 depth, Job::Priority priority)
         {
             (aznew TestJobCalculatePi(depth, priority, m_jobContext))->Start();
         }
@@ -1774,7 +1942,7 @@ namespace Benchmark
         {
             for (AZ::u32 i = 0; i < numberOfJobs; ++i)
             {
-                RunCalculatePiJob(depth, 0);
+                RunCalculatePiJob(depth, Job::Priority::MEDIUM);
             }
 
             // Wait until all the jobs have completed.
@@ -1785,7 +1953,7 @@ namespace Benchmark
         {
             for (AZ::u32 i = 0; i < numberOfJobs; ++i)
             {
-                RunCalculatePiJob(depth, m_randomPriorities[i]);
+                RunCalculatePiJob(depth, static_cast<Job::Priority>(m_randomPriorities[i]));
             }
 
             // Wait until all the jobs have completed.
@@ -1796,7 +1964,7 @@ namespace Benchmark
         {
             for (AZ::u32 i = 0; i < numberOfJobs; ++i)
             {
-                RunCalculatePiJob(m_randomDepths[i], 0);
+                RunCalculatePiJob(m_randomDepths[i], Job::Priority::MEDIUM);
             }
 
             // Wait until all the jobs have completed.
@@ -1807,7 +1975,7 @@ namespace Benchmark
         {
             for (AZ::u32 i = 0; i < numberOfJobs; ++i)
             {
-                RunCalculatePiJob(m_randomDepths[i],m_randomPriorities[i]);
+                RunCalculatePiJob(m_randomDepths[i], static_cast<Job::Priority>(m_randomPriorities[i]));
             }
 
             // Wait until all the jobs have completed.

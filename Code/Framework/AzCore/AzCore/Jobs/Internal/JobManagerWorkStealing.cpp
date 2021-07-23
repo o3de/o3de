@@ -26,58 +26,146 @@ using namespace AZ::Internal;
 
 bool CompareJobPriorities(AZ::s8 value, const Job* job)
 {
-    return value > job->GetPriority();
+    return value < job->GetPriority();
 }
 
-void WorkQueue::LocalInsert(Job* job)
+struct StatusPayload
 {
-    LockGuard lock(m_lock);
-    const AZStd::deque<Job*>::const_iterator locationToinsert = AZStd::upper_bound(m_queue.begin(),
-                                                                                   m_queue.end(),
-                                                                                   job->GetPriority(),
-                                                                                   CompareJobPriorities);
-    m_queue.insert(locationToinsert, job);
-}
-
-Job* WorkQueue::LocalPopFront()
-{
-    LockGuard lock(m_lock);
-
-    Job* result = nullptr;
-    if (!m_queue.empty())
+    StatusPayload(uint64_t status)
     {
-        result = m_queue.front();
-        m_queue.pop_front();
+        memcpy(this, &status, sizeof(status));
     }
 
-    return result;
-}
-
-Job* WorkQueue::TryStealFront()
-{
-    AZStd::exponential_backoff backoff;
-    for (unsigned attempCount = 0; attempCount < TryStealSpinAttemps; ++attempCount)
+    StatusPayload(const StatusPayload& other)
     {
-        // Do a bounded spin with backoff to acquire the lock
-        if (m_lock.try_lock())
+        memcpy(this, &other, sizeof(StatusPayload));
+    }
+
+    StatusPayload& operator=(uint64_t status)
+    {
+        memcpy(this, &status, sizeof(status));
+        return *this;
+    }
+
+    uint64_t pack() const
+    {
+        uint64_t out;
+        memcpy(&out, this, sizeof(out));
+        return out;
+    }
+
+    [[nodiscard]] bool empty() const
+    {
+        return head == tail;
+    }
+
+    // Typical circular buffer pattern where the head chases the tail. For two phase commits, tailReserve can run ahead of tail
+    // but can't bump into head.
+    // Note that for all operations here, we rely on well-defined wrapping behavior of unsigned ints.
+    [[nodiscard]] bool canEnqueue() const
+    {
+        return tailReserve != head - 1;
+    }
+
+    void reserve()
+    {
+        ++tailReserve;
+    }
+
+    void commit()
+    {
+        ++tail;
+    }
+
+    void acquire()
+    {
+        ++head;
+    }
+
+    uint16_t head;
+    uint16_t tail;
+    uint16_t tailReserve;
+    uint16_t unused;
+};
+
+void JobQueue::Enqueue(Job* job)
+{
+    uint8_t priority = job->GetPriority();
+    uint64_t previousStatus = m_status[priority].load(AZStd::memory_order_acquire);
+
+    while (true)
+    {
+        StatusPayload status{ previousStatus };
+
+        // Enqueuing is done in two phases because we cannot atomically write the job to the slot we reserve
+        // and simulataneously publish the fact that the slot is now available.
+        if (status.canEnqueue())
         {
-            Job* result = nullptr;
-            if (!m_queue.empty())
+            // Try to reserve a slot
+            status.reserve();
+            uint64_t reserveStatus = status.pack();
+            if (m_status[priority].compare_exchange_weak(previousStatus, reserveStatus))
             {
-                result = m_queue.front();
-                m_queue.pop_front();
+                m_queues[priority][status.tailReserve - 1] = job;
+
+                while (true)
+                {
+                    // We are only permitted to increment tail if tail == tailReserve - 1
+                    status.commit();
+                    StatusPayload expected{ status };
+                    expected.tail = expected.tailReserve - 1;
+                    uint64_t expectedStatus = expected.pack();
+
+                    // Increment the tail to advertise the new job
+                    if (m_status[priority].compare_exchange_weak(expectedStatus, status.pack()))
+                    {
+                        return;
+                    }
+
+                    status = expectedStatus;
+                }
             }
 
-            m_lock.unlock();
-            return result;
+            // We failed to reserve a slot, try again
         }
+        else
+        {
+            // All queues at or below the requested priority are full. Queue in the global unbounded queue instead.
+            // NOTE: Caller assumes this enqueue operation succeeds and activates a sleeping worker after this function exits.
+            job->GetContext()->GetJobManager().QueueUnbounded(job, false);
+            return;
+        }
+    }
+}
 
-        backoff.wait();
+Job* JobQueue::TryDequeue()
+{
+    for (size_t priority = 0; priority != PriorityLevelCount; ++priority)
+    {
+        uint64_t previousStatus = m_status[priority].load(AZStd::memory_order_acquire);
+        while (true)
+        {
+            StatusPayload status{ previousStatus };
+
+            if (status.empty())
+            {
+                // Queue empty
+                break;
+            }
+            else
+            {
+                Job* job = m_queues[priority][status.head];
+                status.acquire();
+                if (m_status[priority].compare_exchange_weak(previousStatus, status.pack()))
+                {
+                    return job;
+                }
+            }
+        }
     }
 
     return nullptr;
 }
-
 
 AZ_THREAD_LOCAL JobManagerWorkStealing::ThreadInfo* JobManagerWorkStealing::m_currentThreadInfo = nullptr;
 
@@ -145,7 +233,7 @@ void JobManagerWorkStealing::AddPendingJob(Job* job)
     else if (info && info->m_isWorker && (info->m_owningManager == this))
     {
         //current thread is a worker, insert into the local queue based on the job's priority
-        info->m_pendingJobs.LocalInsert(job);
+        info->m_pendingJobs->Enqueue(job);
 #ifdef JOBMANAGER_ENABLE_STATS
         ++info->m_jobsForked;
 #endif
@@ -157,26 +245,12 @@ void JobManagerWorkStealing::AddPendingJob(Job* job)
         //current thread is not a worker thread, insert into the global queue based on the job's priority
         if (IsAsynchronous())
         {
-            AZStd::lock_guard<GlobalQueueMutexType> lock(m_globalJobQueueMutex);
-            const GlobalJobQueue::const_iterator locationToinsert = AZStd::upper_bound(m_globalJobQueue.begin(),
-                                                                                       m_globalJobQueue.end(),
-                                                                                       job->GetPriority(),
-                                                                                       CompareJobPriorities);
-            m_globalJobQueue.insert(locationToinsert, job);
+            QueueUnbounded(job, true);
 
-            //checking/changing global queue empty state or worker availability must be done atomically while holding the global queue lock
-            ActivateWorker();
         }
         else
         {
-            {
-                AZStd::lock_guard<GlobalQueueMutexType> lock(m_globalJobQueueMutex);
-                const GlobalJobQueue::const_iterator locationToinsert = AZStd::upper_bound(m_globalJobQueue.begin(),
-                                                                                           m_globalJobQueue.end(),
-                                                                                           job->GetPriority(),
-                                                                                           CompareJobPriorities);
-                m_globalJobQueue.insert(locationToinsert, job);
-            }
+            QueueUnbounded(job, false);
 
             //no workers, so must process the jobs right now
             if (!info)  //unless we're already processing
@@ -326,7 +400,7 @@ void JobManagerWorkStealing::ProcessJobsInternal(ThreadInfo* info, Job* suspende
     AZ_Assert(IsAsynchronous(), "ProcessJobs is only to be used when we have worker threads (can be called on non-workers too though)");
 
     //get thread local job queue
-    WorkQueue* pendingJobs = info->m_isWorker ? &info->m_pendingJobs : nullptr;
+    JobQueue* pendingJobs = info->m_isWorker ? info->m_pendingJobs.get() : nullptr;
     unsigned int victim = ((m_workerThreads.size() > 1) && (m_workerThreads[0] == info)) ? 1 : 0;
 
     while (true)
@@ -403,7 +477,7 @@ void JobManagerWorkStealing::ProcessJobsInternal(ThreadInfo* info, Job* suspende
         if (!job && pendingJobs)
         {
             //nothing on the global queue, try to pop from the local queue
-            job = pendingJobs->LocalPopFront();
+            job = pendingJobs->TryDequeue();
         }
 
         bool isTerminated = false;
@@ -433,7 +507,7 @@ void JobManagerWorkStealing::ProcessJobsInternal(ThreadInfo* info, Job* suspende
                 //pop a new job from the local queue
                 if (pendingJobs)
                 {
-                    job = pendingJobs->LocalPopFront();
+                    job = pendingJobs->TryDequeue();
                     if (job)
                     {
                         // not necessary, just an optimization - wakeup sleeping threads, there's work to be done
@@ -471,10 +545,11 @@ void JobManagerWorkStealing::ProcessJobsInternal(ThreadInfo* info, Job* suspende
                     }
 
                     //select a victim thread, using the same victim as the previous successful steal if possible
-                    WorkQueue* victimQueue = &m_workerThreads[victim]->m_pendingJobs;
+                    JobQueue* victimQueue = m_workerThreads[victim]->m_pendingJobs.get();
 
-                    //attempt the steal
-                    job = victimQueue->TryStealFront();
+                    // attempt the steal
+                    job = victimQueue->TryDequeue();
+
                     if (job)
                     {
                         //success, continue with the stolen job
@@ -633,6 +708,7 @@ JobManagerWorkStealing::ThreadList JobManagerWorkStealing::CreateWorkerThreads(c
         info->m_isWorker = true;
         info->m_owningManager = this;
         info->m_workerId = iThread;
+        info->m_pendingJobs = AZStd::make_unique<JobQueue>();
 
         AZStd::thread_desc threadDesc;
         threadDesc.m_name = "AZ JobManager worker thread";
@@ -660,7 +736,7 @@ JobManagerWorkStealing::ThreadList JobManagerWorkStealing::CreateWorkerThreads(c
     return workerThreads;
 }
 
-inline void JobManagerWorkStealing::ActivateWorker()
+void JobManagerWorkStealing::ActivateWorker()
 {
     // find an available worker thread (we do it brute force because the number of threads is small)
     while (m_numAvailableWorkers.load(AZStd::memory_order_acquire) > 0)
@@ -679,6 +755,20 @@ inline void JobManagerWorkStealing::ActivateWorker()
                 return;
             }
         }
+    }
+}
+
+void JobManagerWorkStealing::QueueUnbounded(Job* job, bool shouldActivateWorker)
+{
+    AZStd::lock_guard<GlobalQueueMutexType> lock(m_globalJobQueueMutex);
+    const GlobalJobQueue::const_iterator locationToinsert =
+        AZStd::upper_bound(m_globalJobQueue.begin(), m_globalJobQueue.end(), job->GetPriority(), CompareJobPriorities);
+    m_globalJobQueue.insert(locationToinsert, job);
+
+    if (shouldActivateWorker)
+    {
+        // checking/changing global queue empty state or worker availability must be done atomically while holding the global queue lock
+        ActivateWorker();
     }
 }
 

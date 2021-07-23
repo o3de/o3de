@@ -18,7 +18,3 @@ JobManager::JobManager(const JobManagerDesc& desc)
     : m_impl(desc)
 {
 }
-
-JobManager::~JobManager()
-{
-}

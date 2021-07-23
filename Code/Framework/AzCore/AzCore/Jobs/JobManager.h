@@ -41,8 +41,8 @@ namespace AZ
         AZ_CLASS_ALLOCATOR_DECL
 
         JobManager(const JobManagerDesc& desc);
-
-        ~JobManager();
+        JobManager(const JobManager& manager) = delete;
+        JobManager& operator=(const JobManager& manager) = delete;
 
         /// Check if we have multiple threads for parallel processing.
         AZ_FORCE_INLINE bool    IsAsynchronous() const { return m_impl.IsAsynchronous(); }
@@ -78,14 +78,21 @@ namespace AZ
         AZ::u32 GetWorkerThreadId() const { return m_impl.GetWorkerThreadId(); }
 
     private:
-        //non-copyable
-        JobManager(const JobManager& manager);
-        JobManager& operator=(const JobManager& manager);
 
         //called internally by Job class when it becomes available to run
         friend class Job;
         friend class Internal::JobNotify;
         AZ_FORCE_INLINE void AddPendingJob(Job* job) { m_impl.AddPendingJob(job); }
+
+        friend class Internal::JobQueue;
+        void QueueUnbounded(Job* job, bool shouldActivateWorker)
+        {
+            m_impl.QueueUnbounded(job, shouldActivateWorker);
+        }
+        void ActivateWorker()
+        {
+            m_impl.ActivateWorker();
+        }
 
         //called internally by Job class to suspend itself until child jobs are complete
         AZ_FORCE_INLINE void SuspendJobUntilReady(Job* job) { m_impl.SuspendJobUntilReady(job); }

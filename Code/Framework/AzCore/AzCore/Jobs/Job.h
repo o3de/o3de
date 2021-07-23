@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_JOBS_JOB_H
-#define AZCORE_JOBS_JOB_H 1
+#pragma once
 
 #include <AzCore/base.h>
 #include <AzCore/Jobs/JobCancelGroup.h>
@@ -53,6 +52,18 @@ namespace AZ
         };
 
         /**
+         * Priorities MAY be used to queue jobs ahead of all currently queued jobs with lower priority. This should
+         * be done only after profiling demonstrates which jobs lie on the critical path of a representative frame.
+         */
+        enum class Priority : uint8_t
+        {
+            CRITICAL,
+            HIGH,
+            MEDIUM, // Default
+            LOW,
+        };
+
+        /**
          * If a JobContext is not specified, then the currently processing job's context will be
          * used, or the global context from JobContext::SetGlobalContext will be used if this is a top-level job.
          * isAutoDelete if true will call delete on the job after it's complete.
@@ -61,7 +72,7 @@ namespace AZ
          *          The valid range is -128 (lowest priority) to 127 (highest priority), the default is 0,
          *          and jobs with equal priority values will be run in the same order as added to the queue.
          */
-        Job(bool isAutoDelete, JobContext* context, bool isCompletion = false, AZ::s8 priority = 0);
+        Job(bool isAutoDelete, JobContext* context, bool isCompletion = false, Priority priority = Priority::MEDIUM);
 
         virtual ~Job() { }
 
@@ -239,7 +250,7 @@ namespace AZ
     //============================================================================================================
     //============================================================================================================
 
-    inline Job::Job(bool isAutoDelete, JobContext* context, bool isCompletion, AZ::s8 priority)
+    inline Job::Job(bool isAutoDelete, JobContext* context, bool isCompletion, Priority priority)
     {
         if (context)
         {
@@ -259,7 +270,7 @@ namespace AZ
         {
             countAndFlags |= (unsigned int)FLAG_COMPLETION;
         }
-        countAndFlags |= (unsigned int)((priority << FLAG_PRIORITY_START_BIT) & FLAG_PRIORITY_MASK);
+        countAndFlags |= (unsigned int)((static_cast<uint32_t>(priority) << FLAG_PRIORITY_START_BIT) & FLAG_PRIORITY_MASK);
         SetDependentCountAndFlags(countAndFlags);
         StoreDependent(NULL);
 
@@ -548,5 +559,3 @@ namespace AZ
 #endif
 }
 
-#endif
-#pragma once

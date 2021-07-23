@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_JOBS_INTERNAL_JOBMANAGER_BASE_H
-#define AZCORE_JOBS_INTERNAL_JOBMANAGER_BASE_H 1
+#pragma once
 
 namespace AZ
 {
@@ -20,9 +19,12 @@ namespace AZ
             static const AZ::u32 InvalidWorkerThreadId = ~0u;
         protected:
             void Process(Job* job);
+
+            // The purpose of this method is to allow jobs queued past a natural limit to have a place to
+            // go. Generally, queuing jobs past some implementation defined size may result in a slower
+            // path protected by locks.
+            virtual void QueueUnbounded(Job* job, bool shouldActivateWorker) = 0;
         };
     }
 }
-
-#endif
 
