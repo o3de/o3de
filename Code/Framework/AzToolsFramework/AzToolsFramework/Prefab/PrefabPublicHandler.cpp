@@ -1496,7 +1496,7 @@ namespace AzToolsFramework
                         return AZ::Failure(AZStd::string::format(
                             "Entity with name '%s' and id '%llu' has an owning instance that doesn't belong to the instance "
                             "hierarchy of the selected entities.",
-                            entity->GetId(), entity->GetName()));
+                            entity->GetName(), entity->GetId()));
                     }
                 }
             }
