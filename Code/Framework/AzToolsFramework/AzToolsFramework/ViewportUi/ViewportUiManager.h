@@ -18,7 +18,7 @@ namespace AzToolsFramework::ViewportUi
     {
         class ButtonGroup;
         class ViewportUiDisplay;
-    }
+    } // namespace Internal
 
     class ViewportUiManager : public ViewportUiRequestBus::Handler
     {

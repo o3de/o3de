@@ -38,7 +38,7 @@ class WinLauncher(Launcher):
         assert self.workspace.project is not None
         return os.path.join(self.workspace.paths.build_directory(), f"{self.workspace.project}.GameLauncher.exe")
 
-    def setup(self, backupFiles=True, launch_ap=True):
+    def setup(self, backupFiles=True, launch_ap=True, configure_settings=True):
         """
         Perform setup of this launcher, must be called before launching.
         Subclasses should call its parent's setup() before calling its own code, unless it changes configuration files
@@ -56,7 +56,8 @@ class WinLauncher(Launcher):
             launch_ap = True
 
         # Modify and re-configure
-        self.configure_settings()
+        if configure_settings:
+            self.configure_settings()
         super(WinLauncher, self).setup(backupFiles, launch_ap)
 
     def launch(self):

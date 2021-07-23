@@ -19,16 +19,17 @@ namespace AzToolsFramework::ViewportUi::Internal
     {
     public:
         TextField(
-            const AZStd::string& labelText = "", const AZStd::string& fieldText = "",
+            const AZStd::string& labelText = "",
+            const AZStd::string& fieldText = "",
             TextFieldValidationType validationType = TextFieldValidationType::String);
         ~TextField() = default;
 
         void ConnectEventHandler(AZ::Event<AZStd::string>::Handler& handler);
 
         //! Default text for the text field. Will be cast to same type as m_validationType.
-        AZStd::string m_fieldText; 
+        AZStd::string m_fieldText;
         AZStd::string m_labelText;
-        TextFieldValidationType m_validationType; //<! The type of validator for this text edit.
+        TextFieldValidationType m_validationType; //!< The type of validator for this text edit.
         TextFieldId m_textFieldId;
         ViewportUiElementId m_viewportId;
         AZ::Event<AZStd::string> m_textEditedEvent;

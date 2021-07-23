@@ -28,14 +28,14 @@ class AWSMetrics(core.Construct):
 
         # Check context variables to get enabled optional features
         optional_features = {
-            'batch_processing': self.node.try_get_context("batch_processing") == 'true'
+            'batch_processing': self.node.try_get_context("batch_processing") == 'true',
+            'server_access_logs_bucket': self.node.try_get_context("server_access_logs_bucket")
         }
 
         # Deploy AWS Metrics Stack
         self._feature_stack = AWSMetricsStack(
             scope,
             stack_name,
-            stack_name=stack_name,
             application_name=application_name,
             description=f'Contains resources for the AWS Metrics Gem Feature stack as part of the {project_name} project',
             optional_features=optional_features,
