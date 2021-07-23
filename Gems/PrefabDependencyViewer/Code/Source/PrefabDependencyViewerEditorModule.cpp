@@ -8,7 +8,7 @@
 
 #include <AzCore/Module/Module.h>
 #include <PrefabDependencyViewerEditorSystemComponent.h>
-
+#include <AzToolsFramework/Prefab/PrefabSystemComponent.h>
 
 namespace PrefabDependencyViewer
 {
@@ -38,6 +38,7 @@ namespace PrefabDependencyViewer
         {
             return AZ::ComponentTypeList {
                 azrtti_typeid<PrefabDependencyViewerEditorSystemComponent>(),
+                azrtti_typeid<AzToolsFramework::Prefab::PrefabSystemComponent>()
             };
         }
     };
