@@ -485,20 +485,12 @@ namespace AZ
                 AZ_Error("MeshDataInstance::MeshLoader", false, "Invalid model asset Id.");
                 return;
             }
-
-            // Check if the model is in the instance database and skip the loading process in this case.
-            // The model asset id is used as instance id to indicate that it is a static and shared.
-            Data::Instance<RPI::Model> model = Data::InstanceDatabase<RPI::Model>::Instance().Find(Data::InstanceId::CreateFromAssetId(m_modelAsset.GetId()));
-            if (model)
+            
+            if (!m_modelAsset.IsReady())
             {
-                // In case the mesh asset requires instancing (e.g. when containing a cloth buffer), the model will always be cloned and there will not be a
-                // model instance with the asset id as instance id as searched above.
-                m_parent->Init(model);
-                m_modelChangedEvent.Signal(AZStd::move(model));
-                return;
+                m_modelAsset.QueueLoad();
             }
 
-            m_modelAsset.QueueLoad();
             Data::AssetBus::Handler::BusConnect(modelAsset.GetId());
         }
 
