@@ -42,7 +42,7 @@ namespace AudioControls
         // into the new destination tree.
         [[nodiscard]] static AZStd::unique_ptr<AZ::rapidxml::xml_node<char>> DeepCopyNode(AZ::rapidxml::xml_node<char>* srcNode)
         {
-            AZStd::unique_ptr<AZ::rapidxml::xml_node<char>> destNode{};
+            AZStd::unique_ptr<AZ::rapidxml::xml_node<char>> destNode;
             if (srcNode)
             {
                 XmlAllocator& xmlAlloc(AudioControls::s_xmlAllocator);

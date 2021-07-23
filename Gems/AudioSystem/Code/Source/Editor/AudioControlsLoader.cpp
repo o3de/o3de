@@ -553,7 +553,7 @@ namespace AudioControls
     }
 
     //-------------------------------------------------------------------------------------------//
-    CATLControl* CAudioControlsLoader::CreateInternalSwitchState(CATLControl* parentControl, [[maybe_unused]] const AZStd::string& switchName, const AZStd::string& stateName)
+    CATLControl* CAudioControlsLoader::CreateInternalSwitchState(CATLControl* parentControl, const AZStd::string& switchName, const AZStd::string& stateName)
     {
         CATLControl* childControl = m_atlControlsModel->CreateControl(stateName, eACET_SWITCH_STATE, parentControl);
 
