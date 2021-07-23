@@ -8,6 +8,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 from aws_cdk import core
 from .aws_metrics_stack import AWSMetricsStack
 from .auth import AuthPolicy
+from .aws_utils import resource_name_sanitizer
 
 
 class AWSMetrics(core.Construct):
@@ -23,7 +24,8 @@ class AWSMetrics(core.Construct):
                  env: core.Environment) -> None:
         super().__init__(scope, id_)
         # Set-up any stack name(s) to be unique in account
-        stack_name = f'{project_name}-{feature_name}-{env.region}'
+        stack_name = resource_name_sanitizer.sanitize_resource_name(
+            f'{project_name}-{feature_name}-{env.region}', 'cloudformation_stack')
         application_name = f'{project_name}-{feature_name}'
 
         # Check context variables to get enabled optional features
