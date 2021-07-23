@@ -12,7 +12,7 @@ set(FILES
     Source/MainWindow.h
     Source/MainWindow.cpp
     Source/Core/Core.h
-    Source/PrefabDependencyViewerInterface.h
+    Source/MainWindowInterface.h
     Source/DirectedGraph.h
     Source/PrefabDependencyTree.h
 )

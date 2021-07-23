@@ -13,7 +13,7 @@
 #include <GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasEditorDockWidget.h>
 #include <GraphCanvas/Widgets/NodePalette/NodePaletteDockWidget.h>
 #include <QWidget>
-#include <PrefabDependencyViewerInterface.h>
+#include <MainWindowInterface.h>
 #include <AzCore/std/containers/unordered_map.h>
 
 namespace PrefabDependencyViewer
