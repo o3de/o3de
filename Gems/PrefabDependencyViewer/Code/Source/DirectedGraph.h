@@ -123,7 +123,7 @@ namespace PrefabDependencyViewer::Utils
                 return iter->second;
             }
 
-            return NodeSet();
+            return {};
         }
 
         DirectedGraph(const DirectedGraph& rhs)
