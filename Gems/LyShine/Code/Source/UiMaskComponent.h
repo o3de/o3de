@@ -15,6 +15,7 @@
 #include <LyShine/IRenderGraph.h>
 
 #include <AzCore/Component/Component.h>
+#include <Atom/RHI.Reflect/AttachmentId.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 class UiMaskComponent

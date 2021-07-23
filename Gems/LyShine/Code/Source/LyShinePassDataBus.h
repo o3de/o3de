@@ -8,6 +8,8 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/vector.h>
+#include <AtomCore/Instance/Instance.h>
+#include <Atom/RPI.Public/Base.h>
 
 namespace AZ
 {

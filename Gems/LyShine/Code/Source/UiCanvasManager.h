@@ -11,6 +11,7 @@
 #include <LyShine/Bus/UiCanvasManagerBus.h>
 #include <LyShine/Bus/UiCanvasBus.h>
 #include <LyShine/UiEntityContext.h>
+#include "LyShinePassDataBus.h"
 #include <IFont.h>
 
 class UiCanvasComponent;

@@ -18,6 +18,7 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Math/Color.h>
+#include <Atom/RHI.Reflect/AttachmentId.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 class UiFaderComponent
