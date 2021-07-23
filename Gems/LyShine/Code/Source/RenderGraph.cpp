@@ -1518,7 +1518,7 @@ namespace LyShine
         case LyShine::BlendMode::Lighten:
             // This is a pretty good an approximation of the PhotoShop Lighten mode but trying to take some account of src alpha
             // In PhotoShop Lighten means max(SrcColor, DstColor)
-            blendState.m_blendSource = AZ::RHI::BlendFactor::AlphaSourceInverse;
+            blendState.m_blendSource = AZ::RHI::BlendFactor::AlphaSource;
             blendState.m_blendDest = AZ::RHI::BlendFactor::One;
             blendState.m_blendOp = AZ::RHI::BlendOp::Maximum;
             break;
