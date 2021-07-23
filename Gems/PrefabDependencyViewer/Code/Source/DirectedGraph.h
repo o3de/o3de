@@ -15,6 +15,8 @@
 #include <AzToolsFramework/Prefab/PrefabDomTypes.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/queue.h>
+#include <AzCore/std/containers/stack.h>
 
 namespace PrefabDependencyViewer
 {
