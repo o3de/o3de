@@ -9,7 +9,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/API/ViewPaneOptions.h>
 #include <PrefabDependencyViewerEditorSystemComponent.h>
-#include <PrefabDependencyViewerWidget.h>
+#include <MainWindow.h>
 #include <QMenu>
 #include <LyViewPaneNames.h>
 #include <PrefabDependencyTree.h>

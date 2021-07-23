@@ -9,8 +9,8 @@
 set(FILES
     Source/PrefabDependencyViewerEditorSystemComponent.cpp
     Source/PrefabDependencyViewerEditorSystemComponent.h
-    Source/PrefabDependencyViewerWidget.h
-    Source/PrefabDependencyViewerWidget.cpp
+    Source/MainWindow.h
+    Source/MainWindow.cpp
     Source/Core/Core.h
     Source/PrefabDependencyViewerInterface.h
     Source/DirectedGraph.h

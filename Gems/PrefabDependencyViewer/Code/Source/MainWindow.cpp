@@ -8,7 +8,7 @@
 
 #include <AzCore/Interface/Interface.h>
 #include <Core/Core.h>
-#include <PrefabDependencyViewerWidget.h>
+#include <MainWindow.h>
 #include <QBoxLayout>
 #include <QLabel>
 #include <GraphCanvas/GraphCanvasBus.h>
@@ -260,6 +260,6 @@ namespace PrefabDependencyViewer
 }
 
 // Qt best practice for Q_OBJECT macro issues. File available at compile time.
-#include <moc_PrefabDependencyViewerWidget.cpp>
+#include <moc_MainWindow.cpp>
 
 
