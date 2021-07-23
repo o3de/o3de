@@ -84,10 +84,10 @@ namespace AudioControls
                 m_foundLibraryPaths.begin(), m_foundLibraryPaths.end(),
                 [fileIO](AZStd::string& libraryPath) -> void
                 {
-                    AZStd::optional<AZ::u64> newLength = fileIO->ConvertToAlias(libraryPath.data(), libraryPath.size());
-                    if (newLength)
+                    if (auto newPathOpt = fileIO->ConvertToAlias(AZ::IO::PathView{ libraryPath });
+                        newPathOpt.has_value())
                     {
-                        libraryPath.resize_no_construct(*newLength);
+                        libraryPath = newPathOpt.value().Native();
                     }
                     AZStd::to_lower(libraryPath.begin(), libraryPath.end());
                 });
