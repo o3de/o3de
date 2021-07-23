@@ -33,9 +33,9 @@ namespace PrefabDependencyViewer
             MetaData() = default;
 
             MetaData(TemplateId tid, const char* source)
+                : m_tid(tid)
+                , m_source(source)
             {
-                SetTemplateId(tid);
-                SetSource(source);
             }
 
             TemplateId GetTemplateId()
@@ -47,16 +47,8 @@ namespace PrefabDependencyViewer
             {
                 return m_source;
             }
-        private:
-            void SetTemplateId(const TemplateId tid)
-            {
-                m_tid = tid;
-            }
-            void SetSource(const char* source)
-            {
-                m_source = source;
-            }
 
+        private:
             TemplateId m_tid;
             const char* m_source;
         };
@@ -67,9 +59,9 @@ namespace PrefabDependencyViewer
             AZ_CLASS_ALLOCATOR(Node, AZ::SystemAllocator, 0);
 
             Node(TemplateId tid, const char* source, Node* parent = nullptr)
+                : m_metaData(tid, source)
+                , m_parent(parent)
             {
-                SetMetaData(tid, source);
-                SetParent(parent);
             }
 
             MetaData GetMetaData()
@@ -89,11 +81,6 @@ namespace PrefabDependencyViewer
             }
 
         private:
-            void SetMetaData(TemplateId tid, const char* source)
-            {
-                m_metaData = MetaData(tid, source);
-            }
-
             MetaData m_metaData;
             Node* m_parent;
         };
@@ -102,10 +89,10 @@ namespace PrefabDependencyViewer
         {
         public:
             DirectedGraph()
+                : m_nodes(NodeSet())
+                , m_children(ChildrenMap())
+                , m_root(nullptr)
             {
-                m_nodes = NodeSet();
-                m_children = ChildrenMap();
-                m_root = nullptr;
             }
 
             void AddNode(Node* node)
