@@ -6,7 +6,7 @@
  *
  */
 
-#include "RHI/Atom_RHI_DX12_precompiled.h"
+#include <AzCore/PlatformIncl.h>
 #include <RHI/SystemComponent.h>
 #include <RHI/Buffer.h>
 #include <RHI/BufferPool.h>

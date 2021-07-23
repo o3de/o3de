@@ -305,16 +305,12 @@ namespace Multiplayer
 
     bool EntityReplicator::RemoteManagerOwnsEntityLifetime() const
     {
-        bool ret(false);
         bool isServer = (GetBoundLocalNetworkRole() == NetEntityRole::Server)
                      && (GetRemoteNetworkRole() == NetEntityRole::Authority);
         bool isClient = (GetBoundLocalNetworkRole() == NetEntityRole::Client)
                      || (GetBoundLocalNetworkRole() == NetEntityRole::Autonomous);
-        if (isServer || isClient)
-        {
-            ret = true;
-        }
-        return ret;
+
+        return isServer || isClient;
     }
 
     void EntityReplicator::MarkForRemoval()

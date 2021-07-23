@@ -6,8 +6,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include <Editor/DocumentationLinkWidget.h>
 
 namespace PhysX

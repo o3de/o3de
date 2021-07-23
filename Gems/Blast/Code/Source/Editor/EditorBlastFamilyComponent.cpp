@@ -6,8 +6,6 @@
  *
  */
 
-#include "StdAfx.h"
-
 #include <Editor/EditorBlastFamilyComponent.h>
 
 #include <AzCore/Serialization/EditContext.h>

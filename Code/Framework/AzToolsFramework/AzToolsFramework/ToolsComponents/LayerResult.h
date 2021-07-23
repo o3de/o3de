@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#include <QtCore/QString>
+
 namespace AzToolsFramework
 {
     namespace Layers

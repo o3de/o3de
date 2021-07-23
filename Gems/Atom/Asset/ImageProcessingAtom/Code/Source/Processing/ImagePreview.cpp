@@ -6,8 +6,7 @@
  *
  */
 
-#include <ImageProcessing_precompiled.h>
-
+#include <AzCore/PlatformIncl.h>
 #include <Processing/ImagePreview.h>
 #include <BuilderSettings/BuilderSettingManager.h>
 #include <ImageLoader/ImageLoaders.h>

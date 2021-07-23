@@ -8,8 +8,10 @@
 
 #include <System/PhysXJointInterface.h>
 #include <AzFramework/Physics/Configuration/JointConfiguration.h>
+#include <AzCore/std/optional.h>
 
 #include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
+#include <PhysX/Debug/PhysXDebugConfiguration.h>
 
 namespace PhysX
 {

@@ -11,6 +11,7 @@
 
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/UserSettings/UserSettings.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace Driller
 {

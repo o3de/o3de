@@ -10,6 +10,7 @@
 
 #include "EMotionFXConfig.h"
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/string/string.h>
 #include "BaseObject.h"
 #include "VertexAttributeLayer.h"

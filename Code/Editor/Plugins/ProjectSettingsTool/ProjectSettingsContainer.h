@@ -15,6 +15,8 @@
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/std/containers/queue.h>
+#include <AzCore/std/containers/unordered_map.h>
 
 #include <AzFramework/StringFunc/StringFunc.h>
 

@@ -7,9 +7,11 @@
  */
 
 #pragma once
+
 #include <AzCore/Math/Color.h>
 #include <AzCore/std/algorithm.h>
 #include <ImageProcessing_Traits_Platform.h>
+#include <ImageBuilderBaseType.h>
 
 #define IMAGE_BUIDER_MAKEFOURCC(ch0, ch1, ch2, ch3)           \
     ((AZ::u32)(AZ::u8)(ch0) | ((AZ::u32)(AZ::u8)(ch1) << 8) | \

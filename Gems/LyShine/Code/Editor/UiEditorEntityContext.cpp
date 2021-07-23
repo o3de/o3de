@@ -6,8 +6,6 @@
  *
  */
 
-#include "UiCanvasEditor_precompiled.h"
-
 #include "EditorCommon.h"
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/EntityUtils.h>

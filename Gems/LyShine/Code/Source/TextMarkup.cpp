@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "LyShine_precompiled.h"
 #include "TextMarkup.h"
 #include <AzCore/std/containers/stack.h>
 #include <AzCore/std/string/conversions.h>

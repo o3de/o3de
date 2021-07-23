@@ -13,10 +13,10 @@
 #include <Atom/RHI/FrameScheduler.h>
 #include <AzCore/Math/Random.h>
 
-using namespace AZ;
-
 namespace UnitTest
 {
+    using namespace AZ;
+
     struct ImportedImage
     {
         RHI::AttachmentId m_id;

@@ -7,13 +7,4 @@
  */
 #pragma once
 
-#ifndef WIN32_LEAN_AND_MEAN
-    #define WIN32_LEAN_AND_MEAN 1
-    #define LEAN_AND_MEAN_DEFINED 1
-#endif
-
-#include <windows.h>
-
-#if defined(LEAN_AND_MEAN_DEFINED)
-    #undef WIN32_LEAN_AND_MEAN
-#endif
+#include <AzCore/PlatformIncl.h>

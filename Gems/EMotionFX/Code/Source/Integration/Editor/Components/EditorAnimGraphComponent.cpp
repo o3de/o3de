@@ -6,9 +6,6 @@
  *
  */
 
-
-#include "EMotionFX_precompiled.h"
-
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Script/ScriptProperty.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -22,6 +19,7 @@
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/MainWindow.h>
 #include <Integration/ActorComponentBus.h>
 #include <Integration/Editor/Components/EditorAnimGraphComponent.h>
+#include <EMotionFX/Source/MotionSet.h>
 
 #include <QApplication>
 
@@ -63,7 +61,7 @@ namespace EMotionFX
                             ->Attribute(AZ::Edit::Attributes::Category, "Animation")
                             ->Attribute(AZ::Edit::Attributes::Icon, ":/EMotionFX/AnimGraphComponent.svg")
                             ->Attribute(AZ::Edit::Attributes::PrimaryAssetType, azrtti_typeid<AnimGraphAsset>())
-                            ->Attribute(AZ::Edit::Attributes::ViewportIcon, ":/EMotionFX/AnimGraphComponent.svg")
+                            ->Attribute(AZ::Edit::Attributes::ViewportIcon, ":/EMotionFX/Viewport/AnimGraphComponent.svg")
                             ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/animgraph/")

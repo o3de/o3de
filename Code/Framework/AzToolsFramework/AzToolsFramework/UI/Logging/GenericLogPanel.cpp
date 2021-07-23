@@ -6,7 +6,6 @@
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 
 #include "GenericLogPanel.h"
 

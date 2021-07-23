@@ -23,7 +23,11 @@ namespace AZ
     namespace RHI
     {
         class ScopeAttachment;
-        enum class BufferBindFlags : uint32_t;
+        // NOTE: see BufferDescriptor.h, AZ_ENUM... macro wraps enum within an outer inline namespace.
+        inline namespace BufferBindFlagsNamespace
+        {
+            enum class BufferBindFlags : uint32_t;
+        }
         class BufferView;
         class ImageView;
         struct BufferSubresourceRange;

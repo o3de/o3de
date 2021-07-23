@@ -5,13 +5,13 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "AzToolsFramework_precompiled.h"
 #include "PropertyButtonCtrl.hxx"
 #include "PropertyQTConstants.h"
 #include <QtWidgets/QPushButton>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'QLayoutItem::align': class 'QFlags<Qt::AlignmentFlag>' needs to have dll-interface to be used by clients of class 'QLayoutItem'
 #include <QtWidgets/QHBoxLayout>
 AZ_POP_DISABLE_WARNING
+#include <QtCore/QEvent>
 
 namespace AzToolsFramework
 {

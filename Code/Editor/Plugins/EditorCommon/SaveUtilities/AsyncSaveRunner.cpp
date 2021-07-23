@@ -6,7 +6,6 @@
  *
  */
 
-#include "EditorCommon_precompiled.h"
 #include <SaveUtilities/AsyncSaveRunner.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 #include <AzCore/IO/SystemFile.h>

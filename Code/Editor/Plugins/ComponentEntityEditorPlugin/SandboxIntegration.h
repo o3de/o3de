@@ -296,8 +296,8 @@ private:
     AZStd::unordered_set<AZ::EntityId> m_unsavedEntities;
 
     const AZStd::string m_defaultComponentIconLocation = "Icons/Components/Component_Placeholder.svg";
-    const AZStd::string m_defaultComponentViewportIconLocation = "Icons/Components/Viewport/Component_Placeholder.png";
-    const AZStd::string m_defaultEntityIconLocation = "Icons/Components/Viewport/Transform.png";
+    const AZStd::string m_defaultComponentViewportIconLocation = "Icons/Components/Viewport/Component_Placeholder.svg";
+    const AZStd::string m_defaultEntityIconLocation = "Icons/Components/Viewport/Transform.svg";
 
     bool m_debugDisplayBusImplementationActive = false;
 

@@ -133,7 +133,6 @@ def C24308873_CylinderShapeCollider_CollidesWithPhysXTerrain():
     helper.exit_game_mode(Tests.exit_game_mode)
 
 
-
 if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()

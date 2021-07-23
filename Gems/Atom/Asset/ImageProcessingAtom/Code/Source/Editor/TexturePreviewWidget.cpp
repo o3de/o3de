@@ -6,7 +6,6 @@
  *
  */
 
-#include <ImageProcessing_precompiled.h>
 #include "TexturePreviewWidget.h"
 #include <Processing/PixelFormatInfo.h>
 #include <Atom/ImageProcessing/ImageObject.h>

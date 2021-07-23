@@ -6,9 +6,8 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include <PhysX/HeightFieldAsset.h>
+#include <PxPhysicsAPI.h>
 
 namespace PhysX
 {

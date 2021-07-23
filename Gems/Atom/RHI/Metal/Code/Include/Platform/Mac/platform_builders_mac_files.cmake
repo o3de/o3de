@@ -7,6 +7,6 @@
 #
 
 set(FILES
-    Atom_RHI_Metal_precompiled_Mac.h
-    Atom_RHI_Metal_precompiled_Platform.h
+    Atom_RHI_Metal_Mac.h
+    Atom_RHI_Metal_Platform.h
 )

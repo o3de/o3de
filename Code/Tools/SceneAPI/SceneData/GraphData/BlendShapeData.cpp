@@ -281,26 +281,8 @@ namespace AZ
             void BlendShapeData::GetDebugOutput(SceneAPI::Utilities::DebugOutput& output) const
             {
                 output.Write("Positions", m_positions);
-                int index = 0;
-                for (const auto& position : m_positions)
-                {
-                    output.Write(AZStd::string::format("\t%d", index).c_str(), position);
-                    ++index;
-                }
-                index = 0;
                 output.Write("Normals", m_normals);
-                for (const auto& normal : m_normals)
-                {
-                    output.Write(AZStd::string::format("\t%d", index).c_str(), normal);
-                    ++index;
-                }
-                index = 0;
                 output.Write("Faces", m_faces);
-                for (const auto& face : m_faces)
-                {
-                    output.WriteArray(AZStd::string::format("\t%d", index).c_str(), face.vertexIndex, 3);
-                    ++index;
-                }
             }
         } // GraphData
     } // SceneData

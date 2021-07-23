@@ -23,6 +23,7 @@
 #include <SceneAPI/SceneData/Rules/MaterialRule.h>
 #include <SceneAPI/SceneData/Rules/StaticMeshAdvancedRule.h>
 #include <SceneAPI/SceneData/Rules/SkeletonProxyRule.h>
+#include <SceneAPI/SceneData/Rules/TangentsRule.h>
 #include <SceneAPI/SceneData/Rules/SkinMeshAdvancedRule.h>
 #include <SceneAPI/SceneData/Rules/SkinRule.h>
 #include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
@@ -81,6 +82,10 @@ namespace AZ
                     if (existingRules.find(azrtti_typeid<CoordinateSystemRule>()) == existingRules.end())
                     {
                         modifiers.push_back(azrtti_typeid<CoordinateSystemRule>());
+                    }
+                    if (existingRules.find(SceneData::TangentsRule::TYPEINFO_Uuid()) == existingRules.end())
+                    {
+                        modifiers.push_back(SceneData::TangentsRule::TYPEINFO_Uuid());
                     }
                 }
                 else if (target.RTTI_IsTypeOf(DataTypes::ISkinGroup::TYPEINFO_Uuid()))

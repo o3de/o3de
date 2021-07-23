@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "LyShine_precompiled.h"
 #include "IFont.h"
 #include <IRenderer.h> // for SVF_P3F_C4B_T2F which will be removed in a coming PR
 

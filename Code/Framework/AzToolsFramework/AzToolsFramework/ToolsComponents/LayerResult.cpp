@@ -6,10 +6,10 @@
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 #include "LayerResult.h"
 
 #include <QString>
+#include <AzCore/Debug/Trace.h>
 
 namespace AzToolsFramework
 {

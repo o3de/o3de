@@ -8,7 +8,7 @@
 
 // windows include must be first so we get the full version (AZCore bring the trimmed one)
 #ifdef _WIN32
-#include <Windows.h>
+#include <AzCore/PlatformIncl.h>
 #include <winnls.h>
 #include <shobjidl.h>
 #include <objbase.h>

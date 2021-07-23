@@ -179,6 +179,13 @@ struct ModtimeScanningTest
     AZStd::unique_ptr<StaticData> m_data;
 };
 
+
+struct MetadataFileTest
+    : public AssetProcessorManagerTest
+{
+    void SetUp() override;
+};
+
 struct FingerprintTest
     : public AssetProcessorManagerTest
 {

@@ -6,6 +6,4 @@
  *
  */
 
-
-#include "EditorCommon_precompiled.h"
 #include "../../Editor/Objects/DisplayContextShared.inl"

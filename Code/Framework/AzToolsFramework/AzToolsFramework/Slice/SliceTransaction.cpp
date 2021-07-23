@@ -6,7 +6,6 @@
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Debug/Profiler.h>

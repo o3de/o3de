@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    Editor/precompiled.h
     Editor/ScriptCanvasEditorGem.cpp
     Include/ScriptCanvas/ScriptCanvasGem.h
 )

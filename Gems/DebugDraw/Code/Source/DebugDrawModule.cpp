@@ -6,7 +6,6 @@
  *
  */
 
-#include "DebugDraw_precompiled.h"
 
 #include "DebugDrawSystemComponent.h"
 #include "DebugDrawLineComponent.h"

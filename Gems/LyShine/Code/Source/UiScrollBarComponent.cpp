@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "LyShine_precompiled.h"
 #include "UiScrollBarComponent.h"
 
 #include "UiNavigationHelpers.h"

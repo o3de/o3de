@@ -6,7 +6,6 @@
  *
  */
 
-#include "GradientSignal_precompiled.h"
 #include "SurfaceSlopeGradientComponent.h"
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Math/MathUtils.h>

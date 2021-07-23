@@ -6,8 +6,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include "PhysXTestFixtures.h"
 #include "EditorTestUtilities.h"
 #include "PhysXTestCommon.h"

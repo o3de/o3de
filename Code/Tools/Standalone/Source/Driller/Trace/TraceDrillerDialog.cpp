@@ -6,8 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "TraceDrillerDialog.hxx"
 #include "TraceMessageDataAggregator.hxx"
 #include <Source/Driller/Trace/ui_TraceDrillerDialog.h>

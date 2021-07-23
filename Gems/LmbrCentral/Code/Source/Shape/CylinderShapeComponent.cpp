@@ -6,7 +6,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "CylinderShapeComponent.h"
 
 #include <AzCore/RTTI/BehaviorContext.h>

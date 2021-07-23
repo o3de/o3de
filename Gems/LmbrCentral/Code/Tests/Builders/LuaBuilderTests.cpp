@@ -6,7 +6,6 @@
  *
  */
 
-#include <LmbrCentral_precompiled.h>
 #include <AzTest/AzTest.h>
 #include <Builders/LuaBuilder/LuaBuilderWorker.h>
 #include <AzTest/Utils.h>

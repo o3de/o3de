@@ -40,6 +40,21 @@ namespace AssetProcessor
     extern const char AssetConfigPlatformDir[];
     extern const char AssetProcessorPlatformConfigFileName[];
 
+    struct AssetImporterPathsVisitor
+        : AZ::SettingsRegistryInterface::Visitor
+    {
+        AssetImporterPathsVisitor(AZ::SettingsRegistryInterface* settingsRegistry, AZStd::vector<AZStd::string>& supportedExtension)
+            : m_settingsRegistry(settingsRegistry)
+            , m_supportedFileExtensions(supportedExtension)
+        {
+        }
+
+        void Visit(AZStd::string_view path, AZStd::string_view, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override;
+
+        AZ::SettingsRegistryInterface* m_settingsRegistry;
+        AZStd::vector<AZStd::string> m_supportedFileExtensions;
+    };
+
     //! Information for a given recognizer, on a specific platform
     //! essentially a plain data holder, but with helper funcs
     class AssetPlatformSpec

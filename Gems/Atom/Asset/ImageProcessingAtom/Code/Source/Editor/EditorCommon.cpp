@@ -6,7 +6,6 @@
  *
  */
 
-#include <ImageProcessing_precompiled.h>
 #include <ImageProcessing_Traits_Platform.h>
 #include <Editor/EditorCommon.h>
 #include <Processing/ImageToProcess.h>

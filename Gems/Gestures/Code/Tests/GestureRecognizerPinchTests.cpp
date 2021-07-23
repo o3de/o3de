@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Gestures_precompiled.h"
+
 #include <AzTest/AzTest.h>
 #include <Mocks/StubTimer.h>
 #include <Gestures/GestureRecognizerPinch.h>

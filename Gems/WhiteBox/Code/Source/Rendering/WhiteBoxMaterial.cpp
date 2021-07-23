@@ -6,8 +6,6 @@
  *
  */
 
-#include "WhiteBox_precompiled.h"
-
 #include "WhiteBoxMaterial.h"
 
 #include <AzCore/Serialization/EditContext.h>

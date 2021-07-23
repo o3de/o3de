@@ -281,6 +281,11 @@ namespace AZ
             return m_frameScheduler.GetTransientAttachmentStatistics();
         }
 
+        const RHI::MemoryStatistics* RHISystem::GetMemoryStatistics() const
+        {
+            return m_frameScheduler.GetMemoryStatistics();
+        }
+
         const AZ::RHI::TransientAttachmentPoolDescriptor* RHISystem::GetTransientAttachmentPoolDescriptor() const
         {
             return m_frameScheduler.GetTransientAttachmentPoolDescriptor();

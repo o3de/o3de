@@ -6,8 +6,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include <Editor/CollisionFilteringWidget.h>
 #include <Editor/CollisionLayersWidget.h>
 #include <Editor/CollisionGroupsWidget.h>

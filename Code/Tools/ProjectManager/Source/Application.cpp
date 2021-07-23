@@ -170,7 +170,8 @@ namespace O3DE::ProjectManager
         // the decoration wrapper is intended to remember window positioning and sizing 
         auto wrapper = new AzQtComponents::WindowDecorationWrapper();
         wrapper->setGuest(m_mainWindow.data());
-        wrapper->show();
+        wrapper->enableSaveRestoreGeometry("O3DE", "ProjectManager", "mainWindowGeometry");
+        wrapper->showFromSettings();
         m_mainWindow->show();
 
         qApp->setQuitOnLastWindowClosed(true);

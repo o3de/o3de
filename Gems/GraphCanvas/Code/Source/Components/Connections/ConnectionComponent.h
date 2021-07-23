@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#include <AzCore/PlatformDef.h>
+
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
 #include <qgraphicswidget.h>
 #include <qgraphicssceneevent.h>

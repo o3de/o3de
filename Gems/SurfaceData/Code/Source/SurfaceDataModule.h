@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include "SurfaceData_precompiled.h"
 #include <AzCore/Module/Module.h>
 
 namespace SurfaceData

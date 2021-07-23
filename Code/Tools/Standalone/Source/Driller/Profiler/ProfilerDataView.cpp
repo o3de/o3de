@@ -6,8 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "ProfilerDataView.hxx"
 #include <Source/Driller/Profiler/moc_ProfilerDataView.cpp>
 

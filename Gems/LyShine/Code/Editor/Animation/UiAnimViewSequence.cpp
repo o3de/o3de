@@ -7,7 +7,6 @@
  */
 
 
-#include "UiCanvasEditor_precompiled.h"
 #include "UiEditorAnimationBus.h"
 #include "UiAnimViewSequence.h"
 #include "UiAnimViewSequenceManager.h"
@@ -23,6 +22,7 @@
 #include "Clipboard.h"
 
 #include "UiEditorAnimationBus.h"
+#include <Util/EditorUtils.h>
 
 #include <QApplication>
 

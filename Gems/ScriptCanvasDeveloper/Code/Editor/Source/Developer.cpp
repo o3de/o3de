@@ -6,7 +6,6 @@
  *
  */
 
-#include "precompiled.h"
 #include <ScriptCanvasDeveloperEditor/Developer.h>
 #include <ScriptCanvasDeveloperEditor/Mock.h>
 #include <ScriptCanvasDeveloperEditor/WrapperMock.h>

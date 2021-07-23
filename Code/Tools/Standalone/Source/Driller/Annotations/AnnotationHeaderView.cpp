@@ -6,8 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "AnnotationHeaderView.hxx"
 #include "AnnotationsDataView.hxx"
 #include "Annotations.hxx"

@@ -6,7 +6,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
 #include <System/PhysXCpuDispatcher.h>
 #include <System/PhysXJob.h>
 

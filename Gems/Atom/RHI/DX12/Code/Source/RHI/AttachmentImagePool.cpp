@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "CryRenderOther_precompiled.h"
+
 #include "AttachmentImagePool.h"
 #include "Conversions.h"
 #include "Image.h"

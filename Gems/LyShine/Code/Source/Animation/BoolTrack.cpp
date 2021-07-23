@@ -7,7 +7,6 @@
  */
 
 
-#include "LyShine_precompiled.h"
 #include "BoolTrack.h"
 #include <AzCore/Serialization/SerializeContext.h>
 #include "UiAnimSerialize.h"

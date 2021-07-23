@@ -6,7 +6,7 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
+#include <AzCore/PlatformIncl.h>
 
 #include "LUAEditorMainWindow.hxx"
 

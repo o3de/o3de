@@ -6,8 +6,6 @@
  *
  */
 
-#include "StdAfx.h"
-
 #include <Atom/RPI.Public/Scene.h>
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
 #include <AzCore/Component/TransformBus.h>

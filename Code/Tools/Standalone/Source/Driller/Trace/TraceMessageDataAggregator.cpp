@@ -6,8 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "TraceMessageDataAggregator.hxx"
 #include <Source/Driller/Trace/moc_TraceMessageDataAggregator.cpp>
 

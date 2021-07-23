@@ -6,7 +6,6 @@
  *
  */
 
-#include "GradientSignal_precompiled.h"
 #include <GradientSignal/SmoothStep.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/RTTI/BehaviorContext.h>

@@ -29,7 +29,7 @@ namespace Vegetation
         static constexpr const char* const s_componentName = "Vegetation Position Modifier";
         static constexpr const char* const s_componentDescription = "Offsets the position of the vegetation";
         static constexpr const char* const s_icon = "Editor/Icons/Components/VegetationModifier.svg";
-        static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/VegetationModifier.png";
+        static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/VegetationModifier.svg";
         static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/reference/";
     };
 }

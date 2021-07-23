@@ -6,7 +6,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "AudioEnvironmentComponent.h"
 
 #include <ISystem.h>

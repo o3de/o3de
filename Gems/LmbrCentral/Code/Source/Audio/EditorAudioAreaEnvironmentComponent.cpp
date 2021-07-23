@@ -6,7 +6,6 @@
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "EditorAudioAreaEnvironmentComponent.h"
 
 #include <AzCore/Serialization/EditContext.h>
@@ -38,7 +37,7 @@ namespace LmbrCentral
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Audio")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/AudioAreaEnvironment.svg")
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/AudioAreaEnvironment.png")
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/AudioAreaEnvironment.svg")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/audio-area-environment/")

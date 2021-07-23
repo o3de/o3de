@@ -6,7 +6,6 @@
  *
  */
 
-#include <PhysX_precompiled.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <Editor/EditorJointConfiguration.h>

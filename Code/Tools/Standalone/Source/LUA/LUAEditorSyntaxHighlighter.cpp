@@ -6,7 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
 #include "LUAEditorSyntaxHighlighter.hxx"
 #include <Source/LUA/moc_LUAEditorSyntaxHighlighter.cpp>
 #include "LUAEditorStyleMessages.h"

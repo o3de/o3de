@@ -6,7 +6,6 @@
  *
  */
 
-#include <LmbrCentral_precompiled.h>
 #include "MaterialBuilderComponent.h"
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>

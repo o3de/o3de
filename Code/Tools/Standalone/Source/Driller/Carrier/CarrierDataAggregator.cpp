@@ -6,8 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/std/string/conversions.h>
 

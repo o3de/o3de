@@ -6,8 +6,6 @@
  *
  */
 
-#include "StandaloneTools_precompiled.h"
-
 #include "ProfilerDataAggregator.hxx"
 #include <Source/Driller/Profiler/moc_ProfilerDataAggregator.cpp>
 

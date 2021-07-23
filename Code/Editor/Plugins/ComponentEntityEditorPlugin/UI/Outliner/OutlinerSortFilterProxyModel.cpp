@@ -5,8 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "ComponentEntityEditorPlugin_precompiled.h"
-
 #include "OutlinerSortFilterProxyModel.hxx"
 
 #include <AzCore/Component/ComponentApplication.h>

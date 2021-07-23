@@ -5,10 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <stdlib.h>
-#include <windows.h>
-#include <sysinfoapi.h>
-#include <fileapi.h>
+
+#include <AzCore/PlatformIncl.h>
 
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/functional.h>
