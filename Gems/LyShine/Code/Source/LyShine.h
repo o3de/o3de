@@ -115,7 +115,7 @@ public:
     void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
     int GetTickOrder() override;
     // ~TickEvents
-	
+
     // AZ::RPI::ViewportContextNotificationBus::Handler overrides...
     void OnRenderTick() override;
 
