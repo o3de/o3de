@@ -13,7 +13,7 @@
 #include <AzToolsFramework/Prefab/PrefabDomTypes.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
-#include <Utils.h>
+#include <DirectedGraph.h>
 #include <AzCore/Outcome/Outcome.h>
 
 namespace PrefabDependencyViewer

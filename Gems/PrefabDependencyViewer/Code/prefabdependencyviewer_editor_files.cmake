@@ -13,6 +13,6 @@ set(FILES
     Source/PrefabDependencyViewerWidget.cpp
     Source/Core/Core.h
     Source/PrefabDependencyViewerInterface.h
-    Source/Utils.h
-    Source/PrefabDependencyTreeGenerator.h
+    Source/DirectedGraph.h
+    Source/PrefabDependencyTree.h
 )

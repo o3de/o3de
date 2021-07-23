@@ -19,10 +19,10 @@
 #include <AzToolsFramework/Prefab/PrefabDomTypes.h>
 
 #include <AzCore/Math/Vector2.h>
-#include <Utils.h>
+#include <DirectedGraph.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 
-#include <PrefabDependencyTreeGenerator.h>
+#include <PrefabDependencyTree.h>
 
 namespace PrefabDependencyViewer
 {

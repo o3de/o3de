@@ -12,7 +12,7 @@
 #include <PrefabDependencyViewerWidget.h>
 #include <QMenu>
 #include <LyViewPaneNames.h>
-#include <PrefabDependencyTreeGenerator.h>
+#include <PrefabDependencyTree.h>
 
 namespace PrefabDependencyViewer
 {

@@ -11,7 +11,7 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabDomTypes.h>
-#include <Utils.h>
+#include <DirectedGraph.h>
 
  namespace PrefabDependencyViewer
 {
