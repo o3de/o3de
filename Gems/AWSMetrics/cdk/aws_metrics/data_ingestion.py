@@ -12,9 +12,10 @@ from aws_cdk import (
     aws_kinesis as kinesis
 )
 
-from . import aws_metrics_constants
-
 import json
+
+from . import aws_metrics_constants
+from .aws_utils import resource_name_sanitizer
 
 
 class DataIngestion:
@@ -29,7 +30,8 @@ class DataIngestion:
         self._input_stream = kinesis.Stream(
             self._stack,
             id='InputStream',
-            stream_name=f'{self._stack.stack_name}-InputStream',
+            stream_name=resource_name_sanitizer.sanitize_resource_name(
+                f'{self._stack.stack_name}-InputStream', 'kinesis_stream'),
             shard_count=1
         )
 

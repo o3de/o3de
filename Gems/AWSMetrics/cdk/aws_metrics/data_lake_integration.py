@@ -13,6 +13,7 @@ from aws_cdk import (
 )
 
 from . import aws_metrics_constants
+from .aws_utils import resource_name_sanitizer
 
 
 class DataLakeIntegration:
@@ -49,7 +50,9 @@ class DataLakeIntegration:
         # a specific name here, only one customer can deploy the bucket successfully.
         self._analytics_bucket = s3.Bucket(
             self._stack,
-            id=f'{self._stack.stack_name}-AnalyticsBucket'.lower(),
+            id=f'AnalyticsBucket'.lower(),
+            bucket_name=resource_name_sanitizer.sanitize_resource_name(
+                f'{self._stack.stack_name}-AnalyticsBucket'.lower(), 's3_bucket'),
             encryption=s3.BucketEncryption.S3_MANAGED,
             block_public_access=s3.BlockPublicAccess(
                 block_public_acls=True,
@@ -297,7 +300,8 @@ class DataLakeIntegration:
         self._events_crawler_role = iam.Role(
             self._stack,
             id='EventsCrawlerRole',
-            role_name=f'{self._stack.stack_name}-EventsCrawlerRole',
+            role_name=resource_name_sanitizer.sanitize_resource_name(
+                f'{self._stack.stack_name}-EventsCrawlerRole', 'iam_role'),
             assumed_by=iam.ServicePrincipal(
                 service='glue.amazonaws.com'
             ),
