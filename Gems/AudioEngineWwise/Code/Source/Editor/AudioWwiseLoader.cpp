@@ -9,8 +9,6 @@
 
 #include <AudioWwiseLoader.h>
 
-#include <AzCore/StringFunc/StringFunc.h>
-
 #include <IAudioSystemControl.h>
 #include <IAudioSystemEditor.h>
 #include <AudioSystemEditor_wwise.h>
@@ -77,7 +75,7 @@ namespace AudioControls
                     isLocalizedLoaded = true;
                 }
             }
-            else if (fileName.Extension() == Audio::Wwise::BankExtension && !AZ::StringFunc::Equal(fileName.Native(), Audio::Wwise::InitBank))
+            else if (fileName.Extension() == Audio::Wwise::BankExtension && fileName != Audio::Wwise::InitBank)
             {
                 m_audioSystemImpl->CreateControl(
                     SControlDef(AZStd::string{ fileName.Native() }, eWCT_WWISE_SOUND_BANK, isLocalized, nullptr, subPath));

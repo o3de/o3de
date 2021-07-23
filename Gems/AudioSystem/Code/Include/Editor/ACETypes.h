@@ -41,6 +41,6 @@ namespace AudioControls
     using FilepathSet = AZStd::set<AZStd::string>;
 
     using XmlAllocator = AZ::rapidxml::memory_pool<>;
-    inline static XmlAllocator s_xmlAllocator;
+    inline XmlAllocator s_xmlAllocator;
 
 } // namespace AudioControls

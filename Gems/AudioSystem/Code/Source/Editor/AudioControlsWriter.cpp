@@ -352,19 +352,13 @@ namespace AudioControls
     {
         if (node && control && m_audioSystemImpl)
         {
-            TXmlNodeList otherNodes = control->m_connectionNodes;
-            auto end = AZStd::remove_if(
-                otherNodes.begin(), otherNodes.end(),
-                [](const SRawConnectionData& connection)
-                {
-                    return connection.m_isValid;
-                }
-            );
-            otherNodes.erase(end, otherNodes.end());
-
-            for (auto& connectionNode : otherNodes)
+            for (auto& connectionNode : control->m_connectionNodes)
             {
-                node->append_node(SRawConnectionData::DeepCopyNode(connectionNode.m_xmlNode));
+                if (!connectionNode.m_isValid)
+                {
+                    auto nodeCopy = SRawConnectionData::DeepCopyNode(connectionNode.m_xmlNode.get());
+                    node->append_node(nodeCopy.release());
+                }
             }
 
             const size_t size = control->ConnectionCount();
@@ -391,7 +385,7 @@ namespace AudioControls
         IFileUtil* fileUtil = editor ? editor->GetFileUtil() : nullptr;
         if (fileUtil)
         {
-            fileUtil->CheckoutFile(filepath.data(), nullptr);
+            fileUtil->CheckoutFile(AZ::IO::FixedMaxPath{ filepath }.c_str(), nullptr);
         }
     }
 
@@ -402,7 +396,7 @@ namespace AudioControls
         IFileUtil* fileUtil = editor ? editor->GetFileUtil() : nullptr;
         if (fileUtil)
         {
-            fileUtil->DeleteFromSourceControl(filepath.data(), nullptr);
+            fileUtil->DeleteFromSourceControl(AZ::IO::FixedMaxPath{ filepath }.c_str(), nullptr);
         }
     }
 

@@ -25,11 +25,11 @@ namespace AudioControls
     {
         SRawConnectionData(AZ::rapidxml::xml_node<char>* node, bool isValid)
         {
-            m_xmlNode = DeepCopyNode(node);
+            m_xmlNode = AZStd::move(DeepCopyNode(node));
             m_isValid = isValid;
         }
 
-        AZ::rapidxml::xml_node<char>* m_xmlNode{ nullptr };
+        AZStd::unique_ptr<AZ::rapidxml::xml_node<char>> m_xmlNode{};
 
         // indicates if the connection is valid for the currently loaded middleware
         bool m_isValid{ false };
@@ -40,20 +40,20 @@ namespace AudioControls
         // will be pointing into the memory pool of an xml document that has gone out of scope.
         // This function is a rewritten version of 'clone_node' that does the deep copy of strings
         // into the new destination tree.
-        static AZ::rapidxml::xml_node<char>* DeepCopyNode(AZ::rapidxml::xml_node<char>* srcNode)
+        [[nodiscard]] static AZStd::unique_ptr<AZ::rapidxml::xml_node<char>> DeepCopyNode(AZ::rapidxml::xml_node<char>* srcNode)
         {
-            AZ::rapidxml::xml_node<char>* destNode = nullptr;
+            AZStd::unique_ptr<AZ::rapidxml::xml_node<char>> destNode{};
             if (srcNode)
             {
                 XmlAllocator& xmlAlloc(AudioControls::s_xmlAllocator);
-                destNode = xmlAlloc.allocate_node(srcNode->type());
+                destNode.reset(xmlAlloc.allocate_node(srcNode->type()));
 
                 destNode->name(xmlAlloc.allocate_string(srcNode->name(), srcNode->name_size()), srcNode->name_size());
                 destNode->value(xmlAlloc.allocate_string(srcNode->value(), srcNode->value_size()), srcNode->value_size());
 
                 for (AZ::rapidxml::xml_node<char>* child = srcNode->first_node(); child != nullptr; child = child->next_sibling())
                 {
-                    destNode->append_node(DeepCopyNode(child));
+                    destNode->append_node(DeepCopyNode(child).release());
                 }
 
                 for (AZ::rapidxml::xml_attribute<char>* attr = srcNode->first_attribute(); attr != nullptr; attr = attr->next_attribute())

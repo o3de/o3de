@@ -26,7 +26,7 @@ namespace Audio
         AZStd::vector<AZ::IO::FixedMaxPath> foundFiles;
         AZ::IO::FileIOBase::FindFilesCallbackType findFilesCallback = [&foundFiles](const char* file) -> bool
         {
-            foundFiles.emplace_back(AZ::IO::FixedMaxPath{ file }.LexicallyNormal());
+            foundFiles.emplace_back(AZ::IO::PathView{ file }.LexicallyNormal());
             return true;
         };
 
