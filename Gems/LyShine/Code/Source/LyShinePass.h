@@ -15,7 +15,7 @@
 
 namespace LyShine
 {
-    class UiCanvasChildPass;
+    class LyShineChildPass;
 
     //! Manages child passes at runtime that render to render targets
     class LyShinePass final
@@ -56,41 +56,43 @@ namespace LyShine
         void AddUiCanvasChildPass(LyShine::AttachmentImagesAndDependencies AttachmentImagesAndDependencies);
 
         // Pass that renders the UI Canvas elements to the screen
-        AZ::RPI::Ptr<UiCanvasChildPass> m_uiCanvasChildPass;
+        AZ::RPI::Ptr<LyShineChildPass> m_uiCanvasChildPass;
     };
 
-    // Child base pass with potential attachment dependencies
-    class LyShineChildBasePass
+    // Child pass with potential attachment dependencies
+    class LyShineChildPass
         : public AZ::RPI::RasterPass
     {
-        AZ_RPI_PASS(LyShineChildBasePass);
+        AZ_RPI_PASS(LyShineChildPass);
 
         friend class LyShinePass;
     public:
-        AZ_RTTI(LyShineChildBasePass, "{41D525F9-09EB-4004-97DC-082078FF8DD2}", RasterPass);
-        AZ_CLASS_ALLOCATOR(LyShineChildBasePass, AZ::SystemAllocator, 0);
-        virtual ~LyShineChildBasePass();
+        AZ_RTTI(LyShineChildPass, "{41D525F9-09EB-4004-97DC-082078FF8DD2}", RasterPass);
+        AZ_CLASS_ALLOCATOR(LyShineChildPass, AZ::SystemAllocator, 0);
+        virtual ~LyShineChildPass();
+
+        //! Creates a LyShineChildPass
+        static AZ::RPI::Ptr<LyShineChildPass> Create(const AZ::RPI::PassDescriptor& descriptor);
 
     protected:
-        LyShineChildBasePass(const AZ::RPI::PassDescriptor& descriptor);
+        LyShineChildPass(const AZ::RPI::PassDescriptor& descriptor);
 
         // Scope producer Overrides...
         void SetupFrameGraphDependencies(AZ::RHI::FrameGraphInterface frameGraph) override;
 
-        AZ::RHI::DrawListTag m_drawListTag;
         AttachmentImages m_attachmentImageDependencies;
     };
 
     // Child pass that renders UI elements to a render target
     class RttChildPass
-        : public LyShineChildBasePass
+        : public LyShineChildPass
     {
         AZ_RPI_PASS(RttChildPass);
 
         friend class LyShinePass;
 
     public:
-        AZ_RTTI(RttChildPass, "{54B0574D-2EB3-4054-9E1D-0E0D9C8CB09A}", LyShineChildBasePass);
+        AZ_RTTI(RttChildPass, "{54B0574D-2EB3-4054-9E1D-0E0D9C8CB09A}", LyShineChildPass);
         AZ_CLASS_ALLOCATOR(RttChildPass, AZ::SystemAllocator, 0);
         virtual ~RttChildPass();
 
@@ -104,23 +106,5 @@ namespace LyShine
         void BuildInternal() override;
 
         AZ::Data::Instance<AZ::RPI::AttachmentImage> m_attachmentImage;
-    };
-
-    // Child pass that renders the UI Canvases to the screen
-    class UiCanvasChildPass
-        : public LyShineChildBasePass
-    {
-        AZ_RPI_PASS(UiCanvasChildPass);
-
-    public:
-        AZ_RTTI(UiCanvasChildPass, "{4F2FB790-E66E-4BF4-8890-3B58018B906F}", LyShineChildBasePass);
-        AZ_CLASS_ALLOCATOR(UiCanvasChildPass, AZ::SystemAllocator, 0);
-        virtual ~UiCanvasChildPass();
-
-        //! Creates a UiCanvasChildPass
-        static AZ::RPI::Ptr<UiCanvasChildPass> Create(const AZ::RPI::PassDescriptor& descriptor);
-
-    protected:
-        UiCanvasChildPass(const AZ::RPI::PassDescriptor& descriptor);
     };
 } // namespace LyShine

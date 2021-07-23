@@ -159,8 +159,8 @@ namespace LyShine
         {
             // Create a pass template
             auto passTemplate = AZStd::make_shared<AZ::RPI::PassTemplate>();
-            passTemplate->m_name = AZ::Name("UiCanvasChildPass");
-            passTemplate->m_passClass = AZ::Name("UiCanvasChildPass");
+            passTemplate->m_name = AZ::Name("LyShineChildPass");
+            passTemplate->m_passClass = AZ::Name("LyShineChildPass");
 
             // Slots
             passTemplate->m_slots.resize(2);
@@ -199,10 +199,10 @@ namespace LyShine
             // Create a pass descriptor for the new child pass
             AZ::RPI::PassDescriptor childDesc;
             childDesc.m_passTemplate = passTemplate;
-            childDesc.m_passName = AZ::Name("UiCanvasChildPass");
+            childDesc.m_passName = AZ::Name("LyShineChildPass");
 
             AZ::RPI::PassSystemInterface* passSystem = AZ::RPI::PassSystemInterface::Get();
-            m_uiCanvasChildPass = passSystem->CreatePass<UiCanvasChildPass>(childDesc);
+            m_uiCanvasChildPass = passSystem->CreatePass<LyShineChildPass>(childDesc);
             AZ_Assert(m_uiCanvasChildPass, "[LyShinePass] Unable to create %s.", passTemplate->m_name.GetCStr());
         }
 
@@ -216,16 +216,21 @@ namespace LyShine
         AddChild(m_uiCanvasChildPass);
     }
 
-    LyShineChildBasePass::LyShineChildBasePass(const AZ::RPI::PassDescriptor& descriptor)
+    AZ::RPI::Ptr<LyShineChildPass> LyShineChildPass::Create(const AZ::RPI::PassDescriptor& descriptor)
+    {
+        return aznew LyShineChildPass(descriptor);
+    }
+
+    LyShineChildPass::LyShineChildPass(const AZ::RPI::PassDescriptor& descriptor)
         : RasterPass(descriptor)
     {
     }
 
-    LyShineChildBasePass::~LyShineChildBasePass()
+    LyShineChildPass::~LyShineChildPass()
     {
     }
 
-    void LyShineChildBasePass::SetupFrameGraphDependencies(AZ::RHI::FrameGraphInterface frameGraph)
+    void LyShineChildPass::SetupFrameGraphDependencies(AZ::RHI::FrameGraphInterface frameGraph)
     {
         AZ::RPI::RasterPass::SetupFrameGraphDependencies(frameGraph);
 
@@ -254,30 +259,16 @@ namespace LyShine
     }
 
     RttChildPass::RttChildPass(const AZ::RPI::PassDescriptor& descriptor)
-        : LyShineChildBasePass(descriptor)
+        : LyShineChildPass(descriptor)
     {
-    }
-
-    void RttChildPass::BuildInternal()
-    {
-        AttachImageToSlot(AZ::Name("RenderTargetOutput"), m_attachmentImage);
     }
 
     RttChildPass::~RttChildPass()
     {
     }
 
-    AZ::RPI::Ptr<UiCanvasChildPass> UiCanvasChildPass::Create(const AZ::RPI::PassDescriptor& descriptor)
+    void RttChildPass::BuildInternal()
     {
-        return aznew UiCanvasChildPass(descriptor);
-    }
-
-    UiCanvasChildPass::UiCanvasChildPass(const AZ::RPI::PassDescriptor& descriptor)
-        : LyShineChildBasePass(descriptor)
-    {
-    }
-
-    UiCanvasChildPass::~UiCanvasChildPass()
-    {
+        AttachImageToSlot(AZ::Name("RenderTargetOutput"), m_attachmentImage);
     }
 } // namespace LyShine
