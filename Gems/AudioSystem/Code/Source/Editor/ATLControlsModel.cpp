@@ -13,7 +13,6 @@
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AudioControlsEditorUndo.h>
-#include <IEditor.h>
 
 namespace AudioControls
 {

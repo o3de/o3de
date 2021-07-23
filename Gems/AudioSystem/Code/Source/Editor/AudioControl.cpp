@@ -14,7 +14,6 @@
 #include <AudioControlsEditorPlugin.h>
 #include <AudioControlsEditorUndo.h>
 #include <IAudioSystemControl.h>
-#include <IEditor.h>
 #include <ImplementationManager.h>
 
 namespace AudioControls

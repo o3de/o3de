@@ -10,7 +10,6 @@
 #include <AudioControlsLoader.h>
 
 #include <AzCore/std/string/conversions.h>
-#include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
 
 #include <ACEEnums.h>

@@ -9,7 +9,6 @@
 
 #include <AudioControlsEditorWindow.h>
 
-#include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -18,28 +17,21 @@
 #include <ATLControlsPanel.h>
 #include <AudioControlsEditorPlugin.h>
 #include <AudioControlsEditorUndo.h>
+#include <AudioFileUtils.h>
 #include <AudioSystemPanel.h>
-
-
-#include <DockTitleBarWidget.h>
 #include <IAudioSystem.h>
 #include <ImplementationManager.h>
 #include <InspectorPanel.h>
-
-
-#include <CryFile.h>
-#include <CryPath.h>
-#include <ISystem.h>
-#include <Util/PathUtil.h>
-
 #include <QAudioControlEditorIcons.h>
 
+#include <DockTitleBarWidget.h>
 
 #include <QPaintEvent>
 #include <QPushButton>
 #include <QApplication>
 #include <QPainter>
 #include <QMessageBox>
+
 
 void InitACEResources()
 {
@@ -116,25 +108,16 @@ namespace AudioControls
     {
         m_fileSystemWatcher.addPath(folder.data());
 
-        AZStd::string search;
-        AZ::StringFunc::Path::Join(folder.data(), "*", search, true, false);
-        auto pCryPak = gEnv->pCryPak;
-        AZ::IO::ArchiveFileIterator handle = pCryPak->FindFirst(search.c_str());
-        if (handle)
+        auto fileIO = AZ::IO::FileIOBase::GetInstance();
+        auto foundFiles = Audio::FindFilesInPath(folder, "*");
+        for (auto& file : foundFiles)
         {
-            do
+            if (fileIO->IsDirectory(file.c_str()))
             {
-                AZStd::string sName = static_cast<AZStd::string_view>(handle.m_filename);
-                if (!sName.empty() && sName[0] != '.')
-                {
-                    if ((handle.m_fileDesc.nAttrib & AZ::IO::FileDesc::Attribute::Subdirectory) == AZ::IO::FileDesc::Attribute::Subdirectory)
-                    {
-                        AZ::StringFunc::Path::Join(folder.data(), sName.c_str(), sName);
-                        StartWatchingFolder(sName);
-                    }
-                }
-            } while (handle = pCryPak->FindNext(handle));
-            pCryPak->FindClose(handle);
+                AZ::IO::FixedMaxPath resolvedPath;
+                fileIO->ReplaceAlias(resolvedPath, file);
+                StartWatchingFolder(file.Native());
+            }
         }
     }
 
