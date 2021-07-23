@@ -11,7 +11,7 @@ namespace NvCloth
 {
     namespace
     {
-        const float Tolerance = 0.0001f;
+        const float Tolerance = 1e-7f;
     }
 
     bool TangentSpaceHelper::CalculateNormals(
@@ -33,7 +33,8 @@ namespace NvCloth
         const size_t vertexCount = vertices.size();
 
         // Reset results
-        outNormals.resize(vertexCount, AZ::Vector3::CreateZero());
+        outNormals.resize(vertexCount);
+        AZStd::fill(outNormals.begin(), outNormals.end(), AZ::Vector3::CreateZero());
 
         // calculate the normals per triangle
         for (size_t i = 0; i < triangleCount; ++i)
@@ -114,8 +115,10 @@ namespace NvCloth
         const size_t vertexCount = vertices.size();
 
         // Reset results
-        outTangents.resize(vertexCount, AZ::Vector3::CreateZero());
-        outBitangents.resize(vertexCount, AZ::Vector3::CreateZero());
+        outTangents.resize(vertexCount);
+        outBitangents.resize(vertexCount);
+        AZStd::fill(outTangents.begin(), outTangents.end(), AZ::Vector3::CreateZero());
+        AZStd::fill(outBitangents.begin(), outBitangents.end(), AZ::Vector3::CreateZero());
 
         // calculate the base vectors per triangle
         for (size_t i = 0; i < triangleCount; ++i)
@@ -192,9 +195,12 @@ namespace NvCloth
         const size_t vertexCount = vertices.size();
 
         // Reset results
-        outTangents.resize(vertexCount, AZ::Vector3::CreateZero());
-        outBitangents.resize(vertexCount, AZ::Vector3::CreateZero());
-        outNormals.resize(vertexCount, AZ::Vector3::CreateZero());
+        outTangents.resize(vertexCount);
+        outBitangents.resize(vertexCount);
+        outNormals.resize(vertexCount);
+        AZStd::fill(outTangents.begin(), outTangents.end(), AZ::Vector3::CreateZero());
+        AZStd::fill(outBitangents.begin(), outBitangents.end(), AZ::Vector3::CreateZero());
+        AZStd::fill(outNormals.begin(), outNormals.end(), AZ::Vector3::CreateZero());
 
         // calculate the base vectors per triangle
         for (size_t i = 0; i < triangleCount; ++i)
@@ -366,7 +372,7 @@ namespace NvCloth
     {
         // Calculate handedness of the bitangent
         AZ::Vector3 bitangentReference = normal.Cross(tangent);
-        const float handedness = (bitangentReference.Dot(bitangent) < 0.0f) ? -1.0f : 1.0f;
+        const float handedness = (bitangentReference.Dot(bitangent) < 0.0f) ? 1.0f : -1.0f;
 
         // Apply Gram-Schmidt method to make tangent perpendicular to normal.
         tangent -= normal * normal.Dot(tangent);
