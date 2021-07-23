@@ -65,7 +65,7 @@ namespace Multiplayer
         virtual void AlterTime(HostFrameId frameId, AZ::TimeMs timeMs, AzNetworking::ConnectionId rewindConnectionId) = 0;
 
         //! Alters the current Host blend factor. Used to drive interpolation in rewound states.
-		//! @param blendFactor the blend factor to use
+        //! @param blendFactor the blend factor to use
         virtual void AlterBlendFactor(float blendFactor) = 0;
 
         //! Syncs all entities contained within a volume to the current rewind state.

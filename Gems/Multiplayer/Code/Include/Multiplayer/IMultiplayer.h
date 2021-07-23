@@ -194,18 +194,20 @@ namespace Multiplayer
             m_previousHostTimeMs = time->GetHostTimeMs();
             m_previousRewindConnectionId = time->GetRewindingConnectionId();
             time->AlterTime(frameId, timeMs, connectionId);
+            m_previousBlendFactor = time->GetHostBlendFactor();
             time->AlterBlendFactor(blendFactor);
         }
         inline ~ScopedAlterTime()
         {
             INetworkTime* time = GetNetworkTime();
             time->AlterTime(m_previousHostFrameId, m_previousHostTimeMs, m_previousRewindConnectionId);
-            time->AlterBlendFactor(DefaultBlendFactor);
+            time->AlterBlendFactor(m_previousBlendFactor);
         }
     private:
         HostFrameId m_previousHostFrameId = InvalidHostFrameId;
         AZ::TimeMs m_previousHostTimeMs = AZ::TimeMs{ 0 };
         AzNetworking::ConnectionId m_previousRewindConnectionId = AzNetworking::InvalidConnectionId;
+        float m_previousBlendFactor = DefaultBlendFactor;
     };
 
     inline const char* GetEnumString(MultiplayerAgentType value)
