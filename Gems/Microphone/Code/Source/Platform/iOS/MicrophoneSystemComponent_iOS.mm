@@ -238,7 +238,7 @@ public:
     void ProcessAudio(AudioBufferList* bufferList)
     {
         AudioBuffer sourceBuffer = bufferList->mBuffers[0];
-        m_captureData->AddData((int16*)sourceBuffer.mData, sourceBuffer.mDataByteSize / 2, m_config.m_numChannels);
+        m_captureData->AddData((AZ::s16*)sourceBuffer.mData, sourceBuffer.mDataByteSize / 2, m_config.m_numChannels);
 
     }
 
