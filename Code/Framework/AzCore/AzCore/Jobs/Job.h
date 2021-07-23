@@ -301,7 +301,7 @@ namespace AZ
 #ifdef AZ_DEBUG_JOB_STATE
                 AZ_Assert(dependent->m_state == STATE_SETUP, ("Dependent must be in setup state before it can be re-initialized"));
 #endif
-                dependent->IncrementDependentCount();
+                dependent->Reset(false);
             }
         }
     }
