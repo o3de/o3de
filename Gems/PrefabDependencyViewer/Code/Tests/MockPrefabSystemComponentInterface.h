@@ -92,5 +92,6 @@ namespace PrefabDependencyViewer
                 filePath, std::move(containerEntity), ShouldCreateLinks);
         }
 
+        virtual ~MockPrefabSystemComponent() { }
     };
 } // namespace PrefabDependencyViewer

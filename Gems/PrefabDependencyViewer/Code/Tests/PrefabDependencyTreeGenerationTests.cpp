@@ -7,9 +7,9 @@
  */
 
 #include <PrefabDependencyViewerEditorSystemComponent.h>
-#include <PrefabDependencyTreeGenerator.h>
+#include <PrefabDependencyTree.h>
 
-#include <Utils.h>
+#include <DirectedGraph.h>
 #include <PrefabDependencyViewerFixture.h>
 
 #include <AzCore/std/algorithm.h>
