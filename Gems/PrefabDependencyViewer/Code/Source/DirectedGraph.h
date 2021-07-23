@@ -116,7 +116,7 @@ namespace PrefabDependencyViewer::Utils
         {
             AZ_Assert(parent, "Nullptr can't have children");
 
-            auto iter = m_children.find(parent);
+            const auto iter = m_children.find(parent);
             if (iter != m_children.end())
             {
                 return iter->second;
