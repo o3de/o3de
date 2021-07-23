@@ -70,7 +70,6 @@ namespace PrefabDependencyViewer
 
         AzToolsFramework::EditorContextMenuBus::Handler::BusConnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
-        //AZ_Error("DependencyViewer", false, "The Prefab Dependency Viewer has booted up");
     }
 
     void PrefabDependencyViewerEditorSystemComponent::Deactivate()
@@ -78,7 +77,6 @@ namespace PrefabDependencyViewer
         AzToolsFramework::EditorContextMenuBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
     }
-
     
     int PrefabDependencyViewerEditorSystemComponent::GetMenuPosition() const
     {
@@ -97,42 +95,33 @@ namespace PrefabDependencyViewer
         AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
             selectedEntities, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
 
-        // Prefab Dependency Viewer
+        if (selectedEntities.size() == 1)
         {
-            if (selectedEntities.size() == 1)
+            AZ::EntityId selectedEntity = selectedEntities[0];
+            InstanceOptionalReference optionalReference = s_prefabEntityMapperInterface->FindOwningInstance(selectedEntity);
+
+            if (AZStd::nullopt == optionalReference || !optionalReference.has_value())
             {
-                AZ::EntityId selectedEntity = selectedEntities[0];
-                InstanceOptionalReference optionalReference = s_prefabEntityMapperInterface->FindOwningInstance(selectedEntity);
-
-                if (AZStd::nullopt == optionalReference || !optionalReference.has_value())
-                {
-                    AZ_Assert(false, "Prefab - Couldn't retrieve the owning Prefab Instance of the corresponding ContainerEntity");
-                    return;
-                }
-
-                Instance& prefabInstance = optionalReference.value().get();
-                const TemplateId& tid = prefabInstance.GetTemplateId();
-                // PrefabDom& templateJSON = s_prefabSystemComponentInterface->FindTemplateDom(tid);
-
-                QAction* dependencyViewerAction = menu->addAction(QObject::tr("View Dependencies"));
-                QObject::connect(
-                    dependencyViewerAction, &QAction::triggered, dependencyViewerAction,
-                    [this, &tid]
-                    {
-                        ContextMenu_DisplayAssetDependencies(tid);
-                    });
+                AZ_Assert(false, "Prefab - Couldn't retrieve the owning Prefab Instance of the corresponding ContainerEntity");
+                return;
             }
+
+            Instance& prefabInstance = optionalReference.value().get();
+            const TemplateId& tid = prefabInstance.GetTemplateId();
+
+            QAction* dependencyViewerAction = menu->addAction(QObject::tr("View Dependencies"));
+            QObject::connect(
+                dependencyViewerAction, &QAction::triggered, dependencyViewerAction,
+                [this, &tid]
+                {
+                    ContextMenu_DisplayAssetDependencies(tid);
+                });
         }
+
     }
+
     void PrefabDependencyViewerEditorSystemComponent::ContextMenu_DisplayAssetDependencies([[maybe_unused]]const TemplateId& tid)
     {
-        /* AZ_TracePrintf("Prefab Dependency Viewer", "%s\n", typeid(this).name());
-        AZ_TracePrintf("Prefab Dependency Viewer", "%s\n", typeid(prefabInstance).name());
-        AZ_TracePrintf(
-            "Prefab Dependency Viewer", "%s\n", s_prefabPublicInterface->GetOwningInstancePrefabPath(selectedEntity).c_str());
-        AZ_TracePrintf("Prefab Dependency Viewer", "%s\n", prefabInstance.GetAbsoluteInstanceAliasPath().c_str());
-        AZ_TracePrintf("Prefab Dependency Viewer", "%s\n", typeid(prefabInstance.GetTemplateId()).name());
-        */
         AzToolsFramework::OpenViewPane(s_prefabViewerTitle);
         
         PrefabDependencyViewerInterface* window = AZ::Interface<PrefabDependencyViewerInterface>::Get();
@@ -147,26 +136,17 @@ namespace PrefabDependencyViewer
         if (outcome.IsSuccess())
         {
             PrefabDependencyTree tree = outcome.GetValue();
-            window->DisplayTree(tree); // prefabInstance);
+            window->DisplayTree(tree);
         }
         else
         {
             AZ_Assert(false, outcome.GetError());
         }
-        
-        /*
-         AZStd::vector<AZ::Entity&> entities;
-        prefabInstance.GetEntities(
-            [&entities](AZStd::unique_ptr<AZ::Entity>& entity)
-            {
-                //AZ_TracePrintf("Prefab Dependency Viewer", "%s\n", typeid(entity).name());
-                //AZ_TracePrintf("Prefab Dependency Viewer", "%s\n", typeid(entity.get()).name());
-                // entities.push_back(*entity.get());
-                return true;
-            });
+    }
 
-        AZ_TracePrintf("Prefab Dependency Viewer", "%d\n", entities.size());
-        */
+    Outcome PrefabDependencyViewerEditorSystemComponent::GenerateTreeAndSetRoot(TemplateId tid)
+    {
+        return PrefabDependencyTree::GenerateTreeAndSetRoot(tid, s_prefabSystemComponentInterface);
     }
 
     void PrefabDependencyViewerEditorSystemComponent::NotifyRegisterViews()
@@ -174,6 +154,4 @@ namespace PrefabDependencyViewer
         AzToolsFramework::RegisterViewPane<PrefabDependencyViewerWidget>(
             s_prefabViewerTitle, LyViewPane::CategoryTools, AzToolsFramework::ViewPaneOptions());
     }
-
-
 } // namespace PrefabDependencyViewer

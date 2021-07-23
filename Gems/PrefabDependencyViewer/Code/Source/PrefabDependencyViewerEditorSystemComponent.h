@@ -46,20 +46,31 @@ namespace PrefabDependencyViewer
 
         PrefabDependencyViewerEditorSystemComponent();
 
-        // EditorContextMenuBus...
+        //////////////////////////////////// EditorContextMenuBus overrides ///////////////////////////
         int GetMenuPosition() const override;
         AZStd::string GetMenuIdentifier() const override;
+
+        /**
+         * Adds the view Dependencies option when an entity gets
+         * clicked on in the Editor. It also adds a handler for it's trigger event.
+         * The handler name is ContextMenu_DisplayAssetDependencies.
+         */
         void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags) override;
 
-        // Opening a View Pane
+        /////////////////////////////////// EditorEventsBus overrides //////////////////////////////////
         void NotifyRegisterViews() override;
 
-        static Outcome GenerateTreeAndSetRoot(TemplateId tid)
-        {
-            return PrefabDependencyTree::GenerateTreeAndSetRoot(tid,
-                                            s_prefabSystemComponentInterface);
-
-        }
+        /**
+         * Generate the Prefab hierarchy. Set the root of the hierarchy to be the
+         * Prefab Template with the id = param tid. Returns the hierarchy of given Prefab
+         * Template if no errors occurred. Otherwise, it returns the error message.
+         * 
+         * @param tid Id of the Prefab Template whose hierarchy we want to generate.
+         * @return    Outcome which contains the graph if no errors occurred during
+         *            the generation of the graph. Otherwise, it contains the description
+         *            of the error that occurred.
+         */
+        static Outcome GenerateTreeAndSetRoot(TemplateId tid);
 
     private:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
@@ -71,6 +82,12 @@ namespace PrefabDependencyViewer
         void Activate() override;
         void Deactivate() override;
 
+        /**
+         * @param tid Id of the Template from which the Prefab Instance was created.
+         * It's the handler for the trigger event on View Dependencies menu option
+         * on the container entity of a Prefab Instance. Opens a New Graph Canvas
+         * Window and displays the prefab dependencies using it's Template.
+         */ 
         static void ContextMenu_DisplayAssetDependencies(const TemplateId& tid);
 
         static InstanceEntityMapperInterface* s_prefabEntityMapperInterface;
