@@ -52,7 +52,7 @@ namespace AzQtComponents
         // Handle special cases when we have decimals in our value
         if (numDecimals > 0)
         {
-            // Truncate the extra digit now, if it's still there
+            // Truncate the extra digits now, if they're still there
             int decimalPointIndex = retValue.lastIndexOf(decimalPoint);
             if ((decimalPointIndex > 0) && (retValue.size() - (decimalPointIndex + 1)) == numToStringDecimals)
             {
