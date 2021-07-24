@@ -1,6 +1,6 @@
 {
-    "engine_name": "o3de",
-    "restricted_name": "o3de",
+    "engine_name": "REngine",
+    "restricted_name": "REngine",
     "FileVersion": 1,
     "O3DEVersion": "0.0.0.0",
     "O3DECopyrightYear": 2021,
@@ -87,7 +87,6 @@
         "Gems/WhiteBox"
     ],
     "projects": [
-        "AutomatedTesting"
     ],
     "templates": [
         "Templates/AssetGem",
