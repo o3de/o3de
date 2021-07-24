@@ -87,14 +87,14 @@
          <item>
           <widget class="QLabel" name="label_3">
            <property name="text">
-            <string>O3DE Editor</string>
+            <string>REngine - Editor</string>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QLabel" name="label_2">
            <property name="text">
-            <string>Developer Preview</string>
+            <string>Private Mode</string>
            </property>
           </widget>
          </item>

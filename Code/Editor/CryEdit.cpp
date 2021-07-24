@@ -922,7 +922,7 @@ QString FormatRichTextCopyrightNotice()
 {
     // copyright symbol is HTML Entity = &#xA9;
     QString copyrightHtmlSymbol = "&#xA9;";
-    QString copyrightString = QObject::tr("Copyright %1 Contributors to the Open 3D Engine Project");
+    QString copyrightString = QObject::tr("Copyright %1 REngine");
 
     return copyrightString.arg(copyrightHtmlSymbol);
 }

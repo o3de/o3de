@@ -50,7 +50,7 @@ CStartupLogoDialog::CStartupLogoDialog(QString versionText, QString richTextCopy
     m_ui->m_TransparentConfidential->setTextFormat(Qt::RichText);
     m_ui->m_TransparentConfidential->setText(richTextCopyrightNotice);
 
-    setWindowTitle(tr("Starting Open 3D Engine Editor"));
+    setWindowTitle(tr("Starting REngine Editor"));
 
     setStyleSheet( "CStartupLogoDialog > QLabel { background: transparent; color: 'white' }\
                     CStartupLogoDialog > QLabel#copyrightNotice { color: #AAAAAA; font-size: 9px; } ");
