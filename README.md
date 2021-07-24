@@ -1,9 +1,4 @@
-# Open 3D Engine
-
-Open 3D Engine (O3DE) is an open-source, real-time, multi-platform 3D engine that enables developers and content creators to build AAA games, cinema-quality 3D worlds, and high-fidelity simulations without any fees or commercial obligations.
-
-## Contribute
-For information about contributing to Open 3D Engine, visit https://o3de.org/docs/contributing/
+# REngine
 
 ## Download and Install
 
@@ -19,13 +14,6 @@ If Git LFS is not installed, download and run the installer from: https://git-lf
 ### Install Git LFS hooks 
 ```
 git lfs install
-```
-
-
-### Clone the repository 
-
-```shell
-git clone https://github.com/o3de/o3de.git
 ```
 
 ## Building the Engine
