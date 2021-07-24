@@ -12,13 +12,36 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
 {
+#if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
+    class LinuxXcbConnectionManagerImpl
+        : public LinuxXcbConnectionManagerBus::Handler
+    {
+    public:
+        LinuxXcbConnectionManagerImpl()
+        {
+            m_xcbConnection = xcb_connect(nullptr, nullptr);
+            AZ_Error("ApplicationLinux", m_xcbConnection != nullptr, "Unable to connect to X11 Server.");
+            LinuxXcbConnectionManagerBus::Handler::BusConnect();
+        }
+
+        ~LinuxXcbConnectionManagerImpl()
+        {
+            LinuxXcbConnectionManagerBus::Handler::BusDisconnect();
+            xcb_disconnect(m_xcbConnection);   
+        }
+        xcb_connection_t* GetXcbConnection() const override
+        {
+            return m_xcbConnection;
+        }
+    private:
+        xcb_connection_t*   m_xcbConnection = nullptr;
+    };
+#endif // PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
     class ApplicationLinux
         : public Application::Implementation
         , public LinuxLifecycleEvents::Bus::Handler
-#if AZ_LINUX_WINDOW_MANAGER_XCB
-        , public LinuxXCBConnectionManager::Bus::Handler
-#endif // AZ_LINUX_WINDOW_MANAGER_XCB
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -26,19 +49,15 @@ namespace AzFramework
         ApplicationLinux();
         ~ApplicationLinux() override;
 
-#if AZ_LINUX_WINDOW_MANAGER_XCB
-        virtual xcb_connection_t* GetXCBConnection() const override;
-#endif // AZ_LINUX_WINDOW_MANAGER_XCB
-        
-
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Application::Implementation
         void PumpSystemEventLoopOnce() override;
         void PumpSystemEventLoopUntilEmpty() override;
     private:
-#if AZ_LINUX_WINDOW_MANAGER_XCB
-        xcb_connection_t    * m_xcbConnection = NULL;
-#endif // AZ_LINUX_WINDOW_MANAGER_XCB
+
+#if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
+        AZStd::unique_ptr<LinuxXcbConnectionManager>    m_xcbConnectionManager;
+#endif // PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
 
     };
 
@@ -53,34 +72,27 @@ namespace AzFramework
     {
         LinuxLifecycleEvents::Bus::Handler::BusConnect();
 
-#if AZ_LINUX_WINDOW_MANAGER_XCB
-        m_xcbConnection = xcb_connect(NULL, NULL);
-        AZ_Error("ApplicationLinux", m_xcbConnection != NULL, "Unable to connect to X11 Server.");
-
-        LinuxXCBConnectionManager::Bus::Handler::BusConnect();
-#endif // AZ_LINUX_WINDOW_MANAGER_XCB
+#if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
+        m_xcbConnectionManager = AZStd::make_unique<LinuxXcbConnectionManagerImpl>();
+        if (LinuxXcbConnectionManagerInterface::Get() == nullptr)
+        {
+            LinuxXcbConnectionManagerInterface::Register(m_xcbConnectionManager.get());
+        }
+#endif // PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     ApplicationLinux::~ApplicationLinux()
     {
-#if AZ_LINUX_WINDOW_MANAGER_XCB
-        if (m_xcbConnection!=NULL)
+#if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
+        if (LinuxXcbConnectionManagerInterface::Get() == m_xcbConnectionManager.get())
         {
-            xcb_disconnect(m_xcbConnection);
+            LinuxXcbConnectionManagerInterface::Unregister(m_xcbConnectionManager.get());
         }
-        LinuxXCBConnectionManager::Bus::Handler::BusDisconnect();
-
-#endif // AZ_LINUX_WINDOW_MANAGER_XCB
+        m_xcbConnectionManager.reset();
+#endif // PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB        
         LinuxLifecycleEvents::Bus::Handler::BusDisconnect();
     }
-
-#if AZ_LINUX_WINDOW_MANAGER_XCB
-    xcb_connection_t* ApplicationLinux::GetXCBConnection() const
-    {
-        return m_xcbConnection;
-    }
-#endif // AZ_LINUX_WINDOW_MANAGER_XCB
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void ApplicationLinux::PumpSystemEventLoopOnce()

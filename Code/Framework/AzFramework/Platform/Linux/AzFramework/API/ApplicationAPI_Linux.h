@@ -9,9 +9,10 @@
 
 #pragma once
 
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/EBus/EBus.h>
 
-#if AZ_LINUX_WINDOW_MANAGER_XCB
+#if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
 #include <xcb/xcb.h>
 #endif // LY_COMPILE_DEFINITIONS
 
@@ -30,21 +31,30 @@ namespace AzFramework
         using Bus = AZ::EBus<LinuxLifecycleEvents>;
     };
 
-#if AZ_LINUX_WINDOW_MANAGER_XCB
-    class LinuxXCBConnectionManager
-       : public AZ::EBusTraits
+#if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
+    class LinuxXcbConnectionManager
     {
     public:
-        // Bus Configuration
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+        AZ_RTTI(LinuxXcbConnectionManager, "{649951316-3626-4C9D-9DCA-2E7ABF84C0A9}");
 
-        virtual ~LinuxXCBConnectionManager() {}
+        virtual ~LinuxXcbConnectionManager() = default;
 
-        using Bus = AZ::EBus<LinuxXCBConnectionManager>;
-
-        virtual xcb_connection_t* GetXCBConnection() const = 0;
-
+        virtual xcb_connection_t* GetXcbConnection() const = 0;
     };
-#endif // AZ_LINUX_WINDOW_MANAGER_XCB
+
+    class LinuxXcbConnectionManagerBusTraits
+        : public AZ::EBusTraits
+    {
+        public:
+            //////////////////////////////////////////////////////////////////////////
+            // EBusTraits overrides
+            static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+            static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+            //////////////////////////////////////////////////////////////////////////
+    };
+
+    using LinuxXcbConnectionManagerBus = AZ::EBus<LinuxXcbConnectionManager, LinuxXcbConnectionManagerBusTraits>;
+    using LinuxXcbConnectionManagerInterface = AZ::Interface<LinuxXcbConnectionManager>;
+
+#endif // PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
 } // namespace AzFramework

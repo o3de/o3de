@@ -40,4 +40,4 @@ ly_set(LY_PYTHON_CMD ${CMAKE_CURRENT_SOURCE_DIR}/python/python.sh)
 
 # Set the default window manager that applications should be using on Linux 
 # Note: Only ("xcb", "wayland", or "xlib" should be considered)
-ly_set(PAL_TRAIT_LINUX_WINDOW_MANAGER "xcb")  
+set(PAL_TRAIT_LINUX_WINDOW_MANAGER "xcb" CACHE STRING "Sets the Window Manager type to use when configuring Linux (xcb, wayland, or xlib)")  
