@@ -47,6 +47,7 @@ namespace AZ
             void SetAttenuationRadius(LightHandle handle, float attenuationRadius) override;
             void SetBulbRadius(LightHandle handle, float bulbRadius) override;
             void SetShadowsEnabled(LightHandle handle, bool enabled) override;
+            void SetShadowBias(LightHandle handle, float bias) override;
             void SetShadowmapMaxResolution(LightHandle handle, ShadowmapSize shadowmapSize) override;
             void SetShadowFilterMethod(LightHandle handle, ShadowFilterMethod method) override;
             void SetSofteningBoundaryWidthAngle(LightHandle handle, float boundaryWidthRadians) override;

@@ -307,6 +307,7 @@ namespace AZ::Render
             m_lightShapeDelegate->SetEnableShadow(m_configuration.m_enableShadow);
             if (m_configuration.m_enableShadow)
             {
+                m_lightShapeDelegate->SetShadowBias(m_configuration.m_bias);
                 m_lightShapeDelegate->SetShadowmapMaxSize(m_configuration.m_shadowmapMaxSize);
                 m_lightShapeDelegate->SetShadowFilterMethod(m_configuration.m_shadowFilterMethod);
                 m_lightShapeDelegate->SetSofteningBoundaryWidthAngle(m_configuration.m_boundaryWidthInDegrees);
@@ -465,6 +466,20 @@ namespace AZ::Render
         if (m_lightShapeDelegate)
         {
             m_lightShapeDelegate->SetEnableShadow(enabled);
+        }
+    }
+    
+    float AreaLightComponentController::GetShadowBias() const
+    {
+        return m_configuration.m_bias;
+    }
+
+    void AreaLightComponentController::SetShadowBias(float bias)
+    {
+        m_configuration.m_bias = bias;
+        if (m_lightShapeDelegate)
+        {
+            m_lightShapeDelegate->SetShadowBias(bias);
         }
     }
 
