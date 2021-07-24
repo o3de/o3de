@@ -372,7 +372,7 @@ namespace NvCloth
     {
         // Calculate handedness of the bitangent
         AZ::Vector3 bitangentReference = normal.Cross(tangent);
-        const float handedness = (bitangentReference.Dot(bitangent) < 0.0f) ? 1.0f : -1.0f;
+        const float handedness = (bitangentReference.Dot(bitangent) < 0.0f) ? -1.0f : 1.0f;
 
         // Apply Gram-Schmidt method to make tangent perpendicular to normal.
         tangent -= normal * normal.Dot(tangent);
