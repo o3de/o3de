@@ -10,6 +10,8 @@
 #include <ProjectInfo.h>
 
 #include <QWidget>
+#include <QDesktopWidget>
+#include <QFrame>
 #include <AzCore/Outcome/Outcome.h>
 
 namespace O3DE::ProjectManager
@@ -30,5 +32,13 @@ namespace O3DE::ProjectManager
         AZ::Outcome<void, QString> FindSupportedCompilerForPlatform();
 
         ProjectManagerScreen GetProjectManagerScreen(const QString& screen);
+
+        /// <summary>
+        /// Fit a frame into center of screen
+        /// This method can resize a frame if is greater than screen size
+        /// </summary>
+        /// <param name="frame">Target Frame</param>
+        /// <param name="desktopWidget">Desktop Widget</param>
+        void FitFrameOnScreen(QFrame* frame, bool relativeToMouse = false);
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager

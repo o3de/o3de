@@ -29,10 +29,9 @@ namespace O3DE::ProjectManager
 
     bool Application::Init(bool interactive)
     {
-        constexpr const char* applicationName { "O3DE" };
+        constexpr const char* applicationName { "REngine" };
 
         QApplication::setOrganizationName(applicationName);
-        QApplication::setOrganizationDomain("o3de.org");
 
         QCoreApplication::setApplicationName(applicationName);
         QCoreApplication::setApplicationVersion("1.0");
@@ -74,7 +73,7 @@ namespace O3DE::ProjectManager
             if (interactive)
             {
                 QMessageBox::critical(nullptr, QObject::tr("Failed to start Python"),
-                    QObject::tr("This tool requires an O3DE engine with a Python runtime, "
+                    QObject::tr("This tool requires an engine with a Python runtime, "
                         "but either Python is missing or mis-configured. Please rename "
                         "your python/runtime folder to python/runtime_bak, then run "
                         "python/get_python.bat to restore the Python runtime folder."));
@@ -172,6 +171,9 @@ namespace O3DE::ProjectManager
         wrapper->show();
         m_mainWindow->show();
 
+        ProjectUtils::FitFrameOnScreen(wrapper, true);
+
+        
         qApp->setQuitOnLastWindowClosed(true);
 
         // Run the application

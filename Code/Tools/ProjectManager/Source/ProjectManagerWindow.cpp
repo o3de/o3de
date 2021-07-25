@@ -13,7 +13,7 @@ namespace O3DE::ProjectManager
     ProjectManagerWindow::ProjectManagerWindow(QWidget* parent, const AZ::IO::PathView& projectPath, ProjectManagerScreen startScreen)
         : QMainWindow(parent)
     {
-        setWindowTitle(tr("O3DE Project Manager"));
+        setWindowTitle(tr("REngine - Project Manager"));
 
         ScreensCtrl* screensCtrl = new ScreensCtrl();
 

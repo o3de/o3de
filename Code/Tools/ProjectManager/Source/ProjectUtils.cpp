@@ -20,7 +20,8 @@
 #include <QProgressDialog>
 #include <QSpacerItem>
 #include <QGridLayout>
-
+#include <QStyle>
+#include <QScreen>
 namespace O3DE::ProjectManager
 {
     namespace ProjectUtils
@@ -505,6 +506,36 @@ namespace O3DE::ProjectManager
             }
 
             return ProjectManagerScreen::Invalid;
+        }
+
+        void FitFrameOnScreen(QFrame* frame, bool relativeToMouse)
+        {
+            QList<QScreen*> screens = QGuiApplication::screens();
+            AZ_Assert(screens.length() > 0, "ProjectUtils::CenteringMainWindow must contain at least 1 screen");
+            QRect frameRect = frame->rect();
+            QScreen* currScreen = screens[0];
+            if (relativeToMouse) {
+                for (QScreen* screen : screens) {
+                    QRect screenRect = screen->availableGeometry();
+                    if (screenRect.contains(QCursor::pos())) {
+                        currScreen = screen;
+                        break;
+                    }
+                }
+            }
+            QRect screenRect = currScreen->availableGeometry();
+            if (frameRect.width() > screenRect.width())
+                frameRect.setWidth(screenRect.width());
+            if (frameRect.height() > screenRect.height())
+                frameRect.setHeight(screenRect.height());
+
+            QPoint position = screenRect.center() - frameRect.center();
+            QSize size = frameRect.size();
+            frameRect.setX(position.x());
+            frameRect.setY(position.y());
+            frameRect.setSize(size);
+
+            frame->setGeometry(frameRect);
         }
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager

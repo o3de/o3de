@@ -270,7 +270,7 @@ bool GUIApplicationManager::Run()
 
         m_trayIcon = new QSystemTrayIcon(QIcon(":/o3de_assetprocessor_taskbar.svg"), m_mainWindow);
         m_trayIcon->setContextMenu(trayIconMenu);
-        m_trayIcon->setToolTip(QObject::tr("O3DE Asset Processor"));
+        m_trayIcon->setToolTip(QObject::tr("REngine Asset Processor"));
         m_trayIcon->show();
         QObject::connect(m_trayIcon, &QSystemTrayIcon::activated, m_mainWindow, [&, wrapper](QSystemTrayIcon::ActivationReason reason)
             {
@@ -292,8 +292,8 @@ bool GUIApplicationManager::Run()
         if (startHidden)
         {
             m_trayIcon->showMessage(
-                QCoreApplication::translate("Tray Icon", "O3DE Asset Processor has started"),
-                QCoreApplication::translate("Tray Icon", "The O3DE Asset Processor monitors raw project assets and converts those assets into runtime-ready data."),
+                QCoreApplication::translate("Tray Icon", "REngine Asset Processor has started"),
+                QCoreApplication::translate("Tray Icon", "The REngine Asset Processor monitors raw project assets and converts those assets into runtime-ready data."),
                 QSystemTrayIcon::Information, 3000);
         }
     }
