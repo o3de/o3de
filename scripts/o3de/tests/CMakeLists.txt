@@ -52,3 +52,10 @@ ly_add_pytest(
     TEST_SUITE smoke
     EXCLUDE_TEST_RUN_TARGET_FROM_IDE
 )
+
+ly_add_pytest(
+    NAME o3de_register_show
+    PATH ${CMAKE_CURRENT_LIST_DIR}/unit_test_print_registration.py
+    TEST_SUITE smoke
+    EXCLUDE_TEST_RUN_TARGET_FROM_IDE
+)
