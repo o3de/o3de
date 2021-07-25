@@ -29,6 +29,7 @@ namespace AZ
 
     namespace Internal
     {
+        #define AZ_USE_JOBQUEUE_LOCK
         // The Job Queue is a lock free 4-priority queue. Its basic operation is as follows:
         // Each priority level is associated with a different queue, corresponding to the maximum size of a uint16_t.
         // Each queue is implemented as a ring buffer, and a 64 bit atomic maintains the following state per queue:
@@ -51,12 +52,18 @@ namespace AZ
             Job* TryDequeue();
 
         private:
+#if defined AZ_USE_JOBQUEUE_LOCK
+            AZStd::mutex m_mutex;
+            uint64_t m_status[PriorityLevelCount] = {};
+#else
+
             // NOTE: Implementation expects
             // MSB                                                 LSB
             // +--------------------PAYLOAD--------------------------+
             // | unused : 2 | tail_reserve : 2 | tail : 2 | head : 2 |
             // +-----------------------------------------------------+
             AZStd::atomic<uint64_t> m_status[PriorityLevelCount] = {};
+#endif
 
             Job* m_queues[PriorityLevelCount][MaxQueueSize] = {};
         };

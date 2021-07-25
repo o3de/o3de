@@ -90,7 +90,24 @@ struct StatusPayload
 
 void JobQueue::Enqueue(Job* job)
 {
+#if defined AZ_USE_JOBQUEUE_LOCK
     uint8_t priority = job->GetPriority();
+    {
+        AZStd::scoped_lock lock{ m_mutex };
+        StatusPayload status{ m_status[priority] };
+        if (status.canEnqueue())
+        {
+            status.commit();
+            m_status[priority] = status.pack();
+            m_queues[priority][status.tail - 1] = job;
+            return;
+        }
+        else
+        {
+            job->GetContext()->GetJobManager().QueueUnbounded(job, false);
+        }
+    }
+#else
     uint64_t previousStatus = m_status[priority].load(AZStd::memory_order_acquire);
 
     while (true)
@@ -107,13 +124,14 @@ void JobQueue::Enqueue(Job* job)
             if (m_status[priority].compare_exchange_weak(previousStatus, reserveStatus))
             {
                 m_queues[priority][status.tailReserve - 1] = job;
+                uint16_t tailReserve = status.tailReserve;
 
                 while (true)
                 {
                     // We are only permitted to increment tail if tail == tailReserve - 1
-                    status.commit();
+                    status.tail = tailReserve;
                     StatusPayload expected{ status };
-                    expected.tail = expected.tailReserve - 1;
+                    expected.tail = tailReserve - 1;
                     uint64_t expectedStatus = expected.pack();
 
                     // Increment the tail to advertise the new job
@@ -136,12 +154,31 @@ void JobQueue::Enqueue(Job* job)
             return;
         }
     }
+#endif
 }
 
 Job* JobQueue::TryDequeue()
 {
+#if defined AZ_USE_JOBQUEUE_LOCK
+    AZStd::scoped_lock lock{ m_mutex };
+#endif
     for (size_t priority = 0; priority != PriorityLevelCount; ++priority)
     {
+#if defined AZ_USE_JOBQUEUE_LOCK
+        uint64_t previousStatus = m_status[priority];
+        StatusPayload status{ previousStatus };
+        if (status.empty())
+        {
+            continue;
+        }
+        else
+        {
+            Job* job = m_queues[priority][status.head];
+            status.acquire();
+            m_status[priority] = status.pack();
+            return job;
+        }
+#else
         uint64_t previousStatus = m_status[priority].load(AZStd::memory_order_acquire);
         while (true)
         {
@@ -162,6 +199,7 @@ Job* JobQueue::TryDequeue()
                 }
             }
         }
+#endif
     }
 
     return nullptr;
