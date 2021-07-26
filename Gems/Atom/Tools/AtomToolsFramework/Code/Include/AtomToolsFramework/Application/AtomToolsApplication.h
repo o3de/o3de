@@ -79,7 +79,7 @@ namespace AtomToolsFramework
         void OnExceptionMessage(AZStd::string_view message) override;
         ////////////////////////////////////////////////////////////////////////
 
-        virtual AZStd::string_view GetBuildTargetName() {return m_targetName;};
+        virtual AZStd::string GetBuildTargetName();
 
         virtual void LoadSettings();
         virtual void UnloadSettings();
@@ -89,8 +89,6 @@ namespace AtomToolsFramework
         virtual void StartInternal();
 
         static void PyIdleWaitFrames(uint32_t frames);
-
-        AZStd::string m_targetName = "AtomTools";
 
         AzToolsFramework::TraceLogger m_traceLogger;
 

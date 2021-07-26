@@ -33,7 +33,6 @@ namespace MaterialEditor
         // AzFramework::Application
         void CreateStaticModules(AZStd::vector<AZ::Module*>& outModules) override;
         const char* GetCurrentConfigurationName() const override;
-        void StartCommon(AZ::Entity* systemEntity) override;
         void Stop() override;
 
     private:
@@ -54,6 +53,6 @@ namespace MaterialEditor
 
         void ProcessCommandLine(const AZ::CommandLine& commandLine) override;
         void StartInternal() override;
-        AZStd::string_view GetBuildTargetName() override;
+        AZStd::string GetBuildTargetName() override;
      };
 } // namespace MaterialEditor

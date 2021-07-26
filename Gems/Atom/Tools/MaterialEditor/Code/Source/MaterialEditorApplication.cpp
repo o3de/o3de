@@ -51,12 +51,12 @@ AZ_POP_DISABLE_WARNING
 namespace MaterialEditor
 {
     //! This function returns the build system target name of "MaterialEditor
-    AZStd::string_view MaterialEditorApplication::GetBuildTargetName()
+    AZStd::string MaterialEditorApplication::GetBuildTargetName()
     {
 #if !defined (LY_CMAKE_TARGET)
 #error "LY_CMAKE_TARGET must be defined in order to add this source file to a CMake executable target"
 #endif
-        return AZStd::string_view{ LY_CMAKE_TARGET };
+        return AZStd::string{ LY_CMAKE_TARGET };
     }
 
     const char* MaterialEditorApplication::GetCurrentConfigurationName() const
@@ -75,7 +75,6 @@ namespace MaterialEditor
 
     {
         QApplication::setApplicationName("O3DE Material Editor");
-        m_targetName = GetBuildTargetName();
 
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(
             *AZ::SettingsRegistry::Get(), GetBuildTargetName());
@@ -100,15 +99,6 @@ namespace MaterialEditor
         outModules.push_back(aznew MaterialDocumentModule);
         outModules.push_back(aznew MaterialViewportModule);
         outModules.push_back(aznew MaterialEditorWindowModule);
-    }
-
-    void MaterialEditorApplication::StartCommon(AZ::Entity* systemEntity)
-    {
-        {
-            //[GFX TODO][ATOM-408] This needs to be updated in some way to support the MaterialViewport render widget
-        }
-
-        Base::StartCommon(systemEntity);
     }
 
     void MaterialEditorApplication::OnMaterialEditorWindowClosing()
@@ -189,17 +179,6 @@ namespace MaterialEditor
 
         MaterialEditor::MaterialEditorWindowFactoryRequestBus::Broadcast(
             &MaterialEditor::MaterialEditorWindowFactoryRequestBus::Handler::CreateMaterialEditorWindow);
-
-        auto editorPythonEventsInterface = AZ::Interface<AzToolsFramework::EditorPythonEventsInterface>::Get();
-        if (editorPythonEventsInterface)
-        {
-            // The PythonSystemComponent does not call StartPython to allow for lazy python initialization, so start it here
-            // The PythonSystemComponent will call StopPython when it deactivates, so we do not need our own corresponding call to StopPython
-            editorPythonEventsInterface->StartPython();
-        }
-
-        // Delay execution of commands and scripts post initialization
-        QTimer::singleShot(0, [this]() { ProcessCommandLine(m_commandLine); });
     }
 
     void MaterialEditorApplication::Stop()

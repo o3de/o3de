@@ -22,7 +22,7 @@ namespace ShaderManagementConsole
     public:
         AZ_TYPE_INFO(ShaderManagementConsole::ShaderManagementConsoleApplication, "{A31B1AEB-4DA3-49CD-884A-CC998FF7546F}");
 
-        using Base = AzFramework::Application;
+        using Base = AtomToolsFramework::AtomToolsApplication;
 
         ShaderManagementConsoleApplication(int* argc, char*** argv);
         virtual ~ShaderManagementConsoleApplication() = default;
@@ -33,11 +33,6 @@ namespace ShaderManagementConsole
         const char* GetCurrentConfigurationName() const override;
 
     private:
-        //////////////////////////////////////////////////////////////////////////
-        // AssetDatabaseRequestsBus::Handler overrides...
-        bool GetAssetDatabaseLocation(AZStd::string& result) override;
-        //////////////////////////////////////////////////////////////////////////
-
         //////////////////////////////////////////////////////////////////////////
         // ShaderManagementConsoleWindowNotificationBus::Handler overrides...
         void OnShaderManagementConsoleWindowClosing() override;
@@ -55,6 +50,6 @@ namespace ShaderManagementConsole
 
         void ProcessCommandLine();
         void StartInternal() override;
-        AZStd::string_view GetBuildTargetName() override;
+        AZStd::string GetBuildTargetName() override;
     };
 } // namespace ShaderManagementConsole

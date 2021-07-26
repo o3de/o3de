@@ -47,7 +47,7 @@ AZ_POP_DISABLE_WARNING
 
 namespace ShaderManagementConsole
 {
-    AZStd::string_view ShaderManagementConsoleApplication::GetBuildTargetName()
+    AZStd::string ShaderManagementConsoleApplication::GetBuildTargetName()
     {
 #if !defined (LY_CMAKE_TARGET)
 #error "LY_CMAKE_TARGET must be defined in order to add this source file to a CMake executable target"
@@ -70,7 +70,6 @@ namespace ShaderManagementConsole
         : AtomToolsApplication(argc, argv)
     {
         QApplication::setApplicationName("O3DE Shader Management Console");
-        m_targetName = GetBuildTargetName();
 
         // The settings registry has been created at this point, so add the CMake target
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(
@@ -163,51 +162,10 @@ namespace ShaderManagementConsole
 
     void ShaderManagementConsoleApplication::StartInternal()
     {
-        if (WasExitMainLoopRequested())
-        {
-            return;
-        }
-
-        m_traceLogger.WriteStartupLog("ShaderManagementConsole.log");
-
-        //[GFX TODO][ATOM-415] Try to factor out some of this stuff with AtomSampleViewerApplication
-        AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusConnect();
-        AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotificationBus::Broadcast(&AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotifications::OnDatabaseInitialized);
-
-        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::LoadCatalog, "@assets@/assetcatalog.xml");
-
-        AZ::RPI::RPISystemInterface::Get()->InitializeSystemAssets();
-
-        LoadSettings();
-
-        LaunchDiscoveryService();
+        Base::StartInternal();
 
         ShaderManagementConsoleWindowNotificationBus::Handler::BusConnect();
 
         ShaderManagementConsole::ShaderManagementConsoleWindowRequestBus::Broadcast(&ShaderManagementConsole::ShaderManagementConsoleWindowRequestBus::Handler::CreateShaderManagementConsoleWindow);
-
-        auto editorPythonEventsInterface = AZ::Interface<AzToolsFramework::EditorPythonEventsInterface>::Get();
-        if (editorPythonEventsInterface)
-        {
-            // The PythonSystemComponent does not call StartPython to allow for lazy python initialization, so start it here
-            // The PythonSystemComponent will call StopPython when it deactivates, so we do not need our own corresponding call to StopPython
-            editorPythonEventsInterface->StartPython();
-        }
-
-        ProcessCommandLine();
-    }
-
-    bool ShaderManagementConsoleApplication::GetAssetDatabaseLocation(AZStd::string& result)
-    {
-        AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get();
-        AZ::IO::FixedMaxPath assetDatabaseSqlitePath;
-        if (settingsRegistry && settingsRegistry->Get(assetDatabaseSqlitePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder))
-        {
-            assetDatabaseSqlitePath /= "assetdb.sqlite";
-            result = AZStd::string_view(assetDatabaseSqlitePath.Native());
-            return true;
-        }
-
-        return false;
     }
 } // namespace ShaderManagementConsole
