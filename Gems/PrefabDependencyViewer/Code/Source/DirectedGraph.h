@@ -45,12 +45,12 @@ namespace PrefabDependencyViewer::Utils
 
         const char* GetSource()
         {
-            return m_source;
+            return m_source.c_str();
         }
 
     private:
         TemplateId m_tid;
-        const char* m_source;
+        AZStd::string m_source;
     };
 
     class Node
