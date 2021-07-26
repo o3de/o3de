@@ -41,45 +41,6 @@ namespace AZ
                     serializeContext->Class<AssImpTransformImporter, SceneCore::LoadingComponent>()->Version(1);
                 }
             }
-            
-            void GetAllBones(const aiScene* scene, AZStd::unordered_multimap<AZStd::string, const aiBone*>& boneLookup)
-            {
-                AZStd::queue<const aiNode*> queue;
-                AZStd::unordered_set<AZStd::string> nodesWithNoMesh;
-
-                queue.push(scene->mRootNode);
-
-                while (!queue.empty())
-                {
-                    const aiNode* currentNode = queue.front();
-                    queue.pop();
-
-                    if (currentNode->mNumMeshes == 0)
-                    {
-                        nodesWithNoMesh.emplace(currentNode->mName.C_Str());
-                    }
-
-                    for (int childIndex = 0; childIndex < currentNode->mNumChildren; ++childIndex)
-                    {
-                        queue.push(currentNode->mChildren[childIndex]);
-                    }
-                }
-
-                for (unsigned meshIndex = 0; meshIndex < scene->mNumMeshes; ++meshIndex)
-                {
-                    const aiMesh* mesh = scene->mMeshes[meshIndex];
-
-                    for (unsigned boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
-                    {
-                        const aiBone* bone = mesh->mBones[boneIndex];
-
-                        if (nodesWithNoMesh.contains(bone->mName.C_Str()))
-                        {
-                            boneLookup.emplace(bone->mName.C_Str(), bone);
-                        }
-                    }
-                }
-            }
 
             Events::ProcessingResult AssImpTransformImporter::ImportTransform(AssImpSceneNodeAppendedContext& context)
             {
@@ -92,54 +53,7 @@ namespace AZ
                     return Events::ProcessingResult::Ignored;
                 }
 
-                AZStd::unordered_multimap<AZStd::string, const aiBone*> boneLookup;
-                GetAllBones(scene, boneLookup);
-
-                auto boneIterator = boneLookup.find(currentNode->mName.C_Str());
-                const bool isBone = boneIterator != boneLookup.end();
-                
-                DataTypes::MatrixType localTransform;
-
-                if (isBone)
-                {
-                    AZStd::vector<DataTypes::MatrixType> offsets, inverseOffsets;
-                    auto iteratingNode = currentNode;
-
-                    while (iteratingNode && boneLookup.count(iteratingNode->mName.C_Str()))
-                    {
-                        AZStd::string name = iteratingNode->mName.C_Str();
-
-                        auto range = boneLookup.equal_range(name);
-
-                        if (range.first != range.second)
-                        {
-                            // There can be multiple offsetMatrices for a given bone, we're only interested in grabbing the first one
-                            auto boneFirstOffsetMatrix = range.first->second->mOffsetMatrix;
-                            auto azMat = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(boneFirstOffsetMatrix);
-                            offsets.push_back(azMat);
-                            inverseOffsets.push_back(azMat.GetInverseFull());
-                        }
-
-                        iteratingNode = iteratingNode->mParent;
-                    }
-
-                    if (inverseOffsets.size() == 1)
-                    {
-                        // If this is the root bone, just use the inverseOffset, otherwise the equation below just results in the identity matrix
-                        localTransform = inverseOffsets[0];
-                    }
-                    else
-                    {
-                        localTransform = offsets.at(1) // parent bone offset
-                            * inverseOffsets.at(inverseOffsets.size() - 1) // Inverse of root bone offset
-                            * offsets.at(offsets.size() - 1) // Root bone offset
-                            * inverseOffsets.at(0); // Inverse of current node offset
-                    }
-                }
-                else
-                {
-                    localTransform = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(GetConcatenatedLocalTransform(currentNode));
-                }
+                DataTypes::MatrixType localTransform = GetLocalSpaceBindPoseTransform(scene, currentNode);
 
                 // Don't bother adding a node with the identity matrix
                 if (localTransform == DataTypes::MatrixType::Identity())
