@@ -105,7 +105,6 @@ namespace AZ::SceneGenerationComponents
     // Vector3 as a key into a unordered_map.
     template <class MeshDataType>
     class Vector3Map
-        : private AZStd::unordered_map<AZ::Vector3, AZ::u32>
     {
     public:
         Vector3Map(const MeshDataType* meshData, bool hasBlendShapes, float positionTolerance)
@@ -115,9 +114,6 @@ namespace AZ::SceneGenerationComponents
             , m_positionToleranceReciprocal(1.0f / positionTolerance)
         {
         }
-
-        using AZStd::unordered_map<AZ::Vector3, AZ::u32>::reserve;
-        using AZStd::unordered_map<AZ::Vector3, AZ::u32>::size;
 
         AZ::u32 operator[](const AZ::u32 vertexIndex)
         {
@@ -130,7 +126,7 @@ namespace AZ::SceneGenerationComponents
                 return m_meshData->GetUsedPointIndexForControlPoint(m_meshData->GetControlPointIndex(vertexIndex));
             }
 
-            const auto& [iter, didInsert] = try_emplace(GetPositionForIndex(vertexIndex), m_currentOriginalVertexIndex);
+            const auto& [iter, didInsert] = m_map.try_emplace(GetPositionForIndex(vertexIndex), m_currentOriginalVertexIndex);
             if (didInsert)
             {
                 ++m_currentOriginalVertexIndex;
@@ -149,9 +145,30 @@ namespace AZ::SceneGenerationComponents
                 return m_meshData->GetUsedPointIndexForControlPoint(m_meshData->GetControlPointIndex(vertexIndex));
             }
 
-            auto iter = find(GetPositionForIndex(vertexIndex));
-            AZSTD_CONTAINER_ASSERT(iter != end(), "Element with key is not present");
+            auto iter = m_map.find(GetPositionForIndex(vertexIndex));
+            AZSTD_CONTAINER_ASSERT(iter != m_map.end(), "Element with key is not present");
             return iter->second;
+        }
+
+        [[nodiscard]] size_t size() const
+        {
+            if (m_hasBlendShapes)
+            {
+                // Since blend shapes are present, the vertex welding is disabled, and the map will always be empty.
+                // Use the underlying mesh's vertex count instead.
+                return m_meshData->GetUsedControlPointCount();
+            }
+            return m_map.size();
+        }
+
+        void reserve(size_t count)
+        {
+            if (m_hasBlendShapes)
+            {
+                // Since blend shapes are present, the vertex welding is disabled, and the map will always be empty.
+                return;
+            }
+            m_map.reserve(count);
         }
 
     private:
@@ -167,6 +184,7 @@ namespace AZ::SceneGenerationComponents
             ) * m_positionTolerance;
         }
 
+        AZStd::unordered_map<AZ::Vector3, AZ::u32> m_map;
         const MeshDataType* m_meshData;
         bool m_hasBlendShapes;
         float m_positionTolerance;

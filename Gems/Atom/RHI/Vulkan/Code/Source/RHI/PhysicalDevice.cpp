@@ -261,7 +261,7 @@ namespace AZ
                 VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME
             } };
 
-            [[maybe_unused]] uint32_t optionalExtensionCount = static_cast<uint32_t>(optionalExtensions.size());
+            [[maybe_unused]] uint32_t optionalExtensionCount = aznumeric_cast<uint32_t>(optionalExtensions.size());
 
             AZ_Assert(optionalExtensionCount == static_cast<uint32_t>(OptionalDeviceExtension::Count), "The order and size must match the enum OptionalDeviceExtensions.");
 
