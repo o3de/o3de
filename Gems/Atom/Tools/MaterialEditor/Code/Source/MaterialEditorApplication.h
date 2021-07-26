@@ -54,5 +54,6 @@ namespace MaterialEditor
 
         void ProcessCommandLine(const AZ::CommandLine& commandLine) override;
         void StartInternal() override;
+        AZStd::string_view GetBuildTargetName() override;
      };
 } // namespace MaterialEditor

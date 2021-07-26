@@ -47,7 +47,7 @@ AZ_POP_DISABLE_WARNING
 
 namespace ShaderManagementConsole
 {
-    AZStd::string_view GetBuildTargetName()
+    AZStd::string_view ShaderManagementConsoleApplication::GetBuildTargetName()
     {
 #if !defined (LY_CMAKE_TARGET)
 #error "LY_CMAKE_TARGET must be defined in order to add this source file to a CMake executable target"
@@ -70,7 +70,7 @@ namespace ShaderManagementConsole
         : AtomToolsApplication(argc, argv)
     {
         QApplication::setApplicationName("O3DE Shader Management Console");
-        setTargetName("ShaderManagementConsole");
+        m_targetName = GetBuildTargetName();
 
         // The settings registry has been created at this point, so add the CMake target
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(
@@ -125,28 +125,17 @@ namespace ShaderManagementConsole
         };
         AzFramework::AssetSystemRequestBus::Broadcast(ConnectToAssetProcessorWithIdentifier);
 
-        // List of common asset filters for things that need to be compiled to run the material editor
-        // Some of these things will not be necessary once we have proper support for queued asset loading and reloading
-        const AZStd::vector<AZStd::string> assetFiltersArray = { "passes/", "config/"};
-
         if (connected)
         {
+            // List of common asset filters for things that need to be compiled to run the material editor
+            // Some of these things will not be necessary once we have proper support for queued asset loading and reloading
+            const AZStd::vector<AZStd::string> assetFiltersArray = { "passes/", "config/" };
+
             CompileCriticalAssets(assetFiltersArray);
         }
 
         AzFramework::AssetSystemStatusBus::Handler::BusDisconnect();
     }
-
-//    bool ShaderManagementConsoleApplication::OnPrintf(const char* window, const char* /*message*/)
-//    {
-//        // Suppress spam from the Source Control system
-//        if (0 == strncmp(window, AzToolsFramework::SCC_WINDOW, AZ_ARRAY_SIZE(AzToolsFramework::SCC_WINDOW)))
-//        {
-//            return true;
-//        }
-//
-//        return false;
-//    }
 
     void ShaderManagementConsoleApplication::ProcessCommandLine()
     {

@@ -51,7 +51,7 @@ AZ_POP_DISABLE_WARNING
 namespace MaterialEditor
 {
     //! This function returns the build system target name of "MaterialEditor
-    AZStd::string_view GetBuildTargetName()
+    AZStd::string_view MaterialEditorApplication::GetBuildTargetName()
     {
 #if !defined (LY_CMAKE_TARGET)
 #error "LY_CMAKE_TARGET must be defined in order to add this source file to a CMake executable target"
@@ -75,7 +75,7 @@ namespace MaterialEditor
 
     {
         QApplication::setApplicationName("O3DE Material Editor");
-        setTargetName("MaterialEditor");
+        m_targetName = GetBuildTargetName();
 
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(
             *AZ::SettingsRegistry::Get(), GetBuildTargetName());
@@ -139,7 +139,7 @@ namespace MaterialEditor
         AzFramework::AssetSystem::ConnectionSettings connectionSettings;
         AzFramework::AssetSystem::ReadConnectionSettingsFromSettingsRegistry(connectionSettings);
         connectionSettings.m_connectionDirection = AzFramework::AssetSystem::ConnectionSettings::ConnectionDirection::ConnectToAssetProcessor;
-        connectionSettings.m_connectionIdentifier = targetName.c_str();
+        connectionSettings.m_connectionIdentifier = GetBuildTargetName();
         connectionSettings.m_loggingCallback = []([[maybe_unused]] AZStd::string_view logData)
         {
             AZ_TracePrintf("Material Editor", "%.*s", aznumeric_cast<int>(logData.size()), logData.data());
@@ -147,12 +147,12 @@ namespace MaterialEditor
         AzFramework::AssetSystemRequestBus::BroadcastResult(connectedToAssetProcessor,
             &AzFramework::AssetSystemRequestBus::Events::EstablishAssetProcessorConnection, connectionSettings);
 
-        // List of common asset filters for things that need to be compiled to run the material editor
-        // Some of these things will not be necessary once we have proper support for queued asset loading and reloading
-        const AZStd::vector<AZStd::string> assetFiltersArray = { "passes/", "config/", "MaterialEditor/" };
-
         if (connectedToAssetProcessor)
         {
+            // List of common asset filters for things that need to be compiled to run the material editor
+            // Some of these things will not be necessary once we have proper support for queued asset loading and reloading
+            const AZStd::vector<AZStd::string> assetFiltersArray = { "passes/", "config/", "MaterialEditor/" };
+
             CompileCriticalAssets(assetFiltersArray);
         }
 
@@ -168,33 +168,6 @@ namespace MaterialEditor
                 &MaterialEditor::MaterialEditorWindowRequestBus::Handler::ActivateWindow);
         }
 
-        const AZStd::string timeoputSwitchName = "timeout";
-        if (commandLine.HasSwitch(timeoputSwitchName))
-        {
-            const AZStd::string& timeoutValue = commandLine.GetSwitchValue(timeoputSwitchName, 0);
-            const uint32_t timeoutInMs = atoi(timeoutValue.c_str());
-            AZ_Printf("MaterialEditor", "Timeout scheduled, shutting down in %u ms", timeoutInMs);
-            QTimer::singleShot(timeoutInMs, [this] {
-                AZ_Printf("MaterialEditor", "Timeout reached, shutting down");
-                ExitMainLoop();
-                });
-        }
-
-        // Process command line options for running one or more python scripts on startup
-        const AZStd::string runPythonScriptSwitchName = "runpython";
-        size_t runPythonScriptCount = commandLine.GetNumSwitchValues(runPythonScriptSwitchName);
-        for (size_t runPythonScriptIndex = 0; runPythonScriptIndex < runPythonScriptCount; ++runPythonScriptIndex)
-        {
-            const AZStd::string runPythonScriptPath = commandLine.GetSwitchValue(runPythonScriptSwitchName, runPythonScriptIndex);
-            AZStd::vector<AZStd::string_view> runPythonArgs;
-
-            AZ_Printf("MaterialEditor", "Launching script: %s", runPythonScriptPath.c_str());
-            AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
-                &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs,
-                runPythonScriptPath,
-                runPythonArgs);
-        }
-
         // Process command line options for opening one or more material documents on startup
         size_t openDocumentCount = commandLine.GetNumMiscValues();
         for (size_t openDocumentIndex = 0; openDocumentIndex < openDocumentCount; ++openDocumentIndex)
@@ -205,11 +178,7 @@ namespace MaterialEditor
             MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::OpenDocument, openDocumentPath);
         }
 
-        const AZStd::string exitAfterCommandsSwitchName = "exitaftercommands";
-        if (commandLine.HasSwitch(exitAfterCommandsSwitchName))
-        {
-            ExitMainLoop();
-        }
+        Base::ProcessCommandLine(commandLine);
     }
 
     void MaterialEditorApplication::StartInternal()

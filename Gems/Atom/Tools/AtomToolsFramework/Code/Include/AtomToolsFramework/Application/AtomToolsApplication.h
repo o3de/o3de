@@ -11,11 +11,9 @@
 #include <AtomToolsFramework/Communication/LocalSocket.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TickBus.h>
-#include <AzCore/Debug/TraceMessageBus.h>
 #include <AzCore/UserSettings/UserSettingsProvider.h>
 #include <AzFramework/Application/Application.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
-#include <AzFramework/Logging/LogFile.h>
 #include <AzQtComponents/Application/AzQtApplication.h>
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
@@ -81,7 +79,7 @@ namespace AtomToolsFramework
         void OnExceptionMessage(AZStd::string_view message) override;
         ////////////////////////////////////////////////////////////////////////
 
-        virtual AZStd::string_view GetBuildTargetName() {return targetName;};
+        virtual AZStd::string_view GetBuildTargetName() {return m_targetName;};
 
         virtual void LoadSettings();
         virtual void UnloadSettings();
@@ -91,9 +89,8 @@ namespace AtomToolsFramework
         virtual void StartInternal();
 
         static void PyIdleWaitFrames(uint32_t frames);
-        void setTargetName(AZStd::string newTargetName);
 
-        AZStd::string targetName = "AtomTools";
+        AZStd::string m_targetName = "AtomTools";
 
         AzToolsFramework::TraceLogger m_traceLogger;
 

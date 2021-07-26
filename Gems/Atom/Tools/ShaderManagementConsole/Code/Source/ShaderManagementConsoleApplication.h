@@ -55,5 +55,6 @@ namespace ShaderManagementConsole
 
         void ProcessCommandLine();
         void StartInternal() override;
+        AZStd::string_view GetBuildTargetName() override;
     };
 } // namespace ShaderManagementConsole
