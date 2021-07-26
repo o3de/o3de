@@ -176,7 +176,7 @@ RewindableFixedVector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count']
 AZStd::fixed_vector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}> m_{{ LowerFirst(Property.attrib['Name']) }};
 {% endif %}
 {%     elif Property.attrib['IsRewindable']|booleanTrue %}
-Multiplayer::RewindableObject<{{ Property.attrib['Type'] }}, Multiplayer::RewindHistorySize> m_{{ LowerFirst(Property.attrib['Name']) }} = {{ Property.attrib['Init'] }};
+Multiplayer::RewindableObject<{{ Property.attrib['Type'] }}, Multiplayer::RewindHistorySize> m_{{ LowerFirst(Property.attrib['Name']) }} { {{ Property.attrib['Init'] }} };
 {%     else %}
 {{ Property.attrib['Type'] }} m_{{ LowerFirst(Property.attrib['Name']) }} = {{ Property.attrib['Init'] }};
 {%     endif %}
