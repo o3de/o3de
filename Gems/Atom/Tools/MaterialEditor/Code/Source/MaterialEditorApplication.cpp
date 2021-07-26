@@ -139,7 +139,7 @@ namespace MaterialEditor
         AzFramework::AssetSystem::ConnectionSettings connectionSettings;
         AzFramework::AssetSystem::ReadConnectionSettingsFromSettingsRegistry(connectionSettings);
         connectionSettings.m_connectionDirection = AzFramework::AssetSystem::ConnectionSettings::ConnectionDirection::ConnectToAssetProcessor;
-        connectionSettings.m_connectionIdentifier = "MaterialEditor";
+        connectionSettings.m_connectionIdentifier = targetName.c_str();
         connectionSettings.m_loggingCallback = []([[maybe_unused]] AZStd::string_view logData)
         {
             AZ_TracePrintf("Material Editor", "%.*s", aznumeric_cast<int>(logData.size()), logData.data());

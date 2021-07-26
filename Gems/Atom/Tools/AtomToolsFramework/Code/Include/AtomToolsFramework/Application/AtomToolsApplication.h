@@ -81,6 +81,8 @@ namespace AtomToolsFramework
         void OnExceptionMessage(AZStd::string_view message) override;
         ////////////////////////////////////////////////////////////////////////
 
+        virtual AZStd::string_view GetBuildTargetName() {return targetName;};
+
         virtual void LoadSettings();
         virtual void UnloadSettings();
         virtual void CompileCriticalAssets(const AZStd::vector<AZStd::string> &assetFiltersArray);

@@ -79,8 +79,7 @@ namespace ShaderManagementConsole
 
     void ShaderManagementConsoleApplication::CreateStaticModules(AZStd::vector<AZ::Module*>& outModules)
     {
-        Application::CreateStaticModules(outModules);
-        outModules.push_back(aznew AzToolsFramework::AzToolsFrameworkModule);
+        Base::CreateStaticModules(outModules);
         outModules.push_back(aznew ShaderManagementConsoleDocumentModule);
         outModules.push_back(aznew ShaderManagementConsoleWindowModule);
     }
@@ -98,11 +97,8 @@ namespace ShaderManagementConsole
         ShaderManagementConsole::ShaderManagementConsoleWindowRequestBus::Broadcast(&ShaderManagementConsole::ShaderManagementConsoleWindowRequestBus::Handler::DestroyShaderManagementConsoleWindow);
 
         ShaderManagementConsoleWindowNotificationBus::Handler::BusDisconnect();
-        AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusDisconnect();
 
-        AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::StartDisconnectingAssetProcessor);
-
-        Application::Destroy();
+        Base::Destroy();
     }
 
     void ShaderManagementConsoleApplication::AssetSystemAvailable()
