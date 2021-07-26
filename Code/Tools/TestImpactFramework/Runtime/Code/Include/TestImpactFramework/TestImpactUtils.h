@@ -93,5 +93,5 @@ namespace TestImpact
 
     AZStd::string TargetOutputCapturePolicyAsString(Policy::TargetOutputCapture targetOutputCapturePolicy);
 
-    AZStd::string ClientTestCaseResultAsString(Client::TestCaseResult result);
+    AZStd::string ClientTestResultAsString(Client::TestResult result);
 } // namespace TestImpact

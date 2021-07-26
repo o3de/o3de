@@ -151,18 +151,50 @@ namespace TestImpact
             return m_totalNumFailingTests;
         }
 
-        SequenceReport::SequenceReport(
+        RegularSequenceReport::RegularSequenceReport(
             size_t maxConcurrency,
+            const AZStd::optional<AZStd::chrono::milliseconds>& testTargetTimeout,
+            const AZStd::optional<AZStd::chrono::milliseconds>& globalTimeout,
             const SequencePolicyState& policyState,
             SuiteType suiteType,
             const TestRunSelection& selectedTestRuns,
             TestRunReport&& selectedTestRunReport)
-            : SequenceReportBase(SequenceReportType::Sequence, maxConcurrency, policyState, suiteType, selectedTestRuns, AZStd::move(selectedTestRunReport))
+            : SequenceReportBase(
+                  SequenceReportType::RegularSequence,
+                  maxConcurrency,
+                  testTargetTimeout,
+                  globalTimeout,
+                  policyState,
+                  suiteType,
+                  selectedTestRuns,
+                  AZStd::move(selectedTestRunReport))
+        {
+        }
+
+        SeedSequenceReport::SeedSequenceReport(
+            size_t maxConcurrency,
+            const AZStd::optional<AZStd::chrono::milliseconds>& testTargetTimeout,
+            const AZStd::optional<AZStd::chrono::milliseconds>& globalTimeout,
+            const SequencePolicyState& policyState,
+            SuiteType suiteType,
+            const TestRunSelection& selectedTestRuns,
+            TestRunReport&& selectedTestRunReport)
+            : SequenceReportBase(
+                  SequenceReportType::SeedSequence,
+                  maxConcurrency,
+                  testTargetTimeout,
+                  globalTimeout,
+                  policyState,
+                  suiteType,
+                  selectedTestRuns,
+                  AZStd::move(selectedTestRunReport))
         {
         }
 
         ImpactAnalysisSequenceReport::ImpactAnalysisSequenceReport(
             size_t maxConcurrency,
+            const AZStd::optional<AZStd::chrono::milliseconds>& testTargetTimeout,
+            const AZStd::optional<AZStd::chrono::milliseconds>& globalTimeout,
             const ImpactAnalysisSequencePolicyState& policyState,
             SuiteType suiteType,
             const TestRunSelection& selectedTestRuns,
@@ -170,9 +202,11 @@ namespace TestImpact
             const AZStd::vector<AZStd::string>& draftedTestRuns,
             TestRunReport&& selectedTestRunReport,
             TestRunReport&& draftedTestRunReport)
-            : DraftingSequenceReport(
+            : DraftingSequenceReportBase(
                 SequenceReportType::ImpactAnalysisSequence,
                 maxConcurrency,
+                testTargetTimeout,
+                globalTimeout,
                 policyState,
                 suiteType,
                 selectedTestRuns,
@@ -190,6 +224,8 @@ namespace TestImpact
 
         SafeImpactAnalysisSequenceReport::SafeImpactAnalysisSequenceReport(
             size_t maxConcurrency,
+            const AZStd::optional<AZStd::chrono::milliseconds>& testTargetTimeout,
+            const AZStd::optional<AZStd::chrono::milliseconds>& globalTimeout,
             const SafeImpactAnalysisSequencePolicyState& policyState,
             SuiteType suiteType,
             const TestRunSelection& selectedTestRuns,
@@ -198,9 +234,11 @@ namespace TestImpact
             TestRunReport&& selectedTestRunReport,
             TestRunReport&& discardedTestRunReport,
             TestRunReport&& draftedTestRunReport)
-            : DraftingSequenceReport(
+            : DraftingSequenceReportBase(
                 SequenceReportType::SafeImpactAnalysisSequence,
                 maxConcurrency,
+                testTargetTimeout,
+                globalTimeout,
                 policyState,
                 suiteType,
                 selectedTestRuns,
@@ -214,52 +252,52 @@ namespace TestImpact
 
         TestSequenceResult SafeImpactAnalysisSequenceReport::GetResult() const
         {
-            return CalculateMultiTestSequenceResult({ DraftingSequenceReport::GetResult(), m_discardedTestRunReport.GetResult() });
+            return CalculateMultiTestSequenceResult({ DraftingSequenceReportBase::GetResult(), m_discardedTestRunReport.GetResult() });
         }
 
         AZStd::chrono::milliseconds SafeImpactAnalysisSequenceReport::GetDuration() const
         {
-            return DraftingSequenceReport::GetDuration() + m_discardedTestRunReport.GetDuration();
+            return DraftingSequenceReportBase::GetDuration() + m_discardedTestRunReport.GetDuration();
         }
 
         size_t SafeImpactAnalysisSequenceReport::GetTotalNumTestRuns() const
         {
-            return DraftingSequenceReport::GetTotalNumTestRuns() + m_discardedTestRunReport.GetTotalNumTestRuns();
+            return DraftingSequenceReportBase::GetTotalNumTestRuns() + m_discardedTestRunReport.GetTotalNumTestRuns();
         }
 
         size_t SafeImpactAnalysisSequenceReport::GetTotalNumPassingTests() const
         {
-            return DraftingSequenceReport::GetTotalNumPassingTests() + m_discardedTestRunReport.GetTotalNumPassingTests();
+            return DraftingSequenceReportBase::GetTotalNumPassingTests() + m_discardedTestRunReport.GetTotalNumPassingTests();
         }
 
         size_t SafeImpactAnalysisSequenceReport::GetTotalNumFailingTests() const
         {
-            return DraftingSequenceReport::GetTotalNumFailingTests() + m_discardedTestRunReport.GetTotalNumFailingTests();
+            return DraftingSequenceReportBase::GetTotalNumFailingTests() + m_discardedTestRunReport.GetTotalNumFailingTests();
         }
 
         size_t SafeImpactAnalysisSequenceReport::GetTotalNumPassingTestRuns() const
         {
-            return DraftingSequenceReport::GetTotalNumPassingTestRuns() + m_discardedTestRunReport.GetNumPassingTestRuns();
+            return DraftingSequenceReportBase::GetTotalNumPassingTestRuns() + m_discardedTestRunReport.GetNumPassingTestRuns();
         }
 
         size_t SafeImpactAnalysisSequenceReport::GetTotalNumFailingTestRuns() const
         {
-            return DraftingSequenceReport::GetTotalNumFailingTestRuns() + m_discardedTestRunReport.GetNumFailingTestRuns();
+            return DraftingSequenceReportBase::GetTotalNumFailingTestRuns() + m_discardedTestRunReport.GetNumFailingTestRuns();
         }
 
         size_t SafeImpactAnalysisSequenceReport::GetTotalNumExecutionFailureTestRuns() const
         {
-            return DraftingSequenceReport::GetTotalNumExecutionFailureTestRuns() + m_discardedTestRunReport.GetNumExecutionFailureTestRuns();
+            return DraftingSequenceReportBase::GetTotalNumExecutionFailureTestRuns() + m_discardedTestRunReport.GetNumExecutionFailureTestRuns();
         }
 
         size_t SafeImpactAnalysisSequenceReport::GetTotalNumTimedOutTestRuns() const
         {
-            return DraftingSequenceReport::GetTotalNumTimedOutTestRuns() + m_discardedTestRunReport.GetNumTimedOutTestRuns();
+            return DraftingSequenceReportBase::GetTotalNumTimedOutTestRuns() + m_discardedTestRunReport.GetNumTimedOutTestRuns();
         }
 
         size_t SafeImpactAnalysisSequenceReport::GetTotalNumUnexecutedTestRuns() const
         {
-            return DraftingSequenceReport::GetTotalNumUnexecutedTestRuns() + m_discardedTestRunReport.GetNumUnexecutedTestRuns();
+            return DraftingSequenceReportBase::GetTotalNumUnexecutedTestRuns() + m_discardedTestRunReport.GetNumUnexecutedTestRuns();
         }
         
         const TestRunSelection SafeImpactAnalysisSequenceReport::GetDiscardedTestRuns() const

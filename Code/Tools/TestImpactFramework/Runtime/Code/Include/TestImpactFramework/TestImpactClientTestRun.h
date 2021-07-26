@@ -86,45 +86,25 @@ namespace TestImpact
             UnexecutedTestRun(TestRun&& testRun);
         };
 
-        enum class TestCaseResult : AZ::u8
+        enum class TestResult : AZ::u8
         {
             Passed,
             Failed,
             NotRun
         };
 
-        class TestCase
+        class Test
         {
         public:
-            TestCase(const AZStd::string& testName, TestCaseResult result);
+            Test(const AZStd::string& testName, TestResult result);
 
             const AZStd::string& GetName() const;
 
-            TestCaseResult GetResult() const;
+            TestResult GetResult() const;
 
         private:
             AZStd::string m_name;
-            TestCaseResult m_result;
-        };
-
-        class TestSuite
-        {
-        public:
-            TestSuite(const AZStd::string& testCaseName, AZStd::vector<TestCase>&& testCases);
-
-            const AZStd::string& GetName() const;
-
-            const AZStd::vector<TestCase>& GetTestCases() const;
-
-            size_t GetNumPassingTests() const;
-
-            size_t GetNumFailingTests() const;
-
-        private:
-            AZStd::string m_name;
-            AZStd::vector<TestCase> m_testCases;
-            size_t m_numPassingTests = 0;
-            size_t m_numFailingTests = 0;
+            TestResult m_result;
         };
 
         class CompletedTestRun
@@ -137,18 +117,20 @@ namespace TestImpact
                 AZStd::chrono::high_resolution_clock::time_point startTime,
                 AZStd::chrono::milliseconds duration,
                 TestRunResult result,
-                AZStd::vector<TestSuite>&& testSuites);
+                AZStd::vector<Test>&& tests);
 
-            CompletedTestRun(TestRun&& testRun, AZStd::vector<TestSuite>&& testSuites);
+            CompletedTestRun(TestRun&& testRun, AZStd::vector<Test>&& tests);
+
+            size_t GetTotalNumTests() const;
 
             size_t GetTotalNumPassingTests() const;
 
             size_t GetTotalNumFailingTests() const;
 
-            const AZStd::vector<TestSuite>& GetTestSuites() const;
+            const AZStd::vector<Test>& GetTests() const;
 
         private:
-            AZStd::vector<TestSuite> m_testSuites;
+            AZStd::vector<Test> m_tests;
             size_t m_totalNumPassingTests = 0;
             size_t m_totalNumFailingTests = 0;
         };

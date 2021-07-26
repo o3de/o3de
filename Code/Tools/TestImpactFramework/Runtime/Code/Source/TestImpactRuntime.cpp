@@ -150,7 +150,8 @@ namespace TestImpact
         const AZStd::vector<const TestTarget*>& excludedSelectedTestTargets,
         const AZStd::vector<const TestTarget*>& discardedTestTargets,
         const AZStd::vector<const TestTarget*>& draftedTestTargets,
-        const AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
+        const AZStd::optional<AZStd::chrono::milliseconds>& testTargetTimeout,
+        const AZStd::optional<AZStd::chrono::milliseconds>& globalTimeout,
         AZStd::optional<ImpactAnalysisTestSequenceStartCallback> testSequenceStartCallback,
         AZStd::optional<TestSequenceCompleteCallback<Client::ImpactAnalysisSequenceReport>> testSequenceEndCallback,
         AZStd::optional<TestRunCompleteCallback> testCompleteCallback,
@@ -209,6 +210,8 @@ namespace TestImpact
         // Generate the sequence report for the client
         const auto sequenceReport = Client::ImpactAnalysisSequenceReport(
             maxConcurrency,
+            testTargetTimeout,
+            globalTimeout,
             policyState,
             suiteType,
             selectedTests,
@@ -520,11 +523,11 @@ namespace TestImpact
         return { GeneratePolicyStateBase(), testPrioritizationPolicy, dynamicDependencyMapPolicy };
     }
 
-    Client::SequenceReport Runtime::RegularTestSequence(
+    Client::RegularSequenceReport Runtime::RegularTestSequence(
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
         AZStd::optional<TestSequenceStartCallback> testSequenceStartCallback,
-        AZStd::optional<TestSequenceCompleteCallback<Client::SequenceReport>> testSequenceEndCallback,
+        AZStd::optional<TestSequenceCompleteCallback<Client::RegularSequenceReport>> testSequenceEndCallback,
         AZStd::optional<TestRunCompleteCallback> testCompleteCallback)
     {
         const Timer sequenceTimer;
@@ -567,8 +570,10 @@ namespace TestImpact
         const auto testRunDuration = testRunTimer.GetElapsedMs();
 
         // Generate the sequence report for the client
-        const auto sequenceReport = Client::SequenceReport(
+        const auto sequenceReport = Client::RegularSequenceReport(
             m_maxConcurrency,
+            testTargetTimeout,
+            globalTimeout,
             GenerateSequencePolicyState(),
             m_suiteFilter,
             selectedTests,
@@ -680,6 +685,7 @@ namespace TestImpact
                 excludedSelectedTestTargets,
                 discardedTestTargets,
                 draftedTestTargets,
+                testTargetTimeout,
                 globalTimeout,
                 testSequenceStartCallback,
                 testSequenceEndCallback,
@@ -698,6 +704,7 @@ namespace TestImpact
                 excludedSelectedTestTargets,
                 discardedTestTargets,
                 draftedTestTargets,
+                testTargetTimeout,
                 globalTimeout,
                 testSequenceStartCallback,
                 testSequenceEndCallback,
@@ -793,32 +800,43 @@ namespace TestImpact
             testRunData.m_duration = testRunTimer.GetElapsedMs();
         };
 
-        // Run the selected test targets and collect the test run results
-        gatherTestRunData(includedSelectedTestTargets, instrumentedTestRun, selectedTestRunData);
-
-        // Carry the remaining global sequence time over to the discarded test run
-        if (globalTimeout.has_value())
+        if (!includedSelectedTestTargets.empty())
         {
-            const auto elapsed = selectedTestRunData.m_duration;
-            sequenceTimeout = elapsed < globalTimeout.value() ? globalTimeout.value() - elapsed : AZStd::chrono::milliseconds(0);
+            // Run the selected test targets and collect the test run results
+            gatherTestRunData(includedSelectedTestTargets, instrumentedTestRun, selectedTestRunData);
+
+            // Carry the remaining global sequence time over to the discarded test run
+            if (globalTimeout.has_value())
+            {
+                const auto elapsed = selectedTestRunData.m_duration;
+                sequenceTimeout = elapsed < globalTimeout.value() ? globalTimeout.value() - elapsed : AZStd::chrono::milliseconds(0);
+            }
         }
 
-        // Run the discarded test targets and collect the test run results
-        gatherTestRunData(includedDiscardedTestTargets, regularTestRun, discardedTestRunData);
-
-        // Carry the remaining global sequence time over to the drafted test run
-        if (globalTimeout.has_value())
+        if (!includedDiscardedTestTargets.empty())
         {
-            const auto elapsed = selectedTestRunData.m_duration + discardedTestRunData.m_duration;
-            sequenceTimeout = elapsed < globalTimeout.value() ? globalTimeout.value() - elapsed : AZStd::chrono::milliseconds(0);
+            // Run the discarded test targets and collect the test run results
+            gatherTestRunData(includedDiscardedTestTargets, regularTestRun, discardedTestRunData);
+
+            // Carry the remaining global sequence time over to the drafted test run
+            if (globalTimeout.has_value())
+            {
+                const auto elapsed = selectedTestRunData.m_duration + discardedTestRunData.m_duration;
+                sequenceTimeout = elapsed < globalTimeout.value() ? globalTimeout.value() - elapsed : AZStd::chrono::milliseconds(0);
+            }
         }
 
-        // Run the drafted test targets and collect the test run results
-        gatherTestRunData(draftedTestTargets, instrumentedTestRun, draftedTestRunData);
+        if (!draftedTestTargets.empty())
+        {
+            // Run the drafted test targets and collect the test run results
+            gatherTestRunData(draftedTestTargets, instrumentedTestRun, draftedTestRunData);
+        }
 
         // Generate the sequence report for the client
         const auto sequenceReport = Client::SafeImpactAnalysisSequenceReport(
             m_maxConcurrency,
+            testTargetTimeout,
+            globalTimeout,
             GenerateSafeImpactAnalysisSequencePolicyState(testPrioritizationPolicy),
             m_suiteFilter,
             selectedTests,
@@ -850,11 +868,11 @@ namespace TestImpact
         return sequenceReport;
     }
 
-    Client::SequenceReport Runtime::SeededTestSequence(
+    Client::SeedSequenceReport Runtime::SeededTestSequence(
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
         AZStd::optional<TestSequenceStartCallback> testSequenceStartCallback,
-        AZStd::optional<TestSequenceCompleteCallback<Client::SequenceReport>> testSequenceEndCallback,
+        AZStd::optional<TestSequenceCompleteCallback<Client::SeedSequenceReport>> testSequenceEndCallback,
         AZStd::optional<TestRunCompleteCallback> testCompleteCallback)
     {
         const Timer sequenceTimer;
@@ -898,8 +916,10 @@ namespace TestImpact
         const auto testRunDuration = testRunTimer.GetElapsedMs();
 
         // Generate the sequence report for the client
-        const auto sequenceReport = Client::SequenceReport(
+        const auto sequenceReport = Client::SeedSequenceReport(
             m_maxConcurrency,
+            testTargetTimeout,
+            globalTimeout,
             GenerateSequencePolicyState(),
             m_suiteFilter,
             selectedTests,

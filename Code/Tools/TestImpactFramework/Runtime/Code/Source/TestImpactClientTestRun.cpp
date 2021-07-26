@@ -78,69 +78,37 @@ namespace TestImpact
         {
         }
 
-        TestCase::TestCase(const AZStd::string& testName, TestCaseResult result)
+        Test::Test(const AZStd::string& testName, TestResult result)
             : m_name(testName)
             , m_result(result)
         {
         }
 
-        const AZStd::string& TestCase::GetName() const
+        const AZStd::string& Test::GetName() const
         {
             return m_name;
         }
 
-        TestCaseResult TestCase::GetResult() const
+        TestResult Test::GetResult() const
         {
             return m_result;
         }
 
-        TestSuite::TestSuite(const AZStd::string& testCaseName, AZStd::vector<TestCase>&& testCases)
-            : m_name(testCaseName)
-            , m_testCases(AZStd::move(testCases))
-        {
-            for (const auto& testCase : m_testCases)
-            {
-                if (auto result = testCase.GetResult();
-                    result == TestCaseResult::Passed)
-                {
-                    m_numPassingTests++;
-                }
-                else if (result == TestCaseResult::Failed)
-                {
-                    m_numFailingTests++;
-                }
-            }
-        }
-
-        const AZStd::string& TestSuite::GetName() const
-        {
-            return m_name;
-        }
-
-        const AZStd::vector<TestCase>& TestSuite::GetTestCases() const
-        {
-            return m_testCases;
-        }
-
-        size_t TestSuite::GetNumPassingTests() const
-        {
-            return m_numPassingTests;
-        }
-
-        size_t TestSuite::GetNumFailingTests() const
-        {
-            return m_numFailingTests;
-        }
-
-        AZStd::tuple<size_t, size_t> CalculateNumPassingAndFailingTestCases(const AZStd::vector<TestSuite>& testSuites)
+        AZStd::tuple<size_t, size_t> CalculateNumPassingAndFailingTestCases(const AZStd::vector<Test>& tests)
         {
             size_t totalNumPassingTests = 0;
             size_t totalNumFailingTests = 0;
 
-            for (const auto& testSuite : testSuites)
+            for (const auto& test : tests)
             {
-                totalNumPassingTests += testSuite.GetNumPassingTests();
-                totalNumPassingTests += testSuite.GetNumFailingTests();
+                if (test.GetResult() == Client::TestResult::Passed)
+                {
+                    totalNumPassingTests++;
+                }
+                else if (test.GetResult() == Client::TestResult::Failed)
+                {
+                    totalNumFailingTests++;
+                }
             }
 
             return { totalNumPassingTests, totalNumFailingTests };
@@ -152,18 +120,23 @@ namespace TestImpact
             AZStd::chrono::high_resolution_clock::time_point startTime,
             AZStd::chrono::milliseconds duration,
             TestRunResult result,
-            AZStd::vector<TestSuite>&& testSuites)
+            AZStd::vector<Test>&& tests)
             : TestRun(name, commandString, startTime, duration, result)
-            , m_testSuites(AZStd::move(testSuites))
+            , m_tests(AZStd::move(tests))
         {
-            AZStd::tie(m_totalNumPassingTests, m_totalNumFailingTests) = CalculateNumPassingAndFailingTestCases(m_testSuites);
+            AZStd::tie(m_totalNumPassingTests, m_totalNumFailingTests) = CalculateNumPassingAndFailingTestCases(m_tests);
         }
 
-        CompletedTestRun::CompletedTestRun(TestRun&& testRun, AZStd::vector<TestSuite>&& testSuites)
+        CompletedTestRun::CompletedTestRun(TestRun&& testRun, AZStd::vector<Test>&& tests)
             : TestRun(AZStd::move(testRun))
-            , m_testSuites(AZStd::move(testSuites))
+            , m_tests(AZStd::move(tests))
         {
-            AZStd::tie(m_totalNumPassingTests, m_totalNumFailingTests) = CalculateNumPassingAndFailingTestCases(m_testSuites);
+            AZStd::tie(m_totalNumPassingTests, m_totalNumFailingTests) = CalculateNumPassingAndFailingTestCases(m_tests);
+        }
+
+        size_t CompletedTestRun::GetTotalNumTests() const
+        {
+            return m_tests.size();
         }
 
         size_t CompletedTestRun::GetTotalNumPassingTests() const
@@ -176,9 +149,9 @@ namespace TestImpact
             return m_totalNumFailingTests;
         }
 
-        const AZStd::vector<TestSuite>& CompletedTestRun::GetTestSuites() const
+        const AZStd::vector<Test>& CompletedTestRun::GetTests() const
         {
-            return m_testSuites;
+            return m_tests;
         }
     } // namespace Client
 } // namespace TestImpact

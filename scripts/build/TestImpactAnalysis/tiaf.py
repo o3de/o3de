@@ -25,6 +25,7 @@ def is_child_path(parent_path, child_path):
 
 class TestImpact:
     def __init__(self, config_file, dst_commit, src_branch, pipeline, seeding_branches, seeding_pipelines):
+        self.__instance_id = uuid.uuid4().hex
         # Commit
         self.__dst_commit = dst_commit
         print(f"Commit: '{self.__dst_commit}'.")
@@ -32,21 +33,22 @@ class TestImpact:
         self.__has_src_commit = False
         self.__commit_distance = None
         # Branch
-        self.__src_branch = src_branch
-        print(f"Branch: '{self.__src_branch}'.")
-        print(f"Seeding branches: '{seeding_branches}'.")
-        if self.__src_branch in seeding_branches:
+        self.__seeding_branches = seeding_branches
+        self.__branch = src_branch
+        print(f"Branch: '{self.__branch}'.")
+        print(f"Seeding branches: '{self.__seeding_branches}'.")
+        if self.__branch in self.__seeding_branches:
             self.__is_seeding_branch = True
         else:
             self.__is_branch_of_truth = False
         print(f"Is branch of truth: '{self.__is_branch_of_truth}'.")
         # Pipeline
+        self.__seeding_pipelines = seeding_pipelines
         self.__pipeline = pipeline
         print(f"Pipeline: '{self.__pipeline}'.")
-        self.__pipelines_of_truth = pipelines_of_truth
-        print(f"Pipelines of truth: '{self.__pipelines_of_truth}'.")
-        if self.__pipeline in self.__pipelines_of_truth:
-            self.__is_pipeline_of_truth = True
+        print(f"Seeding pipelines: '{self.__seeding_pipelines}'.")
+        if self.__pipeline in self.__seeding_pipelines:
+            self.__is_seeding_pipeline = True
         else:
             self.__is_pipeline_of_truth = False
         print(f"Is pipeline of truth: '{self.__is_pipeline_of_truth}'.")
@@ -112,7 +114,7 @@ class TestImpact:
                 print(f"Source commit '{self.__src_commit}' and destination commit '{self.__dst_commit}' are not related.")
                 return
             self.__commit_distance = self.__repo.commit_distance(self.__src_commit, self.__dst_commit)
-            diff_path = os.path.join(self.__temp_workspace, "changelist.diff")
+            diff_path = os.path.join(self.__temp_workspace, f"changelist.{self.__instance_id}.diff")
             try:
                 git_utils.create_diff_file(self.__src_commit, self.__dst_commit, diff_path)
             except FileNotFoundError as e:
@@ -150,7 +152,7 @@ class TestImpact:
                                 change_list["deletedFiles"].append(match[1])
             # Serialize the change list to the JSON format the test impact analysis runtime expects
             change_list_json = json.dumps(change_list, indent = 4)
-            change_list_path = os.path.join(self.__temp_workspace, "changelist.json")
+            change_list_path = os.path.join(self.__temp_workspace, f"changelist.{self.__instance_id}.json")
             f = open(change_list_path, "w")
             f.write(change_list_json)
             f.close()
@@ -177,12 +179,20 @@ class TestImpact:
         return self.__commit_distance
 
     @property
-    def src_branch(self):
-        return self.__src_branch
+    def branch(self):
+        return self.__branch
 
     @property
     def pipeline(self):
         return self.__pipeline
+
+    @property
+    def seeding_branches(self):
+        return self._seeding_branches
+
+    @property
+    def seeding_pipelines(self):
+        return self.__seeding_pipelines
 
     @property
     def is_seeding_branch(self):
@@ -200,12 +210,31 @@ class TestImpact:
     def has_change_list(self):
         return self.__has_change_list
 
+    def __generate_result(self, suite, return_code, report, runtime_args):
+        result = {}
+        result["src_commit"] = self.__src_commit
+        result["dst_commit"] = self.__dst_commit
+        result["commit_distance"] = self.__commit_distance
+        result["branch"] = self.__branch
+        result["suite"] = suite
+        result["pipeline"] =  self.__pipeline
+        result["seeding_branches"] = self.__seeding_branches
+        result["seeding_pipelines"] = self.__seeding_pipelines
+        result["is_seeding_branch"] = self.__is_seeding_branch
+        result["is_seeding_pipeline"] = self.__is_seeding_pipeline
+        result["use_test_impact_analysis"] = self.__use_test_impact_analysis
+        result["has_change_list"] = self.__has_change_list
+        result["runtime_args"] = runtime_args
+        result["return_code"] = return_code
+        result["report"] = report
+        return result
+
     # Runs the specified test sequence
     def run(self, suite, test_failure_policy, safe_mode, test_timeout, global_timeout):
         args = []
         seed_sequence_test_failure_policy = "continue"
         # Sequence report
-        report_file = os.path.join(self.__temp_workspace, f"report.{uuid.uuid4().hex}.json")
+        report_file = os.path.join(self.__temp_workspace, f"report.{self.__instance_id}.json")
         args.append(f"--report={report_file}")
         print(f"Sequence report file is set to '{report_file}'.")
         # Suite
@@ -268,13 +297,13 @@ class TestImpact:
                 # Test failure policy
                 args.append(f"--fpolicy={test_failure_policy}")
                 print(f"Test failure policy is set to '{test_failure_policy}'.")
-        
+
         print("Args: ", end='')
         print(*args)
-        result = subprocess.run([self.__tiaf_bin] + args)
+        runtime_result = subprocess.run([self.__tiaf_bin] + args)
         report = None
         # If the sequence completed (with or without failures) we will update the historical meta-data
-        if result.returncode == 0 or result.returncode == 7:
+        if runtime_result.returncode == 0 or runtime_result.returncode == 7:
             print("Test impact analysis runtime returned successfully.")
             with open(report_file) as json_file:
                 report = json.load(json_file)
@@ -283,6 +312,8 @@ class TestImpact:
                 self.__write_last_run_hash(self.__dst_commit)
             print("Complete!")
         else:
-            print(f"The test impact analysis runtime returned with error: '{result.returncode}'.")
-        return result.returncode, report, args
+            print(f"The test impact analysis runtime returned with error: '{runtime_result.returncode}'.")
+        
+        result = self.__generate_result(suite, runtime_result.returncode, report, args)
+        return result
         

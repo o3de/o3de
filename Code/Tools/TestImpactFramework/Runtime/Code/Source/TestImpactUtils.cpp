@@ -57,14 +57,17 @@ namespace TestImpact
     {
         switch (type)
         {
-        case Client::SequenceReportType::Sequence:
-            return "sequence";
+        case Client::SequenceReportType::RegularSequence:
+            return "regular";
+
+        case Client::SequenceReportType::SeedSequence:
+            return "seed";
 
         case Client::SequenceReportType::ImpactAnalysisSequence:
-            return "impact_analysis_sequence";
+            return "impact_analysis";
 
         case Client::SequenceReportType::SafeImpactAnalysisSequence:
-            return "safe_impact_analysis_sequence";
+            return "safe_impact_analysis";
 
         default:
             throw(Exception(AZStd::string::format("Unexpected sequence report type: %u", aznumeric_cast<AZ::u32>(type))));
@@ -250,17 +253,17 @@ namespace TestImpact
         }
     }
 
-    AZStd::string ClientTestCaseResultAsString(Client::TestCaseResult result)
+    AZStd::string ClientTestResultAsString(Client::TestResult result)
     {
         switch (result)
         {
-        case Client::TestCaseResult::Failed:
+        case Client::TestResult::Failed:
             return "failed";
 
-        case Client::TestCaseResult::NotRun:
+        case Client::TestResult::NotRun:
             return "not_run";
 
-        case Client::TestCaseResult::Passed:
+        case Client::TestResult::Passed:
             return "passed";
 
         default:

@@ -68,15 +68,11 @@ namespace TestImpact
                         std::cout << "\nTest failures:\n";
                         for (const auto& testRunFailure : testRunReport.GetFailingTestRuns())
                         {
-                            for (const auto& testSuite : testRunFailure.GetTestSuites())
+                            for (const auto& test : testRunFailure.GetTests())
                             {
-                                for (const auto& testCase : testSuite.GetTestCases())
+                                if (test.GetResult() == Client::TestResult::Failed)
                                 {
-                                    if (testCase.GetResult() == Client::TestCaseResult::Failed)
-                                    std::cout << "  "
-                                        << testRunFailure.GetTargetName().c_str()
-                                        << "." << testSuite.GetName().c_str()
-                                        << "." << testCase.GetName().c_str() << "\n";
+                                    std::cout << "  " << test.GetName().c_str() << "\n";
                                 }
                             }
                         }
@@ -161,11 +157,15 @@ namespace TestImpact
                 draftedTests.size());
         }
 
-        void TestSequenceCompleteCallback(const Client::SequenceReport& sequenceReport)
+        void RegularTestSequenceCompleteCallback(const Client::RegularSequenceReport& sequenceReport)
         {
-            
             Output::FailureReport(sequenceReport.GetSelectedTestRunReport());
             std::cout << "Updating and serializing the test impact analysis data, this may take a moment...\n";
+        }
+
+        void SeedTestSequenceCompleteCallback(const Client::SeedSequenceReport& sequenceReport)
+        {
+            Output::FailureReport(sequenceReport.GetSelectedTestRunReport());
         }
 
         void ImpactAnalysisTestSequenceCompleteCallback(const Client::ImpactAnalysisSequenceReport& sequenceReport)

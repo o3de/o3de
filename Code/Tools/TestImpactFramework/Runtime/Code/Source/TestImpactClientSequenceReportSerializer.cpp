@@ -73,46 +73,28 @@ namespace TestImpact
                 // Number of failing test cases
                 writer.Key("num_failing_tests");
                 writer.Uint64(testRun.GetTotalNumFailingTests());
-            
-                // Test Suites
-                writer.Key("test_suites");
+
+                // Tests
+                writer.Key("tests");
                 writer.StartArray();
             
-                for (const auto& testSuite : testRun.GetTestSuites())
+                for (const auto& test : testRun.GetTests())
                 {
-                    // Test suite
-                    writer.StartObject(); 
+                    // Test
+                    writer.StartObject();
             
                         // Name
                         writer.Key("name");
-                        writer.String(testSuite.GetName().c_str());
+                        writer.String(test.GetName().c_str());
             
-                        // Test cases
-                        writer.Key("test_cases");
-                        writer.StartArray();
+                        // Result
+                        writer.Key("result");
+                        writer.String(ClientTestResultAsString(test.GetResult()).c_str());
             
-                        for (const auto& testCase : testSuite.GetTestCases())
-                        {
-                            // Test case
-                            writer.StartObject();
-            
-                                // Name
-                                writer.Key("name");
-                                writer.String(testCase.GetName().c_str());
-            
-                                // Result
-                                writer.Key("result");
-                                writer.String(ClientTestCaseResultAsString(testCase.GetResult()).c_str());
-            
-                            writer.EndObject(); // Test case
-                        }
-            
-                        writer.EndArray(); // Test cases
-            
-                    writer.EndObject(); // Test suite
+                    writer.EndObject(); // Test
                 }
             
-                writer.EndArray(); // Test suites
+                writer.EndArray(); // Tests
             
             writer.EndObject();
         }
@@ -220,15 +202,15 @@ namespace TestImpact
             writer.StartObject();
 
                 // Total number of test runs
-                writer.Key("num_total_tests");
+                writer.Key("total_num_test_runs");
                 writer.Uint64(testSelection.GetTotalNumTests());
 
                 // Number of included test runs
-                writer.Key("num_included_tests");
+                writer.Key("num_included_test_runs");
                 writer.Uint64(testSelection.GetNumIncludedTestRuns());
 
                 // Number of excluded test runs
-                writer.Key("num_excluded_tests");
+                writer.Key("num_excluded_test_runs");
                 writer.Uint64(testSelection.GetNumExcludedTestRuns());
 
                 // Included test runs
@@ -283,14 +265,6 @@ namespace TestImpact
             const SequencePolicyState& policyState, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer)
         {
             SerializePolicyStateBaseMembers(policyState.m_basePolicies, writer);
-
-            // Test prioritization
-            writer.Key("test_prioritization");
-            writer.String("");
-
-            // Dynamic dependency map
-            writer.Key("dynamic_dependency_map");
-            writer.String("");
         }
 
         void SerializePolicyStateMembers(
@@ -301,10 +275,6 @@ namespace TestImpact
             // Test prioritization
             writer.Key("test_prioritization");
             writer.String(TestPrioritizationPolicyAsString(policyState.m_testPrioritizationPolicy).c_str());
-
-            // Dynamic dependency map
-            writer.Key("dynamic_dependency_map");
-            writer.String("");
         }
 
         void SerializePolicyStateMembers(
@@ -328,6 +298,14 @@ namespace TestImpact
             // Type
             writer.Key("type");
             writer.String(SequenceReportTypeAsString(sequenceReport.GetType()).c_str());
+
+            // Test target timeout
+            writer.Key("test_target_timeout");
+            writer.Uint64(sequenceReport.GetTestTargetTimeout().value_or(AZStd::chrono::milliseconds{0}).count());
+
+            // Global timeout
+            writer.Key("global_timeout");
+            writer.Uint64(sequenceReport.GetGlobalTimeout().value_or(AZStd::chrono::milliseconds{ 0 }).count());
 
             // Maximum concurrency
             writer.Key("max_concurrency");
@@ -368,10 +346,10 @@ namespace TestImpact
             writer.String(TestSequenceResultAsString(sequenceReport.GetResult()).c_str());
 
             // Total number of test runs
-            writer.Key("total_num_passing_test_runs");
+            writer.Key("total_num_test_runs");
             writer.Uint64(sequenceReport.GetTotalNumTestRuns());
 
-             // Total number of passing test runs
+            // Total number of passing test runs
             writer.Key("total_num_passing_test_runs");
             writer.Uint64(sequenceReport.GetTotalNumPassingTestRuns());
 
@@ -390,12 +368,22 @@ namespace TestImpact
             // Total number of unexecuted test runs
             writer.Key("total_num_unexecuted_test_runs");
             writer.Uint64(sequenceReport.GetTotalNumUnexecutedTestRuns());
+
+            // Total number of passing tests
+            writer.Key("total_num_passing_tests");
+            writer.Uint64(sequenceReport.GetTotalNumPassingTests());
+
+            // Total number of failing tests
+            writer.Key("total_num_failing_tests");
+            writer.Uint64(sequenceReport.GetTotalNumFailingTests());
         }
 
         template<typename PolicyStateType>
         void SerializeDraftingSequenceReportMembers(
-            const Client::DraftingSequenceReport<PolicyStateType>& sequenceReport, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer)
+            const Client::DraftingSequenceReportBase<PolicyStateType>& sequenceReport, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer)
         {
+            SerializeSequenceReportBaseMembers(sequenceReport, writer);
+
             // Drafted test runs
             writer.Key("drafted_test_runs");
             writer.StartArray();
@@ -411,7 +399,19 @@ namespace TestImpact
         }
     }
 
-    AZStd::string SerializeSequenceReport(const Client::SequenceReport& sequenceReport)
+    AZStd::string SerializeSequenceReport(const Client::RegularSequenceReport& sequenceReport)
+    {
+        rapidjson::StringBuffer stringBuffer;
+        rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(stringBuffer);
+
+        writer.StartObject();
+        SerializeSequenceReportBaseMembers(sequenceReport, writer);
+        writer.EndObject();
+
+        return stringBuffer.GetString();
+    }
+
+    AZStd::string SerializeSequenceReport(const Client::SeedSequenceReport& sequenceReport)
     {
         rapidjson::StringBuffer stringBuffer;
         rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(stringBuffer);
@@ -454,9 +454,11 @@ namespace TestImpact
             SerializeDraftingSequenceReportMembers(sequenceReport, writer);
 
             // Discarded test runs
+            writer.Key("discarded_test_runs");
             SerializeTestSelection(sequenceReport.GetDiscardedTestRuns(), writer);
 
             // Discarded test run report
+            writer.Key("discarded_test_run_report");
             SerializeTestRunReport(sequenceReport.GetDiscardedTestRunReport(), writer);
 
         writer.EndObject();

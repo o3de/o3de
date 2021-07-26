@@ -15,7 +15,10 @@
 namespace TestImpact
 {
     //!
-    AZStd::string SerializeSequenceReport(const Client::SequenceReport& sequenceReport);
+    AZStd::string SerializeSequenceReport(const Client::RegularSequenceReport& sequenceReport);
+
+    //!
+    AZStd::string SerializeSequenceReport(const Client::SeedSequenceReport& sequenceReport);
 
     //!
     AZStd::string SerializeSequenceReport(const Client::ImpactAnalysisSequenceReport& sequenceReport);

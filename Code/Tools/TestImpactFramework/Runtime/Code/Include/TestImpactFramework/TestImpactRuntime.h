@@ -114,11 +114,11 @@ namespace TestImpact
         //! @param testSequenceCompleteCallback The client function to be called after the test sequence has completed.
         //! @param testRunCompleteCallback The client function to be called after an individual test run has completed.
         //! @returns The test run and sequence report for the selected test sequence.
-        Client::SequenceReport RegularTestSequence(
+        Client::RegularSequenceReport RegularTestSequence(
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
             AZStd::optional<TestSequenceStartCallback> testSequenceStartCallback,
-            AZStd::optional<TestSequenceCompleteCallback<Client::SequenceReport>> testSequenceCompleteCallback,
+            AZStd::optional<TestSequenceCompleteCallback<Client::RegularSequenceReport>> testSequenceCompleteCallback,
             AZStd::optional<TestRunCompleteCallback> testRunCompleteCallback);
 
         //! Runs a test sequence where tests are selected according to test impact analysis so long as they are not on the excluded list.
@@ -166,11 +166,11 @@ namespace TestImpact
         //! @param testSequenceCompleteCallback The client function to be called after the test sequence has completed.
         //! @param testRunCompleteCallback The client function to be called after an individual test run has completed.
         //! @returns The test run and sequence report for the selected test sequence.
-        Client::SequenceReport SeededTestSequence(
+        Client::SeedSequenceReport SeededTestSequence(
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
             AZStd::optional<TestSequenceStartCallback> testSequenceStartCallback,
-            AZStd::optional<TestSequenceCompleteCallback<Client::SequenceReport>> testSequenceCompleteCallback,
+            AZStd::optional<TestSequenceCompleteCallback<Client::SeedSequenceReport>> testSequenceCompleteCallback,
             AZStd::optional<TestRunCompleteCallback> testRunCompleteCallback);
 
         //! Returns true if the runtime has test impact analysis data (either preexisting or generated).

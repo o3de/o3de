@@ -109,7 +109,7 @@ namespace TestImpact
                             options.GetTestTargetTimeout(),
                             options.GetGlobalTimeout(),
                             TestSequenceStartCallback,
-                            TestSequenceCompleteCallback,
+                            RegularTestSequenceCompleteCallback,
                             TestRunCompleteCallback),
                         options);
                 }
@@ -201,7 +201,7 @@ namespace TestImpact
                             options.GetTestTargetTimeout(),
                             options.GetGlobalTimeout(),
                             TestSequenceStartCallback,
-                            TestSequenceCompleteCallback,
+                            RegularTestSequenceCompleteCallback,
                             TestRunCompleteCallback),
                         options);
                 }
@@ -212,7 +212,7 @@ namespace TestImpact
                             options.GetTestTargetTimeout(),
                             options.GetGlobalTimeout(),
                             TestSequenceStartCallback,
-                            TestSequenceCompleteCallback,
+                            SeedTestSequenceCompleteCallback,
                             TestRunCompleteCallback),
                         options);
                 }
@@ -234,7 +234,7 @@ namespace TestImpact
                                 options.GetTestTargetTimeout(),
                                 options.GetGlobalTimeout(),
                                 TestSequenceStartCallback,
-                                TestSequenceCompleteCallback,
+                                SeedTestSequenceCompleteCallback,
                                 TestRunCompleteCallback),
                             options);
                     }

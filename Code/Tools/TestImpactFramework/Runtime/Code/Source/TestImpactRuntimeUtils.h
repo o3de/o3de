@@ -54,27 +54,26 @@ namespace TestImpact
     //! Generates the test suites from the specified test engine job information.
     //! @tparam TestJob The test engine job type.
     template<typename TestJob>
-    AZStd::vector<Client::TestSuite> GenerateTestSuites(const TestJob& testJob)
+    AZStd::vector<Client::Test> GenerateClientTests(const TestJob& testJob)
     {
-        AZStd::vector<Client::TestSuite> testSuites;
+        AZStd::vector<Client::Test> tests;
 
         if (testJob.GetTestRun().has_value())
         {
             for (const auto& testSuite : testJob.GetTestRun()->GetTestSuites())
             {
-                AZStd::vector<Client::TestCase> testCases;
                 for (const auto& testCase : testSuite.m_tests)
                 {
-                    auto result = Client::TestCaseResult::NotRun;
+                    auto result = Client::TestResult::NotRun;
                     if (testCase.m_result.has_value())
                     {
                         if (testCase.m_result.value() == TestRunResult::Passed)
                         {
-                            result = Client::TestCaseResult::Passed;
+                            result = Client::TestResult::Passed;
                         }
                         else if (testCase.m_result.value() == TestRunResult::Failed)
                         {
-                            result = Client::TestCaseResult::Failed;
+                            result = Client::TestResult::Failed;
                         }
                         else
                         {
@@ -83,14 +82,13 @@ namespace TestImpact
                         }
                     }
 
-                    testCases.push_back(Client::TestCase(testCase.m_name, result));
+                    const auto name = AZStd::string::format("%s.%s", testSuite.m_name.c_str(), testCase.m_name.c_str());
+                    tests.push_back(Client::Test(name, result));
                 }
-    
-                testSuites.push_back(Client::TestSuite(testSuite.m_name, AZStd::move(testCases)));
             }
         }
 
-        return testSuites;
+        return tests;
     }
 
     template<typename TestJob>
@@ -136,12 +134,12 @@ namespace TestImpact
             }
             case Client::TestRunResult::AllTestsPass:
             {
-                passingTests.emplace_back(AZStd::move(clientTestRun), GenerateTestSuites(testJob));
+                passingTests.emplace_back(AZStd::move(clientTestRun), GenerateClientTests(testJob));
                 break;
             }
             case Client::TestRunResult::TestFailures:
             {
-                failingTests.emplace_back(AZStd::move(clientTestRun), GenerateTestSuites(testJob));
+                failingTests.emplace_back(AZStd::move(clientTestRun), GenerateClientTests(testJob));
                 break;
             }
             default:

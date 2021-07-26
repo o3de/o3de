@@ -11,68 +11,9 @@
 
 import argparse
 from tiaf import TestImpact
-
+import mars_utils
 import sys
 import os
-import datetime
-import json
-import socket
-
-class FilebeatExn(Exception):
-    pass
-
-class FilebeatClient(object):
-    def __init__(self,  host="127.0.0.1", port=9000, timeout=20):
-        self._filebeat_host = host
-        self._filebeat_port = port
-        self._socket_timeout = timeout
-        self._socket = None
-
-        self._open_socket()
-
-    def send_event(self, payload, index, timestamp=None, pipeline="filebeat"):
-        if timestamp is None:
-            timestamp = datetime.datetime.utcnow().timestamp()
-
-        event = {
-            "index": index,
-            "timestamp": timestamp,
-            "pipeline": pipeline,
-            "payload": json.dumps(payload)
-        }
-
-        # Serialise event, add new line and encode as UTF-8 before sending to Filebeat.
-        data = json.dumps(event, sort_keys=True) + "\n"
-        data = data.encode()
-
-        print(f"-> {data}")
-        self._send_data(data)
-
-    def _open_socket(self):
-        print(f"Connecting to Filebeat on {self._filebeat_host}:{self._filebeat_port}")
-
-        self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._socket.settimeout(self._socket_timeout)
-
-        try:
-            self._socket.connect((self._filebeat_host, self._filebeat_port))
-        except (ConnectionError, socket.timeout):
-            raise FilebeatExn("Failed to connect to Filebeat") from None
-
-    def _send_data(self, data):
-        total_sent = 0
-
-        while total_sent < len(data):
-            try:
-                sent = self._socket.send(data[total_sent:])
-            except BrokenPipeError:
-                print("Filebeat socket closed by peer")
-                self._socket.close()
-                self._open_socket()
-                total_sent = 0
-            else:
-                total_sent = total_sent + sent
-
 
 def parse_args():
     def file_path(value):
@@ -112,52 +53,19 @@ def parse_args():
     
     return args
 
-def generate_mars_job(tiaf, return_code, suite, snapshot, seeding_branches, seeding_pipelines, runtime_args):
-    mars_job = {}
-    mars_job["src_commit"] = tiaf.src_commit
-    mars_job["dst_commit"] = tiaf.dst_commit
-    mars_job["commit_distance"] = tiaf.commit_distance
-    mars_job["branch"] = tiaf.src_branch
-    mars_job["suite"] = suite
-    mars_job["pipeline"] =  tiaf.pipeline
-    mars_job["snapshot"] = snapshot
-    mars_job["seeding_branches"] = seeding_branches
-    mars_job["seeding_pipelines"] = seeding_pipelines
-    mars_job["is_seeding_branch"] = tiaf.is_seeding_branch
-    mars_job["is_seeding_pipeline"] = tiaf.is_seeding_pipeline
-    mars_job["use_test_impact_analysis"] = tiaf.use_test_impact_analysis
-    mars_job["has_change_list"] = tiaf.has_change_list
-    mars_job["driver_args"] = str(sys.argv)
-    mars_job["runtime_args"] = runtime_args
-    mars_job["return_code"] = return_code
-    return mars_job
-
-def generate_mars_sequence(report):
-    mars_sequence = {}
-    mars_sequence["foo"]
-    mars_sequence["foo"]
-    mars_sequence["foo"]
-    mars_sequence["foo"]
-    mars_sequence["foo"]
-
-def export_mars_test_target(return_code, report):
-    mars_test_target = {}
-
-
 if __name__ == "__main__":
     
-
     try:
         args = parse_args()
         tiaf = TestImpact(args.config, args.dst_commit, args.src_branch, args.pipeline, args.seeding_branches, args.seeding_pipelines)
+        tiaf_result = tiaf.run(args.suite, args.test_failure_policy, args.safe_mode, args.test_timeout, args.global_timeout)
 
-        mars_job = generate_mars_job(tiaf, -1, args.suite, args.snapshot, args.seeding_branches, args.seeding_pipelines, "--foo=bar")
-        filebeat = FilebeatClient("localhost", 9000, 60)
+        filebeat = mars_utils.FilebeatClient("localhost", 9000, 60)
+        mars_job = mars_utils.generate_mars_job(tiaf_result, args.snapshot, str(sys.argv))
         filebeat.send_event(mars_job, "jonawals.tiaf.job") # DICTIONARY OF PAYLOAD CONTENTS ONLY
 
-        return_code, report, args = tiaf.run(args.suite, args.test_failure_policy, args.safe_mode, args.test_timeout, args.global_timeout)
         # Non-gating will be removed from this script and handled at the job level in SPEC-7413
-        #sys.exit(return_code)
+        #sys.exit(result.return_code)
         sys.exit(0)
     except Exception as e:
         # Non-gating will be removed from this script and handled at the job level in SPEC-7413
