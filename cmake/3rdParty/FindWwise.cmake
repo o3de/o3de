@@ -44,7 +44,7 @@ foreach(test_path ${WWISE_SDK_PATHS})
     is_valid_sdk(${test_path} found_sdk)
     if(found_sdk)
         # Update the Wwise Install Path cache variable
-        set(LY_WWISE_INSTALL_PATH "${test_path}" CACHE PATH "Path to Wwise version ${WWISE_VERSION} installation." FORCE)
+        set(LY_WWISE_INSTALL_PATH "${test_path}")
         break()
     endif()
 endforeach()
@@ -52,12 +52,10 @@ endforeach()
 if(NOT found_sdk)
     # If we don't find a path that appears to be a valid Wwise install, we can bail here.
     # No 3rdParty::Wwise target will exist, so that can be checked elsewhere.
-    message(STATUS "Wwise SDK version ${WWISE_VERSION} was not found.")
     return()
-else()
-    message(STATUS "Using Wwise SDK at ${LY_WWISE_INSTALL_PATH}")
 endif()
 
+message(STATUS "Using Wwise SDK at ${LY_WWISE_INSTALL_PATH}")
 
 set(WWISE_COMMON_LIB_NAMES
     # Core AK

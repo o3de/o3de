@@ -16,9 +16,6 @@ set(AUDIOENGINEWWISE_COMPILEDEFINITIONS
 )
 
 find_package(Wwise MODULE)
-if (NOT Wwise_FOUND)
-    message(STATUS "** Update the LY_WWISE_INSTALL_PATH cache variable if you intend to use Wwise.")
-endif()
 
 ################################################################################
 # Server / Unsupported
