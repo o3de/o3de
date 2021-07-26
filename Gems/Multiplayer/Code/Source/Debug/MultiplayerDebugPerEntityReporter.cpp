@@ -1,18 +1,16 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 #include "MultiplayerDebugPerEntityReporter.h"
 #include <GridMate/Replica/ReplicaChunk.h>
 #include <GridMate/Replica/ReplicaChunkDescriptor.h>
 #include <GridMate/Replica/RemoteProcedureCall.h>
+#include <Multiplayer/IMultiplayer.h>
 
 #if defined(IMGUI_ENABLED)
 #include <imgui/imgui.h>
@@ -115,151 +113,151 @@ namespace MultiplayerDiagnostics
 
     MultiplayerDebugPerEntityReporter::MultiplayerDebugPerEntityReporter ()
     {
-        GridMate::Debug::CarrierDrillerBus::Handler::BusConnect();
+        //GridMate::Debug::CarrierDrillerBus::Handler::BusConnect();
     }
 
     // --------------------------------------------------------------------------------------------
     MultiplayerDebugPerEntityReporter::~MultiplayerDebugPerEntityReporter()
     {
-        GridMate::Debug::ReplicaDrillerBus::Handler::BusDisconnect();
-        GridMate::Debug::CarrierDrillerBus::Handler::BusDisconnect();
+        /*GridMate::Debug::ReplicaDrillerBus::Handler::BusDisconnect();
+        GridMate::Debug::CarrierDrillerBus::Handler::BusDisconnect();*/
     }
 
-    void MultiplayerDebugPerEntityReporter::OnReceiveReplicaBegin(GridMate::Replica*, const void*, size_t)
-    {
-        m_currentReceivingEntityReport.Reset();
-    }
+    //void MultiplayerDebugPerEntityReporter::OnReceiveReplicaBegin(GridMate::Replica*, const void*, size_t)
+    //{
+    //    m_currentReceivingEntityReport.Reset();
+    //}
 
-    void MultiplayerDebugPerEntityReporter::OnReceiveReplicaEnd(GridMate::Replica* replica)
-    {
-        m_receivingEntityReports[replica->GetDebugName()].Combine(m_currentReceivingEntityReport);
-    }
+    //void MultiplayerDebugPerEntityReporter::OnReceiveReplicaEnd(GridMate::Replica* replica)
+    //{
+    //    m_receivingEntityReports[replica->GetDebugName()].Combine(m_currentReceivingEntityReport);
+    //}
 
-    void MultiplayerDebugPerEntityReporter::OnReceiveReplicaChunkEnd(GridMate::ReplicaChunkBase* chunk, AZ::u32 chunkIndex)
-    {
-        AZ_UNUSED(chunk);
-        AZ_UNUSED(chunkIndex);
-        m_currentReceivingEntityReport.ReportFragmentEnd();
-    }
+    //void MultiplayerDebugPerEntityReporter::OnReceiveReplicaChunkEnd(GridMate::ReplicaChunkBase* chunk, AZ::u32 chunkIndex)
+    //{
+    //    AZ_UNUSED(chunk);
+    //    AZ_UNUSED(chunkIndex);
+    //    m_currentReceivingEntityReport.ReportFragmentEnd();
+    //}
 
-    void MultiplayerDebugPerEntityReporter::OnReceiveDataSet(GridMate::ReplicaChunkBase* chunk, AZ::u32 chunkIndex,
-        GridMate::DataSetBase* dataSet, GridMate::PeerId, GridMate::PeerId, const void*, size_t len)
-    {
-        m_currentReceivingEntityReport.ReportField(chunkIndex, chunk->GetDescriptor()->GetChunkName(), chunk->GetDescriptor()->GetDataSetName(chunk, dataSet), len);
-    }
+    //void MultiplayerDebugPerEntityReporter::OnReceiveDataSet(GridMate::ReplicaChunkBase* chunk, AZ::u32 chunkIndex,
+    //    GridMate::DataSetBase* dataSet, GridMate::PeerId, GridMate::PeerId, const void*, size_t len)
+    //{
+    //    m_currentReceivingEntityReport.ReportField(chunkIndex, chunk->GetDescriptor()->GetChunkName(), chunk->GetDescriptor()->GetDataSetName(chunk, dataSet), len);
+    //}
 
-    void MultiplayerDebugPerEntityReporter::OnReceiveRpc (GridMate::ReplicaChunkBase* chunk,
-        AZ::u32 chunkIndex,
-        GridMate::Internal::RpcRequest* rpc,
-        GridMate::PeerId from,
-        GridMate::PeerId to,
-        const void* data,
-        size_t len)
-    {
-        AZ_UNUSED( from );
-        AZ_UNUSED( to );
-        AZ_UNUSED( data );
+    //void MultiplayerDebugPerEntityReporter::OnReceiveRpc (GridMate::ReplicaChunkBase* chunk,
+    //    AZ::u32 chunkIndex,
+    //    GridMate::Internal::RpcRequest* rpc,
+    //    GridMate::PeerId from,
+    //    GridMate::PeerId to,
+    //    const void* data,
+    //    size_t len)
+    //{
+    //    AZ_UNUSED( from );
+    //    AZ_UNUSED( to );
+    //    AZ_UNUSED( data );
 
-        m_currentReceivingEntityReport.ReportField(chunkIndex, chunk->GetDescriptor()->GetChunkName(), chunk->GetDescriptor()->GetRpcName(chunk, rpc->m_rpc), len);
-    }
+    //    m_currentReceivingEntityReport.ReportField(chunkIndex, chunk->GetDescriptor()->GetChunkName(), chunk->GetDescriptor()->GetRpcName(chunk, rpc->m_rpc), len);
+    //}
 
-    void MultiplayerDebugPerEntityReporter::OnSendReplicaBegin (GridMate::Replica*)
-    {
-        m_currentSendingEntityReport.Reset();
-    }
+    //void MultiplayerDebugPerEntityReporter::OnSendReplicaBegin (GridMate::Replica*)
+    //{
+    //    m_currentSendingEntityReport.Reset();
+    //}
 
-    void MultiplayerDebugPerEntityReporter::OnSendReplicaEnd (GridMate::Replica* replica, const void*, size_t)
-    {
-        m_sendingEntityReports[replica->GetDebugName()].Combine(m_currentSendingEntityReport);
-    }
+    //void MultiplayerDebugPerEntityReporter::OnSendReplicaEnd (GridMate::Replica* replica, const void*, size_t)
+    //{
+    //    m_sendingEntityReports[replica->GetDebugName()].Combine(m_currentSendingEntityReport);
+    //}
 
-    void MultiplayerDebugPerEntityReporter::OnSendReplicaChunkEnd (GridMate::ReplicaChunkBase* chunk,
-        AZ::u32 chunkIndex,
-        const void*,
-        size_t)
-    {
-        AZ_UNUSED(chunk);
-        AZ_UNUSED(chunkIndex);
-        m_currentSendingEntityReport.ReportFragmentEnd();
-    }
+    //void MultiplayerDebugPerEntityReporter::OnSendReplicaChunkEnd (GridMate::ReplicaChunkBase* chunk,
+    //    AZ::u32 chunkIndex,
+    //    const void*,
+    //    size_t)
+    //{
+    //    AZ_UNUSED(chunk);
+    //    AZ_UNUSED(chunkIndex);
+    //    m_currentSendingEntityReport.ReportFragmentEnd();
+    //}
 
-    void MultiplayerDebugPerEntityReporter::OnSendDataSet (GridMate::ReplicaChunkBase* chunk,
-        AZ::u32 chunkIndex,
-        GridMate::DataSetBase* dataSet,
-        GridMate::PeerId,
-        GridMate::PeerId,
-        const void*,
-        size_t len)
-    {
-        m_currentSendingEntityReport.ReportField(chunkIndex, chunk->GetDescriptor()->GetChunkName(), chunk->GetDescriptor()->GetDataSetName(chunk, dataSet), len);
-    }
+    //void MultiplayerDebugPerEntityReporter::OnSendDataSet (GridMate::ReplicaChunkBase* chunk,
+    //    AZ::u32 chunkIndex,
+    //    GridMate::DataSetBase* dataSet,
+    //    GridMate::PeerId,
+    //    GridMate::PeerId,
+    //    const void*,
+    //    size_t len)
+    //{
+    //    m_currentSendingEntityReport.ReportField(chunkIndex, chunk->GetDescriptor()->GetChunkName(), chunk->GetDescriptor()->GetDataSetName(chunk, dataSet), len);
+    //}
 
-    void MultiplayerDebugPerEntityReporter::OnSendRpc (GridMate::ReplicaChunkBase* chunk,
-        AZ::u32 chunkIndex,
-        GridMate::Internal::RpcRequest* rpc,
-        GridMate::PeerId,
-        GridMate::PeerId,
-        const void*,
-        size_t len)
-    {
-        m_currentSendingEntityReport.ReportField(chunkIndex, chunk->GetDescriptor()->GetChunkName(), chunk->GetDescriptor()->GetRpcName(chunk, rpc->m_rpc), len);
-    }
+    //void MultiplayerDebugPerEntityReporter::OnSendRpc (GridMate::ReplicaChunkBase* chunk,
+    //    AZ::u32 chunkIndex,
+    //    GridMate::Internal::RpcRequest* rpc,
+    //    GridMate::PeerId,
+    //    GridMate::PeerId,
+    //    const void*,
+    //    size_t len)
+    //{
+    //    m_currentSendingEntityReport.ReportField(chunkIndex, chunk->GetDescriptor()->GetChunkName(), chunk->GetDescriptor()->GetRpcName(chunk, rpc->m_rpc), len);
+    //}
 
-    void MultiplayerDebugPerEntityReporter::OnIncomingConnection (GridMate::Carrier*, GridMate::ConnectionID)
-    {
-    }
+    //void MultiplayerDebugPerEntityReporter::OnIncomingConnection (GridMate::Carrier*, GridMate::ConnectionID)
+    //{
+    //}
 
-    void MultiplayerDebugPerEntityReporter::OnFailedToConnect (GridMate::Carrier*,
-        GridMate::ConnectionID,
-        GridMate::CarrierDisconnectReason)
-    {
-        m_lastSecondStats.clear();
-    }
+    //void MultiplayerDebugPerEntityReporter::OnFailedToConnect (GridMate::Carrier*,
+    //    GridMate::ConnectionID,
+    //    GridMate::CarrierDisconnectReason)
+    //{
+    //    m_lastSecondStats.clear();
+    //}
 
-    void MultiplayerDebugPerEntityReporter::OnConnectionEstablished (GridMate::Carrier*, GridMate::ConnectionID)
-    {
-    }
+    //void MultiplayerDebugPerEntityReporter::OnConnectionEstablished (GridMate::Carrier*, GridMate::ConnectionID)
+    //{
+    //}
 
-    void MultiplayerDebugPerEntityReporter::OnDisconnect (GridMate::Carrier*,
-        GridMate::ConnectionID,
-        GridMate::CarrierDisconnectReason)
-    {
-        /*
-         * CarrierDrillerBus doesn't provide enough information to correctly keep track of network traffic for all peers.
-         * This is a work around until that is fixed to at least not over report the bandwidth amount.
-         */
-        m_lastSecondStats.clear();
-    }
+    //void MultiplayerDebugPerEntityReporter::OnDisconnect (GridMate::Carrier*,
+    //    GridMate::ConnectionID,
+    //    GridMate::CarrierDisconnectReason)
+    //{
+    //    /*
+    //     * CarrierDrillerBus doesn't provide enough information to correctly keep track of network traffic for all peers.
+    //     * This is a work around until that is fixed to at least not over report the bandwidth amount.
+    //     */
+    //    m_lastSecondStats.clear();
+    //}
 
-    void MultiplayerDebugPerEntityReporter::OnDriverError (GridMate::Carrier*,
-        GridMate::ConnectionID,
-        const GridMate::DriverError&)
-    {
-        m_lastSecondStats.clear();
-    }
+    //void MultiplayerDebugPerEntityReporter::OnDriverError (GridMate::Carrier*,
+    //    GridMate::ConnectionID,
+    //    const GridMate::DriverError&)
+    //{
+    //    m_lastSecondStats.clear();
+    //}
 
-    void MultiplayerDebugPerEntityReporter::OnSecurityError (GridMate::Carrier*,
-        GridMate::ConnectionID,
-        const GridMate::SecurityError&)
-    {
-        m_lastSecondStats.clear();
-    }
+    //void MultiplayerDebugPerEntityReporter::OnSecurityError (GridMate::Carrier*,
+    //    GridMate::ConnectionID,
+    //    const GridMate::SecurityError&)
+    //{
+    //    m_lastSecondStats.clear();
+    //}
 
-    void MultiplayerDebugPerEntityReporter::OnUpdateStatistics (const GridMate::string& address,
-        const GridMate::TrafficControl::Statistics&,
-        const GridMate::TrafficControl::Statistics&,
-        const GridMate::TrafficControl::Statistics& effectiveLastSecond,
-        const GridMate::TrafficControl::Statistics&)
-    {
-        m_lastSecondStats[address] = effectiveLastSecond;
-    }
+    //void MultiplayerDebugPerEntityReporter::OnUpdateStatistics (const GridMate::string& address,
+    //    const GridMate::TrafficControl::Statistics&,
+    //    const GridMate::TrafficControl::Statistics&,
+    //    const GridMate::TrafficControl::Statistics& effectiveLastSecond,
+    //    const GridMate::TrafficControl::Statistics&)
+    //{
+    //    m_lastSecondStats[address] = effectiveLastSecond;
+    //}
 
-    void MultiplayerDebugPerEntityReporter::OnConnectionStateChanged (GridMate::Carrier*,
-        GridMate::ConnectionID,
-        GridMate::Carrier::ConnectionStates)
-    {
-        m_lastSecondStats.clear();
-    }
+    //void MultiplayerDebugPerEntityReporter::OnConnectionStateChanged (GridMate::Carrier*,
+    //    GridMate::ConnectionID,
+    //    GridMate::Carrier::ConnectionStates)
+    //{
+    //    m_lastSecondStats.clear();
+    //}
 
     void MultiplayerDebugPerEntityReporter::UpdateTrafficStatistics()
     {
@@ -320,11 +318,11 @@ namespace MultiplayerDiagnostics
                 {
                     if (m_isTrackingMessages)
                     {
-                        GridMate::Debug::ReplicaDrillerBus::Handler::BusConnect();
+                        //GridMate::Debug::ReplicaDrillerBus::Handler::BusConnect();
                     }
                     else
                     {
-                        GridMate::Debug::ReplicaDrillerBus::Handler::BusDisconnect();
+                        //GridMate::Debug::ReplicaDrillerBus::Handler::BusDisconnect();
 
                         m_currentReceivingEntityReport.Reset();
                         m_receivingEntityReports.clear();
@@ -381,5 +379,35 @@ namespace MultiplayerDiagnostics
             ImGui::End();
         }
 #endif
+    }
+
+    void MultiplayerDebugPerEntityReporter::RecordEntitySerializeStart(AZ::EntityId entityId, const char* entityName)
+    {
+    }
+
+    void MultiplayerDebugPerEntityReporter::RecordEntitySerializeStop(AZ::EntityId entityId, const char* entityName)
+    {
+    }
+
+    void MultiplayerDebugPerEntityReporter::RecordPropertySent(
+        AZ::EntityId entityId,
+        Multiplayer::NetComponentId netComponentId,
+        Multiplayer::PropertyIndex propertyId,
+        uint32_t totalBytes)
+    {
+        // TODO
+    }
+
+    void MultiplayerDebugPerEntityReporter::RecordPropertyReceived(
+        Multiplayer::NetComponentId netComponentId,
+        Multiplayer::PropertyIndex propertyId,
+        uint32_t totalBytes)
+    {
+        if (Multiplayer::MultiplayerComponentRegistry* componentRegistry = Multiplayer::GetMultiplayerComponentRegistry())
+        {
+            m_currentReceivingEntityReport.ReportField(static_cast<AZ::u32>(netComponentId),
+                componentRegistry->GetComponentName(netComponentId),
+                componentRegistry->GetComponentPropertyName(netComponentId, propertyId), totalBytes);
+        }
     }
 }

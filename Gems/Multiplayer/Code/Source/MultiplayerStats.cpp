@@ -6,6 +6,7 @@
  *
  */
 
+#include <Debug/MultiplayerDebugPerEntityInterface.h>
 #include <Multiplayer/MultiplayerStats.h>
 
 namespace Multiplayer
@@ -29,8 +30,29 @@ namespace Multiplayer
         m_componentStats[netComponentIndex].m_rpcsRecv.resize(rpcCount);
     }
 
+    void MultiplayerStats::RecordEntitySerializeStart(AZ::EntityId entityId, const char* entityName)
+    {
+        if (auto* perEntityStats = AZ::Interface<MultiplayerDiagnostics::MultilayerIPerEntityStats>::Get())
+        {
+            perEntityStats->RecordEntitySerializeStart(entityId, entityName);
+        }
+    }
+
+    void MultiplayerStats::RecordEntitySerializeStop(AZ::EntityId entityId, const char* entityName)
+    {
+        if (auto* perEntityStats = AZ::Interface<MultiplayerDiagnostics::MultilayerIPerEntityStats>::Get())
+        {
+            perEntityStats->RecordEntitySerializeStop(entityId, entityName);
+        }
+    }
+
     void MultiplayerStats::RecordPropertySent(NetComponentId netComponentId, PropertyIndex propertyId, uint32_t totalBytes)
     {
+        if (auto* perEntityStats = AZ::Interface<MultiplayerDiagnostics::MultilayerIPerEntityStats>::Get())
+        {
+            perEntityStats->RecordPropertySent(netComponentId, propertyId, totalBytes);
+        }
+
         const uint16_t netComponentIndex = aznumeric_cast<uint16_t>(netComponentId);
         const uint16_t propertyIndex = aznumeric_cast<uint16_t>(propertyId);
         m_componentStats[netComponentIndex].m_propertyUpdatesSent[propertyIndex].m_totalCalls++;
@@ -41,6 +63,11 @@ namespace Multiplayer
 
     void MultiplayerStats::RecordPropertyReceived(NetComponentId netComponentId, PropertyIndex propertyId, uint32_t totalBytes)
     {
+        if (auto* perEntityStats = AZ::Interface<MultiplayerDiagnostics::MultilayerIPerEntityStats>::Get())
+        {
+            perEntityStats->RecordPropertyReceived(netComponentId, propertyId, totalBytes);
+        }
+
         const uint16_t netComponentIndex = aznumeric_cast<uint16_t>(netComponentId);
         const uint16_t propertyIndex = aznumeric_cast<uint16_t>(propertyId);
         m_componentStats[netComponentIndex].m_propertyUpdatesRecv[propertyIndex].m_totalCalls++;
