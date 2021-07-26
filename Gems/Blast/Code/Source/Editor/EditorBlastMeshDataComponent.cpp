@@ -119,7 +119,7 @@ namespace Blast
         m_blastChunksAsset = AssetManager::Instance().GetAsset<BlastChunksAsset>(blastAssetId, AssetLoadBehavior::QueueLoad);
         m_blastChunksAsset.BlockUntilLoadComplete();
 
-        if (m_blastChunksAsset.Get()->GetModelAssetIds().empty())
+        if (!m_blastChunksAsset.Get() || m_blastChunksAsset.Get()->GetModelAssetIds().empty())
         {
             AZ_Warning("blast", false, "Blast Chunk Asset does not contain any models.")
             return;

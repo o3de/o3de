@@ -81,7 +81,7 @@ namespace UnitTest
         }
     };
 
-    class EditorBlastSliceAssetHandlerTestFixture
+    class EditorBlastChunkAssetHandlerTestFixture
         : public AllocatorsTestFixture
     {
     public:
@@ -90,7 +90,7 @@ namespace UnitTest
         AZStd::unique_ptr<MockAssetManager> m_mockAssetManager;
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
 
-        void SetUpSliceComponents()
+        void SetUpChunkComponents()
         {
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
 
@@ -98,7 +98,7 @@ namespace UnitTest
             AzToolsFramework::Components::EditorComponentBase::Reflect(m_serializeContext.get());
         }
 
-        void TearDownSliceComponents()
+        void TearDownChunkComponents()
         {
             m_serializeContext.reset();
         }
@@ -129,17 +129,17 @@ namespace UnitTest
             AllocatorsTestFixture::TearDown();
         }
 
-        void SaveSliceAssetToStream(AZ::Entity* sliceAssetEntity, AZStd::vector<char>& buffer)
+        void SaveChunkAssetToStream(AZ::Entity* chunkAssetEntity, AZStd::vector<char>& buffer)
         {
             buffer.clear();
             AZ::IO::ByteContainerStream<AZStd::vector<char>> stream(&buffer);
             AZ::ObjectStream* objStream = AZ::ObjectStream::Create(&stream, *m_serializeContext.get(), AZ::ObjectStream::ST_XML);
-            objStream->WriteClass(sliceAssetEntity);
+            objStream->WriteClass(chunkAssetEntity);
             EXPECT_TRUE(objStream->Finalize());
         }
     };
 
-    TEST_F(EditorBlastSliceAssetHandlerTestFixture, EditorBlastChunkAssetHandler_AssetManager_Registered)
+    TEST_F(EditorBlastChunkAssetHandlerTestFixture, EditorBlastChunkAssetHandler_AssetManager_Registered)
     {
         Blast::EditorBlastChunksAssetHandler handler;
         handler.Register();
@@ -147,7 +147,7 @@ namespace UnitTest
         handler.Unregister();
     }
 
-    TEST_F(EditorBlastSliceAssetHandlerTestFixture, EditorBlastChunkAssetHandler_AssetTypeInfoBus_Responds)
+    TEST_F(EditorBlastChunkAssetHandlerTestFixture, EditorBlastChunkAssetHandler_AssetTypeInfoBus_Responds)
     {
         auto assetId = azrtti_typeid<Blast::BlastChunksAsset>();
 
@@ -178,7 +178,7 @@ namespace UnitTest
         handler.Unregister();
     }
 
-    TEST_F(EditorBlastSliceAssetHandlerTestFixture, EditorBlastChunkAssetHandler_AssetHandler_Ready)
+    TEST_F(EditorBlastChunkAssetHandlerTestFixture, EditorBlastChunkAssetHandler_AssetHandler_Ready)
     {
         auto assetType = azrtti_typeid<Blast::BlastChunksAsset>();
         auto&& assetManager = AZ::Data::AssetManager::Instance();
@@ -187,7 +187,7 @@ namespace UnitTest
         handler.Register();
         EXPECT_EQ(&handler, assetManager.GetHandler(assetType));
 
-        // create and release an instance of the BlastSliceAsset asset type
+        // create and release an instance of the BlastChunkAsset asset type
         {
             using ::testing::Return;
             using ::testing::_;
