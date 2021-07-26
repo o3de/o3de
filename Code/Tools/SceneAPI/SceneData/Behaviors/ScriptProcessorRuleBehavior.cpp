@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -303,6 +304,11 @@ namespace AZ::SceneAPI::Behaviors
         [[maybe_unused]] Events::AssetImportRequest::RequestingApplication requester)
     {
         using namespace AzToolsFramework;
+
+        // This behavior persists on the same AssetBuilder. Clear the script file name so that if
+        // this builder processes a scene file with a script file name, and then later processes
+        // a scene without a script file name, it won't run the old script on the new scene.
+        m_scriptFilename.clear();
 
         if (action != ManifestAction::Update)
         {

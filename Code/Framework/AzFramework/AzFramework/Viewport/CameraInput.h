@@ -1,5 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -261,12 +262,14 @@ namespace AzFramework
     public:
         bool HandleEvents(const InputEvent& event);
         Camera StepCamera(const Camera& targetCamera, float deltaTime);
+        bool HandlingEvents() const { return m_handlingEvents; }
 
         Cameras m_cameras; //!< Represents a collection of camera inputs that together provide a camera controller.
 
     private:
         ScreenVector m_motionDelta; //!< The delta used for look/orbit/pan (rotation + translation) - two dimensional.
         float m_scrollDelta = 0.0f; //!< The delta used for dolly/movement (translation) - one dimensional.
+        bool m_handlingEvents = false; //!< Is the camera system currently handling events (events are consumed and not propagated).
     };
 
     //! A camera input to handle motion deltas that can rotate or orbit the camera.

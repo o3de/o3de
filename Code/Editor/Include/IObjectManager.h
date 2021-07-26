@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,6 +10,10 @@
 #ifndef CRYINCLUDE_EDITOR_INCLUDE_IOBJECTMANAGER_H
 #define CRYINCLUDE_EDITOR_INCLUDE_IOBJECTMANAGER_H
 #pragma once
+
+#include <AzCore/PlatformIncl.h>
+#include <CryCommon/platform.h>
+#include <CryCommon/Cry_Geo.h>
 
 // forward declarations.
 class CEntityObject;
@@ -23,6 +28,8 @@ class CViewport;
 struct HitContext;
 enum class ImageRotationDegrees;
 struct IStatObj;
+class CBaseObject;
+class XmlNodeRef;
 
 #include "ObjectEvent.h"
 

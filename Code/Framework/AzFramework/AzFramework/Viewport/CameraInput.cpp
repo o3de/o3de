@@ -1,5 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -146,7 +147,9 @@ namespace AzFramework
             m_scrollDelta = scroll->m_delta;
         }
 
-        return m_cameras.HandleEvents(event, m_motionDelta, m_scrollDelta);
+        m_handlingEvents = m_cameras.HandleEvents(event, m_motionDelta, m_scrollDelta);
+
+        return m_handlingEvents;
     }
 
     Camera CameraSystem::StepCamera(const Camera& targetCamera, const float deltaTime)

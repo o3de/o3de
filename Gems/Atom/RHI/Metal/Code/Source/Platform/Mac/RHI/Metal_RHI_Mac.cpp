@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "Atom_RHI_Metal_precompiled.h"
 
 #import <QuartzCore/CAMetalLayer.h>
 #include <RHI/Buffer.h>
@@ -120,11 +120,6 @@ namespace Platform
     RHIMetalView* GetMetalView(NativeWindowType* nativeWindow)
     {
         return reinterpret_cast<RHIMetalView*>([nativeWindow.contentViewController view]);
-    }
-
-    void ApplyTileDimentions(MTLRenderPassDescriptor* mtlRenderPassDescriptor)
-    {
-        AZ_UNUSED(mtlRenderPassDescriptor);
     }
 
     void SynchronizeBufferOnCPU(id<MTLBuffer> mtlBuffer, size_t bufferOffset, size_t bufferSize)

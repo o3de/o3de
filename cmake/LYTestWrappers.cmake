@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -275,7 +276,7 @@ endfunction()
 #
 function(ly_add_pytest)
 
-    if(NOT PAL_TRAIT_TEST_PYTEST_SUPPORTED)
+    if(NOT PAL_TRAIT_TEST_PYTEST_SUPPORTED OR NOT PAL_TRAIT_TEST_LYTESTTOOLS_SUPPORTED)
         return()
     endif()
 

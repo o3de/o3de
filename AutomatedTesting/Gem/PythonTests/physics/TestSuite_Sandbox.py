@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
@@ -41,4 +42,12 @@ class TestAutomation(TestAutomationBase):
         # Fixme: for group in collision_groups:
         # Fixme:    unexpected_lines.append(f"GroupName: {group}")
         # Fixme: expected_lines=["GroupName: "]
+        self._run_test(request, workspace, editor, test_module)
+
+    ## Seems to be flaky, need to investigate
+    @pytest.mark.xfail(
+        reason="Editor crashes and errors about files accessed by multiple processes appear in the log.")
+    @revert_physics_config
+    def test_C15425929_Undo_Redo(self, request, workspace, editor, launcher_platform):
+        from . import C15425929_Undo_Redo as test_module
         self._run_test(request, workspace, editor, test_module)

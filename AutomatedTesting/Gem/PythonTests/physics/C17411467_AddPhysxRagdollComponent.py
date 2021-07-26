@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
@@ -19,7 +20,7 @@ class Tests():
 # fmt: on
 
 
-def run():
+def C17411467_AddPhysxRagdollComponent():
     """
     Summary:
     Load level with Entity having Actor, AnimGraph and PhysX Ragdoll components.
@@ -92,4 +93,8 @@ def run():
 
 
 if __name__ == "__main__":
-    run()
+    import ImportPathHelper as imports
+    imports.init()
+
+    from editor_python_test_tools.utils import Report
+    Report.start_test(C17411467_AddPhysxRagdollComponent)

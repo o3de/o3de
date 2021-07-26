@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,6 +14,7 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/GenericStreams.h>
 #include <AzCore/Math/Crc.h>
+#include <AzCore/Math/Uuid.h>
 #include <AzCore/Jobs/JobManager.h>
 #include <AzCore/Jobs/JobContext.h>
 #include <AzCore/Outcome/Outcome.h>
@@ -697,7 +699,7 @@ namespace UnitTest
         auto& assetManager = AssetManager::Instance();
 
         AssetBusCallbacks callbacks{};
-        callbacks.SetOnAssetReadyCallback([&](const Asset<AssetData>&, AssetBusCallbacks&)
+        callbacks.SetOnAssetReadyCallback([&, AssetNoRefB](const Asset<AssetData>&, AssetBusCallbacks&)
             {
                 // This callback should run inside the "main thread" dispatch events loop
                 auto loadAsset = assetManager.GetAsset<AssetWithSerializedData>(AZ::Uuid(AssetNoRefB), AssetLoadBehavior::Default);
