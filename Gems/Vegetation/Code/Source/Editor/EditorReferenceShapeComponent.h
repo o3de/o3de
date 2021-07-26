@@ -25,7 +25,7 @@ namespace Vegetation
         static constexpr const char* const s_componentName = "Vegetation Reference Shape";
         static constexpr const char* const s_componentDescription = "Enables the entity to reference and reuse shape entities";
         static constexpr const char* const s_icon = "Editor/Icons/Components/Vegetation.svg";
-        static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/Vegetation.png";
+        static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/Vegetation.svg";
         static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/reference/";
     };
 }

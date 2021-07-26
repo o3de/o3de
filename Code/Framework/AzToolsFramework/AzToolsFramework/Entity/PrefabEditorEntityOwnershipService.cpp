@@ -88,13 +88,15 @@ namespace AzToolsFramework
     {
         if (m_rootInstance)
         {
+            AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+                &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);
             Prefab::TemplateId templateId = m_rootInstance->GetTemplateId();
+            m_rootInstance->Reset();
             if (templateId != Prefab::InvalidTemplateId)
             {
                 m_rootInstance->SetTemplateId(Prefab::InvalidTemplateId);
                 m_prefabSystemComponent->RemoveTemplate(templateId);
             }
-            m_rootInstance->Reset();
             m_rootInstance->SetContainerEntityName("Level");
         }
 

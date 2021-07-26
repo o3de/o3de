@@ -561,9 +561,24 @@ namespace AZ::SettingsRegistryMergeUtils
             AZ::IO::FixedMaxPath normalizedProjectPath = path.LexicallyNormal();
             registry.Set(FilePathKey_ProjectPath, normalizedProjectPath.Native());
 
-            // Add an alias to the project "user" directory
-            AZ::IO::FixedMaxPath projectUserPath = (normalizedProjectPath / "user").LexicallyNormal();
+            // Set the user directory with the provided path or using project/user as default
+            auto projectUserPathKey = FixedValueString::format("%s/project_user_path", BootstrapSettingsRootKey);
+            AZ::IO::FixedMaxPath projectUserPath;
+            if (!registry.Get(projectUserPath.Native(), projectUserPathKey))
+            {
+                projectUserPath = (normalizedProjectPath / "user").LexicallyNormal();
+            }
             registry.Set(FilePathKey_ProjectUserPath, projectUserPath.Native());
+
+            // Set the user directory with the provided path or using project/user as default
+            auto projectLogPathKey = FixedValueString::format("%s/project_log_path", BootstrapSettingsRootKey);
+            AZ::IO::FixedMaxPath projectLogPath;
+            if (!registry.Get(projectLogPath.Native(), projectLogPathKey))
+            {
+                projectLogPath = (projectUserPath / "log").LexicallyNormal();
+            }
+            registry.Set(FilePathKey_ProjectLogPath, projectLogPath.Native());
+
             // check for a default write storage path, fall back to the project's user/ directory if not
             AZStd::optional<AZ::IO::FixedMaxPathString> devWriteStorage = Utils::GetDevWriteStoragePath();
             registry.Set(FilePathKey_DevWriteStorage, devWriteStorage.has_value()
@@ -948,7 +963,14 @@ namespace AZ::SettingsRegistryMergeUtils
             OptionKeyToRegsetKey{
                 "project-cache-path",
                 AZStd::string::format("%s/project_cache_path", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)},
-            OptionKeyToRegsetKey{"project-build-path", ProjectBuildPath} };
+            OptionKeyToRegsetKey{
+                "project-user-path",
+                AZStd::string::format("%s/project_user_path", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)},
+            OptionKeyToRegsetKey{
+                "project-log-path",
+                AZStd::string::format("%s/project_log_path", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)},
+            OptionKeyToRegsetKey{"project-build-path", ProjectBuildPath},
+        };
 
         AZStd::fixed_vector<AZStd::string, commandOptions.size()> overrideArgs;
 
