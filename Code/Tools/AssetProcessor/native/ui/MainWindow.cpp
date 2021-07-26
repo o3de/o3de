@@ -45,6 +45,8 @@
 #include <QUrl>
 #include <QKeyEvent>
 
+#include <AzCore/Platform.h>
+
 static const char* g_showContextDetailsKey = "ShowContextDetailsTable";
 static const QString g_jobFilteredSearchWidgetState = QStringLiteral("jobFilteredSearchWidget");
 static const qint64 AssetTabFilterUpdateIntervalMs = 5000;
@@ -126,6 +128,8 @@ bool MainWindow::eventFilter(QObject* /*obj*/, QEvent* event)
 void MainWindow::Activate()
 {
     using namespace AssetProcessor;
+
+    setWindowTitle(ENGINE_ASSET_PROCESSOR_NAME);
 
     m_sharedDbConnection = AZStd::shared_ptr<AzToolsFramework::AssetDatabase::AssetDatabaseConnection>(aznew AzToolsFramework::AssetDatabase::AssetDatabaseConnection());
     m_sharedDbConnection->OpenDatabase();
@@ -508,8 +512,9 @@ void MainWindow::OnRescanButtonClicked()
 
 void MainWindow::OnSupportClicked(bool /*checked*/)
 {
-    QDesktopServices::openUrl(
-        QStringLiteral("https://o3de.org/docs/user-guide/assets/pipeline/"));
+    AZ_Assert(false, "Not implemented!");
+    //QDesktopServices::openUrl(
+    //    QStringLiteral("https://o3de.org/docs/user-guide/assets/pipeline/"));
 }
 
 void MainWindow::EditConnection(const QModelIndex& index)

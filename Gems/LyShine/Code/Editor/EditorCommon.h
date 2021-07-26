@@ -33,6 +33,8 @@
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <AzToolsFramework/Undo/UndoSystem.h>
 
+#include <AzCore/Platform.h>
+
 #pragma warning(disable: 4355) // 'this' : used in base member initializer list
 
 class CanvasSizeToolbarSection;
@@ -159,11 +161,11 @@ enum class FusibleCommand
 #include "ViewportWidget.h"
 
 // IMPORTANT: This is NOT the permanent location for these values.
-#define AZ_QCOREAPPLICATION_SETTINGS_ORGANIZATION_NAME "O3DE"
-#define AZ_QCOREAPPLICATION_SETTINGS_APPLICATION_NAME "O3DE"
+#define AZ_QCOREAPPLICATION_SETTINGS_ORGANIZATION_NAME ENGINE_ORGANIZATION
+#define AZ_QCOREAPPLICATION_SETTINGS_APPLICATION_NAME ENGINE_NAME
 
 // See: http://en.wikipedia.org/wiki/Internet_media_type#Prefix_x
-#define UICANVASEDITOR_MIMETYPE "application/x-amazon-o3de-uicanvaseditor"
+#define UICANVASEDITOR_MIMETYPE "application/x-rengine-uicanvaseditor"
 
 bool ClipboardContainsOurDataType();
 

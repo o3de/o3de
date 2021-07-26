@@ -17,6 +17,8 @@
 #include "ImGuiColorDefines.h"
 #include "LYImGuiUtils/ImGuiDrawHelpers.h"
 
+#include <AzCore/Platform.h>
+
 namespace ImGui
 {
     // Resolution Widths to recommend for usage for both O3DE Rendering and/or ImGui Rendering
@@ -155,7 +157,7 @@ namespace ImGui
             ImGui::SetCursorPosX(40.f);
 
             // Main Open 3D Engine menu
-            if (ImGui::BeginMenu("O3DE"))
+            if (ImGui::BeginMenu(ENGINE_NAME))
             {
                 // Asset Explorer
                 if (ImGui::MenuItem("Asset Explorer"))

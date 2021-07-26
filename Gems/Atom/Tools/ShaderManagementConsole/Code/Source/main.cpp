@@ -21,11 +21,12 @@
 
 #include <Source/ShaderManagementConsoleApplication.h>
 
+#include <AzCore/Platform.h>
+
 int main(int argc, char** argv)
 {
-    QApplication::setOrganizationName("O3DE");
-    QApplication::setOrganizationDomain("o3de.com");
-    QApplication::setApplicationName("O3DE Shader Management Console");
+    QApplication::setOrganizationName(ENGINE_ORGANIZATION);
+    QApplication::setApplicationName(ENGINE_SHADER_MANAGEMENT_NAME);
 
     AzQtComponents::PrepareQtPaths();
 

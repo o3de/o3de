@@ -38,6 +38,8 @@
 #include <QJsonObject>
 #include <QSettings>
 
+#include <AzCore/Platform.h>
+
 using namespace AssetProcessor;
 
 namespace
@@ -270,7 +272,7 @@ bool GUIApplicationManager::Run()
 
         m_trayIcon = new QSystemTrayIcon(QIcon(":/o3de_assetprocessor_taskbar.svg"), m_mainWindow);
         m_trayIcon->setContextMenu(trayIconMenu);
-        m_trayIcon->setToolTip(QObject::tr("REngine Asset Processor"));
+        m_trayIcon->setToolTip(QObject::tr(ENGINE_ASSET_PROCESSOR_NAME));
         m_trayIcon->show();
         QObject::connect(m_trayIcon, &QSystemTrayIcon::activated, m_mainWindow, [&, wrapper](QSystemTrayIcon::ActivationReason reason)
             {
@@ -291,9 +293,11 @@ bool GUIApplicationManager::Run()
 
         if (startHidden)
         {
+            QString title = QString(ENGINE_ASSET_PROCESSOR_NAME) + " has started";
+            QString msg = QString("The ") + QString(ENGINE_ASSET_PROCESSOR_NAME) + QString(" monitors raw project assets and converts those assets into runtime - ready data.");
             m_trayIcon->showMessage(
-                QCoreApplication::translate("Tray Icon", "REngine - Asset Processor has started"),
-                QCoreApplication::translate("Tray Icon", "The REngine Asset Processor monitors raw project assets and converts those assets into runtime-ready data."),
+                QCoreApplication::translate("Tray Icon", title.toUtf8().constData()),
+                QCoreApplication::translate("Tray Icon", msg.toUtf8().constData()),
                 QSystemTrayIcon::Information, 3000);
         }
     }
@@ -813,7 +817,7 @@ void GUIApplicationManager::ShowTrayIconErrorMessage(QString msg)
         {
             m_timeWhenLastWarningWasShown = currentTime;
             m_trayIcon->showMessage(
-                QCoreApplication::translate("Tray Icon", "REngine - Asset Processor"),
+                QCoreApplication::translate("Tray Icon", ENGINE_ASSET_PROCESSOR_NAME),
                 QCoreApplication::translate("Tray Icon", msg.toUtf8().data()),
                 QSystemTrayIcon::Critical, 3000);
         }
@@ -825,7 +829,7 @@ void GUIApplicationManager::ShowTrayIconMessage(QString msg)
     if (m_trayIcon && m_mainWindow && !m_mainWindow->isVisible())
     {
         m_trayIcon->showMessage(
-            QCoreApplication::translate("Tray Icon", "REngine - Asset Processor"),
+            QCoreApplication::translate("Tray Icon", ENGINE_ASSET_PROCESSOR_NAME),
             QCoreApplication::translate("Tray Icon", msg.toUtf8().data()),
             QSystemTrayIcon::Information, 3000);
     }

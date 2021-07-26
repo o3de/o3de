@@ -29,7 +29,7 @@ from ly_test_tools.o3de.ap_log_parser import APLogParser
 logger = logging.getLogger(__name__)
 
 # Asset Processor fast scan system setting key/subkey
-AP_FASTSCAN_KEY = r"Software\O3DE\O3DE Asset Processor\Options"
+AP_FASTSCAN_KEY = r"Software\REngine\Asset Processor\Options"
 AP_FASTSCAN_SUBKEY = r"EnableZeroAnalysis"
 
 

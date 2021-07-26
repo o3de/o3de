@@ -13,10 +13,12 @@
 #include <string>
 #include <vector>
 
+#include <AzCore/Platform.h>
+
 namespace CrashHandler
 {
     static const char* defaultCrashFolder = "CrashDB/";
-    static const char* O3DEProductName = "O3DE";
+    static const char* REngineProductName = ENGINE_NAME;
 
     using CrashHandlerAnnotations = std::map<std::string, std::string>;
     using CrashHandlerArguments = std::vector<std::string>;
@@ -43,7 +45,7 @@ namespace CrashHandler
 
         virtual std::string DetermineAppPath() const;
 
-        virtual const char* GetProductName() const { return O3DEProductName; }
+        virtual const char* GetProductName() const { return REngineProductName; }
 
         virtual bool CreateCrashHandlerDB(const std::string& reportPath) const;
 

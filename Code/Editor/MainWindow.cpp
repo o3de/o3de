@@ -1040,11 +1040,11 @@ void MainWindow::InitActions()
     am->AddAction(ID_DOCUMENTATION_AWSSUPPORT, tr("AWS Support"))
         .SetReserved();
 
-    am->AddAction(ID_APP_ABOUT, tr("&About O3DE"))
+    am->AddAction(ID_APP_ABOUT, tr("&About"))
         .SetStatusTip(tr("Display program information, version number and copyright"))
         .SetReserved();
     am->AddAction(ID_APP_SHOW_WELCOME, tr("&Welcome"))
-        .SetStatusTip(tr("Show the Welcome to O3DE dialog box"))
+        .SetStatusTip(tr("Show the Welcome dialog box"))
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateShowWelcomeScreen);
 
     // Editors Toolbar actions

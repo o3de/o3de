@@ -30,6 +30,8 @@
 #include <AzToolsFramework/SourceControl/PerforceComponent.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponent.h>
 
+#include <AzCore/Platform.h>
+
 namespace AssetProcessor
 {
     void MessageHandler(QtMsgType type, [[maybe_unused]] const QMessageLogContext& context, [[maybe_unused]] const QString& msg)
@@ -605,7 +607,7 @@ ApplicationManager::BeforeRunStatus ApplicationManager::BeforeRun()
 
     if (!AssetUtilities::UpdateBranchToken())
     {
-        AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Asset Processor was unable to open  the bootstrap file and verify/update the branch token. \
+        AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Asset Processor was unable to open the bootstrap file and verify/update the branch token. \
             Please ensure that the bootstrap.cfg file is present and not locked by any other program.\n");
         return ApplicationManager::BeforeRunStatus::Status_Failure;
     }
@@ -638,12 +640,12 @@ bool ApplicationManager::Activate()
 
 QString ApplicationManager::GetOrganizationName() const
 {
-    return "REngine";
+    return ENGINE_ORGANIZATION;
 }
 
 QString ApplicationManager::GetApplicationName() const
 {
-    return "REngine Asset Processor";
+    return ENGINE_ASSET_PROCESSOR_NAME;
 }
 
 bool ApplicationManager::PostActivate()

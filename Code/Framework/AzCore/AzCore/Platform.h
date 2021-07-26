@@ -9,6 +9,14 @@
 
 #include <AzCore/base.h>
 
+#define ENGINE_NAME "REngine"
+#define ENGINE_ORGANIZATION "RStudio"
+#define ENGINE_EDITOR_NAME "REngine - Editor"
+#define ENGINE_MODE_DESC "Private Mode"
+#define ENGINE_EDITOR_SPLASHSCREEN "Starting REngine Editor"
+#define ENGINE_ASSET_PROCESSOR_NAME "REngine - Asset Processor"
+#define ENGINE_SHADER_MANAGEMENT_NAME "REngine - Shader Management Console"
+
 namespace AZ
 {
     namespace Platform

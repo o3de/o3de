@@ -12,6 +12,7 @@
 #include "EditorDefs.h"
 
 #include "StartupLogoDialog.h"
+#include <AzCore/Platform.h>
 
 // Qt
 #include <QPainter>
@@ -50,7 +51,7 @@ CStartupLogoDialog::CStartupLogoDialog(QString versionText, QString richTextCopy
     m_ui->m_TransparentConfidential->setTextFormat(Qt::RichText);
     m_ui->m_TransparentConfidential->setText(richTextCopyrightNotice);
 
-    setWindowTitle(tr("Starting REngine Editor"));
+    setWindowTitle(tr(ENGINE_EDITOR_SPLASHSCREEN));
 
     setStyleSheet( "CStartupLogoDialog > QLabel { background: transparent; color: 'white' }\
                     CStartupLogoDialog > QLabel#copyrightNotice { color: #AAAAAA; font-size: 9px; } ");

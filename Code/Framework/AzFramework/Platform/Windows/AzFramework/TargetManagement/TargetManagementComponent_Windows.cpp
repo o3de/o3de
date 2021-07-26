@@ -9,6 +9,7 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzCore/Platform.h>
 
 namespace AzFramework
 {
@@ -16,7 +17,7 @@ namespace AzFramework
     {
         AZStd::string GetPersistentName()
         {
-            AZStd::string persistentName = "O3DE";
+            AZStd::string persistentName = ENGINE_NAME;
 
             char procPath[AZ_MAX_PATH_LEN];
             AZ::Utils::GetExecutablePathReturnType ret = AZ::Utils::GetExecutablePath(procPath, AZ_MAX_PATH_LEN);

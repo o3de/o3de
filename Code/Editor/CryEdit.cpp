@@ -2844,7 +2844,7 @@ void CCryEditApp::OpenProjectManager(const AZStd::string& screen)
     bool launchSuccess = AzFramework::ProjectManager::LaunchProjectManager(commandLineOptions);
     if (!launchSuccess)
     {
-        QMessageBox::critical(AzToolsFramework::GetActiveWindow(), QObject::tr("Failed to launch O3DE Project Manager"), QObject::tr("Failed to find or start the O3dE Project Manager"));
+        QMessageBox::critical(AzToolsFramework::GetActiveWindow(), QObject::tr("Failed to launch REngine Project Manager"), QObject::tr("Failed to find or start the REngine Project Manager"));
     }
 }
 
@@ -4011,7 +4011,7 @@ void CCryEditApp::SetEditorWindowTitle(QString sTitleStr, QString sPreTitleStr, 
     {
         if (sTitleStr.isEmpty())
         {
-            sTitleStr = QObject::tr("O3DE Editor [Developer Preview]");
+            sTitleStr = QObject::tr("REngine - Editor [Private Mode]");
         }
 
         if (!sPreTitleStr.isEmpty())
@@ -4342,7 +4342,7 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
         int exitCode = 0;
 
         BOOL didCryEditStart = CCryEditApp::instance()->InitInstance();
-        AZ_Error("Editor", didCryEditStart, "O3DE Editor did not initialize correctly, and will close."
+        AZ_Error("Editor", didCryEditStart, "Editor did not initialize correctly, and will close."
             "\nThis could be because of incorrectly configured components, or missing required gems."
             "\nSee other errors for more details.");
 

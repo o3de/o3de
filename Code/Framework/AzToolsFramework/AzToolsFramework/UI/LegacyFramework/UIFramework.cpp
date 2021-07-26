@@ -45,6 +45,8 @@ char** __argv = nullptr;
 #include <mach-o/dyld.h>
 #endif
 
+#include <AzCore/Platform.h>
+
 //#include "PanelData.h"
 
 // the UI Framework is the entry point into the UI side of things
@@ -183,8 +185,8 @@ namespace AzToolsFramework
     // if you want to run headlessly, do not call this function.
     void Framework::Run()
     {
-        pApplication->setOrganizationName("O3DE");
-        pApplication->setApplicationName("O3DE Editor");
+        pApplication->setOrganizationName(ENGINE_ORGANIZATION);
+        pApplication->setApplicationName(ENGINE_NAME);
 
         bool GUIMode = true;
         EBUS_EVENT_RESULT(GUIMode, LegacyFramework::FrameworkApplicationMessages::Bus, IsRunningInGUIMode);

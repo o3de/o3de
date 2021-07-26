@@ -38,6 +38,7 @@
 #include "Settings.h"
 #include "CryEdit.h"
 
+#include <AzCore/Platform.h>
 
 enum
 {
@@ -252,9 +253,8 @@ namespace Editor
         setWindowIcon(QIcon(":/Application/res/o3de_editor.ico"));
 
         // set the default key store for our preferences:
-        setOrganizationName("O3DE");
-        setOrganizationDomain("o3de.org");
-        setApplicationName("O3DE Editor");
+        setOrganizationName(ENGINE_ORGANIZATION);
+        setApplicationName(ENGINE_EDITOR_SPLASHSCREEN);
 
         connect(m_idleTimer, &QTimer::timeout, this, &EditorQtApplication::maybeProcessIdle);
 
