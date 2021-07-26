@@ -494,8 +494,8 @@ namespace Camera
                     m_config.m_orthographicHalfWidth,
                     -m_config.m_orthographicHalfWidth / aspectRatio,
                     m_config.m_orthographicHalfWidth / aspectRatio,
-                    m_config.m_nearClipDistance,
-                    m_config.m_farClipDistance);
+                    m_config.m_farClipDistance,
+                    m_config.m_nearClipDistance);
             }
             else
             {
