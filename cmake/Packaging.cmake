@@ -128,7 +128,7 @@ install(FILES ${_cmake_package_dest}
 # the version string and git tags are intended to be synchronized so it should be safe to use that instead
 # of directly calling into git which could get messy in certain scenarios
 if(${CPACK_PACKAGE_VERSION} VERSION_GREATER "0.0.0.0")
-    set(_3rd_party_license_filename SPDX-Licenses.txt)
+    set(_3rd_party_license_filename NOTICES.txt)
 
     set(_3rd_party_license_url "https://raw.githubusercontent.com/o3de/3p-package-source/${CPACK_PACKAGE_VERSION}/${_3rd_party_license_filename}")
     set(_3rd_party_license_dest ${CPACK_BINARY_DIR}/${_3rd_party_license_filename})
