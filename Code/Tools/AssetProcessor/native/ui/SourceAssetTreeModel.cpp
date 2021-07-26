@@ -138,14 +138,14 @@ namespace AssetProcessor
         {
             return;
         }
-
+        const AzToolsFramework::AssetDatabase::SourceDatabaseEntry _entry = entry;
         // Model changes need to be run on the main thread.
-        AZ::SystemTickBus::QueueFunction([&, entry]()
+        AZ::SystemTickBus::QueueFunction([&, _entry]()
             {
-                m_sharedDbConnection->QueryScanFolderBySourceID(entry.m_sourceID,
-                    [&, entry](AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry& scanFolder)
+                m_sharedDbConnection->QueryScanFolderBySourceID(_entry.m_sourceID,
+                    [&, _entry](AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry& scanFolder)
                     {
-                        AddOrUpdateEntry(entry, scanFolder, false);
+                        AddOrUpdateEntry(_entry, scanFolder, false);
                         return true;
                     });
             });

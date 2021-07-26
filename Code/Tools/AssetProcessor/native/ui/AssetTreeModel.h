@@ -46,6 +46,11 @@ namespace AssetProcessor
         static QFlags<QItemSelectionModel::SelectionFlag> GetAssetTreeSelectionFlags();
 
     protected:
+        void beginInsertRows(const QModelIndex& parent, int first, int last) {
+            if(!(first <= rowCount(parent)))
+                AZ_Assert(first <= rowCount(parent), "Invalid Insert Rows");
+            QAbstractItemModel::beginInsertRows(parent, first, last);
+        }
         // Called by reset, while a Qt model reset is active.
         virtual void ResetModel() = 0;
 

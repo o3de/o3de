@@ -292,7 +292,7 @@ bool GUIApplicationManager::Run()
         if (startHidden)
         {
             m_trayIcon->showMessage(
-                QCoreApplication::translate("Tray Icon", "REngine Asset Processor has started"),
+                QCoreApplication::translate("Tray Icon", "REngine - Asset Processor has started"),
                 QCoreApplication::translate("Tray Icon", "The REngine Asset Processor monitors raw project assets and converts those assets into runtime-ready data."),
                 QSystemTrayIcon::Information, 3000);
         }
@@ -813,7 +813,7 @@ void GUIApplicationManager::ShowTrayIconErrorMessage(QString msg)
         {
             m_timeWhenLastWarningWasShown = currentTime;
             m_trayIcon->showMessage(
-                QCoreApplication::translate("Tray Icon", "O3DE Asset Processor"),
+                QCoreApplication::translate("Tray Icon", "REngine - Asset Processor"),
                 QCoreApplication::translate("Tray Icon", msg.toUtf8().data()),
                 QSystemTrayIcon::Critical, 3000);
         }
@@ -825,7 +825,7 @@ void GUIApplicationManager::ShowTrayIconMessage(QString msg)
     if (m_trayIcon && m_mainWindow && !m_mainWindow->isVisible())
     {
         m_trayIcon->showMessage(
-            QCoreApplication::translate("Tray Icon", "O3DE Asset Processor"),
+            QCoreApplication::translate("Tray Icon", "REngine - Asset Processor"),
             QCoreApplication::translate("Tray Icon", msg.toUtf8().data()),
             QSystemTrayIcon::Information, 3000);
     }

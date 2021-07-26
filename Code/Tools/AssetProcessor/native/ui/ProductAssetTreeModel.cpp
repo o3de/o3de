@@ -58,10 +58,12 @@ namespace AssetProcessor
             return;
         }
 
+        const AzToolsFramework::AssetDatabase::ProductDatabaseEntry _entry = entry;
+
         // Model changes need to be run on the main thread.
-        AZ::SystemTickBus::QueueFunction([&, entry]()
+        AZ::SystemTickBus::QueueFunction([&, _entry]()
         {
-            AddOrUpdateEntry(entry, false);
+            AddOrUpdateEntry(_entry, false);
         });
     }
 

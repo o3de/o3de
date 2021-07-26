@@ -93,7 +93,12 @@ namespace AssetProcessor
 
         ///! EraseJobs expects the database name of the source file.
         void EraseJobs(QString sourceFileDatabaseName, AZStd::vector<RCJob*>& pendingJobs);
-
+    protected:
+        void beginInsertRows(const QModelIndex& parent, int first, int last) {
+            if (!(first <= rowCount(parent)))
+                AZ_Assert(first <= rowCount(parent), "Invalid Insert Rows");
+            QAbstractItemModel::beginInsertRows(parent, first, last);
+        }
     private:
 
         AZStd::vector<RCJob*> m_jobs;

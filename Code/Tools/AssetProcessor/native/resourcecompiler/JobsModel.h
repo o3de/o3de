@@ -86,7 +86,12 @@ namespace AssetProcessor
 
         QModelIndex GetJobFromProduct(const AzToolsFramework::AssetDatabase::ProductDatabaseEntry& productEntry, AzToolsFramework::AssetDatabase::AssetDatabaseConnection& assetDatabaseConnection);
         QModelIndex GetJobFromSourceAndJobInfo(const AZStd::string& source, const AZStd::string& platform, const AZStd::string& jobKey);
-
+    protected:
+        void beginInsertRows(const QModelIndex& parent, int first, int last) {
+            if (!(first <= rowCount(parent)))
+                AZ_Assert(first <= rowCount(parent), "Invalid Insert Rows");
+            QAbstractItemModel::beginInsertRows(parent, first, last);
+        }
 public Q_SLOTS:
         void OnJobStatusChanged(JobEntry entry, AzToolsFramework::AssetSystem::JobStatus status);
         void OnJobRemoved(AzToolsFramework::AssetSystem::JobInfo jobInfo);

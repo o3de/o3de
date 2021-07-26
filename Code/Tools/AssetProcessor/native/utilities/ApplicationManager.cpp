@@ -631,7 +631,6 @@ bool ApplicationManager::Activate()
     // the following controls what registry keys (or on mac or linux what entries in home folder) are used
     // so they should not be translated!
     qApp->setOrganizationName(GetOrganizationName());
-    qApp->setOrganizationDomain("amazon.com");
     qApp->setApplicationName(GetApplicationName());
 
     return true;
@@ -639,12 +638,12 @@ bool ApplicationManager::Activate()
 
 QString ApplicationManager::GetOrganizationName() const
 {
-    return "O3DE";
+    return "REngine";
 }
 
 QString ApplicationManager::GetApplicationName() const
 {
-    return "O3DE Asset Processor";
+    return "REngine Asset Processor";
 }
 
 bool ApplicationManager::PostActivate()
