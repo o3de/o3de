@@ -56,6 +56,7 @@ namespace AZ
         void RPISystemComponent::GetRequiredServices(ComponentDescriptor::DependencyArrayType& required)
         {
             required.push_back(RHI::Factory::GetComponentService());
+            required.push_back(AZ_CRC_CE("LoggerService"));
         }
 
         void RPISystemComponent::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
