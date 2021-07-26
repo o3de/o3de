@@ -10,6 +10,7 @@
 #include <Editor/Attribution/AWSCoreAttributionConstant.h>
 #include <Framework/JsonWriter.h>
 #include <sstream>
+#include <time.h>
 
 #pragma warning(disable : 4996)
 

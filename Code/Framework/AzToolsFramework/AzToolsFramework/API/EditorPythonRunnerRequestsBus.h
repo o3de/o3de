@@ -35,11 +35,12 @@ namespace AzToolsFramework
             [[maybe_unused]] AZStd::string_view filename, [[maybe_unused]] const AZStd::vector<AZStd::string_view>& args) {}
 
         //! executes a Python script as a test
-        virtual void ExecuteByFilenameAsTest(
+        virtual bool ExecuteByFilenameAsTest(
             [[maybe_unused]] AZStd::string_view filename,
             [[maybe_unused]] AZStd::string_view testCase,
             [[maybe_unused]] const AZStd::vector<AZStd::string_view>& args)
         {
+            return false;
         }
     };
     using EditorPythonRunnerRequestBus = AZ::EBus<EditorPythonRunnerRequests>;

@@ -7,7 +7,10 @@
  */
 
 #pragma once
+
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzToolsFramework/ViewportUi/TextField.h>
+
 #include <QLabel>
 #include <QLineEdit>
 #include <QWidget>
@@ -17,13 +20,10 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
 #include <QVBoxLayout>
 AZ_POP_DISABLE_WARNING
 
-#include <AzCore/std/smart_ptr/shared_ptr.h>
-
 namespace AzToolsFramework::ViewportUi::Internal
 {
     //! Helper class for a widget that holds and manages multiple LabelTextFields.
-    class ViewportUiTextField
-        : public QWidget
+    class ViewportUiTextField : public QWidget
     {
         Q_OBJECT
 
@@ -34,9 +34,9 @@ namespace AzToolsFramework::ViewportUi::Internal
         void Update();
 
     private:
-        QLabel m_label; //<! The text label.
-        QLineEdit m_lineEdit; //<! The editable text field.
-        QValidator* m_validator; //<! The validator for the line edit text.
-        AZStd::shared_ptr<TextField> m_textField; //<! Reference to the text field data struct.
+        QLabel m_label; //!< The text label.
+        QLineEdit m_lineEdit; //!< The editable text field.
+        QValidator* m_validator; //!< The validator for the line edit text.
+        AZStd::shared_ptr<TextField> m_textField; //!< Reference to the text field data struct.
     };
 } // namespace AzToolsFramework::ViewportUi::Internal

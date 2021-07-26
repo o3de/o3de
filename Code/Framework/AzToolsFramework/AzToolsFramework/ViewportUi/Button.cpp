@@ -6,7 +6,6 @@
  *
  */
 
-
 #include <AzToolsFramework/ViewportUi/Button.h>
 
 namespace AzToolsFramework::ViewportUi::Internal

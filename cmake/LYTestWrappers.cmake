@@ -276,7 +276,7 @@ endfunction()
 #
 function(ly_add_pytest)
 
-    if(NOT PAL_TRAIT_TEST_PYTEST_SUPPORTED)
+    if(NOT PAL_TRAIT_TEST_PYTEST_SUPPORTED OR NOT PAL_TRAIT_TEST_LYTESTTOOLS_SUPPORTED)
         return()
     endif()
 

@@ -12,6 +12,7 @@ from aws_cdk import (
 
 from . import aws_metrics_constants
 from .layout_widget_construct import LayoutWidget
+from .aws_utils import resource_name_sanitizer
 
 
 class Dashboard:
@@ -28,7 +29,8 @@ class Dashboard:
             events_processing_lambda_name: str = '',
             ) -> None:
 
-        self._dashboard_name = f"{stack.stack_name}-Dashboard"
+        self._dashboard_name = resource_name_sanitizer.sanitize_resource_name(
+            f'{stack.stack_name}-Dashboard', 'cloudwatch_dashboard')
         self._dashboard = cloudwatch.Dashboard(
             stack,
             id="DashBoard",
