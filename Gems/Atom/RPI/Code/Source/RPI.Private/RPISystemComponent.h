@@ -14,6 +14,7 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <AzCore/std/parallel/mutex.h>
 
 #include <Atom/RPI.Public/RPISystem.h>
 
@@ -58,6 +59,7 @@ namespace AZ
             RPISystemDescriptor m_rpiDescriptor;
 
             MaterialFunctorSourceDataRegistration* m_materialFunctorRegistration = nullptr;
+            AZStd::mutex    m_renderTickLock;
         };
     } // namespace RPI
 } // namespace AZ

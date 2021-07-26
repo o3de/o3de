@@ -18,6 +18,7 @@
 #include <AzCore/IO/IOUtils.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Jobs/JobFunction.h>
 #ifdef RPI_EDITOR
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceDataRegistration.h>
 #endif
@@ -99,8 +100,21 @@ namespace AZ
 
         void RPISystemComponent::OnSystemTick()
         {
+#if 0
             m_rpiSystem.SimulationTick();
             m_rpiSystem.RenderTick();
+#else
+            AZStd::lock_guard<AZStd::mutex> lock(m_renderTickLock);
+            const auto jobLambda = [this]()
+            {
+                AZStd::lock_guard<AZStd::mutex> lock(m_renderTickLock);
+                m_rpiSystem.SimulationTick();
+                m_rpiSystem.RenderTick();
+            };
+
+            AZ::Job* simulationJob = AZ::CreateJobFunction(AZStd::move(jobLambda), true, nullptr);  //auto-deletes
+            simulationJob->Start();
+#endif
         }
 
     } // namespace RPI
