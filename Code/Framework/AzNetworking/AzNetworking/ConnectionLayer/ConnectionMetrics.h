@@ -131,8 +131,6 @@ namespace AzNetworking
         void LogPacketLost();
         void LogPacketAcked();
 
-        float GetSentLossRatePercent() const;
-
         uint32_t m_packetsSent  = 0;
         uint32_t m_packetsRecv  = 0;
         uint32_t m_packetsLost  = 0;

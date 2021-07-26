@@ -69,9 +69,4 @@ namespace AzNetworking
     {
         m_packetsAcked++;
     }
-
-    inline float ConnectionMetrics::GetSentLossRatePercent() const
-    {
-
-    }
 }
