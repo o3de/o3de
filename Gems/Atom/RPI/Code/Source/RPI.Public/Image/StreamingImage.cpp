@@ -133,10 +133,8 @@ namespace AZ
             // Cache off the RHI streaming image pool instance.
             RHI::StreamingImagePool* rhiPool = pool->GetRHIPool();
 
-            /**
-             * NOTE: The tail mip-chain is required to exist as a dependency of this asset. This allows
-             * the image to initialize with well-defined content.
-             */
+            // NOTE: The tail mip-chain is required to exist as a dependency of this asset. This allows
+            // the image to initialize with well-defined content.
             const uint16_t mipChainTailIndex = static_cast<uint16_t>(imageAsset.GetMipChainCount() - 1);
 
             RHI::ResultCode resultCode = RHI::ResultCode::Success;
@@ -181,21 +179,14 @@ namespace AZ
                 m_state.m_residencyTarget = mipChainTailIndex;
                 m_state.m_streamingTarget = mipChainTailIndex;
 
-                // Setup masks for tail mip chain
-                const uint16_t mipChainBit = static_cast<uint16_t>(1 << mipChainTailIndex);
-                m_state.m_maskActive |= mipChainBit;
-                m_state.m_maskEvictable &= ~mipChainBit;
-                m_state.m_maskReady |= mipChainBit;
-
                 // Take references on dependent assets
                 m_imageAsset = { &imageAsset, AZ::Data::AssetLoadBehavior::PreLoad };
                 m_rhiPool = rhiPool;
                 m_pool = pool;
                 m_pool->AttachImage(this);
                                 
-#if defined (AZ_RPI_STREAMING_IMAGE_HOT_RELOADING)
                 BusConnect(imageAsset.GetId());
-#endif                                
+
                 return RHI::ResultCode::Success;
             }
 
@@ -205,21 +196,19 @@ namespace AZ
 
         void StreamingImage::Shutdown()
         {
-            if (IsInitialized())
+            if (IsInitialized() && m_pool)
             {
-#if defined (AZ_RPI_STREAMING_IMAGE_HOT_RELOADING)
                 Data::AssetBus::MultiHandler::BusDisconnect(GetAssetId());
-#endif
 
-                if(m_pool)
-                {
-                    m_pool->DetachImage(this);
-                    m_pool = nullptr;
-                }
-                
+                m_pool->DetachImage(this);
+
+                // Need to shutdown image before m_pool set to nullptr
+                // because the upload call back need to access m_pool to set the streaming count properly.
+                GetRHIImage()->Shutdown();
+
+                m_pool = nullptr;
                 m_rhiPool = nullptr;
 
-                GetRHIImage()->Shutdown();
 
                 // Evict all active mip chains
                 for (size_t mipChainIndex = 0; mipChainIndex < m_mipChains.size(); ++mipChainIndex)
@@ -247,7 +236,9 @@ namespace AZ
         
         uint16_t StreamingImage::GetResidentMipLevel()
         {
-            return m_image->GetResidentMipLevel();
+            // Using m_mipSliceMin from ImageView instead of Image's m_residentMipLevel because the m_residentMipLevel was set
+            // before the resource is uploaded to CPU. 
+            return m_imageView->GetDescriptor().m_mipSliceMin;
         }
 
         RHI::ResultCode StreamingImage::TrimToMipChainLevel(size_t mipChainIndex)
@@ -288,6 +279,13 @@ namespace AZ
             // Expand operation - queue streaming of mip chains up to target mip chain index. 
             if (m_state.m_streamingTarget > mipChainIndex)
             {
+                // Change state to steaming
+                if (!m_isStreaming)
+                {
+                    m_isStreaming = true;
+                    m_pool->IncreaseStreamingCount();
+                }
+
                 // Start on the next-detailed chain from the streaming target.
                 const size_t mipChainBegin = m_state.m_streamingTarget - 1;
                 const size_t mipChainEnd = mipChainIndex - 1;
@@ -299,6 +297,7 @@ namespace AZ
                 }
 
                 m_state.m_streamingTarget = static_cast<uint16_t>(mipChainIndex);
+
             }
         }
         
@@ -324,7 +323,6 @@ namespace AZ
 #ifdef AZ_RPI_STREAMING_IMAGE_DEBUG_LOG
                 AZ_TracePrintf("StreamingImage", "Expand image [%s]\n", GetImage()->GetName().data());
 #endif
-
                 // Start by assuming we can expand residency to the full target range.
                 uint16_t mipChainIndexFound = m_state.m_streamingTarget;
 
@@ -362,21 +360,15 @@ namespace AZ
 
         void StreamingImage::EvictMipChainAsset(size_t mipChainIndex)
         {
-            AZ_Assert(mipChainIndex < m_mipChains.size(), "Exceeded total number of mip chains.");
-
-            const uint16_t mipChainBit = static_cast<uint16_t>(1 << mipChainIndex);
-
-            const bool isMipChainActive = RHI::CheckBitsAll(m_state.m_maskActive, mipChainBit);
-            const bool isMipChainEvictable = RHI::CheckBitsAll(m_state.m_maskEvictable, mipChainBit);
-
-            if (isMipChainActive && isMipChainEvictable)
+            if (mipChainIndex >= m_mipChains.size())
             {
-                const uint32_t mipChainMask = ~mipChainBit;
-                m_state.m_maskActive &= mipChainMask;
-                m_state.m_maskReady  &= mipChainMask;
+                AZ_Assert(false, "Exceeded total number of mip chains.");
+                return;
+            }
 
-                Data::Asset<ImageMipChainAsset>& mipChainAsset = m_mipChains[mipChainIndex];
-                AZ_Assert(mipChainAsset.GetStatus() != Data::AssetData::AssetStatus::NotLoaded, "Asset marked as active, but mipChainAsset in 'NotLoaded' state.");
+            Data::Asset<ImageMipChainAsset>& mipChainAsset = m_mipChains[mipChainIndex];
+            if (mipChainAsset.IsReady())
+            {
                 Data::AssetBus::MultiHandler::BusDisconnect(mipChainAsset.GetId());
                 mipChainAsset.Release();
             }
@@ -384,52 +376,58 @@ namespace AZ
 
         void StreamingImage::FetchMipChainAsset(size_t mipChainIndex)
         {
-            AZ_Assert(mipChainIndex < m_mipChains.size(), "Exceeded total number of mip chains.");
-
-            const uint16_t mipChainBit = static_cast<uint16_t>(1 << mipChainIndex);
-
-            const bool isMipChainActive = RHI::CheckBitsAll(m_state.m_maskActive, mipChainBit);
-
-            if (!isMipChainActive)
+            if (mipChainIndex >= m_mipChains.size())
             {
-                m_state.m_maskActive |= mipChainBit;
-
-                Data::Asset<ImageMipChainAsset>& mipChainAsset = m_mipChains[mipChainIndex];
-                AZ_Assert(mipChainAsset.Get() == nullptr, "Asset marked as inactive, but has a valid reference.");
-
-                // Connect to the AssetBus so we are ready to receive OnAssetReady(), which will call OnMipChainAssetReady().
-                // If the asset happens to already be loaded, OnAssetReady() will be called immediately.
-                Data::AssetBus::MultiHandler::BusConnect(mipChainAsset.GetId());
-
-                // And we request that the asset be loaded in case it isn't already.
-                mipChainAsset.QueueLoad();
-
-#ifdef AZ_RPI_STREAMING_IMAGE_DEBUG_LOG
-                AZ_TracePrintf("StreamingImage", "Fetch mip chain asset [%s]\n", mipChainAsset.GetHint().c_str());
-#endif
+                AZ_Assert(false, "Exceeded total number of mip chains.");
+                return;
             }
-            else
+
+            if (IsTailMipChain(mipChainIndex))
+            {
+                AZ_Assert(false, "Tail mip chain is embedded in StreamingImageAsset. It shouldn't need to be fetched.");
+                return;
+            }
+
+            Data::Asset<ImageMipChainAsset>& mipChainAsset = m_mipChains[mipChainIndex];
+            if (mipChainAsset.IsLoading() || mipChainAsset.IsReady())
             {
                 AZ_Assert(false, "FetchMipChainAsset called for a mip chain that was already active.");
+                return;
             }
+
+            // Connect to the AssetBus so we are ready to receive OnAssetReady(), which will call OnMipChainAssetReady().
+            // If the asset happens to already be loaded, OnAssetReady() will be called immediately.
+            Data::AssetBus::MultiHandler::BusConnect(mipChainAsset.GetId());
+
+            // And we request that the asset be loaded in case it isn't already.
+            mipChainAsset.QueueLoad();
+
+#ifdef AZ_RPI_STREAMING_IMAGE_DEBUG_LOG
+            AZ_TracePrintf("StreamingImage", "Fetch mip chain asset [%s]\n", mipChainAsset.GetHint().c_str());
+#endif
+        }
+
+        bool StreamingImage::IsTailMipChain(size_t mipChainIndex) const
+        {
+            return mipChainIndex == m_mipChains.size()-1;
         }
 
         bool StreamingImage::IsMipChainAssetReady(size_t mipChainIndex) const
         {
             AZ_Assert(mipChainIndex < m_mipChains.size(), "Exceeded total number of mip chains.");
 
-            return RHI::CheckBitsAny(m_state.m_maskReady, static_cast<uint16_t>(1 << mipChainIndex));
+            // tail mip chian is always ready
+            if (IsTailMipChain(mipChainIndex))
+            {
+                return true;
+            }
+
+            return m_mipChains[mipChainIndex].IsReady();
         }
 
         void StreamingImage::OnMipChainAssetReady(size_t mipChainIndex)
         {
             AZ_Assert(mipChainIndex < m_mipChains.size(), "Exceeded total number of mip chains.");
-
-            const uint16_t mipChainBit = static_cast<uint16_t>(1 << mipChainIndex);
-
-            AZ_Assert(RHI::CheckBitsAll(m_state.m_maskActive, mipChainBit), "Mip chain should be marked as active.");
-
-            m_state.m_maskReady |= mipChainBit;
 
             if (m_streamingController)
             {
@@ -452,6 +450,12 @@ namespace AZ
 #ifdef AZ_RPI_STREAMING_IMAGE_DEBUG_LOG
                     AZ_TracePrintf("StreamingImage", "Upload mipchain done [%s]\n", mipChainAsset.GetHint().c_str());
 #endif
+                    if (mipChainIndex == m_state.m_streamingTarget)
+                    {
+                        AZ_Assert(m_isStreaming, "StreamingImage should be in streaming state");
+                        m_pool->DecreaseStreamingCount();
+                        m_isStreaming = false;
+                    }
                     EvictMipChainAsset(mipChainIndex); 
                 };
 
@@ -486,7 +490,6 @@ namespace AZ
 
         void StreamingImage::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
         {
-#if defined (AZ_RPI_STREAMING_IMAGE_HOT_RELOADING)
             if (asset.GetId() == GetAssetId())
             {
                 StreamingImageAsset* imageAsset = azrtti_cast<StreamingImageAsset*>(asset.GetData());
@@ -508,7 +511,6 @@ namespace AZ
             {
                 AZ_Assert(false, "The mip chain asset auto-reload was disabled. If you are sure you want to reload mip chain manually you can remove this assert");
             }
-#endif
         }
 
         const Data::Instance<StreamingImagePool>& StreamingImage::GetPool() const

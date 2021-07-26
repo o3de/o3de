@@ -13,9 +13,6 @@
 
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 
-// Enable streaming image hot reloading
-#define AZ_RPI_STREAMING_IMAGE_HOT_RELOADING
-
 namespace AZ
 {
     namespace RPI
@@ -113,6 +110,7 @@ namespace AZ
             RHI::ResultCode ExpandMipChain();
 
             //! Returns the most detailed mip level currently resident in memory, where a value of 0 is the highest detailed mip.
+            //! Note: this number is not 
             uint16_t GetResidentMipLevel();
 
         private:
@@ -122,40 +120,39 @@ namespace AZ
             RHI::ResultCode Init(StreamingImageAsset& imageAsset);
             void Shutdown();
 
-            ///////////////////////////////////////////////////////////////////
-            // AssetBus::Handler
-            /// Used to accept image mip chain asset events.
+            // AssetBus::Handler overrides...
+            // Used to accept image mip chain asset events.
             void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
             void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
             ///////////////////////////////////////////////////////////////////
             
-            /**
-             * Evicts the mip chain asset associated with the provided index from the CPU. Does *NOT*
-             * affect the GPU image content.
-             */
+            // Evicts the mip chain asset associated with the provided index from the CPU. Does *NOT*
+            // affect the GPU image content.
             void EvictMipChainAsset(size_t mipChainIndex);
 
-            /**
-             * Fetches the mip chain asset associated with the provided index. This will invoke a
-             * streaming request from the asset system, which will take time. Fires an event to the
-             * streaming controller when the mip is ready.
-             */
+            // Fetches the mip chain asset associated with the provided index. This will invoke a
+            // streaming request from the asset system, which will take time. Fires an event to the
+            // streaming controller when the mip is ready.
             void FetchMipChainAsset(size_t mipChainIndex);
             
-            /// Returns whether the mip chain is loaded.
+            // Returns whether the mip chain asset is loaded.
             bool IsMipChainAssetReady(size_t mipChainIndex) const;
 
-            /**
-             * Called when a mip chain asset is ready.
-             */
+            // Called when a mip chain asset is ready.
             void OnMipChainAssetReady(size_t mipChainIndex);
 
-            /**
-             * Uploads the mip chain content from the asset to the GPU
-             */
+            // Uploads the mip chain content from the asset to the GPU
+            // When upload is finisehd the mipchain asset will be evict.
             RHI::ResultCode UploadMipChain(size_t mipChainIndex);
+
+            // Return true if the mipChainIndex is the tail mip chain.
+            // The tail mip chain doesn't have its own mip chain asset
+            bool IsTailMipChain(size_t mipChainIndex) const;
+
+            // Return true if there are mipmaps are in streaming
+            bool IsStreaming();
             
-            struct MipChainState
+            struct MipChainAssetState
             {
                 static const uint16_t InvalidMipChain = (uint16_t)-1;
 
@@ -164,28 +161,10 @@ namespace AZ
 
                 // Tracks the target mip chain asset for GPU residency.
                 uint16_t m_residencyTarget = InvalidMipChain;
-
-                // Tracks which mip chain assets are active (loading or ready).
-                uint16_t m_maskActive = 0;
-
-                // Tracks which mip chain assets are ready.
-                uint16_t m_maskReady = 0;
-
-                // Tracks which mip chain assets are evictable.
-                uint16_t m_maskEvictable = (uint16_t)-1;
             };
 
-            // Runtime state used to track streaming state. Only valid while initialized.
-            MipChainState m_state;
-
-            /**
-             * Streaming image holds local Asset<> references to mip chains. This is because we are not
-             * allowed to mutate the references held by the streaming image asset (it violates the immutability)
-             * of the asset. Instead, the instance maintains its own list and fetch / evict events will populate
-             * the local references. This also has the benefit of allowing the streaming image asset to hold its
-             * own references which are never evicted, which is key for runtime-generated assets with no backing
-             * representation on disk.
-             */
+            // Runtime state used to track mip chain assets streaming state. Only valid while initialized.
+            MipChainAssetState m_state;
 
             // A vector of local mip chain asset handles; used to control fetching / eviction.
             AZStd::fixed_vector<Data::Asset<ImageMipChainAsset>, RHI::Limits::Image::MipCountMax> m_mipChains;
@@ -193,6 +172,7 @@ namespace AZ
             // The controller interface and local context used to control streaming of the image.
             StreamingImageController* m_streamingController = nullptr;
             StreamingImageContextPtr m_streamingContext;
+            bool m_enableStreamingControl = true;
 
             // The pool used to initialize the asset.
             Data::Instance<StreamingImagePool> m_pool;
@@ -202,6 +182,11 @@ namespace AZ
 
             // The image asset associated with this image instance.
             Data::Asset<StreamingImageAsset> m_imageAsset;
+
+            // If there is streaming going on.
+            // It's set to true when queue expand mip starts
+            // And set to false when the mips are uploaded to device (GPU memory)
+            AZStd::atomic_bool m_isStreaming = false;
         };
     }
 }

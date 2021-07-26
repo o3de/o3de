@@ -50,6 +50,8 @@ namespace AZ
             RHI::StreamingImagePool* GetRHIPool();
 
             const RHI::StreamingImagePool* GetRHIPool() const;
+            
+            bool HasActiveStreaming() const;
 
         private:
             StreamingImagePool() = default;
@@ -65,6 +67,9 @@ namespace AZ
             // Private API for StreamingImage
             void AttachImage(StreamingImage* image);
             void DetachImage(StreamingImage* image);
+
+            void IncreaseStreamingCount();
+            void DecreaseStreamingCount();
             ///////////////////////////////////////////////////////////////////
 
             // The RHI streaming image pool instance.
@@ -72,6 +77,8 @@ namespace AZ
 
             // The controller used to manage streaming events on the pool.
             Data::Instance<StreamingImageController> m_controller;
+
+            AZStd::atomic<uint32_t> m_activeStreamings = 0;
         };
     }
 }

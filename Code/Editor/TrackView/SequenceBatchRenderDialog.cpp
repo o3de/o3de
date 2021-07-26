@@ -17,6 +17,9 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzFramework/Windowing/WindowBus.h>
 
+#include <Atom/RPI.Public/Image/ImageSystemInterface.h>
+#include <Atom/RPI.Public/Image/StreamingImagePool.h>
+
 // Qt
 #include <QAction>
 #include <QFileDialog>
@@ -1007,9 +1010,16 @@ void CSequenceBatchRenderDialog::OnUpdateEnteringGameMode()
         GetIEditor()->GetMovieSystem()->Pause();
     }
     // Spend 30 frames warming up after changing to game mode.
-    else if (m_renderContext.framesSpentInCurrentPhase++ > 30)
+    else if (m_renderContext.framesSpentInCurrentPhase++ > 30 && AZ::RPI::ImageSystemInterface::Get()->GetStreamingPool())
     {
-        EnterCaptureState(CaptureState::BeginPlayingSequence);
+        const int warmUpTimeOutFrames = 500;
+        auto streamingImagePool = AZ::RPI::ImageSystemInterface::Get()->GetStreamingPool();
+        // wait for streaming image pool finish all the streaming (all the mips are loaded)
+        if (!streamingImagePool->HasActiveStreaming() || m_renderContext.framesSpentInCurrentPhase > warmUpTimeOutFrames)
+        {
+            EnterCaptureState(CaptureState::BeginPlayingSequence);
+            AZ_Warning("CSequenceBatchRenderDialog", m_renderContext.framesSpentInCurrentPhase > warmUpTimeOutFrames, "Warming up took too long for entering game mode");
+        }
     }
 }
 

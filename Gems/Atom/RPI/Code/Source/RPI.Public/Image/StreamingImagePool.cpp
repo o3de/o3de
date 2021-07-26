@@ -101,5 +101,21 @@ namespace AZ
         {
             return m_pool.get();
         }
+        
+        bool StreamingImagePool::HasActiveStreaming() const
+        {
+            return m_activeStreamings > 0;
+        }
+        
+        void StreamingImagePool::IncreaseStreamingCount()
+        {
+            m_activeStreamings++;
+        }
+
+        void StreamingImagePool::DecreaseStreamingCount()
+        {
+            AZ_Assert(m_activeStreamings != 0, "Streaming count should be larger than 0");
+            m_activeStreamings--;
+        }
     }
 }
