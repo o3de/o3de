@@ -349,7 +349,7 @@ class TestPrintRegistration:
         with patch('o3de.manifest.load_o3de_manifest', side_effect=self.load_manifest_json) as load_manifest_patch, \
                 patch('o3de.manifest.get_restricted_json_data', side_effect=self.get_restricted_json_data) as get_json_patch, \
                 patch('o3de.manifest.get_project_json_data', side_effect=self.get_project_json_data) as get_project_json_patch, \
-            patch('o3de.print_registration.get_project_path', return_value=project_path) as get_project_path_patch:
+                patch('o3de.print_registration.get_project_path', return_value=project_path) as get_project_path_patch:
             result = print_registration._run_register_show(test_args)
             assert result == 0
 

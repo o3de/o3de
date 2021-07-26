@@ -344,7 +344,7 @@ def print_repos(verbose: int) -> int:
     return 0
 
 
-def register_show(verbose: int, project_path: pathlib.Path = None, project_name: str = None) -> None:
+def register_show(verbose: int, project_path: pathlib.Path = None, project_name: str = None) -> int:
     json_data = manifest.load_o3de_manifest()
     print(f"{manifest.get_o3de_manifest()}:")
     print(json.dumps(json_data, indent=4))
@@ -449,7 +449,7 @@ def add_parser_args(parser):
                        help='Output the restricted directories registered in the global ~/.o3de/o3de_manifest.json.')
     group.add_argument('-es', '--external-subdirectories', action='store_true', required=False,
                        default=False,
-                       help='Output the external subdirectories registered in the global ~.o3de/o3de_manifest.json.')
+                       help='Output the external subdirectories registered in the global ~/.o3de/o3de_manifest.json.')
 
     group.add_argument('-ep', '--engine-projects', action='store_true', required=False,
                        default=False,
