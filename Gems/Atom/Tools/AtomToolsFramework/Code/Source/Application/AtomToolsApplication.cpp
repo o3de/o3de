@@ -82,12 +82,13 @@ namespace AtomToolsFramework
 
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
+            AZStd::string fileName = GetBuildTargetName() + ".general";
             // this will put these methods into the 'azlmbr.AtomTools.general' module
-            auto addGeneral = [](AZ::BehaviorContext::GlobalMethodBuilder methodBuilder)
+            auto addGeneral = [fileName](AZ::BehaviorContext::GlobalMethodBuilder methodBuilder)
             {
                 methodBuilder->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                     ->Attribute(AZ::Script::Attributes::Category, "Editor")
-                    ->Attribute(AZ::Script::Attributes::Module, "AtomTools.general");
+                    ->Attribute(AZ::Script::Attributes::Module, fileName);
             };
             // The reflection here is based on patterns in CryEditPythonHandler::Reflect
             addGeneral(behaviorContext->Method(
