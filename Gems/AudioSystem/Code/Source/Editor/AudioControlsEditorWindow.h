@@ -12,6 +12,7 @@
 #if !defined(Q_MOC_RUN)
 #include <ATLControlsModel.h>
 #include <AzCore/std/string/string_view.h>
+#include <IEditor.h>
 
 #include <QMainWindow>
 #include <QFileSystemWatcher>
