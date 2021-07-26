@@ -40,22 +40,18 @@ endif()
 # If you keep packages after downloading, then they can be moved to a network share
 # or checked into source control so that others on the same project can avoid re-downloading
 set(LY_PACKAGE_KEEP_AFTER_DOWNLOADING TRUE CACHE BOOL "If enabled, packages will be kept after downloading them for later re-use")
-set(LY_PACKAGE_DOWNLOAD_CACHE_LOCATION ${LY_3RDPARTY_PATH}/downloaded_packages CACHE PATH "You can make it store the packages in a folder of your choosing")
+set(LY_PACKAGE_DOWNLOAD_CACHE_LOCATION @LY_3RDPARTY_PATH@/downloaded_packages CACHE PATH "Download location for packages (Defaults to @LY_3RDPARTY_PATH@/downloaded_packages)")
 if (DEFINED ENV{LY_PACKAGE_DOWNLOAD_CACHE_LOCATION})
     set(LY_PACKAGE_DOWNLOAD_CACHE_LOCATION $ENV{LY_PACKAGE_DOWNLOAD_CACHE_LOCATION})
 endif()
+string(CONFIGURE ${LY_PACKAGE_DOWNLOAD_CACHE_LOCATION} LY_PACKAGE_DOWNLOAD_CACHE_LOCATION @ONLY)
 
 # LY_PACKAGE_UNPACK_LOCATION - you can change this to any path reachable.
-set(LY_PACKAGE_UNPACK_LOCATION ${LY_3RDPARTY_PATH}/packages CACHE PATH "Location to unpack downloaded packages to")
+set(LY_PACKAGE_UNPACK_LOCATION @LY_3RDPARTY_PATH@/packages CACHE PATH "Unpack location of downloaded packages (Defaults to @LY_3RDPARTY_PATH@/packages)")
 if (DEFINED ENV{LY_PACKAGE_UNPACK_LOCATION})
     set(LY_PACKAGE_UNPACK_LOCATION $ENV{LY_PACKAGE_UNPACK_LOCATION})
 endif()
-
-# note that sometimes the user configures first without populating LY_3RDPARTY_PATH
-# in that case, we'll try overwriting the cache value, only if it is blank:
-if (NOT LY_PACKAGE_UNPACK_LOCATION)
-    set(LY_PACKAGE_UNPACK_LOCATION ${LY_3RDPARTY_PATH}/packages CACHE PATH "Location to unpack downloaded packages to" FORCE )
-endif()
+string(CONFIGURE ${LY_PACKAGE_UNPACK_LOCATION} LY_PACKAGE_UNPACK_LOCATION @ONLY)
 
 # while developing you can set one or both to true to force auto downloads from your local cache
 set(LY_PACKAGE_VALIDATE_CONTENTS FALSE CACHE BOOL "If enabled, will fully validate every file in every package based on the SHA256SUMS file from the package")
