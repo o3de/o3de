@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <Debug/MultiplayerDebugPerEntityReporter.h>
 
 #ifdef IMGUI_ENABLED
 #   include <imgui/imgui.h>
@@ -42,6 +43,7 @@ namespace Multiplayer
 #ifdef IMGUI_ENABLED
         //! ImGui::ImGuiUpdateListenerBus overrides
         //! @{
+        void OnImGuiInitialize() override;
         void OnImGuiMainMenuUpdate() override;
         void OnImGuiUpdate() override;
         //! @}
@@ -49,5 +51,7 @@ namespace Multiplayer
     private:
         bool m_displayNetworkingStats = false;
         bool m_displayMultiplayerStats = false;
+
+        AZStd::unique_ptr<MultiplayerDiagnostics::MultiplayerDebugPerEntityReporter> m_reporter;
     };
 }

@@ -53,6 +53,11 @@ namespace Multiplayer
 #endif
     }
 
+    void MultiplayerDebugSystemComponent::OnImGuiInitialize()
+    {
+        m_reporter = AZStd::make_unique<MultiplayerDiagnostics::MultiplayerDebugPerEntityReporter>();
+    }
+
 #ifdef IMGUI_ENABLED
     void MultiplayerDebugSystemComponent::OnImGuiMainMenuUpdate()
     {
@@ -317,6 +322,12 @@ namespace Multiplayer
                 }
                 ImGui::End();
             }
+        }
+
+
+        if (m_reporter)
+        {
+            m_reporter->OnImGuiUpdate();
         }
     }
 #endif
