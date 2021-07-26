@@ -274,7 +274,8 @@ namespace AZ::Render
 
         ShadowData& shadowData = m_shadowData.GetElement<ShadowDataIndex>(shadowProperty.m_shadowId.GetIndex());
 
-        // Adjust the manually set bias to a more appropriate range for the shader.
+        // Adjust the manually set bias to a more appropriate range for the shader. Scale the bias by the
+        // near plane so that the bias appears consistent as other light properties change.
         shadowData.m_bias = nearDist * shadowProperty.m_bias * 0.01f;
         
         FilterParameter& esmData = m_shadowData.GetElement<FilterParamIndex>(shadowProperty.m_shadowId.GetIndex());
