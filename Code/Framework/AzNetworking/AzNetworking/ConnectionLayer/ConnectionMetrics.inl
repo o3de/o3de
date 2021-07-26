@@ -40,4 +40,38 @@ namespace AzNetworking
     {
         *this = ConnectionMetrics();
     }
+
+    inline void ConnectionMetrics::LogPacketSent(uint32_t byteCount, AZ::TimeMs currentTimeMs)
+    {
+        if (byteCount > 0)
+        {
+            m_packetsSent++;
+        }
+        m_sendDatarate.LogPacket(byteCount, currentTimeMs);
+    }
+
+    inline void ConnectionMetrics::LogPacketRecv(uint32_t byteCount, AZ::TimeMs currentTimeMs)
+    {
+        if (byteCount > 0)
+        {
+            m_packetsRecv++;
+        }
+        m_recvDatarate.LogPacket(byteCount, currentTimeMs);
+    }
+
+    inline void ConnectionMetrics::LogPacketLost()
+    {
+        m_packetsLost++;
+        m_sendDatarate.LogPacketLost();
+    }
+
+    inline void ConnectionMetrics::LogPacketAcked()
+    {
+        m_packetsAcked++;
+    }
+
+    inline float ConnectionMetrics::GetSentLossRatePercent() const
+    {
+
+    }
 }
