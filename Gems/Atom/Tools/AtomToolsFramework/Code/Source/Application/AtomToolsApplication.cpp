@@ -1,12 +1,18 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of
- * this distribution.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
+#include <Atom/RPI.Edit/Common/AssetUtils.h>
+#include <Atom/RPI.Public/RPISystemInterface.h>
+
+#include <AtomToolsFramework/Util/Util.h>
+#include <AtomToolsFramework/Application/AtomToolsApplication.h>
+
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzFramework/Asset/AssetSystemComponent.h>
 #include <AzFramework/IO/LocalFileIO.h>
@@ -26,15 +32,6 @@
 #include <AzToolsFramework/UI/UICore/QTreeViewStateSaver.hxx>
 #include <AzToolsFramework/UI/UICore/QWidgetSavedState.h>
 
-#include <AtomToolsFramework/Util/Util.h>
-
-#include <Atom/RPI.Edit/Common/AssetUtils.h>
-#include <Atom/RPI.Public/RPISystemInterface.h>
-
-#include <AtomToolsFramework/Application/AtomToolsApplication.h>
-
-#include <AzCore/Utils/Utils.h>
-
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QMessageBox>
 #include <QObject>
@@ -42,15 +39,6 @@ AZ_POP_DISABLE_WARNING
 
 namespace AtomToolsFramework
 {
-    //! This function returns the build system target name of "AtomTools
-//    AZStd::string_view GetBuildTargetName()
-//    {
-//#if !defined(LY_CMAKE_TARGET)
-//#error "LY_CMAKE_TARGET must be defined in order to add this source file to a CMake executable target"
-//#endif
-//        return AZStd::string_view{ LY_CMAKE_TARGET };
-//    }
-
     const char* AtomToolsApplication::GetCurrentConfigurationName() const
     {
 #if defined(_RELEASE)
@@ -61,7 +49,6 @@ namespace AtomToolsFramework
         return "ProfileAtomTools";
 #endif
     }
-
 
     AtomToolsApplication::AtomToolsApplication(int* argc, char*** argv)
         : Application(argc, argv)
@@ -152,22 +139,14 @@ namespace AtomToolsFramework
     {
         AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusDisconnect();
-        AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
 
         AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::StartDisconnectingAssetProcessor);
         Application::Destroy();
     }
 
-    void AtomToolsApplication::CompileCriticalAssets()
+    void AtomToolsApplication::CompileCriticalAssets(const AZStd::vector<AZStd::string> &assetFiltersArray)
     {
-        AZ_TracePrintf("AtomTools", "Compiling critical assets.\n");
-
-        // List of common asset filters for things that need to be compiled to run the material editor
-        // Some of these things will not be necessary once we have proper support for queued asset loading and reloading
-        const AZStd::string assetFiltersArray[] = {
-            "passes/",
-            "config/",
-        };
+        AZ_TracePrintf(targetName.c_str(), "Compiling critical assets.\n");
 
         QStringList failedAssets;
 
@@ -208,12 +187,13 @@ namespace AtomToolsFramework
             AZ_Assert(context, "No serialize context");
 
             char resolvedPath[AZ_MAX_PATH_LEN] = "";
+            AZStd::string fileName = "@user@/" + targetName + "UserSettings.xml";
+
             AZ::IO::FileIOBase::GetInstance()->ResolvePath(
-                "@user@/MaterialEditorUserSettings.xml", resolvedPath, AZ_ARRAY_SIZE(resolvedPath));
+                fileName.c_str(), resolvedPath, AZ_ARRAY_SIZE(resolvedPath));
             m_localUserSettings.Save(resolvedPath, context);
         }
     }
-
 
     void AtomToolsApplication::LoadSettings()
     {
@@ -222,7 +202,9 @@ namespace AtomToolsFramework
         AZ_Assert(context, "No serialize context");
 
         char resolvedPath[AZ_MAX_PATH_LEN] = "";
-        AZ::IO::FileIOBase::GetInstance()->ResolvePath("@user@/EditorUserSettings.xml", resolvedPath, AZ_MAX_PATH_LEN);
+        AZStd::string fileName = "@user@/" + targetName + "UserSettings.xml";
+
+        AZ::IO::FileIOBase::GetInstance()->ResolvePath(fileName.c_str(), resolvedPath, AZ_MAX_PATH_LEN);
 
         m_localUserSettings.Load(resolvedPath, context);
         m_localUserSettings.Activate(AZ::UserSettings::CT_LOCAL);
@@ -234,7 +216,7 @@ namespace AtomToolsFramework
     {
         if (m_activatedLocalUserSettings)
         {
-            //SaveSettings();
+            SaveSettings();
             m_localUserSettings.Deactivate();
             AZ::UserSettingsOwnerRequestBus::Handler::BusDisconnect();
             m_activatedLocalUserSettings = false;
@@ -243,6 +225,34 @@ namespace AtomToolsFramework
 
     void AtomToolsApplication::ProcessCommandLine(const AZ::CommandLine& commandLine)
     {
+        const AZStd::string timeoputSwitchName = "timeout";
+        if (commandLine.HasSwitch(timeoputSwitchName))
+        {
+            const AZStd::string& timeoutValue = commandLine.GetSwitchValue(timeoputSwitchName, 0);
+            const uint32_t timeoutInMs = atoi(timeoutValue.c_str());
+            AZ_Printf(targetName.c_str(), "Timeout scheduled, shutting down in %u ms", timeoutInMs);
+            QTimer::singleShot(
+                timeoutInMs,
+                [this]
+                {
+                    AZ_Printf(targetName.c_str(), "Timeout reached, shutting down");
+                    ExitMainLoop();
+                });
+        }
+
+        // Process command line options for running one or more python scripts on startup
+        const AZStd::string runPythonScriptSwitchName = "runpython";
+        size_t runPythonScriptCount = commandLine.GetNumSwitchValues(runPythonScriptSwitchName);
+        for (size_t runPythonScriptIndex = 0; runPythonScriptIndex < runPythonScriptCount; ++runPythonScriptIndex)
+        {
+            const AZStd::string runPythonScriptPath = commandLine.GetSwitchValue(runPythonScriptSwitchName, runPythonScriptIndex);
+            AZStd::vector<AZStd::string_view> runPythonArgs;
+
+            AZ_Printf(targetName.c_str(), "Launching script: %s", runPythonScriptPath.c_str());
+            AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
+                &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs, runPythonScriptPath, runPythonArgs);
+        }
+
         const AZStd::string exitAfterCommandsSwitchName = "exitaftercommands";
         if (commandLine.HasSwitch(exitAfterCommandsSwitchName))
         {
@@ -313,7 +323,9 @@ namespace AtomToolsFramework
             return;
         }
 
-        m_traceLogger.WriteStartupLog("AtomTools.log");
+        AZStd::string fileName = targetName + ".log";
+
+        m_traceLogger.WriteStartupLog(fileName.c_str());
 
         if (!LaunchDiscoveryService())
         {
@@ -330,23 +342,6 @@ namespace AtomToolsFramework
         AZ::RPI::RPISystemInterface::Get()->InitializeSystemAssets();
 
         LoadSettings();
-
-        auto editorPythonEventsInterface = AZ::Interface<AzToolsFramework::EditorPythonEventsInterface>::Get();
-        if (editorPythonEventsInterface)
-        {
-            // The PythonSystemComponent does not call StartPython to allow for lazy python initialization, so start it here
-            // The PythonSystemComponent will call StopPython when it deactivates, so we do not need our own corresponding call to
-            // StopPython
-            editorPythonEventsInterface->StartPython();
-        }
-
-        // Delay execution of commands and scripts post initialization
-        QTimer::singleShot(
-            0,
-            [this]()
-            {
-                ProcessCommandLine(m_commandLine);
-            });
     }
 
     bool AtomToolsApplication::GetAssetDatabaseLocation(AZStd::string& result)
@@ -387,6 +382,34 @@ namespace AtomToolsFramework
         appType.m_maskValue = AZ::ApplicationTypeQuery::Masks::Game;
     }
 
+        void AtomToolsApplication::OnTraceMessage([[maybe_unused]] AZStd::string_view message)
+    {
+#if defined(AZ_ENABLE_TRACING)
+        AZStd::vector<AZStd::string> lines;
+        AzFramework::StringFunc::Tokenize(
+            message, lines, "\n",
+            false, // Keep empty strings
+            false // Keep space strings
+        );
+
+        for (auto& line : lines)
+        {
+            AZ_TracePrintf(targetName.c_str(), "Python: %s\n", line.c_str());
+        }
+#endif
+    }
+
+    void AtomToolsApplication::OnErrorMessage(AZStd::string_view message)
+    {
+        // Use AZ_TracePrintf instead of AZ_Error or AZ_Warning to avoid all the metadata noise
+        OnTraceMessage(message);
+    }
+
+    void AtomToolsApplication::OnExceptionMessage([[maybe_unused]] AZStd::string_view message)
+    {
+        AZ_Error(targetName.c_str(), false, "Python: " AZ_STRING_FORMAT, AZ_STRING_ARG(message));
+    }
+
     // Copied from PyIdleWaitFrames in CryEdit.cpp
     void AtomToolsApplication::PyIdleWaitFrames(uint32_t frames)
     {
@@ -421,5 +444,9 @@ namespace AtomToolsFramework
         Ticker ticker(&loop, frames);
         loop.exec();
     }
-    
+
+    void AtomToolsApplication::setTargetName(AZStd::string newTargetName)
+    {
+        targetName = newTargetName;
+    }
 } // namespace AtomToolsFramework

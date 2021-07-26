@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 #pragma once
 
 #include <AtomToolsFramework/Communication/LocalServer.h>
@@ -25,11 +32,10 @@ namespace AtomToolsFramework
         , protected AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler
         , protected AzFramework::AssetSystemStatusBus::Handler
         , protected AzToolsFramework::EditorPythonConsoleNotificationBus::Handler
-        , protected AZ::Debug::TraceMessageBus::Handler
         , protected AZ::UserSettingsOwnerRequestBus::Handler
     {
     public:
-        AZ_TYPE_INFO(AtomTools::AtomToolsApplication, "{30F90CA5-1253-49B5-8143-19CEE37E22BB}");
+        AZ_TYPE_INFO(AtomTools::AtomToolsApplication, "{A0DF25BA-6F74-4F11-9F85-0F99278D5986}");
 
         using Base = AzFramework::Application;
 
@@ -68,14 +74,24 @@ namespace AtomToolsFramework
         void SaveSettings() override;
         //////////////////////////////////////////////////////////////////////////
 
+        ////////////////////////////////////////////////////////////////////////
+        // EditorPythonConsoleNotificationBus::Handler overrides...
+        void OnTraceMessage(AZStd::string_view message) override;
+        void OnErrorMessage(AZStd::string_view message) override;
+        void OnExceptionMessage(AZStd::string_view message) override;
+        ////////////////////////////////////////////////////////////////////////
+
         virtual void LoadSettings();
         virtual void UnloadSettings();
-        virtual void CompileCriticalAssets();
+        virtual void CompileCriticalAssets(const AZStd::vector<AZStd::string> &assetFiltersArray);
         virtual void ProcessCommandLine(const AZ::CommandLine& commandLine);
         virtual bool LaunchDiscoveryService();
         virtual void StartInternal();
 
         static void PyIdleWaitFrames(uint32_t frames);
+        void setTargetName(AZStd::string newTargetName);
+
+        AZStd::string targetName = "AtomTools";
 
         AzToolsFramework::TraceLogger m_traceLogger;
 

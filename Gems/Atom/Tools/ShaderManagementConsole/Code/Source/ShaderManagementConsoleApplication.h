@@ -7,22 +7,8 @@
 
 #pragma once
 
-#include <AzCore/Component/Entity.h>
-#include <AzCore/Component/TickBus.h>
-#include <AzCore/UserSettings/UserSettingsProvider.h>
-#include <AzCore/Debug/TraceMessageBus.h>
-
-#include <AzFramework/Application/Application.h>
-#include <AzFramework/Asset/AssetSystemBus.h>
-
-#include <AzToolsFramework/API/AssetDatabaseBus.h>
-#include <AzToolsFramework/API/EditorPythonConsoleBus.h>
-#include <AzToolsFramework/Logger/TraceLogger.h>
-
 #include <Atom/Document/ShaderManagementConsoleDocumentSystemRequestBus.h>
 #include <Atom/Window/ShaderManagementConsoleWindowNotificationBus.h>
-
-#include <AzQtComponents/Application/AzQtApplication.h>
 #include <AtomToolsFramework/Application/AtomToolsApplication.h>
 
 #include <QTimer>
@@ -34,7 +20,7 @@ namespace ShaderManagementConsole
         , private ShaderManagementConsoleWindowNotificationBus::Handler
     {
     public:
-        AZ_TYPE_INFO(ShaderManagementConsole::ShaderManagementConsoleApplication, "{30F90CA5-1253-49B5-8143-19CEE37E22BB}");
+        AZ_TYPE_INFO(ShaderManagementConsole::ShaderManagementConsoleApplication, "{A31B1AEB-4DA3-49CD-884A-CC998FF7546F}");
 
         using Base = AzFramework::Application;
 
@@ -45,7 +31,6 @@ namespace ShaderManagementConsole
         // AzFramework::Application
         void CreateStaticModules(AZStd::vector<AZ::Module*>& outModules) override;
         const char* GetCurrentConfigurationName() const override;
-        void Tick(float deltaOverride = -1.f) override;
 
     private:
         //////////////////////////////////////////////////////////////////////////
@@ -63,24 +48,11 @@ namespace ShaderManagementConsole
         void Destroy() override;
         //////////////////////////////////////////////////////////////////////////
 
-        ////////////////////////////////////////////////////////////////////////
-        // EditorPythonConsoleNotificationBus::Handler overrides...
-        void OnTraceMessage(AZStd::string_view message) override;
-        void OnErrorMessage(AZStd::string_view message) override;
-        void OnExceptionMessage(AZStd::string_view message) override;
-        ////////////////////////////////////////////////////////////////////////
-
         //////////////////////////////////////////////////////////////////////////
         // AzFramework::AssetSystemStatusBus::Handler overrides...
         void AssetSystemAvailable() override;
         //////////////////////////////////////////////////////////////////////////
 
-        //////////////////////////////////////////////////////////////////////////
-        // AZ::Debug::TraceMessageBus::Handler overrides...
-        bool OnPrintf(const char* window, const char* message) override;
-        //////////////////////////////////////////////////////////////////////////
-
-        void CompileCriticalAssets() override;
         void ProcessCommandLine();
         void StartInternal() override;
     };

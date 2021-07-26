@@ -70,6 +70,7 @@ namespace ShaderManagementConsole
         : AtomToolsApplication(argc, argv)
     {
         QApplication::setApplicationName("O3DE Shader Management Console");
+        setTargetName("ShaderManagementConsole");
 
         // The settings registry has been created at this point, so add the CMake target
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(
@@ -98,7 +99,6 @@ namespace ShaderManagementConsole
 
         ShaderManagementConsoleWindowNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusDisconnect();
-        AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
 
         AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::StartDisconnectingAssetProcessor);
 
@@ -129,66 +129,28 @@ namespace ShaderManagementConsole
         };
         AzFramework::AssetSystemRequestBus::Broadcast(ConnectToAssetProcessorWithIdentifier);
 
+        // List of common asset filters for things that need to be compiled to run the material editor
+        // Some of these things will not be necessary once we have proper support for queued asset loading and reloading
+        const AZStd::vector<AZStd::string> assetFiltersArray = { "passes/", "config/"};
+
         if (connected)
         {
-            CompileCriticalAssets();
+            CompileCriticalAssets(assetFiltersArray);
         }
 
         AzFramework::AssetSystemStatusBus::Handler::BusDisconnect();
     }
 
-    void ShaderManagementConsoleApplication::CompileCriticalAssets()
-    {
-        AZ_TracePrintf("Shader Management Console", "Compiling critical assets.\n");
-
-        // List of common asset filters for things that need to be compiled to run
-        // Some of these things will not be necessary once we have proper support for queued asset loading and reloading
-        const AZStd::string assetFilterss[] =
-        {
-            "passes/",
-            "config/",
-        };
-
-        QStringList failedAssets;
-
-        // Forced asset processor to synchronously process all critical assets
-        // Note: with AssetManager's current implementation, a compiled asset won't be added in asset registry until next system tick. 
-        // So the asset id won't be found right after CompileAssetSync call. 
-        for (const AZStd::string& assetFilters : assetFilterss)
-        {
-            AZ_TracePrintf("Shader Management Console", "Compiling critical asset matching: %s.\n", assetFilters.c_str());
-
-            // Wait for the asset be compiled
-            AzFramework::AssetSystem::AssetStatus status = AzFramework::AssetSystem::AssetStatus_Unknown;
-            AzFramework::AssetSystemRequestBus::BroadcastResult(
-                status, &AzFramework::AssetSystemRequestBus::Events::CompileAssetSync, assetFilters);
-            if (status != AzFramework::AssetSystem::AssetStatus_Compiled)
-            {
-                failedAssets.append(assetFilters.c_str());
-            }
-        }
-
-        if (!failedAssets.empty())
-        {
-            QMessageBox::critical(activeWindow(),
-                QString("Failed to compile critical assets"),
-                QString("Failed to compile the following critical assets:\n%1\n%2")
-                .arg(failedAssets.join(",\n"))
-                .arg("Make sure this is an Atom project."));
-            ExitMainLoop();
-        }
-    }
-
-    bool ShaderManagementConsoleApplication::OnPrintf(const char* window, const char* /*message*/)
-    {
-        // Suppress spam from the Source Control system
-        if (0 == strncmp(window, AzToolsFramework::SCC_WINDOW, AZ_ARRAY_SIZE(AzToolsFramework::SCC_WINDOW)))
-        {
-            return true;
-        }
-
-        return false;
-    }
+//    bool ShaderManagementConsoleApplication::OnPrintf(const char* window, const char* /*message*/)
+//    {
+//        // Suppress spam from the Source Control system
+//        if (0 == strncmp(window, AzToolsFramework::SCC_WINDOW, AZ_ARRAY_SIZE(AzToolsFramework::SCC_WINDOW)))
+//        {
+//            return true;
+//        }
+//
+//        return false;
+//    }
 
     void ShaderManagementConsoleApplication::ProcessCommandLine()
     {
@@ -262,47 +224,5 @@ namespace ShaderManagementConsole
         }
 
         return false;
-    }
-
-    void ShaderManagementConsoleApplication::Tick(float deltaOverride)
-    {
-        TickSystem();
-        Application::Tick(deltaOverride);
-
-        if (WasExitMainLoopRequested())
-        {
-            m_timer.disconnect();
-            quit();
-        }
-    }
-
-    void ShaderManagementConsoleApplication::OnTraceMessage([[maybe_unused]] AZStd::string_view message)
-    {
-#if defined(AZ_ENABLE_TRACING)
-        AZStd::vector<AZStd::string> lines;
-        AzFramework::StringFunc::Tokenize(
-            message,
-            lines,
-            "\n",
-            false, // Keep empty strings
-            false // Keep space strings
-        );
-
-        for (auto& line : lines)
-        {
-            AZ_TracePrintf("Shader Management Console", "Python: %s\n", line.c_str());
-        }
-#endif
-    }
-
-    void ShaderManagementConsoleApplication::OnErrorMessage(AZStd::string_view message)
-    {
-        // Use AZ_TracePrintf instead of AZ_Error or AZ_Warning to avoid all the metadata noise
-        OnTraceMessage(message);
-    }
-
-    void ShaderManagementConsoleApplication::OnExceptionMessage([[maybe_unused]] AZStd::string_view message)
-    {
-        AZ_Error("Shader Management Console", false, "Python: " AZ_STRING_FORMAT, AZ_STRING_ARG(message));
     }
 } // namespace ShaderManagementConsole

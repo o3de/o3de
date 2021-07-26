@@ -5,7 +5,22 @@
  *
  */
 
+#include <AtomToolsFramework/Util/Util.h>
+
+#include <Atom/RPI.Edit/Common/AssetUtils.h>
+#include <Atom/RPI.Public/RPISystemInterface.h>
+
+#include <Atom/Document/MaterialDocumentModule.h>
+#include <Atom/Document/MaterialDocumentSystemRequestBus.h>
+
+#include <Atom/Viewport/MaterialViewportModule.h>
+
+#include <Atom/Window/MaterialEditorWindowModule.h>
+#include <Atom/Window/MaterialEditorWindowFactoryRequestBus.h>
+#include <Atom/Window/MaterialEditorWindowRequestBus.h>
+
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/IO/LocalFileIO.h>
@@ -25,23 +40,8 @@
 #include <AzToolsFramework/UI/PropertyEditor/PropertyManagerComponent.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 
-#include <AtomToolsFramework/Util/Util.h>
-
-#include <Atom/RPI.Edit/Common/AssetUtils.h>
-#include <Atom/RPI.Public/RPISystemInterface.h>
-
 #include <Source/MaterialEditorApplication.h>
 #include <MaterialEditor_Traits_Platform.h>
-
-#include <Atom/Document/MaterialDocumentModule.h>
-#include <Atom/Document/MaterialDocumentSystemRequestBus.h>
-
-#include <Atom/Viewport/MaterialViewportModule.h>
-
-#include <Atom/Window/MaterialEditorWindowModule.h>
-#include <Atom/Window/MaterialEditorWindowFactoryRequestBus.h>
-#include <Atom/Window/MaterialEditorWindowRequestBus.h>
-#include <AzCore/Utils/Utils.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QObject>
@@ -75,6 +75,7 @@ namespace MaterialEditor
 
     {
         QApplication::setApplicationName("O3DE Material Editor");
+        setTargetName("MaterialEditor");
 
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(
             *AZ::SettingsRegistry::Get(), GetBuildTargetName());
@@ -95,8 +96,7 @@ namespace MaterialEditor
 
     void MaterialEditorApplication::CreateStaticModules(AZStd::vector<AZ::Module*>& outModules)
     {
-        Application::CreateStaticModules(outModules);
-        outModules.push_back(aznew AzToolsFramework::AzToolsFrameworkModule);
+        Base::CreateStaticModules(outModules);
         outModules.push_back(aznew MaterialDocumentModule);
         outModules.push_back(aznew MaterialViewportModule);
         outModules.push_back(aznew MaterialEditorWindowModule);
@@ -108,14 +108,7 @@ namespace MaterialEditor
             //[GFX TODO][ATOM-408] This needs to be updated in some way to support the MaterialViewport render widget
         }
 
-        AzFramework::AssetSystemStatusBus::Handler::BusConnect();
-        AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusConnect();
-
-        AzFramework::Application::StartCommon(systemEntity);
-
-        StartInternal();
-
-        m_timer.start();
+        Base::StartCommon(systemEntity);
     }
 
     void MaterialEditorApplication::OnMaterialEditorWindowClosing()
@@ -129,16 +122,9 @@ namespace MaterialEditor
         MaterialEditor::MaterialEditorWindowFactoryRequestBus::Broadcast(
             &MaterialEditor::MaterialEditorWindowFactoryRequestBus::Handler::DestroyMaterialEditorWindow);
 
-        AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();
-        AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusDisconnect();
         MaterialEditorWindowNotificationBus::Handler::BusDisconnect();
-        AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
 
-        m_logFile = {};
-        m_startupLogSink = {};
-
-        AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::StartDisconnectingAssetProcessor);
-        Application::Destroy();
+        Base::Destroy();
     }
 
     void MaterialEditorApplication::AssetSystemAvailable()
@@ -160,75 +146,17 @@ namespace MaterialEditor
         };
         AzFramework::AssetSystemRequestBus::BroadcastResult(connectedToAssetProcessor,
             &AzFramework::AssetSystemRequestBus::Events::EstablishAssetProcessorConnection, connectionSettings);
-        if (connectedToAssetProcessor)
-        {
-            CompileCriticalAssets();
-        }
-
-        AzFramework::AssetSystemStatusBus::Handler::BusDisconnect();
-    }
-
-
-    void MaterialEditorApplication::CompileCriticalAssets()
-    {
-        AZ_TracePrintf("MaterialEditor", "Compiling critical assets.\n");
 
         // List of common asset filters for things that need to be compiled to run the material editor
         // Some of these things will not be necessary once we have proper support for queued asset loading and reloading
-        const AZStd::string assetFiltersArray[] =
+        const AZStd::vector<AZStd::string> assetFiltersArray = { "passes/", "config/", "MaterialEditor/" };
+
+        if (connectedToAssetProcessor)
         {
-            "passes/",
-            "config/",
-            "MaterialEditor/",
-        };
-
-        QStringList failedAssets;
-
-        // Forced asset processor to synchronously process all critical assets
-        // Note: with AssetManager's current implementation, a compiled asset won't be added in asset registry until next system tick. 
-        // So the asset id won't be found right after CompileAssetSync call. 
-        for (const AZStd::string& assetFilters : assetFiltersArray)
-        {
-            AZ_TracePrintf("MaterialEditor", "Compiling critical asset matching: %s.\n", assetFilters.c_str());
-
-            // Wait for the asset be compiled
-            AzFramework::AssetSystem::AssetStatus status = AzFramework::AssetSystem::AssetStatus_Unknown;
-            AzFramework::AssetSystemRequestBus::BroadcastResult(
-                status, &AzFramework::AssetSystemRequestBus::Events::CompileAssetSync, assetFilters);
-            if (status != AzFramework::AssetSystem::AssetStatus_Compiled)
-            {
-                failedAssets.append(assetFilters.c_str());
-            }
+            CompileCriticalAssets(assetFiltersArray);
         }
 
-        if (!failedAssets.empty())
-        {
-            QMessageBox::critical(activeWindow(),
-                QString("Failed to compile critical assets"),
-                QString("Failed to compile the following critical assets:\n%1\n%2")
-                .arg(failedAssets.join(",\n"))
-                .arg("Make sure this is an Atom project."));
-            ExitMainLoop();
-        }
-    }
-
-    bool MaterialEditorApplication::OnOutput(const char* window, const char* message)
-    {
-        // Suppress spam from the Source Control system
-        if (0 == strncmp(window, AzToolsFramework::SCC_WINDOW, AZ_ARRAY_SIZE(AzToolsFramework::SCC_WINDOW)))
-        {
-            return true;
-        }
-
-        if (m_logFile)
-        {
-            m_logFile->AppendLog(AzFramework::LogFile::SEV_NORMAL, window, message);
-        }
-        else
-        {
-            m_startupLogSink.push_back({ window, message });
-        }
-        return false;
+        AzFramework::AssetSystemStatusBus::Handler::BusDisconnect();
     }
 
     void MaterialEditorApplication::ProcessCommandLine(const AZ::CommandLine& commandLine)
@@ -286,27 +214,7 @@ namespace MaterialEditor
 
     void MaterialEditorApplication::StartInternal()
     {
-        if (WasExitMainLoopRequested())
-        {
-            return;
-        }
-
-        m_traceLogger.WriteStartupLog("MaterialEditor.log");
-
-        if (!LaunchDiscoveryService())
-        {
-            ExitMainLoop();
-            return;
-        }
-
-        AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusConnect();
-        AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotificationBus::Broadcast(&AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotifications::OnDatabaseInitialized);
-
-        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::LoadCatalog, "@assets@/assetcatalog.xml");
-
-        AZ::RPI::RPISystemInterface::Get()->InitializeSystemAssets();
-
-        LoadSettings();
+        Base::StartInternal();
 
         MaterialEditorWindowNotificationBus::Handler::BusConnect();
 
@@ -325,54 +233,11 @@ namespace MaterialEditor
         QTimer::singleShot(0, [this]() { ProcessCommandLine(m_commandLine); });
     }
 
-    void MaterialEditorApplication::Tick(float deltaOverride)
-    {
-        TickSystem();
-        Application::Tick(deltaOverride);
-
-        if (WasExitMainLoopRequested())
-        {
-            m_timer.disconnect();
-            quit();
-        }
-    }
-
     void MaterialEditorApplication::Stop()
     {
         MaterialEditor::MaterialEditorWindowFactoryRequestBus::Broadcast(
             &MaterialEditor::MaterialEditorWindowFactoryRequestBus::Handler::DestroyMaterialEditorWindow);
 
-        UnloadSettings();
-        AzFramework::Application::Stop();
-    }
-
-    void MaterialEditorApplication::OnTraceMessage([[maybe_unused]] AZStd::string_view message)
-    {
-#if defined(AZ_ENABLE_TRACING)
-        AZStd::vector<AZStd::string> lines;
-        AzFramework::StringFunc::Tokenize(
-            message,
-            lines,
-            "\n",
-            false, // Keep empty strings
-            false // Keep space strings
-        );
-
-        for (auto& line : lines)
-        {
-            AZ_TracePrintf("MaterialEditor", "Python: %s\n", line.c_str());
-        }
-#endif
-    }
-
-    void MaterialEditorApplication::OnErrorMessage(AZStd::string_view message)
-    {
-        // Use AZ_TracePrintf instead of AZ_Error or AZ_Warning to avoid all the metadata noise
-        OnTraceMessage(message);
-    }
-
-    void MaterialEditorApplication::OnExceptionMessage([[maybe_unused]] AZStd::string_view message)
-    {
-        AZ_Error("MaterialEditor", false, "Python: " AZ_STRING_FORMAT, AZ_STRING_ARG(message));
+        Base::Stop();
     }
 } // namespace MaterialEditor

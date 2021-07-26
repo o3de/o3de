@@ -9,19 +9,6 @@
 
 #include <Atom/Document/MaterialDocumentSystemRequestBus.h>
 #include <Atom/Window/MaterialEditorWindowNotificationBus.h>
-#include <AtomToolsFramework/Communication/LocalServer.h>
-#include <AtomToolsFramework/Communication/LocalSocket.h>
-#include <AzCore/Component/Entity.h>
-#include <AzCore/Component/TickBus.h>
-#include <AzCore/Debug/TraceMessageBus.h>
-#include <AzCore/UserSettings/UserSettingsProvider.h>
-#include <AzFramework/Application/Application.h>
-#include <AzFramework/Asset/AssetSystemBus.h>
-#include <AzFramework/Logging/LogFile.h>
-#include <AzToolsFramework/API/AssetDatabaseBus.h>
-#include <AzToolsFramework/API/EditorPythonConsoleBus.h>
-#include <AzToolsFramework/Logger/TraceLogger.h>
-#include <AzQtComponents/Application/AzQtApplication.h>
 #include <AtomToolsFramework/Application/AtomToolsApplication.h>
 
 #include <QTimer>
@@ -47,7 +34,6 @@ namespace MaterialEditor
         void CreateStaticModules(AZStd::vector<AZ::Module*>& outModules) override;
         const char* GetCurrentConfigurationName() const override;
         void StartCommon(AZ::Entity* systemEntity) override;
-        void Tick(float deltaOverride = -1.f) override;
         void Stop() override;
 
     private:
@@ -61,34 +47,12 @@ namespace MaterialEditor
         void Destroy() override;
         //////////////////////////////////////////////////////////////////////////
 
-        ////////////////////////////////////////////////////////////////////////
-        // EditorPythonConsoleNotificationBus::Handler overrides...
-        void OnTraceMessage(AZStd::string_view message) override;
-        void OnErrorMessage(AZStd::string_view message) override;
-        void OnExceptionMessage(AZStd::string_view message) override;
-        ////////////////////////////////////////////////////////////////////////
-
         //////////////////////////////////////////////////////////////////////////
         // AzFramework::AssetSystemStatusBus::Handler overrides...
         void AssetSystemAvailable() override;
         //////////////////////////////////////////////////////////////////////////
 
-        //////////////////////////////////////////////////////////////////////////
-        // AZ::Debug::TraceMessageBus::Handler overrides...
-        bool OnOutput(const char* window, const char* message) override;
-        ////////////////////////////////////////////////////////////////////////// 
-
-        void CompileCriticalAssets() override;
         void ProcessCommandLine(const AZ::CommandLine& commandLine) override;
         void StartInternal() override;
-
-        struct LogMessage
-        {
-            AZStd::string window;
-            AZStd::string message;
-        };
-
-        AZStd::vector<LogMessage> m_startupLogSink;
-        AZStd::unique_ptr<AzFramework::LogFile> m_logFile;
-    };
+     };
 } // namespace MaterialEditor
