@@ -5,8 +5,6 @@
  *
  */
 
-#include "StdAfx.h"
-
 #include <Asset/BlastChunksAsset.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 

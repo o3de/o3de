@@ -4,8 +4,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "StdAfx.h"
-
 #include <Editor/EditorBlastChunksAssetHandler.h>
 #include <Editor/EditorBlastMeshDataComponent.h>
 #include <Asset/BlastChunksAsset.h>
