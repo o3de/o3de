@@ -143,7 +143,10 @@ function(ly_pip_install_local_package_editable package_folder_path pip_package_n
     # we only ever need to do this once per runtime install, since its a link
     # not an actual install:
 
-    if(EXISTS ${stamp_file})
+    # If setup.py changes we must reinstall the package in case its dependencies changed
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${package_folder_path}/setup.py)
+
+    if(EXISTS ${stamp_file} AND ${stamp_file} IS_NEWER_THAN ${package_folder_path}/setup.py)
         ly_package_is_newer_than(${LY_PYTHON_PACKAGE_NAME} ${stamp_file} package_is_newer)
         if (NOT package_is_newer)
             # no need to run the command again, as the package is older than the stamp file

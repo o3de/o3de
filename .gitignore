@@ -1,8 +1,10 @@
 .idea/
+.vs/
 .vscode/
 __pycache__
 AssetProcessorTemp/**
 [Bb]uild/**
+[Oo]ut/**
 [Cc]ache/
 /install/
 Editor/EditorEventLog.xml

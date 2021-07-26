@@ -8,7 +8,6 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 # Test case ID : C111111
 # Test Case Title : Check that Gravity works
 
-
 # fmt:off
 class Tests:
     enter_game_mode          = ("Entered game mode",        "Failed to enter game mode")
@@ -83,7 +82,6 @@ def C111111_RigidBody_EnablingGravityWorksUsingNotificationsPoC():
 
     # 7) Exit game mode
     helper.exit_game_mode(Tests.exit_game_mode)
-
 
 if __name__ == "__main__":
     import ImportPathHelper as imports

@@ -453,8 +453,8 @@ namespace AZ
                 JsonSerializerSettings serializationSettings;
                 serializationSettings.m_keepDefaults = true;
 
-                TimestampSerializer timestapSerializer(CollectPassesRecursively(root));
-                const auto saveResult = JsonSerializationUtils::SaveObjectToFile(&timestapSerializer,
+                TimestampSerializer timestampSerializer(CollectPassesRecursively(root));
+                const auto saveResult = JsonSerializationUtils::SaveObjectToFile(&timestampSerializer,
                     outputFilePath, (TimestampSerializer*)nullptr, &serializationSettings);
 
                 AZStd::string captureInfo = outputFilePath;

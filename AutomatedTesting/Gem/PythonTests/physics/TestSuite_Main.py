@@ -44,11 +44,6 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
-    def test_C15425929_Undo_Redo(self, request, workspace, editor, launcher_platform):
-        from . import C15425929_Undo_Redo as test_module
-        self._run_test(request, workspace, editor, test_module)
-        
-    @revert_physics_config
     def test_C4976243_Collision_SameCollisionGroupDiffCollisionLayers(self, request, workspace, editor,
                                                                       launcher_platform):
         from . import C4976243_Collision_SameCollisionGroupDiffCollisionLayers as test_module

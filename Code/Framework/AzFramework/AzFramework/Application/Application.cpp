@@ -707,25 +707,23 @@ namespace AzFramework
                 }
             }
 
-            if (AZ::IO::FixedMaxPath projectUserPath;
-                m_settingsRegistry->Get(projectUserPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath))
+            AZ::IO::FixedMaxPath engineRoot = GetEngineRoot();
+            AZ::IO::FixedMaxPath projectUserPath;
+            if (!m_settingsRegistry->Get(projectUserPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath))
             {
-                fileIoBase->SetAlias("@user@", projectUserPath.c_str());
-                AZ::IO::FixedMaxPath projectLogPath = projectUserPath / "log";
-                fileIoBase->SetAlias("@log@", projectLogPath.c_str());
-                fileIoBase->CreatePath(projectLogPath.c_str()); // Create the log directory at this point
+                projectUserPath = engineRoot / "user";
+            }
+            fileIoBase->SetAlias("@user@", projectUserPath.c_str());
+            fileIoBase->CreatePath(projectUserPath.c_str());
+            CreateUserCache(projectUserPath, *fileIoBase);
 
-                CreateUserCache(projectUserPath, *fileIoBase);
-            }
-            else
+            AZ::IO::FixedMaxPath projectLogPath;
+            if (!m_settingsRegistry->Get(projectLogPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectLogPath))
             {
-                AZ::IO::FixedMaxPath fallbackLogPath = GetEngineRoot();
-                fallbackLogPath /= "user";
-                fileIoBase->SetAlias("@user@", fallbackLogPath.c_str());
-                fallbackLogPath /= "log";
-                fileIoBase->SetAlias("@log@", fallbackLogPath.c_str());
-                fileIoBase->CreatePath(fallbackLogPath.c_str());
+                projectLogPath = projectUserPath / "log";
             }
+            fileIoBase->SetAlias("@log@", projectLogPath.c_str());
+            fileIoBase->CreatePath(projectLogPath.c_str());
         }
     }
 

@@ -6,13 +6,11 @@
  *
  */
 
-
 #include "ViewportUiWidgetCallbacks.h"
 
 namespace AzToolsFramework::ViewportUi::Internal
 {
-    void ViewportUiWidgetCallbacks::AddWidget(
-        QPointer<QObject> widget, const AZStd::function<void(QPointer<QObject>)>& updateCallback)
+    void ViewportUiWidgetCallbacks::AddWidget(QPointer<QObject> widget, const AZStd::function<void(QPointer<QObject>)>& updateCallback)
     {
         if (widget.isNull())
         {
@@ -40,7 +38,7 @@ namespace AzToolsFramework::ViewportUi::Internal
     {
         // if widget exists on the manager, register the callback
         auto callBackWidget = AZStd::find(m_widgets.begin(), m_widgets.end(), widget);
-        AZ_Assert(callBackWidget != m_widgets.end(), "Unable to register a callback for an unregistered widget.")
+        AZ_Assert(callBackWidget != m_widgets.end(), "Unable to register a callback for an unregistered widget.");
 
         if (callBackWidget != m_widgets.end())
         {
@@ -58,8 +56,7 @@ namespace AzToolsFramework::ViewportUi::Internal
                 RemoveWidget(widget);
             }
             // check if the widget has not been deleted externally
-            else if (auto callback = m_updateCallbacks.find(widget);
-                callback != m_updateCallbacks.end())
+            else if (auto callback = m_updateCallbacks.find(widget); callback != m_updateCallbacks.end())
             {
                 callback->second(widget);
             }
