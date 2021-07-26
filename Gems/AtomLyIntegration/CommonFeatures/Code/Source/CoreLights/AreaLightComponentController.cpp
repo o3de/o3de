@@ -68,6 +68,8 @@ namespace AZ::Render
 
                 ->Event("GetEnableShadow", &AreaLightRequestBus::Events::GetEnableShadow)
                 ->Event("SetEnableShadow", &AreaLightRequestBus::Events::SetEnableShadow)
+                ->Event("GetShadowBias", &AreaLightRequestBus::Events::GetShadowBias)
+                ->Event("SetShadowBias", &AreaLightRequestBus::Events::SetShadowBias)
                 ->Event("GetShadowmapMaxSize", &AreaLightRequestBus::Events::GetShadowmapMaxSize)
                 ->Event("SetShadowmapMaxSize", &AreaLightRequestBus::Events::SetShadowmapMaxSize)
                 ->Event("GetShadowFilterMethod", &AreaLightRequestBus::Events::GetShadowFilterMethod)
@@ -94,6 +96,7 @@ namespace AZ::Render
                 ->VirtualProperty("OuterShutterAngle", "GetOuterShutterAngle", "SetOuterShutterAngle")
 
                 ->VirtualProperty("ShadowsEnabled", "GetEnableShadow", "SetEnableShadow")
+                ->VirtualProperty("ShadowBias", "GetShadowBias", "SetShadowBias")
                 ->VirtualProperty("ShadowmapMaxSize", "GetShadowmapMaxSize", "SetShadowmapMaxSize")
                 ->VirtualProperty("ShadowFilterMethod", "GetShadowFilterMethod", "SetShadowFilterMethod")
                 ->VirtualProperty("SofteningBoundaryWidthAngle", "GetSofteningBoundaryWidthAngle", "SetSofteningBoundaryWidthAngle")
