@@ -218,19 +218,14 @@ namespace ScriptCanvasEditor
 
                     if (!reporter.IsProcessOnly())
                     {
-                        dependencies = LoadInterpretedDepencies(luaAssetResult.m_dependencies.source.userSubgraphs);
-
                         RuntimeDataOverrides runtimeDataOverrides;
                         runtimeDataOverrides.m_runtimeAsset = loadResult.m_runtimeAsset;
 
-                        if (!dependencies.empty())
-                        {
-                           
 #if defined(LINUX) //////////////////////////////////////////////////////////////////////////
-
-                            // Temporarily disable testing on the Linux build until the casing discrepancy
-                            // is sorted out through the SC build and testing pipeline.
-
+                        // Temporarily disable testing on the Linux build until the file name casing discrepancy
+                        // is sorted out through the SC build and testing pipeline.
+                        if (!luaAssetResult.m_dependencies.source.userSubgraphs.empty())
+                        {
                             auto graphEntityId = AZ::Entity::MakeId();
                             reporter.SetGraph(graphEntityId);
                             loadResult.m_entity->Activate();
@@ -239,8 +234,13 @@ namespace ScriptCanvasEditor
                             reporter.FinishReport();
                             ScriptCanvas::SystemRequestBus::Broadcast(&ScriptCanvas::SystemRequests::MarkScriptUnitTestEnd);
                             return;
+                        }
 #else ///////////////////////////////////////////////////////////////////////////////////////
 
+                        dependencies = LoadInterpretedDepencies(luaAssetResult.m_dependencies.source.userSubgraphs);
+                        
+                        if (!dependencies.empty())
+                        {
                             // #functions2_recursive_unit_tests eventually, this will need to be recursive, or the full asset handling system will need to be integrated into the testing framework
                             // in order to test functionality with a dependency stack greater than 2
 
@@ -274,8 +274,8 @@ namespace ScriptCanvasEditor
                                 Execution::Context::InitializeActivationData(dependencyData);
                                 Execution::InitializeInterpretedStatics(dependencyData);
                             }
-#endif //////////////////////////////////////////////////////////////////////////////////////
                         }
+#endif //////////////////////////////////////////////////////////////////////////////////////
 
                         loadResult.m_scriptAsset = luaAssetResult.m_scriptAsset;
                         loadResult.m_runtimeAsset.Get()->GetData().m_script = loadResult.m_scriptAsset;
