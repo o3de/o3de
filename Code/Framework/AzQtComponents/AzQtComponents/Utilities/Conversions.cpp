@@ -43,7 +43,7 @@ namespace AzQtComponents
     {
         const QChar decimalPoint = locale.decimalPoint();
         const QChar zeroDigit = locale.zeroDigit();
-        const int numToStringDecimals = numDecimals < 8 ? 8 : numDecimals;
+        const int numToStringDecimals = AZStd::max(numDecimals, 20);
 
         // We want to truncate, not round. toString will round, so we add extra decimal places to the formatting
         // so we can remove the last values
