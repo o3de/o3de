@@ -44,6 +44,10 @@ namespace AZ::SettingsRegistryMergeUtils
     //! project settings can be stored
     inline static constexpr char FilePathKey_ProjectUserPath[] = "/Amazon/AzCore/Runtime/FilePaths/SourceProjectUserPath";
 
+    //! Store the absolute path to the Projects "log" directory, which is a transient directory where per user
+    //! logs can be stored. By default this would be on "{FilePathKey_ProjectUserPath}/log"
+    inline static constexpr char FilePathKey_ProjectLogPath[] = "/Amazon/AzCore/Runtime/FilePaths/SourceProjectLogPath";
+
     //! User facing key which represents the root of a project cmake build tree. i.e the ${CMAKE_BINARY_DIR}
     //! A relative path is taking relative to the *project* root, NOT *engine* root.
     inline constexpr AZStd::string_view ProjectBuildPath = "/Amazon/Project/Settings/Build/project_build_path";

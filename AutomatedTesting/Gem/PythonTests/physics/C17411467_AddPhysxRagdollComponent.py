@@ -20,7 +20,7 @@ class Tests():
 # fmt: on
 
 
-def run():
+def C17411467_AddPhysxRagdollComponent():
     """
     Summary:
     Load level with Entity having Actor, AnimGraph and PhysX Ragdoll components.
@@ -93,4 +93,8 @@ def run():
 
 
 if __name__ == "__main__":
-    run()
+    import ImportPathHelper as imports
+    imports.init()
+
+    from editor_python_test_tools.utils import Report
+    Report.start_test(C17411467_AddPhysxRagdollComponent)

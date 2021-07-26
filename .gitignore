@@ -16,6 +16,8 @@ UserSettings.xml
 FrameCapture/**
 .DS_Store
 user*.cfg
+client*.cfg
+server*.cfg
 .mayaSwatches/
 _savebackup/
 #Output folder for test results when running Automated Tests

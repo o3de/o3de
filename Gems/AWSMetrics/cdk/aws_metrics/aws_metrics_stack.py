@@ -43,9 +43,11 @@ class AWSMetricsStack(core.Stack):
         )
 
         batch_processing_enabled = optional_features.get('batch_processing', False)
+        server_access_logs_bucket = optional_features.get('server_access_logs_bucket')
         self._data_lake_integration = DataLakeIntegration(
             self,
-            application_name=application_name
+            application_name=application_name,
+            server_access_logs_bucket=server_access_logs_bucket
         ) if batch_processing_enabled else None
 
         self._batch_processing = BatchProcessing(
