@@ -12,7 +12,7 @@
 ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
 ly_get_list_relative_pal_filename(common_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/Common)
 
-if(LY_ENABLE_RAD_TELEMETRY)
+if(LY_RAD_TELEMETRY_ENABLED)
     set(AZ_CORE_RADTELEMETRY_FILES ${common_dir}/azcore_profile_telemetry_files.cmake)
     set(AZ_CORE_RADTELEMETRY_PLATFORM_INCLUDES ${pal_dir}/profile_telemetry_platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
     set(AZ_CORE_RADTELEMETRY_INCLUDE_DIRECTORIES ${common_dir})
