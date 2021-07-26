@@ -64,7 +64,7 @@ namespace Camera
         virtual float GetFrustumHeight() = 0;
 
         //! Gets whether or not the camera is using an orthographic projection.
-        //! @return True if the camera is using an orthographic projecetion, or false if the camera is a using a perspective projection.
+        //! @return True if the camera is using an orthographic projection, or false if the camera is using a perspective projection.
         virtual bool IsOrthographic() = 0;
 
         //! @return The half width of the orthographic projection, @see SetOrthographicHalfWidth.
