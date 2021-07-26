@@ -103,6 +103,11 @@ namespace PrefabDependencyViewer::Utils
             }
             else
             {
+                if (m_root)
+                {
+                    AZ_Assert(false, "Prefab Dependency Viewer - Memory leak in the graph because the root was already set.");
+                }
+
                 m_root = child;
             }
         }
