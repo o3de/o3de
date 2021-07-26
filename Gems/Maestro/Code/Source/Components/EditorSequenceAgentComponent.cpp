@@ -19,6 +19,7 @@
 #include <AzCore/Component/Entity.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <Maestro/Types/AnimParamType.h>
+#include <AzToolsFramework/Editor/Settings/EditorSettingsContext.h>
 #include <AzToolsFramework/ToolsComponents/EditorDisabledCompositionBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorPendingCompositionComponent.h>
 #include <AzToolsFramework/Undo/UndoCacheInterface.h>
@@ -48,6 +49,15 @@ namespace Maestro
                     ->Attribute(AZ::Edit::Attributes::AddableByUser, false)     // SequenceAgents are only added by TrackView
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }
+        }
+
+        AzToolsFramework::EditorSettingsContext* settingsContext = azrtti_cast<AzToolsFramework::EditorSettingsContext*>(context);
+        if (settingsContext)
+        {
+            settingsContext->Setting<int>("Left Side Category", "Right Side Category", "Gem Setting", "The description for this setting.")
+                ->Attribute(AzToolsFramework::SettingProperty::Min, 0)
+                ->Attribute(AzToolsFramework::SettingProperty::Max, 100)
+                ->Attribute(AzToolsFramework::SettingProperty::Step, 5);
         }
     }
 

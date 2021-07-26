@@ -12,6 +12,7 @@
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
+#include <AzToolsFramework/Editor/Settings/EditorSettingsContext.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityIdMapper.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceSerializer.h>
 #include <AzToolsFramework/Prefab/Spawnable/EditorInfoRemover.h>
@@ -66,6 +67,15 @@ namespace AzToolsFramework
             if (jsonRegistration)
             {
                 jsonRegistration->Serializer<JsonInstanceSerializer>()->HandlesType<Instance>();
+            }
+
+            AzToolsFramework::EditorSettingsContext* settingsContext = azrtti_cast<AzToolsFramework::EditorSettingsContext*>(context);
+            if (settingsContext)
+            {
+                settingsContext->Setting<int>("Left Side Category", "Right Side Category", "Setting Name", "The description for this setting.")
+                    ->Attribute(AzToolsFramework::SettingProperty::Min, 0)
+                    ->Attribute(AzToolsFramework::SettingProperty::Max, 100)
+                    ->Attribute(AzToolsFramework::SettingProperty::Step, 5);
             }
         }
 

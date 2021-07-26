@@ -16,6 +16,7 @@
 #include <AzToolsFramework/API/EditorEntityAPI.h>
 #include <AzToolsFramework/Application/EditorEntityManager.h>
 #include <AzToolsFramework/Commands/PreemptiveUndoCache.h>
+#include <AzToolsFramework/Editor/Settings/EditorSettingsManager.h>
 
 #pragma once
 
@@ -184,6 +185,7 @@ namespace AzToolsFramework
         EditorEntityAPI* m_editorEntityAPI = nullptr;
 
         EditorEntityManager m_editorEntityManager;
+        Editor::EditorSettingsManager m_editorSettingsManager;
 
         UndoSystem::UndoCacheInterface*             m_undoCacheInterface = nullptr;
     };

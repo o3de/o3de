@@ -165,6 +165,9 @@ AZ_POP_DISABLE_WARNING
 
 #include <AzCore/std/smart_ptr/make_shared.h>
 
+// Test
+#include <AzToolsFramework/Editor/Settings/EditorSettingsInterface.h>
+
 static const char O3DEEditorClassName[] = "O3DEEditorClass";
 static const char O3DEApplicationName[] = "O3DEApplication";
 
@@ -3661,8 +3664,17 @@ void CCryEditApp::OnValidatelevel()
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnToolsPreferences()
 {
+    AzToolsFramework::Editor::EditorSettingsInterface* editorSettingsInterface =
+        AZ::Interface<AzToolsFramework::Editor::EditorSettingsInterface>::Get();
+    if (editorSettingsInterface != nullptr)
+    {
+        editorSettingsInterface->OpenEditorSettingsDialog();
+    }
+
+    /*
     EditorPreferencesDialog dlg(MainWindow::instance());
     dlg.exec();
+    */
 }
 
 //////////////////////////////////////////////////////////////////////////

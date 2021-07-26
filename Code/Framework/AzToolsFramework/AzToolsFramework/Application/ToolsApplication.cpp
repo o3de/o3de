@@ -286,6 +286,7 @@ namespace AzToolsFramework
         }
 
         m_editorEntityManager.Start();
+        m_editorSettingsManager.Start();
 
         m_editorEntityAPI = AZ::Interface<EditorEntityAPI>::Get();
         AZ_Assert(m_editorEntityAPI, "ToolsApplication - Could not retrieve instance of EditorEntityAPI");
