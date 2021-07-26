@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -34,8 +35,8 @@ namespace AZ
                         "Decal (Atom)", "The Decal component allows an entity to project a texture or material onto a mesh")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Atom")
-                        ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.png")
+                        ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Decal.svg")
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Decal.svg")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/atom/decal/")

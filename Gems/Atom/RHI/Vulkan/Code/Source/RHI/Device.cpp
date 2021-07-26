@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "Atom_RHI_Vulkan_precompiled.h"
 #include <Atom/RHI.Loader/FunctionLoader.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/TransientAttachmentPool.h>
@@ -165,12 +165,12 @@ namespace AZ
             VkPhysicalDeviceDepthClipEnableFeaturesEXT depthClipEnabled = {};
             depthClipEnabled.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT;
             depthClipEnabled.depthClipEnable = physicalDevice.GetPhysicalDeviceDepthClipEnableFeatures().depthClipEnable;
-            descriptorIndexingFeatures.pNext = &depthClipEnabled;
+            bufferDeviceAddressFeatures.pNext = &depthClipEnabled;
 
             VkPhysicalDeviceRobustness2FeaturesEXT robustness2 = {};
             robustness2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT;
             robustness2.nullDescriptor = physicalDevice.GetPhysicalDeviceRobutness2Features().nullDescriptor;
-            bufferDeviceAddressFeatures.pNext = &robustness2;
+            depthClipEnabled.pNext = &robustness2;
 
             VkPhysicalDeviceVulkan12Features vulkan12Features = {};
             VkPhysicalDeviceShaderFloat16Int8FeaturesKHR float16Int8 = {};
@@ -815,11 +815,12 @@ namespace AZ
             createInfo.size = descriptor.m_byteCount;
             createInfo.usage = GetBufferUsageFlagBitsUnderRestrictions(descriptor.m_bindFlags);
             // Trying to guess here if the buffers are going to be used as attachments. Maybe it would be better to add an explicit flag in the descriptor.
-            createInfo.sharingMode =
-                RHI::CheckBitsAny(
-                    descriptor.m_bindFlags,
-                    RHI::BufferBindFlags::ShaderWrite | RHI::BufferBindFlags::Predication | RHI::BufferBindFlags::Indirect)
-                ? VK_SHARING_MODE_EXCLUSIVE
+            createInfo.sharingMode = 
+                (RHI::CheckBitsAny(
+                    descriptor.m_bindFlags, 
+                    RHI::BufferBindFlags::ShaderWrite | RHI::BufferBindFlags::Predication | RHI::BufferBindFlags::Indirect) || 
+                    (queueFamilies.size()) <= 1) 
+                ? VK_SHARING_MODE_EXCLUSIVE 
                 : VK_SHARING_MODE_CONCURRENT;
             createInfo.queueFamilyIndexCount = static_cast<uint32_t>(queueFamilies.size());
             createInfo.pQueueFamilyIndices = queueFamilies.empty() ? nullptr : queueFamilies.data();

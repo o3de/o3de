@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,8 +10,6 @@
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/string/string.h>
-
-#include <ScriptCanvas/AWSScriptBehaviorBase.h>
 
 namespace AWSCore
 {
@@ -55,10 +54,14 @@ namespace AWSCore
     };
 
     class AWSScriptBehaviorDynamoDB
-        : public AWSScriptBehaviorBase
     {
     public:
-        AWS_SCRIPT_BEHAVIOR_DEFINITION(AWSScriptBehaviorDynamoDB, "{569E74F6-1268-4199-9653-A3B603FC9F4F}");
+        AZ_RTTI(AWSScriptBehaviorDynamoDB, "{569E74F6-1268-4199-9653-A3B603FC9F4F}");
+
+        AWSScriptBehaviorDynamoDB() = default;
+        virtual ~AWSScriptBehaviorDynamoDB() = default;
+
+        static void Reflect(AZ::ReflectContext* context);
 
         static void GetItem(const AZStd::string& tableResourceKey, const DynamoDBAttributeValueMap& keyMap);
         static void GetItemRaw(const AZStd::string& table, const DynamoDBAttributeValueMap& keyMap, const AZStd::string& region);

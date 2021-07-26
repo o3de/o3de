@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,6 +10,7 @@
 #include <AzCore/std/function/function_base.h>
 #include <AzCore/std/function/invoke.h>
 #include <AzCore/std/typetraits/remove_cvref.h>
+#include <AzCore/std/allocator.h>
 
 #if defined(AZ_COMPILER_MSVC)
 #   pragma warning( push )

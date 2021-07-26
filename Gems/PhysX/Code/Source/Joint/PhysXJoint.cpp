@@ -1,17 +1,18 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include <PhysX_precompiled.h>
 #include <Joint/PhysXJoint.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <Include/PhysX/NativeTypeIdentifiers.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <Source/Joint/PhysXJointUtils.h>
+#include <PhysX/MathConversion.h>
 
 namespace PhysX
 {

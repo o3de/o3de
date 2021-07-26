@@ -1,12 +1,12 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 # Test case ID : C111111
 # Test Case Title : Check that Gravity works
-
 
 # fmt:off
 class Tests:
@@ -82,7 +82,6 @@ def C111111_RigidBody_EnablingGravityWorksUsingNotificationsPoC():
 
     # 7) Exit game mode
     helper.exit_game_mode(Tests.exit_game_mode)
-
 
 if __name__ == "__main__":
     import ImportPathHelper as imports

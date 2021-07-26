@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -29,6 +30,7 @@
 #include <Atom/RPI.Edit/Material/MaterialConverterBus.h>
 
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 
 namespace AZ
 {
@@ -78,7 +80,10 @@ namespace AZ
             jobDependency.m_platformIdentifier = platformIdentifier;
             jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
 
-            jobDependencyList.push_back(jobDependency);
+            if (!materialTypeSource.m_sourceFileDependencyPath.empty())
+            {
+                jobDependencyList.push_back(jobDependency);
+            }
         }
 
         void MaterialAssetBuilderComponent::Reflect(ReflectContext* context)
@@ -103,6 +108,15 @@ namespace AZ
 
         MaterialAssetBuilderComponent::MaterialAssetBuilderComponent()
         {
+            // This setting disables material output (for automated testing purposes) to allow an FBX file to be processed without including
+            // the dozens of dependencies required to process a material.  
+            auto settingsRegistry = AZ::SettingsRegistry::Get();
+            bool skipAtomOutput = false;
+            if (settingsRegistry && settingsRegistry->Get(skipAtomOutput, "/O3DE/SceneAPI/AssetImporter/SkipAtomOutput") && skipAtomOutput)
+            {
+                return;
+            }
+
             BindToCall(&MaterialAssetBuilderComponent::BuildMaterials);
         }
 

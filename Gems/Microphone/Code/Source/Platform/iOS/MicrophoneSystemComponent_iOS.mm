@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include "Microphone_precompiled.h"
 
 #import <Foundation/Foundation.h>
 #import <AudioToolbox/AudioToolbox.h>
@@ -239,7 +238,7 @@ public:
     void ProcessAudio(AudioBufferList* bufferList)
     {
         AudioBuffer sourceBuffer = bufferList->mBuffers[0];
-        m_captureData->AddData((int16*)sourceBuffer.mData, sourceBuffer.mDataByteSize / 2, m_config.m_numChannels);
+        m_captureData->AddData((AZ::s16*)sourceBuffer.mData, sourceBuffer.mDataByteSize / 2, m_config.m_numChannels);
 
     }
 

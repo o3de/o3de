@@ -1,10 +1,12 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Atom_RHI_Vulkan_precompiled.h"
+
+#include "Atom_RHI_Vulkan_Platform.h"
 #include <Atom/RHI/PipelineStateDescriptor.h>
 #include <Atom/RHI.Reflect/ClearValue.h>
 #include <Atom/RHI.Reflect/ImageScopeAttachmentDescriptor.h>
@@ -268,7 +270,7 @@ namespace AZ
                 info.pImageIndices = &imageIndex;
                 info.pResults = nullptr;
 
-                VkResult result = vkQueuePresentKHR(vulkanQueue->GetNativeQueue(), &info);
+                [[maybe_unused]] const VkResult result = vkQueuePresentKHR(vulkanQueue->GetNativeQueue(), &info);
 
                 // Resizing window cause recreation of SwapChain after calling this method,
                 // so VK_SUBOPTIMAL_KHR or VK_ERROR_OUT_OF_DATE_KHR  should not happen at this point.

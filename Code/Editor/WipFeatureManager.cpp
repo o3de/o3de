@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -445,7 +446,7 @@ void CWipFeatureManager::SetFeatureUpdateCallback(int aFeatureId, TWipFeatureUpd
     m_features[aFeatureId].m_pfnUpdateFeature = pfnUpdate;
 }
 
-std::map<int, CWipFeatureManager::SWipFeatureInfo>&  CWipFeatureManager::GetFeatures()
+AZStd::map<int, CWipFeatureManager::SWipFeatureInfo>&  CWipFeatureManager::GetFeatures()
 {
     return m_features;
 }

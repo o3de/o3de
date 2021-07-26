@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -28,10 +29,3 @@ endif()
 ly_set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 ly_set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
 ly_set(CMAKE_INSTALL_RPATH "$ORIGIN")
-
-if(CMAKE_GENERATOR MATCHES "Ninja")
-    if(LY_PARALLEL_LINK_JOBS)
-        set_property(GLOBAL APPEND PROPERTY JOB_POOLS link_job_pool=${LY_PARALLEL_LINK_JOBS})
-        ly_set(CMAKE_JOB_POOL_LINK link_job_pool)
-    endif()
-endif()

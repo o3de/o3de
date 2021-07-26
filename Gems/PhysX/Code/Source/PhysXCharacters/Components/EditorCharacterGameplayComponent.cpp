@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -46,7 +47,7 @@ namespace PhysX
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXCharacter.svg")
-                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/PhysXCharacter.svg")
+                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/PhysXCharacter.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorCharacterGameplayComponent::m_gameplayConfig,
                         "Gameplay Configuration", "Gameplay Configuration")

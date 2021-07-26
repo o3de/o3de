@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -539,7 +540,9 @@ namespace AZ
                 }
                 else
                 {
-                    AZ_Warning(s_builderName, false, "Found multiple tangent data sets. Only the first will be used.");
+                    AZ_Warning(s_builderName, false,
+                        "Found multiple tangent data sets for mesh '%s'. Only the first will be used.",
+                        content.m_name.GetCStr());
                 }
             }
             else if (azrtti_istypeof<BitangentData>(data.get()))
@@ -551,7 +554,9 @@ namespace AZ
                 }
                 else
                 {
-                    AZ_Warning(s_builderName, false, "Found multiple bitangent data sets. Only the first will be used.");
+                    AZ_Warning(s_builderName, false,
+                        "Found multiple bitangent data sets for mesh '%s'. Only the first will be used.",
+                        content.m_name.GetCStr());
                 }
             }
             else if (azrtti_istypeof<MaterialData>(data.get()))
