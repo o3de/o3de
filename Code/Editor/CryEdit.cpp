@@ -164,8 +164,10 @@ AZ_POP_DISABLE_WARNING
 
 #include <AzCore/std/smart_ptr/make_shared.h>
 
-static const char O3DEEditorClassName[] = "O3DEEditorClass";
-static const char O3DEApplicationName[] = "O3DEApplication";
+#include <AzCore/Platform.h>
+
+static const char REngineEditorClassName[] = "REnginEditorClass";
+static const char REngineApplicationName[] = "REngineApplication";
 
 static AZ::EnvironmentVariable<bool> inEditorBatchMode = nullptr;
 
@@ -662,13 +664,13 @@ struct SharedData
 //      article Q141752 to locate the previous instance of the application. .
 BOOL CCryEditApp::FirstInstance(bool bForceNewInstance)
 {
-    QSystemSemaphore sem(QString(O3DEApplicationName) + "_sem", 1);
+    QSystemSemaphore sem(QString(REngineApplicationName) + "_sem", 1);
     sem.acquire();
     {
-        FixDanglingSharedMemory(O3DEEditorClassName);
+        FixDanglingSharedMemory(REngineEditorClassName);
     }
     sem.release();
-    m_mutexApplication = new QSharedMemory(O3DEEditorClassName);
+    m_mutexApplication = new QSharedMemory(REngineEditorClassName);
     if (!m_mutexApplication->create(sizeof(SharedData)) && !bForceNewInstance)
     {
         m_mutexApplication->attach();
@@ -693,7 +695,7 @@ BOOL CCryEditApp::FirstInstance(bool bForceNewInstance)
         sem.release();
         QTimer* t = new QTimer(this);
         connect(t, &QTimer::timeout, this, [this]() {
-            QSystemSemaphore sem(QString(O3DEApplicationName) + "_sem", 1);
+            QSystemSemaphore sem(QString(REngineApplicationName) + "_sem", 1);
             sem.acquire();
             SharedData* data = reinterpret_cast<SharedData*>(m_mutexApplication->data());
             QString preview = QString::fromLatin1(data->text);
@@ -1068,8 +1070,8 @@ BOOL CCryEditApp::CheckIfAlreadyRunning()
 
     if (!m_bPreviewMode)
     {
-        FixDanglingSharedMemory(O3DEApplicationName);
-        m_mutexApplication = new QSharedMemory(O3DEApplicationName);
+        FixDanglingSharedMemory(REngineApplicationName);
+        m_mutexApplication = new QSharedMemory(REngineApplicationName);
         if (!m_mutexApplication->create(16))
         {
             // Don't prompt the user in non-interactive export mode.  Instead, default to allowing multiple instances to
@@ -1654,7 +1656,7 @@ BOOL CCryEditApp::InitInstance()
     GetIEditor()->GetCommandManager()->RegisterAutoCommands();
     GetIEditor()->AddUIEnums();
 
-    mainWindowWrapper->enableSaveRestoreGeometry("O3DE", "O3DE", "mainWindowGeometry");
+    mainWindowWrapper->enableSaveRestoreGeometry(ENGINE_NAME, ENGINE_NAME, "mainWindowGeometry");
     m_pDocManager->OnFileNew();
 
     if (IsInRegularEditorMode())
