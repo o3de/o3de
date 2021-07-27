@@ -29,7 +29,7 @@
         },
         "normal": {
             "flipY": true,
-            "textureMap": "Objects/Lucy/Lucy_normal.png"
+            "textureMap": "Objects/Lucy/Lucy_Normal.png"
         },
         "subsurfaceScattering": {
             "enableSubsurfaceScattering": true,

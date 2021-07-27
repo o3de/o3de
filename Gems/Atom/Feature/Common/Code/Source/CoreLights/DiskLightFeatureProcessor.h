@@ -50,6 +50,7 @@ namespace AZ
             void SetConstrainToConeLight(LightHandle handle, bool useCone) override;
             void SetConeAngles(LightHandle handle, float innerDegrees, float outerDegrees) override;
             void SetShadowsEnabled(LightHandle handle, bool enabled) override;
+            void SetShadowBias(LightHandle handle, float bias) override;
             void SetShadowmapMaxResolution(LightHandle handle, ShadowmapSize shadowmapSize) override;
             void SetShadowFilterMethod(LightHandle handle, ShadowFilterMethod method) override;
             void SetSofteningBoundaryWidthAngle(LightHandle handle, float boundaryWidthRadians) override;
