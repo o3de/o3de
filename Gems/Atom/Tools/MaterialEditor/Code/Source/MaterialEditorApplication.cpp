@@ -93,6 +93,11 @@ namespace MaterialEditor
         AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();
     }
 
+    void MaterialEditorApplication::Reflect(AZ::ReflectContext* context)
+    {
+        Base::Reflect();
+    }
+
     void MaterialEditorApplication::CreateStaticModules(AZStd::vector<AZ::Module*>& outModules)
     {
         Base::CreateStaticModules(outModules);

@@ -98,7 +98,7 @@ namespace AtomToolsFramework
 
     void AtomToolsApplication::RegisterCoreComponents()
     {
-        Application::RegisterCoreComponents();
+        Base::RegisterCoreComponents();
         RegisterComponentDescriptor(AzToolsFramework::AssetBrowser::AssetBrowserComponent::CreateDescriptor());
         RegisterComponentDescriptor(AzToolsFramework::Thumbnailer::ThumbnailerComponent::CreateDescriptor());
         RegisterComponentDescriptor(AzToolsFramework::Components::PropertyManagerComponent::CreateDescriptor());
@@ -108,7 +108,7 @@ namespace AtomToolsFramework
 
     AZ::ComponentTypeList AtomToolsApplication::GetRequiredSystemComponents() const
     {
-        AZ::ComponentTypeList components = Application::GetRequiredSystemComponents();
+        AZ::ComponentTypeList components = Base::GetRequiredSystemComponents();
 
         components.insert(
             components.end(),
