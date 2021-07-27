@@ -95,7 +95,7 @@ namespace MaterialEditor
 
     void MaterialEditorApplication::Reflect(AZ::ReflectContext* context)
     {
-        Base::Reflect();
+        Base::Reflect(context);
     }
 
     void MaterialEditorApplication::CreateStaticModules(AZStd::vector<AZ::Module*>& outModules)

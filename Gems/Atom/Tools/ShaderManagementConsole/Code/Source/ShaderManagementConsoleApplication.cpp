@@ -85,7 +85,7 @@ namespace ShaderManagementConsole
 
     void ShaderManagementConsoleApplication::Reflect(AZ::ReflectContext* context)
     {
-        Base::Reflect();
+        Base::Reflect(context);
     }
 
     void ShaderManagementConsoleApplication::OnShaderManagementConsoleWindowClosing()
