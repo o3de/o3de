@@ -63,7 +63,7 @@ namespace AtomToolsFramework
 
     void AtomToolsApplication::CreateReflectionManager()
     {
-        Application::CreateReflectionManager();
+        Base::CreateReflectionManager();
         GetSerializeContext()->CreateEditContext();
     }
 
