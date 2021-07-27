@@ -35,7 +35,7 @@ namespace AZ::MeshBuilder
 
         MeshBuilderSkinningInfo(size_t numOrgVertices);
 
-        void AddInfluence(size_t orgVtxNr, const Influence& influence)             { mInfluences.resize(AZStd::max(mInfluences.size(), orgVtxNr)); mInfluences.at(orgVtxNr).emplace_back(influence); }
+        void AddInfluence(size_t orgVtxNr, const Influence& influence)             { mInfluences.resize(AZStd::max(mInfluences.size(), orgVtxNr + 1)); mInfluences.at(orgVtxNr).emplace_back(influence); }
         void RemoveInfluence(size_t orgVtxNr, size_t influenceNr)                  { mInfluences.at(orgVtxNr).erase(mInfluences.at(orgVtxNr).begin() + influenceNr); }
         const Influence& GetInfluence(size_t orgVtxNr, size_t influenceNr) const   { return mInfluences.at(orgVtxNr).at(influenceNr); }
         size_t GetNumInfluences(size_t orgVtxNr) const                             { return mInfluences.at(orgVtxNr).size(); }
