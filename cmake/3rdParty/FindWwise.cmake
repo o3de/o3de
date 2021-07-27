@@ -7,29 +7,15 @@
 #
 
 # Wwise Install Path
-# Initialize to the default 3rdParty path
 set(LY_WWISE_INSTALL_PATH "" CACHE PATH "Path to Wwise installation.")
 
-set(WWISE_VERSION)
-
-# Inspect a file in the Wwise SDK and extract the full version from it
+# Check for a known file in the SDK path to verify the path
 function(is_valid_sdk sdk_path is_valid)
     set(${is_valid} FALSE PARENT_SCOPE)
     if(EXISTS ${sdk_path})
         set(sdk_version_file ${sdk_path}/SDK/include/AK/AkWwiseSDKVersion.h)
         if(EXISTS ${sdk_version_file})
-            set(version_regex "^.*VERSION_(MAJOR|MINOR|SUBMINOR|BUILD)[ \t]+([0-9]+)")
-            file(STRINGS ${sdk_version_file} version_strings REGEX ${version_regex})
-            list(LENGTH version_strings num_parts)
-            if(num_parts EQUAL 4)
-                set(wwise_ver)
-                foreach(ver_str ${version_strings})
-                    string(REGEX REPLACE ${version_regex} "\\2" version_part ${ver_str})
-                    string(JOIN "." wwise_ver ${wwise_ver} ${version_part})
-                endforeach()
-                set(WWISE_VERSION ${wwise_ver} PARENT_SCOPE)
-                set(${is_valid} TRUE PARENT_SCOPE)
-            endif()
+            set(${is_valid} TRUE PARENT_SCOPE)
         endif()
     endif()
 endfunction()
@@ -46,7 +32,7 @@ set(found_sdk FALSE)
 foreach(candidate_path ${WWISE_SDK_PATHS})
     is_valid_sdk(${candidate_path} found_sdk)
     if(found_sdk)
-        # Update the Wwise Install Path cache variable
+        # Update the Wwise Install Path variable internally
         set(LY_WWISE_INSTALL_PATH "${candidate_path}")
         break()
     endif()
@@ -58,7 +44,7 @@ if(NOT found_sdk)
     return()
 endif()
 
-message(STATUS "Using Wwise SDK v${WWISE_VERSION} at ${LY_WWISE_INSTALL_PATH}")
+message(STATUS "Using Wwise SDK at ${LY_WWISE_INSTALL_PATH}")
 
 set(WWISE_COMMON_LIB_NAMES
     # Core AK
@@ -115,15 +101,14 @@ set(WWISE_COMPILE_DEFINITIONS
 )
 
 
-# The default install path might look different than the standard 3rdParty format (${LY_3RDPARTY_PATH}/<Name>/<Version>).
 # Use these to get the parent path and folder name before adding the external 3p target.
-get_filename_component(WWISE_3P_ROOT ${LY_WWISE_INSTALL_PATH} DIRECTORY)
+get_filename_component(WWISE_INSTALL_ROOT ${LY_WWISE_INSTALL_PATH} DIRECTORY)
 get_filename_component(WWISE_FOLDER ${LY_WWISE_INSTALL_PATH} NAME)
 
 ly_add_external_target(
     NAME Wwise
     VERSION "${WWISE_FOLDER}"
-    3RDPARTY_ROOT_DIRECTORY "${WWISE_3P_ROOT}"
+    3RDPARTY_ROOT_DIRECTORY "${WWISE_INSTALL_ROOT}"
     INCLUDE_DIRECTORIES SDK/include
     COMPILE_DEFINITIONS ${WWISE_COMPILE_DEFINITIONS}
 )
