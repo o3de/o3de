@@ -1122,8 +1122,7 @@ namespace AzToolsFramework
             m_handlerName = AZ::Edit::UIHandlers::CheckBox;
             PropertyTypeRegistrationMessages::Bus::BroadcastResult(m_handler, &PropertyTypeRegistrationMessages::Bus::Events::ResolvePropertyHandler, m_handlerName, azrtti_typeid<bool>());
             m_toggleSwitch = m_handler->CreateGUI(this);
-            m_toggleSwitch->setFixedWidth(38);
-            m_middleLayout->addWidget(m_toggleSwitch, 1, Qt::AlignRight);
+            m_middleLayout->insertWidget(0, m_toggleSwitch, 1);
             auto checkBoxCtrl = static_cast<AzToolsFramework::PropertyCheckBoxCtrl*>(m_toggleSwitch);
             QObject::connect(checkBoxCtrl, &AzToolsFramework::PropertyCheckBoxCtrl::valueChanged, this, &PropertyRowWidget::OnClickedToggleButton);
         }
