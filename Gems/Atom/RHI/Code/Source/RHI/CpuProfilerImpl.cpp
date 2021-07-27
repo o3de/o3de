@@ -101,6 +101,8 @@ namespace AZ
             m_registeredThreads.clear();
             m_timeRegionMap.clear();
             m_initialized = false;
+            m_continuousCaptureInProgress = false;
+            m_continuousCaptureData.clear();
             SystemTickBus::Handler::BusDisconnect();
         }
 
@@ -141,12 +143,33 @@ namespace AZ
             return m_timeRegionMap;
         }
 
+        void CpuProfilerImpl::BeginContinuousCapture()
+        {
+            AZ_Warning("Profiler", !m_continuousCaptureInProgress, "Attempting to start a continuous capture while one already in progress");
+            m_continuousCaptureInProgress = true;
+            AZ_TracePrintf("Profiler", "Continuous capture started");
+        }
+
+        void CpuProfilerImpl::EndContinuousCapture(AZStd::deque<TimeRegionMap>& flushTarget)
+        {
+            AZ_Warning("Profiler", m_continuousCaptureInProgress, "Attempting to end a continuous capture while one not in progress");
+            m_continuousCaptureInProgress = false;
+            flushTarget = AZStd::move(m_continuousCaptureData);
+            m_continuousCaptureData.clear();
+            AZ_TracePrintf("Profiler", "Continuous capture ended");
+        }
+
+        bool CpuProfilerImpl::IsContinuousCaptureInProgress() const
+        {
+            return m_continuousCaptureInProgress;
+        }
+
         void CpuProfilerImpl::SetProfilerEnabled(bool enabled)
         {
             AZStd::unique_lock<AZStd::mutex> lock(m_threadRegisterMutex);
 
-            // Early out if the state is already the same
-            if (m_enabled == enabled)
+            // Early out if the state is already the same or a continuous capture is in progress
+            if (m_enabled == enabled || m_continuousCaptureInProgress)
             {
                 return;
             }
@@ -179,6 +202,17 @@ namespace AZ
             {
                 return;
             }
+
+            if (m_continuousCaptureInProgress)
+            {
+                if (m_continuousCaptureData.size() >= MaxFramesToSave)
+                {
+                    m_continuousCaptureData.pop_front();
+                }
+                m_continuousCaptureData.emplace_back(AZStd::move(m_timeRegionMap));
+                m_timeRegionMap.clear();
+            }
+
             AZStd::unique_lock<AZStd::mutex> lock(m_threadRegisterMutex);
 
             // Iterate through all the threads, and collect the thread's cached time regions

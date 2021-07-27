@@ -106,13 +106,18 @@ namespace AZ
             void OnSystemTick() final override;
 
             //! CpuProfiler overrides...
-            void BeginTimeRegion(TimeRegion& timeRegion) final;
-            void EndTimeRegion() final;
-            const TimeRegionMap& GetTimeRegionMap() const final;
-            void SetProfilerEnabled(bool enabled) final;
-            bool IsProfilerEnabled() const final;
+            void BeginTimeRegion(TimeRegion& timeRegion) final override;
+            void EndTimeRegion() final override;
+            const TimeRegionMap& GetTimeRegionMap() const final override;
+            void BeginContinuousCapture() final override;
+            void EndContinuousCapture(AZStd::deque<TimeRegionMap>& flushTarget) final override;
+            bool IsContinuousCaptureInProgress() const final override;
+            void SetProfilerEnabled(bool enabled) final override;
+            bool IsProfilerEnabled() const final override;
 
         private:
+            static constexpr u32 MaxFramesToSave = 60 * 120; // 1 minute of 120fps
+
             // Lazily create and register the local thread data
             void RegisterThreadStorage();
 
@@ -134,6 +139,12 @@ namespace AZ
             AZStd::shared_mutex m_shutdownMutex;
 
             bool m_initialized = false;
+
+            bool m_continuousCaptureInProgress = false;
+
+            // Stores multiple frames of profiling data, size is controlled by MaxFramesToSave. Flushed when EndContinuousCapture is called.
+            // Deque so that we can have fast append of new data + removal of old profiling data.
+            AZStd::deque<TimeRegionMap> m_continuousCaptureData;
         };
 
     }; // namespace RPI
