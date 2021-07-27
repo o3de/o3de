@@ -111,7 +111,7 @@ namespace AzPhysics
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<RigidBodyConfiguration, AzPhysics::SimulatedBodyConfiguration>()
-                ->Version(5, &Internal::RigidBodyVersionConverter)
+                ->Version(6, &Internal::RigidBodyVersionConverter)
                 ->Field("Initial linear velocity", &RigidBodyConfiguration::m_initialLinearVelocity)
                 ->Field("Initial angular velocity", &RigidBodyConfiguration::m_initialAngularVelocity)
                 ->Field("Linear damping", &RigidBodyConfiguration::m_linearDamping)
@@ -132,6 +132,8 @@ namespace AzPhysics
                 ->Field("Include All Shapes In Mass", &RigidBodyConfiguration::m_includeAllShapesInMassCalculation)
                 ->Field("CCD Min Advance", &RigidBodyConfiguration::m_ccdMinAdvanceCoefficient)
                 ->Field("CCD Friction", &RigidBodyConfiguration::m_ccdFrictionEnabled)
+                ->Field("Linear Axis Lock", &RigidBodyConfiguration::m_linearAxisLock)
+                ->Field("Angular Axis Lock", &RigidBodyConfiguration::m_angularAxisLock)
                 ;
         }
     }

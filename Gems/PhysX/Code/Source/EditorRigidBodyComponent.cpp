@@ -216,7 +216,19 @@ namespace PhysX
                         "Include non-simulated shapes in Mass", "If set, non-simulated shapes will also be included in the center of mass, inertia and mass calculations.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetInertiaSettingsVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                    ;
+
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &RigidBodyConfiguration::m_linearAxisLock,
+                        "Linear Axis Lock", "Lock movement along a specified axis (0|1)")
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 1.f)
+                        ->Attribute(AZ::Edit::Attributes::Step, 1.f)
+
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &RigidBodyConfiguration::m_angularAxisLock,
+                        "Angular Axis Lock", "Lock rotation around a specified axis (0|1)")
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 1.f)
+                        ->Attribute(AZ::Edit::Attributes::Step, 1.f)
+                        ;
 
                 editContext->Class<EditorRigidBodyConfiguration>(
                     "PhysX Rigid Body Configuration", "")

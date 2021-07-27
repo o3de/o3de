@@ -120,6 +120,7 @@ namespace PhysX
         void ComputeInertia();
         void SetInertia(const AZ::Matrix3x3& inertia);
         void SetZeroCenterOfMass();
+        void SetAxisLockFlags(const AZ::Vector3& linearAxisLock, const AZ::Vector3& angularAxisLock);
 
         AZStd::shared_ptr<physx::PxRigidDynamic> m_pxRigidActor;
         AZStd::vector<AZStd::shared_ptr<PhysX::Shape>> m_shapes;

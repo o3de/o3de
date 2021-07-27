@@ -45,6 +45,8 @@ namespace AzPhysics
         // Simulation parameters.
         float m_mass = 1.0f;
         AZ::Matrix3x3 m_inertiaTensor = AZ::Matrix3x3::CreateIdentity();
+        AZ::Vector3 m_linearAxisLock = AZ::Vector3::CreateZero();
+        AZ::Vector3 m_angularAxisLock = AZ::Vector3::CreateZero();
         float m_linearDamping = 0.05f;
         float m_angularDamping = 0.15f;
         float m_sleepMinEnergy = 0.005f;

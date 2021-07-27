@@ -83,6 +83,8 @@ namespace PhysX
             {
                 SetUserData(configuration.m_customUserData);
             }
+
+            SetAxisLockFlags(configuration.m_linearAxisLock, configuration.m_angularAxisLock);
         }
     }
 
@@ -791,5 +793,39 @@ namespace PhysX
             PHYSX_SCENE_WRITE_LOCK(m_pxRigidActor->getScene());
             m_pxRigidActor->setCMassLocalPose(physx::PxTransform(PxMathConvert(AZ::Vector3::CreateZero())));
         }
+    }
+
+    void RigidBody::SetAxisLockFlags(const AZ::Vector3& linearAxisLock, const AZ::Vector3& angularAxisLock)
+    {
+        physx::PxRigidDynamicLockFlags flags(0);
+
+        if (!AZ::IsClose(linearAxisLock.GetX(), 0.0f))
+        {
+            flags |= physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_X;
+        }
+        if (!AZ::IsClose(linearAxisLock.GetY(), 0.0f))
+        {
+            flags |= physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Y;
+        }
+        if (!AZ::IsClose(linearAxisLock.GetZ(), 0.0f))
+        {
+            flags |= physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Z;
+        }
+
+        if (!AZ::IsClose(angularAxisLock.GetX(), 0.0f))
+        {
+            flags |= physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X;
+        }
+        if (!AZ::IsClose(angularAxisLock.GetY(), 0.0f))
+        {
+            flags |= physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y;
+        }
+        if (!AZ::IsClose(angularAxisLock.GetZ(), 0.0f))
+        {
+            flags |= physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z;
+        }
+
+        PHYSX_SCENE_WRITE_LOCK(m_pxRigidActor->getScene());
+        m_pxRigidActor->setRigidDynamicLockFlags(flags);
     }
 }
