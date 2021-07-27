@@ -7,6 +7,10 @@
  */
 
 #include "MultiplayerDebugPerEntityReporter.h"
+
+#include <AzCore/Component/TransformBus.h>
+#include <AzCore/Math/ToString.h>
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <Multiplayer/IMultiplayer.h>
 
 #if defined(IMGUI_ENABLED)
@@ -117,6 +121,17 @@ namespace MultiplayerDiagnostics
         static ImGuiTextFilter filter;
         filter.Draw();
 
+        char status[100] = {};
+
+        struct NetworkEntityTraffic
+        {
+            const char* m_name = nullptr;
+            float m_up = 0.f;
+            float m_down = 0.f;
+        };
+
+        AZStd::fixed_unordered_map<AZ::EntityId, NetworkEntityTraffic, 5, 10> networkEntitiesTraffic;
+
         if (ImGui::CollapsingHeader("Receiving Entities"))
         {
             for (AZStd::pair<AZ::EntityId, EntityReporter>& entityPair : m_receivingEntityReports)
@@ -132,6 +147,9 @@ namespace MultiplayerDiagnostics
                     DisplayReplicatedStateReport(entityPair.second.GetComponentReports(), m_replicatedStateKbpsWarn, m_replicatedStateMaxSizeWarn);
                     ImGui::TreePop();
                 }
+
+                networkEntitiesTraffic[entityPair.first].m_name = entityPair.second.GetEntityName();
+                networkEntitiesTraffic[entityPair.first].m_down = entityPair.second.GetKbitsPerSecond();
             }
         }
 
@@ -151,7 +169,26 @@ namespace MultiplayerDiagnostics
                     DisplayReplicatedStateReport(entityPair.second.GetComponentReports(), m_replicatedStateKbpsWarn, m_replicatedStateMaxSizeWarn);
                     ImGui::TreePop();
                 }
+
+                networkEntitiesTraffic[entityPair.first].m_name = entityPair.second.GetEntityName();
+                networkEntitiesTraffic[entityPair.first].m_up = entityPair.second.GetKbitsPerSecond();
             }
+        }
+
+        constexpr float trafficThreshold = 0.1f;
+        for (AZStd::pair<AZ::EntityId, NetworkEntityTraffic>& networkEntity : networkEntitiesTraffic)
+        {
+            if (networkEntity.second.m_down < trafficThreshold && networkEntity.second.m_up < trafficThreshold)
+            {
+                continue;
+            }
+
+            azsprintf(status, "%s - %.0f down / %0.f up (kbps)", networkEntity.second.m_name, networkEntity.second.m_down, networkEntity.second.m_up);
+            AZ::Vector3 entityPosition = AZ::Vector3::CreateZero();
+            constexpr bool centerText = true;
+            AZ::TransformBus::EventResult(entityPosition, networkEntity.first, &AZ::TransformBus::Events::GetWorldTranslation);
+            AzFramework::DebugDisplayRequestBus::Broadcast(&AzFramework::DebugDisplayRequestBus::Events::DrawTextLabel,
+                entityPosition, 1.0f, status, centerText, 0, 0);
         }
 #endif
     }

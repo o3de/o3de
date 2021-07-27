@@ -329,7 +329,7 @@ namespace Multiplayer
 
         if (m_displayPerEntityStats)
         {
-            if (ImGui::Begin("Multiplayer Per Entity Analytics", &m_displayPerEntityStats))
+            if (ImGui::Begin("Multiplayer Per Entity Analytics", &m_displayPerEntityStats, ImGuiWindowFlags_None))
             {
                 if (m_reporter)
                 {
