@@ -23,7 +23,7 @@
 
 namespace AtomToolsFramework
 {
-    //!Base class for Atom tools to inherit from
+    //! Base class for Atom tools to inherit from
     class AtomToolsApplication
         : public AzFramework::Application
         , public AzQtComponents::AzQtApplication

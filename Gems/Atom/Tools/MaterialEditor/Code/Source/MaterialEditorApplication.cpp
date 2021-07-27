@@ -113,8 +113,6 @@ namespace MaterialEditor
 
     AZStd::vector<AZStd::string> MaterialEditorApplication::GetCriticalAssetFilters() const
     {
-        // List of common asset filters for things that need to be compiled to run the material editor
-        // Some of these things will not be necessary once we have proper support for queued asset loading and reloading
         return AZStd::vector<AZStd::string>({ "passes/", "config/", "MaterialEditor" });
     }
 
