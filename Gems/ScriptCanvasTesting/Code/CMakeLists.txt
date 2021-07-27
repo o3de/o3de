@@ -113,8 +113,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     )
     ly_add_googletest(
         NAME Gem::ScriptCanvasTesting.Editor.Tests
-        TEST_SERIAL true
     )
+    set_tests_properties(Gem::ScriptCanvasTesting.Editor.Tests.main::TEST_RUN PROPERTIES RUN_SERIAL true)
 endif()
 
 
