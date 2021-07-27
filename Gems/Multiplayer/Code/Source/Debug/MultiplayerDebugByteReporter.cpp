@@ -12,6 +12,8 @@
 #include <sstream>
 #include <AzCore/std/sort.h>
 
+#pragma optimize("", off)
+
 namespace MultiplayerDiagnostics
 {
     void MultiplayerDebugByteReporter::ReportBytes(size_t byteSize)

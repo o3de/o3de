@@ -30,6 +30,8 @@
 
 #include <AzFramework/Components/TransformComponent.h>
 
+#pragma optimize("", off)
+
 namespace Multiplayer
 {
     EntityReplicator::EntityReplicator
@@ -441,7 +443,12 @@ namespace Multiplayer
     {
         // Received rpc metrics, log rpc sent, number of bytes, and the componentId/rpcId for bandwidth metrics
         MultiplayerStats& stats = GetMultiplayer()->GetStats();
+        stats.RecordEntitySerializeStart(AzNetworking::SerializerMode::ReadFromObject,
+            GetEntityHandle().GetEntity()->GetId(), GetEntityHandle().GetEntity()->GetName().c_str());
         stats.RecordRpcSent(entityRpcMessage.GetComponentId(), entityRpcMessage.GetRpcIndex(), entityRpcMessage.GetEstimatedSerializeSize());
+        stats.RecordComponentSerializeEnd(AzNetworking::SerializerMode::ReadFromObject, entityRpcMessage.GetComponentId());
+        stats.RecordEntitySerializeStop(AzNetworking::SerializerMode::ReadFromObject,
+            GetEntityHandle().GetEntity()->GetId(), GetEntityHandle().GetEntity()->GetName().c_str());
 
         m_replicationManager.AddDeferredRpcMessage(entityRpcMessage);
     }
@@ -515,7 +522,7 @@ namespace Multiplayer
                 && (GetRemoteNetworkRole() == NetEntityRole::Server))
             {
                 // We are on a server, and we received this message from another server, therefore we should forward this to our autonomous player
-                // This can occur if we've recently migrated 
+                // This can occur if we've recently migrated
                 result = RpcValidationResult::ForwardToAutonomous;
             }
         }

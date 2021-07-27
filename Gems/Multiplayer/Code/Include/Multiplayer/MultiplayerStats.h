@@ -50,8 +50,9 @@ namespace Multiplayer
         AZStd::vector<ComponentStats> m_componentStats;
 
         void ReserveComponentStats(NetComponentId netComponentId, uint16_t propertyCount, uint16_t rpcCount);
-        void RecordEntitySerializeStart(AZ::EntityId entityId, const char* entityName);
-        void RecordEntitySerializeStop(AZ::EntityId entityId, const char* entityName);
+        void RecordEntitySerializeStart(AzNetworking::SerializerMode mode, AZ::EntityId entityId, const char* entityName);
+        void RecordComponentSerializeEnd(AzNetworking::SerializerMode mode, NetComponentId netComponentId);
+        void RecordEntitySerializeStop(AzNetworking::SerializerMode mode, AZ::EntityId entityId, const char* entityName);
         void RecordPropertySent(NetComponentId netComponentId, PropertyIndex propertyId, uint32_t totalBytes);
         void RecordPropertyReceived(NetComponentId netComponentId, PropertyIndex propertyId, uint32_t totalBytes);
         void RecordRpcSent(NetComponentId netComponentId, RpcIndex rpcId, uint32_t totalBytes);

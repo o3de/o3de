@@ -30,25 +30,33 @@ namespace Multiplayer
         m_componentStats[netComponentIndex].m_rpcsRecv.resize(rpcCount);
     }
 
-    void MultiplayerStats::RecordEntitySerializeStart(AZ::EntityId entityId, const char* entityName)
+    void MultiplayerStats::RecordEntitySerializeStart(AzNetworking::SerializerMode mode, AZ::EntityId entityId, const char* entityName)
     {
-        if (auto* perEntityStats = AZ::Interface<MultiplayerDiagnostics::MultilayerIPerEntityStats>::Get())
+        if (auto* perEntityStats = AZ::Interface<MultiplayerDiagnostics::MultiplayerIPerEntityStats>::Get())
         {
-            perEntityStats->RecordEntitySerializeStart(entityId, entityName);
+            perEntityStats->RecordEntitySerializeStart(mode, entityId, entityName);
         }
     }
 
-    void MultiplayerStats::RecordEntitySerializeStop(AZ::EntityId entityId, const char* entityName)
+    void MultiplayerStats::RecordComponentSerializeEnd(AzNetworking::SerializerMode mode, NetComponentId netComponentId)
     {
-        if (auto* perEntityStats = AZ::Interface<MultiplayerDiagnostics::MultilayerIPerEntityStats>::Get())
+        if (auto* perEntityStats = AZ::Interface<MultiplayerDiagnostics::MultiplayerIPerEntityStats>::Get())
         {
-            perEntityStats->RecordEntitySerializeStop(entityId, entityName);
+            perEntityStats->RecordComponentSerializeEnd(mode, netComponentId);
+        }
+    }
+
+    void MultiplayerStats::RecordEntitySerializeStop(AzNetworking::SerializerMode mode, AZ::EntityId entityId, const char* entityName)
+    {
+        if (auto* perEntityStats = AZ::Interface<MultiplayerDiagnostics::MultiplayerIPerEntityStats>::Get())
+        {
+            perEntityStats->RecordEntitySerializeStop(mode, entityId, entityName);
         }
     }
 
     void MultiplayerStats::RecordPropertySent(NetComponentId netComponentId, PropertyIndex propertyId, uint32_t totalBytes)
     {
-        if (auto* perEntityStats = AZ::Interface<MultiplayerDiagnostics::MultilayerIPerEntityStats>::Get())
+        if (auto* perEntityStats = AZ::Interface<MultiplayerDiagnostics::MultiplayerIPerEntityStats>::Get())
         {
             perEntityStats->RecordPropertySent(netComponentId, propertyId, totalBytes);
         }
@@ -63,7 +71,7 @@ namespace Multiplayer
 
     void MultiplayerStats::RecordPropertyReceived(NetComponentId netComponentId, PropertyIndex propertyId, uint32_t totalBytes)
     {
-        if (auto* perEntityStats = AZ::Interface<MultiplayerDiagnostics::MultilayerIPerEntityStats>::Get())
+        if (auto* perEntityStats = AZ::Interface<MultiplayerDiagnostics::MultiplayerIPerEntityStats>::Get())
         {
             perEntityStats->RecordPropertyReceived(netComponentId, propertyId, totalBytes);
         }
@@ -78,6 +86,11 @@ namespace Multiplayer
 
     void MultiplayerStats::RecordRpcSent(NetComponentId netComponentId, RpcIndex rpcId, uint32_t totalBytes)
     {
+        if (auto* perEntityStats = AZ::Interface<MultiplayerDiagnostics::MultiplayerIPerEntityStats>::Get())
+        {
+            perEntityStats->RecordRpcSent(netComponentId, rpcId, totalBytes);
+        }
+
         const uint16_t netComponentIndex = aznumeric_cast<uint16_t>(netComponentId);
         const uint16_t rpcIndex = aznumeric_cast<uint16_t>(rpcId);
         m_componentStats[netComponentIndex].m_rpcsSent[rpcIndex].m_totalCalls++;

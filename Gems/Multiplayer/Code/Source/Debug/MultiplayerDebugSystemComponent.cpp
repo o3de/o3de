@@ -13,6 +13,8 @@
 #include <AzNetworking/Framework/INetworkInterface.h>
 #include <Multiplayer/IMultiplayer.h>
 
+#pragma optimize("", off)
+
 namespace Multiplayer
 {
     void MultiplayerDebugSystemComponent::Reflect(AZ::ReflectContext* context)
@@ -65,6 +67,7 @@ namespace Multiplayer
         {
             ImGui::Checkbox("Networking Stats", &m_displayNetworkingStats);
             ImGui::Checkbox("Multiplayer Stats", &m_displayMultiplayerStats);
+            ImGui::Checkbox("Multiplayer Per Entity Stats", &m_displayPerEntityStats);
             ImGui::EndMenu();
         }
     }
@@ -324,10 +327,15 @@ namespace Multiplayer
             }
         }
 
-
-        if (m_reporter)
+        if (m_displayPerEntityStats)
         {
-            m_reporter->OnImGuiUpdate();
+            if (ImGui::Begin("Multiplayer Per Entity Analytics", &m_displayPerEntityStats))
+            {
+                if (m_reporter)
+                {
+                    m_reporter->OnImGuiUpdate();
+                }
+            }
         }
     }
 #endif

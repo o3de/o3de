@@ -111,7 +111,6 @@ namespace Multiplayer
         int32_t bitIndex,
         TYPE& value,
         const char* name,
-        AZ::EntityId entityId,
         NetComponentId componentId,
         PropertyIndex propertyIndex,
         MultiplayerStats& stats
@@ -134,11 +133,11 @@ namespace Multiplayer
             {
                 if (modifyRecord)
                 {
-                    stats.RecordPropertyReceived(entityId, componentId, propertyIndex, updateSize);
+                    stats.RecordPropertyReceived(componentId, propertyIndex, updateSize);
                 }
                 else
                 {
-                    stats.RecordPropertySent(entityId, componentId, propertyIndex, updateSize);
+                    stats.RecordPropertySent(componentId, propertyIndex, updateSize);
                 }
             }
         }

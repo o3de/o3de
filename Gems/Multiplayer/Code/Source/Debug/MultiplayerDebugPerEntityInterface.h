@@ -13,14 +13,16 @@
 
 namespace MultiplayerDiagnostics
 {
-    class MultilayerIPerEntityStats
+    class MultiplayerIPerEntityStats
     {
     public:
-        virtual ~MultilayerIPerEntityStats();
+        AZ_RTTI(MultiplayerIPerEntityStats, "{91A1E4F0-8AE6-44B2-89DF-DA34134C408A}");
 
-        virtual void RecordEntitySerializeStart(AZ::EntityId entityId, const char* entityName) = 0;
-        virtual void RecordEntitySerializeStop(AZ::EntityId entityId, const char* entityName) = 0;
-        virtual void RecordPropertySent(Multiplayer::NetComponentId netComponentId, Multiplayer::PropertyIndex propertyId, uint32_t totalBytes);
-        virtual void RecordPropertyReceived(Multiplayer::NetComponentId netComponentId, Multiplayer::PropertyIndex propertyId, uint32_t totalBytes);
+        virtual void RecordEntitySerializeStart(AzNetworking::SerializerMode mode, AZ::EntityId entityId, const char* entityName) = 0;
+        virtual void RecordComponentSerializeEnd(AzNetworking::SerializerMode mode, Multiplayer::NetComponentId netComponentId) = 0;
+        virtual void RecordEntitySerializeStop(AzNetworking::SerializerMode mode, AZ::EntityId entityId, const char* entityName) = 0;
+        virtual void RecordPropertySent(Multiplayer::NetComponentId netComponentId, Multiplayer::PropertyIndex propertyId, uint32_t totalBytes) = 0;
+        virtual void RecordPropertyReceived(Multiplayer::NetComponentId netComponentId, Multiplayer::PropertyIndex propertyId, uint32_t totalBytes) = 0;
+        virtual void RecordRpcSent(Multiplayer::NetComponentId netComponentId, Multiplayer::RpcIndex rpcId, uint32_t totalBytes) = 0;
     };
 }
