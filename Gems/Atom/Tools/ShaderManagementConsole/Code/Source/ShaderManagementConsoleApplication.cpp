@@ -83,11 +83,6 @@ namespace ShaderManagementConsole
         outModules.push_back(aznew ShaderManagementConsoleWindowModule);
     }
 
-    void ShaderManagementConsoleApplication::Reflect(AZ::ReflectContext* context)
-    {
-        Base::Reflect(context);
-    }
-
     void ShaderManagementConsoleApplication::OnShaderManagementConsoleWindowClosing()
     {
         ExitMainLoop();

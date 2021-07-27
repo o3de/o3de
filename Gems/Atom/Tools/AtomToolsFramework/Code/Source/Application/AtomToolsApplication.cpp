@@ -82,12 +82,14 @@ namespace AtomToolsFramework
 
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
+            auto targetName = GetBuildTargetName();
+
             // this will put these methods into the 'azlmbr.AtomTools.general' module
-            auto addGeneral = [](AZ::BehaviorContext::GlobalMethodBuilder methodBuilder)
+            auto addGeneral = [targetName](AZ::BehaviorContext::GlobalMethodBuilder methodBuilder)
             {
                 methodBuilder->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                     ->Attribute(AZ::Script::Attributes::Category, "Editor")
-                    ->Attribute(AZ::Script::Attributes::Module, "AtomTools");
+                    ->Attribute(AZ::Script::Attributes::Module, targetName);
             };
             // The reflection here is based on patterns in CryEditPythonHandler::Reflect
             addGeneral(behaviorContext->Method(
@@ -165,14 +167,16 @@ namespace AtomToolsFramework
         // and able to negotiate a connection when running a debug build
         // and to negotiate a connection
 
+        auto targetName = GetBuildTargetName();
+
         AzFramework::AssetSystem::ConnectionSettings connectionSettings;
         AzFramework::AssetSystem::ReadConnectionSettingsFromSettingsRegistry(connectionSettings);
         connectionSettings.m_connectionDirection =
             AzFramework::AssetSystem::ConnectionSettings::ConnectionDirection::ConnectToAssetProcessor;
         connectionSettings.m_connectionIdentifier = GetBuildTargetName();
-        connectionSettings.m_loggingCallback = []([[maybe_unused]] AZStd::string_view logData)
+        connectionSettings.m_loggingCallback = [targetName]([[maybe_unused]] AZStd::string_view logData)
         {
-            AZ_TracePrintf("Atom Tools", "%.*s", aznumeric_cast<int>(logData.size()), logData.data());
+            AZ_TracePrintf(targetName.c_str(), "%.*s", aznumeric_cast<int>(logData.size()), logData.data());
         };
         AzFramework::AssetSystemRequestBus::BroadcastResult(
             connectedToAssetProcessor, &AzFramework::AssetSystemRequestBus::Events::EstablishAssetProcessorConnection, connectionSettings);
