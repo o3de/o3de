@@ -49,7 +49,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     # Tool and Builder type targets when this gem is enabled.  If you don't want it
     # active in Tools or Builders by default, delete one of both of the following lines:
     ly_create_alias(NAME Prefab.Tools    NAMESPACE Gem TARGETS Gem::PrefabDependencyViewer.Editor)
-    ly_create_alias(NAME Prefab.Builders NAMESPACE Gem TARGETS Gem::PrefabDependencyViewer.Editor)
+    ly_create_alias(NAME Prefab.Builders NAMESPACE Gem)
 endif()
 
 ################################################################################
