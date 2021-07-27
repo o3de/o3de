@@ -101,7 +101,10 @@ namespace AZ
                         )
                             ->Attribute(AZ::Edit::Attributes::FalseText, "16-bit")
                             ->Attribute(AZ::Edit::Attributes::TrueText, "32-bit")
-                        ->DataElement(Edit::UIHandlers::Default, &SkinMeshAdvancedRule::m_useCustomNormals, "Use Custom Normals", "Use custom normals from DCC data or average them.")
+
+                        // hide this from the editor, since we put this feature in a different place (Tangent & Normals > Normals)
+                        //->DataElement(Edit::UIHandlers::Default, &SkinMeshAdvancedRule::m_useCustomNormals, "Use Custom Normals", "Use custom normals from DCC data or average them.")
+
                         ->DataElement("NodeListSelection", &SkinMeshAdvancedRule::m_vertexColorStreamName, "Vertex Color Stream",
                             "Select a vertex color stream to enable Vertex Coloring or 'Disable' to turn Vertex Coloring off.\n\n"
                             "Vertex Coloring works in conjunction with materials. If a material was previously generated,\n"

@@ -54,6 +54,7 @@ namespace AZ
 
                 virtual const AZ::Vector3& GetPosition(unsigned int index) const = 0;
                 virtual const AZ::Vector3& GetNormal(unsigned int index) const = 0;
+                virtual void SetNormal(unsigned int index, const AZ::Vector3&) = 0;
 
                 virtual unsigned int GetFaceVertexIndex(unsigned int face, unsigned int vertexIndex) const = 0;
             };

@@ -55,6 +55,7 @@ namespace AZ
 
                 SCENE_DATA_API const AZ::Vector3& GetPosition(unsigned int index) const override;
                 SCENE_DATA_API const AZ::Vector3& GetNormal(unsigned int index) const override;
+                SCENE_DATA_API void SetNormal(unsigned int index, const AZ::Vector3& normal) override;
 
                 SCENE_DATA_API unsigned int GetFaceCount() const override;
                 SCENE_DATA_API const AZ::SceneAPI::DataTypes::IMeshData::Face& GetFaceInfo(unsigned int index) const override;
