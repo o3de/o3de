@@ -13,8 +13,6 @@
 #include <AzNetworking/Framework/INetworkInterface.h>
 #include <Multiplayer/IMultiplayer.h>
 
-#pragma optimize("", off)
-
 namespace Multiplayer
 {
     void MultiplayerDebugSystemComponent::Reflect(AZ::ReflectContext* context)
@@ -329,7 +327,8 @@ namespace Multiplayer
 
         if (m_displayPerEntityStats)
         {
-            if (ImGui::Begin("Multiplayer Per Entity Analytics", &m_displayPerEntityStats, ImGuiWindowFlags_None))
+            //ImGui::SetNextWindowSize({500, 400});
+            if (ImGui::Begin("Multiplayer Per Entity Stats", &m_displayPerEntityStats, ImGuiWindowFlags_AlwaysAutoResize))
             {
                 if (m_reporter)
                 {

@@ -10,7 +10,10 @@
 #include "MultiplayerDebugByteReporter.h"
 
 #include <AzCore/Component/EntityId.h>
+#include <AzCore/Component/TickBus.h>
+#include <AzCore/EBus/ScheduledEvent.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <Debug/MultiplayerDebugPerEntityInterface.h>
 #include <GridMate/Drillers/CarrierDriller.h>
 #include <Multiplayer/MultiplayerTypes.h>
@@ -24,8 +27,8 @@ namespace MultiplayerDiagnostics
         : public AZ::Interface<MultiplayerIPerEntityStats>::Registrar
     {
     public:
-        MultiplayerDebugPerEntityReporter() = default;
-        ~MultiplayerDebugPerEntityReporter() override = default;
+        MultiplayerDebugPerEntityReporter();
+        ~MultiplayerDebugPerEntityReporter() override;
 
         // main update loop
         void OnImGuiUpdate();
@@ -38,9 +41,14 @@ namespace MultiplayerDiagnostics
         void RecordPropertySent(Multiplayer::NetComponentId netComponentId, Multiplayer::PropertyIndex propertyId, uint32_t totalBytes) override;
         void RecordPropertyReceived(Multiplayer::NetComponentId netComponentId, Multiplayer::PropertyIndex propertyId, uint32_t totalBytes) override;
         void RecordRpcSent(Multiplayer::NetComponentId netComponentId, Multiplayer::RpcIndex rpcId, uint32_t totalBytes) override;
+        void RecordRpcReceived(Multiplayer::NetComponentId netComponentId, Multiplayer::RpcIndex rpcId, uint32_t totalBytes) override;
         // }@
 
+        void UpdateDebugOverlay();
+
     private:
+
+        AZ::ScheduledEvent m_updateDebugOverlay;
 
         AZStd::map<AZ::EntityId, EntityReporter> m_sendingEntityReports{};
         EntityReporter m_currentSendingEntityReport;
@@ -50,5 +58,18 @@ namespace MultiplayerDiagnostics
 
         float m_replicatedStateKbpsWarn = 10.f;
         float m_replicatedStateMaxSizeWarn = 30.f;
+
+        char m_statusBuffer[100] = {};
+
+        struct NetworkEntityTraffic
+        {
+            const char* m_name = nullptr;
+            float m_up = 0.f;
+            float m_down = 0.f;
+        };
+
+        AZStd::fixed_unordered_map<AZ::EntityId, NetworkEntityTraffic, 5, 10> m_networkEntitiesTraffic;
+
+        AzFramework::DebugDisplayRequests* m_debugDisplay = nullptr;
     };
 }

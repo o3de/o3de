@@ -101,6 +101,11 @@ namespace Multiplayer
 
     void MultiplayerStats::RecordRpcReceived(NetComponentId netComponentId, RpcIndex rpcId, uint32_t totalBytes)
     {
+        if (auto* perEntityStats = AZ::Interface<MultiplayerDiagnostics::MultiplayerIPerEntityStats>::Get())
+        {
+            perEntityStats->RecordRpcReceived(netComponentId, rpcId, totalBytes);
+        }
+
         const uint16_t netComponentIndex = aznumeric_cast<uint16_t>(netComponentId);
         const uint16_t rpcIndex = aznumeric_cast<uint16_t>(rpcId);
         m_componentStats[netComponentIndex].m_rpcsRecv[rpcIndex].m_totalCalls++;
