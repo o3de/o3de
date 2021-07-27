@@ -14,7 +14,6 @@
 #include <AudioControlsEditorPlugin.h>
 #include <AudioControlsEditorUndo.h>
 #include <IAudioSystemControl.h>
-#include <IEditor.h>
 #include <ImplementationManager.h>
 
 namespace AudioControls
@@ -346,7 +345,7 @@ namespace AudioControls
         {
             for (auto& connectionNode : m_connectionNodes)
             {
-                if (TConnectionPtr connection = audioSystemImpl->CreateConnectionFromXMLNode(connectionNode.m_xmlNode, m_type))
+                if (TConnectionPtr connection = audioSystemImpl->CreateConnectionFromXMLNode(connectionNode.m_xmlNode.get(), m_type))
                 {
                     AddConnection(connection);
                     connectionNode.m_isValid = true;

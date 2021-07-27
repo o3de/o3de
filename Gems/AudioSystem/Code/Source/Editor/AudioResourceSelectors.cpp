@@ -9,7 +9,6 @@
 
 #include <ATLControlsResourceDialog.h>
 #include <AudioControlsEditorPlugin.h>
-#include <IEditor.h>
 #include <Include/IResourceSelectorHost.h>
 #include <QAudioControlEditorIcons.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
