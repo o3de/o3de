@@ -22,6 +22,7 @@ namespace AzNetworking
         const AZ::TimeMs deltaTimeMs = currentTimeMs - m_lastLoggedTimeMs;
 
         m_atoms[m_activeAtom].m_bytesTransmitted += byteCount;
+        m_atoms[m_activeAtom].m_packetsSent++;
         m_atoms[m_activeAtom].m_timeAccumulatorMs += deltaTimeMs;
 
         if (m_atoms[m_activeAtom].m_timeAccumulatorMs >= m_maxSampleTimeMs)
@@ -30,6 +31,11 @@ namespace AzNetworking
         }
 
         m_lastLoggedTimeMs = currentTimeMs;
+    }
+
+    void DatarateMetrics::LogPacketLost()
+    {
+        m_atoms[m_activeAtom].m_packetsLost++;
     }
 
     float DatarateMetrics::GetBytesPerSecond() const
@@ -45,6 +51,18 @@ namespace AzNetworking
         const float sampleTime = float(m_atoms[sampleAtom].m_timeAccumulatorMs);
 
         return (bytesLogged * 1000.0f) / sampleTime; // (* 1000) to convert from bytes per millisecond to bytes per second
+    }
+
+    float DatarateMetrics::GetLossRatePercent() const
+    {
+        const uint32_t sampleAtom = 1 - m_activeAtom;
+
+        if (m_atoms[sampleAtom].m_packetsSent == 0)
+        {
+            return 0.0f;
+        }
+
+        return float(m_atoms[sampleAtom].m_packetsLost) / float(m_atoms[sampleAtom].m_packetsSent);
     }
 
     void ConnectionComputeRtt::LogPacketSent(PacketId packetId, AZ::TimeMs currentTimeMs)
