@@ -175,8 +175,8 @@ struct HairObjectShadeParams
     float4		m_matKValue;   // KAmbient, KDiffuse, KSpec1, Exp1
     float       m_hairKs2;
     float		fPadding0;
-    float		fPadding1;
-    float		fPadding2;
+    float		m_roughness;
+    float		m_cuticleTilt;
 };
 
 //------------------------------------------------------------------------------

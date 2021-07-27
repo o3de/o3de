@@ -25,7 +25,6 @@
 
 #pragma once
 
-
 //==============================================================================
 //                    Atom Lighting & Light Types
 //==============================================================================
@@ -41,7 +40,53 @@
 #include <Atom/Features/PBR/BackLighting.azsli>
 //------------------------------------------------------------------------------
 #include <Atom/Features/PBR/Decals.azsli>
+
+#include <HairLightingEquations.azsli>
 //==============================================================================
+enum class HairLightingModel {GGX, Marschner};
+static HairLightingModel lightingModel = HairLightingModel::Marschner;
+//==============================================================================
+float3 GetSpecularLighting(Surface surface, LightingData lightingData, const float3 lightIntensity, const float3 dirToLight)
+{
+    float3 specular = float3(0, 0, 0);
+    if(lightingModel == HairLightingModel::GGX)
+    {
+        specular = SpecularGGX(lightingData.dirToCamera, dirToLight, surface.normal, surface.specularF0, lightingData.NdotV, surface.roughnessA2, lightingData.multiScatterCompensation);
+    }
+    else if(lightingModel == HairLightingModel::Marschner)
+    {
+        specular = HairBSDF(surface, lightingData, dirToLight);
+    }
+
+    return specular * lightIntensity;
+}
+
+float3 GetHairBackLighting(Surface surface, LightingData lightingData, float3 lightIntensity, float3 dirToLight, float shadowRatio)
+{
+    if (lightingModel == HairLightingModel::GGX)
+    {
+        float3 result = float3(0.0, 0.0, 0.0);
+        float thickness = 0.0;
+        float4 transmissionParams = surface.transmission.transmissionParams;
+
+        // Thin object mode, using thin-film assumption proposed by Jimenez J. et al, 2010, "Real-Time Realistic Skin Translucency"
+        // http://www.iryoku.com/translucency/downloads/Real-Time-Realistic-Skin-Translucency.pdf
+
+        result = shadowRatio ?
+            float3(0.0, 0.0, 0.0) :
+            TransmissionKernel(surface.transmission.thickness * transmissionParams.w, rcp(transmissionParams.xyz)) *
+            saturate(dot(-surface.normal, dirToLight)) * lightIntensity * shadowRatio;
+
+        return result;
+    }
+    else if (lightingModel == HairLightingModel::Marschner)
+    {
+        return float3(0.0f, 0.0f, 0.0f);
+    }
+
+    return float3(1.0f, 0.0f, 0.0f);
+}
+
 //! Simple Lambertian BRDF
 float3 HairDiffuseLambertian(float3 albedo, float3 normal, float3 dirToLight)
 {
@@ -53,31 +98,24 @@ float3 HairDiffuseLambertian(float3 albedo, float3 normal, float3 dirToLight)
 // and removing the regular usage of clear coat second lobe energy distribution.
 float3 GetDiffuseLighting(Surface surface, LightingData lightingData, float3 lightIntensity, float3 dirToLight)
 {
-    float3 diffuse = HairDiffuseLambertian(surface.albedo, surface.normal, dirToLight);
-    diffuse *= lightIntensity * lightingData.diffuseResponse;   // Notice that addition of the response (1-F) here
+    float3 diffuse = float3(0, 0, 0);
+
+    if (lightingModel == HairLightingModel::GGX)
+    {
+        // Notice that addition of the response (1-F) here
+        diffuse = HairDiffuseLambertian(surface.albedo, surface.normal, dirToLight) * lightingData.diffuseResponse;
+    }
+    else if (lightingModel == HairLightingModel::Marschner)
+    {
+        return float3(0.0f, 0.0f, 0.0f);
+    }
+    else
+    {
+        diffuse = float3(0, 1, 0);
+    }
+
+    diffuse *= lightIntensity;   
     return diffuse;
-}
-
-float3 GetSpecularLighting(Surface surface, LightingData lightingData, const float3 lightIntensity, const float3 dirToLight)
-{
-    float3 specular = SpecularGGX(lightingData.dirToCamera, dirToLight, surface.normal, surface.specularF0, lightingData.NdotV, surface.roughnessA2, lightingData.multiScatterCompensation);
-    specular *= lightIntensity;
-    return specular;
-}
-
-float3 GetHairBackLighting(Surface surface, LightingData lightingData, float3 lightIntensity, float3 dirToLight, float shadowRatio)
-{
-    float3 result = float3(0.0, 0.0, 0.0);
-    float thickness = 0.0; 
-    float4 transmissionParams = surface.transmission.transmissionParams;
-
-    // Thin object mode, using thin-film assumption proposed by Jimenez J. et al, 2010, "Real-Time Realistic Skin Translucency"
-    // http://www.iryoku.com/translucency/downloads/Real-Time-Realistic-Skin-Translucency.pdf
-
-    result = shadowRatio ? float3(0.0, 0.0, 0.0) : TransmissionKernel(surface.transmission.thickness * transmissionParams.w, rcp(transmissionParams.xyz)) * 
-        saturate(dot(-surface.normal, dirToLight)) * lightIntensity * shadowRatio;
-
-    return result;
 }
 
 void UpdateLightingParameters(
@@ -101,9 +139,17 @@ void SetNormal(
     inout LightingData lightingData)
 {
     // Direct towards close to half vector by never cross fully (more weight to camera direction)
-    float3 halfDir = normalize( dirToLight + 1.2 * lightingData.dirToCamera);
-    float3 biNormal = cross(tangent, halfDir);
-//    float3 biNormal = cross(tangent, lightingData.dirToCamera);   // Original - simple face forward
+    float3 biNormal;
+    if (lightingModel == HairLightingModel::GGX)
+    {
+        float3 halfDir = normalize( dirToLight + 1.2 * lightingData.dirToCamera);
+        biNormal = cross(tangent, halfDir);
+    }
+    else
+    {
+        biNormal = cross(tangent, lightingData.dirToCamera);   // Original - simple face forward
+    }
+
     float3 projectedNormal = cross(biNormal, tangent);
     surface.normal = normalize(projectedNormal);
 
@@ -301,6 +347,144 @@ void ApplyAllPointLights(Surface surface, inout LightingData lightingData)
 //                             Disk Lights
 //==============================================================================
 #include <Atom/Features/PBR/Lights/DiskLight.azsli>
+/*
+void TestApplyDiskLight(ViewSrg::DiskLight light, Surface surface, inout LightingData lightingData)
+{
+    float3 posToLight = light.m_position - surface.position;
+    float distanceToLight2 = dot(posToLight, posToLight); // light distance squared
+    float falloff = distanceToLight2 * light.m_invAttenuationRadiusSquared;
+
+    float3 posToLightDir = normalize(posToLight);
+
+    // Reduce the brightness based on how much the disk is facing this pixel.
+    float angleFalloff = dot(posToLightDir, -light.m_direction);
+
+    // Only calculate shading if light is in range
+    if (falloff < 1.0f && angleFalloff > 0.0f)
+    {
+        bool useConeAngle = light.m_flags & DiskLightFlag::UseConeAngle;
+        float3 dirToConeTip;
+        float dotWithDirection;
+
+        if (useConeAngle)
+        {
+            float3 coneTipPosition = light.m_position + light.m_bulbPositionOffset * -light.m_direction;
+            dirToConeTip = normalize(coneTipPosition - surface.position);
+            dotWithDirection = dot(dirToConeTip, -normalize(light.m_direction));
+
+            // If outside the outer cone angle return.
+            if (dotWithDirection < light.m_cosOuterConeAngle)
+            {
+                return;
+            }
+        }
+
+        // Smoothly adjusts the light intensity so it reaches 0 at light.m_attenuationRadius distance
+        float radiusAttenuation = 1.0 - (falloff * falloff);
+        radiusAttenuation = radiusAttenuation * radiusAttenuation;
+
+        // Find the distance to the closest point on the disk
+        float distanceToPlane = dot(posToLight, -light.m_direction);
+        float distanceToPlane2 = distanceToPlane * distanceToPlane;
+        float pointOnPlaneToLightDistance = sqrt(distanceToLight2 - distanceToPlane2); // pythagorean theorem 
+        float pointOnPlaneToDiskDistance = max(pointOnPlaneToLightDistance - light.m_diskRadius, 0.0f); 
+        float distanceToDisk2 = pointOnPlaneToDiskDistance * pointOnPlaneToDiskDistance + distanceToPlane2;
+
+        // Update the light direction based on the edges of the disk as visible from this point instead of the center.
+        float3 pointOnPlane = -light.m_direction * distanceToPlane;
+        float3 pointOnPlaneToLightDir = normalize(posToLight - pointOnPlane);
+        float3 nearSideDir = normalize(pointOnPlane + pointOnPlaneToLightDir * (pointOnPlaneToLightDistance - light.m_diskRadius));
+        float3 farSideDir = normalize(pointOnPlane + pointOnPlaneToLightDir * (pointOnPlaneToLightDistance + light.m_diskRadius));
+        posToLightDir = normalize((nearSideDir + farSideDir) * 0.5);
+
+        // Standard quadratic falloff
+        distanceToDisk2 = max(0.001 * 0.001, distanceToDisk2); // clamp the light to at least 1mm away to avoid extreme values.
+        float3 lightIntensity = (light.m_rgbIntensityCandelas / distanceToDisk2) * radiusAttenuation * angleFalloff;
+
+        // Adjust brightness based on the disk size relative to its distance.
+        // The larger the disk is relative to the surface point, the dimmer it becomes.
+        // 0 radius disks are unaffected.
+        lightIntensity /= ((light.m_diskRadius / distanceToPlane) + 1.0);
+
+        // shadow
+        float litRatio = 1.0;
+
+        // How much is back face shadowed, it's set to the reverse of litRatio to share the same default value with thickness, which should be 0 if no shadow map available
+        float backShadowRatio = 0.0;
+        {
+            litRatio = ProjectedShadow::GetVisibility(
+                light.m_shadowIndex,
+                light.m_position,
+                surface.position,
+                -dirToConeTip,
+                surface.normal);
+
+            // Use backShadowRatio to carry thickness from shadow map for thick mode
+            backShadowRatio = 1.0 - litRatio;
+            if (o_transmission_mode == TransmissionMode::ThickObject)
+            {
+                backShadowRatio = ProjectedShadow::GetThickness(
+                    light.m_shadowIndex,
+                    surface.position);
+            }
+        }
+
+        if (useConeAngle && dotWithDirection < light.m_cosInnerConeAngle) // in penumbra
+        {   
+            // Normalize into 0.0 - 1.0 space.
+            float penumbraMask = (dotWithDirection - light.m_cosOuterConeAngle) / (light.m_cosInnerConeAngle - light.m_cosOuterConeAngle);
+
+            // Apply smoothstep
+            penumbraMask = penumbraMask * penumbraMask * (3.0 - 2.0 * penumbraMask);
+
+            lightIntensity *= penumbraMask;
+        }
+
+        // Diffuse contribution
+        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, posToLightDir) * litRatio;
+
+        // Tranmission contribution
+        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, lightIntensity, posToLightDir, 0.0) * litRatio;
+
+        // Adjust the light direction for specular based on disk size
+
+        // Calculate the reflection off the normal from the view direction
+        float3 reflectionDir = reflect(-lightingData.dirToCamera, surface.normal);
+        float reflectionDotLight = dot(reflectionDir, -light.m_direction);
+
+        // Let 'Intersection' denote the point where the reflection ray intersects the diskLight plane
+        // As such, posToIntersection denotes the vector from pos to the intersection of the reflection ray and the disk plane:
+        float3 posToIntersection;
+
+        if (reflectionDotLight >= 0.0001)
+        {
+            // Reflection going towards the light
+            posToIntersection = reflectionDir * distanceToPlane / reflectionDotLight;
+        }
+        else
+        {
+            // Reflection going away from the light. Choose a point far off and project it on the plane,
+            // then treat that as the reflection plane intersection.
+            float3 posToFarOffPoint = reflectionDir * distanceToPlane * 10000.0;
+            float3 lightToFarOffPoint = posToFarOffPoint - posToLight;
+            float3 intersectionToFarOffPoint = dot(lightToFarOffPoint, light.m_direction) * light.m_direction;
+            posToIntersection = posToFarOffPoint - intersectionToFarOffPoint;
+        }
+
+        // Calculate a vector from the reflection vector to the light
+        float3 intersectionToLight = posToLight - posToIntersection;
+
+        // Adjust the direction to light based on the bulb size
+        posToLight -= intersectionToLight * saturate(light.m_diskRadius / length(intersectionToLight));
+
+        // Adjust the intensity of the light based on the bulb size to conserve energy
+        float diskIntensityNormalization = GetIntensityAdjustedByRadiusAndRoughness(surface.roughnessA, light.m_diskRadius, distanceToLight2);
+
+        // Specular contribution
+        lightingData.specularLighting += diskIntensityNormalization * GetSpecularLighting(surface, lightingData, lightIntensity, normalize(posToLight)) * litRatio;
+    }
+}
+*/
 
 void ApplyAllDiskLights(Surface surface, inout LightingData lightingData)
 {    
@@ -324,7 +508,7 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
     float litRatio = 1.0f;
     float backShadowRatio = 0.0f;
 
-    SetNormal(surface.tangent, lightingData.dirToCamera, surface, lightingData);
+    SetNormal(surface.tangent, -lightingData.dirToCamera, surface, lightingData);
 
 //    if (o_enableShadows && shadowIndex <  SceneSrg::m_directionalLightCount)
     if (shadowIndex <  SceneSrg::m_directionalLightCount)
@@ -335,10 +519,10 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
             surface.normal,
             debugInfo);
 
-        if (o_transmission_mode == TransmissionMode::ThickObject)
-        {
-            backShadowRatio = DirectionalLightShadow::GetThickness(shadowIndex, lightingData.shadowCoords);
-        }
+//        if (o_transmission_mode == TransmissionMode::ThickObject)
+//        {
+//            backShadowRatio = DirectionalLightShadow::GetThickness(shadowIndex, lightingData.shadowCoords);
+//        }
     }
 
     // Add the lighting contribution for each directional light
@@ -356,13 +540,11 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
         dirToLight += lightDirToReflectionDir * lightDirToReflectionDirLen;
         dirToLight = normalize(dirToLight);
 
-        // [GFX TODO][ATOM-2012] care of multiple directional light
-        // Currently shadow check is done only for index == shadowIndex.
         float currentLitRatio = 1.0f;
         float currentBackShadowRatio = 1.0f;
 //        if (o_enableShadows)
         {
-            currentLitRatio = (index == shadowIndex) ? litRatio : 1.;
+            currentLitRatio = (index == shadowIndex) ? litRatio : 1.0f;
 
             currentBackShadowRatio = 1.0 - currentLitRatio;
             if (o_transmission_mode == TransmissionMode::ThickObject)
@@ -385,7 +567,8 @@ float3 ApplyIblDiffuse(Surface surface, LightingData lightingData)
     float3 irradianceDir = MultiplyVectorQuaternion(surface.normal, SceneSrg::m_iblOrientation);
     float3 diffuseSample = SceneSrg::m_diffuseEnvMap.Sample(SceneSrg::m_samplerEnv, GetCubemapCoords(irradianceDir)).rgb;
 
-    return lightingData.diffuseResponse * surface.albedo * diffuseSample;
+    float3 diffuseLighting = GetDiffuseLighting(surface, lightingData, diffuseSample, surface.normal);
+    return diffuseLighting;
 }
 
 float3 ApplyIblSpecular(Surface surface, LightingData lightingData)
@@ -394,12 +577,12 @@ float3 ApplyIblSpecular(Surface surface, LightingData lightingData)
     reflectDir = MultiplyVectorQuaternion(reflectDir, SceneSrg::m_iblOrientation);    
 
     // global
-    float3 outSpecular = SceneSrg::m_specularEnvMap.SampleLevel(
+    float3 specularSample = SceneSrg::m_specularEnvMap.SampleLevel(
         SceneSrg::m_samplerEnv, GetCubemapCoords(reflectDir), 
         GetRoughnessMip(surface.roughnessLinear)).rgb;
-    outSpecular *= (surface.specularF0 * lightingData.brdf.x + lightingData.brdf.y);
 
-    return outSpecular;
+    float3 specularLighting = GetSpecularLighting(surface, lightingData, specularSample, reflectDir);
+    return specularLighting;
 }
 
 void ApplyIBL(Surface surface, inout LightingData lightingData)
@@ -413,4 +596,36 @@ void ApplyIBL(Surface surface, inout LightingData lightingData)
     float iblExposureFactor = pow(2.0, SceneSrg::m_iblExposure);
     lightingData.diffuseLighting += (iblDiffuse * iblExposureFactor * lightingData.diffuseAmbientOcclusion);
     lightingData.specularLighting += (iblSpecular * iblExposureFactor);
+}
+
+
+//==============================================================================
+//                         
+//                       Light Types Application
+// 
+//==============================================================================
+void ApplyLighting(inout Surface surface, inout LightingData lightingData)
+{
+    // Shadow coordinates generation for the directional light
+    const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
+    if (shadowIndex < SceneSrg::m_directionalLightCount)
+    {
+        DirectionalLightShadow::GetShadowCoords(shadowIndex, surface.position, lightingData.shadowCoords);
+    }
+
+    //-------------------------
+    // Light loops application.
+    // If culling is used, the order of the calls must match the light types list order 
+    ApplyDecals(lightingData.tileIterator, surface);
+
+    ApplyDirectionalLights(surface, lightingData);
+
+    ApplyAllSimplePointLights(surface, lightingData);
+    ApplyAllSimpleSpotLights(surface, lightingData);
+    ApplyAllPointLights(surface, lightingData);
+
+    ApplyAllDiskLights(surface, lightingData);
+
+    ApplyIBL(surface, lightingData); 
+    //--------------------------
 }
