@@ -59,4 +59,14 @@ namespace AzNetworking
     {
         return m_connectionMetrics;
     }
+
+    inline const ConnectionQuality& IConnection::GetConnectionQuality() const
+    {
+        return m_connectionQuality;
+    }
+
+    inline ConnectionQuality& IConnection::GetConnectionQuality()
+    {
+        return m_connectionQuality;
+    }
 }
