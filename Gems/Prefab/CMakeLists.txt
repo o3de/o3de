@@ -7,3 +7,4 @@
 #
 
 add_subdirectory(PrefabBuilder)
+add_subdirectory(PrefabDependencyViewer)

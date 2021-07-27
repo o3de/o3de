@@ -53,5 +53,4 @@ set(ENABLED_GEMS
     AWSClientAuth
     AWSMetrics    
     AudioSystem
-    PrefabDependencyViewer
 )
