@@ -33,7 +33,7 @@ namespace AZ
             void ResetPerFrameStatistics();
 
             // Get a string of all threads that this region executed in during the last frame
-            AZStd::string TableRow::GetExecutingThreadsLabel() const;
+            AZStd::string GetExecutingThreadsLabel() const;
                
             AZStd::string m_groupName;
             AZStd::string m_regionName;

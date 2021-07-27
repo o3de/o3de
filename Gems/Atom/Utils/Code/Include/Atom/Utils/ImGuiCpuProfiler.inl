@@ -180,7 +180,7 @@ namespace AZ
                     ImGui::Text("%.2f", CpuProfilerImGuiHelper::TicksToMs(statistics->m_maxTicks));
                     ImGui::TableNextColumn();
 
-                    ImGui::Text("%ld", statistics->m_invocationsLastFrame);
+                    ImGui::Text("%llu", statistics->m_invocationsLastFrame);
                     ImGui::TableNextColumn();
 
                     ImGui::Text("%.2f", CpuProfilerImGuiHelper::TicksToMs(statistics->m_lastFrameTotalTicks));
