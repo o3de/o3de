@@ -47,6 +47,7 @@ namespace Audio
         static constexpr const char* ATLInternalNameAttribute = "atl_internal_name";
         static constexpr const char* ATLTypeAttribute = "atl_type";
         static constexpr const char* ATLConfigGroupAttribute = "atl_config_group_name";
+        static constexpr const char* ATLPathAttribute = "path";
 
         static constexpr const char* ATLDataLoadType = "AutoLoad";
 
