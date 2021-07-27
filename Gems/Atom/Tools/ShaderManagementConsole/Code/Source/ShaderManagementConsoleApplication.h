@@ -43,13 +43,9 @@ namespace ShaderManagementConsole
         void Destroy() override;
         //////////////////////////////////////////////////////////////////////////
 
-        //////////////////////////////////////////////////////////////////////////
-        // AzFramework::AssetSystemStatusBus::Handler overrides...
-        void AssetSystemAvailable() override;
-        //////////////////////////////////////////////////////////////////////////
-
         void ProcessCommandLine();
         void StartInternal() override;
-        AZStd::string GetBuildTargetName() override;
+        AZStd::string GetBuildTargetName() const override;
+        AZStd::vector<AZStd::string> GetCriticalAssetFilters() const override;
     };
 } // namespace ShaderManagementConsole

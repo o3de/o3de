@@ -63,6 +63,11 @@ namespace AtomToolsFramework
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
+        // AzFramework::AssetSystemStatusBus::Handler overrides...
+        void AssetSystemAvailable() override;
+        //////////////////////////////////////////////////////////////////////////
+
+        //////////////////////////////////////////////////////////////////////////
         // AZ::ComponentApplication overrides...
         void QueryApplicationType(AZ::ApplicationTypeQuery& appType) const override;
         //////////////////////////////////////////////////////////////////////////
@@ -79,7 +84,8 @@ namespace AtomToolsFramework
         void OnExceptionMessage(AZStd::string_view message) override;
         ////////////////////////////////////////////////////////////////////////
 
-        virtual AZStd::string GetBuildTargetName();
+        virtual AZStd::string GetBuildTargetName() const;
+        virtual AZStd::vector<AZStd::string> GetCriticalAssetFilters() const;
 
         virtual void LoadSettings();
         virtual void UnloadSettings();

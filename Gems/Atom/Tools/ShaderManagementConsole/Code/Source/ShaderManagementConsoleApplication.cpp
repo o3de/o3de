@@ -47,7 +47,7 @@ AZ_POP_DISABLE_WARNING
 
 namespace ShaderManagementConsole
 {
-    AZStd::string ShaderManagementConsoleApplication::GetBuildTargetName()
+    AZStd::string ShaderManagementConsoleApplication::GetBuildTargetName() const
     {
 #if !defined (LY_CMAKE_TARGET)
 #error "LY_CMAKE_TARGET must be defined in order to add this source file to a CMake executable target"
@@ -100,40 +100,11 @@ namespace ShaderManagementConsole
         Base::Destroy();
     }
 
-    void ShaderManagementConsoleApplication::AssetSystemAvailable()
+    AZStd::vector<AZStd::string> ShaderManagementConsoleApplication::GetCriticalAssetFilters() const
     {
-        // Try connect to AP first before try to launch it manually.
-        bool connected = false;
-        auto ConnectToAssetProcessorWithIdentifier = [&connected](AzFramework::AssetSystem::AssetSystemRequests* assetSystemRequests)
-        {
-            // When the AssetProcessor is already launched it should take less than a second to perform a connection
-            // but when the AssetProcessor needs to be launch it could take up to 15 seconds to have the AssetProcessor initialize
-            // and able to negotiate a connection when running a debug build
-            // and to negotiate a connection
-
-            AzFramework::AssetSystem::ConnectionSettings connectionSettings;
-            AzFramework::AssetSystem::ReadConnectionSettingsFromSettingsRegistry(connectionSettings);
-            connectionSettings.m_connectionDirection = AzFramework::AssetSystem::ConnectionSettings::ConnectionDirection::ConnectToAssetProcessor;
-            connectionSettings.m_connectionIdentifier = "Shader Management Console";
-            connectionSettings.m_loggingCallback = []([[maybe_unused]] AZStd::string_view logData)
-            {
-                AZ_TracePrintf("Shader Management Console", "%.*s", aznumeric_cast<int>(logData.size()), logData.data());
-            };
-
-            connected = assetSystemRequests->EstablishAssetProcessorConnection(connectionSettings);
-        };
-        AzFramework::AssetSystemRequestBus::Broadcast(ConnectToAssetProcessorWithIdentifier);
-
-        if (connected)
-        {
-            // List of common asset filters for things that need to be compiled to run the material editor
-            // Some of these things will not be necessary once we have proper support for queued asset loading and reloading
-            const AZStd::vector<AZStd::string> assetFiltersArray = { "passes/", "config/" };
-
-            CompileCriticalAssets(assetFiltersArray);
-        }
-
-        AzFramework::AssetSystemStatusBus::Handler::BusDisconnect();
+        // List of common asset filters for things that need to be compiled to run the material editor
+        // Some of these things will not be necessary once we have proper support for queued asset loading and reloading
+        return AZStd::vector<AZStd::string>({ "passes/", "config/" });
     }
 
     void ShaderManagementConsoleApplication::ProcessCommandLine()

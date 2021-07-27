@@ -39,7 +39,7 @@ AZ_POP_DISABLE_WARNING
 
 namespace AtomToolsFramework
 {
-    AZStd::string AtomToolsApplication::GetBuildTargetName()
+    AZStd::string AtomToolsApplication::GetBuildTargetName() const
     {
         return AZStd::string("AtomTools");
     }
@@ -69,7 +69,7 @@ namespace AtomToolsFramework
 
     void AtomToolsApplication::Reflect(AZ::ReflectContext* context)
     {
-        Application::Reflect(context);
+        Base::Reflect(context);
 
         AzToolsFramework::AssetBrowser::AssetBrowserEntry::Reflect(context);
         AzToolsFramework::AssetBrowser::RootAssetBrowserEntry::Reflect(context);
@@ -82,13 +82,12 @@ namespace AtomToolsFramework
 
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            AZStd::string fileName = GetBuildTargetName() + ".general";
             // this will put these methods into the 'azlmbr.AtomTools.general' module
-            auto addGeneral = [fileName](AZ::BehaviorContext::GlobalMethodBuilder methodBuilder)
+            auto addGeneral = [](AZ::BehaviorContext::GlobalMethodBuilder methodBuilder)
             {
                 methodBuilder->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                     ->Attribute(AZ::Script::Attributes::Category, "Editor")
-                    ->Attribute(AZ::Script::Attributes::Module, fileName);
+                    ->Attribute(AZ::Script::Attributes::Module, "AtomTools");
             };
             // The reflection here is based on patterns in CryEditPythonHandler::Reflect
             addGeneral(behaviorContext->Method(
@@ -148,6 +147,42 @@ namespace AtomToolsFramework
 
         AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::StartDisconnectingAssetProcessor);
         Base::Destroy();
+    }
+
+    AZStd::vector<AZStd::string> AtomToolsApplication::GetCriticalAssetFilters() const
+    {
+        // List of common asset filters for things that need to be compiled to run the material editor
+        // Some of these things will not be necessary once we have proper support for queued asset loading and reloading
+        return AZStd::vector<AZStd::string>({ "passes/", "config/" });
+    }
+
+    void AtomToolsApplication::AssetSystemAvailable()
+    {
+        bool connectedToAssetProcessor = false;
+
+        // When the AssetProcessor is already launched it should take less than a second to perform a connection
+        // but when the AssetProcessor needs to be launch it could take up to 15 seconds to have the AssetProcessor initialize
+        // and able to negotiate a connection when running a debug build
+        // and to negotiate a connection
+
+        AzFramework::AssetSystem::ConnectionSettings connectionSettings;
+        AzFramework::AssetSystem::ReadConnectionSettingsFromSettingsRegistry(connectionSettings);
+        connectionSettings.m_connectionDirection =
+            AzFramework::AssetSystem::ConnectionSettings::ConnectionDirection::ConnectToAssetProcessor;
+        connectionSettings.m_connectionIdentifier = GetBuildTargetName();
+        connectionSettings.m_loggingCallback = []([[maybe_unused]] AZStd::string_view logData)
+        {
+            AZ_TracePrintf("Atom Tools", "%.*s", aznumeric_cast<int>(logData.size()), logData.data());
+        };
+        AzFramework::AssetSystemRequestBus::BroadcastResult(
+            connectedToAssetProcessor, &AzFramework::AssetSystemRequestBus::Events::EstablishAssetProcessorConnection, connectionSettings);
+
+        if (connectedToAssetProcessor)
+        {
+            CompileCriticalAssets(GetCriticalAssetFilters());
+        }
+
+        AzFramework::AssetSystemStatusBus::Handler::BusDisconnect();
     }
 
     void AtomToolsApplication::CompileCriticalAssets(const AZStd::vector<AZStd::string> &assetFiltersArray)
