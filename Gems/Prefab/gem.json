@@ -1,0 +1,12 @@
+{
+    "gem_name": "Prefab",
+    "display_name": "Prefab",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Open 3D Engine - o3de.org",
+    "type": "Code",
+    "summary": "Prefab Gem provides an Asset Processor module for prefabs, which are complex assets built by combining smaller entities. [Experimental] Enables a Prefab Relationship Viewer UI in the editor",
+    "canonical_tags": ["Gem"],
+    "user_tags": ["Assets", "Utility", "Core"],
+    "icon_path": "preview.png",
+    "requirements": ""
+}
