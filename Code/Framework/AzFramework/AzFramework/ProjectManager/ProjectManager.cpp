@@ -93,7 +93,7 @@ namespace AzFramework::ProjectManager
             AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
         }
         {
-            AZStd::string filename = "o3de";
+            AZStd::string filename = "REngine";
             AZ::IO::FixedMaxPath executablePath = AZ::Utils::GetExecutableDirectory();
             executablePath /= filename + AZ_TRAIT_OS_EXECUTABLE_EXTENSION;
 

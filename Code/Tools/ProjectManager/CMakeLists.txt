@@ -47,7 +47,7 @@ ly_add_target(
 
 ly_add_target(
     NAME ProjectManager APPLICATION
-    OUTPUT_NAME o3de
+    OUTPUT_NAME REngine
     NAMESPACE AZ
     AUTORCC
     FILES_CMAKE
