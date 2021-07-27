@@ -1,0 +1,18 @@
+{
+    "gem_name": "Javascript",
+    "display_name": "Javascript",
+    "license": "",
+    "origin": "",
+    "type": "Tool",
+    "summary": "Javascript Scripting Enviroment.",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Javascript",
+        "Debug",
+        "Scripting"
+    ],
+    "icon_path": "preview.png",
+    "requirements": ""
+}

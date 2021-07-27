@@ -84,7 +84,8 @@
         "Gems/Vegetation",
         "Gems/VideoPlaybackFramework",
         "Gems/VirtualGamepad",
-        "Gems/WhiteBox"
+        "Gems/WhiteBox",
+        "Gems/Javascript"
     ],
     "projects": [
     ],
