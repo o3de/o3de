@@ -89,7 +89,7 @@ namespace AtomToolsFramework
 
         virtual void LoadSettings();
         virtual void UnloadSettings();
-        virtual void CompileCriticalAssets(const AZStd::vector<AZStd::string> &assetFiltersArray);
+        virtual void CompileCriticalAssets();
         virtual void ProcessCommandLine(const AZ::CommandLine& commandLine);
         virtual bool LaunchDiscoveryService();
         virtual void StartInternal();

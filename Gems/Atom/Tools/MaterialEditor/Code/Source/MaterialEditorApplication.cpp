@@ -78,12 +78,6 @@ namespace MaterialEditor
 
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(
             *AZ::SettingsRegistry::Get(), GetBuildTargetName());
-
-        connect(&m_timer, &QTimer::timeout, this, [&]()
-        {
-            this->PumpSystemEventLoopUntilEmpty();
-            this->Tick();
-        });
     }
 
     MaterialEditorApplication::~MaterialEditorApplication()

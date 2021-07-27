@@ -59,6 +59,11 @@ namespace AtomToolsFramework
         : Application(argc, argv)
         , AzQtApplication(*argc, *argv)
     {
+        connect(&m_timer, &QTimer::timeout, this, [&]()
+        {
+            this->PumpSystemEventLoopUntilEmpty();
+            this->Tick();
+        });
     }
 
     void AtomToolsApplication::CreateReflectionManager()
@@ -155,7 +160,7 @@ namespace AtomToolsFramework
     {
         // List of common asset filters for things that need to be compiled to run the material editor
         // Some of these things will not be necessary once we have proper support for queued asset loading and reloading
-        return AZStd::vector<AZStd::string>({ "passes/", "config/" });
+        return AZStd::vector<AZStd::string>({});
     }
 
     void AtomToolsApplication::AssetSystemAvailable()
@@ -183,13 +188,13 @@ namespace AtomToolsFramework
 
         if (connectedToAssetProcessor)
         {
-            CompileCriticalAssets(GetCriticalAssetFilters());
+            CompileCriticalAssets();
         }
 
         AzFramework::AssetSystemStatusBus::Handler::BusDisconnect();
     }
 
-    void AtomToolsApplication::CompileCriticalAssets(const AZStd::vector<AZStd::string> &assetFiltersArray)
+    void AtomToolsApplication::CompileCriticalAssets()
     {
         AZ_TracePrintf(GetBuildTargetName().c_str(), "Compiling critical assets.\n");
 
@@ -198,7 +203,7 @@ namespace AtomToolsFramework
         // Forced asset processor to synchronously process all critical assets
         // Note: with AssetManager's current implementation, a compiled asset won't be added in asset registry until next system tick.
         // So the asset id won't be found right after CompileAssetSync call.
-        for (const AZStd::string& assetFilters : assetFiltersArray)
+        for (const AZStd::string& assetFilters : GetCriticalAssetFilters())
         {
             AZ_TracePrintf(GetBuildTargetName().c_str(), "Compiling critical asset matching: %s.\n", assetFilters.c_str());
 
@@ -424,7 +429,7 @@ namespace AtomToolsFramework
     void AtomToolsApplication::Tick(float deltaOverride)
     {
         TickSystem();
-        Application::Tick(deltaOverride);
+        Base::Tick(deltaOverride);
 
         if (WasExitMainLoopRequested())
         {
