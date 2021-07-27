@@ -54,7 +54,6 @@ namespace MultiplayerDiagnostics
         ComponentReporter() = default;
 
         void ReportField(const char* fieldName, size_t byteSize);
-        void ReportDirtyBits(size_t byteSize) { m_componentDirtyBytes.AggregateBytes(byteSize); }
         void ReportFragmentEnd();
 
         using Report = AZStd::pair<AZStd::string, MultiplayerDebugByteReporter*>;
@@ -75,11 +74,17 @@ namespace MultiplayerDiagnostics
         EntityReporter() = default;
 
         void ReportField(AZ::u32 index, const char* componentName, const char* fieldName, size_t byteSize);
-        void ReportDirtyBits(AZ::u32 index, const char* componentName, size_t byteSize);
         void ReportFragmentEnd();
 
         void Combine(const EntityReporter& other);
         void Reset() override;
+
+        const char* GetEntityName() const { return m_entityName.c_str(); }
+        void SetEntityName(const char* entityName)
+        {
+            // copying because the entity might go away
+            m_entityName = entityName;
+        }
 
         AZStd::map<AZStd::string, ComponentReporter>& GetComponentReports();
         AZStd::size_t GetTotalDirtyBits() const { return m_gdeDirtyBytes.GetTotalBytes(); }
@@ -89,5 +94,6 @@ namespace MultiplayerDiagnostics
         ComponentReporter* m_currentComponentReport = nullptr;
         AZStd::map<AZStd::string, ComponentReporter> m_componentReports;
         MultiplayerDebugByteReporter m_gdeDirtyBytes;
+        AZStd::string m_entityName;
     };
 }

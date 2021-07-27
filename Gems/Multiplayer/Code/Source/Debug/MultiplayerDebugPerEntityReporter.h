@@ -42,10 +42,10 @@ namespace MultiplayerDiagnostics
 
     private:
 
-        AZStd::map<AZStd::string, EntityReporter> m_sendingEntityReports{};
+        AZStd::map<AZ::EntityId, EntityReporter> m_sendingEntityReports{};
         EntityReporter m_currentSendingEntityReport;
 
-        AZStd::map<AZStd::string, EntityReporter> m_receivingEntityReports{};
+        AZStd::map<AZ::EntityId, EntityReporter> m_receivingEntityReports{};
         EntityReporter m_currentReceivingEntityReport;
 
         float m_replicatedStateKbpsWarn = 10.f;

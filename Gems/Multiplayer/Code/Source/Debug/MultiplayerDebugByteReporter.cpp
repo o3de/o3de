@@ -163,25 +163,6 @@ namespace MultiplayerDiagnostics
         MultiplayerDebugByteReporter::AggregateBytes(byteSize);
     }
 
-    void EntityReporter::ReportDirtyBits(AZ::u32 index, const char* componentName, size_t byteSize)
-    {
-        const char* const prefix = "MB::";
-        if (strncmp(prefix, componentName, 4) == 0)
-        {
-            componentName += strlen(prefix);
-        }
-
-        if (m_currentComponentReport == nullptr)
-        {
-            std::stringstream component;
-            component << "[" << std::setw(2) << std::setfill('0') << static_cast<int>(index) << "]" << " " << componentName;
-            m_currentComponentReport = &m_componentReports[component.str().c_str()];
-        }
-
-        m_currentComponentReport->ReportDirtyBits(byteSize);
-        m_gdeDirtyBytes.AggregateBytes(byteSize);
-    }
-
     void EntityReporter::ReportFragmentEnd()
     {
         if (m_currentComponentReport)
@@ -203,6 +184,7 @@ namespace MultiplayerDiagnostics
             m_componentReports[componentIter.first].Combine(componentIter.second);
         }
 
+        SetEntityName(other.GetEntityName());
         m_gdeDirtyBytes.Combine(other.m_gdeDirtyBytes);
     }
 

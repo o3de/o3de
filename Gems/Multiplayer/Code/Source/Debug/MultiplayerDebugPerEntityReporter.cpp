@@ -119,15 +119,15 @@ namespace MultiplayerDiagnostics
 
         if (ImGui::CollapsingHeader("Receiving Entities"))
         {
-            for (auto& entityPair : m_receivingEntityReports)
+            for (AZStd::pair<AZ::EntityId, EntityReporter>& entityPair : m_receivingEntityReports)
             {
-                if (!filter.PassFilter(entityPair.first.c_str()))
+                if (!filter.PassFilter(entityPair.second.GetEntityName()))
                 {
                     continue;
                 }
 
                 ImGui::Separator();
-                if (ReplicatedStateTreeNode(entityPair.first, entityPair.second, k_ImGuiDusk))
+                if (ReplicatedStateTreeNode(entityPair.second.GetEntityName(), entityPair.second, k_ImGuiDusk))
                 {
                     DisplayReplicatedStateReport(entityPair.second.GetComponentReports(), m_replicatedStateKbpsWarn, m_replicatedStateMaxSizeWarn);
                     ImGui::TreePop();
@@ -137,15 +137,16 @@ namespace MultiplayerDiagnostics
 
         if (ImGui::CollapsingHeader("Sending Entities"))
         {
-            for (auto& entityPair : m_sendingEntityReports)
+            for (AZStd::pair<AZ::EntityId, EntityReporter>& entityPair : m_sendingEntityReports)
             {
-                if (!filter.PassFilter(entityPair.first.c_str()))
+                const char* name = entityPair.second.GetEntityName();
+                if (!filter.PassFilter(name))
                 {
                     continue;
                 }
 
                 ImGui::Separator();
-                if (ReplicatedStateTreeNode(entityPair.first, entityPair.second, k_ImGuiDusk))
+                if (ReplicatedStateTreeNode(name, entityPair.second, k_ImGuiDusk))
                 {
                     DisplayReplicatedStateReport(entityPair.second.GetComponentReports(), m_replicatedStateKbpsWarn, m_replicatedStateMaxSizeWarn);
                     ImGui::TreePop();
@@ -162,9 +163,11 @@ namespace MultiplayerDiagnostics
         {
         case AzNetworking::SerializerMode::ReadFromObject:
             m_currentSendingEntityReport.Reset();
+            m_currentSendingEntityReport.SetEntityName(entityName);
             break;
         case AzNetworking::SerializerMode::WriteToObject:
             m_currentReceivingEntityReport.Reset();
+            m_currentReceivingEntityReport.SetEntityName(entityName);
             break;
         }
     }
@@ -183,15 +186,15 @@ namespace MultiplayerDiagnostics
     }
 
     void MultiplayerDebugPerEntityReporter::RecordEntitySerializeStop(AzNetworking::SerializerMode mode,
-        [[maybe_unused]] AZ::EntityId entityId, const char* entityName)
+        [[maybe_unused]] AZ::EntityId entityId, [[maybe_unused]] const char* entityName)
     {
         switch (mode)
         {
         case AzNetworking::SerializerMode::ReadFromObject:
-            m_sendingEntityReports[entityName].Combine(m_currentSendingEntityReport);
+            m_sendingEntityReports[entityId].Combine(m_currentSendingEntityReport);
             break;
         case AzNetworking::SerializerMode::WriteToObject:
-            m_receivingEntityReports[entityName].Combine(m_currentReceivingEntityReport);
+            m_receivingEntityReports[entityId].Combine(m_currentReceivingEntityReport);
             break;
         }
     }
