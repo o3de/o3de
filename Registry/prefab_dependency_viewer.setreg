@@ -1,0 +1,12 @@
+{
+    "Amazon":
+    {
+        "Gems":
+        {
+            "PrefabDependencyViewer.Editor":
+            {
+                "AutoLoad": false
+            }
+        }
+    }
+}
