@@ -1151,6 +1151,52 @@ namespace PhysX
         EXPECT_LT(rigidBodyTrigger->GetPosition().GetZ(), 0.5f);
     }
 
+    TEST_F(PhysXSpecificTest, RigidBody_RigidBodyWithAxisLockFlagsCreated_InternalPhysXFlagsSetAccordingly)
+    {
+        // Helper function wrapping creation logic
+        auto CreateRigidBody = [this](const AZ::Vector3& linearLock, const AZ::Vector3& angularLock) -> AzPhysics::RigidBody*
+        {
+            AzPhysics::RigidBodyConfiguration rigidBodyConfig;
+            rigidBodyConfig.m_linearAxisLock = linearLock;
+            rigidBodyConfig.m_angularAxisLock = angularLock;
+
+            if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+            {
+                AzPhysics::SimulatedBodyHandle simBodyHandle = sceneInterface->AddSimulatedBody(m_testSceneHandle, &rigidBodyConfig);
+                return azdynamic_cast<AzPhysics::RigidBody*>(sceneInterface->GetSimulatedBodyFromHandle(m_testSceneHandle, simBodyHandle));
+            }
+            return nullptr;
+        };
+
+        auto RemoveRigidBody = [this](AzPhysics::RigidBody*& rigidBody)
+        {
+            auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
+            if (rigidBody && sceneInterface)
+            {
+                sceneInterface->RemoveSimulatedBody(rigidBody->m_sceneOwner, rigidBody->m_bodyHandle);
+            }
+            rigidBody = nullptr;
+        };
+
+        auto TestLockFlags =
+            [&CreateRigidBody, &RemoveRigidBody](const AZ::Vector3& linearLock, const AZ::Vector3& angularLock, physx::PxRigidDynamicLockFlags expectedFlags)
+        {
+            auto* rigidBody = CreateRigidBody(linearLock, angularLock);
+            ASSERT_TRUE(rigidBody != nullptr);
+
+            physx::PxRigidDynamic* pxRigidBody = static_cast<physx::PxRigidDynamic*>(rigidBody->GetNativePointer());
+            EXPECT_EQ(pxRigidBody->getRigidDynamicLockFlags(), expectedFlags);
+
+            RemoveRigidBody(rigidBody);
+        };
+
+        TestLockFlags(AZ::Vector3::CreateZero(), AZ::Vector3::CreateZero(), physx::PxRigidDynamicLockFlags(0));
+        TestLockFlags(AZ::Vector3::CreateAxisX(1.0f), AZ::Vector3::CreateZero(), physx::PxRigidDynamicLockFlags(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_X));
+        TestLockFlags(AZ::Vector3::CreateZero(), AZ::Vector3::CreateAxisY(1.0f), physx::PxRigidDynamicLockFlags(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y));
+        TestLockFlags(AZ::Vector3::CreateAxisY(1.0f), AZ::Vector3::CreateAxisZ(1.0f),
+            physx::PxRigidDynamicLockFlags(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Y | physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z));
+    }
+
     // Fixture for testing combinations of densities on multiple shapes
     class MultiShapesDensityTestFixture
         : public ::testing::TestWithParam<AZStd::pair<float, float>>
