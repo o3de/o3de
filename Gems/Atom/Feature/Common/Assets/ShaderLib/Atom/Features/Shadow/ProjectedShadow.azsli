@@ -62,6 +62,7 @@ class ProjectedShadow
     float3 m_lightDirection;
     float3 m_normalVector;
     float3 m_shadowPosition;
+    float m_bias;
 };
 
 float ProjectedShadow::GetVisibility(
@@ -238,7 +239,7 @@ float ProjectedShadow::GetVisibilityEsm()
         }
         const float3 atlasPosition = GetAtlasPosition(m_shadowPosition.xy);
         const float depth = PerspectiveDepthToLinear(
-            m_shadowPosition.z, 
+            m_shadowPosition.z - m_bias, 
             coefficients);
         const float occluder = shadowmap.SampleLevel(
             PassSrg::LinearSampler, 
@@ -280,7 +281,7 @@ float ProjectedShadow::GetVisibilityEsmPcf()
         }
         const float3 atlasPosition = GetAtlasPosition(m_shadowPosition.xy);
         const float depth = PerspectiveDepthToLinear(
-            m_shadowPosition.z,
+            m_shadowPosition.z - m_bias,
             coefficients);
         const float occluder = shadowmap.SampleLevel(
             PassSrg::LinearSampler,
@@ -346,7 +347,7 @@ float ProjectedShadow::SamplePcfBicubic()
     param.shadowPos = float3(atlasPosition.xy * ViewSrg::m_invShadowmapAtlasSize, atlasPosition.z);
     param.shadowMapSize = ViewSrg::m_shadowmapAtlasSize;
     param.invShadowMapSize = ViewSrg::m_invShadowmapAtlasSize;
-    param.comparisonValue = m_shadowPosition.z - ViewSrg::m_projectedShadows[m_shadowIndex].m_bias;
+    param.comparisonValue = m_shadowPosition.z - m_bias;
     param.samplerState = SceneSrg::m_hwPcfSampler;
 
     if (filteringSampleCount <= 4)       
@@ -384,8 +385,8 @@ bool ProjectedShadow::IsShadowed(float3 shadowPosition)
             PassSrg::LinearSampler,
             float3(atlasPosition.xy * invAtlasSize, atlasPosition.z), /*LOD=*/0).r;
         const float depthDiff = depthInShadowmap - shadowPosition.z;
-        float bias = ViewSrg::m_projectedShadows[m_shadowIndex].m_bias;
-        if (depthDiff < -bias)
+
+        if (depthDiff < -m_bias)
         {
             return true;
         }
@@ -428,6 +429,8 @@ void ProjectedShadow::SetShadowPosition()
     const float4x4 depthBiasMatrix = ViewSrg::m_projectedShadows[m_shadowIndex].m_depthBiasMatrix;
     float4 shadowPositionHomogeneous = mul(depthBiasMatrix, float4(m_worldPosition, 1));
     m_shadowPosition = shadowPositionHomogeneous.xyz / shadowPositionHomogeneous.w;
+    
+    m_bias = ViewSrg::m_projectedShadows[m_shadowIndex].m_bias / shadowPositionHomogeneous.w;
 }
 
 float3 ProjectedShadow::GetAtlasPosition(float2 texturePosition)
