@@ -23,7 +23,7 @@ namespace PrefabDependencyViewer::Utils
     public:
         AZ_CLASS_ALLOCATOR(Node, AZ::SystemAllocator, 0);
 
-        Node(TemplateId tid, const char* source, Node* parent = nullptr)
+        Node(TemplateId tid, AZStd::string source, Node* parent = nullptr)
             : m_metaData(tid, source)
             , m_parent(parent)
         {

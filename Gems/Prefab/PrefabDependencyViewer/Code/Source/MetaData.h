@@ -24,9 +24,9 @@ namespace PrefabDependencyViewer::Utils
 
         MetaData() = default;
 
-        MetaData(TemplateId tid, const char* source)
+        MetaData(TemplateId tid, AZStd::string source)
             : m_tid(tid)
-            , m_source(source)
+            , m_source(AZStd::move(source))
         {
         }
 
