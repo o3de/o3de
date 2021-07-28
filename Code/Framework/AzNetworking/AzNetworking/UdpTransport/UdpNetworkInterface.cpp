@@ -224,8 +224,7 @@ namespace AzNetworking
                 continue;
             }
 
-            connection->GetMetrics().m_recvDatarate.LogPacket(packet.m_receivedBytes + UdpPacketHeaderSize, currentTimeMs);
-            connection->GetMetrics().m_packetsRecv++;
+            connection->GetMetrics().LogPacketRecv(packet.m_receivedBytes + UdpPacketHeaderSize, currentTimeMs);
 
             // Decode the packet flag bitset first since it's always uncompressed
             UdpPacketHeader header;

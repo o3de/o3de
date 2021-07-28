@@ -12,7 +12,6 @@
 #include <ACETypes.h>
 #include <AudioControlsEditorPlugin.h>
 #include <IAudioSystemControl.h>
-#include <IEditor.h>
 #include <QAudioControlEditorIcons.h>
 
 #include <QMessageBox>

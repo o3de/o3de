@@ -10,6 +10,7 @@
 
 #include <SceneAPI/SceneCore/Components/GenerationComponent.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
+#include <SceneAPI/SceneData/Rules/TangentsRule.h>
 #include <AzCore/RTTI/RTTI.h>
 
 namespace AZ::SceneAPI::DataTypes { class IMeshData; }
@@ -59,7 +60,7 @@ namespace AZ::SceneGenerationComponents
             AZStd::vector<AZ::SceneData::GraphData::BlendShapeData*>& outBlendShapes) const;
         bool GenerateTangentsForMesh(AZ::SceneAPI::Containers::Scene& scene, const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex, AZ::SceneAPI::DataTypes::IMeshData* meshData);
         void UpdateFbxTangentWValues(AZ::SceneAPI::Containers::SceneGraph& graph, const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex, const AZ::SceneAPI::DataTypes::IMeshData* meshData);
-        AZ::SceneAPI::DataTypes::TangentSpace GetTangentSpaceFromRule(const AZ::SceneAPI::Containers::Scene& scene) const;
+        const AZ::SceneAPI::SceneData::TangentsRule* GetTangentRule(const AZ::SceneAPI::Containers::Scene& scene) const;
 
         size_t CalcUvSetCount(AZ::SceneAPI::Containers::SceneGraph& graph, const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex) const;
         AZ::SceneAPI::DataTypes::IMeshVertexUVData* FindUvData(AZ::SceneAPI::Containers::SceneGraph& graph, const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex, AZ::u64 uvSet) const;
@@ -69,7 +70,7 @@ namespace AZ::SceneGenerationComponents
             const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex,
             size_t numVerts,
             size_t uvSetIndex,
-            AZ::SceneAPI::DataTypes::TangentSpace tangentSpace,
+            AZ::SceneAPI::DataTypes::TangentGenerationMethod generationMethod,
             AZ::SceneAPI::Containers::SceneGraph& graph,
             AZ::SceneAPI::DataTypes::IMeshVertexTangentData** outTangentData);
 
@@ -78,7 +79,7 @@ namespace AZ::SceneGenerationComponents
             const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex,
             size_t numVerts,
             size_t uvSetIndex,
-            AZ::SceneAPI::DataTypes::TangentSpace tangentSpace,
+            AZ::SceneAPI::DataTypes::TangentGenerationMethod generationMethod,
             AZ::SceneAPI::Containers::SceneGraph& graph,
             AZ::SceneAPI::DataTypes::IMeshVertexBitangentData** outBitangentData);
     };

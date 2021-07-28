@@ -12,10 +12,7 @@
 #include <ATLControlsModel.h>
 #include <AudioControl.h>
 #include <AudioControlsEditorPlugin.h>
-#include <CryFile.h>
-#include <CryPath.h>
 #include <IAudioSystemEditor.h>
-#include <IEditor.h>
 #include <QAudioControlEditorIcons.h>
 
 #include <QWidgetAction>
