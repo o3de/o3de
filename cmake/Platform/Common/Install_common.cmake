@@ -11,7 +11,7 @@ include(cmake/FileUtil.cmake)
 set(CMAKE_INSTALL_MESSAGE NEVER) # Simplify messages to reduce output noise
 
 define_property(TARGET PROPERTY LY_INSTALL_GENERATE_RUN_TARGET
-    BRIEF_DOCS "Defines if a \"RUN\" targets hould be created when installing this target Gem"
+    BRIEF_DOCS "Defines if a \"RUN\" targets should be created when installing this target Gem"
     FULL_DOCS [[
         Property which is set on targets that should generate a "RUN"
         target when installed. This \"RUN\" target helps to run the 
