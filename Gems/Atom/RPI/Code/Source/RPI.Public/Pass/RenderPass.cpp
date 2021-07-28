@@ -200,6 +200,8 @@ namespace AZ
                 m_attachmentCopy.lock()->FrameBegin(params);
             }
             CollectSrgs();
+
+            PassSystemInterface::Get()->IncrementFrameRenderPassCount();
         }
 
 

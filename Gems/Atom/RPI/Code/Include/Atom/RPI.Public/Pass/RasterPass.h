@@ -42,6 +42,8 @@ namespace AZ
             //! Expose shader resource group.
             ShaderResourceGroup* GetShaderResourceGroup();
 
+            u32 GetDrawItemCount();
+
         protected:
             explicit RasterPass(const PassDescriptor& descriptor);
 
@@ -68,6 +70,7 @@ namespace AZ
             RHI::Viewport m_viewportState;
             bool m_overrideScissorSate = false;
             bool m_overrideViewportState = false;
+            u32 m_drawItemCount = 0;
         };
     }   // namespace RPI
 }   // namespace AZ

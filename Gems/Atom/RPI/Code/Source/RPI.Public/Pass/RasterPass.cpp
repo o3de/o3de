@@ -112,6 +112,11 @@ namespace AZ
             return m_shaderResourceGroup.get();
         }
 
+        u32 RasterPass::GetDrawItemCount()
+        {
+            return m_drawItemCount;
+        }
+
         // --- Pass behaviour overrides ---
 
         void RasterPass::Validate(PassValidationResults& validationResults)
@@ -145,6 +150,8 @@ namespace AZ
 
                 // Draw List 
                 m_drawListView = view->GetDrawList(m_drawListTag);
+                m_drawItemCount = m_drawListView.size();
+                PassSystemInterface::Get()->IncrementFrameDrawItemCount(m_drawItemCount);
             }
 
             RenderPass::FrameBeginInternal(params);

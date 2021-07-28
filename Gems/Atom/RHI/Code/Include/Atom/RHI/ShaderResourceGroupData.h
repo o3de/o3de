@@ -172,6 +172,9 @@ namespace AZ
             //! Different platforms might follow different packing rules for the internally-managed SRG constant buffer.
             AZStd::array_view<uint8_t> GetConstantData() const;
 
+            //! Returns the underlying ConstantsData struct
+            const ConstantsData& GetConstantsData() const;
+
             //! Returns the shader resource layout for this group.
             const ShaderResourceGroupLayout* GetLayout() const;
 
