@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,8 +14,6 @@
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshVertexUVData.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshVertexTangentData.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshVertexBitangentData.h>
-
-#include <SceneAPI/SceneData/Rules/TangentsRule.h>
 
 #include <SceneAPI/SceneCore/Containers/Views/PairIterator.h>
 #include <SceneAPI/SceneCore/Containers/Views/SceneGraphDownwardsIterator.h>
@@ -51,11 +50,8 @@ namespace AZ::SceneGenerationComponents
         }
     }
 
-
-    AZStd::vector<AZ::SceneAPI::DataTypes::TangentSpace> TangentGenerateComponent::CollectRequiredTangentSpaces(const AZ::SceneAPI::Containers::Scene& scene) const
+    const AZ::SceneAPI::SceneData::TangentsRule* TangentGenerateComponent::GetTangentRule(const AZ::SceneAPI::Containers::Scene& scene) const
     {
-        AZStd::vector<AZ::SceneAPI::DataTypes::TangentSpace> result;
-
         for (const auto& object : scene.GetManifest().GetValueStorage())
         {
             if (object->RTTI_IsTypeOf(AZ::SceneAPI::DataTypes::IGroup::TYPEINFO_Uuid()))
@@ -64,17 +60,13 @@ namespace AZ::SceneGenerationComponents
                 const AZ::SceneAPI::SceneData::TangentsRule* rule = group->GetRuleContainerConst().FindFirstByType<AZ::SceneAPI::SceneData::TangentsRule>().get();
                 if (rule)
                 {
-                    if (AZStd::find(result.begin(), result.end(), rule->GetTangentSpace()) == result.end())
-                    {
-                        result.emplace_back(rule->GetTangentSpace());
-                    }
+                    return rule;
                 }
             }
         }
 
-        return result;
+        return nullptr;
     }
-
 
     AZ::SceneAPI::Events::ProcessingResult TangentGenerateComponent::GenerateTangentData(TangentGenerateContext& context)
     {
@@ -114,17 +106,15 @@ namespace AZ::SceneGenerationComponents
         return AZ::SceneAPI::Events::ProcessingResult::Success;
     }
 
-
     void TangentGenerateComponent::UpdateFbxTangentWValues(AZ::SceneAPI::Containers::SceneGraph& graph, const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex, const AZ::SceneAPI::DataTypes::IMeshData* meshData)
     {
         // Iterate over all UV sets.
-        AZ::SceneAPI::DataTypes::IMeshVertexUVData* uvData = AZ::SceneAPI::SceneData::TangentsRule::FindUVData(graph, nodeIndex, 0);
+        AZ::SceneAPI::DataTypes::IMeshVertexUVData* uvData = FindUvData(graph, nodeIndex, 0);
         size_t uvSetIndex = 0;
         while (uvData)
         {
-            // Get the tangents and bitangents from the source scene.
-            AZ::SceneAPI::DataTypes::IMeshVertexTangentData*    fbxTangentData   = AZ::SceneAPI::SceneData::TangentsRule::FindTangentData(graph, nodeIndex, uvSetIndex, AZ::SceneAPI::DataTypes::TangentSpace::FromSourceScene);
-            AZ::SceneAPI::DataTypes::IMeshVertexBitangentData*  fbxBitangentData = AZ::SceneAPI::SceneData::TangentsRule::FindBitangentData(graph, nodeIndex, uvSetIndex, AZ::SceneAPI::DataTypes::TangentSpace::FromSourceScene);
+            AZ::SceneAPI::DataTypes::IMeshVertexTangentData* fbxTangentData = FindTangentData(graph, nodeIndex, uvSetIndex);
+            AZ::SceneAPI::DataTypes::IMeshVertexBitangentData* fbxBitangentData = FindBitangentData(graph, nodeIndex, uvSetIndex);
 
             if (fbxTangentData && fbxBitangentData)
             {
@@ -162,7 +152,7 @@ namespace AZ::SceneGenerationComponents
             }
 
             // Find the next UV set.
-            uvData = AZ::SceneAPI::SceneData::TangentsRule::FindUVData(graph, nodeIndex, ++uvSetIndex);
+            uvData = FindUvData(graph, nodeIndex, ++uvSetIndex);
         }
     }
 
@@ -190,148 +180,255 @@ namespace AZ::SceneGenerationComponents
         AZ::SceneAPI::Containers::SceneGraph& graph = scene.GetGraph();
 
         // Check if we have any UV data, if not, we cannot possibly generate the tangents.
-        AZ::SceneAPI::DataTypes::IMeshVertexUVData* uvData = AZ::SceneAPI::SceneData::TangentsRule::FindUVData(graph, nodeIndex, 0);
-        if (!uvData)
+        const size_t uvSetCount = CalcUvSetCount(graph, nodeIndex);
+        if (uvSetCount == 0)
         {
-            AZ_TracePrintf(AZ::SceneAPI::Utilities::WarningWindow, "We cannot generate tangents for this mesh, as it has no UV coordinates!\n");
+            AZ_Warning(AZ::SceneAPI::Utilities::WarningWindow, false, "Cannot generate tangents for this mesh, as it has no UV coordinates.\n");
             return true; // No fatal error
         }
 
-        // Check if we had tangents inside the source scene file.
-        AZ::SceneAPI::DataTypes::IMeshVertexTangentData*    fbxTangentData   = AZ::SceneAPI::SceneData::TangentsRule::FindTangentData(graph, nodeIndex, 0, AZ::SceneAPI::DataTypes::TangentSpace::FromSourceScene);
-        AZ::SceneAPI::DataTypes::IMeshVertexBitangentData*  fbxBitangentData = AZ::SceneAPI::SceneData::TangentsRule::FindBitangentData(graph, nodeIndex, 0, AZ::SceneAPI::DataTypes::TangentSpace::FromSourceScene);
-
-        // Check what tangent spaces we need.
-        AZStd::vector<AZ::SceneAPI::DataTypes::TangentSpace> requiredSpaces = CollectRequiredTangentSpaces(scene);
-
-        // If we have no tangent rules, so if the required spaces is empty.
-        if (requiredSpaces.empty())
-        {
-            AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "Mesh '%s' has no tangents rule, assuming MikkT tangent space on UV set 0, using normalized tangents and orthogonal bitangents!\n", scene.GetGraph().GetNodeName(nodeIndex).GetName());
-            requiredSpaces.emplace_back(AZ::SceneAPI::DataTypes::TangentSpace::MikkT);
-        }
-
-        // If all we need is import from the source scene, and we have tangent data from the source scene already, then skip generating.
-        if ((requiredSpaces.size() == 1 && requiredSpaces[0] == AZ::SceneAPI::DataTypes::TangentSpace::FromSourceScene) && fbxTangentData && fbxBitangentData)
-        {
-            return true;
-        }
+        const AZ::SceneAPI::SceneData::TangentsRule* tangentsRule = GetTangentRule(scene);
+        const AZ::SceneAPI::DataTypes::TangentGenerationMethod ruleGenerationMethod = tangentsRule ? tangentsRule->GetGenerationMethod() : AZ::SceneAPI::DataTypes::TangentGenerationMethod::FromSourceScene;
 
         // Find all blend shape data under the mesh. We need to generate the tangent and bitangent for blend shape as well.
         AZStd::vector<AZ::SceneData::GraphData::BlendShapeData*> blendShapes;
         FindBlendShapes(graph, nodeIndex, blendShapes);
 
-        // Generate all the tangent spaces we need.
-        // Do this for every UV set.
+        // Generate tangents/bitangents for all uv sets.
         bool allSuccess = true;
-        size_t uvSetIndex = 0;
-        while (uvData)
+        for (size_t uvSetIndex = 0; uvSetIndex < uvSetCount; ++uvSetIndex)
         {
-            for (AZ::SceneAPI::DataTypes::TangentSpace space : requiredSpaces)
+            AZ::SceneAPI::DataTypes::IMeshVertexUVData* uvData = FindUvData(graph, nodeIndex, uvSetIndex);
+            if (!uvData)
             {
-                switch (space)
-                {
-                // If we want Fbx tangents, we don't need to do anything for that.
-                case AZ::SceneAPI::DataTypes::TangentSpace::FromSourceScene:
-                {
-                    allSuccess &= true;
-                }
-                break;
+                AZ_Error(AZ::SceneAPI::Utilities::ErrorWindow, false, "Cannot generate tangents for uv set %zu as it cannot be retrieved.\n", uvSetIndex);
+                continue;
+            }
 
-                // Generate using MikkT space.
-                case AZ::SceneAPI::DataTypes::TangentSpace::MikkT:
-                {
-                    allSuccess &= AZ::TangentGeneration::Mesh::MikkT::GenerateTangents(
-                        scene.GetManifest(), graph, nodeIndex, const_cast<AZ::SceneAPI::DataTypes::IMeshData*>(meshData), uvSetIndex);
-                    for (AZ::SceneData::GraphData::BlendShapeData* blendShape : blendShapes)
-                    {
-                        allSuccess &= AZ::TangentGeneration::BlendShape::MikkT::GenerateTangents(blendShape, uvSetIndex);
-                    }
-                }
-                break;
+            // Check if we had tangents inside the source scene file.
+            AZ::SceneAPI::DataTypes::TangentGenerationMethod generationMethod = ruleGenerationMethod;
+            AZ::SceneAPI::DataTypes::IMeshVertexTangentData* tangentData = FindTangentData(graph, nodeIndex, uvSetIndex);
+            AZ::SceneAPI::DataTypes::IMeshVertexBitangentData* bitangentData = FindBitangentData(graph, nodeIndex, uvSetIndex);
 
-                // If we use EMotion FX calculated tangents, we don't need to generate this here.
-                case AZ::SceneAPI::DataTypes::TangentSpace::EMotionFX:
-                    allSuccess &= true;
-                    break;
-
-                default:
+            // If all we need is import from the source scene, and we have tangent data from the source scene already, then skip generating.
+            if ((generationMethod == AZ::SceneAPI::DataTypes::TangentGenerationMethod::FromSourceScene))
+            {
+                if (tangentData && bitangentData)
                 {
-                    AZ_Assert(false, "Unknown tangent space selected (spaceID=%d) for UV set %d, cannot generate tangents!\n", static_cast<AZ::u32>(space), uvSetIndex);
-                    allSuccess = false;
+                    AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "Using source scene tangents and bitangents for uv set %zu for mesh '%s'.\n",
+                        uvSetIndex, scene.GetGraph().GetNodeName(nodeIndex).GetName());
+                    continue;
                 }
+                else
+                {
+                    // In case there are no tangents/bitangents while the user selected to use the source ones, default to MikkT.
+                    AZ_Warning(AZ::SceneAPI::Utilities::WarningWindow, false, "Cannot use source scene tangents as there are none in the asset for mesh '%s' for uv set %zu. Defaulting to generating tangents using MikkT.\n",
+                        scene.GetGraph().GetNodeName(nodeIndex).GetName(), uvSetIndex);
+                    generationMethod = AZ::SceneAPI::DataTypes::TangentGenerationMethod::MikkT;
                 }
             }
 
-            // Try to find the next UV set.
-            uvData = AZ::SceneAPI::SceneData::TangentsRule::FindUVData(graph, nodeIndex, ++uvSetIndex);
+            if (!tangentData)
+            {
+                if (!AZ::SceneGenerationComponents::TangentGenerateComponent::CreateTangentLayer(scene.GetManifest(), nodeIndex, meshData->GetVertexCount(), uvSetIndex,
+                    generationMethod, graph, &tangentData))
+                {
+                    AZ_Error(AZ::SceneAPI::Utilities::ErrorWindow, false, "Failed to create tangents data set for mesh %s for uv set %zu.\n",
+                        scene.GetGraph().GetNodeName(nodeIndex).GetName(), uvSetIndex);
+                    continue;
+                }
+            }
+            AZ_Assert(tangentData == FindTangentData(graph, nodeIndex, uvSetIndex), "Used tangent data is not the same as the graph returns.");
+
+            if (!bitangentData)
+            {
+                if (!AZ::SceneGenerationComponents::TangentGenerateComponent::CreateBitangentLayer(scene.GetManifest(), nodeIndex, meshData->GetVertexCount(), uvSetIndex,
+                    generationMethod, graph, &bitangentData))
+                {
+                    AZ_Error(AZ::SceneAPI::Utilities::ErrorWindow, false, "Failed to create bitangents data set for mesh %s for uv set %zu.\n",
+                        scene.GetGraph().GetNodeName(nodeIndex).GetName(), uvSetIndex);
+                    continue;
+                }
+            }
+            AZ_Assert(bitangentData == FindBitangentData(graph, nodeIndex, uvSetIndex), "Used bitangent data is not the same as the graph returns.");
+
+            tangentData->SetGenerationMethod(generationMethod);
+            bitangentData->SetGenerationMethod(generationMethod);
+
+            switch (generationMethod)
+            {
+            // Generate using MikkT space.
+            case AZ::SceneAPI::DataTypes::TangentGenerationMethod::MikkT:
+            {
+                const AZ::SceneAPI::DataTypes::MikkTSpaceMethod tSpaceMethod = tangentsRule ? tangentsRule->GetMikkTSpaceMethod() : AZ::SceneAPI::DataTypes::MikkTSpaceMethod::TSpace;
+
+                allSuccess &= AZ::TangentGeneration::Mesh::MikkT::GenerateTangents(meshData, uvData, tangentData, bitangentData, tSpaceMethod);
+
+                for (AZ::SceneData::GraphData::BlendShapeData* blendShape : blendShapes)
+                {
+                    allSuccess &= AZ::TangentGeneration::BlendShape::MikkT::GenerateTangents(blendShape, uvSetIndex, tSpaceMethod);
+                }
+            }
+            break;
+
+            default:
+            {
+                AZ_Assert(false, "Unknown tangent generation method selected (%d) for UV set %d, cannot generate tangents.\n", static_cast<AZ::u32>(generationMethod), uvSetIndex);
+                allSuccess = false;
+            }
+            }
         }
 
         return allSuccess;
     }
 
-
-    bool TangentGenerateComponent::CreateTangentBitangentLayers(AZ::SceneAPI::Containers::SceneManifest& manifest, const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex, size_t numVerts, size_t uvSetIndex, AZ::SceneAPI::DataTypes::TangentSpace tangentSpace, const char* spaceName, AZ::SceneAPI::Containers::SceneGraph& graph, AZ::SceneAPI::DataTypes::IMeshVertexTangentData** outTangentData, AZ::SceneAPI::DataTypes::IMeshVertexBitangentData** outBitangentData)
+    size_t TangentGenerateComponent::CalcUvSetCount(AZ::SceneAPI::Containers::SceneGraph& graph, const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex) const
     {
-        *outTangentData     = nullptr;
-        *outBitangentData   = nullptr;
+        const auto nameContentView = AZ::SceneAPI::Containers::Views::MakePairView(graph.GetNameStorage(), graph.GetContentStorage());
 
-        //-------------------------------------------------------------
-        // Create tangent layer.
-        //-------------------------------------------------------------
+        size_t result = 0;
+        auto meshChildView = AZ::SceneAPI::Containers::Views::MakeSceneGraphChildView<AZ::SceneAPI::Containers::Views::AcceptEndPointsOnly>(graph, nodeIndex, nameContentView.begin(), true);
+        for (auto child = meshChildView.begin(); child != meshChildView.end(); ++child)
+        {
+            AZ::SceneAPI::DataTypes::IMeshVertexUVData* data = azrtti_cast<AZ::SceneAPI::DataTypes::IMeshVertexUVData*>(child->second.get());
+            if (data)
+            {
+                result++;
+            }
+        }
+
+        return result;
+    }
+
+    AZ::SceneAPI::DataTypes::IMeshVertexUVData* TangentGenerateComponent::FindUvData(AZ::SceneAPI::Containers::SceneGraph& graph, const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex, AZ::u64 uvSet) const
+    {
+        const auto nameContentView = AZ::SceneAPI::Containers::Views::MakePairView(graph.GetNameStorage(), graph.GetContentStorage());
+
+        AZ::u64 uvSetIndex = 0;
+        auto meshChildView = AZ::SceneAPI::Containers::Views::MakeSceneGraphChildView<AZ::SceneAPI::Containers::Views::AcceptEndPointsOnly>(graph, nodeIndex, nameContentView.begin(), true);
+        for (auto child = meshChildView.begin(); child != meshChildView.end(); ++child)
+        {
+            AZ::SceneAPI::DataTypes::IMeshVertexUVData* data = azrtti_cast<AZ::SceneAPI::DataTypes::IMeshVertexUVData*>(child->second.get());
+            if (data)
+            {
+                if (uvSetIndex == uvSet)
+                {
+                    return data;
+                }
+                uvSetIndex++;
+            }
+        }
+
+        return nullptr;
+    }
+
+    AZ::SceneAPI::DataTypes::IMeshVertexTangentData* TangentGenerateComponent::FindTangentData(AZ::SceneAPI::Containers::SceneGraph& graph, const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex, AZ::u64 setIndex) const
+    {
+        const auto nameContentView = AZ::SceneAPI::Containers::Views::MakePairView(graph.GetNameStorage(), graph.GetContentStorage());
+
+        auto meshChildView = AZ::SceneAPI::Containers::Views::MakeSceneGraphChildView<AZ::SceneAPI::Containers::Views::AcceptEndPointsOnly>(graph, nodeIndex, nameContentView.begin(), true);
+        for (auto child = meshChildView.begin(); child != meshChildView.end(); ++child)
+        {
+            AZ::SceneAPI::DataTypes::IMeshVertexTangentData* data = azrtti_cast<AZ::SceneAPI::DataTypes::IMeshVertexTangentData*>(child->second.get());
+            if (data && setIndex == data->GetTangentSetIndex())
+            {
+                return data;
+            }
+        }
+
+        return nullptr;
+    }
+
+    bool TangentGenerateComponent::CreateTangentLayer(AZ::SceneAPI::Containers::SceneManifest& manifest,
+        const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex,
+        size_t numVerts,
+        size_t uvSetIndex,
+        AZ::SceneAPI::DataTypes::TangentGenerationMethod generationMethod,
+        AZ::SceneAPI::Containers::SceneGraph& graph,
+        AZ::SceneAPI::DataTypes::IMeshVertexTangentData** outTangentData)
+    {
+        *outTangentData = nullptr;
+
         AZStd::shared_ptr<SceneData::GraphData::MeshVertexTangentData> tangentData = AZStd::make_shared<AZ::SceneData::GraphData::MeshVertexTangentData>();
         tangentData->Resize(numVerts);
 
         AZ_Assert(tangentData, "Failed to allocate tangent data for scene graph.");
         if (!tangentData)
         {
-            AZ_TracePrintf(AZ::SceneAPI::Utilities::ErrorWindow, "Failed to allocate tangent data.\n");
+            AZ_Error(AZ::SceneAPI::Utilities::ErrorWindow, false, "Failed to allocate tangent data.\n");
             return false;
         }
 
         tangentData->SetTangentSetIndex(uvSetIndex);
-        tangentData->SetTangentSpace(tangentSpace);
+        tangentData->SetGenerationMethod(generationMethod);
 
-        const AZStd::string tangentGeneratedName = AZStd::string::format("TangentSet_%s_%zu", spaceName, uvSetIndex);
+        const AZStd::string tangentGeneratedName = AZStd::string::format("TangentSet_%zu", uvSetIndex);
         const AZStd::string tangentSetName = AZ::SceneAPI::DataTypes::Utilities::CreateUniqueName<SceneData::GraphData::MeshVertexBitangentData>(tangentGeneratedName, manifest);
         AZ::SceneAPI::Containers::SceneGraph::NodeIndex newIndex = graph.AddChild(nodeIndex, tangentSetName.c_str(), tangentData);
         AZ_Assert(newIndex.IsValid(), "Failed to create SceneGraph node for tangent attribute.");
         if (!newIndex.IsValid())
         {
-            AZ_TracePrintf(AZ::SceneAPI::Utilities::ErrorWindow, "Failed to create node in scene graph that stores tangent data.\n");
+            AZ_Error(AZ::SceneAPI::Utilities::ErrorWindow, false, "Failed to create node in scene graph that stores tangent data.\n");
             return false;
         }
         graph.MakeEndPoint(newIndex);
 
-        //-------------------------------------------------------------
-        // Create bitangent layer.
-        //-------------------------------------------------------------
+        *outTangentData = tangentData.get();
+        return true;
+    }
+
+    AZ::SceneAPI::DataTypes::IMeshVertexBitangentData* TangentGenerateComponent::FindBitangentData(AZ::SceneAPI::Containers::SceneGraph& graph, const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex, AZ::u64 setIndex) const
+    {
+        const auto nameContentView = AZ::SceneAPI::Containers::Views::MakePairView(graph.GetNameStorage(), graph.GetContentStorage());
+
+        auto meshChildView = AZ::SceneAPI::Containers::Views::MakeSceneGraphChildView<AZ::SceneAPI::Containers::Views::AcceptEndPointsOnly>(graph, nodeIndex, nameContentView.begin(), true);
+        for (auto child = meshChildView.begin(); child != meshChildView.end(); ++child)
+        {
+            AZ::SceneAPI::DataTypes::IMeshVertexBitangentData* data = azrtti_cast<AZ::SceneAPI::DataTypes::IMeshVertexBitangentData*>(child->second.get());
+            if (data && setIndex == data->GetBitangentSetIndex())
+            {
+                return data;
+            }
+        }
+
+        return nullptr;
+    }
+
+    bool TangentGenerateComponent::CreateBitangentLayer(AZ::SceneAPI::Containers::SceneManifest& manifest,
+        const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex,
+        size_t numVerts,
+        size_t uvSetIndex,
+        AZ::SceneAPI::DataTypes::TangentGenerationMethod generationMethod,
+        AZ::SceneAPI::Containers::SceneGraph& graph,
+        AZ::SceneAPI::DataTypes::IMeshVertexBitangentData** outBitangentData)
+    {
+        *outBitangentData = nullptr;
+
         AZStd::shared_ptr<AZ::SceneData::GraphData::MeshVertexBitangentData> bitangentData = AZStd::make_shared<AZ::SceneData::GraphData::MeshVertexBitangentData>();
         bitangentData->Resize(numVerts);
 
         AZ_Assert(bitangentData, "Failed to allocate bitangent data for scene graph.");
         if (!bitangentData)
         {
-            AZ_TracePrintf(AZ::SceneAPI::Utilities::ErrorWindow, "Failed to allocate bitangent data.\n");
+            AZ_Error(AZ::SceneAPI::Utilities::ErrorWindow, false, "Failed to allocate bitangent data.\n");
             return false;
         }
 
         bitangentData->SetBitangentSetIndex(uvSetIndex);
-        bitangentData->SetTangentSpace(tangentSpace);
+        bitangentData->SetGenerationMethod(generationMethod);
 
-        const AZStd::string bitangentGeneratedName = AZStd::string::format("BitangentSet_%s_%zu", spaceName, uvSetIndex);
+        const AZStd::string bitangentGeneratedName = AZStd::string::format("BitangentSet_%zu", uvSetIndex);
         const AZStd::string bitangentSetName = AZ::SceneAPI::DataTypes::Utilities::CreateUniqueName<SceneData::GraphData::MeshVertexBitangentData>(bitangentGeneratedName, manifest);
-        newIndex = graph.AddChild(nodeIndex, bitangentSetName.c_str(), bitangentData);
+        AZ::SceneAPI::Containers::SceneGraph::NodeIndex newIndex = graph.AddChild(nodeIndex, bitangentSetName.c_str(), bitangentData);
         AZ_Assert(newIndex.IsValid(), "Failed to create SceneGraph node for bitangent attribute.");
         if (!newIndex.IsValid())
         {
-            AZ_TracePrintf(AZ::SceneAPI::Utilities::ErrorWindow, "Failed to create node in scene graph that stores bitangent data.\n");
+            AZ_Error(AZ::SceneAPI::Utilities::ErrorWindow, false, "Failed to create node in scene graph that stores bitangent data.\n");
             return false;
         }
         graph.MakeEndPoint(newIndex);
 
-        *outTangentData     = tangentData.get();
-        *outBitangentData   = bitangentData.get();
+        *outBitangentData = bitangentData.get();
         return true;
     }
 } // namespace AZ::SceneGenerationComponents

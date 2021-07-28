@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -62,26 +63,38 @@ namespace AZ
             ImGuiCpuProfiler() = default;
             ~ImGuiCpuProfiler() = default;
 
-            //! Draws the provided Cpu statistics.
+            //! Draws the overall CPU profiling window, defaults to the statistical view
             void Draw(bool& keepDrawing, const AZ::RHI::CpuTimingStatistics& cpuTimingStatistics);
 
+            //! Draws the statistical view of the CPU profiling data
+            void DrawStatisticsView();
+
             //! Draws the CPU profiling visualizer in a new window. 
-            void DrawVisualizer(bool& keepDrawing, const AZ::RHI::CpuTimingStatistics& currentCpuTimingStatistics);
+            void DrawVisualizer();
 
         private:
             static constexpr float RowHeight = 50.0;
             static constexpr int DefaultFramesToCollect = 50;
+            static constexpr float MediumFrameTimeLimit = 16.6; // 60 fps
+            static constexpr float HighFrameTimeLimit = 33.3; // 30 fps
 
-            // Update the GroupRegionMap with the latest cached time regions
-            void UpdateGroupRegionMap();
+            // Draw the shared header between the two windows
+            void DrawCommonHeader();
 
             // ImGui filter used to filter TimedRegions.
             ImGuiTextFilter m_timedRegionFilter;
 
+            // Saves statistical view data organized by group name -> region name -> regions
             GroupRegionMap m_groupRegionMap;
 
             // Pause cpu profiling. The profiler will show the statistics of the last frame before pause
             bool m_paused = false;
+
+            // Export the profiling data from a single frame to a local file
+            bool m_captureToFile = false;
+
+            // Toggle between the normal statistical view and the visual profiling view
+            bool m_enableVisualizer = false;
 
             // Total frames need to be saved
             int m_captureFrameCount = 1;
@@ -116,8 +129,11 @@ namespace AZ
             // Draw the ruler with frame time labels
             void DrawRuler();
 
+            // Draw the frame time histogram 
+            void DrawFrameTimeHistogram();
+
             // Converts raw ticks to a pixel value suitable to give to ImDrawList, handles window scrolling
-            float ConvertTickToPixelSpace(AZStd::sys_time_t tick) const;
+            float ConvertTickToPixelSpace(AZStd::sys_time_t tick, AZStd::sys_time_t leftBound, AZStd::sys_time_t rightBound) const;
 
             AZStd::sys_time_t GetViewportTickWidth() const;
 
@@ -129,8 +145,6 @@ namespace AZ
             virtual void OnSystemTick() override;
 
             // Visualizer state
-
-            bool m_showVisualizer = false;
 
             int m_framesToCollect = DefaultFramesToCollect;
 

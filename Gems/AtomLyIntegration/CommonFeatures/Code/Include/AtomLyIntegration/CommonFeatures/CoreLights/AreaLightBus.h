@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -100,6 +101,12 @@ namespace AZ
 
             //! Sets if shadows should be enabled.
             virtual void SetEnableShadow(bool enabled) = 0;
+            
+            //! Returns the shadow bias.
+            virtual float GetShadowBias() const = 0;
+            
+            //! Sets the shadow bias.
+            virtual void SetShadowBias(float bias) = 0;
 
             //! Returns the maximum width and height of shadowmap.
             virtual ShadowmapSize GetShadowmapMaxSize() const = 0;

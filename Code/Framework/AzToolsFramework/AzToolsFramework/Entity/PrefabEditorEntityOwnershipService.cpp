@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -87,13 +88,15 @@ namespace AzToolsFramework
     {
         if (m_rootInstance)
         {
+            AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+                &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);
             Prefab::TemplateId templateId = m_rootInstance->GetTemplateId();
+            m_rootInstance->Reset();
             if (templateId != Prefab::InvalidTemplateId)
             {
                 m_rootInstance->SetTemplateId(Prefab::InvalidTemplateId);
                 m_prefabSystemComponent->RemoveTemplate(templateId);
             }
-            m_rootInstance->Reset();
             m_rootInstance->SetContainerEntityName("Level");
         }
 

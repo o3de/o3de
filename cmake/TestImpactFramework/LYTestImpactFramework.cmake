@@ -1,15 +1,13 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
 
-# Switch to enable/disable test impact analysis (and related build targets)
-option(LY_TEST_IMPACT_ACTIVE "Enable test impact framework" OFF)
-
 # Path to test instrumentation binary
-option(LY_TEST_IMPACT_INSTRUMENTATION_BIN "Path to test impact framework instrumentation binary" OFF)
+set(LY_TEST_IMPACT_INSTRUMENTATION_BIN "" CACHE PATH "Path to test impact framework instrumentation binary")
 
 # Name of test impact framework console static library target
 set(LY_TEST_IMPACT_CONSOLE_STATIC_TARGET "TestImpact.Frontend.Console.Static")
@@ -212,9 +210,9 @@ function(ly_test_impact_extract_python_test_params COMPOSITE_TEST COMPOSITE_SUIT
         list(GET suite_components 2 test_timeout)
         # Get python script path relative to repo root
         ly_test_impact_rebase_file_to_repo_root(
-            ${script_path}
+            "${script_path}"
             script_path
-            ${LY_ROOT_FOLDER}
+            "${LY_ROOT_FOLDER}"
         )
         set(suite_params "{ \"suite\": \"${test_suite}\",  \"script\": \"${script_path}\", \"timeout\": ${test_timeout} }")
         list(APPEND test_suites "${suite_params}")
@@ -258,7 +256,8 @@ function(ly_test_impact_write_test_enumeration_file TEST_ENUMERATION_TEMPLATE_FI
             ly_test_impact_extract_google_test_params(${test} "${test_params}" test_name test_suites)
             list(APPEND google_benchmarks "        { \"name\": \"${test_name}\", \"launch_method\": \"${launch_method}\", \"suites\": [${test_suites}] }")
         else()
-            message("${test_name} is of unknown type (TEST_LIBRARY property is empty)")
+            ly_test_impact_extract_python_test_params(${test} "${test_params}" test_name test_suites)
+            message("${test_name} is of unknown type (TEST_LIBRARY property is \"${test_type}\")")
             list(APPEND unknown_tests "        { \"name\": \"${test}\", \"type\": \"${test_type}\" }")
         endif()
     endforeach()
@@ -439,7 +438,7 @@ endfunction()
 
 #! ly_test_impact_post_step: runs the post steps to be executed after all other cmake scripts have been executed.
 function(ly_test_impact_post_step)
-    if(NOT ${LY_TEST_IMPACT_ACTIVE})
+    if(NOT LY_TEST_IMPACT_INSTRUMENTATION_BIN)
         return()
     endif()
 

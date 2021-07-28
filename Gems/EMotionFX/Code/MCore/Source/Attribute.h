@@ -1,13 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #pragma once
 
-// include the required headers
 #include "StandardHeaders.h"
 #include "MemoryManager.h"
 #include "Endian.h"
@@ -26,7 +26,6 @@ namespace MCore
 {
     // forward declarations
     class AttributeSettings;
-
 
     // the attribute interface types
     enum : uint32
@@ -48,12 +47,6 @@ namespace MCore
         ATTRIBUTE_INTERFACETYPE_DEFAULT         = 0xFFFFFFFF// use the default attribute type that the specific attribute class defines as default
     };
 
-
-    /**
-     *
-     *
-     *
-     */
     class MCORE_API Attribute
     {
         friend class AttributeFactory;
@@ -69,10 +62,6 @@ namespace MCore
         virtual uint32 GetClassSize() const = 0;
         virtual uint32 GetDefaultInterfaceType() const = 0;
 
-        // These two members and ReadData can go away once we put the old-format parser
-        bool Read(Stream* stream, MCore::Endian::EEndianType sourceEndianType);
-        virtual uint32 GetDataSize() const = 0;         // data only
-
         Attribute& operator=(const Attribute& other);
 
         virtual void NetworkSerialize(EMotionFX::Network::AnimGraphSnapshotChunkSerializer&) {};
@@ -81,16 +70,5 @@ namespace MCore
         uint32      mTypeID;    /**< The unique type ID of the attribute class. */
 
         Attribute(uint32 typeID);
-
-        /**
-         * Read the attribute info and data from a given stream.
-         * Please note that the endian information of the actual data is not being converted. You have to handle that yourself.
-         * The data endian conversion could be done with for example the static Attribute::ConvertDataEndian method.
-         * @param stream The stream to read the info and data from.
-         * @param endianType The endian type in which the data is stored in the stream.
-         * @param version The version of the attribute.
-         * @result Returns true when successful, or false when reading failed.
-         */
-        virtual bool ReadData(MCore::Stream* stream, MCore::Endian::EEndianType streamEndianType, uint8 version) = 0;
     };
 } // namespace MCore

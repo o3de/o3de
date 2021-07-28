@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -12,6 +13,7 @@ from aws_cdk import (
 from .aws_metrics_stack import AWSMetricsStack
 from aws_metrics.policy_statements_builder.user_policy_statements_builder import UserPolicyStatementsBuilder
 from aws_metrics.policy_statements_builder.admin_policy_statements_builder import AdminPolicyStatementsBuilder
+from .aws_utils import resource_name_sanitizer
 
 
 class AuthPolicy:
@@ -57,12 +59,13 @@ class AuthPolicy:
         policy = iam.ManagedPolicy(
             self._stack,
             policy_id,
-            managed_policy_name=f'{self._stack.stack_name}-{role_name}Policy',
+            managed_policy_name=resource_name_sanitizer.sanitize_resource_name(
+                f'{self._stack.stack_name}-{role_name}Policy', 'iam_managed_policy'),
             statements=policy_statements)
 
         policy_output = core.CfnOutput(
             self._stack,
             id=f'{policy_id}Output',
             description=f'{role_name} policy arn to call service',
-            export_name=f"{self._application_name}:{policy_id}",
+            export_name=f'{self._application_name}:{policy_id}',
             value=policy.managed_policy_arn)

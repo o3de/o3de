@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -109,7 +110,7 @@ namespace AWSGameLift
 
         if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
         {
-            AZ::GetValueResult getCvarResult = console->GetCvarValue("sv_port", serverProcessDesc.m_port);
+            [[maybe_unused]] AZ::GetValueResult getCvarResult = console->GetCvarValue("sv_port", serverProcessDesc.m_port);
             AZ_Error(
                 "AWSGameLift", getCvarResult == AZ::GetValueResult::Success, "Lookup of 'sv_port' console variable failed with error %s",
                 AZ::GetEnumString(getCvarResult));

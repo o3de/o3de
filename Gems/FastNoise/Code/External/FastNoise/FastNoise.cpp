@@ -28,8 +28,6 @@
 
 // Modified from original
 
-#include "FastNoise_precompiled.h"
-
 #include "FastNoise.h"
 
 #include <math.h>

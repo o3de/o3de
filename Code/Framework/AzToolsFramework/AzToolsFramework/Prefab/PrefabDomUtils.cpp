@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -234,6 +235,26 @@ namespace AzToolsFramework
                 }
 
                 return findInstancesResult->get();
+            }
+
+            AZ::JsonSerializationResult::ResultCode ApplyPatches(
+                PrefabDomValue& prefabDomToApplyPatchesOn, PrefabDom::AllocatorType& allocator, const PrefabDomValue& patches)
+            {
+                auto issueReportingCallback = [](AZStd::string_view, AZ::JsonSerializationResult::ResultCode result,
+                                                 AZStd::string_view) -> AZ::JsonSerializationResult::ResultCode
+                {
+                    using namespace AZ::JsonSerializationResult;
+                    if (result.GetProcessing() == Processing::Halted)
+                    {
+                        return ResultCode(result.GetTask(), Outcomes::PartialSkip);
+                    }
+                    return result;
+                };
+
+                AZ::JsonApplyPatchSettings applyPatchSettings;
+                applyPatchSettings.m_reporting = AZStd::move(issueReportingCallback);
+                return AZ::JsonSerialization::ApplyPatch(
+                    prefabDomToApplyPatchesOn, allocator, patches, AZ::JsonMergeApproach::JsonPatch, applyPatchSettings);
             }
 
             void PrintPrefabDomValue(

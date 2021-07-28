@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -83,6 +84,8 @@ namespace AZ
 
             //! Sets if shadows are enabled
             virtual void SetShadowsEnabled(LightHandle handle, bool enabled) = 0;
+            //! Sets the shadow bias
+            virtual void SetShadowBias(LightHandle handle, float bias) = 0;
             //! Sets the shadowmap size (width and height) of the light.
             virtual void SetShadowmapMaxResolution(LightHandle handle, ShadowmapSize shadowmapSize) = 0;
             //! Specifies filter method of shadows.

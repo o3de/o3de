@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -144,7 +145,7 @@ namespace AWSGameLift
         Aws::GameLift::GenericOutcome processEndingOutcome = m_gameLiftServerSDKWrapper->ProcessEnding();
         AZ_TracePrintf(AWSGameLiftServerManagerName, "ProcessEnding request against Amazon GameLift service is complete.");
 
-        bool processEndingIsSuccess = processEndingOutcome.IsSuccess();
+        [[maybe_unused]] bool processEndingIsSuccess = processEndingOutcome.IsSuccess();
 
         AZ_Error(AWSGameLiftServerManagerName, processEndingIsSuccess, AWSGameLiftServerProcessEndingErrorMessage,
             processEndingOutcome.GetError().GetErrorMessage().c_str());

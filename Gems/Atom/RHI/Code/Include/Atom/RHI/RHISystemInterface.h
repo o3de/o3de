@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,6 +11,7 @@
 #include <AzCore/Name/Name.h>
 #include <AzCore/EBus/EBus.h>
 #include <Atom/RHI.Reflect/FrameSchedulerEnums.h>
+#include <Atom/RHI.Reflect/MemoryStatistics.h>
 #include <Atom/RHI/DrawListTagRegistry.h>
 
 namespace AZ
@@ -53,6 +55,8 @@ namespace AZ
             virtual const RHI::CpuTimingStatistics* GetCpuTimingStatistics() const = 0;
 
             virtual const RHI::TransientAttachmentStatistics* GetTransientAttachmentStatistics() const = 0;
+
+            virtual const RHI::MemoryStatistics* GetMemoryStatistics() const = 0;
 
             virtual const RHI::TransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const = 0;
 

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -184,6 +185,15 @@ namespace AZ
             return m_componentConfig.m_depthFar * tanf(m_componentConfig.m_fovY / 2) * 2;
         }
 
+        bool CameraComponent::IsOrthographic()
+        {
+            return false;
+        }
+
+        float CameraComponent::GetOrthographicHalfWidth()
+        {
+            return 0.0f;
+        }
 
         void CameraComponent::SetFovDegrees(float fov)
         {
@@ -223,6 +233,16 @@ namespace AZ
             AZ_Assert(m_componentConfig.m_depthFar > 0.f, "Depth Far has to be positive.");
             m_componentConfig.m_fovY = atanf(height / 2 / m_componentConfig.m_depthFar) * 2;
             UpdateViewToClipMatrix();
+        }
+
+        void CameraComponent::SetOrthographic(bool orthographic)
+        {
+            AZ_Assert(!orthographic, "DebugCamera does not support orthographic projection");
+        }
+
+        void CameraComponent::SetOrthographicHalfWidth([[maybe_unused]] float halfWidth)
+        {
+            AZ_Assert(false, "DebugCamera does not support orthographic projection");
         }
 
         void CameraComponent::MakeActiveView() 

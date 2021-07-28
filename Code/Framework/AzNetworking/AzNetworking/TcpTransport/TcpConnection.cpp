@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -121,7 +122,7 @@ namespace AzNetworking
     bool TcpConnection::UpdateRecv()
     {
         const AZ::TimeMs startTimeMs = AZ::GetElapsedTimeMs();
-        GetMetrics().m_recvDatarate.LogPacket(0, startTimeMs);
+        GetMetrics().LogPacketRecv(0, startTimeMs);
 
         // Read new data off the input socket
         {
@@ -260,11 +261,6 @@ namespace AzNetworking
         return 0; // do nothing, unsupported on TCP connections
     }
 
-    void TcpConnection::SetConnectionQuality([[maybe_unused]] const ConnectionQuality& connectionQuality)
-    {
-        ; // do nothing, unsupported on TCP connections
-    }
-
     bool TcpConnection::SendPacketInternal(PacketType packetType, TcpPacketEncodingBuffer& payloadBuffer, AZ::TimeMs currentTimeMs)
     {
         AZ_Assert(payloadBuffer.GetCapacity() < AZStd::numeric_limits<uint16_t>::max(), "Buffer capacity should be representable using 2 bytes or less");
@@ -332,8 +328,7 @@ namespace AzNetworking
         }
 
         m_sendRingbuffer.AdvanceWriteBuffer(headerSize + payloadSize);
-        GetMetrics().m_packetsSent++;
-        GetMetrics().m_sendDatarate.LogPacket(headerSize + payloadSize, currentTimeMs);
+        GetMetrics().LogPacketSent(headerSize + payloadSize, currentTimeMs);
         m_networkInterface.GetMetrics().m_sendPackets++;
         UpdateSend();
         return true;
@@ -378,8 +373,7 @@ namespace AzNetworking
         memcpy(dstData, srcData, packetSize);
 
         m_recvRingbuffer.AdvanceReadBuffer(serializer.GetReadSize() + packetSize);
-        GetMetrics().m_packetsRecv++;
-        GetMetrics().m_recvDatarate.LogPacket(packetSize, currentTimeMs);
+        GetMetrics().LogPacketRecv(packetSize, currentTimeMs);
         m_networkInterface.GetMetrics().m_recvPackets++;
         return true;
     }

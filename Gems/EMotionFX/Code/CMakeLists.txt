@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -218,8 +219,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             ${CMAKE_CURRENT_SOURCE_DIR}/Tests/TestAssets/EMotionFXBuilderTestAssets/AnimGraphExampleNoDependency.animgraph
             ${CMAKE_CURRENT_SOURCE_DIR}/Tests/TestAssets/EMotionFXBuilderTestAssets/EmptyAnimGraphExample.animgraph
             ${CMAKE_CURRENT_SOURCE_DIR}/Tests/TestAssets/EMotionFXBuilderTestAssets/EmptyMotionSetExample.motionset
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/TestAssets/EMotionFXBuilderTestAssets/LegacyAnimGraphExample.animgraph
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/TestAssets/EMotionFXBuilderTestAssets/LegacyMotionSetExample.motionset
             ${CMAKE_CURRENT_SOURCE_DIR}/Tests/TestAssets/EMotionFXBuilderTestAssets/MotionSetExample.motionset
             ${CMAKE_CURRENT_SOURCE_DIR}/Tests/TestAssets/EMotionFXBuilderTestAssets/MotionSetExampleNoDependency.motionset
         OUTPUT_SUBDIRECTORY

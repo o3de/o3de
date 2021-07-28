@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -15,10 +16,9 @@
 #include <ACETypes.h>
 #include <ATLCommon.h>
 #include <AudioControl.h>
-#include <ISystem.h>
+
 #include <QModelIndex>
 
-#include <IXml.h>
 
 class QStandardItemModel;
 
@@ -32,15 +32,16 @@ namespace AudioControls
     {
         SLibraryScope()
         {
-            m_nodes[eACET_TRIGGER] = GetISystem()->CreateXmlNode(Audio::ATLXmlTags::TriggersNodeTag);
-            m_nodes[eACET_RTPC] = GetISystem()->CreateXmlNode(Audio::ATLXmlTags::RtpcsNodeTag);
-            m_nodes[eACET_SWITCH] = GetISystem()->CreateXmlNode(Audio::ATLXmlTags::SwitchesNodeTag);
+            XmlAllocator& xmlAlloc(AudioControls::s_xmlAllocator);
+            m_nodes[eACET_TRIGGER] = xmlAlloc.allocate_node(AZ::rapidxml::node_element, Audio::ATLXmlTags::TriggersNodeTag);
+            m_nodes[eACET_RTPC] = xmlAlloc.allocate_node(AZ::rapidxml::node_element, Audio::ATLXmlTags::RtpcsNodeTag);
+            m_nodes[eACET_SWITCH] = xmlAlloc.allocate_node(AZ::rapidxml::node_element, Audio::ATLXmlTags::SwitchesNodeTag);
             m_nodes[eACET_SWITCH_STATE] = nullptr;
-            m_nodes[eACET_ENVIRONMENT] = GetISystem()->CreateXmlNode(Audio::ATLXmlTags::EnvironmentsNodeTag);
-            m_nodes[eACET_PRELOAD] = GetISystem()->CreateXmlNode(Audio::ATLXmlTags::PreloadsNodeTag);
+            m_nodes[eACET_ENVIRONMENT] = xmlAlloc.allocate_node(AZ::rapidxml::node_element, Audio::ATLXmlTags::EnvironmentsNodeTag);
+            m_nodes[eACET_PRELOAD] = xmlAlloc.allocate_node(AZ::rapidxml::node_element, Audio::ATLXmlTags::PreloadsNodeTag);
         }
 
-        XmlNodeRef m_nodes[eACET_NUM_TYPES];
+        AZ::rapidxml::xml_node<char>* m_nodes[eACET_NUM_TYPES];
         bool m_isDirty = false;
     };
 
@@ -55,12 +56,13 @@ namespace AudioControls
     private:
         void WriteLibrary(const AZStd::string_view libraryName, QModelIndex root);
         void WriteItem(QModelIndex index, const AZStd::string& path, TLibraryStorage& library, bool isParentModified);
-        void WriteControlToXml(XmlNodeRef node, CATLControl* control, const AZStd::string_view path);
-        void WriteConnectionsToXml(XmlNodeRef node, CATLControl* control);
+        void WriteControlToXml(AZ::rapidxml::xml_node<char>* node, CATLControl* control, const AZStd::string_view path);
+        void WriteConnectionsToXml(AZ::rapidxml::xml_node<char>* node, CATLControl* control);
         bool IsItemModified(QModelIndex index);
 
-        void CheckOutFile(const AZStd::string& filepath);
-        void DeleteLibraryFile(const AZStd::string& filepath);
+        bool WriteXmlToFile(const AZStd::string_view filepath, AZ::rapidxml::xml_node<char>* rootNode);
+        void CheckOutFile(const AZStd::string_view filepath);
+        void DeleteLibraryFile(const AZStd::string_view filepath);
 
         CATLControlsModel* m_atlModel;
         QStandardItemModel* m_layoutModel;
