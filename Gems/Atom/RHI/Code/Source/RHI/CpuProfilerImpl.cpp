@@ -143,20 +143,34 @@ namespace AZ
             return m_timeRegionMap;
         }
 
-        void CpuProfilerImpl::BeginContinuousCapture()
+        bool CpuProfilerImpl::BeginContinuousCapture()
         {
-            AZ_Warning("Profiler", !m_continuousCaptureInProgress, "Attempting to start a continuous capture while one already in progress");
+            if (m_continuousCaptureInProgress)
+            {
+                AZ_TracePrintf("Profiler", "Attempting to start a continuous capture while one already in progress");
+                return false;
+            }
+
+            m_enabled = true;
             m_continuousCaptureInProgress = true;
-            AZ_TracePrintf("Profiler", "Continuous capture started");
+            AZ_TracePrintf("Profiler", "Continuous capture started\n");
+            return true;
         }
 
-        void CpuProfilerImpl::EndContinuousCapture(AZStd::deque<TimeRegionMap>& flushTarget)
+        bool CpuProfilerImpl::EndContinuousCapture(AZStd::deque<TimeRegionMap>& flushTarget)
         {
-            AZ_Warning("Profiler", m_continuousCaptureInProgress, "Attempting to end a continuous capture while one not in progress");
+            if (!m_continuousCaptureInProgress)
+            {
+                AZ_TracePrintf("Profiler", "Attempting to end a continuous capture while one not in progress");
+                return false;
+            }
+
+            m_enabled = false;
             m_continuousCaptureInProgress = false;
             flushTarget = AZStd::move(m_continuousCaptureData);
             m_continuousCaptureData.clear();
-            AZ_TracePrintf("Profiler", "Continuous capture ended");
+            AZ_TracePrintf("Profiler", "Continuous capture ended\n");
+            return true;
         }
 
         bool CpuProfilerImpl::IsContinuousCaptureInProgress() const

@@ -109,14 +109,14 @@ namespace AZ
             void BeginTimeRegion(TimeRegion& timeRegion) final override;
             void EndTimeRegion() final override;
             const TimeRegionMap& GetTimeRegionMap() const final override;
-            void BeginContinuousCapture() final override;
-            void EndContinuousCapture(AZStd::deque<TimeRegionMap>& flushTarget) final override;
+            bool BeginContinuousCapture() final override;
+            bool EndContinuousCapture(AZStd::deque<TimeRegionMap>& flushTarget) final override;
             bool IsContinuousCaptureInProgress() const final override;
             void SetProfilerEnabled(bool enabled) final override;
             bool IsProfilerEnabled() const final override;
 
         private:
-            static constexpr u32 MaxFramesToSave = 60 * 120; // 1 minute of 120fps
+            static constexpr u32 MaxFramesToSave = 2 * 60 * 120; // 2 minutes of 120fps
 
             // Lazily create and register the local thread data
             void RegisterThreadStorage();

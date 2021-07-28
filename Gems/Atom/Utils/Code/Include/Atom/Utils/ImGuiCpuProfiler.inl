@@ -129,6 +129,34 @@ namespace AZ
                 m_captureToFile = true;
             }
 
+            ImGui::SameLine();
+            bool isInProgress = RHI::CpuProfiler::Get()->IsContinuousCaptureInProgress();
+            if (ImGui::Button(isInProgress ? "End" : "Begin"))
+            {
+                if (isInProgress)
+                {
+                    AZStd::sys_time_t timeNow = AZStd::GetTimeNowSecond();
+                    AZStd::string timeString;
+                    AZStd::to_string(timeString, timeNow);
+                    u64 currentTick = AZ::RPI::RPISystemInterface::Get()->GetCurrentTick();
+                    const AZStd::string frameDataFilePath = AZStd::string::format(
+                        "@user@/CpuProfiler/%s_%llu.json",
+                        timeString.c_str(),
+                        currentTick);
+                    char resolvedPath[AZ::IO::MaxPathLength];
+                    AZ::IO::FileIOBase::GetInstance()->ResolvePath(frameDataFilePath.c_str(), resolvedPath, AZ::IO::MaxPathLength);
+                    m_lastCapturedFilePath = resolvedPath;
+                    AZ::Render::ProfilingCaptureRequestBus::Broadcast(
+                        &AZ::Render::ProfilingCaptureRequestBus::Events::EndContinuousCpuProfilingCapture, frameDataFilePath);
+                }
+
+                else
+                {
+                    AZ::Render::ProfilingCaptureRequestBus::Broadcast(
+                        &AZ::Render::ProfilingCaptureRequestBus::Events::BeginContinuousCpuProfilingCapture);
+                }
+            }
+
             if (!m_lastCapturedFilePath.empty())
             {
                 ImGui::SameLine();

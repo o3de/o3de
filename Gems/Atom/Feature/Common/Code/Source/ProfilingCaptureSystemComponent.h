@@ -12,6 +12,7 @@
 #include <AzCore/Component/TickBus.h>
 
 #include <Atom/Feature/Utils/ProfilingCaptureBus.h>
+#include <Atom/RHI/CpuProfiler.h>
 
 namespace AZ
 {
@@ -70,10 +71,14 @@ namespace AZ
             bool CapturePassTimestamp(const AZStd::string& outputFilePath) override;
             bool CapturePassPipelineStatistics(const AZStd::string& outputFilePath) override;
             bool CaptureCpuProfilingStatistics(const AZStd::string& outputFilePath) override;
+            bool BeginContinuousCpuProfilingCapture() override;
+            bool EndContinuousCpuProfilingCapture(const AZStd::string& outputFilePath) override;
             bool CaptureBenchmarkMetadata(const AZStd::string& benchmarkName, const AZStd::string& outputFilePath) override;
 
         private:
             void OnTick(float deltaTime, ScriptTimePoint time) override;
+
+            bool SerializeCpuProfilingData(AZStd::deque<RHI::CpuProfiler::TimeRegionMap>&& data, const AZStd::string& outputFilePath, bool wasEnabled);
 
             // Recursively collect all the passes from the root pass.
             AZStd::vector<const RPI::Pass*> CollectPassesRecursively(const RPI::Pass* root) const;

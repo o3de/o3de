@@ -84,10 +84,10 @@ namespace AZ
             virtual const TimeRegionMap& GetTimeRegionMap() const = 0;
 
             //! Begin a continuous capture. Blocks the profiler from being toggled off until EndContinuousCapture is called. 
-            virtual void BeginContinuousCapture() = 0;
+            virtual bool BeginContinuousCapture() = 0;
 
             //! Flush the CPU Profiler's saved data into the passed deque.
-            virtual void EndContinuousCapture(AZStd::deque<TimeRegionMap>& flushTarget) = 0;
+            virtual bool EndContinuousCapture(AZStd::deque<TimeRegionMap>& flushTarget) = 0;
 
             virtual bool IsContinuousCaptureInProgress() const = 0;
 
