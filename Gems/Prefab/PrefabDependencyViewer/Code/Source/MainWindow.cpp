@@ -46,20 +46,20 @@ namespace PrefabDependencyViewer
         AZ::Interface<PrefabDependencyViewerInterface>::Register(this);
     }
 
-    void PrefabDependencyViewerWidget::SetupUI() {
+    void PrefabDependencyViewerWidget::SetupUI()
+    {
         GraphCanvas::AssetEditorMainWindow::SetupUI();
         delete m_nodePalette;
         m_nodePalette = nullptr;
     }
 
-    void PrefabDependencyViewerWidget::DisplayTree([[maybe_unused]]const Utils::DirectedGraph& graph)
+    void PrefabDependencyViewerWidget::DisplayTree(const Utils::DirectedGraph& graph)
     {
         m_sceneId = CreateNewGraph();
         GraphCanvas::GraphModelRequestBus::Handler::BusConnect(m_sceneId);
 
         const auto [nodeCountAtEachLevel, widestLevelSize] = graph.countNodesAtEachLevel();
         DisplayNodesByLevel(graph, nodeCountAtEachLevel, widestLevelSize);
-        // CreateNodeUi(AzToolsFramework::Prefab::InvalidTemplateId);
     }
 
     void PrefabDependencyViewerWidget::DisplayNodesByLevel(const Utils::DirectedGraph& graph, [[maybe_unused]] AZStd::vector<int> numNodesAtEachLevel, [[maybe_unused]] int widestLevelSize)
@@ -105,7 +105,6 @@ namespace PrefabDependencyViewer
     {
         const char* nodeStyle = "";
         const AZ::Entity* graphCanvasNode = nullptr;
-        ;
 
         GraphCanvas::GraphCanvasRequestBus::BroadcastResult(
             graphCanvasNode, &GraphCanvas::GraphCanvasRequests::CreateGeneralNodeAndActivate, nodeStyle);
