@@ -18,6 +18,7 @@
 #include <AzCore/std/containers/queue.h>
 #include <AzCore/std/containers/stack.h>
 #include <MetaData.h>
+#include <Node.h>
 
 namespace PrefabDependencyViewer::Utils
 {
@@ -25,37 +26,6 @@ namespace PrefabDependencyViewer::Utils
     using NodeSet = AZStd::unordered_set<Node*>;
     using ChildrenMap = AZStd::unordered_map<Node*, NodeSet>;
     using TemplateId = AzToolsFramework::Prefab::TemplateId;
-
-    class Node
-    {
-    public:
-        AZ_CLASS_ALLOCATOR(Node, AZ::SystemAllocator, 0);
-
-        Node(TemplateId tid, const char* source, Node* parent = nullptr)
-            : m_metaData(tid, source)
-            , m_parent(parent)
-        {
-        }
-
-        MetaData GetMetaData()
-        {
-            return m_metaData;
-        }
-
-        Node* GetParent()
-        {
-            return m_parent;
-        }
-
-        void SetParent(Node* parent)
-        {
-            m_parent = parent;
-        }
-
-    private:
-        MetaData m_metaData;
-        Node* m_parent;
-    };
 
     class DirectedGraph
     {
