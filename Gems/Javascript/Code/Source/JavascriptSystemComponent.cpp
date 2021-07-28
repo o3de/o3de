@@ -17,11 +17,11 @@ namespace Javascript
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<JavascriptSystemComponent>("Javascript", "Run Javascript Code")
+                /*ec->Class<JavascriptSystemComponent>("Javascript", "Run Javascript Code")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ;
+                    ;*/
             }
         }
     }

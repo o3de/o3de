@@ -29,7 +29,6 @@ ly_append_configurations_options(
         /MP             # Multicore compilation in Visual Studio
         /nologo         # Suppress Copyright and version number message
         /W4             # Warning level 4
-        /WX             # Warnings as errors
         
         # Disabling some warnings
         /wd4201 # nonstandard extension used: nameless struct/union. This actually became part of the C++11 std, MS has an open issue: https://developercommunity.visualstudio.com/t/warning-level-4-generates-a-bogus-warning-c4201-no/103064
