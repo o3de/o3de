@@ -143,9 +143,6 @@ namespace AZ
                 m_hairPPLLResolvePass->SetEnabled(enable);
             }
 
-            // [To Do] Adi - Critical: done at the wrong time this can lead to a crash if the GPU is
-            // still crunching while the object is removed.  Make sure this removes the object's
-            // render items and dispatches!
             bool HairFeatureProcessor::RemoveHairRenderObject(Data::Instance<HairRenderObject> renderObject)
             {
                 for ( auto objIter = m_hairRenderObjects.begin() ; objIter != m_hairRenderObjects.end() ; ++objIter )
@@ -163,38 +160,24 @@ namespace AZ
                 return false;
             }
 
-            // Adi: The feature processor might be the one triggering this (or not), but
-            // in any case this should be done via the passes and not the feature processor
-            // Limited method to update the hair skinning matrices.
-            // MOVE MOST OF THIS METHOD TO THE PASS
-            // It avoid any physics and simulation response and should be used for initial integration testing
             void HairFeatureProcessor::UpdateHairSkinning()
             {
                 // Copying CPU side m_SimCB content to the GPU buffer (matrices, wind parameters..) 
 
-                // Adi: more initialization might be required here if we prep for more than
-                // only the skinning pass
-                // Adi: this requires to update the matrices data within the buffer as well!!
                 for (auto objIter = m_hairRenderObjects.begin(); objIter != m_hairRenderObjects.end(); ++objIter)
                 {
                     objIter->get()->Update();
                 }
             }
 
-
             //! Assumption: the hair is being updated per object before this method is called and
             //!  therefore the parameters that were calculated per object can be directly copied
             //!  without need to recalculate as in the original code.
             //! Make sure there are no more than (currently) 16 hair objects or update dynamic handling.
-            //! This DOES NOT do the srg binding since it can be shared - make sure to do it in the
-            //!   pass itself when compiling resources.
+            //! This DOES NOT do the srg binding since it can be shared but by pass itself when compiling resources.
             //! Originally called 'UpdateShadeParameters' in TressFX
             void HairFeatureProcessor::FillHairMaterialsArray(std::vector<const AMD::TressFXRenderParams*>& renderSettings)
             {
-                // [To Do] Adi: this needs to be initialized when creating the render passes
-                //                bool bindSuccess = m_hairObjectsMaterialsCB.CreateAndSetBindIndex(m_hairRenderSrg,
-                //                    m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::RenderCB)]);
-
                 // Update Render Parameters
                 for (int i = 0; i < renderSettings.size(); ++i)
                 {

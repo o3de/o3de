@@ -74,7 +74,7 @@ namespace AZ
         {
             SrgBufferDescriptor  descriptor = SrgBufferDescriptor(
                 RPI::CommonBufferPoolType::ReadWrite, RHI::Format::Unknown,
-                sizeof(float), m_sizeInBytes,
+                sizeof(float), m_sizeInBytes / sizeof(float),
                 Name{ "HairSharedDynamicBuffer" }, Name{ "m_skinnedHairSharedBuffer" }, 0, 0
             );
             m_buffer = Hair::UtilityClass::CreateBuffer("Hair Gem", descriptor, nullptr);
@@ -124,36 +124,6 @@ namespace AZ
                 
                 creator.End(m_bufferAsset);
             }
-            /*
-            ////////////////////////////
-            RHI::Ptr<RHI::Device> device = RHI::GetRHIDevice();
-
-            RHI::BufferPoolDescriptor bufferPoolDesc;
-            bufferPoolDesc.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite;
-            bufferPoolDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
-            bufferPoolDesc.m_hostMemoryAccess = RHI::HostMemoryAccess::Write;
-
-            RHI::ResultCode result = m_bufferPool->Init(*device, bufferPoolDesc);
-            AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialized compute buffer pool");
-
-            m_buffer = RHI::Factory::Get().CreateBuffer();
-            uint32_t bufferSize = m_sizeInBytes;
-
-            RHI::BufferInitRequest request;
-            request.m_buffer = m_buffer.get();
-            request.m_descriptor = RHI::BufferDescriptor{ RHI::BufferBindFlags::ShaderReadWrite, bufferSize };
-            result = m_bufferPool->InitBuffer(request);
-            AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialized compute buffer");
-
-
-            RHI::BufferViewDescriptor bufferViewDescriptor = RHI::BufferViewDescriptor::CreateStructured(
-                0,
-                aznumeric_cast<uint32_t>(m_sizeInBytes) / sizeof(float),
-                sizeof(float)
-            );
-            m_bufferView = m_buffer->GetBufferView(bufferViewDescriptor);
-            //////////////////////////////
-            */
         }
 
         void SharedBuffer::Init(AZStd::string bufferName, AZStd::vector<SrgBufferDescriptor>& buffersDescriptors)
