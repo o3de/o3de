@@ -62,12 +62,12 @@ namespace AzPhysics
         bool m_computeInertiaTensor = true;
         bool m_computeMass = true;
 
-        //! Flags to restrict motion along specific world-space axes.
+        // Flags to restrict motion along specific world-space axes.
         bool m_lockLinearX = false;
         bool m_lockLinearY = false;
         bool m_lockLinearZ = false;
 
-        //! Flags to restrict rotation around specific world-space axes.
+        // Flags to restrict rotation around specific world-space axes.
         bool m_lockAngularX = false;
         bool m_lockAngularY = false;
         bool m_lockAngularZ = false;
