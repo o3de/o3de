@@ -97,7 +97,7 @@ namespace PrefabDependencyViewer
         //! Get the Display Type name for the given AZ type
         AZStd::string GetDataTypeString([[maybe_unused]] const AZ::Uuid& typeId) override
         {
-            return "";
+            return {};
         };
 
         // Signals out that the specified elements save data is dirty.

@@ -98,6 +98,6 @@ namespace PrefabDependencyViewer
         static PrefabSystemComponentInterface* s_prefabSystemComponentInterface;
         static PrefabPublicInterface* s_prefabPublicInterface;
 
-        static const char* s_prefabViewerTitle;
+        static constexpr inline const char* s_prefabViewerTitle = "Prefab Dependencies Viewer";
     };
 } // namespace PrefabDependencyViewer

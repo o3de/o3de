@@ -27,8 +27,6 @@ namespace PrefabDependencyViewer
     PrefabSystemComponentInterface* PrefabDependencyViewerEditorSystemComponent::s_prefabSystemComponentInterface = nullptr;
     PrefabPublicInterface* PrefabDependencyViewerEditorSystemComponent::s_prefabPublicInterface = nullptr;
 
-    const char* PrefabDependencyViewerEditorSystemComponent::s_prefabViewerTitle = "Prefab Dependencies Viewer";
-
     void PrefabDependencyViewerEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
