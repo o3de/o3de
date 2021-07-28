@@ -132,12 +132,6 @@ namespace PrefabDependencyViewer
                                                         azrtti_typeid<AZ::EntityId>(),
                                                         GraphCanvas::SlotGroups::DataGroup, false);
 
-        /* GraphCanvas::SlotId inputSlotId =
-                CreateExecutionSlot(nodeUiId, "Input", "Child",
-                                            GraphCanvas::SlotGroups::ExecutionGroup, true);
-        GraphCanvas::SlotId outputSlotId = CreateExecutionSlot(nodeUiId, "Output", "Parent",
-                                            GraphCanvas::SlotGroups::ExecutionGroup, false);
-        */
         nodeToSlotId[node] = AZStd::make_pair(inputSlotId, outputSlotId);
 
         // This might break if the parent is nullptr
@@ -192,41 +186,6 @@ namespace PrefabDependencyViewer
 
         return slotEntity ? slotEntity->GetId() : GraphCanvas::SlotId();
     }
-    GraphCanvas::SlotId PrefabDependencyViewerWidget::CreateExecutionSlot(
-        GraphCanvas::NodeId nodeId,
-        const AZStd::string& slotName,
-        const AZStd::string& tooltip,
-        GraphCanvas::SlotGroup slotGroup,
-        bool isInput)
-    {
-        GraphCanvas::ExecutionSlotConfiguration executionConfiguration;
-        executionConfiguration.m_name = slotName;
-        executionConfiguration.m_tooltip = tooltip;
-        executionConfiguration.m_slotGroup = slotGroup;
-
-        // Need to specify the ConnectionType for this slot.
-        if (isInput)
-        {
-            executionConfiguration.m_connectionType = GraphCanvas::CT_Input;
-        }
-        else
-        {
-            executionConfiguration.m_connectionType = GraphCanvas::CT_Output;
-        }
-
-        AZ::Entity* slotEntity = nullptr;
-        GraphCanvas::GraphCanvasRequestBus::BroadcastResult(
-            slotEntity, &GraphCanvas::GraphCanvasRequests::CreateSlot, nodeId, executionConfiguration);
-
-        if (slotEntity)
-        {
-            // Any customization to the Slot Entity will need to be done here before being activated.
-
-            AddSlotToNode(slotEntity, nodeId);
-        }
-
-        return slotEntity ? slotEntity->GetId() : GraphCanvas::SlotId();
-    }
 
     void PrefabDependencyViewerWidget::AddSlotToNode(AZ::Entity* slotEntity, GraphCanvas::NodeId nodeId)
     {
@@ -236,26 +195,6 @@ namespace PrefabDependencyViewer
         // At this point the Slot's user data should be set to help tie it to whatever the underlying model wants.
 
         GraphCanvas::NodeRequestBus::Event(nodeId, &GraphCanvas::NodeRequests::AddSlot, slotEntity->GetId());
-    }
-
-    void PrefabDependencyViewerWidget::CreateNodeUi([[maybe_unused]]const AzToolsFramework::Prefab::TemplateId& tid)
-    {
-        const char* nodeStyle = "";
-        const AZ::Entity* graphCanvasNode = nullptr;;
-
-        GraphCanvas::GraphCanvasRequestBus::BroadcastResult(
-            graphCanvasNode,
-            &GraphCanvas::GraphCanvasRequests::CreateGeneralNodeAndActivate,
-            nodeStyle);
-
-        AZ_Assert(graphCanvasNode, "Unable to create GraphCanvas Node");
-
-        AZ::EntityId nodeUiId = graphCanvasNode->GetId();
-        GraphCanvas::NodeTitleRequestBus::Event(nodeUiId, &GraphCanvas::NodeTitleRequests::SetTitle, "Prefab");
-
-        GraphCanvas::SceneRequestBus::Event(m_sceneId, &GraphCanvas::SceneRequests::AddNode, nodeUiId, AZ::Vector2(5, 5), false);
-        GraphCanvas::SceneMemberUIRequestBus::Event(nodeUiId, &GraphCanvas::SceneMemberUIRequests::SetSelected, true);
-        // AddNodeUiToScene()
     }
 
     PrefabDependencyViewerWidget::~PrefabDependencyViewerWidget() {

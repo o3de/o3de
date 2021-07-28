@@ -53,14 +53,6 @@ namespace PrefabDependencyViewer
 
         void DisplayNode(Utils::Node* node, AZ::Vector2 pos);
 
-        
-        GraphCanvas::SlotId CreateExecutionSlot(
-            GraphCanvas::NodeId nodeId,
-            const AZStd::string& slotName,
-            const AZStd::string& tooltip,
-            GraphCanvas::SlotGroup slotGroup,
-            bool isInput);
-
         GraphCanvas::SlotId CreateDataSlot(
             GraphCanvas::NodeId nodeId,
             const AZStd::string& slotName,
@@ -70,7 +62,6 @@ namespace PrefabDependencyViewer
             bool isInput);
 
         void AddSlotToNode(AZ::Entity* slotEntity, GraphCanvas::NodeId nodeId);
-        void CreateNodeUi(const AzToolsFramework::Prefab::TemplateId& tid);
 
     protected:
         ////////////////// GraphCanvas::AssetEditorMainWindow overrides //////////////
