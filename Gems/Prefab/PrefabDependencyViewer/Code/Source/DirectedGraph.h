@@ -17,6 +17,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/queue.h>
 #include <AzCore/std/containers/stack.h>
+#include <MetaData.h>
 
 namespace PrefabDependencyViewer::Utils
 {
@@ -24,34 +25,6 @@ namespace PrefabDependencyViewer::Utils
     using NodeSet = AZStd::unordered_set<Node*>;
     using ChildrenMap = AZStd::unordered_map<Node*, NodeSet>;
     using TemplateId = AzToolsFramework::Prefab::TemplateId;
-
-    struct MetaData
-    {
-    public:
-        AZ_CLASS_ALLOCATOR(MetaData, AZ::SystemAllocator, 0);
-
-        MetaData() = default;
-
-        MetaData(TemplateId tid, const char* source)
-            : m_tid(tid)
-            , m_source(source)
-        {
-        }
-
-        TemplateId GetTemplateId()
-        {
-            return m_tid;
-        }
-
-        const char* GetSource()
-        {
-            return m_source.c_str();
-        }
-
-    private:
-        TemplateId m_tid;
-        AZStd::string m_source;
-    };
 
     class Node
     {

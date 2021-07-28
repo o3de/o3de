@@ -14,5 +14,7 @@ set(FILES
     Source/Core/Core.h
     Source/MainWindowInterface.h
     Source/DirectedGraph.h
+    Source/Node.h
+    Source/MetaData.h
     Source/PrefabDependencyTree.h
 )
