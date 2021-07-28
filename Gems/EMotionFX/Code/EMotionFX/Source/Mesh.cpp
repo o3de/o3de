@@ -1372,20 +1372,17 @@ namespace EMotionFX
     }
 
 
-    void Mesh::CalcAABB(MCore::AABB* outBoundingBox, const Transform& transform, uint32 vertexFrequency)
+    void Mesh::CalcAabb(AZ::Aabb* outBoundingBox, const Transform& transform, uint32 vertexFrequency)
     {
         MCORE_ASSERT(vertexFrequency >= 1);
+        *outBoundingBox = AZ::Aabb::CreateNull();
 
-        // init the bounding box
-        outBoundingBox->Init();
-
-        // get the position data
         AZ::Vector3* positions = (AZ::Vector3*)FindVertexData(ATTRIB_POSITIONS);
 
         const uint32 numVerts = GetNumVertices();
         for (uint32 i = 0; i < numVerts; i += vertexFrequency)
         {
-            outBoundingBox->Encapsulate(transform.TransformPoint(positions[i]));
+            outBoundingBox->AddPoint(transform.TransformPoint(positions[i]));
         }
     }
 
