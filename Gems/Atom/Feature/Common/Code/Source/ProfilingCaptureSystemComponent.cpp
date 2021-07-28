@@ -21,9 +21,9 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/Json/JsonSerializationSettings.h>
+#include <AzCore/std/parallel/thread.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
-#pragma optimize("", off)
 namespace AZ
 {
     namespace Render
@@ -144,7 +144,7 @@ namespace AZ
             static void Reflect(AZ::ReflectContext* context);
 
             CpuProfilingStatisticsSerializer() = default;
-            CpuProfilingStatisticsSerializer(AZStd::deque<RHI::CpuProfiler::TimeRegionMap>&& continuousData);
+            CpuProfilingStatisticsSerializer(const AZStd::deque<RHI::CpuProfiler::TimeRegionMap>& continuousData);
 
             AZStd::vector<CpuProfilingStatisticsSerializerEntry> m_cpuProfilingStatisticsSerializerEntries;
         };
@@ -289,23 +289,22 @@ namespace AZ
 
         // --- CpuProfilingStatisticsSerializer ---
 
-        CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializer(AZStd::deque<RHI::CpuProfiler::TimeRegionMap>&& continuousData)
+        CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializer(const AZStd::deque<RHI::CpuProfiler::TimeRegionMap>& continuousData)
         {
             // Create serializable entries
-            for (auto& timeRegionMap : continuousData)
+            for (const auto& timeRegionMap : continuousData)
             {
-                for (auto& threadEntry : timeRegionMap)
+                for (const auto& threadEntry : timeRegionMap)
                 {
-                    for (auto& cachedRegionEntry : threadEntry.second)
+                    for (const auto& cachedRegionEntry : threadEntry.second)
                     {
                         m_cpuProfilingStatisticsSerializerEntries.insert(
                             m_cpuProfilingStatisticsSerializerEntries.end(),
-                            AZStd::move_iterator(cachedRegionEntry.second.begin()),
-                            AZStd::move_iterator(cachedRegionEntry.second.end()));
+                            cachedRegionEntry.second.begin(),
+                            cachedRegionEntry.second.end());
                     }
                 }
             }
-            continuousData.clear();
         }
 
         void CpuProfilingStatisticsSerializer::Reflect(AZ::ReflectContext* context)
@@ -431,6 +430,12 @@ namespace AZ
             TickBus::Handler::BusDisconnect();
 
             ProfilingCaptureRequestBus::Handler::BusDisconnect();
+
+            if (m_cpuStatisticsIoThread.joinable())
+            {
+                // Block until the IO thread has completed
+                m_cpuStatisticsIoThread.join();
+            }
         }
 
         bool ProfilingCaptureSystemComponent::CapturePassTimestamp(const AZStd::string& outputFilePath)
@@ -533,12 +538,13 @@ namespace AZ
             return captureStarted;
         }
 
-        bool ProfilingCaptureSystemComponent::SerializeCpuProfilingData(AZStd::deque<RHI::CpuProfiler::TimeRegionMap>&& data, const AZStd::string& outputFilePath, bool wasEnabled)
+        bool SerializeCpuProfilingData(const AZStd::deque<RHI::CpuProfiler::TimeRegionMap>& data, AZStd::string outputFilePath, bool wasEnabled)
         {
+            AZ_TracePrintf("ProfilingCaptureSystemComponent", "Beginning serialization of %zu frames of profiling data\n", data.size());
             JsonSerializerSettings serializationSettings;
             serializationSettings.m_keepDefaults = true;
 
-            CpuProfilingStatisticsSerializer serializer(AZStd::move(data));
+            CpuProfilingStatisticsSerializer serializer(data);
 
             const auto saveResult = JsonSerializationUtils::SaveObjectToFile(&serializer,
                 outputFilePath, (CpuProfilingStatisticsSerializer*)nullptr, &serializationSettings);
@@ -580,8 +586,9 @@ namespace AZ
 
             const bool captureStarted = m_cpuProfilingStatisticsCapture.StartCapture([this, outputFilePath, wasEnabled]()
             {
+                // Blocking call for a single frame of data, avoid thread overhead
                 AZStd::deque singleFrameData = { RHI::CpuProfiler::Get()->GetTimeRegionMap() };
-                SerializeCpuProfilingData(AZStd::move(singleFrameData), outputFilePath, wasEnabled);
+                SerializeCpuProfilingData(singleFrameData, outputFilePath, wasEnabled);
             });
 
             // Start the TickBus.
@@ -595,15 +602,46 @@ namespace AZ
 
         bool ProfilingCaptureSystemComponent::BeginContinuousCpuProfilingCapture()
         {
+            if (m_cpuDataSerializationInProgress.load())
+            {
+                AZ_TracePrintf(
+                    "ProfilingSystemCaptureComponent",
+                    "Cannot begin a continuous capture - another serialization is currently in progress\n");
+                return false;
+            }
             return AZ::RHI::CpuProfiler::Get()->BeginContinuousCapture();
         }
 
         bool ProfilingCaptureSystemComponent::EndContinuousCpuProfilingCapture(const AZStd::string& outputFilePath)
         {
-            AZStd::deque<AZ::RHI::CpuProfiler::TimeRegionMap> cpuProfilingData;
-            AZ::RHI::CpuProfiler::Get()->EndContinuousCapture(cpuProfilingData);
+            if (m_cpuDataSerializationInProgress.load())
+            {
+                AZ_TracePrintf(
+                    "ProfilingSystemCaptureComponent",
+                    "Cannot end a continuous capture - another serialization is currently in progress\n");
+                return false;
+            }
 
-            return SerializeCpuProfilingData(AZStd::move(cpuProfilingData), outputFilePath, false);
+            const bool captureEnded = AZ::RHI::CpuProfiler::Get()->EndContinuousCapture(m_lastContinuousCapture);
+            if (!captureEnded)
+            {
+                AZ_TracePrintf("ProfilingCaptureSystemComponent", "Could not end the continuous capture, is one in progress?\n");
+                return false;
+            }
+
+            // cpuProfilingData could be 1GB+ once saved, so use an IO thread to write it to disk.
+            m_cpuDataSerializationInProgress.store(true);
+            auto thread = AZStd::thread(
+                [&data = m_lastContinuousCapture, filePath = AZStd::string(outputFilePath), &flag = m_cpuDataSerializationInProgress]()
+                {
+                    SerializeCpuProfilingData(data, filePath, true);
+                    flag.store(false);
+                });
+
+            thread.detach(); 
+            m_cpuStatisticsIoThread = AZStd::move(thread);
+
+            return true;
         }
 
         bool ProfilingCaptureSystemComponent::CaptureBenchmarkMetadata(const AZStd::string& benchmarkName, const AZStd::string& outputFilePath)

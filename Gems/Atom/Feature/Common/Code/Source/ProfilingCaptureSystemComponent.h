@@ -78,8 +78,6 @@ namespace AZ
         private:
             void OnTick(float deltaTime, ScriptTimePoint time) override;
 
-            bool SerializeCpuProfilingData(AZStd::deque<RHI::CpuProfiler::TimeRegionMap>&& data, const AZStd::string& outputFilePath, bool wasEnabled);
-
             // Recursively collect all the passes from the root pass.
             AZStd::vector<const RPI::Pass*> CollectPassesRecursively(const RPI::Pass* root) const;
 
@@ -89,6 +87,13 @@ namespace AZ
             DelayedQueryCaptureHelper m_pipelineStatisticsCapture;
             DelayedQueryCaptureHelper m_cpuProfilingStatisticsCapture;
             DelayedQueryCaptureHelper m_benchmarkMetadataCapture;
+
+            // Stores the last continuous capture data so that the IO thread can access it by reference. 
+            // Ensure that this is not cleared until m_cpuDataSerializationInProgress is false. 
+            AZStd::deque<RHI::CpuProfiler::TimeRegionMap> m_lastContinuousCapture;
+            AZStd::atomic_bool m_cpuDataSerializationInProgress = false;
+
+            AZStd::thread m_cpuStatisticsIoThread;
         };
     }
 }
