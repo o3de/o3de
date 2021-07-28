@@ -125,7 +125,7 @@ namespace AzToolsFramework
 
         bool Instance::AddEntity(AZ::Entity& entity)
         {
-            EntityAlias newEntityAlias = GenerateEntityAlias();
+            EntityAlias newEntityAlias = GenerateEntityAlias(entity.GetName());
             return AddEntity(entity, newEntityAlias);
         }
 
@@ -221,7 +221,7 @@ namespace AzToolsFramework
             if (m_containerEntity)
             {
                 m_containerEntity.reset(aznew AZ::Entity());
-                RegisterEntity(m_containerEntity->GetId(), GenerateEntityAlias());
+                RegisterEntity(m_containerEntity->GetId(), GenerateEntityAlias(m_containerEntity->GetName()));
             }
 
         }
@@ -542,9 +542,9 @@ namespace AzToolsFramework
             return aliasPathResult;
         }
 
-        EntityAlias Instance::GenerateEntityAlias()
-        {
-            return AZStd::string::format("Entity_%s", AZ::Entity::MakeId().ToString().c_str());
+        EntityAlias Instance::GenerateEntityAlias(AZStd::string_view e_name)
+        { 
+            return AZStd::string::format("%s-%s", e_name.data(), AZ::Entity::MakeId().ToString().c_str());
         }
 
         InstanceAlias Instance::GenerateInstanceAlias()

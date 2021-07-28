@@ -176,7 +176,7 @@ namespace AzToolsFramework
 
             AZStd::unique_ptr<AZ::Entity> DetachContainerEntity();
 
-            static EntityAlias GenerateEntityAlias();
+            static EntityAlias GenerateEntityAlias(AZStd::string_view entityName);
             AliasPath GetAbsoluteInstanceAliasPath() const;
 
             static InstanceAlias GenerateInstanceAlias();

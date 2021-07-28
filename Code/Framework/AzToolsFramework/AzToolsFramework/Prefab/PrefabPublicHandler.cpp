@@ -533,14 +533,15 @@ namespace AzToolsFramework
                     "Cannot add entity because the owning instance of parent entity with id '%llu' could not be found.",
                     static_cast<AZ::u64>(parentId)));
             }
-            
-            EntityAlias entityAlias = Instance::GenerateEntityAlias();
+            AZStd::string entityName = AZStd::string::format("Entity%llu", static_cast<AZ::u64>(m_newEntityCounter++));
+
+            EntityAlias entityAlias = entityName; // Instance::GenerateEntityAlias();
 
             AliasPath absoluteEntityPath = owningInstanceOfParentEntity->get().GetAbsoluteInstanceAliasPath();
             absoluteEntityPath.Append(entityAlias);
 
             AZ::EntityId entityId = InstanceEntityIdMapper::GenerateEntityIdForAliasPath(absoluteEntityPath);
-            AZStd::string entityName = AZStd::string::format("Entity%llu", static_cast<AZ::u64>(m_newEntityCounter++));
+            //AZStd::string entityName = AZStd::string::format("Entity%llu", static_cast<AZ::u64>(m_newEntityCounter++));
 
             AZ::Entity* entity = aznew AZ::Entity(entityId, entityName.c_str());
             
@@ -1611,7 +1612,8 @@ namespace AzToolsFramework
 
                 // Keep track of the old alias <-> new alias mapping for this duplicated entity
                 // so we can fixup references later
-                EntityAlias newEntityAlias = Instance::GenerateEntityAlias();
+                EntityAlias newEntityAlias = AZStd::string::format(entity->GetName().c_str(), AZ::Entity::MakeId().ToString().c_str());
+                ;
                 oldAliasToNewAliasMap.emplace(oldAlias, newEntityAlias);
 
                 rapidjson::StringBuffer buffer;
