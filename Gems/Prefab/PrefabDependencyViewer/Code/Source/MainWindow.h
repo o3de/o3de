@@ -40,14 +40,14 @@ namespace PrefabDependencyViewer
         Q_OBJECT;
     public:
         explicit PrefabDependencyViewerWidget(QWidget* pParent = NULL);
-        virtual ~PrefabDependencyViewerWidget();
+        ~PrefabDependencyViewerWidget() override;
 
         ////////////////// GraphCanvas::AssetEditorMainWindow overrides //////////////
         /** Sets up the GraphCanvas UI without the Node Palette. */
-        virtual void SetupUI() override;
+        void SetupUI() override;
 
         ////////////////// PrefabDependencyViewerWidget overrides ////////////////////
-        virtual void DisplayTree(const Utils::DirectedGraph& graph) override;
+        void DisplayTree(const Utils::DirectedGraph& graph) override;
 
         void DisplayNodesByLevel(const Utils::DirectedGraph& graph, AZStd::vector<int> numNodesAtEachLevel, int widestLevel);
 
@@ -68,62 +68,46 @@ namespace PrefabDependencyViewer
         /** Overriding RefreshMenu in order to remove the
         unnecessary menu bar on the top. As a bonus, this
         also removes the ability to revive NodePalette from the UI. */
-        virtual void RefreshMenu() override {}
+        void RefreshMenu() override {}
 
         // GraphCanvas::GraphModelRequestBus::Handler overrides
-        virtual void RequestUndoPoint() {}
-        virtual void RequestPushPreventUndoStateUpdate() {}
-        virtual void RequestPopPreventUndoStateUpdate() {}
-        virtual void TriggerUndo() {}
-        virtual void TriggerRedo() {}
+        void RequestUndoPoint() override {}
+        void RequestPushPreventUndoStateUpdate() override {}
+        void RequestPopPreventUndoStateUpdate() override {}
+        void TriggerUndo() override {}
+        void TriggerRedo() override {}
         //! This is sent when a connection is disconnected.
-        virtual void DisconnectConnection([[maybe_unused]]const ConnectionId& connectionId)
+        void DisconnectConnection([[maybe_unused]]const ConnectionId& connectionId) override
         {
         }
         //! This is sent when attempting to create a given connection.
-        virtual bool CreateConnection(
+        bool CreateConnection(
             [[maybe_unused]] const ConnectionId& connectionId,
             [[maybe_unused]] const Endpoint& sourcePoint,
-            [[maybe_unused]] const Endpoint& targetPoint)
+            [[maybe_unused]] const Endpoint& targetPoint) override
         {
             return true;
         }
         //! This is sent to confirm whether or not a connection can take place.
-        virtual bool IsValidConnection([[maybe_unused]] const Endpoint& sourcePoint, [[maybe_unused]] const Endpoint& targetPoint) const
-        {
-            return true;
-        }
-        //! This is sent to confirm whether or not a variable assignment can take place.
-        virtual bool IsValidVariableAssignment([[maybe_unused]]const AZ::EntityId& variableId, [[maybe_unused]]const Endpoint& targetPoint) const
+        bool IsValidConnection([[maybe_unused]] const Endpoint& sourcePoint, [[maybe_unused]] const Endpoint& targetPoint) const override
         {
             return true;
         }
 
-                //! Get the Display Type name for the given AZ type
-        virtual AZStd::string GetDataTypeString([[maybe_unused]] const AZ::Uuid& typeId)
+        //! Get the Display Type name for the given AZ type
+        AZStd::string GetDataTypeString([[maybe_unused]] const AZ::Uuid& typeId) override
         {
             return "";
         };
 
         // Signals out that the specified elements save data is dirty.
-        virtual void OnSaveDataDirtied([[maybe_unused]]const AZ::EntityId& savedElement){};
+        void OnSaveDataDirtied([[maybe_unused]]const AZ::EntityId& savedElement) override {};
 
-        // Signals out that the graph was signeld to clean itself up.
-        virtual void OnRemoveUnusedNodes()
-        {
-        }
-        virtual void OnRemoveUnusedElements()
-        {
-        }
-        virtual void ResetSlotToDefaultValue([[maybe_unused]] const Endpoint& endpoint)
-        {
-        }
-        /*
-        bool IsValidConnection([[maybe_unused]]const GraphCanvas::Endpoint& sourcePoint, [[maybe_unused]]const GraphCanvas::Endpoint& targetPoint) const override
-        {
-            return true;
-        }
-        */
+        // Signals out that the graph was signaled to clean itself up.
+        void OnRemoveUnusedNodes() override { }
+        void OnRemoveUnusedElements() override { }
+        void ResetSlotToDefaultValue([[maybe_unused]] const Endpoint& endpoint) override { }
+
     private:
         AZ::EntityId m_sceneId;
         AZStd::unordered_map<Utils::Node*, AZ::EntityId> nodeToNodeUiId;
