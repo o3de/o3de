@@ -66,7 +66,7 @@ namespace PrefabDependencyViewer
             AddInstance("level23Prefab", "level31Prefab");
         }
 
-        void CreatePrefabAddSourceAndValue(AZStd::string prefabName, const char* prefabSource)
+        void CreatePrefabAddSourceAndValue(const AZStd::string& prefabName, const char* prefabSource)
         {
             const char* sourceKey = AzToolsFramework::Prefab::PrefabDomUtils::SourceName;
             m_prefabDomsCases[prefabName] = PrefabDom();

@@ -13,7 +13,6 @@
 #include <PrefabDependencyViewerFixture.h>
 
 #include <AzCore/std/algorithm.h>
-#include <AzCore/StringFunc/StringFunc.h>
 
 namespace PrefabDependencyViewer
 {
@@ -21,11 +20,6 @@ namespace PrefabDependencyViewer
     using TestComponent = PrefabDependencyViewerEditorSystemComponent;
     using Outcome       = AZ::Outcome<PrefabDependencyTree, const char*>;
     using NodeList      = AZStd::vector<Utils::Node*>;
-
-    bool StrEqual(const char* expected, const char* result)
-    {
-        return AZ::StringFunc::Equal(expected, result);
-    }
 
     void EXPECT_STR_EQ(const char* expected, AZStd::string_view result)
     {
@@ -101,7 +95,7 @@ namespace PrefabDependencyViewer
         {
             Utils::Node* node = *it;
             if (node->GetMetaData().GetTemplateId() == tid
-                && StrEqual(node->GetMetaData().GetSource().data(), source))
+                && node->GetMetaData().GetSource() == source)
             {
                 nodes.push_back(node);
             }
