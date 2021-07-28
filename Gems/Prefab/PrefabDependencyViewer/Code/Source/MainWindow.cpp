@@ -33,7 +33,7 @@ namespace PrefabDependencyViewer
     PrefabDependencyViewerConfig* GetDefaultConfig()
     {
         // Make sure no memory leak happens here
-        PrefabDependencyViewerConfig* config = new PrefabDependencyViewerConfig();
+        PrefabDependencyViewerConfig* config = aznew PrefabDependencyViewerConfig();
         config->m_editorId = PrefabDependencyViewerEditorId;
         config->m_baseStyleSheet = "PrefabDependencyViewer/StyleSheet/graphcanvas_style.json";
 

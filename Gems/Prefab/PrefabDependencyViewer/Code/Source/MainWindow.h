@@ -24,6 +24,7 @@ namespace PrefabDependencyViewer
     struct PrefabDependencyViewerConfig
         : GraphCanvas::AssetEditorWindowConfig
     {
+        AZ_CLASS_ALLOCATOR(PrefabDependencyViewerConfig, AZ::SystemAllocator, 0);
         /** Return an empty NodePalette tree */
         GraphCanvas::GraphCanvasTreeItem* CreateNodePaletteRoot() override;
     };
