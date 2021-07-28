@@ -161,7 +161,7 @@ namespace PhysX
                 // Add it to the list otherwise
                 sourceSceneMaterialNames.push_back(materialName);
 
-                AZ::u16 newIndex = sourceSceneMaterialNames.size() - 1;
+                AZ::u16 newIndex = static_cast<AZ::u16>(sourceSceneMaterialNames.size() - 1);
                 materialIndexByName[materialName] = newIndex;
 
                 return newIndex;

@@ -401,7 +401,7 @@ namespace LmbrCentral
         // 2 verts for each segment
         //  loops == sides
         //   2 loops per segment
-        const AZ::u32 segments = segmentCount * spline->GetSegmentGranularity();
+        const AZ::u32 segments = static_cast<AZ::u32>(segmentCount * spline->GetSegmentGranularity());
         const AZ::u32 totalEndSegments = capSegments * 2 * 2 * 2 * 2;
         const AZ::u32 totalSegments = segments * 2 * 2 * 2;
         const AZ::u32 totalLoops = 2 * sides * segments * 2;
