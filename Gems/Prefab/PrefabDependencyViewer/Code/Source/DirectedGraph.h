@@ -62,7 +62,7 @@ namespace PrefabDependencyViewer::Utils
             return m_root;
         }
 
-        NodeSet GetChildren(Node* parent) const
+        AZStd::optional<NodeSet> GetChildren(Node* parent) const
         {
             AZ_Assert(parent, "Nullptr can't have children");
 
@@ -72,7 +72,7 @@ namespace PrefabDependencyViewer::Utils
                 return iter->second;
             }
 
-            return {};
+            return AZStd::nullopt;
         }
 
         DirectedGraph(const DirectedGraph& rhs)
@@ -96,9 +96,13 @@ namespace PrefabDependencyViewer::Utils
                 AddNode(copy);
                 AddChild(parent, copy);
 
-                for (Node* child : rhs.GetChildren(rhsNode))
+                AZStd::optional<NodeSet> children = rhs.GetChildren(rhsNode);
+                if (AZStd::nullopt != children && children.has_value())
                 {
-                    stack.push(AZStd::make_pair(child, copy));
+                    for (Node* child : children.value())
+                    {
+                        stack.push(AZStd::make_pair(child, copy));
+                    }
                 }
             }
         }

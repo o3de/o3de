@@ -83,10 +83,13 @@ namespace PrefabDependencyViewer
 
                 DisplayNode(currNode, pos);
 
-                Utils::NodeSet currChildren = graph.GetChildren(currNode);
-                for (Utils::Node* currChild : currChildren)
+                AZStd::optional<Utils::NodeSet> currChildren = graph.GetChildren(currNode);
+                if (AZStd::nullopt != currChildren && currChildren.has_value())
                 {
-                    queue.push(currChild);
+                    for (Utils::Node* currChild : currChildren.value())
+                    {
+                        queue.push(currChild);
+                    }
                 }
                 currRight += stepRight;
             }
