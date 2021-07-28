@@ -13,7 +13,7 @@
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/vector.h>
 
-namespace MultiplayerDiagnostics
+namespace Multiplayer
 {
     class MultiplayerDebugByteReporter
     {
@@ -48,10 +48,10 @@ namespace MultiplayerDiagnostics
         AZStd::chrono::monotonic_clock::time_point m_lastUpdateTime;
     };
 
-    class ComponentReporter : public MultiplayerDebugByteReporter
+    class MultiplayerDebugComponentReporter : public MultiplayerDebugByteReporter
     {
     public:
-        ComponentReporter() = default;
+        MultiplayerDebugComponentReporter() = default;
 
         void ReportField(const char* fieldName, size_t byteSize);
         void ReportFragmentEnd();
@@ -61,22 +61,22 @@ namespace MultiplayerDiagnostics
         AZStd::size_t GetTotalDirtyBits() const { return m_componentDirtyBytes.GetTotalBytes(); }
         float GetAvgDirtyBits() const { return m_componentDirtyBytes.GetAverageBytes(); }
 
-        void Combine(const ComponentReporter& other);
+        void Combine(const MultiplayerDebugComponentReporter& other);
 
     private:
         AZStd::map<AZStd::string, MultiplayerDebugByteReporter> m_fieldReports;
         MultiplayerDebugByteReporter m_componentDirtyBytes;
     };
 
-    class EntityReporter : public MultiplayerDebugByteReporter
+    class MultiplayerDebugEntityReporter : public MultiplayerDebugByteReporter
     {
     public:
-        EntityReporter() = default;
+        MultiplayerDebugEntityReporter() = default;
 
         void ReportField(AZ::u32 index, const char* componentName, const char* fieldName, size_t byteSize);
         void ReportFragmentEnd();
 
-        void Combine(const EntityReporter& other);
+        void Combine(const MultiplayerDebugEntityReporter& other);
         void Reset() override;
 
         const char* GetEntityName() const { return m_entityName.c_str(); }
@@ -86,13 +86,13 @@ namespace MultiplayerDiagnostics
             m_entityName = entityName;
         }
 
-        AZStd::map<AZStd::string, ComponentReporter>& GetComponentReports();
+        AZStd::map<AZStd::string, MultiplayerDebugComponentReporter>& GetComponentReports();
         AZStd::size_t GetTotalDirtyBits() const { return m_gdeDirtyBytes.GetTotalBytes(); }
         float GetAvgDirtyBits() const { return m_gdeDirtyBytes.GetAverageBytes(); }
 
     private:
-        ComponentReporter* m_currentComponentReport = nullptr;
-        AZStd::map<AZStd::string, ComponentReporter> m_componentReports;
+        MultiplayerDebugComponentReporter* m_currentComponentReport = nullptr;
+        AZStd::map<AZStd::string, MultiplayerDebugComponentReporter> m_componentReports;
         MultiplayerDebugByteReporter m_gdeDirtyBytes;
         AZStd::string m_entityName;
     };

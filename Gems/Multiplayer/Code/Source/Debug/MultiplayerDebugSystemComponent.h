@@ -53,6 +53,6 @@ namespace Multiplayer
         bool m_displayMultiplayerStats = false;
         bool m_displayPerEntityStats = false;
 
-        AZStd::unique_ptr<MultiplayerDiagnostics::MultiplayerDebugPerEntityReporter> m_reporter;
+        AZStd::unique_ptr<MultiplayerDebugPerEntityReporter> m_reporter;
     };
 }

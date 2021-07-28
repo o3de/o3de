@@ -55,7 +55,7 @@ namespace Multiplayer
 
     void MultiplayerDebugSystemComponent::OnImGuiInitialize()
     {
-        m_reporter = AZStd::make_unique<MultiplayerDiagnostics::MultiplayerDebugPerEntityReporter>();
+        m_reporter = AZStd::make_unique<MultiplayerDebugPerEntityReporter>();
     }
 
 #ifdef IMGUI_ENABLED
@@ -65,7 +65,7 @@ namespace Multiplayer
         {
             ImGui::Checkbox("Networking Stats", &m_displayNetworkingStats);
             ImGui::Checkbox("Multiplayer Stats", &m_displayMultiplayerStats);
-            ImGui::Checkbox("Multiplayer Per Entity Stats", &m_displayPerEntityStats);
+            ImGui::Checkbox("Multiplayer Entity Stats", &m_displayPerEntityStats);
             ImGui::EndMenu();
         }
     }

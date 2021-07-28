@@ -34,7 +34,7 @@ AZ_CVAR(AZ::Color, net_DebugNetworkEntity_WarningColor, AZ::Colors::Red, nullptr
 AZ_CVAR(AZ::Color, net_DebugNetworkEntity_BelowWarningColor, AZ::Colors::Grey, nullptr, AZ::ConsoleFunctorFlags::Null,
     "If true, prints debug text over entities that use a considerable amount of network traffic");
 
-namespace MultiplayerDiagnostics
+namespace Multiplayer
 {
 #if defined(IMGUI_ENABLED)
     static const ImVec4 k_ImGuiTomato = ImVec4(1.0f, 0.4f, 0.3f, 1.0f);
@@ -64,12 +64,12 @@ namespace MultiplayerDiagnostics
     }
 
     // --------------------------------------------------------------------------------------------
-    void DisplayReplicatedStateReport(AZStd::map<AZStd::string, ComponentReporter>& componentReports, float kbpsWarn, float maxWarn)
+    void DisplayReplicatedStateReport(AZStd::map<AZStd::string, MultiplayerDebugComponentReporter>& componentReports, float kbpsWarn, float maxWarn)
     {
         for (auto& componentPair : componentReports)
         {
             ImGui::Separator();
-            ComponentReporter& componentReport = componentPair.second;
+            MultiplayerDebugComponentReporter& componentReport = componentPair.second;
 
             if (ReplicatedStateTreeNode(componentPair.first, componentReport, k_ImGuiCyan, 1))
             {
@@ -94,7 +94,7 @@ namespace MultiplayerDiagnostics
                     const float kbitsLastSecond = fieldReport.GetKbitsPerSecond();
 
                     const ImVec4* textColor = &k_ImGuiWhite;
-                    if (fieldReport.GetMaxBytes() > maxWarn)
+                    if (aznumeric_cast<float>(fieldReport.GetMaxBytes()) > maxWarn)
                     {
                         textColor = &k_ImGuiKhaki;
                     }
@@ -133,6 +133,37 @@ namespace MultiplayerDiagnostics
         : m_updateDebugOverlay([this]() { UpdateDebugOverlay(); }, AZ::Name("UpdateDebugPerEntityOverlay"))
     {
         m_updateDebugOverlay.Enqueue(AZ::TimeMs{ 0 }, true);
+
+        m_eventHandlers.m_entitySerializeStart = decltype(m_eventHandlers.m_entitySerializeStart)([this](AzNetworking::SerializerMode mode, AZ::EntityId entityId, const char* entityName)
+            {
+                RecordEntitySerializeStart(mode, entityId, entityName);
+            });
+        m_eventHandlers.m_componentSerializeEnd = decltype(m_eventHandlers.m_componentSerializeEnd)([this](AzNetworking::SerializerMode mode, Multiplayer::NetComponentId netComponentId)
+            {
+                RecordComponentSerializeEnd(mode, netComponentId);
+            });
+        m_eventHandlers.m_entitySerializeStop = decltype(m_eventHandlers.m_entitySerializeStop)([this](AzNetworking::SerializerMode mode, AZ::EntityId entityId, const char* entityName)
+            {
+                RecordEntitySerializeStop(mode, entityId, entityName);
+            });
+        m_eventHandlers.m_propertySent = decltype(m_eventHandlers.m_propertySent)([this](Multiplayer::NetComponentId netComponentId, Multiplayer::PropertyIndex propertyId, uint32_t totalBytes)
+            {
+                RecordPropertySent(netComponentId, propertyId, totalBytes);
+            });
+        m_eventHandlers.m_propertyReceived = decltype(m_eventHandlers.m_propertyReceived)([this](Multiplayer::NetComponentId netComponentId, Multiplayer::PropertyIndex propertyId, uint32_t totalBytes)
+            {
+                RecordPropertyReceived(netComponentId, propertyId, totalBytes);
+            });
+        m_eventHandlers.m_rpcSent = decltype(m_eventHandlers.m_rpcSent)([this](AZ::EntityId entityId, const char* entityName, Multiplayer::NetComponentId netComponentId, Multiplayer::RpcIndex rpcId, uint32_t totalBytes)
+            {
+                RecordRpcSent(entityId, entityName, netComponentId, rpcId, totalBytes);
+            });
+        m_eventHandlers.m_rpcReceived = decltype(m_eventHandlers.m_rpcReceived)([this](AZ::EntityId entityId, const char* entityName, Multiplayer::NetComponentId netComponentId, Multiplayer::RpcIndex rpcId, uint32_t totalBytes)
+            {
+                RecordRpcSent(entityId, entityName, netComponentId, rpcId, totalBytes);
+            });
+
+        GetMultiplayer()->GetStats().ConnectHandlers(m_eventHandlers);
     }
 
     MultiplayerDebugPerEntityReporter::~MultiplayerDebugPerEntityReporter()
@@ -149,7 +180,7 @@ namespace MultiplayerDiagnostics
 
         if (ImGui::CollapsingHeader("Receiving Entities"))
         {
-            for (AZStd::pair<AZ::EntityId, EntityReporter>& entityPair : m_receivingEntityReports)
+            for (AZStd::pair<AZ::EntityId, MultiplayerDebugEntityReporter>& entityPair : m_receivingEntityReports)
             {
                 if (!filter.PassFilter(entityPair.second.GetEntityName()))
                 {
@@ -167,7 +198,7 @@ namespace MultiplayerDiagnostics
 
         if (ImGui::CollapsingHeader("Sending Entities"))
         {
-            for (AZStd::pair<AZ::EntityId, EntityReporter>& entityPair : m_sendingEntityReports)
+            for (AZStd::pair<AZ::EntityId, MultiplayerDebugEntityReporter>& entityPair : m_sendingEntityReports)
             {
                 const char* name = entityPair.second.GetEntityName();
                 if (!filter.PassFilter(name))
@@ -255,26 +286,38 @@ namespace MultiplayerDiagnostics
         }
     }
 
-    void MultiplayerDebugPerEntityReporter::RecordRpcSent(Multiplayer::NetComponentId netComponentId, Multiplayer::RpcIndex rpcId, uint32_t totalBytes)
+    void MultiplayerDebugPerEntityReporter::RecordRpcSent(AZ::EntityId entityId, const char* entityName, Multiplayer::NetComponentId netComponentId, Multiplayer::RpcIndex rpcId, uint32_t totalBytes)
     {
         if (const Multiplayer::MultiplayerComponentRegistry* componentRegistry = Multiplayer::GetMultiplayerComponentRegistry())
         {
+            // MultiplayerDebugByteReporter requires a
+            RecordEntitySerializeStart(AzNetworking::SerializerMode::ReadFromObject, entityId, entityName);
+
             m_currentSendingEntityReport.ReportField(static_cast<AZ::u32>(netComponentId),
                 componentRegistry->GetComponentName(netComponentId),
                 componentRegistry->GetComponentRpcName(netComponentId, rpcId), totalBytes);
+
+            RecordComponentSerializeEnd(AzNetworking::SerializerMode::ReadFromObject, netComponentId);
+            RecordEntitySerializeStop(AzNetworking::SerializerMode::ReadFromObject, entityId, entityName);
         }
     }
 
     void MultiplayerDebugPerEntityReporter::RecordRpcReceived(
+        AZ::EntityId entityId, const char* entityName,
         Multiplayer::NetComponentId netComponentId,
         Multiplayer::RpcIndex rpcId,
         uint32_t totalBytes)
     {
         if (const Multiplayer::MultiplayerComponentRegistry* componentRegistry = Multiplayer::GetMultiplayerComponentRegistry())
         {
+            RecordEntitySerializeStart(AzNetworking::SerializerMode::WriteToObject, entityId, entityName);
+
             m_currentReceivingEntityReport.ReportField(static_cast<AZ::u32>(netComponentId),
                 componentRegistry->GetComponentName(netComponentId),
                 componentRegistry->GetComponentRpcName(netComponentId, rpcId), totalBytes);
+
+            RecordComponentSerializeEnd(AzNetworking::SerializerMode::WriteToObject, netComponentId);
+            RecordEntitySerializeStop(AzNetworking::SerializerMode::WriteToObject, entityId, entityName);
         }
     }
 
@@ -284,13 +327,13 @@ namespace MultiplayerDiagnostics
         {
             m_networkEntitiesTraffic.clear();
 
-            for (AZStd::pair<AZ::EntityId, EntityReporter>& entityPair : m_receivingEntityReports)
+            for (AZStd::pair<AZ::EntityId, MultiplayerDebugEntityReporter>& entityPair : m_receivingEntityReports)
             {
                 m_networkEntitiesTraffic[entityPair.first].m_name = entityPair.second.GetEntityName();
                 m_networkEntitiesTraffic[entityPair.first].m_down = entityPair.second.GetKbitsPerSecond();
             }
 
-            for (AZStd::pair<AZ::EntityId, EntityReporter>& entityPair : m_sendingEntityReports)
+            for (AZStd::pair<AZ::EntityId, MultiplayerDebugEntityReporter>& entityPair : m_sendingEntityReports)
             {
                 m_networkEntitiesTraffic[entityPair.first].m_name = entityPair.second.GetEntityName();
                 m_networkEntitiesTraffic[entityPair.first].m_up = entityPair.second.GetKbitsPerSecond();

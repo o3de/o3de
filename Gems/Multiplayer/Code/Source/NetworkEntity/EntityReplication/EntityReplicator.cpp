@@ -443,12 +443,8 @@ namespace Multiplayer
     {
         // Received rpc metrics, log rpc sent, number of bytes, and the componentId/rpcId for bandwidth metrics
         MultiplayerStats& stats = GetMultiplayer()->GetStats();
-        stats.RecordEntitySerializeStart(AzNetworking::SerializerMode::ReadFromObject,
-            GetEntityHandle().GetEntity()->GetId(), GetEntityHandle().GetEntity()->GetName().c_str());
-        stats.RecordRpcSent(entityRpcMessage.GetComponentId(), entityRpcMessage.GetRpcIndex(), entityRpcMessage.GetEstimatedSerializeSize());
-        stats.RecordComponentSerializeEnd(AzNetworking::SerializerMode::ReadFromObject, entityRpcMessage.GetComponentId());
-        stats.RecordEntitySerializeStop(AzNetworking::SerializerMode::ReadFromObject,
-            GetEntityHandle().GetEntity()->GetId(), GetEntityHandle().GetEntity()->GetName().c_str());
+        stats.RecordRpcSent(GetEntityHandle().GetEntity()->GetId(), GetEntityHandle().GetEntity()->GetName().c_str(),
+            entityRpcMessage.GetComponentId(), entityRpcMessage.GetRpcIndex(), entityRpcMessage.GetEstimatedSerializeSize());
 
         m_replicationManager.AddDeferredRpcMessage(entityRpcMessage);
     }
@@ -631,7 +627,8 @@ namespace Multiplayer
     {
         // Received rpc metrics, log rpc received, time spent, number of bytes, and the componentId/rpcId for bandwidth metrics
         MultiplayerStats& stats = GetMultiplayer()->GetStats();
-        stats.RecordRpcReceived(entityRpcMessage.GetComponentId(), entityRpcMessage.GetRpcIndex(), entityRpcMessage.GetEstimatedSerializeSize());
+        stats.RecordRpcReceived(GetEntityHandle().GetEntity()->GetId(), GetEntityHandle().GetEntity()->GetName().c_str(),
+            entityRpcMessage.GetComponentId(), entityRpcMessage.GetRpcIndex(), entityRpcMessage.GetEstimatedSerializeSize());
 
         if (!m_netBindComponent)
         {

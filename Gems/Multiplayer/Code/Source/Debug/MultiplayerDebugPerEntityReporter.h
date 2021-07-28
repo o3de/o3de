@@ -10,38 +10,35 @@
 #include "MultiplayerDebugByteReporter.h"
 
 #include <AzCore/Component/EntityId.h>
-#include <AzCore/Component/TickBus.h>
 #include <AzCore/EBus/ScheduledEvent.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
-#include <Debug/MultiplayerDebugPerEntityInterface.h>
-#include <GridMate/Drillers/CarrierDriller.h>
+#include <Multiplayer/MultiplayerStats.h>
 #include <Multiplayer/MultiplayerTypes.h>
 
-namespace MultiplayerDiagnostics
+namespace Multiplayer
 {
     /**
      * \brief GridMate network live analysis tool via ImGui.
      */
     class MultiplayerDebugPerEntityReporter
-        : public AZ::Interface<MultiplayerIPerEntityStats>::Registrar
     {
     public:
         MultiplayerDebugPerEntityReporter();
-        ~MultiplayerDebugPerEntityReporter() override;
+        ~MultiplayerDebugPerEntityReporter();
 
         // main update loop
         void OnImGuiUpdate();
 
-        //! MultilayerIPerEntityStats
+        //! Event handlers
         // @{
-        void RecordEntitySerializeStart(AzNetworking::SerializerMode mode, AZ::EntityId entityId, const char* entityName) override;
-        void RecordComponentSerializeEnd(AzNetworking::SerializerMode mode, Multiplayer::NetComponentId netComponentId) override;
-        void RecordEntitySerializeStop(AzNetworking::SerializerMode mode, AZ::EntityId entityId, const char* entityName) override;
-        void RecordPropertySent(Multiplayer::NetComponentId netComponentId, Multiplayer::PropertyIndex propertyId, uint32_t totalBytes) override;
-        void RecordPropertyReceived(Multiplayer::NetComponentId netComponentId, Multiplayer::PropertyIndex propertyId, uint32_t totalBytes) override;
-        void RecordRpcSent(Multiplayer::NetComponentId netComponentId, Multiplayer::RpcIndex rpcId, uint32_t totalBytes) override;
-        void RecordRpcReceived(Multiplayer::NetComponentId netComponentId, Multiplayer::RpcIndex rpcId, uint32_t totalBytes) override;
+        void RecordEntitySerializeStart(AzNetworking::SerializerMode mode, AZ::EntityId entityId, const char* entityName);
+        void RecordComponentSerializeEnd(AzNetworking::SerializerMode mode, Multiplayer::NetComponentId netComponentId);
+        void RecordEntitySerializeStop(AzNetworking::SerializerMode mode, AZ::EntityId entityId, const char* entityName);
+        void RecordPropertySent(Multiplayer::NetComponentId netComponentId, Multiplayer::PropertyIndex propertyId, uint32_t totalBytes);
+        void RecordPropertyReceived(Multiplayer::NetComponentId netComponentId, Multiplayer::PropertyIndex propertyId, uint32_t totalBytes);
+        void RecordRpcSent(AZ::EntityId entityId, const char* entityName, Multiplayer::NetComponentId netComponentId, Multiplayer::RpcIndex rpcId, uint32_t totalBytes);
+        void RecordRpcReceived(AZ::EntityId entityId, const char* entityName, Multiplayer::NetComponentId netComponentId, Multiplayer::RpcIndex rpcId, uint32_t totalBytes);
         // }@
 
         void UpdateDebugOverlay();
@@ -49,12 +46,13 @@ namespace MultiplayerDiagnostics
     private:
 
         AZ::ScheduledEvent m_updateDebugOverlay;
+        Multiplayer::MultiplayerStats::EventHandlers m_eventHandlers;
 
-        AZStd::map<AZ::EntityId, EntityReporter> m_sendingEntityReports{};
-        EntityReporter m_currentSendingEntityReport;
+        AZStd::map<AZ::EntityId, MultiplayerDebugEntityReporter> m_sendingEntityReports{};
+        MultiplayerDebugEntityReporter m_currentSendingEntityReport;
 
-        AZStd::map<AZ::EntityId, EntityReporter> m_receivingEntityReports{};
-        EntityReporter m_currentReceivingEntityReport;
+        AZStd::map<AZ::EntityId, MultiplayerDebugEntityReporter> m_receivingEntityReports{};
+        MultiplayerDebugEntityReporter m_currentReceivingEntityReport;
 
         float m_replicatedStateKbpsWarn = 10.f;
         float m_replicatedStateMaxSizeWarn = 30.f;

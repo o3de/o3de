@@ -14,7 +14,7 @@
 
 #pragma optimize("", off)
 
-namespace MultiplayerDiagnostics
+namespace Multiplayer
 {
     void MultiplayerDebugByteReporter::ReportBytes(size_t byteSize)
     {
@@ -44,7 +44,7 @@ namespace MultiplayerDiagnostics
             return 0.0f;
         }
 
-        return (1.0f * m_totalBytes) / m_count;
+        return aznumeric_cast<float>(m_totalBytes) / aznumeric_cast<float>(m_count);
     }
 
     size_t MultiplayerDebugByteReporter::GetMaxBytes() const
@@ -64,26 +64,26 @@ namespace MultiplayerDiagnostics
 
     float MultiplayerDebugByteReporter::GetKbitsPerSecond()
     {
-        auto now = AZStd::chrono::monotonic_clock::now();
+        const auto now = AZStd::chrono::monotonic_clock::now();
 
         // Check the amount of time elapsed and update totals if necessary.
         // Time here is measured in whole seconds from the epoch, providing synchronization in
         // reporting intervals across all byte reporters.
-        AZStd::chrono::seconds nowSeconds = AZStd::chrono::duration_cast<AZStd::chrono::seconds>(now.time_since_epoch());
-        AZStd::chrono::seconds secondsSinceLastUpdate = nowSeconds -
+        const AZStd::chrono::seconds nowSeconds = AZStd::chrono::duration_cast<AZStd::chrono::seconds>(now.time_since_epoch());
+        const AZStd::chrono::seconds secondsSinceLastUpdate = nowSeconds -
             AZStd::chrono::duration_cast<AZStd::chrono::seconds>(m_lastUpdateTime.time_since_epoch());
         if (secondsSinceLastUpdate.count())
         {
             // normalize over elapsed milliseconds
-            const int k_millisecondsPerSecond = 1000;
-            auto msSinceLastUpdate = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(now - m_lastUpdateTime);
-            m_totalBytesLastSecond = k_millisecondsPerSecond * (1.f * m_totalBytesThisSecond / msSinceLastUpdate.count());
+            constexpr int k_millisecondsPerSecond = 1000;
+            const auto msSinceLastUpdate = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(now - m_lastUpdateTime);
+            m_totalBytesLastSecond = k_millisecondsPerSecond * aznumeric_cast<float>(m_totalBytesThisSecond) / aznumeric_cast<float>(msSinceLastUpdate.count());
             m_totalBytesThisSecond = 0;
             m_lastUpdateTime = now;
         }
 
-        const float k_bitsPerByte = 8.0f;
-        const int k_bitsPerKilobit = 1024;
+        constexpr float k_bitsPerByte = 8.0f;
+        constexpr int k_bitsPerKilobit = 1024;
         return k_bitsPerByte * m_totalBytesLastSecond / k_bitsPerKilobit;
     }
 
@@ -107,19 +107,19 @@ namespace MultiplayerDiagnostics
         m_aggregateBytes = 0;
     }
 
-    void ComponentReporter::ReportField(const char* fieldName, size_t byteSize)
+    void MultiplayerDebugComponentReporter::ReportField(const char* fieldName, size_t byteSize)
     {
         MultiplayerDebugByteReporter::AggregateBytes(byteSize);
         m_fieldReports[fieldName].ReportBytes(byteSize);
     }
 
-    void ComponentReporter::ReportFragmentEnd()
+    void MultiplayerDebugComponentReporter::ReportFragmentEnd()
     {
         MultiplayerDebugByteReporter::ReportAggregateBytes();
         m_componentDirtyBytes.ReportAggregateBytes();
     }
 
-    AZStd::vector<ComponentReporter::Report> ComponentReporter::GetFieldReports()
+    AZStd::vector<MultiplayerDebugComponentReporter::Report> MultiplayerDebugComponentReporter::GetFieldReports()
     {
         AZStd::vector<Report> copy;
         for (auto field = m_fieldReports.begin(); field != m_fieldReports.end(); ++field)
@@ -137,7 +137,7 @@ namespace MultiplayerDiagnostics
         return copy;
     }
 
-    void ComponentReporter::Combine(const ComponentReporter& other)
+    void MultiplayerDebugComponentReporter::Combine(const MultiplayerDebugComponentReporter& other)
     {
         MultiplayerDebugByteReporter::Combine(other);
 
@@ -149,7 +149,7 @@ namespace MultiplayerDiagnostics
         m_componentDirtyBytes.Combine(other.m_componentDirtyBytes);
     }
 
-    void EntityReporter::ReportField(AZ::u32 index, const char* componentName,
+    void MultiplayerDebugEntityReporter::ReportField(AZ::u32 index, const char* componentName,
         const char* fieldName, size_t byteSize)
     {
         if (m_currentComponentReport == nullptr)
@@ -163,7 +163,7 @@ namespace MultiplayerDiagnostics
         MultiplayerDebugByteReporter::AggregateBytes(byteSize);
     }
 
-    void EntityReporter::ReportFragmentEnd()
+    void MultiplayerDebugEntityReporter::ReportFragmentEnd()
     {
         if (m_currentComponentReport)
         {
@@ -175,7 +175,7 @@ namespace MultiplayerDiagnostics
         MultiplayerDebugByteReporter::ReportAggregateBytes();
     }
 
-    void EntityReporter::Combine(const EntityReporter& other)
+    void MultiplayerDebugEntityReporter::Combine(const MultiplayerDebugEntityReporter& other)
     {
         MultiplayerDebugByteReporter::Combine(other);
 
@@ -188,7 +188,7 @@ namespace MultiplayerDiagnostics
         m_gdeDirtyBytes.Combine(other.m_gdeDirtyBytes);
     }
 
-    void EntityReporter::Reset()
+    void MultiplayerDebugEntityReporter::Reset()
     {
         MultiplayerDebugByteReporter::Reset();
 
@@ -196,7 +196,7 @@ namespace MultiplayerDiagnostics
         m_gdeDirtyBytes.Reset();
     }
 
-    AZStd::map<AZStd::string, ComponentReporter>& EntityReporter::GetComponentReports()
+    AZStd::map<AZStd::string, MultiplayerDebugComponentReporter>& MultiplayerDebugEntityReporter::GetComponentReports()
     {
         return m_componentReports;
     }
