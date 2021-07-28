@@ -1144,7 +1144,9 @@ namespace PhysX
             ASSERT_TRUE(rigidBody != nullptr);
 
             physx::PxRigidDynamic* pxRigidBody = static_cast<physx::PxRigidDynamic*>(rigidBody->GetNativePointer());
-            EXPECT_EQ(pxRigidBody->getRigidDynamicLockFlags(), expectedFlags);
+
+            // These values need to be cast to integral types to prevent a compilation error on somme platforms.
+            EXPECT_EQ(static_cast<AZ::u32>(pxRigidBody->getRigidDynamicLockFlags()), static_cast<AZ::u32>((expectedFlags)));
 
             RemoveRigidBody(rigidBody);
         };
