@@ -162,26 +162,26 @@ namespace PhysX
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_lockLinearX, "Lock X",
-                        "Lock linear momentum in X direction")
+                        "Lock motion along X direction")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_lockLinearY, "Lock Y",
-                        "Lock linear momentum in Y direction")
+                        "Lock motion along Y direction")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_lockLinearZ, "Lock Z",
-                        "Lock linear momentum in Z direction")
+                        "Lock motion along Z direction")
 
                     // Angular axis locking properties
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Angular Axis Locking")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_lockAngularX, "Lock X",
-                        "Lock angular momentum in X direction")
+                        "Lock rotation around X direction")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_lockAngularY, "Lock Y",
-                        "Lock angular momentum in Y direction")
+                        "Lock rotation around Y direction")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_lockAngularZ, "Lock Z",
-                        "Lock angular momentum in Z direction")
+                        "Lock rotation around Z direction")
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Continuous Collision Detection")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
