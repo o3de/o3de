@@ -3230,7 +3230,7 @@ namespace ScriptCanvas
             auto valueSlot = forEachNodeSC->GetSlot(forEachNodeSC->GetValueSlotId());
             AZ_Assert(valueSlot, "no value slot in for each node");
 
-            lastExecution->AddChild({});
+            lastExecution->AddChild({ &loopSlot, {}, nullptr });
             auto outputValue = CreateOutputData(lastExecution, lastExecution->ModChild(0), *valueSlot);
             lastExecution->ModChild(0).m_output.push_back({ valueSlot, outputValue });
 
