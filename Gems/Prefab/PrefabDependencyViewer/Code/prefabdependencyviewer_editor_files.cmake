@@ -11,7 +11,6 @@ set(FILES
     Source/PrefabDependencyViewerEditorSystemComponent.h
     Source/MainWindow.h
     Source/MainWindow.cpp
-    Source/Core/Core.h
     Source/MainWindowInterface.h
     Source/DirectedGraph.h
     Source/Node.h

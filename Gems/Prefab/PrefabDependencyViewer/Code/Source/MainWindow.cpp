@@ -17,9 +17,11 @@
 
 namespace PrefabDependencyViewer
 {
+    static const GraphCanvas::EditorId PrefabDependencyViewerEditorId = AZ_CRC_CE("PrefabDependencyViewerEditor");
+
     GraphCanvas::GraphCanvasTreeItem* PrefabDependencyViewerConfig::CreateNodePaletteRoot()
     {
-        const GraphCanvas::EditorId& editorId = PREFAB_DEPENDENCY_VIEWER_EDITOR_ID;
+        const GraphCanvas::EditorId& editorId = PrefabDependencyViewerEditorId;
         GraphCanvas::NodePaletteTreeItem* rootItem = aznew GraphCanvas::NodePaletteTreeItem("Root", editorId);
 
         return rootItem;
@@ -31,7 +33,7 @@ namespace PrefabDependencyViewer
     {
         // Make sure no memory leak happens here
         PrefabDependencyViewerConfig* config = new PrefabDependencyViewerConfig();
-        config->m_editorId = PREFAB_DEPENDENCY_VIEWER_EDITOR_ID;
+        config->m_editorId = PrefabDependencyViewerEditorId;
         config->m_baseStyleSheet = "PrefabDependencyViewer/StyleSheet/graphcanvas_style.json";
 
         return config;
