@@ -144,7 +144,9 @@ namespace PrefabDependencyViewer::Utils
                 {
                     NodeSet children = it->second;
                     for (Node* node : children)
+                    {
                         queue.push(AZStd::make_pair(level + 1, node));
+                    }
                 }
             }
 
@@ -153,8 +155,8 @@ namespace PrefabDependencyViewer::Utils
             return AZStd::make_tuple(count, widestLevelSize);
         }
     private:
-        NodeSet m_nodes {};
-        ChildrenMap m_children {};
+        NodeSet m_nodes;
+        ChildrenMap m_children;
         Node* m_root = nullptr;
     };
 }
