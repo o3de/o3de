@@ -38,7 +38,6 @@ set(FILES
     Include/Atom/Feature/Utils/FrameCaptureBus.h
     Include/Atom/Feature/Utils/GpuBufferHandler.h
     Include/Atom/Feature/Utils/IndexedDataVector.h
-    Include/Atom/Feature/Utils/IndexedDataVector.inl
     Include/Atom/Feature/Utils/MultiIndexedDataVector.h
     Include/Atom/Feature/Utils/MultiSparseVector.h
     Include/Atom/Feature/Utils/ProfilingCaptureBus.h
