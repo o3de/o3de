@@ -126,15 +126,19 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
         set(NAMESPACE_PLACEHOLDER "")
         set(NAME_PLACEHOLDER ${TARGET_NAME})
     endif()
+    get_target_property(should_create_helper ${TARGET_NAME} LY_INSTALL_GENERATE_RUN_TARGET)
+    if(should_create_helper)
+        set(NAME_PLACEHOLDER ${NAME_PLACEHOLDER}.Imported)
+    endif()
 
     set(TARGET_TYPE_PLACEHOLDER "")
-    get_target_property(target_type ${NAME_PLACEHOLDER} TYPE)
+    get_target_property(target_type ${TARGET_NAME} TYPE)
     # Remove the _LIBRARY since we dont need to pass that to ly_add_targets
     string(REPLACE "_LIBRARY" "" TARGET_TYPE_PLACEHOLDER ${target_type})
     # For HEADER_ONLY libs we end up generating "INTERFACE" libraries, need to specify HEADERONLY instead
     string(REPLACE "INTERFACE" "HEADERONLY" TARGET_TYPE_PLACEHOLDER ${TARGET_TYPE_PLACEHOLDER})
     if(TARGET_TYPE_PLACEHOLDER STREQUAL "MODULE")
-        get_target_property(gem_module ${NAME_PLACEHOLDER} GEM_MODULE)
+        get_target_property(gem_module ${TARGET_NAME} GEM_MODULE)
         if(gem_module)
             set(TARGET_TYPE_PLACEHOLDER "GEM_MODULE")
         endif()
@@ -167,7 +171,6 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
         unset(RUNTIME_DEPENDENCIES_PLACEHOLDER)
     endif()
 
-
     get_target_property(inteface_build_dependencies_props ${TARGET_NAME} INTERFACE_LINK_LIBRARIES)
     unset(INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER)
     if(inteface_build_dependencies_props)
@@ -192,20 +195,20 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
     string(REPLACE ";" "\n" INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER "${INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER}")
 
     # If the target is an executable/application, add a custom target so we can debug the target in project-centric workflow
-    get_target_property(should_create_helper ${TARGET_NAME} LY_INSTALL_GENERATE_RUN_TARGET)
     if(should_create_helper)
+        string(REPLACE ".Imported" "" RUN_TARGET_NAME ${NAME_PLACEHOLDER})
         set(target_types_with_debugging_helper EXECUTABLE APPLICATION)
         if(NOT target_type IN_LIST target_types_with_debugging_helper)
             message(FATAL_ERROR "Cannot generate a RUN target for ${TARGET_NAME}, type is ${target_type}")
         endif()
         set(TARGET_RUN_HELPER
-"add_custom_target(RUN_${TARGET_NAME} COMMAND \$<GENEX_EVAL:\$<TARGET_PROPERTY:${TARGET_NAME},IMPORTED_LOCATION>> --project-path=\${LY_DEFAULT_PROJECT_PATH})
-set_target_properties(RUN_${TARGET_NAME} PROPERTIES 
+"add_custom_target(${RUN_TARGET_NAME})
+set_target_properties(${RUN_TARGET_NAME} PROPERTIES 
     FOLDER \"CMakePredefinedTargets/SDK\"
-    VS_DEBUGGER_COMMAND \$<GENEX_EVAL:\$<TARGET_PROPERTY:${TARGET_NAME},IMPORTED_LOCATION>>
+    VS_DEBUGGER_COMMAND \$<GENEX_EVAL:\$<TARGET_PROPERTY:${NAME_PLACEHOLDER},IMPORTED_LOCATION>>
     VS_DEBUGGER_COMMAND_ARGUMENTS \"--project-path=\${LY_DEFAULT_PROJECT_PATH}\"
 )"
-)        
+)
     endif()
 
     # Config file
@@ -220,13 +223,13 @@ set_target_properties(RUN_${TARGET_NAME} PROPERTIES
             set(target_location "\${LY_ROOT_FOLDER}/${library_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_library_output_subdirectory}/$<TARGET_FILE_NAME:${TARGET_NAME}>")
         elseif(target_type STREQUAL SHARED_LIBRARY)
             string(APPEND target_file_contents 
-"set_property(TARGET ${TARGET_NAME} 
+"set_property(TARGET ${NAME_PLACEHOLDER} 
     APPEND_STRING PROPERTY IMPORTED_IMPLIB
         $<$<CONFIG:$<CONFIG>$<ANGLE-R>:\"\${LY_ROOT_FOLDER}/${archive_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/$<TARGET_LINKER_FILE_NAME:${TARGET_NAME}>\"$<ANGLE-R>
 )
 ")
             string(APPEND target_file_contents 
-"set_property(TARGET ${TARGET_NAME} 
+"set_property(TARGET ${NAME_PLACEHOLDER} 
     PROPERTY IMPORTED_IMPLIB_$<UPPER_CASE:$<CONFIG>> 
         \"\${LY_ROOT_FOLDER}/${archive_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/$<TARGET_LINKER_FILE_NAME:${TARGET_NAME}>\"
 )
@@ -238,11 +241,11 @@ set_target_properties(RUN_${TARGET_NAME} PROPERTIES
 
         if(target_location)
             string(APPEND target_file_contents
-"set_property(TARGET ${TARGET_NAME}
+"set_property(TARGET ${NAME_PLACEHOLDER}
     APPEND_STRING PROPERTY IMPORTED_LOCATION
         $<$<CONFIG:$<CONFIG>$<ANGLE-R>:${target_location}$<ANGLE-R>
 )
-set_property(TARGET ${TARGET_NAME}
+set_property(TARGET ${NAME_PLACEHOLDER}
     PROPERTY IMPORTED_LOCATION_$<UPPER_CASE:$<CONFIG>>
         ${target_location}
 )
