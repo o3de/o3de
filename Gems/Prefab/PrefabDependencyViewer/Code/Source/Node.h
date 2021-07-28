@@ -29,7 +29,7 @@ namespace PrefabDependencyViewer::Utils
         {
         }
 
-        MetaData GetMetaData()
+        MetaData& GetMetaData()
         {
             return m_metaData;
         }
