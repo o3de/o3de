@@ -26,9 +26,9 @@ namespace PrefabDependencyViewer
         return (AZStd::string)expected == (AZStd::string)result;
     }
 
-    void EXPECT_STR_EQ(const char* expected, const char* result)
+    void EXPECT_STR_EQ(const char* expected, AZStd::string_view result)
     {
-        EXPECT_EQ(true, str_equal(expected, result));
+        EXPECT_STREQ(expected, result.data());
     }
 
     TEST_F(PrefabDependencyViewerFixture, INVALID_TEMPLATE_ID)
@@ -100,7 +100,7 @@ namespace PrefabDependencyViewer
         {
             Utils::Node* node = *it;
             if (node->GetMetaData().GetTemplateId() == tid
-                && str_equal(node->GetMetaData().GetSource(), source))
+                && str_equal(node->GetMetaData().GetSource().data(), source))
             {
                 nodes.push_back(node);
             }

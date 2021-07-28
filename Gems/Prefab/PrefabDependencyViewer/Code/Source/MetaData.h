@@ -10,7 +10,7 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/string/string.h>
-
+#include <AzCore/std/string/string_view.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 
 namespace PrefabDependencyViewer::Utils
@@ -35,9 +35,9 @@ namespace PrefabDependencyViewer::Utils
             return m_tid;
         }
 
-        const char* GetSource()
+        AZStd::string_view GetSource()
         {
-            return m_source.c_str();
+            return m_source;
         }
 
     private:
