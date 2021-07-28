@@ -448,9 +448,12 @@ void TressFXHairObject::UpdateRenderingParameters(const TressFXRenderingSettings
 
     m_RenderCB->HairKs2 = parameters->m_HairKSpec2;
     m_RenderCB->HairEx2 = parameters->m_HairSpecExp2;
-
     m_RenderCB->MatKValue = { 0.f, parameters->m_HairKDiffuse, parameters->m_HairKSpec1, parameters->m_HairSpecExp1 }; // no ambient
-    
+
+    // Marschner lighting model parameters
+    m_RenderCB->Roughness = parameters->m_HairRoughness;
+    m_RenderCB->CuticleTilt = parameters->m_HairCuticleTilt;
+
     m_RenderCB->MaxShadowFibers = parameters->m_HairMaxShadowFibers;
     
     // Update Strand Parameters (per hair object)

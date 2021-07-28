@@ -181,12 +181,15 @@ namespace AZ
                 // Update Render Parameters
                 for (int i = 0; i < renderSettings.size(); ++i)
                 {
-                    m_hairObjectsMaterialsCB->HairShadeParams[i].FiberRadius = renderSettings[i]->FiberRadius;
-                    m_hairObjectsMaterialsCB->HairShadeParams[i].ShadowAlpha = renderSettings[i]->ShadowAlpha;
-                    m_hairObjectsMaterialsCB->HairShadeParams[i].FiberSpacing = renderSettings[i]->FiberSpacing;
-                    m_hairObjectsMaterialsCB->HairShadeParams[i].HairEx2 = renderSettings[i]->HairEx2;
-                    m_hairObjectsMaterialsCB->HairShadeParams[i].HairKs2 = renderSettings[i]->HairKs2;
-                    m_hairObjectsMaterialsCB->HairShadeParams[i].MatKValue = renderSettings[i]->MatKValue;
+                    AMD::ShadeParams& hairMaterial = m_hairObjectsMaterialsCB->HairShadeParams[i];
+                    hairMaterial.FiberRadius = renderSettings[i]->FiberRadius;
+                    hairMaterial.ShadowAlpha = renderSettings[i]->ShadowAlpha;
+                    hairMaterial.FiberSpacing = renderSettings[i]->FiberSpacing;
+                    hairMaterial.HairEx2 = renderSettings[i]->HairEx2;
+                    hairMaterial.HairKs2 = renderSettings[i]->HairKs2;
+                    hairMaterial.MatKValue = renderSettings[i]->MatKValue;
+                    hairMaterial.Roughness = renderSettings[i]->Roughness;
+                    hairMaterial.CuticleTilt = renderSettings[i]->CuticleTilt;
                 }
             }
 

@@ -139,21 +139,24 @@ namespace AMD
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<TressFXRenderingSettings>()
-                ->Version(1)
+                ->Version(2)
                 // Albedo assets
                 ->Field("BaseAlbedoAsset", &TressFXRenderingSettings::m_baseAlbedoAsset)
                 ->Field("StrandAlbedoAsset", &TressFXRenderingSettings::m_strandAlbedoAsset)
+
                 // LOD Settings
                 ->Field("LODStartDistance", &TressFXRenderingSettings::m_LODStartDistance)
                 ->Field("LODEndDistance", &TressFXRenderingSettings::m_LODEndDistance)
                 ->Field("LODPercent", &TressFXRenderingSettings::m_LODPercent)
                 ->Field("LODWidthMultiplier", &TressFXRenderingSettings::m_LODWidthMultiplier)
+
                 // General information
                 ->Field("FiberRadius", &TressFXRenderingSettings::m_FiberRadius)
                 ->Field("TipPercentage", &TressFXRenderingSettings::m_TipPercentage)
                 ->Field("StrandUVTilingFactor", &TressFXRenderingSettings::m_StrandUVTilingFactor)
                 ->Field("FiberRatio", &TressFXRenderingSettings::m_FiberRatio)
-                // Lighting/shading
+
+                // Lighting/shading - Original TressFX Kajiya lighting model
                 ->Field("HairMatBaseColor", &TressFXRenderingSettings::m_HairMatBaseColor)
                 ->Field("HairMatTipColor", &TressFXRenderingSettings::m_HairMatTipColor)
                 ->Field("HairKDiffuse", &TressFXRenderingSettings::m_HairKDiffuse)
@@ -161,6 +164,10 @@ namespace AMD
                 ->Field("HairSpecExp1", &TressFXRenderingSettings::m_HairSpecExp1)
                 ->Field("HairKSpec2", &TressFXRenderingSettings::m_HairKSpec2)
                 ->Field("HairSpecExp2", &TressFXRenderingSettings::m_HairSpecExp2)
+                // Lighting/shading - modified Marschner lighting model
+                ->Field("HairRoughness", &TressFXRenderingSettings::m_HairRoughness)
+                ->Field("HairCuticleTilt", &TressFXRenderingSettings::m_HairCuticleTilt)
+
                 // shadow lookup
                 ->Field("HairShadowAlpha", &TressFXRenderingSettings::m_HairShadowAlpha)
                 ->Field("HairFiberSpacing", &TressFXRenderingSettings::m_HairFiberSpacing)
@@ -169,6 +176,7 @@ namespace AMD
                 ->Field("ShadowLODEndDistance", &TressFXRenderingSettings::m_ShadowLODEndDistance)
                 ->Field("ShadowLODPercent", &TressFXRenderingSettings::m_ShadowLODPercent)
                 ->Field("ShadowLODWidthMultiplier", &TressFXRenderingSettings::m_ShadowLODWidthMultiplier)
+
                 // others
                 ->Field("EnableStrandUV", &TressFXRenderingSettings::m_EnableStrandUV)
                 ->Field("EnableStrandTangent", &TressFXRenderingSettings::m_EnableStrandTangent)
@@ -258,6 +266,16 @@ namespace AMD
                         "Specular power to use for the calculated specular tip value.")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Slider, &TressFXRenderingSettings::m_HairRoughness, "Hair Roughness",
+                        "Roughness of the hair - effective value is between 0.5 and 0.7")
+                    ->Attribute(AZ::Edit::Attributes::Min, 0.4f)
+                    ->Attribute(AZ::Edit::Attributes::Max, 0.9f)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Slider, &TressFXRenderingSettings::m_HairCuticleTilt, "Hair Cuticle Angle",
+                        "Cutical angle in radians determeaning how the light refraction behaves. Suggested value is 5-8 degrees --> 0.07")
+                    ->Attribute(AZ::Edit::Attributes::Min, -0.05f)
+                    ->Attribute(AZ::Edit::Attributes::Max, 0.15f)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Slider, &TressFXRenderingSettings::m_HairShadowAlpha, "Hair Shadow Alpha",
                         "Used to attenuate hair shadows based on distance (depth into the strands of hair).")

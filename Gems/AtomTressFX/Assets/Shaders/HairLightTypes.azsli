@@ -43,13 +43,13 @@
 
 #include <HairLightingEquations.azsli>
 //==============================================================================
-enum class HairLightingModel {GGX, Marschner};
+enum class HairLightingModel {GGX, Marschner, Kajiya};
 static HairLightingModel lightingModel = HairLightingModel::Marschner;
 //==============================================================================
 float3 GetSpecularLighting(Surface surface, LightingData lightingData, const float3 lightIntensity, const float3 dirToLight)
 {
-    float3 specular = float3(0, 0, 0);
-    if(lightingModel == HairLightingModel::GGX)
+    float3 specular = float3(1, 0, 1);  // purple - error color
+    if (lightingModel == HairLightingModel::GGX)
     {
         specular = SpecularGGX(lightingData.dirToCamera, dirToLight, surface.normal, surface.specularF0, lightingData.NdotV, surface.roughnessA2, lightingData.multiScatterCompensation);
     }
@@ -79,7 +79,7 @@ float3 GetHairBackLighting(Surface surface, LightingData lightingData, float3 li
 
         return result;
     }
-    else if (lightingModel == HairLightingModel::Marschner)
+    else // if (lightingModel == HairLightingModel::Marschner)
     {
         return float3(0.0f, 0.0f, 0.0f);
     }
@@ -98,7 +98,7 @@ float3 HairDiffuseLambertian(float3 albedo, float3 normal, float3 dirToLight)
 // and removing the regular usage of clear coat second lobe energy distribution.
 float3 GetDiffuseLighting(Surface surface, LightingData lightingData, float3 lightIntensity, float3 dirToLight)
 {
-    float3 diffuse = float3(0, 0, 0);
+    float3 diffuse = float3(0, 1, 0);   // Green - error color
 
     if (lightingModel == HairLightingModel::GGX)
     {
@@ -108,10 +108,6 @@ float3 GetDiffuseLighting(Surface surface, LightingData lightingData, float3 lig
     else if (lightingModel == HairLightingModel::Marschner)
     {
         return float3(0.0f, 0.0f, 0.0f);
-    }
-    else
-    {
-        diffuse = float3(0, 1, 0);
     }
 
     diffuse *= lightIntensity;   
@@ -347,7 +343,7 @@ void ApplyAllPointLights(Surface surface, inout LightingData lightingData)
 //                             Disk Lights
 //==============================================================================
 #include <Atom/Features/PBR/Lights/DiskLight.azsli>
-/*
+
 void TestApplyDiskLight(ViewSrg::DiskLight light, Surface surface, inout LightingData lightingData)
 {
     float3 posToLight = light.m_position - surface.position;
@@ -484,7 +480,7 @@ void TestApplyDiskLight(ViewSrg::DiskLight light, Surface surface, inout Lightin
         lightingData.specularLighting += diskIntensityNormalization * GetSpecularLighting(surface, lightingData, lightIntensity, normalize(posToLight)) * litRatio;
     }
 }
-*/
+
 
 void ApplyAllDiskLights(Surface surface, inout LightingData lightingData)
 {    
@@ -492,7 +488,7 @@ void ApplyAllDiskLights(Surface surface, inout LightingData lightingData)
     for (int l = 0; l < ViewSrg::m_diskLightCount; ++l)
     {
         ViewSrg::DiskLight light = ViewSrg::m_diskLights[l];
-        ApplyDiskLight(light, surface, lightingData);
+        TestApplyDiskLight(light, surface, lightingData);
     }
 }
 

@@ -33,12 +33,18 @@ struct HairShadeParams
     float m_hairShadowAlpha;
     float m_fiberRadius;
     float m_fiberSpacing;
+
+    // Original TressFX Kajiya lighting model parameters
     float m_Ka;
     float m_Kd;
     float m_Ks1;
     float m_Ex1;
     float m_Ks2;
     float m_Ex2;
+
+    // MArschner lighting model parameters
+    float m_cuticleTilt;
+    float m_roughness;
 };
 
 // Returns a float3 which is the scale for diffuse, spec term, and colored spec term.
@@ -303,8 +309,8 @@ float3 CalculateLighting(
     surface.position = vPositionWS;
     surface.tangent = vTangent;         // Redundant - will be calculated per light
     surface.normal = float3(0, 0, 0);   // Will fail lights that did not initialize properly. 
-    surface.roughnessLinear = material.m_Ex1;// 0.50f;
-    surface.cuticleTilt = material.m_Ks1;// 0.08715;
+    surface.roughnessLinear = material.m_roughness;
+    surface.cuticleTilt = material.m_cuticleTilt;
     surface.thickness = thickness;
     surface.CalculateRoughnessA();
     surface.SetAlbedoAndSpecularF0(material.m_color, specularF0Factor);
@@ -390,9 +396,20 @@ float3 TressFXShading(float2 pixelCoord, float depth, float3 vTangentCoverage, f
     params.m_Ex1 = HairParams[shaderParamIndex].m_matKValue.w;
     params.m_Ks2 = HairParams[shaderParamIndex].m_hairKs2;
     params.m_Ex2 = HairParams[shaderParamIndex].m_hairEx2;
+
+    params.m_cuticleTilt = HairParams[shaderParamIndex].m_cuticleTilt;
+    params.m_roughness = HairParams[shaderParamIndex].m_roughness;
     //---------------------------------------------------
 
-    return CalculateLighting(screenCoords, vPositionWS, vViewDirWS, vTangent, thickness, params);
-    return SimplifiedHairLighting(vTangent, vPositionWS, vViewDirWS, params, vNDC);    
-    return AccumulateHairLight(vTangent, vPositionWS, vViewDirWS, params, vNDC);
+    float3 accumulatedLight = float3(0, 0, 1);
+    if (lightingModel == HairLightingModel::Kajiya)
+    {
+        accumulatedLight = SimplifiedHairLighting(vTangent, vPositionWS, vViewDirWS, params, vNDC);    
+//        accumulatedLight = AccumulateHairLight(vTangent, vPositionWS, vViewDirWS, params, vNDC);
+    }
+    else
+    {
+        accumulatedLight = CalculateLighting(screenCoords, vPositionWS, vViewDirWS, vTangent, thickness, params);
+    }
+    return accumulatedLight;
 }

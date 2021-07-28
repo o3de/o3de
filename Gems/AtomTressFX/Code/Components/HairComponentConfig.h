@@ -39,11 +39,6 @@ namespace AZ
 
                 static void Reflect(ReflectContext* context);
 
-                /*
-                void CopySettingsFrom(HairSettingsInterface* settings);
-                void CopySettingsTo(HairSettingsInterface* settings);
-                */
-
                 // HairComponentConfigInterface overrides...
                 void SetEnabled(bool value)
                 {
