@@ -130,9 +130,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_googletest(
         NAME AZ::AzCore.Tests
     )
-    if(PAL_TRAIT_TEST_GOOGLE_TEST_SUPPORTED)
-        set_tests_properties(AZ::AzCore.Tests.main::TEST_RUN PROPERTIES RUN_SERIAL true)
-    endif()
     ly_add_googlebenchmark(
         NAME AZ::AzCore.Benchmarks
         TARGET AZ::AzCore.Tests
