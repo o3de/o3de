@@ -32,7 +32,7 @@ namespace PrefabDependencyViewer::Utils
     class DirectedGraph
     {
     public:
-        DirectedGraph() {}
+        DirectedGraph() = default;
 
         void AddNode(Node* node)
         {
