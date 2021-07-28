@@ -7,12 +7,17 @@
  */
 
 #include <AzCore/Serialization/SerializeContext.h>
+
 #include <AzToolsFramework/API/ViewPaneOptions.h>
-#include <PrefabDependencyViewerEditorSystemComponent.h>
-#include <MainWindow.h>
-#include <QMenu>
+
 #include <LyViewPaneNames.h>
+
+#include <MainWindow.h>
+
 #include <PrefabDependencyTree.h>
+#include <PrefabDependencyViewerEditorSystemComponent.h>
+
+#include <QMenu>
 
 namespace PrefabDependencyViewer
 {

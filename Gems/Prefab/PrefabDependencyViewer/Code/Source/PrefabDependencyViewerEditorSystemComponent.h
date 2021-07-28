@@ -8,20 +8,22 @@
 
 #pragma once
 
+#include <AzCore/Math/Vector2.h>
+
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
-#include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
-#include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
-#include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
-
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
-#include <AzToolsFramework/Prefab/PrefabIdTypes.h>
-#include <AzToolsFramework/Prefab/PrefabDomTypes.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 
-#include <AzCore/Math/Vector2.h>
-#include <DirectedGraph.h>
+#include <AzToolsFramework/Prefab/PrefabDomTypes.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
+#include <AzToolsFramework/Prefab/PrefabIdTypes.h>
+
+#include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
+#include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
+
+#include <DirectedGraph.h>
 
 #include <PrefabDependencyTree.h>
 

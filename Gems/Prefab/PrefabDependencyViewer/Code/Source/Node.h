@@ -9,7 +9,9 @@
 #pragma once
 
 #include <AzCore/Memory/SystemAllocator.h>
+
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
+
 #include <MetaData.h>
 
 namespace PrefabDependencyViewer::Utils

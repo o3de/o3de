@@ -7,13 +7,14 @@
  */
 
 #include <AzCore/Interface/Interface.h>
-#include <Core/Core.h>
+
+#include <GraphCanvas/Components/Nodes/NodeBus.h>
+#include <GraphCanvas/Components/Nodes/NodeTitleBus.h>
+#include <GraphCanvas/GraphCanvasBus.h>
+
 #include <MainWindow.h>
 #include <QBoxLayout>
 #include <QLabel>
-#include <GraphCanvas/GraphCanvasBus.h>
-#include <GraphCanvas/Components/Nodes/NodeTitleBus.h>
-#include <GraphCanvas/Components/Nodes/NodeBus.h>
 
 namespace PrefabDependencyViewer
 {

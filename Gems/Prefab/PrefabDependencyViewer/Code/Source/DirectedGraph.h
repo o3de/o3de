@@ -8,15 +8,17 @@
 
 #pragma once
 
-#include <AzCore/std/containers/unordered_map.h>
-#include <AzCore/std/containers/unordered_set.h>
-#include <AzToolsFramework/Prefab/Template/Template.h>
-#include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
-#include <AzToolsFramework/Prefab/PrefabDomTypes.h>
 #include <AzCore/std/algorithm.h>
-#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/queue.h>
 #include <AzCore/std/containers/stack.h>
+#include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/containers/unordered_set.h>
+#include <AzCore/std/containers/vector.h>
+
+#include <AzToolsFramework/Prefab/PrefabDomTypes.h>
+#include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
+#include <AzToolsFramework/Prefab/Template/Template.h>
+
 #include <MetaData.h>
 #include <Node.h>
 

@@ -8,13 +8,16 @@
 
 #pragma once
 
+#include <AzCore/std/containers/unordered_map.h>
+
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
+
 #include <GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.h>
 #include <GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasEditorDockWidget.h>
 #include <GraphCanvas/Widgets/NodePalette/NodePaletteDockWidget.h>
-#include <QWidget>
+
 #include <MainWindowInterface.h>
-#include <AzCore/std/containers/unordered_map.h>
+#include <QWidget>
 
 namespace PrefabDependencyViewer
 {

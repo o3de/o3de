@@ -8,9 +8,11 @@
 
 #pragma once
 
+#include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/containers/stack.h>
 #include <AzCore/std/utils.h>
-#include <AzCore/Outcome/Outcome.h>
+
+#include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 
 namespace PrefabDependencyViewer
 {
