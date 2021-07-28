@@ -82,10 +82,7 @@ namespace PrefabDependencyViewer::Utils
 
             while (!stack.empty())
             {
-                AZStd::pair<Node*, Node*> pair = stack.top();
-                Node* rhsNode = pair.first;
-                Node* parent = pair.second;
-
+                auto [rhsNode, parent] = stack.top();
                 stack.pop();
 
                 MetaData cpyMetaData = rhsNode->GetMetaData();
@@ -126,10 +123,7 @@ namespace PrefabDependencyViewer::Utils
 
             while (!queue.empty())
             {
-                pair p = queue.front();
-                int level = p.first;
-                Node* currNode = p.second;
-
+                auto [level, currNode] = queue.front();
                 queue.pop();
 
                 if (count.size() <= level)
