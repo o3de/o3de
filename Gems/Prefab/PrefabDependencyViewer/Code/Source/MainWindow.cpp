@@ -164,15 +164,8 @@ namespace PrefabDependencyViewer
         dataSlotConfiguration.m_slotGroup = slotGroup;
 
         // Need to specify the ConnectionType for this slot.
-        if (isInput)
-        {
-            dataSlotConfiguration.m_connectionType = GraphCanvas::CT_Input;
-        }
-        else
-        {
-            dataSlotConfiguration.m_connectionType = GraphCanvas::CT_Output;
-        }
-
+        dataSlotConfiguration.m_connectionType = isInput ? GraphCanvas::CT_Input : GraphCanvas::CT_Output;
+   
         AZ::Entity* slotEntity = nullptr;
         GraphCanvas::GraphCanvasRequestBus::BroadcastResult(
             slotEntity, &GraphCanvas::GraphCanvasRequests::CreateSlot, nodeId, dataSlotConfiguration);
