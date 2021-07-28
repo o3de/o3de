@@ -12,7 +12,7 @@ namespace NvCloth
 {
     namespace
     {
-        const float Tolerance = 0.0001f;
+        const float Tolerance = 1e-7f;
     }
 
     bool TangentSpaceHelper::CalculateNormals(
@@ -34,7 +34,8 @@ namespace NvCloth
         const size_t vertexCount = vertices.size();
 
         // Reset results
-        outNormals.resize(vertexCount, AZ::Vector3::CreateZero());
+        outNormals.resize(vertexCount);
+        AZStd::fill(outNormals.begin(), outNormals.end(), AZ::Vector3::CreateZero());
 
         // calculate the normals per triangle
         for (size_t i = 0; i < triangleCount; ++i)
@@ -115,8 +116,10 @@ namespace NvCloth
         const size_t vertexCount = vertices.size();
 
         // Reset results
-        outTangents.resize(vertexCount, AZ::Vector3::CreateZero());
-        outBitangents.resize(vertexCount, AZ::Vector3::CreateZero());
+        outTangents.resize(vertexCount);
+        outBitangents.resize(vertexCount);
+        AZStd::fill(outTangents.begin(), outTangents.end(), AZ::Vector3::CreateZero());
+        AZStd::fill(outBitangents.begin(), outBitangents.end(), AZ::Vector3::CreateZero());
 
         // calculate the base vectors per triangle
         for (size_t i = 0; i < triangleCount; ++i)
@@ -193,9 +196,12 @@ namespace NvCloth
         const size_t vertexCount = vertices.size();
 
         // Reset results
-        outTangents.resize(vertexCount, AZ::Vector3::CreateZero());
-        outBitangents.resize(vertexCount, AZ::Vector3::CreateZero());
-        outNormals.resize(vertexCount, AZ::Vector3::CreateZero());
+        outTangents.resize(vertexCount);
+        outBitangents.resize(vertexCount);
+        outNormals.resize(vertexCount);
+        AZStd::fill(outTangents.begin(), outTangents.end(), AZ::Vector3::CreateZero());
+        AZStd::fill(outBitangents.begin(), outBitangents.end(), AZ::Vector3::CreateZero());
+        AZStd::fill(outNormals.begin(), outNormals.end(), AZ::Vector3::CreateZero());
 
         // calculate the base vectors per triangle
         for (size_t i = 0; i < triangleCount; ++i)

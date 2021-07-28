@@ -4343,6 +4343,9 @@ namespace ScriptCanvas
 
                     execution->AddInput({ &input, inputVariable, DebugDataSource::FromSelfSlot(input, inputVariable->m_datum.GetType()) });
                 }
+
+                // Check for known null reads
+                CheckForKnownNullDereference(execution, execution->GetInput(execution->GetInputCount() - 1), input);
             }
             else
             {
@@ -4374,9 +4377,6 @@ namespace ScriptCanvas
                     return;
                 }
             }
-
-            // Check for known null reads
-            CheckForKnownNullDereference(execution, execution->GetInput(execution->GetInputCount() - 1), input);
         }
 
         bool AbstractCodeModel::ParseInputThisPointer(ExecutionTreePtr execution)
