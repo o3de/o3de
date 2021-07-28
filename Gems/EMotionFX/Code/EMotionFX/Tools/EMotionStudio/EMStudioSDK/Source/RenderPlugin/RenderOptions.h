@@ -59,7 +59,6 @@ namespace EMStudio
         static const char* s_nodeAABBColorOptionName;
         static const char* s_staticAABBColorOptionName;
         static const char* s_meshAABBColorOptionName;
-        static const char* s_collisionMeshAABBColorOptionName;
         static const char* s_OBBsColorOptionName;
         static const char* s_lineSkeletonColorOptionName;
         static const char* s_skeletonColorOptionName;
@@ -191,9 +190,6 @@ namespace EMStudio
         AZ::Color GetMeshAABBColor() const { return m_meshAABBColor; }
         void SetMeshAABBColor(const AZ::Color& meshAABBColor);
 
-        AZ::Color GetCollisionMeshAABBColor() const { return m_collisionMeshAABBColor; }
-        void SetCollisionMeshAABBColor(const AZ::Color& collisionMeshAABBColor);
-
         AZ::Color GetOBBsColor() const { return m_OBBsColor; }
         void SetOBBsColor(const AZ::Color& OBBsColor);
 
@@ -303,7 +299,6 @@ namespace EMStudio
         void OnNodeAABBColorChangedCallback() const;
         void OnStaticAABBColorChangedCallback() const;
         void OnMeshAABBColorChangedCallback() const;
-        void OnCollisionMeshAABBColorChangedCallback() const;
         void OnOBBsColorChangedCallback() const;
         void OnLineSkeletonColorChangedCallback() const;
         void OnSkeletonColorChangedCallback() const;
@@ -361,7 +356,6 @@ namespace EMStudio
         AZ::Color        m_nodeAABBColor;
         AZ::Color        m_staticAABBColor;
         AZ::Color        m_meshAABBColor;
-        AZ::Color        m_collisionMeshAABBColor;
         AZ::Color        m_OBBsColor;
         AZ::Color        m_lineSkeletonColor;
         AZ::Color        m_skeletonColor;
