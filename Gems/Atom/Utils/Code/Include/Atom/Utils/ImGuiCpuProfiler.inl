@@ -880,7 +880,7 @@ namespace AZ
             const AZStd::sys_time_t deltaTime = region.m_endTick - region.m_startTick;
 
             // Update per frame statistics
-            m_invocationsLastFrame++;
+            ++m_invocationsLastFrame;
             m_executingThreads.insert(threadId);
             m_lastFrameTotalTicks += deltaTime;
             m_maxTicks = AZStd::max(m_maxTicks, deltaTime);
