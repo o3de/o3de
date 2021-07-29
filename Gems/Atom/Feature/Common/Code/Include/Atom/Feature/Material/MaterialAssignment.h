@@ -63,5 +63,8 @@ namespace AZ
         //! Utility function for generating a set of available material assignments in a model
         MaterialAssignmentMap GetMaterialAssignmentsFromModel(Data::Instance<AZ::RPI::Model> model);
 
-    } // namespace Render
-} // namespace AZ
+        //! Find an assignment id corresponding to the lod and label substring filters
+        MaterialAssignmentId FindMaterialAssignmentIdInModel(
+            const Data::Instance<AZ::RPI::Model> model, const MaterialAssignmentLodIndex lodFilter, const AZStd::string& labelFilter);
+    } // namespace R    ender
+    } // namespace AZ
