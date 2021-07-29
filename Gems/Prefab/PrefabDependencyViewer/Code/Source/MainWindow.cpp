@@ -137,7 +137,6 @@ namespace PrefabDependencyViewer
 
         nodeToSlotId[node] = AZStd::make_pair(inputSlotId, outputSlotId);
 
-        // This might break if the parent is nullptr
         if (node->GetParent())
         {
             AZ::EntityId sourceNodeUiId = nodeToNodeUiId[node->GetParent()];
