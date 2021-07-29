@@ -116,10 +116,6 @@ set(FILES
     TimeValue_info.h
     TypeInfo_decl.h
     TypeInfo_impl.h
-    UnicodeBinding.h
-    UnicodeEncoding.h
-    UnicodeFunctions.h
-    UnicodeIterator.h
     VectorMap.h
     VectorSet.h
     VertexFormats.h
