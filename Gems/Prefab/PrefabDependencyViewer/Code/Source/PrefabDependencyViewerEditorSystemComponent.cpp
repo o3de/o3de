@@ -23,10 +23,6 @@ namespace PrefabDependencyViewer
 {
     using Outcome = AZ::Outcome<PrefabDependencyTree, const char*>;
 
-    InstanceEntityMapperInterface* PrefabDependencyViewerEditorSystemComponent::s_prefabEntityMapperInterface = nullptr;
-    PrefabSystemComponentInterface* PrefabDependencyViewerEditorSystemComponent::s_prefabSystemComponentInterface = nullptr;
-    PrefabPublicInterface* PrefabDependencyViewerEditorSystemComponent::s_prefabPublicInterface = nullptr;
-
     void PrefabDependencyViewerEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))

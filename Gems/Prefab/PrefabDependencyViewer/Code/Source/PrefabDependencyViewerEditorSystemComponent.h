@@ -74,7 +74,7 @@ namespace PrefabDependencyViewer
          *            the generation of the graph. Otherwise, it contains the description
          *            of the error that occurred.
          */
-        static Outcome GenerateTreeAndSetRoot(TemplateId tid);
+        Outcome GenerateTreeAndSetRoot(TemplateId tid);
 
     private:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
@@ -92,11 +92,11 @@ namespace PrefabDependencyViewer
          * on the container entity of a Prefab Instance. Opens a New Graph Canvas
          * Window and displays the prefab dependencies using it's Template.
          */ 
-        static void ContextMenu_DisplayAssetDependencies(const TemplateId& tid);
+        void ContextMenu_DisplayAssetDependencies(const TemplateId& tid);
 
-        static InstanceEntityMapperInterface* s_prefabEntityMapperInterface;
-        static PrefabSystemComponentInterface* s_prefabSystemComponentInterface;
-        static PrefabPublicInterface* s_prefabPublicInterface;
+        InstanceEntityMapperInterface* s_prefabEntityMapperInterface     = nullptr;
+        PrefabSystemComponentInterface* s_prefabSystemComponentInterface = nullptr;
+        PrefabPublicInterface* s_prefabPublicInterface                   = nullptr;
 
         static constexpr inline const char* s_prefabViewerTitle = "Prefab Dependencies Viewer";
     };
