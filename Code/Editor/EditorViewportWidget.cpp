@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -102,7 +103,7 @@
 AZ_CVAR(
     bool, ed_visibility_logTiming, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Output the timing of the new IVisibilitySystem query");
 AZ_CVAR(bool, ed_useNewCameraSystem, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Use the new Editor camera system");
-AZ_CVAR(bool, ed_showCursorCameraLook, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Show the cursor when using free look with the new camera system");
+AZ_CVAR(bool, ed_showCursorCameraLook, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Show the cursor when using free look with the new camera system");
 
 namespace SandboxEditor
 {
@@ -402,6 +403,19 @@ bool EditorViewportWidget::event(QEvent* event)
         m_keyDown.clear();
         break;
 
+    case QEvent::ShortcutOverride:
+    {
+        // Ensure we exit game mode on escape, even if something else would eat our escape key event.
+        if (static_cast<QKeyEvent*>(event)->key() == Qt::Key_Escape && GetIEditor()->IsInGameMode())
+        {
+            GetIEditor()->SetInGameMode(false);
+            event->accept();
+            return true;
+        }
+        break;
+    }
+
+
     case QEvent::Shortcut:
         // a shortcut should immediately clear us, otherwise the release event never gets sent
         m_keyDown.clear();
@@ -449,13 +463,12 @@ void EditorViewportWidget::Update()
 
     if (m_updateCameraPositionNextTick)
     {
-        auto cameraState = m_renderViewport->GetCameraState();
+        auto cameraState = GetCameraState();
         AZ::Matrix3x4 matrix;
         matrix.SetBasisAndTranslation(cameraState.m_side, cameraState.m_forward, cameraState.m_up, cameraState.m_position);
         auto m = AZMatrix3x4ToLYMatrix3x4(matrix);
 
         SetViewTM(m);
-        SetFOV(cameraState.m_fovOrZoom);
         m_Camera.SetZRange(cameraState.m_nearClip, cameraState.m_farClip);
     }
 
@@ -1125,6 +1138,17 @@ void EditorViewportWidget::OnMenuSelectCurrentCamera()
 
 AzFramework::CameraState EditorViewportWidget::GetCameraState()
 {
+    if (m_viewEntityId.IsValid())
+    {
+        bool cameraStateAcquired = false;
+        AzFramework::CameraState cameraState;
+        Camera::EditorCameraViewRequestBus::BroadcastResult(cameraStateAcquired,
+            &Camera::EditorCameraViewRequestBus::Events::GetCameraState, cameraState);
+        if (cameraStateAcquired)
+        {
+            return cameraState;
+        }
+    }
     return m_renderViewport->GetCameraState();
 }
 
@@ -2600,6 +2624,8 @@ void EditorViewportWidget::DestroyRenderContext()
 //////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::SetDefaultCamera()
 {
+    // Ensure the FOV matches our internally stored setting
+    SetFOV(GetFOV());
     if (IsDefaultCamera())
     {
         return;

@@ -1,46 +1,26 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
 
+set(minimum_supported_toolset 142)
+if(MSVC_TOOLSET_VERSION VERSION_LESS ${minimum_supported_toolset})
+    message(FATAL_ERROR "MSVC toolset ${MSVC_TOOLSET_VERSION} is too old, minimum supported toolset is ${minimum_supported_toolset}")
+endif()
+unset(minimum_supported_toolset)
+
 include(cmake/Platform/Common/Configurations_common.cmake)
 include(cmake/Platform/Common/VisualStudio_common.cmake)
 
-set(LY_MSVC_SUPPORTED_GENERATORS
-    "Visual Studio 15"
-    "Visual Studio 16"
-)
-set(FOUND_SUPPORTED_GENERATOR)
-foreach(supported_generator ${LY_MSVC_SUPPORTED_GENERATORS})
-    if(CMAKE_GENERATOR MATCHES ${supported_generator})
-        set(FOUND_SUPPORTED_GENERATOR TRUE)
-        break()
-    endif()
-endforeach()
-# VS2017's checks since it defaults the toolchain and target architecture to x86
-if(CMAKE_GENERATOR MATCHES "Visual Studio 15")
-    if(CMAKE_VS_PLATFORM_NAME AND CMAKE_VS_PLATFORM_NAME STREQUAL "Win32") # VS2017 has Win32 as the default architecture
-        message(FATAL_ERROR "Win32 architecture not supported, specify \"-A x64\" when invoking cmake")
-    endif()
-    if(NOT CMAKE_VS_PLATFORM_TOOLSET_HOST_ARCHITECTURE STREQUAL "x64") # There is at least one library (EditorLib) that make the x86 linker to run out of memory
-        message(FATAL_ERROR "x86 toolset not supported, specify \"-T host=x64\" when invoking cmake")
-    endif()
-else()
-    # For the other cases, verify that it wasn't invoked with an unsupported architecture. defaults to x86 architecture
-    if(SUPPORTED_VS_PLATFORM_NAME_OVERRIDE)
-        set(SUPPORTED_VS_PLATFORM_NAME ${SUPPORTED_VS_PLATFORM_NAME_OVERRIDE})
-    else()
-        set(SUPPORTED_VS_PLATFORM_NAME x64)
-    endif()
-
-    if(CMAKE_VS_PLATFORM_NAME AND NOT CMAKE_VS_PLATFORM_NAME STREQUAL "${SUPPORTED_VS_PLATFORM_NAME}")
-        message(FATAL_ERROR "${CMAKE_VS_PLATFORM_NAME} architecture not supported")
-    endif()
-    if(CMAKE_VS_PLATFORM_TOOLSET_HOST_ARCHITECTURE AND NOT CMAKE_VS_PLATFORM_TOOLSET_HOST_ARCHITECTURE STREQUAL "x64")
-        message(FATAL_ERROR "${CMAKE_VS_PLATFORM_TOOLSET_HOST_ARCHITECTURE} toolset not supported")
-    endif()
+# Verify that it wasn't invoked with an unsupported target/host architecture. Currently only supports x64/x64
+if(CMAKE_VS_PLATFORM_NAME AND NOT CMAKE_VS_PLATFORM_NAME STREQUAL "x64")
+    message(FATAL_ERROR "${CMAKE_VS_PLATFORM_NAME} target architecture is not supported, it must be 'x64'")
+endif()
+if(CMAKE_VS_PLATFORM_TOOLSET_HOST_ARCHITECTURE AND NOT CMAKE_VS_PLATFORM_TOOLSET_HOST_ARCHITECTURE STREQUAL "x64")
+    message(FATAL_ERROR "${CMAKE_VS_PLATFORM_TOOLSET_HOST_ARCHITECTURE} host toolset is not supported, it must be 'x64'")
 endif()
 
 ly_append_configurations_options(
@@ -77,6 +57,7 @@ ly_append_configurations_options(
         /Zc:forScope    # Force Conformance in for Loop Scope
         /diagnostics:caret # Compiler diagnostic options: includes the column where the issue was found and places a caret (^) under the location in the line of code where the issue was detected.
         /Zc:__cplusplus
+        /Zc:lambda      # Use the new lambda processor (See https://developercommunity.visualstudio.com/t/A-lambda-that-binds-the-this-pointer-w/1467873 for more details)
         /favor:AMD64    # Create Code optimized for 64 bit
         /bigobj         # Increase number of sections in obj files. Profiling has shown no meaningful impact in memory nore build times
     COMPILATION_DEBUG
@@ -133,14 +114,6 @@ else()
             /INCREMENTAL:NO
 
     )    
-endif()
-
-if(CMAKE_GENERATOR MATCHES "Visual Studio 15")
-    # Visual Studio 2017 has problems with [[maybe_unused]] on lambdas. Sadly, there is no different warning, so 4100 has to remain disabled on 2017
-    ly_append_configurations_options(
-        COMPILATION
-            /wd4100
-    )
 endif()
 
 # Configure system includes

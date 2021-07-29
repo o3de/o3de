@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -27,7 +28,7 @@ def add_args(parser, subparsers) -> None:
     o3de_package_dir = (script_dir / 'o3de').resolve()
     # add the scripts/o3de directory to the front of the sys.path
     sys.path.insert(0, str(o3de_package_dir))
-    from o3de import engine_template, global_project, register, print_registration, get_registration, \
+    from o3de import engine_properties, engine_template, gem_properties, global_project, register, print_registration, get_registration, \
         enable_gem, disable_gem, project_properties, sha256
     # Remove the temporarily added path
     sys.path = sys.path[1:]
@@ -51,9 +52,15 @@ def add_args(parser, subparsers) -> None:
 
     # remove a gem from a project
     disable_gem.add_args(subparsers)
-    
-    # modify project properties 
+
+    # modify engine properties
+    engine_properties.add_args(subparsers)
+
+    # modify project properties
     project_properties.add_args(subparsers)
+
+    # modify gem properties
+    gem_properties.add_args(subparsers)
     
     # sha256
     sha256.add_args(subparsers)

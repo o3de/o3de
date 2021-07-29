@@ -35,7 +35,6 @@
 */Code/Framework/AzCore/Tests/Memory.cpp
 */Code/Framework/AzFramework/AzFramework/Asset/AssetSystemComponentHelper.cpp
 */Code/Framework/AzQtComponents/AzQtComponents/*
-*/Code/Framework/AzToolsFramework/AzToolsFramework/AzToolsFramework_precompiled.h
 */Code/Framework/AzToolsFramework/AzToolsFramework/API/EditorAssetSystemAPI.h
 */Code/Framework/AzToolsFramework/AzToolsFramework/Application/ToolsApplication.cpp
 */Code/Framework/AzToolsFramework/AzToolsFramework/Asset/AssetSystemComponent.cpp

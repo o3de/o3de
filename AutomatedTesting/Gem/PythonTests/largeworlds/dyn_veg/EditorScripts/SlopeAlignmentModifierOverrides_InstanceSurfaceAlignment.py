@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -52,17 +53,19 @@ class TestSlopeAlignmentModifierOverrides(EditorTestHelper):
             use_terrain=False,
         )
 
+        general.set_current_view_position(512.0, 480.0, 38.0)
+
         # Create a spawner entity setup with all needed components
         center_point = math.Vector3(512.0, 512.0, 32.0)
         asset_path = os.path.join("Slices", "PinkFlower.dynamicslice")
         spawner_entity = dynveg.create_vegetation_area("Instance Spawner", center_point, 16.0, 16.0, 32.0, asset_path)
 
         # Create a sloped mesh surface for the instances to plant on
+        center_point = math.Vector3(502.0, 512.0, 24.0)
         mesh_asset_path = os.path.join("objects", "_primitives", "_box_1x1.azmodel")
         mesh_asset = asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", mesh_asset_path, math.Uuid(),
                                                   False)
         rotation = math.Vector3(0.0, radians(45.0), 0.0)
-        scale = math.Vector3(10.0, 10.0, 10.0)
         surface_entity = hydra.Entity("Surface Entity")
         surface_entity.create_entity(
             center_point,
@@ -72,7 +75,7 @@ class TestSlopeAlignmentModifierOverrides(EditorTestHelper):
             print(f"'{surface_entity.name}' created")
         hydra.get_set_test(surface_entity, 0, "Controller|Configuration|Mesh Asset", mesh_asset)
         components.TransformBus(bus.Event, "SetLocalRotation", surface_entity.id, rotation)
-        components.TransformBus(bus.Event, "SetLocalScale", surface_entity.id, scale)
+        components.TransformBus(bus.Event, "SetLocalUniformScale", surface_entity.id, 30.0)
 
         # Add a Vegetation Debugger component to allow refreshing instances
         hydra.add_level_component("Vegetation Debugger")

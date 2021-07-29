@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,54 +10,45 @@
 #include <AzCore/base.h>
 #include <AzCore/Memory/AllocatorScope.h>
 
+#include <AzCore/UnitTest/Mocks/MockFileIOBase.h>
+
 #include <AudioControlsLoader.h>
 #include <ATLControlsModel.h>
-
-#include <platform.h>
-#include <ISystem.h>
-#include <Mocks/ICryPakMock.h>
 
 using ::testing::NiceMock;
 using namespace AudioControls;
 
 namespace CustomMocks
 {
-    class AudioControlsEditorTest_CryPakMock
-        : public CryPakMock
+    class AudioControlsEditorTest_FileIOMock
+        : public AZ::IO::MockFileIOBase
     {
     public:
-        AZ_TEST_CLASS_ALLOCATOR(AudioControlsEditorTest_CryPakMock)
+        AZ_TEST_CLASS_ALLOCATOR(AudioControlsEditorTest_FileIOMock);
 
-        AudioControlsEditorTest_CryPakMock(const char* levelName)
-            : m_levelName(levelName)
-        {}
-
-        AZ::IO::ArchiveFileIterator FindFirst([[maybe_unused]] AZStd::string_view dir, AZ::IO::IArchive::EFileSearchType) override
+        AudioControlsEditorTest_FileIOMock()
         {
-            AZ::IO::FileDesc fileDesc;
-            fileDesc.nSize = sizeof(AZ::IO::FileDesc);
-            // Add a filename and file description reference to the TestFindData map to make sure the file iterator is valid
-            m_findData = new TestFindData();
-            m_findData->m_fileStack.emplace_back(AZ::IO::ArchiveFileIterator{ static_cast<AZ::IO::FindData*>(m_findData.get()), m_levelName, fileDesc });
-            return m_findData->Fetch();
         }
 
-        AZ::IO::ArchiveFileIterator FindNext(AZ::IO::ArchiveFileIterator iter) override
+        bool IsDirectory([[maybe_unused]] const char* path) override
         {
-            return ++iter;
+            return false;
         }
 
-        // public: for easy resetting...
+        AZ::IO::Result FindFiles(
+            [[maybe_unused]] const char* path,
+            [[maybe_unused]] const char* filter,
+            AZ::IO::FileIOBase::FindFilesCallbackType callback) override
+        {
+            if (callback)
+            {
+                callback(m_levelName.c_str());
+                return AZ::IO::ResultCode::Success;
+            }
+            return AZ::IO::ResultCode::Error;
+        }
+
         AZStd::string m_levelName;
-
-        // Add an inherited FindData class to control the adding of a mapfile which indicates that a FileIterator is valid
-        struct TestFindData
-            : AZ::IO::FindData
-        {
-            using AZ::IO::FindData::m_fileStack;
-        };
-
-        AZStd::intrusive_ptr<TestFindData> m_findData;
     };
 
 } // namespace CustomMocks
@@ -74,10 +66,6 @@ protected:
     void SetupEnvironment() override
     {
         m_allocatorScope.ActivateAllocators();
-
-        m_stubEnv.pCryPak = nullptr;
-        m_stubEnv.pFileIO = nullptr;
-        gEnv = &m_stubEnv;
     }
 
     void TeardownEnvironment() override
@@ -86,30 +74,68 @@ protected:
     }
 
 private:
-    AZ::AllocatorScope<AZ::OSAllocator, AZ::SystemAllocator, AZ::LegacyAllocator, CryStringAllocator> m_allocatorScope;
-    SSystemGlobalEnvironment m_stubEnv;
+    AZ::AllocatorScope<AZ::OSAllocator, AZ::SystemAllocator> m_allocatorScope;
 };
 
 AZ_UNIT_TEST_HOOK(new AudioControlsEditorTestEnvironment);
 
-TEST(AudioControlsEditorTest, AudioControlsLoader_LoadScopes_ScopesAreAdded)
+class AudioControlsEditorTest
+    : public ::testing::Test
 {
-    ASSERT_TRUE(gEnv != nullptr);
-    ASSERT_TRUE(gEnv->pCryPak == nullptr);
+public:
+    void SetUp() override
+    {
+        // Store and remove the existing fileIO...
+        m_prevFileIO = AZ::IO::FileIOBase::GetInstance();
+        if (m_prevFileIO)
+        {
+            AZ::IO::FileIOBase::SetInstance(nullptr);
+        }
 
-    NiceMock<CustomMocks::AudioControlsEditorTest_CryPakMock> m_cryPakMock("ly_extension.ly");
-    gEnv->pCryPak = &m_cryPakMock;
+        // Replace with a new FileIO Mock...
+        m_fileIO = AZStd::make_unique<CustomMocks::AudioControlsEditorTest_FileIOMock>();
+        AZ::IO::FileIOBase::SetInstance(m_fileIO.get());
+    }
 
+    void TearDown() override
+    {
+        // Destroy our LocalFileIO...
+        m_fileIO.reset();
+
+        // Replace the old fileIO (set instance to null first)...
+        AZ::IO::FileIOBase::SetInstance(nullptr);
+        if (m_prevFileIO)
+        {
+            AZ::IO::FileIOBase::SetInstance(m_prevFileIO);
+            m_prevFileIO = nullptr;
+        }
+    }
+
+protected:
+    AZ::IO::FileIOBase* m_prevFileIO = nullptr;
+    AZStd::unique_ptr<CustomMocks::AudioControlsEditorTest_FileIOMock> m_fileIO;
+};
+
+TEST_F(AudioControlsEditorTest, AudioControlsLoader_LoadScopes_ScopesAreAdded)
+{
     CATLControlsModel atlModel;
     CAudioControlsLoader loader(&atlModel, nullptr, nullptr);
 
+    m_fileIO->m_levelName = "ly_extension.ly";
     loader.LoadScopes();
     EXPECT_TRUE(atlModel.ScopeExists("ly_extension"));
 
-    m_cryPakMock.m_levelName = "cry_extension.cry";
+    m_fileIO->m_levelName = "cry_extension.cry";
     loader.LoadScopes();
     EXPECT_TRUE(atlModel.ScopeExists("cry_extension"));
 
+    m_fileIO->m_levelName = "prefab_extension.prefab";
+    loader.LoadScopes();
+    EXPECT_TRUE(atlModel.ScopeExists("prefab_extension"));
+
+    m_fileIO->m_levelName = "spawnable_extension.spawnable";
+    loader.LoadScopes();
+    EXPECT_FALSE(atlModel.ScopeExists("spawnable_extension"));
+
     atlModel.ClearScopes();
-    gEnv->pCryPak = nullptr;
 }

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -76,8 +77,8 @@ namespace AudioControls
         EACEControlType ImplTypeToATLType(TImplControlType type) const override;
         TImplControlTypeMask GetCompatibleTypes(EACEControlType atlControlType) const override;
         TConnectionPtr CreateConnectionToControl(EACEControlType atlControlType, IAudioSystemControl* middlewareControl) override;
-        TConnectionPtr CreateConnectionFromXMLNode(XmlNodeRef node, EACEControlType atlControlType) override;
-        XmlNodeRef CreateXMLNodeFromConnection(const TConnectionPtr connection, const EACEControlType atlControlType) override;
+        TConnectionPtr CreateConnectionFromXMLNode(AZ::rapidxml::xml_node<char>* node, EACEControlType atlControlType) override;
+        AZ::rapidxml::xml_node<char>* CreateXMLNodeFromConnection(const TConnectionPtr connection, const EACEControlType atlControlType) override;
         const AZStd::string_view GetTypeIcon(TImplControlType type) const override;
         const AZStd::string_view GetTypeIconSelected(TImplControlType type) const override;
         AZStd::string GetName() const override;

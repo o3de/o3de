@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -18,10 +19,7 @@
 #include <AudioSystemControl_wwise.h>
 #include <Common_wwise.h>
 
-#include <ISystem.h>
-#include <CryFile.h>
-#include <CryPath.h>
-#include <Util/PathUtil.h>
+#include <QDir>
 
 void InitWwiseResources()
 {
@@ -216,28 +214,34 @@ namespace AudioControls
     }
 
     //-------------------------------------------------------------------------------------------//
-    TConnectionPtr CAudioSystemEditor_wwise::CreateConnectionFromXMLNode(XmlNodeRef node, EACEControlType atlControlType)
+    TConnectionPtr CAudioSystemEditor_wwise::CreateConnectionFromXMLNode(AZ::rapidxml::xml_node<char>* node, EACEControlType atlControlType)
     {
         if (node)
         {
-            const AZStd::string tag(node->getTag());
-            TImplControlType type = TagToType(tag);
+            AZStd::string_view element(node->name());
+            TImplControlType type = TagToType(element);
             if (type != AUDIO_IMPL_INVALID_TYPE)
             {
-                AZStd::string name(node->getAttr(Audio::WwiseXmlTags::WwiseNameAttribute));
-                AZStd::string localized(node->getAttr(Audio::WwiseXmlTags::WwiseLocalizedAttribute));
+                AZStd::string name;
+                AZStd::string_view localized;
 
-                // Legacy Preload support
-                if (localized.empty())
+                if (auto nameAttr = node->first_attribute(Audio::WwiseXmlTags::WwiseNameAttribute, 0, false);
+                    nameAttr != nullptr)
                 {
-                    localized = node->getAttr(Audio::WwiseXmlTags::Legacy::WwiseLocalizedAttribute);
+                    name = nameAttr->value();
                 }
 
-                bool isLocalized = AZ::StringFunc::Equal(localized.c_str(), "true");
+                if (auto localizedAttr = node->first_attribute(Audio::WwiseXmlTags::WwiseLocalizedAttribute, 0, false);
+                    localizedAttr != nullptr)
+                {
+                    localized = localizedAttr->value();
+                }
 
-                // If control not found, create a placeholder.
-                // We want to keep that connection even if it's not in the middleware.
-                // The user could be using the engine without the wwise project
+                bool isLocalized = AZ::StringFunc::Equal(localized, "true");
+
+                // If the control wasn't found, create a placeholder.
+                // We want to see that connection even if it's not in the middleware.
+                // User could be viewing the editor without a middleware project.
                 IAudioSystemControl* control = GetControlByName(name, isLocalized);
                 if (!control)
                 {
@@ -249,27 +253,26 @@ namespace AudioControls
                     }
                 }
 
-                // If it's a switch we actually connect to one of the states within the switch
+                // If it's a switch we connect to one of the states within the switch
                 if (type == eWCT_WWISE_SWITCH_GROUP || type == eWCT_WWISE_GAME_STATE_GROUP)
                 {
-                    if (node->getChildCount() == 1)
+                    if (auto childNode = node->first_node();
+                        childNode != nullptr)
                     {
-                        node = node->getChild(0);
-                        if (node)
+                        AZStd::string childName;
+                        if (auto childNameAttr = childNode->first_attribute(Audio::WwiseXmlTags::WwiseNameAttribute, 0, false);
+                            childNameAttr != nullptr)
                         {
-                            AZStd::string childName(node->getAttr(Audio::WwiseXmlTags::WwiseNameAttribute));
-
-                            IAudioSystemControl* childControl = GetControlByName(childName, false, control);
-                            if (!childControl)
-                            {
-                                childControl = CreateControl(SControlDef(childName, type == eWCT_WWISE_SWITCH_GROUP ? eWCT_WWISE_SWITCH : eWCT_WWISE_GAME_STATE, false, control));
-                            }
-                            control = childControl;
+                            childName = childNameAttr->value();
                         }
-                    }
-                    else
-                    {
-                        CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_ERROR, "Audio Controls Editor (Wwise): Error reading connection to Wwise control %s", name.c_str());
+
+                        IAudioSystemControl* childControl = GetControlByName(childName, false, control);
+                        if (!childControl)
+                        {
+                            childControl = CreateControl(SControlDef(
+                                childName, type == eWCT_WWISE_SWITCH_GROUP ? eWCT_WWISE_SWITCH : eWCT_WWISE_GAME_STATE, false, control));
+                        }
+                        control = childControl;
                     }
                 }
 
@@ -288,16 +291,19 @@ namespace AudioControls
 
                                 float mult = 1.0f;
                                 float shift = 0.0f;
-                                if (node->haveAttr(Audio::WwiseXmlTags::WwiseMutiplierAttribute))
+
+                                if (auto multAttr = node->first_attribute(Audio::WwiseXmlTags::WwiseMutiplierAttribute, 0, false);
+                                    multAttr != nullptr)
                                 {
-                                    const AZStd::string multProperty(node->getAttr(Audio::WwiseXmlTags::WwiseMutiplierAttribute));
-                                    mult = AZStd::stof(multProperty);
+                                    mult = AZStd::stof(AZStd::string(multAttr->value()));
                                 }
-                                if (node->haveAttr(Audio::WwiseXmlTags::WwiseShiftAttribute))
+
+                                if (auto shiftAttr = node->first_attribute(Audio::WwiseXmlTags::WwiseShiftAttribute, 0, false);
+                                    shiftAttr != nullptr)
                                 {
-                                    const AZStd::string shiftProperty(node->getAttr(Audio::WwiseXmlTags::WwiseShiftAttribute));
-                                    shift = AZStd::stof(shiftProperty);
+                                    shift = AZStd::stof(AZStd::string(shiftAttr->value()));
                                 }
+
                                 connection->m_mult = mult;
                                 connection->m_shift = shift;
                                 return connection;
@@ -307,11 +313,12 @@ namespace AudioControls
                                 TStateConnectionPtr connection = AZStd::make_shared<CStateToRtpcConnection>(control->GetId());
 
                                 float value = 0.0f;
-                                if (node->haveAttr(Audio::WwiseXmlTags::WwiseValueAttribute))
+                                if (auto valueAttr = node->first_attribute(Audio::WwiseXmlTags::WwiseValueAttribute, 0, false);
+                                    valueAttr != nullptr)
                                 {
-                                    const AZStd::string valueProperty(node->getAttr(Audio::WwiseXmlTags::WwiseValueAttribute));
-                                    value = AZStd::stof(valueProperty);
+                                    value = AZStd::stof(AZStd::string(valueAttr->value()));
                                 }
+
                                 connection->m_value = value;
                                 return connection;
                             }
@@ -328,28 +335,50 @@ namespace AudioControls
     }
 
     //-------------------------------------------------------------------------------------------//
-    XmlNodeRef CAudioSystemEditor_wwise::CreateXMLNodeFromConnection(const TConnectionPtr connection, const EACEControlType atlControlType)
+    AZ::rapidxml::xml_node<char>* CAudioSystemEditor_wwise::CreateXMLNodeFromConnection(const TConnectionPtr connection, const EACEControlType atlControlType)
     {
         const IAudioSystemControl* control = GetControl(connection->GetID());
         if (control)
         {
+            XmlAllocator& xmlAllocator(AudioControls::s_xmlAllocator);
+
             switch (control->GetType())
             {
                 case AudioControls::eWCT_WWISE_SWITCH:
+                    [[fallthrough]];
                 case AudioControls::eWCT_WWISE_SWITCH_GROUP:
+                    [[fallthrough]];
                 case AudioControls::eWCT_WWISE_GAME_STATE:
+                    [[fallthrough]];
                 case AudioControls::eWCT_WWISE_GAME_STATE_GROUP:
                 {
                     const IAudioSystemControl* parent = control->GetParent();
                     if (parent)
                     {
-                        XmlNodeRef switchNode = GetISystem()->CreateXmlNode(TypeToTag(parent->GetType()).data());
-                        switchNode->setAttr(Audio::WwiseXmlTags::WwiseNameAttribute, parent->GetName().c_str());
+                        AZStd::string_view parentType = TypeToTag(parent->GetType());
+                        auto switchNode = xmlAllocator.allocate_node(
+                            AZ::rapidxml::node_element,
+                            xmlAllocator.allocate_string(parentType.data())
+                        );
 
-                        XmlNodeRef stateNode = switchNode->createNode(Audio::WwiseXmlTags::WwiseValueTag);
-                        stateNode->setAttr(Audio::WwiseXmlTags::WwiseNameAttribute, control->GetName().c_str());
-                        switchNode->addChild(stateNode);
+                        auto switchNameAttr = xmlAllocator.allocate_attribute(
+                            Audio::WwiseXmlTags::WwiseNameAttribute,
+                            xmlAllocator.allocate_string(parent->GetName().c_str())
+                        );
 
+                        auto stateNode = xmlAllocator.allocate_node(
+                            AZ::rapidxml::node_element,
+                            Audio::WwiseXmlTags::WwiseValueTag
+                        );
+
+                        auto stateNameAttr = xmlAllocator.allocate_attribute(
+                            Audio::WwiseXmlTags::WwiseNameAttribute,
+                            xmlAllocator.allocate_string(control->GetName().c_str())
+                        );
+
+                        switchNode->append_attribute(switchNameAttr);
+                        stateNode->append_attribute(stateNameAttr);
+                        switchNode->append_node(stateNode);
                         return switchNode;
                     }
                     break;
@@ -357,51 +386,98 @@ namespace AudioControls
 
                 case AudioControls::eWCT_WWISE_RTPC:
                 {
-                    XmlNodeRef connectionNode = GetISystem()->CreateXmlNode(TypeToTag(control->GetType()).data());
-                    connectionNode->setAttr(Audio::WwiseXmlTags::WwiseNameAttribute, control->GetName().c_str());
+                    auto connectionNode = xmlAllocator.allocate_node(
+                        AZ::rapidxml::node_element,
+                        xmlAllocator.allocate_string(TypeToTag(control->GetType()).data())
+                    );
+
+                    auto nameAttr = xmlAllocator.allocate_attribute(
+                        Audio::WwiseXmlTags::WwiseNameAttribute,
+                        xmlAllocator.allocate_string(control->GetName().c_str())
+                    );
+
+                    connectionNode->append_attribute(nameAttr);
 
                     if (atlControlType == eACET_RTPC)
                     {
                         AZStd::shared_ptr<const CRtpcConnection> rtpcConnection = AZStd::static_pointer_cast<const CRtpcConnection>(connection);
-                        if (rtpcConnection->m_mult != 1.0f)
+                        if (rtpcConnection->m_mult != 1.f)
                         {
-                            connectionNode->setAttr(Audio::WwiseXmlTags::WwiseMutiplierAttribute, rtpcConnection->m_mult);
+                            auto multAttr = xmlAllocator.allocate_attribute(
+                                Audio::WwiseXmlTags::WwiseMutiplierAttribute,
+                                xmlAllocator.allocate_string(AZStd::to_string(rtpcConnection->m_mult).c_str())
+                            );
+
+                            connectionNode->append_attribute(multAttr);
                         }
-                        if (rtpcConnection->m_shift != 0.0f)
+
+                        if (rtpcConnection->m_shift != 0.f)
                         {
-                            connectionNode->setAttr(Audio::WwiseXmlTags::WwiseShiftAttribute, rtpcConnection->m_shift);
+                            auto shiftAttr = xmlAllocator.allocate_attribute(
+                                Audio::WwiseXmlTags::WwiseShiftAttribute,
+                                xmlAllocator.allocate_string(AZStd::to_string(rtpcConnection->m_shift).c_str())
+                            );
+
+                            connectionNode->append_attribute(shiftAttr);
                         }
                     }
                     else if (atlControlType == eACET_SWITCH_STATE)
                     {
                         AZStd::shared_ptr<const CStateToRtpcConnection> stateConnection = AZStd::static_pointer_cast<const CStateToRtpcConnection>(connection);
-                        connectionNode->setAttr(Audio::WwiseXmlTags::WwiseValueAttribute, stateConnection->m_value);
+
+                        auto valueAttr = xmlAllocator.allocate_attribute(
+                            Audio::WwiseXmlTags::WwiseValueAttribute,
+                            xmlAllocator.allocate_string(AZStd::to_string(stateConnection->m_value).c_str())
+                        );
+
+                        connectionNode->append_attribute(valueAttr);
                     }
+
                     return connectionNode;
                 }
 
                 case AudioControls::eWCT_WWISE_EVENT:
-                {
-                    XmlNodeRef connectionNode = GetISystem()->CreateXmlNode(TypeToTag(control->GetType()).data());
-                    connectionNode->setAttr(Audio::WwiseXmlTags::WwiseNameAttribute, control->GetName().c_str());
-                    return connectionNode;
-                }
-
+                    [[fallthrough]];
                 case AudioControls::eWCT_WWISE_AUX_BUS:
                 {
-                    XmlNodeRef connectionNode = GetISystem()->CreateXmlNode(TypeToTag(control->GetType()).data());
-                    connectionNode->setAttr(Audio::WwiseXmlTags::WwiseNameAttribute, control->GetName().c_str());
+                    auto connectionNode = xmlAllocator.allocate_node(
+                        AZ::rapidxml::node_element,
+                        xmlAllocator.allocate_string(TypeToTag(control->GetType()).data())
+                    );
+
+                    auto nameAttr = xmlAllocator.allocate_attribute(
+                        Audio::WwiseXmlTags::WwiseNameAttribute,
+                        xmlAllocator.allocate_string(control->GetName().c_str())
+                    );
+
+                    connectionNode->append_attribute(nameAttr);
                     return connectionNode;
                 }
 
                 case AudioControls::eWCT_WWISE_SOUND_BANK:
                 {
-                    XmlNodeRef connectionNode = GetISystem()->CreateXmlNode(TypeToTag(control->GetType()).data());
-                    connectionNode->setAttr(Audio::WwiseXmlTags::WwiseNameAttribute, control->GetName().c_str());
+                    auto connectionNode = xmlAllocator.allocate_node(
+                        AZ::rapidxml::node_element,
+                        xmlAllocator.allocate_string(TypeToTag(control->GetType()).data())
+                    );
+
+                    auto nameAttr = xmlAllocator.allocate_attribute(
+                        Audio::WwiseXmlTags::WwiseNameAttribute,
+                        xmlAllocator.allocate_string(control->GetName().c_str())
+                    );
+
+                    connectionNode->append_attribute(nameAttr);
+
                     if (control->IsLocalized())
                     {
-                        connectionNode->setAttr(Audio::WwiseXmlTags::WwiseLocalizedAttribute, "true");
+                        auto locAttr = xmlAllocator.allocate_attribute(
+                            Audio::WwiseXmlTags::WwiseLocalizedAttribute,
+                            xmlAllocator.allocate_string("true")
+                        );
+
+                        connectionNode->append_attribute(locAttr);
                     }
+
                     return connectionNode;
                 }
             }

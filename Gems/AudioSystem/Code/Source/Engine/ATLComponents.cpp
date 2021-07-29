@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -29,7 +30,6 @@
 
 #include <MathConversion.h>
 #include <IRenderAuxGeom.h>
-#include <IConsole.h>
 
 namespace Audio
 {
@@ -1005,14 +1005,14 @@ namespace Audio
         AZStd::string searchPath;
         AZ::StringFunc::Path::Join(m_rootPath.c_str(), folderPath, searchPath);
 
-        AZStd::vector<AZStd::string> foundFiles = Audio::FindFilesInPath(searchPath, "*.xml");
+        auto foundFiles = Audio::FindFilesInPath(searchPath, "*.xml");
 
         for (const auto& file : foundFiles)
         {
             AZ_Assert(AZ::IO::FileIOBase::GetInstance()->Exists(file.c_str()), "FindFiles found file '%s' but FileIO says it doesn't exist!", file.c_str());
             g_audioLogger.Log(eALT_ALWAYS, "Loading Audio Controls Library: '%s'", file.c_str());
 
-            Audio::ScopedXmlLoader xmlFileLoader(file);
+            Audio::ScopedXmlLoader xmlFileLoader(file.Native());
             if (xmlFileLoader.HasError())
             {
                 continue;
@@ -1053,14 +1053,14 @@ namespace Audio
         AZStd::string searchPath;
         AZ::StringFunc::Path::Join(m_rootPath.c_str(), folderPath, searchPath);
 
-        AZStd::vector<AZStd::string> foundFiles = Audio::FindFilesInPath(searchPath, "*.xml");
+        auto foundFiles = Audio::FindFilesInPath(searchPath, "*.xml");
 
         for (const auto& file : foundFiles)
         {
             AZ_Assert(AZ::IO::FileIOBase::GetInstance()->Exists(file.c_str()), "FindFiles found file '%s' but FileIO says it doesn't exist!", file.c_str());
             g_audioLogger.Log(eALT_ALWAYS, "Loading Audio Preloads Library: '%s'", file.c_str());
 
-            Audio::ScopedXmlLoader xmlFileLoader(file);
+            Audio::ScopedXmlLoader xmlFileLoader(file.Native());
             if (xmlFileLoader.HasError())
             {
                 continue;

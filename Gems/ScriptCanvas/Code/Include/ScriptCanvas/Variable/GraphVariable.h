@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -180,6 +181,22 @@ namespace ScriptCanvas
         static const char* s_ScopeNames[static_cast<int>(VariableFlags::Scope::COUNT)];
 
     private:
+
+        AZStd::vector<AZStd::pair<unsigned char, AZStd::string>> GetPropertyChoices() const
+        {
+            AZStd::vector< AZStd::pair<unsigned char, AZStd::string>> choices;
+            choices.emplace_back(AZStd::make_pair(static_cast<unsigned char>(VariableFlags::InitialValueSource::Graph), s_InitialValueSourceNames[0]));
+            choices.emplace_back(AZStd::make_pair(static_cast<unsigned char>(VariableFlags::InitialValueSource::Component), s_InitialValueSourceNames[1]));
+            return choices;
+        }
+
+        AZStd::vector<AZStd::pair<unsigned char, AZStd::string>> GetScopeChoices() const
+        {
+            AZStd::vector< AZStd::pair<unsigned char, AZStd::string>> choices;
+            choices.emplace_back(AZStd::make_pair(static_cast<unsigned char>(VariableFlags::Scope::Graph), s_ScopeNames[0]));
+            choices.emplace_back(AZStd::make_pair(static_cast<unsigned char>(VariableFlags::Scope::Function), s_ScopeNames[1]));
+            return choices;
+        }
 
         bool IsInFunction() const;
         

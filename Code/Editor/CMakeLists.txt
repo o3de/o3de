@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -162,6 +163,8 @@ ly_add_target(
         editor_files.cmake
     PLATFORM_INCLUDE_FILES
         Platform/${PAL_PLATFORM_NAME}/editor_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
+    TARGET_PROPERTIES
+        LY_INSTALL_GENERATE_RUN_TARGET TRUE
     BUILD_DEPENDENCIES
         PRIVATE
             3rdParty::Qt::Core

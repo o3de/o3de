@@ -1,5 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -136,16 +137,9 @@ namespace ScriptCanvasBuilder
 
             if (!ScriptCanvas::Grammar::IsParserGeneratedId(entityId.first))
             {
-                auto graphEntityId = variables.FindVariable(entityId.first);
-                if (!graphEntityId)
+                if (auto graphEntityId = variables.FindVariable(entityId.first); graphEntityId && graphEntityId->IsComponentProperty())
                 {
-                    AZ_Error("ScriptCanvasBuilder", false, "Missing EntityId from graph data that was just parsed");
-                    continue;
-                }
-
-                // copy to override list for editor display
-                if (graphEntityId->IsComponentProperty())
-                {
+                    // copy to override list for editor display
                     m_overrides.push_back(*graphEntityId);
                     auto& overrideValue = m_overrides.back();
                     overrideValue.SetScriptInputControlVisibility(AZ::Edit::PropertyVisibility::Hide);

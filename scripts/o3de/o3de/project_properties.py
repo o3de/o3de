@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -25,7 +26,7 @@ def get_project_props(name: str = None, path: pathlib.Path = None) -> dict:
         return None
     return proj_json
 
-def edit_project_props(proj_path: pathlib.Path, 
+def edit_project_props(proj_path: pathlib.Path = None,
                        proj_name: str = None,
                        new_name: str = None,
                        new_origin: str = None,
@@ -70,8 +71,8 @@ def edit_project_props(proj_path: pathlib.Path,
         tag_list = replace_tags.split() if isinstance(replace_tags, str) else replace_tags
         proj_json['user_tags'] = tag_list
 
-    manifest.save_o3de_manifest(proj_json, pathlib.Path(proj_path) / 'project.json')
-    return 0
+
+    return 0 if manifest.save_o3de_manifest(proj_json, pathlib.Path(proj_path) / 'project.json') else 1
 
 def _edit_project_props(args: argparse) -> int:
     return edit_project_props(args.project_path,

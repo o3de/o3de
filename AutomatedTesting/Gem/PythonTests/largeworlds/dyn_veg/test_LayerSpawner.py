@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -99,7 +100,7 @@ class TestLayerSpawner(object):
     @pytest.mark.test_case_id("C4765973")
     @pytest.mark.SUITE_periodic
     @pytest.mark.dynveg_misc
-    @pytest.mark.xfail      # LYN-3275
+    @pytest.mark.xfail(reason="https://github.com/o3de/o3de/issues/2303")
     def test_LayerSpawner_FilterStageToggle(self, request, editor, level, workspace, launcher_platform):
 
         expected_lines = [

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -34,11 +35,12 @@ namespace AzToolsFramework
             [[maybe_unused]] AZStd::string_view filename, [[maybe_unused]] const AZStd::vector<AZStd::string_view>& args) {}
 
         //! executes a Python script as a test
-        virtual void ExecuteByFilenameAsTest(
+        virtual bool ExecuteByFilenameAsTest(
             [[maybe_unused]] AZStd::string_view filename,
             [[maybe_unused]] AZStd::string_view testCase,
             [[maybe_unused]] const AZStd::vector<AZStd::string_view>& args)
         {
+            return false;
         }
     };
     using EditorPythonRunnerRequestBus = AZ::EBus<EditorPythonRunnerRequests>;

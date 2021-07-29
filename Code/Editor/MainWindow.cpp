@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -277,14 +278,9 @@ namespace
         PyExit();
     }
 
-    void PyReportTest(bool success, const AZStd::string& output)
+    void PyTestOutput(const AZStd::string& output)
     {
         CCryEditApp::instance()->PrintAlways(output);
-        if (!success)
-        {
-            gEnv->retCode = 0xF; // Special error code indicating a failure in tests
-        }
-        PyExitNoPrompt();
     }
 }
 
@@ -1955,7 +1951,7 @@ namespace AzToolsFramework
             addLegacyGeneral(behaviorContext->Method("get_pane_class_names", PyGetViewPaneNames, nullptr, "Get all available class names for use with open_pane & close_pane."));
             addLegacyGeneral(behaviorContext->Method("exit", PyExit, nullptr, "Exits the editor."));
             addLegacyGeneral(behaviorContext->Method("exit_no_prompt", PyExitNoPrompt, nullptr, "Exits the editor without prompting to save first."));
-            addLegacyGeneral(behaviorContext->Method("report_test_result", PyReportTest, nullptr, "Report test information."));
+            addLegacyGeneral(behaviorContext->Method("test_output", PyTestOutput, nullptr, "Report test information."));
         }
     }
 }

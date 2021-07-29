@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -87,7 +88,7 @@ namespace AtomToolsFramework
             [this](const AzFramework::InputChannel* inputChannel, QEvent* event)
         {
             AzFramework::NativeWindowHandle windowId = reinterpret_cast<AzFramework::NativeWindowHandle>(winId());
-            if (m_controllerList->HandleInputChannelEvent({GetId(), windowId, *inputChannel}))
+            if (m_controllerList->HandleInputChannelEvent(AzFramework::ViewportControllerInputEvent{GetId(), windowId, *inputChannel}))
             {
                 // If the controller handled the input event, mark the event as accepted so it doesn't continue to propagate.
                 if (event)

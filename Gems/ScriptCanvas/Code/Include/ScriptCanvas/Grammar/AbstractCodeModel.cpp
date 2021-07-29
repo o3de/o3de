@@ -1,5 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -4342,6 +4343,9 @@ namespace ScriptCanvas
 
                     execution->AddInput({ &input, inputVariable, DebugDataSource::FromSelfSlot(input, inputVariable->m_datum.GetType()) });
                 }
+
+                // Check for known null reads
+                CheckForKnownNullDereference(execution, execution->GetInput(execution->GetInputCount() - 1), input);
             }
             else
             {
@@ -4373,9 +4377,6 @@ namespace ScriptCanvas
                     return;
                 }
             }
-
-            // Check for known null reads
-            CheckForKnownNullDereference(execution, execution->GetInput(execution->GetInputCount() - 1), input);
         }
 
         bool AbstractCodeModel::ParseInputThisPointer(ExecutionTreePtr execution)

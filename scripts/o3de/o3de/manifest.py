@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -235,15 +236,13 @@ def get_gems_from_subdirectories(external_subdirs: list) -> list:
 
 
 # Data query methods
-def get_this_engine() -> dict:
-    json_data = load_o3de_manifest()
-    engine_data = find_engine_data(json_data)
-    return engine_data
-
-
 def get_engines() -> list:
     json_data = load_o3de_manifest()
-    return json_data['engines'] if 'engines' in json_data else []
+    engine_list = json_data['engines'] if 'engines' in json_data else []
+    # Convert each engine dict entry into a string entry
+    return list(map(
+        lambda engine_object: engine_object.get('path', '') if isinstance(engine_object, dict) else engine_object,
+        engine_list))
 
 
 def get_projects() -> list:
@@ -421,20 +420,6 @@ def get_templates_for_generic_creation():  # temporary until we have a better wa
         return template_path not in templates_for_project_creation and template_path not in templates_for_gem_creation
 
     return list(filter(filter_project_and_gem_templates_out, get_all_templates()))
-
-
-def find_engine_data(json_data: dict,
-                     engine_path: str or pathlib.Path = None) -> dict or None:
-    if not engine_path:
-        engine_path = get_this_engine_path()
-    engine_path = pathlib.Path(engine_path).resolve()
-
-    for engine_object in json_data['engines']:
-        engine_object_path = pathlib.Path(engine_object['path']).resolve()
-        if engine_path == engine_object_path:
-            return engine_object
-
-    return None
 
 
 def get_engine_json_data(engine_name: str = None,
@@ -638,8 +623,13 @@ def get_registered(engine_name: str = None,
 
     # check global first then this engine
     if isinstance(engine_name, str):
-        for engine in json_data['engines']:
-            engine_path = pathlib.Path(engine['path']).resolve()
+        engines = get_engines()
+        for engine in engines:
+            if isinstance(engine, dict):
+                engine_path = pathlib.Path(engine['path']).resolve()
+            else:
+                engine_path = pathlib.Path(engine_object).resolve()
+
             engine_json = engine_path / 'engine.json'
             with engine_json.open('r') as f:
                 try:
