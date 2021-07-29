@@ -347,7 +347,7 @@ namespace AZ
             // spirv cross compiler executable
             static const char* spirvCrossRelativePath = "Builders/SPIRVCross/spirv-cross";
            
-            AZStd::string spirvCrossCommandOptions = AZStd::string::format("--msl --msl-version 20100 --msl-argument-buffers --msl-decoration-binding --msl-texture-buffer-native --output \"%s\" \"%s\"", shaderMSLOutputFile.c_str(), shaderSpirvOutputFile.c_str());
+            AZStd::string spirvCrossCommandOptions = AZStd::string::format("--msl --msl-version 20100 --msl-invariant-float-math --msl-argument-buffers --msl-decoration-binding --msl-texture-buffer-native --output \"%s\" \"%s\"", shaderMSLOutputFile.c_str(), shaderSpirvOutputFile.c_str());
             
             // Run spirv cross
             if (!RHI::ExecuteShaderCompiler(spirvCrossRelativePath, spirvCrossCommandOptions, shaderSpirvOutputFile, "SpirvCross"))
@@ -424,7 +424,7 @@ namespace AZ
             AZStd::string outMetalLibFile = RHI::BuildFileNameWithExtension(shaderSourceFile, tempFolder, "metallib");
             
             //Debug symbols are always enabled at the moment. Need to turn them off for optimized shader assets. 
-            AZStd::string shaderDebugInfo = "-gline-tables-only -MO";
+            AZStd::string shaderDebugInfo = "-gline-tables-only -MO -fpreserve-invariance";
 
             //Apply the correct platform sdk option
             AZStd::string platformSdk = "macosx";
