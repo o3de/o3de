@@ -23,6 +23,7 @@ namespace PrefabDependencyViewer
 
     void EXPECT_STR_EQ(const char* expected, AZStd::string_view result)
     {
+        EXPECT_EQ(strlen(expected), result.size());
         EXPECT_STREQ(expected, result.data());
     }
 
