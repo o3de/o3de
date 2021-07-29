@@ -10,19 +10,7 @@
 
 #include <Atom/Document/MaterialDocumentSystemRequestBus.h>
 #include <Atom/Window/MaterialEditorWindowNotificationBus.h>
-#include <AtomToolsFramework/Communication/LocalServer.h>
-#include <AtomToolsFramework/Communication/LocalSocket.h>
-#include <AzCore/Component/Entity.h>
-#include <AzCore/Component/TickBus.h>
-#include <AzCore/Debug/TraceMessageBus.h>
-#include <AzCore/UserSettings/UserSettingsProvider.h>
-#include <AzFramework/Application/Application.h>
-#include <AzFramework/Asset/AssetSystemBus.h>
-#include <AzFramework/Logging/LogFile.h>
-#include <AzToolsFramework/API/AssetDatabaseBus.h>
-#include <AzToolsFramework/API/EditorPythonConsoleBus.h>
-#include <AzToolsFramework/Logger/TraceLogger.h>
-#include <AzQtComponents/Application/AzQtApplication.h>
+#include <AtomToolsFramework/Application/AtomToolsApplication.h>
 
 #include <QTimer>
 
@@ -31,41 +19,24 @@ namespace MaterialEditor
     class MaterialThumbnailRenderer;
 
     class MaterialEditorApplication
-        : public AzFramework::Application
-        , public AzQtComponents::AzQtApplication
-        , private AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler
+        : public AtomToolsFramework::AtomToolsApplication
         , private MaterialEditorWindowNotificationBus::Handler
-        , private AzFramework::AssetSystemStatusBus::Handler
-        , private AZ::UserSettingsOwnerRequestBus::Handler
-        , private AZ::Debug::TraceMessageBus::Handler
-        , private AzToolsFramework::EditorPythonConsoleNotificationBus::Handler
     {
     public:
         AZ_TYPE_INFO(MaterialEditor::MaterialEditorApplication, "{30F90CA5-1253-49B5-8143-19CEE37E22BB}");
 
-        using Base = AzFramework::Application;
+        using Base = AtomToolsFramework::AtomToolsApplication;
 
         MaterialEditorApplication(int* argc, char*** argv);
         virtual ~MaterialEditorApplication();
 
         //////////////////////////////////////////////////////////////////////////
         // AzFramework::Application
-        void CreateReflectionManager() override;
-        void Reflect(AZ::ReflectContext* context) override;
-        void RegisterCoreComponents() override;
-        AZ::ComponentTypeList GetRequiredSystemComponents() const override;
         void CreateStaticModules(AZStd::vector<AZ::Module*>& outModules) override;
         const char* GetCurrentConfigurationName() const override;
-        void StartCommon(AZ::Entity* systemEntity) override;
-        void Tick(float deltaOverride = -1.f) override;
         void Stop() override;
 
     private:
-        //////////////////////////////////////////////////////////////////////////
-        // AssetDatabaseRequestsBus::Handler overrides...
-        bool GetAssetDatabaseLocation(AZStd::string& result) override;
-        //////////////////////////////////////////////////////////////////////////
-
         //////////////////////////////////////////////////////////////////////////
         // MaterialEditorWindowNotificationBus::Handler overrides...
         void OnMaterialEditorWindowClosing() override;
@@ -76,66 +47,12 @@ namespace MaterialEditor
         void Destroy() override;
         //////////////////////////////////////////////////////////////////////////
 
-        //////////////////////////////////////////////////////////////////////////
-        // AZ::ComponentApplication overrides...
-        void QueryApplicationType(AZ::ApplicationTypeQuery& appType) const override;
-        //////////////////////////////////////////////////////////////////////////
+        void ProcessCommandLine(const AZ::CommandLine& commandLine) override;
+        void StartInternal() override;
+        AZStd::string GetBuildTargetName() const override;
 
-        ////////////////////////////////////////////////////////////////////////
-        // EditorPythonConsoleNotificationBus::Handler overrides...
-        void OnTraceMessage(AZStd::string_view message) override;
-        void OnErrorMessage(AZStd::string_view message) override;
-        void OnExceptionMessage(AZStd::string_view message) override;
-        ////////////////////////////////////////////////////////////////////////
-
-        //////////////////////////////////////////////////////////////////////////
-        // AzFramework::AssetSystemStatusBus::Handler overrides...
-        void AssetSystemAvailable() override;
-        //////////////////////////////////////////////////////////////////////////
-
-        //////////////////////////////////////////////////////////////////////////
-        // AZ::UserSettingsOwnerRequestBus::Handler overrides...
-        void SaveSettings() override;
-        //////////////////////////////////////////////////////////////////////////
-
-        //////////////////////////////////////////////////////////////////////////
-        // AZ::Debug::TraceMessageBus::Handler overrides...
-        bool OnOutput(const char* window, const char* message) override;
-        ////////////////////////////////////////////////////////////////////////// 
-
-        void CompileCriticalAssets();
-
-        void ProcessCommandLine(const AZ::CommandLine& commandLine);
-
-        void LoadSettings();
-        void UnloadSettings();
-
-        bool LaunchDiscoveryService();
-
-        void StartInternal();
-
-        static void PyIdleWaitFrames(uint32_t frames);
-
-        struct LogMessage
-        {
-            AZStd::string window;
-            AZStd::string message;
-        };
-
-        AZStd::vector<LogMessage> m_startupLogSink;
-        AZStd::unique_ptr<AzFramework::LogFile> m_logFile;
-
-        AzToolsFramework::TraceLogger m_traceLogger;
-
-        //! Local user settings are used to store material browser tree expansion state
-        AZ::UserSettingsProvider m_localUserSettings;
-
-        //! Are local settings loaded
-        bool m_activatedLocalUserSettings = false;
-
-        QTimer m_timer;
-
-        AtomToolsFramework::LocalSocket m_socket;
-        AtomToolsFramework::LocalServer m_server;
-    };
+        //! List of common asset filters for things that need to be compiled to run the material editor
+            //! Some of these things will not be necessary once we have proper support for queued asset loading and reloading
+        AZStd::vector<AZStd::string> GetCriticalAssetFilters() const override;
+     };
 } // namespace MaterialEditor
