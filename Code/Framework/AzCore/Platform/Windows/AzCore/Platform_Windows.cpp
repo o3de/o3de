@@ -37,7 +37,7 @@ namespace AZ
                 {
                     DWORD dataType = REG_SZ;
                     DWORD dataSize = sizeof(machineInfo);
-                    ret = RegQueryValueEx(key, "MachineGuid", 0, &dataType, (LPBYTE)machineInfo, &dataSize);
+                    ret = RegQueryValueExW(key, L"MachineGuid", 0, &dataType, (LPBYTE)machineInfo, &dataSize);
                     RegCloseKey(key);
                 }
                 else
@@ -45,7 +45,7 @@ namespace AZ
                     AZ_Error("System", false, "Failed to open HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Cryptography\\MachineGuid!")
                 }
 
-                TCHAR* hostname = machineInfo + _tcslen(machineInfo);
+                TCHAR* hostname = machineInfo + wcslen(machineInfo);
                 // salt the guid time with ComputerName/UserName
                 DWORD  bufCharCount = DWORD(sizeof(machineInfo) - (hostname - machineInfo));
                 if (!::GetComputerName(hostname, &bufCharCount))
@@ -53,7 +53,7 @@ namespace AZ
                     AZ_Error("System", false, "GetComputerName filed with code %d", GetLastError());
                 }
 
-                TCHAR* username = hostname + _tcslen(hostname);
+                TCHAR* username = hostname + wcslen(hostname);
                 bufCharCount = DWORD(sizeof(machineInfo) - (username - machineInfo));
                 if( !GetUserName( username, &bufCharCount ) ) 
                 {
@@ -62,7 +62,7 @@ namespace AZ
 
                 Sha1 hash;
                 AZ::u32 digest[5] = { 0 };
-                hash.ProcessBytes(machineInfo, _tcslen(machineInfo) * sizeof(TCHAR));
+                hash.ProcessBytes(machineInfo, wcslen(machineInfo) * sizeof(TCHAR));
                 hash.GetDigest(digest);
                 s_machineId = digest[0];
                 if (s_machineId == 0)

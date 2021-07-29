@@ -90,7 +90,7 @@ namespace AZ {
             {
             case CBA_EVENT:
                 evt = (PIMAGEHLP_CBA_EVENT)CallbackData;
-                _tprintf(_T("%s"), (PTSTR)evt->desc);
+                _tprintf(_T("%s"), evt->desc);
                 break;
 
             default:
@@ -300,7 +300,7 @@ namespace AZ {
                 return;
             }
 
-            const HMODULE hNtDll = GetModuleHandle(_T("ntdll.dll"));
+            const HMODULE hNtDll = GetModuleHandleW(L"ntdll.dll");
             m_LdrRegisterDllNotification = reinterpret_cast<PLDR_REGISTER_DLL_NOTIFICATION>(GetProcAddress(hNtDll, "LdrRegisterDllNotification"));
 
             if (m_LdrRegisterDllNotification)
@@ -324,7 +324,7 @@ namespace AZ {
                 return;
             }
 
-            const HMODULE hNtDll = GetModuleHandle(_T("ntdll.dll"));
+            const HMODULE hNtDll = GetModuleHandleW(L"ntdll.dll");
             m_LdrUnregisterDllNotification = reinterpret_cast<PLDR_UNREGISTER_DLL_NOTIFICATION>(GetProcAddress(hNtDll, "LdrUnregisterDllNotification"));
 
             if (m_LdrUnregisterDllNotification)
@@ -609,8 +609,8 @@ namespace AZ {
                         if (GetFileVersionInfoA(szImg, dwHandle, dwSize, vData) != 0)
                         {
                             UINT len;
-                            TCHAR szSubBlock[] = _T("\\");
-                            if (VerQueryValue(vData, szSubBlock, (LPVOID*) &fInfo, &len) == 0)
+                            TCHAR szSubBlock[] = L"\\";
+                            if (VerQueryValueW(vData, szSubBlock, (LPVOID*) &fInfo, &len) == 0)
                             {
                                 fInfo = NULL;
                             }
@@ -711,7 +711,7 @@ namespace AZ {
             typedef BOOL (__stdcall * tM32N)(HANDLE hSnapshot, LPMODULEENTRY32 lpme);
 
             // try both dlls...
-            const TCHAR* dllname[] = { _T("kernel32.dll"), _T("tlhelp32.dll") };
+            const TCHAR* dllname[] = { L"kernel32.dll", L"tlhelp32.dll" };
             HINSTANCE hToolhelp = NULL;
             tCT32S pCT32S = NULL;
             tM32F pM32F = NULL;
@@ -822,7 +822,7 @@ namespace AZ {
             const SIZE_T TTBUFLEN = 8096;
             int cnt = 0;
 
-            hPsapi = LoadLibrary(_T("psapi.dll"));
+            hPsapi = LoadLibraryW(L"psapi.dll");
             if (hPsapi == NULL)
             {
                 return FALSE;
@@ -956,10 +956,10 @@ cleanup:
                 // In that scenario, we may try to load and older dbghelp.dll which could cause issues
                 // To overcome this, we try to load dbghelp.dll from the Win 10 SDK folder, if that doesn't
                 // work, load the default.
-                g_dbgHelpDll = LoadLibrary(_T(R"(C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\dbghelp.dll)"));
+                g_dbgHelpDll = LoadLibraryW(LR"(C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\dbghelp.dll)");
                 if (g_dbgHelpDll == NULL)
                 {
-                    g_dbgHelpDll = LoadLibrary(_T("dbghelp.dll"));
+                    g_dbgHelpDll = LoadLibrary(L"dbghelp.dll");
                 }
             }
             if (g_dbgHelpDll == NULL)

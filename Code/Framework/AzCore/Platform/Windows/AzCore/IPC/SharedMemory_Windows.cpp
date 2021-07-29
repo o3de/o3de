@@ -10,6 +10,7 @@
 
 #include <AzCore/IPC/SharedMemory.h>
 #include <AzCore/std/parallel/spin_mutex.h>
+#include <AzCore/std/string/conversions.h>
 
 namespace AZ
 {
@@ -41,7 +42,9 @@ namespace AZ
         SetSecurityDescriptorDacl(secAttr.lpSecurityDescriptor, TRUE, 0, FALSE);
 
         // Obtain global mutex
-        m_globalMutex = CreateMutex(&secAttr, FALSE, fullName);
+        AZStd::wstring fullNameW;
+        AZStd::to_wstring(fullNameW, fullName);
+        m_globalMutex = CreateMutexW(&secAttr, FALSE, fullNameW.c_str());
         DWORD error = GetLastError();
         if (m_globalMutex == NULL || (error == ERROR_ALREADY_EXISTS && openIfCreated == false))
         {
@@ -51,7 +54,7 @@ namespace AZ
 
         // Create the file mapping.
         azsnprintf(fullName, AZ_ARRAY_SIZE(fullName), "%s_Data", name);
-        m_mapHandle = CreateFileMapping(INVALID_HANDLE_VALUE, &secAttr, PAGE_READWRITE, 0, size, fullName);
+        m_mapHandle = CreateFileMappingW(INVALID_HANDLE_VALUE, &secAttr, PAGE_READWRITE, 0, size, fullNameW.c_str());
         error = GetLastError();
         if (m_mapHandle == NULL || (error == ERROR_ALREADY_EXISTS && openIfCreated == false))
         {
@@ -66,8 +69,10 @@ namespace AZ
     {
         char fullName[256];
         ComposeMutexName(fullName, AZ_ARRAY_SIZE(fullName), name);
+        AZStd::wstring fullNameW;
+        AZStd::to_wstring(fullNameW, fullName);
 
-        m_globalMutex = OpenMutex(SYNCHRONIZE, TRUE, fullName);
+        m_globalMutex = OpenMutex(SYNCHRONIZE, TRUE, fullNameW.c_str());
         AZ_Warning("AZSystem", m_globalMutex != NULL, "Failed to open OS mutex [%s]\n", m_name);
         if (m_globalMutex == NULL)
         {
@@ -76,7 +81,7 @@ namespace AZ
         }
 
         azsnprintf(fullName, AZ_ARRAY_SIZE(fullName), "%s_Data", name);
-        m_mapHandle = OpenFileMapping(FILE_MAP_WRITE, false, fullName);
+        m_mapHandle = OpenFileMapping(FILE_MAP_WRITE, false, fullNameW.c_str());
         if (m_mapHandle == NULL)
         {
             AZ_TracePrintf("AZSystem", "OpenFileMapping %s failed with error %d\n", m_name, GetLastError());

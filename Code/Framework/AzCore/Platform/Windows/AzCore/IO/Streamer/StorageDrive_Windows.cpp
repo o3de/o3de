@@ -16,6 +16,7 @@
 #include <AzCore/std/typetraits/decay.h>
 #include <AzCore/std/typetraits/is_unsigned.h>
 #include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/std/string/conversions.h>
 
 namespace AZ::IO
 {
@@ -467,8 +468,10 @@ namespace AZ::IO
                 DWORD createFlags = m_constructionOptions.m_enableUnbufferedReads ? (FILE_FLAG_OVERLAPPED | FILE_FLAG_NO_BUFFERING) : FILE_FLAG_OVERLAPPED;
                 DWORD shareMode = (m_constructionOptions.m_enableSharing || data.m_sharedRead) ? FILE_SHARE_READ: 0;
 
-                file = ::CreateFile(
-                    data.m_path.GetAbsolutePath(),  // file name
+                AZStd::wstring filenameW;
+                AZStd::to_wstring(filenameW, data.m_path.GetAbsolutePath());
+                file = ::CreateFileW(
+                    filenameW.c_str(),              // file name
                     FILE_GENERIC_READ,              // desired access
                     shareMode,                      // share mode
                     nullptr,                        // security attributes
@@ -806,7 +809,9 @@ namespace AZ::IO
         }
 
         WIN32_FILE_ATTRIBUTE_DATA attributes;
-        if (::GetFileAttributesEx(fileExists.m_path.GetAbsolutePath(), GetFileExInfoStandard, &attributes))
+        AZStd::wstring filenameW;
+        AZStd::to_wstring(filenameW, fileExists.m_path.GetAbsolutePath());
+        if (::GetFileAttributesExW(filenameW.c_str(), GetFileExInfoStandard, &attributes))
         {
             if ((attributes.dwFileAttributes != INVALID_FILE_ATTRIBUTES) &&
                 ((attributes.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0))
@@ -863,7 +868,9 @@ namespace AZ::IO
         else
         {
             WIN32_FILE_ATTRIBUTE_DATA attributes;
-            if (::GetFileAttributesEx(command.m_path.GetAbsolutePath(), GetFileExInfoStandard, &attributes) &&
+            AZStd::wstring filenameW;
+            AZStd::to_wstring(filenameW, command.m_path.GetAbsolutePath());
+            if (::GetFileAttributesExW(filenameW.c_str(), GetFileExInfoStandard, &attributes) &&
                 (attributes.dwFileAttributes != INVALID_FILE_ATTRIBUTES) && ((attributes.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0))
             {
                 fileSize.LowPart = attributes.nFileSizeLow;
