@@ -18,6 +18,12 @@ namespace PrefabDependencyViewer::Utils
 {
     using TemplateId = AzToolsFramework::Prefab::TemplateId;
 
+    /**
+     * Node is a building block for the DirectedGraph. It stores
+     * generic MetaData about Prefab or an Asset. It also keeps
+     * track of it's parent which helps with adding connections
+     * in the GraphCanvas UI.
+     */
     class Node
     {
     public:

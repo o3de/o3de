@@ -17,6 +17,10 @@ namespace PrefabDependencyViewer::Utils
 {
     using TemplateId = AzToolsFramework::Prefab::TemplateId;
 
+    /**
+     * MetaData class is a generic struct that stores debugging
+     * information about the Prefabs and Assets dependencies.
+     */
     struct MetaData
     {
     public:
