@@ -46,6 +46,8 @@ namespace PrefabDependencyViewer
 
     void PrefabDependencyViewerEditorSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
+        required.push_back(AZ_CRC_CE("PrefabSystem"));
+        required.push_back(AZ_CRC_CE("EditorEntityContextService"));
     }
 
     void PrefabDependencyViewerEditorSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -57,7 +59,8 @@ namespace PrefabDependencyViewer
         s_prefabEntityMapperInterface = AZ::Interface<InstanceEntityMapperInterface>::Get();
         if (nullptr == s_prefabEntityMapperInterface)
         {
-            AZ_Assert(false, "Prefab Dependency Viewer Gem - could not get PrefabEntityMapperInterface during it's EditorSystemComponent activation.");
+            // Since the Viewer is listed as "Tools", it might be loaded into Tools that
+            // are not in the Editor. => Shouldn't assert in light of that situation.
             return;
         }
 
