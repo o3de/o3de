@@ -10,6 +10,7 @@
 #define __EMSTUDIO_LOGWINDOWPLUGIN_H
 
 #if !defined(Q_MOC_RUN)
+#include <MCore/Source/LogManager.h>
 #include "../StandardPluginsConfig.h"
 #include "../../../../EMStudioSDK/Source/DockWidgetPlugin.h"
 #endif
