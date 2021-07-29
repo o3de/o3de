@@ -33,23 +33,23 @@ public:
     virtual int handleException([[maybe_unused]] EXCEPTION_POINTERS* exception_pointer){return 0; }
 
     // returns the module name of a given address
-    virtual string GetModuleNameForAddr([[maybe_unused]] void* addr) { return "[unknown]"; }
+    virtual AZStd::string GetModuleNameForAddr([[maybe_unused]] void* addr) { return "[unknown]"; }
 
     // returns the function name of a given address together with source file and line number (if available) of a given address
-    virtual void GetProcNameForAddr(void* addr, string& procName, void*& baseAddr, string& filename, int& line)
+    virtual void GetProcNameForAddr(void* addr, AZStd::string& procName, void*& baseAddr, AZStd::string& filename, int& line)
     {
         filename = "[unknown]";
         line = 0;
         baseAddr = addr;
 #if defined(PLATFORM_64BIT)
-        procName.Format("[%016llX]", addr);
+        procName = AZStd::string::format("[%016llX]", addr);
 #else
-        procName.Format("[%08X]", addr);
+        procName = AZStd::string::format("[%08X]", addr);
 #endif
     }
 
     // returns current filename
-    virtual string GetCurrentFilename()  { return "[unknown]"; }
+    virtual AZStd::string GetCurrentFilename()  { return "[unknown]"; }
 
     //! Dumps Current Call Stack to log.
     virtual void LogCallstack();

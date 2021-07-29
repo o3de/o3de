@@ -88,14 +88,7 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
 
     // Handle with the default procedure
-#if defined(UNICODE) || defined(_UNICODE)
     assert(IsWindowUnicode(hWnd) && "Window should be Unicode when compiling with UNICODE");
-#else
-    if (!IsWindowUnicode(hWnd))
-    {
-        return DefWindowProcA(hWnd, uMsg, wParam, lParam);
-    }
-#endif
     return DefWindowProcW(hWnd, uMsg, wParam, lParam);
 }
 #endif
@@ -138,7 +131,6 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 #include "RemoteConsole/RemoteConsole.h"
 
 #include <PNoise3.h>
-#include <StringUtils.h>
 
 #include <LyShine/Bus/UiCursorBus.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
@@ -1209,10 +1201,11 @@ void CSystem::WarningV(EValidatorModule module, EValidatorSeverity severity, int
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CSystem::GetLocalizedPath(const char* sLanguage, string& sLocalizedPath)
+void CSystem::GetLocalizedPath(const char* sLanguage, AZStd::string& sLocalizedPath)
 {
     // Omit the trailing slash!
-    string sLocalizationFolder(string().assign(PathUtil::GetLocalizationFolder(), 0, PathUtil::GetLocalizationFolder().size() - 1));
+    AZStd::string sLocalizationFolder(PathUtil::GetLocalizationFolder());
+    sLocalizationFolder.pop_back();
 
     int locFormat = 0;
     LocalizationManagerRequestBus::BroadcastResult(locFormat, &LocalizationManagerRequestBus::Events::GetLocalizationFormat);
@@ -1228,16 +1221,17 @@ void CSystem::GetLocalizedPath(const char* sLanguage, string& sLocalizedPath)
     }
     else
     {
-        sLocalizedPath = string("Localized/") + sLanguage + "_xml.pak";
+        sLocalizedPath = AZStd::string("Localized/") + sLanguage + "_xml.pak";
         }
     }
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CSystem::GetLocalizedAudioPath(const char* sLanguage, string& sLocalizedPath)
+void CSystem::GetLocalizedAudioPath(const char* sLanguage, AZStd::string& sLocalizedPath)
 {
     // Omit the trailing slash!
-    string sLocalizationFolder(string().assign(PathUtil::GetLocalizationFolder(), 0, PathUtil::GetLocalizationFolder().size() - 1));
+    AZStd::string sLocalizationFolder(PathUtil::GetLocalizationFolder());
+    sLocalizationFolder.pop_back();
 
     if (sLocalizationFolder.compareNoCase("Languages") != 0)
     {
@@ -1245,14 +1239,14 @@ void CSystem::GetLocalizedAudioPath(const char* sLanguage, string& sLocalizedPat
     }
     else
     {
-        sLocalizedPath = string("Localized/") + sLanguage + ".pak";
+        sLocalizedPath = AZStd::string("Localized/") + sLanguage + ".pak";
     }
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CSystem::CloseLanguagePak(const char* sLanguage)
 {
-    string sLocalizedPath;
+    AZStd::string sLocalizedPath;
     GetLocalizedPath(sLanguage, sLocalizedPath);
     m_env.pCryPak->ClosePacks({ sLocalizedPath.c_str(), sLocalizedPath.size() });
 }
@@ -1260,7 +1254,7 @@ void CSystem::CloseLanguagePak(const char* sLanguage)
 //////////////////////////////////////////////////////////////////////////
 void CSystem::CloseLanguageAudioPak(const char* sLanguage)
 {
-    string sLocalizedPath;
+    AZStd::string sLocalizedPath;
     GetLocalizedAudioPath(sLanguage, sLocalizedPath);
     m_env.pCryPak->ClosePacks({ sLocalizedPath.c_str(), sLocalizedPath.size() });
 }
@@ -1334,11 +1328,11 @@ void CSystem::ExecuteCommandLine(bool deferred)
 
         if (pCmd->GetType() == eCLAT_Post)
         {
-            string sLine = pCmd->GetName();
+            AZStd::string sLine = pCmd->GetName();
             {
                 if (pCmd->GetValue())
                 {
-                    sLine += string(" ") + pCmd->GetValue();
+                    sLine += AZStd::string(" ") + pCmd->GetValue();
                 }
 
                 GetILog()->Log("Executing command from command line: \n%s\n", sLine.c_str()); // - the actual command might be executed much later (e.g. level load pause)

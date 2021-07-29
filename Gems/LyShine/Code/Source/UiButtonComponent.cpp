@@ -222,7 +222,7 @@ bool UiButtonComponent::VersionConverter(AZ::SerializeContext& context,
     // - Need to convert Color to Color and Alpha
     // conversion from version 2 to 3:
     // - Need to convert CryString ActionName elements to AZStd::string
-    AZ_Assert(classElement.GetVersion() < 3, "Unsupported UiButtonComponent version: %d", classElement.GetVersion());
+    AZ_Assert(classElement.GetVersion() >= 3, "Unsupported UiButtonComponent version: %d", classElement.GetVersion());
 
     // conversion from version 3 to 4:
     // - Need to convert AZStd::string sprites to AzFramework::SimpleAssetReference<LmbrCentral::TextureAsset>

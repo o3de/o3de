@@ -480,7 +480,7 @@ CLevelInfo* CLevelSystem::GetLevelInfoInternal(const AZStd::string& levelName)
     for (AZStd::vector<CLevelInfo>::iterator it = m_levelInfos.begin(); it != m_levelInfos.end(); ++it)
     {
         {
-            if (!azstricmp(PathUtil::GetFileName(it->GetName()), levelName.c_str()))
+            if (!azstricmp(PathUtil::GetFileName(it->GetName()).c_str(), levelName.c_str()))
             {
                 return &(*it);
             }

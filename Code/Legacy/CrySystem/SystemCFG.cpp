@@ -279,7 +279,7 @@ public:
         int nFlags = pCVar->GetFlags();
         if (((nFlags & VF_DUMPTODISK) && (nFlags & VF_MODIFIED)) || (nFlags & VF_WASINCONFIG))
         {
-            string szValue = pCVar->GetString();
+            AZStd::string szValue = pCVar->GetString();
             int pos;
 
             pos = 1;
@@ -287,7 +287,7 @@ public:
             {
                 pos = szValue.find_first_of("\\", pos);
 
-                if (pos == string::npos)
+                if (pos == AZStd::string::npos)
                 {
                     break;
                 }
@@ -302,7 +302,7 @@ public:
             {
                 pos = szValue.find_first_of("\"", pos);
 
-                if (pos == string::npos)
+                if (pos == AZStd::string::npos)
                 {
                     break;
                 }
@@ -311,7 +311,7 @@ public:
                 pos += 2;
             }
 
-            string szLine = pCVar->GetName();
+            AZStd::string szLine = pCVar->GetName();
 
             if (pCVar->GetType() == CVAR_STRING)
             {
@@ -344,7 +344,7 @@ void CSystem::SaveConfiguration()
 //////////////////////////////////////////////////////////////////////////
 // system cfg
 //////////////////////////////////////////////////////////////////////////
-CSystemConfiguration::CSystemConfiguration(const string& strSysConfigFilePath, CSystem* pSystem, ILoadConfigurationEntrySink* pSink, bool warnIfMissing)
+CSystemConfiguration::CSystemConfiguration(const AZStd::string& strSysConfigFilePath, CSystem* pSystem, ILoadConfigurationEntrySink* pSink, bool warnIfMissing)
     : m_strSysConfigFilePath(strSysConfigFilePath)
     , m_bError(false)
     , m_pSink(pSink)
@@ -364,14 +364,14 @@ CSystemConfiguration::~CSystemConfiguration()
 //////////////////////////////////////////////////////////////////////////
 bool CSystemConfiguration::ParseSystemConfig()
 {
-    string filename = m_strSysConfigFilePath;
-    if (strlen(PathUtil::GetExt(filename)) == 0)
+    AZStd::string filename = m_strSysConfigFilePath;
+    if (strlen(PathUtil::GetExt(filename.c_str())) == 0)
     {
         filename = PathUtil::ReplaceExtension(filename, "cfg");
     }
 
     CCryFile file;
-    string filenameLog;
+    AZStd::string filenameLog;
     {
         int flags = AZ::IO::IArchive::FOPEN_HINT_QUIET | AZ::IO::IArchive::FOPEN_ONDISK;
 
@@ -380,7 +380,7 @@ bool CSystemConfiguration::ParseSystemConfig()
             // this is used when theres a very specific file to read, like @user@/game.cfg which is read
             // IN ADDITION to the one in the game folder, and afterwards to override values in it.
             // if the file is missing and its already prefixed with an alias, there is no need to look any further.
-            if (!(file.Open(filename, "rb", flags)))
+            if (!(file.Open(filename.c_str(), "rb", flags)))
             {
                 if (m_warnIfMissing)
                 {
@@ -394,11 +394,11 @@ bool CSystemConfiguration::ParseSystemConfig()
             // otherwise, if the file isn't prefixed with an alias, then its likely one of the convenience mappings
             // to either root or assets/config.  this is done so that code can just request a simple file name and get its data
             if (
-                !(file.Open(filename, "rb", flags)) &&
-                !(file.Open(string("@root@/") + filename, "rb", flags)) &&
-                !(file.Open(string("@assets@/") + filename, "rb", flags)) &&
-                !(file.Open(string("@assets@/config/") + filename, "rb", flags)) &&
-                !(file.Open(string("@assets@/config/spec/") + filename, "rb", flags))
+                !(file.Open(filename.c_str(), "rb", flags)) &&
+                !(file.Open((AZStd::string("@root@/") + filename).c_str(), "rb", flags)) &&
+                !(file.Open((AZStd::string("@assets@/") + filename).c_str(), "rb", flags)) &&
+                !(file.Open((AZStd::string("@assets@/config/") + filename).c_str(), "rb", flags)) &&
+                !(file.Open((AZStd::string("@assets@/config/spec/") + filename).c_str(), "rb", flags))
                 )
             {
                 if (m_warnIfMissing)
@@ -429,7 +429,7 @@ bool CSystemConfiguration::ParseSystemConfig()
     sAllText[nLen] = '\0';
     sAllText[nLen + 1] = '\0';
 
-    string strGroup;            // current group e.g. "[General]"
+    AZStd::string strGroup;            // current group e.g. "[General]"
 
     char* strLast = sAllText + nLen;
     char* str = sAllText;
@@ -447,11 +447,11 @@ bool CSystemConfiguration::ParseSystemConfig()
             str++;
         }
 
-        string strLine = s;
+        AZStd::string strLine = s;
 
         // detect groups e.g. "[General]"   should set strGroup="General"
         {
-            string strTrimmedLine(RemoveWhiteSpaces(strLine));
+            AZStd::string strTrimmedLine(RemoveWhiteSpaces(strLine));
             size_t size = strTrimmedLine.size();
 
             if (size >= 3)
@@ -466,7 +466,7 @@ bool CSystemConfiguration::ParseSystemConfig()
         }
 
         //trim all whitespace characters at the beginning and the end of the current line and store its size
-        strLine.Trim();
+        AZ::StringFunc::TrimWhiteSpace(strLine, true, true);
         size_t strLineSize = strLine.size();
 
         //skip comments, comments start with ";" or "--" but may have preceding whitespace characters
@@ -488,35 +488,35 @@ bool CSystemConfiguration::ParseSystemConfig()
         }
 
         //if line contains a '=' try to read and assign console variable
-        string::size_type posEq(strLine.find("=", 0));
-        if (string::npos != posEq)
+        AZStd::string::size_type posEq(strLine.find("=", 0));
+        if (AZStd::string::npos != posEq)
         {
-            string stemp(strLine, 0, posEq);
-            string strKey(RemoveWhiteSpaces(stemp));
+            AZStd::string stemp(strLine, 0, posEq);
+            AZStd::string strKey(RemoveWhiteSpaces(stemp));
 
             {
                 // extract value
-                string::size_type posValueStart(strLine.find("\"", posEq + 1) + 1);
-                string::size_type posValueEnd(strLine.rfind('\"'));
+                AZStd::string::size_type posValueStart(strLine.find("\"", posEq + 1) + 1);
+                AZStd::string::size_type posValueEnd(strLine.rfind('\"'));
 
-                string strValue;
+                AZStd::string strValue;
 
-                if (string::npos != posValueStart && string::npos != posValueEnd)
+                if (AZStd::string::npos != posValueStart && AZStd::string::npos != posValueEnd)
                 {
-                    strValue = string(strLine, posValueStart, posValueEnd - posValueStart);
+                    strValue = AZStd::string(strLine, posValueStart, posValueEnd - posValueStart);
                 }
                 else
                 {
-                    string strTmp(strLine, posEq + 1, strLine.size() - (posEq + 1));
+                    AZStd::string strTmp(strLine, posEq + 1, strLine.size() - (posEq + 1));
                     strValue = RemoveWhiteSpaces(strTmp);
                 }
 
                 {
                     // replace '\\\\' with '\\' and '\\\"' with '\"'
-                    strValue.replace("\\\\", "\\");
-                    strValue.replace("\\\"", "\"");
+                    AZ::StringFunc::Replace(strValue, "\\\\", "\\");
+                    AZ::StringFunc::Replace(strValue, "\\\"", "\"");
                     
-                    m_pSink->OnLoadConfigurationEntry(strKey, strValue, strGroup);
+                    m_pSink->OnLoadConfigurationEntry(strKey.c_str(), strValue.c_str(), strGroup.c_str());
                 }
             }
         }

@@ -138,7 +138,7 @@ private:
     bool IsDefaultValue(const Quat& v) const { return v.w == 1.0f && v.v.x == 0 && v.v.y == 0 && v.v.z == 0; };
     bool IsDefaultValue(const CTimeValue& v) const { return v.GetValue() == 0; };
     bool IsDefaultValue(const char* str) const { return !str || !*str; };
-    bool IsDefaultValue(const string& str) const { return str.empty(); };
+    bool IsDefaultValue(const AZStd::string& str) const { return str.empty(); };
     bool IsDefaultValue(const SSerializeString& str) const { return str.empty(); };
     //////////////////////////////////////////////////////////////////////////
 

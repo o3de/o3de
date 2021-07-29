@@ -362,13 +362,9 @@ GridHubComponent::GridHubComponent()
     DWORD dwCompNameLen = AZ_ARRAY_SIZE(name);
     if ( GetComputerName(name, &dwCompNameLen) != 0 ) 
     {
-#ifdef _UNICODE
         char c[MAX_COMPUTERNAME_LENGTH + 1];
         wcstombs(c, name, AZ_ARRAY_SIZE(c));
         m_hubName = c;
-#else
-        m_hubName = name;
-#endif
     }
     else
 #endif

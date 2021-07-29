@@ -9,7 +9,6 @@
 
 #include "CrySystem_precompiled.h"
 #include "XMLPatcher.h"
-#include "StringUtils.h"
 
 CXMLPatcher::CXMLPatcher(XmlNodeRef& patchXML)
 {
@@ -84,7 +83,7 @@ XmlNodeRef CXMLPatcher::FindPatchForFile(
             {
                 const char* pForFile = child->getAttr("forfile");
 
-                if (pForFile && CryStringUtils::stristr(pForFile, pInFileToPatch) != 0)
+                if (pForFile && AZ::StringFunc::Find(pForFile, pInFileToPatch) != AZStd::string::npos)
                 {
                     result = child;
                     break;
@@ -353,7 +352,7 @@ void CXMLPatcher::DumpXMLNodes(
 
     INDENT();
 
-    ioTempString->Format("<%s ", inNode->getTag());
+    *ioTempString = AZStd::fixed_string<512>::format("<%s ", inNode->getTag());
 
     pPak->FWrite(ioTempString->c_str(), ioTempString->length(), inFileHandle);
 
@@ -361,7 +360,7 @@ void CXMLPatcher::DumpXMLNodes(
     {
         const char* pKey, * pVal;
         inNode->getAttributeByIndex(i, &pKey, &pVal);
-        ioTempString->Format("%s=\"%s\" ", pKey, pVal);
+        *ioTempString = AZStd::fixed_string<512>::format("%s=\"%s\" ", pKey, pVal);
         pPak->FWrite(ioTempString->c_str(), ioTempString->length(), inFileHandle);
     }
     pPak->FWrite(">\n", 2, inFileHandle);
@@ -372,7 +371,7 @@ void CXMLPatcher::DumpXMLNodes(
     }
 
     INDENT();
-    ioTempString->Format("</%s>\n", inNode->getTag());
+    *ioTempString = AZStd::fixed_string<512>::format("</%s>\n", inNode->getTag());
     pPak->FWrite(ioTempString->c_str(), ioTempString->length(), inFileHandle);
 }
 
@@ -391,12 +390,12 @@ void CXMLPatcher::DumpFiles(
         {
             pOrigFileName++;
 
-            DumpXMLFile(string().Format("PATCH_%s", pOrigFileName), inBefore);
+            DumpXMLFile(AZStd::string::format("PATCH_%s", pOrigFileName).c_str(), inBefore);
 
-            AZStd::fixed_string<128>        newFileName(pOrigFileName);
-            newFileName.replace(".xml", "_patched.xml");
+            AZStd::string newFileName(pOrigFileName);
+            AZ::StringFunc::Replace(newFileName, ".xml", "_patched.xml");
 
-            DumpXMLFile(string().Format("PATCH_%s", newFileName.c_str()), inAfter);
+            DumpXMLFile(AZStd::string::format("PATCH_%s", newFileName.c_str()).c_str(), inAfter);
         }
         else
         {

@@ -12,7 +12,7 @@
 
 #include <stack>
 
-typedef std::map<string, XmlNodeRef> IdTable;
+typedef std::map<AZStd::string, XmlNodeRef> IdTable;
 
 static bool IsOptionalWriteXML(XmlNodeRef& definition);
 
@@ -66,7 +66,7 @@ struct WritePropertyTyped
 };
 
 template <>
-struct WritePropertyTyped<string>
+struct WritePropertyTyped<AZStd::string>
     : public WritePropertyTyped<const char*>
 {
 };

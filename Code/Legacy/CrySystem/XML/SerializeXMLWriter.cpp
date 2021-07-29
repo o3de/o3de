@@ -114,7 +114,7 @@ void CSerializeXMLWriterImpl::GetMemoryUsage(ICrySizer* pSizer) const
 //////////////////////////////////////////////////////////////////////////
 const char* CSerializeXMLWriterImpl::GetStackInfo() const
 {
-    static string str;
+    static AZStd::string str;
     str.assign("");
     for (int i = 0; i < (int)m_nodeStack.size(); i++)
     {
@@ -138,7 +138,7 @@ const char* CSerializeXMLWriterImpl::GetStackInfo() const
 //////////////////////////////////////////////////////////////////////////
 const char* CSerializeXMLWriterImpl::GetLuaStackInfo() const
 {
-    static string str;
+    static AZStd::string str;
     str.assign("");
     for (int i = 0; i < (int)m_luaSaveStack.size(); i++)
     {

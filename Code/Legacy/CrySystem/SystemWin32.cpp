@@ -505,9 +505,7 @@ bool CSystem::GetWinGameFolder(char* szMyDocumentsPath, int maxPathSize)
             if (bSucceeded)
             {
                 // Convert from UNICODE to UTF-8
-                AZStd::string str;
-                AZStd::to_string(str, AZStd::wstring(wMyDocumentsPath));
-                azstrcpy(szMyDocumentsPath, maxPathSize, str.c_str());
+                azstrcpy(szMyDocumentsPath, maxPathSize, CryStringUtils::WStrToUTF8(wMyDocumentsPath));
                 CoTaskMemFree(wMyDocumentsPath);
             }
         }
@@ -521,9 +519,7 @@ bool CSystem::GetWinGameFolder(char* szMyDocumentsPath, int maxPathSize)
         bSucceeded = SUCCEEDED(SHGetFolderPathW(NULL, CSIDL_PERSONAL | CSIDL_FLAG_CREATE, NULL, 0, wMyDocumentsPath));
         if (bSucceeded)
         {
-            AZStd::string str;
-            AZStd::to_string(str, AZStd::wstring(wMyDocumentsPath));
-            azstrcpy(szMyDocumentsPath, maxPathSize, str.c_str());
+            azstrcpy(szMyDocumentsPath, maxPathSize, CryStringUtils::WStrToUTF8(wMyDocumentsPath));
         }
     }
 

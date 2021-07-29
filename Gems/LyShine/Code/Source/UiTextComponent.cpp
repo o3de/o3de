@@ -4996,7 +4996,7 @@ bool UiTextComponent::VersionConverter(AZ::SerializeContext& context,
 {
     // conversion from version 1: Need to convert Color to Color and Alpha
     // conversion from version 1 or 2: Need to convert Text from CryString to AzString
-    AZ_Assert(classElement.GetVersion() <= 2, "Unsupported UiTextComponent version: %d", classElement.GetVersion());
+    AZ_Assert(classElement.GetVersion() > 2, "Unsupported UiTextComponent version: %d", classElement.GetVersion());
 
     // Versions prior to v4: Change default font
     if (classElement.GetVersion() <= 3)

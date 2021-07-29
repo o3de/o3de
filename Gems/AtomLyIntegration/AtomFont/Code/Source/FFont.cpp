@@ -126,7 +126,7 @@ bool AZ::FFont::Load(const char* fontFilePath, unsigned int width, unsigned int 
 
     auto pPak = gEnv->pCryPak;
 
-    string fullFile;
+    AZStd::string fullFile;
     if (pPak->IsAbsPath(fontFilePath))
     {
         fullFile = fontFilePath;
@@ -1166,7 +1166,7 @@ size_t AZ::FFont::GetTextLength(const char* str, const bool asciiMultiLine) cons
     return len;
 }
 
-void AZ::FFont::WrapText(string& result, float maxWidth, const char* str, const TextDrawContext& ctx)
+void AZ::FFont::WrapText(AZStd::string& result, float maxWidth, const char* str, const TextDrawContext& ctx)
 {
     result = str;
 

@@ -1185,8 +1185,7 @@ void UiTextInputComponent::UpdateDisplayedTextFunction()
                 // NOTE: this assumes the uint32_t can be interpreted as a wchar_t, it seems to
                 // work for cases tested but may not in general.
                 wchar_t wcharString[2] = { static_cast<wchar_t>(this->GetReplacementCharacter()), 0 };
-                AZStd::string replacementCharString;
-                AZStd::to_string(replacementCharString, AZStd::wstring(wcharString));
+                AZStd::string replacementCharString(CryStringUtils::WStrToUTF8(wcharString));
 
                 int numReplacementChars = LyShine::GetUtf8StringLength(originalText);
 
@@ -1478,7 +1477,7 @@ bool UiTextInputComponent::VersionConverter(AZ::SerializeContext& context,
     // - Need to convert Color to Color and Alpha
     // conversion from version 1 or 2 to current:
     // - Need to convert CryString ActionName elements to AZStd::string
-    AZ_Assert(classElement.GetVersion() <= 2, "Unsupported UiTextInputComponent version: %d", classElement.GetVersion());
+    AZ_Assert(classElement.GetVersion() > 2, "Unsupported UiTextInputComponent version: %d", classElement.GetVersion());
     
     // conversion from version 1, 2 or 3 to current:
     // - Need to convert AZStd::string sprites to AzFramework::SimpleAssetReference<LmbrCentral::TextureAsset>

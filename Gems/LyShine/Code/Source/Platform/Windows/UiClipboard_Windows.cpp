@@ -9,7 +9,6 @@
 
 #include "UiClipboard.h"
 #include <AzCore/PlatformIncl.h>
-#include <StringUtils.h>
 
 bool UiClipboard::SetText(const AZStd::string& text)
 {
@@ -20,8 +19,7 @@ bool UiClipboard::SetText(const AZStd::string& text)
         {
             if (text.length() > 0)
             {
-                AZStd::wstring wstr;
-                AZStd::to_wstring(wstr, text);
+                auto wstr = CryStringUtils::UTF8ToWStr(text.c_str());
                 const SIZE_T buffSize = (wstr.size() + 1) * sizeof(WCHAR);
                 if (HGLOBAL hBuffer = GlobalAlloc(GMEM_MOVEABLE, buffSize))
                 {
@@ -47,7 +45,7 @@ AZStd::string UiClipboard::GetText()
         if (HANDLE hText = GetClipboardData(CF_UNICODETEXT))
         {
             const WCHAR* text = static_cast<const WCHAR*>(GlobalLock(hText));
-            AZStd::to_string(outText, AZStd::wstring(text));
+            outText = CryStringUtils::WStrToUTF8(text);
             GlobalUnlock(hText);
         }
         CloseClipboard();

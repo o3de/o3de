@@ -237,7 +237,7 @@ void IDebugCallStack::WriteLineToLog(const char* format, ...)
     char        szBuffer[MAX_WARNING_LENGTH];
     va_start(ArgList, format);
     vsnprintf_s(szBuffer, sizeof(szBuffer), sizeof(szBuffer) - 1, format, ArgList);
-    cry_strcat(szBuffer, "\n");
+    azstrcat(szBuffer, "\n");
     szBuffer[sizeof(szBuffer) - 1] = '\0';
     va_end(ArgList);
 

@@ -36,8 +36,7 @@ namespace LyShine
         // In the long run it would be better to eliminate
         // this function and use Unicode::CIterator<>::Position instead.
         wchar_t wcharString[2] = { static_cast<wchar_t>(multiByteChar), 0 };
-        AZStd::string utf8String;
-        AZStd::to_string(utf8String, AZStd::wstring(wcharString));
+        AZStd::string utf8String(CryStringUtils::WStrToUTF8(wcharString));
         int utf8Length = utf8String.length();
         return utf8Length;
     }

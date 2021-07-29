@@ -348,7 +348,7 @@ void DebugCallStack::ReportBug(const char* szErrorMessage)
     m_szBugMessage = NULL;
 }
 
-void DebugCallStack::dumpCallStack(std::vector<string>& funcs)
+void DebugCallStack::dumpCallStack(std::vector<AZStd::string>& funcs)
 {
     WriteLineToLog("=============================================================================");
     int len = (int)funcs.size();
@@ -364,7 +364,7 @@ void DebugCallStack::dumpCallStack(std::vector<string>& funcs)
 //////////////////////////////////////////////////////////////////////////
 void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
 {
-    string path("");
+    AZStd::string path("");
     if ((gEnv) && (gEnv->pFileIO))
     {
         const char* logAlias = gEnv->pFileIO->GetAlias("@log@");
@@ -379,12 +379,12 @@ void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
         }
     }
 
-    string fileName = path;
+    AZStd::string fileName = path;
     fileName += "error.log";
 
     struct stat fileInfo;
-    string timeStamp;
-    string backupPath;
+    AZStd::string timeStamp;
+    AZStd::string backupPath;
     if (gEnv->IsDedicated())
     {
         backupPath = PathUtil::ToUnixPath(PathUtil::AddSlash(path + "DumpBackups"));
@@ -399,7 +399,7 @@ void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
             strftime(tempBuffer, sizeof(tempBuffer), "%d %b %Y (%H %M %S)", &creationTime);
             timeStamp = tempBuffer;
 
-            string backupFileName = backupPath + timeStamp + " error.log";
+            AZStd::string backupFileName = backupPath + timeStamp + " error.log";
             CopyFile(fileName.c_str(), backupFileName.c_str(), true);
         }
     }
@@ -414,8 +414,8 @@ void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
     char versionbuf[1024];
     azstrcpy(versionbuf, AZ_ARRAY_SIZE(versionbuf), "");
     PutVersion(versionbuf, AZ_ARRAY_SIZE(versionbuf));
-    cry_strcat(errorString, versionbuf);
-    cry_strcat(errorString, "\n");
+    azstrcat(errorString, versionbuf);
+    azstrcat(errorString, "\n");
 
     char excCode[MAX_WARNING_LENGTH];
     char excAddr[80];
@@ -481,9 +481,9 @@ void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
         excCode, excAddr, m_excModule, excName, desc);
 
 
-    cry_strcat(errs, "\nCall Stack Trace:\n");
+    azstrcat(errs, "\nCall Stack Trace:\n");
 
-    std::vector<string> funcs;
+    std::vector<AZStd::string> funcs;
     {
         AZ::Debug::StackFrame frames[25];
         AZ::Debug::SymbolStorage::StackLine lines[AZ_ARRAY_SIZE(frames)];
@@ -504,15 +504,15 @@ void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
         {
             char temp[s_iCallStackSize];
             sprintf_s(temp, "%2zd) %s", funcs.size() - i, (const char*)funcs[i].c_str());
-            cry_strcat(str, temp);
-            cry_strcat(str, "\r\n");
-            cry_strcat(errs, temp);
-            cry_strcat(errs, "\n");
+            azstrcat(str, temp);
+            azstrcat(str, "\r\n");
+            azstrcat(errs, temp);
+            azstrcat(errs, "\n");
         }
         azstrcpy(m_excCallstack, str);
     }
 
-    cry_strcat(errorString, errs);
+    azstrcat(errorString, errs);
 
     if (f)
     {
@@ -593,7 +593,7 @@ void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
                     timeStamp = tempBuffer;
                 }
 
-                string backupFileName = backupPath + timeStamp + " error.dmp";
+                AZStd::string backupFileName = backupPath + timeStamp + " error.dmp";
                 CopyFile(fileName.c_str(), backupFileName.c_str(), true);
             }
 
@@ -818,7 +818,7 @@ void DebugCallStack::ResetFPU(EXCEPTION_POINTERS* pex)
     }
 }
 
-string DebugCallStack::GetModuleNameForAddr(void* addr)
+AZStd::string DebugCallStack::GetModuleNameForAddr(void* addr)
 {
     if (m_modules.empty())
     {
@@ -844,7 +844,7 @@ string DebugCallStack::GetModuleNameForAddr(void* addr)
     return m_modules.rbegin()->second;
 }
 
-void DebugCallStack::GetProcNameForAddr(void* addr, string& procName, void*& baseAddr, string& filename, int& line)
+void DebugCallStack::GetProcNameForAddr(void* addr, AZStd::string& procName, void*& baseAddr, AZStd::string& filename, int& line)
 {
     AZ::Debug::SymbolStorage::StackLine func, file, module;
     AZ::Debug::SymbolStorage::FindFunctionFromIP(addr, &func, &file, &module, line, baseAddr);
@@ -852,7 +852,7 @@ void DebugCallStack::GetProcNameForAddr(void* addr, string& procName, void*& bas
     filename = file;
 }
 
-string DebugCallStack::GetCurrentFilename()
+AZStd::string DebugCallStack::GetCurrentFilename()
 {
     char fullpath[MAX_PATH_LENGTH + 1];
     GetModuleFileName(NULL, fullpath, MAX_PATH_LENGTH);

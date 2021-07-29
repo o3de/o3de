@@ -984,13 +984,13 @@ XmlString CXmlNode::MakeValidXmlString(const XmlString& instr) const
     XmlString str = instr;
 
     // check if str contains any invalid characters
-    str.replace("&", "&amp;");
-    str.replace("\"", "&quot;");
-    str.replace("\'", "&apos;");
-    str.replace("<", "&lt;");
-    str.replace(">", "&gt;");
-    str.replace("...", "&gt;");
-    str.replace("\n", "&#10;");
+    AZ::StringFunc::Replace(str, "&", "&amp;");
+    AZ::StringFunc::Replace(str, "\"", "&quot;");
+    AZ::StringFunc::Replace(str, "\'", "&apos;");
+    AZ::StringFunc::Replace(str, "<", "&lt;");
+    AZ::StringFunc::Replace(str, ">", "&gt;");
+    AZ::StringFunc::Replace(str, "...", "&gt;");
+    AZ::StringFunc::Replace(str, "\n", "&#10;");
 
     return str;
 }
@@ -1732,9 +1732,9 @@ XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString,
             return 0;
         }
         adjustedFilename = xmlFile.GetAdjustedFilename();
-        adjustedFilename.replace('\\', '/');
+        AZStd::replace(adjustedFilename.begin(), adjustedFilename.end(), '\\', '/');
         pakPath = xmlFile.GetPakPath();
-        pakPath.replace('\\', '/');
+        AZStd::replace(pakPath.begin(), pakPath.end(), '\\', '/');
     }
 
     if (g_bEnableBinaryXmlLoading)

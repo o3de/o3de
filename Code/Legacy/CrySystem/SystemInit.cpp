@@ -33,7 +33,6 @@
 
 #include "CryLibrary.h"
 #include "CryPath.h"
-#include <StringUtils.h>
 
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/IO/LocalFileIO.h>
