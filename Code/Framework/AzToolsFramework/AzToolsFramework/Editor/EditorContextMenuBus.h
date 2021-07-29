@@ -11,7 +11,11 @@
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/any.h>
 #include <AzCore/std/string/string.h>
-#include <AzCore/Math/Vector2.h>
+
+namespace AZ
+{
+    class Vector2;
+}
 
 class QMenu;
 
