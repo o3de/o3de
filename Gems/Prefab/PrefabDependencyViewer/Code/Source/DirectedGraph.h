@@ -119,7 +119,7 @@ namespace PrefabDependencyViewer::Utils
 
             using pair = AZStd::pair<int, Node*>;
             AZStd::queue<pair> queue;
-            queue.push(AZStd::make_pair(0, m_root));
+            queue.emplace(0, m_root);
 
             while (!queue.empty())
             {
@@ -145,7 +145,7 @@ namespace PrefabDependencyViewer::Utils
                     NodeSet children = it->second;
                     for (Node* node : children)
                     {
-                        queue.push(AZStd::make_pair(level + 1, node));
+                        queue.emplace(level + 1, node);
                     }
                 }
             }
