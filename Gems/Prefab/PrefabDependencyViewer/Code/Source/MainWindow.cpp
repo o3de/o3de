@@ -29,10 +29,11 @@ namespace PrefabDependencyViewer
     }
 
     /** Returns a bare minimum configuration to configure GraphCanvas UI
-    for the purpose of visualizing the Prefab hierarchy. */
+      * by passing in EditorId and Stylesheet which contains rules for 
+      * displaying background, Nodes, Slots and Connections in Graph Canvas.
+      */
     PrefabDependencyViewerConfig* GetDefaultConfig()
     {
-        // Make sure no memory leak happens here
         PrefabDependencyViewerConfig* config = aznew PrefabDependencyViewerConfig();
         config->m_editorId = PrefabDependencyViewerEditorId;
         config->m_baseStyleSheet = "PrefabDependencyViewer/StyleSheet/graphcanvas_style.json";
@@ -40,6 +41,8 @@ namespace PrefabDependencyViewer
         return config;
     }
 
+    // Memory leak happens here because AssetEditorMainWindow isn't deallocating
+    // the config pointer.
     PrefabDependencyViewerWidget::PrefabDependencyViewerWidget(QWidget* pParent)
         : GraphCanvas::AssetEditorMainWindow(GetDefaultConfig(), pParent)
     {
