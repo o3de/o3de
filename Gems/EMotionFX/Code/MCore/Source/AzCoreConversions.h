@@ -18,7 +18,6 @@
 #include <MCore/Source/Algorithms.h>
 #include <MCore/Source/Color.h>
 #include <MCore/Source/Vector.h>
-#include <MCore/Source/Quaternion.h>
 #include <EMotionFX/Source/Transform.h>
 
 // This file is "glue" code to convert math back-forward between MCore and AZ. It also has functions that MCore used to 
