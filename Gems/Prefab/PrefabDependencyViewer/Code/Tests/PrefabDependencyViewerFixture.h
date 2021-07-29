@@ -17,6 +17,7 @@ namespace PrefabDependencyViewer
 {
     using PrefabDom    = AzToolsFramework::Prefab::PrefabDom;
     using PrefabDomMap = AZStd::unordered_map<AZStd::string, PrefabDom>;
+    using NodeList      = AZStd::vector<Utils::Node*>;
 
     struct PrefabDependencyViewerFixture : public UnitTest::ScopedAllocatorSetupFixture
     {
@@ -130,6 +131,20 @@ namespace PrefabDependencyViewer
         void TearDown() override
         {
             delete m_prefabSystemComponent;
+        }
+
+        NodeList FindNodes(Utils::NodeSet& nodeSet, TemplateId tid, const char* source)
+        {
+            NodeList nodes;
+
+            for (Utils::Node* node : nodeSet)
+            {
+                if (node->GetMetaData().GetTemplateId() == tid && node->GetMetaData().GetSource() == source)
+                {
+                    nodes.push_back(node);
+                }
+            }
+            return nodes;
         }
 
         PrefabDomMap m_prefabDomsCases;

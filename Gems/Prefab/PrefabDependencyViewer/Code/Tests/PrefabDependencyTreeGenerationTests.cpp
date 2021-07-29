@@ -88,22 +88,6 @@ namespace PrefabDependencyViewer
         EXPECT_EQ(false, outcome.IsSuccess());
     }
 
-    NodeList FindNodes(Utils::NodeSet& nodeSet, TemplateId tid, const char* source)
-    {
-        NodeList nodes;
-
-        for (Utils::Node* node : nodeSet)
-        {
-            if (node->GetMetaData().GetTemplateId() == tid
-                && node->GetMetaData().GetSource() == source)
-            {
-                nodes.push_back(node);
-            }
-        }
-        return nodes;
-    }
-
-
     TEST_F(PrefabDependencyViewerFixture, VALID_NESTED_PREFAB)
     {
         TemplateId tid = 2022412;
