@@ -240,13 +240,11 @@ void CryLowLatencySleep(unsigned int dwMilliseconds)
 int CryMessageBox([[maybe_unused]] const char* lpText, [[maybe_unused]] const char* lpCaption, [[maybe_unused]] unsigned int uType)
 {
 #ifdef WIN32
-#if !defined(RESOURCE_COMPILER)
     ICVar* const pCVar = gEnv && gEnv->pConsole ? gEnv->pConsole->GetCVar("sys_no_crash_dialog") : NULL;
     if ((pCVar && pCVar->GetIVal() != 0) || (gEnv && gEnv->bNoAssertDialog))
     {
         return 0;
     }
-#endif
     return MessageBox(NULL, lpText, lpCaption, uType);
 #else
     return 0;
