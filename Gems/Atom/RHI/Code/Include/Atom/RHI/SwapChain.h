@@ -81,6 +81,13 @@ namespace AZ
 
             AZ_RTTI(SwapChain, "{888B64A5-D956-406F-9C33-CF6A54FC41B0}", Object);
 
+#if defined(PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB)
+            // On Linux platforms that uses XCB, a resize may occur in the swap chain but the command queue may still
+            // reference the original surface. This flag is a temporary fix to make sure that all the swap chains
+            // have finished their resize events before presenting the command queue.
+            AZStd::atomic_bool m_resized = { false };
+#endif // PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
+
         protected:
             SwapChain();
 
