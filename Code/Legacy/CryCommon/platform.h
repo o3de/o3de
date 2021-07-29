@@ -176,7 +176,7 @@
 
 // In Win32 Release we use static linkage
 #ifdef WIN32
-    #if !defined(_RELEASE) || defined(RESOURCE_COMPILER) || defined(EDITOR) || defined(_FORCEDLL)
+    #if !defined(_RELEASE) || defined(EDITOR) || defined(_FORCEDLL)
 // All windows targets not in Release built as DLLs.
         #ifndef _USRDLL
             #define _USRDLL

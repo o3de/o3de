@@ -61,16 +61,12 @@ namespace AZ
             void OutputToDebugger(const char* window, const char* message)
             {
                 AZ_UNUSED(window);
-#ifdef _UNICODE
                 wchar_t messageW[g_maxMessageLength];
                 size_t numCharsConverted;
                 if (mbstowcs_s(&numCharsConverted, messageW, message, g_maxMessageLength - 1) == 0)
                 {
                     OutputDebugStringW(messageW);
                 }
-#else // !_UNICODE
-                OutputDebugString(message);
-#endif // !_UNICODE
             }
         }
     }

@@ -75,22 +75,14 @@ extern "C"
     AZ_DLL_IMPORT HANDLE _stdcall CreateSemaphoreW(LPSECURITY_ATTRIBUTES lpSemaphoreAttributes, LONG lInitialCount, LONG lMaximumCount, LPCWSTR lpName);
     AZ_DLL_IMPORT BOOL _stdcall ReleaseSemaphore(HANDLE hSemaphore, LONG lReleaseCount, LPLONG lpPreviousCount);
     #ifndef CreateSemaphore
-        #ifdef UNICODE
-            #define CreateSemaphore CreateSemaphoreW
-        #else
-            #define CreateSemaphore CreateSemaphoreA
-        #endif
+        #define CreateSemaphore CreateSemaphoreW
     #endif
 
     // Event
     AZ_DLL_IMPORT HANDLE _stdcall CreateEventA(LPSECURITY_ATTRIBUTES lpEventAttributes, BOOL bManualReset, BOOL bInitialState, LPCSTR lpName);
     AZ_DLL_IMPORT HANDLE _stdcall CreateEventW(LPSECURITY_ATTRIBUTES lpEventAttributes, BOOL bManualReset, BOOL bInitialState, LPCWSTR lpName);
     #ifndef CreateEvent
-       #ifdef UNICODE
-           #define CreateEvent CreateEventW
-       #else
-           #define CreateEvent CreateEventA
-       #endif
+        #define CreateEvent CreateEventW
     #endif
     AZ_DLL_IMPORT BOOL _stdcall SetEvent(HANDLE);
 }
