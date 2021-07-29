@@ -22,6 +22,8 @@
 
 namespace ScriptEvents
 {
+    constexpr const char* k_builderJobKey = "Script Events";
+
     class ScriptEventsAsset
         : public AZ::Data::AssetData
     {
