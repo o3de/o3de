@@ -861,12 +861,12 @@ namespace Multiplayer
     {
         m_tickFactor += deltaTime / serverRateSeconds;
         // Linear close to the origin, but asymptote at y = 1
-        const float renderBlendFactor = AZStd::clamp(1.0f - (std::pow(cl_renderTickBlendBase, m_tickFactor)), 0.0f, 1.0f);
+        m_renderBlendFactor = AZStd::clamp(1.0f - (std::pow(cl_renderTickBlendBase, m_tickFactor)), 0.0f, 1.0f);
         AZLOG
         (
             NET_Blending,
             "Computed blend factor of %0.3f using a tick factor of %0.3f, a frametime of %0.3f and a serverTickRate of %0.3f",
-            renderBlendFactor,
+            m_renderBlendFactor,
             m_tickFactor,
             deltaTime,
             serverRateSeconds
@@ -913,7 +913,7 @@ namespace Multiplayer
 
             for (NetBindComponent* netBindComponent : gatheredEntities)
             {
-                netBindComponent->NotifyPreRender(deltaTime, renderBlendFactor);
+                netBindComponent->NotifyPreRender(deltaTime, m_renderBlendFactor);
             }
         }
         else
@@ -925,7 +925,7 @@ namespace Multiplayer
                 NetBindComponent* netBindComponent = entity->FindComponent<NetBindComponent>();
                 if (netBindComponent != nullptr)
                 {
-                    netBindComponent->NotifyPreRender(deltaTime, renderBlendFactor);
+                    netBindComponent->NotifyPreRender(deltaTime, m_renderBlendFactor);
                 }
             }
         }
