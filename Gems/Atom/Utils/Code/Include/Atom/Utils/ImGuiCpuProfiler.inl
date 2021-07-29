@@ -208,39 +208,22 @@ namespace AZ
             switch (columnToSort)
             {
             case (0): // Sort by group name
-                AZStd::sort(m_tableData.begin(), m_tableData.end(), [ascending](const TableRow* lhs, const TableRow* rhs){
-                    return ascending ? lhs->m_groupName < rhs->m_groupName : lhs->m_groupName > rhs->m_groupName;
-                });
+                AZStd::sort(m_tableData.begin(), m_tableData.end(), TableRow::TableRowCompareFunctor(&TableRow::m_groupName, ascending));
                 break;
             case (1): // Sort by region name
-                AZStd::sort(m_tableData.begin(), m_tableData.end(),[ascending](const TableRow* lhs, const TableRow* rhs){
-                    return ascending ? lhs->m_regionName < rhs->m_regionName
-                                     : lhs->m_regionName > rhs->m_regionName;
-                });
+                AZStd::sort(m_tableData.begin(), m_tableData.end(), TableRow::TableRowCompareFunctor(&TableRow::m_regionName, ascending));
                 break;
             case (2): // Sort by average time
-                AZStd::sort(m_tableData.begin(), m_tableData.end(), [ascending](const TableRow* lhs, const TableRow* rhs){
-                    return ascending ? lhs->m_runningAverageTicks < rhs->m_runningAverageTicks
-                                     : lhs->m_runningAverageTicks > rhs->m_runningAverageTicks;
-                });
+                AZStd::sort(m_tableData.begin(), m_tableData.end(), TableRow::TableRowCompareFunctor(&TableRow::m_runningAverageTicks, ascending));
                 break;
             case (3): // Sort by max time
-                AZStd::sort(m_tableData.begin(), m_tableData.end(), [ascending](const TableRow* lhs, const TableRow* rhs){
-                    return ascending ? lhs->m_maxTicks < rhs->m_maxTicks
-                                     : lhs->m_maxTicks > rhs->m_maxTicks;
-                });
+                AZStd::sort(m_tableData.begin(), m_tableData.end(), TableRow::TableRowCompareFunctor(&TableRow::m_maxTicks, ascending));
                 break;
             case (4): // Sort by invocations
-                AZStd::sort(m_tableData.begin(), m_tableData.end(), [ascending](const TableRow* lhs, const TableRow* rhs){
-                    return ascending ? lhs->m_invocationsLastFrame < rhs->m_invocationsLastFrame
-                                     : lhs->m_invocationsLastFrame > rhs->m_invocationsLastFrame;
-                });
+                AZStd::sort(m_tableData.begin(), m_tableData.end(), TableRow::TableRowCompareFunctor(&TableRow::m_invocationsLastFrame, ascending));
                 break;
             case (5): // Sort by total time 
-                AZStd::sort(m_tableData.begin(), m_tableData.end(), [ascending](const TableRow* lhs, const TableRow* rhs){
-                    return ascending ? lhs->m_lastFrameTotalTicks < rhs->m_lastFrameTotalTicks
-                                     : lhs->m_lastFrameTotalTicks > rhs->m_lastFrameTotalTicks;
-                });
+                AZStd::sort(m_tableData.begin(), m_tableData.end(), TableRow::TableRowCompareFunctor(&TableRow::m_lastFrameTotalTicks, ascending));
                 break;
             }
             sortSpecs->SpecsDirty = false;

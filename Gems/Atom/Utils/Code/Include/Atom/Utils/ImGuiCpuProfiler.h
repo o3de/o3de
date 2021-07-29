@@ -27,6 +27,20 @@ namespace AZ
         //! Stores all the data associated with a row in the table. 
         struct TableRow
         {
+            template <typename T>
+            struct TableRowCompareFunctor
+            {
+                TableRowCompareFunctor(T memberPointer, bool isAscending) : m_memberPointer(memberPointer), m_ascending(isAscending){};
+
+                bool operator()(const TableRow* lhs, const TableRow* rhs)
+                {
+                    return m_ascending ? lhs->*m_memberPointer < rhs->*m_memberPointer : lhs->*m_memberPointer > rhs->*m_memberPointer;
+                }
+
+                T m_memberPointer;
+                bool m_ascending;
+            };
+
             // Update running statistics with new region data 
             void RecordRegion(const AZ::RHI::CachedTimeRegion& region, AZStd::thread_id threadId);
 
