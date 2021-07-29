@@ -66,6 +66,8 @@ namespace AZ
             virtual void SetShadowsEnabled(LightHandle handle, bool enabled) = 0;
             //! Sets the shadowmap size (width and height) of the light.
             virtual void SetShadowmapMaxResolution(LightHandle handle, ShadowmapSize shadowmapSize) = 0;
+            //! Sets the shadow bias
+            virtual void SetShadowBias(LightHandle handle, float bias) = 0;
             //! Specifies filter method of shadows.
             virtual void SetShadowFilterMethod(LightHandle handle, ShadowFilterMethod method) = 0;
             //! Specifies the width of boundary between shadowed area and lit area in radians. The degree ofshadowed gradually changes on

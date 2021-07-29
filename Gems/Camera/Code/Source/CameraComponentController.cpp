@@ -24,7 +24,9 @@ namespace Camera
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<CameraComponentConfig, AZ::ComponentConfig>()
-                ->Version(2)
+                ->Version(3)
+                ->Field("Orthographic", &CameraComponentConfig::m_orthographic)
+                ->Field("Orthographic Half Width", &CameraComponentConfig::m_orthographicHalfWidth)
                 ->Field("Field of View", &CameraComponentConfig::m_fov)
                 ->Field("Near Clip Plane Distance", &CameraComponentConfig::m_nearClipDistance)
                 ->Field("Far Clip Plane Distance", &CameraComponentConfig::m_farClipDistance)
@@ -42,25 +44,33 @@ namespace Camera
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CameraComponentConfig::m_makeActiveViewOnActivation,
                             "Make active camera on activation?", "If true, this camera will become the active render camera when it activates")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &CameraComponentConfig::m_orthographic, "Orthographic",
+                        "If set, this camera will use an orthographic projection instead of a perspective one. Objects will appear as the same size, regardless of distance from the camera.")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &CameraComponentConfig::m_orthographicHalfWidth, "Orthographic Half-width", "The half-width used to calculate the orthographic projection. The height will be determined by the aspect ratio.")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &CameraComponentConfig::GetOrthographicParameterVisibility)
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.001f)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::ValuesOnly)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CameraComponentConfig::m_fov, "Field of view", "Vertical field of view in degrees")
                         ->Attribute(AZ::Edit::Attributes::Min, MIN_FOV)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " degrees")
                         ->Attribute(AZ::Edit::Attributes::Step, 1.f)
                         ->Attribute(AZ::Edit::Attributes::Max, AZ::RadToDeg(AZ::Constants::Pi) - 0.0001f)       //We assert at fovs >= Pi so set the max for this field to be just under that
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshValues", 0x28e720d4))
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::ValuesOnly)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &CameraComponentConfig::GetPerspectiveParameterVisibility)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CameraComponentConfig::m_nearClipDistance, "Near clip distance",
                         "Distance to the near clip plane of the view Frustum")
                         ->Attribute(AZ::Edit::Attributes::Min, CAMERA_MIN_NEAR)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " m")
                         ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
                         ->Attribute(AZ::Edit::Attributes::Max, &CameraComponentConfig::GetFarClipDistance)
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshAttributesAndValues", 0xcbc2147c))
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CameraComponentConfig::m_farClipDistance, "Far clip distance",
                         "Distance to the far clip plane of the view Frustum")
                         ->Attribute(AZ::Edit::Attributes::Min, &CameraComponentConfig::GetNearClipDistance)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " m")
                         ->Attribute(AZ::Edit::Attributes::Step, 10.f)
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshAttributesAndValues", 0xcbc2147c))
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                 ;
             }
         }
@@ -79,6 +89,16 @@ namespace Camera
     AZ::EntityId CameraComponentConfig::GetEditorEntityId() const
     {
         return AZ::EntityId(m_editorEntityId);
+    }
+
+    AZ::u32 CameraComponentConfig::GetPerspectiveParameterVisibility() const
+    {
+        return m_orthographic ? AZ::Edit::PropertyVisibility::Hide : AZ::Edit::PropertyVisibility::Show;
+    }
+
+    AZ::u32 CameraComponentConfig::GetOrthographicParameterVisibility() const
+    {
+        return m_orthographic ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
     }
 
     CameraComponentController::CameraComponentController(const CameraComponentConfig& config)
@@ -289,6 +309,16 @@ namespace Camera
         return m_config;
     }
 
+    AZ::RPI::ViewportContextPtr CameraComponentController::GetViewportContext()
+    {
+        auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+        if (m_atomCamera && atomViewportRequests)
+        {
+            return atomViewportRequests->GetDefaultViewportContext();
+        }
+        return nullptr;
+    }
+
     AZ::EntityId CameraComponentController::GetCameras()
     {
         return m_entityId;
@@ -324,6 +354,16 @@ namespace Camera
         return m_config.m_frustumHeight;
     }
 
+    bool CameraComponentController::IsOrthographic()
+    {
+        return m_config.m_orthographic;
+    }
+
+    float CameraComponentController::GetOrthographicHalfWidth()
+    {
+        return m_config.m_orthographicHalfWidth;
+    }
+
     void CameraComponentController::SetFovDegrees(float fov)
     {
         m_config.m_fov = AZ::GetClamp(fov, MinFoV, MaxFoV);
@@ -356,6 +396,18 @@ namespace Camera
     void CameraComponentController::SetFrustumHeight(float height)
     {
         m_config.m_frustumHeight = height;
+        UpdateCamera();
+    }
+
+    void CameraComponentController::SetOrthographic(bool orthographic)
+    {
+        m_config.m_orthographic = orthographic;
+        UpdateCamera();
+    }
+
+    void CameraComponentController::SetOrthographicHalfWidth(float halfWidth)
+    {
+        m_config.m_orthographicHalfWidth = halfWidth;
         UpdateCamera();
     }
 
@@ -423,30 +475,38 @@ namespace Camera
             m_view->SetCurrentParams(viewParams);
         }
 
-        auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-        if (m_atomCamera && atomViewportRequests)
+        if (auto viewportContext = GetViewportContext())
         {
             AZ::Matrix4x4 viewToClipMatrix;
             float aspectRatio = m_view ? m_view->GetCamera().GetPixelAspectRatio() : 1.f;
-            auto viewportContext = atomViewportRequests->GetViewportContextByName(
-                atomViewportRequests->GetDefaultViewportContextName());
-            if (viewportContext)
+            if (!m_atomAuxGeom)
             {
-                if (!m_atomAuxGeom)
-                {
-                    SetupAtomAuxGeom(viewportContext);
-                }
-                auto windowSize = viewportContext->GetViewportSize();
-                aspectRatio = aznumeric_cast<float>(windowSize.m_width) / aznumeric_cast<float>(windowSize.m_height);
+                SetupAtomAuxGeom(viewportContext);
             }
+            auto windowSize = viewportContext->GetViewportSize();
+            aspectRatio = aznumeric_cast<float>(windowSize.m_width) / aznumeric_cast<float>(windowSize.m_height);
 
             // This assumes a reversed depth buffer, in line with other LY Atom integration
-            AZ::MakePerspectiveFovMatrixRH(viewToClipMatrix,
-                AZ::DegToRad(m_config.m_fov),
-                aspectRatio,
-                m_config.m_nearClipDistance,
-                m_config.m_farClipDistance,
-                true);
+            if (m_config.m_orthographic)
+            {
+                AZ::MakeOrthographicMatrixRH(viewToClipMatrix,
+                    -m_config.m_orthographicHalfWidth,
+                    m_config.m_orthographicHalfWidth,
+                    -m_config.m_orthographicHalfWidth / aspectRatio,
+                    m_config.m_orthographicHalfWidth / aspectRatio,
+                    m_config.m_nearClipDistance,
+                    m_config.m_farClipDistance,
+                    true);
+            }
+            else
+            {
+                AZ::MakePerspectiveFovMatrixRH(viewToClipMatrix,
+                    AZ::DegToRad(m_config.m_fov),
+                    aspectRatio,
+                    m_config.m_nearClipDistance,
+                    m_config.m_farClipDistance,
+                    true);
+            }
             m_updatingTransformFromEntity = true;
             m_atomCamera->SetViewToClipMatrix(viewToClipMatrix);
             m_updatingTransformFromEntity = false;

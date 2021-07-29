@@ -45,12 +45,17 @@ namespace AZ
                 SCENE_DATA_API TangentsRule();
                 SCENE_DATA_API ~TangentsRule() override = default;
 
-                SCENE_DATA_API AZ::SceneAPI::DataTypes::TangentSpace GetTangentSpace() const;
+                SCENE_DATA_API AZ::SceneAPI::DataTypes::TangentGenerationMethod GetGenerationMethod() const;
+                SCENE_DATA_API AZ::SceneAPI::DataTypes::MikkTSpaceMethod GetMikkTSpaceMethod() const;
 
                 static void Reflect(ReflectContext* context);
 
             protected:
-                AZ::SceneAPI::DataTypes::TangentSpace m_tangentSpace;     /**< Specifies how to handle tangents. Either generate them, or import them. */
+                AZ::SceneAPI::DataTypes::TangentGenerationMethod m_generationMethod = AZ::SceneAPI::DataTypes::TangentGenerationMethod::MikkT; /**< Specifies how to handle tangents. Either generate them, or import them. */
+
+                // MikkT specific settings
+                AZ::Crc32 GetSpaceMethodVisibility() const;
+                AZ::SceneAPI::DataTypes::MikkTSpaceMethod m_tSpaceMethod = AZ::SceneAPI::DataTypes::MikkTSpaceMethod::TSpace;
             };
         } // SceneData
     } // SceneAPI

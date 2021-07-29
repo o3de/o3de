@@ -40,7 +40,6 @@ function(ly_add_autogen)
         )
         set_target_properties(${ly_add_autogen_NAME} PROPERTIES AUTOGEN_INPUT_FILES "${AZCG_INPUTFILES}")
         set_target_properties(${ly_add_autogen_NAME} PROPERTIES AUTOGEN_OUTPUT_FILES "${AUTOGEN_OUTPUTS}")
-        set_target_properties(${ly_add_autogen_NAME} PROPERTIES VS_USER_PROPS "${LY_ROOT_FOLDER}/Code/Framework/AzAutoGen/AzAutoGen.props")
         target_sources(${ly_add_autogen_NAME} PRIVATE ${AUTOGEN_OUTPUTS})
     endif()
 

@@ -14,7 +14,6 @@
 #include <AudioControlsEditorPlugin.h>
 #include <IAudioSystemControl.h>
 #include <IAudioSystemEditor.h>
-#include <IEditor.h>
 #include <ImplementationManager.h>
 
 #include <QDropEvent>

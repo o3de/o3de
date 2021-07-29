@@ -75,6 +75,8 @@ namespace AZ
         private:
             static constexpr float RowHeight = 50.0;
             static constexpr int DefaultFramesToCollect = 50;
+            static constexpr float MediumFrameTimeLimit = 16.6; // 60 fps
+            static constexpr float HighFrameTimeLimit = 33.3; // 30 fps
 
             // Draw the shared header between the two windows
             void DrawCommonHeader();
@@ -127,8 +129,11 @@ namespace AZ
             // Draw the ruler with frame time labels
             void DrawRuler();
 
+            // Draw the frame time histogram 
+            void DrawFrameTimeHistogram();
+
             // Converts raw ticks to a pixel value suitable to give to ImDrawList, handles window scrolling
-            float ConvertTickToPixelSpace(AZStd::sys_time_t tick) const;
+            float ConvertTickToPixelSpace(AZStd::sys_time_t tick, AZStd::sys_time_t leftBound, AZStd::sys_time_t rightBound) const;
 
             AZStd::sys_time_t GetViewportTickWidth() const;
 

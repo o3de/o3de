@@ -290,7 +290,7 @@ namespace ScriptCanvas
 
             Source() = default;
             Source
-            (const Graph& graph
+                ( const Graph& graph
                 , const AZ::Data::AssetId& id
                 , const GraphData& graphData
                 , const VariableData& variableData
