@@ -92,9 +92,8 @@ namespace PrefabDependencyViewer
     {
         NodeList nodes;
 
-        for (auto it = nodeSet.begin(); it != nodeSet.end(); ++it)
+        for (Utils::Node* node : nodeSet)
         {
-            Utils::Node* node = *it;
             if (node->GetMetaData().GetTemplateId() == tid
                 && node->GetMetaData().GetSource() == source)
             {
