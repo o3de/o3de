@@ -39,7 +39,7 @@ namespace AZ {
         struct SymbolStorageDynamicallyLoadedModules
         {
             size_t m_size;
-            DynamicallyLoadedModuleInfo m_modules[1024];
+            DynamicallyLoadedModuleInfo m_modules[256];
 
             SymbolStorageDynamicallyLoadedModules()
                 : m_size(0)
