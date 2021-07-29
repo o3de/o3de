@@ -97,7 +97,7 @@ namespace EMotionFX
             AZ_UNUSED(sourceFile);
 
             AZ::ObjectStream::FilterDescriptor loadFilter = AZ::ObjectStream::FilterDescriptor(&AZ::Data::AssetFilterNoAssetLoading, AZ::ObjectStream::FILTERFLAG_IGNORE_UNKNOWN_CLASSES);
-            AZStd::unique_ptr<AnimGraph> animGraph(GetImporter().LoadAnimGraph(fullPath, nullptr, loadFilter));
+            AZStd::unique_ptr<AnimGraph> animGraph(GetImporter().LoadAnimGraph(fullPath, loadFilter));
 
             if (!animGraph)
             {

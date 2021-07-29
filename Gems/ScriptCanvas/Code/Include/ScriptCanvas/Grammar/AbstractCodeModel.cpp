@@ -3230,7 +3230,7 @@ namespace ScriptCanvas
             auto valueSlot = forEachNodeSC->GetSlot(forEachNodeSC->GetValueSlotId());
             AZ_Assert(valueSlot, "no value slot in for each node");
 
-            lastExecution->AddChild({});
+            lastExecution->AddChild({ &loopSlot, {}, nullptr });
             auto outputValue = CreateOutputData(lastExecution, lastExecution->ModChild(0), *valueSlot);
             lastExecution->ModChild(0).m_output.push_back({ valueSlot, outputValue });
 
@@ -4343,6 +4343,9 @@ namespace ScriptCanvas
 
                     execution->AddInput({ &input, inputVariable, DebugDataSource::FromSelfSlot(input, inputVariable->m_datum.GetType()) });
                 }
+
+                // Check for known null reads
+                CheckForKnownNullDereference(execution, execution->GetInput(execution->GetInputCount() - 1), input);
             }
             else
             {
@@ -4374,9 +4377,6 @@ namespace ScriptCanvas
                     return;
                 }
             }
-
-            // Check for known null reads
-            CheckForKnownNullDereference(execution, execution->GetInput(execution->GetInputCount() - 1), input);
         }
 
         bool AbstractCodeModel::ParseInputThisPointer(ExecutionTreePtr execution)

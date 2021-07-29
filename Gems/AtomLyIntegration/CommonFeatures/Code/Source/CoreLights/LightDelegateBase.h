@@ -53,6 +53,7 @@ namespace AZ
             void SetShutterAngles([[maybe_unused]]float innerAngleDegrees, [[maybe_unused]]float outerAngleDegrees) override {};
 
             void SetEnableShadow(bool enabled) override { m_shadowsEnabled = enabled; };
+            void SetShadowBias([[maybe_unused]] float bias) override {};
             void SetShadowmapMaxSize([[maybe_unused]] ShadowmapSize size) override {};
             void SetShadowFilterMethod([[maybe_unused]] ShadowFilterMethod method) override {};
             void SetSofteningBoundaryWidthAngle([[maybe_unused]] float widthInDegrees) override {};
