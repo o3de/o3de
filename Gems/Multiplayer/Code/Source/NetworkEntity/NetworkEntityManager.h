@@ -42,12 +42,13 @@ namespace Multiplayer
         HostId GetHostId() const override;
         ConstNetworkEntityHandle GetEntity(NetEntityId netEntityId) const override;
 
-        EntityList CreateEntitiesImmediate(const AzFramework::Spawnable& spawnable, NetEntityRole netEntityRole);
+        EntityList CreateEntitiesImmediate(const AzFramework::Spawnable& spawnable, NetEntityRole netEntityRole, AutoActivate autoActivate);
         EntityList CreateEntitiesImmediate
         (
             const PrefabEntityId& prefabEntryId,
             NetEntityRole netEntityRole,
-            const AZ::Transform& transform
+            const AZ::Transform& transform,
+            AutoActivate autoActivate = AutoActivate::Activate
         ) override;
         EntityList CreateEntitiesImmediate
         (

@@ -59,7 +59,8 @@ namespace Multiplayer
         (
             const PrefabEntityId& prefabEntryId,
             NetEntityRole netEntityRole,
-            const AZ::Transform& transform
+            const AZ::Transform& transform,
+            AutoActivate autoActivate = AutoActivate::Activate
         ) = 0;
 
         //! Creates new entities of the given archetype
