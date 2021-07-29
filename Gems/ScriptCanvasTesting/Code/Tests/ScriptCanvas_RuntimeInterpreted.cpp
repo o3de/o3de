@@ -84,11 +84,6 @@ public:
     }
 };
 
-TEST_F(ScriptCanvasTestFixture, ForEachMultipleOutSyntaxOnEach)
-{
-    RunUnitTestGraph("LY_SC_UnitTest_ForEachMultipleOutSyntaxOnEach");
-}
-
 TEST_F(ScriptCanvasTestFixture, EntityIdInputForOnGraphStart)
 {
     RunUnitTestGraph("LY_SC_UnitTest_EntityIdInputForOnGraphStart");
