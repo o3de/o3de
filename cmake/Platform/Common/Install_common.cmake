@@ -76,7 +76,6 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
                         PATTERN *.inl
                         PATTERN *.hxx
                         PATTERN *.jinja # LyAutoGen files
-                        PATTERN *.py    # AzAutoGen.py, but some targets may be exposing python files
                 )
             endif()
         endforeach()

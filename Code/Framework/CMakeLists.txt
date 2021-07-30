@@ -6,7 +6,6 @@
 #
 #
 
-add_subdirectory(AzAutoGen)
 add_subdirectory(AtomCore)
 add_subdirectory(AzCore)
 add_subdirectory(AzQtComponents)
