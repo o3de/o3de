@@ -29,7 +29,7 @@ namespace AZ
         return errno;
     }
 
-    void SharedMemory_Mac::ComposeMutexName(char* dest, size_t length, const char* name)
+    void ComposeMutexName(char* dest, size_t length, const char* name)
     {
         azstrncpy(m_name, AZ_ARRAY_SIZE(m_name), name, strlen(name));
 

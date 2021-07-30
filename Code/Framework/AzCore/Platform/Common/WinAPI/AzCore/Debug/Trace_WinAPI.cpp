@@ -12,6 +12,8 @@
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/Debug/TraceMessageBus.h>
 #include <AzCore/Debug/TraceMessagesDrillerBus.h>
+#include <AzCore/std/string/conversions.h>
+#include <AzCore/std/string/fixed_string.h>
 
 #include <stdio.h>
 
@@ -22,7 +24,7 @@ namespace AZ
     LPTOP_LEVEL_EXCEPTION_FILTER g_previousExceptionHandler = nullptr;
 #endif
 
-    const int g_maxMessageLength = 4096;
+    constexpr int g_maxMessageLength = 4096;
 
     namespace Debug
     {
@@ -58,15 +60,18 @@ namespace AZ
                 TerminateProcess(GetCurrentProcess(), exitCode);
             }
 
-            void OutputToDebugger(const char* window, const char* message)
+            void OutputToDebugger([[maybe_unused]] const char* window, const char* message)
             {
-                AZ_UNUSED(window);
-                wchar_t messageW[g_maxMessageLength];
-                size_t numCharsConverted;
-                if (mbstowcs_s(&numCharsConverted, messageW, message, g_maxMessageLength - 1) == 0)
+                AZStd::fixed_wstring<g_maxMessageLength> tmpW;
+                if(window)
                 {
-                    OutputDebugStringW(messageW);
+                    AZStd::to_wstring(tmpW, window);
+                    tmpW += L": ";
+                    OutputDebugStringW(tmpW.c_str());
+                    tmpW.clear();
                 }
+                AZStd::to_wstring(tmpW, message);
+                OutputDebugStringW(tmpW.c_str());
             }
         }
     }
