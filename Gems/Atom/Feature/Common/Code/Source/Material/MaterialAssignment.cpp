@@ -33,8 +33,7 @@ namespace AZ
                 serializeContext->Class<MaterialAssignment>()
                     ->Version(1)
                     ->Field("MaterialAsset", &MaterialAssignment::m_materialAsset)
-                    ->Field("PropertyOverrides", &MaterialAssignment::m_propertyOverrides)
-                    ;
+                    ->Field("PropertyOverrides", &MaterialAssignment::m_propertyOverrides);
             }
 
             if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
@@ -50,8 +49,7 @@ namespace AZ
                     ->Constructor<const Data::Asset<RPI::MaterialAsset>&, const Data::Instance<RPI::Material>&>()
                     ->Method("ToString", &MaterialAssignment::ToString)
                     ->Property("materialAsset", BehaviorValueProperty(&MaterialAssignment::m_materialAsset))
-                    ->Property("propertyOverrides", BehaviorValueProperty(&MaterialAssignment::m_propertyOverrides))
-                    ;
+                    ->Property("propertyOverrides", BehaviorValueProperty(&MaterialAssignment::m_propertyOverrides));
 
                 behaviorContext->ConstantProperty("DefaultMaterialAssignment", BehaviorConstant(DefaultMaterialAssignment))
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
@@ -67,7 +65,6 @@ namespace AZ
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                     ->Attribute(AZ::Script::Attributes::Category, "render")
                     ->Attribute(AZ::Script::Attributes::Module, "render");
-
             }
         }
 
@@ -152,7 +149,8 @@ namespace AZ
                     {
                         if (mesh.m_material)
                         {
-                            const MaterialAssignmentId generalId = MaterialAssignmentId::CreateFromStableIdOnly(mesh.m_materialSlotStableId);
+                            const MaterialAssignmentId generalId =
+                                MaterialAssignmentId::CreateFromStableIdOnly(mesh.m_materialSlotStableId);
                             materials[generalId] = MaterialAssignment(mesh.m_material->GetAsset(), mesh.m_material);
 
                             const MaterialAssignmentId specificId =
@@ -168,19 +166,17 @@ namespace AZ
         }
 
         MaterialAssignmentId FindMaterialAssignmentIdInLod(
-            const Data::Instance<AZ::RPI::ModelLod>& lod, const MaterialAssignmentLodIndex lodIndex, const AZStd::string& labelFilter)
+            const Data::Instance<AZ::RPI::Model> model,
+            const Data::Instance<AZ::RPI::ModelLod>& lod,
+            const MaterialAssignmentLodIndex lodIndex,
+            const AZStd::string& labelFilter)
         {
             for (const AZ::RPI::ModelLod::Mesh& mesh : lod->GetMeshes())
             {
-                if (mesh.m_material && mesh.m_material->GetAssetId().IsValid())
+                const AZ::RPI::ModelMaterialSlot& slot = model->GetModelAsset()->FindMaterialSlot(mesh.m_materialSlotStableId);
+                if (AZ::StringFunc::Contains(slot.m_displayName.GetCStr(), labelFilter, true))
                 {
-                    AZ::Data::AssetInfo assetInfo;
-                    AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-                        assetInfo, &AZ::Data::AssetCatalogRequests::GetAssetInfoById, mesh.m_material->GetAssetId());
-                    if (assetInfo.m_assetId.IsValid() && AZ::StringFunc::Contains(assetInfo.m_relativePath, labelFilter, true))
-                    {
-                        return MaterialAssignmentId::CreateFromLodAndAsset(lodIndex, mesh.m_material->GetAssetId());
-                    }
+                    return MaterialAssignmentId::CreateFromLodAndStableId(lodIndex, mesh.m_materialSlotStableId);
                 }
             }
             return MaterialAssignmentId();
@@ -193,13 +189,13 @@ namespace AZ
             {
                 if (lodFilter < model->GetLodCount())
                 {
-                    return FindMaterialAssignmentIdInLod(model->GetLods()[lodFilter], lodFilter, labelFilter);
+                    return FindMaterialAssignmentIdInLod(model, model->GetLods()[lodFilter], lodFilter, labelFilter);
                 }
 
                 for (size_t lodIndex = 0; lodIndex < model->GetLodCount(); ++lodIndex)
                 {
                     const MaterialAssignmentId result =
-                        FindMaterialAssignmentIdInLod(model->GetLods()[lodIndex], MaterialAssignmentId::NonLodIndex, labelFilter);
+                        FindMaterialAssignmentIdInLod(model, model->GetLods()[lodIndex], MaterialAssignmentId::NonLodIndex, labelFilter);
                     if (!result.IsDefault())
                     {
                         return result;
