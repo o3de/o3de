@@ -100,11 +100,11 @@ namespace AZ
 
         void RPISystemComponent::OnSystemTick()
         {
-#if 0
+#if 1
             m_rpiSystem.SimulationTick();
             m_rpiSystem.RenderTick();
 #else
-            AZStd::lock_guard<AZStd::mutex> lock(m_renderTickLock);
+            AZStd::lock_guard<AZStd::mutex> lock(m_renderTickLock); // prevent render tick job setup while render tick is still executing
             const auto jobLambda = [this]()
             {
                 AZStd::lock_guard<AZStd::mutex> lock(m_renderTickLock);

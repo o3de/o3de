@@ -33,6 +33,8 @@
 #include <AzFramework/Scene/Scene.h>
 #include <AzFramework/Scene/SceneSystemInterface.h>
 
+#include <AzCore/Jobs/taskflow/taskflow.hpp>
+
 namespace AZ
 {
     namespace RPI
@@ -208,6 +210,7 @@ namespace AZ
 
             // CPU simulation job completion for track all feature processors' simulation jobs
             AZ::JobCompletion* m_simulationCompletion = nullptr;
+            tf::Future<void> m_taskFlowFuture;
 
             AZ::RPI::CullingScene* m_cullingScene;
 

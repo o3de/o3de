@@ -215,6 +215,38 @@ set(FILES
     IO/Streamer/StreamStackEntry.cpp
     IPC/SharedMemory.cpp
     IPC/SharedMemory.h
+    Jobs/taskflow/utility/iterator.hpp    
+    Jobs/taskflow/utility/math.hpp        
+    Jobs/taskflow/utility/object_pool.hpp 
+    Jobs/taskflow/utility/os.hpp          
+    Jobs/taskflow/utility/serializer.hpp  
+    Jobs/taskflow/utility/singleton.hpp   
+    Jobs/taskflow/utility/small_vector.hpp
+    Jobs/taskflow/utility/stream.hpp      
+    Jobs/taskflow/utility/traits.hpp      
+    Jobs/taskflow/utility/uuid.hpp        
+    Jobs/taskflow/core/algorithm/critical.hpp
+    Jobs/taskflow/core/algorithm/for_each.hpp
+    Jobs/taskflow/core/algorithm/reduce.hpp  
+    Jobs/taskflow/core/algorithm/sort.hpp    
+    Jobs/taskflow/core/declarations.hpp
+    Jobs/taskflow/core/environment.hpp 
+    Jobs/taskflow/core/error.hpp       
+    Jobs/taskflow/core/executor.hpp    
+    Jobs/taskflow/core/flow_builder.hpp
+    Jobs/taskflow/core/graph.hpp       
+    Jobs/taskflow/core/notifier.hpp    
+    Jobs/taskflow/core/observer.hpp    
+    Jobs/taskflow/core/semaphore.hpp   
+    Jobs/taskflow/core/task.hpp        
+    Jobs/taskflow/core/taskflow.hpp    
+    Jobs/taskflow/core/topology.hpp    
+    Jobs/taskflow/core/tsq.hpp         
+    Jobs/taskflow/core/worker.hpp      
+    Jobs/taskflow/taskflow.hpp
+    Jobs/TaskFlowBus.h
+    Jobs/TaskFlowSystemComponent.h
+    Jobs/TaskFlowSystemComponent.cpp
     Jobs/Algorithms.h
     Jobs/Internal/JobManagerBase.cpp
     Jobs/Internal/JobManagerBase.h

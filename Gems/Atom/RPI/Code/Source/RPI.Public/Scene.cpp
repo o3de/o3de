@@ -24,6 +24,13 @@
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Jobs/JobEmpty.h>
 
+#define USE_TASKFLOW 1
+#if USE_TASKFLOW
+#include <AzCore/Jobs/taskflow/taskflow.hpp>
+#include <AzCore/Jobs/TaskFlowBus.h>
+#include <AzCore/Interface/Interface.h>
+#endif
+
 #include <AzFramework/Entity/EntityContext.h>
 
 namespace AZ
@@ -93,7 +100,14 @@ namespace AZ
 
         Scene::~Scene()
         {
+#if USE_TASKFLOW
+            if (m_taskFlowFuture.valid())
+            {
+                m_taskFlowFuture.wait();
+            }
+#else
             WaitAndCleanCompletionJob(m_simulationCompletion);
+#endif
             SceneRequestBus::Handler::BusDisconnect();
 
             // Remove all the render pipelines. Need to process queued changes with pass system before and after remove render pipelines
@@ -347,10 +361,33 @@ namespace AZ
             return nullptr;
         }
 
-        void Scene::Simulate([[maybe_unused]] const TickTimeInfo& tickInfo, RHI::JobPolicy jobPolicy)
+        void Scene::Simulate(const TickTimeInfo& tickInfo [[maybe_unused]], RHI::JobPolicy jobPolicy [[maybe_unused]])
         {
             AZ_ATOM_PROFILE_FUNCTION("RPI", "Scene: Simulate");
 
+#if USE_TASKFLOW
+            // If previous simulation job wasn't done, wait for it to finish.
+            if (m_taskFlowFuture.valid())
+            {
+                m_taskFlowFuture.wait();
+            }
+
+            tf::Taskflow simulationTF;
+            for (FeatureProcessorPtr& fp : m_featureProcessors)
+            {
+                FeatureProcessor* featureProcessor = fp.get();
+                const auto jobLambda = [this, featureProcessor]()
+                {
+                    featureProcessor->Simulate(m_simulatePacket);
+                };
+
+                simulationTF.emplace(jobLambda);
+            }
+
+            tf::Executor* tfExecutor = AZ::Interface<AZ::TaskFlowExecutorInterface>::Get()->GetExecutor();
+            m_taskFlowFuture = tfExecutor->run(AZStd::move(simulationTF)); // use the move form so tf manages the taskflow lifetime
+
+#else
             // If previous simulation job wasn't done, wait for it to finish.
             WaitAndCleanCompletionJob(m_simulationCompletion);
 
@@ -380,6 +417,7 @@ namespace AZ
                 }
                 //[GFX TODO]: the completion job should start here
             }
+#endif
         }
 
         void Scene::WaitAndCleanCompletionJob(AZ::JobCompletion*& completionJob)
@@ -401,7 +439,14 @@ namespace AZ
             {
                 AZ_PROFILE_SCOPE(Debug::ProfileCategory::AzRender, "WaitForSimulationCompletion");
                 AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "WaitForSimulationCompletion");
+#if USE_TASKFLOW
+                if (m_taskFlowFuture.valid())
+                {
+                    m_taskFlowFuture.wait();
+                }
+#else
                 WaitAndCleanCompletionJob(m_simulationCompletion);
+#endif
             }
 
             SceneNotificationBus::Event(GetId(), &SceneNotification::OnBeginPrepareRender);

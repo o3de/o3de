@@ -40,6 +40,7 @@ set(FILES
     Interface.cpp
     IO/Path/PathTests.cpp
     IPC.cpp
+    Jobs_taskflow.cpp
     Jobs.cpp
     JSON.cpp
     FixedWidthIntegers.cpp

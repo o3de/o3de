@@ -33,6 +33,7 @@ ly_add_target(
     INCLUDE_DIRECTORIES
         PUBLIC
             .
+            AzCore/Jobs/taskflow
             ${pal_dir}
             ${common_dir}
             ${AZ_CORE_RADTELEMETRY_INCLUDE_DIRECTORIES}
