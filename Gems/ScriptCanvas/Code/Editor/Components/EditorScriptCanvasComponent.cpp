@@ -424,14 +424,14 @@ namespace ScriptCanvasEditor
 
     void EditorScriptCanvasComponent::OnAssetReady(const ScriptCanvasMemoryAsset::pointer asset)
     {
-        OnScriptCanvasAssetReady(asset);
+        // OnScriptCanvasAssetReady(asset);
     }
 
     void EditorScriptCanvasComponent::OnAssetSaved(const ScriptCanvasMemoryAsset::pointer asset, bool isSuccessful)
     {
         if (isSuccessful)
         {
-            OnScriptCanvasAssetReady(asset);
+            // OnScriptCanvasAssetReady(asset);
         }
     }
 

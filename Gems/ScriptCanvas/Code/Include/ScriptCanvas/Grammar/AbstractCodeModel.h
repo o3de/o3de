@@ -138,6 +138,8 @@ namespace ScriptCanvas
 
             const AZStd::vector<VariableConstPtr>& GetVariables() const;
 
+            const AZStd::vector<VariableConstPtr>& GetVariablesUnused() const;
+
             bool IsErrorFree() const;
 
             // has modified data or handlers
@@ -165,8 +167,6 @@ namespace ScriptCanvas
             };
 
             void AddAllVariablesPreParse();
-
-            void AddAllVariablesPreParse_LegacyFunctions();
 
             void AddDebugInformation();
 
@@ -519,6 +519,7 @@ namespace ScriptCanvas
             AZStd::unordered_map<VariableConstPtr, DependencyInfo> m_dependencyByVariable;
 
             AZStd::vector<VariableConstPtr> m_variables;
+            AZStd::vector<VariableConstPtr> m_variablesUnused;
             AZStd::vector<const Node*> m_possibleExecutionRoots;
 
             // true iff there are no internal errors and no error validation events
