@@ -60,7 +60,7 @@ namespace Multiplayer
         //! @return value in const base type form
         const BASE_TYPE& Get() const;
 
-        //! Const base type retriever for one host frame behind Get().
+        //! Const base type retriever for one host frame behind Get(). Only intended for use in SyncRewind contexts.
         //! @return value in const base type form
         const BASE_TYPE& GetPrevious() const;
 
