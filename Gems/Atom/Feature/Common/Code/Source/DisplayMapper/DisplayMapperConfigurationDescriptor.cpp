@@ -124,6 +124,18 @@ namespace AZ
                     ->Field("AcesParameterOverrides", &DisplayMapperConfigurationDescriptor::m_acesParameterOverrides)
                 ;
             }
+
+            if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+            {
+                behaviorContext->Class<DisplayMapperOperationType>()
+                    ->Enum<(uint32_t)DisplayMapperOperationType::Aces>("DisplayMapperOperationType_Aces")
+                    ->Enum<(uint32_t)DisplayMapperOperationType::AcesLut>("DisplayMapperOperationType_AcesLut")
+                    ->Enum<(uint32_t)DisplayMapperOperationType::Passthrough>("DisplayMapperOperationType_Passthrough")
+                    ->Enum<(uint32_t)DisplayMapperOperationType::GammaSRGB>("DisplayMapperOperationType_GammaSRGB")
+                    ->Enum<(uint32_t)DisplayMapperOperationType::Reinhard>("DisplayMapperOperationType_Reinhard")
+                    ->Enum<(uint32_t)DisplayMapperOperationType::Invalid>("DisplayMapperOperationType_Invalid")
+                    ;
+            }
         }
 
         void DisplayMapperPassData::Reflect(ReflectContext* context)
