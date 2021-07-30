@@ -11,4 +11,7 @@ ly_add_target(
     NAMESPACE AZ
     FILES_CMAKE
         azautogen_files.cmake
+    INCLUDE_DIRECTORIES
+        INTERFACE
+            .
 )
