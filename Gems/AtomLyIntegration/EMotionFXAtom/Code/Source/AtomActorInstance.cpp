@@ -308,6 +308,17 @@ namespace AZ
             m_skinnedMeshFeatureProcessor = nullptr;
         }
 
+        MaterialAssignmentId AtomActorInstance::FindMaterialAssignmentId(
+            const MaterialAssignmentLodIndex lod, const AZStd::string& label) const
+        {
+            if (m_skinnedMeshInstance && m_skinnedMeshInstance->m_model)
+            {
+                return FindMaterialAssignmentIdInModel(m_skinnedMeshInstance->m_model, lod, label);
+            }
+
+            return MaterialAssignmentId();
+        }
+
         MaterialAssignmentMap AtomActorInstance::GetMaterialAssignments() const
         {
             if (m_skinnedMeshInstance && m_skinnedMeshInstance->m_model)
