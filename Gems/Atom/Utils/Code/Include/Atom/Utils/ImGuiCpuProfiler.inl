@@ -9,9 +9,10 @@
 #include <Atom/Feature/Utils/ProfilingCaptureBus.h>
 #include <Atom/RHI.Reflect/CpuTimingStatistics.h>
 #include <Atom/RHI/CpuProfiler.h>
+#include <Atom/RPI.Edit/Common/JsonUtils.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 
-#include <AzCore/IO/Path/Path_fwd.h>
+#include <AzCore/IO/FileIO.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/limits.h>
@@ -80,6 +81,11 @@ namespace AZ
                 {
                     DrawStatisticsView();
                 }
+
+                if (m_showFilePicker)
+                {
+                    DrawFilePicker();
+                }
             }
             ImGui::End();
          
@@ -110,6 +116,11 @@ namespace AZ
 
         inline void ImGuiCpuProfiler::DrawCommonHeader()
         {
+            if (!m_lastCapturedFilePath.empty())
+            {
+                ImGui::Text("Saved: %s", m_lastCapturedFilePath.c_str());
+            }
+
             if (ImGui::Button(m_enableVisualizer ? "Swap to statistics" : "Swap to visualizer"))
             {
                 m_enableVisualizer = !m_enableVisualizer;
@@ -157,10 +168,31 @@ namespace AZ
                 }
             }
 
-            if (!m_lastCapturedFilePath.empty())
+            ImGui::SameLine();
+            if (ImGui::Button("Load file"))
             {
-                ImGui::SameLine();
-                ImGui::Text("Saved: %s", m_lastCapturedFilePath.c_str());
+                m_showFilePicker = true;
+
+                // Only update the cached file list when opened so that we aren't making IO calls on every frame.
+                auto* base = AZ::IO::FileIOBase::GetInstance();
+                const AZStd::string defaultSavedCapturePath = "@user@/CpuProfiler";
+
+                m_cachedCapturePaths.clear();
+                base->FindFiles(
+                    defaultSavedCapturePath.c_str(), "*.json",
+                    [&paths = m_cachedCapturePaths](const char* path) -> bool
+                    {
+                        auto foundPath = IO::Path(path);
+                        paths.push_back(foundPath);
+                        return true;
+                    });
+
+                // Sort by decreasing modification time (most recent at the top)
+                AZStd::sort(m_cachedCapturePaths.begin(), m_cachedCapturePaths.end(),
+                    [&base](const IO::Path& lhs, const IO::Path& rhs)
+                    {
+                        return base->ModificationTime(lhs.c_str()) > base->ModificationTime(rhs.c_str());
+                    });
             }
         }
 
@@ -311,6 +343,45 @@ namespace AZ
 
                 DrawTable();
             } 
+        }
+
+        inline void ImGuiCpuProfiler::DrawFilePicker()
+        {
+            ImGui::SetNextWindowSize({ 500, 200 }, ImGuiCond_Once);
+            if (ImGui::Begin("File Picker", &m_showFilePicker))
+            {
+                if (ImGui::Button("Load selected"))
+                {
+                    LoadFile();
+                }
+
+                auto getter = [](void* vectorPointer, int idx, const char** out_text) -> bool
+                {
+                    const auto& pathVec = *static_cast<AZStd::vector<IO::Path>*>(vectorPointer);
+                    if (idx < 0 || idx >= pathVec.size())
+                    {
+                        return false;
+                    }
+                    *out_text = pathVec[idx].c_str();
+                    return true;
+                };
+
+                ImGui::SetNextItemWidth(ImGui::GetWindowContentRegionWidth());
+                ImGui::ListBox("", &m_currentFileIndex, getter, &m_cachedCapturePaths, aznumeric_cast<int>(m_cachedCapturePaths.size()));
+            }
+            ImGui::End();
+        }
+
+        inline void ImGuiCpuProfiler::LoadFile()
+        {
+            const IO::Path& pathToLoad = m_cachedCapturePaths[m_currentFileIndex];
+            auto res = RPI::JsonUtils::LoadSavedCpuProfilingStatistics(pathToLoad.String());
+            if (!res.IsSuccess())
+            {
+                AZ_TracePrintf("ImGuiCpuProfiler", "%s", res.GetError().c_str());
+                return;
+            }
+            // TODO ATOM-16022 Parse this data and display it in the visualizer widget.
         }
 
         // -- CPU Visualizer --

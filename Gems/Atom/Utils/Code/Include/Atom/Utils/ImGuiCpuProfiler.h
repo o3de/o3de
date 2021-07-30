@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/Math/Random.h>
 
 #include <Atom/RHI.Reflect/CpuTimingStatistics.h>
@@ -101,6 +102,12 @@ namespace AZ
 
             //! Draws the statistical view of the CPU profiling data.
             void DrawStatisticsView();
+
+            //! Callback invoked when the "Load File" button is pressed in the file picker.
+            void LoadFile();
+
+            //! Draws the file picker window.
+            void DrawFilePicker();
 
             //! Draws the CPU profiling visualizer.
             void DrawVisualizer();
@@ -198,6 +205,14 @@ namespace AZ
             AZ::RHI::CpuTimingStatistics m_cpuTimingStatisticsWhenPause;
 
             AZStd::string m_lastCapturedFilePath;
+
+            bool m_showFilePicker = false;
+
+            // Cached file paths to previous traces on disk, sorted with the most recent trace at the front.
+            AZStd::vector<IO::Path> m_cachedCapturePaths;
+
+            // Index into the file picker, used to determine which file to load when "Load File" is pressed.
+            int m_currentFileIndex = 0;
         };
     } // namespace Render
 } // namespace AZ

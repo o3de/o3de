@@ -149,5 +149,33 @@ namespace AZ
             AZStd::ring_buffer<TimeRegionMap> m_continuousCaptureData;
         };
 
-    }; // namespace RPI
+        // Intermediate class to serialize Cpu TimedRegion data.
+        class CpuProfilingStatisticsSerializer
+        {
+        public:
+            class CpuProfilingStatisticsSerializerEntry
+            {
+            public:
+                AZ_TYPE_INFO(CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializerEntry, "{26B78F65-EB96-46E2-BE7E-A1233880B225}");
+                static void Reflect(AZ::ReflectContext* context);
+
+                CpuProfilingStatisticsSerializerEntry() = default;
+                CpuProfilingStatisticsSerializerEntry(const RHI::CachedTimeRegion& cachedTimeRegion);
+
+                Name m_groupName;
+                Name m_regionName;
+                uint16_t m_stackDepth;
+                AZStd::sys_time_t m_startTick;
+                AZStd::sys_time_t m_endTick;
+            };
+
+            AZ_TYPE_INFO(CpuProfilingStatisticsSerializer, "{D5B02946-0D27-474F-9A44-364C2706DD41}");
+            static void Reflect(AZ::ReflectContext* context);
+
+            CpuProfilingStatisticsSerializer() = default;
+            CpuProfilingStatisticsSerializer(const AZStd::ring_buffer<RHI::CpuProfiler::TimeRegionMap>& continuousData);
+
+            AZStd::vector<CpuProfilingStatisticsSerializerEntry> m_cpuProfilingStatisticsSerializerEntries;
+        };
+    }; // namespace RHI
 }; // namespace AZ
