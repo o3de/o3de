@@ -129,7 +129,8 @@ namespace PhysX
 
     void SystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
-        dependent.push_back(AZ_CRC("AssetDatabaseService", 0x3abf5601));
+        dependent.push_back(AZ_CRC_CE("AssetDatabaseService"));
+        dependent.push_back(AZ_CRC_CE("AssetCatalogService"));
     }
 
     SystemComponent::SystemComponent()
