@@ -95,6 +95,7 @@ namespace PhysX
         {
             serialize->Class<SystemComponent, AZ::Component>()
                 ->Version(1)
+                ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("AssetBuilder") }))
                 ->Field("Enabled", &SystemComponent::m_enabled)
             ;
 
@@ -122,13 +123,13 @@ namespace PhysX
         incompatible.push_back(AZ_CRC("PhysXService", 0x75beae2d));
     }
 
-    void SystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+    void SystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("AssetDatabaseService", 0x3abf5601));
     }
 
-    void SystemComponent::GetDependentServices([[maybe_unused]]AZ::ComponentDescriptor::DependencyArrayType& dependent)
+    void SystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
+        dependent.push_back(AZ_CRC("AssetDatabaseService", 0x3abf5601));
     }
 
     SystemComponent::SystemComponent()
