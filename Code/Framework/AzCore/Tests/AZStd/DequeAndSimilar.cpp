@@ -324,7 +324,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(int_queue2.size() == 40);
         AZ_TEST_ASSERT(int_queue2.back() == 20);
 
-        int_queue.push();
+        int_queue.emplace();
         AZ_TEST_ASSERT(!int_queue.empty());
         AZ_TEST_ASSERT(int_queue.size() == 1);
 
@@ -423,7 +423,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(int_stack2.size() == 40);
         AZ_TEST_ASSERT(int_stack2.top() == 10);
 
-        int_stack.push();
+        int_stack.emplace();
         AZ_TEST_ASSERT(!int_stack.empty());
         AZ_TEST_ASSERT(int_stack.size() == 1);
         // StackContainerTest-End
@@ -668,5 +668,19 @@ namespace UnitTest
             EXPECT_EQ(max - iteration - 1, *rit);
             ++iteration;
         }
+    }
+
+    using StackContainerTestFixture = ScopedAllocatorSetupFixture;
+
+    TEST_F(StackContainerTestFixture, StackEmplaceOperator_SupportsZeroOrMoreArguments)
+    {
+        using TestPairType = AZStd::pair<int, int>;
+        AZStd::stack<TestPairType> testStack;
+        testStack.emplace();
+        testStack.emplace(1);
+        testStack.emplace(2, 3);
+
+
+        EXPECT_THAT(testStack.get_container(), ::testing::ElementsAre(TestPairType{ 0, 0 }, TestPairType{ 1, 0 }, TestPairType{ 2, 3 }));
     }
 }
