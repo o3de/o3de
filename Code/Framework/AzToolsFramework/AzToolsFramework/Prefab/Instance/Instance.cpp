@@ -542,9 +542,9 @@ namespace AzToolsFramework
             return aliasPathResult;
         }
 
-        EntityAlias Instance::GenerateEntityAlias(AZStd::string_view e_name)
-        { 
-            return AZStd::string::format("%s-%s", e_name.data(), AZ::Entity::MakeId().ToString().c_str());
+        EntityAlias Instance::GenerateEntityAlias(AZStd::string_view entityName)
+        {
+            return AZStd::string::format("%s-%s", entityName.data(), AZ::Entity::MakeId().ToString().c_str());
         }
 
         InstanceAlias Instance::GenerateInstanceAlias()
