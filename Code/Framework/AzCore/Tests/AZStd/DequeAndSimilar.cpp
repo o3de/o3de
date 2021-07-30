@@ -298,7 +298,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(int_queue.empty());
         AZ_TEST_ASSERT(int_queue.size() == 0);
 
-        // Queue uses deque as default container, so try to contruct to queue from a deque.
+        // Queue uses deque as default container, so try to construct to queue from a deque.
         deque<int> container(40, 10);
         int_queue_type int_queue2(container);
         AZ_TEST_ASSERT(!int_queue2.empty());
@@ -680,7 +680,8 @@ namespace UnitTest
         testStack.emplace(1);
         testStack.emplace(2, 3);
 
-
-        EXPECT_THAT(testStack.get_container(), ::testing::ElementsAre(TestPairType{ 0, 0 }, TestPairType{ 1, 0 }, TestPairType{ 2, 3 }));
+        using ContainerType = typename AZStd::stack<TestPairType>::container_type;
+        AZStd::stack<TestPairType> expectedStack(ContainerType{ TestPairType{ 0, 0 }, TestPairType{ 1, 0 }, TestPairType{ 2, 3 } });
+        EXPECT_EQ(expectedStack, testStack);
     }
 }
