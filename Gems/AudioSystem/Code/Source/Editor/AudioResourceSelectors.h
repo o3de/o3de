@@ -8,8 +8,7 @@
 
 #pragma once
 
-// This header is only meant to include the nodes and should not contain
-// shared code
-
-#include "RotateMethod.h"
-#include "EntityNodes.h"
+namespace AudioControls
+{
+    void RegisterAudioControlsResourceSelectors();
+}

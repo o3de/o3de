@@ -30,6 +30,7 @@ namespace ScriptCanvasBuilder
     {
         m_source.Reset();
         m_variables.clear();
+        m_overrides.clear();
         m_entityIds.clear();
         m_dependencies.clear();
     }
