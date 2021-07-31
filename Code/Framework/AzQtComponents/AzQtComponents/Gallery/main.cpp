@@ -40,13 +40,8 @@ const QString g_ui_1_0_SettingKey = QStringLiteral("useUI_1_0");
 
 static void LogToDebug([[maybe_unused]] QtMsgType Type, [[maybe_unused]] const QMessageLogContext& Context, const QString& message)
 {
-#ifdef Q_OS_WIN
-    OutputDebugStringW(L"Qt: ");
-    OutputDebugStringW(reinterpret_cast<const wchar_t*>(message.utf16()));
-    OutputDebugStringW(L"\n");
-#else
-    std::wcerr << L"Qt: " << message.toStdWString() << std::endl;
-#endif
+    AZ::Debug::Platform::OutputToDebugger("Qt", message.toStdString().c_str());
+    AZ::Debug::Platform::OutputToDebugger(nullptr, "\n");
 }
 
 /*
