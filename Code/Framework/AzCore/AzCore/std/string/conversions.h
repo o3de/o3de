@@ -35,11 +35,11 @@ namespace AZStd
             {
                 if constexpr (Size == 2)
                 {
-                    Utf8::Unchecked::utf16to8(first, last, AZStd::back_inserter(dest));
+                    Utf8::Unchecked::utf16to8(first, last, AZStd::back_inserter(dest), dest.max_size());
                 }
                 else if constexpr (Size == 4)
                 {
-                    Utf8::Unchecked::utf32to8(first, last, AZStd::back_inserter(dest));
+                    Utf8::Unchecked::utf32to8(first, last, AZStd::back_inserter(dest), dest.max_size());
                 }
                 else
                 {
@@ -54,11 +54,29 @@ namespace AZStd
             {
                 if constexpr (Size == 2)
                 {
-                    Utf8::Unchecked::utf16to8(first, last, AZStd::back_inserter(dest));
+                    Utf8::Unchecked::utf16to8(first, last, AZStd::back_inserter(dest), dest.max_size());
                 }
                 else if constexpr (Size == 4)
                 {
-                    Utf8::Unchecked::utf32to8(first, last, AZStd::back_inserter(dest));
+                    Utf8::Unchecked::utf32to8(first, last, AZStd::back_inserter(dest), dest.max_size());
+                }
+                else
+                {
+                    // Workaround to defer static_assert evaluation until this function is invoked by using the template parameter
+                    using StringType = AZStd::basic_string<string::value_type, string::traits_type, Allocator1>;
+                    static_assert(!AZStd::is_same_v<StringType, StringType>, "only wchar_t types of size 2 or 4 can be converted to utf8");
+                }
+            }
+
+            static inline void to_string(char* dest, size_t destSize, const wchar_t* first, const wchar_t* last)
+            {
+                if constexpr (Size == 2)
+                {
+                    Utf8::Unchecked::utf16to8(first, last, dest, destSize);
+                }
+                else if constexpr (Size == 4)
+                {
+                    Utf8::Unchecked::utf32to8(first, last, dest, destSize);
                 }
                 else
                 {
@@ -73,11 +91,11 @@ namespace AZStd
             {
                 if constexpr (Size == 2)
                 {
-                    Utf8::Unchecked::utf8to16(first, last, AZStd::back_inserter(dest));
+                    Utf8::Unchecked::utf8to16(first, last, AZStd::back_inserter(dest), dest.max_size());
                 }
                 else if constexpr (Size == 4)
                 {
-                    Utf8::Unchecked::utf8to32(first, last, AZStd::back_inserter(dest));
+                    Utf8::Unchecked::utf8to32(first, last, AZStd::back_inserter(dest), dest.max_size());
                 }
                 else
                 {
@@ -92,11 +110,11 @@ namespace AZStd
             {
                 if constexpr (Size == 2)
                 {
-                    Utf8::Unchecked::utf8to16(first, last, AZStd::back_inserter(dest));
+                    Utf8::Unchecked::utf8to16(first, last, AZStd::back_inserter(dest), dest.max_size());
                 }
                 else if constexpr (Size == 4)
                 {
-                    Utf8::Unchecked::utf8to32(first, last, AZStd::back_inserter(dest));
+                    Utf8::Unchecked::utf8to32(first, last, AZStd::back_inserter(dest), dest.max_size());
                 }
                 else
                 {
@@ -324,6 +342,19 @@ namespace AZStd
     void to_string(AZStd::basic_fixed_string<string::value_type, MaxElementCount1, string::traits_type>& dest, const AZStd::basic_fixed_string<wstring::value_type, MaxElementCount2, wstring::traits_type>& src)
     {
         return to_string(dest, src.c_str(), src.length());
+    }
+
+    inline void to_string(char* dest, size_t destSize, const wchar_t* str, size_t srcLen = 0)
+    {
+        if (srcLen == 0)
+        {
+            srcLen = wcslen(str) + 1;
+        }
+
+        if (srcLen > 0)
+        {
+            Internal::WCharTPlatformConverter<>::to_string(dest, destSize, str, str + srcLen + 1); // copy null terminator
+        }
     }
 
     template<class Allocator>

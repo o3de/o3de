@@ -628,10 +628,6 @@ namespace UnitTest
         }
     }
 
-#if defined(AZ_COMPILER_MSVC)
-#   pragma warning(push)
-#   pragma warning( disable: 4428 )   // universal-character-name encountered in source
-#endif // AZ_COMPILER_MSVC
     TEST_F(String, Algorithms)
     {
         string str = string::format("%s %d", "BlaBla", 5);
@@ -1113,11 +1109,6 @@ namespace UnitTest
         EXPECT_FALSE(other.Valid());
         EXPECT_FALSE(other2.Valid());
     }
-
-    // StringAlgorithmTest-End
-#if defined(AZ_COMPILER_MSVC)
-#   pragma warning(pop)
-#endif // AZ_COMPILER_MSVC
 
     TEST_F(String, ConstString)
     {

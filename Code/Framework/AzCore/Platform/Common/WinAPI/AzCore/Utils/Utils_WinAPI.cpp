@@ -11,6 +11,7 @@
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/std/string/fixed_string.h>
+#include <AzCore/std/string/conversions.h>
 
 #include <stdlib.h>
 
@@ -29,7 +30,9 @@ namespace AZ
             result.m_pathIncludesFilename = true;
             // Platform specific get exe path: http://stackoverflow.com/a/1024937
             // https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulefilenamea
-            const DWORD pathLen = GetModuleFileNameA(nullptr, exeStorageBuffer, static_cast<DWORD>(exeStorageSize));
+            AZStd::wstring pathBuffer;
+            pathBuffer.resize(exeStorageSize);
+            const DWORD pathLen = GetModuleFileName(nullptr, pathBuffer.data(), static_cast<DWORD>(exeStorageSize));
             const DWORD errorCode = GetLastError();
             if (pathLen == exeStorageSize && errorCode == ERROR_INSUFFICIENT_BUFFER)
             {
@@ -38,6 +41,10 @@ namespace AZ
             else if (pathLen == 0 && errorCode != ERROR_SUCCESS)
             {
                 result.m_pathStored = ExecutablePathResult::GeneralError;
+            }
+            else
+            {
+                AZStd::to_string(exeStorageBuffer, exeStorageSize, pathBuffer.c_str());
             }
 
             return result;

@@ -92,33 +92,58 @@ namespace Utf8::Unchecked
             return temp;
         }
 
-        static Iterator to_utf8_sequence(AZ::u32 cp, Iterator result)
+        static Iterator to_utf8_sequence(AZ::u32 cp, Iterator& result, size_t& resultMaxSize)
         {
             if (cp < 0x80)
             {
                 // one octet
+                resultMaxSize -= 1; // no need to check the calling function will exit the loop
                 *(result++) = static_cast<AZ::u8>(cp);
             }
             else if (cp < 0x800)
             {
                 // two octets
-                *(result++) = static_cast<AZ::u8>((cp >> 6) | 0xc0);
-                *(result++) = static_cast<AZ::u8>((cp & 0x3f) | 0x80);
+                if (resultMaxSize >= 2)
+                {
+                    *(result++) = static_cast<AZ::u8>((cp >> 6) | 0xc0);
+                    *(result++) = static_cast<AZ::u8>((cp & 0x3f) | 0x80);
+                    resultMaxSize -= 2;
+                }
+                else
+                {
+                    resultMaxSize = 0;
+                }
             }
             else if (cp < 0x10000)
             {
                 // three octets
-                *(result++) = static_cast<AZ::u8>((cp >> 12) | 0xe0);
-                *(result++) = static_cast<AZ::u8>(((cp >> 6) & 0x3f) | 0x80);
-                *(result++) = static_cast<AZ::u8>((cp & 0x3f) | 0x80);
+                if (resultMaxSize >= 3)
+                {
+                    *(result++) = static_cast<AZ::u8>((cp >> 12) | 0xe0);
+                    *(result++) = static_cast<AZ::u8>(((cp >> 6) & 0x3f) | 0x80);
+                    *(result++) = static_cast<AZ::u8>((cp & 0x3f) | 0x80);
+                    resultMaxSize -= 3;
+                }
+                else
+                {
+                    resultMaxSize = 0;
+                }
             }
             else
             {
                 // four octets
-                *(result++) = static_cast<AZ::u8>((cp >> 18) | 0xf0);
-                *(result++) = static_cast<AZ::u8>(((cp >> 12) & 0x3f) | 0x80);
-                *(result++) = static_cast<AZ::u8>(((cp >> 6) & 0x3f) | 0x80);
-                *(result++) = static_cast<AZ::u8>((cp & 0x3f) | 0x80);
+                if (resultMaxSize >= 4)
+                {
+                    *(result++) = static_cast<AZ::u8>((cp >> 18) | 0xf0);
+                    *(result++) = static_cast<AZ::u8>(((cp >> 12) & 0x3f) | 0x80);
+                    *(result++) = static_cast<AZ::u8>(((cp >> 6) & 0x3f) | 0x80);
+                    *(result++) = static_cast<AZ::u8>((cp & 0x3f) | 0x80);
+                    resultMaxSize -= 4;
+                }
+                else
+                {
+                    resultMaxSize = 0;
+                }
             }
             return result;
         }
@@ -155,9 +180,9 @@ namespace Utf8::Unchecked
     };
 
     template <typename u16bit_iterator, typename Utf8Iterator>
-    Utf8Iterator utf16to8(u16bit_iterator start, u16bit_iterator end, Utf8Iterator result)
+    Utf8Iterator utf16to8(u16bit_iterator start, u16bit_iterator end, Utf8Iterator result, size_t resultMaxSize)
     {
-        while (start != end)
+        while (start != end && resultMaxSize > 0)
         {
             AZ::u32 cp = Utf8::Internal::mask16(*start++);
             // Take care of surrogate pairs first
@@ -166,52 +191,62 @@ namespace Utf8::Unchecked
                 AZ::u32 trail_surrogate = Utf8::Internal::mask16(*start++);
                 cp = (cp << 10) + trail_surrogate + Internal::SURROGATE_OFFSET;
             }
-            octet_iterator<Utf8Iterator>::to_utf8_sequence(cp, result);
+            octet_iterator<Utf8Iterator>::to_utf8_sequence(cp, result, resultMaxSize);
         }
         return result;
     }
 
     template <typename u16bit_iterator, typename Utf8Iterator>
-    u16bit_iterator utf8to16(Utf8Iterator start, Utf8Iterator end, u16bit_iterator result)
+    u16bit_iterator utf8to16(Utf8Iterator start, Utf8Iterator end, u16bit_iterator result, size_t resultMaxSize)
     {
         octet_iterator utf8Start(start);
         octet_iterator utf8Last(end);
-        while (utf8Start != utf8Last)
+        while (utf8Start != utf8Last && resultMaxSize > 0)
         {
             AZ::u32 cp = *utf8Start++;
             if (cp > 0xffff)
             {
                 //make a surrogate pair
-                *result++ = static_cast<AZ::u16>((cp >> 10) + Internal::LEAD_OFFSET);
-                *result++ = static_cast<AZ::u16>((cp & 0x3ff) + Internal::TRAIL_SURROGATE_MIN);
+                if (resultMaxSize >= 2)
+                {
+                    *result++ = static_cast<AZ::u16>((cp >> 10) + Internal::LEAD_OFFSET);
+                    *result++ = static_cast<AZ::u16>((cp & 0x3ff) + Internal::TRAIL_SURROGATE_MIN);
+                    resultMaxSize -= 2;
+                }
+                else
+                {
+                    resultMaxSize = 0;
+                }
             }
             else
             {
                 *result++ = static_cast<AZ::u16>(cp);
+                resultMaxSize -= 1;
             }
         }
         return result;
     }
 
     template <typename Utf8Iterator, typename u32bit_iterator>
-    Utf8Iterator utf32to8(u32bit_iterator start, u32bit_iterator end, Utf8Iterator result)
+    Utf8Iterator utf32to8(u32bit_iterator start, u32bit_iterator end, Utf8Iterator result, size_t resultMaxSize)
     {
-        while (start != end)
+        while (start != end && resultMaxSize > 0)
         {
-            octet_iterator<Utf8Iterator>::to_utf8_sequence(*start++, result);
+            octet_iterator<Utf8Iterator>::to_utf8_sequence(*start++, result, resultMaxSize);
         }
 
         return result;
     }
 
     template <typename Utf8Iterator, typename u32bit_iterator>
-    u32bit_iterator utf8to32(Utf8Iterator start, Utf8Iterator end, u32bit_iterator result)
+    u32bit_iterator utf8to32(Utf8Iterator start, Utf8Iterator end, u32bit_iterator result, size_t resultMaxSize)
     {
         octet_iterator utf8Start(start);
         octet_iterator utf8Last(end);
-        while (utf8Start != utf8Last)
+        while (utf8Start != utf8Last && resultMaxSize > 0)
         {
             *result++ = *utf8Start++;
+            --resultMaxSize;
         }
 
         return result;
