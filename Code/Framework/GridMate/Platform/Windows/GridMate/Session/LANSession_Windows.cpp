@@ -21,7 +21,7 @@ namespace GridMate
 
             char procPath[256];
             char procName[256];
-            DWORD ret = GetModuleFileName(NULL, procPath, 256);
+            DWORD ret = GetModuleFileNameA(NULL, procPath, 256);
             if (ret > 0)
             {
                 ::_splitpath_s(procPath, 0, 0, 0, 0, procName, 256, 0, 0);
