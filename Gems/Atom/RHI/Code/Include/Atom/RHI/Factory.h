@@ -11,6 +11,11 @@
 #include <Atom/RHI/PhysicalDevice.h>
 #include <AzCore/Name/Name.h>
 
+#if defined(USE_RENDERDOC)
+#include <renderdoc_app.h>
+#include <AzCore/AzCore_Traits_Platform.h>
+#endif
+
 namespace AZ
 {
     namespace RHI
@@ -66,7 +71,7 @@ namespace AZ
         public:
             AZ_TYPE_INFO(Factory, "{2C0231FD-DD11-4154-A4F5-177181E26D8E}");
 
-            Factory() = default;
+            Factory();
             virtual ~Factory() = default;
 
             // Note that you have to delete these for safety reasons, you will trip a static_assert if you do not
@@ -92,6 +97,25 @@ namespace AZ
 
             /// Access the global factory instance.
             static Factory& Get();
+
+#if defined(USE_RENDERDOC)
+#if defined(AZ_PLATFORM_WINDOWS)
+            static const char* RENDERDOC_MODULE = "renderdoc.dll";
+#elif defined(AZ_PLATFORM_LINUX)
+            static const char* RENDERDOC_MODULE = "librenderdoc.so";
+#elif defined(AZ_PLATFORM_ANDROID)
+            static const char* RENDERDOC_MODULE = "libVkLayer_GLES_RenderDoc.so"
+#else
+            static const char* RENDERDOC_MODULE = nullptr;
+#endif
+
+            /// Access the RenderDoc API pointer if available.
+            /// The availability of the render doc API at runtime depends on the following:
+            /// - You must not be building a packaged game/product (LY_MONOLITHIC_GAME not enabled in CMake)
+            /// - A valid renderdoc installation was found, either by auto-discovery, or by supplying ATOM_RENDERDOC_PATH as an environment variable
+            /// - The module loaded successfully at runtime, and the API function pointer was retrieved successfully
+            static RENDERDOC_API_1_1_2* GetRenderDocAPI();
+#endif
 
             /// Returns the name of the Factory.
             virtual Name GetName() = 0;
