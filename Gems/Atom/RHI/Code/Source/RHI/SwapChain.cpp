@@ -164,6 +164,10 @@ namespace AZ
                 m_currentImageIndex = 0;
             }
 
+#if defined(PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB)
+            m_resized.store(true);
+#endif // PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
+
             return resultCode;
         }
 
