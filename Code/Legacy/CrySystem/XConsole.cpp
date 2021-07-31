@@ -15,9 +15,6 @@
 #include "XConsoleVariable.h"
 #include "System.h"
 #include "ConsoleBatchFile.h"
-#include "StringUtils.h"
-#include "UnicodeFunctions.h"
-#include "UnicodeIterator.h"
 
 #include <ITimer.h>
 #include <IRenderer.h>
@@ -88,11 +85,13 @@ inline int GetCharPrio(char x)
     }
 }
 // case sensitive
-inline bool less_CVar(const char* left, const char* right)
+inline bool less_CVar(const AZStd::string& left, const AZStd::string& right)
 {
+    AZStd::string_view leftView(left);
+    AZStd::string_view rightView(right);
     for (;; )
     {
-        uint32 l = GetCharPrio(*left), r = GetCharPrio(*right);
+        uint32 l = GetCharPrio(leftView.front()), r = GetCharPrio(rightView.front());
 
         if (l < r)
         {
@@ -103,13 +102,13 @@ inline bool less_CVar(const char* left, const char* right)
             return false;
         }
 
-        if (*left == 0 || *right == 0)
+        if (leftView.front() == 0 || rightView.front() == 0)
         {
             break;
         }
 
-        ++left;
-        ++right;
+        leftView.remove_prefix(1);
+        rightView.remove_prefix(1);
     }
 
     return false;
@@ -149,7 +148,7 @@ void Bind(IConsoleCmdArgs* cmdArgs)
 {
     if (cmdArgs->GetArgCount() >= 3)
     {
-        string arg;
+        AZStd::string arg;
         for (int i = 2; i < cmdArgs->GetArgCount(); ++i)
         {
             arg += cmdArgs->GetArg(i);
@@ -414,9 +413,7 @@ void CXConsole::Init(ISystem* pSystem)
 void CXConsole::LogChangeMessage(const char* name, const bool isConst, const bool isCheat, const bool isReadOnly, const bool isDeprecated,
     const char* oldValue, const char* newValue, [[maybe_unused]] const bool isProcessingGroup, const bool allowChange)
 {
-    string logMessage;
-
-    logMessage.Format
+    AZStd::string logMessage = AZStd::string::format
         ("[CVARS]: [%s] variable [%s] from [%s] to [%s]%s; Marked as%s%s%s%s",
         (allowChange) ? "CHANGED" : "IGNORED CHANGE",
         name,
@@ -452,7 +449,7 @@ void CXConsole::RegisterVar(ICVar* pCVar, ConsoleVarFunc pChangeFunc)
     bool isReadOnly = ((pCVar->GetFlags() & VF_READONLY) != 0);
     bool isDeprecated = ((pCVar->GetFlags() & VF_DEPRECATED) != 0);
 
-    ConfigVars::iterator it = m_configVars.find(CONST_TEMP_STRING(pCVar->GetName()));
+    ConfigVars::iterator it = m_configVars.find(pCVar->GetName());
     if (it != m_configVars.end())
     {
         SConfigVar& var = it->second;
@@ -906,7 +903,7 @@ void CXConsole::DumpKeyBinds(IKeyBindDumpSink* pCallback)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const char* CXConsole::FindKeyBind(const char* sCmd) const
 {
-    ConsoleBindsMap::const_iterator it = m_mapBinds.find(CONST_TEMP_STRING(sCmd));
+    ConsoleBindsMap::const_iterator it = m_mapBinds.find(sCmd);
 
     if (it != m_mapBinds.end())
     {
@@ -1263,9 +1260,7 @@ bool CXConsole::ProcessInput(const AzFramework::InputChannel& inputChannel)
         if (m_nCursorPos)
         {
             const char* pCursor = m_sInputBuffer.c_str() + m_nCursorPos;
-            Unicode::CIterator<const char*, false> pUnicode(pCursor);
-            --pUnicode; // Note: This moves back one UCS code-point, but doesn't necessarily match one displayed character (ie, combining diacritics)
-            pCursor = pUnicode.GetPosition();
+            pCursor -= Utf8::Internal::sequence_length(pCursor); // Note: This moves back one UCS code-point, but doesn't necessarily match one displayed character (ie, combining diacritics)
             m_nCursorPos = pCursor - m_sInputBuffer.c_str();
         }
         return true;
@@ -1275,9 +1270,7 @@ bool CXConsole::ProcessInput(const AzFramework::InputChannel& inputChannel)
         if (m_nCursorPos < (int)(m_sInputBuffer.length()))
         {
             const char* pCursor = m_sInputBuffer.c_str() + m_nCursorPos;
-            Unicode::CIterator<const char*, false> pUnicode(pCursor);
-            ++pUnicode; // Note: This moves forward one UCS code-point, but doesn't necessarily match one displayed character (ie, combining diacritics)
-            pCursor = pUnicode.GetPosition();
+            pCursor += Utf8::Internal::sequence_length(pCursor); // Note: This moves forward one UCS code-point, but doesn't necessarily match one displayed character (ie, combining diacritics)
             m_nCursorPos = pCursor - m_sInputBuffer.c_str();
         }
         return true;
@@ -1446,7 +1439,7 @@ bool CXConsole::GetLineNo(const int indwLineNo, char* outszBuffer, const int ind
     {
         buf++;                          // to jump over verbosity level character
     }
-    cry_strcpy(outszBuffer, indwBufferSize, buf);
+    azstrcpy(outszBuffer, indwBufferSize, buf);
 
     return true;
 }
@@ -1558,27 +1551,27 @@ const char* CXConsole::GetFlagsString(const uint32 dwFlags)
 
     if (dwFlags & VF_READONLY)
     {
-        cry_strcat(sFlags, "READONLY, ");
+        azstrcat(sFlags, "READONLY, ");
     }
     if (dwFlags & VF_DEPRECATED)
     {
-        cry_strcat(sFlags, "DEPRECATED, ");
+        azstrcat(sFlags, "DEPRECATED, ");
     }
     if (dwFlags & VF_DUMPTODISK)
     {
-        cry_strcat(sFlags, "DUMPTODISK, ");
+        azstrcat(sFlags, "DUMPTODISK, ");
     }
     if (dwFlags & VF_REQUIRE_LEVEL_RELOAD)
     {
-        cry_strcat(sFlags, "REQUIRE_LEVEL_RELOAD, ");
+        azstrcat(sFlags, "REQUIRE_LEVEL_RELOAD, ");
     }
     if (dwFlags & VF_REQUIRE_APP_RESTART)
     {
-        cry_strcat(sFlags, "REQUIRE_APP_RESTART, ");
+        azstrcat(sFlags, "REQUIRE_APP_RESTART, ");
     }
     if (dwFlags & VF_RESTRICTEDMODE)
     {
-        cry_strcat(sFlags, "RESTRICTEDMODE, ");
+        azstrcat(sFlags, "RESTRICTEDMODE, ");
     }
 
     if (sFlags[0] != 0)
@@ -1794,7 +1787,7 @@ void CXConsole::DisplayHelp(const char* help, const char* name)
         char* start, * pos;
         for (pos = strstr((char*)help, "\n"), start = (char*)help; pos; start = ++pos)
         {
-            string s = start;
+            AZStd::string s = start;
             s.resize(pos - start);
             ConsoleLogInputResponse("    $3%s", s.c_str());
             pos = strstr(pos, "\n");
@@ -1816,11 +1809,12 @@ void CXConsole::ExecuteString(const char* command, const bool bSilentMode, const
 
     // Store the string commands into a list and defer the execution for later.
     // The commands will be processed in CXConsole::Update()
-    string str(command);
-    str.TrimLeft();
+    AZStd::string str(command);
+    AZ::StringFunc::TrimWhiteSpace(str, true, false);
 
     // Unroll the exec command
-    bool unroll = (0 == str.Left(strlen("exec")).compareNoCase("exec"));
+    
+    bool unroll = (0 == AZ::StringFunc::Find(str, "exec", 0, false, false));
 
     if (unroll)
     {
@@ -1858,10 +1852,10 @@ void CXConsole::ResetCVarsToDefaults()
 
 }
 
-void CXConsole::SplitCommands(const char* line, std::list<string>& split)
+void CXConsole::SplitCommands(const char* line, std::list<AZStd::string>& split)
 {
     const char* start = line;
-    string working;
+    AZStd::string working;
 
     while (true)
     {
@@ -1881,7 +1875,7 @@ void CXConsole::SplitCommands(const char* line, std::list<string>& split)
         case '\0':
         {
             working.assign(start, line - 1);
-            working.Trim();
+            AZ::StringFunc::TrimWhiteSpace(working, true, true);
 
             if (!working.empty())
             {
@@ -1931,15 +1925,15 @@ void CXConsole::ExecuteStringInternal(const char* command, const bool bFromConso
     ConsoleCommandsMapItor itrCmd;
     ConsoleVariablesMapItor itrVar;
 
-    std::list<string> lineCommands;
+    std::list<AZStd::string> lineCommands;
     SplitCommands(command, lineCommands);
 
-    string sTemp;
-    string sCommand, sLineCommand;
+    AZStd::string sTemp;
+    AZStd::string sCommand, sLineCommand;
 
     while (!lineCommands.empty())
     {
-        string::size_type nPos;
+        AZStd::string::size_type nPos;
 
         {
             sTemp = lineCommands.front();
@@ -1951,17 +1945,17 @@ void CXConsole::ExecuteStringInternal(const char* command, const bool bFromConso
             {
                 if (GetStatus())
                 {
-                    AddLine(sTemp);
+                    AddLine(sTemp.c_str());
                 }
             }
 
             nPos = sTemp.find_first_of('=');
 
-            if (nPos != string::npos)
+            if (nPos != AZStd::string::npos)
             {
                 sCommand = sTemp.substr(0, nPos);
             }
-            else if ((nPos = sTemp.find_first_of(' ')) != string::npos)
+            else if ((nPos = sTemp.find_first_of(' ')) != AZStd::string::npos)
             {
                 sCommand = sTemp.substr(0, nPos);
             }
@@ -1970,7 +1964,7 @@ void CXConsole::ExecuteStringInternal(const char* command, const bool bFromConso
                 sCommand = sTemp;
             }
 
-            sCommand.Trim();
+            AZ::StringFunc::TrimWhiteSpace(sCommand, true, true);
 
             //////////////////////////////////////////
             // Search for CVars
@@ -2005,7 +1999,7 @@ void CXConsole::ExecuteStringInternal(const char* command, const bool bFromConso
 
         //////////////////////////////////////////
         //Check  if is a variable
-        itrVar = m_mapVariables.find(sCommand);
+        itrVar = m_mapVariables.find(sCommand.c_str());
         if (itrVar != m_mapVariables.end())
         {
             ICVar* pCVar = itrVar->second;
@@ -2017,10 +2011,10 @@ void CXConsole::ExecuteStringInternal(const char* command, const bool bFromConso
                     m_blockCounter++;
                 }
 
-                if (nPos != string::npos)
+                if (nPos != AZStd::string::npos)
                 {
                     sTemp = sTemp.substr(nPos + 1);     // remove the command from sTemp
-                    sTemp.Trim(" \t\r\n\"\'");
+                    AZ::StringFunc::StripEnds(sTemp, " \t\r\n\"\'");
 
                     if (sTemp == "?")
                     {
@@ -2094,12 +2088,12 @@ void CXConsole::ExecuteDeferredCommands()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CXConsole::ExecuteCommand(CConsoleCommand& cmd, string& str, bool bIgnoreDevMode)
+void CXConsole::ExecuteCommand(CConsoleCommand& cmd, AZStd::string& str, bool bIgnoreDevMode)
 {
     CryLog ("[CONSOLE] Executing console command '%s'", str.c_str());
     INDENT_LOG_DURING_SCOPE();
 
-    std::vector<string> args;
+    std::vector<AZStd::string> args;
     size_t t;
 
     {
@@ -2118,7 +2112,7 @@ void CXConsole::ExecuteCommand(CConsoleCommand& cmd, string& str, bool bIgnoreDe
                 {
                     ;
                 }
-                args.push_back(string(start + 1, commandLine - 1));
+                args.push_back(AZStd::string(start + 1, commandLine - 1));
                 start = commandLine;
                 break;
             }
@@ -2129,7 +2123,7 @@ void CXConsole::ExecuteCommand(CConsoleCommand& cmd, string& str, bool bIgnoreDe
             {
                 if ((*commandLine == ' ') || !*commandLine)
                 {
-                    args.push_back(string(start, commandLine));
+                    args.push_back(AZStd::string(start, commandLine));
                     start = commandLine + 1;
                 }
             }
@@ -2139,7 +2133,7 @@ void CXConsole::ExecuteCommand(CConsoleCommand& cmd, string& str, bool bIgnoreDe
 
         if (args.size() >= 2 && args[1] == "?")
         {
-            DisplayHelp(cmd.m_sHelp, cmd.m_sName.c_str());
+            DisplayHelp(cmd.m_sHelp.c_str(), cmd.m_sName.c_str());
             return;
         }
 
@@ -2166,13 +2160,13 @@ void CXConsole::ExecuteCommand(CConsoleCommand& cmd, string& str, bool bIgnoreDe
         return;
     }
 
-    string buf;
+    AZStd::string buf;
     {
         // only do this for commands with script implementation
         for (;; )
         {
             t = str.find_first_of("\\", t);
-            if (t == string::npos)
+            if (t == AZStd::string::npos)
             {
                 break;
             }
@@ -2183,7 +2177,7 @@ void CXConsole::ExecuteCommand(CConsoleCommand& cmd, string& str, bool bIgnoreDe
         for (t = 1;; )
         {
             t = str.find_first_of("\"", t);
-            if (t == string::npos)
+            if (t == AZStd::string::npos)
             {
                 break;
             }
@@ -2194,9 +2188,9 @@ void CXConsole::ExecuteCommand(CConsoleCommand& cmd, string& str, bool bIgnoreDe
         buf = cmd.m_sCommand;
 
         size_t pp = buf.find("%%");
-        if (pp != string::npos)
+        if (pp != AZStd::string::npos)
         {
-            string list = "";
+            AZStd::string list = "";
             for (unsigned int i = 1; i < args.size(); i++)
             {
                 list += "\"" + args[i] + "\"";
@@ -2207,9 +2201,9 @@ void CXConsole::ExecuteCommand(CConsoleCommand& cmd, string& str, bool bIgnoreDe
             }
             buf.replace(pp, 2, list);
         }
-        else if ((pp = buf.find("%line")) != string::npos)
+        else if ((pp = buf.find("%line")) != AZStd::string::npos)
         {
-            string tmp = "\"" + str.substr(str.find(" ") + 1) + "\"";
+            AZStd::string tmp = "\"" + str.substr(str.find(" ") + 1) + "\"";
             if (args.size() > 1)
             {
                 buf.replace(pp, 5, tmp);
@@ -2226,7 +2220,7 @@ void CXConsole::ExecuteCommand(CConsoleCommand& cmd, string& str, bool bIgnoreDe
                 char pat[10];
                 azsprintf(pat, "%%%d", i);
                 size_t pos = buf.find(pat);
-                if (pos == string::npos)
+                if (pos == AZStd::string::npos)
                 {
                     if (i != args.size())
                     {
@@ -2241,7 +2235,7 @@ void CXConsole::ExecuteCommand(CConsoleCommand& cmd, string& str, bool bIgnoreDe
                         ConsoleWarning("Not enough arguments for: %s", cmd.m_sName.c_str());
                         return;
                     }
-                    string arg = "\"" + args[i] + "\"";
+                    AZStd::string arg = "\"" + args[i] + "\"";
                     buf.replace(pos, strlen(pat), arg);
                 }
             }
@@ -2340,15 +2334,15 @@ const char* CXConsole::ProcessCompletion(const char* szInputBuffer)
     }
     //try to search in command list
     bool bArgumentAutoComplete = false;
-    std::vector<string> matches;
+    std::vector<AZStd::string> matches;
 
-    if (m_sPrevTab.find(' ') != string::npos)
+    if (m_sPrevTab.find(' ') != AZStd::string::npos)
     {
         bool bProcessAutoCompl = true;
 
         // Find command.
-        string sVar = m_sPrevTab.substr(0, m_sPrevTab.find(' '));
-        ICVar* pCVar = GetCVar(sVar);
+        AZStd::string sVar = m_sPrevTab.substr(0, m_sPrevTab.find(' '));
+        ICVar* pCVar = GetCVar(sVar.c_str());
         if (pCVar)
         {
             if (!(pCVar->GetFlags() & VF_RESTRICTEDMODE) && con_restricted)            // in restricted mode we allow only VF_RESTRICTEDMODE CVars&CCmd
@@ -2376,7 +2370,7 @@ const char* CXConsole::ProcessCompletion(const char* szInputBuffer)
                 int nMatches = pArgumentAutoComplete->GetCount();
                 for (int i = 0; i < nMatches; i++)
                 {
-                    string cmd = string(sVar) + " " + pArgumentAutoComplete->GetValue(i);
+                    AZStd::string cmd = AZStd::string(sVar) + " " + pArgumentAutoComplete->GetValue(i);
                     if (_strnicmp(m_sPrevTab.c_str(), cmd.c_str(), m_sPrevTab.length()) == 0)
                     {
                         {
@@ -2436,10 +2430,10 @@ const char* CXConsole::ProcessCompletion(const char* szInputBuffer)
     {
         ConsoleLogInput(" ");       // empty line before auto completion
 
-        for (std::vector<string>::iterator i = matches.begin(); i != matches.end(); ++i)
+        for (std::vector<AZStd::string>::iterator i = matches.begin(); i != matches.end(); ++i)
         {
             // List matching variables
-            const char* sVar = *i;
+            const char* sVar = i->c_str();
             ICVar* pVar = GetCVar(sVar);
 
             if (pVar)
@@ -2453,7 +2447,7 @@ const char* CXConsole::ProcessCompletion(const char* szInputBuffer)
         }
     }
 
-    for (std::vector<string>::iterator i = matches.begin(); i != matches.end(); ++i)
+    for (std::vector<AZStd::string>::iterator i = matches.begin(); i != matches.end(); ++i)
     {
         if (m_nTabCount <= nMatch)
         {
@@ -2485,8 +2479,8 @@ void CXConsole::DisplayVarValue(ICVar* pVar)
 
     const char* sFlagsString = GetFlagsString(pVar->GetFlags());
 
-    string sValue = (pVar->GetFlags() & VF_INVISIBLE) ? "" : pVar->GetString();
-    string sVar = pVar->GetName();
+    AZStd::string sValue = (pVar->GetFlags() & VF_INVISIBLE) ? "" : pVar->GetString();
+    AZStd::string sVar = pVar->GetName();
 
     char szRealState[40] = "";
 
@@ -2623,12 +2617,8 @@ void CXConsole::AddLine(const char* inputStr)
 
 void CXConsole::PostLine(const char* lineOfText, size_t len)
 {
-    string line;
-
-    {
-        line = string(lineOfText, len);
-        m_dqConsoleBuffer.push_back(line);
-    }
+    AZStd::string line = AZStd::string(lineOfText, len);
+    m_dqConsoleBuffer.push_back(line);
 
     int nBufferSize = con_line_buffer_size;
 
@@ -2701,7 +2691,7 @@ void CXConsole::RemoveOutputPrintSink(IOutputPrintSink* inpSink)
 //////////////////////////////////////////////////////////////////////////
 void CXConsole::AddLinePlus(const char* inputStr)
 {
-    string str, tmpStr;
+    AZStd::string str, tmpStr;
 
     {
         if (!m_dqConsoleBuffer.size())
@@ -2717,13 +2707,13 @@ void CXConsole::AddLinePlus(const char* inputStr)
             str.resize(str.size() - 1);
         }
 
-        string::size_type nPos;
-        while ((nPos = str.find('\n')) != string::npos)
+        AZStd::string::size_type nPos;
+        while ((nPos = str.find('\n')) != AZStd::string::npos)
         {
             str.replace(nPos, 1, 1, ' ');
         }
 
-        while ((nPos = str.find('\r')) != string::npos)
+        while ((nPos = str.find('\r')) != AZStd::string::npos)
         {
             str.replace(nPos, 1, 1, ' ');
         }
@@ -2783,7 +2773,7 @@ void CXConsole::AddInputUTF8(const AZStd::string& textUTF8)
 //////////////////////////////////////////////////////////////////////////
 void CXConsole::ExecuteInputBuffer()
 {
-    string sTemp = m_sInputBuffer;
+    AZStd::string sTemp = m_sInputBuffer;
     if (m_sInputBuffer.empty())
     {
         return;
@@ -2814,9 +2804,7 @@ void CXConsole::RemoveInputChar(bool bBackSpace)
             const char* const pBase = m_sInputBuffer.c_str();
             const char* pCursor = pBase + m_nCursorPos;
             const char* const pEnd = pCursor;
-            Unicode::CIterator<const char*, false> pUnicode(pCursor);
-            pUnicode--; // Remove one UCS code-point, doesn't account for combining diacritics
-            pCursor = pUnicode.GetPosition();
+            pCursor -= Utf8::Internal::sequence_length(pCursor); // Remove one UCS code-point, doesn't account for combining diacritics
             size_t length = pEnd - pCursor;
             m_sInputBuffer.erase(pCursor - pBase, length);
             m_nCursorPos -= length;
@@ -2829,9 +2817,7 @@ void CXConsole::RemoveInputChar(bool bBackSpace)
             const char* const pBase = m_sInputBuffer.c_str();
             const char* pCursor = pBase + m_nCursorPos;
             const char* const pBegin = pCursor;
-            Unicode::CIterator<const char*, false> pUnicode(pCursor);
-            pUnicode--; // Remove one UCS code-point, doesn't account for combining diacritics
-            pCursor = pUnicode.GetPosition();
+            pCursor -= Utf8::Internal::sequence_length(pCursor); // Remove one UCS code-point, doesn't account for combining diacritics
             size_t length = pCursor - pBegin;
             m_sInputBuffer.erase(pBegin - pBase, length);
         }
@@ -2905,28 +2891,29 @@ void CXConsole::Paste()
 #if defined(AZ_PLATFORM_WINDOWS)
     if (OpenClipboard(NULL) != 0)
     {
-        wstring data;
+        AZStd::string data;
         const HANDLE wideData = GetClipboardData(CF_UNICODETEXT);
         if (wideData)
         {
             const LPCWSTR pWideData = (LPCWSTR)GlobalLock(wideData);
             if (pWideData)
             {
-                // Note: This conversion is just to make sure we discard malicious or malformed data
-                Unicode::ConvertSafe<Unicode::eErrorRecovery_Discard>(data, pWideData);
+                AZStd::to_string(data, pWideData);
                 GlobalUnlock(wideData);
             }
         }
         CloseClipboard();
 
-        for (Unicode::CIterator<wstring::const_iterator> it(data.begin(), data.end()); it != data.end(); ++it)
+        Utf8::Unchecked::octet_iterator end(data.end());
+        for (Utf8::Unchecked::octet_iterator it(data.begin()); it != end; ++it)
         {
             const uint32 cp = *it;
             if (cp != '\r')
             {
                 // Convert UCS code-point into UTF-8 string
-                char utf8_buf[5];
-                Unicode::Convert(utf8_buf, cp);
+                char utf8_buf[5] = {0};
+                size_t size = 5;
+                it.to_utf8_sequence(cp, utf8_buf, size);
                 AddInputUTF8(utf8_buf);
             }
         }
@@ -3030,7 +3017,7 @@ void CXConsole::AddCVarsToHash(ConsoleVariablesVector::const_iterator begin, Con
     {
         // add name & variable to string. We add both since adding only the value could cause
         // many collisions with variables all having value 0 or all 1.
-        string hashStr = it->first;
+        AZStd::string hashStr = it->first;
 
         runningNameCrc32.Add(hashStr.c_str(), hashStr.length());
         hashStr += it->second->GetDataProbeString();
@@ -3281,7 +3268,7 @@ void CXConsole::FindVar(const char* substr)
 
     for (size_t i = 0; i < cmdCount; i++)
     {
-        if (CryStringUtils::stristr(cmds[i], substr))
+        if (AZ::StringFunc::Find(cmds[i], substr) != AZStd::string::npos)
         {
             ICVar* pCvar = gEnv->pConsole->GetCVar(cmds[i]);
             if (pCvar)
@@ -3399,7 +3386,7 @@ const char* CXConsole::AutoCompletePrev(const char* substr)
 }
 
 //////////////////////////////////////////////////////////////////////////
-inline size_t sizeOf (const string& str)
+inline size_t sizeOf (const AZStd::string& str)
 {
     return str.capacity() + 1;
 }

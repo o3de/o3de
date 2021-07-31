@@ -187,7 +187,7 @@ AZ_PUSH_DISABLE_WARNING(4996, "-Wunknown-warning-option")
     azstrcat(str, length, "\n");
 
 #if AZ_LEGACY_CRYSYSTEM_TRAIT_DEBUGCALLSTACK_APPEND_MODULENAME
-    GetModuleFileNameA(NULL, s, sizeof(s));
+    AZ::Utils::GetExecutablePath(s, sizeof(s));
     
     // Log EXE filename only if possible (not full EXE path which could contain sensitive info)
     AZStd::string exeName;

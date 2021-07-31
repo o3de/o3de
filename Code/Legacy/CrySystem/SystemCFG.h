@@ -25,12 +25,6 @@ public:
     CSystemConfiguration(const AZStd::string& strSysConfigFilePath, CSystem* pSystem, ILoadConfigurationEntrySink* pSink, bool warnIfMissing = true);
     ~CSystemConfiguration();
 
-    AZStd::string RemoveWhiteSpaces(AZStd::string& s)
-    {
-        s.Trim();
-        return s;
-    }
-
     bool IsError() const { return m_bError; }
 
 private: // ----------------------------------------

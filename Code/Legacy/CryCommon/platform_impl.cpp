@@ -10,13 +10,14 @@
 #include <platform.h>
 #include <ISystem.h>
 #include <Random.h>
-#include <UnicodeFunctions.h>
 #include <IConsole.h>
 
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Debug/ProfileModuleInit.h>
 #include <AzCore/Memory/AllocatorManager.h>
 #include <AzCore/Module/Environment.h>
+#include <AzCore/std/string/conversions.h>
+#include <AzCore/Utils/Utils.h>
 
 // Section dictionary
 #if defined(AZ_RESTRICTED_PLATFORM)
@@ -245,18 +246,23 @@ int CryMessageBox([[maybe_unused]] const char* lpText, [[maybe_unused]] const ch
     {
         return 0;
     }
-    return MessageBox(NULL, lpText, lpCaption, uType);
+    AZStd::wstring lpTextW;
+    AZStd::to_wstring(lpTextW, lpText);
+    AZStd::wstring lpCaptionW;
+    AZStd::to_wstring(lpCaptionW, lpCaption);
+    return MessageBoxW(NULL, lpTextW.c_str(), lpCaptionW.c_str(), uType);
 #else
     return 0;
 #endif
 }
 
 // Initializes root folder of the game, optionally returns exe and path name.
-void InitRootDir(char szExeFileName[], uint nExeSize, char szExeRootName[], [[maybe_unused]] uint nRootSize)
+void InitRootDir(char szExeFileName[], uint nExeSize, char szExeRootName[], uint nRootSize)
 {
-    WCHAR szPath[_MAX_PATH];
-    size_t nLen = GetModuleFileNameW(GetModuleHandle(NULL), szPath, _MAX_PATH);
-    assert(nLen < _MAX_PATH && "The path to the current executable exceeds the expected length");
+    char szPath[_MAX_PATH];
+    AZ::Utils::GetExecutablePathReturnType ret = AZ::Utils::GetExecutablePath(szPath, _MAX_PATH);
+    AZ_Assert(ret.m_pathStored == AZ::Utils::ExecutablePathResult::Success, "The path to the current executable exceeds the expected length");
+    const size_t nLen = strnlen(szPath, _MAX_PATH);
 
     // Find path above exe name and deepest folder.
     bool firstIteration = true;
@@ -271,25 +277,27 @@ void InitRootDir(char szExeFileName[], uint nExeSize, char szExeRootName[], [[ma
                 // Return exe path
                 if (szExeRootName)
                 {
-                    Unicode::Convert(szExeRootName, n+1, szPath);
+                    azstrncpy(szExeRootName, nRootSize, szPath + n + 1, nLen - n - 1);
                 }
 
                 // Return exe name
                 if (szExeFileName)
                 {
-                    Unicode::Convert(szExeFileName, nExeSize, szPath + n);
+                    azstrncpy(szExeFileName, nExeSize, szPath + n, nLen - n);
                 }
                 firstIteration = false;
             }
             // Check if the engineroot exists
-            wcscat_s(szPath, L"\\engine.json");
+            azstrcat(szPath, "\\engine.json");
             WIN32_FILE_ATTRIBUTE_DATA data;
-            BOOL res = GetFileAttributesExW(szPath, GetFileExInfoStandard, &data);
+            AZStd::wstring szPathW;
+            AZStd::to_wstring(szPathW, szPath);
+            BOOL res = GetFileAttributesExW(szPathW.c_str(), GetFileExInfoStandard, &data);
             if (res != 0 && data.dwFileAttributes != INVALID_FILE_ATTRIBUTES)
             {
                 // Found file
                 szPath[n] = 0;
-                SetCurrentDirectoryW(szPath);
+                SetCurrentDirectoryW(szPathW.c_str());
                 break;
             }
         }
@@ -423,7 +431,9 @@ uint32 CryGetFileAttributes(const char* lpFileName)
 #if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
 #undef AZ_RESTRICTED_SECTION_IMPLEMENTED
 #else
-    res = GetFileAttributesEx(lpFileName, GetFileExInfoStandard, &data);
+    AZStd::wstring lpFileNameW;
+    AZStd::to_wstring(lpFileNameW, lpFileName);
+    res = GetFileAttributesExW(lpFileNameW.c_str(), GetFileExInfoStandard, &data);
 #endif
     return res ? data.dwFileAttributes : -1;
 }
@@ -438,7 +448,9 @@ bool CrySetFileAttributes(const char* lpFileName, uint32 dwFileAttributes)
 #if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
 #undef AZ_RESTRICTED_SECTION_IMPLEMENTED
 #else
-    return SetFileAttributes(lpFileName, dwFileAttributes) != 0;
+    AZStd::wstring lpFileNameW;
+    AZStd::to_wstring(lpFileNameW, lpFileName);
+    return SetFileAttributes(lpFileNameW.c_str(), dwFileAttributes) != 0;
 #endif
 }
 

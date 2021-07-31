@@ -25,6 +25,7 @@
 
 #include <AzCore/std/string/conversions.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <AzCore/std/string/conversions.h>
 
 #define MAX_CELL_COUNT 32
 
@@ -2329,12 +2330,11 @@ bool CLocalizedStringsManager::GetSubtitle(const char* sKeyOrLabel, AZStd::strin
     }
 }
 
-template<typename StringClass, typename CharType>
-void InternalFormatStringMessage(StringClass& outString, const StringClass& sString, const CharType** sParams, int nParams)
+void InternalFormatStringMessage(AZStd::string& outString, const AZStd::string& sString, const char** sParams, int nParams)
 {
-    static const CharType token = (CharType) '%';
-    static const CharType tokens1[2] = { token, (CharType) '\0' };
-    static const CharType tokens2[3] = { token, token, (CharType) '\0' };
+    static const char token = '%';
+    static const char tokens1[2] = { token, '\0' };
+    static const char tokens2[3] = { token, token, '\0' };
 
     int maxArgUsed = 0;
     int lastPos = 0;
@@ -2342,8 +2342,8 @@ void InternalFormatStringMessage(StringClass& outString, const StringClass& sStr
     const int sourceLen = sString.length();
     while (true)
     {
-        int foundPos = sString.find(token, curPos);
-        if (foundPos != string::npos)
+        auto foundPos = sString.find(token, curPos);
+        if (foundPos != AZStd::string::npos)
         {
             if (foundPos + 1 < sourceLen)
             {
@@ -2360,8 +2360,8 @@ void InternalFormatStringMessage(StringClass& outString, const StringClass& sStr
                     }
                     else
                     {
-                        StringClass tmp (sString);
-                        tmp.replace(tokens1, tokens2);
+                        AZStd::string tmp(sString);
+                        AZ::StringFunc::Replace(tmp, tokens1, tokens2);
                         if constexpr (sizeof(*tmp.c_str()) == sizeof(char))
                         {
                             CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "Parameter for argument %d is missing. [%s]", nArg + 1, (const char*)tmp.c_str());
@@ -2391,11 +2391,10 @@ void InternalFormatStringMessage(StringClass& outString, const StringClass& sStr
     }
 }
 
-template<typename StringClass, typename CharType>
-void InternalFormatStringMessage(StringClass& outString, const StringClass& sString, const CharType* param1, const CharType* param2 = 0, const CharType* param3 = 0, const CharType* param4 = 0)
+void InternalFormatStringMessage(AZStd::string& outString, const AZStd::string& sString, const char* param1, const char* param2 = 0, const char* param3 = 0, const char* param4 = 0)
 {
     static const int MAX_PARAMS = 4;
-    const CharType* params[MAX_PARAMS] = { param1, param2, param3, param4 };
+    const char* params[MAX_PARAMS] = { param1, param2, param3, param4 };
     int nParams = 0;
     while (nParams < MAX_PARAMS && params[nParams])
     {
@@ -2677,7 +2676,7 @@ void CLocalizedStringsManager::LocalizeTime(time_t t, bool bMakeLocalTime, bool 
         localtime_s(&thetime, &t);
         t = gEnv->pTimer->DateToSecondsUTC(thetime);
     }
-    outTimeString.resize(0);
+    outTimeString.clear();
     LCID lcID = g_currentLanguageID.lcID ? g_currentLanguageID.lcID : LOCALE_USER_DEFAULT;
     DWORD flags = bShowSeconds == false ? TIME_NOSECONDS : 0;
     SYSTEMTIME systemTime;
@@ -2689,7 +2688,7 @@ void CLocalizedStringsManager::LocalizeTime(time_t t, bool bMakeLocalTime, bool 
         AZStd::fixed_wstring<256> tmpString;
         tmpString.resize(len);
         ::GetTimeFormatW(lcID, flags, &systemTime, 0, (wchar_t*) tmpString.c_str(), len);
-        Unicode::Convert(outTimeString, tmpString);
+        AZStd::to_string(outTimeString, tmpString.data());
     }
 }
 
@@ -2719,7 +2718,7 @@ void CLocalizedStringsManager::LocalizeDate(time_t t, bool bMakeLocalTime, bool 
             tmpString.resize(len);
             ::GetDateFormatW(lcID, 0, &systemTime, L"ddd", (wchar_t*) tmpString.c_str(), len);
             AZStd::string utf8;
-            Unicode::Convert(utf8, tmpString);
+            AZStd::to_string(utf8, tmpString.data());
             outDateString.append(utf8);
             outDateString.append(" ");
         }
@@ -2732,7 +2731,7 @@ void CLocalizedStringsManager::LocalizeDate(time_t t, bool bMakeLocalTime, bool 
         tmpString.resize(len);
         ::GetDateFormatW(lcID, flags, &systemTime, 0, (wchar_t*) tmpString.c_str(), len);
         AZStd::string utf8;
-        Unicode::Convert(utf8, tmpString);
+        AZStd::to_string(utf8, tmpString.data());
         outDateString.append(utf8);
     }
 }

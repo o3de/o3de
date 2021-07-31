@@ -18,6 +18,7 @@
 
 #include <AzCore/Debug/StackTracer.h>
 #include <AzCore/Debug/EventTraceDrillerBus.h>
+#include <AzCore/Utils/Utils.h>
 
 #define VS_VERSION_INFO                 1
 #define IDD_CRITICAL_ERROR              101
@@ -400,7 +401,11 @@ void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
             timeStamp = tempBuffer;
 
             AZStd::string backupFileName = backupPath + timeStamp + " error.log";
-            CopyFile(fileName.c_str(), backupFileName.c_str(), true);
+            AZStd::wstring fileNameW;
+            AZStd::to_wstring(fileNameW, fileName.c_str());
+            AZStd::wstring backupFileNameW;
+            AZStd::to_wstring(backupFileNameW, backupFileName.c_str());
+            CopyFileW(fileNameW.c_str(), backupFileNameW.c_str(), true);
         }
     }
 
@@ -594,7 +599,11 @@ void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
                 }
 
                 AZStd::string backupFileName = backupPath + timeStamp + " error.dmp";
-                CopyFile(fileName.c_str(), backupFileName.c_str(), true);
+                AZStd::wstring fileNameW;
+                AZStd::to_wstring(fileNameW, fileName.c_str());
+                AZStd::wstring backupFileNameW;
+                AZStd::to_wstring(backupFileNameW, backupFileName.c_str());
+                CopyFileW(fileNameW.c_str(), backupFileNameW.c_str(), true);
             }
 
             CryEngineExceptionFilterMiniDump(pex, fileName.c_str(), mdumpValue);
@@ -635,11 +644,11 @@ void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
         {
             if (SaveCurrentLevel())
             {
-                MessageBox(NULL, "Level has been successfully saved!\r\nPress Ok to terminate Editor.", "Save", MB_OK);
+                MessageBoxW(NULL, L"Level has been successfully saved!\r\nPress Ok to terminate Editor.", L"Save", MB_OK);
             }
             else
             {
-                MessageBox(NULL, "Error saving level.\r\nPress Ok to terminate Editor.", "Save", MB_OK | MB_ICONWARNING);
+                MessageBoxW(NULL, L"Error saving level.\r\nPress Ok to terminate Editor.", L"Save", MB_OK | MB_ICONWARNING);
             }
         }
     }
@@ -855,7 +864,7 @@ void DebugCallStack::GetProcNameForAddr(void* addr, AZStd::string& procName, voi
 AZStd::string DebugCallStack::GetCurrentFilename()
 {
     char fullpath[MAX_PATH_LENGTH + 1];
-    GetModuleFileName(NULL, fullpath, MAX_PATH_LENGTH);
+    AZ::Utils::GetExecutablePath(fullpath, MAX_PATH_LENGTH);
     return fullpath;
 }
 

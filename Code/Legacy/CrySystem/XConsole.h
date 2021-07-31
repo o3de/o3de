@@ -95,25 +95,11 @@ private:
 
 struct string_nocase_lt
 {
-    bool operator()(const char* s1, const char* s2) const
+    bool operator()(const AZStd::string& s1, const AZStd::string& s2) const
     {
-        return azstricmp(s1, s2) < 0;
+        return azstricmp(s1.c_str(), s2.c_str()) < 0;
     }
 };
-
-/* - very dangerous to use with STL containers
-struct string_nocase_lt
-{
-    bool operator()( const char *s1,const char *s2 ) const
-    {
-        return _stricmp(s1,s2) < 0;
-    }
-    bool operator()( const string &s1,const string &s2 ) const
-    {
-        return _stricmp(s1.c_str(),s2.c_str()) < 0;
-    }
-};
-*/
 
 //forward declarations
 class ITexture;

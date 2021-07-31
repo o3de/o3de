@@ -1148,7 +1148,7 @@ void CSystem::WarningV(EValidatorModule module, EValidatorSeverity severity, int
     if (sModuleFilter && *sModuleFilter != 0)
     {
         const char* sModule = ValidatorModuleToString(module);
-        if (strlen(sModule) > 1 || CryStringUtils::stristr(sModule, sModuleFilter) == 0)
+        if (strlen(sModule) > 1 || AZ::StringFunc::Find(sModule, sModuleFilter) == AZStd::string::npos)
         {
             // Filter out warnings from other modules.
             return;
@@ -1215,13 +1215,13 @@ void CSystem::GetLocalizedPath(const char* sLanguage, AZStd::string& sLocalizedP
     }
     else
     {
-    if (sLocalizationFolder.compareNoCase("Languages") != 0)
-    {
-        sLocalizedPath = sLocalizationFolder + "/" + sLanguage + "_xml.pak";
-    }
-    else
-    {
-        sLocalizedPath = AZStd::string("Localized/") + sLanguage + "_xml.pak";
+        if (AZ::StringFunc::Equal(sLocalizationFolder, "Languages", false))
+        {
+            sLocalizedPath = sLocalizationFolder + "/" + sLanguage + "_xml.pak";
+        }
+        else
+        {
+            sLocalizedPath = AZStd::string("Localized/") + sLanguage + "_xml.pak";
         }
     }
 }
@@ -1233,7 +1233,7 @@ void CSystem::GetLocalizedAudioPath(const char* sLanguage, AZStd::string& sLocal
     AZStd::string sLocalizationFolder(PathUtil::GetLocalizationFolder());
     sLocalizationFolder.pop_back();
 
-    if (sLocalizationFolder.compareNoCase("Languages") != 0)
+    if (AZ::StringFunc::Equal(sLocalizationFolder, "Languages", false))
     {
         sLocalizedPath = sLocalizationFolder + "/" + sLanguage + ".pak";
     }

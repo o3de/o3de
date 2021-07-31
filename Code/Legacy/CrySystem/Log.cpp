@@ -18,7 +18,6 @@
 #include <ISystem.h>
 #include "System.h"
 #include "CryPath.h"                    // PathUtil::ReplaceExtension()
-#include "UnicodeFunctions.h"
 
 #include <AzFramework/IO/FileOperations.h>
 #include <AzCore/IO/FileIO.h>
@@ -1052,13 +1051,7 @@ void CLog::LogStringToFile(const char* szString, ELogType logType, bool bAdd, [[
 #if !defined(_RELEASE)
     if (queueState == MessageQueueState::NotQueued)
     {
-        // Note: OutputDebugString(A) only accepts current ANSI code-page, and the W variant will call the A variant internally.
-        // Here we replace non-ASCII characters with '?', which is the same as OutputDebugStringW will do for non-ANSI.
-        // Thus, we discard slightly more characters (ie, those inside the current ANSI code-page, but outside ASCII).
-        // In exchange, we save double-converting that would have happened otherwise (UTF-8 -> UTF-16 -> ANSI).
-        LogStringType asciiString;
-        Unicode::ConvertSafe<Unicode::EErrorRecovery::eErrorRecovery_FallbackLatin1ThenDiscard, Unicode::eEncoding_ASCII, Unicode::eEncoding_UTF8>(asciiString, tempString);
-        OutputDebugString(asciiString.c_str());
+        AZ::Debug::Platform::OutputToDebugger(nullptr, tempString.c_str());
     }
 
     if (!bIsMainThread)
@@ -1224,8 +1217,8 @@ void CLog::CreateBackupFile() const
     AZStd::string sFileWithoutExt = PathUtil::GetFileName(m_szFilename);
 
     {
-        assert(::strstr(sFileWithoutExt, ":") == 0);
-        assert(::strstr(sFileWithoutExt, "\\") == 0);
+        assert(::strstr(sFileWithoutExt.c_str(), ":") == 0);
+        assert(::strstr(sFileWithoutExt.c_str(), "\\") == 0);
     }
 
     PathUtil::RemoveExtension(sFileWithoutExt);
@@ -1255,11 +1248,9 @@ void CLog::CreateBackupFile() const
 
                     if (sName.find("BackupNameAttachment=") == AZStd::string::npos)
                     {
-#ifdef WIN32
-                        OutputDebugString("Log::CreateBackupFile ERROR '");
-                        OutputDebugString(sName.c_str());
-                        OutputDebugString("' not recognized \n");
-#endif
+                        AZ::Debug::Platform::OutputToDebugger("CrySystem Log", "Log::CreateBackupFile ERROR '");
+                        AZ::Debug::Platform::OutputToDebugger(nullptr, sName.c_str());
+                        AZ::Debug::Platform::OutputToDebugger(nullptr, "' not recognized \n");
                         assert(0);      // broken log file? - first line should include this name - written by LogVersion()
                         return;
                     }

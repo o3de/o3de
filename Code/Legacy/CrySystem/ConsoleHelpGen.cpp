@@ -6,13 +6,13 @@
  *
  */
 
+#if defined(WIN32) || defined(WIN64)
 
 #include "CrySystem_precompiled.h"
 
-#if defined(WIN32) || defined(WIN64)
-
 #include "ConsoleHelpGen.h"
 #include "System.h"
+#include <AzCore/Utils/Utils.h>
 
 
 
@@ -132,7 +132,7 @@ void CConsoleHelpGen::LogVersion(FILE* f) const
     char s[1024];
 
     {
-        GetModuleFileName(NULL, s, sizeof(s));
+        AZ::Utils::GetExecutablePath(s, 1024);
 
         char fdir[_MAX_PATH];
         char fdrive[_MAX_PATH];

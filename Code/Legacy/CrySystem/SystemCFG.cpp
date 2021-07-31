@@ -114,20 +114,22 @@ void CSystem::QueryVersionInfo()
 
     char ver[1024 * 8];
 
-    GetModuleFileName(NULL, moduleName, _MAX_PATH);  //retrieves the PATH for the current module
+    AZ::Utils::GetExecutablePath(moduleName, _MAX_PATH);  //retrieves the PATH for the current module
 
 #ifdef AZ_MONOLITHIC_BUILD
-    GetModuleFileName(NULL, moduleName, _MAX_PATH);  //retrieves the PATH for the current module
+    AZ::Utils::GetExecutablePath(moduleName, _MAX_PATH);  //retrieves the PATH for the current module
 #else // AZ_MONOLITHIC_BUILD
     azstrcpy(moduleName, AZ_ARRAY_SIZE(moduleName), "CrySystem.dll"); // we want to version from the system dll
 #endif // AZ_MONOLITHIC_BUILD
 
-    int verSize = GetFileVersionInfoSize(moduleName, &dwHandle);
+    AZStd::wstring moduleNameW;
+    AZStd::to_wstring(moduleNameW, moduleName);
+    int verSize = GetFileVersionInfoSizeW(moduleNameW.c_str(), &dwHandle);
     if (verSize > 0)
     {
-        GetFileVersionInfo(moduleName, dwHandle, 1024 * 8, ver);
+        GetFileVersionInfoW(moduleNameW.c_str(), dwHandle, 1024 * 8, ver);
         VS_FIXEDFILEINFO* vinfo;
-        VerQueryValue(ver, "\\", (void**)&vinfo, &len);
+        VerQueryValueW(ver, L"\\", (void**)&vinfo, &len);
 
         const uint32 verIndices[4] = {0, 1, 2, 3};
         m_fileVersion.v[verIndices[0]] = m_productVersion.v[verIndices[0]] = vinfo->dwFileVersionLS & 0xFFFF;
@@ -143,14 +145,14 @@ void CSystem::QueryVersionInfo()
         }* lpTranslate;
 
         UINT count = 0;
-        char path[256];
+        wchar_t path[256];
         char* version = NULL;
 
-        VerQueryValue(ver, "\\VarFileInfo\\Translation", (LPVOID*)&lpTranslate, &count);
+        VerQueryValueW(ver, L"\\VarFileInfo\\Translation", (LPVOID*)&lpTranslate, &count);
         if (lpTranslate != NULL)
         {
-            azsnprintf(path, sizeof(path), "\\StringFileInfo\\%04x%04x\\InternalName", lpTranslate[0].wLanguage, lpTranslate[0].wCodePage);
-            VerQueryValue(ver, path, (LPVOID*)&version, &count);
+            azsnwprintf(path, sizeof(path), L"\\StringFileInfo\\%04x%04x\\InternalName", lpTranslate[0].wLanguage, lpTranslate[0].wCodePage);
+            VerQueryValueW(ver, path, (LPVOID*)&version, &count);
             if (version)
             {
                 m_buildVersion.Set(version);
@@ -211,7 +213,7 @@ void CSystem::LogVersion()
     CryLogAlways("Running 64 bit Mac version");
 #endif
 #if AZ_LEGACY_CRYSYSTEM_TRAIT_SYSTEMCFG_MODULENAME
-    GetModuleFileName(NULL, s, sizeof(s));
+    AZ::Utils::GetExecutablePath(s, sizeof(s));
 
     // Log EXE filename only if possible (not full EXE path which could contain sensitive info)
     AZStd::string exeName;
@@ -448,25 +450,24 @@ bool CSystemConfiguration::ParseSystemConfig()
         }
 
         AZStd::string strLine = s;
+        AZ::StringFunc::TrimWhiteSpace(strLine, true, true);
 
         // detect groups e.g. "[General]"   should set strGroup="General"
         {
-            AZStd::string strTrimmedLine(RemoveWhiteSpaces(strLine));
-            size_t size = strTrimmedLine.size();
+            size_t size = strLine.size();
 
             if (size >= 3)
             {
-                if (strTrimmedLine[0] == '[' && strTrimmedLine[size - 1] == ']')       // currently no comments are allowed to be behind groups
+                if (strLine[0] == '[' && strLine[size - 1] == ']')  // currently no comments are allowed to be behind groups
                 {
-                    strGroup = &strTrimmedLine[1];
-                    strGroup.resize(size - 2);                                  // remove [ and ]
+                    strGroup = &strLine[1];
+                    strGroup.resize(size - 2);                      // remove [ and ]
                     continue;                                       // next line
                 }
             }
         }
 
         //trim all whitespace characters at the beginning and the end of the current line and store its size
-        AZ::StringFunc::TrimWhiteSpace(strLine, true, true);
         size_t strLineSize = strLine.size();
 
         //skip comments, comments start with ";" or "--" but may have preceding whitespace characters
@@ -491,8 +492,9 @@ bool CSystemConfiguration::ParseSystemConfig()
         AZStd::string::size_type posEq(strLine.find("=", 0));
         if (AZStd::string::npos != posEq)
         {
-            AZStd::string stemp(strLine, 0, posEq);
-            AZStd::string strKey(RemoveWhiteSpaces(stemp));
+            AZStd::string stemp;
+            AZStd::string strKey(strLine, 0, posEq);
+            AZ::StringFunc::TrimWhiteSpace(strKey, true, true);
 
             {
                 // extract value
@@ -507,8 +509,8 @@ bool CSystemConfiguration::ParseSystemConfig()
                 }
                 else
                 {
-                    AZStd::string strTmp(strLine, posEq + 1, strLine.size() - (posEq + 1));
-                    strValue = RemoveWhiteSpaces(strTmp);
+                    strValue = AZStd::string(strLine, posEq + 1, strLine.size() - (posEq + 1));
+                    AZ::StringFunc::TrimWhiteSpace(strValue, true, true);
                 }
 
                 {
