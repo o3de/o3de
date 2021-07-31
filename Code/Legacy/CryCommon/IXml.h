@@ -101,7 +101,13 @@ public:
     XmlString(const char* str)
         : AZStd::string(str) {};
 
-    operator const char*() const {
+    size_t GetAllocatedMemory() const
+    {
+        return sizeof(XmlString) + capacity() * sizeof(AZStd::string::value_type);
+    }
+
+    operator const char*() const
+    {
         return c_str();
     }
 };

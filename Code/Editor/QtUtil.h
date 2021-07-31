@@ -10,8 +10,6 @@
 #pragma once
 
 #include <QString>
-#include <CryString.h>
-#include "UnicodeFunctions.h"
 
 #include <QApplication>
 #include <QDropEvent>
@@ -36,28 +34,6 @@ public:
 
 namespace QtUtil
 {
-    // From QString to CryString
-    inline CryStringT<char> ToString(const QString& str)
-    {
-        return Unicode::Convert<CryStringT<char> >(str);
-    }
-
-    // From CryString to QString
-    inline QString ToQString(const CryStringT<char>& str)
-    {
-        return Unicode::Convert<QString>(str);
-    }
-
-    // From const char * to QString
-    inline QString ToQString(const char* str, size_t len = -1)
-    {
-        if (len == -1)
-        {
-            len = strlen(str);
-        }
-        return Unicode::Convert<QString>(str, str + len);
-    }
-
     // Replacement for CString::trimRight()
     inline QString trimRight(const QString& str)
     {

@@ -1963,7 +1963,7 @@ void CLightAnimWrapper::InvalidateAllNodes()
 
 CLightAnimWrapper* CLightAnimWrapper::FindLightAnim(const char* name)
 {
-    LightAnimWrapperCache::const_iterator it = ms_lightAnimWrapperCache.find(CONST_TEMP_STRING(name));
+    LightAnimWrapperCache::const_iterator it = ms_lightAnimWrapperCache.find(name);
     return it != ms_lightAnimWrapperCache.end() ? (*it).second : 0;
 }
 
@@ -1976,7 +1976,7 @@ void CLightAnimWrapper::CacheLightAnim(const char* name, CLightAnimWrapper* p)
 //////////////////////////////////////////////////////////////////////////
 void CLightAnimWrapper::RemoveCachedLightAnim(const char* name)
 {
-    ms_lightAnimWrapperCache.erase(CONST_TEMP_STRING(name));
+    ms_lightAnimWrapperCache.erase(name);
 }
 
 #ifdef MOVIESYSTEM_SUPPORT_EDITING

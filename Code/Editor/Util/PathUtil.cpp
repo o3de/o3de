@@ -15,24 +15,20 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h> // for ebus events
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/API/ApplicationAPI.h>
+#include <AzCore/std/string/conversions.h>
 
 #include <QRegularExpression>
-
-namespace
-{
-    string g_currentModName; // folder name only!
-}
 
 namespace Path
 {
     //////////////////////////////////////////////////////////////////////////
     void SplitPath(const QString& rstrFullPathFilename, QString& rstrDriveLetter, QString& rstrDirectory, QString& rstrFilename, QString& rstrExtension)
     {
-        string          strFullPathString(rstrFullPathFilename.toUtf8().data());
-        string          strDriveLetter;
-        string          strDirectory;
-        string          strFilename;
-        string          strExtension;
+        AZStd::string   strFullPathString(rstrFullPathFilename.toUtf8().data());
+        AZStd::string   strDriveLetter;
+        AZStd::string   strDirectory;
+        AZStd::string   strFilename;
+        AZStd::string   strExtension;
 
         char*           szPath((char*)strFullPathString.c_str());
         char*           pchLastPosition(szPath);
@@ -81,16 +77,16 @@ namespace Path
             strFilename.assign(pchLastPosition, pchCurrentPosition);
         }
 
-        rstrDriveLetter = strDriveLetter;
-        rstrDirectory = strDirectory;
-        rstrFilename = strFilename;
-        rstrExtension = strExtension;
+        rstrDriveLetter = strDriveLetter.c_str();
+        rstrDirectory = strDirectory.c_str();
+        rstrFilename = strFilename.c_str();
+        rstrExtension = strExtension.c_str();
     }
     //////////////////////////////////////////////////////////////////////////
     void GetDirectoryQueue(const QString& rstrSourceDirectory, QStringList& rcstrDirectoryTree)
     {
-        string                      strCurrentDirectoryName;
-        string                      strSourceDirectory(rstrSourceDirectory.toUtf8().data());
+        AZStd::string           strCurrentDirectoryName;
+        AZStd::string           strSourceDirectory(rstrSourceDirectory.toUtf8().data());
         const char*             szSourceDirectory(strSourceDirectory.c_str());
         const char*             pchCurrentPosition(szSourceDirectory);
         const char*             pchLastPosition(szSourceDirectory);
@@ -207,7 +203,9 @@ namespace Path
 
     bool IsFolder(const char* pPath)
     {
-        DWORD attrs = GetFileAttributes(pPath);
+        AZStd::wstring pPathW;
+        AZStd::to_wstring(pPathW, pPath);
+        DWORD attrs = GetFileAttributes(pPathW.c_str());
 
         if (attrs == FILE_ATTRIBUTE_DIRECTORY)
         {
@@ -255,16 +253,17 @@ namespace Path
     /// Get the data folder
     AZStd::string GetEditingGameDataFolder()
     {
+        static AZStd::string s_currentModName;
         // query the editor root.  The bus exists in case we want tools to be able to override this.
 
 
-        if (g_currentModName.empty())
+        if (s_currentModName.empty())
         {
             return GetGameAssetsFolder();
         }
         AZStd::string str(GetGameAssetsFolder());
         str += "Mods\\";
-        str += g_currentModName;
+        str += s_currentModName;
         return str;
     }
 

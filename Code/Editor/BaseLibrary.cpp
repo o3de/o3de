@@ -258,9 +258,8 @@ bool CBaseLibrary::SaveLibrary(const char* name, bool saveEmptyLibrary)
     }
     if (!bRes)
     {
-        string strMessage;
         QByteArray filenameUtf8 = fileName.toUtf8();
-        strMessage.Format("The file %s is read-only and the save of the library couldn't be performed. Try to remove the \"read-only\" flag or check-out the file and then try again.", filenameUtf8.data());
+        AZStd::string strMessage = AZStd::string::format("The file %s is read-only and the save of the library couldn't be performed. Try to remove the \"read-only\" flag or check-out the file and then try again.", filenameUtf8.data());
         CryMessageBox(strMessage.c_str(), "Saving Error", MB_OK | MB_ICONWARNING);
     }
     return bRes;

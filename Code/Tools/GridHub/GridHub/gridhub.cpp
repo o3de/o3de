@@ -358,13 +358,11 @@ GridHubComponent::GridHubComponent()
     m_isLogToFile = false;
     
 #ifdef AZ_PLATFORM_WINDOWS
-    TCHAR name[MAX_COMPUTERNAME_LENGTH + 1];
+    wchar_t name[MAX_COMPUTERNAME_LENGTH + 1];
     DWORD dwCompNameLen = AZ_ARRAY_SIZE(name);
-    if ( GetComputerName(name, &dwCompNameLen) != 0 ) 
+    if (GetComputerName(name, &dwCompNameLen) != 0) 
     {
-        char c[MAX_COMPUTERNAME_LENGTH + 1];
-        wcstombs(c, name, AZ_ARRAY_SIZE(c));
-        m_hubName = c;
+        AZStd::to_string(m_hubName, name);
     }
     else
 #endif

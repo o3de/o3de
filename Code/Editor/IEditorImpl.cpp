@@ -1109,7 +1109,7 @@ void CEditorImpl::DetectVersion()
 
     char ver[1024 * 8];
 
-    GetModuleFileName(NULL, exe, _MAX_PATH);
+    AZ::Utils::GetExecutablePath(exe, _MAX_PATH);
 
     int verSize = GetFileVersionInfoSize(exe, &dwHandle);
     if (verSize > 0)

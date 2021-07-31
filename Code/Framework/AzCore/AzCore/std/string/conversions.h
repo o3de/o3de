@@ -80,9 +80,7 @@ namespace AZStd
                 }
                 else
                 {
-                    // Workaround to defer static_assert evaluation until this function is invoked by using the template parameter
-                    using StringType = AZStd::basic_string<string::value_type, string::traits_type, Allocator1>;
-                    static_assert(!AZStd::is_same_v<StringType, StringType>, "only wchar_t types of size 2 or 4 can be converted to utf8");
+                    static_assert(false, "only wchar_t types of size 2 or 4 can be converted to utf8");
                 }
             }
 
@@ -121,6 +119,22 @@ namespace AZStd
                     // Workaround to defer static_assert evaluation until this function is invoked by using the template parameter
                     using StringType = AZStd::basic_string<string::value_type, string::traits_type, Allocator1>;
                     static_assert(!AZStd::is_same_v<StringType, StringType>, "Cannot convert a utf8 string to a wchar_t that isn't size 2 or 4");
+                }
+            }
+
+            static inline void to_wstring(wchar_t* dest, size_t destSize, const char* first, const char* last)
+            {
+                if constexpr (Size == 2)
+                {
+                    Utf8::Unchecked::utf8to16(first, last, dest, destSize);
+                }
+                else if constexpr (Size == 4)
+                {
+                    Utf8::Unchecked::utf8to32(first, last, dest, destSize);
+                }
+                else
+                {
+                    static_assert(false, "Cannot convert a utf8 string to a wchar_t that isn't size 2 or 4");
                 }
             }
         };
@@ -348,7 +362,7 @@ namespace AZStd
     {
         if (srcLen == 0)
         {
-            srcLen = wcslen(str) + 1;
+            srcLen = wcslen(str);
         }
 
         if (srcLen > 0)
@@ -495,6 +509,19 @@ namespace AZStd
     void to_wstring(AZStd::basic_fixed_string<wstring::value_type, MaxElementCount1, wstring::traits_type>& dest, const AZStd::basic_fixed_string<string::value_type, MaxElementCount2, string::traits_type>& src)
     {
         return to_wstring(dest, src.c_str(), src.length());
+    }
+
+    inline void to_wstring(wchar_t* dest, size_t destSize, const char* str, size_t srcLen = 0)
+    {
+        if (srcLen == 0)
+        {
+            srcLen = strlen(str) + 1;
+        }
+
+        if (srcLen > 0)
+        {
+            Internal::WCharTPlatformConverter<>::to_wstring(dest, destSize, str, str + srcLen + 1); // copy null terminator
+        }
     }
 
     // Convert a range of chars to lower case

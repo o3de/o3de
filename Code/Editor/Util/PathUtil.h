@@ -93,7 +93,7 @@ namespace Path
 #endif
         file = path_buffer;
     }
-    inline void Split(const string& filepath, string& path, string& file)
+    inline void Split(const AZStd::string& filepath, AZStd::string& path, AZStd::string& file)
     {
         char path_buffer[_MAX_PATH];
         char drive[_MAX_DRIVE];
@@ -101,7 +101,7 @@ namespace Path
         char fname[_MAX_FNAME];
         char ext[_MAX_EXT];
 #ifdef AZ_COMPILER_MSVC
-        _splitpath_s(filepath, drive, AZ_ARRAY_SIZE(drive), dir, AZ_ARRAY_SIZE(dir), 0, 0, 0, 0);
+        _splitpath_s(filepath.c_str(), drive, AZ_ARRAY_SIZE(drive), dir, AZ_ARRAY_SIZE(dir), 0, 0, 0, 0);
         _makepath_s(path_buffer, AZ_ARRAY_SIZE(path_buffer), drive, dir, 0, 0);
         path = path_buffer;
         _makepath_s(path_buffer, AZ_ARRAY_SIZE(path_buffer), 0, 0, fname, ext);
@@ -137,7 +137,7 @@ namespace Path
         filename = fname;
         fext = ext;
     }
-    inline void Split(const string& filepath, string& path, string& filename, string& fext)
+    inline void Split(const AZStd::string& filepath, AZStd::string& path, AZStd::string& filename, AZStd::string& fext)
     {
         char path_buffer[_MAX_PATH];
         char drive[_MAX_DRIVE];
@@ -145,7 +145,7 @@ namespace Path
         char fname[_MAX_FNAME];
         char ext[_MAX_EXT];
 #ifdef AZ_COMPILER_MSVC
-        _splitpath_s(filepath, drive, AZ_ARRAY_SIZE(drive), dir, AZ_ARRAY_SIZE(dir), fname, AZ_ARRAY_SIZE(fname), ext, AZ_ARRAY_SIZE(ext));
+        _splitpath_s(filepath.c_str(), drive, AZ_ARRAY_SIZE(drive), dir, AZ_ARRAY_SIZE(dir), fname, AZ_ARRAY_SIZE(fname), ext, AZ_ARRAY_SIZE(ext));
         _makepath_s(path_buffer, AZ_ARRAY_SIZE(path_buffer), drive, dir, 0, 0);
 #else
         _splitpath(filepath, drive, dir, fname, ext);
@@ -271,7 +271,7 @@ namespace Path
     }
 
     template<size_t size>
-    inline void AddBackslash(AZstd::fixed_string<size>* path)
+    inline void AddBackslash(AZStd::fixed_string<size>* path)
     {
         if (path->empty())
         {
@@ -284,7 +284,7 @@ namespace Path
     }
 
     template<size_t size>
-    inline void AddSlash(AZstd::fixed_string<size>* path)
+    inline void AddSlash(AZStd::fixed_string<size>* path)
     {
         if (path->empty())
         {
@@ -357,7 +357,7 @@ namespace Path
     {
         return CaselessPaths(GetRelativePath(path, true));
     }
-    inline string FullPathToGamePath(const char* path)
+    inline AZStd::string FullPathToGamePath(const char* path)
     {
         return CaselessPaths(GetRelativePath(path, true)).toUtf8().data();
     }
@@ -394,7 +394,7 @@ namespace Path
     inline QString GetAudioLocalizationFolder(bool returnAbsolutePath)
     {
         // Omit the trailing slash!
-        QString sLocalizationFolder(QString(PathUtil::GetLocalizationFolder()).left(static_cast<int>(PathUtil::GetLocalizationFolder().size()) - 1));
+        QString sLocalizationFolder(QString(PathUtil::GetLocalizationFolder().c_str()).left(static_cast<int>(PathUtil::GetLocalizationFolder().size()) - 1));
 
         if (!sLocalizationFolder.isEmpty())
         {
