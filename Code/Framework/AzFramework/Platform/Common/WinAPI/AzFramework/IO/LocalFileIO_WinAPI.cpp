@@ -9,6 +9,7 @@
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/functional.h>
+#include <AzCore/std/string/conversions.h>
 
 namespace AZ
 {
@@ -33,7 +34,7 @@ namespace AZ
             char resolvedPath[AZ_MAX_PATH_LEN];
             ResolvePath(filePath, resolvedPath, AZ_MAX_PATH_LEN);
 
-            AZ::OSString searchPattern;
+            AZStd::string searchPattern;
             if ((resolvedPath[0] == 0) || (resolvedPath[1] == 0))
             {
                 return ResultCode::Error; // not a valid path.
@@ -54,7 +55,9 @@ namespace AZ
             searchPattern += "\\*.*"; // use our own filtering function!
 
             WIN32_FIND_DATA findData;
-            HANDLE hFind = FindFirstFile(searchPattern.c_str(), &findData);
+            AZStd::wstring searchPatternW;
+            AZStd::to_wstring(searchPatternW, searchPattern.c_str());
+            HANDLE hFind = FindFirstFileW(searchPatternW.c_str(), &findData);
 
             if (hFind != INVALID_HANDLE_VALUE)
             {
@@ -63,15 +66,17 @@ namespace AZ
                 char tempBuffer[AZ_MAX_PATH_LEN];
                 do
                 {
-                    AZStd::string_view filenameView = findData.cFileName;
+                    AZStd::string fileName;
+                    AZStd::to_string(fileName, findData.cFileName);
+                    AZStd::string_view filenameView = fileName;
                     // Skip over the current directory and parent directory paths to prevent infinite recursion
-                    if (filenameView == "." || filenameView == ".." || !NameMatchesFilter(findData.cFileName, filter))
+                    if (filenameView == "." || filenameView == ".." || !NameMatchesFilter(fileName.c_str(), filter))
                     {
                         continue;
                     }
 
-                    AZ::OSString foundFilePath = CheckForTrailingSlash(resolvedPath);
-                    foundFilePath += findData.cFileName;
+                    AZStd::string foundFilePath = CheckForTrailingSlash(resolvedPath);
+                    foundFilePath += fileName;
                     AZStd::replace(foundFilePath.begin(), foundFilePath.end(), '\\', '/');
 
                     // if aliased, de-alias!
