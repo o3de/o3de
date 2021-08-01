@@ -13,7 +13,6 @@
 
 #if defined(USE_RENDERDOC)
 #include <renderdoc_app.h>
-#include <AzCore/AzCore_Traits_Platform.h>
 #endif
 
 namespace AZ
@@ -99,16 +98,6 @@ namespace AZ
             static Factory& Get();
 
 #if defined(USE_RENDERDOC)
-#if defined(AZ_PLATFORM_WINDOWS)
-            static const char* RENDERDOC_MODULE = "renderdoc.dll";
-#elif defined(AZ_PLATFORM_LINUX)
-            static const char* RENDERDOC_MODULE = "librenderdoc.so";
-#elif defined(AZ_PLATFORM_ANDROID)
-            static const char* RENDERDOC_MODULE = "libVkLayer_GLES_RenderDoc.so"
-#else
-            static const char* RENDERDOC_MODULE = nullptr;
-#endif
-
             /// Access the RenderDoc API pointer if available.
             /// The availability of the render doc API at runtime depends on the following:
             /// - You must not be building a packaged game/product (LY_MONOLITHIC_GAME not enabled in CMake)

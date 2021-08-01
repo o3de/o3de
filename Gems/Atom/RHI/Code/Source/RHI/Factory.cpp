@@ -14,6 +14,7 @@
 #if defined(USE_RENDERDOC)
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <Atom/RHI/RHIUtils.h>
+#include <Atom_RHI_Traits_Platform.h>
 
 static AZStd::unique_ptr<AZ::DynamicModuleHandle> s_renderDocModule;
 static RENDERDOC_API_1_1_2* s_renderDocApi = nullptr;
@@ -45,9 +46,9 @@ namespace AZ
             // If RenderDoc is requested, we need to load the library as early as possible (before device queries/factories are made)
             bool enableRenderDoc = RHI::QueryCommandLineOption("enableRenderDoc");
 
-            if (enableRenderDoc && RENDERDOC_MODULE && !s_renderDocModule)
+            if (enableRenderDoc && AZ_TRAIT_RENDERDOC_MODULE && !s_renderDocModule)
             {
-                s_renderDocModule = DynamicModuleHandle::Create(RENDERDOC_MODULE);
+                s_renderDocModule = DynamicModuleHandle::Create(AZ_TRAIT_RENDERDOC_MODULE);
                 if (s_renderDocModule)
                 {
                     if (s_renderDocModule->Load(false))
