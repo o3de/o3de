@@ -12,9 +12,10 @@ import os
 import pytest
 
 import editor_python_test_tools.hydra_test_utils as hydra
+from atom_renderer.atom_utils.atom_component_helper import LIGHT_TYPES
 
 logger = logging.getLogger(__name__)
-EDITOR_TIMEOUT = 300
+EDITOR_TIMEOUT = 120
 TEST_DIRECTORY = os.path.join(os.path.dirname(__file__), "atom_hydra_scripts")
 
 
@@ -173,6 +174,55 @@ class TestAtomEditorComponentsMain(object):
             TEST_DIRECTORY,
             editor,
             "hydra_AtomEditorComponents_AddedToEntity.py",
+            timeout=EDITOR_TIMEOUT,
+            expected_lines=expected_lines,
+            unexpected_lines=unexpected_lines,
+            halt_on_unexpected=True,
+            null_renderer=True,
+            cfg_args=cfg_args,
+        )
+
+    def test_AtomEditorComponents_LightComponent(
+            self, request, editor, workspace, project, launcher_platform, level):
+        """
+        Please review the hydra script run by this test for more specific test info.
+        Tests that the Light component has the expected property options available to it.
+        """
+        cfg_args = [level]
+
+        sphere_light_type = LIGHT_TYPES[1]
+        spot_disk_light_type = LIGHT_TYPES[2]
+        capsule_light_type = LIGHT_TYPES[3]
+        quad_light_type = LIGHT_TYPES[4]
+        polygon_light_type = LIGHT_TYPES[5]
+        simple_point_light = LIGHT_TYPES[6]
+        simple_spot_light = LIGHT_TYPES[7]
+
+        expected_lines = [
+            "light_entity Entity successfully created",
+            "light_entity_test: Component added to the entity: True",
+            f"light_entity_test: Property value is {capsule_light_type} which matches {capsule_light_type}",
+            f"light_entity_test: Property value is {spot_disk_light_type} which matches {spot_disk_light_type}",
+            f"light_entity_test: Property value is {sphere_light_type} which matches {sphere_light_type}",
+            f"light_entity_test: Property value is {quad_light_type} which matches {quad_light_type}",
+            f"light_entity_test: Property value is {polygon_light_type} which matches {polygon_light_type}",
+            f"light_entity_test: Property value is {simple_point_light} which matches {simple_point_light}",
+            f"light_entity_test: Property value is {simple_spot_light} which matches {simple_spot_light}",
+            "light_entity_test: Component added to the entity: True",
+            "Light component test (non-GPU) completed.",
+        ]
+
+        unexpected_lines = [
+            "Trace::Assert",
+            "Trace::Error",
+            "Traceback (most recent call last):",
+        ]
+
+        hydra.launch_and_validate_results(
+            request,
+            TEST_DIRECTORY,
+            editor,
+            "hydra_AtomEditorComponents_LightComponent.py",
             timeout=EDITOR_TIMEOUT,
             expected_lines=expected_lines,
             unexpected_lines=unexpected_lines,
