@@ -127,12 +127,15 @@ namespace TestImpact
 
             size_t GetTotalNumFailingTests() const;
 
+            size_t GetTotalNumDisabledTests() const;
+
             const AZStd::vector<Test>& GetTests() const;
 
         private:
             AZStd::vector<Test> m_tests;
             size_t m_totalNumPassingTests = 0;
             size_t m_totalNumFailingTests = 0;
+            size_t m_totalNumDisabledTests = 0;
         };
     } // namespace Client
 } // namespace TestImpact

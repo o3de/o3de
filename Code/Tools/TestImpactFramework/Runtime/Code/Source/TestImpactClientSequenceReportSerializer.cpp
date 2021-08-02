@@ -74,6 +74,10 @@ namespace TestImpact
                 writer.Key("num_failing_tests");
                 writer.Uint64(testRun.GetTotalNumFailingTests());
 
+                // Number of disabled test cases
+                writer.Key("num_disabled_tests");
+                writer.Uint64(testRun.GetTotalNumDisabledTests());
+
                 // Tests
                 writer.Key("tests");
                 writer.StartArray();
@@ -159,7 +163,7 @@ namespace TestImpact
                 writer.EndArray(); // Failing test runs
 
                 // Execution failures
-                writer.Key("execution_failures_test_runs");
+                writer.Key("execution_failure_test_runs");
                 writer.StartArray();
                 for (const auto& testRun : testRunReport.GetExecutionFailureTestRuns())
                 {
@@ -186,12 +190,16 @@ namespace TestImpact
                 writer.EndArray(); // Unexecuted test runs
 
                 // Number of passing tests
-                writer.Key("num_passing_tests");
+                writer.Key("total_num_passing_tests");
                 writer.Uint64(testRunReport.GetTotalNumPassingTests());
 
                 // Number of failing tests
-                writer.Key("num_failing_tests");
+                writer.Key("total_num_failing_tests");
                 writer.Uint64(testRunReport.GetTotalNumFailingTests());
+
+                // Number of disabled tests
+                writer.Key("total_num_disabled_tests");
+                writer.Uint64(testRunReport.GetTotalNumDisabledTests());
 
             writer.EndObject();
         }
@@ -376,6 +384,10 @@ namespace TestImpact
             // Total number of failing tests
             writer.Key("total_num_failing_tests");
             writer.Uint64(sequenceReport.GetTotalNumFailingTests());
+
+             // Total number of disabled tests
+            writer.Key("total_num_disabled_tests");
+            writer.Uint64(sequenceReport.GetTotalNumDisabledTests());
         }
 
         template<typename PolicyStateType>

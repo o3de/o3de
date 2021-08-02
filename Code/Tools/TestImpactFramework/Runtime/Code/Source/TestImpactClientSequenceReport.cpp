@@ -53,11 +53,13 @@ namespace TestImpact
             {
                 m_totalNumPassingTests += failingTestRun.GetTotalNumPassingTests();
                 m_totalNumFailingTests += failingTestRun.GetTotalNumFailingTests();
+                m_totalNumDisabledTests += failingTestRun.GetTotalNumDisabledTests();
             }
 
             for (const auto& passingTestRun : m_passingTestRuns)
             {
                 m_totalNumPassingTests += passingTestRun.GetTotalNumPassingTests();
+                m_totalNumDisabledTests += passingTestRun.GetTotalNumDisabledTests();
             }
         }
 
@@ -149,6 +151,11 @@ namespace TestImpact
         size_t TestRunReport::GetTotalNumFailingTests() const
         {
             return m_totalNumFailingTests;
+        }
+
+        size_t TestRunReport::GetTotalNumDisabledTests() const
+        {
+            return m_totalNumDisabledTests;
         }
 
         RegularSequenceReport::RegularSequenceReport(
@@ -273,6 +280,11 @@ namespace TestImpact
         size_t SafeImpactAnalysisSequenceReport::GetTotalNumFailingTests() const
         {
             return DraftingSequenceReportBase::GetTotalNumFailingTests() + m_discardedTestRunReport.GetTotalNumFailingTests();
+        }
+
+        size_t SafeImpactAnalysisSequenceReport::GetTotalNumDisabledTests() const
+        {
+            return DraftingSequenceReportBase::GetTotalNumDisabledTests() + m_discardedTestRunReport.GetTotalNumDisabledTests();
         }
 
         size_t SafeImpactAnalysisSequenceReport::GetTotalNumPassingTestRuns() const

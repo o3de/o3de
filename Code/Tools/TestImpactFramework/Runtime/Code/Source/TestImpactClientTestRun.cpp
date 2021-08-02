@@ -94,10 +94,11 @@ namespace TestImpact
             return m_result;
         }
 
-        AZStd::tuple<size_t, size_t> CalculateNumPassingAndFailingTestCases(const AZStd::vector<Test>& tests)
+        AZStd::tuple<size_t, size_t, size_t> CalculateNumPassingAndFailingTestCases(const AZStd::vector<Test>& tests)
         {
             size_t totalNumPassingTests = 0;
             size_t totalNumFailingTests = 0;
+            size_t totalNumDisabledTests = 0;
 
             for (const auto& test : tests)
             {
@@ -109,9 +110,13 @@ namespace TestImpact
                 {
                     totalNumFailingTests++;
                 }
+                else
+                {
+                    totalNumDisabledTests++;
+                }
             }
 
-            return { totalNumPassingTests, totalNumFailingTests };
+            return { totalNumPassingTests, totalNumFailingTests, totalNumDisabledTests };
         }
 
         CompletedTestRun::CompletedTestRun(
@@ -124,14 +129,14 @@ namespace TestImpact
             : TestRun(name, commandString, startTime, duration, result)
             , m_tests(AZStd::move(tests))
         {
-            AZStd::tie(m_totalNumPassingTests, m_totalNumFailingTests) = CalculateNumPassingAndFailingTestCases(m_tests);
+            AZStd::tie(m_totalNumPassingTests, m_totalNumFailingTests, m_totalNumDisabledTests) = CalculateNumPassingAndFailingTestCases(m_tests);
         }
 
         CompletedTestRun::CompletedTestRun(TestRun&& testRun, AZStd::vector<Test>&& tests)
             : TestRun(AZStd::move(testRun))
             , m_tests(AZStd::move(tests))
         {
-            AZStd::tie(m_totalNumPassingTests, m_totalNumFailingTests) = CalculateNumPassingAndFailingTestCases(m_tests);
+            AZStd::tie(m_totalNumPassingTests, m_totalNumFailingTests, m_totalNumDisabledTests) = CalculateNumPassingAndFailingTestCases(m_tests);
         }
 
         size_t CompletedTestRun::GetTotalNumTests() const
@@ -147,6 +152,11 @@ namespace TestImpact
         size_t CompletedTestRun::GetTotalNumFailingTests() const
         {
             return m_totalNumFailingTests;
+        }
+
+        size_t CompletedTestRun::GetTotalNumDisabledTests() const
+        {
+            return m_totalNumDisabledTests;
         }
 
         const AZStd::vector<Test>& CompletedTestRun::GetTests() const

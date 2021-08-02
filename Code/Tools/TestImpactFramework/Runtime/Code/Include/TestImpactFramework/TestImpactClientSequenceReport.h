@@ -88,6 +88,9 @@ namespace TestImpact
             //! Returns the total number of failing tests across all test runs in the report.
             size_t GetTotalNumFailingTests() const;
 
+            //! Returns the total number of disabled tests across all test runs in the report.
+            size_t GetTotalNumDisabledTests() const;
+
             //! Returns the set of test runs that executed successfully with no failing tests.
             const AZStd::vector<CompletedTestRun>& GetPassingTestRuns() const;
 
@@ -113,6 +116,7 @@ namespace TestImpact
             AZStd::vector<UnexecutedTestRun> m_unexecutedTestRuns;
             size_t m_totalNumPassingTests = 0;
             size_t m_totalNumFailingTests = 0;
+            size_t m_totalNumDisabledTests = 0;
         };
 
         template<typename PolicyStateType>
@@ -236,6 +240,12 @@ namespace TestImpact
             virtual size_t GetTotalNumFailingTests() const
             {
                 return m_selectedTestRunReport.GetTotalNumFailingTests();
+            }
+
+            //! Returns the total number of unexecuted tests across all test targets in all test run reports.
+            virtual size_t GetTotalNumDisabledTests() const
+            {
+                return m_selectedTestRunReport.GetTotalNumDisabledTests();
             }
 
             //! Get the total number of test runs in the sequence that passed.
@@ -382,6 +392,11 @@ namespace TestImpact
                 return SequenceReportBase::GetTotalNumFailingTests() + m_draftedTestRunReport.GetTotalNumFailingTests();
             }
 
+            size_t GetTotalNumDisabledTests() const override
+            {
+                return SequenceReportBase::GetTotalNumDisabledTests() + m_draftedTestRunReport.GetTotalNumDisabledTests();
+            }
+
             size_t GetTotalNumPassingTestRuns() const override
             {
                 return SequenceReportBase::GetTotalNumPassingTestRuns() + m_draftedTestRunReport.GetNumPassingTestRuns();
@@ -473,6 +488,7 @@ namespace TestImpact
             size_t GetTotalNumTestRuns() const override;
             size_t GetTotalNumPassingTests() const override;
             size_t GetTotalNumFailingTests() const override;
+            size_t GetTotalNumDisabledTests() const override;
             size_t GetTotalNumPassingTestRuns() const override;
             size_t GetTotalNumFailingTestRuns() const override;
             size_t GetTotalNumExecutionFailureTestRuns() const override;
