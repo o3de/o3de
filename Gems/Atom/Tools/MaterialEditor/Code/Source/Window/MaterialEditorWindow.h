@@ -46,7 +46,6 @@ namespace MaterialEditor
      */
     class MaterialEditorWindow
         : public AtomToolsFramework::AtomToolsMainWindow
-        , private MaterialEditorWindowRequestBus::Handler
         , private MaterialDocumentNotificationBus::Handler
     {
         Q_OBJECT
@@ -59,14 +58,6 @@ namespace MaterialEditor
         ~MaterialEditorWindow();
 
     private:
-        // MaterialEditorWindowRequestBus::Handler overrides...
-        void ActivateWindow() override;
-        bool AddDockWidget(const AZStd::string& name, QWidget* widget, uint32_t area, uint32_t orientation) override;
-        void RemoveDockWidget(const AZStd::string& name) override;
-        void SetDockWidgetVisible(const AZStd::string& name, bool visible) override;
-        bool IsDockWidgetVisible(const AZStd::string& name) const override;
-        AZStd::vector<AZStd::string> GetDockWidgetNames() const override;
-
         void ResizeViewportRenderTarget(uint32_t width, uint32_t height) override;
         void LockViewportRenderTargetSize(uint32_t width, uint32_t height) override;
         void UnlockViewportRenderTargetSize() override;
@@ -91,8 +82,6 @@ namespace MaterialEditor
 
         MaterialViewportWidget* m_materialViewport = nullptr;
         MaterialEditorToolBar* m_toolBar = nullptr;
-
-        AZStd::unordered_map <AZStd::string, AzQtComponents::StyledDockWidget*> m_dockWidgets;
 
         QAction* m_actionNew = {};
         QAction* m_actionOpen = {};

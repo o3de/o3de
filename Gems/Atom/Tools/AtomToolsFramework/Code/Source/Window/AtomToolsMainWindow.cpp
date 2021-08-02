@@ -8,7 +8,6 @@
 
 #include <AtomToolsFramework/Window/AtomToolsMainWindow.h>
 
-
 namespace AtomToolsFramework
 {
     AtomToolsMainWindow::AtomToolsMainWindow(QWidget* parent)
@@ -31,6 +30,80 @@ namespace AtomToolsFramework
         m_tabWidget->setObjectName("TabWidget");
         m_tabWidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
         m_tabWidget->setContentsMargins(0, 0, 0, 0);
+
+        AtomToolsMainWindowRequestBus::Handler::BusConnect();
+    }
+
+    AtomToolsMainWindow::~AtomToolsMainWindow()
+    {
+        AtomToolsMainWindowRequestBus::Handler::BusDisconnect();
+    }
+
+    void AtomToolsMainWindow::ActivateWindow()
+    {
+        activateWindow();
+        raise();
+    }
+
+    bool AtomToolsMainWindow::AddDockWidget(const AZStd::string& name, QWidget* widget, uint32_t area, uint32_t orientation)
+    {
+        auto dockWidgetItr = m_dockWidgets.find(name);
+        if (dockWidgetItr != m_dockWidgets.end() || !widget)
+        {
+            return false;
+        }
+
+        auto dockWidget = new AzQtComponents::StyledDockWidget(name.c_str());
+        dockWidget->setObjectName(QString("%1_DockWidget").arg(name.c_str()));
+        dockWidget->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable);
+        widget->setObjectName(name.c_str());
+        widget->setParent(dockWidget);
+        widget->setMinimumSize(QSize(300, 300));
+        dockWidget->setWidget(widget);
+        addDockWidget(aznumeric_cast<Qt::DockWidgetArea>(area), dockWidget);
+        resizeDocks({ dockWidget }, { 400 }, aznumeric_cast<Qt::Orientation>(orientation));
+        m_dockWidgets[name] = dockWidget;
+        return true;
+    }
+
+    void AtomToolsMainWindow::RemoveDockWidget(const AZStd::string& name)
+    {
+        auto dockWidgetItr = m_dockWidgets.find(name);
+        if (dockWidgetItr != m_dockWidgets.end())
+        {
+            delete dockWidgetItr->second;
+            m_dockWidgets.erase(dockWidgetItr);
+        }
+    }
+
+    void AtomToolsMainWindow::SetDockWidgetVisible(const AZStd::string& name, bool visible)
+    {
+        auto dockWidgetItr = m_dockWidgets.find(name);
+        if (dockWidgetItr != m_dockWidgets.end())
+        {
+            dockWidgetItr->second->setVisible(visible);
+        }
+    }
+
+    bool AtomToolsMainWindow::IsDockWidgetVisible(const AZStd::string& name) const
+    {
+        auto dockWidgetItr = m_dockWidgets.find(name);
+        if (dockWidgetItr != m_dockWidgets.end())
+        {
+            return dockWidgetItr->second->isVisible();
+        }
+        return false;
+    }
+
+    AZStd::vector<AZStd::string> AtomToolsMainWindow::GetDockWidgetNames() const
+    {
+        AZStd::vector<AZStd::string> names;
+        names.reserve(m_dockWidgets.size());
+        for (const auto& dockWidgetPair : m_dockWidgets)
+        {
+            names.push_back(dockWidgetPair.first);
+        }
+        return names;
     }
 
     void AtomToolsMainWindow::SetupMenu()
@@ -132,4 +205,4 @@ namespace AtomToolsFramework
             m_tabWidget->setCurrentIndex((m_tabWidget->currentIndex() + 1) % m_tabWidget->count());
         }
     }
-}
+} // namespace AtomToolsFramework

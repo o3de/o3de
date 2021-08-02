@@ -58,24 +58,8 @@ namespace ShaderManagementConsole
         SetupMenu();
         SetupTabs();
 
-        m_assetBrowserDockWidget = new AzQtComponents::StyledDockWidget("Asset Browser");
-        m_assetBrowserDockWidget->setObjectName(m_assetBrowserDockWidget->windowTitle());
-        m_assetBrowserDockWidget->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable);
-        m_assetBrowser = new ShaderManagementConsoleBrowserWidget(m_assetBrowserDockWidget);
-        m_assetBrowser->setMinimumSize(QSize(300, 300));
-        m_assetBrowserDockWidget->setWidget(m_assetBrowser);
-        addDockWidget(Qt::BottomDockWidgetArea, m_assetBrowserDockWidget);
-        resizeDocks({ m_assetBrowserDockWidget }, { 400 }, Qt::Vertical);
-
-        m_pythonTerminalDockWidget = new AzQtComponents::StyledDockWidget("Python Terminal");
-        m_pythonTerminalDockWidget->setObjectName(m_pythonTerminalDockWidget->windowTitle());
-        m_pythonTerminalDockWidget->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable);
-        m_pythonTerminal = new AzToolsFramework::CScriptTermDialog(m_pythonTerminalDockWidget);
-        m_pythonTerminal->setMinimumSize(QSize(300, 300));
-        m_pythonTerminalDockWidget->setWidget(m_pythonTerminal);
-        addDockWidget(Qt::BottomDockWidgetArea, m_pythonTerminalDockWidget);
-        resizeDocks({ m_pythonTerminalDockWidget }, { 400 }, Qt::Vertical);
-        m_pythonTerminalDockWidget->setVisible(false);
+        AddDockWidget("Asset Browser", new ShaderManagementConsoleBrowserWidget, Qt::BottomDockWidgetArea, Qt::Vertical);
+        AddDockWidget("Python Terminal", new AzToolsFramework::CScriptTermDialog, Qt::BottomDockWidgetArea, Qt::Horizontal);
 
         ShaderManagementConsoleDocumentNotificationBus::Handler::BusConnect();
         OnDocumentOpened(AZ::Uuid::CreateNull());
@@ -256,17 +240,20 @@ namespace ShaderManagementConsole
 
         m_menuView = m_menuBar->addMenu("&View");
 
-        m_actionAssetBrowser = m_menuView->addAction("&Asset Browser", [this]() {
-            m_assetBrowserDockWidget->setVisible(!m_assetBrowserDockWidget->isVisible());
-        });
-
-        m_actionPythonTerminal = m_menuView->addAction("Python &Terminal", [this]() {
-            m_pythonTerminalDockWidget->setVisible(!m_pythonTerminalDockWidget->isVisible());
-            if (m_pythonTerminalDockWidget->isVisible())
+        m_actionAssetBrowser = m_menuView->addAction(
+            "&Asset Browser",
+            [this]()
             {
-                // reposition console window on the bottom, otherwise it gets docked in some weird spot...
-                addDockWidget(Qt::BottomDockWidgetArea, m_pythonTerminalDockWidget);
-            }
+                const AZStd::string label = "Asset Browser";
+                SetDockWidgetVisible(label, !IsDockWidgetVisible(label));
+            });
+
+        m_actionPythonTerminal = m_menuView->addAction(
+            "Python &Terminal",
+            [this]()
+            {
+                const AZStd::string label = "Python Terminal";
+                SetDockWidgetVisible(label, !IsDockWidgetVisible(label));
             });
 
         m_menuView->addSeparator();

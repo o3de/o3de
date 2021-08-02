@@ -8,6 +8,7 @@
 
 #pragma once
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h>
 
 #include <AzQtComponents/Components/DockMainWindow.h>
 #include <AzQtComponents/Components/FancyDocking.h>
@@ -22,14 +23,19 @@ namespace AtomToolsFramework
 {
     class AtomToolsMainWindow
         : public AzQtComponents::DockMainWindow
+        , protected AtomToolsFramework::AtomToolsMainWindowRequestBus::Handler
     {
     public:
         AtomToolsMainWindow(QWidget* parent = 0);
+        ~AtomToolsMainWindow();
+
     protected:
-        AzQtComponents::FancyDocking* m_advancedDockManager = nullptr;
-        QWidget* m_centralWidget = nullptr;
-        QMenuBar* m_menuBar = nullptr;
-        AzQtComponents::TabWidget* m_tabWidget = nullptr;
+        void ActivateWindow() override;
+        bool AddDockWidget(const AZStd::string& name, QWidget* widget, uint32_t area, uint32_t orientation) override;
+        void RemoveDockWidget(const AZStd::string& name) override;
+        void SetDockWidgetVisible(const AZStd::string& name, bool visible) override;
+        bool IsDockWidgetVisible(const AZStd::string& name) const override;
+        AZStd::vector<AZStd::string> GetDockWidgetNames() const override;
 
         virtual void SetupMenu();
 
@@ -43,6 +49,14 @@ namespace AtomToolsFramework
         virtual void SelectPreviousTab();
         virtual void SelectNextTab();
 
+        AzQtComponents::FancyDocking* m_advancedDockManager = nullptr;
+        QWidget* m_centralWidget = nullptr;
+        QMenuBar* m_menuBar = nullptr;
+        AzQtComponents::TabWidget* m_tabWidget = nullptr;
+
+        AZStd::unordered_map<AZStd::string, AzQtComponents::StyledDockWidget*> m_dockWidgets;
+
         QMenu* m_menuFile = {};
+        //StatusBarWidget* m_statusBar = {};
     };
 }

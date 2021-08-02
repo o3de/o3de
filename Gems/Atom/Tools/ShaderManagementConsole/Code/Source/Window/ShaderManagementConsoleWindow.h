@@ -79,12 +79,7 @@ namespace ShaderManagementConsole
 
         void CreateDocumentContent(const AZ::Uuid& documentId, QStandardItemModel* model);
 
-        ShaderManagementConsoleBrowserWidget* m_assetBrowser = nullptr;
         ShaderManagementConsoleToolBar* m_toolBar = nullptr;
-        AzToolsFramework::CScriptTermDialog* m_pythonTerminal = nullptr;
-
-        AzQtComponents::StyledDockWidget* m_assetBrowserDockWidget = nullptr;
-        AzQtComponents::StyledDockWidget* m_pythonTerminalDockWidget = nullptr;
 
         QMenu* m_menuNew = {};
         QAction* m_actionOpen = {};

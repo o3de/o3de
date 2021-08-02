@@ -131,7 +131,6 @@ namespace MaterialEditor
             m_advancedDockManager->restoreState(windowState);
         }
 
-        MaterialEditorWindowRequestBus::Handler::BusConnect();
         MaterialDocumentNotificationBus::Handler::BusConnect();
         OnDocumentOpened(AZ::Uuid::CreateNull());
     }
@@ -139,76 +138,9 @@ namespace MaterialEditor
     MaterialEditorWindow::~MaterialEditorWindow()
     {
         MaterialDocumentNotificationBus::Handler::BusDisconnect();
-        MaterialEditorWindowRequestBus::Handler::BusDisconnect();
     }
 
-    void MaterialEditorWindow::ActivateWindow()
-    {
-        activateWindow();
-        raise();
-    }
-
-    bool MaterialEditorWindow::AddDockWidget(const AZStd::string& name, QWidget* widget, uint32_t area, uint32_t orientation)
-    {
-        auto dockWidgetItr = m_dockWidgets.find(name);
-        if (dockWidgetItr != m_dockWidgets.end() || !widget)
-        {
-            return false;
-        }
-
-        auto dockWidget = new AzQtComponents::StyledDockWidget(name.c_str());
-        dockWidget->setObjectName(QString("%1_DockWidget").arg(name.c_str()));
-        dockWidget->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable);
-        widget->setObjectName(name.c_str());
-        widget->setParent(dockWidget);
-        widget->setMinimumSize(QSize(300, 300));
-        dockWidget->setWidget(widget);
-        addDockWidget(aznumeric_cast<Qt::DockWidgetArea>(area), dockWidget);
-        resizeDocks({ dockWidget }, { 400 }, aznumeric_cast<Qt::Orientation>(orientation));
-        m_dockWidgets[name] = dockWidget;
-        return true;
-    }
-
-    void MaterialEditorWindow::RemoveDockWidget(const AZStd::string& name)
-    {
-        auto dockWidgetItr = m_dockWidgets.find(name);
-        if (dockWidgetItr != m_dockWidgets.end())
-        {
-            delete dockWidgetItr->second;
-            m_dockWidgets.erase(dockWidgetItr);
-        }
-    }
-
-    void MaterialEditorWindow::SetDockWidgetVisible(const AZStd::string& name, bool visible)
-    {
-        auto dockWidgetItr = m_dockWidgets.find(name);
-        if (dockWidgetItr != m_dockWidgets.end())
-        {
-            dockWidgetItr->second->setVisible(visible);
-        }
-    }
-
-    bool MaterialEditorWindow::IsDockWidgetVisible(const AZStd::string& name) const
-    {
-        auto dockWidgetItr = m_dockWidgets.find(name);
-        if (dockWidgetItr != m_dockWidgets.end())
-        {
-            return dockWidgetItr->second->isVisible();
-        }
-        return false;
-    }
-
-    AZStd::vector<AZStd::string> MaterialEditorWindow::GetDockWidgetNames() const
-    {
-        AZStd::vector<AZStd::string> names;
-        names.reserve(m_dockWidgets.size());
-        for (const auto& dockWidgetPair : m_dockWidgets)
-        {
-            names.push_back(dockWidgetPair.first);
-        }
-        return names;
-    }
-
+    
     void MaterialEditorWindow::ResizeViewportRenderTarget(uint32_t width, uint32_t height)
     {
         QSize requestedViewportSize = QSize(width, height) / devicePixelRatioF();
