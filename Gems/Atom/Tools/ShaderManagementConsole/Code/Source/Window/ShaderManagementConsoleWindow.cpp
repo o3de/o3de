@@ -38,28 +38,15 @@ AZ_POP_DISABLE_WARNING
 namespace ShaderManagementConsole
 {
     ShaderManagementConsoleWindow::ShaderManagementConsoleWindow(QWidget* parent /* = 0 */)
-        : AzQtComponents::DockMainWindow(parent)
+        : AtomToolsFramework::AtomToolsMainWindow(parent)
     {
         setWindowTitle("Shader Management Console");
 
-        m_advancedDockManager = new AzQtComponents::FancyDocking(this);
-
-        setDockNestingEnabled(true);
-        setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
-        setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
-        setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
-        setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
-
-        m_menuBar = new QMenuBar(this);
-        setMenuBar(m_menuBar);
+        setObjectName("ShaderManagementConsoleWindow");
 
         m_toolBar = new ShaderManagementConsoleToolBar(this);
+        m_toolBar->setObjectName("ToolBar");
         addToolBar(m_toolBar);
-
-        m_centralWidget = new QWidget(this);
-        m_tabWidget = new AzQtComponents::TabWidget(m_centralWidget);
-        m_tabWidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
-        m_tabWidget->setContentsMargins(0, 0, 0, 0);
 
         QVBoxLayout* vl = new QVBoxLayout(m_centralWidget);
         vl->setMargin(0);
@@ -144,7 +131,7 @@ namespace ShaderManagementConsole
 
         m_actionUndo->setEnabled(canUndo);
         m_actionRedo->setEnabled(canRedo);
-        m_actionPreferences->setEnabled(false);
+        m_actionSettings->setEnabled(false);
 
         m_actionAssetBrowser->setEnabled(true);
         m_actionPythonTerminal->setEnabled(true);
@@ -188,8 +175,7 @@ namespace ShaderManagementConsole
 
     void ShaderManagementConsoleWindow::SetupMenu()
     {
-        // Generating the main menu manually because it's easier and we will have some dynamic or data driven entries
-        m_menuFile = m_menuBar->addMenu("&File");
+        AtomToolsFramework::AtomToolsMainWindow::SetupMenu();
 
         m_actionOpen = m_menuFile->addAction("&Open...", [this]() {
             const AZStd::vector<AZ::Data::AssetType> assetTypes = {
@@ -264,9 +250,9 @@ namespace ShaderManagementConsole
 
         m_menuEdit->addSeparator();
 
-        m_actionPreferences = m_menuEdit->addAction("&Preferences...", [this]() {
+        m_actionSettings = m_menuEdit->addAction("&Preferences...", [this]() {
         }, QKeySequence::Preferences);
-        m_actionPreferences->setEnabled(false);
+        m_actionSettings->setEnabled(false);
 
         m_menuView = m_menuBar->addMenu("&View");
 
@@ -304,18 +290,7 @@ namespace ShaderManagementConsole
 
     void ShaderManagementConsoleWindow::SetupTabs()
     {
-        // The tab bar should only be visible if it has active documents
-        m_tabWidget->setVisible(false);
-        m_tabWidget->setTabBarAutoHide(false);
-        m_tabWidget->setMovable(true);
-        m_tabWidget->setTabsClosable(true);
-        m_tabWidget->setUsesScrollButtons(true);
-
-        // Add context menu for right-clicking on tabs
-        m_tabWidget->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
-        connect(m_tabWidget, &QWidget::customContextMenuRequested, this, [this]() {
-            OpenTabContextMenu();
-        });
+        AtomToolsFramework::AtomToolsMainWindow::SetupTabs();
 
         // This signal will be triggered whenever a tab is added, removed, selected, clicked, dragged
         // When the last tab is removed tabIndex will be -1 and the document ID will be null
@@ -339,20 +314,7 @@ namespace ShaderManagementConsole
             return;
         }
 
-        // Blocking signals from the tab bar so the currentChanged signal is not sent while a document is already being opened.
-        // This prevents the OnDocumentOpened notification from being sent recursively.
-        const QSignalBlocker blocker(m_tabWidget);
-
-        // If a tab for this document already exists then select it instead of creating a new one
-        for (int tabIndex = 0; tabIndex < m_tabWidget->count(); ++tabIndex)
-        {
-            if (documentId == GetDocumentIdFromTab(tabIndex))
-            {
-                m_tabWidget->setCurrentIndex(tabIndex);
-                m_tabWidget->repaint();
-                return;
-            }
-        }
+        AtomToolsMainWindow::AddTabForDocumentId(documentId);
 
         // Create a new tab for the document ID and assign it's label to the file name of the document.
         AZStd::string absolutePath;
@@ -380,22 +342,6 @@ namespace ShaderManagementConsole
         m_tabWidget->repaint();
 
         CreateDocumentContent(documentId, model);
-    }
-
-    void ShaderManagementConsoleWindow::RemoveTabForDocumentId(const AZ::Uuid& documentId)
-    {
-        // We are not blocking signals here because we want closing tabs to close the associated document
-        // and automatically select the next document. 
-        for (int tabIndex = 0; tabIndex < m_tabWidget->count(); ++tabIndex)
-        {
-            if (documentId == GetDocumentIdFromTab(tabIndex))
-            {
-                m_tabWidget->removeTab(tabIndex);
-                m_tabWidget->setVisible(m_tabWidget->count() > 0);
-                m_tabWidget->repaint();
-                break;
-            }
-        }
     }
 
     void ShaderManagementConsoleWindow::UpdateTabForDocumentId(const AZ::Uuid& documentId)
@@ -434,20 +380,6 @@ namespace ShaderManagementConsole
         }
     }
 
-    AZ::Uuid ShaderManagementConsoleWindow::GetDocumentIdFromTab(const int tabIndex) const
-    {
-        const QVariant tabData = m_tabWidget->tabBar()->tabData(tabIndex);
-        if (!tabData.isNull())
-        {
-            // We need to be able to convert between a UUID and a string to store and retrieve a document ID from the tab bar
-            const QString documentIdString = tabData.toString();
-            const QByteArray documentIdBytes = documentIdString.toUtf8();
-            const AZ::Uuid documentId(documentIdBytes.data(), documentIdBytes.size());
-            return documentId;
-        }
-        return AZ::Uuid::CreateNull();
-    }
-
     void ShaderManagementConsoleWindow::OpenTabContextMenu()
     {
         const QTabBar* tabBar = m_tabWidget->tabBar();
@@ -469,23 +401,6 @@ namespace ShaderManagementConsole
             });
             closeOthersAction->setEnabled(tabBar->count() > 1);
             tabMenu.exec(QCursor::pos());
-        }
-    }
-
-    void ShaderManagementConsoleWindow::SelectPreviousTab()
-    {
-        if (m_tabWidget->count() > 1)
-        {
-            // Adding count to wrap around when index <= 0
-            m_tabWidget->setCurrentIndex((m_tabWidget->currentIndex() + m_tabWidget->count() - 1) % m_tabWidget->count());
-        }
-    }
-
-    void ShaderManagementConsoleWindow::SelectNextTab()
-    {
-        if (m_tabWidget->count() > 1)
-        {
-            m_tabWidget->setCurrentIndex((m_tabWidget->currentIndex() + 1) % m_tabWidget->count());
         }
     }
 

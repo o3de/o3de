@@ -11,6 +11,7 @@
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
 #include <Atom/Document/MaterialDocumentNotificationBus.h>
+#include <AtomToolsFramework/Window/AtomToolsMainWindow.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <AzQtComponents/Components/DockMainWindow.h>
@@ -44,13 +45,15 @@ namespace MaterialEditor
      * 3) MaterialPropertyInspector  - The user edits the properties of the selected Material.
      */
     class MaterialEditorWindow
-        : public AzQtComponents::DockMainWindow
+        : public AtomToolsFramework::AtomToolsMainWindow
         , private MaterialEditorWindowRequestBus::Handler
         , private MaterialDocumentNotificationBus::Handler
     {
         Q_OBJECT
     public:
         AZ_CLASS_ALLOCATOR(MaterialEditorWindow, AZ::SystemAllocator, 0);
+
+        using Base = AtomToolsFramework::AtomToolsMainWindow;
 
         MaterialEditorWindow(QWidget* parent = 0);
         ~MaterialEditorWindow();
@@ -75,31 +78,22 @@ namespace MaterialEditor
         void OnDocumentUndoStateChanged(const AZ::Uuid& documentId) override;
         void OnDocumentSaved(const AZ::Uuid& documentId) override;
 
-        void SetupMenu();
+        void SetupMenu() override;
 
-        void SetupTabs();
-        void AddTabForDocumentId(const AZ::Uuid& documentId);
-        void RemoveTabForDocumentId(const AZ::Uuid& documentId);
-        void UpdateTabForDocumentId(const AZ::Uuid& documentId);
+        void SetupTabs() override;
+        void AddTabForDocumentId(const AZ::Uuid& documentId) override;
+        void UpdateTabForDocumentId(const AZ::Uuid& documentId) override;
         QString GetDocumentPath(const AZ::Uuid& documentId) const;
-        AZ::Uuid GetDocumentIdFromTab(const int tabIndex) const;
 
-        void OpenTabContextMenu();
-        void SelectPreviousTab();
-        void SelectNextTab();
+        void OpenTabContextMenu() override;
 
         void closeEvent(QCloseEvent* closeEvent) override;
 
-        AzQtComponents::FancyDocking* m_advancedDockManager = nullptr;
-        QWidget* m_centralWidget = nullptr;
-        QMenuBar* m_menuBar = nullptr;
-        AzQtComponents::TabWidget* m_tabWidget = nullptr;
         MaterialViewportWidget* m_materialViewport = nullptr;
         MaterialEditorToolBar* m_toolBar = nullptr;
 
         AZStd::unordered_map <AZStd::string, AzQtComponents::StyledDockWidget*> m_dockWidgets;
 
-        QMenu* m_menuFile = {};
         QAction* m_actionNew = {};
         QAction* m_actionOpen = {};
         QAction* m_actionOpenRecent = {};

@@ -14,6 +14,7 @@
 
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Edit/Shader/ShaderVariantListSourceData.h>
+#include <AtomToolsFramework/Window/AtomToolsMainWindow.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <AzQtComponents/Components/DockMainWindow.h>
@@ -42,12 +43,14 @@ namespace ShaderManagementConsole
      * its panels, managing selection of assets, and performing high-level actions like saving. It contains...
      */
     class ShaderManagementConsoleWindow
-        : public AzQtComponents::DockMainWindow
+        : public AtomToolsFramework::AtomToolsMainWindow
         , private ShaderManagementConsoleDocumentNotificationBus::Handler
     {
         Q_OBJECT
     public:
         AZ_CLASS_ALLOCATOR(ShaderManagementConsoleWindow, AZ::SystemAllocator, 0);
+
+        using Base = AtomToolsFramework::AtomToolsMainWindow;
 
         ShaderManagementConsoleWindow(QWidget* parent = 0);
         ~ShaderManagementConsoleWindow();
@@ -60,17 +63,13 @@ namespace ShaderManagementConsole
         void OnDocumentUndoStateChanged(const AZ::Uuid& documentId) override;
         void OnDocumentSaved(const AZ::Uuid& documentId) override;
 
-        void SetupMenu();
+        void SetupMenu() override; 
 
-        void SetupTabs();
-        void AddTabForDocumentId(const AZ::Uuid& documentId);
-        void RemoveTabForDocumentId(const AZ::Uuid& documentId);
-        void UpdateTabForDocumentId(const AZ::Uuid& documentId);
-        AZ::Uuid GetDocumentIdFromTab(const int tabIndex) const;
+        void SetupTabs() override;
+        void AddTabForDocumentId(const AZ::Uuid& documentId) override;
+        void UpdateTabForDocumentId(const AZ::Uuid& documentId) override;
 
-        void OpenTabContextMenu();
-        void SelectPreviousTab();
-        void SelectNextTab();
+        void OpenTabContextMenu() override;
 
         void SelectDocumentForTab(const int tabIndex);
         void CloseDocumentForTab(const int tabIndex);
@@ -80,10 +79,6 @@ namespace ShaderManagementConsole
 
         void CreateDocumentContent(const AZ::Uuid& documentId, QStandardItemModel* model);
 
-        AzQtComponents::FancyDocking* m_advancedDockManager = nullptr;
-        QMenuBar* m_menuBar = nullptr;
-        QWidget* m_centralWidget = nullptr;
-        AzQtComponents::TabWidget* m_tabWidget = nullptr;
         ShaderManagementConsoleBrowserWidget* m_assetBrowser = nullptr;
         ShaderManagementConsoleToolBar* m_toolBar = nullptr;
         AzToolsFramework::CScriptTermDialog* m_pythonTerminal = nullptr;
@@ -91,7 +86,6 @@ namespace ShaderManagementConsole
         AzQtComponents::StyledDockWidget* m_assetBrowserDockWidget = nullptr;
         AzQtComponents::StyledDockWidget* m_pythonTerminalDockWidget = nullptr;
 
-        QMenu* m_menuFile = {};
         QMenu* m_menuNew = {};
         QAction* m_actionOpen = {};
         QAction* m_actionOpenRecent = {};
@@ -106,7 +100,7 @@ namespace ShaderManagementConsole
         QMenu* m_menuEdit = {};
         QAction* m_actionUndo = {};
         QAction* m_actionRedo = {};
-        QAction* m_actionPreferences = {};
+        QAction* m_actionSettings = {};
 
         QMenu* m_menuView = {};
         QAction* m_actionAssetBrowser = {};

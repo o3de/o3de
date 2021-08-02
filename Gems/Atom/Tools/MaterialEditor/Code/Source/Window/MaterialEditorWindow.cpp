@@ -56,7 +56,7 @@ AZ_POP_DISABLE_WARNING
 namespace MaterialEditor
 {
     MaterialEditorWindow::MaterialEditorWindow(QWidget* parent /* = 0 */)
-        : AzQtComponents::DockMainWindow(parent)
+        : AtomToolsFramework::AtomToolsMainWindow(parent)
     {
         resize(1280, 1024);
 
@@ -83,28 +83,11 @@ namespace MaterialEditor
             setWindowTitle(QApplication::applicationName());
         }
 
-        m_advancedDockManager = new AzQtComponents::FancyDocking(this);
-
         setObjectName("MaterialEditorWindow");
-        setDockNestingEnabled(true);
-        setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
-        setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
-        setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
-        setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
-
-        m_menuBar = new QMenuBar(this);
-        m_menuBar->setObjectName("MenuBar");
-        setMenuBar(m_menuBar);
 
         m_toolBar = new MaterialEditorToolBar(this);
         m_toolBar->setObjectName("ToolBar");
         addToolBar(m_toolBar);
-
-        m_centralWidget = new QWidget(this);
-        m_tabWidget = new AzQtComponents::TabWidget(m_centralWidget);
-        m_tabWidget->setObjectName("TabWidget");
-        m_tabWidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
-        m_tabWidget->setContentsMargins(0, 0, 0, 0);
 
         m_materialViewport = new MaterialViewportWidget(m_centralWidget);
         m_materialViewport->setObjectName("Viewport");
@@ -370,8 +353,7 @@ namespace MaterialEditor
 
     void MaterialEditorWindow::SetupMenu()
     {
-        // Generating the main menu manually because it's easier and we will have some dynamic or data driven entries
-        m_menuFile = m_menuBar->addMenu("&File");
+        AtomToolsFramework::AtomToolsMainWindow::SetupMenu();
 
         m_actionNew = m_menuFile->addAction("&New...", [this]() {
             CreateMaterialDialog createDialog(this);
@@ -563,18 +545,7 @@ namespace MaterialEditor
 
     void MaterialEditorWindow::SetupTabs()
     {
-        // The tab bar should only be visible if it has active documents
-        m_tabWidget->setVisible(false);
-        m_tabWidget->setTabBarAutoHide(false);
-        m_tabWidget->setMovable(true);
-        m_tabWidget->setTabsClosable(true);
-        m_tabWidget->setUsesScrollButtons(true);
-
-        // Add context menu for right-clicking on tabs
-        m_tabWidget->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
-        connect(m_tabWidget, &QWidget::customContextMenuRequested, this, [this]() {
-            OpenTabContextMenu();
-        });
+        AtomToolsFramework::AtomToolsMainWindow::SetupTabs();
 
         // This signal will be triggered whenever a tab is added, removed, selected, clicked, dragged
         // When the last tab is removed tabIndex will be -1 and the document ID will be null
@@ -600,20 +571,7 @@ namespace MaterialEditor
             return;
         }
 
-        // Blocking signals from the tab bar so the currentChanged signal is not sent while a document is already being opened.
-        // This prevents the OnDocumentOpened notification from being sent recursively.
-        const QSignalBlocker blocker(m_tabWidget);
-
-        // If a tab for this document already exists then select it instead of creating a new one
-        for (int tabIndex = 0; tabIndex < m_tabWidget->count(); ++tabIndex)
-        {
-            if (documentId == GetDocumentIdFromTab(tabIndex))
-            {
-                m_tabWidget->setCurrentIndex(tabIndex);
-                m_tabWidget->repaint();
-                return;
-            }
-        }
+        AtomToolsMainWindow::AddTabForDocumentId(documentId);
 
         // Create a new tab for the document ID and assign it's label to the file name of the document.
         AZStd::string absolutePath;
@@ -637,22 +595,6 @@ namespace MaterialEditor
         m_tabWidget->setCurrentIndex(tabIndex);
         m_tabWidget->setVisible(true);
         m_tabWidget->repaint();
-    }
-
-    void MaterialEditorWindow::RemoveTabForDocumentId(const AZ::Uuid& documentId)
-    {
-        // We are not blocking signals here because we want closing tabs to close the associated document
-        // and automatically select the next document. 
-        for (int tabIndex = 0; tabIndex < m_tabWidget->count(); ++tabIndex)
-        {
-            if (documentId == GetDocumentIdFromTab(tabIndex))
-            {
-                m_tabWidget->removeTab(tabIndex);
-                m_tabWidget->setVisible(m_tabWidget->count() > 0);
-                m_tabWidget->repaint();
-                break;
-            }
-        }
     }
 
     void MaterialEditorWindow::UpdateTabForDocumentId(const AZ::Uuid& documentId)
@@ -698,20 +640,6 @@ namespace MaterialEditor
         return absolutePath.c_str();
     }
 
-    AZ::Uuid MaterialEditorWindow::GetDocumentIdFromTab(const int tabIndex) const
-    {
-        const QVariant tabData = m_tabWidget->tabBar()->tabData(tabIndex);
-        if (!tabData.isNull())
-        {
-            // We need to be able to convert between a UUID and a string to store and retrieve a document ID from the tab bar
-            const QString documentIdString = tabData.toString();
-            const QByteArray documentIdBytes = documentIdString.toUtf8();
-            const AZ::Uuid documentId(documentIdBytes.data(), documentIdBytes.size());
-            return documentId;
-        }
-        return AZ::Uuid::CreateNull();
-    }
-
     void MaterialEditorWindow::OpenTabContextMenu()
     {
         const QTabBar* tabBar = m_tabWidget->tabBar();
@@ -736,23 +664,6 @@ namespace MaterialEditor
             });
             closeOthersAction->setEnabled(tabBar->count() > 1);
             tabMenu.exec(QCursor::pos());
-        }
-    }
-
-    void MaterialEditorWindow::SelectPreviousTab()
-    {
-        if (m_tabWidget->count() > 1)
-        {
-            // Adding count to wrap around when index <= 0
-            m_tabWidget->setCurrentIndex((m_tabWidget->currentIndex() + m_tabWidget->count() - 1) % m_tabWidget->count());
-        }
-    }
-
-    void MaterialEditorWindow::SelectNextTab()
-    {
-        if (m_tabWidget->count() > 1)
-        {
-            m_tabWidget->setCurrentIndex((m_tabWidget->currentIndex() + 1) % m_tabWidget->count());
         }
     }
 } // namespace MaterialEditor
