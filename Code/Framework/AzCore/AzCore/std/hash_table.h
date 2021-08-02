@@ -269,7 +269,7 @@ namespace AZStd
         private:
             vector_value_type* m_buckets;       ///< Current buckets array. (can point to the m_vector or m_startBucket).
             size_type           m_numBuckets;   ///< Current number of buckets.
-            float               m_max_load_factor; ///< Maximum element load(elements/buckets) for a bucket before rehashing
+            float               m_max_load_factor; ///< Maximum load(elements/buckets) before rehashing
             vector_value_type   m_startBucket;  ///< Start bucket used for before we start dynamically allocate memory from m_vector.
         };
 
