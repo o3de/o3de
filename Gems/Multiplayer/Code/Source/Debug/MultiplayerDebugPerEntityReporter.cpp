@@ -17,11 +17,6 @@
 #include <imgui/imgui.h>
 #endif
 
-#pragma optimize("", off)
-
-AZ_CVAR(bool, net_DebugNetworkEntity_Bandwidth, true, nullptr, AZ::ConsoleFunctorFlags::Null,
-    "If true, prints debug text over entities that use a considerable amount of network traffic");
-
 AZ_CVAR(float, net_DebugNetworkEntity_ShowAboveKbps, 1.f, nullptr, AZ::ConsoleFunctorFlags::Null,
     "Prints bandwidth on network entities with higher kpbs than this value");
 
@@ -304,8 +299,8 @@ namespace Multiplayer
 
     void MultiplayerDebugPerEntityReporter::RecordRpcReceived(
         AZ::EntityId entityId, const char* entityName,
-        Multiplayer::NetComponentId netComponentId,
-        Multiplayer::RpcIndex rpcId,
+        NetComponentId netComponentId,
+        RpcIndex rpcId,
         uint32_t totalBytes)
     {
         if (const Multiplayer::MultiplayerComponentRegistry* componentRegistry = Multiplayer::GetMultiplayerComponentRegistry())
@@ -323,69 +318,66 @@ namespace Multiplayer
 
     void MultiplayerDebugPerEntityReporter::UpdateDebugOverlay()
     {
-        if (net_DebugNetworkEntity_Bandwidth)
+        m_networkEntitiesTraffic.clear();
+
+        for (AZStd::pair<AZ::EntityId, MultiplayerDebugEntityReporter>& entityPair : m_receivingEntityReports)
         {
-            m_networkEntitiesTraffic.clear();
-
-            for (AZStd::pair<AZ::EntityId, MultiplayerDebugEntityReporter>& entityPair : m_receivingEntityReports)
-            {
-                m_networkEntitiesTraffic[entityPair.first].m_name = entityPair.second.GetEntityName();
-                m_networkEntitiesTraffic[entityPair.first].m_down = entityPair.second.GetKbitsPerSecond();
-            }
-
-            for (AZStd::pair<AZ::EntityId, MultiplayerDebugEntityReporter>& entityPair : m_sendingEntityReports)
-            {
-                m_networkEntitiesTraffic[entityPair.first].m_name = entityPair.second.GetEntityName();
-                m_networkEntitiesTraffic[entityPair.first].m_up = entityPair.second.GetKbitsPerSecond();
-            }
-
-            //get debug display interface for the viewport
-            if (m_debugDisplay == nullptr)
-            {
-                AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
-                AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, AzFramework::g_defaultSceneEntityDebugDisplayId);
-                m_debugDisplay = AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
-            }
-
-            const AZ::u32 stateBefore = m_debugDisplay->GetState();
-
-            for (AZStd::pair<AZ::EntityId, NetworkEntityTraffic>& networkEntity : m_networkEntitiesTraffic)
-            {
-                if (networkEntity.second.m_down < net_DebugNetworkEntity_ShowAboveKbps && networkEntity.second.m_up < net_DebugNetworkEntity_ShowAboveKbps)
-                {
-                    continue;
-                }
-
-                if (networkEntity.second.m_down > net_DebugNetworkEntity_WarnAboveKbps || networkEntity.second.m_up > net_DebugNetworkEntity_WarnAboveKbps)
-                {
-                    m_debugDisplay->SetColor(net_DebugNetworkEntity_WarningColor);
-                }
-                else
-                {
-                    m_debugDisplay->SetColor(net_DebugNetworkEntity_BelowWarningColor);
-                }
-
-                if (networkEntity.second.m_down > net_DebugNetworkEntity_ShowAboveKbps && networkEntity.second.m_up > net_DebugNetworkEntity_ShowAboveKbps)
-                {
-                    azsprintf(m_statusBuffer, "[%s] %.0f down / %0.f up (kbps)", networkEntity.second.m_name,
-                        networkEntity.second.m_down, networkEntity.second.m_up);
-                }
-                else if (networkEntity.second.m_down > net_DebugNetworkEntity_ShowAboveKbps)
-                {
-                    azsprintf(m_statusBuffer, "[%s] %.0f down (kbps)", networkEntity.second.m_name, networkEntity.second.m_down);
-                }
-                else
-                {
-                    azsprintf(m_statusBuffer, "[%s] %.0f up (kbps)", networkEntity.second.m_name, networkEntity.second.m_up);
-                }
-
-                AZ::Vector3 entityPosition = AZ::Vector3::CreateZero();
-                constexpr bool centerText = true;
-                AZ::TransformBus::EventResult(entityPosition, networkEntity.first, &AZ::TransformBus::Events::GetWorldTranslation);
-                m_debugDisplay->DrawTextLabel(entityPosition, 1.0f, m_statusBuffer, centerText, 0, 0);
-            }
-
-            m_debugDisplay->SetState(stateBefore);
+            m_networkEntitiesTraffic[entityPair.first].m_name = entityPair.second.GetEntityName();
+            m_networkEntitiesTraffic[entityPair.first].m_down = entityPair.second.GetKbitsPerSecond();
         }
+
+        for (AZStd::pair<AZ::EntityId, MultiplayerDebugEntityReporter>& entityPair : m_sendingEntityReports)
+        {
+            m_networkEntitiesTraffic[entityPair.first].m_name = entityPair.second.GetEntityName();
+            m_networkEntitiesTraffic[entityPair.first].m_up = entityPair.second.GetKbitsPerSecond();
+        }
+
+        //get debug display interface for the viewport
+        if (m_debugDisplay == nullptr)
+        {
+            AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
+            AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, AzFramework::g_defaultSceneEntityDebugDisplayId);
+            m_debugDisplay = AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
+        }
+
+        const AZ::u32 stateBefore = m_debugDisplay->GetState();
+
+        for (AZStd::pair<AZ::EntityId, NetworkEntityTraffic>& networkEntity : m_networkEntitiesTraffic)
+        {
+            if (networkEntity.second.m_down < net_DebugNetworkEntity_ShowAboveKbps && networkEntity.second.m_up < net_DebugNetworkEntity_ShowAboveKbps)
+            {
+                continue;
+            }
+
+            if (networkEntity.second.m_down > net_DebugNetworkEntity_WarnAboveKbps || networkEntity.second.m_up > net_DebugNetworkEntity_WarnAboveKbps)
+            {
+                m_debugDisplay->SetColor(net_DebugNetworkEntity_WarningColor);
+            }
+            else
+            {
+                m_debugDisplay->SetColor(net_DebugNetworkEntity_BelowWarningColor);
+            }
+
+            if (networkEntity.second.m_down > net_DebugNetworkEntity_ShowAboveKbps && networkEntity.second.m_up > net_DebugNetworkEntity_ShowAboveKbps)
+            {
+                azsprintf(m_statusBuffer, "[%s] %.0f down / %0.f up (kbps)", networkEntity.second.m_name,
+                    networkEntity.second.m_down, networkEntity.second.m_up);
+            }
+            else if (networkEntity.second.m_down > net_DebugNetworkEntity_ShowAboveKbps)
+            {
+                azsprintf(m_statusBuffer, "[%s] %.0f down (kbps)", networkEntity.second.m_name, networkEntity.second.m_down);
+            }
+            else
+            {
+                azsprintf(m_statusBuffer, "[%s] %.0f up (kbps)", networkEntity.second.m_name, networkEntity.second.m_up);
+            }
+
+            AZ::Vector3 entityPosition = AZ::Vector3::CreateZero();
+            constexpr bool centerText = true;
+            AZ::TransformBus::EventResult(entityPosition, networkEntity.first, &AZ::TransformBus::Events::GetWorldTranslation);
+            m_debugDisplay->DrawTextLabel(entityPosition, 1.0f, m_statusBuffer, centerText, 0, 0);
+        }
+
+        m_debugDisplay->SetState(stateBefore);
     }
 }

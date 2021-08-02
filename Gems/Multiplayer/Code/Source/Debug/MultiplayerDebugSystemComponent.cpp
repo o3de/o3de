@@ -13,6 +13,11 @@
 #include <AzNetworking/Framework/INetworkInterface.h>
 #include <Multiplayer/IMultiplayer.h>
 
+void OnDebugNetworkEntity_ShowBandwidth_Changed(const bool& showBandwidth);
+
+AZ_CVAR(bool, net_DebugNetworkEntity_ShowBandwidth, false, &OnDebugNetworkEntity_ShowBandwidth_Changed, AZ::ConsoleFunctorFlags::Null,
+    "If true, prints bandwidth values over entities that use a considerable amount of network traffic");
+
 namespace Multiplayer
 {
     void MultiplayerDebugSystemComponent::Reflect(AZ::ReflectContext* context)
@@ -53,9 +58,18 @@ namespace Multiplayer
 #endif
     }
 
-    void MultiplayerDebugSystemComponent::OnImGuiInitialize()
+    void MultiplayerDebugSystemComponent::ShowEntityBandwidthDebugOverlay()
     {
         m_reporter = AZStd::make_unique<MultiplayerDebugPerEntityReporter>();
+    }
+
+    void MultiplayerDebugSystemComponent::HideEntityBandwidthDebugOverlay()
+    {
+        m_reporter.reset();
+    }
+
+    void MultiplayerDebugSystemComponent::OnImGuiInitialize()
+    {
     }
 
 #ifdef IMGUI_ENABLED
@@ -327,15 +341,32 @@ namespace Multiplayer
 
         if (m_displayPerEntityStats)
         {
-            //ImGui::SetNextWindowSize({500, 400});
+            // This overrides @net_DebugNetworkEntity_ShowBandwidth value
             if (ImGui::Begin("Multiplayer Per Entity Stats", &m_displayPerEntityStats, ImGuiWindowFlags_AlwaysAutoResize))
             {
                 if (m_reporter)
                 {
                     m_reporter->OnImGuiUpdate();
                 }
+                else
+                {
+                    ShowEntityBandwidthDebugOverlay();
+                }
             }
         }
     }
 #endif
 }
+
+void OnDebugNetworkEntity_ShowBandwidth_Changed(const bool& showBandwidth)
+{
+    if (showBandwidth)
+    {
+        AZ::Interface<Multiplayer::IMultiplayerDebug>::Get()->ShowEntityBandwidthDebugOverlay();
+    }
+    else
+    {
+        AZ::Interface<Multiplayer::IMultiplayerDebug>::Get()->HideEntityBandwidthDebugOverlay();
+    }
+}
+

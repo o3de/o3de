@@ -8,11 +8,9 @@
 
 #include "MultiplayerDebugByteReporter.h"
 
-#include <iomanip>
+#include <iomanip> // for std::setfill
 #include <sstream>
 #include <AzCore/std/sort.h>
-
-#pragma optimize("", off)
 
 namespace Multiplayer
 {

@@ -11,7 +11,6 @@
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/EBus/ScheduledEvent.h>
-#include <AzCore/Interface/Interface.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <Multiplayer/MultiplayerStats.h>
 #include <Multiplayer/MultiplayerTypes.h>
@@ -66,7 +65,7 @@ namespace Multiplayer
             float m_down = 0.f;
         };
 
-        AZStd::fixed_unordered_map<AZ::EntityId, NetworkEntityTraffic, 5, 10> m_networkEntitiesTraffic;
+        AZStd::unordered_map<AZ::EntityId, NetworkEntityTraffic> m_networkEntitiesTraffic;
 
         AzFramework::DebugDisplayRequests* m_debugDisplay = nullptr;
     };

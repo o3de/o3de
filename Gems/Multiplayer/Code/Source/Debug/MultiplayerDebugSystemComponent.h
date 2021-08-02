@@ -9,7 +9,9 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <AzCore/Interface/Interface.h>
 #include <Debug/MultiplayerDebugPerEntityReporter.h>
+#include <Multiplayer/IMultiplayerDebug.h>
 
 #ifdef IMGUI_ENABLED
 #   include <imgui/imgui.h>
@@ -20,6 +22,7 @@ namespace Multiplayer
 {
     class MultiplayerDebugSystemComponent final
         : public AZ::Component
+        , public AZ::Interface<IMultiplayerDebug>::Registrar
 #ifdef IMGUI_ENABLED
         , public ImGui::ImGuiUpdateListenerBus::Handler
 #endif
@@ -30,7 +33,7 @@ namespace Multiplayer
         static void Reflect(AZ::ReflectContext* context);
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
-        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatbile);
+        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
         ~MultiplayerDebugSystemComponent() override = default;
 
@@ -38,6 +41,12 @@ namespace Multiplayer
         //! @{
         void Activate() override;
         void Deactivate() override;
+        //! @}
+
+        //! IMultiplayerDebugSystem overrides
+        //! @{
+        void ShowEntityBandwidthDebugOverlay() override;
+        void HideEntityBandwidthDebugOverlay() override;
         //! @}
 
 #ifdef IMGUI_ENABLED
