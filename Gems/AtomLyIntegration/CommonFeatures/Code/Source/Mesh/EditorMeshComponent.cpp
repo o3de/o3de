@@ -79,6 +79,7 @@ namespace AZ
                         ->DataElement(AZ::Edit::UIHandlers::Default, &MeshComponentConfig::m_minimumScreenCoverage, "Minimum Screen Coverage", "Minimum proportion of screen area an entitiy takes up, after that the entitiy is culled.")
                             ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                             ->Attribute(AZ::Edit::Attributes::Max, 1.f)
+                            ->Attribute(AZ::Edit::Attributes::Suffix, " percent")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &MeshComponentConfig::m_qualityDecayRate, "Quality Decay Rate",
                             "Rate at which mesh quality decays (0 -> always stay highest quality, 1 -> quality falls off to lowest quality immediately).")
                             ->Attribute(AZ::Edit::Attributes::Min, 0.f)

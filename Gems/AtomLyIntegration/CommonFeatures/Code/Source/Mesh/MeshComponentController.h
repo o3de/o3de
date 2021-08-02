@@ -101,6 +101,7 @@ namespace AZ
 
             void SetMinimumScreenCoverage(float minimumScreenCoverage) override;
             float GetMinimumScreenCoverage() const override;
+
             void SetQualityDecayRate(float qualityDecayRate) override;
             float GetQualityDecayRate() const override;
 

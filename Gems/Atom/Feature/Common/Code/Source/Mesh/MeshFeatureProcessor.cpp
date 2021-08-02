@@ -1098,7 +1098,6 @@ namespace AZ
             cullData.m_drawListMask.reset();
 
             const size_t lodCount = lodAssets.size();
-
             for (size_t lodIndex = 0; lodIndex < lodCount; ++lodIndex)
             {
                 //initialize the lod
@@ -1117,8 +1116,7 @@ namespace AZ
                 if (lodIndex < lodAssets.size() - 1)
                 {
                     //first and middle lods: compute a stepdown value for the min
-                    lod.m_screenCoverageMin =
-                        AZStd::GetMax(lodData.m_qualityDecayRate * lod.m_screenCoverageMax, lodData.m_minimumScreenCoverage);
+                    lod.m_screenCoverageMin = AZStd::GetMax(lodData.m_qualityDecayRate * lod.m_screenCoverageMax, lodData.m_minimumScreenCoverage);
                 }
                 else
                 {

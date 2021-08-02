@@ -63,7 +63,7 @@ namespace AZ
             void SetRayTracingData();
             void SetSortKey(RHI::DrawItemSortKey sortKey);
             RHI::DrawItemSortKey GetSortKey();
-            void SetLodOverride( RPI::Cullable::LodOverride lodOverride);
+            void SetLodOverride(RPI::Cullable::LodOverride lodOverride);
             RPI::Cullable::LodOverride GetLodOverride();
             void SetMinimumScreenCoverage(float minimumScreenCoverage);
             float GetMinimumScreenCoverage();
