@@ -113,7 +113,5 @@ namespace MaterialEditor
         QMenu* m_menuHelp = {};
         QAction* m_actionHelp = {};
         QAction* m_actionAbout = {};
-
-        StatusBarWidget* m_statusBar = {};
     };
 } // namespace MaterialEditor

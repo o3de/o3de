@@ -303,6 +303,10 @@ namespace ShaderManagementConsole
 
         AtomToolsMainWindow::AddTabForDocumentId(documentId);
 
+        // Blocking signals from the tab bar so the currentChanged signal is not sent while a document is already being opened.
+        // This prevents the OnDocumentOpened notification from being sent recursively.
+        const QSignalBlocker blocker(m_tabWidget);
+
         // Create a new tab for the document ID and assign it's label to the file name of the document.
         AZStd::string absolutePath;
         ShaderManagementConsoleDocumentRequestBus::EventResult(absolutePath, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::GetAbsolutePath);

@@ -53,6 +53,7 @@ namespace AtomToolsFramework
         QWidget* m_centralWidget = nullptr;
         QMenuBar* m_menuBar = nullptr;
         AzQtComponents::TabWidget* m_tabWidget = nullptr;
+        QStatusBar* m_statusBar = nullptr;
 
         AZStd::unordered_map<AZStd::string, AzQtComponents::StyledDockWidget*> m_dockWidgets;
 

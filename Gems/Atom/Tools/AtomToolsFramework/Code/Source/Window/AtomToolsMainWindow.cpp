@@ -31,6 +31,10 @@ namespace AtomToolsFramework
         m_tabWidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
         m_tabWidget->setContentsMargins(0, 0, 0, 0);
 
+        m_statusBar = new QStatusBar(this);
+        m_statusBar->setObjectName("StatusBar");
+        statusBar()->addPermanentWidget(m_statusBar, 1);
+
         AtomToolsMainWindowRequestBus::Handler::BusConnect();
     }
 

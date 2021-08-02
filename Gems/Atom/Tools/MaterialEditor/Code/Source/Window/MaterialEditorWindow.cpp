@@ -101,10 +101,6 @@ namespace MaterialEditor
         m_centralWidget->setLayout(vl);
         setCentralWidget(m_centralWidget);
 
-        m_statusBar = new StatusBarWidget(this);
-        m_statusBar->setObjectName("StatusBar");
-        statusBar()->addPermanentWidget(m_statusBar, 1);
-
         SetupMenu();
         SetupTabs();
 
@@ -245,7 +241,8 @@ namespace MaterialEditor
         const QString documentPath = GetDocumentPath(documentId);
         if (!documentPath.isEmpty())
         {
-            m_statusBar->UpdateStatusInfo(QString("Material opened: %1").arg(documentPath));
+            const QString status = QString("Material closed: %1").arg(documentPath);
+            m_statusBar->setWindowIconText(QString("<font color=\"White\">%1</font>").arg(status));
         }
     }
 
@@ -254,7 +251,8 @@ namespace MaterialEditor
         RemoveTabForDocumentId(documentId);
 
         const QString documentPath = GetDocumentPath(documentId);
-        m_statusBar->UpdateStatusInfo(QString("Material closed: %1").arg(documentPath));
+        const QString status = QString("Material closed: %1").arg(documentPath);
+        m_statusBar->setWindowIconText(QString("<font color=\"White\">%1</font>").arg(status));
     }
 
     void MaterialEditorWindow::OnDocumentModified(const AZ::Uuid& documentId)
@@ -280,7 +278,8 @@ namespace MaterialEditor
         UpdateTabForDocumentId(documentId);
 
         const QString documentPath = GetDocumentPath(documentId);
-        m_statusBar->UpdateStatusInfo(QString("Material saved: %1").arg(documentPath));
+        const QString status = QString("Material closed: %1").arg(documentPath);
+        m_statusBar->setWindowIconText(QString("<font color=\"White\">%1</font>").arg(status));
     }
 
     void MaterialEditorWindow::SetupMenu()
@@ -321,7 +320,8 @@ namespace MaterialEditor
             if (!result)
             {
                 const QString documentPath = GetDocumentPath(documentId);
-                m_statusBar->UpdateStatusError(QString("Failed to save material: %1").arg(documentPath));
+                const QString status = QString("Failed to save material: %1").arg(documentPath);
+                m_statusBar->setWindowIconText(QString("<font color=\"Red\">%1</font>").arg(status));
             }
         }, QKeySequence::Save);
 
@@ -334,7 +334,8 @@ namespace MaterialEditor
                 documentId, AtomToolsFramework::GetSaveFileInfo(documentPath).absoluteFilePath().toUtf8().constData());
             if (!result)
             {
-                m_statusBar->UpdateStatusError(QString("Failed to save material: %1").arg(documentPath));
+                const QString status = QString("Failed to save material: %1").arg(documentPath);
+                m_statusBar->setWindowIconText(QString("<font color=\"Red\">%1</font>").arg(status));
             }
         }, QKeySequence::SaveAs);
 
@@ -347,7 +348,8 @@ namespace MaterialEditor
                 documentId, AtomToolsFramework::GetSaveFileInfo(documentPath).absoluteFilePath().toUtf8().constData());
             if (!result)
             {
-                m_statusBar->UpdateStatusError(QString("Failed to save material: %1").arg(documentPath));
+                const QString status = QString("Failed to save material: %1").arg(documentPath);
+                m_statusBar->setWindowIconText(QString("<font color=\"Red\">%1</font>").arg(status));
             }
         });
 
@@ -356,7 +358,8 @@ namespace MaterialEditor
             MaterialDocumentSystemRequestBus::BroadcastResult(result, &MaterialDocumentSystemRequestBus::Events::SaveAllDocuments);
             if (!result)
             {
-                m_statusBar->UpdateStatusError(QString("Failed to save materials."));
+                const QString status = QString("Failed to save materials.");
+                m_statusBar->setWindowIconText(QString("<font color=\"Red\">%1</font>").arg(status));
             }
         });
 
@@ -401,7 +404,8 @@ namespace MaterialEditor
             if (!result)
             {
                 const QString documentPath = GetDocumentPath(documentId);
-                m_statusBar->UpdateStatusError(QString("Failed to perform Undo in material: %1").arg(documentPath));
+                const QString status = QString("Failed to perform Undo in material: %1").arg(documentPath);
+                m_statusBar->setWindowIconText(QString("<font color=\"Red\">%1</font>").arg(status));
             }
         }, QKeySequence::Undo);
 
@@ -412,7 +416,8 @@ namespace MaterialEditor
             if (!result)
             {
                 const QString documentPath = GetDocumentPath(documentId);
-                m_statusBar->UpdateStatusError(QString("Failed to perform Undo in material: %1").arg(documentPath));
+                const QString status = QString("Failed to perform Undo in material: %1").arg(documentPath);
+                m_statusBar->setWindowIconText(QString("<font color=\"Red\">%1</font>").arg(status));
             }
         }, QKeySequence::Redo);
 
@@ -504,6 +509,10 @@ namespace MaterialEditor
         }
 
         AtomToolsMainWindow::AddTabForDocumentId(documentId);
+
+        // Blocking signals from the tab bar so the currentChanged signal is not sent while a document is already being opened.
+        // This prevents the OnDocumentOpened notification from being sent recursively.
+        const QSignalBlocker blocker(m_tabWidget);
 
         // Create a new tab for the document ID and assign it's label to the file name of the document.
         AZStd::string absolutePath;
