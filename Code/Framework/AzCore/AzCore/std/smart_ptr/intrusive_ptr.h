@@ -21,8 +21,8 @@
 //
 
 #include <AzCore/std/smart_ptr/sp_convertible.h>
-#include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/typetraits/is_abstract.h>
+#include <AzCore/std/typetraits/typetraits.h>
 
 namespace AZStd
 {
@@ -277,11 +277,11 @@ namespace AZStd
         return const_cast<T*>(p.get());
     }
 
-    template<class T, class U>
-    intrusive_ptr<T> dynamic_pointer_cast(intrusive_ptr<U> const& p)
-    {
-        return azdynamic_cast<T*>(p.get());
-    }
+//    template<class T, class U>
+//    intrusive_ptr<T> dynamic_pointer_cast(intrusive_ptr<U> const& p)
+//    {
+//        return azdynamic_cast<T*>(p.get());
+//    }
 
     template <typename T>
     struct hash;

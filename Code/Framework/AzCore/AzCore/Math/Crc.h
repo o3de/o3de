@@ -8,7 +8,7 @@
 #pragma once
 
 #include <AzCore/base.h>
-
+#include <AzCore/std/hash.h>
 #include <AzCore/std/string/string_view.h>
 
 //////////////////////////////////////////////////////////////////////////
@@ -108,7 +108,7 @@ namespace AZ
 
 namespace AZStd
 {
-   template<>
+    template<>
     struct hash<AZ::Crc32>
     {
         size_t operator()(const AZ::Crc32& id) const

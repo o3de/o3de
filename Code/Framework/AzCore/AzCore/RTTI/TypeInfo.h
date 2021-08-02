@@ -1050,8 +1050,6 @@ namespace AZ
 #define AZ_TYPE_INFO_INTERNAL_17 AZ_TYPE_INFO_INTERNAL_TEMPLATE
 #define AZ_TYPE_INFO_INTERNAL(...) AZ_MACRO_SPECIALIZE(AZ_TYPE_INFO_INTERNAL_, AZ_VA_NUM_ARGS(__VA_ARGS__), (__VA_ARGS__))
 
-#define AZ_TYPE_INFO_1 AZ_TYPE_INFO_INTERNAL_1
-#define AZ_TYPE_INFO_2 AZ_TYPE_INFO_INTERNAL_2
 #define AZ_TYPE_INFO_3 AZ_TYPE_INFO_INTERNAL_TEMPLATE_DEPRECATED
 #define AZ_TYPE_INFO_4 AZ_TYPE_INFO_INTERNAL_TEMPLATE_DEPRECATED
 #define AZ_TYPE_INFO_5 AZ_TYPE_INFO_INTERNAL_TEMPLATE_DEPRECATED
@@ -1072,17 +1070,7 @@ namespace AZ
 // to fix issues where AZ_TYPE_INFO was incorrectly used and the old UUID has to be maintained.
 #define AZ_TYPE_INFO_LEGACY AZ_TYPE_INFO_INTERNAL
 
-/**
-* Use this macro inside a class to allow it to be identified across modules and serialized (in different contexts).
-* The expected input is the class and the assigned uuid as a string or an instance of a uuid.
-* Example:
-*   class MyClass
-*   {
-*   public:
-*       AZ_TYPE_INFO(MyClass, "{BD5B1568-D232-4EBF-93BD-69DB66E3773F}");
-*       ...
-*/
-#define AZ_TYPE_INFO(...) AZ_MACRO_SPECIALIZE(AZ_TYPE_INFO_, AZ_VA_NUM_ARGS(__VA_ARGS__), (__VA_ARGS__))
+#include <AzCore/RTTI/TypeInfoSimple.h>
 
 /**
 * Use this macro outside a class to allow it to be identified across modules and serialized (in different contexts).

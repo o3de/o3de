@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#include <AzCore/Math/MathUtils.h>
 #include <AzCore/std/containers/node_handle.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/fixed_vector.h>
