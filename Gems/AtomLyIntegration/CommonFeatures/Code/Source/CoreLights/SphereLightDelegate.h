@@ -31,6 +31,7 @@ namespace AZ
             float GetSurfaceArea() const override;
             float GetEffectiveSolidAngle() const override { return PhotometricValue::OmnidirectionalSteradians; }
             void SetEnableShadow(bool enabled) override;
+            void SetShadowBias(float bias) override;
             void SetShadowmapMaxSize(ShadowmapSize size) override;
             void SetShadowFilterMethod(ShadowFilterMethod method) override;
             void SetSofteningBoundaryWidthAngle(float widthInDegrees) override;

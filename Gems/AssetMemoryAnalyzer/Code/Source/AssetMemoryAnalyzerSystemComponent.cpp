@@ -6,6 +6,8 @@
  *
  */
 
+#include <time.h>
+
 #include <AzCore/Debug/AssetTrackingTypesImpl.h>
 #include <AzCore/IO/SystemFile.h> // For AZ_MAX_PATH_LEN
 #include <AzCore/Serialization/SerializeContext.h>

@@ -970,7 +970,7 @@ enum class NetworkProperties
 {% macro DefineComponentServiceProxyGrabs(Component, ClassType, ComponentType) %}
 {% for Service in Component.iter('ComponentRelation') %}
 {%     if Service.attrib['Constraint'] != 'Incompatible' %}
-m_{{ LowerFirst(Service.attrib['Name']) }} = FindComponent<{{ UpperFirst(Service.attrib['Namespace']) }}::{{ UpperFirst(Service.attrib['Name']) }}>();
+m_{{ LowerFirst(Service.attrib['Name']) }} = FindComponent<{{ Service.attrib['Namespace'] }}::{{ UpperFirst(Service.attrib['Name']) }}>();
 {%     endif %}
 {% endfor %}
 {% endmacro %}
@@ -1709,12 +1709,12 @@ namespace {{ Component.attrib['Namespace'] }}
 
 {% for Service in Component.iter('ComponentRelation') %}
 {%      if Service.attrib['Constraint'] != 'Incompatible' %}
-    const {{ UpperFirst(Service.attrib['Namespace']) }}::{{ UpperFirst(Service.attrib['Name']) }}* {{ ComponentBaseName }}::Get{{ UpperFirst(Service.attrib['Name']) }}() const
+    const {{ Service.attrib['Namespace'] }}::{{ UpperFirst(Service.attrib['Name']) }}* {{ ComponentBaseName }}::Get{{ UpperFirst(Service.attrib['Name']) }}() const
     {
         return m_{{ LowerFirst(Service.attrib['Name']) }};
     }
 
-    {{ UpperFirst(Service.attrib['Namespace']) }}::{{ UpperFirst(Service.attrib['Name']) }}* {{ ComponentBaseName }}::Get{{ UpperFirst(Service.attrib['Name']) }}() 
+    {{ Service.attrib['Namespace'] }}::{{ UpperFirst(Service.attrib['Name']) }}* {{ ComponentBaseName }}::Get{{ UpperFirst(Service.attrib['Name']) }}() 
     {
         return m_{{ LowerFirst(Service.attrib['Name']) }};
     }

@@ -6,8 +6,6 @@
 #
 #
 
-set(LY_ENABLE_MULTIPLAYER_COMPRESSION OFF CACHE BOOL "Enables usage of Multiplayer Compressor.")
-
 ly_add_target(
     NAME MultiplayerCompression.Static STATIC
     NAMESPACE Gem
