@@ -255,14 +255,22 @@ namespace
 
     UiRenderer* GetUiRendererForGame()
     {
-        CLyShine* lyShine = static_cast<CLyShine*>(gEnv->pLyShine);
-        return lyShine ? lyShine->GetUiRenderer() : nullptr;
+        if (gEnv && gEnv->pLyShine)
+        {
+            CLyShine* lyShine = static_cast<CLyShine*>(gEnv->pLyShine);
+            return lyShine->GetUiRenderer();
+        }
+        return nullptr;
     }
 
     UiRenderer* GetUiRendererForEditor()
     {
-        CLyShine* lyShine = static_cast<CLyShine*>(gEnv->pLyShine);
-        return lyShine ? lyShine->GetUiRendererForEditor() : nullptr;
+        if (gEnv && gEnv->pLyShine)
+        {
+            CLyShine* lyShine = static_cast<CLyShine*>(gEnv->pLyShine);
+            return lyShine->GetUiRendererForEditor();
+        }
+        return nullptr;
     }
 
     bool IsValidInteractable(const AZ::EntityId& entityId)
@@ -1853,9 +1861,7 @@ AZ::RHI::AttachmentId UiCanvasComponent::UseRenderTarget(const AZ::Name& renderT
     m_attachmentImageMap[attachmentImage->GetAttachmentId()] = attachmentImage;
 
     // Notify LyShine render pass that it needs to rebuild
-    UiRenderer* uiRenderer = m_renderInEditor ? GetUiRendererForEditor() : GetUiRendererForGame();
-    AZ::RPI::SceneId sceneId = uiRenderer->GetViewportContext()->GetRenderScene()->GetId();
-    EBUS_EVENT_ID(sceneId, LyShinePassRequestBus, RebuildRttChildren);
+    QueueRttPassRebuild();
     
     return attachmentImage->GetAttachmentId();
 }
@@ -1866,9 +1872,7 @@ void UiCanvasComponent::ReleaseRenderTarget(const AZ::RHI::AttachmentId& attachm
     m_attachmentImageMap.erase(attachmentId);
 
     // Notify LyShine render pass that it needs to rebuild
-    UiRenderer* uiRenderer = m_isLoadedInGame ? GetUiRendererForGame() : GetUiRendererForEditor();
-    AZ::RPI::SceneId sceneId = uiRenderer->GetViewportContext()->GetRenderScene()->GetId();
-    EBUS_EVENT_ID(sceneId, LyShinePassRequestBus, RebuildRttChildren);
+    QueueRttPassRebuild();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2013,6 +2017,17 @@ void UiCanvasComponent::DestroyScheduledElements()
     }
 
     m_elementsScheduledForDestroy.clear();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void UiCanvasComponent::QueueRttPassRebuild()
+{
+    UiRenderer* uiRenderer = m_renderInEditor ? GetUiRendererForEditor() : GetUiRendererForGame();
+    if (uiRenderer && uiRenderer->GetViewportContext()) // can be null in automated testing
+    {
+        AZ::RPI::SceneId sceneId = uiRenderer->GetViewportContext()->GetRenderScene()->GetId();
+        EBUS_EVENT_ID(sceneId, LyShinePassRequestBus, RebuildRttChildren);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2461,10 +2476,8 @@ void UiCanvasComponent::Deactivate()
     // Destroy owned render targets
     m_attachmentImageMap.clear();
 
-    // Notify pass that it needs to rebuild
-    UiRenderer* uiRenderer = m_isLoadedInGame ? GetUiRendererForGame() : GetUiRendererForEditor();
-    AZ::RPI::SceneId sceneId = uiRenderer->GetViewportContext()->GetRenderScene()->GetId();
-    EBUS_EVENT_ID(sceneId, LyShinePassRequestBus, RebuildRttChildren);
+    //! Notify LyShine pass that it needs to rebuild
+    QueueRttPassRebuild();
 
     delete m_layoutManager;
     m_layoutManager = nullptr;

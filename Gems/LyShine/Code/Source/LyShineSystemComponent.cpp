@@ -116,7 +116,7 @@ namespace LyShine
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void LyShineSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-#if !defined(LYSHINE_BUILDER)
+#if !defined(LYSHINE_BUILDER) && !defined(LYSHINE_TESTS)
         required.push_back(AZ_CRC("RPISystem", 0xf2add773));
 #endif
     }
@@ -190,7 +190,7 @@ namespace LyShine
         RegisterComponentTypeForMenuOrdering(UiParticleEmitterComponent::RTTI_Type());
         RegisterComponentTypeForMenuOrdering(UiFlipbookAnimationComponent::RTTI_Type());
 
-#if !defined(LYSHINE_BUILDER)
+#if !defined(LYSHINE_BUILDER) && !defined(LYSHINE_TESTS)
         // Add LyShine pass
         auto* passSystem = AZ::RPI::PassSystemInterface::Get();
         AZ_Assert(passSystem, "Cannot get the pass system.");
@@ -401,7 +401,7 @@ namespace LyShine
         UiCursorBus::Broadcast(&UiCursorInterface::SetUiCursor, m_cursorImagePathname.GetAssetPath().c_str());
     }
 
-#if !defined(LYSHINE_BUILDER)
+#if !defined(LYSHINE_BUILDER) && !defined(LYSHINE_TESTS)
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void LyShineSystemComponent::LoadPassTemplateMappings()
     {

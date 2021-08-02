@@ -20,7 +20,7 @@
 #include <LyShine/UiComponentTypes.h>
 #include "LyShine.h"
 
-#if !defined(LYSHINE_BUILDER)
+#if !defined(LYSHINE_BUILDER) && !defined(LYSHINE_TESTS)
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #endif
 
@@ -94,7 +94,7 @@ namespace LyShine
 
         void BroadcastCursorImagePathname();
 
-#if !defined(LYSHINE_BUILDER)
+#if !defined(LYSHINE_BUILDER) && !defined(LYSHINE_TESTS)
         // Load pass template mappings for this gem
         void LoadPassTemplateMappings();
 #endif
@@ -112,7 +112,7 @@ namespace LyShine
         // We only store this in order to generate metrics on LyShine specific components
         static const AZStd::list<AZ::ComponentDescriptor*>* m_componentDescriptors;
 
-#if !defined(LYSHINE_BUILDER)
+#if !defined(LYSHINE_BUILDER) && !defined(LYSHINE_TESTS)
         AZ::RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler m_loadTemplatesHandler;
 #endif
     };

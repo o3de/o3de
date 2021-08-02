@@ -440,6 +440,9 @@ private: // member functions
 
     void DestroyScheduledElements();
 
+    //! Notify LyShine pass that it needs to rebuild its Rtt child passes
+    void QueueRttPassRebuild();
+
 private: // static member functions
 
     static AZ::u64 CreateUniqueId();
