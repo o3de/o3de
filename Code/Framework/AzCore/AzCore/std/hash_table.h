@@ -197,7 +197,7 @@ namespace AZStd
                         if (!table->find_insert_position(valueKey, table->m_keyEqual, insertIter, numElements, integral_constant<bool, Traits::has_multi_elements>()))
                         {
                             // The elements shouldn't be inserted, remove them from the list and keep processing
-                            newList.erase(cur, curEnd);
+                            m_list.erase(cur, curEnd);
                             continue;
                         }
 
