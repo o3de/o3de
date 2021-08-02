@@ -88,7 +88,7 @@ namespace GridMate
         /// Connect with host and port. This is ASync operation, the connection is active after OnConnectionEstablished is called.
         virtual ConnectionID    Connect(const char* hostAddress, unsigned int port) = 0;
         /// Connect with internal address format. This is ASync operation, the connection is active after OnConnectionEstablished is called.
-        virtual ConnectionID    Connect(const string& address) = 0;
+        virtual ConnectionID    Connect(const AZStd::string& address) = 0;
         /// Request a disconnect procedure. This is ASync operation, the connection is closed after OnDisconnect is called.
         virtual void            Disconnect(ConnectionID id) = 0;
 

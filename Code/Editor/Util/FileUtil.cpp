@@ -1330,7 +1330,7 @@ IFileUtil::ECopyTreeResult CFileUtil::CopyTree(const QString& strSourceDirectory
         const QString fileName = QFileInfo(filePath).fileName();
 
         bool ignored = false;
-        for (const string& ignoredFile : ignoredPatterns)
+        for (const AZStd::string& ignoredFile : ignoredPatterns)
         {
             if (StringHelpers::CompareIgnoreCase(fileName.toStdString().c_str(), ignoredFile.c_str()) == 0)
             {

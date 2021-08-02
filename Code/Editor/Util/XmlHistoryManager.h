@@ -103,7 +103,7 @@ public:
     // History
     void ClearHistory(bool flagAsSaved = false);
     int GetVersionCount() const { return m_LatestVersion; }
-    const string& GetVersionDesc(int number) const;
+    const AZStd::string& GetVersionDesc(int number) const;
     int GetCurrentVersionNumber() const { return m_CurrentVersion; }
 
     // Views

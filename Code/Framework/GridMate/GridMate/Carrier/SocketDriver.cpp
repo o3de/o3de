@@ -498,7 +498,7 @@ namespace GridMate
         }
     }
 
-    SocketDriverAddress::SocketDriverAddress(Driver* driver, const string& ip, unsigned int port)
+    SocketDriverAddress::SocketDriverAddress(Driver* driver, const AZStd::string& ip, unsigned int port)
         : DriverAddress(driver)
     {
         AZ_Assert(!ip.empty(), "Invalid address string!");
@@ -1156,7 +1156,7 @@ namespace GridMate
     // [3/4/2013]
     //=========================================================================
     bool
-    SocketDriverCommon::AddressStringToIPPort(const string& address, string& ip, unsigned int& port)
+    SocketDriverCommon::AddressStringToIPPort(const AZStd::string& address, AZStd::string& ip, unsigned int& port)
     {
         AZStd::size_t pos = address.find('|');
         AZ_Assert(pos != string::npos, "Invalid driver address!");
@@ -1176,7 +1176,7 @@ namespace GridMate
     // [7/11/2013]
     //=========================================================================
     Driver::BSDSocketFamilyType
-    SocketDriverCommon::AddressFamilyType(const string& ip)
+    SocketDriverCommon::AddressFamilyType(const AZStd::string& ip)
     {
         // TODO: We can/should use inet_ntop() to detect the family type
         AZStd::size_t pos = ip.find(".");
@@ -1198,13 +1198,13 @@ namespace GridMate
     //////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////
     //=========================================================================
-    // CreateDriverAddress(const string&)
+    // CreateDriverAddress(const AZStd::string&)
     // [1/12/2011]
     //=========================================================================
     AZStd::intrusive_ptr<DriverAddress>
-    SocketDriver::CreateDriverAddress(const string& address)
+    SocketDriver::CreateDriverAddress(const AZStd::string& address)
     {
-        string ip;
+        AZStd::string ip;
         unsigned int port;
         if (!AddressToIPPort(address, ip, port))
         {
@@ -1243,7 +1243,7 @@ namespace GridMate
     namespace Utils
     {
         // \note function moved here to use addinfo when IPV6 is not in use, consider moving those definitions to a header file
-        bool GetIpByHostName(int familyType, const char* hostName, string& ip)
+        bool GetIpByHostName(int familyType, const char* hostName, AZStd::string& ip)
         {
             static const size_t kMaxLen = 64; // max length of ipv6 ip is 45 chars, so all ips should be able to fit in this buf
             char ipBuf[kMaxLen];

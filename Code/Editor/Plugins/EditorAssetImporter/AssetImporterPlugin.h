@@ -41,7 +41,7 @@ public:
         return m_editor;
     }
 
-    const string& GetToolName() const
+    const AZStd::string& GetToolName() const
     {
         return m_toolName;
     }

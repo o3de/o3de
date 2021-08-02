@@ -84,7 +84,7 @@ static inline int Vsnprintf_s(wchar_t* str, size_t sizeInBytes, [[maybe_unused]]
 }
 
 
-int StringHelpers::Compare(const string& str0, const string& str1)
+int StringHelpers::Compare(const AZStd::string& str0, const AZStd::string& str1)
 {
     const size_t minLength = Util::getMin(str0.length(), str1.length());
     const int result = std::memcmp(str0.c_str(), str1.c_str(), minLength);
@@ -119,7 +119,7 @@ int StringHelpers::Compare(const wstring& str0, const wstring& str1)
 }
 
 
-int StringHelpers::CompareIgnoreCase(const string& str0, const string& str1)
+int StringHelpers::CompareIgnoreCase(const AZStd::string& str0, const AZStd::string& str1)
 {
     const size_t minLength = Util::getMin(str0.length(), str1.length());
     const int result = azmemicmp(str0.c_str(), str1.c_str(), minLength);
@@ -154,7 +154,7 @@ int StringHelpers::CompareIgnoreCase(const wstring& str0, const wstring& str1)
 }
 
 
-bool StringHelpers::Equals(const string& str0, const string& str1)
+bool StringHelpers::Equals(const AZStd::string& str0, const AZStd::string& str1)
 {
     if (str0.length() != str1.length())
     {
@@ -173,7 +173,7 @@ bool StringHelpers::Equals(const wstring& str0, const wstring& str1)
 }
 
 
-bool StringHelpers::EqualsIgnoreCase(const string& str0, const string& str1)
+bool StringHelpers::EqualsIgnoreCase(const AZStd::string& str0, const AZStd::string& str1)
 {
     if (str0.length() != str1.length())
     {
@@ -200,7 +200,7 @@ bool StringHelpers::EqualsIgnoreCase(const wstring& str0, const wstring& str1)
 }
 
 
-bool StringHelpers::StartsWith(const string& str, const string& pattern)
+bool StringHelpers::StartsWith(const AZStd::string& str, const AZStd::string& pattern)
 {
     if (str.length() < pattern.length())
     {
@@ -219,7 +219,7 @@ bool StringHelpers::StartsWith(const wstring& str, const wstring& pattern)
 }
 
 
-bool StringHelpers::StartsWithIgnoreCase(const string& str, const string& pattern)
+bool StringHelpers::StartsWithIgnoreCase(const AZStd::string& str, const AZStd::string& pattern)
 {
     if (str.length() < pattern.length())
     {
@@ -246,7 +246,7 @@ bool StringHelpers::StartsWithIgnoreCase(const wstring& str, const wstring& patt
 }
 
 
-bool StringHelpers::EndsWith(const string& str, const string& pattern)
+bool StringHelpers::EndsWith(const AZStd::string& str, const AZStd::string& pattern)
 {
     if (str.length() < pattern.length())
     {
@@ -265,7 +265,7 @@ bool StringHelpers::EndsWith(const wstring& str, const wstring& pattern)
 }
 
 
-bool StringHelpers::EndsWithIgnoreCase(const string& str, const string& pattern)
+bool StringHelpers::EndsWithIgnoreCase(const AZStd::string& str, const AZStd::string& pattern)
 {
     if (str.length() < pattern.length())
     {
@@ -292,7 +292,7 @@ bool StringHelpers::EndsWithIgnoreCase(const wstring& str, const wstring& patter
 }
 
 
-bool StringHelpers::Contains(const string& str, const string& pattern)
+bool StringHelpers::Contains(const AZStd::string& str, const AZStd::string& pattern)
 {
     const size_t patternLength = pattern.length();
     if (str.length() < patternLength)
@@ -329,7 +329,7 @@ bool StringHelpers::Contains(const wstring& str, const wstring& pattern)
 }
 
 
-bool StringHelpers::ContainsIgnoreCase(const string& str, const string& pattern)
+bool StringHelpers::ContainsIgnoreCase(const AZStd::string& str, const AZStd::string& pattern)
 {
     const size_t patternLength = pattern.length();
     if (str.length() < patternLength)
@@ -380,7 +380,7 @@ bool StringHelpers::ContainsIgnoreCase(const wstring& str, const wstring& patter
     return false;
 }
 
-string StringHelpers::TrimLeft(const string& s)
+string StringHelpers::TrimLeft(const AZStd::string& s)
 {
     const size_t first = s.find_first_not_of(" \r\t");
     return (first == s.npos) ? string() : s.substr(first);
@@ -393,7 +393,7 @@ wstring StringHelpers::TrimLeft(const wstring& s)
 }
 
 
-string StringHelpers::TrimRight(const string& s)
+string StringHelpers::TrimRight(const AZStd::string& s)
 {
     const size_t last = s.find_last_not_of(" \r\t");
     return (last == s.npos) ? s : s.substr(0, last + 1);
@@ -406,7 +406,7 @@ wstring StringHelpers::TrimRight(const wstring& s)
 }
 
 
-string StringHelpers::Trim(const string& s)
+string StringHelpers::Trim(const AZStd::string& s)
 {
     return TrimLeft(TrimRight(s));
 }
@@ -447,7 +447,7 @@ static inline TS RemoveDuplicateSpaces_Tpl(const TS& s)
     return res;
 }
 
-string StringHelpers::RemoveDuplicateSpaces(const string& s)
+string StringHelpers::RemoveDuplicateSpaces(const AZStd::string& s)
 {
     return RemoveDuplicateSpaces_Tpl(s);
 }
@@ -470,7 +470,7 @@ static inline TS MakeLowerCase_Tpl(const TS& s)
     return copy;
 }
 
-string StringHelpers::MakeLowerCase(const string& s)
+string StringHelpers::MakeLowerCase(const AZStd::string& s)
 {
     return MakeLowerCase_Tpl(s);
 }
@@ -493,7 +493,7 @@ static inline TS MakeUpperCase_Tpl(const TS& s)
     return copy;
 }
 
-string StringHelpers::MakeUpperCase(const string& s)
+string StringHelpers::MakeUpperCase(const AZStd::string& s)
 {
     return MakeUpperCase_Tpl(s);
 }
@@ -517,7 +517,7 @@ static inline TS Replace_Tpl(const TS& s, const typename TS::value_type oldChar,
     return copy;
 }
 
-string StringHelpers::Replace(const string& s, char oldChar, char newChar)
+string StringHelpers::Replace(const AZStd::string& s, char oldChar, char newChar)
 {
     return Replace_Tpl(s, oldChar, newChar);
 }
@@ -528,12 +528,12 @@ wstring StringHelpers::Replace(const wstring& s, wchar_t oldChar, wchar_t newCha
 }
 
 
-void StringHelpers::ConvertStringByRef(string& out, const string& in)
+void StringHelpers::ConvertStringByRef(string& out, const AZStd::string& in)
 {
     out = in;
 }
 
-void StringHelpers::ConvertStringByRef(wstring& out, const string& in)
+void StringHelpers::ConvertStringByRef(wstring& out, const AZStd::string& in)
 {
     Unicode::Convert(out, in);
 }
@@ -630,7 +630,7 @@ static inline void SplitByAnyOf_Tpl(const TS& str, const TS& separators, bool bR
 
 
 
-void StringHelpers::Split(const string& str, const string& separator, bool bReturnEmptyPartsToo, std::vector<string>& outParts)
+void StringHelpers::Split(const AZStd::string& str, const AZStd::string& separator, bool bReturnEmptyPartsToo, std::vector<string>& outParts)
 {
     Split_Tpl(str, separator, bReturnEmptyPartsToo, outParts);
 }
@@ -641,7 +641,7 @@ void StringHelpers::Split(const wstring& str, const wstring& separator, bool bRe
 }
 
 
-void StringHelpers::SplitByAnyOf(const string& str, const string& separators, bool bReturnEmptyPartsToo, std::vector<string>& outParts)
+void StringHelpers::SplitByAnyOf(const AZStd::string& str, const AZStd::string& separators, bool bReturnEmptyPartsToo, std::vector<string>& outParts)
 {
     SplitByAnyOf_Tpl(str, separators, bReturnEmptyPartsToo, outParts);
 }

@@ -37,7 +37,7 @@ namespace GridMate
     {
         friend class LANMemberIDMarshaler;
 
-        static LANMemberID Create(MemberIDCompact id, const string& address)
+        static LANMemberID Create(MemberIDCompact id, const AZStd::string& address)
         {
             LANMemberID mid;
             mid.m_id = id;
@@ -45,7 +45,7 @@ namespace GridMate
             return mid;
         }
 
-        void SetAddress(const string& address)
+        void SetAddress(const AZStd::string& address)
         {
             m_address = address;
         }
@@ -120,14 +120,14 @@ namespace GridMate
         /// Creates the local player.
         GridMember* CreateLocalMember(bool isHost, bool isInvited, RemotePeerMode peerMode);
         /// Creates remote player, when he wants to join.
-        GridMember* CreateRemoteMember(const string& address, ReadBuffer& data, RemotePeerMode peerMode, ConnectionID connId = InvalidConnectionID) override;
+        GridMember* CreateRemoteMember(const AZStd::string& address, ReadBuffer& data, RemotePeerMode peerMode, ConnectionID connId = InvalidConnectionID) override;
 
         /// Called when we receive the session replica. We create one and return the pointer.
         LANSessionReplica*  OnSessionReplicaArrived();
 
         /// Called when session parameters have changed.
         void OnSessionParamChanged(const GridSessionParam& param) override { (void)param; }
-        void OnSessionParamRemoved(const string& paramId) override { (void)paramId; }
+        void OnSessionParamRemoved(const AZStd::string& paramId) override { (void)paramId; }
 
     private:
         explicit LANSession(LANSessionService* service);
@@ -762,7 +762,7 @@ LANSession::CreateLocalMember(bool isHost, bool isInvited, RemotePeerMode peerMo
 // [2/2/2011]
 //==========================================================================
 GridMember*
-LANSession::CreateRemoteMember(const string& address, ReadBuffer& data, RemotePeerMode peerMode, ConnectionID connId)
+LANSession::CreateRemoteMember(const AZStd::string& address, ReadBuffer& data, RemotePeerMode peerMode, ConnectionID connId)
 {
     MemberIDCompact id;
     data.Read(id);
@@ -803,7 +803,7 @@ LANSession::OnStateCreate(AZ::HSM& sm, const AZ::HSM::Event& e)
     {
         // patch the ID if we use implicit port
         AZ_Assert(m_carrier, "Carrier must be created!");
-        string ip;
+        AZStd::string ip;
         unsigned int port;
         SocketDriverCommon::AddressStringToIPPort(m_myMember->GetId().ToAddress(), ip, port);
         AZ_Assert(port == 0 || port == m_carrier->GetPort(), "Carrier port missmatch! It should either be 0 (and patched here) in the implicit bind or the port number for explicit bind!");

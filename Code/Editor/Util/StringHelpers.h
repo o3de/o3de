@@ -15,83 +15,83 @@ namespace StringHelpers
 {
     // compares two strings to see if they are the same or different, case sensitive
     // returns 0 if the strings are the same, a -1 if the first string is bigger, or a 1 if the second string is bigger
-    int Compare(const string& str0, const string& str1);
+    int Compare(const AZStd::string& str0, const AZStd::string& str1);
     int Compare(const wstring& str0, const wstring& str1);
 
     // compares two strings to see if they are the same or different, case is ignored
     // returns 0 if the strings are the same, a -1 if the first string is bigger, or a 1 if the second string is bigger
-    int CompareIgnoreCase(const string& str0, const string& str1);
+    int CompareIgnoreCase(const AZStd::string& str0, const AZStd::string& str1);
     int CompareIgnoreCase(const wstring& str0, const wstring& str1);
 
     // compares two strings to see if they are the same, case senstive
     // returns true if they are the same or false if they are different
-    bool Equals(const string& str0, const string& str1);
+    bool Equals(const AZStd::string& str0, const AZStd::string& str1);
     bool Equals(const wstring& str0, const wstring& str1);
 
     // compares two strings to see if they are the same, case is ignored
     // returns true if they are the same or false if they are different
-    bool EqualsIgnoreCase(const string& str0, const string& str1);
+    bool EqualsIgnoreCase(const AZStd::string& str0, const AZStd::string& str1);
     bool EqualsIgnoreCase(const wstring& str0, const wstring& str1);
 
     // checks to see if a string starts with a specified string, case sensitive
     // returns true if the string does start with a specified string or false if it does not
-    bool StartsWith(const string& str, const string& pattern);
+    bool StartsWith(const AZStd::string& str, const AZStd::string& pattern);
     bool StartsWith(const wstring& str, const wstring& pattern);
 
     // checks to see if a string starts with a specified string, case is ignored
     // returns true if the string does start with a specified string or false if it does not
-    bool StartsWithIgnoreCase(const string& str, const string& pattern);
+    bool StartsWithIgnoreCase(const AZStd::string& str, const AZStd::string& pattern);
     bool StartsWithIgnoreCase(const wstring& str, const wstring& pattern);
 
     // checks to see if a string ends with a specified string, case sensitive
     // returns true if the string does end with a specified string or false if it does not
-    bool EndsWith(const string& str, const string& pattern);
+    bool EndsWith(const AZStd::string& str, const AZStd::string& pattern);
     bool EndsWith(const wstring& str, const wstring& pattern);
 
     // checks to see if a string ends with a specified string, case is ignored
     // returns true if the string does end with a specified string or false if it does not
-    bool EndsWithIgnoreCase(const string& str, const string& pattern);
+    bool EndsWithIgnoreCase(const AZStd::string& str, const AZStd::string& pattern);
     bool EndsWithIgnoreCase(const wstring& str, const wstring& pattern);
 
     // checks to see if a string contains a specified string, case sensitive
     // returns true if the string does contain the specified string or false if it does not
-    bool Contains(const string& str, const string& pattern);
+    bool Contains(const AZStd::string& str, const AZStd::string& pattern);
     bool Contains(const wstring& str, const wstring& pattern);
 
     // checks to see if a string contains a specified string, case is ignored
     // returns true if the string does contain the specified string or false if it does not
-    bool ContainsIgnoreCase(const string& str, const string& pattern);
+    bool ContainsIgnoreCase(const AZStd::string& str, const AZStd::string& pattern);
     bool ContainsIgnoreCase(const wstring& str, const wstring& pattern);
 
-    string TrimLeft(const string& s);
+    string TrimLeft(const AZStd::string& s);
     wstring TrimLeft(const wstring& s);
 
-    string TrimRight(const string& s);
+    string TrimRight(const AZStd::string& s);
     wstring TrimRight(const wstring& s);
 
-    string Trim(const string& s);
+    string Trim(const AZStd::string& s);
     wstring Trim(const wstring& s);
 
-    string RemoveDuplicateSpaces(const string& s);
+    string RemoveDuplicateSpaces(const AZStd::string& s);
     wstring RemoveDuplicateSpaces(const wstring& s);
 
     // converts a string with upper case characters to be all lower case
     // returns the string in all lower case
-    string MakeLowerCase(const string& s);
+    string MakeLowerCase(const AZStd::string& s);
     wstring MakeLowerCase(const wstring& s);
 
     // converts a string with lower case characters to be all upper case
     // returns the string in all upper case
-    string MakeUpperCase(const string& s);
+    string MakeUpperCase(const AZStd::string& s);
     wstring MakeUpperCase(const wstring& s);
 
     // replace a specified character in a string with a specified replacement character
     // returns string with specified character replaced
-    string Replace(const string& s, char oldChar, char newChar);
+    string Replace(const AZStd::string& s, char oldChar, char newChar);
     wstring Replace(const wstring& s, wchar_t oldChar, wchar_t newChar);
 
-    void ConvertStringByRef(string& out, const string& in);
-    void ConvertStringByRef(wstring& out, const string& in);
+    void ConvertStringByRef(string& out, const AZStd::string& in);
+    void ConvertStringByRef(wstring& out, const AZStd::string& in);
     void ConvertStringByRef(string& out, const wstring& in);
     void ConvertStringByRef(wstring& out, const wstring& in);
 
@@ -103,10 +103,10 @@ namespace StringHelpers
         return out;
     }
     
-    void Split(const string& str, const string& separator, bool bReturnEmptyPartsToo, std::vector<string>& outParts);
+    void Split(const AZStd::string& str, const AZStd::string& separator, bool bReturnEmptyPartsToo, std::vector<string>& outParts);
     void Split(const wstring& str, const wstring& separator, bool bReturnEmptyPartsToo, std::vector<wstring>& outParts);
 
-    void SplitByAnyOf(const string& str, const string& separators, bool bReturnEmptyPartsToo, std::vector<string>& outParts);
+    void SplitByAnyOf(const AZStd::string& str, const AZStd::string& separators, bool bReturnEmptyPartsToo, std::vector<string>& outParts);
     void SplitByAnyOf(const wstring& str, const wstring& separators, bool bReturnEmptyPartsToo, std::vector<wstring>& outParts);
 
     string FormatVA(const char* const format, va_list parg);

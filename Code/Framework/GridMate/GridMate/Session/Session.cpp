@@ -92,7 +92,7 @@ namespace GridMate
             */
             virtual bool            OnConfirmAck(ConnectionID id, ReadBuffer& rb)   { (void)id; (void)rb; return true; } // we don't do any further filtering
             /// Return true if you want to reject early reject a connection.
-            virtual bool            OnNewConnection(const string& address);
+            virtual bool            OnNewConnection(const AZStd::string& address);
             /// Called when we close a connection.
             virtual void            OnDisconnect(ConnectionID id);
             /// Return timeout in milliseconds of the handshake procedure.
@@ -684,7 +684,7 @@ GridSession::SetParam(const GridSessionParam& param)
 // RemoveParam
 //=========================================================================
 bool
-GridSession::RemoveParam(const string& paramId)
+GridSession::RemoveParam(const AZStd::string& paramId)
 {
     AZ_Assert(m_state, "Invalid session state replica. Session is not initialized.");
 
@@ -970,7 +970,7 @@ GridSession::AddMember(GridMember* member)
 // IsAddressInMemberList
 //=========================================================================
 bool
-GridSession::IsAddressInMemberList(const string& address)
+GridSession::IsAddressInMemberList(const AZStd::string& address)
 {
     for (AZStd::size_t i = 0; i < m_members.size(); ++i)
     {
@@ -2783,7 +2783,7 @@ bool GridSessionHandshake::OnConfirmRequest(ConnectionID id, ReadBuffer& rb)
 //=========================================================================
 // OnNewConnection
 //=========================================================================
-bool GridSessionHandshake::OnNewConnection(const string& address)
+bool GridSessionHandshake::OnNewConnection(const AZStd::string& address)
 {
     AZStd::lock_guard<AZStd::mutex> l(m_dataLock);
 

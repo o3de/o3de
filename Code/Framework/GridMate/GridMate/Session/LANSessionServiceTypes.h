@@ -39,9 +39,9 @@ namespace GridMate
         {}
 
         int     m_familyType;                   ///< Socket driver specific, by default 0.
-        string  m_serverAddress;                ///< Address of the server, we empty we create a broadcast address.
+        AZStd::string  m_serverAddress;         ///< Address of the server, we empty we create a broadcast address.
         int     m_serverPort;                   ///< Server port (must be provided).
-        string  m_listenAddress;                ///< Address to bind for listening. By default is empty, which means we are listening to any address.
+        AZStd::string  m_listenAddress;         ///< Address to bind for listening. By default is empty, which means we are listening to any address.
         int     m_listenPort;                   ///< Search listen port, if not set we will use ephimeral port.
         unsigned int m_broadcastFrequencyMs;    ///< Time in MS between search broadcasts.
     };
@@ -52,7 +52,7 @@ namespace GridMate
     struct LANSearchInfo
         : public SearchInfo
     {
-        string m_serverIP; ///< server ID as we see it
+        AZStd::string m_serverIP; ///< server ID as we see it
         AZ::u16 m_serverPort; ///< server port for the session
     };
 }

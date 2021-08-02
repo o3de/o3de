@@ -102,7 +102,7 @@ public:
     virtual bool LocalizeString_ch(const char* sString, AZStd::string& outLocalizedString, bool bEnglish = false) = 0;
 
     // Summary:
-    //   Same as LocalizeString( const char* sString, string& outLocalizedString, bool bEnglish=false )
+    //   Same as LocalizeString( const char* sString, AZStd::string& outLocalizedString, bool bEnglish=false )
     //   but at the moment this is faster.
     virtual bool LocalizeString_s(const AZStd::string& sString, AZStd::string& outLocalizedString, bool bEnglish = false) = 0;
 

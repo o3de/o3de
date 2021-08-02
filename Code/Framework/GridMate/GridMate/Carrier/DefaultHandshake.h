@@ -47,7 +47,7 @@ namespace GridMate
         */
         virtual bool                OnConfirmAck(ConnectionID id, ReadBuffer& rb);
         /// Return true if you want to reject early reject a connection.
-        virtual bool                OnNewConnection(const string& address);
+        virtual bool                OnNewConnection(const AZStd::string& address);
         /// Called when we close a connection.
         virtual void                OnDisconnect(ConnectionID id);
         /// Return timeout in milliseconds of the handshake procedure.

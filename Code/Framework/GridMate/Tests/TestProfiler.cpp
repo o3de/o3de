@@ -34,7 +34,7 @@ static bool CollectPerformanceCounters(const AZ::Debug::ProfilerRegister& reg, c
     return true;
 }
 
-static string FormatString(const string& pre, const string& name, const string& post, AZ::u64 time, AZ::u64 calls)
+static string FormatString(const AZStd::string& pre, const AZStd::string& name, const AZStd::string& post, AZ::u64 time, AZ::u64 calls)
 {
     string units = "us";
     if (AZ::u64 divtime = time / 1000)

@@ -419,7 +419,7 @@ void CXmlHistoryManager::ClearHistory(bool flagAsSaved)
 }
 
 /////////////////////////////////////////////////////////////////////////////
-const string& CXmlHistoryManager::GetVersionDesc(int number) const
+const AZStd::string& CXmlHistoryManager::GetVersionDesc(int number) const
 {
     THistoryInfoMap::const_iterator it = m_HistoryInfoMap.find(number);
     if (it != m_HistoryInfoMap.end())

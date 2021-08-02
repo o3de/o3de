@@ -62,7 +62,7 @@ struct IXmlHistoryManager
     // History
     virtual void ClearHistory(bool flagAsSaved = false) = 0;
     virtual int GetVersionCount() const = 0;
-    virtual const string& GetVersionDesc(int number) const = 0;
+    virtual const AZStd::string& GetVersionDesc(int number) const = 0;
     virtual int GetCurrentVersionNumber() const = 0;
 
     // Views

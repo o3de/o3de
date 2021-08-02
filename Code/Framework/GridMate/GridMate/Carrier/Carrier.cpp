@@ -417,7 +417,7 @@ namespace GridMate
     {
         GM_CLASS_ALLOCATOR(Connection); // make a pool and use it...
 
-        Connection(CarrierThread* threadOwner, const string& address);
+        Connection(CarrierThread* threadOwner, const AZStd::string& address);
         ~Connection();
 
         CarrierThread*              m_threadOwner;                                  ///< Pointer to the carrier thread that operates with this connection.
@@ -999,7 +999,7 @@ namespace GridMate
         /// Connect with host and port. This is ASync operation, the connection is active after OnConnectionEstablished is called.
         ConnectionID    Connect(const char* hostAddress, unsigned int port) override;
         /// Connect with internal address format. This is ASync operation, the connection is active after OnConnectionEstablished is called.
-        ConnectionID    Connect(const string& address) override;
+        ConnectionID    Connect(const AZStd::string& address) override;
         /// Request a disconnect procedure. This is ASync operation, the connection is closed after OnDisconnect is called.
         void            Disconnect(ConnectionID id) override;
 
@@ -1118,7 +1118,7 @@ using namespace GridMate;
 // Connection
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
-Connection::Connection(CarrierThread* threadOwner, const string& address)
+Connection::Connection(CarrierThread* threadOwner, const AZStd::string& address)
     : m_threadOwner(threadOwner)
     , m_threadConn(NULL)
     , m_fullAddress(address)
@@ -3740,7 +3740,7 @@ CarrierImpl::Connect(const char* hostAddress, unsigned int port)
 // [1/12/2011]
 //=========================================================================
 ConnectionID
-CarrierImpl::Connect(const string& address)
+CarrierImpl::Connect(const AZStd::string& address)
 {
     // check if we don't have it in the list.
     for(auto& i : m_connections)

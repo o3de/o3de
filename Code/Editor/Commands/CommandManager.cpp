@@ -79,7 +79,7 @@ CEditorCommandManager::~CEditorCommandManager()
     m_uiCommands.clear();
 }
 
-string CEditorCommandManager::GetFullCommandName(const string& module, const string& name)
+string CEditorCommandManager::GetFullCommandName(const AZStd::string& module, const string& name)
 {
     string fullName = module;
     fullName += ".";

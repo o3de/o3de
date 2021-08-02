@@ -560,7 +560,7 @@ QString CBaseLibraryManager::MakeUniqueItemName(const QString& srcName, const QS
         return srcName;
     }
 
-    std::sort(possibleDuplicates.begin(), possibleDuplicates.end(), [](const string& strOne, const string& strTwo)
+    std::sort(possibleDuplicates.begin(), possibleDuplicates.end(), [](const AZStd::string& strOne, const AZStd::string& strTwo)
         {
             // I can assume size sorting since if the length is different, either one of the two strings doesn't
             // closely match the string we are trying to duplicate, or it's a bigger number (X1 vs X10)
