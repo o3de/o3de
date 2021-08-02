@@ -17,6 +17,7 @@
 
 #include <AzCore/std/limits.h>
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Math/Sfmt.h>
 
 #include <AZTestShared/Math/MathTestHelpers.h>
 #include <AzTest/AzTest.h>
@@ -91,7 +92,7 @@ namespace UnitTest
             AZ::Aabb m_aabb = AZ::Aabb::CreateNull();
             uint32_t m_indexCount = 0;
             uint32_t m_vertexCount = 0;
-            AZ::Data::Asset<AZ::RPI::MaterialAsset> m_material;
+            AZ::RPI::ModelMaterialSlot::StableId m_materialSlotId = AZ::RPI::ModelMaterialSlot::InvalidStableId;
         };
 
         struct ExpectedLod
@@ -136,6 +137,7 @@ namespace UnitTest
             return true;
         }
 
+        //! This function assumes the model has "sharedMeshCount + separateMeshCount" unique material slots, with incremental IDs starting at 0.
         AZ::Data::Asset<AZ::RPI::ModelLodAsset> BuildTestLod(const uint32_t sharedMeshCount, const uint32_t separateMeshCount, ExpectedLod& expectedLod)
         {
             using namespace AZ;
@@ -147,6 +149,8 @@ namespace UnitTest
 
             const uint32_t indexCount = 36;
             const uint32_t vertexCount = 36;
+
+            RPI::ModelMaterialSlot::StableId materialSlotId = 0;
 
             if(sharedMeshCount > 0)
             {
@@ -164,7 +168,7 @@ namespace UnitTest
                     ExpectedMesh expectedMesh;
                     expectedMesh.m_indexCount = indexCount;
                     expectedMesh.m_vertexCount = vertexCount;
-                    expectedMesh.m_material = m_materialAsset;
+                    expectedMesh.m_materialSlotId = i;
 
                     RHI::BufferViewDescriptor indexBufferViewDescriptor =
                         RHI::BufferViewDescriptor::CreateStructured(i * indexCount, indexCount, sizeof(uint32_t));
@@ -180,7 +184,7 @@ namespace UnitTest
                     creator.BeginMesh();
                     Aabb aabb = expectedMesh.m_aabb;
                     creator.SetMeshAabb(AZStd::move(aabb));
-                    creator.SetMeshMaterialAsset(m_materialAsset);
+                    creator.SetMeshMaterialSlot(materialSlotId++);
                     creator.SetMeshIndexBuffer({ sharedIndexBuffer, indexBufferViewDescriptor });
                     creator.AddMeshStreamBuffer(GetPositionSemantic(), AZ::Name(), { sharedPositionBuffer, vertexBufferViewDescriptor });
                     creator.EndMesh();
@@ -195,7 +199,7 @@ namespace UnitTest
                 ExpectedMesh expectedMesh;
                 expectedMesh.m_indexCount = indexCount;
                 expectedMesh.m_vertexCount = vertexCount;
-                expectedMesh.m_material = m_materialAsset;
+                expectedMesh.m_materialSlotId = sharedMeshCount + i;
 
                 RHI::BufferViewDescriptor indexBufferViewDescriptor =
                     RHI::BufferViewDescriptor::CreateStructured(0, indexCount, sizeof(uint32_t));
@@ -213,7 +217,7 @@ namespace UnitTest
                 creator.BeginMesh();
                 Aabb aabb = expectedMesh.m_aabb;
                 creator.SetMeshAabb(AZStd::move(aabb));
-                creator.SetMeshMaterialAsset(m_materialAsset);
+                creator.SetMeshMaterialSlot(materialSlotId++);
                 creator.SetMeshIndexBuffer({ BuildTestBuffer(indexCount, sizeof(uint32_t)), indexBufferViewDescriptor });
                 creator.AddMeshStreamBuffer(GetPositionSemantic(), AZ::Name(), { positonBuffer, positionBufferViewDescriptor });
 
@@ -239,6 +243,15 @@ namespace UnitTest
 
             creator.Begin(Data::AssetId(AZ::Uuid::CreateRandom()));
             creator.SetName("TestModel");
+            
+            for (RPI::ModelMaterialSlot::StableId materialSlotId = 0; materialSlotId < sharedMeshCount + separateMeshCount; ++materialSlotId)
+            {
+                RPI::ModelMaterialSlot slot;
+                slot.m_defaultMaterialAsset = m_materialAsset;
+                slot.m_displayName = AZStd::string::format("Slot%d", materialSlotId);
+                slot.m_stableId = materialSlotId;
+                creator.AddMaterialSlot(slot);
+            }
 
             for (uint32_t i = 0; i < lodCount; ++i)
             {
@@ -263,7 +276,7 @@ namespace UnitTest
             EXPECT_TRUE(mesh.GetAabb() == expectedMesh.m_aabb);
             EXPECT_TRUE(mesh.GetIndexCount() == expectedMesh.m_indexCount);
             EXPECT_TRUE(mesh.GetVertexCount() == expectedMesh.m_vertexCount);
-            EXPECT_TRUE(mesh.GetMaterialAsset() == expectedMesh.m_material);
+            EXPECT_TRUE(mesh.GetMaterialSlotId() == expectedMesh.m_materialSlotId);
         }
 
         void ValidateLodAsset(const AZ::RPI::ModelLodAsset* lodAsset, const ExpectedLod& expectedLod)
@@ -687,11 +700,11 @@ namespace UnitTest
         }
     }
 
-    // Tests that if we try to set the material id on a mesh
+    // Tests that if we try to set the material slot on a mesh
     // without calling Begin or BeginMesh that it fails
     // as expected. Also tests the case that Begin *is*
     // called but BeginMesh is not.
-    TEST_F(ModelTests, SetMaterialIdNoBeginNoBeginMesh)
+    TEST_F(ModelTests, SetMaterialSlotNoBeginNoBeginMesh)
     {
         using namespace AZ;
 
@@ -699,7 +712,7 @@ namespace UnitTest
 
         {
             ErrorMessageFinder messageFinder("Begin() was not called");
-            creator.SetMeshMaterialAsset(m_materialAsset);
+            creator.SetMeshMaterialSlot(0);
         }
 
         creator.Begin(Data::AssetId(AZ::Uuid::CreateRandom()));
@@ -707,7 +720,7 @@ namespace UnitTest
         //This should still fail even if we call Begin but not BeginMesh
         {
             ErrorMessageFinder messageFinder("BeginMesh() was not called");
-            creator.SetMeshMaterialAsset(m_materialAsset);
+            creator.SetMeshMaterialSlot(0);
         }
     }
 
@@ -827,7 +840,7 @@ namespace UnitTest
 
             creator.BeginMesh();
             creator.SetMeshAabb(AZStd::move(aabb));
-            creator.SetMeshMaterialAsset(m_materialAsset);
+            creator.SetMeshMaterialSlot(0);
             creator.SetMeshIndexBuffer({ BuildTestBuffer(indexCount, sizeof(uint32_t)), indexBufferViewDescriptor });
             creator.AddMeshStreamBuffer(GetPositionSemantic(), AZ::Name(), { BuildTestBuffer(vertexCount, sizeof(float) * 3), vertexBufferViewDescriptor });
 
@@ -842,7 +855,7 @@ namespace UnitTest
             ErrorMessageFinder messageFinder("BeginMesh() was not called", 5);
 
             creator.SetMeshAabb(AZStd::move(aabb));
-            creator.SetMeshMaterialAsset(m_materialAsset);
+            creator.SetMeshMaterialSlot(0);
             creator.SetMeshIndexBuffer({ BuildTestBuffer(indexCount, sizeof(uint32_t)), indexBufferViewDescriptor });
             creator.AddMeshStreamBuffer(GetPositionSemantic(), AZ::Name(), { BuildTestBuffer(vertexCount, sizeof(float) * 3), vertexBufferViewDescriptor });
 
@@ -885,7 +898,7 @@ namespace UnitTest
 
             creator.BeginMesh();
             creator.SetMeshAabb(AZStd::move(aabb));
-            creator.SetMeshMaterialAsset(m_materialAsset);
+            creator.SetMeshMaterialSlot(0);
             creator.SetMeshIndexBuffer({ BuildTestBuffer(indexCount, sizeof(uint32_t)), indexBufferViewDescriptor });
             creator.AddMeshStreamBuffer(GetPositionSemantic(), AZ::Name(), { BuildTestBuffer(vertexCount, sizeof(float) * 3), vertexBufferViewDescriptor });
 
@@ -907,7 +920,7 @@ namespace UnitTest
 
             creator.BeginMesh();
             creator.SetMeshAabb(AZStd::move(aabb));
-            creator.SetMeshMaterialAsset(m_materialAsset);
+            creator.SetMeshMaterialSlot(0);
             creator.SetMeshIndexBuffer({ BuildTestBuffer(indexCount, sizeof(uint32_t)), indexBufferViewDescriptor });
             creator.AddMeshStreamBuffer(GetPositionSemantic(), AZ::Name(), { BuildTestBuffer(vertexCount, sizeof(float) * 3), vertexBufferViewDescriptor });
 
@@ -1019,10 +1032,7 @@ namespace UnitTest
 
             lodCreator.BeginMesh();
             lodCreator.SetMeshAabb(AZ::Aabb::CreateFromMinMax({-1.0f, -1.0f, -0.5f}, {1.0f, 1.0f, 0.5f}));
-            lodCreator.SetMeshMaterialAsset(
-                AZ::Data::Asset<AZ::RPI::MaterialAsset>(AZ::Data::AssetId(AZ::Uuid::CreateRandom(), 0),
-                    AZ::AzTypeInfo<AZ::RPI::MaterialAsset>::Uuid(), "")
-            );
+            lodCreator.SetMeshMaterialSlot(AZ::Sfmt::GetInstance().Rand32());
 
             {
                 AZ::Data::Asset<AZ::RPI::BufferAsset> indexBuffer = BuildTestBuffer(indicesCount, sizeof(uint32_t));
