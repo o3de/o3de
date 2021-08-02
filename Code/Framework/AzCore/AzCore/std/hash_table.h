@@ -1008,7 +1008,7 @@ namespace AZStd
             {
                 if (keyEq(keyCmp, Traits::key_from_value(*insertIter)))
                 {
-                    // Element already exists, it shouldn't be inserted as we don't allow more than one element for this specialization
+                    // Element already exists, it shouldn't be inserted as we don't allow more than one repeated element for this specialization
                     return false;
                 }
             }
