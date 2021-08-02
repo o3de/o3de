@@ -46,7 +46,7 @@ namespace
         SEfResTexture* pTex = pRes->GetTextureResource(nSlot);
         if (pTex)
         {
-            cry_strcat(outName, Path::GamePathToFullPath(pTex->m_Name.c_str()).toUtf8().data());
+            azstrcat(outName, Path::GamePathToFullPath(pTex->m_Name.c_str()).toUtf8().data());
         }
     }
 

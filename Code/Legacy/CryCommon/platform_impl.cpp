@@ -499,7 +499,7 @@ inline void CryDebugStr([[maybe_unused]] const char* format, ...)
      va_start(ArgList, format);
      azvsnprintf(szBuffer,sizeof(szBuffer)-1, format, ArgList);
      va_end(ArgList);
-     cry_strcat(szBuffer,"\n");
+     azstrcat(szBuffer,"\n");
      OutputDebugString(szBuffer);
      #endif
      */

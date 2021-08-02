@@ -917,7 +917,7 @@ void CAnimSceneNode::ApplyEventKey(IEventKey& key, [[maybe_unused]] SAnimContext
 {
     char funcName[1024];
     azstrcpy(funcName, "Event_");
-    cry_strcat(funcName, key.event.c_str());
+    azstrcat(funcName, key.event.c_str());
     gEnv->pMovieSystem->SendGlobalEvent(funcName);
 }
 
@@ -1003,7 +1003,7 @@ void CAnimSceneNode::ApplyGotoKey(CGotoTrack*   poGotoTrack, SAnimContext& ec)
         {
             if (stDiscreteFloadKey.m_fValue >= 0)
             {
-                string fullname = m_pSequence->GetName();
+                AZStd::string fullname = m_pSequence->GetName();
                 GetMovieSystem()->GoToFrame(fullname.c_str(), stDiscreteFloadKey.m_fValue);
             }
         }

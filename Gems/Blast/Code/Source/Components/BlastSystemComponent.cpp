@@ -32,6 +32,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 #endif
+#include <CryCommon/ISystem.h>
 
 namespace Blast
 {

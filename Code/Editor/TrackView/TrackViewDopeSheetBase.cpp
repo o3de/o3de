@@ -2808,10 +2808,10 @@ void CTrackViewDopeSheetBase::DrawKeys(CTrackViewTrack* pTrack, QPainter* painte
                 }
                 else
                 {
-                    cry_strcpy(keydesc, "{");
+                    azstrcpy(keydesc, "{");
                 }
-                cry_strcat(keydesc, pDescription);
-                cry_strcat(keydesc, "}");
+                azstrcat(keydesc, pDescription);
+                azstrcat(keydesc, "}");
                 // Draw key description text.
                 // Find next key.
                 const QRect textRect(QPoint(x + 10, rect.top()), QPoint(x1, rect.bottom()));

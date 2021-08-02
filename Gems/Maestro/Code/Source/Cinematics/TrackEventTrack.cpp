@@ -146,8 +146,8 @@ void CTrackEventTrack::GetKeyInfo(int key, const char*& description, float& dura
     azstrcpy(desc, m_keys[key].event.c_str());
     if (!m_keys[key].eventValue.empty())
     {
-        cry_strcat(desc, ", ");
-        cry_strcat(desc, m_keys[key].eventValue.c_str());
+        azstrcat(desc, ", ");
+        azstrcat(desc, m_keys[key].eventValue.c_str());
     }
 
     description = desc;

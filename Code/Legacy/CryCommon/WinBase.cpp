@@ -349,23 +349,23 @@ void _makepath(char* path, const char* drive, const char* dir, const char* filen
     }
     if (dir && dir[0])
     {
-        cry_strcat(tmp, dir);
+        azstrcat(tmp, dir);
         ch = tmp[strlen(tmp) - 1];
         if (ch != '/' && ch != '\\')
         {
-            cry_strcat(tmp, "\\");
+            azstrcat(tmp, "\\");
         }
     }
     if (filename && filename[0])
     {
-        cry_strcat(tmp, filename);
+        azstrcat(tmp, filename);
         if (ext && ext[0])
         {
             if (ext[0] != '.')
             {
-                cry_strcat(tmp, ".");
+                azstrcat(tmp, ".");
             }
-            cry_strcat(tmp, ext);
+            azstrcat(tmp, ext);
         }
     }
     azstrcpy(path, strlen(tmp) + 1, tmp);
