@@ -1466,6 +1466,14 @@ namespace PhysX
             rigidDynamic->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, configuration.m_kinematic);
             rigidDynamic->setMaxAngularVelocity(configuration.m_maxAngularVelocity);
 
+            // Set axis locks.
+            rigidDynamic->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_X, configuration.m_lockLinearX);
+            rigidDynamic->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Y, configuration.m_lockLinearY);
+            rigidDynamic->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Z, configuration.m_lockLinearZ);
+            rigidDynamic->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, configuration.m_lockAngularX);
+            rigidDynamic->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y, configuration.m_lockAngularY);
+            rigidDynamic->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z, configuration.m_lockAngularZ);
+
             return rigidDynamic;
         }
 

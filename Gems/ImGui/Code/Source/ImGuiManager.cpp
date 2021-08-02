@@ -452,7 +452,7 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
     const InputDeviceId& inputDeviceId = inputChannel.GetInputDevice().GetInputDeviceId();
 
     // Handle Keyboard Hotkeys
-    if (inputDeviceId == InputDeviceKeyboard::Id && inputChannel.IsStateBegan())
+    if (InputDeviceKeyboard::IsKeyboardDevice(inputDeviceId) && inputChannel.IsStateBegan())
     {
         // Cycle through ImGui Menu Bar States on Home button press
         if (inputChannelId == InputDeviceKeyboard::Key::NavigationHome)
@@ -477,7 +477,7 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
     }
 
     // Handle Keyboard Modifier Keys
-    if (inputDeviceId == InputDeviceKeyboard::Id)
+    if (InputDeviceKeyboard::IsKeyboardDevice(inputDeviceId))
     {
         if (inputChannelId == InputDeviceKeyboard::Key::ModifierShiftL
             || inputChannelId == InputDeviceKeyboard::Key::ModifierShiftR)
@@ -506,14 +506,10 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
     // Handle Controller Inputs
     int inputControllerIndex = -1;
     bool controllerInput = false;
-    for (int i = 0; i < MaxControllerNumber; ++i)
+    if (InputDeviceGamepad::IsGamepadDevice(inputDeviceId))
     {
-        //Allow only one controller navigating ImGui at the same time. After menu bar dismissed, other controllers could take over
-        if (inputDeviceId == InputDeviceGamepad::IdForIndexN(i))
-        {
-            inputControllerIndex = i;
-            controllerInput = true;
-        }
+        inputControllerIndex = inputDeviceId.GetIndex();
+        controllerInput = true;
     }
 
     
@@ -570,7 +566,7 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
     }
 
     // Handle Mouse Inputs
-    if (inputDeviceId == InputDeviceMouse::Id)
+    if (InputDeviceMouse::IsMouseDevice(inputDeviceId))
     {
         const int mouseButtonIndex = GetAzMouseButtonIndex(inputChannelId);
         if (0 <= mouseButtonIndex && mouseButtonIndex < AZ_ARRAY_SIZE(io.MouseDown))
@@ -584,7 +580,7 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
     }
 
     // Handle Touch Inputs
-    if (inputDeviceId == InputDeviceTouch::Id)
+    if (InputDeviceTouch::IsTouchDevice(inputDeviceId))
     {
         const int touchIndex = GetAzTouchIndex(inputChannelId);
         if (0 <= touchIndex && touchIndex < AZ_ARRAY_SIZE(io.MouseDown))
@@ -605,7 +601,7 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
     }
 
     // Handle Virtual Keyboard Inputs
-    if (inputDeviceId == InputDeviceVirtualKeyboard::Id)
+    if (InputDeviceVirtualKeyboard::IsVirtualKeyboardDevice(inputDeviceId))
     {
         if (inputChannelId == AzFramework::InputDeviceVirtualKeyboard::Command::EditEnter)
         {
