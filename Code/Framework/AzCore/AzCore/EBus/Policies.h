@@ -268,7 +268,7 @@ namespace AZ
                     m_messages.pop();
                     if (numMessages == 1)
                     {
-                        m_messages.get_container().clear(); // If it was the last message, free all memory.
+                        m_messages = {};
                     }
                 }
                 //////////////////////////////////////////////////////////////////////////
@@ -280,7 +280,7 @@ namespace AZ
         void Clear()
         {
             AZStd::lock_guard<MutexType> lock(m_messagesMutex);
-            m_messages.get_container().clear();
+            m_messages = {};
         }
 
         void SetActive(bool isActive)
@@ -289,7 +289,7 @@ namespace AZ
             m_isActive = isActive;
             if (!m_isActive)
             {
-                m_messages.get_container().clear();
+                m_messages = {};
             }
         };
 

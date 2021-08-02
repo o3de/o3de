@@ -62,7 +62,7 @@ namespace StartingPointInput
                         ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, true)
                         ->Attribute("BrowseIcon", ":/stylesheet/img/UI20/browse-edit-select-files.svg")
                         ->Attribute("EditButton", "")
-                        ->Attribute("EditDescription", "Open in Input Bindings Editor")
+                        ->Attribute("EditDescription", "Open in Asset Editor")
                     ->DataElement(AZ::Edit::UIHandlers::SpinBox, &InputConfigurationComponent::m_localPlayerIndex, "Local player index",
                             "The player index that this component will receive input from (0 based, -1 means all controllers).\n"
                             "Will only work on platforms such as PC where the local user id corresponds to the local player index.\n"

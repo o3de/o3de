@@ -277,6 +277,11 @@ namespace AZ
                 }
             }
         }
+        
+        void PointLightFeatureProcessor::SetShadowBias(LightHandle handle, float bias)
+        {
+            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetShadowBias, bias);
+        }
 
         void PointLightFeatureProcessor::SetShadowmapMaxResolution(LightHandle handle, ShadowmapSize shadowmapSize)
         {

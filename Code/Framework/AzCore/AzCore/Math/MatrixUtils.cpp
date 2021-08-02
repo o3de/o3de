@@ -71,7 +71,7 @@ namespace AZ
         return &out;
     }
 
-    Matrix4x4* MakeOrthographicMatrixRH(Matrix4x4& out, float left, float right, float bottom, float top, float nearDist, float farDist)
+    Matrix4x4* MakeOrthographicMatrixRH(Matrix4x4& out, float left, float right, float bottom, float top, float nearDist, float farDist, bool reverseDepth)
     {
         AZ_Assert(right > left, "right should be greater than left");
         // valid to have matrix invert top/bottom and far/near
@@ -81,6 +81,11 @@ namespace AZ
         if (!(right > left /*&& top > bottom && farDist > nearDist*/))
         {
             return nullptr;
+        }
+
+        if (reverseDepth)
+        {
+            AZStd::swap(nearDist, farDist);
         }
 
         out.SetRow(0,   2.f/(right - left), 0.f,                    0.f,                        - (right + left) / (right - left)   );

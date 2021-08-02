@@ -82,8 +82,6 @@ namespace GraphCanvas
         AZStd::unique_ptr<TranslationAssetHandler> m_assetHandler;
 
         void RegisterTranslationBuilder();
-
-        void RegisterAssetHandler();
         void UnregisterAssetHandler();
         TranslationAssetWorker m_translationAssetWorker;
         AZStd::vector<AZ::Data::AssetId> m_translationAssets;

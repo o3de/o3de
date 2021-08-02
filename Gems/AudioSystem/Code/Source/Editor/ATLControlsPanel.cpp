@@ -16,13 +16,8 @@
 #include <ATLControlsModel.h>
 #include <AudioControl.h>
 #include <AudioControlsEditorPlugin.h>
-#include <CryFile.h>
-#include <CryPath.h>
-#include <Cry_Camera.h>
-#include <IAudioSystem.h>
 #include <IAudioSystemControl.h>
 #include <IAudioSystemEditor.h>
-#include <IEditor.h>
 #include <QAudioControlEditorIcons.h>
 
 #include <QWidgetAction>

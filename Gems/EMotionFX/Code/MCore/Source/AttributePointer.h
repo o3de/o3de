@@ -66,18 +66,5 @@ namespace MCore
             : Attribute(TYPE_ID)
             , mValue(pointer)   { }
         ~AttributePointer() {}
-
-        uint32 GetDataSize() const override                         { return sizeof(void*); }
-
-        // read from a stream
-        bool ReadData(MCore::Stream* stream, MCore::Endian::EEndianType streamEndianType, uint8 version) override
-        {
-            MCORE_UNUSED(stream);
-            MCORE_UNUSED(streamEndianType);
-            MCORE_UNUSED(version);
-
-            MCore::LogWarning("MCore::AttributePointer::ReadData() - Pointer attributes cannot be read from disk.");
-            return false;
-        }
     };
 }   // namespace MCore

@@ -76,6 +76,8 @@ namespace AZ
 
             bool GetEnableShadow() const override;
             void SetEnableShadow(bool enabled) override;
+            float GetShadowBias() const override;
+            void SetShadowBias(float bias) override;
             ShadowmapSize GetShadowmapMaxSize() const override;
             void SetShadowmapMaxSize(ShadowmapSize size) override;
             ShadowFilterMethod GetShadowFilterMethod() const override;
