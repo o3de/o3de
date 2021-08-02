@@ -58,9 +58,18 @@ def create_jobs(request):
     # create job descriptor for each platform
     jobDescriptorList = []
     for platformInfo in request.enabledPlatforms:
+        sourceFileDependency = azlmbr.asset.builder.SourceFileDependency()
+        sourceFileDependency.sourceFileDependencyPath = fbxSidecarFilename
+
+        jobDependency = azlmbr.asset.builder.JobDependency()
+        jobDependency.sourceFile = sourceFileDependency
+        jobDependency.jobKey = jobKeyName
+        jobDependency.platformIdentifier = platformInfo.identifier
+
         jobDesc = azlmbr.asset.builder.JobDescriptor()
         jobDesc.jobKey = jobKeyName
         jobDesc.set_platform_identifier(platformInfo.identifier)
+        jobDesc.jobDependencyList = [jobDependency]
         jobDescriptorList.append(jobDesc)
 
     response = azlmbr.asset.builder.CreateJobsResponse()
