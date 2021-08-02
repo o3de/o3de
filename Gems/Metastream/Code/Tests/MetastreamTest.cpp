@@ -60,7 +60,7 @@ public:
 
     }
 
-    const string m_serverOptionsString = "document_root=Gems/Metastream/Files;listening_ports=8082";
+    const char* m_serverOptionsString = "document_root=Gems/Metastream/Files;listening_ports=8082";
 
 protected:
     void SetUp() override
