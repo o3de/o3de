@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "Commands.h"
 #include <AzCore/Component/ComponentApplicationBus.h>
@@ -27,6 +23,7 @@
 #include <SceneAPIExt/Rules/ActorPhysicsSetupRule.h>
 #include <SceneAPIExt/Rules/SimulatedObjectSetupRule.h>
 #include <SceneAPIExt/Rules/MetaDataRule.h>
+#include <SceneAPIExt/Rules/MotionMetaDataRule.h>
 #include <SceneAPIExt/Groups/MotionGroup.h>
 #include <SceneAPIExt/Groups/ActorGroup.h>
 
@@ -298,14 +295,61 @@ namespace EMStudio
         AZStd::string sourceAssetFilename;
         EBUS_EVENT_RESULT(fullPathFound, AzToolsFramework::AssetSystemRequestBus, GetFullSourcePathFromRelativeProductPath, productFilename, sourceAssetFilename);
 
-        // Generate meta data command for all changes being made to the motion.
-        const AZStd::vector<MCore::Command*> metaData = CommandSystem::MetaData::GenerateMotionMetaData(motion);
+        // Load the manifest from disk.
+        AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene> scene;
+        AZ::SceneAPI::Events::SceneSerializationBus::BroadcastResult(scene, &AZ::SceneAPI::Events::SceneSerializationBus::Events::LoadScene, sourceAssetFilename, AZ::Uuid::CreateNull());
+        if (!scene)
+        {
+            AZ_Error("EMotionFX", false, "Unable to save meta data to manifest due to failed scene loading.");
+            return false;
+        }
 
-        // Save meta data commands to the manifest.
-        const bool saveResult = EMotionFX::Pipeline::Rule::MetaDataRule::SaveMetaDataToFile<EMotionFX::Pipeline::Group::MotionGroup>(sourceAssetFilename, groupName, metaData, outResult);
+        AZ::SceneAPI::Containers::SceneManifest& manifest = scene->GetManifest();
+        auto values = manifest.GetValueStorage();
+        auto groupView = AZ::SceneAPI::Containers::MakeDerivedFilterView<EMotionFX::Pipeline::Group::MotionGroup>(values);
+        for (EMotionFX::Pipeline::Group::MotionGroup& group : groupView)
+        {
+            // Non-case sensitive group name comparison. Product filenames are lower case only and might mismatch casing of the entered group name.
+            if (AzFramework::StringFunc::Equal(group.GetName().c_str(), groupName.c_str()))
+            {
+                // Remove legacy meta data rule.
+                EMotionFX::Pipeline::Rule::RemoveRuleFromGroup<EMotionFX::Pipeline::Rule::MetaDataRule, const AZStd::vector<MCore::Command*>>(*scene, group);
+
+                // Add motion meta data.
+                auto motionMetaData = AZStd::make_shared<EMotionFX::Pipeline::Rule::MotionMetaData>(motion->GetMotionExtractionFlags(), motion->GetEventTable());
+                EMotionFX::Pipeline::Rule::SaveToGroup<EMotionFX::Pipeline::Rule::MotionMetaDataRule, AZStd::shared_ptr<EMotionFX::Pipeline::Rule::MotionMetaData>>(*scene, group, motionMetaData);
+            }
+        }
+
+        const AZStd::string& manifestFilename = scene->GetManifestFilename();
+        const bool fileExisted = AZ::IO::FileIOBase::GetInstance()->Exists(manifestFilename.c_str());
+
+        // Source Control: Checkout file.
+        if (fileExisted)
+        {
+            using ApplicationBus = AzToolsFramework::ToolsApplicationRequestBus;
+            bool checkoutResult = false;
+            ApplicationBus::BroadcastResult(checkoutResult, &ApplicationBus::Events::RequestEditForFileBlocking, manifestFilename.c_str(), "Checking out manifest from source control.", []([[maybe_unused]] int& current, [[maybe_unused]] int& max) {});
+            if (!checkoutResult)
+            {
+                AZ_Error("EMotionFX", false, "Cannot checkout file '%s' from source control.", manifestFilename.c_str());
+                return false;
+            }
+        }
+
+        const bool saveResult = manifest.SaveToFile(manifestFilename.c_str());
         if (saveResult)
         {
             motion->SetDirtyFlag(false);
+        }
+
+        // Source Control: Add file in case it did not exist before (when saving it the first time).
+        if (saveResult && !fileExisted)
+        {
+            using ApplicationBus = AzToolsFramework::ToolsApplicationRequestBus;
+            bool checkoutResult = false;
+            ApplicationBus::BroadcastResult(checkoutResult, &ApplicationBus::Events::RequestEditForFileBlocking, manifestFilename.c_str(), "Adding manifest to source control.", []([[maybe_unused]] int& current, [[maybe_unused]] int& max) {});
+            AZ_Error("EMotionFX", checkoutResult, "Cannot add file '%s' to source control.", manifestFilename.c_str());
         }
 
         return saveResult;

@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-#include "precompiled.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Editor/View/Widgets/LoggingPanel/LoggingDataAggregator.h>
 
@@ -294,7 +289,7 @@ namespace ScriptCanvasEditor
 
     void LoggingDataAggregator::OnRegistrationDisabled(const AZ::NamedEntityId&, const ScriptCanvas::GraphIdentifier&)
     {
-        
+
     }
 
     void LoggingDataAggregator::ResetLog()
@@ -329,7 +324,7 @@ namespace ScriptCanvasEditor
         m_hasAnchor = false;
         m_anchorTimeStamp = ScriptCanvas::Timestamp(0);
     }
-    
+
     void LoggingDataAggregator::RegisterScriptCanvas(const AZ::NamedEntityId& entityId, const ScriptCanvas::GraphIdentifier& graphIdentifier)
     {
         bool foundMatch = false;
@@ -340,7 +335,7 @@ namespace ScriptCanvasEditor
             if (mapIter->second == graphIdentifier)
             {
                 foundMatch = true;
-                AZ_Error("ScriptCanvas", false, "Received a duplicated registration callback.");
+                AZ_Warning("ScriptCanvas", false, "Received a duplicated registration callback.");
             }
         }
 

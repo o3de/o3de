@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <gtest/gtest.h>
 
@@ -254,7 +250,7 @@ namespace EMotionFX
             LoadActor(actorFilename.toUtf8().data(), false);
             ASSERT_EQ(EMotionFX::GetActorManager().GetNumActorInstances(), 2) << "Failed to merge Actor.";
 
-            // We can't test Save Selected Actor as we would it would involve mocking fbx scene handling.
+            // We can't test Save Selected Actor as we would it would involve mocking source scene handling.
 
             // Add the filename to the recent actorsa anyway, so we can test that functionality.
             EMStudio::GetMainWindow()->AddRecentActorFile(actorFilename);
@@ -639,7 +635,7 @@ namespace EMotionFX
             motionSet->SetFilename(motionsetFilename.toUtf8().constData());
             motionSet->SetDirtyFlag(true);
 
-            // Don't create an actor or motion as we can't save that due to fbx scene requirements.
+            // Don't create an actor or motion as we can't save that due to source scene requirements.
 
             EMStudio::Workspace* workspace = EMStudio::GetManager()->GetWorkspace();
             const QString workspaceFilename = GenerateTempWorkspaceFilename();

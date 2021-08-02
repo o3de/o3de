@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzQtComponents/Utilities/Conversions.h>
 #include <AzCore/Math/MathUtils.h>
@@ -47,19 +43,20 @@ namespace AzQtComponents
     {
         const QChar decimalPoint = locale.decimalPoint();
         const QChar zeroDigit = locale.zeroDigit();
+        const int numToStringDecimals = AZStd::max(numDecimals, 20);
 
-        // We want to truncate, not round. toString will round, so we add an extra decimal place to the formatting
-        // so we can remove the last value
-        QString retValue = locale.toString(value, 'f', (numDecimals > 0) ? numDecimals + 1 : 0);
+        // We want to truncate, not round. toString will round, so we add extra decimal places to the formatting
+        // so we can remove the last values
+        QString retValue = locale.toString(value, 'f', (numDecimals > 0) ? numToStringDecimals : 0);
 
         // Handle special cases when we have decimals in our value
         if (numDecimals > 0)
         {
-            // Truncate the extra digit now, if it's still there
+            // Truncate the extra digits now, if they're still there
             int decimalPointIndex = retValue.lastIndexOf(decimalPoint);
-            if ((decimalPointIndex > 0) && (retValue.size() - (decimalPointIndex + 1)) == (numDecimals + 1))
+            if ((decimalPointIndex > 0) && (retValue.size() - (decimalPointIndex + 1)) == numToStringDecimals)
             {
-                retValue.resize(retValue.size() - 1);
+                retValue.resize(retValue.size() - (numToStringDecimals - numDecimals));
             }
 
             // Remove trailing zeros, since the locale conversion won't do

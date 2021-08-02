@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Interface/Interface.h>
@@ -86,16 +82,7 @@ namespace AzToolsFramework
                 return;
             }
 
-            // If this instance's templateId is valid, we should be able to unregister this instance from 
-            // Template to Instance mapping successfully.
-            if (m_templateId != InvalidTemplateId &&
-                !m_templateInstanceMapper->UnregisterInstance(*this))
-            {
-                AZ_Assert(false,
-                    "Prefab - Attempted to Unregister Instance from Template with Id '%u'.  "
-                    "Instance may never have been registered or was unregistered early.",
-                    m_templateId);
-            }
+            m_templateInstanceMapper->UnregisterInstance(*this);
 
             m_templateId = templateId;
 
@@ -225,15 +212,7 @@ namespace AzToolsFramework
 
         void Instance::Reset()
         {
-            // Clean up Instance associations.
-            if (m_templateId != InvalidTemplateId && !m_templateInstanceMapper->UnregisterInstance(*this))
-            {
-                AZ_Assert(
-                    false,
-                    "Prefab - Attempted to unregister Instance from Template on file path '%s' with Id '%u'.  "
-                    "Instance may never have been registered or was unregistered early.",
-                    m_templateSourcePath.c_str(), m_templateId);
-            }
+            m_templateInstanceMapper->UnregisterInstance(*this);
 
             ClearEntities();
 
@@ -241,7 +220,6 @@ namespace AzToolsFramework
 
             if (m_containerEntity)
             {
-                m_instanceEntityMapper->UnregisterEntity(m_containerEntity->GetId());
                 m_containerEntity.reset(aznew AZ::Entity());
                 RegisterEntity(m_containerEntity->GetId(), GenerateEntityAlias());
             }
@@ -269,6 +247,11 @@ namespace AzToolsFramework
 
         void Instance::ClearEntities()
         {
+            if (m_containerEntity)
+            {
+                m_instanceEntityMapper->UnregisterEntity(m_containerEntity->GetId());
+            }
+
             for (const auto&[entityAlias, entity] : m_entities)
             {
                 if (entity)
@@ -285,9 +268,11 @@ namespace AzToolsFramework
                 }
             }
 
+            // Destroy the entities *before* clearing the lookup maps so that any lookups triggered during an entity's destructor
+            // are still valid.
+            m_entities.clear();
             m_instanceToTemplateEntityIdMap.clear();
             m_templateToInstanceEntityIdMap.clear();
-            m_entities.clear();
         }
 
         bool Instance::RegisterEntity(const AZ::EntityId& entityId, const EntityAlias& entityAlias)

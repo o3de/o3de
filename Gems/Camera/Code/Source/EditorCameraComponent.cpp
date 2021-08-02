@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-#include "Camera_precompiled.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
@@ -22,6 +17,9 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
+#include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/RPI.Public/View.h>
+
 namespace Camera
 {
     namespace ClassConverters
@@ -31,8 +29,10 @@ namespace Camera
 
     void EditorCameraComponent::Activate()
     {
-        auto controllerConfig = m_controller.GetConfiguration();
+        // Ensure our Editor Entity ID is up-to-date to sync camera configurations between Edit & Game mode.
+        CameraComponentConfig controllerConfig = m_controller.GetConfiguration();
         controllerConfig.m_editorEntityId = GetEntityId().operator AZ::u64();
+        m_controller.SetConfiguration(controllerConfig);
 
         // Call base class activate, which in turn calls Activate on our controller.
         EditorCameraComponentBase::Activate();
@@ -108,10 +108,10 @@ namespace Camera
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Camera")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/Camera.svg")
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/Camera.png")
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/Camera.svg")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://docs.aws.amazon.com/lumberyard/latest/userguide/component-camera.html")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/camera/")
                     ->UIElement(AZ::Edit::UIHandlers::Button,"", "Sets the view to this camera")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorCameraComponent::OnPossessCameraButtonClicked)
                         ->Attribute(AZ::Edit::Attributes::ButtonText, &EditorCameraComponent::GetCameraViewButtonText)
@@ -156,6 +156,42 @@ namespace Camera
             m_isActiveEditorCamera = false;
             AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh, AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
         }
+    }
+
+    bool EditorCameraComponent::GetCameraState(AzFramework::CameraState& cameraState)
+    {
+        const CameraComponentConfig& config = m_controller.GetConfiguration();
+        AZ::RPI::ViewportContextPtr viewportContext = m_controller.GetViewportContext();
+        AZ::RPI::ViewPtr view = m_controller.GetView();
+
+        if (viewportContext == nullptr || view == nullptr)
+        {
+            return false;
+        }
+
+        AzFramework::SetCameraTransform(cameraState, view->GetCameraTransform());
+
+        {
+            const AzFramework::WindowSize viewportSize = viewportContext->GetViewportSize();
+            cameraState.m_viewportSize =
+                AZ::Vector2{aznumeric_cast<float>(viewportSize.m_width), aznumeric_cast<float>(viewportSize.m_height)};
+        }
+
+        if (config.m_orthographic)
+        {
+            cameraState.m_fovOrZoom = cameraState.m_viewportSize.GetX() / (config.m_orthographicHalfWidth * 2.0f);
+            cameraState.m_orthographic = true;
+        }
+        else
+        {
+            cameraState.m_fovOrZoom = config.m_fov;
+            cameraState.m_orthographic = false;
+        }
+
+        cameraState.m_nearClip = config.m_nearClipDistance;
+        cameraState.m_farClip = config.m_farClipDistance;
+
+        return true;
     }
 
     AZ::Crc32 EditorCameraComponent::OnPossessCameraButtonClicked()
@@ -204,9 +240,20 @@ namespace Camera
         const CameraComponentConfig& config = m_controller.GetConfiguration();
         const float distance = config.m_farClipDistance * m_frustumViewPercentLength * 0.01f;
 
-        float tangent = static_cast<float>(tan(0.5f * AZ::DegToRad(config.m_fov)));
-        float height = distance * tangent;
-        float width = height * debugDisplay.GetAspectRatio();
+        float width;
+        float height;
+
+        if (config.m_orthographic)
+        {
+            width = config.m_orthographicHalfWidth;
+            height = width / debugDisplay.GetAspectRatio();
+        }
+        else
+        {
+            const float tangent = static_cast<float>(tan(0.5f * AZ::DegToRad(config.m_fov)));
+            height = distance * tangent;
+            width = height * debugDisplay.GetAspectRatio();
+        }
 
         AZ::Vector3 farPoints[4];
         farPoints[0] = AZ::Vector3( width, distance,  height);
@@ -214,12 +261,21 @@ namespace Camera
         farPoints[2] = AZ::Vector3(-width, distance, -height);
         farPoints[3] = AZ::Vector3( width, distance, -height);
 
-        AZ::Vector3 start(0, 0, 0);
         AZ::Vector3 nearPoints[4];
-        nearPoints[0] = farPoints[0].GetNormalizedSafe() * config.m_nearClipDistance;
-        nearPoints[1] = farPoints[1].GetNormalizedSafe() * config.m_nearClipDistance;
-        nearPoints[2] = farPoints[2].GetNormalizedSafe() * config.m_nearClipDistance;
-        nearPoints[3] = farPoints[3].GetNormalizedSafe() * config.m_nearClipDistance;
+        if (config.m_orthographic)
+        {
+            nearPoints[0] = AZ::Vector3( width, config.m_nearClipDistance,  height);
+            nearPoints[1] = AZ::Vector3(-width, config.m_nearClipDistance,  height);
+            nearPoints[2] = AZ::Vector3(-width, config.m_nearClipDistance, -height);
+            nearPoints[3] = AZ::Vector3( width, config.m_nearClipDistance, -height);
+        }
+        else
+        {
+            nearPoints[0] = farPoints[0].GetNormalizedSafe() * config.m_nearClipDistance;
+            nearPoints[1] = farPoints[1].GetNormalizedSafe() * config.m_nearClipDistance;
+            nearPoints[2] = farPoints[2].GetNormalizedSafe() * config.m_nearClipDistance;
+            nearPoints[3] = farPoints[3].GetNormalizedSafe() * config.m_nearClipDistance;
+        }
 
         debugDisplay.PushMatrix(world);
         debugDisplay.SetColor(m_frustumDrawColor.GetAsVector4());

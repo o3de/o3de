@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <SceneAPI/SceneData/GraphData/RootBoneData.h>
 #include <SceneAPI/SceneCore/Containers/Utilities/SceneGraphUtilities.h>
@@ -22,12 +18,13 @@
 
 #include <SceneAPIExt/Behaviors/MotionGroupBehavior.h>
 #include <SceneAPIExt/Groups/MotionGroup.h>
-#include <SceneAPIExt/Rules/MotionScaleRule.h>
+#include <SceneAPIExt/Rules/MotionAdditiveRule.h>
 #include <SceneAPIExt/Rules/MotionCompressionSettingsRule.h>
+#include <SceneAPIExt/Rules/MotionMetaDataRule.h>
+#include <SceneAPIExt/Rules/MotionSamplingRule.h>
+#include <SceneAPIExt/Rules/MotionScaleRule.h>
 #include <SceneAPIExt/Rules/MotionRangeRule.h>
 #include <SceneAPIExt/Rules/MorphTargetRule.h>
-#include <SceneAPIExt/Rules/MotionAdditiveRule.h>
-#include <SceneAPIExt/Rules/MotionSamplingRule.h>
 
 namespace EMotionFX
 {
@@ -40,11 +37,13 @@ namespace EMotionFX
             void MotionGroupBehavior::Reflect(AZ::ReflectContext* context)
             {
                 Group::MotionGroup::Reflect(context);
-                Rule::MotionScaleRule::Reflect(context);
-                Rule::MotionCompressionSettingsRule::Reflect(context);
-                Rule::MorphTargetRuleReadOnly::Reflect(context);
                 Rule::MotionAdditiveRule::Reflect(context);
+                Rule::MotionCompressionSettingsRule::Reflect(context);
+                Rule::MotionMetaData::Reflect(context);
+                Rule::MotionMetaDataRule::Reflect(context);
                 Rule::MotionSamplingRule::Reflect(context);
+                Rule::MotionScaleRule::Reflect(context);
+                Rule::MorphTargetRuleReadOnly::Reflect(context);
                 
                 AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
                 if (serializeContext)

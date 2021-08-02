@@ -1,18 +1,15 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/string/string.h>
@@ -24,22 +21,26 @@ namespace Audio
     /*!
      * FindFilesInPath
      */
-    static AZStd::vector<AZStd::string> FindFilesInPath(const AZStd::string_view folderPath, const char* filter)
+    static AZStd::vector<AZ::IO::FixedMaxPath> FindFilesInPath(const AZStd::string_view folderPath, const char* filter)
     {
-        AZStd::vector<AZStd::string> foundFiles;
+        AZStd::vector<AZ::IO::FixedMaxPath> foundFiles;
         AZ::IO::FileIOBase::FindFilesCallbackType findFilesCallback = [&foundFiles](const char* file) -> bool
         {
-            foundFiles.emplace_back(file);
+            foundFiles.emplace_back(AZ::IO::PathView{ file }.LexicallyNormal());
             return true;
         };
 
-        auto fileIO = AZ::IO::FileIOBase::GetInstance();
-        if (fileIO)
+        if (auto fileIO = AZ::IO::FileIOBase::GetInstance();
+            fileIO != nullptr)
         {
             AZ::IO::Result result = fileIO->FindFiles(folderPath.data(), filter, findFilesCallback);
+            if (result == AZ::IO::ResultCode::Success)
+            {
+                return AZStd::move(foundFiles);
+            }
         }
 
-        return foundFiles;
+        return {};
     }
 
     /*!

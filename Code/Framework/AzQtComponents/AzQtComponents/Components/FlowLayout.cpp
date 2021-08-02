@@ -37,7 +37,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-// Modifications copyright Amazon.com, Inc. or its affiliates
+// Modified from original
 
 #include <QtWidgets/QWidget>
 #include <AzQtComponents/Components/FlowLayout.h>

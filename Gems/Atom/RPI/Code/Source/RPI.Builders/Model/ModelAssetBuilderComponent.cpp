@@ -1,13 +1,8 @@
 /*
- * All or portions of this file Copyright(c) Amazon.com, Inc.or its affiliates
- *or its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root
- *of this distribution(the "License").All use of this software is governed by
- *the License, or, if provided, by the license below or the license
- *accompanying this file.Do not remove or modify any license notices.This file
- *is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- *KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -545,7 +540,9 @@ namespace AZ
                 }
                 else
                 {
-                    AZ_Warning(s_builderName, false, "Found multiple tangent data sets. Only the first will be used.");
+                    AZ_Warning(s_builderName, false,
+                        "Found multiple tangent data sets for mesh '%s'. Only the first will be used.",
+                        content.m_name.GetCStr());
                 }
             }
             else if (azrtti_istypeof<BitangentData>(data.get()))
@@ -557,7 +554,9 @@ namespace AZ
                 }
                 else
                 {
-                    AZ_Warning(s_builderName, false, "Found multiple bitangent data sets. Only the first will be used.");
+                    AZ_Warning(s_builderName, false,
+                        "Found multiple bitangent data sets for mesh '%s'. Only the first will be used.",
+                        content.m_name.GetCStr());
                 }
             }
             else if (azrtti_istypeof<MaterialData>(data.get()))
@@ -1001,7 +1000,7 @@ namespace AZ
                 if (numInfluencesExcess > 0)
                 {
                     AZ_Warning(s_builderName, warnedExcessOfSkinInfluences,
-                        "Mesh %s has more skin influences (%d) than the maximum (%d). Skinning influences won't be normalized. Maximum number of skin influences can be increased with a Skin Modifier in FBX Settings.",
+                        "Mesh %s has more skin influences (%d) than the maximum (%d). Skinning influences won't be normalized. Maximum number of skin influences can be increased with a Skin Modifier in Scene Settings.",
                         sourceMesh.m_name.GetCStr(),
                         m_numSkinJointInfluencesPerVertex + numInfluencesExcess,
                         m_numSkinJointInfluencesPerVertex);

@@ -1,16 +1,13 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <Multiplayer/IMultiplayer.h>
+#include <Multiplayer/INetworkSpawnableLibrary.h>
 #include <Multiplayer/MultiplayerConstants.h>
 #include <Editor/MultiplayerEditorConnection.h>
 #include <Source/AutoGen/AutoComponentTypes.h>
@@ -55,16 +52,12 @@ namespace Multiplayer
     )
     {
         // Editor Server Init is intended for non-release targets
-        if (!packet.GetLastUpdate())
-        {
-            // More packets are expected, flush this to the buffer
-            m_byteStream.Write(TcpPacketEncodingBuffer::GetCapacity(), reinterpret_cast<void*>(packet.ModifyAssetData().GetBuffer()));
-        }
-        else
-        {
-            // This is the last expected packet, flush it to the buffer
-            m_byteStream.Write(packet.GetAssetData().GetSize(), reinterpret_cast<void*>(packet.ModifyAssetData().GetBuffer()));
+        m_byteStream.Write(packet.GetAssetData().GetSize(), reinterpret_cast<void*>(packet.ModifyAssetData().GetBuffer()));
 
+        // In case if this is the last update, process the byteStream buffer. Otherwise more packets are expected
+        if (packet.GetLastUpdate())
+        {
+            // This is the last expected packet
             // Read all assets out of the buffer
             m_byteStream.Seek(0, AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);
             AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>> assetData;
@@ -80,6 +73,11 @@ namespace Multiplayer
 
                 size_t assetSize = m_byteStream.GetCurPos();
                 AZ::Data::AssetData* assetDatum = AZ::Utils::LoadObjectFromStream<AZ::Data::AssetData>(m_byteStream, nullptr);
+                if (!assetDatum)
+                {
+                    AZLOG_ERROR("EditorServerInit packet contains no asset data. Asset: %s", assetHint.c_str());
+                    return false;
+                }
                 assetSize = m_byteStream.GetCurPos() - assetSize;
                 AZ::Data::Asset<AZ::Data::AssetData> asset = AZ::Data::Asset<AZ::Data::AssetData>(assetId, assetDatum, AZ::Data::AssetLoadBehavior::NoLoad);
                 asset.SetHint(assetHint);
@@ -100,6 +98,9 @@ namespace Multiplayer
             // Now that we've deserialized, clear the byte stream
             m_byteStream.Seek(0, AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);
             m_byteStream.Truncate();
+
+            // Spawnable library needs to be rebuilt since now we have newly registered in-memory spawnable assets
+            AZ::Interface<INetworkSpawnableLibrary>::Get()->BuildSpawnablesList();
 
             // Load the level via the root spawnable that was registered
             const AZ::CVarFixedString loadLevelString = "LoadLevel Root.spawnable";
@@ -178,6 +179,18 @@ namespace Multiplayer
 
     void MultiplayerEditorConnection::OnDisconnect([[maybe_unused]] AzNetworking::IConnection* connection, [[maybe_unused]] DisconnectReason reason, [[maybe_unused]] TerminationEndpoint endpoint)
     {
-        ;
+        bool editorLaunch = false;
+        if (auto console = AZ::Interface<AZ::IConsole>::Get(); console)
+        {
+            console->GetCvarValue("editorsv_launch", editorLaunch);
+        }
+
+        if (editorsv_isDedicated && editorLaunch && m_networkEditorInterface->GetConnectionSet().GetConnectionCount() == 1)
+        {
+            if (m_networkEditorInterface->GetPort() != 0)
+            {
+                m_networkEditorInterface->StopListening();
+            }
+        }
     }
 }

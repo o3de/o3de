@@ -1,16 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-
-#include "Microphone_precompiled.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "MicrophoneSystemComponent.h"
 
@@ -106,7 +100,11 @@ namespace Audio
                 }
 
                 PropVariantClear(&endpointName);
-                SAFE_RELEASE(m_deviceProps);
+                if (m_deviceProps)
+                {
+                    m_deviceProps->Release();
+                    m_deviceProps = nullptr;
+                }
             }
 
             return true;
@@ -120,8 +118,16 @@ namespace Audio
             // Assert: m_audioClient and m_audioCaptureClient are both nullptr!  (i.e. the capture thread is not running)
             AZ_Assert(!m_audioClient && !m_audioCaptureClient, "ShutdownDevice - Audio Client pointers are not null!  You need to call EndSession first!\n");
 
-            SAFE_RELEASE(m_device);
-            SAFE_RELEASE(m_enumerator);
+            if (m_device)
+            {
+                m_device->Release();
+                m_device = nullptr;
+            }
+            if (m_enumerator)
+            {
+                m_enumerator->Release();
+                m_enumerator = nullptr;
+            }
 
             CoUninitialize();
         }
@@ -322,8 +328,16 @@ namespace Audio
                 }
             }
 
-            SAFE_RELEASE(m_audioCaptureClient);
-            SAFE_RELEASE(m_audioClient);
+            if (m_audioCaptureClient)
+            {
+                m_audioCaptureClient->Release();
+                m_audioCaptureClient = nullptr;
+            }
+            if (m_audioClient)
+            {
+                m_audioClient->Release();
+                m_audioClient = nullptr;
+            }
             CoTaskMemFree(m_streamFormat);
             m_streamFormat = nullptr;
 

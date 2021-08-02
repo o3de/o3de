@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <Atom/RHI/SwapChain.h>
@@ -54,7 +50,7 @@ namespace AZ
             const CommandQueue& GetPresentationQueue() const;
 
             void QueueBarrier(const VkPipelineStageFlags src, const VkPipelineStageFlags dst, const VkImageMemoryBarrier& imageBarrier);
-            
+
         private:
             SwapChain() = default;
 
@@ -70,14 +66,15 @@ namespace AZ
             RHI::ResultCode InitImageInternal(const RHI::SwapChain::InitImageRequest& request) override;
             RHI::ResultCode ResizeInternal(const RHI::SwapChainDimensions& dimensions, RHI::SwapChainDimensions* nativeDimensions) override;
             uint32_t PresentInternal() override;
+            void SetVerticalSyncIntervalInternal(uint32_t previousVsyncInterval) override;
             //////////////////////////////////////////////////////////////////////
 
             RHI::ResultCode BuildSurface(const RHI::SwapChainDescriptor& descriptor);
             bool ValidateSurfaceDimensions(const RHI::SwapChainDimensions& dimensions);
             VkSurfaceFormatKHR GetSupportedSurfaceFormat(const RHI::Format format) const;
-            VkPresentModeKHR GetSupportedPresentMode() const;
+            VkPresentModeKHR GetSupportedPresentMode(uint32_t verticalSyncInterval) const;
             VkCompositeAlphaFlagBitsKHR GetSupportedCompositeAlpha() const;
-            RHI::ResultCode BuildNativeSwapChain(const RHI::SwapChainDimensions& dimensions);
+            RHI::ResultCode BuildNativeSwapChain(const RHI::SwapChainDimensions& dimensions, uint32_t verticalSyncInterval);
             RHI::ResultCode AcquireNewImage(uint32_t* acquiredImageIndex);
 
             void InvalidateSurface();

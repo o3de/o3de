@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/Feature/LuxCore/LuxCoreTexturePass.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
@@ -69,23 +65,9 @@ namespace AZ
                 // Set up read back attachment before children prepare
                 if (m_readback->IsReady())
                 {
-                    AZ::RPI::RenderPass* renderPass = azrtti_cast<AZ::RPI::RenderPass*>(m_renderTargetPass.get());
-                    if (renderPass)
+                    if (m_renderTargetPass)
                     {
-                        RPI::PassAttachment* attachment = nullptr;
-                        for (auto& binding : renderPass->GetAttachmentBindings())
-                        {
-                            if (binding.m_slotType == RPI::PassSlotType::Output)
-                            {
-                                attachment = binding.m_attachment.get();
-                                break;
-                            }
-                        }
-                        if (attachment)
-                        {
-                            renderPass->ReadbackAttachment(m_readback, attachment);
-                            m_attachmentReadbackComplete = true;
-                        }
+                        m_attachmentReadbackComplete = m_renderTargetPass->ReadbackAttachment(m_readback, AZ::Name("RenderTargetOutput"));                           
                     }
                 }
             }

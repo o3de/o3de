@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-#include "LyShine_precompiled.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "IFont.h"
 #include <IRenderer.h> // for SVF_P3F_C4B_T2F which will be removed in a coming PR
 
@@ -100,7 +95,7 @@ void CDraw2d::OnBootstrapSceneReady([[maybe_unused]] AZ::RPI::Scene* bootstrapSc
     AZ_Assert(scene != nullptr, "Attempting to create a DynamicDrawContext for a viewport context that has not been associated with a scene yet.");
 
     // Create and initialize a DynamicDrawContext for 2d drawing
-    m_dynamicDraw = AZ::RPI::DynamicDrawInterface::Get()->CreateDynamicDrawContext(scene.get());
+    m_dynamicDraw = AZ::RPI::DynamicDrawInterface::Get()->CreateDynamicDrawContext();
     AZ::RPI::ShaderOptionList shaderOptions;
     shaderOptions.push_back(AZ::RPI::ShaderOption(AZ::Name("o_useColorChannels"), AZ::Name("true")));
     shaderOptions.push_back(AZ::RPI::ShaderOption(AZ::Name("o_clamp"), AZ::Name("false")));
@@ -111,6 +106,7 @@ void CDraw2d::OnBootstrapSceneReady([[maybe_unused]] AZ::RPI::Scene* bootstrapSc
         {"TEXCOORD0", AZ::RHI::Format::R32G32_FLOAT} });
     m_dynamicDraw->AddDrawStateOptions(AZ::RPI::DynamicDrawContext::DrawStateOptions::PrimitiveType
         | AZ::RPI::DynamicDrawContext::DrawStateOptions::BlendMode);
+    m_dynamicDraw->SetOutputScope(scene.get());
     m_dynamicDraw->EndInit();
 
     AZ::RHI::TargetBlendState targetBlendState;
@@ -541,22 +537,19 @@ AZ::Vector2 CDraw2d::Align(AZ::Vector2 position, AZ::Vector2 size,
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 AZ::Data::Instance<AZ::RPI::Image> CDraw2d::LoadTexture(const AZStd::string& pathName)
 {
-    AZStd::string sourceRelativePath(pathName);
-    AZStd::string cacheRelativePath = sourceRelativePath + ".streamingimage";
-
     // The file may not be in the AssetCatalog at this point if it is still processing or doesn't exist on disk.
     // Use GenerateAssetIdTEMP instead of GetAssetIdByPath so that it will return a valid AssetId anyways
     AZ::Data::AssetId streamingImageAssetId;
     AZ::Data::AssetCatalogRequestBus::BroadcastResult(
         streamingImageAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GenerateAssetIdTEMP,
-        sourceRelativePath.c_str());
+        pathName.c_str());
     streamingImageAssetId.m_subId = AZ::RPI::StreamingImageAsset::GetImageAssetSubId();
 
     auto streamingImageAsset = AZ::Data::AssetManager::Instance().FindOrCreateAsset<AZ::RPI::StreamingImageAsset>(streamingImageAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
     AZ::Data::Instance<AZ::RPI::Image> image = AZ::RPI::StreamingImage::FindOrCreate(streamingImageAsset);
     if (!image)
     {
-        AZ_Error("Draw2d", false, "Failed to find or create an image instance from image asset '%s'", streamingImageAsset.GetHint().c_str());
+        AZ_Error("Draw2d", false, "Failed to find or create an image instance from image asset '%s'", pathName.c_str());
     }
 
     return image;

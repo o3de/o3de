@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <API/EditorAssetSystemAPI.h>
 
 #include <AzCore/Asset/AssetManagerBus.h>
@@ -227,6 +223,21 @@ namespace AzToolsFramework
 
         void AssetBrowserTreeView::UpdateAfterFilter(bool hasFilter, bool selectFirstValidEntry)
         {
+            const QModelIndexList& selectedIndexes = selectionModel()->selectedRows();
+
+            // If we've cleared the filter but had something selected, ensure it stays selected and visible.
+            if (!hasFilter && !selectedIndexes.isEmpty())
+            {
+                QModelIndex curIndex = selectedIndexes[0];
+                m_expandToEntriesByDefault = true;
+                m_treeStateSaver->ApplySnapshot();
+
+                setCurrentIndex(curIndex);
+                scrollTo(curIndex);
+
+                return;
+            }
+
             // Flag our default expansion state so that we expand down to source entries after filtering
             m_expandToEntriesByDefault = hasFilter;
             // Then ask our state saver to apply its current snapshot again, falling back on asking us if entries should be expanded or not

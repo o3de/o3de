@@ -1,22 +1,20 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <Editor/Attribution/AWSCoreAttributionMetric.h>
 #include <Editor/Attribution/AWSCoreAttributionManager.h>
+#include <Editor/Attribution/AWSCoreAttributionConsentDialog.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/PlatformId/PlatformId.h>
 #include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/Jobs/JobFunction.h>
@@ -24,10 +22,11 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Module/ModuleManagerBus.h>
 #include <ResourceMapping/AWSResourceMappingUtils.h>
+#include <Credential/AWSCredentialBus.h>
 
 #include <QSysInfo>
-#include <QString>
-
+#include <QMessageBox>
+#include <QCheckBox>
 
 
 namespace AWSCore
@@ -39,27 +38,64 @@ namespace AWSCore
     constexpr char AWSAttributionEnabledKey[] = "/Amazon/AWS/Preferences/AWSAttributionEnabled";
     constexpr char AWSAttributionDelaySecondsKey[] = "/Amazon/AWS/Preferences/AWSAttributionDelaySeconds";
     constexpr char AWSAttributionLastTimeStampKey[] = "/Amazon/AWS/Preferences/AWSAttributionLastTimeStamp";
-    constexpr char AWSAttributionApiId[] = "2zxvvmv8d7";
-    constexpr char AWSAttributionChinaApiId[] = "";
-    constexpr char AWSAttributionApiStage[] = "prod";
+    constexpr char AWSAttributionConsentShownKey[] = "/Amazon/AWS/Preferences/AWSAttributionConsentShown";
+    constexpr char AWSAttributionEndpoint[] = "https://o3deattribution.us-east-1.amazonaws.com";
+    constexpr char AWSAttributionChinaEndpoint[] = "";
     const int AWSAttributionDefaultDelayInDays = 7;
 
     AWSAttributionManager::AWSAttributionManager()
     {
-        m_settingsRegistry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
+        m_settingsRegistry = AZ::SettingsRegistry::Get();
+        AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
     }
 
     AWSAttributionManager::~AWSAttributionManager()
     {
-        m_settingsRegistry.reset();
+        AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
+        m_settingsRegistry = nullptr;
     }
 
     void AWSAttributionManager::Init()
     {
+        bool consentShown;
+        // If override is used skip merging the settings file
+        if (m_settingsRegistry->Get(consentShown, AWSAttributionConsentShownKey))
+        {
+            return;
+        }
+
+        AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
+        AZ_Assert(fileIO, "File IO is not initialized.");
+
+        // Resolve path to editor_aws_preferences.setreg
+        AZStd::string editorAWSPreferencesFilePath =
+            AZStd::string::format("@user@/%s/%s", AZ::SettingsRegistryInterface::RegistryFolder, EditorAWSPreferencesFileName);
+        AZStd::array<char, AZ::IO::MaxPathLength> resolvedPathAWSPreference{};
+        if (!fileIO->ResolvePath(editorAWSPreferencesFilePath.c_str(), resolvedPathAWSPreference.data(), resolvedPathAWSPreference.size()))
+        {
+            AZ_Warning("AWSAttributionManager", false, "Error resolving path %s", resolvedPathAWSPreference.data());
+            return;
+        }
+
+        if (fileIO->Exists(resolvedPathAWSPreference.data()))
+        {
+            m_settingsRegistry->MergeSettingsFile(
+                resolvedPathAWSPreference.data(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "");
+        }
     }
 
     void AWSAttributionManager::MetricCheck()
     {
+        if (!CheckAWSCredentialsConfigured())
+        {
+            return;
+        }
+
+        if (!CheckConsentShown())
+        {
+            ShowConsentDialog();
+        }
+        
         if (ShouldGenerateMetric())
         {
             // Gather metadata and assemble metric
@@ -72,30 +108,12 @@ namespace AWSCore
     }
 
     bool AWSAttributionManager::ShouldGenerateMetric() const
-    {
-        AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
-        AZ_Assert(fileIO, "File IO is not initialized.");
-
-        // Resolve path to editor_aws_preferences.setreg
-        AZStd::string editorAWSPreferencesFilePath =
-            AZStd::string::format("@user@/%s/%s", AZ::SettingsRegistryInterface::RegistryFolder, EditorAWSPreferencesFileName);
-        AZStd::array<char, AZ::IO::MaxPathLength> resolvedPathAWSPreference{};
-        if (!fileIO->ResolvePath(editorAWSPreferencesFilePath.c_str(), resolvedPathAWSPreference.data(), resolvedPathAWSPreference.size()))
-        {
-            AZ_Warning("AWSAttributionManager", false, "Error resolving path %s", resolvedPathAWSPreference.data());
-            return false;
-        }
-
-        if (fileIO->Exists(resolvedPathAWSPreference.data()))
-        {
-            m_settingsRegistry->MergeSettingsFile(resolvedPathAWSPreference.data(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "");
-        }
-
+    {   
         bool awsAttributionEnabled = false;
         if (!m_settingsRegistry->Get(awsAttributionEnabled, AWSAttributionEnabledKey))
         {
-            // If not found default to sending the metric.
-            awsAttributionEnabled = true;
+            AZ_Warning("AWSAttributionManager", false, "Key %s should be set by consent window", AWSAttributionEnabledKey);
+            return false;
         }
 
         if (!awsAttributionEnabled)
@@ -127,6 +145,50 @@ namespace AWSCore
         }
 
         return false;
+    }
+
+    bool AWSAttributionManager::CheckAWSCredentialsConfigured()
+    {
+        AWSCore::AWSCredentialResult credentialResult;
+        AWSCore::AWSCredentialRequestBus::BroadcastResult(credentialResult, &AWSCore::AWSCredentialRequests::GetCredentialsProvider);
+        if (credentialResult.result)
+        {
+            std::shared_ptr<Aws::Auth::AWSCredentialsProvider> provider = credentialResult.result;
+            auto creds = provider->GetAWSCredentials();
+            if (!creds.IsEmpty())
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    void AWSAttributionManager::ShowConsentDialog()
+    {
+        AWSCoreAttributionConsentDialog* msgBox = aznew AWSCoreAttributionConsentDialog();
+        int ret = msgBox->exec();
+        m_settingsRegistry->Set(AWSAttributionConsentShownKey, true);
+        switch (ret)
+        {
+        case QMessageBox::Save:
+            m_settingsRegistry->Set(AWSAttributionEnabledKey, msgBox->checkBox()->checkState() == Qt::Checked);
+            break;
+        case QMessageBox::Cancel:
+        default:
+            m_settingsRegistry->Set(AWSAttributionEnabledKey, false);
+            break;
+        }
+
+        SaveSettingsRegistryFile();
+        delete msgBox;
+    }
+
+    // Waiting on Editor QT main window to be initialized before showing consent window.
+    // This will have the Editor loading screen in the background when showing consent dialog.
+    void AWSAttributionManager::NotifyMainWindowInitialized(QMainWindow* mainWindow)
+    {
+        AZ_UNUSED(mainWindow);
+        MetricCheck();
     }
 
     void AWSAttributionManager::SaveSettingsRegistryFile()
@@ -191,17 +253,24 @@ namespace AWSCore
         // Assumption to determine China region is the default profile is set to China region.
         auto profile_name = Aws::Auth::GetConfigProfileName();
         Aws::Client::ClientConfiguration clientConfig(profile_name.c_str());
-        AZStd::string apiId = AWSAttributionApiId;
 
         if (clientConfig.region == Aws::Region::CN_NORTH_1 || clientConfig.region == Aws::Region::CN_NORTHWEST_1)
         {
             config->region = Aws::Region::CN_NORTH_1;
-            apiId = AWSAttributionChinaApiId;
+            config->endpointOverride = AWSAttributionChinaEndpoint;
         }
+        else
+        {   
+            config->region = Aws::Region::US_EAST_1;
+            config->endpointOverride = AWSAttributionEndpoint;
+        }
+    }
 
-        config->region = Aws::Region::US_WEST_2;
-        config->endpointOverride =
-            AWSResourceMappingUtils::FormatRESTApiUrl(apiId, config->region.value().c_str(), AWSAttributionApiStage).c_str();
+    bool AWSAttributionManager::CheckConsentShown()
+    {
+        bool consentShown = false;
+        m_settingsRegistry->Get(consentShown, AWSAttributionConsentShownKey);
+        return consentShown;
     }
 
     AZStd::string AWSAttributionManager::GetEngineVersion() const

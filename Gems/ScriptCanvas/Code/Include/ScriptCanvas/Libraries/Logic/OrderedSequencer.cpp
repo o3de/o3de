@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "OrderedSequencer.h"
 
@@ -23,7 +19,7 @@ namespace ScriptCanvas
             OrderedSequencer::OrderedSequencer()
                 : Node()
                 , m_numOutputs(0)
-            {                
+            {
             }
 
             AZ::Outcome<DependencyReport, void> OrderedSequencer::GetDependencies() const
@@ -72,15 +68,15 @@ namespace ScriptCanvas
                     visualExtensions.m_connectionType = ConnectionType::Output;
                     visualExtensions.m_identifier = AZ::Crc32("AddOutputGroup");
                     visualExtensions.m_displayGroup = GetDisplayGroup();
-                    
+
                     RegisterExtension(visualExtensions);
                 }
             }
-            
+
             bool OrderedSequencer::CanDeleteSlot(const SlotId& slotId) const
             {
-                Slot* slot = GetSlot(slotId);                
-                
+                Slot* slot = GetSlot(slotId);
+
                 // Only remove execution out slots when we have more then 1 output slot.
                 if (slot && slot->IsExecution() && slot->IsOutput())
                 {
@@ -93,17 +89,17 @@ namespace ScriptCanvas
             SlotId OrderedSequencer::HandleExtension([[maybe_unused]] AZ::Crc32 extensionId)
             {
                 ExecutionSlotConfiguration executionConfiguration(GenerateOutputName(m_numOutputs), ConnectionType::Output);
-                
+
                 executionConfiguration.m_addUniqueSlotByNameAndType = false;
                 executionConfiguration.m_displayGroup = GetDisplayGroup();
-                
+
                 ++m_numOutputs;
-                
+
                 return AddSlot(executionConfiguration);
             }
 
             void OrderedSequencer::OnSlotRemoved([[maybe_unused]] const SlotId& slotId)
-            {                
+            {
                 FixupStateNames();
             }
 
@@ -112,12 +108,12 @@ namespace ScriptCanvas
                 AZStd::string slotName = AZStd::string::format("Out %i", counter);
                 return AZStd::move(slotName);
             }
-            
+
             void OrderedSequencer::FixupStateNames()
             {
                 auto outputSlots = GetAllSlotsByDescriptor(SlotDescriptors::ExecutionOut());
                 m_numOutputs = static_cast<int>(outputSlots.size());
-                
+
                 for (int i = 0; i < outputSlots.size(); ++i)
                 {
                     Slot* slot = GetSlot(outputSlots[i]->GetId());
@@ -127,7 +123,7 @@ namespace ScriptCanvas
                         slot->Rename(GenerateOutputName(i));
                     }
                 }
-            }            
+            }
         }
     }
 }

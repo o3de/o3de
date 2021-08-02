@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -111,8 +107,10 @@ namespace AWSGameLift
             return false;
         }
 
-        AZ_TracePrintf(AWSGameLiftServerManagerName, "Initiating Amazon GameLift Server SDK...");
+        AZ_TracePrintf(AWSGameLiftServerManagerName, "Initiating Amazon GameLift Server SDK ...");
         Aws::GameLift::Server::InitSDKOutcome initOutcome = m_gameLiftServerSDKWrapper->InitSDK();
+        AZ_TracePrintf(AWSGameLiftServerManagerName, "InitSDK request against Amazon GameLift service is complete.");
+
         m_serverSDKInitialized = initOutcome.IsSuccess();
 
         AZ_Error(AWSGameLiftServerManagerName, m_serverSDKInitialized,
@@ -143,9 +141,11 @@ namespace AWSGameLift
             return;
         }
 
-        AZ_TracePrintf(AWSGameLiftServerManagerName, "Notifying GameLift server process is ending...");
+        AZ_TracePrintf(AWSGameLiftServerManagerName, "Notifying GameLift server process is ending ...");
         Aws::GameLift::GenericOutcome processEndingOutcome = m_gameLiftServerSDKWrapper->ProcessEnding();
-        bool processEndingIsSuccess = processEndingOutcome.IsSuccess();
+        AZ_TracePrintf(AWSGameLiftServerManagerName, "ProcessEnding request against Amazon GameLift service is complete.");
+
+        [[maybe_unused]] bool processEndingIsSuccess = processEndingOutcome.IsSuccess();
 
         AZ_Error(AWSGameLiftServerManagerName, processEndingIsSuccess, AWSGameLiftServerProcessEndingErrorMessage,
             processEndingOutcome.GetError().GetErrorMessage().c_str());
@@ -160,7 +160,12 @@ namespace AWSGameLift
             return;
         }
 
+        AZ_TracePrintf(AWSGameLiftServerManagerName,
+            "Removing player session %s from Amazon GameLift service ...", playerSessionId.c_str());
         Aws::GameLift::GenericOutcome disconnectOutcome = m_gameLiftServerSDKWrapper->RemovePlayerSession(playerSessionId);
+        AZ_TracePrintf(AWSGameLiftServerManagerName,
+            "RemovePlayerSession request for player session %s against Amazon GameLift service is complete.", playerSessionId.c_str());
+
         AZ_Error(AWSGameLiftServerManagerName, disconnectOutcome.IsSuccess(), AWSGameLiftServerRemovePlayerSessionErrorMessage,
             playerSessionId.c_str(), disconnectOutcome.GetError().GetErrorMessage().c_str());
     }
@@ -193,8 +198,9 @@ namespace AWSGameLift
                     AZStd::bind(&AWSGameLiftServerManager::OnHealthCheck, this), desc.m_port,
                     Aws::GameLift::Server::LogParameters(logPaths));
 
-                AZ_TracePrintf(AWSGameLiftServerManagerName, "Notifying GameLift server process is ready...");
+                AZ_TracePrintf(AWSGameLiftServerManagerName, "Notifying GameLift server process is ready ...");
                 auto processReadyOutcome = m_gameLiftServerSDKWrapper->ProcessReady(processReadyParameter);
+                AZ_TracePrintf(AWSGameLiftServerManagerName, "ProcessReady request against Amazon GameLift service is complete.");
 
                 if (!processReadyOutcome.IsSuccess())
                 {
@@ -218,8 +224,9 @@ namespace AWSGameLift
 
         if (createSessionResult)
         {
-            AZ_TracePrintf(AWSGameLiftServerManagerName, "Activating GameLift game session...");
+            AZ_TracePrintf(AWSGameLiftServerManagerName, "Activating GameLift game session ...");
             Aws::GameLift::GenericOutcome activationOutcome = m_gameLiftServerSDKWrapper->ActivateGameSession();
+            AZ_TracePrintf(AWSGameLiftServerManagerName, "ActivateGameSession request against Amazon GameLift service is complete.");
 
             if (activationOutcome.IsSuccess())
             {
@@ -245,7 +252,7 @@ namespace AWSGameLift
 
     void AWSGameLiftServerManager::OnProcessTerminate()
     {
-        AZ_TracePrintf(AWSGameLiftServerManagerName, "GameLift is shutting down server process...");
+        AZ_TracePrintf(AWSGameLiftServerManagerName, "GameLift is shutting down server process ...");
 
         HandleDestroySession();
     }
@@ -304,8 +311,11 @@ namespace AWSGameLift
             return false;
         }
 
-        AZ_TracePrintf(AWSGameLiftServerManagerName, "Attempting to accept player session connection with Amazon GameLift service...");
+        AZ_TracePrintf(AWSGameLiftServerManagerName,
+            "Attempting to accept player session %s connection with Amazon GameLift service ...", playerSessionId.c_str());
         auto acceptPlayerSessionOutcome = m_gameLiftServerSDKWrapper->AcceptPlayerSession(playerSessionId.c_str());
+        AZ_TracePrintf(AWSGameLiftServerManagerName,
+            "AcceptPlayerSession request for player session %s against Amazon GameLift service is complete.", playerSessionId.c_str());
 
         if (!acceptPlayerSessionOutcome.IsSuccess())
         {

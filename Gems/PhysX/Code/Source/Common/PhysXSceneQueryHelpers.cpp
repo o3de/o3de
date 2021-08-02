@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/std/limits.h>
 #include <Common/PhysXSceneQueryHelpers.h>
@@ -50,11 +46,17 @@ namespace PhysX
             hit.m_distance = pxHit.distance;
             hit.m_resultFlags |= AzPhysics::SceneQuery::ResultFlags::Distance;
 
-            hit.m_position = PxMathConvert(pxHit.position);
-            hit.m_resultFlags |= AzPhysics::SceneQuery::ResultFlags::Position;
+            if (pxHit.flags & physx::PxHitFlag::ePOSITION)
+            {
+                hit.m_position = PxMathConvert(pxHit.position);
+                hit.m_resultFlags |= AzPhysics::SceneQuery::ResultFlags::Position;
+            }
 
-            hit.m_normal = PxMathConvert(pxHit.normal);
-            hit.m_resultFlags |= AzPhysics::SceneQuery::ResultFlags::Normal;
+            if (pxHit.flags & physx::PxHitFlag::eNORMAL)
+            {
+                hit.m_normal = PxMathConvert(pxHit.normal);
+                hit.m_resultFlags |= AzPhysics::SceneQuery::ResultFlags::Normal;
+            }
 
             const ActorData* actorData = Utils::GetUserData(pxHit.actor);
             hit.m_bodyHandle = actorData->GetBodyHandle();

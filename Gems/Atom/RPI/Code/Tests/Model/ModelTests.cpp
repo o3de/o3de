@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RPI.Reflect/Buffer/BufferAssetCreator.h>
 #include <Atom/RPI.Reflect/Model/ModelAssetCreator.h>
@@ -1219,11 +1215,12 @@ namespace UnitTest
 
         float distance = AZStd::numeric_limits<float>::max();
         AZ::Vector3 normal;
+        constexpr bool AllowBruteForce = false;
 
         EXPECT_THAT(
             mesh.GetModel()->LocalRayIntersectionAgainstModel(
                 AZ::Vector3(GetParam().xpos, GetParam().ypos, GetParam().zpos),
-                AZ::Vector3(GetParam().xdir, GetParam().ydir, GetParam().zdir), distance, normal),
+                AZ::Vector3(GetParam().xdir, GetParam().ydir, GetParam().zdir), AllowBruteForce, distance, normal),
             testing::Eq(GetParam().expectedShouldIntersect));
         EXPECT_THAT(distance, testing::FloatEq(GetParam().expectedDistance));
     }
@@ -1267,9 +1264,10 @@ namespace UnitTest
 
         // firing down the negative z axis, positioned 5 units from cube (cube is 2x2x2 so intersection
         // happens at 1 in z)
+        constexpr bool AllowBruteForce = false;
         EXPECT_THAT(
             m_mesh->GetModel()->LocalRayIntersectionAgainstModel(
-                AZ::Vector3::CreateAxisZ(5.0f), -AZ::Vector3::CreateAxisZ(10.0f), t, normal),
+                AZ::Vector3::CreateAxisZ(5.0f), -AZ::Vector3::CreateAxisZ(10.0f), AllowBruteForce, t, normal),
             testing::Eq(true));
         EXPECT_THAT(t, testing::FloatEq(0.4f));
     }
@@ -1280,9 +1278,10 @@ namespace UnitTest
         AZ::Vector3 normal = AZ::Vector3::CreateOne(); // invalid starting normal
 
         // ensure the intersection happens right at the end of the ray
+        constexpr bool AllowBruteForce = false;
         EXPECT_THAT(
             m_mesh->GetModel()->LocalRayIntersectionAgainstModel(
-                AZ::Vector3::CreateAxisY(10.0f), -AZ::Vector3::CreateAxisY(9.0f), t, normal),
+                AZ::Vector3::CreateAxisY(10.0f), -AZ::Vector3::CreateAxisY(9.0f), AllowBruteForce, t, normal),
             testing::Eq(true));
         EXPECT_THAT(t, testing::FloatEq(1.0f));
         EXPECT_THAT(normal, IsClose(AZ::Vector3::CreateAxisY()));

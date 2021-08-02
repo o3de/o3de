@@ -1,12 +1,9 @@
 # 
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or 
-# its licensors. 
-# 
-# For complete copyright and license terms please see the LICENSE at the root of this 
-# distribution (the "License"). All use of this software is governed by the License, 
-# or, if provided, by the license below or the license accompanying this file. Do not 
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS, 
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 # 
 
 set(FILES
@@ -116,7 +113,6 @@ set(FILES
     Passes/DepthUpsample.pass
     Passes/DiffuseComposite.pass
     Passes/DiffuseGlobalFullscreen.pass
-    Passes/DiffuseGlobalFullscreen_nomsaa.pass
     Passes/DiffuseGlobalIllumination.pass
     Passes/DiffuseProbeGridBlendDistance.pass
     Passes/DiffuseProbeGridBlendIrradiance.pass
@@ -155,7 +151,6 @@ set(FILES
     Passes/LightCullingHeatmap.pass
     Passes/LightCullingParent.pass
     Passes/LightCullingRemap.pass
-    Passes/LightCullingTilePrepare.pass
     Passes/LightCullingTilePrepareMSAA.pass
     Passes/LookModificationComposite.pass
     Passes/LookModificationTransform.pass
@@ -179,7 +174,6 @@ set(FILES
     Passes/ReflectionComposite.pass
     Passes/ReflectionCopyFrameBuffer.pass
     Passes/ReflectionGlobalFullscreen.pass
-    Passes/ReflectionGlobalFullscreen_nomsaa.pass
     Passes/ReflectionProbeBlendWeight.pass
     Passes/ReflectionProbeRenderInner.pass
     Passes/ReflectionProbeRenderOuter.pass
@@ -193,7 +187,6 @@ set(FILES
     Passes/ReflectionScreenSpaceComposite.pass
     Passes/ReflectionScreenSpaceMobile.pass
     Passes/ReflectionScreenSpaceTrace.pass
-    Passes/Reflections_nomsaa.pass
     Passes/ShadowParent.pass
     Passes/Skinning.pass
     Passes/SkyBox.pass
@@ -323,16 +316,10 @@ set(FILES
     Shaders/Depth/DepthPassTransparentMin.shader
     Shaders/DiffuseGlobalIllumination/DiffuseComposite.azsl
     Shaders/DiffuseGlobalIllumination/DiffuseComposite.shader
-    Shaders/DiffuseGlobalIllumination/DiffuseComposite_nomsaa.azsl
-    Shaders/DiffuseGlobalIllumination/DiffuseComposite_nomsaa.shader
     Shaders/DiffuseGlobalIllumination/DiffuseGlobalFullscreen.azsl
     Shaders/DiffuseGlobalIllumination/DiffuseGlobalFullscreen.shader
-    Shaders/DiffuseGlobalIllumination/DiffuseGlobalFullscreen_nomsaa.azsl
-    Shaders/DiffuseGlobalIllumination/DiffuseGlobalFullscreen_nomsaa.shader
     Shaders/DiffuseGlobalIllumination/DiffuseProbeGridDownsample.azsl
     Shaders/DiffuseGlobalIllumination/DiffuseProbeGridDownsample.shader
-    Shaders/DiffuseGlobalIllumination/DiffuseProbeGridDownsample_nomsaa.azsl
-    Shaders/DiffuseGlobalIllumination/DiffuseProbeGridDownsample_nomsaa.shader
     Shaders/ImGui/ImGui.azsl
     Shaders/ImGui/ImGui.shader
     Shaders/LightCulling/LightCulling.azsl
@@ -354,11 +341,8 @@ set(FILES
     Shaders/MorphTargets/MorphTargetSRG.azsli
     Shaders/MotionVector/CameraMotionVector.azsl
     Shaders/MotionVector/CameraMotionVector.shader
-    Shaders/MotionVector/MeshMotionVectorCommon.azsli
-    Shaders/MotionVector/SkinnedMeshMotionVector.azsl
-    Shaders/MotionVector/SkinnedMeshMotionVector.shader
-    Shaders/MotionVector/StaticMeshMotionVector.azsl
-    Shaders/MotionVector/StaticMeshMotionVector.shader
+    Shaders/MotionVector/MeshMotionVector.azsl
+    Shaders/MotionVector/MeshMotionVector.shader
     Shaders/PostProcessing/AcesOutputTransformLut.azsl
     Shaders/PostProcessing/AcesOutputTransformLut.shader
     Shaders/PostProcessing/ApplyShaperLookupTable.azsl
@@ -448,12 +432,8 @@ set(FILES
     Shaders/Reflections/ReflectionCommon.azsli
     Shaders/Reflections/ReflectionComposite.azsl
     Shaders/Reflections/ReflectionComposite.shader
-    Shaders/Reflections/ReflectionComposite_nomsaa.azsl
-    Shaders/Reflections/ReflectionComposite_nomsaa.shader
     Shaders/Reflections/ReflectionGlobalFullscreen.azsl
     Shaders/Reflections/ReflectionGlobalFullscreen.shader
-    Shaders/Reflections/ReflectionGlobalFullscreen_nomsaa.azsl
-    Shaders/Reflections/ReflectionGlobalFullscreen_nomsaa.shader
     Shaders/Reflections/ReflectionProbeBlendWeight.azsl
     Shaders/Reflections/ReflectionProbeBlendWeight.shader
     Shaders/Reflections/ReflectionProbeRenderCommon.azsli

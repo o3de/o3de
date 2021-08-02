@@ -26,9 +26,7 @@
 // off every 'zix'.)
 //
 
- // Modifications copyright Amazon.com, Inc. or its affiliates.
-
-#include "FastNoise_precompiled.h"
+// Modified from original
 
 #include "FastNoise.h"
 

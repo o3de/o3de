@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -131,6 +127,9 @@ namespace AzToolsFramework
         SnappingCluster(const SnappingCluster&) = delete;
         SnappingCluster& operator=(const SnappingCluster&) = delete;
 
+        //! Attempt to show the snapping cluster (will only succeed if snapping is enabled).
+        void TrySetVisible(bool visible);
+
         ViewportUi::ClusterId m_clusterId; //!< The cluster id for all snapping buttons.
         ViewportUi::ButtonId m_snapToWorldButtonId; //!< The button id for snapping all axes to the world.
         AZ::Event<ViewportUi::ButtonId>::Handler m_snappingHandler; //!< Callback for when a snapping cluster button is pressed.
@@ -151,6 +150,7 @@ namespace AzToolsFramework
         , private EditorEntityLockComponentNotificationBus::Router
         , private EditorManipulatorCommandUndoRedoRequestBus::Handler
         , private AZ::TransformNotificationBus::MultiHandler
+        , private ViewportInteraction::ViewportSettingsNotificationBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
@@ -289,12 +289,16 @@ namespace AzToolsFramework
         void OnStartPlayInEditor() override;
         void OnStopPlayInEditor() override;
 
+        // ViewportSettingsNotificationBus overrides ...
+        void OnGridSnappingChanged(bool enabled) override;
+
         // Helpers to safely interact with the TransformBus (requests).
         void SetEntityWorldTranslation(AZ::EntityId entityId, const AZ::Vector3& worldTranslation);
         void SetEntityLocalTranslation(AZ::EntityId entityId, const AZ::Vector3& localTranslation);
         void SetEntityWorldTransform(AZ::EntityId entityId, const AZ::Transform& worldTransform);
         void SetEntityLocalScale(AZ::EntityId entityId, float localScale);
         void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Vector3& localRotation);
+        void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Quaternion& localRotation);
 
         //! Responsible for keeping the space cluster in sync with the current reference frame.
         void UpdateSpaceCluster(ReferenceFrame referenceFrame);
@@ -374,5 +378,6 @@ namespace AzToolsFramework
         void SetEntityWorldTransform(AZ::EntityId entityId, const AZ::Transform& worldTransform, bool& internal);
         void SetEntityLocalScale(AZ::EntityId entityId, float localScale, bool& internal);
         void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Vector3& localRotation, bool& internal);
+        void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Quaternion& localRotation, bool& internal);
     } // namespace ETCS
 } // namespace AzToolsFramework

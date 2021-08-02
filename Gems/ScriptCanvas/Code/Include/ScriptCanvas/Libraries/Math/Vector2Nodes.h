@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -170,7 +166,7 @@ namespace ScriptCanvas
             return a.GetMin(b);
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(Min, k_categoryName, "{815685B8-B877-4D54-9E11-D0161185B4B9}", "returns the vector (min(A.x, B.x), min(A.y, B.y))", "A", "B");
-        
+
         AZ_INLINE Vector2Type SetX(Vector2Type source, NumberType value)
         {
             source.SetX(aznumeric_caster(value));
@@ -247,7 +243,7 @@ namespace ScriptCanvas
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(ToPerpendicular, k_categoryName, "{CC4DC102-8B50-4828-BA94-0586F34E0D37}", "returns the vector (-Source.y, Source.x), a 90 degree, positive rotation", "Source");
 
-        using Registrar = RegistrarGeneric<
+        using Registrar = RegistrarGeneric <
             AbsoluteNode
             , AddNode
             , AngleNode
@@ -299,8 +295,8 @@ namespace ScriptCanvas
             , SlerpNode
             , SubtractNode
             , ToPerpendicularNode
-        >;
+        > ;
 
     }
-} 
+}
 

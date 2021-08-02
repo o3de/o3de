@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "UserTypes.h"
 
 #include <AzCore/std/containers/array.h>
@@ -302,7 +298,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(int_queue.empty());
         AZ_TEST_ASSERT(int_queue.size() == 0);
 
-        // Queue uses deque as default container, so try to contruct to queue from a deque.
+        // Queue uses deque as default container, so try to construct to queue from a deque.
         deque<int> container(40, 10);
         int_queue_type int_queue2(container);
         AZ_TEST_ASSERT(!int_queue2.empty());
@@ -328,7 +324,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(int_queue2.size() == 40);
         AZ_TEST_ASSERT(int_queue2.back() == 20);
 
-        int_queue.push();
+        int_queue.emplace();
         AZ_TEST_ASSERT(!int_queue.empty());
         AZ_TEST_ASSERT(int_queue.size() == 1);
 
@@ -427,7 +423,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(int_stack2.size() == 40);
         AZ_TEST_ASSERT(int_stack2.top() == 10);
 
-        int_stack.push();
+        int_stack.emplace();
         AZ_TEST_ASSERT(!int_stack.empty());
         AZ_TEST_ASSERT(int_stack.size() == 1);
         // StackContainerTest-End
@@ -672,5 +668,20 @@ namespace UnitTest
             EXPECT_EQ(max - iteration - 1, *rit);
             ++iteration;
         }
+    }
+
+    using StackContainerTestFixture = ScopedAllocatorSetupFixture;
+
+    TEST_F(StackContainerTestFixture, StackEmplaceOperator_SupportsZeroOrMoreArguments)
+    {
+        using TestPairType = AZStd::pair<int, int>;
+        AZStd::stack<TestPairType> testStack;
+        testStack.emplace();
+        testStack.emplace(1);
+        testStack.emplace(2, 3);
+
+        using ContainerType = typename AZStd::stack<TestPairType>::container_type;
+        AZStd::stack<TestPairType> expectedStack(ContainerType{ TestPairType{ 0, 0 }, TestPairType{ 1, 0 }, TestPairType{ 2, 3 } });
+        EXPECT_EQ(expectedStack, testStack);
     }
 }

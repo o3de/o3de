@@ -1,12 +1,8 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 
 Reg cleaner: tools for working with the lumberyard windows registry keys
 """
@@ -16,7 +12,7 @@ import winreg
 
 import ly_test_tools.environment.process_utils as process_utils
 
-CONST_LY_REG = r'SOFTWARE\Amazon\Lumberyard'
+CONST_LY_REG = r'SOFTWARE\O3DE\O3DE'
 AUTOMATION_EXCEPTION_LIST = [
     os.path.join(CONST_LY_REG, r"Identity"),
     os.path.join(CONST_LY_REG, r"Settings\DXInstalled"),
@@ -122,6 +118,6 @@ def create_ly_keys():
     process_utils.check_call(
         ["reg", "add", target_key, "/v", "RC_EnableSourceControl", "/t", "REG_DWORD", "/d", "0", "/f"])
     # The editor will ignore settings unless EditorSettingsVersion is what it expects
-    # The value it expects is in Code\Sandbox\Editor\Settings.cpp
+    # The value it expects is in Code\Editor\Settings.cpp
     process_utils.check_call(
         ["reg", "add", target_key, "/v", "EditorSettingsVersion", "/t", "REG_DWORD", "/d", "2", "/f"])

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 
 #include "Connection.h"
@@ -27,6 +23,11 @@ namespace ScriptCanvas
         AZStd::string failedContract;
         AZStd::all_of(firstSlot.GetContracts().begin(), firstSlot.GetContracts().end(), [&firstSlot, &secondSlot, &outcome](const AZStd::unique_ptr<Contract>& contract)
         {
+            if (!contract)
+            {
+                return false;
+            }
+
             outcome = contract->Evaluate(firstSlot, secondSlot);
             if (outcome.IsSuccess())
             {
@@ -173,7 +174,12 @@ namespace ScriptCanvas
     {
         if (nodeId == m_sourceEndpoint.GetNodeId() || nodeId == m_targetEndpoint.GetNodeId())
         {
-            GraphRequestBus::Event(*GraphNotificationBus::GetCurrentBusId(), &GraphRequests::DisconnectById, GetEntityId());
+            Slot* sourceSlot{};
+            NodeRequestBus::EventResult(sourceSlot, m_sourceEndpoint.GetNodeId(), &NodeRequests::GetSlot, m_sourceEndpoint.GetSlotId());
+            if (sourceSlot)
+            {
+                GraphRequestBus::Event(sourceSlot->GetNode()->GetOwningScriptCanvasId(), &GraphRequests::DisconnectById, GetEntityId());
+            }
         }
     }
 }

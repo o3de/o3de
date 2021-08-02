@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Atom/RPI.Public/RPIUtils.h>
@@ -180,6 +176,27 @@ namespace AZ
             }
         }
 
+        void DiffuseProbeGridFeatureProcessor::OnBeginPrepareRender()
+        {
+            for (auto& diffuseProbeGrid : m_realTimeDiffuseProbeGrids)
+            {
+                diffuseProbeGrid->ResetCullingVisibility();
+            }
+        }
+
+        void DiffuseProbeGridFeatureProcessor::OnEndPrepareRender()
+        {
+            // re-build the list of visible real-time diffuse probe grids
+            m_visibleRealTimeDiffuseProbeGrids.clear();
+            for (auto& diffuseProbeGrid : m_realTimeDiffuseProbeGrids)
+            {
+                if (diffuseProbeGrid->GetIsVisible())
+                {
+                    m_visibleRealTimeDiffuseProbeGrids.push_back(diffuseProbeGrid);
+                }
+            }
+        }
+
         DiffuseProbeGridHandle DiffuseProbeGridFeatureProcessor::AddProbeGrid(const AZ::Transform& transform, const AZ::Vector3& extents, const AZ::Vector3& probeSpacing)
         {
             AZStd::shared_ptr<DiffuseProbeGrid> diffuseProbeGrid = AZStd::make_shared<DiffuseProbeGrid>();
@@ -218,6 +235,17 @@ namespace AZ
             if (itEntry != m_realTimeDiffuseProbeGrids.end())
             {
                 m_realTimeDiffuseProbeGrids.erase(itEntry);
+            }
+
+            // remove from side list of visible real-time grids
+            itEntry = AZStd::find_if(m_visibleRealTimeDiffuseProbeGrids.begin(), m_visibleRealTimeDiffuseProbeGrids.end(), [&](AZStd::shared_ptr<DiffuseProbeGrid> const& entry)
+            {
+                return (entry == probeGrid);
+            });
+
+            if (itEntry != m_visibleRealTimeDiffuseProbeGrids.end())
+            {
+                m_visibleRealTimeDiffuseProbeGrids.erase(itEntry);
             }
 
             probeGrid = nullptr;
@@ -577,13 +605,6 @@ namespace AZ
                 RPI::PassHierarchyFilter updatePassFilter(AZ::Name("DiffuseProbeGridUpdatePass"));
                 const AZStd::vector<RPI::Pass*>& updatePasses = RPI::PassSystemInterface::Get()->FindPasses(updatePassFilter);
                 for (RPI::Pass* pass : updatePasses)
-                {
-                    pass->SetEnabled(false);
-                }
-
-                RPI::PassHierarchyFilter renderPassFilter(AZ::Name("DiffuseProbeGridRenderPass"));
-                const AZStd::vector<RPI::Pass*>& renderPasses = RPI::PassSystemInterface::Get()->FindPasses(renderPassFilter);
-                for (RPI::Pass* pass : renderPasses)
                 {
                     pass->SetEnabled(false);
                 }

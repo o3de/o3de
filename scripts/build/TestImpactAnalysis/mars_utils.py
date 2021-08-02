@@ -11,6 +11,8 @@ import json
 import socket
 import argparse
 import os
+import boto3
+
 class FilebeatExn(Exception):
     pass
 
@@ -238,58 +240,81 @@ def generate_mars_test_targets(sequence_report, mars_job):
 
     return mars_test_targets
 
+
+def output_s3(rendered, bucket, object):
+    s3 = boto3.resource("s3")
+    s3.Object(bucket, object).put(Body=rendered)
+
 if __name__ == "__main__":
     
-    try:
-        def file_path(value):
-            if os.path.isfile(value):
-                return value
-            else:
-                raise FileNotFoundError(value)
+    #output_s3("Hello World!", "tiaf", "hello/world/contents.txt")
 
-        def dir_path(value):
-            if os.path.isdir(value):
-                return value
-            else:
-                raise FileNotFoundError(value)
+    s3 = boto3.resource("s3")
+    bucket = s3.Bucket("tiaf")
 
-        parser = argparse.ArgumentParser()
-        parser.add_argument('--inputReport', dest="input_report", type=file_path, help="Path to the test impact analysis framework sequence report file", required=True)
-        parser.add_argument('--outputPath', dest="output_path", type=dir_path, help="Path to output the report and test target files (if not specified, stdout will be used)", required=False)
-        parser.add_argument('--exportTestTargets', action="store_true", help="Flag to specify whether or not to output the test targets", required=False)
-        args = parser.parse_args()
+    # Secondly, delete old objects.
+    objects = sorted(
+        bucket.objects.filter(Prefix="hello/"),
+        key=lambda obj: obj.last_modified,
+        reverse=True,
+    )
 
-        t0_timestamp = datetime.datetime.now().timestamp()
+    for obj in objects:
+        print(obj)
+        s3.Object(obj.bucket_name, obj.key).download_file(
+        f'test.txt')
 
-        sequence_result = {}
-        sequence_result["src_commit"] = "self.__src_commit"
-        sequence_result["dst_commit"] = "self.__dst_commit"
-        sequence_result["commit_distance"] = "self.__commit_distance"
-        sequence_result["branch"] = "self.__branch"
-        sequence_result["suite"] = "suite"
-        sequence_result["pipeline"] = "self.__pipeline"
-        sequence_result["seeding_branches"] = "self.__seeding_branches"
-        sequence_result["seeding_pipelines"] = "self.__seeding_pipelines"
-        sequence_result["is_seeding_branch"] = "self.__is_seeding_branch"
-        sequence_result["is_seeding_pipeline"] = "self.__is_seeding_pipeline"
-        sequence_result["use_test_impact_analysis"] = "self.__use_test_impact_analysis"
-        sequence_result["has_change_list"] = "self.__has_change_list"
-        sequence_result["runtime_args"] = "runtime_args"
-        sequence_result["return_code"] = 1
-
-        with open(args.input_report, "r") as sequence_report_data:
-            sequence_report = json.load(sequence_report_data)
-
-        mars_job = generate_mars_job(sequence_result, "snapshot", "--args=foo")
-        mars_sequence = generate_mars_sequence(sequence_report, mars_job, "tiaf data", {"createdFiles": [], "updatedFiles": [], "deletedFiles": []}, t0_timestamp)
-        mars_test_targets = generate_mars_test_targets(sequence_report, mars_job)
-
-        filebeat = FilebeatClient("localhost", 9000, 60)
-        filebeat.send_event(mars_job, "jonawals.tiaf.job")
-        filebeat.send_event(mars_sequence, "jonawals.tiaf.sequence")
-        for mars_test_target in mars_test_targets:
-            filebeat.send_event(mars_test_target, "jonawals.tiaf.test_target")
-
-        sys.exit(0)
-    except Exception as e:
-        print(e)
+    
+    #try:
+    #    def file_path(value):
+    #        if os.path.isfile(value):
+    #            return value
+    #        else:
+    #            raise FileNotFoundError(value)
+#
+    #    def dir_path(value):
+    #        if os.path.isdir(value):
+    #            return value
+    #        else:
+    #            raise FileNotFoundError(value)
+#
+    #    parser = argparse.ArgumentParser()
+    #    parser.add_argument('--inputReport', dest="input_report", type=file_path, help="Path to the test impact analysis framework sequence report file", required=True)
+    #    parser.add_argument('--outputPath', dest="output_path", type=dir_path, help="Path to output the report and test target files (if not specified, stdout will be used)", required=False)
+    #    parser.add_argument('--exportTestTargets', action="store_true", help="Flag to specify whether or not to output the test targets", required=False)
+    #    args = parser.parse_args()
+#
+    #    t0_timestamp = datetime.datetime.now().timestamp()
+#
+    #    sequence_result = {}
+    #    sequence_result["src_commit"] = "self.__src_commit"
+    #    sequence_result["dst_commit"] = "self.__dst_commit"
+    #    sequence_result["commit_distance"] = "self.__commit_distance"
+    #    sequence_result["branch"] = "self.__branch"
+    #    sequence_result["suite"] = "suite"
+    #    sequence_result["pipeline"] = "self.__pipeline"
+    #    sequence_result["seeding_branches"] = "self.__seeding_branches"
+    #    sequence_result["seeding_pipelines"] = "self.__seeding_pipelines"
+    #    sequence_result["is_seeding_branch"] = "self.__is_seeding_branch"
+    #    sequence_result["is_seeding_pipeline"] = "self.__is_seeding_pipeline"
+    #    sequence_result["use_test_impact_analysis"] = "self.__use_test_impact_analysis"
+    #    sequence_result["has_change_list"] = "self.__has_change_list"
+    #    sequence_result["runtime_args"] = "runtime_args"
+    #    sequence_result["return_code"] = 1
+#
+    #    with open(args.input_report, "r") as sequence_report_data:
+    #        sequence_report = json.load(sequence_report_data)
+#
+    #    mars_job = generate_mars_job(sequence_result, "snapshot", "--args=foo")
+    #    mars_sequence = generate_mars_sequence(sequence_report, mars_job, "tiaf data", {"createdFiles": [], "updatedFiles": [], "deletedFiles": []}, t0_timestamp)
+    #    mars_test_targets = generate_mars_test_targets(sequence_report, mars_job)
+#
+    #    filebeat = FilebeatClient("localhost", 9000, 60)
+    #    filebeat.send_event(mars_job, "jonawals.tiaf.job")
+    #    filebeat.send_event(mars_sequence, "jonawals.tiaf.sequence")
+    #    for mars_test_target in mars_test_targets:
+    #        filebeat.send_event(mars_test_target, "jonawals.tiaf.test_target")
+#
+    #    sys.exit(0)
+    #except Exception as e:
+    #    print(e)

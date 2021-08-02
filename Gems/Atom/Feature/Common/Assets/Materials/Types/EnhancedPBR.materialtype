@@ -1478,14 +1478,9 @@
             "file": "./EnhancedPBR_DepthPass_WithPS.shader",
             "tag": "DepthPass_WithPS"
         },
-        // [GFX TODO][ATOM-4726] Use an "isSkinnedMesh" external material property and a functor that enables/disables the appropriate motion-vector shader
         {
-            "file": "Shaders/MotionVector/StaticMeshMotionVector.shader",
-            "tag": "StaticMeshMotionVector"
-        },
-        {
-            "file": "Shaders/MotionVector/SkinnedMeshMotionVector.shader",
-            "tag": "SkinnedMeshMotionVector"
+            "file": "Shaders/MotionVector/MeshMotionVector.shader",
+            "tag": "MeshMotionVector"
         },
         // Used by the light culling system to produce accurate depth bounds for this object when it uses blended transparency
         {

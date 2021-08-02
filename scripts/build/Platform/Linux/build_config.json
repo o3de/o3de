@@ -24,7 +24,7 @@
     "COMMAND": "python_linux.sh",
     "PARAMETERS": {
       "SCRIPT_PATH": "scripts/build/ci_build_metrics.py",
-      "SCRIPT_PARAMETERS": "--platform Linux --jobname=\\'${JOB_NAME}\\' --jobnumber \\'${BUILD_NUMBER}\\' --jobnode \\'${NODE_LABEL}\\' --changelist \\'${CHANGE_ID}\\'"
+      "SCRIPT_PARAMETERS": "--platform=Linux --repository=${REPOSITORY_NAME} --jobname=${JOB_NAME} --jobnumber=${BUILD_NUMBER} --jobnode=${NODE_LABEL} --changelist=${CHANGE_ID}"
     }
   },
   "debug": {

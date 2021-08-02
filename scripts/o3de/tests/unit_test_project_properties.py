@@ -1,12 +1,9 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 
 import pytest
@@ -40,18 +37,18 @@ def init_project_json_data(request):
 
 @pytest.mark.usefixtures('init_project_json_data')
 class TestEditProjectProperties:
-    @pytest.mark.parametrize("project_path, project_name, project_origin, project_display,\
+    @pytest.mark.parametrize("project_path, project_name, project_new_name, project_origin, project_display,\
                             project_summary, project_icon, add_tags, delete_tags,\
                             replace_tags, expected_result", [
         pytest.param(pathlib.PurePath('E:/TestProject'),
-        'test', 'editing by pytest', 'Unit Test', 'pyTest project', 'pytest.bmp', 'A B C',
+        'test', 'test', 'editing by pytest', 'Unit Test', 'pyTest project', 'pytest.bmp', 'A B C',
         'B', 'D E F', 0),
         pytest.param('',
-        'test', 'editing by pytest', 'Unit Test', 'pyTest project', 'pytest.bmp', 'A B C',
+        'test', 'test', 'editing by pytest', 'Unit Test', 'pyTest project', 'pytest.bmp', 'A B C',
         'B', 'D E F', 1)
         ]
     )
-    def test_edit_project_properties(self, project_path, project_name, project_origin, project_display,
+    def test_edit_project_properties(self, project_path, project_name, project_new_name, project_origin, project_display,
                                     project_summary, project_icon, add_tags, delete_tags,
                                     replace_tags, expected_result):
 
@@ -61,12 +58,13 @@ class TestEditProjectProperties:
                 return None
             return self.project_json.data
 
-        def save_o3de_manifest(new_proj_data: dict, project_path) -> None:
+        def save_o3de_manifest(new_proj_data: dict, project_path) -> bool:
             self.project_json.data = new_proj_data
+            return True
 
         with patch('o3de.manifest.get_project_json_data', side_effect=get_project_json_data) as get_project_json_data_patch, \
                 patch('o3de.manifest.save_o3de_manifest', side_effect=save_o3de_manifest) as save_o3de_manifest_patch:
-            result = project_properties.edit_project_props(project_path, project_name, project_origin,
+            result = project_properties.edit_project_props(project_path, project_name, project_new_name, project_origin,
                                                             project_display, project_summary, project_icon,
                                                             add_tags, delete_tags, replace_tags)
             assert result == expected_result

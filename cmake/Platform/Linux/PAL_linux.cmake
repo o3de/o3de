@@ -1,12 +1,9 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 
 ly_set(PAL_EXECUTABLE_APPLICATION_FLAG)
@@ -40,3 +37,7 @@ set(LY_ASSET_DEPLOY_ASSET_TYPE "pc" CACHE STRING "Set the asset type for deploym
 
 # Set the python cmd tool
 ly_set(LY_PYTHON_CMD ${CMAKE_CURRENT_SOURCE_DIR}/python/python.sh)
+
+# Set the default window manager that applications should be using on Linux 
+# Note: Only ("xcb", "wayland", or "xlib" should be considered)
+set(PAL_TRAIT_LINUX_WINDOW_MANAGER "xcb" CACHE STRING "Sets the Window Manager type to use when configuring Linux (xcb, wayland, or xlib)")  

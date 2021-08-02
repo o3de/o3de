@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of thistoolsApp
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/Asset/AssetManagerBus.h>
@@ -16,6 +12,7 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
+#include <AzCore/IO/FileIO.h>
 #include <Tests/AZTestShared/Utils/Utils.h>
 #include <AzToolsFramework/Archive/ArchiveAPI.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -28,6 +25,7 @@
 #include <QStandardPaths>
 #include <QTemporaryDir>
 #include <QTextStream>
+#include <Utils/Utils.h>
 
 namespace UnitTest
 {
@@ -77,7 +75,7 @@ namespace UnitTest
 
             void CreateArchiveFolder( QString archiveFolderName, QStringList fileList )
             {
-                QDir tempPath = QDir(m_tempDir.path()).filePath(archiveFolderName);
+                QDir tempPath = QDir(m_tempDir.GetDirectory()).filePath(archiveFolderName);
 
                 for (const auto& thisFile : fileList)
                 {
@@ -93,12 +91,12 @@ namespace UnitTest
 
             QString GetArchivePath()
             {
-                return  QDir(m_tempDir.path()).filePath("TestArchive.pak");
+                return  QDir(m_tempDir.GetDirectory()).filePath("TestArchive.pak");
             }
 
             QString GetArchiveFolder()
             {
-                return QDir(m_tempDir.path()).filePath(GetArchiveFolderName());
+                return QDir(m_tempDir.GetDirectory()).filePath(GetArchiveFolderName());
             }
 
             bool CreateArchive()
@@ -116,6 +114,11 @@ namespace UnitTest
                 // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
                 // in the unit tests.
                 AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
+
+                if (auto fileIoBase = AZ::IO::FileIOBase::GetInstance(); fileIoBase != nullptr)
+                {
+                    fileIoBase->SetAlias("@assets@", m_tempDir.GetDirectory());
+                }
             }
 
             void TearDown() override
@@ -125,7 +128,7 @@ namespace UnitTest
             }
 
             AZStd::unique_ptr<ToolsTestApplication> m_app;
-            QTemporaryDir m_tempDir {QDir(QStandardPaths::writableLocation(QStandardPaths::TempLocation)).filePath("ArchiveTests-")};
+            UnitTest::ScopedTemporaryDirectory m_tempDir;
         };
 
 #if AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
@@ -134,7 +137,7 @@ namespace UnitTest
         TEST_F(ArchiveTest, CreateArchiveBlocking_FilesAtThreeDepths_ArchiveCreated)
 #endif // AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
         {
-            EXPECT_TRUE(m_tempDir.isValid());
+            EXPECT_TRUE(m_tempDir.IsValid());
             CreateArchiveFolder();
 
             bool createResult = CreateArchive();
@@ -148,7 +151,7 @@ namespace UnitTest
         TEST_F(ArchiveTest, ListFilesInArchiveBlocking_FilesAtThreeDepths_FilesFound)
 #endif // AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
         {
-            EXPECT_TRUE(m_tempDir.isValid());
+            EXPECT_TRUE(m_tempDir.IsValid());
             CreateArchiveFolder();
             
             EXPECT_EQ(CreateArchive(), true);
@@ -208,7 +211,9 @@ namespace UnitTest
             }
 
             bool catalogCreated{ false };
+            AZ_TEST_START_TRACE_SUPPRESSION;
             AzToolsFramework::AssetBundleCommandsBus::BroadcastResult(catalogCreated, &AzToolsFramework::AssetBundleCommandsBus::Events::CreateDeltaCatalog, GetArchivePath().toStdString().c_str(), true);
+            AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT; // produces different counts in different platforms
             EXPECT_EQ(catalogCreated, true);
         }
     }

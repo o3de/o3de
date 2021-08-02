@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -41,14 +37,14 @@ namespace ScriptCanvas
             };
 
             using EBus = AZ::EBus<EBusTraits>;
-            
-            class EBusHandler 
+
+            class EBusHandler
                 : public EBus::Handler
                 , public AZ::BehaviorEBusHandler
             {
             public:
                 AZ_EBUS_BEHAVIOR_BINDER
-                    ( EBusHandler
+                (EBusHandler
                     , "{5168D163-AAB9-417D-9FD4-CE10541D51CE}"
                     , AZ::SystemAllocator
                     , CStyleToCStyle
@@ -100,14 +96,14 @@ namespace ScriptCanvas
                     return result;
                 }
             };
-            
+
             class StringConversion
             {
             public:
                 AZ_TYPE_INFO(StringConversion, "{47A9CF0C-6F34-4E0C-B1F9-F908FC2B7388}");
 
                 static const char* CStyleToCStyle(const char* input);
-            
+
                 static void Reflect(AZ::ReflectContext* reflection);
             };
 
@@ -123,5 +119,5 @@ namespace ScriptCanvas
                 AZ::Outcome<AZ::Vector3> m_outcomeVector3Void;
             };
         }
-    } 
-} 
+    }
+}

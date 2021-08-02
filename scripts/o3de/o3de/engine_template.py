@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 """
 This file contains all the code that has to do with creating and instantiate engine templates
@@ -22,7 +18,7 @@ import uuid
 import re
 
 
-from o3de import manifest, validation, utils
+from o3de import manifest, register, validation, utils
 
 logger = logging.getLogger()
 logging.basicConfig()
@@ -350,6 +346,7 @@ def _instantiate_template(template_json_data: dict,
 
 def create_template(source_path: pathlib.Path,
                     template_path: pathlib.Path,
+                    source_name: str = None,
                     source_restricted_path: pathlib.Path = None,
                     source_restricted_name: str = None,
                     template_restricted_path: pathlib.Path = None,
@@ -365,6 +362,8 @@ def create_template(source_path: pathlib.Path,
 
     :param source_path: The path to the source that you want to make into a template
     :param template_path: the path of the template to create, can be absolute or relative to default templates path
+    :param source_name: Name to replace within template folder with ${Name} placeholder
+            If not specified, the basename of the source_path parameter is used as the source_name instead
     :param source_restricted_path: path to the source restricted folder
     :param source_restricted_name: name of the source restricted folder
     :param template_restricted_path: path to the templates restricted folder
@@ -390,24 +389,35 @@ def create_template(source_path: pathlib.Path,
     if not source_path:
         logger.error('Src path cannot be empty.')
         return 1
-    if not os.path.isdir(source_path):
+    if not source_path.is_dir():
         logger.error(f'Src path {source_path} is not a folder.')
         return 1
 
+    source_path = source_path.resolve()
     # source_name is now the last component of the source_path
-    source_name = os.path.basename(source_path)
+    if not source_name:
+        source_name = os.path.basename(source_path)
     sanitized_source_name = utils.sanitize_identifier_for_cpp(source_name)
 
     # if no template path, error
     if not template_path:
         logger.info(f'Template path empty. Using source name {source_name}')
         template_path = source_name
-    if not os.path.isabs(template_path):
+    if not template_path.is_absolute():
         default_templates_folder = manifest.get_registered(default_folder='templates')
-        template_path = default_templates_folder/ template_path
+        template_path = default_templates_folder / template_path
         logger.info(f'Template path not a full path. Using default templates folder {template_path}')
-    if not force and os.path.isdir(template_path):
+    if not force and template_path.is_dir():
         logger.error(f'Template path {template_path} already exists.')
+        return 1
+
+    # Make sure the output directory for the template is outside the source path directory
+    try:
+        template_path.relative_to(source_path)
+    except ValueError:
+        pass
+    else:
+        logger.error(f'Template output path {template_path} cannot be a subdirectory of the source_path {source_path}\n')
         return 1
 
     # template name is now the last component of the template_path
@@ -938,7 +948,7 @@ def create_template(source_path: pathlib.Path,
         s.write(json.dumps(json_data, indent=4) + '\n')
 
     # copy the default preview.png
-    preview_png_src = this_script_parent / 'resources' /' preview.png'
+    preview_png_src = this_script_parent / 'resources' / 'preview.png'
     preview_png_dst = template_path / 'Template' / 'preview.png'
     if not os.path.isfile(preview_png_dst):
         shutil.copy(preview_png_src, preview_png_dst)
@@ -987,6 +997,7 @@ def create_template(source_path: pathlib.Path,
 def create_from_template(destination_path: pathlib.Path,
                          template_path: pathlib.Path = None,
                          template_name: str = None,
+                         destination_name: str = None,
                          destination_restricted_path: pathlib.Path = None,
                          destination_restricted_name: str = None,
                          template_restricted_path: pathlib.Path = None,
@@ -1004,6 +1015,10 @@ def create_from_template(destination_path: pathlib.Path,
     :param destination_path: the folder you want to instantiate the template into
     :param template_path: the path to the template you want to instance
     :param template_name: the name of the template you want to instance, resolves template_path
+    :param destination_name: the name that will be substituted when instantiating the template.
+           The placeholders of ${Name} and ${SanitizedCppName} will be replaced with destination name and a sanitized
+           version of the destination name that is suitable as a C++ identifier. If not specified, defaults to the
+           last path component of the destination_path
     :param destination_restricted_path: path to the projects restricted folder
     :param destination_restricted_name: name of the projects restricted folder, resolves destination_restricted_path
     :param template_restricted_path: path of the templates restricted folder
@@ -1043,12 +1058,13 @@ def create_from_template(destination_path: pathlib.Path,
     if template_name:
         template_path = manifest.get_registered(template_name=template_name)
 
+    if not template_path:
+        logger.error(f'Could not find the template path using name {template_name}.\n'
+                     f'Has the engine been registered yet. It can be registered via the "o3de.py register --this-engine" command')
+        return 1
     if not os.path.isdir(template_path):
         logger.error(f'Could not find the template {template_name}=>{template_path}')
         return 1
-
-    # template folder name is now the last component of the template_path
-    template_folder_name = os.path.basename(template_path)
 
     # the template.json should be in the template_path, make sure it's there a nd valid
     template_json = template_path / 'template.json'
@@ -1130,7 +1146,7 @@ def create_from_template(destination_path: pathlib.Path,
                     return 1
 
         # check and make sure the restricted exists
-        if not os.path.isdir(template_restricted_path):
+        if template_restricted_path and not os.path.isdir(template_restricted_path):
             logger.error(f'Template restricted path {template_restricted_path} does not exist.')
             return 1
 
@@ -1183,8 +1199,9 @@ def create_from_template(destination_path: pathlib.Path,
     else:
         os.makedirs(destination_path, exist_ok=force)
 
-    # destination name is now the last component of the destination_path
-    destination_name = os.path.basename(destination_path)
+    if not destination_name:
+        # destination name is now the last component of the destination_path
+        destination_name = destination_path.name
 
     # destination name cannot be the same as a restricted platform name
     if destination_name in restricted_platforms:
@@ -1340,9 +1357,6 @@ def create_project(project_path: pathlib.Path,
         logger.error(f'Could not find the template {template_name}=>{template_path}')
         return 1
 
-    # template folder name is now the last component of the template_path
-    template_folder_name = os.path.basename(template_path)
-
     # the template.json should be in the template_path, make sure it's there and valid
     template_json = template_path / 'template.json'
     if not validation.valid_o3de_template_json(template_json):
@@ -1423,7 +1437,7 @@ def create_project(project_path: pathlib.Path,
                     return 1
 
         # check and make sure the restricted exists
-        if not os.path.isdir(template_restricted_path):
+        if template_restricted_path and not os.path.isdir(template_restricted_path):
             logger.error(f'Template restricted path {template_restricted_path} does not exist.')
             return 1
 
@@ -1574,6 +1588,7 @@ def create_project(project_path: pathlib.Path,
         return 1
 
     # We created the project, now do anything extra that a project requires
+    project_json = project_path / 'project.json'
 
     # If we are not keeping the restricted in the project read the name of the restricted folder from the
     # restricted json and set that as this projects restricted
@@ -1607,7 +1622,6 @@ def create_project(project_path: pathlib.Path,
                 return 1
 
             # set the "restricted_name": "restricted_name" element of the project.json
-            project_json = project_path / 'project.json'
             if not validation.valid_o3de_project_json(project_json):
                 logger.error(f'Project json {project_json} is not valid.')
                 return 1
@@ -1636,48 +1650,22 @@ def create_project(project_path: pathlib.Path,
                     with open(cmakelists_file_name, 'w') as d:
                         if keep_license_text:
                             d.write('# {BEGIN_LICENSE}\n')
-                            d.write('# All or portions of this file Copyright (c) Amazon.com, Inc. or its'
-                                    ' affiliates or\n')
-                            d.write('# its licensors.\n')
+                            d.write('# Copyright (c) Contributors to the Open 3D Engine Project.\n')
+                            d.write('# For complete copyright and license terms please see the LICENSE at the root of this distribution.\n')
                             d.write('#\n')
-                            d.write('# For complete copyright and license terms please see the LICENSE at the'
-                                    ' root of this\n')
-                            d.write('# distribution (the "License"). All use of this software is governed by'
-                                    ' the License,\n')
-                            d.write('# or, if provided, by the license below or the license accompanying this'
-                                    ' file. Do not\n')
-                            d.write('# remove or modify any license notices. This file is distributed on an'
-                                    ' "AS IS" BASIS,\n')
-                            d.write('# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n')
+                            d.write('# SPDX-License-Identifier: Apache-2.0 OR MIT\n')
                             d.write('# {END_LICENSE}\n')
 
-    # set the "engine" element of the project.json
-    engine_json_data = manifest.get_engine_json_data(engine_path=manifest.get_this_engine_path())
-    try:
-        engine_name = engine_json_data['engine_name']
-    except KeyError as e:
-        logger.error(f"engine_name for this engine not found in engine.json.")
-        return 1
 
-    project_json_data = manifest.get_project_json_data(project_path=project_path)
-    if not project_json_data:
-        # get_project_json_data already logs an error if the project.json is mising
-        return 1
-
-    project_json_data.update({"engine": engine_name})
-    with open(project_json, 'w') as s:
-        try:
-            s.write(json.dumps(project_json_data, indent=4) + '\n')
-        except OSError as e:
-            logger.error(f'Failed to write project json at {project_path}.')
-            return 1
-
-    return 0
+    # Register the project with the global o3de_manifest.json and set the project.json "engine" field to match the
+    # engine.json "engine_name" field
+    return register.register(project_path=project_path)
 
 
 def create_gem(gem_path: pathlib.Path,
                template_path: pathlib.Path = None,
                template_name: str = None,
+               gem_name: str = None,
                gem_restricted_path: pathlib.Path = None,
                gem_restricted_name: str = None,
                template_restricted_path: pathlib.Path = None,
@@ -1697,6 +1685,10 @@ def create_gem(gem_path: pathlib.Path,
     :param gem_path: the gem path, can be absolute or relative to default gems path
     :param template_path: the template path you want to instance, can be absolute or relative to default templates path
     :param template_name: the name of the registered template you want to instance, defaults to DefaultGem, resolves template_path
+    :param gem_name: the name that will be substituted when instantiating the template.
+       The placeholders of ${Name} and ${SanitizedCppName} will be replaced with gem name and a sanitized
+       version of the gem name that is suitable as a C++ identifier. If not specified, defaults to the
+       last path component of the gem_path
     :param gem_restricted_path: path to the gems restricted folder, can be absolute or relative to the restricted='gems'
     :param gem_restricted_name: str = name of the registered gems restricted path, resolves gem_restricted_path
     :param template_restricted_path: the templates restricted path, can be absolute or relative to the restricted='templates'
@@ -1737,12 +1729,14 @@ def create_gem(gem_path: pathlib.Path,
     if template_name and not template_path:
         template_path = manifest.get_registered(template_name=template_name)
 
+    if not template_path:
+        logger.error(f'Could not find the template path using name {template_name}.\n'
+                     'Has the template been registered yet? It can be registered via the '
+                     '"o3de.py register --tp <template-path>" command')
+        return 1
     if not os.path.isdir(template_path):
         logger.error(f'Could not find the template {template_name}=>{template_path}')
         return 1
-
-    # template name is now the last component of the template_path
-    template_folder_name = os.path.basename(template_path)
 
     # the template.json should be in the template_path, make sure it's there and valid
     template_json = template_path / 'template.json'
@@ -1822,7 +1816,7 @@ def create_gem(gem_path: pathlib.Path,
                         f' and {template_json_restricted_path} will be used.')
                     return 1
         # check and make sure the restricted path exists
-        if not os.path.isdir(template_restricted_path):
+        if template_restricted_path and not os.path.isdir(template_restricted_path):
             logger.error(f'Template restricted path {template_restricted_path} does not exist.')
             return 1
 
@@ -1880,10 +1874,9 @@ def create_gem(gem_path: pathlib.Path,
     else:
         os.makedirs(gem_path, exist_ok=force)
 
-    # gem nam
-    #
-    # e is now the last component of the gem_path
-    gem_name = os.path.basename(gem_path)
+    # Default to the gem path basename component if gem_name has not been supplied
+    if not gem_name:
+        gem_name = os.path.basename(gem_path)
 
     if not utils.validate_identifier(gem_name):
         logger.error(f'Gem name must be fewer than 64 characters, contain only alphanumeric, "_" or "-" characters, and start with a letter.  {gem_name}')
@@ -2037,19 +2030,10 @@ def create_gem(gem_path: pathlib.Path,
                         with open(cmakelists_file_name, 'w') as d:
                             if keep_license_text:
                                 d.write('# {BEGIN_LICENSE}\n')
-                                d.write(
-                                    '# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or\n')
-                                d.write('# its licensors.\n')
+                                d.write('# Copyright (c) Contributors to the Open 3D Engine Project.\n')
+                                d.write('# For complete copyright and license terms please see the LICENSE at the root of this distribution.\n')
                                 d.write('#\n')
-                                d.write(
-                                    '# For complete copyright and license terms please see the LICENSE at the root of this\n')
-                                d.write(
-                                    '# distribution (the "License"). All use of this software is governed by the License,\n')
-                                d.write(
-                                    '# or, if provided, by the license below or the license accompanying this file. Do not\n')
-                                d.write(
-                                    '# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,\n')
-                                d.write('# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n')
+                                d.write('# SPDX-License-Identifier: Apache-2.0 OR MIT\n')
                                 d.write('# {END_LICENSE}\n')
     return 0
 
@@ -2057,6 +2041,7 @@ def create_gem(gem_path: pathlib.Path,
 def _run_create_template(args: argparse) -> int:
     return create_template(args.source_path,
                            args.template_path,
+                           args.source_name,
                            args.source_restricted_path,
                            args.source_restricted_name,
                            args.template_restricted_path,
@@ -2073,6 +2058,7 @@ def _run_create_from_template(args: argparse) -> int:
     return create_from_template(args.destination_path,
                                 args.template_path,
                                 args.template_name,
+                                args.destination_name,
                                 args.destination_restricted_path,
                                 args.destination_restricted_name,
                                 args.template_restricted_path,
@@ -2109,6 +2095,7 @@ def _run_create_gem(args: argparse) -> int:
     return create_gem(args.gem_path,
                       args.template_path,
                       args.template_name,
+                      args.gem_name,
                       args.gem_restricted_path,
                       args.gem_restricted_name,
                       args.template_restricted_path,
@@ -2159,6 +2146,16 @@ def add_args(subparsers) -> None:
                        help='The name of the templates restricted folder. If supplied this will resolve'
                             ' the --template-restricted-path.')
 
+    create_template_subparser.add_argument('-sn', '--source-name',
+                                           type=str,
+                                           help='Substitutes any file and path entries which match the source'
+                                                ' name within the source-path directory with the ${Name} and'
+                                                ' ${SanitizedCppName}.'
+                                                'Ex: Path substitution'
+                                                '--source-name Foo'
+                                                '<source-path>/Code/Include/FooBus.h -> <source-path>/Code/Include/${Name}Bus.h'
+                                                'Ex: File content substitution.'
+                                                'class FooRequests -> class ${SanitizedCppName}Requests')
     create_template_subparser.add_argument('-srprp', '--source-restricted-platform-relative-path', type=pathlib.Path,
                                            required=False,
                                            default=None,
@@ -2215,6 +2212,13 @@ def add_args(subparsers) -> None:
     group.add_argument('-tn', '--template-name', type=str, required=False,
                        help='The name to the registered template you want to instantiate. If supplied this will'
                             ' resolve the --template-path.')
+
+    create_from_template_subparser.add_argument('-dn', '--destination-name', type=str,
+                                      help='The name to use when substituting the ${Name} placeholder in instantiated template,'
+                                           ' must be alphanumeric, '
+                                           ' and can contain _ and - characters.'
+                                           ' If no name is provided, will use last component of destination path.'
+                                           ' Ex. New_Gem')
 
     group = create_from_template_subparser.add_mutually_exclusive_group(required=False)
     group.add_argument('-drp', '--destination-restricted-path', type=pathlib.Path, required=False,
@@ -2372,6 +2376,12 @@ def add_args(subparsers) -> None:
     create_gem_subparser = subparsers.add_parser('create-gem')
     create_gem_subparser.add_argument('-gp', '--gem-path', type=pathlib.Path, required=True,
                                       help='The gem path, can be absolute or relative to default gems path')
+    create_gem_subparser.add_argument('-gn', '--gem-name', type=str,
+                                          help='The name to use when substituting the ${Name} placeholder for the gem,'
+                                               ' must be alphanumeric, '
+                                               ' and can contain _ and - characters.'
+                                               ' If no name is provided, will use last component of gem path.'
+                                               ' Ex. New_Gem')
 
     group = create_gem_subparser.add_mutually_exclusive_group(required=False)
     group.add_argument('-tp', '--template-path', type=pathlib.Path, required=False,

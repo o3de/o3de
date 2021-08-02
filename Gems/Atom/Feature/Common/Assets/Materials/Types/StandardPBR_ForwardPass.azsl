@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "Atom/Features/ShaderQualityOptions.azsli"
 
@@ -126,7 +122,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
                          ObjectSrg::GetWorldMatrix(), uvMatrix, uvMatrixInverse,
                          IN.m_uv[MaterialSrg::m_parallaxUvIndex], IN.m_worldPosition, depthNDC, IN.m_position.w, displacementIsClipped);
 
-        // Adjust directional light shadow coorinates for parallax correction
+        // Adjust directional light shadow coordinates for parallax correction
         if(o_parallax_enablePixelDepthOffset)
         {
             const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
@@ -256,16 +252,20 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     // Finalize Lighting
     lightingData.FinalizeLighting();
 
-
-    if (o_opacity_mode == OpacityMode::Blended || o_opacity_mode == OpacityMode::TintedTransparent)
-    {
-        float fresnelAlpha = FresnelSchlickWithRoughness(lightingData.NdotV, alpha, surface.roughnessLinear).x; // Increase opacity at grazing angles.
-        alpha = lerp(fresnelAlpha, alpha, MaterialSrg::m_opacityAffectsSpecularFactor);
-    }
-
     PbrLightingOutput lightingOutput = GetPbrLightingOutput(surface, lightingData, alpha);
 
     // ------- Opacity -------
+
+    if (o_opacity_mode == OpacityMode::Blended || o_opacity_mode == OpacityMode::TintedTransparent)
+    {
+        // Increase opacity at grazing angles for surfaces with a low m_opacityAffectsSpecularFactor.
+        // For m_opacityAffectsSpecularFactor values close to 0, that indicates a transparent surface
+        // like glass, so it becomes less transparent at grazing angles. For m_opacityAffectsSpecularFactor
+        // values close to 1.0, that indicates the absence of a surface entirely, so this effect should
+        // not apply.
+        float fresnelAlpha = FresnelSchlickWithRoughness(lightingData.NdotV, alpha, surface.roughnessLinear).x;
+        alpha = lerp(fresnelAlpha, alpha, MaterialSrg::m_opacityAffectsSpecularFactor);
+    }
 
     if (o_opacity_mode == OpacityMode::Blended)
     {
@@ -282,6 +282,8 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
         float3 specular = lightingOutput.m_specularColor.rgb;
         specular = lerp(specular, specular * lightingOutput.m_diffuseColor.w, MaterialSrg::m_opacityAffectsSpecularFactor);
         lightingOutput.m_diffuseColor.rgb += specular;
+
+        lightingOutput.m_diffuseColor.w = alpha;
     }
     else if (o_opacity_mode == OpacityMode::TintedTransparent)
     {
@@ -304,7 +306,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
         specular = lerp(specular, specular * lightingOutput.m_diffuseColor.w, MaterialSrg::m_opacityAffectsSpecularFactor);
         lightingOutput.m_diffuseColor.rgb += specular;
 
-        lightingOutput.m_specularColor.rgb = baseColor * (1.0 - lightingOutput.m_diffuseColor.w); 
+        lightingOutput.m_specularColor.rgb = baseColor * (1.0 - alpha); 
     }
     else
     {

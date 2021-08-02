@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -32,7 +28,7 @@ namespace AzFramework
         AZStd::string m_ipAddress;
 
         // The port number for the session.
-        uint16_t m_port;
+        uint16_t m_port = 0;
     };
 
     //! SessionConnectionConfig
@@ -40,7 +36,7 @@ namespace AzFramework
     struct PlayerConnectionConfig
     {
         // A unique identifier for player connection.
-        uint32_t m_playerConnectionId;
+        uint32_t m_playerConnectionId = 0;
 
         // A unique identifier for registered player in session.
         AZStd::string m_playerSessionId;

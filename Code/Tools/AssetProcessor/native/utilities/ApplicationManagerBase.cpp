@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "ApplicationManagerBase.h"
 
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
@@ -483,7 +479,7 @@ void ApplicationManagerBase::InitConnectionManager()
     result = QObject::connect(GetRCController(), &AssetProcessor::RCController::JobStarted, this,
             [](QString inputFile, QString platform)
             {
-                QString msg = QCoreApplication::translate("Asset Processor", "Processing %1 (%2)...\n", "%1 is the name of the file, and %2 is the platform to process it for").arg(inputFile, platform);
+                QString msg = QCoreApplication::translate("O3DE Asset Processor", "Processing %1 (%2)...\n", "%1 is the name of the file, and %2 is the platform to process it for").arg(inputFile, platform);
                 AZ_Printf(AssetProcessor::ConsoleChannel, "%s", msg.toUtf8().constData());
                 AssetNotificationMessage message(inputFile.toUtf8().constData(), AssetNotificationMessage::JobStarted, AZ::Data::s_invalidAssetType, platform.toUtf8().constData());
                 EBUS_EVENT(AssetProcessor::ConnectionBus, SendPerPlatform, 0, message, platform);

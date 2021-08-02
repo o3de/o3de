@@ -1,35 +1,13 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 namespace Vegetation
 {
-    template<typename TComponent, typename TConfiguration>
-    void EditorVegetationComponentBase<TComponent, TConfiguration>::OnCryEditorEndLevelExport(bool /*success*/)
-    {
-        // Restore the activation state of our components after the export is complete.
-        if (m_visible)
-        {
-            m_component.Activate();
-        }
-    }
-
-    template<typename TComponent, typename TConfiguration>
-    void EditorVegetationComponentBase<TComponent, TConfiguration>::OnCryEditorBeginLevelExport()
-    {
-        // We need to deactivate our game components at the start of level exports because any vegetation meshes that are loaded
-        // or instances that are spawned can end up in our static vegetation level data.
-        m_component.Deactivate();
-    }
-
     template<typename TComponent, typename TConfiguration>
     AZ::u32 EditorVegetationComponentBase<TComponent, TConfiguration>::ConfigurationChanged()
     {
@@ -69,13 +47,11 @@ namespace Vegetation
     {
         GradientSignal::SetSamplerOwnerEntity(m_configuration, GetEntityId());
         BaseClassType::Activate();
-        CrySystemEventBus::Handler::BusConnect();
     }
 
     template<typename TComponent, typename TConfiguration>
     void EditorVegetationComponentBase<TComponent, TConfiguration>::Deactivate()
     {
-        CrySystemEventBus::Handler::BusDisconnect();
         BaseClassType::Deactivate();
     }
 

@@ -1,17 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-
-
-#include "EMotionFX_precompiled.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -24,6 +17,8 @@
 #include <Integration/Assets/ActorAsset.h>
 #include <Integration/Editor/Components/EditorSimpleMotionComponent.h>
 #include <Integration/SimpleMotionComponentBus.h>
+#include <EMotionFX/Source/MotionSystem.h>
+#include <EMotionFX/Source/MotionInstance.h>
 
 namespace EMotionFX
 {
@@ -49,14 +44,14 @@ namespace EMotionFX
                         ->Attribute(AZ::Edit::Attributes::Category, "Animation")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/SimpleMotion.svg")
                         ->Attribute(AZ::Edit::Attributes::PrimaryAssetType, azrtti_typeid<MotionAsset>())
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Mannequin.png")
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Mannequin.svg")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(0, &EditorSimpleMotionComponent::m_previewInEditor, "Preview In Editor", "Plays motion in Editor")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSimpleMotionComponent::OnEditorPropertyChanged)
                         ->DataElement(0, &EditorSimpleMotionComponent::m_configuration, "Configuration", "Settings for this Simple Motion")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSimpleMotionComponent::OnEditorPropertyChanged)
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://docs.aws.amazon.com/lumberyard/latest/userguide/component-simple-motion.html")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/simple-motion/")
                         ;
                 }
             }

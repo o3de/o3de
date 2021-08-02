@@ -1,12 +1,9 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 
 ly_add_target(
@@ -43,7 +40,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::SceneCore
                 AZ::SceneData
                 AZ::AzFramework
-                AZ::FbxSceneBuilder
+                AZ::SceneBuilder
                 AZ::AssetBuilderSDK
     )
 
@@ -65,6 +62,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
         RUNTIME_DEPENDENCIES
             AZ::SceneCore
             AZ::SceneData
+            AZ::SceneUI
     )
     # the SceneProcessing.Editor module above is only used in Builders and Tools.
     ly_create_alias(NAME SceneProcessing.Builders NAMESPACE Gem TARGETS Gem::SceneProcessing.Editor)
@@ -115,6 +113,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 PRIVATE
                     Gem::SceneProcessing.Editor.Static
                     AZ::AzTest
+                    AZ::SceneData
         )
         ly_add_googletest(
             NAME Gem::SceneProcessing.Editor.Tests

@@ -1,16 +1,12 @@
 {
     "gem_name": "Presence",
-    "GemFormatVersion": 4,
-    "Uuid": "903ce283760647049efaef70d9368eeb",
-    "Name": "Presence",
-    "DisplayName": "Presence",
-    "Version": "0.1.0",
-    "Summary": "Platform agnostic interface for Presence services",
-    "Tags": [ "Presence", "Rich Presence" ],
-    "IconPath": "preview.png",
-    "Modules": [
-        {
-            "Type": "GameModule"
-        }
-    ]
+    "display_name": "Presence",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Open 3D Engine - o3de.org",
+    "type": "Code",
+    "summary": "The Presence Gem provides a target platform agnostic interface for Presence services.",
+    "canonical_tags": ["Gem"],
+    "user_tags": ["Network", "Gameplay", "Framework"],
+    "icon_path": "preview.png",
+    "requirements": ""
 }

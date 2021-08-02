@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RPI.Public/Model/ModelLod.h>
 #include <Atom/RPI.Public/Material/Material.h>
@@ -285,10 +281,11 @@ namespace AZ
                 {
                     if (contractStreamChannel.m_isOptional)
                     {
-                        RHI::Format formatDoesntReallyMatter = RHI::Format::R8_UNORM;
-                        layoutBuilder.AddBuffer()->Channel(contractStreamChannel.m_semantic, formatDoesntReallyMatter);
+                        //We are using R8G8B8A8_UINT as on Metal mesh stream formats need to be atleast 4 byte aligned.
+                        RHI::Format dummyStreamFormat = RHI::Format::R8G8B8A8_UINT;
+                        layoutBuilder.AddBuffer()->Channel(contractStreamChannel.m_semantic, dummyStreamFormat);
                         // We can't just use a null buffer pointer here because vulkan will occasionally crash. So we bind some valid non-null buffer and view it with length 0.
-                        RHI::StreamBufferView dummyBuffer{*mesh.m_indexBufferView.GetBuffer(), 0, 0, 1};
+                        RHI::StreamBufferView dummyBuffer{*mesh.m_indexBufferView.GetBuffer(), 0, 0, 4};
                         streamBufferViewsOut.push_back(dummyBuffer);
 
                         // Note that all of the below scenarios seem to work find on PC, for both dx12 and vulkan. If the above approach proves to be incompatible

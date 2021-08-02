@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -33,17 +29,6 @@ namespace TestImpact
         return m_coverageArtifact;
     }
 
-    InstrumentedTestRunner::JobPayload ParseTestRunAndCoverageFiles(
-        const RepoPath& runFile,
-        const RepoPath& coverageFile,
-        AZStd::chrono::milliseconds duration)
-    {
-        TestRun run(GTest::TestRunSuitesFactory(ReadFileContents<TestEngineException>(runFile)), duration);
-        AZStd::vector<ModuleCoverage> moduleCoverages = Cobertura::ModuleCoveragesFactory(ReadFileContents<TestEngineException>(coverageFile));
-        TestCoverage coverage(AZStd::move(moduleCoverages));
-        return {AZStd::move(run), AZStd::move(coverage)};
-    }
-
     InstrumentedTestRunner::InstrumentedTestRunner(size_t maxConcurrentRuns)
         : JobRunner(maxConcurrentRuns)
     {
@@ -63,16 +48,35 @@ namespace TestImpact
                 const auto& [meta, jobInfo] = jobData;
                 if (meta.m_result == JobResult::ExecutedWithSuccess || meta.m_result == JobResult::ExecutedWithFailure)
                 {
+                    const auto printException = [](const Exception& e)
+                    {
+                        AZ_Printf("RunInstrumentedTests", AZStd::string::format("%s\n.", e.what()).c_str());
+                    };
+
+                    AZStd::optional<TestRun> run;
                     try
                     {
-                        runs[jobId] = ParseTestRunAndCoverageFiles(
-                            jobInfo->GetRunArtifactPath(),
-                            jobInfo->GetCoverageArtifactPath(),
+                        run = TestRun(
+                            GTest::TestRunSuitesFactory(ReadFileContents<TestEngineException>(jobInfo->GetRunArtifactPath())),
                             meta.m_duration.value());
                     }
                     catch (const Exception& e)
                     {
-                        AZ_Printf("RunInstrumentedTests", AZStd::string::format("%s\n", e.what()).c_str());
+                        // No run result is not necessarily a failure (e.g. test targets not using gtest)
+                        printException(e);
+                    }
+
+                    try
+                    {
+                        AZStd::vector<ModuleCoverage> moduleCoverages =
+                            Cobertura::ModuleCoveragesFactory(ReadFileContents<TestEngineException>(jobInfo->GetCoverageArtifactPath()));
+                        TestCoverage coverage(AZStd::move(moduleCoverages));
+                        runs[jobId] = { run, AZStd::move(coverage) };
+                    }
+                    catch (const Exception& e)
+                    {
+                        printException(e);
+                        // No coverage, however, is a failure
                         runs[jobId] = AZStd::nullopt;
                     }
                 }

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <MCore/Source/File.h>
 #include <MCore/Source/DiskFile.h>
@@ -159,85 +155,6 @@ namespace EMotionFX
         // yes, it is a valid motion file!
         return true;
     }
-
-
-    // check if we can process the given motion set file
-    bool Importer::CheckIfIsValidMotionSetFile(MCore::File* f, MCore::Endian::EEndianType* outEndianType) const
-    {
-        MCORE_ASSERT(f->GetIsOpen());
-
-        // verify if we actually are dealing with a valid actor file
-        FileFormat::MotionSet_Header    header;
-        if (f->Read(&header, sizeof(FileFormat::MotionSet_Header)) == 0)
-        {
-            MCore::LogError("Failed to read the motion set file header!");
-            return false;
-        }
-
-        // check the FOURCC
-        if (header.mFourCC[0] != 'M' || header.mFourCC[1] != 'O' || header.mFourCC[2] != 'S' || header.mFourCC[3] != ' ')
-        {
-            return false;
-        }
-
-        // read the chunks
-        switch (header.mEndianType)
-        {
-        case 0:
-            *outEndianType  = MCore::Endian::ENDIAN_LITTLE;
-            break;
-        case 1:
-            *outEndianType  = MCore::Endian::ENDIAN_BIG;
-            break;
-        default:
-            MCore::LogError("Unsupported endian type used! (endian type = %d)", header.mEndianType);
-            return false;
-        }
-        ;
-
-        // yes, it is a valid motionset file!
-        return true;
-    }
-
-
-
-    // check if we can process the given anim graph file
-    bool Importer::CheckIfIsValidAnimGraphFile(MCore::File* f, MCore::Endian::EEndianType* outEndianType) const
-    {
-        MCORE_ASSERT(f->GetIsOpen());
-
-        // verify if we actually are dealing with a valid actor file
-        FileFormat::AnimGraph_Header  header;
-        if (f->Read(&header, sizeof(FileFormat::AnimGraph_Header)) == 0)
-        {
-            return false;
-        }
-
-        // check the FOURCC
-        if (header.mFourCC[0] != 'A' || header.mFourCC[1] != 'N' || header.mFourCC[2] != 'G' || header.mFourCC[3] != 'R')
-        {
-            return false;
-        }
-
-        // read the chunks
-        switch (header.mEndianType)
-        {
-        case 0:
-            *outEndianType  = MCore::Endian::ENDIAN_LITTLE;
-            break;
-        case 1:
-            *outEndianType  = MCore::Endian::ENDIAN_BIG;
-            break;
-        default:
-            MCore::LogError("Unsupported endian type used! (endian type = %d)", header.mEndianType);
-            return false;
-        }
-        ;
-
-        // yes, it is a valid anim graph file!
-        return true;
-    }
-
 
     // check if we can process the given node map file
     bool Importer::CheckIfIsValidNodeMapFile(MCore::File* f, MCore::Endian::EEndianType* outEndianType) const
@@ -603,125 +520,32 @@ namespace EMotionFX
 
     //-------------------------------------------------------------------------------------------------
 
-    // try to load a motion set from disk
     MotionSet* Importer::LoadMotionSet(AZStd::string filename, MotionSetSettings* settings, const AZ::ObjectStream::FilterDescriptor& loadFilter)
     {
         EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, filename);
 
-        const bool isLegacyFile = Importer::CheckFileType(filename.c_str()) == Importer::EFileType::FILETYPE_MOTIONSET;
-        if (!isLegacyFile)
+        AZ::SerializeContext* context = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+        if (!context)
         {
-            AZ::SerializeContext* context = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-            if (!context)
-            {
-                AZ_Error("EMotionFX", false, "Can't get serialize context from component application.");
-                return nullptr;
-            }
-
-            EMotionFX::MotionSet* motionSet = EMotionFX::MotionSet::LoadFromFile(filename, context, loadFilter);
-            if (motionSet)
-            {
-                motionSet->SetFilename(filename.c_str());
-            }
-            return motionSet;
-        }
-
-        //////////////////////////////////////////
-        // Legacy file type loading
-        //////////////////////////////////////////
-
-        // check if we want to load the motion set even if a motion set with the given filename is already inside the motion manager
-        if (settings == nullptr || settings->mForceLoading == false)
-        {
-            // search the motion set inside the motion manager and return it if it already got loaded
-            MotionSet* motionSet = GetMotionManager().FindMotionSetByFileName(filename.c_str());
-            if (motionSet)
-            {
-                MCore::LogInfo("  + Motion set '%s' already loaded, returning already loaded motion set from the MotionManager.", filename.c_str());
-                return motionSet;
-            }
-        }
-
-        if (GetLogging())
-        {
-            MCore::LogInfo("- Trying to load motion set from file '%s'...", filename.c_str());
-        }
-
-        // try to open the file from disk
-        MCore::DiskFile f;
-        if (f.Open(filename.c_str(), MCore::DiskFile::READ) == false)
-        {
-            if (GetLogging())
-            {
-                MCore::LogError("  + Failed to open the file for motion set.");
-            }
+            AZ_Error("EMotionFX", false, "Can't get serialize context from component application.");
             return nullptr;
         }
 
-        // retrieve the filesize
-        const size_t fileSize = f.GetFileSize();
-
-        // create a temporary buffer for the file
-        uint8* fileBuffer = (uint8*)MCore::Allocate(fileSize, EMFX_MEMCATEGORY_IMPORTER);
-
-        // read in the complete file
-        f.Read(fileBuffer, fileSize);
-
-        // close the file again
-        f.Close();
-
-        // create the motion set reading from memory
-        MotionSet* result = LoadMotionSet(fileBuffer, fileSize, settings);
-        if (result)
+        EMotionFX::MotionSet* motionSet = EMotionFX::MotionSet::LoadFromFile(filename, context, loadFilter);
+        if (motionSet)
         {
-            result->SetFilename(filename.c_str());
-        }
-
-        // delete the filebuffer again
-        MCore::Free(fileBuffer);
-
-        // check if it worked :)
-        if (result == nullptr)
-        {
-            if (GetLogging())
-            {
-                MCore::LogError("  + Failed to load motion set from file '%s'.", filename.c_str());
-            }
-        }
-        else
-        {
-            if (GetLogging())
-            {
-                MCore::LogInfo("  + Loading successfully finished.");
-            }
-        }
-
-        // return the result
-        return result;
-    }
-
-
-    MotionSet* Importer::LoadMotionSet(uint8* memoryStart, size_t lengthInBytes, MotionSetSettings* settings)
-    {
-        // Legacy file type loading.
-        MCore::MemoryFile memFile;
-        memFile.Open(memoryStart, lengthInBytes);
-
-        const bool isLegacyFile = Importer::CheckFileType(&memFile) == Importer::EFileType::FILETYPE_MOTIONSET;
-        if (isLegacyFile)
-        {
-            // Open the memory file again as CheckFileType() is closing it at the end.
-            memFile.Open(memoryStart, lengthInBytes);
-            EMotionFX::MotionSet* motionSet = LoadMotionSet(&memFile, settings);
+            motionSet->SetFilename(filename.c_str());
             if (settings)
             {
                 motionSet->SetIsOwnedByRuntime(settings->m_isOwnedByRuntime);
             }
-            return motionSet;
         }
+        return motionSet;
+    }
 
-
+    MotionSet* Importer::LoadMotionSet(uint8* memoryStart, size_t lengthInBytes, MotionSetSettings* settings)
+    {
         AZ::SerializeContext* context = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         if (!context)
@@ -736,58 +560,6 @@ namespace EMotionFX
             motionSet->SetIsOwnedByRuntime(settings->m_isOwnedByRuntime);
         }
         return motionSet;
-    }
-
-
-    // try to load a motion set from a file
-    MotionSet* Importer::LoadMotionSet(MCore::File* f, MotionSetSettings* settings)
-    {
-        MCORE_ASSERT(f);
-        MCORE_ASSERT(f->GetIsOpen());
-
-        // create the shared data
-        MCore::Array<SharedData*> sharedData;
-        sharedData.SetMemoryCategory(EMFX_MEMCATEGORY_IMPORTER);
-        PrepareSharedData(sharedData);
-
-        // load the file header
-        FileFormat::MotionSet_Header fileHeader;
-        f->Read(&fileHeader, sizeof(FileFormat::MotionSet_Header));
-        if (fileHeader.mFourCC[0] != 'M' || fileHeader.mFourCC[1] != 'O' || fileHeader.mFourCC[2] != 'S' || fileHeader.mFourCC[3] != ' ')
-        {
-            MCore::LogError("The motion set file is not a valid file.");
-            f->Close();
-            return nullptr;
-        }
-
-        // get the endian type
-        MCore::Endian::EEndianType endianType = (MCore::Endian::EEndianType)fileHeader.mEndianType;
-
-        // init the import parameters
-        ImportParameters params;
-        params.mSharedData  = &sharedData;
-        params.mEndianType  = endianType;
-        params.m_isOwnedByRuntime = settings ? settings->m_isOwnedByRuntime : false;
-
-        // read the chunks
-        while (ProcessChunk(f, params))
-        {
-        }
-
-        // close the file and return a pointer to the actor we loaded
-        f->Close();
-
-        // get rid of shared data
-        ResetSharedData(sharedData);
-        sharedData.Clear();
-
-        // check if the motion set got set
-        if (params.mMotionSet == nullptr)
-        {
-            return nullptr;
-        }
-
-        return params.mMotionSet;
     }
 
     //-------------------------------------------------------------------------------------------------
@@ -1066,6 +838,7 @@ namespace EMotionFX
         // shared processors
         RegisterChunkProcessor(aznew ChunkProcessorMotionEventTrackTable());
         RegisterChunkProcessor(aznew ChunkProcessorMotionEventTrackTable2());
+        RegisterChunkProcessor(aznew ChunkProcessorMotionEventTrackTable3());
 
         // Actor file format
         RegisterChunkProcessor(aznew ChunkProcessorActorInfo());
@@ -1089,19 +862,6 @@ namespace EMotionFX
         RegisterChunkProcessor(aznew ChunkProcessorMotionSubMotions());
         RegisterChunkProcessor(aznew ChunkProcessorMotionMorphSubMotions());
         RegisterChunkProcessor(aznew ChunkProcessorMotionData());
-
-        // AnimGraph file format
-        RegisterChunkProcessor(aznew ChunkProcessorAnimGraphParameters());
-        RegisterChunkProcessor(aznew ChunkProcessorAnimGraphNodeGroups());
-        RegisterChunkProcessor(aznew ChunkProcessorAnimGraphNode());
-        RegisterChunkProcessor(aznew ChunkProcessorAnimGraphStateTransitions());
-        RegisterChunkProcessor(aznew ChunkProcessorAnimGraphNodeConnections());
-        RegisterChunkProcessor(aznew ChunkProcessorAnimGraphGroupParameters());
-        RegisterChunkProcessor(aznew ChunkProcessorAnimGraphGameControllerSettings());
-        RegisterChunkProcessor(aznew ChunkProcessorAnimGraphAdditionalInfo());
-
-        // motion set file format
-        RegisterChunkProcessor(aznew ChunkProcessorMotionSet());
 
         // node map
         RegisterChunkProcessor(aznew ChunkProcessorNodeMap());
@@ -1235,6 +995,18 @@ namespace EMotionFX
             return FILETYPE_UNKNOWN;
         }
 
+        AZStd::string fileExtension;
+        AZ::StringFunc::Path::GetExtension(filename, fileExtension);
+
+        if (fileExtension == ".animgraph")
+        {
+            return FILETYPE_ANIMGRAPH;
+        }
+        if (fileExtension == ".motionset")
+        {
+            return FILETYPE_MOTIONSET;
+        }
+
         // try to open the file from disk
         MCore::MemoryFile memoryFile;
         memoryFile.Open();
@@ -1275,28 +1047,12 @@ namespace EMotionFX
             return FILETYPE_MOTION;
         }
 
-        // check for motion set
-        file->Seek(0);
-        if (CheckIfIsValidMotionSetFile(file, &endianType))
-        {
-            file->Close();
-            return FILETYPE_MOTIONSET;
-        }
-
         // check for node map
         file->Seek(0);
         if (CheckIfIsValidNodeMapFile(file, &endianType))
         {
             file->Close();
             return FILETYPE_NODEMAP;
-        }
-
-        // check for anim graph
-        file->Seek(0);
-        if (CheckIfIsValidAnimGraphFile(file, &endianType))
-        {
-            file->Close();
-            return FILETYPE_ANIMGRAPH;
         }
 
         // close the file again
@@ -1307,124 +1063,30 @@ namespace EMotionFX
 
     //---------------------------------------------------------
 
-
-    // load anim graph by filename
-    AnimGraph* Importer::LoadAnimGraph(AZStd::string filename, AnimGraphSettings* settings, const AZ::ObjectStream::FilterDescriptor& loadFilter)
+    AnimGraph* Importer::LoadAnimGraph(AZStd::string filename, const AZ::ObjectStream::FilterDescriptor& loadFilter)
     {
         EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, filename);
 
-        const bool isLegacyFile = Importer::CheckFileType(filename.c_str()) == Importer::EFileType::FILETYPE_ANIMGRAPH;
-        if (!isLegacyFile)
+        AZ::SerializeContext* context = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+        if (!context)
         {
-            AZ::SerializeContext* context = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-            if (!context)
-            {
-                AZ_Error("EMotionFX", false, "Can't get serialize context from component application.");
-                return nullptr;
-            }
-
-            EMotionFX::AnimGraph* animGraph = EMotionFX::AnimGraph::LoadFromFile(filename, context, loadFilter);
-            if (animGraph)
-            {
-                animGraph->SetFileName(filename.c_str());
-                animGraph->RemoveInvalidConnections();  // Remove connections that have nullptr source node's, which happens when connections point to unknown nodes.
-            }
-
-            return animGraph;
-        }
-
-        //////////////////////////////////////////
-        // Legacy file type loading
-        //////////////////////////////////////////
-
-        // check if we want to load the anim graph even if a anim graph with the given filename is already inside the anim graph manager
-        if (settings == nullptr || settings->mForceLoading == false)
-        {
-            // search the anim graph inside the anim graph manager and return it if it already got loaded
-            AnimGraph* animGraph = GetAnimGraphManager().FindAnimGraphByFileName(filename.c_str());
-            if (animGraph)
-            {
-                MCore::LogInfo("  + Anim graph '%s' already loaded, returning already loaded anim graph from the AnimGraphManager.", filename.c_str());
-                return animGraph;
-            }
-        }
-
-        if (GetLogging())
-        {
-            MCore::LogInfo("- Trying to load anim graph from file '%s'...", filename.c_str());
-        }
-
-        // try to open the file from disk
-        MCore::DiskFile f;
-        if (!f.Open(filename.c_str(), MCore::DiskFile::READ))
-        {
-            if (GetLogging())
-            {
-                MCore::LogError("  + Failed to open the file for anim graph '%s', anim graph not loaded!", filename.c_str());
-            }
+            AZ_Error("EMotionFX", false, "Can't get serialize context from component application.");
             return nullptr;
         }
 
-        // retrieve the filesize
-        const size_t fileSize = f.GetFileSize();
-
-        // create a temporary buffer for the file
-        uint8* fileBuffer = (uint8*)MCore::Allocate(fileSize, EMFX_MEMCATEGORY_IMPORTER);
-
-        // read in the complete file
-        f.Read(fileBuffer, fileSize);
-
-        // close the file again
-        f.Close();
-
-        // create the actor reading from memory
-        AnimGraph* result = LoadAnimGraph(fileBuffer, fileSize, settings);
-        if (result)
+        EMotionFX::AnimGraph* animGraph = EMotionFX::AnimGraph::LoadFromFile(filename, context, loadFilter);
+        if (animGraph)
         {
-            result->SetFileName(filename.c_str());
-            result->RemoveInvalidConnections();  // Remove connections that have nullptr source node's, which happens when connections point to unknown nodes.
+            animGraph->SetFileName(filename.c_str());
+            animGraph->RemoveInvalidConnections(); // Remove connections that have nullptr source node's, which happens when connections point to unknown nodes.
         }
 
-        // delete the filebuffer again
-        MCore::Free(fileBuffer);
-
-        // check if it worked
-        if (result == nullptr)
-        {
-            if (GetLogging())
-            {
-                MCore::LogError("   + Failed to load anim graph from file '%s'", filename.c_str());
-            }
-        }
-        else
-        {
-            if (GetLogging())
-            {
-                MCore::LogInfo("  + Loading successfully finished");
-            }
-        }
-
-        // return the result
-        return result;
+        return animGraph;
     }
 
-
-    // load the anim graph from memory
-    AnimGraph* Importer::LoadAnimGraph(uint8* memoryStart, size_t lengthInBytes, AnimGraphSettings* settings)
+    AnimGraph* Importer::LoadAnimGraph(uint8* memoryStart, size_t lengthInBytes)
     {
-        // Legacy file type loading.
-        MCore::MemoryFile memFile;
-        memFile.Open(memoryStart, lengthInBytes);
-
-        const bool isLegacyFile = Importer::CheckFileType(&memFile) == Importer::EFileType::FILETYPE_ANIMGRAPH;
-        if (isLegacyFile)
-        {
-            // Open the memory file again as CheckFileType() is closing it at the end.
-            memFile.Open(memoryStart, lengthInBytes);
-            return LoadAnimGraph(&memFile, settings);
-        }
-
         AZ::SerializeContext* context = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         if (!context)
@@ -1436,123 +1098,6 @@ namespace EMotionFX
         EMotionFX::AnimGraph* animGraph = EMotionFX::AnimGraph::LoadFromBuffer(memoryStart, lengthInBytes, context);
         return animGraph;
     }
-
-
-    // load a anim graph from a file object
-    AnimGraph* Importer::LoadAnimGraph(MCore::File* f, AnimGraphSettings* settings)
-    {
-        MCORE_ASSERT(f);
-        MCORE_ASSERT(f->GetIsOpen());
-
-        // execute the pre-passes
-        if (f->GetType() != MCore::MemoryFile::TYPE_ID)
-        {
-            MCore::LogError("Given file is not a memory file. Cannot process pre-passes.");
-            return nullptr;
-        }
-
-        // copy over the actor settings, or use defaults
-        AnimGraphSettings animGraphSettings;
-        if (settings)
-        {
-            animGraphSettings = *settings;
-        }
-
-        // create the shared data
-        MCore::Array<SharedData*> sharedData;
-        sharedData.SetMemoryCategory(EMFX_MEMCATEGORY_IMPORTER);
-        PrepareSharedData(sharedData);
-
-        //-----------------------------------------------
-
-        // load the file header
-        FileFormat::AnimGraph_Header fileHeader;
-        f->Read(&fileHeader, sizeof(FileFormat::AnimGraph_Header));
-        if (fileHeader.mFourCC[0] != 'A' || fileHeader.mFourCC[1] != 'N' || fileHeader.mFourCC[2] != 'G' || fileHeader.mFourCC[3] != 'R')
-        {
-            MCore::LogError("The anim graph file is not a valid anim graph file.");
-            f->Close();
-            return nullptr;
-        }
-
-        // get the endian type
-        MCore::Endian::EEndianType endianType = (MCore::Endian::EEndianType)fileHeader.mEndianType;
-
-        // convert endian of the integer values
-        MCore::Endian::ConvertUnsignedInt32(&fileHeader.mFileVersion,          endianType);
-        MCore::Endian::ConvertUnsignedInt32(&fileHeader.mNumNodes,             endianType);
-        MCore::Endian::ConvertUnsignedInt32(&fileHeader.mNumStateTransitions,  endianType);
-        MCore::Endian::ConvertUnsignedInt32(&fileHeader.mNumNodeConnections,   endianType);
-        MCore::Endian::ConvertUnsignedInt32(&fileHeader.mNumParameters,        endianType);
-
-        // read the anim graph name, create it, and read the other remaining info strings
-        SharedHelperData::ReadString(f, &sharedData, endianType);
-        AnimGraph* animGraph = aznew AnimGraph();
-
-        if (GetLogDetails())
-        {
-            MCore::LogDetailedInfo("Anim Graph:");
-
-            SharedHelperData::ReadString(f, &sharedData, endianType); // copyright
-            SharedHelperData::ReadString(f, &sharedData, endianType); // description
-            MCore::LogDetailedInfo("   + Company           = %s", SharedHelperData::ReadString(f, &sharedData, endianType)); // company
-            MCore::LogDetailedInfo("   + EMotion FX Version= %s", SharedHelperData::ReadString(f, &sharedData, endianType)); // emfx version
-            MCore::LogDetailedInfo("   + EMStudio Build    = %s", SharedHelperData::ReadString(f, &sharedData, endianType)); // emstudio build
-            MCore::LogDetailedInfo("   + Num nodes         = %d", fileHeader.mNumNodes);
-            MCore::LogDetailedInfo("   + Num transitions   = %d", fileHeader.mNumStateTransitions);
-            MCore::LogDetailedInfo("   + Num connections   = %d", fileHeader.mNumNodeConnections);
-            MCore::LogDetailedInfo("   + Num parameters    = %d", fileHeader.mNumParameters);
-            MCore::LogDetailedInfo("   + File version      = %d", fileHeader.mFileVersion);
-            MCore::LogDetailedInfo("   + Endian type       = %d", fileHeader.mEndianType);
-        }
-        else
-        {
-            SharedHelperData::ReadString(f, &sharedData, endianType); // copyright
-            SharedHelperData::ReadString(f, &sharedData, endianType); // description
-            SharedHelperData::ReadString(f, &sharedData, endianType); // company
-            SharedHelperData::ReadString(f, &sharedData, endianType); // emfx version
-            SharedHelperData::ReadString(f, &sharedData, endianType); // emstudio build
-        }
-
-        // init the import parameters
-        ImportParameters params;
-        params.mSharedData          = &sharedData;
-        params.mEndianType          = endianType;
-        params.mAnimGraph          = animGraph;
-        params.mAnimGraphSettings  = &animGraphSettings;
-
-        // pre-allocate the blend nodes array to prevent reallocs
-        MCore::Array<AnimGraphNode*>& blendNodes = SharedHelperData::GetBlendNodes(params.mSharedData);
-        blendNodes.Reserve(fileHeader.mNumNodes);
-
-        // process all chunks
-        while (ProcessChunk(f, params))
-        {
-        }
-
-        // close the file and return a pointer to the actor we loaded
-        f->Close();
-
-        // get rid of shared data
-        ResetSharedData(sharedData);
-        sharedData.Clear();
-
-        // recursively update attributes of all state machines and blend tree nodes
-        if (animGraph->GetRootStateMachine())
-        {
-            animGraph->InitAfterLoading();
-            animGraph->RemoveInvalidConnections(true);  // Remove connections that have nullptr source node's, which happens when connections point to unknown nodes.
-        }
-        else
-        {
-            delete animGraph;
-            animGraph = nullptr;
-        }
-
-        // return the created actor
-        return animGraph;
-    }
-
 
     // extract the file information from an actor file
     bool Importer::ExtractActorFileInfo(FileInfo* outInfo, const char* filename) const

@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -27,6 +23,8 @@ namespace TestImpact
 {
     namespace
     {
+        static const char* const LogCallSite = "TestImpact";
+
         //! Simple helper class for tracking basic timing information.
         class Timer
         {
@@ -320,7 +318,8 @@ namespace TestImpact
         }
         catch ([[maybe_unused]]const Exception& e)
         {
-            AZ_Printf("TestImpactRuntime",
+            AZ_Printf(
+                LogCallSite,
                 AZStd::string::format(
                     "No test impact analysis data found for suite '%s' at %s\n", SuiteTypeAsString(m_suiteFilter).c_str(), m_sparTIAFile.c_str()).c_str());
         }
@@ -428,8 +427,8 @@ namespace TestImpact
                         job.GetTestCoverge().has_value(),
                         RuntimeException,
                         AZStd::string::format(
-                            "Test target '%s' completed its test run successfully but produced no coverage data",
-                            job.GetTestTarget()->GetName().c_str()));
+                            "Test target '%s' completed its test run successfully but produced no coverage data. Command string: '%s'",
+                            job.GetTestTarget()->GetName().c_str(), job.GetCommandString().c_str()));
                 }
 
                 if (!job.GetTestCoverge().has_value())
@@ -460,7 +459,7 @@ namespace TestImpact
             }
             else
             {
-                AZ_Warning("TestImpact", false, "Ignoring source, source it outside of repo: '%s'", sourcePath.c_str());
+                AZ_Warning(LogCallSite, false, "Ignoring source, source it outside of repo: '%s'", sourcePath.c_str());
             }
         }
 
@@ -472,7 +471,7 @@ namespace TestImpact
         try
         {
             const auto sourceCoverageTestsList = CreateSourceCoveringTestFromTestCoverages(jobs);
-            if (!sourceCoverageTestsList.GetNumSources())
+            if (sourceCoverageTestsList.GetNumSources() == 0)
             {
                 return;
             }
@@ -488,6 +487,10 @@ namespace TestImpact
             if (m_integrationFailurePolicy == Policy::IntegrityFailure::Abort)
             {
                 throw e;
+            }
+            else
+            {
+                AZ_Error(LogCallSite, false, e.what());
             }
         }
     }

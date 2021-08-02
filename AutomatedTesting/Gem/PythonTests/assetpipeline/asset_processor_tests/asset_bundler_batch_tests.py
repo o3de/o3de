@@ -1,12 +1,8 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 
 General Asset Bundler Batch Tests
 """
@@ -538,19 +534,19 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
             assert os.path.isfile(bundle_file)
 
         # This asset is created both on mac and windows platform
-        file_to_check = b"engineassets/shading/defaultprobe_cm_ibldiffuse.tif.streamingimage"  # [use byte str because file is in binary]
+        file_to_check = b"engineassets/slices/defaultlevelsetup.slice"  # [use byte str because file is in binary]
 
         # Extract the delta catalog file from pc archive. {file_to_check} SHOULD NOT be present for PC
         file_contents = helper.extract_file_content(bundle_files["pc"], "DeltaCatalog.xml")
         # fmt:off
-        assert file_to_check in file_contents, \
+        assert file_contents.find(file_to_check), \
             f"{file_to_check} was found in DeltaCatalog.xml in pc bundle file {bundle_files['pc']}"
         # fmt:on
 
         # Extract the delta catalog file from mac archive. {file_to_check} SHOULD be present for MAC
         file_contents = helper.extract_file_content(bundle_files["mac"], "DeltaCatalog.xml")
         # fmt:off
-        assert file_to_check in file_contents, \
+        assert file_contents.find(file_to_check), \
             f"{file_to_check} was not found in DeltaCatalog.xml in darwin bundle file {bundle_files['mac']}"
         # fmt:on
 
@@ -631,7 +627,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         if os.path.exists(helper["asset_info_file_request"]):
             fs.delete([helper["asset_info_file_request"]], True, True)
 
-        test_asset = r"levels\testdependencieslevel\level.pak"
+        test_asset = r"fonts/open_sans/license.txt"
         re_pattern = re.compile(r"""field="platformFlags" value="(\d+)" """)
         all_lines = ""
 
@@ -735,6 +731,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
 
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
+    @pytest.mark.SUITE_sandbox
     @pytest.mark.test_case_id("C16877174")
     @pytest.mark.test_case_id("C16877175")
     @pytest.mark.test_case_id("C16877178")

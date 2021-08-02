@@ -1,12 +1,8 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 
 Tests that require a GPU in order to run.
 """
@@ -18,11 +14,12 @@ import pytest
 
 import ly_test_tools.environment.file_system as file_system
 from ly_test_tools.image.screenshot_compare_qssim import qssim as compare_screenshots
+from ly_test_tools.benchmark.data_aggregator import BenchmarkDataAggregator
 import editor_python_test_tools.hydra_test_utils as hydra
 
 logger = logging.getLogger(__name__)
 DEFAULT_SUBFOLDER_PATH = 'user/PythonTests/Automated/Screenshots'
-EDITOR_TIMEOUT = 300
+EDITOR_TIMEOUT = 600
 TEST_DIRECTORY = os.path.join(os.path.dirname(__file__), "atom_hydra_scripts")
 
 
@@ -82,9 +79,48 @@ class TestAllComponentsIndepthTests(object):
             unexpected_lines=unexpected_lines,
             halt_on_unexpected=True,
             cfg_args=[level],
-            auto_test_mode=False,
             null_renderer=False,
         )
 
         for test_screenshot, golden_screenshot in zip(test_screenshots, golden_images):
             compare_screenshots(test_screenshot, golden_screenshot)
+
+@pytest.mark.parametrize('rhi', ['dx12', 'vulkan'])
+@pytest.mark.parametrize("project", ["AutomatedTesting"])
+@pytest.mark.parametrize("launcher_platform", ["windows_editor"])
+@pytest.mark.parametrize("level", ["AtomFeatureIntegrationBenchmark"])
+class TestPerformanceBenchmarkSuite(object):
+    def test_AtomFeatureIntegrationBenchmark(
+            self, request, editor, workspace, rhi, project, launcher_platform, level):
+        """
+        Please review the hydra script run by this test for more specific test info.
+        Tests the performance of the Simple level.
+        """
+        expected_lines = [
+            "Benchmark metadata captured.",
+            "Pass timestamps captured.",
+            "Capturing complete.",
+            "Captured data successfully."
+        ]
+
+        unexpected_lines = [
+            "Failed to capture data.",
+            "Failed to capture pass timestamps.",
+            "Failed to capture benchmark metadata."
+        ]
+
+        hydra.launch_and_validate_results(
+            request,
+            TEST_DIRECTORY,
+            editor,
+            "hydra_GPUTest_AtomFeatureIntegrationBenchmark.py",
+            timeout=EDITOR_TIMEOUT,
+            expected_lines=expected_lines,
+            unexpected_lines=unexpected_lines,
+            halt_on_unexpected=True,
+            cfg_args=[level],
+            null_renderer=False,
+        )
+
+        aggregator = BenchmarkDataAggregator(workspace, logger, 'periodic')
+        aggregator.upload_metrics(rhi)

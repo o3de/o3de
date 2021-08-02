@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <SceneAPI/SceneCore/Containers/Views/PairIterator.h>
 #include <SceneAPI/SceneCore/Containers/Views/SceneGraphDownwardsIterator.h>
@@ -16,7 +12,6 @@
 #include <SceneAPI/SceneCore/Containers/Utilities/Filters.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneAPI/SceneCore/DataTypes/DataTypeUtilities.h>
-#include <SceneAPI/SceneCore/DataTypes/GraphData/IBoneData.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IAnimationData.h>
 #include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
 
@@ -171,6 +166,35 @@ namespace EMotionFX
             return finalMotionData;
         }
 
+        AZ::SceneAPI::DataTypes::MatrixType MotionDataBuilder::GetLocalSpaceBindPose(const SceneContainers::SceneGraph& sceneGraph,
+            const SceneContainers::SceneGraph::NodeIndex rootBoneNodeIndex,
+            const SceneContainers::SceneGraph::NodeIndex nodeIndex,
+            const SceneDataTypes::ITransform* transform,
+            const SceneDataTypes::IBoneData* bone) const
+        {
+            AZ::SceneAPI::DataTypes::MatrixType nodeTransform = AZ::SceneAPI::DataTypes::MatrixType::CreateIdentity();
+            if (bone)
+            {
+                nodeTransform = bone->GetWorldTransform();
+            }
+            else if (transform)
+            {
+                nodeTransform = transform->GetMatrix();
+            }
+
+            if (nodeIndex != rootBoneNodeIndex)
+            {
+                const SceneContainers::SceneGraph::NodeIndex parentNodeIndex = sceneGraph.GetNodeParent(nodeIndex);
+                const SceneDataTypes::IGraphObject* parentNode = sceneGraph.GetNodeContent(parentNodeIndex).get();
+                if (const SceneDataTypes::IBoneData* parentBone = azrtti_cast<const SceneDataTypes::IBoneData*>(parentNode))
+                {
+                    return parentBone->GetWorldTransform().GetInverseFull() * nodeTransform;
+                }
+            }
+
+            return nodeTransform;
+        }
+
         AZ::SceneAPI::Events::ProcessingResult MotionDataBuilder::BuildMotionData(MotionDataBuilderContext& context)
         {
             if (context.m_phase != AZ::RC::Phase::Filling)
@@ -225,8 +249,10 @@ namespace EMotionFX
                     continue;
                 }
 
-                AZStd::shared_ptr<const SceneDataTypes::IBoneData> nodeBone = azrtti_cast<const SceneDataTypes::IBoneData*>(it->second);
-                if (!nodeBone)
+                // Check if we are dealing with a transform node or a bone and only recurse down the node hierarchy in this case.
+                const SceneDataTypes::IBoneData* nodeBone = azrtti_cast<const SceneDataTypes::IBoneData*>(it->second.get());
+                const SceneDataTypes::ITransform* nodeTransform = azrtti_cast<const SceneDataTypes::ITransform*>(it->second.get());
+                if (!nodeBone && !nodeTransform)
                 {
                     it.IgnoreNodeDescendants();
                     continue;
@@ -294,24 +320,13 @@ namespace EMotionFX
 
                 // Get the bind pose transform in local space.
                 using SceneAPIMatrixType = AZ::SceneAPI::DataTypes::MatrixType;
-                SceneAPIMatrixType bindSpaceLocalTransform;
-                const SceneContainers::SceneGraph::NodeIndex parentIndex = graph.GetNodeParent(boneNodeIndex);
-                if (boneNodeIndex != rootBoneNodeIndex)
-                {
-                    auto parentNode = graph.GetNodeContent(parentIndex);
-                    AZStd::shared_ptr<const SceneDataTypes::IBoneData> parentNodeBone = azrtti_cast<const SceneDataTypes::IBoneData*>(parentNode);
-                    bindSpaceLocalTransform = parentNodeBone->GetWorldTransform().GetInverseFull() * nodeBone->GetWorldTransform();
-                }
-                else
-                {
-                    bindSpaceLocalTransform = nodeBone->GetWorldTransform();
-                }
+                const SceneAPIMatrixType bindSpaceLocalTransform = GetLocalSpaceBindPose(graph, rootBoneNodeIndex, boneNodeIndex, nodeTransform, nodeBone);
 
                 // Get the time step and make sure it didn't change compared to other joint animations.
                 const double timeStep = animation->GetTimeStepBetweenFrames();
                 lowestTimeStep = AZ::GetMin<double>(timeStep, lowestTimeStep);
 
-                SceneAPIMatrixType sampleFrameTransformInverse;
+                AZ::SceneAPI::DataTypes::MatrixType sampleFrameTransformInverse;
                 if (additiveRule)
                 {
                     size_t sampleFrameIndex = additiveRule->GetSampleFrameIndex();

@@ -1,16 +1,14 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
@@ -74,27 +72,6 @@ namespace AWSCore
     void AWSCoreConfiguration::InitConfig()
     {
         InitSourceProjectFolderPath();
-        InitSettingsRegistry();
-    }
-
-    void AWSCoreConfiguration::InitSettingsRegistry()
-    {
-        if (m_sourceProjectFolder.empty())
-        {
-            AZ_Warning(AWSCoreConfigurationName, false, ProjectSourceFolderNotFoundErrorMessage);
-            return;
-        }
-
-        AZStd::string settingsRegistryPath = AZStd::string::format("%s/%s/%s",
-            m_sourceProjectFolder.c_str(), AZ::SettingsRegistryInterface::RegistryFolder, AWSCoreConfiguration::AWSCoreConfigurationFileName);
-        AzFramework::StringFunc::Path::Normalize(settingsRegistryPath);
-
-        if (!m_settingsRegistry.MergeSettingsFile(settingsRegistryPath, AZ::SettingsRegistryInterface::Format::JsonMergePatch, ""))
-        {
-            AZ_Warning(AWSCoreConfigurationName, false, SettingsRegistryLoadFailureErrorMessage);
-            return;
-        }
-
         ParseSettingsRegistryValues();
     }
 
@@ -113,10 +90,17 @@ namespace AWSCore
 
     void AWSCoreConfiguration::ParseSettingsRegistryValues()
     {
+        AZ::SettingsRegistryInterface*  settingsRegistry = AZ::SettingsRegistry::Get();
+        if (!settingsRegistry)
+        {
+            AZ_Warning(AWSCoreConfigurationName, false, GlobalSettingsRegistryLoadFailureErrorMessage);
+            return;
+        }
+
         m_resourceMappingConfigFileName.clear();
         auto resourceMappingConfigFileNamePath = AZStd::string::format("%s%s",
             AZ::SettingsRegistryMergeUtils::OrganizationRootKey, AWSCoreResourceMappingConfigFileNameKey);
-        if (!m_settingsRegistry.Get(m_resourceMappingConfigFileName, resourceMappingConfigFileNamePath))
+        if (!settingsRegistry->Get(m_resourceMappingConfigFileName, resourceMappingConfigFileNamePath))
         {
             AZ_Warning(AWSCoreConfigurationName, false, ResourceMappingFileNameNotFoundErrorMessage);
         }
@@ -124,7 +108,7 @@ namespace AWSCore
         m_profileName.clear();
         auto profileNamePath = AZStd::string::format(
             "%s%s", AZ::SettingsRegistryMergeUtils::OrganizationRootKey, AWSCoreProfileNameKey);
-        if (!m_settingsRegistry.Get(m_profileName, profileNamePath))
+        if (!settingsRegistry->Get(m_profileName, profileNamePath))
         {
             AZ_Warning(AWSCoreConfigurationName, false, ProfileNameNotFoundErrorMessage);
             m_profileName = AWSCoreDefaultProfileName;
@@ -133,20 +117,43 @@ namespace AWSCore
 
     void AWSCoreConfiguration::ResetSettingsRegistryData()
     {
+        AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get();
+        if (!settingsRegistry)
+        {
+            AZ_Warning(AWSCoreConfigurationName, false, GlobalSettingsRegistryLoadFailureErrorMessage);
+            return;
+        }
+
         auto profileNamePath = AZStd::string::format("%s%s",
             AZ::SettingsRegistryMergeUtils::OrganizationRootKey, AWSCoreProfileNameKey);
-        m_settingsRegistry.Remove(profileNamePath);
+        settingsRegistry->Remove(profileNamePath);
         m_profileName = AWSCoreDefaultProfileName;
 
         auto resourceMappingConfigFileNamePath = AZStd::string::format("%s%s",
             AZ::SettingsRegistryMergeUtils::OrganizationRootKey, AWSCoreResourceMappingConfigFileNameKey);
-        m_settingsRegistry.Remove(resourceMappingConfigFileNamePath);
+        settingsRegistry->Remove(resourceMappingConfigFileNamePath);
         m_resourceMappingConfigFileName.clear();
+
+        // Reload the AWSCore setting registry file from disk.
+        if (m_sourceProjectFolder.empty())
+        {
+            AZ_Warning(AWSCoreConfigurationName, false, SettingsRegistryFileLoadFailureErrorMessage);
+            return;
+        }
+
+        auto settingsRegistryPath = AZ::IO::FixedMaxPath(AZStd::string_view{ m_sourceProjectFolder }) /
+            AZ::SettingsRegistryInterface::RegistryFolder /
+            AWSCoreConfiguration::AWSCoreConfigurationFileName;
+        if (!settingsRegistry->MergeSettingsFile(settingsRegistryPath.c_str(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, ""))
+        {
+            AZ_Warning(AWSCoreConfigurationName, false, SettingsRegistryFileLoadFailureErrorMessage);
+            return;
+        }
     }
 
     void AWSCoreConfiguration::ReloadConfiguration()
     {
         ResetSettingsRegistryData();
-        InitSettingsRegistry();
+        ParseSettingsRegistryValues();
     }
 } // namespace AWSCore

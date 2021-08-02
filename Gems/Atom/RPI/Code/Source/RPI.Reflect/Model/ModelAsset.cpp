@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelKdTree.h>
@@ -77,7 +73,8 @@ namespace AZ
         }
 
         bool ModelAsset::LocalRayIntersectionAgainstModel(
-            const AZ::Vector3& rayStart, const AZ::Vector3& rayDir, float& distanceNormalized, AZ::Vector3& normal) const
+            const AZ::Vector3& rayStart, const AZ::Vector3& rayDir, bool allowBruteForce,
+            float& distanceNormalized, AZ::Vector3& normal) const
         {
             AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
 
@@ -95,7 +92,7 @@ namespace AZ
                     BuildKdTree();
 
                     AZ_WarningOnce("Model", false, "ray intersection against a model that is still creating spatial information");
-                    return false;
+                    return allowBruteForce ? BruteForceRayIntersect(rayStart, rayDir, distanceNormalized, normal) : false;
                 }
                 else
                 {

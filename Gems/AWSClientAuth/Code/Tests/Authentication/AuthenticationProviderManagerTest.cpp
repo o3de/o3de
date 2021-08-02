@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
@@ -32,7 +28,8 @@ protected:
         AWSClientAuth::LWAProviderSetting::Reflect(*m_serializeContext);
         AWSClientAuth::GoogleProviderSetting::Reflect(*m_serializeContext);
 
-        m_settingspath = AZStd::string::format("%s/%s/authenticationProvider.setreg",
+        AZStd::string settingspath = AZStd::string::format(
+            "%s/%s/authenticationProvider.setreg",
             m_testFolder->c_str(), AZ::SettingsRegistryInterface::RegistryFolder);
         CreateTestFile("authenticationProvider.setreg"
             , R"({
@@ -58,6 +55,7 @@ protected:
                     }
                 } 
             })");
+        m_settingsRegistry->MergeSettingsFile(settingspath, AZ::SettingsRegistryInterface::Format::JsonMergePatch, {});
 
         m_mockController = AZStd::make_unique<testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderManagerLocalMock>>();
     }
@@ -70,20 +68,19 @@ protected:
 
 public:
     AZStd::unique_ptr<testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderManagerLocalMock>> m_mockController;
-    AZStd::string m_settingspath;
     AZStd::vector<AWSClientAuth::ProviderNameEnum> m_enabledProviderNames {AWSClientAuth::ProviderNameEnum::AWSCognitoIDP,
         AWSClientAuth::ProviderNameEnum::LoginWithAmazon, AWSClientAuth::ProviderNameEnum::Google};
 };
 
 TEST_F(AuthenticationProviderManagerTest, Initialize_Success)
 {
-    ASSERT_TRUE(m_mockController->Initialize(m_enabledProviderNames, m_settingspath));
+    ASSERT_TRUE(m_mockController->Initialize(m_enabledProviderNames));
     ASSERT_TRUE(m_mockController->m_authenticationProvidersMap[AWSClientAuth::ProviderNameEnum::AWSCognitoIDP] != nullptr);
 }
 
 TEST_F(AuthenticationProviderManagerTest, PasswordGrantSingleFactorSignInAsync_Success)
 {
-    m_mockController->Initialize(m_enabledProviderNames, m_settingspath);
+    m_mockController->Initialize(m_enabledProviderNames);
     testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock> *cognitoProviderMock = (testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock>*)m_mockController->m_authenticationProvidersMap[AWSClientAuth::ProviderNameEnum::AWSCognitoIDP].get();
   
     EXPECT_CALL(*cognitoProviderMock, PasswordGrantSingleFactorSignInAsync(testing::_, testing::_)).Times(1);
@@ -100,7 +97,7 @@ TEST_F(AuthenticationProviderManagerTest, PasswordGrantSingleFactorSignInAsync_F
 
 TEST_F(AuthenticationProviderManagerTest, PasswordGrantMultiFactorSignInAsync_Success)
 {
-    m_mockController->Initialize(m_enabledProviderNames, m_settingspath);
+    m_mockController->Initialize(m_enabledProviderNames);
     testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock>* cognitoProviderMock = (testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock>*)m_mockController->m_authenticationProvidersMap[AWSClientAuth::ProviderNameEnum::AWSCognitoIDP].get();
     testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock>* lwaProviderMock = (testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock>*)m_mockController->m_authenticationProvidersMap[AWSClientAuth::ProviderNameEnum::LoginWithAmazon].get();
 
@@ -115,7 +112,7 @@ TEST_F(AuthenticationProviderManagerTest, PasswordGrantMultiFactorSignInAsync_Su
 
 TEST_F(AuthenticationProviderManagerTest, PasswordGrantMultiFactorConfirmSignInAsync_Success)
 {
-    m_mockController->Initialize(m_enabledProviderNames, m_settingspath);
+    m_mockController->Initialize(m_enabledProviderNames);
     testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock> *cognitoProviderMock = (testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock>*)m_mockController->m_authenticationProvidersMap[AWSClientAuth::ProviderNameEnum::AWSCognitoIDP].get();
     testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock> *lwaProviderMock = (testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock>*)m_mockController->m_authenticationProvidersMap[AWSClientAuth::ProviderNameEnum::LoginWithAmazon].get();
 
@@ -130,7 +127,7 @@ TEST_F(AuthenticationProviderManagerTest, PasswordGrantMultiFactorConfirmSignInA
 
 TEST_F(AuthenticationProviderManagerTest, DeviceCodeGrantSignInAsync_Success)
 {
-    m_mockController->Initialize(m_enabledProviderNames, m_settingspath);
+    m_mockController->Initialize(m_enabledProviderNames);
     testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock>* cognitoProviderMock = (testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock>*)m_mockController->m_authenticationProvidersMap[AWSClientAuth::ProviderNameEnum::AWSCognitoIDP].get();
     testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock>* lwaProviderMock = (testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock>*)m_mockController->m_authenticationProvidersMap[AWSClientAuth::ProviderNameEnum::LoginWithAmazon].get();
 
@@ -146,7 +143,7 @@ TEST_F(AuthenticationProviderManagerTest, DeviceCodeGrantSignInAsync_Success)
 
 TEST_F(AuthenticationProviderManagerTest, DeviceCodeGrantConfirmSignInAsync_Success)
 {
-    m_mockController->Initialize(m_enabledProviderNames, m_settingspath);
+    m_mockController->Initialize(m_enabledProviderNames);
     testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock>* cognitoProviderMock = (testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock>*)m_mockController->m_authenticationProvidersMap[AWSClientAuth::ProviderNameEnum::AWSCognitoIDP].get();
     testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock>* lwaProviderMock = (testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock>*)m_mockController->m_authenticationProvidersMap[AWSClientAuth::ProviderNameEnum::LoginWithAmazon].get();
 
@@ -161,7 +158,7 @@ TEST_F(AuthenticationProviderManagerTest, DeviceCodeGrantConfirmSignInAsync_Succ
 
 TEST_F(AuthenticationProviderManagerTest, RefreshTokenAsync_Success)
 {
-    m_mockController->Initialize(m_enabledProviderNames, m_settingspath);
+    m_mockController->Initialize(m_enabledProviderNames);
     testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock> *cognitoProviderMock = (testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock>*)m_mockController->m_authenticationProvidersMap[AWSClientAuth::ProviderNameEnum::AWSCognitoIDP].get();
     testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock> *lwaProviderMock = (testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock>*)m_mockController->m_authenticationProvidersMap[AWSClientAuth::ProviderNameEnum::LoginWithAmazon].get();
 
@@ -176,7 +173,7 @@ TEST_F(AuthenticationProviderManagerTest, RefreshTokenAsync_Success)
 
 TEST_F(AuthenticationProviderManagerTest, GetTokensWithRefreshAsync_ValidToken_Success)
 {
-    m_mockController->Initialize(m_enabledProviderNames, m_settingspath);
+    m_mockController->Initialize(m_enabledProviderNames);
     testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock>* cognitoProviderMock = (testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock>*)m_mockController->m_authenticationProvidersMap[AWSClientAuth::ProviderNameEnum::AWSCognitoIDP].get();
 
      AWSClientAuth::AuthenticationTokens tokens(
@@ -192,7 +189,7 @@ TEST_F(AuthenticationProviderManagerTest, GetTokensWithRefreshAsync_ValidToken_S
 
 TEST_F(AuthenticationProviderManagerTest, GetTokensWithRefreshAsync_InvalidToken_Success)
 {
-    m_mockController->Initialize(m_enabledProviderNames, m_settingspath);
+    m_mockController->Initialize(m_enabledProviderNames);
     testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock>* cognitoProviderMock = (testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock>*)m_mockController->m_authenticationProvidersMap[AWSClientAuth::ProviderNameEnum::AWSCognitoIDP].get();
     AWSClientAuth::AuthenticationTokens tokens;
     EXPECT_CALL(*cognitoProviderMock, GetAuthenticationTokens()).Times(1).WillOnce(testing::Return(tokens));
@@ -213,7 +210,7 @@ TEST_F(AuthenticationProviderManagerTest, GetTokensWithRefreshAsync_NotInitializ
 
 TEST_F(AuthenticationProviderManagerTest, GetTokens_Success)
 {
-    m_mockController->Initialize(m_enabledProviderNames, m_settingspath);
+    m_mockController->Initialize(m_enabledProviderNames);
     testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock>* cognitoProviderMock = (testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock>*)m_mockController->m_authenticationProvidersMap[AWSClientAuth::ProviderNameEnum::AWSCognitoIDP].get();
 
      AWSClientAuth::AuthenticationTokens tokens(
@@ -228,7 +225,7 @@ TEST_F(AuthenticationProviderManagerTest, GetTokens_Success)
 
 TEST_F(AuthenticationProviderManagerTest, IsSignedIn_Success)
 {
-    m_mockController->Initialize(m_enabledProviderNames, m_settingspath);
+    m_mockController->Initialize(m_enabledProviderNames);
     testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock>* cognitoProviderMock = (testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock>*)m_mockController->m_authenticationProvidersMap[AWSClientAuth::ProviderNameEnum::AWSCognitoIDP].get();
 
      AWSClientAuth::AuthenticationTokens tokens(
@@ -242,7 +239,7 @@ TEST_F(AuthenticationProviderManagerTest, IsSignedIn_Success)
 
 TEST_F(AuthenticationProviderManagerTest, SignOut_Success)
 {
-    m_mockController->Initialize(m_enabledProviderNames, m_settingspath);
+    m_mockController->Initialize(m_enabledProviderNames);
     testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock>* googleProviderMock = (testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock>*)m_mockController->m_authenticationProvidersMap[AWSClientAuth::ProviderNameEnum::Google].get();
 
     EXPECT_CALL(*googleProviderMock, SignOut()).Times(1);
@@ -252,9 +249,3 @@ TEST_F(AuthenticationProviderManagerTest, SignOut_Success)
     googleProviderMock = nullptr;
 }
 
-TEST_F(AuthenticationProviderManagerTest, Initialize_Fail_InvalidPath)
-{
-    AZ_TEST_START_TRACE_SUPPRESSION;
-    ASSERT_FALSE(m_mockController->Initialize(m_enabledProviderNames, ""));
-    AZ_TEST_STOP_TRACE_SUPPRESSION(1);
-}

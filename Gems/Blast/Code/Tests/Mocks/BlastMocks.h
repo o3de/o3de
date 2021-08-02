@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #pragma once
@@ -15,7 +11,6 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
-#include <AzFramework/Physics/Joint.h>
 #include <AzFramework/Physics/RigidBodyBus.h>
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/SystemBus.h>
@@ -221,23 +216,6 @@ namespace Blast
             AZStd::vector<AZStd::shared_ptr<Physics::Material>>(const Physics::MaterialSelection&));
         MOCK_METHOD2(
             UpdateMaterialSelection, bool(const Physics::ShapeConfiguration&, Physics::ColliderConfiguration&));
-        MOCK_METHOD0(GetSupportedJointTypes, AZStd::vector<AZ::TypeId>());
-        MOCK_METHOD1(CreateJointLimitConfiguration, AZStd::shared_ptr<Physics::JointLimitConfiguration>(AZ::TypeId));
-        MOCK_METHOD3(
-            CreateJoint,
-            AZStd::shared_ptr<Physics::Joint>(
-                const AZStd::shared_ptr<Physics::JointLimitConfiguration>&, AzPhysics::SimulatedBody*, AzPhysics::SimulatedBody*));
-        MOCK_METHOD10(
-            GenerateJointLimitVisualizationData,
-            void(
-                const Physics::JointLimitConfiguration&, const AZ::Quaternion&, const AZ::Quaternion&, float, AZ::u32,
-                AZ::u32, AZStd::vector<AZ::Vector3>&, AZStd::vector<AZ::u32>&, AZStd::vector<AZ::Vector3>&,
-                AZStd::vector<bool>&));
-        MOCK_METHOD5(
-            ComputeInitialJointLimitConfiguration,
-            AZStd::unique_ptr<Physics::JointLimitConfiguration>(
-                const AZ::TypeId&, const AZ::Quaternion&, const AZ::Quaternion&, const AZ::Vector3&,
-                const AZStd::vector<AZ::Quaternion>&));
         MOCK_METHOD3(CookConvexMeshToFile, bool(const AZStd::string&, const AZ::Vector3*, AZ::u32));
         MOCK_METHOD3(CookConvexMeshToMemory, bool(const AZ::Vector3*, AZ::u32, AZStd::vector<AZ::u8>&));
         MOCK_METHOD5(

@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -487,6 +483,16 @@ namespace AzToolsFramework
             AZStd::string::format(":/stylesheet/img/UI20/toolbar/%s.svg", iconName));
 
         return buttonId;
+    }
+
+    void SnappingCluster::TrySetVisible(const bool visible)
+    {
+        bool snapping = false;
+        ViewportInteraction::ViewportInteractionRequestBus::EventResult(
+            snapping, ViewportUi::DefaultViewportId, &ViewportInteraction::ViewportInteractionRequestBus::Events::GridSnappingEnabled);
+
+        // show snapping viewport ui only if there are entities selected and snapping is enabled
+        SetViewportUiClusterVisible(m_clusterId, visible && snapping);
     }
 
     // return either center or entity pivot
@@ -1034,6 +1040,7 @@ namespace AzToolsFramework
         EditorEntityLockComponentNotificationBus::Router::BusRouterConnect();
         EditorManipulatorCommandUndoRedoRequestBus::Handler::BusConnect(entityContextId);
         EditorContextMenuBus::Handler::BusConnect();
+        ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusConnect(ViewportUi::DefaultViewportId);
 
         CreateTransformModeSelectionCluster();
         CreateSpaceSelectionCluster();
@@ -1057,6 +1064,7 @@ namespace AzToolsFramework
 
         m_pivotOverrideFrame.Reset();
 
+        ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusDisconnect();
         EditorContextMenuBus::Handler::BusConnect();
         EditorManipulatorCommandUndoRedoRequestBus::Handler::BusDisconnect();
         EditorEntityLockComponentNotificationBus::Router::BusRouterDisconnect();
@@ -2011,7 +2019,7 @@ namespace AzToolsFramework
     static void AddAction(
         AZStd::vector<AZStd::unique_ptr<QAction>>& actions,
         const QList<QKeySequence>& keySequences,
-        int actionId,
+        AZ::Crc32 actionId,
         const QString& name,
         const QString& statusTip,
         const T& callback)
@@ -2026,7 +2034,7 @@ namespace AzToolsFramework
 
         QObject::connect(actions.back().get(), &QAction::triggered, actions.back().get(), callback);
 
-        EditorActionRequestBus::Broadcast(&EditorActionRequests::AddActionViaBus, actionId, actions.back().get());
+        EditorActionRequestBus::Broadcast(&EditorActionRequests::AddActionViaBusCrc, actionId, actions.back().get());
     }
 
     void EditorTransformComponentSelection::OnEscape()
@@ -2074,8 +2082,6 @@ namespace AzToolsFramework
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
-        // note: see Code/Sandbox/Editor/Resource.h for ID_EDIT_<action> ids
-
         const auto lockUnlock = [this](const bool lock)
         {
             AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
@@ -2100,8 +2106,7 @@ namespace AzToolsFramework
 
         // lock selection
         AddAction(
-            m_actions, { QKeySequence(Qt::Key_L) },
-            /*ID_EDIT_FREEZE =*/32900, s_lockSelectionTitle, s_lockSelectionDesc,
+            m_actions, { QKeySequence(Qt::Key_L) }, LockSelection, s_lockSelectionTitle, s_lockSelectionDesc,
             [lockUnlock]()
             {
                 lockUnlock(true);
@@ -2109,8 +2114,7 @@ namespace AzToolsFramework
 
         // unlock selection
         AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_L) },
-            /*ID_EDIT_UNFREEZE =*/32973, s_lockSelectionTitle, s_lockSelectionDesc,
+            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_L) }, UnlockSelection, s_lockSelectionTitle, s_lockSelectionDesc,
             [lockUnlock]()
             {
                 lockUnlock(false);
@@ -2140,8 +2144,7 @@ namespace AzToolsFramework
 
         // hide selection
         AddAction(
-            m_actions, { QKeySequence(Qt::Key_H) },
-            /*ID_EDIT_HIDE =*/32898, s_hideSelectionTitle, s_hideSelectionDesc,
+            m_actions, { QKeySequence(Qt::Key_H) }, HideSelection, s_hideSelectionTitle, s_hideSelectionDesc,
             [showHide]()
             {
                 showHide(false);
@@ -2149,8 +2152,7 @@ namespace AzToolsFramework
 
         // show selection
         AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_H) },
-            /*ID_EDIT_UNHIDE =*/32974, s_hideSelectionTitle, s_hideSelectionDesc,
+            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_H) }, ShowSelection, s_hideSelectionTitle, s_hideSelectionDesc,
             [showHide]()
             {
                 showHide(true);
@@ -2158,8 +2160,7 @@ namespace AzToolsFramework
 
         // unlock all entities in the level/scene
         AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_L) },
-            /*ID_EDIT_UNFREEZEALL =*/32901, s_unlockAllTitle, s_unlockAllDesc,
+            m_actions, { QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_L) }, UnlockAll, s_unlockAllTitle, s_unlockAllDesc,
             []()
             {
                 AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
@@ -2176,8 +2177,7 @@ namespace AzToolsFramework
 
         // show all entities in the level/scene
         AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_H) },
-            /*ID_EDIT_UNHIDEALL =*/32899, s_showAllTitle, s_showAllDesc,
+            m_actions, { QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_H) }, ShowAll, s_showAllTitle, s_showAllDesc,
             []()
             {
                 AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
@@ -2194,8 +2194,7 @@ namespace AzToolsFramework
 
         // select all entities in the level/scene
         AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_A) },
-            /*ID_EDIT_SELECTALL =*/33376, s_selectAllTitle, s_selectAllDesc,
+            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_A) }, SelectAll, s_selectAllTitle, s_selectAllDesc,
             [this]()
             {
                 AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
@@ -2235,8 +2234,7 @@ namespace AzToolsFramework
 
         // invert current selection
         AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_I) },
-            /*ID_EDIT_INVERTSELECTION =*/33692, s_invertSelectionTitle, s_invertSelectionDesc,
+            m_actions, { QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_I) }, InvertSelect, s_invertSelectionTitle, s_invertSelectionDesc,
             [this]()
             {
                 AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
@@ -2283,8 +2281,7 @@ namespace AzToolsFramework
 
         // duplicate selection
         AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_D) },
-            /*ID_EDIT_CLONE =*/33525, s_duplicateTitle, s_duplicateDesc,
+            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_D) }, DuplicateSelect, s_duplicateTitle, s_duplicateDesc,
             []()
             {
                 AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
@@ -2309,8 +2306,7 @@ namespace AzToolsFramework
 
         // delete selection
         AddAction(
-            m_actions, { QKeySequence(Qt::Key_Delete) },
-            /*ID_EDIT_DELETE=*/33480, s_deleteTitle, s_deleteDesc,
+            m_actions, { QKeySequence(Qt::Key_Delete) }, DeleteSelect, s_deleteTitle, s_deleteDesc,
             [this]()
             {
                 AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
@@ -2327,24 +2323,21 @@ namespace AzToolsFramework
             });
 
         AddAction(
-            m_actions, { QKeySequence(Qt::Key_Space) },
-            /*ID_EDIT_ESCAPE=*/33513, "", "",
+            m_actions, { QKeySequence(Qt::Key_Space) }, EditEscaspe, "", "",
             [this]()
             {
                 DeselectEntities();
             });
 
         AddAction(
-            m_actions, { QKeySequence(Qt::Key_P) },
-            /*ID_EDIT_PIVOT=*/36203, s_togglePivotTitleEditMenu, s_togglePivotDesc,
+            m_actions, { QKeySequence(Qt::Key_P) }, EditPivot, s_togglePivotTitleEditMenu, s_togglePivotDesc,
             [this]()
             {
                 ToggleCenterPivotSelection();
             });
 
         AddAction(
-            m_actions, { QKeySequence(Qt::Key_R) },
-            /*ID_EDIT_RESET=*/36204, s_resetEntityTransformTitle, s_resetEntityTransformDesc,
+            m_actions, { QKeySequence(Qt::Key_R) }, EditReset, s_resetEntityTransformTitle, s_resetEntityTransformDesc,
             [this]()
             {
                 switch (m_mode)
@@ -2362,13 +2355,11 @@ namespace AzToolsFramework
             });
 
         AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_R) },
-            /*ID_EDIT_RESET_MANIPULATOR=*/36207, s_resetManipulatorTitle, s_resetManipulatorDesc,
+            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_R) }, EditResetManipulator, s_resetManipulatorTitle, s_resetManipulatorDesc,
             AZStd::bind(AZStd::mem_fn(&EditorTransformComponentSelection::DelegateClearManipulatorOverride), this));
 
         AddAction(
-            m_actions, { QKeySequence(Qt::ALT + Qt::Key_R) },
-            /*ID_EDIT_RESET_LOCAL=*/36205, s_resetTransformLocalTitle, s_resetTransformLocalDesc,
+            m_actions, { QKeySequence(Qt::ALT + Qt::Key_R) }, EditResetLocal, s_resetTransformLocalTitle, s_resetTransformLocalDesc,
             [this]()
             {
                 switch (m_mode)
@@ -2386,8 +2377,7 @@ namespace AzToolsFramework
             });
 
         AddAction(
-            m_actions, { QKeySequence(Qt::SHIFT + Qt::Key_R) },
-            /*ID_EDIT_RESET_WORLD=*/36206, s_resetTransformWorldTitle, s_resetTransformWorldDesc,
+            m_actions, { QKeySequence(Qt::SHIFT + Qt::Key_R) }, EditResetWorld, s_resetTransformWorldTitle, s_resetTransformWorldDesc,
             [this]()
             {
                 switch (m_mode)
@@ -2408,8 +2398,7 @@ namespace AzToolsFramework
             });
 
         AddAction(
-            m_actions, { QKeySequence(Qt::Key_U) },
-            /*ID_VIEWPORTUI_VISIBLE=*/50040, "Toggle Viewport UI", "Hide/Show Viewport UI",
+            m_actions, { QKeySequence(Qt::Key_U) }, ViewportUiVisible, "Toggle Viewport UI", "Hide/Show Viewport UI",
             [this]()
             {
                 SetAllViewportUiVisible(!m_viewportUiVisible);
@@ -3090,17 +3079,10 @@ namespace AzToolsFramework
             // update orientations relative to initial
             for (AZ::EntityId entityId : manipulatorEntityIds.m_entityIds)
             {
-                ScopedUndoBatch::MarkEntityDirty(entityId);
-
-                const auto transformIt = transformsBefore.find(entityId);
-                if (transformIt != transformsBefore.end())
+                if (const auto transformIt = transformsBefore.find(entityId); transformIt != transformsBefore.end())
                 {
-                    AZ::Transform newWorldFromLocal = transformIt->second;
-                    const float scale = newWorldFromLocal.GetUniformScale();
-                    newWorldFromLocal.SetRotation(orientation);
-                    newWorldFromLocal *= AZ::Transform::CreateUniformScale(scale);
-
-                    SetEntityWorldTransform(entityId, newWorldFromLocal);
+                    ScopedUndoBatch::MarkEntityDirty(entityId);
+                    SetEntityLocalRotation(entityId, orientation);
                 }
             }
 
@@ -3272,7 +3254,7 @@ namespace AzToolsFramework
             m_didSetSelectedEntities = false;
         }
 
-        SetViewportUiClusterVisible(m_snappingCluster.m_clusterId, m_viewportUiVisible && !m_selectedEntityIds.empty());
+        m_snappingCluster.TrySetVisible(m_viewportUiVisible && !m_selectedEntityIds.empty());
 
         RegenerateManipulators();
     }
@@ -3726,6 +3708,11 @@ namespace AzToolsFramework
         ETCS::SetEntityLocalRotation(entityId, localRotation, m_transformChangedInternally);
     }
 
+    void EditorTransformComponentSelection::SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Quaternion& localRotation)
+    {
+        ETCS::SetEntityLocalRotation(entityId, localRotation, m_transformChangedInternally);
+    }
+
     void EditorTransformComponentSelection::OnStartPlayInEditor()
     {
         SetAllViewportUiVisible(false);
@@ -3734,6 +3721,11 @@ namespace AzToolsFramework
     void EditorTransformComponentSelection::OnStopPlayInEditor()
     {
         SetAllViewportUiVisible(true);
+    }
+
+    void EditorTransformComponentSelection::OnGridSnappingChanged([[maybe_unused]] const bool enabled)
+    {
+        m_snappingCluster.TrySetVisible(m_viewportUiVisible && !m_selectedEntityIds.empty());
     }
 
     namespace ETCS
@@ -3785,6 +3777,12 @@ namespace AzToolsFramework
         {
             ScopeSwitch sw(internal);
             AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetLocalRotation, localRotation);
+        }
+
+        void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Quaternion& localRotation, bool& internal)
+        {
+            ScopeSwitch sw(internal);
+            AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetLocalRotationQuaternion, localRotation);
         }
     } // namespace ETCS
 

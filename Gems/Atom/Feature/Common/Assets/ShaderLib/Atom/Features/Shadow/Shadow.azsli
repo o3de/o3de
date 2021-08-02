@@ -1,18 +1,19 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
 static const float EsmExponentialShift = 87.; // slightly smaller value of log(FLT_MAX)
+
+// Slope-scale depth bias doesn't work with depth writes. Apply a small bias with this value so that bicubic filtering 
+// won't have shadow acne
+// Longer-term, we should probably try and implement Normal Offset biasing [GFX TODO][ATOM-15846]
+static const float PdoShadowMapBias = 0.001; 
 
 // Must match the equivalent enumeration in ShadowConstants.h
 enum PcfFilterMethod { PcfFilterMethod_BoundarySearch = 0, PcfFilterMethod_Bicubic = 1 };

@@ -1,22 +1,16 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-
-#include "AzToolsFramework_precompiled.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzToolsFramework/ViewportUi/Button.h>
 #include <AzToolsFramework/ViewportUi/ButtonGroup.h>
-#include <AzToolsFramework/ViewportUi/ViewportUiManager.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiDisplay.h>
+#include <AzToolsFramework/ViewportUi/ViewportUiManager.h>
 
 namespace AzToolsFramework::ViewportUi
 {
@@ -119,7 +113,8 @@ namespace AzToolsFramework::ViewportUi
         return ButtonId(0);
     }
 
-    const ButtonId ViewportUiManager::CreateSwitcherButton(const SwitcherId switcherId, const AZStd::string& icon, const AZStd::string& name)
+    const ButtonId ViewportUiManager::CreateSwitcherButton(
+        const SwitcherId switcherId, const AZStd::string& icon, const AZStd::string& name)
     {
         if (auto switcherIt = m_switcherButtonGroups.find(switcherId); switcherIt != m_switcherButtonGroups.end())
         {
@@ -151,8 +146,7 @@ namespace AzToolsFramework::ViewportUi
         }
     }
 
-    static void SetViewportUiElementVisible(
-        Internal::ViewportUiDisplay* ui, ViewportUiElementId id, bool visible)
+    static void SetViewportUiElementVisible(Internal::ViewportUiDisplay* ui, ViewportUiElementId id, bool visible)
     {
         if (visible)
         {
@@ -191,11 +185,9 @@ namespace AzToolsFramework::ViewportUi
     }
 
     const TextFieldId ViewportUiManager::CreateTextField(
-        const AZStd::string& labelText, const AZStd::string& textFieldDefaultText,
-        TextFieldValidationType validationType) 
+        const AZStd::string& labelText, const AZStd::string& textFieldDefaultText, TextFieldValidationType validationType)
     {
-        auto textField = AZStd::make_shared<Internal::TextField>(
-            labelText, textFieldDefaultText, validationType);
+        auto textField = AZStd::make_shared<Internal::TextField>(labelText, textFieldDefaultText, validationType);
         m_viewportUi->AddTextField(textField);
 
         return RegisterNewTextField(textField);
@@ -211,8 +203,7 @@ namespace AzToolsFramework::ViewportUi
         }
     }
 
-    void ViewportUiManager::RegisterTextFieldCallback(
-        TextFieldId textFieldId, AZ::Event<AZStd::string>::Handler& handler) 
+    void ViewportUiManager::RegisterTextFieldCallback(TextFieldId textFieldId, AZ::Event<AZStd::string>::Handler& handler)
     {
         if (auto textFieldIt = m_textFields.find(textFieldId); textFieldIt != m_textFields.end())
         {
@@ -239,7 +230,6 @@ namespace AzToolsFramework::ViewportUi
         }
     }
 
-
     void ViewportUiManager::CreateComponentModeBorder(const AZStd::string& borderTitle)
     {
         m_viewportUi->CreateComponentModeBorder(borderTitle);
@@ -253,8 +243,7 @@ namespace AzToolsFramework::ViewportUi
     void ViewportUiManager::PressButton(ClusterId clusterId, ButtonId buttonId)
     {
         // Find cluster using ID and cluster map
-        if (auto clusterIt = m_clusterButtonGroups.find(clusterId);
-            clusterIt != m_clusterButtonGroups.end())
+        if (auto clusterIt = m_clusterButtonGroups.find(clusterId); clusterIt != m_clusterButtonGroups.end())
         {
             clusterIt->second->PressButton(buttonId);
         }
@@ -310,7 +299,7 @@ namespace AzToolsFramework::ViewportUi
     SwitcherId ViewportUiManager::RegisterNewSwitcher(AZStd::shared_ptr<Internal::ButtonGroup>& buttonGroup)
     {
         SwitcherId newId = SwitcherId(m_switcherButtonGroups.size() + 1);
-        m_switcherButtonGroups.insert({newId, buttonGroup});
+        m_switcherButtonGroups.insert({ newId, buttonGroup });
 
         return newId;
     }

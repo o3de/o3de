@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TransformBus.h>
@@ -92,13 +88,15 @@ namespace AzToolsFramework
     {
         if (m_rootInstance)
         {
+            AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+                &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);
             Prefab::TemplateId templateId = m_rootInstance->GetTemplateId();
+            m_rootInstance->Reset();
             if (templateId != Prefab::InvalidTemplateId)
             {
                 m_rootInstance->SetTemplateId(Prefab::InvalidTemplateId);
                 m_prefabSystemComponent->RemoveTemplate(templateId);
             }
-            m_rootInstance->Reset();
             m_rootInstance->SetContainerEntityName("Level");
         }
 
@@ -509,7 +507,7 @@ namespace AzToolsFramework
                     copy.CopyFrom(templateReference->get().GetPrefabDom(), copy.GetAllocator(), false);
                     context.AddPrefab(DefaultMainSpawnableName, AZStd::move(copy));
                     m_playInEditorData.m_converter.ProcessPrefab(context);
-                    if (context.HasCompletedSuccessfully())
+                    if (context.HasCompletedSuccessfully() && !context.GetProcessedObjects().empty())
                     {
                         static constexpr size_t NoRootSpawnable = AZStd::numeric_limits<size_t>::max();
                         size_t rootSpawnableIndex = NoRootSpawnable;
@@ -556,6 +554,13 @@ namespace AzToolsFramework
                             m_playInEditorData.m_entities.Reset(m_playInEditorData.m_assets[rootSpawnableIndex]);
                             m_playInEditorData.m_entities.SpawnAllEntities();
                         }
+                        else
+                        {
+                            AZ_Error("Prefab", false,
+                                "Processing of the level prefab failed to produce a root spawnable while entering game mode. "
+                                "Unable to fully enter game mode.");
+                            return;
+                        }
 
                         // This is a workaround until the replacement for GameEntityContext is done
                         AzFramework::GameEntityContextEventBus::Broadcast(
@@ -563,7 +568,9 @@ namespace AzToolsFramework
                     }
                     else
                     {
-                        AZ_Error("Prefab", false, "Failed to convert the prefab into assets.");
+                        AZ_Error("Prefab", false,
+                            "Failed to convert the prefab into assets. "
+                            "Confirm that the 'PlayInEditor' prefab processor stack is capable of producing a useable product asset.");
                         return;
                     }
                 }
@@ -593,18 +600,23 @@ namespace AzToolsFramework
     {
         if (m_rootInstance && m_playInEditorData.m_isEnabled)
         {
-            auto end = m_playInEditorData.m_deactivatedEntities.rend();
-            for (auto it = m_playInEditorData.m_deactivatedEntities.rbegin(); it != end; ++it)
-            {
-                AZ_Assert(*it, "Invalid entity added to list for re-activation after play-in-editor stopped.");
-                (*it)->Activate();
-            }
-            m_playInEditorData.m_deactivatedEntities.clear();
+            AZ_Assert(m_playInEditorData.m_entities.IsSet(),
+                "Invalid Game Mode Entities Container encountered after play-in-editor stopped. "
+                "Confirm that the container was initialized correctly");
 
             m_playInEditorData.m_entities.DespawnAllEntities();
             m_playInEditorData.m_entities.Alert(
-                [assets = AZStd::move(m_playInEditorData.m_assets)]([[maybe_unused]]uint32_t generation) mutable
+                [assets = AZStd::move(m_playInEditorData.m_assets),
+                 deactivatedEntities = AZStd::move(m_playInEditorData.m_deactivatedEntities)]
+                ([[maybe_unused]]uint32_t generation) mutable
                 {
+                    auto end = deactivatedEntities.rend();
+                    for (auto it = deactivatedEntities.rbegin(); it != end; ++it)
+                    {
+                        AZ_Assert(*it, "Invalid entity added to list for re-activation after play-in-editor stopped.");
+                        (*it)->Activate();
+                    }
+
                     for (auto& asset : assets)
                     {
                         if (asset)
@@ -616,12 +628,20 @@ namespace AzToolsFramework
                         }
                     }
                     AZ::ScriptSystemRequestBus::Broadcast(&AZ::ScriptSystemRequests::GarbageCollect);
+
+                    // This is a workaround until the replacement for GameEntityContext is done
+                    AzFramework::GameEntityContextEventBus::Broadcast(&AzFramework::GameEntityContextEventBus::Events::OnGameEntitiesReset);
                 });
             m_playInEditorData.m_entities.Clear();
-
-            // This is a workaround until the replacement for GameEntityContext is done
-            AzFramework::GameEntityContextEventBus::Broadcast(&AzFramework::GameEntityContextEventBus::Events::OnGameEntitiesReset);
         }
+
+        // Game entity cleanup is queued onto the next tick via the DespawnEntities call.
+        // To avoid both game entities and Editor entities active at the same time
+        // we flush the tick queue to ensure the game entities are cleared first.
+        // The Alert callback that follows the DespawnEntities call will then reactivate the editor entities
+        // This should be considered temporary as a move to a less rigid event sequence that supports async entity clean up
+        // is the desired direction forward.
+        AZ::TickBus::ExecuteQueuedEvents();
 
         m_playInEditorData.m_isEnabled = false;
     }

@@ -54,7 +54,7 @@
                         "Attachment": "Input"
                     },
                     "ImageDescriptor": {
-                        "Format": "R32_FLOAT"
+                        "Format": "R16_FLOAT"
                     }
                 }
             ],

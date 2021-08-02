@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright(c) Amazon.com, Inc.or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-*or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-*WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/IO/FileIO.h>
@@ -55,7 +51,7 @@ namespace SceneBuilder
         if (m_cachedFingerprint.empty())
         {
             // put them in an ORDERED set so that changing the reflection
-            // or the gems loaded does not invalidate FBX files due to order of reflection changing.
+            // or the gems loaded does not invalidate scene files due to order of reflection changing.
             AZStd::set<AZStd::string> fragments;
 
             AZ::SerializeContext* context = nullptr;
@@ -78,6 +74,8 @@ namespace SceneBuilder
             {
                 m_cachedFingerprint.append(element);
             }
+            // A general catch all version fingerprint. Update this to force all FBX files to recompile.
+            m_cachedFingerprint.append("Version 1");
         }
 
         return m_cachedFingerprint.c_str();
@@ -355,7 +353,7 @@ namespace SceneBuilder
     AZ::u32 SceneBuilderWorker::BuildSubId(const AZ::SceneAPI::Events::ExportProduct& product) const
     {
         // Instead of the just the lower 16-bits, use the full 32-bits that are available. There are production examples of
-        // uber-fbx files that contain hundreds of meshes that need to be split into individual mesh objects as an example.
+        // uber-scene files that contain hundreds of meshes that need to be split into individual mesh objects as an example.
         AZ::u32 id = static_cast<AZ::u32>(product.m_id.GetHash());
 
         if (product.m_lod.has_value())

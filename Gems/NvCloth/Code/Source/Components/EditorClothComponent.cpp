@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -50,9 +46,9 @@ namespace NvCloth
                      ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Cloth.svg")
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Cloth.svg")
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Cloth.svg")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://docs.o3de.org/docs/user-guide/components/reference/cloth/")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/cloth/")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
                     ->UIElement(AZ::Edit::UIHandlers::CheckBox, "Simulate in editor",
@@ -73,7 +69,7 @@ namespace NvCloth
 
                     // Mesh Node
                     ->DataElement(Editor::MeshNodeSelector, &ClothConfiguration::m_meshNode, "Mesh node", 
-                        "List of mesh nodes with cloth simulation data. These are the nodes selected inside Cloth Modifiers in FBX Editor Settings.")
+                        "List of mesh nodes with cloth simulation data. These are the nodes selected inside Cloth Modifiers in Scene Settings.")
                         ->Attribute(AZ::Edit::UIHandlers::EntityId, &ClothConfiguration::GetEntityId)
                         ->Attribute(AZ::Edit::Attributes::StringList, &ClothConfiguration::PopulateMeshNodeList)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)

@@ -1,19 +1,17 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 # This file is copied during engine registration. Edits to this file will be lost next
 # time a registration happens.
 
 include_guard()
 
-set(LY_EXTERNAL_SUBDIRS "" CACHE STRING "List of subdirectories to recurse into when running cmake against the engine's CMakeLists.txt")
+set(LY_EXTERNAL_SUBDIRS "" CACHE STRING "Additional list of subdirectory to recurse into via the cmake `add_subdirectory()` command. \
+    The subdirectories are included after the restricted platform folders have been visited by a call to `add_subdirectory(restricted/\${restricted_platform})`")
 
 #! read_engine_external_subdirs
 # Read the external subdirectories from the engine.json file

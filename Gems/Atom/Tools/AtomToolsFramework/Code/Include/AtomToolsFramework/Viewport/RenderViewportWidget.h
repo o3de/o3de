@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -16,6 +12,7 @@
 #include <QElapsedTimer>
 #include <Atom/RPI.Public/Base.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <AzToolsFramework/Input/QtEventToAzInputManager.h>
 #include <AzFramework/Input/Events/InputChannelEventListener.h>
 #include <AzFramework/Scene/Scene.h>
 #include <AzFramework/Viewport/ViewportControllerInterface.h>
@@ -86,6 +83,12 @@ namespace AtomToolsFramework
         //! Gets the default camera that's been automatically registered to our ViewportContext.
         AZ::RPI::ViewPtr GetDefaultCamera();
         AZ::RPI::ConstViewPtr GetDefaultCamera() const;
+        //! Sets whether or not input processing is enabled for this RenderViewportWidget.
+        //! While input processing is enabled, synthetic input events may appear in OnInputChannelEventFiltered
+        //! due to internal viewport input mapping via QtEventToAzInputMapper, so it may be desirable to disable
+        //! camera controller input processing wholesale to avoid competing input messages.
+        //! Input processing is enabled by default.
+        void SetInputProcessingEnabled(bool enabled);
 
         // AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler ...
         AzFramework::CameraState GetCameraState() override;
@@ -107,7 +110,6 @@ namespace AtomToolsFramework
         void BeginCursorCapture() override;
         void EndCursorCapture() override;
         AzFramework::ScreenPoint ViewportCursorScreenPosition() override;
-        AZStd::optional<AzFramework::ScreenPoint> PreviousViewportCursorScreenPosition() override;
         bool IsMouseOver() const override;
 
         // AzFramework::WindowRequestBus::Handler ...
@@ -118,6 +120,7 @@ namespace AtomToolsFramework
         void SetFullScreenState(bool fullScreenState) override;
         bool CanToggleFullScreenState() const override;
         void ToggleFullScreenState() override;
+        float GetDpiScaleFactor() const override;
 
     protected:
         // AzFramework::InputChannelEventListener ...
@@ -135,7 +138,6 @@ namespace AtomToolsFramework
 
     private:
         void SendWindowResizeEvent();
-        bool CanInputGrantFocus(const AzFramework::InputChannel& inputChannel) const;
 
         // The underlying ViewportContext, our entry-point to the Atom RPI.
         AZ::RPI::ViewportContextPtr m_viewportContext;
@@ -158,9 +160,9 @@ namespace AtomToolsFramework
         AZ::ScriptTimePoint m_time;
         // Whether the Viewport is currently hiding and capturing the cursor position.
         bool m_capturingCursor = false;
-        // The last known position of the mouse cursor, if one is available.
-        AZStd::optional<QPoint> m_lastCursorPosition;
         // The viewport settings (e.g. grid snapping, grid size) for this viewport.
         const AzToolsFramework::ViewportInteraction::ViewportSettings* m_viewportSettings = nullptr;
+        // Maps our internal Qt events into AzFramework InputChannels for our ViewportControllerList.
+        AzToolsFramework::QtEventToAzInputMapper* m_inputChannelMapper = nullptr;
     };
 } //namespace AtomToolsFramework

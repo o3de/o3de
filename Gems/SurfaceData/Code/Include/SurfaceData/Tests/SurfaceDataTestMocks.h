@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <AzTest/AzTest.h>
@@ -276,7 +272,7 @@ namespace UnitTest
         {
             // We don't actually remove the entry from our list because we use handles as indices, so the indices can't change.
             // Clearing out the entity Id should be good enough.
-            uint32 index = static_cast<uint32>(handle) - 1;
+            uint32_t index = static_cast<uint32_t>(handle) - 1;
             if (index < entryList.size())
             {
                 entryList[index].m_entityId = AZ::EntityId();
@@ -286,7 +282,7 @@ namespace UnitTest
         void UpdateEntry(const SurfaceData::SurfaceDataRegistryHandle& handle, const SurfaceData::SurfaceDataRegistryEntry& entry,
                          AZStd::vector<SurfaceData::SurfaceDataRegistryEntry>& entryList)
         {
-            uint32 index = static_cast<uint32>(handle) - 1;
+            uint32_t index = static_cast<uint32_t>(handle) - 1;
             if (index < entryList.size())
             {
                 entryList[index] = entry;

@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-#include "Maestro_precompiled.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "EditorSequenceAgentComponent.h"
 #include "SequenceAgentComponent.h"
 
@@ -26,6 +21,7 @@
 #include <Maestro/Types/AnimParamType.h>
 #include <AzToolsFramework/ToolsComponents/EditorDisabledCompositionBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorPendingCompositionComponent.h>
+#include <AzToolsFramework/Undo/UndoCacheInterface.h>
 
 namespace Maestro
 {
@@ -166,9 +162,18 @@ namespace Maestro
             return;
         }
 
+        AZ::EntityId curEntityId = GetEntityId();
+
         // remove this SequenceAgent from this entity if no sequenceComponents are connected to it
         AzToolsFramework::EntityCompositionRequestBus::Broadcast(&AzToolsFramework::EntityCompositionRequests::RemoveComponents, AZ::Entity::ComponentArrayType{this});        
-        
+
+        // Let any currently-active undo operations know that this entity has changed state.
+        auto undoCacheInterface = AZ::Interface<AzToolsFramework::UndoSystem::UndoCacheInterface>::Get();
+        if (undoCacheInterface)
+        {
+            undoCacheInterface->UpdateCache(curEntityId);
+        }
+
         // CAUTION!
         // THIS CLASS INSTANCE IS NOW DEAD DUE TO DELETION BY THE ENTITY DURING RemoveComponents!
     }

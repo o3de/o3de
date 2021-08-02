@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UnitTest/UnitTest.h>
@@ -35,14 +31,16 @@ namespace UnitTest
 
             m_initHandler = Multiplayer::SessionInitEvent::Handler([this](AzNetworking::INetworkInterface* value) { TestInitEvent(value); });
             m_mpComponent->AddSessionInitHandler(m_initHandler);
-            m_shutdownHandler = Multiplayer::SessionInitEvent::Handler([this](AzNetworking::INetworkInterface* value) { TestShutdownEvent(value); });
+            m_shutdownHandler = Multiplayer::SessionShutdownEvent::Handler([this](AzNetworking::INetworkInterface* value) { TestShutdownEvent(value); });
             m_mpComponent->AddSessionShutdownHandler(m_shutdownHandler);
             m_connAcquiredHandler = Multiplayer::ConnectionAcquiredEvent::Handler([this](Multiplayer::MultiplayerAgentDatum value) { TestConnectionAcquiredEvent(value); });
             m_mpComponent->AddConnectionAcquiredHandler(m_connAcquiredHandler);
+            m_mpComponent->Activate();
         }
 
         void TearDown() override
         {
+            m_mpComponent->Deactivate();
             delete m_mpComponent;
             delete m_netComponent;
             AZ::NameDictionary::Destroy();
@@ -86,6 +84,7 @@ namespace UnitTest
 
     TEST_F(MultiplayerSystemTests, TestShutdownEvent)
     {
+        m_mpComponent->InitializeMultiplayer(Multiplayer::MultiplayerAgentType::DedicatedServer);
         IMultiplayerConnectionMock connMock1 = IMultiplayerConnectionMock(AzNetworking::ConnectionId(), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Acceptor);
         IMultiplayerConnectionMock connMock2 = IMultiplayerConnectionMock(AzNetworking::ConnectionId(), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Connector);
         m_mpComponent->OnDisconnect(&connMock1, AzNetworking::DisconnectReason::None, AzNetworking::TerminationEndpoint::Local);

@@ -1,20 +1,17 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
 #include <AzCore/RTTI/RTTI.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzNetworking/DataStructures/ByteBuffer.h>
+#include <Multiplayer/NetworkEntity/IFilterEntityManager.h>
 #include <Multiplayer/Components/MultiplayerComponentRegistry.h>
 #include <Multiplayer/NetworkEntity/INetworkEntityManager.h>
 #include <Multiplayer/NetworkTime/INetworkTime.h>
@@ -132,6 +129,15 @@ namespace Multiplayer
         //! Returns the network entity manager instance bound to this multiplayer instance.
         //! @return pointer to the network entity manager instance bound to this multiplayer instance
         virtual INetworkEntityManager* GetNetworkEntityManager() = 0;
+
+        //! Sets user-defined filtering manager for entities.
+        //! This allows selectively choosing which entities to replicate on a per client connection.
+        //! See IFilterEntityManager for details.
+        //! @param entityFilter non-owning pointer, the caller is responsible for memory management.
+        virtual void SetFilterEntityManager(IFilterEntityManager* entityFilter) = 0;
+
+        //! @return pointer to the user-defined filtering manager of entities. By default, this isn't set and returns nullptr.
+        virtual IFilterEntityManager* GetFilterEntityManager() = 0;
 
         //! Retrieve the stats object bound to this multiplayer instance.
         //! @return the stats object bound to this multiplayer instance

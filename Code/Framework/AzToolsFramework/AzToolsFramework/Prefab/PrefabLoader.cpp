@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 
 #include <AzToolsFramework/Prefab/PrefabLoader.h>
@@ -177,7 +173,7 @@ namespace AzToolsFramework
             progressedFilePathsSet.emplace(relativePath);
 
             // Get 'Instances' value from Template.
-            bool isLoadedWithErrors = false;
+            bool isLoadSuccessful = true;
             PrefabDomValueReference instancesReference = newTemplate.GetInstancesValue();
             if (instancesReference.has_value())
             {
@@ -190,7 +186,7 @@ namespace AzToolsFramework
                 {
                     if (!LoadNestedInstance(instanceIterator, newTemplateId, progressedFilePathsSet))
                     {
-                        isLoadedWithErrors = true;
+                        isLoadSuccessful = false;
                         AZ_Error(
                             "Prefab", false,
                             "PrefabLoader::LoadTemplate - "
@@ -201,7 +197,10 @@ namespace AzToolsFramework
                     }
                 }
             }
-            newTemplate.MarkAsLoadedWithErrors(isLoadedWithErrors);
+
+            isLoadSuccessful &= SanitizeLoadedTemplate(newTemplate.GetPrefabDom());
+
+            newTemplate.MarkAsLoadedWithErrors(!isLoadSuccessful);
 
             // Un-mark the file as being in progress.
             progressedFilePathsSet.erase(originPath);
@@ -280,6 +279,63 @@ namespace AzToolsFramework
 
             // Let the new Template carry up the error flag of its nested Prefab.
             return !nestedTemplateReference->get().IsLoadedWithErrors();
+        }
+
+        bool PrefabLoader::SanitizeLoadedTemplate(PrefabDomReference loadedTemplateDom)
+        {
+            // Prefabs are stored to disk with default values stripped. However, while in memory, we need those default values to be
+            // present to make patches work consistently. To accomplish this, we'll instantiate the Dom, then serialize the instance
+            // back into a Dom with all of the default values preserved.
+            // Note that this is the default behavior in Prefab serialization, so we don't need to specify StoreInstanceFlags.
+
+            if (!loadedTemplateDom)
+            {
+                return false;
+            }
+
+            Instance loadedPrefabInstance;
+            if (!PrefabDomUtils::LoadInstanceFromPrefabDom(loadedPrefabInstance, loadedTemplateDom->get()))
+            {
+                return false;
+            }
+
+            PrefabDom storedPrefabDom(&loadedTemplateDom->get().GetAllocator());
+            if (!PrefabDomUtils::StoreInstanceInPrefabDom(loadedPrefabInstance, storedPrefabDom))
+            {
+                return false;
+            }
+
+            loadedTemplateDom->get().CopyFrom(storedPrefabDom, loadedTemplateDom->get().GetAllocator());
+            return true;
+        }
+
+        bool PrefabLoader::SanitizeSavingTemplate(PrefabDomReference savingTemplateDom)
+        {
+            // Prefabs are stored in memory with default values spelled out to make patches work consistently. However, when we store them
+            // to disk, we strip those default values to save on file size. To accomplish this, we'll instantiate the Dom, then serialize
+            // the instance back into a Dom with all of the default values stripped.
+
+            if (!savingTemplateDom)
+            {
+                return false;
+            }
+
+            Instance savingPrefabInstance;
+            if (!PrefabDomUtils::LoadInstanceFromPrefabDom(savingPrefabInstance, savingTemplateDom->get()))
+            {
+                return false;
+            }
+
+            PrefabDom storedPrefabDom(&savingTemplateDom->get().GetAllocator());
+            if (!PrefabDomUtils::StoreInstanceInPrefabDom(savingPrefabInstance, storedPrefabDom,
+                PrefabDomUtils::StoreInstanceFlags::StripDefaultValues))
+            {
+                return false;
+            }
+
+            savingTemplateDom->get().CopyFrom(storedPrefabDom, savingTemplateDom->get().GetAllocator());
+
+            return true;
         }
 
         bool PrefabLoader::SaveTemplate(TemplateId templateId)
@@ -400,7 +456,7 @@ namespace AzToolsFramework
 
             // Make a copy of a our prefab DOM where nested instances become file references with patch data
             PrefabDom templateDomToSave;
-            if (!templateToSave.CopyTemplateIntoPrefabFileFormat(templateDomToSave))
+            if (!CopyTemplateIntoPrefabFileFormat(templateToSave, templateDomToSave))
             {
                 AZ_Error(
                     "Prefab", false,
@@ -413,6 +469,80 @@ namespace AzToolsFramework
             }
 
             return { { AZStd::move(templateDomToSave), templateToSave.GetFilePath() } };
+        }
+
+        bool PrefabLoader::CopyTemplateIntoPrefabFileFormat(TemplateReference templateRef, PrefabDom& output)
+        {
+            AZ_Assert(
+                templateRef.has_value(),
+                "CopyTemplateIntoPrefabFileFormat called on empty template reference."
+            );
+
+            PrefabDom& prefabDom = templateRef->get().GetPrefabDom();
+
+            // Start by making a copy of our dom
+            output.CopyFrom(prefabDom, prefabDom.GetAllocator());
+
+            SanitizeSavingTemplate(output);
+
+            for (const LinkId& linkId : templateRef->get().GetLinks())
+            {
+                AZStd::optional<AZStd::reference_wrapper<Link>> findLinkResult = m_prefabSystemComponentInterface->FindLink(linkId);
+
+                if (!findLinkResult.has_value())
+                {
+                    AZ_Error(
+                        "Prefab", false,
+                        "Link with id %llu could not be found while attempting to store "
+                        "Prefab Template with source path %s in Prefab File format. "
+                        "Unable to proceed.",
+                        linkId, templateRef->get().GetFilePath().c_str());
+
+                    return false;
+                }
+
+                if (!findLinkResult->get().IsValid())
+                {
+                    AZ_Error(
+                        "Prefab", false,
+                        "Link with id %llu and is invalid during attempt to store "
+                        "Prefab Template with source path %s in Prefab File format. "
+                        "Unable to Proceed.",
+                        linkId, templateRef->get().GetFilePath().c_str());
+
+                    return false;
+                }
+
+                Link& link = findLinkResult->get();
+
+                PrefabDomPath instancePath = link.GetInstancePath();
+                PrefabDom& linkDom = link.GetLinkDom();
+
+                // Get the instance value of the Template copy
+                // This currently stores a fully realized nested Template Dom
+                PrefabDomValue* instanceValue = instancePath.Get(output);
+
+                if (!instanceValue)
+                {
+                    AZ_Error(
+                        "Prefab", false,
+                        "Template::CopyTemplateIntoPrefabFileFormat: Unable to recover nested instance Dom value from link with id %llu "
+                        "while attempting to store a collapsed version of a Prefab Template with source path %s. Unable to proceed.",
+                        linkId, templateRef->get().GetFilePath().c_str());
+
+                    return false;
+                }
+
+                // Copy the contents of the Link to overwrite our Template Dom copies Instance
+                // The instance is now "collapsed" as it contains the file reference and patches from the link
+                instanceValue->CopyFrom(linkDom, prefabDom.GetAllocator());
+            }
+
+            // Remove Source parameter from the dom. It will be added on file load, and should not be stored to disk.
+            PrefabDomPath sourcePath = PrefabDomPath((AZStd::string("/") + PrefabDomUtils::SourceName).c_str());
+            sourcePath.Erase(output);
+
+            return true;
         }
 
         bool PrefabLoader::IsValidPrefabPath(AZ::IO::PathView path)

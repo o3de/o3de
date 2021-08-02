@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -119,6 +115,8 @@ namespace Multiplayer
         AZ::TimeMs GetCurrentHostTimeMs() const override;
         INetworkTime* GetNetworkTime() override;
         INetworkEntityManager* GetNetworkEntityManager() override;
+        void SetFilterEntityManager(IFilterEntityManager* entityFilter) override;
+        IFilterEntityManager* GetFilterEntityManager() override;
         //! @}
 
         //! Console commands.
@@ -143,17 +141,21 @@ namespace Multiplayer
         NetworkEntityManager m_networkEntityManager;
         NetworkTime m_networkTime;
         MultiplayerAgentType m_agentType = MultiplayerAgentType::Uninitialized;
+        
+        IFilterEntityManager* m_filterEntityManager = nullptr; // non-owning pointer
 
         SessionInitEvent m_initEvent;
         SessionShutdownEvent m_shutdownEvent;
         ConnectionAcquiredEvent m_connAcquiredEvent;
         ClientDisconnectedEvent m_clientDisconnectedEvent;
 
+        AZStd::queue<AZStd::string> m_pendingConnectionTickets;
+
         AZ::TimeMs m_lastReplicatedHostTimeMs = AZ::TimeMs{ 0 };
-        HostFrameId m_lastReplicatedHostFrameId = InvalidHostFrameId;
+        HostFrameId m_lastReplicatedHostFrameId = HostFrameId(0);
 
         double m_serverSendAccumulator = 0.0;
-        float m_renderBlendFactor = 0.0f;
+        float m_tickFactor = 0.0f;
 
 #if !defined(AZ_RELEASE_BUILD)
         MultiplayerEditorConnection m_editorConnectionListener;

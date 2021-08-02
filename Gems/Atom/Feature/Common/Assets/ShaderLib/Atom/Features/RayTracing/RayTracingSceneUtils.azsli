@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 // returns the normalized camera view ray into the scene for this raytracing dispatch thread
 float3 GetViewRayDirection(float4x4 viewProjectionInverseMatrix)
@@ -38,9 +34,9 @@ struct VertexData
 {
     float3 m_position;
     float3 m_normal;
-    float3 m_tangent;
-    float3 m_bitangent;
-    float2 m_uv;
+    float4 m_tangent;       // optional: use only if MESH_BUFFER_FLAG_TANGENT in MeshData.m_bufferFlags is set
+    float3 m_bitangent;     // optional: use only if MESH_BUFFER_FLAG_BITANGENT in MeshData.m_bufferFlags is set
+    float2 m_uv;            // optional: use only if MESH_BUFFER_FLAG_UV in MeshData.m_bufferFlags is set
 };
 
 VertexData GetHitInterpolatedVertexData(RayTracingSceneSrg::MeshInfo meshInfo, float2 builtInBarycentrics)
@@ -79,22 +75,27 @@ VertexData GetHitInterpolatedVertexData(RayTracingSceneSrg::MeshInfo meshInfo, f
             vertexData.m_normal += asfloat(RayTracingSceneSrg::m_meshBuffers[meshVertexNormalArrayIndex].Load3(normalOffset)) * barycentrics[i];
         }
 
+        // optional streams begin after MESH_NORMAL_BUFFER_OFFSET
+        uint optionalBufferOffset = MESH_NORMAL_BUFFER_OFFSET + 1;
+
         // tangent
+        if (meshInfo.m_bufferFlags & MESH_BUFFER_FLAG_TANGENT)
         {
             // array index of the tangent buffer for this mesh in the m_meshBuffers unbounded array
-            uint meshVertexTangentArrayIndex = meshInfo.m_bufferStartIndex + MESH_TANGENT_BUFFER_OFFSET;
+            uint meshVertexTangentArrayIndex = meshInfo.m_bufferStartIndex + optionalBufferOffset++;
 
             // offset into the tangent buffer for this vertex
-            uint tangentOffset = meshInfo.m_tangentOffset + (indices[i] * 12);
+            uint tangentOffset = meshInfo.m_tangentOffset + (indices[i] * 16);
 
             // load the tangent data
-            vertexData.m_tangent += asfloat(RayTracingSceneSrg::m_meshBuffers[meshVertexTangentArrayIndex].Load3(tangentOffset)) * barycentrics[i];
+            vertexData.m_tangent += asfloat(RayTracingSceneSrg::m_meshBuffers[meshVertexTangentArrayIndex].Load4(tangentOffset)) * barycentrics[i];
         }
 
         // bitangent
+        if (meshInfo.m_bufferFlags & MESH_BUFFER_FLAG_BITANGENT)
         {
             // array index of the bitangent buffer for this mesh in the m_meshBuffers unbounded array
-            uint meshVertexBitangentArrayIndex = meshInfo.m_bufferStartIndex + MESH_BITANGENT_BUFFER_OFFSET;
+            uint meshVertexBitangentArrayIndex = meshInfo.m_bufferStartIndex + optionalBufferOffset++;
 
             // offset into the bitangent buffer for this vertex
             uint bitangentOffset = meshInfo.m_bitangentOffset + (indices[i] * 12);
@@ -102,9 +103,6 @@ VertexData GetHitInterpolatedVertexData(RayTracingSceneSrg::MeshInfo meshInfo, f
             // load the bitangent data
             vertexData.m_bitangent += asfloat(RayTracingSceneSrg::m_meshBuffers[meshVertexBitangentArrayIndex].Load3(bitangentOffset)) * barycentrics[i];
         }
-
-        // optional streams begin after MESH_BITANGENT_BUFFER_OFFSET
-        uint optionalBufferOffset = MESH_BITANGENT_BUFFER_OFFSET + 1;
 
         // UV
         if (meshInfo.m_bufferFlags & MESH_BUFFER_FLAG_UV)
@@ -121,6 +119,9 @@ VertexData GetHitInterpolatedVertexData(RayTracingSceneSrg::MeshInfo meshInfo, f
     }
     
     vertexData.m_normal = normalize(vertexData.m_normal);
+    vertexData.m_tangent.xyz = normalize(vertexData.m_tangent.xyz);
+    vertexData.m_tangent.w = sign(vertexData.m_tangent.w);
+    vertexData.m_bitangent = normalize(vertexData.m_bitangent);
 
     return vertexData;
 }

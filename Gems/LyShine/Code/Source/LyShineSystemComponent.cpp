@@ -1,16 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-
-#include "LyShine_precompiled.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -140,7 +134,7 @@ namespace LyShine
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     LyShineSystemComponent::LyShineSystemComponent()
     {
-        m_cursorImagePathname.SetAssetPath("engineassets/textures/cursor_green.tif");
+        m_cursorImagePathname.SetAssetPath("Textures/Cursor_Default.tif");
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -153,7 +147,6 @@ namespace LyShine
     {
         LyShineAllocatorScope::ActivateAllocators();
 
-        LyShineRequestBus::Handler::BusConnect();
         UiSystemBus::Handler::BusConnect();
         UiSystemToolsBus::Handler::BusConnect();
         UiFrameworkBus::Handler::BusConnect();
@@ -201,16 +194,9 @@ namespace LyShine
         UiSystemBus::Handler::BusDisconnect();
         UiSystemToolsBus::Handler::BusDisconnect();
         UiFrameworkBus::Handler::BusDisconnect();
-        LyShineRequestBus::Handler::BusDisconnect();
         CrySystemEventBus::Handler::BusDisconnect();
 
         LyShineAllocatorScope::DeactivateAllocators();
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    void LyShineSystemComponent::InitializeSystem()
-    {
-        BroadcastCursorImagePathname();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -384,6 +370,8 @@ namespace LyShine
 #endif
         m_pLyShine = new CLyShine(gEnv->pSystem);
         gEnv->pLyShine = m_pLyShine;
+
+        BroadcastCursorImagePathname();
     }
 
     void LyShineSystemComponent::OnCrySystemShutdown([[maybe_unused]] ISystem& system)

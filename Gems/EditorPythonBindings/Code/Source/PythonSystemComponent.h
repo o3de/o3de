@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #pragma once
@@ -49,6 +45,7 @@ namespace EditorPythonBindings
         // AzToolsFramework::EditorPythonEventsInterface
         bool StartPython(bool silenceWarnings = false) override;
         bool StopPython(bool silenceWarnings = false) override;
+        bool IsPythonActive() override;
         void WaitForInitialization() override;
         void ExecuteWithLock(AZStd::function<void()> executionCallback) override;
         ////////////////////////////////////////////////////////////////////////
@@ -58,7 +55,7 @@ namespace EditorPythonBindings
         void ExecuteByString(AZStd::string_view script, bool printResult) override;
         void ExecuteByFilename(AZStd::string_view filename) override;
         void ExecuteByFilenameWithArgs(AZStd::string_view filename, const AZStd::vector<AZStd::string_view>& args) override;
-        void ExecuteByFilenameAsTest(AZStd::string_view filename, AZStd::string_view testCase, const AZStd::vector<AZStd::string_view>& args) override;
+        bool ExecuteByFilenameAsTest(AZStd::string_view filename, AZStd::string_view testCase, const AZStd::vector<AZStd::string_view>& args) override;
         ////////////////////////////////////////////////////////////////////////
         
     private:

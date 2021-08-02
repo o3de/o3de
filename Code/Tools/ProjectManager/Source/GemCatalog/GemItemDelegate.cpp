@@ -1,17 +1,13 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <GemCatalog/GemItemDelegate.h>
-#include "GemModel.h"
+#include <GemCatalog/GemModel.h>
 #include <QEvent>
 #include <QPainter>
 #include <QMouseEvent>
@@ -82,14 +78,14 @@ namespace O3DE::ProjectManager
         QString gemName = GemModel::GetName(modelIndex);
         QFont gemNameFont(options.font);
         const int firstColumnMaxTextWidth = s_summaryStartX - 30;
-        gemName = QFontMetrics(gemNameFont).elidedText(gemName, Qt::TextElideMode::ElideRight, firstColumnMaxTextWidth);
         gemNameFont.setPixelSize(s_gemNameFontSize);
         gemNameFont.setBold(true);
+        gemName = QFontMetrics(gemNameFont).elidedText(gemName, Qt::TextElideMode::ElideRight, firstColumnMaxTextWidth);
         QRect gemNameRect = GetTextRect(gemNameFont, gemName, s_gemNameFontSize);
         gemNameRect.moveTo(contentRect.left(), contentRect.top());
-
         painter->setFont(gemNameFont);
         painter->setPen(m_textColor);
+        gemNameRect = painter->boundingRect(gemNameRect, Qt::TextSingleLine, gemName);
         painter->drawText(gemNameRect, Qt::TextSingleLine, gemName);
 
         // Gem creator
@@ -100,10 +96,19 @@ namespace O3DE::ProjectManager
 
         painter->setFont(standardFont);
         painter->setPen(m_linkColor);
+        gemCreatorRect = painter->boundingRect(gemCreatorRect, Qt::TextSingleLine, gemCreator);
         painter->drawText(gemCreatorRect, Qt::TextSingleLine, gemCreator);
 
         // Gem summary
-        const QSize summarySize = QSize(contentRect.width() - s_summaryStartX - s_buttonWidth - s_itemMargins.right() * 3, contentRect.height());
+
+        // In case there are feature tags displayed at the bottom, decrease the size of the summary text field.
+        const QStringList featureTags = GemModel::GetFeatures(modelIndex);
+        const int featureTagAreaHeight = 30;
+        const int summaryHeight = contentRect.height() - (!featureTags.empty() * featureTagAreaHeight);
+
+        const int additionalSummarySpacing = s_itemMargins.right() * 3;
+        const QSize summarySize = QSize(contentRect.width() - s_summaryStartX - s_buttonWidth - additionalSummarySpacing,
+            summaryHeight);
         const QRect summaryRect = QRect(/*topLeft=*/QPoint(contentRect.left() + s_summaryStartX, contentRect.top()), summarySize);
 
         painter->setFont(standardFont);
@@ -112,9 +117,9 @@ namespace O3DE::ProjectManager
         const QString summary = GemModel::GetSummary(modelIndex);
         painter->drawText(summaryRect, Qt::AlignLeft | Qt::TextWordWrap, summary);
 
-
         DrawButton(painter, contentRect, modelIndex);
         DrawPlatformIcons(painter, contentRect, modelIndex);
+        DrawFeatureTags(painter, contentRect, featureTags, standardFont, summaryRect);
 
         painter->restore();
     }
@@ -133,6 +138,17 @@ namespace O3DE::ProjectManager
         if (!modelIndex.isValid())
         {
             return false;
+        }
+
+        if (event->type() == QEvent::KeyPress)
+        {
+            auto keyEvent = static_cast<const QKeyEvent*>(event);
+            if (keyEvent->key() == Qt::Key_Space)
+            {
+                const bool isAdded = GemModel::IsAdded(modelIndex);
+                GemModel::SetIsAdded(*model, modelIndex, !isAdded);
+                return true;
+            }
         }
 
         if (event->type() == QEvent::MouseButtonPress)
@@ -196,6 +212,46 @@ namespace O3DE::ProjectManager
                     startX += s_platformIconSize * aspectRatio + s_platformIconSize / 2.5;
                 }
             }
+        }
+    }
+
+    void GemItemDelegate::DrawFeatureTags(QPainter* painter, const QRect& contentRect, const QStringList& featureTags, const QFont& standardFont, const QRect& summaryRect) const
+    {
+        QFont gemFeatureTagFont(standardFont);
+        gemFeatureTagFont.setPixelSize(s_featureTagFontSize);
+        gemFeatureTagFont.setBold(false);
+        painter->setFont(gemFeatureTagFont);
+
+        int x = s_summaryStartX;
+        for (const QString& featureTag : featureTags)
+        {
+            QRect featureTagRect = GetTextRect(gemFeatureTagFont, featureTag, s_featureTagFontSize);
+            featureTagRect.moveTo(contentRect.left() + x + s_featureTagBorderMarginX,
+                contentRect.top() + 47);
+            featureTagRect = painter->boundingRect(featureTagRect, Qt::TextSingleLine, featureTag);
+
+            QRect backgroundRect = featureTagRect;
+            backgroundRect = backgroundRect.adjusted(/*left=*/-s_featureTagBorderMarginX,
+                /*top=*/-s_featureTagBorderMarginY,
+                /*right=*/s_featureTagBorderMarginX,
+                /*bottom=*/s_featureTagBorderMarginY);
+
+            // Skip drawing all following feature tags as there is no more space available.
+            if (backgroundRect.right() > summaryRect.right())
+            {
+                break;
+            }
+
+            // Draw border.
+            painter->setPen(m_textColor);
+            painter->setBrush(Qt::NoBrush);
+            painter->drawRect(backgroundRect);
+
+            // Draw text within the border.
+            painter->setPen(m_textColor);
+            painter->drawText(featureTagRect, Qt::TextSingleLine, featureTag);
+
+            x += backgroundRect.width() + s_featureTagSpacing;
         }
     }
 

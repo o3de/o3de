@@ -1,17 +1,12 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/IO/FileIO.h>
 
 #include <Authentication/AuthenticationProviderTypes.h>
@@ -32,37 +27,21 @@ namespace AWSClientAuth
     AuthenticationProviderManager::~AuthenticationProviderManager()
     {
         ResetProviders();
-        m_settingsRegistry.reset();
         AuthenticationProviderScriptCanvasRequestBus::Handler::BusDisconnect();
         AuthenticationProviderRequestBus::Handler::BusDisconnect();
         AZ::Interface<IAuthenticationProviderRequests>::Unregister(this);
     }
 
-    bool AuthenticationProviderManager::Initialize(const AZStd::vector<ProviderNameEnum>& providerNames, const AZStd::string& settingsRegistryPath)
+    bool AuthenticationProviderManager::Initialize(const AZStd::vector<ProviderNameEnum>& providerNames)
     {
         ResetProviders();
-        AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
-        AZ_Assert(fileIO, "File IO is not initialized.");
-        
-        m_settingsRegistry.reset();
-        m_settingsRegistry = AZStd::make_shared<AZ::SettingsRegistryImpl>();
-
-        AZStd::array<char, AZ::IO::MaxPathLength> resolvedPath{};
-        fileIO->ResolvePath(settingsRegistryPath.data(), resolvedPath.data(), resolvedPath.size());
-
-
-        if (!m_settingsRegistry->MergeSettingsFile(resolvedPath.data(), AZ::SettingsRegistryInterface::Format::JsonMergePatch))
-        {
-            AZ_Error("AuthenticationProviderManager", true, "Error merging settings registry for path: %s", resolvedPath.data());
-            return false;
-        }
 
         bool initializeSuccess = true;
 
         for (auto providerName : providerNames)
         {
             m_authenticationProvidersMap[providerName] = CreateAuthenticationProviderObject(providerName);
-            initializeSuccess = initializeSuccess && m_authenticationProvidersMap[providerName]->Initialize(m_settingsRegistry);
+            initializeSuccess = initializeSuccess && m_authenticationProvidersMap[providerName]->Initialize();
         }
 
         return initializeSuccess;
@@ -199,19 +178,19 @@ namespace AWSClientAuth
         {
             return enumValue.value();
         }
-        AZ_Warning("AuthenticationProviderManager", true, "Incorrect string value for enum: %s", name.c_str());
+        AZ_Warning("AuthenticationProviderManager", false, "Incorrect string value for enum: %s", name.c_str());
         return ProviderNameEnum::None;
     }
 
     bool AuthenticationProviderManager::Initialize(
-        const AZStd::vector<AZStd::string>& providerNames, const AZStd::string& settingsRegistryPath)
+        const AZStd::vector<AZStd::string>& providerNames)
     {
         AZStd::vector<ProviderNameEnum> providerNamesEnum;
         for (auto name : providerNames)
         {
             providerNamesEnum.push_back(GetProviderNameEnum(name));
         }
-        return Initialize(providerNamesEnum, settingsRegistryPath);
+        return Initialize(providerNamesEnum);
     }
 
     void AuthenticationProviderManager::PasswordGrantSingleFactorSignInAsync(const AZStd::string& providerName, const AZStd::string& username, const AZStd::string& password)

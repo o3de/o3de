@@ -1,16 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-
-#include "LyShine_precompiled.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "LyShineModule.h"
 #include "LyShineSystemComponent.h"
@@ -57,9 +51,9 @@
 #include "World/UiCanvasProxyRefComponent.h"
 #include "World/UiCanvasOnMeshComponent.h"
 
-#if defined (LYSHINE_EDITOR)
-#   include "Pipeline/LyShineBuilder/LyShineBuilderComponent.h"
-#endif // LYSHINE_EDITOR
+#if defined(LYSHINE_BUILDER)
+#include "Pipeline/LyShineBuilder/LyShineBuilderComponent.h"
+#endif // LYSHINE_BUILDER
 
 namespace LyShine
 {
@@ -69,7 +63,7 @@ namespace LyShine
         // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
         m_descriptors.insert(m_descriptors.end(), {
                 LyShineSystemComponent::CreateDescriptor(),
-#if defined (LYSHINE_EDITOR)
+#if defined(LYSHINE_EDITOR)
                 LyShineEditor::LyShineEditorSystemComponent::CreateDescriptor(),
 #endif
                 UiCanvasAssetRefComponent::CreateDescriptor(),
@@ -108,7 +102,7 @@ namespace LyShine
                 UiRadioButtonComponent::CreateDescriptor(),
                 UiRadioButtonGroupComponent::CreateDescriptor(),
                 UiParticleEmitterComponent::CreateDescriptor(),
-    #if defined(LYSHINE_EDITOR)
+    #if defined(LYSHINE_BUILDER)
                 // Builder
                 LyShineBuilder::LyShineBuilderComponent::CreateDescriptor(),
     #endif
@@ -128,7 +122,7 @@ namespace LyShine
     {
         return AZ::ComponentTypeList{
                    azrtti_typeid<LyShineSystemComponent>(),
-    #if defined (LYSHINE_EDITOR)
+    #if defined(LYSHINE_EDITOR)
                    azrtti_typeid<LyShineEditor::LyShineEditorSystemComponent>(),
     #endif
     #if AZ_LOADSCREENCOMPONENT_ENABLED

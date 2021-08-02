@@ -1,14 +1,18 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
+
+    include(${LY_ROOT_FOLDER}/Code/Tools/SerializeContextTools/Platform/${PAL_PLATFORM_NAME}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+    if (PAL_TRAIT_BUILD_SERIALIZECONTEXTTOOLS)
+        list(APPEND additional_dependencies AZ::SerializeContextTools) # test_CLITool_SerializeContextTools depends on it
+    endif()
+    list(APPEND additional_dependencies AZ::AssetBundlerBatch) # test_CLITool_AssetBundlerBatch_Works depends on it
+
     ly_add_pytest(
         NAME AutomatedTesting::SmokeTest
         TEST_SUITE smoke
@@ -22,6 +26,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
             Legacy::Editor
             AutomatedTesting.GameLauncher
             AutomatedTesting.Assets
+            ${aditional_dependencies}
         COMPONENT
             Smoke
     )
@@ -41,5 +46,32 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
             AutomatedTesting.Assets
         COMPONENT
             Sandbox
+    )
+
+    ly_add_pytest(
+        NAME AutomatedTesting::EditorTestWithGPU
+        TEST_REQUIRES gpu
+        PATH ${CMAKE_CURRENT_LIST_DIR}/test_Editor_NewExistingLevels_Works.py
+        TIMEOUT 100
+        RUNTIME_DEPENDENCIES
+            AZ::AssetProcessor
+            AZ::PythonBindingsExample
+            Legacy::Editor
+            AutomatedTesting.GameLauncher
+            AutomatedTesting.Assets
+    )
+
+    ly_add_pytest(
+        NAME AutomatedTesting::GameLauncherWithGPU
+        TEST_SUITE sandbox
+        TEST_REQUIRES gpu
+        PATH ${CMAKE_CURRENT_LIST_DIR}/test_GameLauncher_EnterExitGameMode_Works.py
+        TIMEOUT 100
+        RUNTIME_DEPENDENCIES
+            AZ::AssetProcessor
+            AZ::PythonBindingsExample
+            Legacy::Editor
+            AutomatedTesting.GameLauncher
+            AutomatedTesting.Assets
     )
 endif()

@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright(c) Amazon.com, Inc.or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution(the "License").All use of this software is governed by the License,
- *or, if provided, by the license below or the license accompanying this file.Do not
- * remove or modify any license notices.This file is distributed on an "AS IS" BASIS,
- *WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -34,6 +30,7 @@
 #include <Atom/RPI.Edit/Material/MaterialConverterBus.h>
 
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 
 namespace AZ
 {
@@ -74,7 +71,7 @@ namespace AZ
         void MaterialAssetDependenciesComponent::ReportJobDependencies(SceneAPI::JobDependencyList& jobDependencyList, const char* platformIdentifier)
         {
             AssetBuilderSDK::SourceFileDependency materialTypeSource;
-            // Right now, FBX importing only supports a single material type, once that changes, this will have to be re-designed, see ATOM-3554
+            // Right now, scene file importing only supports a single material type, once that changes, this will have to be re-designed, see ATOM-3554
             RPI::MaterialConverterBus::BroadcastResult(materialTypeSource.m_sourceFileDependencyPath, &RPI::MaterialConverterBus::Events::GetMaterialTypePath);
 
             AssetBuilderSDK::JobDependency jobDependency;
@@ -83,7 +80,10 @@ namespace AZ
             jobDependency.m_platformIdentifier = platformIdentifier;
             jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
 
-            jobDependencyList.push_back(jobDependency);
+            if (!materialTypeSource.m_sourceFileDependencyPath.empty())
+            {
+                jobDependencyList.push_back(jobDependency);
+            }
         }
 
         void MaterialAssetBuilderComponent::Reflect(ReflectContext* context)
@@ -99,7 +99,7 @@ namespace AZ
         {
             // [GFX TODO] I am suggesting we use the first two 16bits for different kind of assets generated from a Scene
             // For example, 0x10000 for mesh, 0x20000 for material, 0x30000 for animation, 0x40000 for scene graph and etc. 
-            // so the subid can be evaluated for reference across different assets generate within this fbx. 
+            // so the subid can be evaluated for reference across different assets generate within this scene file. 
             /*const uint32_t materialPrefix = 0x20000;
             AZ_Assert(materialPrefix > materialId, "materialId should be smaller than materialPrefix");
             return materialPrefix + materialId;*/
@@ -108,6 +108,15 @@ namespace AZ
 
         MaterialAssetBuilderComponent::MaterialAssetBuilderComponent()
         {
+            // This setting disables material output (for automated testing purposes) to allow an FBX file to be processed without including
+            // the dozens of dependencies required to process a material.  
+            auto settingsRegistry = AZ::SettingsRegistry::Get();
+            bool skipAtomOutput = false;
+            if (settingsRegistry && settingsRegistry->Get(skipAtomOutput, "/O3DE/SceneAPI/AssetImporter/SkipAtomOutput") && skipAtomOutput)
+            {
+                return;
+            }
+
             BindToCall(&MaterialAssetBuilderComponent::BuildMaterials);
         }
 
@@ -153,7 +162,7 @@ namespace AZ
                     // The source data for generating material asset
                     MaterialSourceData sourceData;
 
-                    // User hook to create their materials based on the data from Fbx pipeline
+                    // User hook to create their materials based on the data from the scene pipeline
                     bool result = false;
                     RPI::MaterialConverterBus::BroadcastResult(result, &RPI::MaterialConverterBus::Events::ConvertMaterial, *materialData, sourceData);
                     if (result)

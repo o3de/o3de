@@ -1,21 +1,20 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
-#include <PhysX_precompiled.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 #include <PhysXCharacters/API/RagdollNode.h>
 #include <PhysX/NativeTypeIdentifiers.h>
+#include <PhysX/Debug/PhysXDebugConfiguration.h>
+#include <PhysX/MathConversion.h>
+
+#include <PxPhysicsAPI.h>
 
 namespace PhysX
 {
@@ -38,11 +37,17 @@ namespace PhysX
 
     RagdollNode::~RagdollNode()
     {
+        DestroyJoint();
         DestroyPhysicsBody();
     }
 
-    void RagdollNode::SetJoint(const AZStd::shared_ptr<Physics::Joint>& joint)
+    void RagdollNode::SetJoint(AzPhysics::Joint* joint)
     {
+        if (m_joint)
+        {
+            return;
+        }
+        
         m_joint = joint;
     }
 
@@ -52,7 +57,7 @@ namespace PhysX
         return *m_rigidBody;
     }
 
-    const AZStd::shared_ptr<Physics::Joint>& RagdollNode::GetJoint() const
+    AzPhysics::Joint* RagdollNode::GetJoint()
     {
         return m_joint;
     }
@@ -164,6 +169,18 @@ namespace PhysX
             }
             m_rigidBody = nullptr;
             m_sceneOwner = AzPhysics::InvalidSceneHandle;
+        }
+    }
+
+    void RagdollNode::DestroyJoint()
+    {
+        if (m_joint != nullptr && m_sceneOwner != AzPhysics::InvalidSceneHandle)
+        {
+            if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+            {
+                sceneInterface->RemoveJoint(m_sceneOwner, m_joint->m_jointHandle);
+            }
+            m_joint = nullptr;
         }
     }
 

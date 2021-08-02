@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "OperatorAdd.h"
 #include <ScriptCanvas/Libraries/Core/MethodUtility.h>
@@ -50,13 +46,13 @@ namespace ScriptCanvas
                 Data::ColorType operator()(const Data::ColorType& lhs, const Datum& rhs)
                 {
                     const AZ::Color* dataRhs = rhs.GetAs<AZ::Color>();
-                    
+
                     float a = AZ::GetClamp<float>(lhs.GetA(), 0.f, 1.f) + AZ::GetClamp<float>(dataRhs->GetA(), 0.f, 1.f);
                     float r = AZ::GetClamp<float>(lhs.GetR(), 0.f, 1.f) + AZ::GetClamp<float>(dataRhs->GetR(), 0.f, 1.f);
                     float g = AZ::GetClamp<float>(lhs.GetG(), 0.f, 1.f) + AZ::GetClamp<float>(dataRhs->GetG(), 0.f, 1.f);
                     float b = AZ::GetClamp<float>(lhs.GetB(), 0.f, 1.f) + AZ::GetClamp<float>(dataRhs->GetB(), 0.f, 1.f);
 
-                    return AZ::Color(r, g, b, a);                    
+                    return AZ::Color(r, g, b, a);
                 }
             };
 

@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -51,7 +47,17 @@ namespace TestImpact
 
             //! Returns the test target name.
             const AZStd::string& GetTargetName() const;
+
+            //! Returns the test run result.
             TestRunResult GetResult() const;
+
+            //! Returns the test run start time.
+            AZStd::chrono::high_resolution_clock::time_point GetStartTime() const;
+
+            //! Returns the end time, relative to the sequence start, that this run ended.
+            AZStd::chrono::high_resolution_clock::time_point GetEndTime() const;
+
+            //! Returns the duration that this test run took to complete.
             AZStd::chrono::milliseconds GetDuration() const;
 
             //! Returns the command string used to execute this test target.
@@ -61,6 +67,7 @@ namespace TestImpact
             AZStd::string m_targetName;
             AZStd::string m_commandString;
             TestRunResult m_result;
+            AZStd::chrono::high_resolution_clock::time_point m_startTime;
             AZStd::chrono::milliseconds m_duration;
         };
 

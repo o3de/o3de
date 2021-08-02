@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/JSON/stringbuffer.h>
@@ -94,10 +90,11 @@ namespace AzToolsFramework
                 AZStd::unordered_map<Instance*, PrefabDom> nestedInstanceLinkPatchesMap;
 
                 // Retrieve all entities affected and identify Instances
-                if (!RetrieveAndSortPrefabEntitiesAndInstances(inputEntityList, commonRootEntityOwningInstance->get(), entities, instances))
+                PrefabOperationResult retrieveEntitiesAndInstancesOutcome = RetrieveAndSortPrefabEntitiesAndInstances(
+                    inputEntityList, commonRootEntityOwningInstance->get(), entities, instances);
+                if (!retrieveEntitiesAndInstancesOutcome.IsSuccess())
                 {
-                    return AZ::Failure(
-                        AZStd::string("Could not create a new prefab out of the entities provided - invalid selection."));
+                    return retrieveEntitiesAndInstancesOutcome;
                 }
 
                 AZStd::unordered_map<AZ::EntityId, AZStd::string> oldEntityAliases;
@@ -592,21 +589,21 @@ namespace AzToolsFramework
             return AZ::Success(entityId);
         }
 
-        void PrefabPublicHandler::GenerateUndoNodesForEntityChangeAndUpdateCache(
+        PrefabOperationResult PrefabPublicHandler::GenerateUndoNodesForEntityChangeAndUpdateCache(
             AZ::EntityId entityId, UndoSystem::URSequencePoint* parentUndoBatch)
         {
             // Create Undo node on entities if they belong to an instance
             InstanceOptionalReference owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
             if (!owningInstance.has_value())
             {
-                return;
+                return AZ::Success();
             }
 
             AZ::Entity* entity = GetEntityById(entityId);
             if (!entity)
             {
                 m_prefabUndoCache.PurgeCache(entityId);
-                return;
+                return AZ::Success();
             }
 
             PrefabDom beforeState;
@@ -638,6 +635,46 @@ namespace AzToolsFramework
                         (&beforeOwningInstance->get() != &afterOwningInstance->get()))
                     {
                         isNewParentOwnedByDifferentInstance = true;
+
+                        // Detect loops. Assert if an instance has been reparented in such a way to generate circular dependencies.
+                        AZStd::vector<Instance*> instancesInvolved;
+
+                        if (isInstanceContainerEntity)
+                        {
+                            instancesInvolved.push_back(&owningInstance->get());
+                        }
+                        else
+                        {
+                            // Retrieve all nested instances that are part of the subtree under the current entity.
+                            EntityList entities;
+                            PrefabOperationResult retrieveEntitiesAndInstancesOutcome = RetrieveAndSortPrefabEntitiesAndInstances(
+                                { entity }, beforeOwningInstance->get(), entities, instancesInvolved);
+                            if (!retrieveEntitiesAndInstancesOutcome.IsSuccess())
+                            {
+                                return retrieveEntitiesAndInstancesOutcome;
+                            }
+                        }
+
+                        for (Instance* instance : instancesInvolved)
+                        {
+                            const PrefabDom& templateDom =
+                                m_prefabSystemComponentInterface->FindTemplateDom(instance->GetTemplateId());
+                            AZStd::unordered_set<AZ::IO::Path> templatePaths;
+                            PrefabDomUtils::GetTemplateSourcePaths(templateDom, templatePaths);
+
+                            if (IsCyclicalDependencyFound(afterOwningInstance->get(), templatePaths))
+                            {
+                                // Cancel the operation by restoring the previous parent
+                                AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetParent, beforeParentId);
+                                m_prefabUndoCache.UpdateCache(entityId);
+
+                                // Skip the creation of an undo node
+                                return AZ::Failure(AZStd::string::format(
+                                    "Reparent Prefab operation aborted - Cyclical dependency detected\n(%s depends on %s).",
+                                    instance->GetTemplateSourcePath().Native().c_str(),
+                                    afterOwningInstance->get().GetTemplateSourcePath().Native().c_str()));
+                            }
+                        }
                     }
                 }
 
@@ -678,6 +715,8 @@ namespace AzToolsFramework
             }
 
             m_prefabUndoCache.UpdateCache(entityId);
+
+            return AZ::Success();
         }
 
         void PrefabPublicHandler::Internal_HandleContainerOverride(
@@ -715,7 +754,9 @@ namespace AzToolsFramework
             AZStd::vector<Instance*> instances;
 
             // Retrieve all descendant entities and instances of this entity that belonged to the same owning instance.
-            RetrieveAndSortPrefabEntitiesAndInstances({ entity }, beforeOwningInstance->get(), entities, instances);
+            PrefabOperationResult retrieveEntitiesAndInstancesOutcome = RetrieveAndSortPrefabEntitiesAndInstances(
+                { entity }, beforeOwningInstance->get(), entities, instances);
+            AZ_Error("Prefab", retrieveEntitiesAndInstancesOutcome.IsSuccess(), retrieveEntitiesAndInstancesOutcome.GetError().data());
 
             AZStd::vector<AZStd::unique_ptr<Instance>> instanceUniquePtrs;
             AZStd::vector<AZStd::pair<Instance*, PrefabDom>> instancePatches;
@@ -948,11 +989,12 @@ namespace AzToolsFramework
                 AZStd::vector<Instance*> instances;
 
                 EntityList inputEntityList = EntityIdSetToEntityList(duplicationSet);
-                bool success = RetrieveAndSortPrefabEntitiesAndInstances(inputEntityList, commonOwningInstance->get(), entities, instances);
+                PrefabOperationResult retrieveEntitiesAndInstancesOutcome =
+                    RetrieveAndSortPrefabEntitiesAndInstances(inputEntityList, commonOwningInstance->get(), entities, instances);
 
-                if (!success)
+                if (!retrieveEntitiesAndInstancesOutcome.IsSuccess())
                 {
-                    return AZ::Failure(AZStd::string("Failed to retrieve entities and instances from the given list of entity ids for duplication"));
+                    return AZStd::move(retrieveEntitiesAndInstancesOutcome);
                 }
 
                 // Take a snapshot of the instance DOM before we manipulate it
@@ -1095,11 +1137,12 @@ namespace AzToolsFramework
                     AZStd::vector<AZ::Entity*> entities;
                     AZStd::vector<Instance*> instances;
 
-                    bool success = RetrieveAndSortPrefabEntitiesAndInstances(inputEntityList, commonOwningInstance->get(), entities, instances);
+                    PrefabOperationResult retrieveEntitiesAndInstancesOutcome =
+                        RetrieveAndSortPrefabEntitiesAndInstances(inputEntityList, commonOwningInstance->get(), entities, instances);
 
-                    if (!success)
+                    if (!retrieveEntitiesAndInstancesOutcome.IsSuccess())
                     {
-                        return AZ::Failure(AZStd::string("DeleteEntitiesAndAllDescendantsInInstance"));
+                        return AZStd::move(retrieveEntitiesAndInstancesOutcome);
                     }
 
                     for (AZ::Entity* entity : entities)
@@ -1372,13 +1415,16 @@ namespace AzToolsFramework
             return nullptr;
         }
 
-        bool PrefabPublicHandler::RetrieveAndSortPrefabEntitiesAndInstances(
-            const EntityList& inputEntities, Instance& commonRootEntityOwningInstance,
-            EntityList& outEntities, AZStd::vector<Instance*>& outInstances) const
+        PrefabOperationResult PrefabPublicHandler::RetrieveAndSortPrefabEntitiesAndInstances(
+            const EntityList& inputEntities,
+            Instance& commonRootEntityOwningInstance,
+            EntityList& outEntities,
+            AZStd::vector<Instance*>& outInstances) const
         {
             if (inputEntities.size() == 0)
             {
-                return false;
+                return AZ::Failure(
+                    AZStd::string("An empty list of input entities is provided to retrieve the prefab entities and instances."));
             }
 
             AZStd::queue<AZ::Entity*> entityQueue;
@@ -1405,8 +1451,8 @@ namespace AzToolsFramework
                 AZ_Assert(
                     owningInstance.has_value(),
                     "An error occurred while retrieving entities and prefab instances : "
-                    "Owning instance of entity with id '%llu' couldn't be found",
-                    entity->GetId());
+                    "Owning instance of entity with name '%s' and id '%llu' couldn't be found",
+                    entity->GetName().c_str(), static_cast<AZ::u64>(entity->GetId()));
 
                 // Check if this entity is owned by the same instance owning the root.
                 if (&owningInstance->get() == &commonRootEntityOwningInstance)
@@ -1447,7 +1493,10 @@ namespace AzToolsFramework
                     else
                     {
                         // This can only happen if one entity does not share the common root!
-                        return false;
+                        return AZ::Failure(AZStd::string::format(
+                            "Entity with name '%s' and id '%llu' has an owning instance that doesn't belong to the instance "
+                            "hierarchy of the selected entities.",
+                            entity->GetName().c_str(), static_cast<AZ::u64>(entity->GetId())));
                     }
                 }
             }
@@ -1468,7 +1517,12 @@ namespace AzToolsFramework
                 outInstances.push_back(instancePtr);
             }
 
-            return (outEntities.size() + outInstances.size()) > 0;
+            if ((outEntities.size() + outInstances.size()) == 0)
+            {
+                return AZ::Failure(
+                    AZStd::string("An empty list of entities and prefab instances were retrieved from the selected entities"));
+            }
+            return AZ::Success();
         }
 
         EntityIdList PrefabPublicHandler::GenerateEntityIdListWithoutLevelInstance(

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Math/Transform.h>
@@ -266,23 +262,15 @@ namespace EMotionFX
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeTransformNode::Reinit)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
             ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeTransformNode::m_minTranslation, "Min Translation", "The minimum translation value, used when the input translation amount equals zero.")
-            ->Attribute(AZ::Edit::Attributes::Min, AZ::Vector3(-std::numeric_limits<float>::max()))
-            ->Attribute(AZ::Edit::Attributes::Max, AZ::Vector3(std::numeric_limits<float>::max()))
             ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeTransformNode::m_maxTranslation, "Max Translation", "The maximum translation value, used when the input translation amount equals one.")
-            ->Attribute(AZ::Edit::Attributes::Min, AZ::Vector3(-std::numeric_limits<float>::max()))
-            ->Attribute(AZ::Edit::Attributes::Max, AZ::Vector3(std::numeric_limits<float>::max()))
             ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeTransformNode::m_minRotation, "Min Rotation", "The minimum rotation value, in degrees, used when the input rotation amount equals zero.")
-            ->Attribute(AZ::Edit::Attributes::Min, AZ::Vector3(-360.0f, -360.0f, -360.0f))
-            ->Attribute(AZ::Edit::Attributes::Max, AZ::Vector3(360.0f,  360.0f,  360.0f))
+            ->Attribute(AZ::Edit::Attributes::Min, -360.0f)
+            ->Attribute(AZ::Edit::Attributes::Max, 360.0f)
             ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeTransformNode::m_maxRotation, "Max Rotation", "The maximum rotation value, in degrees, used when the input rotation amount equals one.")
-            ->Attribute(AZ::Edit::Attributes::Min, AZ::Vector3(-360.0f, -360.0f, -360.0f))
-            ->Attribute(AZ::Edit::Attributes::Max, AZ::Vector3(360.0f,  360.0f,  360.0f))
+            ->Attribute(AZ::Edit::Attributes::Min, -360.0f)
+            ->Attribute(AZ::Edit::Attributes::Max, 360.0f)
             ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeTransformNode::m_minScale, "Min Scale", "The minimum scale value, used when the input scale amount equals zero.")
-            ->Attribute(AZ::Edit::Attributes::Min, AZ::Vector3(-std::numeric_limits<float>::max()))
-            ->Attribute(AZ::Edit::Attributes::Max, AZ::Vector3(std::numeric_limits<float>::max()))
             ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeTransformNode::m_maxScale, "Max Scale", "The maximum scale value, used when the input scale amount equals one.")
-            ->Attribute(AZ::Edit::Attributes::Min, AZ::Vector3(-std::numeric_limits<float>::max()))
-            ->Attribute(AZ::Edit::Attributes::Max, AZ::Vector3(std::numeric_limits<float>::max()))
         ;
     }
 } // namespace EMotionFX

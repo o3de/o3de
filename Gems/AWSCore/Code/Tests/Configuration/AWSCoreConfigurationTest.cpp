@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -65,6 +61,8 @@ public:
         AzFramework::StringFunc::Path::Normalize(m_normalizedSetRegFolderPath);
 
         m_localFileIO->SetAlias("@devassets@", m_normalizedSourceProjectFolder.c_str());
+
+        CreateTestSetRegFile(TEST_VALID_RESOURCE_MAPPING_SETREG);
     }
 
     void TearDown() override
@@ -78,11 +76,11 @@ public:
     }
 
     AZStd::unique_ptr<AWSCore::AWSCoreConfiguration> m_awsCoreConfiguration;
+    AZStd::string m_normalizedSetRegFilePath;
 
 private:
     AZStd::string m_normalizedSourceProjectFolder;
     AZStd::string m_normalizedSetRegFolderPath;
-    AZStd::string m_normalizedSetRegFilePath;
 
     void CreateTestFile(const AZStd::string& filePath, const AZStd::string& fileContent)
     {
@@ -123,17 +121,9 @@ private:
 
 TEST_F(AWSCoreConfigurationTest, InitConfig_NoSourceProjectFolderFound_ReturnEmptyConfigFilePath)
 {
+    m_settingsRegistry->MergeSettingsFile(m_normalizedSetRegFilePath, AZ::SettingsRegistryInterface::Format::JsonMergePatch, {});
     m_localFileIO->ClearAlias("@devassets@");
-    AZ_TEST_START_TRACE_SUPPRESSION;
-    m_awsCoreConfiguration->InitConfig();
-    AZ_TEST_STOP_TRACE_SUPPRESSION(1); // expect the above have thrown an AZ_Error
 
-    auto actualConfigFilePath = m_awsCoreConfiguration->GetResourceMappingConfigFilePath();
-    EXPECT_TRUE(actualConfigFilePath.empty());
-}
-
-TEST_F(AWSCoreConfigurationTest, InitConfig_NoSettingsRegistryFileFound_ReturnEmptyConfigFilePath)
-{
     AZ_TEST_START_TRACE_SUPPRESSION;
     m_awsCoreConfiguration->InitConfig();
     AZ_TEST_STOP_TRACE_SUPPRESSION(1); // expect the above have thrown an AZ_Error
@@ -145,6 +135,7 @@ TEST_F(AWSCoreConfigurationTest, InitConfig_NoSettingsRegistryFileFound_ReturnEm
 TEST_F(AWSCoreConfigurationTest, InitConfig_SettingsRegistryIsEmpty_ReturnEmptyConfigFilePath)
 {
     CreateTestSetRegFile(TEST_INVALID_RESOURCE_MAPPING_SETREG);
+    m_settingsRegistry->MergeSettingsFile(m_normalizedSetRegFilePath, AZ::SettingsRegistryInterface::Format::JsonMergePatch, {});
     m_awsCoreConfiguration->InitConfig();
 
     auto actualConfigFilePath = m_awsCoreConfiguration->GetResourceMappingConfigFilePath();
@@ -153,7 +144,7 @@ TEST_F(AWSCoreConfigurationTest, InitConfig_SettingsRegistryIsEmpty_ReturnEmptyC
 
 TEST_F(AWSCoreConfigurationTest, InitConfig_LoadValidSettingsRegistry_ReturnNonEmptyConfigFilePath)
 {
-    CreateTestSetRegFile(TEST_VALID_RESOURCE_MAPPING_SETREG);
+    m_settingsRegistry->MergeSettingsFile(m_normalizedSetRegFilePath, AZ::SettingsRegistryInterface::Format::JsonMergePatch, {});
     m_awsCoreConfiguration->InitConfig();
 
     auto actualConfigFilePath = m_awsCoreConfiguration->GetResourceMappingConfigFilePath();
@@ -162,6 +153,7 @@ TEST_F(AWSCoreConfigurationTest, InitConfig_LoadValidSettingsRegistry_ReturnNonE
 
 TEST_F(AWSCoreConfigurationTest, ReloadConfiguration_NoSourceProjectFolderFound_ReturnEmptyConfigFilePath)
 {
+    m_settingsRegistry->MergeSettingsFile(m_normalizedSetRegFilePath, AZ::SettingsRegistryInterface::Format::JsonMergePatch, {});
     m_localFileIO->ClearAlias("@devassets@");
     m_awsCoreConfiguration->ReloadConfiguration();
 
@@ -172,6 +164,7 @@ TEST_F(AWSCoreConfigurationTest, ReloadConfiguration_NoSourceProjectFolderFound_
 TEST_F(AWSCoreConfigurationTest, ReloadConfiguration_LoadValidSettingsRegistryAfterInvalidOne_ReturnNonEmptyConfigFilePath)
 {
     CreateTestSetRegFile(TEST_INVALID_RESOURCE_MAPPING_SETREG);
+    m_settingsRegistry->MergeSettingsFile(m_normalizedSetRegFilePath, AZ::SettingsRegistryInterface::Format::JsonMergePatch, {});
     m_awsCoreConfiguration->InitConfig();
 
     auto actualConfigFilePath = m_awsCoreConfiguration->GetResourceMappingConfigFilePath();
@@ -190,7 +183,7 @@ TEST_F(AWSCoreConfigurationTest, ReloadConfiguration_LoadValidSettingsRegistryAf
 
 TEST_F(AWSCoreConfigurationTest, ReloadConfiguration_LoadInvalidSettingsRegistryAfterValidOne_ReturnEmptyConfigFilePath)
 {
-    CreateTestSetRegFile(TEST_VALID_RESOURCE_MAPPING_SETREG);
+    m_settingsRegistry->MergeSettingsFile(m_normalizedSetRegFilePath, AZ::SettingsRegistryInterface::Format::JsonMergePatch, {});
     m_awsCoreConfiguration->InitConfig();
 
     auto actualConfigFilePath = m_awsCoreConfiguration->GetResourceMappingConfigFilePath();

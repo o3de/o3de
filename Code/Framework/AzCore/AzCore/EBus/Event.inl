@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -32,11 +28,17 @@ namespace AZ
     template <typename... Params>
     EventHandler<Params...>::EventHandler(const EventHandler& rhs)
         : m_callback(rhs.m_callback)
+        , m_event(rhs.m_event)
     {
-        // Copy the callback function, then perform a Connect with the new event
-        if (rhs.m_event)
+        // Copy the callback and event, then perform a Connect to the event
+        if (m_callback && m_event)
         {
-            rhs.m_event->Connect(*this);
+            m_event->Connect(*this);
+        }
+        else
+        {
+            // It was not possible to connect to the event, set it to nullptr
+            m_event = nullptr;
         }
     }
 
@@ -70,9 +72,16 @@ namespace AZ
         {
             Disconnect();
             m_callback = rhs.m_callback;
-            if (rhs.m_event)
+            m_event = rhs.m_event;
+            // Copy the callback and event, then perform a Connect to the event
+            if (m_callback && m_event)
             {
-                rhs.m_event->Connect(*this);
+                m_event->Connect(*this);
+            }
+            else
+            {
+                // It was not possible to connect to the event, set it to nullptr
+                m_event = nullptr;
             }
         }
 

@@ -1,16 +1,12 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 
 set(FILES
-    Editor/precompiled.h
     Editor/ScriptCanvasEditorGem.cpp
     Editor/Settings.h
     Editor/Settings.cpp
@@ -25,8 +21,6 @@ set(FILES
     Editor/Assets/ScriptCanvasAssetHelpers.h
     Editor/Assets/ScriptCanvasAssetHelpers.cpp
     Editor/Assets/ScriptCanvasAssetTrackerDefinitions.h
-    Editor/Include/ScriptCanvas/Assets/Functions/ScriptCanvasFunctionAssetHandler.h
-    Editor/Assets/Functions/ScriptCanvasFunctionAssetHandler.cpp
     Editor/Include/ScriptCanvas/Assets/ScriptCanvasAsset.h
     Editor/Assets/ScriptCanvasAsset.cpp
     Editor/Include/ScriptCanvas/Assets/ScriptCanvasAssetBus.h
@@ -35,11 +29,6 @@ set(FILES
     Editor/Assets/ScriptCanvasAssetHandler.cpp
     Editor/Assets/ScriptCanvasAssetHolder.h
     Editor/Assets/ScriptCanvasAssetHolder.cpp
-    Editor/Assets/ScriptCanvasAssetInstance.h
-    Editor/Assets/ScriptCanvasAssetInstance.cpp
-    Editor/Assets/ScriptCanvasAssetReference.h
-    Editor/Assets/ScriptCanvasAssetReference.cpp
-    Editor/Assets/ScriptCanvasAssetReferenceContainer.h
     Editor/Assets/ScriptCanvasMemoryAsset.h
     Editor/Assets/ScriptCanvasMemoryAsset.cpp
     Editor/Assets/ScriptCanvasUndoHelper.h
@@ -88,8 +77,6 @@ set(FILES
     Editor/GraphCanvas/Components/NodeDescriptors/EBusHandlerNodeDescriptorComponent.h
     Editor/GraphCanvas/Components/NodeDescriptors/EBusSenderNodeDescriptorComponent.cpp
     Editor/GraphCanvas/Components/NodeDescriptors/EBusSenderNodeDescriptorComponent.h
-    Editor/GraphCanvas/Components/NodeDescriptors/EntityRefNodeDescriptorComponent.cpp
-    Editor/GraphCanvas/Components/NodeDescriptors/EntityRefNodeDescriptorComponent.h
     Editor/GraphCanvas/Components/NodeDescriptors/FunctionNodeDescriptorComponent.cpp
     Editor/GraphCanvas/Components/NodeDescriptors/FunctionNodeDescriptorComponent.h
     Editor/GraphCanvas/Components/NodeDescriptors/FunctionDefinitionNodeDescriptorComponent.h
@@ -133,16 +120,12 @@ set(FILES
     Editor/Model/LibraryDataModel.cpp
     Editor/Model/UnitTestBrowserFilterModel.h
     Editor/Model/UnitTestBrowserFilterModel.cpp
-    Editor/Nodes/EditorLibrary.h
-    Editor/Nodes/EditorLibrary.cpp
     Editor/Nodes/NodeCreateUtils.h
     Editor/Nodes/NodeCreateUtils.cpp
     Editor/Nodes/NodeDisplayUtils.h
     Editor/Nodes/NodeDisplayUtils.cpp
     Editor/Nodes/NodeUtils.h
     Editor/Nodes/NodeUtils.cpp
-    Editor/Nodes/ScriptCanvasAssetNode.h
-    Editor/Nodes/ScriptCanvasAssetNode.cpp
     Editor/Translation/TranslationHelper.h
     Editor/Undo/ScriptCanvasGraphCommand.cpp
     Editor/Undo/ScriptCanvasGraphCommand.h

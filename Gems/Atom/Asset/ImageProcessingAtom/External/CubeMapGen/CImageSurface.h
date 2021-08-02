@@ -5,8 +5,7 @@
 //--------------------------------------------------------------------------------------
 // (C) 2005 ATI Research, Inc., All rights reserved.
 //--------------------------------------------------------------------------------------
-// modifications by Crytek GmbH
-// modifications by Amazon
+// Modified from original
 
 #pragma once
 
@@ -14,7 +13,7 @@
 #include <stdio.h>
 
 #include "VectorMacros.h"
-
+#include <ImageBuilderBaseType.h>
 
 #ifndef WCHAR 
 #define WCHAR wchar_t

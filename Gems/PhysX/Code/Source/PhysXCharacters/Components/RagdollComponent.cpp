@@ -1,16 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-
-#include <PhysX_precompiled.h>
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Component/Entity.h>
 #include <PhysXCharacters/API/CharacterUtils.h>
@@ -92,7 +86,7 @@ namespace PhysX
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXRagdoll.svg")
-                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/PhysXRagdoll.svg")
+                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/PhysXRagdoll.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &RagdollComponent::m_positionIterations, "Position Iteration Count",
@@ -379,7 +373,7 @@ namespace PhysX
 
             for (size_t nodeIndex = 0; nodeIndex < numNodes; nodeIndex++)
             {
-                if (const AZStd::shared_ptr<Physics::Joint>& joint = ragdoll->GetNode(nodeIndex)->GetJoint())
+                if (const AzPhysics::Joint* joint = ragdoll->GetNode(nodeIndex)->GetJoint())
                 {
                     if (auto* pxJoint = static_cast<physx::PxD6Joint*>(joint->GetNativePointer()))
                     {

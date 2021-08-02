@@ -1,16 +1,13 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include <AtomLyIntegration/AtomFont/AtomFont_precompiled.h>
+#define USE_NULLFONT
+
 #include "AtomFontSystemComponent.h"
 
 #include <AzCore/Serialization/SerializeContext.h>
@@ -100,8 +97,8 @@ namespace AZ
         #else
                 // The NULL font implementation must be present for all platforms
                 // supporting running as a pure dedicated server.
-                system->GetILog()->LogError("Missing NULL font implementation for dedicated server");
-                env.pCryFont = NULL;
+                system.GetILog()->LogError("Missing NULL font implementation for dedicated server");
+                gEnv->pCryFont = NULL;
         #endif
             }
             else

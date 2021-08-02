@@ -1,12 +1,9 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 
 # This file contains utility wrappers for dealing with the Gems system. 
@@ -35,25 +32,29 @@ function(ly_create_alias)
                             "Make sure the target wasn't copy and pasted here or elsewhere.")
     endif()
 
-    # easy version - if its juts one target, we can directly get the target, and make both aliases, 
+    # easy version - if its just one target and it exist at the time of this call,
+    # we can directly get the target, and make both aliases,
     # the namespaced and non namespaced one, point at it.
     list(LENGTH ly_create_alias_TARGETS number_of_targets)
     if (number_of_targets EQUAL 1)
-        ly_de_alias_target(${ly_create_alias_TARGETS} de_aliased_target_name)
-        add_library(${ly_create_alias_NAMESPACE}::${ly_create_alias_NAME} ALIAS ${de_aliased_target_name})
-        if (NOT TARGET ${ly_create_alias_NAME})
-            add_library(${ly_create_alias_NAME} ALIAS ${de_aliased_target_name})
+        if(TARGET ${ly_create_alias_TARGETS})
+            ly_de_alias_target(${ly_create_alias_TARGETS} de_aliased_target_name)
+            add_library(${ly_create_alias_NAMESPACE}::${ly_create_alias_NAME} ALIAS ${de_aliased_target_name})
+            if (NOT TARGET ${ly_create_alias_NAME})
+                add_library(${ly_create_alias_NAME} ALIAS ${de_aliased_target_name})
+            endif()
+            # Store off the arguments needed used ly_create_alias into a DIRECTORY property
+            # This will be used to re-create the calls in the generated CMakeLists.txt in the INSTALL step
+            string(REPLACE ";" " " create_alias_args "${ly_create_alias_NAME},${ly_create_alias_NAMESPACE},${ly_create_alias_TARGETS}")
+            set_property(DIRECTORY APPEND PROPERTY LY_CREATE_ALIAS_ARGUMENTS "${ly_create_alias_NAME},${ly_create_alias_NAMESPACE},${ly_create_alias_TARGETS}")
+            return()
         endif()
-        # Store off the arguments needed used ly_create_alias into a DIRECTORY property
-        # This will be used to re-create the calls in the generated CMakeLists.txt in the INSTALL step
-        string(REPLACE ";" " " create_alias_args "${ly_create_alias_NAME},${ly_create_alias_NAMESPACE},${ly_create_alias_TARGETS}")
-        set_property(DIRECTORY APPEND PROPERTY LY_CREATE_ALIAS_ARGUMENTS "${ly_create_alias_NAME},${ly_create_alias_NAMESPACE},${ly_create_alias_TARGETS}")
-        return()
     endif()
 
-    # more complex version - one alias to multiple targets.  To actually achieve this
-    # we have to create an interface library with those dependencies, then we have to create an alias to that target.
-    # by convention we create one without a namespace then alias the namespaced one.
+    # more complex version - one alias to multiple targets or the alias is being made to a TARGET that doesn't exist yet.
+    # To actually achieve this we have to create an interface library with those dependencies,
+    # then we have to create an alias to that target.
+    # By convention we create one without a namespace then alias the namespaced one.
 
     if(TARGET ${ly_create_alias_NAME})
         message(FATAL_ERROR "Internal alias target already exists, cannot create an alias for it: ${ly_create_alias_NAME}\n"
@@ -90,6 +91,13 @@ function(ly_create_alias)
     # Replace the CMake list separator with a space to replicate the space separated TARGETS arguments
     string(REPLACE ";" " " create_alias_args "${ly_create_alias_NAME},${ly_create_alias_NAMESPACE},${ly_create_alias_TARGETS}")
     set_property(DIRECTORY APPEND PROPERTY LY_CREATE_ALIAS_ARGUMENTS "${create_alias_args}")
+
+    # Store the directory path in the GLOBAL property so that it can be accessed
+    # in the layout install logic. Skip if the directory has already been added
+    get_property(ly_all_target_directories GLOBAL PROPERTY LY_ALL_TARGET_DIRECTORIES)
+    if(NOT CMAKE_CURRENT_SOURCE_DIR IN_LIST ly_all_target_directories)
+        set_property(GLOBAL APPEND PROPERTY LY_ALL_TARGET_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR})
+    endif()
 endfunction()
 
 # ly_enable_gems
@@ -159,7 +167,13 @@ function(ly_enable_gems)
     # This will be used to re-create the ly_enable_gems call in the generated CMakeLists.txt at the INSTALL step
 
     # Replace the CMake list separator with a space to replicate the space separated TARGETS arguments
-    string(REPLACE ";" " " enable_gems_args "${ly_enable_gems_PROJECT_NAME},${ly_enable_gems_GEMS},${ly_enable_gems_GEM_FILE},${ly_enable_gems_VARIANTS},${ly_enable_gems_TARGETS}")
+    if(NOT ly_enable_gems_PROJECT_NAME STREQUAL "__NOPROJECT__")
+        set(replicated_project_name ${ly_enable_gems_PROJECT_NAME})
+    endif()
+    # The GEM_FILE file is used to populate the GEMS argument via the ENABLED_GEMS variable in the file.
+    # Furthermore the GEM_FILE itself is not copied over to the install layout, so make its argument entry blank and use the list of GEMS
+    # stored in ly_enable_gems_GEMS
+    string(REPLACE ";" " " enable_gems_args "${replicated_project_name},${ly_enable_gems_GEMS},,${ly_enable_gems_VARIANTS},${ly_enable_gems_TARGETS}")
     set_property(DIRECTORY APPEND PROPERTY LY_ENABLE_GEMS_ARGUMENTS "${enable_gems_args}")
 endfunction()
 

@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -39,10 +35,12 @@ namespace TestImpact
     class TestTargetExclusionList;
 
     //! Callback for a test sequence that isn't using test impact analysis to determine selected tests.
+    //! @parm suiteType The test suite to select tests from.
     //! @param tests The tests that will be run for this sequence.
     using TestSequenceStartCallback = AZStd::function<void(SuiteType suiteType, const Client::TestRunSelection& tests)>;
 
     //! Callback for a test sequence using test impact analysis.
+    //! @parm suiteType The test suite to select tests from.
     //! @param selectedTests The tests that have been selected for this run by test impact analysis.
     //! @param discardedTests The tests that have been rejected for this run by test impact analysis. 
     //! @param draftedTests The tests that have been drafted in for this run due to requirements outside of test impact analysis
@@ -57,6 +55,7 @@ namespace TestImpact
         const AZStd::vector<AZStd::string>& draftedTests)>;
 
     //! Callback for a test sequence using test impact analysis.
+    //! @parm suiteType The test suite to select tests from.
     //! @param selectedTests The tests that have been selected for this run by test impact analysis.
     //! @param discardedTests The tests that have been rejected for this run by test impact analysis.
     //! These tests will not be run without coverage instrumentation unless there is an entry in the draftedTests list.

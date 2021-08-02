@@ -1,16 +1,11 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
-#include "LmbrCentral_precompiled.h"
 #include "TubeShape.h"
 
 #include <AzCore/Math/Transform.h>
@@ -136,7 +131,7 @@ namespace LmbrCentral
             m_variableRadius.SetElement(vertIndex, radius);
             ValidateVariableRadius(vertIndex);
         }
-         
+
         ShapeComponentNotificationsBus::Event(
             m_entityId, &ShapeComponentNotificationsBus::Events::OnShapeChanged,
             ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
@@ -384,6 +379,14 @@ namespace LmbrCentral
         const float radius, const AZ::u32 capSegments, const AZ::u32 sides,
         AZStd::vector<AZ::Vector3>& vertexBufferOut)
     {
+        const size_t segmentCount = spline->GetSegmentCount();
+        if (segmentCount == 0)
+        {
+            // clear the buffer so we no longer draw anything
+            vertexBufferOut.clear();
+            return;
+        }
+
         // notes on vert buffer size
         // total end segments
         // 2 verts for each segment
@@ -398,7 +401,7 @@ namespace LmbrCentral
         // 2 verts for each segment
         //  loops == sides
         //   2 loops per segment
-        const AZ::u32 segments = spline->GetSegmentCount() * spline->GetSegmentGranularity();
+        const AZ::u32 segments = segmentCount * spline->GetSegmentGranularity();
         const AZ::u32 totalEndSegments = capSegments * 2 * 2 * 2 * 2;
         const AZ::u32 totalSegments = segments * 2 * 2 * 2;
         const AZ::u32 totalLoops = 2 * sides * segments * 2;
@@ -406,7 +409,7 @@ namespace LmbrCentral
         const size_t numVerts = totalEndSegments + totalSegments + totalLoops;
         vertexBufferOut.resize(numVerts);
 
-        AZ::Vector3* vertices = vertexBufferOut.begin();
+        AZ::Vector3* vertices = vertexBufferOut.data();
 
         // start cap
         auto address = spline->GetAddressByFraction(0.0f);
@@ -427,7 +430,7 @@ namespace LmbrCentral
         // body
         const float stepDelta = 1.0f / static_cast<float>(spline->GetSegmentGranularity());
         auto nextAddress = address;
-        const auto endIndex = address.m_segmentIndex + spline->GetSegmentCount();
+        const auto endIndex = address.m_segmentIndex + segmentCount;
         while (address.m_segmentIndex < endIndex)
         {
             address.m_segmentFraction = 0.f;

@@ -57,7 +57,7 @@
     "COMMAND": "python_windows.cmd",
     "PARAMETERS": {
       "SCRIPT_PATH": "scripts/build/ci_build_metrics.py",
-      "SCRIPT_PARAMETERS": "--platform Windows --jobname \"!JOB_NAME!\" --jobnumber \"!BUILD_NUMBER!\" --jobnode \"!NODE_LABEL!\" --changelist \"!CHANGE_ID!\""
+      "SCRIPT_PARAMETERS": "--platform=Windows --repository=!REPOSITORY_NAME! --jobname=!JOB_NAME! --jobnumber=!BUILD_NUMBER! --jobnode=!NODE_LABEL! --changelist=!CHANGE_ID!"
     }
   },
   "windows_packaging_all": {
@@ -132,7 +132,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build\\windows_vs2019",
-      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DLY_TEST_IMPACT_ACTIVE=1 -DLY_TEST_IMPACT_INSTRUMENTATION_BIN=!TEST_IMPACT_WIN_BINARY!",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DLY_TEST_IMPACT_INSTRUMENTATION_BIN=!TEST_IMPACT_WIN_BINARY!",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "ALL_BUILD",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
@@ -322,13 +322,15 @@
   },
   "windows_installer": {
     "TAGS": [
-      "package"
+      "nightly-clean"
     ],
     "COMMAND": "build_installer_windows.cmd",
     "PARAMETERS": {
         "CONFIGURATION": "profile",
         "OUTPUT_DIRECTORY": "build\\windows_vs2019",
-        "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DLY_DISABLE_TEST_MODULES=TRUE -DCPACK_WIX_ROOT=\"!WIX!\"",
+        "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DLY_DISABLE_TEST_MODULES=TRUE -DLY_VERSION_ENGINE_NAME=o3de-sdk -DLY_INSTALLER_WIX_ROOT=\"!WIX! \"",
+        "EXTRA_CMAKE_OPTIONS": "-DLY_INSTALLER_AUTO_GEN_TAG=ON -DLY_INSTALLER_DOWNLOAD_URL=https://dkb1uj4hs9ikv.cloudfront.net -DLY_INSTALLER_LICENSE_URL=https://www.o3debinaries.org/license -DLY_INSTALLER_3RD_PARTY_LICENSE_URL=https://dkb1uj4hs9ikv.cloudfront.net/SPDX-Licenses.txt",
+        "CPACK_BUCKET": "spectra-prism-staging-us-west-2",
         "CMAKE_LY_PROJECTS": "",
         "CMAKE_TARGET": "ALL_BUILD",
         "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"

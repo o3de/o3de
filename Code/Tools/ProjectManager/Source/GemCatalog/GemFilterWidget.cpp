@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <GemCatalog/GemFilterWidget.h>
 #include <QButtonGroup>
@@ -19,6 +15,7 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QPushButton>
+#include <QSignalBlocker>
 
 namespace O3DE::ProjectManager
 {
@@ -490,6 +487,7 @@ namespace O3DE::ProjectManager
             const QString& feature = elementNames[i];
             QAbstractButton* button = buttons[i];
 
+            // Adjust the proxy model and enable or disable the clicked feature used for filtering.
             connect(button, &QAbstractButton::toggled, this, [=](bool checked)
                 {
                     QSet<QString> features = m_filterProxyModel->GetFeatures();
@@ -502,6 +500,15 @@ namespace O3DE::ProjectManager
                         features.remove(feature);
                     }
                     m_filterProxyModel->SetFeatures(features);
+                });
+
+            // Sync the UI state with the proxy model filtering.
+            connect(m_filterProxyModel, &GemSortFilterProxyModel::OnInvalidated, this, [=]
+                {
+                    const QSet<QString>& filteredFeatureTags = m_filterProxyModel->GetFeatures();
+                    const bool isChecked = filteredFeatureTags.contains(button->text());
+                    QSignalBlocker signalsBlocker(button);
+                    button->setChecked(isChecked);
                 });
         }
     }
