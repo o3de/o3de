@@ -169,7 +169,6 @@ namespace Multiplayer
             m_currentComponentReport = nullptr;
         }
 
-        m_gdeDirtyBytes.ReportAggregateBytes();
         MultiplayerDebugByteReporter::ReportAggregateBytes();
     }
 
@@ -183,7 +182,6 @@ namespace Multiplayer
         }
 
         SetEntityName(other.GetEntityName());
-        m_gdeDirtyBytes.Combine(other.m_gdeDirtyBytes);
     }
 
     void MultiplayerDebugEntityReporter::Reset()
@@ -191,7 +189,6 @@ namespace Multiplayer
         MultiplayerDebugByteReporter::Reset();
 
         m_componentReports.clear();
-        m_gdeDirtyBytes.Reset();
     }
 
     AZStd::map<AZStd::string, MultiplayerDebugComponentReporter>& MultiplayerDebugEntityReporter::GetComponentReports()

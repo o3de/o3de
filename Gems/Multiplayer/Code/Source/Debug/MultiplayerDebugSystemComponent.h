@@ -60,7 +60,9 @@ namespace Multiplayer
     private:
         bool m_displayNetworkingStats = false;
         bool m_displayMultiplayerStats = false;
+
         bool m_displayPerEntityStats = false;
+        bool m_displayPerEntityBandwidth = false;
 
         AZStd::unique_ptr<MultiplayerDebugPerEntityReporter> m_reporter;
     };

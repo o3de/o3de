@@ -58,8 +58,6 @@ namespace Multiplayer
 
         using Report = AZStd::pair<AZStd::string, MultiplayerDebugByteReporter*>;
         AZStd::vector<Report> GetFieldReports();
-        AZStd::size_t GetTotalDirtyBits() const { return m_componentDirtyBytes.GetTotalBytes(); }
-        float GetAvgDirtyBits() const { return m_componentDirtyBytes.GetAverageBytes(); }
 
         void Combine(const MultiplayerDebugComponentReporter& other);
 
@@ -87,13 +85,10 @@ namespace Multiplayer
         }
 
         AZStd::map<AZStd::string, MultiplayerDebugComponentReporter>& GetComponentReports();
-        AZStd::size_t GetTotalDirtyBits() const { return m_gdeDirtyBytes.GetTotalBytes(); }
-        float GetAvgDirtyBits() const { return m_gdeDirtyBytes.GetAverageBytes(); }
 
     private:
         MultiplayerDebugComponentReporter* m_currentComponentReport = nullptr;
         AZStd::map<AZStd::string, MultiplayerDebugComponentReporter> m_componentReports;
-        MultiplayerDebugByteReporter m_gdeDirtyBytes;
         AZStd::string m_entityName;
     };
 }

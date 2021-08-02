@@ -341,16 +341,20 @@ namespace Multiplayer
 
         if (m_displayPerEntityStats)
         {
-            // This overrides @net_DebugNetworkEntity_ShowBandwidth value
             if (ImGui::Begin("Multiplayer Per Entity Stats", &m_displayPerEntityStats, ImGuiWindowFlags_AlwaysAutoResize))
             {
+                if (ImGui::Checkbox("Show Bandwidth over Entities", &m_displayPerEntityBandwidth))
+                {
+                    // This overrides @net_DebugNetworkEntity_ShowBandwidth value
+                    if (m_reporter == nullptr)
+                    {
+                        ShowEntityBandwidthDebugOverlay();
+                    }
+                }
+
                 if (m_reporter)
                 {
                     m_reporter->OnImGuiUpdate();
-                }
-                else
-                {
-                    ShowEntityBandwidthDebugOverlay();
                 }
             }
         }
