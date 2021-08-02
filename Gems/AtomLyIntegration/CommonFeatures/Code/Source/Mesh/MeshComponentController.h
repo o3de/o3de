@@ -46,6 +46,8 @@ namespace AZ
             Data::Asset<RPI::ModelAsset> m_modelAsset = { AZ::Data::AssetLoadBehavior::QueueLoad };
             RHI::DrawItemSortKey m_sortKey = 0;
             RPI::Cullable::LodOverride m_lodOverride = RPI::Cullable::NoLodOverride;
+            float m_minimumScreenCoverage = 1.0f / 1080.0f;
+            float m_qualityDecayRate = 0.5f;
             bool m_excludeFromReflectionCubeMaps = false;
             bool m_useForwardPassIblSpecular = false;
         };
@@ -96,6 +98,11 @@ namespace AZ
 
             void SetLodOverride(RPI::Cullable::LodOverride lodOverride) override;
             RPI::Cullable::LodOverride GetLodOverride() const override;
+
+            void SetMinimumScreenCoverage(float minimumScreenCoverage) override;
+            float GetMinimumScreenCoverage() const override;
+            void SetQualityDecayRate(float qualityDecayRate) override;
+            float GetQualityDecayRate() const override;
 
             void SetVisibility(bool visible) override;
             bool GetVisibility() const override;

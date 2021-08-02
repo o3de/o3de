@@ -40,6 +40,8 @@ namespace AZ
                     ->Field("ModelAsset", &MeshComponentConfig::m_modelAsset)
                     ->Field("SortKey", &MeshComponentConfig::m_sortKey)
                     ->Field("LodOverride", &MeshComponentConfig::m_lodOverride)
+                    ->Field("MinimumScreenCoverage", &MeshComponentConfig::m_minimumScreenCoverage)
+                    ->Field("QualityDecayRate", &MeshComponentConfig::m_qualityDecayRate)
                     ->Field("ExcludeFromReflectionCubeMaps", &MeshComponentConfig::m_excludeFromReflectionCubeMaps)
                     ->Field("UseForwardPassIBLSpecular", &MeshComponentConfig::m_useForwardPassIblSpecular);
             }
@@ -116,10 +118,16 @@ namespace AZ
                     ->Event("GetSortKey", &MeshComponentRequestBus::Events::GetSortKey)
                     ->Event("SetLodOverride", &MeshComponentRequestBus::Events::SetLodOverride)
                     ->Event("GetLodOverride", &MeshComponentRequestBus::Events::GetLodOverride)
+                    ->Event("SetMinimumScreenCoverage", &MeshComponentRequestBus::Events::SetMinimumScreenCoverage)
+                    ->Event("GetMinimumScreenCoverage", &MeshComponentRequestBus::Events::GetMinimumScreenCoverage)
+                    ->Event("SetQualityDecayRate", &MeshComponentRequestBus::Events::SetQualityDecayRate)
+                    ->Event("GetQualityDecayRate", &MeshComponentRequestBus::Events::GetQualityDecayRate)
                     ->VirtualProperty("ModelAssetId", "GetModelAssetId", "SetModelAssetId")
                     ->VirtualProperty("ModelAssetPath", "GetModelAssetPath", "SetModelAssetPath")
                     ->VirtualProperty("SortKey", "GetSortKey", "SetSortKey")
                     ->VirtualProperty("LodOverride", "GetLodOverride", "SetLodOverride")
+                    ->VirtualProperty("MinimumScreenCoverage", "GetMinimumScreenCoverage", "SetMinimumScreenCoverage")
+                    ->VirtualProperty("QualityDecayRate", "GetQualityDecayRate", "SetQualityDecayRate")
                     ;
             }
         }
@@ -325,6 +333,8 @@ namespace AZ
                 m_meshFeatureProcessor->SetTransform(m_meshHandle, transform, m_cachedNonUniformScale);
                 m_meshFeatureProcessor->SetSortKey(m_meshHandle, m_configuration.m_sortKey);
                 m_meshFeatureProcessor->SetLodOverride(m_meshHandle, m_configuration.m_lodOverride);
+                m_meshFeatureProcessor->SetMinimumScreenCoverage(m_meshHandle, m_configuration.m_minimumScreenCoverage);
+                m_meshFeatureProcessor->SetQualityDecayRate(m_meshHandle, m_configuration.m_qualityDecayRate);
                 m_meshFeatureProcessor->SetExcludeFromReflectionCubeMaps(m_meshHandle, m_configuration.m_excludeFromReflectionCubeMaps);
                 m_meshFeatureProcessor->SetVisible(m_meshHandle, m_isVisible);
 
@@ -424,6 +434,28 @@ namespace AZ
         RPI::Cullable::LodOverride MeshComponentController::GetLodOverride() const
         {
             return m_meshFeatureProcessor->GetSortKey(m_meshHandle);
+        }
+
+        void MeshComponentController::SetMinimumScreenCoverage(float minimumScreenCoverage)
+        {
+            m_configuration.m_minimumScreenCoverage = minimumScreenCoverage;
+            m_meshFeatureProcessor->SetMinimumScreenCoverage(m_meshHandle, minimumScreenCoverage);
+        }
+
+        float MeshComponentController::GetMinimumScreenCoverage() const
+        {
+            return m_meshFeatureProcessor->GetMinimumScreenCoverage(m_meshHandle);
+        }
+
+        void MeshComponentController::SetQualityDecayRate(float qualityDecayRate)
+        {
+            m_configuration.m_qualityDecayRate = qualityDecayRate;
+            m_meshFeatureProcessor->SetQualityDecayRate(m_meshHandle, qualityDecayRate);
+        }
+
+        float MeshComponentController::GetQualityDecayRate() const
+        {
+            return m_meshFeatureProcessor->GetQualityDecayRate(m_meshHandle);
         }
 
         void MeshComponentController::SetVisibility(bool visible)

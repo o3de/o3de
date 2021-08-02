@@ -39,6 +39,12 @@ namespace AZ
             virtual void SetLodOverride(RPI::Cullable::LodOverride lodOverride) = 0;
             virtual RPI::Cullable::LodOverride GetLodOverride() const = 0;
 
+            virtual void SetMinimumScreenCoverage(float minimumScreenCoverage) = 0;
+            virtual float GetMinimumScreenCoverage() const = 0;
+
+            virtual void SetQualityDecayRate(float qualityDecayRate) = 0;
+            virtual float GetQualityDecayRate() const = 0;
+
             virtual void SetVisibility(bool visible) = 0;
             virtual bool GetVisibility() const = 0;
 

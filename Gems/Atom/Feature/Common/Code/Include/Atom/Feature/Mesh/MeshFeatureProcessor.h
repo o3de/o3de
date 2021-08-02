@@ -63,8 +63,12 @@ namespace AZ
             void SetRayTracingData();
             void SetSortKey(RHI::DrawItemSortKey sortKey);
             RHI::DrawItemSortKey GetSortKey();
-            void SetLodOverride(RPI::Cullable::LodOverride lodOverride);
+            void SetLodOverride( RPI::Cullable::LodOverride lodOverride);
             RPI::Cullable::LodOverride GetLodOverride();
+            void SetMinimumScreenCoverage(float minimumScreenCoverage);
+            float GetMinimumScreenCoverage();
+            void SetQualityDecayRate(float qualityDecayRate);
+            float GetQualityDecayRate();
             void UpdateDrawPackets(bool forceUpdate = false);
             void BuildCullable();
             void UpdateCullBounds(const TransformServiceFeatureProcessor* transformService);
@@ -157,6 +161,12 @@ namespace AZ
 
             void SetLodOverride(const MeshHandle& meshHandle, RPI::Cullable::LodOverride lodOverride) override;
             RPI::Cullable::LodOverride GetLodOverride(const MeshHandle& meshHandle) override;
+
+            void SetMinimumScreenCoverage(const MeshHandle& meshHandle, float minimumScreenCoverage) override;
+            float GetMinimumScreenCoverage(const MeshHandle& meshHandle) override;
+
+            void SetQualityDecayRate(const MeshHandle& meshHandle, float qualityDecayRate) override;
+            float GetQualityDecayRate(const MeshHandle& meshHandle) override;
 
             void SetExcludeFromReflectionCubeMaps(const MeshHandle& meshHandle, bool excludeFromReflectionCubeMaps) override;
             void SetRayTracingEnabled(const MeshHandle& meshHandle, bool rayTracingEnabled) override;

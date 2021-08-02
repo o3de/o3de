@@ -98,6 +98,13 @@ namespace AZ
             virtual void SetLodOverride(const MeshHandle& meshHandle, RPI::Cullable::LodOverride lodOverride) = 0;
             //! Gets the LOD override for a given mesh handle.
             virtual RPI::Cullable::LodOverride GetLodOverride(const MeshHandle& meshHandle) = 0;
+
+            virtual void SetMinimumScreenCoverage(const MeshHandle& meshHandle, float minimumScreenCoverage) = 0;
+            virtual float GetMinimumScreenCoverage(const MeshHandle& meshHandle) = 0;
+
+            virtual void SetQualityDecayRate(const MeshHandle& meshHandle, float qualityDecayRate) = 0;
+            virtual float GetQualityDecayRate(const MeshHandle& meshHandle) = 0;
+
             //! Sets the option to exclude this mesh from baked reflection probe cubemaps
             virtual void SetExcludeFromReflectionCubeMaps(const MeshHandle& meshHandle, bool excludeFromReflectionCubeMaps) = 0;
             //! Sets the option to exclude this mesh from raytracing

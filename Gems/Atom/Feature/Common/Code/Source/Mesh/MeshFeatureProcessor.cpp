@@ -380,6 +380,48 @@ namespace AZ
             }
         }
 
+        void MeshFeatureProcessor::SetMinimumScreenCoverage( const MeshHandle& meshHandle, float minimumScreenCoverage)
+        {
+            if (meshHandle.IsValid())
+            {
+                meshHandle->SetMinimumScreenCoverage(minimumScreenCoverage);
+            }
+        }
+
+        float MeshFeatureProcessor::GetMinimumScreenCoverage(const MeshHandle& meshHandle)
+        {
+            if (meshHandle.IsValid())
+            {
+                return meshHandle->GetMinimumScreenCoverage();
+            }
+            else
+            {
+                AZ_Assert(false, "Invalid mesh handle");
+                return 0;
+            }
+        }
+
+        void MeshFeatureProcessor::SetQualityDecayRate(const MeshHandle& meshHandle, float qualityDecayRate)
+        {
+            if (meshHandle.IsValid())
+            {
+                meshHandle->SetQualityDecayRate(qualityDecayRate);
+            }
+        }
+
+        float MeshFeatureProcessor::GetQualityDecayRate(const MeshHandle& meshHandle)
+        {
+            if (meshHandle.IsValid())
+            {
+                return meshHandle->GetQualityDecayRate();
+            }
+            else
+            {
+                AZ_Assert(false, "Invalid mesh handle");
+                return 0;
+            }
+        }
+
         void MeshFeatureProcessor::SetExcludeFromReflectionCubeMaps(const MeshHandle& meshHandle, bool excludeFromReflectionCubeMaps)
         {
             if (meshHandle.IsValid())
@@ -1001,6 +1043,26 @@ namespace AZ
             return m_cullable.m_lodData.m_lodOverride;
         }
 
+        void MeshDataInstance::SetMinimumScreenCoverage(float minimumScreenCoverage)
+        {
+            m_cullable.m_lodData.m_minimumScreenCoverage = minimumScreenCoverage;
+        }
+
+        float MeshDataInstance::GetMinimumScreenCoverage()
+        {
+            return m_cullable.m_lodData.m_minimumScreenCoverage;
+        }
+
+        void MeshDataInstance::SetQualityDecayRate(float qualityDecayRate)
+        {
+            m_cullable.m_lodData.m_qualityDecayRate = qualityDecayRate;
+        }
+
+        float MeshDataInstance::GetQualityDecayRate()
+        {
+            return m_cullable.m_lodData.m_qualityDecayRate;
+        }
+
         void MeshDataInstance::UpdateDrawPackets(bool forceUpdate /*= false*/)
         {
             AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
@@ -1036,13 +1098,11 @@ namespace AZ
             cullData.m_drawListMask.reset();
 
             const size_t lodCount = lodAssets.size();
+
             for (size_t lodIndex = 0; lodIndex < lodCount; ++lodIndex)
             {
                 //initialize the lod
                 RPI::Cullable::LodData::Lod& lod = lodData.m_lods[lodIndex];
-                //[GFX TODO][ATOM-5562] - Level of detail: override lod distances and add global lod multiplier(s)
-                static const float MinimumScreenCoverage = 1.0f/1080.0f;        //mesh should cover at least a screen pixel at 1080p to be drawn
-                static const float ReductionFactor = 0.5f;
                 if (lodIndex == 0)
                 {
                     //first lod
@@ -1051,17 +1111,19 @@ namespace AZ
                 else
                 {
                     //every other lod: use the previous lod's min
-                    lod.m_screenCoverageMax = AZStd::GetMax(lodData.m_lods[lodIndex-1].m_screenCoverageMin, MinimumScreenCoverage);
+                    lod.m_screenCoverageMax = AZStd::GetMax(lodData.m_lods[lodIndex - 1].m_screenCoverageMin, lodData.m_minimumScreenCoverage);
                 }
+
                 if (lodIndex < lodAssets.size() - 1)
                 {
                     //first and middle lods: compute a stepdown value for the min
-                    lod.m_screenCoverageMin = AZStd::GetMax(ReductionFactor * lod.m_screenCoverageMax, MinimumScreenCoverage);
+                    lod.m_screenCoverageMin =
+                        AZStd::GetMax(lodData.m_qualityDecayRate * lod.m_screenCoverageMax, lodData.m_minimumScreenCoverage);
                 }
                 else
                 {
                     //last lod: use MinimumScreenCoverage for the min
-                    lod.m_screenCoverageMin = MinimumScreenCoverage;
+                    lod.m_screenCoverageMin = lodData.m_minimumScreenCoverage;
                 }
 
                 lod.m_drawPackets.clear();

@@ -415,6 +415,26 @@ namespace AZ
             return m_meshFeatureProcessor->GetLodOverride(*m_meshHandle);
         }
 
+        void AtomActorInstance::SetMinimumScreenCoverage(float minimumScreenCoverage)
+        {
+            m_meshFeatureProcessor->SetMinimumScreenCoverage(*m_meshHandle, minimumScreenCoverage);
+        }
+
+        float AtomActorInstance::GetMinimumScreenCoverage() const
+        {
+            return m_meshFeatureProcessor->GetMinimumScreenCoverage(*m_meshHandle);
+        }
+
+        void AtomActorInstance::SetQualityDecayRate(float qualityDecayRate)
+        {
+            m_meshFeatureProcessor->SetQualityDecayRate(*m_meshHandle, qualityDecayRate);
+        }
+
+        float AtomActorInstance::GetQualityDecayRate() const
+        {
+            return m_meshFeatureProcessor->GetQualityDecayRate(*m_meshHandle);
+        }
+
         void AtomActorInstance::SetVisibility(bool visible)
         {
             SetIsVisible(visible);
