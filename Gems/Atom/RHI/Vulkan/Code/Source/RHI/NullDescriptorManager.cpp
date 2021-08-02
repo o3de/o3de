@@ -117,6 +117,35 @@ namespace AZ
             m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::MultiSampleReadOnly2D)].m_sampleCountFlag = VK_SAMPLE_COUNT_4_BIT;
             m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::MultiSampleReadOnly2D)].m_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::GeneralArray2D)] = {};
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::GeneralArray2D)].m_name = "NULL_DESCRIPTOR_GENERAL_ARRAY_2D";
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::GeneralArray2D)].m_sampleCountFlag = VK_SAMPLE_COUNT_1_BIT;
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::GeneralArray2D)].m_format = VK_FORMAT_R8G8B8A8_SRGB;
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::GeneralArray2D)].m_usageFlagBits =VkImageUsageFlagBits(VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::GeneralArray2D)].m_arrayLayers = 1;
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::GeneralArray2D)].m_imageCreateFlagBits = VkImageCreateFlagBits(0);
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::GeneralArray2D)].m_layout = VK_IMAGE_LAYOUT_GENERAL;
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::GeneralArray2D)].m_dimension = imageDimension;
+
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnlyArray2D)] = m_imageNullDescriptor.m_images[static_cast<uint32_t>(NullDescriptorManager::ImageTypes::GeneralArray2D)];
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnlyArray2D)].m_name = "NULL_DESCRIPTOR_READONLY_ARRAY_2D";
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnlyArray2D)].m_sampleCountFlag = VK_SAMPLE_COUNT_1_BIT;
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnlyArray2D)].m_format = VK_FORMAT_R8G8B8A8_SRGB;
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnlyArray2D)].m_usageFlagBits = VkImageUsageFlagBits(VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnlyArray2D)].m_arrayLayers = 1;
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnlyArray2D)].m_imageCreateFlagBits = VkImageCreateFlagBits(0);
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnlyArray2D)].m_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnlyArray2D)].m_dimension = imageDimension;
+
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::StorageArray2D)] = m_imageNullDescriptor.m_images[static_cast<uint32_t>(NullDescriptorManager::ImageTypes::General2D)];
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::StorageArray2D)].m_name = "NULL_DESCRIPTOR_STORAGE_ARRAY_2D";
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::StorageArray2D)].m_sampleCountFlag = VK_SAMPLE_COUNT_1_BIT;
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::StorageArray2D)].m_format = VK_FORMAT_R32G32B32A32_UINT;
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::StorageArray2D)].m_usageFlagBits =VkImageUsageFlagBits(VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT);
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::StorageArray2D)].m_arrayLayers = 1;
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::StorageArray2D)].m_layout = VK_IMAGE_LAYOUT_GENERAL;
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::StorageArray2D)].m_dimension = 256;
+
             m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::GeneralCube)] = m_imageNullDescriptor.m_images[static_cast<uint32_t>(NullDescriptorManager::ImageTypes::General2D)];
             m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::GeneralCube)].m_name = "NULL_DESCRIPTOR_GENERAL_CUBE";
             m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::GeneralCube)].m_arrayLayers = 6;
@@ -243,6 +272,10 @@ namespace AZ
                 {
                     imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_3D;
                 }
+                else if (imageIndex >= static_cast<uint32_t>(ImageTypes::GeneralArray2D) && imageIndex <= static_cast<uint32_t>(ImageTypes::StorageArray2D))
+                {
+                    imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+                }
 
                 result = vkCreateImageView(device.GetNativeDevice(), &imageViewCreateInfo, nullptr, &m_imageNullDescriptor.m_images[imageIndex].m_view);
                 RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
@@ -366,7 +399,7 @@ namespace AZ
 
         VkDescriptorImageInfo NullDescriptorManager::GetDescriptorImageInfo(RHI::ShaderInputImageType imageType, bool storageImage)
         {
-            if (imageType == RHI::ShaderInputImageType::Image2D || imageType == RHI::ShaderInputImageType::Image2DArray)
+            if (imageType == RHI::ShaderInputImageType::Image2D)
             {
                 if (storageImage)
                 {
@@ -375,6 +408,17 @@ namespace AZ
                 else
                 {
                     return GetImage(ImageTypes::ReadOnly2D);
+                }
+            }
+            else if (imageType == RHI::ShaderInputImageType::Image2DArray)
+            {
+                if (storageImage)
+                {
+                    return GetImage(ImageTypes::StorageArray2D);
+                }
+                else
+                {
+                    return GetImage(ImageTypes::ReadOnlyArray2D);
                 }
             }
             else if (imageType == RHI::ShaderInputImageType::Image2DMultisample)
