@@ -16,11 +16,11 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/typetraits/integral_constant.h>
+#include <AzCore/Math/AABB.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Color.h>
 
 // include MCore related files
-#include <MCore/Source/AABB.h>
 #include <MCore/Source/Vector.h>
 #include <MCore/Source/Array.h>
 #include <MCore/Source/SmallArray.h>
@@ -781,9 +781,9 @@ namespace EMotionFX
         void ResizeTransformData();
         void CopyTransformsFrom(const Actor* other);
 
-        const MCore::AABB& GetStaticAABB() const;
-        void SetStaticAABB(const MCore::AABB& box);
-        void UpdateStaticAABB();    // VERY heavy operation, you shouldn't call this ever (internally creates an actor instance, updates mesh deformers, calcs a mesh based aabb, destroys the actor instance again)
+        const AZ::Aabb& GetStaticAabb() const;
+        void SetStaticAabb(const AZ::Aabb& aabb);
+        void UpdateStaticAabb();    // VERY heavy operation, you shouldn't call this ever (internally creates an actor instance, updates mesh deformers, calcs a mesh based aabb, destroys the actor instance again)
 
         void SetThreadIndex(uint32 index)                   { mThreadIndex = index; }
         uint32 GetThreadIndex() const                       { return mThreadIndex; }
@@ -985,7 +985,7 @@ namespace EMotionFX
         uint32                                          mRetargetRootNode;          /**< The retarget root node, which controls the height displacement of the character. This is most likely the hip or pelvis node. */
         uint32                                          mID;                        /**< The unique identification number for the actor. */
         uint32                                          mThreadIndex;               /**< The thread number we are running on, which is a value starting at 0, up to the number of threads in the job system. */
-        MCore::AABB                                     mStaticAABB;                /**< The static AABB. */
+        AZ::Aabb                                        m_staticAabb;               /**< The static AABB. */
         bool                                            mDirtyFlag;                 /**< The dirty flag which indicates whether the user has made changes to the actor since the last file save operation. */
         bool                                            mUsedForVisualization;      /**< Indicates if the actor is used for visualization specific things and is not used as a normal in-game actor. */
         bool                                            m_optimizeSkeleton;         /**< Indicates if we should perform/ */

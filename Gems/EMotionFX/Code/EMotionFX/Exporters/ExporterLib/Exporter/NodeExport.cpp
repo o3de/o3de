@@ -184,12 +184,12 @@ namespace ExporterLib
         EMotionFX::FileFormat::Actor_Nodes nodesChunk;
         nodesChunk.mNumNodes        = numNodes;
         nodesChunk.mNumRootNodes    = actor->GetSkeleton()->GetNumRootNodes();
-        nodesChunk.mStaticBoxMin.mX = actor->GetStaticAABB().GetMin().GetX();
-        nodesChunk.mStaticBoxMin.mY = actor->GetStaticAABB().GetMin().GetY();
-        nodesChunk.mStaticBoxMin.mZ = actor->GetStaticAABB().GetMin().GetZ();
-        nodesChunk.mStaticBoxMax.mX = actor->GetStaticAABB().GetMax().GetX();
-        nodesChunk.mStaticBoxMax.mY = actor->GetStaticAABB().GetMax().GetY();
-        nodesChunk.mStaticBoxMax.mZ = actor->GetStaticAABB().GetMax().GetZ();
+        nodesChunk.mStaticBoxMin.mX = actor->GetStaticAabb().GetMin().GetX();
+        nodesChunk.mStaticBoxMin.mY = actor->GetStaticAabb().GetMin().GetY();
+        nodesChunk.mStaticBoxMin.mZ = actor->GetStaticAabb().GetMin().GetZ();
+        nodesChunk.mStaticBoxMax.mX = actor->GetStaticAabb().GetMax().GetX();
+        nodesChunk.mStaticBoxMax.mY = actor->GetStaticAabb().GetMax().GetY();
+        nodesChunk.mStaticBoxMax.mZ = actor->GetStaticAabb().GetMax().GetZ();
 
         // endian conversion and write it
         ConvertUnsignedInt(&nodesChunk.mNumNodes, targetEndianType);

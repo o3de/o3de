@@ -97,6 +97,7 @@ namespace EMotionFX
         mID                         = MCore::GetIDGenerator().GenerateID();
         mUnitType                   = GetEMotionFX().GetUnitType();
         mFileUnitType               = mUnitType;
+        m_staticAabb                = AZ::Aabb::CreateNull();
 
         mUsedForVisualization       = false;
         mDirtyFlag                  = false;
@@ -148,7 +149,7 @@ namespace EMotionFX
         result->mMotionExtractionNode   = mMotionExtractionNode;
         result->mUnitType               = mUnitType;
         result->mFileUnitType           = mFileUnitType;
-        result->mStaticAABB             = mStaticAABB;
+        result->m_staticAabb            = m_staticAabb;
         result->mRetargetRootNode       = mRetargetRootNode;
         result->mInvBindPoseTransforms  = mInvBindPoseTransforms;
         result->m_optimizeSkeleton      = m_optimizeSkeleton;
@@ -1405,10 +1406,6 @@ namespace EMotionFX
 
         m_simulatedObjectSetup->InitAfterLoad(this);
 
-        // build the static axis aligned bounding box by creating an actor instance (needed to perform cpu skinning mesh deforms and mesh scaling etc)
-        // then copy it over to the actor
-        UpdateStaticAABB();
-
         // rescale all content if needed
         if (convertUnitType)
         {
@@ -1526,6 +1523,10 @@ namespace EMotionFX
                     mMorphSetups[i] = nullptr;
                 }
             }
+
+            // build the static axis aligned bounding box by creating an actor instance (needed to perform cpu skinning mesh deforms and mesh scaling etc)
+            // then copy it over to the actor
+            UpdateStaticAabb();
         }
 
         m_isReady = true;
@@ -1534,16 +1535,13 @@ namespace EMotionFX
     }
 
     // update the static AABB (very heavy as it has to create an actor instance, update mesh deformers, calculate the mesh based bounds etc)
-    void Actor::UpdateStaticAABB()
+    void Actor::UpdateStaticAabb()
     {
-        if (!mStaticAABB.CheckIfIsValid())
-        {
-            ActorInstance* actorInstance = ActorInstance::Create(this, nullptr, mThreadIndex);
-            //actorInstance->UpdateMeshDeformers(0.0f);
-            //actorInstance->UpdateStaticBasedAABBDimensions();
-            actorInstance->GetStaticBasedAABB(&mStaticAABB);
-            actorInstance->Destroy();
-        }
+        ActorInstance* actorInstance = ActorInstance::Create(this, nullptr, mThreadIndex);
+        actorInstance->UpdateMeshDeformers(0.0f);
+        actorInstance->UpdateStaticBasedAabbDimensions();
+        actorInstance->GetStaticBasedAabb(&m_staticAabb);
+        actorInstance->Destroy();
     }
 
 
@@ -2206,14 +2204,14 @@ namespace EMotionFX
 #endif
     }
 
-    const MCore::AABB& Actor::GetStaticAABB() const
+    const AZ::Aabb& Actor::GetStaticAabb() const
     {
-        return mStaticAABB;
+        return m_staticAabb;
     }
 
-    void Actor::SetStaticAABB(const MCore::AABB& box)
+    void Actor::SetStaticAabb(const AZ::Aabb& aabb)
     {
-        mStaticAABB = box;
+        m_staticAabb = aabb;
     }
 
     //---------------------------------
@@ -2422,8 +2420,8 @@ namespace EMotionFX
         }
 
         // update static aabb
-        mStaticAABB.SetMin(mStaticAABB.GetMin() * scaleFactor);
-        mStaticAABB.SetMax(mStaticAABB.GetMax() * scaleFactor);
+        m_staticAabb.SetMin(m_staticAabb.GetMin() * scaleFactor);
+        m_staticAabb.SetMax(m_staticAabb.GetMax() * scaleFactor);
 
         // update mesh data for all LOD levels
         const uint32 numLODs = GetNumLODLevels();
