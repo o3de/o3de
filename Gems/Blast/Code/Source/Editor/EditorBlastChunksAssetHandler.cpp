@@ -13,7 +13,6 @@
 #include <AzCore/Serialization/ObjectStream.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
-#include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -53,7 +52,7 @@ namespace Blast
     {
         BlastChunksAsset* blastChunksAsset = asset.GetAs<BlastChunksAsset>();
         AZ_Error("blast", blastChunksAsset,
-            "This should be a BlastSliceAsset type, as this is the only type we process!");
+            "This should be a BlastChunksAsset type, as this is the only type we process!");
         if (!blastChunksAsset)
         {
             return LoadResult::Error;
