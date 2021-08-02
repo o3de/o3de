@@ -20,7 +20,6 @@ partial ShaderResourceGroup ViewSrg
     struct FilterParameter
     {
         uint m_isEnabled;
-        uint2 m_shadowmapOriginInSlice;
         uint m_shadowmapSize;
         uint m_parameterOffset;
         uint m_parameterCount;
@@ -29,6 +28,7 @@ partial ShaderResourceGroup ViewSrg
         float m_n_f;   // n - f
         float m_f;     // f
                        // where n: nearDepth, f: farDepth.
+        uint2 m_shadowmapOriginInSlice;
         float2 m_padding; // explicit padding
     };
 
@@ -83,13 +83,14 @@ partial ShaderResourceGroup ViewSrg
         float4x4 m_depthBiasMatrix;
         uint m_shadowmapArraySlice; // array slice who has shadowmap in the atlas.
         uint m_shadowFilterMethod; // Includes overall filter method in top 16 bits and pcf method in bottom 16 bits.
-        float m_boundaryScale;
         uint m_predictionSampleCount;
         uint m_filteringSampleCount;
-        float2 m_unprojectConstants;
+        float m_boundaryScale;
         float m_bias;
         float m_esmExponent;
-        float3 m_padding;
+        float m_padding0;
+        float2 m_unprojectConstants;
+        float2 m_padding1;
     };
 
     StructuredBuffer<ProjectedShadow> m_projectedShadows;

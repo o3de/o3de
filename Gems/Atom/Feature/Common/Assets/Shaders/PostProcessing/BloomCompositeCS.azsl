@@ -16,6 +16,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     RWTexture2D<float4>   m_outputTexture;
 
     float  m_intensity;
+    uint m_enableBicubic;
     float2 m_sourceImageSize;
 
     // 1.0 / m_sourceImageSize
@@ -23,7 +24,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     float2 m_targetImageSize;
     float3 m_tint;
 
-    uint m_enableBicubic;
+    
     uint m_sourceMipLevel;
     
     Sampler LinearSampler
