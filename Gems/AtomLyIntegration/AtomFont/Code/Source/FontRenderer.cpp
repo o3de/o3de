@@ -22,6 +22,8 @@
 
 #include <AzCore/Casting/lossy_cast.h>
 
+#include <CryCommon/ISystem.h>
+
 // Sizes are defined in in 26.6 fixed float format (TT_F26Dot6), where
 // 1 unit is 1/64 of a pixel.
 constexpr int FractionalPixelUnits = 64;
@@ -94,7 +96,7 @@ AZ::FontRenderer::~FontRenderer()
 }
 
 //-------------------------------------------------------------------------------------------------
-int AZ::FontRenderer::LoadFromFile(const string& fileName)
+int AZ::FontRenderer::LoadFromFile(const AZStd::string& fileName)
 {
     int iError = FT_Init_FreeType(&m_library);
 
@@ -309,8 +311,7 @@ Vec2 AZ::FontRenderer::GetKerning(uint32_t leftGlyph, uint32_t rightGlyph)
 #if !defined(_RELEASE)
         if (0 != ftError)
         {
-            string warnMsg;
-            warnMsg.Format("FT_Get_Kerning returned %d", ftError);
+            AZStd::string warnMsg = AZStd::string::format("FT_Get_Kerning returned %d", ftError);
             CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, warnMsg.c_str());
         }
 #endif

@@ -13,6 +13,8 @@
 
 #if !defined(USE_NULLFONT_ALWAYS)
 
+#include <CryCommon/ISystem.h>
+
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Matrix4x4.h>
 #include <AzCore/Math/MatrixUtils.h>
@@ -26,7 +28,6 @@
 #include <AtomLyIntegration/AtomFont/FFont.h>
 #include <AtomLyIntegration/AtomFont/AtomFont.h>
 #include <AtomLyIntegration/AtomFont/FontTexture.h>
-#include <CryCommon/UnicodeIterator.h>
 #include <CryCommon/MathConversion.h>
 
 #include <AzCore/std/parallel/lock.h>
@@ -409,6 +410,9 @@ Vec2 AZ::FFont::GetTextSizeUInternal(
     const size_t fxIdx = ctx.m_fxIdx < fxSize ? ctx.m_fxIdx : 0;
     const FontEffect& fx = m_effects[fxIdx];
 
+    AZStd::wstring strW;
+    AZStd::to_wstring(strW, str);
+
     for (size_t i = 0, numPasses = fx.m_passes.size(); i < numPasses; ++i)
     {
         const FontRenderingPass* pass = &fx.m_passes[numPasses - i - 1];
@@ -426,7 +430,7 @@ Vec2 AZ::FFont::GetTextSizeUInternal(
 
         // parse the string, ignoring control characters
         uint32_t nextCh = 0;
-        Unicode::CIterator<const char*, false> pChar(str);
+        const wchar_t* pChar = strW.c_str();
         while (uint32_t ch = *pChar)
         {
             ++pChar;
@@ -556,6 +560,9 @@ uint32_t AZ::FFont::GetNumQuadsForText(const char* str, const bool asciiMultiLin
     const size_t fxIdx = ctx.m_fxIdx < fxSize ? ctx.m_fxIdx : 0;
     const FontEffect& fx = m_effects[fxIdx];
 
+    AZStd::wstring strW;
+    AZStd::to_wstring(strW, str);
+
     for (size_t j = 0, numPasses = fx.m_passes.size(); j < numPasses; ++j)
     {
         size_t i = numPasses - j - 1;
@@ -567,7 +574,7 @@ uint32_t AZ::FFont::GetNumQuadsForText(const char* str, const bool asciiMultiLin
         }
 
         uint32_t nextCh = 0;
-        Unicode::CIterator<const char*, false> pChar(str);
+        const wchar_t* pChar = strW.c_str();
         while (uint32_t ch = *pChar)
         {
             ++pChar;
@@ -862,9 +869,12 @@ int AZ::FFont::CreateQuadsForText(const RHI::Viewport& viewport, float x, float 
             }
         }
 
+        AZStd::wstring strW;
+        AZStd::to_wstring(strW, str);
+
         // parse the string, ignoring control characters
         uint32_t nextCh = 0;
-        Unicode::CIterator<const char*, false> pChar(str);
+        const wchar_t* pChar = strW.c_str();
         while (uint32_t ch = *pChar)
         {
             ++pChar;
@@ -1188,7 +1198,7 @@ void AZ::FFont::WrapText(AZStd::string& result, float maxWidth, const char* str,
     const bool multiLine = strSize.y > GetRestoredFontSize(ctx).y;
 
     int lastSpace = -1;
-    const char* pLastSpace = NULL;
+    const wchar_t* pLastSpace = NULL;
     float lastSpaceWidth = 0.0f;
 
     float curCharWidth = 0.0f;
@@ -1197,7 +1207,9 @@ void AZ::FFont::WrapText(AZStd::string& result, float maxWidth, const char* str,
     float widthSum = 0.0f;
 
     int curChar = 0;
-    Unicode::CIterator<const char*, false> pChar(result.c_str());
+    AZStd::wstring resultW;
+    AZStd::to_wstring(resultW, result.c_str());
+    const wchar_t* pChar = resultW.c_str();
     while (uint32_t ch = *pChar)
     {
         // Dollar sign escape codes.  The following scenarios can happen with dollar signs embedded in a string.
@@ -1224,7 +1236,7 @@ void AZ::FFont::WrapText(AZStd::string& result, float maxWidth, const char* str,
         // get char width and sum it to the line width
         // Note: This is not unicode compatible, since char-width depends on surrounding context (ie, combining diacritics etc)
         char codepoint[5];
-        Unicode::Convert(codepoint, ch);
+        AZStd::to_string(codepoint, 5, (wchar_t*)&ch, 1);
         curCharWidth = GetTextSize(codepoint, true, ctx).x;
 
         // keep track of spaces
@@ -1233,15 +1245,15 @@ void AZ::FFont::WrapText(AZStd::string& result, float maxWidth, const char* str,
         {
             lastSpace = curChar;
             lastSpaceWidth = curLineWidth + curCharWidth;
-            pLastSpace = pChar.GetPosition();
+            pLastSpace = pChar;
             assert(*pLastSpace == ' ');
         }
 
         bool prevCharWasNewline = false;
-        const bool notFirstChar = pChar.GetPosition() != result.c_str();
+        const bool notFirstChar = pChar != resultW.c_str();
         if (*pChar && notFirstChar)
         {
-            const char* pPrevCharStr = pChar.GetPosition() - 1;
+            const wchar_t* pPrevCharStr = pChar - 1;
             prevCharWasNewline = pPrevCharStr[0] == '\n';
         }
 
@@ -1268,12 +1280,12 @@ void AZ::FFont::WrapText(AZStd::string& result, float maxWidth, const char* str,
             }
             else
             {
-                const char* buf = pChar.GetPosition();
-                size_t bytesProcessed = buf - result.c_str();
-                result.insert(bytesProcessed, '\n'); // Insert the newline, this invalidates the iterator
-                buf = result.c_str() + bytesProcessed; // In case reallocation occurs, we ensure we are inside the new buffer
+                const wchar_t* buf = pChar;
+                size_t bytesProcessed = buf - resultW.c_str();
+                resultW.insert(resultW.begin() + bytesProcessed, L'\n'); // Insert the newline, this invalidates the iterator
+                buf = resultW.c_str() + bytesProcessed; // In case reallocation occurs, we ensure we are inside the new buffer
                 assert(*buf == '\n');
-                pChar.SetPosition(buf); // pChar once again points inside the target string, at the current character
+                pChar = buf; // pChar once again points inside the target string, at the current character
                 assert(*pChar == ch);
                 ++pChar;
                 ++curChar;

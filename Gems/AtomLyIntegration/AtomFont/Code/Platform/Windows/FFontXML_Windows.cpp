@@ -9,6 +9,7 @@
 #include <FFontXML_Internal.h>
 
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/std/string/conversions.h>
 
 #include <shlobj_core.h>
 
@@ -16,11 +17,13 @@ namespace AtomFontInternal
 {
     void XmlFontShader::FoundElementImpl()
     {
-        TCHAR sysFontPath[MAX_PATH];
-        if (SUCCEEDED(SHGetFolderPath(0, CSIDL_FONTS, 0, SHGFP_TYPE_DEFAULT, sysFontPath)))
+        wchar_t sysFontPathW[MAX_PATH];
+        if (SUCCEEDED(SHGetFolderPath(0, CSIDL_FONTS, 0, SHGFP_TYPE_DEFAULT, sysFontPathW)))
         {
             const AZ::IO::PathView fontName = AZ::IO::PathView(m_strFontPath.c_str()).Filename();
 
+            AZStd::string sysFontPath;
+            AZStd::to_string(sysFontPath, sysFontPathW);
             AZ::IO::Path newFontPath(sysFontPath);
             newFontPath /= fontName;
             m_font->Load(newFontPath.c_str(), m_FontTexSize.x, m_FontTexSize.y, m_slotSizes.x, m_slotSizes.y, CreateTTFFontFlag(m_FontSmoothMethod, m_FontSmoothAmount), m_SizeRatio);

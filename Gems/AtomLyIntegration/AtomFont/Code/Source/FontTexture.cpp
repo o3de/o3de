@@ -14,8 +14,8 @@
 #if !defined(USE_NULLFONT_ALWAYS)
 
 #include <AtomLyIntegration/AtomFont/FontTexture.h>
-#include <CryCommon/UnicodeIterator.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/std/string/conversions.h>
 
 //-------------------------------------------------------------------------------------------------
 AZ::FontTexture::FontTexture()
@@ -44,7 +44,7 @@ AZ::FontTexture::~FontTexture()
 }
 
 //-------------------------------------------------------------------------------------------------
-int AZ::FontTexture::CreateFromFile(const string& fileName, int width, int height, AZ::FontSmoothMethod smoothMethod, AZ::FontSmoothAmount smoothAmount, int widthCellCount, int heightCellCount)
+int AZ::FontTexture::CreateFromFile(const AZStd::string& fileName, int width, int height, AZ::FontSmoothMethod smoothMethod, AZ::FontSmoothAmount smoothAmount, int widthCellCount, int heightCellCount)
 {
     if (!m_glyphCache.LoadFontFromFile(fileName))
     {
@@ -255,10 +255,10 @@ int AZ::FontTexture::PreCacheString(const char* string, int* updated, float size
     uint16_t slotUsage = m_slotUsage++;
     int updateCount = 0;
 
-    uint32_t character;
-    for (Unicode::CIterator<const char*, false> it(string); *it; ++it)
+    AZStd::wstring stringW;
+    AZStd::to_wstring(stringW, string);
+    for (wchar_t character : stringW)
     {
-        character = *it;
         TextureSlot* slot = GetCharSlot(character, clampedGlyphSize);
 
         if (!slot)
