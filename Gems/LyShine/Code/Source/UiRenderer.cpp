@@ -123,10 +123,6 @@ AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> UiRenderer::CreateDynamicDrawContext(
     AZ::RPI::RasterPass* uiCanvasPass = nullptr;
     AZ::RPI::SceneId sceneId = m_scene->GetId();
     LyShinePassRequestBus::EventResult(uiCanvasPass, sceneId, &LyShinePassRequestBus::Events::GetUiCanvasPass);
-    if (!uiCanvasPass)
-    {
-        return nullptr;
-    }
 
     AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw = AZ::RPI::DynamicDrawInterface::Get()->CreateDynamicDrawContext();
 
@@ -140,7 +136,16 @@ AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> UiRenderer::CreateDynamicDrawContext(
     );
     dynamicDraw->AddDrawStateOptions(AZ::RPI::DynamicDrawContext::DrawStateOptions::StencilState
         | AZ::RPI::DynamicDrawContext::DrawStateOptions::BlendMode);
-    dynamicDraw->SetOutputScope(uiCanvasPass);
+
+    if (uiCanvasPass)
+    {
+        dynamicDraw->SetOutputScope(uiCanvasPass);
+    }
+    else
+    {
+        // Render target support is disabled
+        dynamicDraw->SetOutputScope(m_scene.get());
+    }
     dynamicDraw->EndInit();
 
     return dynamicDraw;

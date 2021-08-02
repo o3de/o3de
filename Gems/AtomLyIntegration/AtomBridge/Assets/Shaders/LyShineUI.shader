@@ -20,7 +20,7 @@
         "BlendOp" : "Add"
     },
 
-    "DrawList" : "uicanvas",
+    "DrawList" : "2dpass",
 
     "ProgramSettings":
     {

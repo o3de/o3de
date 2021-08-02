@@ -524,6 +524,11 @@ namespace LyShine
 
                 uiRenderer->SetBaseState(priorBaseState);
             }
+            else
+            {
+                AZ_WarningOnce("UI", false, "Failed to create a Dynamic Draw Context for UI Element's render target. "\
+                    "Please ensure that the custom LyShinePass has been added to the project's main render pipeline.");
+            }
         }
     }
 

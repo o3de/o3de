@@ -101,10 +101,6 @@ void CDraw2d::OnBootstrapSceneReady([[maybe_unused]] AZ::RPI::Scene* bootstrapSc
     AZ::RPI::RasterPass* uiCanvasPass = nullptr;
     AZ::RPI::SceneId sceneId = scene->GetId();
     LyShinePassRequestBus::EventResult(uiCanvasPass, sceneId, &LyShinePassRequestBus::Events::GetUiCanvasPass);
-    if (!uiCanvasPass)
-    {
-        return;
-    }
 
     m_dynamicDraw = AZ::RPI::DynamicDrawInterface::Get()->CreateDynamicDrawContext();
     AZ::RPI::ShaderOptionList shaderOptions;
@@ -117,7 +113,15 @@ void CDraw2d::OnBootstrapSceneReady([[maybe_unused]] AZ::RPI::Scene* bootstrapSc
         {"TEXCOORD0", AZ::RHI::Format::R32G32_FLOAT} });
     m_dynamicDraw->AddDrawStateOptions(AZ::RPI::DynamicDrawContext::DrawStateOptions::PrimitiveType
         | AZ::RPI::DynamicDrawContext::DrawStateOptions::BlendMode);
-    m_dynamicDraw->SetOutputScope(uiCanvasPass);
+    if (uiCanvasPass)
+    {
+        m_dynamicDraw->SetOutputScope(uiCanvasPass);
+    }
+    else
+    {
+        // Render target support is disabled
+        m_dynamicDraw->SetOutputScope(scene.get());
+    }
     m_dynamicDraw->EndInit();
 
     AZ::RHI::TargetBlendState targetBlendState;
