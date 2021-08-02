@@ -26,7 +26,7 @@ namespace AZ
             static void Reflect(AZ::ReflectContext* context);
 
             using StableId = uint32_t;
-            static const StableId InvalidStableId = -1;
+            static const StableId InvalidStableId;
 
             //! This ID must have a consistent value when the asset is reprocessed by the asset pipeline, and must be unique within the ModelLodAsset.
             //! In practice, this set using the MaterialUid from SceneAPI. See ModelAssetBuilderComponent::CreateMesh.
