@@ -10,10 +10,10 @@
 
 #include <Atom/Feature/Shadows/ProjectedShadowFeatureProcessorInterface.h>
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
+#include <Atom/Feature/Utils/IndexedDataVector.h>
 #include <Atom/Feature/Utils/MultiSparseVector.h>
 #include <CoreLights/EsmShadowmapsPass.h>
 #include <CoreLights/ProjectedShadowmapsPass.h>
-#include <CoreLights/IndexedDataVector.h>
 
 namespace AZ::Render
 {

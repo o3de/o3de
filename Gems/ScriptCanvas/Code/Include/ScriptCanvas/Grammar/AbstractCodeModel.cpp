@@ -1358,17 +1358,23 @@ namespace ScriptCanvas
                 {
                     if (variable->m_isMember)
                     {
-                        return !this->m_variableUse.memberVariables.contains(variable);
+                        if (!this->m_variableUse.memberVariables.contains(variable))
+                        {
+                            m_variablesUnused.push_back(variable);
+                            return true;
+                        }
                     }
                     else
                     {
-                        return !this->m_variableUse.localVariables.contains(variable);
+                        if (!this->m_variableUse.localVariables.contains(variable))
+                        {
+                            m_variablesUnused.push_back(variable);
+                            return true;
+                        }
                     }
                 }
-                else
-                {
-                    return false;
-                }
+
+                return false;
             });
         }
 
@@ -2066,6 +2072,11 @@ namespace ScriptCanvas
         const AZStd::vector<VariableConstPtr>& AbstractCodeModel::GetVariables() const
         {
             return m_variables;
+        }
+
+        const AZStd::vector<VariableConstPtr>& AbstractCodeModel::GetVariablesUnused() const
+        {
+            return m_variablesUnused;
         }
 
         bool AbstractCodeModel::IsActiveGraph() const
