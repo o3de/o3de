@@ -605,6 +605,18 @@ namespace AzToolsFramework
          * system simulates its execution, and avoids some code duplication.
          */
         virtual void RunRedoSeparately(UndoSystem::URSequencePoint* redoCommand) = 0;
+
+        /**
+         * Create a prefab out of the entities provided, at the path provided.
+         * Automatically detects descendants of entities, and discerns between entities and child instances.
+         */
+        virtual bool CreatePrefab(
+            const AZStd::vector<AZ::EntityId>& entityIds, const char* filePath, bool saveToDisk) = 0;
+
+        /**
+         * Instantiate a prefab from a prefab file.
+         */
+        virtual bool InstantiatePrefab(const char* filePath, AZ::EntityId parent, const AZ::Vector3& position) = 0;
     };
 
     using ToolsApplicationRequestBus = AZ::EBus<ToolsApplicationRequests>;

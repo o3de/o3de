@@ -396,6 +396,8 @@ namespace AzToolsFramework
                 ->Event("IsSelected", &ToolsApplicationRequests::IsSelected)
                 ->Event("AreAnyEntitiesSelected", &ToolsApplicationRequests::AreAnyEntitiesSelected)
                 ->Event("GetSelectedEntitiesCount", &ToolsApplicationRequests::GetSelectedEntitiesCount)
+                ->Event("CreatePrefab", &ToolsApplicationRequests::CreatePrefab)
+                ->Event("InstantiatePrefab", &ToolsApplicationRequests::InstantiatePrefab)
                 ;
 
             behaviorContext->EBus<ToolsApplicationNotificationBus>("ToolsApplicationNotificationBus")
@@ -1781,5 +1783,56 @@ namespace AzToolsFramework
     { 
         appType.m_maskValue = AZ::ApplicationTypeQuery::Masks::Tool;
     };
+
+    bool ToolsApplication::CreatePrefab(const AZStd::vector<AZ::EntityId>& entityIds, const char* filePath, bool saveToDisk)
+    {
+        if (IsPrefabSystemEnabled())
+        {
+            auto prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
+            AZ_Assert(prefabPublicInterface != nullptr, "PrefabPublicInterface is unavailable.");
+
+            auto createPrefabOutcome = prefabPublicInterface->CreatePrefab(entityIds, filePath, saveToDisk);
+            if (!createPrefabOutcome.IsSuccess())
+            {
+                AZ_Error("CreatePrefab", false,
+                    "Failed to create Prefab on file path '%s'. Error message: %s.",
+                    filePath,
+                    createPrefabOutcome.GetError().c_str());
+
+                return false;
+            }
+
+            return true;
+        }
+
+        AZ_Error("CreatePrefab", false, "Prefab system is not enabled");
+        return false;
+    }
+
+    bool ToolsApplication::InstantiatePrefab(const char* filePath, AZ::EntityId parent, const AZ::Vector3& position)
+    {
+        if (IsPrefabSystemEnabled())
+        {
+            auto prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
+            AZ_Assert(prefabPublicInterface != nullptr, "PrefabPublicInterface is unavailable.");
+
+            auto instantiatePrefabOutcome = prefabPublicInterface->InstantiatePrefab(filePath, parent, position);
+            if (!instantiatePrefabOutcome.IsSuccess())
+            {
+                AZ_Error("InstantiatePrefab", false,
+                    "Failed to instantiate Prefab on file path '%s'. Error message: %s.",
+                    filePath,
+                    instantiatePrefabOutcome.GetError().c_str());
+
+                return false;
+            }
+
+            return true;
+        }
+
+        AZ_Error("InstantiatePrefab", false, "Prefab system is not enabled");
+        return false;
+    }
+
 
 } // namespace AzToolsFramework

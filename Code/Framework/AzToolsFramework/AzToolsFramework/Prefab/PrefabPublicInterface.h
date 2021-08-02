@@ -43,9 +43,11 @@ namespace AzToolsFramework
              * Automatically detects descendants of entities, and discerns between entities and child instances.
              * @param entityIds The entities that should form the new prefab (along with their descendants).
              * @param filePath The absolute path for the new prefab file.
+             * @param saveToDisk The flag that indicates whether to save prefab to disk immediately or not.
              * @return An outcome object; on failure, it comes with an error message detailing the cause of the error.
              */
-            virtual PrefabOperationResult CreatePrefab(const AZStd::vector<AZ::EntityId>& entityIds, AZ::IO::PathView absolutePath) = 0;
+            virtual PrefabOperationResult CreatePrefab(
+                const AZStd::vector<AZ::EntityId>& entityIds, AZ::IO::PathView filePath, bool saveToDisk) = 0;
 
             /**
              * Instantiate a prefab from a prefab file.

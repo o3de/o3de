@@ -29,3 +29,8 @@ class TestAutomation(TestAutomationBase):
     def test_PrefabLevel_OpensLevelWithEntities(self, request, workspace, editor, launcher_platform):
         from . import PrefabLevel_OpensLevelWithEntities as test_module
         self._run_prefab_test(request, workspace, editor, test_module)
+
+    def test_PrefabLevel_BasicWorkflow(self, request, workspace, editor, launcher_platform):
+        from . import PrefabLevel_BasicWorkflow as test_module
+        self._run_prefab_test(request, workspace, editor, test_module)
+

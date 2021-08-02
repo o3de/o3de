@@ -151,6 +151,9 @@ namespace AzToolsFramework
 
         void CreateAndAddEntityFromComponentTags(const AZStd::vector<AZ::Crc32>& requiredTags, const char* entityName) override;
 
+        bool CreatePrefab(const AZStd::vector<AZ::EntityId>& entityIds, const char* filePath, bool saveToDisk) override;
+        bool InstantiatePrefab(const char* filePath, AZ::EntityId parent, const AZ::Vector3& position) override;
+
         /* Open 3D Engine INTERNAL USE ONLY. */
         void RunRedoSeparately(UndoSystem::URSequencePoint* redoCommand) override;
 

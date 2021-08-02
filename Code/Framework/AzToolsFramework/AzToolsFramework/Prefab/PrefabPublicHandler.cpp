@@ -61,7 +61,7 @@ namespace AzToolsFramework
             m_prefabUndoCache.Destroy();
         }
 
-        PrefabOperationResult PrefabPublicHandler::CreatePrefab(const AZStd::vector<AZ::EntityId>& entityIds, AZ::IO::PathView absolutePath)
+        PrefabOperationResult PrefabPublicHandler::CreatePrefab(const AZStd::vector<AZ::EntityId>& entityIds, AZ::IO::PathView filePath, bool saveToDisk)
         {
             EntityList inputEntityList, topLevelEntities;
             AZ::EntityId commonRootEntityId;
@@ -73,7 +73,10 @@ namespace AzToolsFramework
                 return findCommonRootOutcome;
             }
 
-            AZ_Assert(absolutePath.IsAbsolute(), "CreatePrefab requires an absolute path for saving the initial prefab file.");
+            if (saveToDisk)
+            {
+                AZ_Assert(filePath.IsAbsolute(), "CreatePrefab requires an absolute path for saving the initial prefab file if saving to disk.");
+            }
 
             InstanceOptionalReference instanceToCreate;
             {
@@ -143,9 +146,18 @@ namespace AzToolsFramework
                 }
 
                 // Create the Prefab
-                instanceToCreate = prefabEditorEntityOwnershipInterface->CreatePrefab(
-                    entities, AZStd::move(instancePtrs), m_prefabLoaderInterface->GenerateRelativePath(absolutePath),
-                    commonRootEntityOwningInstance);
+                if (saveToDisk)
+                {
+                    instanceToCreate = prefabEditorEntityOwnershipInterface->CreatePrefab(
+                        entities, AZStd::move(instancePtrs), m_prefabLoaderInterface->GenerateRelativePath(filePath),
+                        commonRootEntityOwningInstance);
+                }
+                else
+                {
+                    instanceToCreate = prefabEditorEntityOwnershipInterface->CreatePrefab(
+                        entities, AZStd::move(instancePtrs), filePath,
+                        commonRootEntityOwningInstance);
+                }
 
                 if (!instanceToCreate)
                 {
@@ -262,7 +274,10 @@ namespace AzToolsFramework
             }
 
             // Save Template to file
-            m_prefabLoaderInterface->SaveTemplateToFile(instanceToCreate->get().GetTemplateId(), absolutePath);
+            if (saveToDisk)
+            {
+                m_prefabLoaderInterface->SaveTemplateToFile(instanceToCreate->get().GetTemplateId(), filePath);
+            }
             
             return AZ::Success();
         }
