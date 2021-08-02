@@ -141,7 +141,7 @@ namespace AZ
             m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::StorageArray2D)].m_name = "NULL_DESCRIPTOR_STORAGE_ARRAY_2D";
             m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::StorageArray2D)].m_sampleCountFlag = VK_SAMPLE_COUNT_1_BIT;
             m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::StorageArray2D)].m_format = VK_FORMAT_R32G32B32A32_UINT;
-            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::StorageArray2D)].m_usageFlagBits =VkImageUsageFlagBits(VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT);
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::StorageArray2D)].m_usageFlagBits = VkImageUsageFlagBits(VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT);
             m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::StorageArray2D)].m_arrayLayers = 1;
             m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::StorageArray2D)].m_layout = VK_IMAGE_LAYOUT_GENERAL;
             m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::StorageArray2D)].m_dimension = 256;
