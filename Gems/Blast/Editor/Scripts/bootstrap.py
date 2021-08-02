@@ -10,7 +10,7 @@ try:
     import azlmbr.asset.builder
     import blast_asset_builder
 except:
-    # this script only runs in an asset processing enviorment
+    # this script only runs in an asset processing environment
     # like the AssetProcessor or an AssetBuilder
     # plus the Blast gem needs to be enabled for the project
     pass

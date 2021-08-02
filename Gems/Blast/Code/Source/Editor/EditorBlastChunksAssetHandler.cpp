@@ -69,6 +69,10 @@ namespace Blast
 
         if (!found)
         {
+            AZ_Error("blast",
+                found,
+                "Could not find asset models produced by source asset ID %s, verify the output product model assets.",
+                asset.Get()->GetId().m_guid.ToString<AZStd::string>().c_str());
             return LoadResult::Error;
         }
 
