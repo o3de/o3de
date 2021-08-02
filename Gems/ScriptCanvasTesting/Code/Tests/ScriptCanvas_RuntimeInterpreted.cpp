@@ -84,9 +84,9 @@ public:
     }
 };
 
-TEST_F(ScriptCanvasTestFixture, ProveError)
+TEST_F(ScriptCanvasTestFixture, EntityIdInputForOnGraphStart)
 {
-    EXPECT_TRUE(false);
+    RunUnitTestGraph("LY_SC_UnitTest_EntityIdInputForOnGraphStart");
 }
 
 TEST_F(ScriptCanvasTestFixture, ParseErrorOnKnownNull)

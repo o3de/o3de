@@ -82,23 +82,35 @@ namespace ScriptCanvasBuilder
 
         m_processEditorAssetDependencies.clear();
 
-        auto assetFilter = [this, &response](const AZ::Data::AssetFilterInfo& filterInfo)
+        AZStd::unordered_multimap<AZStd::string, AssetBuilderSDK::SourceFileDependency> jobDependenciesByKey;
+
+        auto assetFilter = [this, &jobDependenciesByKey](const AZ::Data::AssetFilterInfo& filterInfo)
         {
             // force load these before processing
             if (filterInfo.m_assetType == azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>()
-                || filterInfo.m_assetType == azrtti_typeid<ScriptEvents::ScriptEventsAsset>())
+            || filterInfo.m_assetType == azrtti_typeid<ScriptEvents::ScriptEventsAsset>())
             {
                 this->m_processEditorAssetDependencies.push_back(filterInfo);
             }
 
             // these trigger re-processing
-            if (filterInfo.m_assetType == azrtti_typeid<ScriptCanvasEditor::ScriptCanvasAsset>()
-                || filterInfo.m_assetType == azrtti_typeid<ScriptEvents::ScriptEventsAsset>()
-                || filterInfo.m_assetType == azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>())
+            if (filterInfo.m_assetType == azrtti_typeid<ScriptCanvasEditor::ScriptCanvasAsset>())
+            {
+                AZ_Error("ScriptCanvas", false, "ScriptAsset Reference in a graph detected");
+            }
+
+            if (filterInfo.m_assetType == azrtti_typeid<ScriptEvents::ScriptEventsAsset>())
             {
                 AssetBuilderSDK::SourceFileDependency dependency;
                 dependency.m_sourceFileDependencyUUID = filterInfo.m_assetId.m_guid;
-                response.m_sourceFileDependencyList.push_back(dependency);
+                jobDependenciesByKey.insert({ ScriptEvents::k_builderJobKey, dependency });
+            }
+
+            if (filterInfo.m_assetType == azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>())
+            {
+                AssetBuilderSDK::SourceFileDependency dependency;
+                dependency.m_sourceFileDependencyUUID = filterInfo.m_assetId.m_guid;
+                jobDependenciesByKey.insert({ s_scriptCanvasProcessJobKey, dependency });
             }
 
             // Asset filter always returns false to prevent parsing dependencies, but makes note of the script canvas dependencies
@@ -163,9 +175,10 @@ namespace ScriptCanvasBuilder
             jobDescriptor.m_additionalFingerprintInfo = AZStd::string(GetFingerprintString()).append("|").append(AZStd::to_string(static_cast<AZ::u64>(fingerprint)));
 
             // Graph process job needs to wait until its dependency asset job finished
-            for (const auto& processingDependency : response.m_sourceFileDependencyList)
+            for (const auto& processingDependency : jobDependenciesByKey)
             {
-                jobDescriptor.m_jobDependencyList.emplace_back(s_scriptCanvasProcessJobKey, info.m_identifier.c_str(), AssetBuilderSDK::JobDependencyType::Order, processingDependency);
+                response.m_sourceFileDependencyList.push_back(processingDependency.second);
+                jobDescriptor.m_jobDependencyList.emplace_back(processingDependency.first, info.m_identifier.c_str(), AssetBuilderSDK::JobDependencyType::Order, processingDependency.second);
             }
 
             response.m_createJobOutputs.push_back(jobDescriptor);

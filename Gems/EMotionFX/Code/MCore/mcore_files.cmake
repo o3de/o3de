@@ -107,9 +107,6 @@ set(FILES
     Source/PlaneEq.cpp
     Source/PlaneEq.h
     Source/PlaneEq.inl
-    Source/Quaternion.cpp
-    Source/Quaternion.h
-    Source/Quaternion.inl
     Source/Random.cpp
     Source/Random.h
     Source/Ray.cpp
