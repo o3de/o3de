@@ -163,6 +163,8 @@ ly_add_target(
         editor_files.cmake
     PLATFORM_INCLUDE_FILES
         Platform/${PAL_PLATFORM_NAME}/editor_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
+    TARGET_PROPERTIES
+        LY_INSTALL_GENERATE_RUN_TARGET TRUE
     BUILD_DEPENDENCIES
         PRIVATE
             3rdParty::Qt::Core

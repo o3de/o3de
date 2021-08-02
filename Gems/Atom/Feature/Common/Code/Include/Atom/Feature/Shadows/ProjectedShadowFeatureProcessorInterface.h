@@ -50,6 +50,8 @@ namespace AZ::Render
         virtual void SetFieldOfViewY(ShadowId id, float fieldOfView) = 0;
         //! Sets the maximum resolution of the shadow map
         virtual void SetShadowmapMaxResolution(ShadowId id, ShadowmapSize size) = 0;
+        //! Sets the shadow bias
+        virtual void SetShadowBias(ShadowId id, float bias) = 0;
         //! Sets the shadowmap Pcf method.
         virtual void SetPcfMethod(ShadowId id, PcfMethod method) = 0;
         //! Sets the shadow filter method

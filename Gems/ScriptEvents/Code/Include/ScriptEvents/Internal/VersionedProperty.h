@@ -109,7 +109,7 @@ namespace ScriptEventData
         {
             VersionedProperty property = VersionedProperty("Void");
             property.Set<const VoidType>(VoidType {});
-            return AZStd::ref(property);
+            return property;
         }
 
         template <typename T>

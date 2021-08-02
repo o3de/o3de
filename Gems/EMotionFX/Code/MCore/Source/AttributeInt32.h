@@ -64,23 +64,5 @@ namespace MCore
             : Attribute(TYPE_ID)
             , mValue(value) {}
         ~AttributeInt32() {}
-
-        uint32 GetDataSize() const override                         { return sizeof(int32); }
-
-        // read from a stream
-        bool ReadData(MCore::Stream* stream, MCore::Endian::EEndianType streamEndianType, uint8 version) override
-        {
-            MCORE_UNUSED(version);
-
-            int32 streamValue;
-            if (stream->Read(&streamValue, sizeof(int32)) == 0)
-            {
-                return false;
-            }
-
-            Endian::ConvertSignedInt32(&streamValue, streamEndianType);
-            mValue = streamValue;
-            return true;
-        }
     };
 }   // namespace MCore

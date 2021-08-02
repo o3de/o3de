@@ -93,9 +93,7 @@ namespace CommandSystem
         }
 
         // load anim graph from file
-        EMotionFX::Importer::AnimGraphSettings settings;
-        settings.mDisableNodeVisualization = false;
-        EMotionFX::AnimGraph* animGraph = EMotionFX::GetImporter().LoadAnimGraph(filename.c_str(), &settings);
+        EMotionFX::AnimGraph* animGraph = EMotionFX::GetImporter().LoadAnimGraph(filename.c_str());
         if (!animGraph)
         {
             outResult = AZStd::string::format("Failed to load anim graph from %s.", filename.c_str());

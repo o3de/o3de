@@ -10,7 +10,7 @@
 
 #include <Atom/Feature/CoreLights/CapsuleLightFeatureProcessorInterface.h>
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
-#include <CoreLights/IndexedDataVector.h>
+#include <Atom/Feature/Utils/IndexedDataVector.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 
 namespace AZ

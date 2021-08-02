@@ -77,6 +77,19 @@ namespace UnitTest
             m_intSpinBox.reset();
         }
 
+        QString setupTruncationTest(QString textValue)
+        {
+            QString retval;
+            m_doubleSpinBoxWithLineEdit->setDecimals(7);
+            m_doubleSpinBoxWithLineEdit->setDisplayDecimals(3);
+            m_doubleSpinBoxWithLineEdit->setFocus();
+            m_doubleSpinBoxWithLineEdit->GetLineEdit()->setText(textValue);
+            m_doubleSpinBoxWithLineEdit->clearFocus();
+
+            return m_doubleSpinBoxWithLineEdit->textFromValue(m_doubleSpinBoxWithLineEdit->value());
+        }
+
+
         AZStd::unique_ptr<QWidget> m_dummyWidget;
         AZStd::unique_ptr<AzQtComponents::SpinBox> m_intSpinBox;
         AZStd::unique_ptr<AzQtComponents::DoubleSpinBox> m_doubleSpinBox;
@@ -277,4 +290,34 @@ namespace UnitTest
         // test would result in a crash
         EXPECT_TRUE(m_intSpinBox.get() == nullptr);
     }
+
+    TEST_F(SpinBoxFixture, SpinBoxCheckHighValueTruncatesCorrectly)
+    {
+        QString value = setupTruncationTest("0.9999999");
+
+        EXPECT_TRUE(value == "0.999");
+    }
+
+    TEST_F(SpinBoxFixture, SpinBoxCheckLowValueTruncatesCorrectly)
+    {
+        QString value = setupTruncationTest("0.0000001");
+
+        EXPECT_TRUE(value == "0.0");
+    }
+
+    TEST_F(SpinBoxFixture, SpinBoxCheckBugValuesTruncatesCorrectly)
+    {
+        QString value = setupTruncationTest("0.12395");
+
+        EXPECT_TRUE(value == "0.123");
+
+        value = setupTruncationTest("0.94496");
+
+        EXPECT_TRUE(value == "0.944");
+
+        value = setupTruncationTest("0.0009999");
+
+        EXPECT_TRUE(value == "0.0");
+    }
+
 } // namespace UnitTest
