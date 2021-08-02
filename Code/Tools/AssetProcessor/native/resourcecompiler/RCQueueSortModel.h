@@ -50,11 +50,6 @@ namespace AssetProcessor
         void AddJobIdEntry(AssetProcessor::RCJob* rcJob);
         void RemoveJobIdEntry(AssetProcessor::RCJob* rcJob);
 
-        void SetQueueSortOnDBSourceName()
-        {
-            m_sortQueueOnDBSourceName = true;
-        }
-
         // implement QSortFilteRProxyModel:
         bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override;
         bool lessThan(const QModelIndex& left, const QModelIndex& right) const override;
@@ -71,11 +66,6 @@ namespace AssetProcessor
 
         QSet<QString> m_currentlyConnectedPlatforms;
         bool m_dirtyNeedsResort = false; // instead of constantly resorting, we resort only when someone wants to pull an element from us
-
-        // By default, jobs with equal priority and escalation sort on the job run key. This flag changes
-        // jobs to sort on the database source name. This is used for testing, to guarantee jobs run in the same
-        // order for those tests each time they are run.
-        bool m_sortQueueOnDBSourceName = false;
 
         // ---------------------------------------------------------
         // AssetProcessorPlatformBus::Handler

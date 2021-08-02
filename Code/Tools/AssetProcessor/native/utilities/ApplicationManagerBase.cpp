@@ -177,7 +177,6 @@ void ApplicationManagerBase::InitAssetProcessorManager()
     const APCommandLineSwitch Command_warningLevel("warningLevel", "Configure the error and warning reporting level for AssetProcessor. Pass in 1 for fatal errors, 2 for fatal errors and warnings.");
     const APCommandLineSwitch Command_acceptInput("acceptInput", "Enable external control messaging via the ControlRequestHandler, used with automated tests.");
     const APCommandLineSwitch Command_debugOutput("debugOutput", "When enabled, builders that support it will output debug information as product assets. Used primarily with scene files.");
-    const APCommandLineSwitch Command_sortJobsByDBSourceName("sortJobsByDBSourceName", "When enabled, sorts pending jobs with equal priority and dependencies by database source name instead of job ID. Useful for automated tests to process assets in the same order each time.");
     const APCommandLineSwitch Command_truncatefingerprint("truncatefingerprint", "Truncates the fingerprint used for processed assets. Useful if you plan to compress product assets to share on another machine because some compression formats like zip will truncate file mod timestamps.");
     const APCommandLineSwitch Command_help("help", "Displays this message.");
     const APCommandLineSwitch Command_h("h", Command_help.m_helpText);
@@ -260,11 +259,6 @@ void ApplicationManagerBase::InitAssetProcessorManager()
         m_assetProcessorManager->SetBuilderDebugFlag(true);
     }
 
-    if (commandLine->HasSwitch(Command_sortJobsByDBSourceName.m_switch))
-    {
-        m_sortJobsByDBSourceName = true;
-    }
-
     if (commandLine->HasSwitch(Command_truncatefingerprint.m_switch))
     {
         // Zip archive format uses 2 second precision truncated
@@ -302,7 +296,6 @@ void ApplicationManagerBase::InitAssetProcessorManager()
         AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_warningLevel.m_switch, Command_warningLevel.m_helpText);
         AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_acceptInput.m_switch, Command_acceptInput.m_helpText);
         AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_debugOutput.m_switch, Command_debugOutput.m_helpText);
-        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_sortJobsByDBSourceName.m_switch, Command_sortJobsByDBSourceName.m_helpText);
         AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_truncatefingerprint.m_switch, Command_truncatefingerprint.m_helpText);
         AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_help.m_switch, Command_help.m_helpText);
         AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_h.m_switch, Command_h.m_helpText);
@@ -342,11 +335,6 @@ void ApplicationManagerBase::InitAssetCatalog()
 void ApplicationManagerBase::InitRCController()
 {
     m_rcController = new AssetProcessor::RCController(m_platformConfiguration->GetMinJobs(), m_platformConfiguration->GetMaxJobs());
-
-    if (m_sortJobsByDBSourceName)
-    {
-        m_rcController->SetQueueSortOnDBSourceName();
-    }
 
     QObject::connect(m_assetProcessorManager, &AssetProcessor::AssetProcessorManager::AssetToProcess, m_rcController, &AssetProcessor::RCController::JobSubmitted);
     QObject::connect(m_rcController, &AssetProcessor::RCController::FileCompiled, m_assetProcessorManager, &AssetProcessor::AssetProcessorManager::AssetProcessed, Qt::UniqueConnection);
