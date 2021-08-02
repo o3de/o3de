@@ -469,6 +469,8 @@ namespace AZ
             ResourceTransitionLoggerNull logger(imageFrameAttachment.GetId());
 #endif
 
+            AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameGraphCompiler: CompileImageBarriers (DX12)");
+
             Image& image = static_cast<Image&>(*imageFrameAttachment.GetImage());
             RHI::ImageScopeAttachment* scopeAttachment = imageFrameAttachment.GetFirstScopeAttachment();
 

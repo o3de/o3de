@@ -7,6 +7,7 @@
  */
 
 #include <MCore/Source/Config.h>
+#include <MCore/Source/LogManager.h>
 #include "GLSLShader.h"
 #include "GraphicsManager.h"
 #include <QFile>

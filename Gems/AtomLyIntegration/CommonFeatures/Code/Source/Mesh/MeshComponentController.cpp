@@ -252,6 +252,12 @@ namespace AZ
             }
         }
 
+        MaterialAssignmentId MeshComponentController::FindMaterialAssignmentId(
+            const MaterialAssignmentLodIndex lod, const AZStd::string& label) const
+        {
+            return FindMaterialAssignmentIdInModel(GetModel(), lod, label);
+        }
+
         MaterialAssignmentMap MeshComponentController::GetMaterialAssignments() const
         {
             return GetMaterialAssignmentsFromModel(GetModel());

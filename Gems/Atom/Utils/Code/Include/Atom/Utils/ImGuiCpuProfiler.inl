@@ -14,6 +14,7 @@
 #include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/set.h>
+#include <AzCore/std/limits.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/std/time.h>
 
@@ -36,6 +37,7 @@ namespace AZ
             {
                 return AZStd::string::format("Thread: %zu", static_cast<size_t>(threadId));
             }
+
             inline float TicksToMs(AZStd::sys_time_t ticks)
             {
                 // Note: converting to microseconds integer before converting to milliseconds float
@@ -134,6 +136,99 @@ namespace AZ
             }
         }
 
+        inline void ImGuiCpuProfiler::DrawTable()
+        {
+            const auto flags =
+                ImGuiTableFlags_Borders | ImGuiTableFlags_Sortable | ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable;
+            if (ImGui::BeginTable("FunctionStatisticsTable", 6, flags))
+            {
+                // Table header setup
+                ImGui::TableSetupColumn("Group");
+                ImGui::TableSetupColumn("Region");
+                ImGui::TableSetupColumn("MTPC (ms)");
+                ImGui::TableSetupColumn("Max (ms)");
+                ImGui::TableSetupColumn("Invocations");
+                ImGui::TableSetupColumn("Total (ms)");
+                ImGui::TableHeadersRow();
+                ImGui::TableNextColumn();
+
+                ImGuiTableSortSpecs* sortSpecs = ImGui::TableGetSortSpecs();
+                if (sortSpecs && sortSpecs->SpecsDirty)
+                {
+                    SortTable(sortSpecs);
+                }
+
+                // Draw all of the rows held in the GroupRegionMap
+                for (const auto* statistics : m_tableData)
+                {
+                    if (!m_timedRegionFilter.PassFilter(statistics->m_groupName.c_str())
+                        && !m_timedRegionFilter.PassFilter(statistics->m_regionName.c_str()))
+                    {
+                        continue;
+                    }
+
+                    ImGui::Text(statistics->m_groupName.c_str());
+                    const ImVec2 topLeftBound = ImGui::GetItemRectMin();
+                    ImGui::TableNextColumn();
+
+                    ImGui::Text(statistics->m_regionName.c_str());
+                    ImGui::TableNextColumn();
+
+                    ImGui::Text("%.2f", CpuProfilerImGuiHelper::TicksToMs(statistics->m_runningAverageTicks));
+                    ImGui::TableNextColumn();
+
+                    ImGui::Text("%.2f", CpuProfilerImGuiHelper::TicksToMs(statistics->m_maxTicks));
+                    ImGui::TableNextColumn();
+
+                    ImGui::Text("%llu", statistics->m_invocationsLastFrame);
+                    ImGui::TableNextColumn();
+
+                    ImGui::Text("%.2f", CpuProfilerImGuiHelper::TicksToMs(statistics->m_lastFrameTotalTicks));
+                    const ImVec2 botRightBound = ImGui::GetItemRectMax();
+                    ImGui::TableNextColumn();
+
+                    // NOTE: we are manually checking the bounds rather than using ImGui::IsItemHovered + Begin/EndGroup because
+                    // ImGui reports incorrect bounds when using Begin/End group in the Tables API.
+                    if (ImGui::IsWindowHovered() && ImGui::IsMouseHoveringRect(topLeftBound, botRightBound, false))
+                    {
+                        ImGui::BeginTooltip();
+                        ImGui::Text(statistics->GetExecutingThreadsLabel().c_str());
+                        ImGui::EndTooltip();
+                    }
+                }
+            }
+            ImGui::EndTable();
+        }
+
+        inline void ImGuiCpuProfiler::SortTable(ImGuiTableSortSpecs* sortSpecs)
+        {
+            const bool ascending = sortSpecs->Specs->SortDirection == ImGuiSortDirection_Ascending;
+            const ImS16 columnToSort = sortSpecs->Specs->ColumnIndex;
+                
+            switch (columnToSort)
+            {
+            case (0): // Sort by group name
+                AZStd::sort(m_tableData.begin(), m_tableData.end(), TableRow::TableRowCompareFunctor(&TableRow::m_groupName, ascending));
+                break;
+            case (1): // Sort by region name
+                AZStd::sort(m_tableData.begin(), m_tableData.end(), TableRow::TableRowCompareFunctor(&TableRow::m_regionName, ascending));
+                break;
+            case (2): // Sort by average time
+                AZStd::sort(m_tableData.begin(), m_tableData.end(), TableRow::TableRowCompareFunctor(&TableRow::m_runningAverageTicks, ascending));
+                break;
+            case (3): // Sort by max time
+                AZStd::sort(m_tableData.begin(), m_tableData.end(), TableRow::TableRowCompareFunctor(&TableRow::m_maxTicks, ascending));
+                break;
+            case (4): // Sort by invocations
+                AZStd::sort(m_tableData.begin(), m_tableData.end(), TableRow::TableRowCompareFunctor(&TableRow::m_invocationsLastFrame, ascending));
+                break;
+            case (5): // Sort by total time 
+                AZStd::sort(m_tableData.begin(), m_tableData.end(), TableRow::TableRowCompareFunctor(&TableRow::m_lastFrameTotalTicks, ascending));
+                break;
+            }
+            sortSpecs->SpecsDirty = false;
+        }
+
         inline void ImGuiCpuProfiler::DrawStatisticsView()
         {
             DrawCommonHeader();
@@ -156,62 +251,6 @@ namespace AZ
                 ImGui::NextColumn();
             };
 
-            const auto DrawRegionHoverMarker = [this, &ShowTimeInMs](AZStd::vector<ThreadRegionEntry>& entries)
-            {
-                if (ImGui::IsItemHovered())
-                {
-                    ImGui::BeginTooltip();
-                    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 60.0f);
-
-                    for (ThreadRegionEntry& entry : entries)
-                    {
-                        ImGui::Text(CpuProfilerImGuiHelper::TextThreadId(entry.m_threadId.m_id).c_str());
-
-                        const AZStd::sys_time_t elapsed = entry.m_endTick - entry.m_startTick;
-                        ShowTimeInMs(elapsed);
-                        ImGui::Separator();
-                    }
-
-                    ImGui::PopTextWrapPos();
-                    ImGui::EndTooltip();
-                }
-            };
-
-            const auto ShowRegionRow =
-                [ticksPerSecond, &DrawRegionHoverMarker,
-                 &ShowTimeInMs](const char* regionLabel, AZStd::vector<ThreadRegionEntry> regions, AZStd::sys_time_t duration)
-            {
-                // Draw the region label
-                ImGui::Text(regionLabel);
-                ImGui::NextColumn();
-
-                // Draw the thread count label
-                AZStd::sys_time_t totalTime = 0;
-                AZStd::set<AZStd::thread_id> threads;
-                for (ThreadRegionEntry& entry : regions) // Find the thread count and total execution time for all threads
-                {
-                    threads.insert(entry.m_threadId);
-                    totalTime += entry.m_endTick - entry.m_startTick;
-                }
-                const AZStd::string threadLabel = AZStd::string::format("Threads: %u", static_cast<uint32_t>(threads.size()));
-                ImGui::Text(threadLabel.c_str());
-                DrawRegionHoverMarker(regions);
-                ImGui::NextColumn();
-
-                // Draw the overall invocation count
-                const AZStd::string invocationLabel = AZStd::string::format("Total calls: %u", static_cast<uint32_t>(regions.size()));
-                ImGui::Text(invocationLabel.c_str());
-                DrawRegionHoverMarker(regions);
-                ImGui::NextColumn();
-
-                // Draw the time labels (max and then total)
-                const AZStd::string timeLabel = AZStd::string::format(
-                    "%.2f ms max, %.2f ms total", CpuProfilerImGuiHelper::TicksToMs(duration),
-                    CpuProfilerImGuiHelper::TicksToMs(totalTime));
-                ImGui::Text(timeLabel.c_str());
-                ImGui::NextColumn();
-            };
-
             if (ImGui::BeginChild("Statistics View", { 0, 0 }, true))
             {
                 // Set column settings.
@@ -229,44 +268,20 @@ namespace AZ
                 ImGui::Separator();
                 ImGui::Columns(1, "view", false);
 
-                m_timedRegionFilter.Draw("TimedRegion Filter");
-
-                // Draw the timed regions
-                if (ImGui::BeginChild("TimedRegions"))
+                m_timedRegionFilter.Draw("Filter");
+                ImGui::SameLine();
+                if (ImGui::Button("Clear Filter"))
                 {
-                    for (auto& timeRegionMapEntry : m_groupRegionMap)
-                    {
-                        // Draw the regions
-                        if (ImGui::TreeNodeEx(timeRegionMapEntry.first.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
-                        {
-                            ImGui::Columns(4, "view", false);
-                            ImGui::SetColumnWidth(0, 400.0f);
-                            ImGui::SetColumnWidth(1, 100.0f);
-                            ImGui::SetColumnWidth(2, 150.0f);
-                            ImGui::SetColumnWidth(3, 240.0f);
-
-                            for (auto& region : timeRegionMapEntry.second)
-                            {
-                                // Calculate the region with the longest execution time
-                                AZStd::sys_time_t threadExecutionElapsed = 0;
-                                for (ThreadRegionEntry& entry : region.second)
-                                {
-                                    const AZStd::sys_time_t elapsed = entry.m_endTick - entry.m_startTick;
-                                    threadExecutionElapsed = AZStd::max(threadExecutionElapsed, elapsed);
-                                }
-
-                                // Only draw the TimedRegion rows when it passes the filter
-                                if (m_timedRegionFilter.PassFilter(region.first.c_str()))
-                                {
-                                    ShowRegionRow(region.first.c_str(), region.second, threadExecutionElapsed);
-                                }
-                            }
-                            ImGui::Columns(1, "view", false);
-                            ImGui::TreePop();
-                        }
-                    }
-                    ImGui::EndChild();
+                    m_timedRegionFilter.Clear();
                 }
+                ImGui::SameLine();
+                if (ImGui::Button("Reset Table"))
+                {
+                    m_tableData.clear();
+                    m_groupRegionMap.clear();
+                }
+
+                DrawTable();
             } 
         }
 
@@ -279,8 +294,8 @@ namespace AZ
             if (ImGui::BeginChild("Options and Statistics", { 0, 0 }, true))
             {
                 ImGui::Columns(3, "Options", true);
-                ImGui::Text("Frames To Collect:");
-                ImGui::SliderInt("", &m_framesToCollect, 10, 10000, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_Logarithmic);
+                ImGui::SliderInt("Saved Frames", &m_framesToCollect, 10, 10000, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_Logarithmic);
+                m_visualizerHighlightFilter.Draw("Find Region");
 
                 ImGui::NextColumn();
 
@@ -372,7 +387,6 @@ namespace AZ
                     baseRow += maxDepth + 1; // Next draw loop should start one row down
                 }
 
-                DrawRegionStatistics();
                 DrawFrameBoundaries();
 
                 // Draw an invisible button to capture inputs
@@ -432,14 +446,11 @@ namespace AZ
             // view is only holding data from the last frame, the memory overhead is minimal and gives us a faster redraw
             // compared to if we needed to transform the visualizer's data into the statistical format every frame.
 
-            // Clear the statistical view's cached entries
-            m_groupRegionMap.clear();
-
             // Get the latest TimeRegionMap
             const RHI::CpuProfiler::TimeRegionMap& timeRegionMap = RHI::CpuProfiler::Get()->GetTimeRegionMap();
 
-            m_viewportStartTick = INT64_MAX;
-            m_viewportEndTick = INT64_MIN;
+            m_viewportStartTick = AZStd::numeric_limits<s64>::max();
+            m_viewportEndTick = AZStd::numeric_limits<s64>::lowest();
 
             // Iterate through the entire TimeRegionMap and copy the data since it will get deleted on the next frame
             for (const auto& [threadId, singleThreadRegionMap] : timeRegionMap)
@@ -461,14 +472,15 @@ namespace AZ
 
                         // Also update the statistical view's data
                         const AZStd::string& groupName = region.m_groupRegionName->m_groupName;
-                        m_groupRegionMap[groupName][regionName].push_back(
-                            { threadId, region.m_startTick, region.m_endTick });
 
-                        // Update running statistics if we want to record this region's data
-                        if (m_regionStatisticsMap[region.m_groupRegionName].m_record)
+                        if (!m_groupRegionMap[groupName].contains(regionName))
                         {
-                            m_regionStatisticsMap[region.m_groupRegionName].RecordRegion(region);
+                            m_groupRegionMap[groupName][regionName].m_groupName = groupName;
+                            m_groupRegionMap[groupName][regionName].m_regionName = regionName;
+                            m_tableData.push_back(&m_groupRegionMap[groupName][regionName]);
                         }
+
+                        m_groupRegionMap[groupName][regionName].RecordRegion(region, threadId);
                     }
                 }
 
@@ -522,6 +534,12 @@ namespace AZ
 
         inline void ImGuiCpuProfiler::DrawBlock(const TimeRegion& block, u64 targetRow)
         {
+            // Don't draw anything if the user is searching for regions and this block doesn't pass the filter
+            if (!m_visualizerHighlightFilter.PassFilter(block.m_groupRegionName->m_regionName))
+            {
+                return;
+            }
+
             float wy = ImGui::GetWindowPos().y - ImGui::GetScrollY();
 
             ImDrawList* drawList = ImGui::GetWindowDrawList();
@@ -567,13 +585,14 @@ namespace AZ
             // Tooltip and block highlighting
             if (ImGui::IsMouseHoveringRect(startPoint, endPoint) && ImGui::IsWindowHovered())
             {
-                // Open function statistics map on click
+                // Go to the statistics view when a region is clicked
                 if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                 {
-                    const GroupRegionName* key = block.m_groupRegionName;
-                    m_regionStatisticsMap[key].m_draw = true;
+                    m_enableVisualizer = false;
+                    const auto newFilter = AZStd::string(block.m_groupRegionName->m_regionName);
+                    m_timedRegionFilter = ImGuiTextFilter(newFilter.c_str());
+                    m_timedRegionFilter.Build();
                 }
-
                 // Hovering outline
                 drawList->AddRect(startPoint, endPoint, ImGui::GetColorU32({ 1, 1, 1, 1 }), 0.0, 0, 1.5);
 
@@ -623,31 +642,6 @@ namespace AZ
             const AZStd::string threadIdText =  CpuProfilerImGuiHelper::TextThreadId(threadId.m_id);
 
             ImGui::GetWindowDrawList()->AddText({ wx + 10, wy + baseRow * RowHeight + 5 }, IM_COL32_WHITE, threadIdText.c_str());
-        }
-
-        inline void ImGuiCpuProfiler::DrawRegionStatistics()
-        {
-            for (auto& [groupRegionName, stat] : m_regionStatisticsMap)
-            {
-                if (stat.m_draw)
-                {
-                    ImGui::SetNextWindowSize({300, 340}, ImGuiCond_FirstUseEver);
-                    ImGui::Begin(groupRegionName->m_regionName, &stat.m_draw, 0);
-
-                    if (ImGui::Button(stat.m_record ? "Pause" : "Resume"))
-                    {
-                        stat.m_record = !stat.m_record;
-                    }
-
-                    ImGui::Text("Invocations: %llu", stat.m_invocations);
-                    ImGui::Text("Average time: %.3f ms", stat.CalcAverageTimeMs());
-
-                    ImGui::Separator();
-
-                    ImGui::ColorPicker4("Region color", &m_regionColorMap[groupRegionName].x); 
-                    ImGui::End();
-                }
-            }
         }
 
         inline void ImGuiCpuProfiler::DrawFrameBoundaries()
@@ -851,25 +845,51 @@ namespace AZ
             else
             {
                 m_frameEndTicks.push_back(AZStd::GetTimeNowTicks());
+
+                for (auto& [groupName, regionMap] : m_groupRegionMap)
+                {
+                    for (auto& [regionName, row] : regionMap)
+                    {
+                        row.ResetPerFrameStatistics();
+                    }
+                }
             }
         }
 
-        // ----- RegionStatistics implementation ----- 
-        
-        inline float RegionStatistics::CalcAverageTimeMs() const
+        // ---- TableRow impl ----
+
+        inline void TableRow::RecordRegion(const AZ::RHI::CachedTimeRegion& region, AZStd::thread_id threadId)
         {
-            if (m_invocations == 0)
+            const AZStd::sys_time_t deltaTime = region.m_endTick - region.m_startTick;
+
+            // Update per frame statistics
+            ++m_invocationsLastFrame;
+            m_executingThreads.insert(threadId);
+            m_lastFrameTotalTicks += deltaTime;
+            m_maxTicks = AZStd::max(m_maxTicks, deltaTime);
+
+            // Update aggregate statistics
+            m_runningAverageTicks =
+                aznumeric_cast<AZStd::sys_time_t>((1.0 * (deltaTime + m_invocationsTotal * m_runningAverageTicks)) / (m_invocationsTotal + 1));
+            ++m_invocationsTotal;
+        }
+
+        inline void TableRow::ResetPerFrameStatistics()
+        {
+            m_invocationsLastFrame = 0;
+            m_executingThreads.clear();
+            m_lastFrameTotalTicks = 0;
+            m_maxTicks = 0;
+        }
+
+        inline AZStd::string TableRow::GetExecutingThreadsLabel() const 
+        {
+            auto threadString = AZStd::string::format("Executed in %zu threads\n", m_executingThreads.size());
+            for (const auto& threadId : m_executingThreads)
             {
-                return 0.0;
+                threadString.append(CpuProfilerImGuiHelper::TextThreadId(threadId.m_id) + "\n");
             }
-            const double averageTicks = aznumeric_cast<double>(m_totalTicks) / m_invocations;
-            return CpuProfilerImGuiHelper::TicksToMs(aznumeric_cast<AZStd::sys_time_t>(averageTicks));
-        }
-
-        inline void RegionStatistics::RecordRegion(const AZ::RHI::CachedTimeRegion& region)
-        {
-            m_invocations++;
-            m_totalTicks += region.m_endTick - region.m_startTick;
+            return threadString;
         }
     } // namespace Render
 } // namespace AZ

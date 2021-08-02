@@ -21,6 +21,8 @@ namespace AZ
         public:
             //! Get all material assignments that can be overridden
             virtual MaterialAssignmentMap GetOriginalMaterialAssignments() const = 0;
+            //! Get material assignment id matching lod and label substring
+            virtual MaterialAssignmentId FindMaterialAssignmentId(const MaterialAssignmentLodIndex lod, const AZStd::string& label) const = 0;
             //! Set material overrides
             virtual void SetMaterialOverrides(const MaterialAssignmentMap& materials) = 0;
             //! Get material overrides
@@ -69,6 +71,9 @@ namespace AZ
             : public ComponentBus
         {
         public:
+            //! Get material assignment id matching lod and label substring
+            virtual MaterialAssignmentId FindMaterialAssignmentId(
+                const MaterialAssignmentLodIndex lod, const AZStd::string& label) const = 0;
             virtual MaterialAssignmentMap GetMaterialAssignments() const = 0;
             virtual AZStd::unordered_set<AZ::Name> GetModelUvNames() const = 0;
         };
