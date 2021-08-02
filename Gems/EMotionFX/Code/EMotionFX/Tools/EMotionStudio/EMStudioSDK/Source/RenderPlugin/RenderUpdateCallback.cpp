@@ -170,9 +170,8 @@ namespace EMStudio
             settings.mNodeBasedColor          = renderOptions->GetNodeAABBColor();
             settings.mStaticBasedColor        = renderOptions->GetStaticAABBColor();
             settings.mMeshBasedColor          = renderOptions->GetMeshAABBColor();
-            settings.mCollisionMeshBasedColor = renderOptions->GetCollisionMeshAABBColor();
 
-            renderUtil->RenderAABBs(actorInstance, settings);
+            renderUtil->RenderAabbs(actorInstance, settings);
         }
 
         if (widget->GetRenderFlag(RenderViewWidget::RENDER_OBB))
@@ -260,8 +259,8 @@ namespace EMStudio
         // render the selection
         if (renderOptions->GetRenderSelectionBox() && EMotionFX::GetActorManager().GetNumActorInstances() != 1 && mPlugin->GetCurrentSelection()->CheckIfHasActorInstance(actorInstance))
         {
-            MCore::AABB aabb = actorInstance->GetAABB();
-            aabb.Widen(aabb.CalcRadius() * 0.005f);
+            AZ::Aabb aabb = actorInstance->GetAabb();
+            aabb.Expand(aabb.GetExtents() * 0.005f);
             renderUtil->RenderSelection(aabb, renderOptions->GetSelectionColor());
         }
 

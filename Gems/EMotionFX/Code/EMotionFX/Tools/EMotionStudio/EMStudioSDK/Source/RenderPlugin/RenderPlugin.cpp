@@ -915,7 +915,7 @@ namespace EMStudio
             }
 
             // get the mesh based AABB
-            AZ::Aabb aabb;
+            AZ::Aabb aabb = AZ::Aabb::CreateNull();
             actorInstance->CalcMeshBasedAabb(0, &aabb);
 
             // get the node based AABB
