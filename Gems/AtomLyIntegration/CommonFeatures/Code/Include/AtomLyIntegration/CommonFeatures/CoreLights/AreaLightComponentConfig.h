@@ -56,6 +56,7 @@ namespace AZ
 
             // Shadows (only used for supported shapes)
             bool m_enableShadow = false;
+            float m_bias = 0.1f;
             ShadowmapSize m_shadowmapMaxSize = ShadowmapSize::Size256;
             ShadowFilterMethod m_shadowFilterMethod = ShadowFilterMethod::None;
             PcfMethod m_pcfMethod = PcfMethod::Bicubic;

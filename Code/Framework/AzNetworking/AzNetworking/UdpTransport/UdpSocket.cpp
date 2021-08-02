@@ -126,7 +126,7 @@ namespace AzNetworking
 #ifdef ENABLE_LATENCY_DEBUG
         if (connectionQuality.m_lossPercentage > 0)
         {
-            if (int32_t(m_random.GetRandom() % 100) < (connectionQuality.m_lossPercentage / 2))
+            if (int32_t(m_random.GetRandom() % 100) < (connectionQuality.m_lossPercentage))
             {
                 // Pretend we sent, but don't actually send
                 return true;
@@ -157,9 +157,11 @@ namespace AzNetworking
 #ifdef ENABLE_LATENCY_DEBUG
         else if ((connectionQuality.m_latencyMs > AZ::TimeMs{ 0 }) || (connectionQuality.m_varianceMs > AZ::TimeMs{ 0 }))
         {
-            const AZ::TimeMs jitterMs = aznumeric_cast<AZ::TimeMs>(m_random.GetRandom()) % (connectionQuality.m_varianceMs / aznumeric_cast<AZ::TimeMs>(2));
+            const AZ::TimeMs jitterMs = aznumeric_cast<AZ::TimeMs>(m_random.GetRandom()) % (connectionQuality.m_varianceMs > AZ::TimeMs{ 0 }
+                                      ? connectionQuality.m_varianceMs
+                                      : AZ::TimeMs{ 1 });
             const AZ::TimeMs currTimeMs = AZ::GetElapsedTimeMs();
-            const AZ::TimeMs deferTimeMs = (connectionQuality.m_latencyMs / aznumeric_cast<AZ::TimeMs>(2)) + jitterMs;
+            const AZ::TimeMs deferTimeMs = (connectionQuality.m_latencyMs) + jitterMs;
 
             DeferredData deferred = DeferredData(address, data, size, encrypt, dtlsEndpoint);
             AZ::Interface<AZ::IEventScheduler>::Get()->AddCallback([&, deferredData = deferred]

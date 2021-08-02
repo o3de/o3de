@@ -463,7 +463,7 @@ void EditorViewportWidget::Update()
 
     if (m_updateCameraPositionNextTick)
     {
-        auto cameraState = m_renderViewport->GetCameraState();
+        auto cameraState = GetCameraState();
         AZ::Matrix3x4 matrix;
         matrix.SetBasisAndTranslation(cameraState.m_side, cameraState.m_forward, cameraState.m_up, cameraState.m_position);
         auto m = AZMatrix3x4ToLYMatrix3x4(matrix);
@@ -1138,6 +1138,17 @@ void EditorViewportWidget::OnMenuSelectCurrentCamera()
 
 AzFramework::CameraState EditorViewportWidget::GetCameraState()
 {
+    if (m_viewEntityId.IsValid())
+    {
+        bool cameraStateAcquired = false;
+        AzFramework::CameraState cameraState;
+        Camera::EditorCameraViewRequestBus::BroadcastResult(cameraStateAcquired,
+            &Camera::EditorCameraViewRequestBus::Events::GetCameraState, cameraState);
+        if (cameraStateAcquired)
+        {
+            return cameraState;
+        }
+    }
     return m_renderViewport->GetCameraState();
 }
 

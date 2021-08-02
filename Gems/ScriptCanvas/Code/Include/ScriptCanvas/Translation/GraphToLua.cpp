@@ -1943,7 +1943,8 @@ namespace ScriptCanvas
                 {
                     const auto requirement = ParseConstructionRequirement(variable);
 
-                    if (requirement == Grammar::VariableConstructionRequirement::None || (requirement != Grammar::VariableConstructionRequirement::Static && !execution->IsStartCall()))
+                    if (requirement == Grammar::VariableConstructionRequirement::None
+                    || requirement != Grammar::VariableConstructionRequirement::Static && execution != m_model.GetStart())
                     {
                         m_dotLua.WriteLineIndented("local %s = %s", variable->m_name.data(), ToValueString(variable->m_datum, m_configuration).data());
                     }

@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <Atom/Feature/Material/MaterialAssignmentId.h>
@@ -63,5 +64,8 @@ namespace AZ
         //! Utility function for generating a set of available material assignments in a model
         MaterialAssignmentMap GetMaterialAssignmentsFromModel(Data::Instance<AZ::RPI::Model> model);
 
+        //! Find an assignment id corresponding to the lod and label substring filters
+        MaterialAssignmentId FindMaterialAssignmentIdInModel(
+            const Data::Instance<AZ::RPI::Model> model, const MaterialAssignmentLodIndex lodFilter, const AZStd::string& labelFilter);
     } // namespace Render
 } // namespace AZ
