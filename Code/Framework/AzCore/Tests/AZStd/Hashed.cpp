@@ -287,6 +287,77 @@ namespace UnitTest
         }
     }
 
+    TEST_F(HashedContainers, HashTable_InsertionDuplicateOnRehash)
+    {
+        struct TwoPtrs
+        {
+            void* m_ptr1;
+            void* m_ptr2;
+
+            bool operator==(const TwoPtrs& other) const
+            {
+                if (m_ptr1 == other.m_ptr1)
+                {
+                    return m_ptr2 == other.m_ptr2;
+                }
+                else if (m_ptr1 == other.m_ptr2)
+                {
+                    return m_ptr2 == other.m_ptr1;
+                }
+                return false;
+            }
+        };
+
+        struct TwoPtrsHasher
+        {
+            size_t operator()(const TwoPtrs& p) const
+            {
+                size_t hash{ 0 };
+                AZStd::hash_combine(hash, p.m_ptr1, p.m_ptr2);
+                return hash;
+            }
+        };
+        using PairSet = AZStd::unordered_set<TwoPtrs, TwoPtrsHasher>;
+        PairSet set;
+        TwoPtrs data[] =
+        {
+            { (void*)0x000001ceddd942a0, (void*)0x000001ceddd94720 },
+            { (void*)0x000001ceddd94420, (void*)0x000001ceddd94a20 },
+            { (void*)0x000001ceddd94720, (void*)0x000001ceddd94420 },
+            { (void*)0x000001ceddd948a0, (void*)0x000001ceddd945a0 },
+            { (void*)0x000001ceddd94a20, (void*)0x000001ceddd9c420 },
+            { (void*)0x000001ceddd94ba0, (void*)0x000001ceddd94d20 },
+            { (void*)0x000001ceddd94d20, (void*)0x000001ceddd948a0 },
+            { (void*)0x000001ceddd9c2a0, (void*)0x000001ceddd942a0 },
+            { (void*)0x000001ceddd9c420, (void*)0x000001ceddd94ba0 },
+            { (void*)0x000001ceddd9c5a0, (void*)0x000001ceddd9c720 },
+            { (void*)0x000001ceddd9c720, (void*)0x000001ceddd9c8a0 },
+            { (void*)0x000001ceddd9c8a0, (void*)0x000001ceddd94a20 },
+            { (void*)0x000001ceddd9ca20, (void*)0x000001ceddd9cba0 },
+            { (void*)0x000001ceddd9cba0, (void*)0x000001ceddd9cd20 },
+            { (void*)0x000001ceddd9cd20, (void*)0x000001ceddd9cea0 },
+            { (void*)0x000001ceddd9cea0, (void*)0x000001ceddd94a20 },
+            { (void*)0x000001ceddd9d020, (void*)0x000001ceddd9e2c0 },
+            { (void*)0x000001ceddd9e2c0, (void*)0x000001ceddd9e440 },
+            { (void*)0x000001ceddd9e440, (void*)0x000001ceddd948a0 },
+            { (void*)0x000001ceddd9e5c0, (void*)0x000001ceddd9e740 },
+            { (void*)0x000001ceddd9e740, (void*)0x000001ceddd9e8c0 },
+            { (void*)0x000001ceddd9e8c0, (void*)0x000001ceddd948a0 },
+            { (void*)0x000001ceddd9e5c0, (void*)0x000001ceddd9d020 },
+            { (void*)0x000001ceddd9e440, (void*)0x000001ceddd9cd20 },
+            { (void*)0x000001ceddd9d020, (void*)0x000001ceddd9e440 },
+            { (void*)0x000001ceddd9cea0, (void*)0x000001ceddd9e2c0 },
+            { (void*)0x000001ceddd9cd20, (void*)0x000001ceddd9c720 },
+            { (void*)0x000001ceddd9cba0, (void*)0x000001ceddd9ca20 },
+            { (void*)0x000001ceddd9ca20, (void*)0x000001ceddd9cea0 }
+        };
+
+        for (auto& e : data)
+        {
+            set.insert(e);
+        }
+    }
+
     TEST_F(HashedContainers, HashTable_Fixed)
     {
         array<int, 5> elements = {

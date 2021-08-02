@@ -134,6 +134,7 @@ namespace AZStd
             void        rehash(HashTable* table, size_type numBucketsMin)
             {
                 size_type num_buckets = 0;
+
                 numBucketsMin = (AZStd::max)(numBucketsMin, (size_type)ceilf((float)m_list.size() / m_max_load_factor));
 
                 if (numBucketsMin != 0)
@@ -143,7 +144,7 @@ namespace AZStd
 
                 if (num_buckets == m_numBuckets)
                 {
-                    return; // no point
+                    return; // no need yet to rehash
                 }
                 m_numBuckets = num_buckets;
 
@@ -165,32 +166,42 @@ namespace AZStd
                 while (!m_list.empty())
                 {
                     cur = m_list.begin();
+                    typename list_type::iterator insertIter, curEnd(cur);
+                    const typename HashTable::key_type& valueKey = Traits::key_from_value(*cur);
 
-                    typename list_type::iterator newIter, iter(cur);
                     size_type numValues = 1;
-                    for (++iter; iter != last && table->m_keyEqual(Traits::key_from_value(*cur), Traits::key_from_value(*iter)); ++iter, ++numValues)
+                    // Get the number of same consecutive elements in the table with same key,
+                    // this allows range insertion of elements at once
+                    for (++curEnd; curEnd != last && table->m_keyEqual(valueKey, Traits::key_from_value(*curEnd)); ++curEnd, ++numValues)
                     {
                     }
                     ;
 
-                    const typename HashTable::key_type& valueKey = Traits::key_from_value(*cur);
                     size_type newBucketIndex = table->bucket_from_hash(table->m_hasher(valueKey));
+
+                    // newBucket.first holds the total number of elements in the bucket
+                    // newBucket.second contains the pointer to the first element of the bucket
                     vector_value_type& newBucket = newBuckets[newBucketIndex];
                     size_type numElements = newBucket.first;
-                    newIter = newBucket.second;
+                    insertIter = newBucket.second;
+
+                    // If we don't have elements in the bucket yet, transfer the elements directly
                     if (numElements == 0)
                     {
-                        newList.splice(newList.begin(), m_list, cur, iter);
+                        newList.splice(newList.begin(), m_list, cur, curEnd);
                         newBucket.second = newList.begin();
                     }
                     else
                     {
-                        if (!table->find_insert_position(valueKey, table->m_keyEqual, newIter, numElements, integral_constant<bool, Traits::has_multi_elements>()))
+                        // Since they are elements already in the bucket, update `insertIter` to where the elements will need to be inserted.
+                        if (!table->find_insert_position(valueKey, table->m_keyEqual, insertIter, numElements, integral_constant<bool, Traits::has_multi_elements>()))
                         {
+                            // The elements shouldn't be inserted, remove them from the list and keep processing
+                            newList.erase(cur, curEnd);
                             continue;
                         }
 
-                        newList.splice(newIter, m_list, cur, iter);
+                        newList.splice(insertIter, m_list, cur, curEnd);
                     }
 
                     newBucket.first += numValues;
@@ -258,7 +269,7 @@ namespace AZStd
         private:
             vector_value_type* m_buckets;       ///< Current buckets array. (can point to the m_vector or m_startBucket).
             size_type           m_numBuckets;   ///< Current number of buckets.
-            float               m_max_load_factor;
+            float               m_max_load_factor; ///< Maximum element load for a bucket before rehashing (elements/buckets)
             vector_value_type   m_startBucket;  ///< Start bucket used for before we start dynamically allocate memory from m_vector.
         };
 
@@ -972,28 +983,32 @@ namespace AZStd
             rhs.clear();
         }
 
+        // find_insert_position sets `insertIter` to where the element should be inserted
+        // and returns true if the element should be inserted, otherwise false
         template<class ComparableToKey, class KeyEq>
-        bool find_insert_position(const ComparableToKey& keyCmp, const KeyEq& keyEq, iterator& iter, size_type numElements, const true_type& /* is multi elements */)
+        bool find_insert_position(const ComparableToKey& keyCmp, const KeyEq& keyEq, iterator& insertIter, size_type numElements, const true_type& /* is multi elements */)
         {
-            for (size_type i = 0; i < numElements; ++i, ++iter)
+            for (size_type i = 0; i < numElements; ++i, ++insertIter)
             {
-                if (keyEq(keyCmp, Traits::key_from_value(*iter)))
+                if (keyEq(keyCmp, Traits::key_from_value(*insertIter)))
                 {
-                    ++iter;
+                    ++insertIter;
                     break;
                 }
             }
 
+            // we always return true since multi elements (like multiset) allow to have repeated elements
             return true;
         }
 
         template<class ComparableToKey, class KeyEq>
-        bool find_insert_position(const ComparableToKey& keyCmp, const KeyEq& keyEq, iterator& iter, size_type numElements, const false_type& /* !is multi elements */)
+        bool find_insert_position(const ComparableToKey& keyCmp, const KeyEq& keyEq, iterator& insertIter, size_type numElements, const false_type& /* !is multi elements */)
         {
-            for (size_type i = 0; i < numElements; ++i, ++iter)
+            for (size_type i = 0; i < numElements; ++i, ++insertIter)
             {
-                if (keyEq(keyCmp, Traits::key_from_value(*iter)))
+                if (keyEq(keyCmp, Traits::key_from_value(*insertIter)))
                 {
+                    // Element already exists, it shouldn't be inserted as we don't allow more than one element for this specialization
                     return false;
                 }
             }
