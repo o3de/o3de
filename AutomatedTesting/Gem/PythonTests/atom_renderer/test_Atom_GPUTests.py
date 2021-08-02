@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
@@ -13,6 +14,7 @@ import pytest
 
 import ly_test_tools.environment.file_system as file_system
 from ly_test_tools.image.screenshot_compare_qssim import qssim as compare_screenshots
+from ly_test_tools.benchmark.data_aggregator import BenchmarkDataAggregator
 import editor_python_test_tools.hydra_test_utils as hydra
 
 logger = logging.getLogger(__name__)
@@ -82,3 +84,43 @@ class TestAllComponentsIndepthTests(object):
 
         for test_screenshot, golden_screenshot in zip(test_screenshots, golden_images):
             compare_screenshots(test_screenshot, golden_screenshot)
+
+@pytest.mark.parametrize('rhi', ['dx12', 'vulkan'])
+@pytest.mark.parametrize("project", ["AutomatedTesting"])
+@pytest.mark.parametrize("launcher_platform", ["windows_editor"])
+@pytest.mark.parametrize("level", ["AtomFeatureIntegrationBenchmark"])
+class TestPerformanceBenchmarkSuite(object):
+    def test_AtomFeatureIntegrationBenchmark(
+            self, request, editor, workspace, rhi, project, launcher_platform, level):
+        """
+        Please review the hydra script run by this test for more specific test info.
+        Tests the performance of the Simple level.
+        """
+        expected_lines = [
+            "Benchmark metadata captured.",
+            "Pass timestamps captured.",
+            "Capturing complete.",
+            "Captured data successfully."
+        ]
+
+        unexpected_lines = [
+            "Failed to capture data.",
+            "Failed to capture pass timestamps.",
+            "Failed to capture benchmark metadata."
+        ]
+
+        hydra.launch_and_validate_results(
+            request,
+            TEST_DIRECTORY,
+            editor,
+            "hydra_GPUTest_AtomFeatureIntegrationBenchmark.py",
+            timeout=EDITOR_TIMEOUT,
+            expected_lines=expected_lines,
+            unexpected_lines=unexpected_lines,
+            halt_on_unexpected=True,
+            cfg_args=[level],
+            null_renderer=False,
+        )
+
+        aggregator = BenchmarkDataAggregator(workspace, logger, 'periodic')
+        aggregator.upload_metrics(rhi)

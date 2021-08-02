@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -27,7 +28,7 @@ void OnVsyncIntervalChanged(uint32_t const& interval)
 // NOTE: On change, broadcasts the new requested vsync interval to all windows.
 // The value of the vsync interval is constrained between 0 and 4
 // Vsync intervals greater than 1 are not currently supported on the Vulkan RHI (see #2061 for discussion)
-AZ_CVAR(uint32_t, rpi_vsync_interval, 0, OnVsyncIntervalChanged, AZ::ConsoleFunctorFlags::Null, "Set swapchain vsync interval");
+AZ_CVAR(uint32_t, rpi_vsync_interval, 1, OnVsyncIntervalChanged, AZ::ConsoleFunctorFlags::Null, "Set swapchain vsync interval");
 
 namespace AZ
 {

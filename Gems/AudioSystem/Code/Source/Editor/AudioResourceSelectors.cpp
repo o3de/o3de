@@ -1,19 +1,18 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 
+#include <AudioResourceSelectors.h>
 #include <ATLControlsResourceDialog.h>
 #include <AudioControlsEditorPlugin.h>
-#include <IEditor.h>
 #include <Include/IResourceSelectorHost.h>
 #include <QAudioControlEditorIcons.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
-
-using namespace AudioControls;
 
 namespace AudioControls
 {
@@ -67,10 +66,32 @@ namespace AudioControls
     }
 
     //-------------------------------------------------------------------------------------------//
-    REGISTER_RESOURCE_SELECTOR("AudioTrigger", AudioTriggerSelector, ":/AudioControlsEditor/Icons/Trigger_Icon.png");
-    REGISTER_RESOURCE_SELECTOR("AudioSwitch", AudioSwitchSelector, ":/AudioControlsEditor/Icons/Switch_Icon.png");
-    REGISTER_RESOURCE_SELECTOR("AudioSwitchState", AudioSwitchStateSelector, ":/AudioControlsEditor/Icons/State_Icon.png");
-    REGISTER_RESOURCE_SELECTOR("AudioRTPC", AudioRTPCSelector, ":/AudioControlsEditor/Icons/RTPC_Icon.png");
-    REGISTER_RESOURCE_SELECTOR("AudioEnvironment", AudioEnvironmentSelector, ":/AudioControlsEditor/Icons/Environment_Icon.png");
-    REGISTER_RESOURCE_SELECTOR("AudioPreloadRequest", AudioPreloadRequestSelector, ":/AudioControlsEditor/Icons/Bank_Icon.png");
+    static SStaticResourceSelectorEntry audioTriggerSelector(
+        "AudioTrigger", AudioTriggerSelector, ":/Icons/Trigger_Icon.svg");
+    static SStaticResourceSelectorEntry audioSwitchSelector(
+        "AudioSwitch", AudioSwitchSelector, ":/Icons/Switch_Icon.svg");
+    static SStaticResourceSelectorEntry audioStateSelector(
+        "AudioSwitchState", AudioSwitchStateSelector, ":/Icons/Property_Icon.png");
+    static SStaticResourceSelectorEntry audioRtpcSelector(
+        "AudioRTPC", AudioRTPCSelector, ":/Icons/RTPC_Icon.svg");
+    static SStaticResourceSelectorEntry audioEnvironmentSelector(
+        "AudioEnvironment", AudioEnvironmentSelector, ":/Icons/Environment_Icon.svg");
+    static SStaticResourceSelectorEntry audioPreloadSelector(
+        "AudioPreloadRequest", AudioPreloadRequestSelector, ":/Icons/Bank_Icon.png");
+
+    //-------------------------------------------------------------------------------------------//
+    void RegisterAudioControlsResourceSelectors()
+    {
+        if (IResourceSelectorHost* host = GetIEditor()->GetResourceSelectorHost();
+            host != nullptr)
+        {
+            host->RegisterResourceSelector(&audioTriggerSelector);
+            host->RegisterResourceSelector(&audioSwitchSelector);
+            host->RegisterResourceSelector(&audioStateSelector);
+            host->RegisterResourceSelector(&audioRtpcSelector);
+            host->RegisterResourceSelector(&audioEnvironmentSelector);
+            host->RegisterResourceSelector(&audioPreloadSelector);
+        }
+    }
+
 } // namespace AudioControls

@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Atom_RHI_Vulkan_precompiled.h"
 #include <AzCore/Debug/EventTraceDrillerBus.h>
 #include <RHI/CommandList.h>
 #include <RHI/CommandQueue.h>
@@ -42,6 +42,15 @@ namespace AZ
 
         void CommandQueue::ExecuteWork(const RHI::ExecuteWorkRequest& rhiRequest)
         {
+#if defined(PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB)
+            for (RHI::SwapChain* swapChain : rhiRequest.m_swapChainsToPresent)
+            {
+                if (!swapChain->m_resized)
+                {
+                    return;
+                }
+            }
+#endif // PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
             const ExecuteWorkRequest& request = static_cast<const ExecuteWorkRequest&>(rhiRequest);
             QueueCommand([=](void* queue) 
             {

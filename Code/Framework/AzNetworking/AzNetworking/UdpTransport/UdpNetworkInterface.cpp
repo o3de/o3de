@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -223,8 +224,7 @@ namespace AzNetworking
                 continue;
             }
 
-            connection->GetMetrics().m_recvDatarate.LogPacket(packet.m_receivedBytes + UdpPacketHeaderSize, currentTimeMs);
-            connection->GetMetrics().m_packetsRecv++;
+            connection->GetMetrics().LogPacketRecv(packet.m_receivedBytes + UdpPacketHeaderSize, currentTimeMs);
 
             // Decode the packet flag bitset first since it's always uncompressed
             UdpPacketHeader header;

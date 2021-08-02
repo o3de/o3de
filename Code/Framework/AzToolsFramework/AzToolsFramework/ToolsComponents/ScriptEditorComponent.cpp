@@ -1,12 +1,12 @@
 
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 #include <AzToolsFramework/ToolsComponents/ScriptEditorComponent.h>
 #include <AzCore/Script/ScriptSystemBus.h>
 #include <AzCore/EBus/Results.h>
@@ -1021,6 +1021,7 @@ namespace AzToolsFramework
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Category, "Scripting")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/LuaScript.svg")
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/LuaScript.svg")
                         ->Attribute(AZ::Edit::Attributes::PrimaryAssetType, AZ::AzTypeInfo<AZ::ScriptAsset>::Uuid())
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Script.png")
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/lua-script/")

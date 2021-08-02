@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -111,6 +112,7 @@ void DebugComponent::Activate()
     DebugNotificationBus::Handler::BusConnect();
     DebugNotificationBus::AllowFunctionQueuing(true);
     AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(GetEntityId());
+    AzFramework::BoundsRequestBus::Handler::BusConnect(GetEntityId());
     SystemConfigurationRequestBus::Handler::BusConnect();
 
     VEG_PROFILE_METHOD(DebugSystemDataBus::BroadcastResult(m_debugData, &DebugSystemDataBus::Events::GetDebugData));
@@ -119,6 +121,7 @@ void DebugComponent::Activate()
 void DebugComponent::Deactivate()
 {
     SystemConfigurationRequestBus::Handler::BusDisconnect();
+    AzFramework::BoundsRequestBus::Handler::BusDisconnect();
     AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
     DebugRequestBus::Handler::BusDisconnect();
     DebugNotificationBus::Handler::BusDisconnect();
@@ -285,7 +288,7 @@ void DebugComponent::DrawSectorTimingData(const AzFramework::ViewportInfo& viewp
                 sectorTiming.m_id.second, static_cast<int>(sectorTiming.m_averageTimeUs), sectorTiming.m_updateCount);
 
             constexpr bool centerText = true;
-            constexpr float fontSize = 1.5f;
+            constexpr float fontSize = 0.7f;
             debugDisplay.SetColor(AZ::Color(1.0f));
             debugDisplay.DrawTextLabel(sectorTiming.m_worldPosition, fontSize, displayString.c_str(), centerText);
         }
@@ -972,7 +975,7 @@ void DebugComponent::DrawDebugStats(AzFramework::DebugDisplayRequests& debugDisp
 
     debugDisplay.SetColor(AZ::Color(1.0f));
     debugDisplay.Draw2dTextLabel(
-        4.0f, 16.0f, 1.5f,
+        40.0f, 22.0f, 0.7f,
         AZStd::string::format(
             "VegetationSystemStats:\nActive Instances Count: %d\nInstance Register Queue: %d\nInstance Unregister Queue: %d\nThread "
             "Queue Count: %d\nThread Processing Count: %d",

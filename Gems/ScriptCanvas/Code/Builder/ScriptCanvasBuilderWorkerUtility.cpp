@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "precompiled.h"
 
 #include <Asset/AssetDescription.h>
 #include <AssetBuilderSDK/SerializationDependencies.h>
@@ -97,7 +97,7 @@ namespace ScriptCanvasBuilder
         bool pathFound = false;
         AZStd::string relativePath;
         AzToolsFramework::AssetSystemRequestBus::BroadcastResult
-        (pathFound
+            ( pathFound
             , &AzToolsFramework::AssetSystem::AssetSystemRequest::GetRelativeProductPathFromFullSourceOrProductPath
             , fullPath.c_str(), relativePath);
 

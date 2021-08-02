@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -57,8 +58,9 @@ class TestEditProjectProperties:
                 return None
             return self.project_json.data
 
-        def save_o3de_manifest(new_proj_data: dict, project_path) -> None:
+        def save_o3de_manifest(new_proj_data: dict, project_path) -> bool:
             self.project_json.data = new_proj_data
+            return True
 
         with patch('o3de.manifest.get_project_json_data', side_effect=get_project_json_data) as get_project_json_data_patch, \
                 patch('o3de.manifest.save_o3de_manifest', side_effect=save_o3de_manifest) as save_o3de_manifest_patch:

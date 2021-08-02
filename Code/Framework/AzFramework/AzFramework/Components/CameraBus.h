@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -62,6 +63,13 @@ namespace Camera
         //! @return The camera frustum's height
         virtual float GetFrustumHeight() = 0;
 
+        //! Gets whether or not the camera is using an orthographic projection.
+        //! @return True if the camera is using an orthographic projection, or false if the camera is using a perspective projection.
+        virtual bool IsOrthographic() = 0;
+
+        //! @return The half width of the orthographic projection, @see SetOrthographicHalfWidth.
+        virtual float GetOrthographicHalfWidth() = 0;
+
         //! Sets the camera's field of view in degrees between 0 < fov < 180 degrees
         //! @param fov The camera frustum's new field of view in degrees
         virtual void SetFov(float fov)
@@ -93,6 +101,15 @@ namespace Camera
         //! Sets the camera frustum's height
         //! @param height The camera frustum's new height
         virtual void SetFrustumHeight(float height) = 0;
+
+        //! Sets whether or not the camera should use an orthographic projection in place of a perspective projection.
+        //! @param orthographic If true, the camera will use an orthographic projection
+        virtual void SetOrthographic(bool orthographic) = 0;
+
+        //! Sets the half-width of the orthographic projection.
+        //! @params halfWidth Used to calculate the bounds of the projection while in orthographic mode.
+        //! The height is calculated automatically based on the aspect ratio.
+        virtual void SetOrthographicHalfWidth(float halfWidth) = 0;
 
         //! Makes the camera the active view
         virtual void MakeActiveView() = 0;

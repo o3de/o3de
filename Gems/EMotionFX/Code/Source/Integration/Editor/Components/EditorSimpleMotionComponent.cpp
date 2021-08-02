@@ -1,12 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-
-#include "EMotionFX_precompiled.h"
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -19,6 +17,8 @@
 #include <Integration/Assets/ActorAsset.h>
 #include <Integration/Editor/Components/EditorSimpleMotionComponent.h>
 #include <Integration/SimpleMotionComponentBus.h>
+#include <EMotionFX/Source/MotionSystem.h>
+#include <EMotionFX/Source/MotionInstance.h>
 
 namespace EMotionFX
 {
@@ -44,7 +44,7 @@ namespace EMotionFX
                         ->Attribute(AZ::Edit::Attributes::Category, "Animation")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/SimpleMotion.svg")
                         ->Attribute(AZ::Edit::Attributes::PrimaryAssetType, azrtti_typeid<MotionAsset>())
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Mannequin.png")
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Mannequin.svg")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(0, &EditorSimpleMotionComponent::m_previewInEditor, "Preview In Editor", "Plays motion in Editor")

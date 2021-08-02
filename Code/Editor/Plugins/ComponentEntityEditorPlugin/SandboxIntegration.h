@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -295,8 +296,8 @@ private:
     AZStd::unordered_set<AZ::EntityId> m_unsavedEntities;
 
     const AZStd::string m_defaultComponentIconLocation = "Icons/Components/Component_Placeholder.svg";
-    const AZStd::string m_defaultComponentViewportIconLocation = "Icons/Components/Viewport/Component_Placeholder.png";
-    const AZStd::string m_defaultEntityIconLocation = "Icons/Components/Viewport/Transform.png";
+    const AZStd::string m_defaultComponentViewportIconLocation = "Icons/Components/Viewport/Component_Placeholder.svg";
+    const AZStd::string m_defaultEntityIconLocation = "Icons/Components/Viewport/Transform.svg";
 
     bool m_debugDisplayBusImplementationActive = false;
 

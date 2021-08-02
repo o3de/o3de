@@ -1,11 +1,13 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
 
 set(FILES
+    Include/AtomToolsFramework/Application/AtomToolsApplication.h
     Include/AtomToolsFramework/Communication/LocalServer.h
     Include/AtomToolsFramework/Communication/LocalSocket.h
     Include/AtomToolsFramework/Debug/TraceRecorder.h
@@ -22,6 +24,7 @@ set(FILES
     Include/AtomToolsFramework/Viewport/RenderViewportWidget.h
     Include/AtomToolsFramework/Viewport/ModularViewportCameraController.h
     Include/AtomToolsFramework/Viewport/ModularViewportCameraControllerRequestBus.h
+    Source/Application/AtomToolsApplication.cpp
     Source/Communication/LocalServer.cpp
     Source/Communication/LocalSocket.cpp
     Source/Debug/TraceRecorder.cpp

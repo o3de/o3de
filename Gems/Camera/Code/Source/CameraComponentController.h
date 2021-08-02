@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -39,6 +40,9 @@ namespace Camera
         float GetNearClipDistance() const;
         AZ::EntityId GetEditorEntityId() const;
 
+        AZ::u32 GetPerspectiveParameterVisibility() const;
+        AZ::u32 GetOrthographicParameterVisibility() const;
+
         // Reflected members
         float m_fov = DefaultFoV;
         float m_nearClipDistance = DefaultNearPlaneDistance;
@@ -48,6 +52,8 @@ namespace Camera
         bool m_specifyFrustumDimensions = false;
         AZ::u64 m_editorEntityId = AZ::EntityId::InvalidEntityId;
         bool m_makeActiveViewOnActivation = true;
+        bool m_orthographic = false;
+        float m_orthographicHalfWidth = 5.f;
     };
 
     class CameraComponentController
@@ -77,6 +83,7 @@ namespace Camera
         void Deactivate();
         void SetConfiguration(const CameraComponentConfig& config);
         const CameraComponentConfig& GetConfiguration() const;
+        AZ::RPI::ViewportContextPtr GetViewportContext();
 
         // CameraBus::Handler interface
         AZ::EntityId GetCameras() override;
@@ -88,12 +95,17 @@ namespace Camera
         float GetFarClipDistance() override;
         float GetFrustumWidth() override;
         float GetFrustumHeight() override;
+        bool IsOrthographic() override;
+        float GetOrthographicHalfWidth() override;
         void SetFovDegrees(float fov) override;
         void SetFovRadians(float fov) override;
         void SetNearClipDistance(float nearClipDistance) override;
         void SetFarClipDistance(float farClipDistance) override;
         void SetFrustumWidth(float width) override;
         void SetFrustumHeight(float height) override;
+        void SetOrthographic(bool orthographic) override;
+        void SetOrthographicHalfWidth(float halfWidth) override;
+
         void MakeActiveView() override;
 
         // AZ::TransformNotificationBus::Handler interface

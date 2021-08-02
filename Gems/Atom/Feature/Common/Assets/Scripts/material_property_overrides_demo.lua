@@ -1,7 +1,8 @@
 ----------------------------------------------------------------------------------------------------
 --
--- Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
--- 
+-- Copyright (c) Contributors to the Open 3D Engine Project.
+-- For complete copyright and license terms please see the LICENSE at the root of this distribution.
+--
 -- SPDX-License-Identifier: Apache-2.0 OR MIT
 --
 --
@@ -52,10 +53,9 @@ function PropertyOverrideTest:OnActivate()
     self.originalAssignments = MaterialComponentRequestBus.Event.GetOriginalMaterialAssignments(self.entityId);
     self.assignmentIds = self.originalAssignments:GetKeys()
 
-    for index = 0, self.assignmentIds:Size() do
-        local idOutcome = self.assignmentIds:At(index)
-        if (idOutcome:IsSuccess()) then
-            local id = idOutcome:GetValue()
+    for index = 1, self.assignmentIds:GetSize() do
+        local id = self.assignmentIds[index]
+        if (id ~= nil) then
             self.colors[index] = randomColor()
             self.lerpDirs[index] = randomDir()
         end
@@ -87,10 +87,9 @@ end
 
 function PropertyOverrideTest:UpdateProperties()
     Debug.Log("Overriding properties...")
-    for index = 0, self.assignmentIds:Size() do
-        local idOutcome = self.assignmentIds:At(index)
-        if (idOutcome:IsSuccess()) then
-            local id = idOutcome:GetValue()
+    for index = 1, self.assignmentIds:GetSize() do
+        local id = self.assignmentIds[index]
+        if (id ~= nil) then
             self:UpdateFactor(id)
             self:UpdateTexture(id)
         end
@@ -133,10 +132,9 @@ function lerpColor(color, lerpDir, deltaTime)
 end
 
 function PropertyOverrideTest:lerpColors(deltaTime)
-    for index = 0, self.assignmentIds:Size() do
-        local idOutcome = self.assignmentIds:At(index)
-        if (idOutcome:IsSuccess()) then
-            local id = idOutcome:GetValue()
+    for index = 1, self.assignmentIds:GetSize() do
+        local id = self.assignmentIds[index]
+        if (id ~= nil) then
             lerpColor(self.colors[index], self.lerpDirs[index], deltaTime)
             self:UpdateColor(id, self.colors[index])
         end

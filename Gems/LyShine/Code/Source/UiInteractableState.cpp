@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "LyShine_precompiled.h"
 #include "UiInteractableState.h"
 
 #include <AzCore/Math/Crc.h>
@@ -21,6 +21,7 @@
 #include <LyShine/Bus/UiElementBus.h>
 #include <LyShine/Bus/UiVisualBus.h>
 #include <LyShine/Bus/UiIndexableImageBus.h>
+#include <CryCommon/LyShine/ILyShine.h>
 
 #include <IRenderer.h>
 #include "EditorPropertyTypes.h"

@@ -1,15 +1,16 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
 
-set(CPACK_WIX_ROOT "" CACHE PATH "Path to the WiX install path")
+set(LY_INSTALLER_WIX_ROOT "" CACHE PATH "Path to the WiX install path")
 
-if(CPACK_WIX_ROOT)
-    if(NOT EXISTS ${CPACK_WIX_ROOT})
-        message(FATAL_ERROR "Invalid path supplied for CPACK_WIX_ROOT argument")
+if(LY_INSTALLER_WIX_ROOT)
+    if(NOT EXISTS ${LY_INSTALLER_WIX_ROOT})
+        message(FATAL_ERROR "Invalid path supplied for LY_INSTALLER_WIX_ROOT argument")
     endif()
 else()
     # early out as no path to WiX has been supplied effectively disabling support

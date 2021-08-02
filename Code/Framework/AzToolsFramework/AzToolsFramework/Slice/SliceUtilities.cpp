@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/EntityUtils.h>
 #include <AzCore/IO/FileIO.h>
@@ -61,6 +61,7 @@
 #include <AzToolsFramework/Slice/SliceMetadataEntityContextBus.h>
 AZ_PUSH_DISABLE_WARNING(4251 4244, "-Wunknown-warning-option") // 4251: class '...' needs to have dll-interface to be used by clients of class '...'
                                                                // 4244: 'argument': conversion from 'int' to 'float', possible loss of data
+#include <QtWidgets/QApplication>
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QWidgetAction>
 #include <QtWidgets/QMenu>

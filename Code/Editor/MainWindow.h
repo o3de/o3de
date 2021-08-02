@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,6 +11,7 @@
 #if !defined(Q_MOC_RUN)
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/EBus/Event.h>
 
 #include <QComboBox>
 #include <QMainWindow>

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -65,12 +66,7 @@ namespace AzNetworking
         bool Disconnect(DisconnectReason reason, TerminationEndpoint endpoint) override;
         void SetConnectionMtu(uint32_t connectionMtu) override;
         uint32_t GetConnectionMtu() const override;
-        void SetConnectionQuality(const ConnectionQuality& connectionQuality) override;
         // @}
-
-        //! Gets connection quality values for testing poor connection conditions.
-        //! @return connection quality values for this IConnection instance
-        const ConnectionQuality& GetConnectionQuality() const;
 
         //! Returns a suitable encryption endpoint for this connection type.
         //! @return reference to the connections encryption endpoint
@@ -145,8 +141,6 @@ namespace AzNetworking
         UdpFragmentQueue  m_fragmentQueue;
         ConnectionState   m_state = ConnectionState::Disconnected;
         ConnectionRole    m_connectionRole = ConnectionRole::Connector;
-
-        ConnectionQuality m_connectionQuality;
         DtlsEndpoint      m_dtlsEndpoint;
 
         AZ::TimeMs m_lastSentPacketMs;
@@ -159,4 +153,3 @@ namespace AzNetworking
 }
 
 #include <AzNetworking/UdpTransport/UdpConnection.inl>
-

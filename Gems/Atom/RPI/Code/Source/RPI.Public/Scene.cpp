@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -407,6 +408,7 @@ namespace AZ
 
             {
                 AZ_PROFILE_SCOPE(Debug::ProfileCategory::AzRender, "m_srgCallback");
+                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "ShaderResourceGroupCallback: SrgCallback");
                 // Set values for scene srg
                 if (m_srg && m_srgCallback)
                 {
@@ -417,7 +419,7 @@ namespace AZ
             // Get active pipelines which need to be rendered and notify them frame started
             AZStd::vector<RenderPipelinePtr> activePipelines;
             {
-                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "OnStartFrame");
+                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "Scene: OnStartFrame");
                 for (auto& pipeline : m_pipelines)
                 {
                     if (pipeline->NeedsRender())
@@ -482,6 +484,7 @@ namespace AZ
 
             {
                 AZ_PROFILE_SCOPE(Debug::ProfileCategory::AzRender, "CollectDrawPackets");                
+                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "CollectDrawPackets");
                 AZ::JobCompletion* collectDrawPacketsCompletion = aznew AZ::JobCompletion();
 
                 // Launch FeatureProcessor::Render() jobs

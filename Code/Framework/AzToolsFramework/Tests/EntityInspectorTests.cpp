@@ -1,13 +1,15 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -348,7 +350,6 @@ namespace UnitTest
         EXPECT_FALSE(AzToolsFramework::ComponentPaletteUtil::ContainsEditableComponents(context, &Filter_IsTestComponent2, AZ::ComponentDescriptor::DependencyArrayType()));
 
         // Reflect Test Component 2 for subsequent tests
-        Inspector_TestComponent2::Reflect(context);
         m_application->RegisterComponentDescriptor(Inspector_TestComponent2Descriptor);
 
         // Verify that there is now a component that satisfies the AppearsInGameComponentMenu filter without service dependency conditions

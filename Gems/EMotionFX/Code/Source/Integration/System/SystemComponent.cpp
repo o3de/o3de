@@ -1,12 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-
-#include "EMotionFX_precompiled.h"
 
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/TransformBus.h>
@@ -29,6 +27,13 @@
 #include <EMotionFX/Source/Parameter/ParameterFactory.h>
 #include <EMotionFX/Source/TwoStringEventData.h>
 #include <EMotionFX/Source/EventDataFootIK.h>
+#include <EMotionFX/Source/MotionEvent.h>
+#include <EMotionFX/Source/AnimGraphNodeGroup.h>
+#include <EMotionFX/Source/AnimGraphGameControllerSettings.h>
+#include <EMotionFX/Source/MotionEventTable.h>
+#include <EMotionFX/Source/MotionEventTrack.h>
+#include <EMotionFX/Source/AnimGraphSyncTrack.h>
+#include <EMotionFX/Source/AnimGraph.h>
 
 #include <EMotionFX/Source/PhysicsSetup.h>
 #include <EMotionFX/Source/SimulatedObjectSetup.h>

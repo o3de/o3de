@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -323,7 +324,7 @@ namespace MaterialEditor
     {
         if (!preset)
         {
-            AZ_Error("MaterialViewportRenderer", false, "Attempting to set invalid lighting preset.");
+            AZ_Warning("MaterialViewportRenderer", false, "Attempting to set invalid lighting preset.");
             return;
         }
 
@@ -364,13 +365,13 @@ namespace MaterialEditor
     {
         if (!preset)
         {
-            AZ_Error("MaterialViewportRenderer", false, "Attempting to set invalid model preset.");
+            AZ_Warning("MaterialViewportRenderer", false, "Attempting to set invalid model preset.");
             return;
         }
 
         if (!preset->m_modelAsset.GetId().IsValid())
         {
-            AZ_Error("MaterialViewportRenderer", false, "Attempting to set invalid model for preset: '%s'\n.", preset->m_displayName.c_str());
+            AZ_Warning("MaterialViewportRenderer", false, "Attempting to set invalid model for preset: '%s'\n.", preset->m_displayName.c_str());
             return;
         }
 

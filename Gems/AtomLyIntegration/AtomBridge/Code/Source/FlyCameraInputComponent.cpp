@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -100,8 +101,8 @@ void FlyCameraInputComponent::Reflect(AZ::ReflectContext* reflection)
             editContext->Class<FlyCameraInputComponent>("Fly Camera Input", "The Fly Camera Input allows you to control the camera")
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute("Category", "Gameplay")
-                ->Attribute("Icon", "Icons/Components/CameraRig.svg")
-                ->Attribute("ViewportIcon", "Icons/Components/Viewport/CameraRig.png")
+                ->Attribute("Icon", "Icons/Components/FlyCameraInput.svg")
+                ->Attribute("ViewportIcon", "Icons/Components/Viewport/FlyCameraInput.svg")
                 ->Attribute("AutoExpand", true)
                 ->Attribute("AppearsInAddComponentMenu", AZ_CRC("Game", 0x232b318c))
                 ->DataElement(0, &FlyCameraInputComponent::m_moveSpeed, "Move Speed", "Speed at which the camera moves")

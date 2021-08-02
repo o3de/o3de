@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -1942,7 +1943,8 @@ namespace ScriptCanvas
                 {
                     const auto requirement = ParseConstructionRequirement(variable);
 
-                    if (requirement == Grammar::VariableConstructionRequirement::None || (requirement != Grammar::VariableConstructionRequirement::Static && !execution->IsStartCall()))
+                    if (requirement == Grammar::VariableConstructionRequirement::None
+                    || requirement != Grammar::VariableConstructionRequirement::Static && execution != m_model.GetStart())
                     {
                         m_dotLua.WriteLineIndented("local %s = %s", variable->m_name.data(), ToValueString(variable->m_datum, m_configuration).data());
                     }

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -110,6 +111,8 @@ namespace AZ
             void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
             // MaterialReceiverRequestBus::Handler overrides ...
+            virtual MaterialAssignmentId FindMaterialAssignmentId(
+                const MaterialAssignmentLodIndex lod, const AZStd::string& label) const override;
             MaterialAssignmentMap GetMaterialAssignments() const override;
             AZStd::unordered_set<AZ::Name> GetModelUvNames() const override;
 

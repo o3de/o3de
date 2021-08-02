@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
@@ -42,11 +43,6 @@ class TestAutomation(TestAutomationBase):
         from . import C4044459_Material_DynamicFriction as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    @revert_physics_config
-    def test_C15425929_Undo_Redo(self, request, workspace, editor, launcher_platform):
-        from . import C15425929_Undo_Redo as test_module
-        self._run_test(request, workspace, editor, test_module)
-        
     @revert_physics_config
     def test_C4976243_Collision_SameCollisionGroupDiffCollisionLayers(self, request, workspace, editor,
                                                                       launcher_platform):

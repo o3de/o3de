@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -164,6 +165,49 @@ namespace AZ
             }
 
             return materials;
+        }
+
+        MaterialAssignmentId FindMaterialAssignmentIdInLod(
+            const Data::Instance<AZ::RPI::ModelLod>& lod, const MaterialAssignmentLodIndex lodIndex, const AZStd::string& labelFilter)
+        {
+            for (const AZ::RPI::ModelLod::Mesh& mesh : lod->GetMeshes())
+            {
+                if (mesh.m_material && mesh.m_material->GetAssetId().IsValid())
+                {
+                    AZ::Data::AssetInfo assetInfo;
+                    AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                        assetInfo, &AZ::Data::AssetCatalogRequests::GetAssetInfoById, mesh.m_material->GetAssetId());
+                    if (assetInfo.m_assetId.IsValid() && AZ::StringFunc::Contains(assetInfo.m_relativePath, labelFilter, true))
+                    {
+                        return MaterialAssignmentId::CreateFromLodAndAsset(lodIndex, mesh.m_material->GetAssetId());
+                    }
+                }
+            }
+            return MaterialAssignmentId();
+        }
+
+        MaterialAssignmentId FindMaterialAssignmentIdInModel(
+            const Data::Instance<AZ::RPI::Model> model, const MaterialAssignmentLodIndex lodFilter, const AZStd::string& labelFilter)
+        {
+            if (model && !labelFilter.empty())
+            {
+                if (lodFilter < model->GetLodCount())
+                {
+                    return FindMaterialAssignmentIdInLod(model->GetLods()[lodFilter], lodFilter, labelFilter);
+                }
+
+                for (size_t lodIndex = 0; lodIndex < model->GetLodCount(); ++lodIndex)
+                {
+                    const MaterialAssignmentId result =
+                        FindMaterialAssignmentIdInLod(model->GetLods()[lodIndex], MaterialAssignmentId::NonLodIndex, labelFilter);
+                    if (!result.IsDefault())
+                    {
+                        return result;
+                    }
+                }
+            }
+
+            return MaterialAssignmentId();
         }
     } // namespace Render
 } // namespace AZ

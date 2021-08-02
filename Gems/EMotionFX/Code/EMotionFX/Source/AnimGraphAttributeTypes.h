@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -78,9 +79,6 @@ namespace EMotionFX
         AttributePose(AnimGraphPose* pose)
             : MCore::Attribute(TYPE_ID)     { mValue = pose; }
         ~AttributePose() {}
-
-        uint32 GetDataSize() const override                                 { return 0; }
-        bool ReadData(MCore::Stream* stream, MCore::Endian::EEndianType streamEndianType, uint8 version) override   { MCORE_UNUSED(stream); MCORE_UNUSED(streamEndianType); MCORE_UNUSED(version); return false; }  // unsupported
     };
 
 
@@ -129,9 +127,6 @@ namespace EMotionFX
         AttributeMotionInstance(MotionInstance* motionInstance)
             : MCore::Attribute(TYPE_ID)     { mValue = motionInstance; }
         ~AttributeMotionInstance() {}
-
-        uint32 GetDataSize() const override                                 { return 0; }
-        bool ReadData(MCore::Stream* stream, MCore::Endian::EEndianType streamEndianType, uint8 version) override   { MCORE_UNUSED(stream); MCORE_UNUSED(streamEndianType); MCORE_UNUSED(version); return false; }  // unsupported
     };
 
     class AnimGraphPropertyUtils

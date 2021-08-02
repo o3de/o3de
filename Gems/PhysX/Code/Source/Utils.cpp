@@ -1,12 +1,12 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include <PhysX_precompiled.h>
-
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzCore/EBus/Results.h>
@@ -15,6 +15,7 @@
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/SimdMath.h>
+#include <AzCore/Math/ToString.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
@@ -38,6 +39,7 @@
 #include <Source/Utils.h>
 #include <PhysX/PhysXLocks.h>
 #include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
+#include <PhysX/MathConversion.h>
 
 namespace PhysX
 {
@@ -1463,6 +1465,14 @@ namespace PhysX
             rigidDynamic->setCMassLocalPose(physx::PxTransform(PxMathConvert(configuration.m_centerOfMassOffset)));
             rigidDynamic->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, configuration.m_kinematic);
             rigidDynamic->setMaxAngularVelocity(configuration.m_maxAngularVelocity);
+
+            // Set axis locks.
+            rigidDynamic->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_X, configuration.m_lockLinearX);
+            rigidDynamic->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Y, configuration.m_lockLinearY);
+            rigidDynamic->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Z, configuration.m_lockLinearZ);
+            rigidDynamic->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, configuration.m_lockAngularX);
+            rigidDynamic->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y, configuration.m_lockAngularY);
+            rigidDynamic->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z, configuration.m_lockAngularZ);
 
             return rigidDynamic;
         }

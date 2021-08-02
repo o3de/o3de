@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -297,6 +298,7 @@ namespace AZ
 
         void PassSystem::ProcessQueuedChanges()
         {
+            AZ_ATOM_PROFILE_FUNCTION("RPI", "PassSystem: ProcessQueuedChanges");
             RemovePasses();
             BuildPasses();
             InitializePasses();
@@ -312,7 +314,11 @@ namespace AZ
 
             m_state = PassSystemState::Rendering;
             Pass::FramePrepareParams params{ &frameGraphBuilder };
-            m_rootPass->FrameBegin(params);
+
+            {
+                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "Pass: FrameBegin");
+                m_rootPass->FrameBegin(params);
+            }
         }
 
         void PassSystem::FrameEnd()

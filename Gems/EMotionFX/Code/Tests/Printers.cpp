@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -32,18 +33,6 @@ namespace AZStd
         *os << '"' << std::string(string.data(), string.size()) << '"';
     }
 } // namespace AZStd
-
-namespace MCore
-{
-    void PrintTo(const Quaternion& quaternion, ::std::ostream* os)
-    {
-        *os << "(x: " << quaternion.x
-            << ", y: " << quaternion.y
-            << ", z: " << quaternion.z
-            << ", w: " << quaternion.w
-            << ")";
-    }
-} // namespace MCore
 
 namespace EMotionFX
 {

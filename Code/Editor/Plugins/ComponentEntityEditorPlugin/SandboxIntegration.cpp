@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "ComponentEntityEditorPlugin_precompiled.h"
-
 #include "SandboxIntegration.h"
 
 #include <AzCore/Component/ComponentApplicationBus.h>
@@ -82,6 +81,7 @@
 #include <Editor/StringDlg.h>
 #include <Editor/QtViewPaneManager.h>
 #include <Editor/EditorViewportSettings.h>
+#include <Editor/Util/PathUtil.h>
 #include <IResourceSelectorHost.h>
 #include "CryEdit.h"
 

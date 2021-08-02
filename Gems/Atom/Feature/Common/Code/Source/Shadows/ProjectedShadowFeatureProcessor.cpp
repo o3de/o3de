@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -142,7 +143,15 @@ namespace AZ::Render
         shadowProperty.m_desc.m_fieldOfViewYRadians = fieldOfViewYRadians;
         UpdateShadowView(shadowProperty);
     }
-    
+
+    void ProjectedShadowFeatureProcessor::SetShadowBias(ShadowId id, float bias)
+    {
+        AZ_Assert(id.IsValid(), "Invalid ShadowId passed to ProjectedShadowFeatureProcessor::SetShadowBias().");
+        
+        ShadowProperty& shadowProperty = GetShadowPropertyFromShadowId(id);
+        shadowProperty.m_bias = bias;
+    }
+
     void ProjectedShadowFeatureProcessor::SetShadowmapMaxResolution(ShadowId id, ShadowmapSize size)
     {
         AZ_Assert(id.IsValid(), "Invalid ShadowId passed to ProjectedShadowFeatureProcessor::SetShadowmapMaxResolution().");
@@ -264,23 +273,20 @@ namespace AZ::Render
         view->SetCameraTransform(Matrix3x4::CreateFromTransform(desc.m_transform));
 
         ShadowData& shadowData = m_shadowData.GetElement<ShadowDataIndex>(shadowProperty.m_shadowId.GetIndex());
-        shadowData.m_bias = (nearDist / farDist) * 0.1f;
+
+        // Adjust the manually set bias to a more appropriate range for the shader. Scale the bias by the
+        // near plane so that the bias appears consistent as other light properties change.
+        shadowData.m_bias = nearDist * shadowProperty.m_bias * 0.01f;
         
         FilterParameter& esmData = m_shadowData.GetElement<FilterParamIndex>(shadowProperty.m_shadowId.GetIndex());
-        if (FilterMethodIsEsm(shadowData))
-        {
-            // Set parameters to calculate linear depth if ESM is used.
-            m_filterParameterNeedsUpdate = true;
-            esmData.m_isEnabled = true;
-            esmData.m_n_f_n = nearDist / (farDist - nearDist);
-            esmData.m_n_f = nearDist - farDist;
-            esmData.m_f = farDist;
-        }
-        else
-        {
-            // Reset enabling flag if ESM is not used.
-            esmData.m_isEnabled = false;
-        }
+        
+        // Set parameters to calculate linear depth if ESM is used.
+        esmData.m_n_f_n = nearDist / (farDist - nearDist);
+        esmData.m_n_f = nearDist - farDist;
+        esmData.m_f = farDist;
+
+        esmData.m_isEnabled = FilterMethodIsEsm(shadowData);
+        m_filterParameterNeedsUpdate = m_filterParameterNeedsUpdate || esmData.m_isEnabled;
         
         for (EsmShadowmapsPass* esmPass : m_esmShadowmapsPasses)
         {

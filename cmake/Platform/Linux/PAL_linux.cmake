@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -36,3 +37,7 @@ set(LY_ASSET_DEPLOY_ASSET_TYPE "pc" CACHE STRING "Set the asset type for deploym
 
 # Set the python cmd tool
 ly_set(LY_PYTHON_CMD ${CMAKE_CURRENT_SOURCE_DIR}/python/python.sh)
+
+# Set the default window manager that applications should be using on Linux 
+# Note: Only ("xcb", "wayland", or "xlib" should be considered)
+set(PAL_TRAIT_LINUX_WINDOW_MANAGER "xcb" CACHE STRING "Sets the Window Manager type to use when configuring Linux (xcb, wayland, or xlib)")  
