@@ -6,8 +6,6 @@
  *
  */
 #pragma once
-#ifndef AZSTD_VECTOR_H
-#define AZSTD_VECTOR_H 1
 
 #include <AzCore/std/allocator.h>
 #include <AzCore/std/algorithm.h>
@@ -1397,5 +1395,3 @@ namespace AZStd
         return removedCount;
     }
 }
-
-#endif // AZSTD_VECTOR_H
