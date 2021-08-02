@@ -107,6 +107,18 @@ namespace UnitTest
             AZStd::vector<ExpectedLod> m_lods;
         };
 
+        void SetUp() override
+        {
+            RPITestFixture::SetUp();
+
+            auto assetId = AZ::Data::AssetId(AZ::Uuid::CreateRandom(), 0);
+            auto typeId = AZ::AzTypeInfo<AZ::RPI::MaterialAsset>::Uuid();
+            m_materialAsset = AZ::Data::Asset<AZ::RPI::MaterialAsset>(assetId, typeId, "");
+
+            // Some tests attempt to serialize-in the model asset, which should not attempt to actually load this dummy asset reference.
+            m_materialAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehaviorNamespace::NoLoad); 
+        }
+
         AZ::RHI::ShaderSemantic GetPositionSemantic() const
         {
             return AZ::RHI::ShaderSemantic(AZ::Name("POSITION"));
@@ -312,9 +324,7 @@ namespace UnitTest
         }
 
         const uint32_t m_manyMesh = 100; // Not too much to hold up the tests but enough to stress them
-        AZ::Data::Asset<AZ::RPI::MaterialAsset> m_materialAsset =
-            AZ::Data::Asset<AZ::RPI::MaterialAsset>(AZ::Data::AssetId(AZ::Uuid::CreateRandom(), 0),
-                AZ::AzTypeInfo<AZ::RPI::MaterialAsset>::Uuid(), "");
+        AZ::Data::Asset<AZ::RPI::MaterialAsset> m_materialAsset;
 
     };
 
