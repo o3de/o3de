@@ -9,7 +9,7 @@
 --
 ----------------------------------------------------------------------------------------------------
 
-local PropertyOverrideTest = 
+local FindMaterialAssignmentTest = 
 {
     Properties = 
     {
@@ -42,7 +42,7 @@ function randomDir()
     return dir
 end
 
-function PropertyOverrideTest:OnActivate()
+function FindMaterialAssignmentTest:OnActivate()
     self.timer = 0.0
     self.totalTime = 0.0
     self.totalTimeMax = 200.0
@@ -50,10 +50,12 @@ function PropertyOverrideTest:OnActivate()
     self.colors = {}
     self.lerpDirs = {}
 
-    self.originalAssignments = MaterialComponentRequestBus.Event.GetOriginalMaterialAssignments(self.entityId);
-    self.assignmentIds = self.originalAssignments:GetKeys()
+    self.assignmentIds =
+    {
+        MaterialComponentRequestBus.Event.FindMaterialAssignmentId(self.entityId, -1, "lambert"),
+    }
 
-    for index = 1, self.assignmentIds:GetSize() do
+    for index = 1, #self.assignmentIds do
         local id = self.assignmentIds[index]
         if (id ~= nil) then
             self.colors[index] = randomColor()
@@ -63,19 +65,19 @@ function PropertyOverrideTest:OnActivate()
     self.tickBusHandler = TickBus.Connect(self);
 end
 
-function PropertyOverrideTest:UpdateFactor(assignmentId)
+function FindMaterialAssignmentTest:UpdateFactor(assignmentId)
     local propertyName = Name("baseColor.factor")
     local propertyValue = math.random()
     MaterialComponentRequestBus.Event.SetPropertyOverride(self.entityId, assignmentId, propertyName, propertyValue);
 end
 
-function PropertyOverrideTest:UpdateColor(assignmentId, color)
+function FindMaterialAssignmentTest:UpdateColor(assignmentId, color)
     local propertyName = Name("baseColor.color")
     local propertyValue = color
     MaterialComponentRequestBus.Event.SetPropertyOverride(self.entityId, assignmentId, propertyName, propertyValue);
 end
 
-function PropertyOverrideTest:UpdateTexture(assignmentId)
+function FindMaterialAssignmentTest:UpdateTexture(assignmentId)
     if (#self.Properties.Textures > 0) then
         local propertyName = Name("baseColor.textureMap")
         local textureName = self.Properties.Textures[ math.random( #self.Properties.Textures ) ]
@@ -85,9 +87,9 @@ function PropertyOverrideTest:UpdateTexture(assignmentId)
     end
 end
 
-function PropertyOverrideTest:UpdateProperties()
+function FindMaterialAssignmentTest:UpdateProperties()
     Debug.Log("Overriding properties...")
-    for index = 1, self.assignmentIds:GetSize() do
+    for index = 1, #self.assignmentIds do
         local id = self.assignmentIds[index]
         if (id ~= nil) then
             self:UpdateFactor(id)
@@ -96,7 +98,7 @@ function PropertyOverrideTest:UpdateProperties()
     end
 end
 
-function PropertyOverrideTest:ClearProperties()
+function FindMaterialAssignmentTest:ClearProperties()
     Debug.Log("Clearing properties...")
     MaterialComponentRequestBus.Event.ClearAllPropertyOverrides(self.entityId);
 end
@@ -131,8 +133,8 @@ function lerpColor(color, lerpDir, deltaTime)
     end
 end
 
-function PropertyOverrideTest:lerpColors(deltaTime)
-    for index = 1, self.assignmentIds:GetSize() do
+function FindMaterialAssignmentTest:lerpColors(deltaTime)
+    for index = 1, #self.assignmentIds do
         local id = self.assignmentIds[index]
         if (id ~= nil) then
             lerpColor(self.colors[index], self.lerpDirs[index], deltaTime)
@@ -141,7 +143,7 @@ function PropertyOverrideTest:lerpColors(deltaTime)
     end
 end
 
-function PropertyOverrideTest:OnTick(deltaTime, timePoint)
+function FindMaterialAssignmentTest:OnTick(deltaTime, timePoint)
     self.timer = self.timer + deltaTime
     self.totalTime = self.totalTime + deltaTime
     self:lerpColors(deltaTime)
@@ -155,4 +157,4 @@ function PropertyOverrideTest:OnTick(deltaTime, timePoint)
     end
 end
 
-return PropertyOverrideTest
+return FindMaterialAssignmentTest

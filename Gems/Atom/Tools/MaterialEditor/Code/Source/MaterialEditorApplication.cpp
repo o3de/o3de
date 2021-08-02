@@ -6,47 +6,44 @@
  *
  */
 
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Utils/Utils.h>
+#include <AzFramework/Asset/AssetSystemComponent.h>
+#include <AzFramework/IO/LocalFileIO.h>
+#include <AzFramework/Network/AssetProcessorConnection.h>
+#include <AzFramework/StringFunc/StringFunc.h>
+#include <AzToolsFramework/API/EditorPythonConsoleBus.h>
+#include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
+#include <AzToolsFramework/Asset/AssetSystemComponent.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserComponent.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+#include <AzToolsFramework/AzToolsFrameworkModule.h>
+#include <AzToolsFramework/SourceControl/PerforceComponent.h>
+#include <AzToolsFramework/SourceControl/SourceControlAPI.h>
+#include <AzToolsFramework/Thumbnails/ThumbnailerComponent.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyManagerComponent.h>
+#include <AzToolsFramework/UI/UICore/QTreeViewStateSaver.hxx>
+#include <AzToolsFramework/UI/UICore/QWidgetSavedState.h>
+
 #include <AtomToolsFramework/Util/Util.h>
 
+#include <Atom/Document/MaterialDocumentSystemRequestBus.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 
 #include <Atom/Document/MaterialDocumentModule.h>
-#include <Atom/Document/MaterialDocumentSystemRequestBus.h>
-
 #include <Atom/Viewport/MaterialViewportModule.h>
-
-#include <Atom/Window/MaterialEditorWindowModule.h>
 #include <Atom/Window/MaterialEditorWindowFactoryRequestBus.h>
+#include <Atom/Window/MaterialEditorWindowModule.h>
 #include <Atom/Window/MaterialEditorWindowRequestBus.h>
 
-#include <AzCore/IO/Path/Path.h>
-#include <AzCore/Utils/Utils.h>
-#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzFramework/StringFunc/StringFunc.h>
-#include <AzFramework/IO/LocalFileIO.h>
-#include <AzFramework/Network/AssetProcessorConnection.h>
-#include <AzFramework/Asset/AssetSystemComponent.h>
-
-#include <AzToolsFramework/AzToolsFrameworkModule.h>
-#include <AzToolsFramework/API/EditorPythonConsoleBus.h>
-#include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
-#include <AzToolsFramework/UI/UICore/QWidgetSavedState.h>
-#include <AzToolsFramework/UI/UICore/QTreeViewStateSaver.hxx>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
-#include <AzToolsFramework/SourceControl/PerforceComponent.h>
-#include <AzToolsFramework/Asset/AssetSystemComponent.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserComponent.h>
-#include <AzToolsFramework/Thumbnails/ThumbnailerComponent.h>
-#include <AzToolsFramework/UI/PropertyEditor/PropertyManagerComponent.h>
-#include <AzToolsFramework/SourceControl/SourceControlAPI.h>
-
-#include <Source/MaterialEditorApplication.h>
+#include <MaterialEditorApplication.h>
 #include <MaterialEditor_Traits_Platform.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
-#include <QObject>
 #include <QMessageBox>
+#include <QObject>
 AZ_POP_DISABLE_WARNING
 
 namespace MaterialEditor
@@ -54,7 +51,7 @@ namespace MaterialEditor
     //! This function returns the build system target name of "MaterialEditor
     AZStd::string MaterialEditorApplication::GetBuildTargetName() const
     {
-#if !defined (LY_CMAKE_TARGET)
+#if !defined(LY_CMAKE_TARGET)
 #error "LY_CMAKE_TARGET must be defined in order to add this source file to a CMake executable target"
 #endif
         return AZStd::string{ LY_CMAKE_TARGET };
@@ -73,7 +70,6 @@ namespace MaterialEditor
 
     MaterialEditorApplication::MaterialEditorApplication(int* argc, char*** argv)
         : AtomToolsApplication(argc, argv)
-
     {
         QApplication::setApplicationName("O3DE Material Editor");
 

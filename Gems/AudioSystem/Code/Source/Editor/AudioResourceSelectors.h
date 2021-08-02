@@ -5,13 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
-#include <AzCore/std/containers/deque.h>
-#include <stack>
-
-namespace AZStd
+namespace AudioControls
 {
-    template<class T, class Container = AZStd::deque<T>>
-    using stack = std::stack<T, Container>;
+    void RegisterAudioControlsResourceSelectors();
 }
