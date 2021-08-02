@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -222,7 +223,7 @@ namespace AZ
                  * own RHI scopes to the frame scheduler. This happens prior to the RPI pass graph registration.
                  */
                 {
-                    AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "RHISystem :FrameUpdate: OnFramePrepare");
+                    AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "RHISystem: FrameUpdate: OnFramePrepare");
                     RHISystemNotificationBus::Broadcast(&RHISystemNotificationBus::Events::OnFramePrepare, m_frameScheduler);
                 }
 
@@ -278,6 +279,11 @@ namespace AZ
         const RHI::TransientAttachmentStatistics* RHISystem::GetTransientAttachmentStatistics() const
         {
             return m_frameScheduler.GetTransientAttachmentStatistics();
+        }
+
+        const RHI::MemoryStatistics* RHISystem::GetMemoryStatistics() const
+        {
+            return m_frameScheduler.GetMemoryStatistics();
         }
 
         const AZ::RHI::TransientAttachmentPoolDescriptor* RHISystem::GetTransientAttachmentPoolDescriptor() const

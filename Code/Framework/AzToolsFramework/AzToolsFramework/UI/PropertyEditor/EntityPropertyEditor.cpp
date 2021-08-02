@@ -1,13 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <AzCore/PlatformDef.h>
 AZ_PUSH_DISABLE_WARNING(4127, "-Wunknown-warning-option") // conditional expression is constant
-#include "AzToolsFramework_precompiled.h"
 #include "EntityPropertyEditor.hxx"
 AZ_POP_DISABLE_WARNING
 
@@ -376,6 +376,7 @@ namespace AzToolsFramework
         ToolsApplicationEvents::Bus::Handler::BusConnect();
         AZ::EntitySystemBus::Handler::BusConnect();
         EntityPropertyEditorRequestBus::Handler::BusConnect();
+        EditorWindowUIRequestBus::Handler::BusConnect();
         m_spacer = nullptr;
 
         m_emptyIcon = QIcon();
@@ -421,6 +422,7 @@ namespace AzToolsFramework
     {
         qApp->removeEventFilter(this);
 
+        EditorWindowUIRequestBus::Handler::BusDisconnect();
         EntityPropertyEditorRequestBus::Handler::BusDisconnect();
         ToolsApplicationEvents::Bus::Handler::BusDisconnect();
         AZ::EntitySystemBus::Handler::BusDisconnect();
@@ -1949,12 +1951,13 @@ namespace AzToolsFramework
             return;
         }
 
+        // If prefabs are enabled, there will be no root slice so bail out here since we don't need
+        // to show any slice options in the menu
         AZ::SliceComponent* rootSlice = nullptr;
         AzFramework::SliceEntityOwnershipServiceRequestBus::EventResult(rootSlice, contextId,
             &AzFramework::SliceEntityOwnershipServiceRequestBus::Events::GetRootSlice);
         if (!rootSlice)
         {
-            AZ_Error("PropertyEditor", false, "Entity context has no root slice");
             return;
         }
 
@@ -2103,10 +2106,6 @@ namespace AzToolsFramework
     {
         QMenu* revertMenu = nullptr;
 
-        revertMenu = menu.addMenu(tr("Revert overrides"));
-        revertMenu->setToolTipsVisible(true);
-        revertMenu->setEnabled(false);
-
         //check for changes on selected property
         if (componentClassData)
         {
@@ -2125,6 +2124,11 @@ namespace AzToolsFramework
             {
                 return;
             }
+
+            // Only add the "Revert overrides" menu option if it belongs to a slice
+            revertMenu = menu.addMenu(tr("Revert overrides"));
+            revertMenu->setToolTipsVisible(true);
+            revertMenu->setEnabled(false);
 
             if (fieldNode)
             {
@@ -4959,6 +4963,35 @@ namespace AzToolsFramework
         QWidget* widget, const QVector<QAction*>& actions)
     {
         EnableDisableComponentActions(widget, actions, false);
+    }
+
+    void EntityPropertyEditor::SetEditorUiEnabled(bool enable)
+    {
+        if (!m_selectedEntityIds.empty())
+        {
+            if (enable)
+            {
+                EnableComponentActions(this, m_entityComponentActions);
+            }
+            else
+            {
+                DisableComponentActions(this, m_entityComponentActions);
+            }
+            SetPropertyEditorState(m_gui, enable);
+
+            for (auto componentEditor : m_componentEditors)
+            {
+                AzQtComponents::SetWidgetInteractEnabled(componentEditor, enable);
+            }
+        }
+        else
+        {
+            AzQtComponents::SetWidgetInteractEnabled(m_gui->m_entityDetailsLabel, enable);
+        }
+        m_disabled = !enable;
+
+        // record the selected state after entering/leaving component mode
+        SaveComponentEditorState();
     }
 
     void EntityPropertyEditor::EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes)

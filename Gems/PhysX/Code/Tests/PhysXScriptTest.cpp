@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include <PhysX_precompiled.h>
 #include "PhysXTestFixtures.h"
 #include "PhysXTestUtil.h"
 #include "PhysXTestCommon.h"
@@ -87,7 +87,7 @@ namespace PhysX
         AZStd::unique_ptr<AZ::ScriptContext> m_scriptContext;
     };
 
-    TEST_F(PhysXScriptTest, ScriptedRaycast_RaycastNotIntersectingBox_ReturnsNoHits)
+    TEST_F(PhysXScriptTest, SimulatedBodyRaycast_RaycastNotIntersectingBox_ReturnsNoHits)
     {
         s_testEntities.insert(
             {
@@ -109,7 +109,7 @@ namespace PhysX
         EXPECT_TRUE(GetScriptContext()->Execute(luaCode));
     }
 
-    TEST_F(PhysXScriptTest, ScriptedRaycast_RaycastIntersectingBox_ReturnsHitOnBox)
+    TEST_F(PhysXScriptTest, SimulatedBodyRaycast_RaycastIntersectingBox_ReturnsHitOnBox)
     {
         s_testEntities.insert(
             {
@@ -131,7 +131,7 @@ namespace PhysX
         EXPECT_TRUE(GetScriptContext()->Execute(luaCode));
     }
 
-    TEST_F(PhysXScriptTest, ScriptedRaycast_RaycastNotInteractingCollisionFilters_ReturnsNoHit)
+    TEST_F(PhysXScriptTest, SimulatedBodyRaycast_RaycastNonInteractingCollisionFilters_ReturnsNoHits)
     {
         s_testEntities.insert(
             {
@@ -149,6 +149,387 @@ namespace PhysX
                 request.Collision = CollisionGroup("None")
                 hit = SimulatedBodyComponentRequestBus.Event.RayCast(boxId, request)
                 ExpectTrue(hit.EntityId == EntityId())
+            )";
+
+        EXPECT_TRUE(GetScriptContext()->Execute(luaCode));
+    }
+
+    TEST_F(PhysXScriptTest, SceneRayCast_RaycastNotIntersectingBox_ReturnsNoHits)
+    {
+        s_testEntities.insert(
+            {
+                "Box",
+                TestUtils::AddStaticUnitTestObject<BoxColliderComponent>(GetDefaultSceneHandle(), AZ::Vector3::CreateZero(), "Box")
+            });
+
+        const char luaCode[] =
+            R"(
+                physicsSystem = GetPhysicsSystem()
+                sceneHandle = physicsSystem:GetSceneHandle(DefaultPhysicsSceneName)
+                scene = physicsSystem:GetScene(sceneHandle)
+                request = RayCastRequest()
+                request.Start = Vector3(5.0, 0.0, 5.0)
+                request.Direction = Vector3(0.0, 0.0, -1.0)
+                request.Distance = 10.0
+                hits = scene:QueryScene(request)
+                ExpectTrue(hits.HitArray:Size() == 0)
+            )";
+
+        EXPECT_TRUE(GetScriptContext()->Execute(luaCode));
+    }
+
+    TEST_F(PhysXScriptTest, SceneRayCast_RaycastIntersectingBox_ReturnsHitOnBox)
+    {
+        s_testEntities.insert(
+            {
+                "Box",
+                TestUtils::AddStaticUnitTestObject<BoxColliderComponent>(GetDefaultSceneHandle(), AZ::Vector3::CreateZero(), "Box")
+            });
+
+        const char luaCode[] =
+            R"(
+                boxId = GetTestEntityId("Box")
+                physicsSystem = GetPhysicsSystem()
+                sceneHandle = physicsSystem:GetSceneHandle(DefaultPhysicsSceneName)
+                scene = physicsSystem:GetScene(sceneHandle)
+                request = RayCastRequest()
+                request.Start = Vector3(0.0, 0.0, 5.0)
+                request.Direction = Vector3(0.0, 0.0, -1.0)
+                request.Distance = 10.0
+                hits = scene:QueryScene(request)
+                ExpectTrue(hits.HitArray:Size() == 1)
+                hit = hits.HitArray[1] -- lua uses 1-indexing
+                ExpectTrue(hit.EntityId == boxId)
+            )";
+
+        EXPECT_TRUE(GetScriptContext()->Execute(luaCode));
+    }
+
+    TEST_F(PhysXScriptTest, SceneRayCast_MultipleHitRaycastIntersectingBoxes_ReturnsMultipleHits)
+    {
+        s_testEntities.insert(
+            {
+                "Box1",
+                TestUtils::AddStaticUnitTestObject<BoxColliderComponent>(GetDefaultSceneHandle(), AZ::Vector3::CreateZero(), "Box1")
+            });
+        s_testEntities.insert(
+            {
+                "Box2",
+                TestUtils::AddStaticUnitTestObject<BoxColliderComponent>(GetDefaultSceneHandle(), AZ::Vector3::CreateAxisZ(-5.0f), "Box2")
+            });
+
+        const char luaCode[] =
+            R"(
+                box1Id = GetTestEntityId("Box1")
+                box2Id = GetTestEntityId("Box2")
+                physicsSystem = GetPhysicsSystem()
+                sceneHandle = physicsSystem:GetSceneHandle(DefaultPhysicsSceneName)
+                scene = physicsSystem:GetScene(sceneHandle)
+                request = RayCastRequest()
+                request.Start = Vector3(0.0, 0.0, 5.0)
+                request.Direction = Vector3(0.0, 0.0, -1.0)
+                request.Distance = 10.0
+                request.ReportMultipleHits = true
+                hits = scene:QueryScene(request)
+                numHits = hits.HitArray:Size()
+                box1Hit = false
+                box2Hit = false
+                for hitIndex = 1, numHits do
+                    box1Hit = box1Hit or hits.HitArray[hitIndex].EntityId == box1Id
+                    box2Hit = box2Hit or hits.HitArray[hitIndex].EntityId == box2Id
+                end
+                ExpectTrue(box1Hit)
+                ExpectTrue(box2Hit)
+            )";
+
+        EXPECT_TRUE(GetScriptContext()->Execute(luaCode));
+    }
+
+    TEST_F(PhysXScriptTest, SceneRaycast_RaycastNonInteractingCollisionFilters_ReturnsNoHits)
+    {
+        s_testEntities.insert(
+            {
+                "Box",
+                TestUtils::AddStaticUnitTestObject<BoxColliderComponent>(GetDefaultSceneHandle(), AZ::Vector3::CreateZero(), "Box")
+            });
+
+        const char luaCode[] =
+            R"(
+                physicsSystem = GetPhysicsSystem()
+                sceneHandle = physicsSystem:GetSceneHandle(DefaultPhysicsSceneName)
+                scene = physicsSystem:GetScene(sceneHandle)
+                request = RayCastRequest()
+                request.Start = Vector3(0.0, 0.0, 5.0)
+                request.Direction = Vector3(0.0, 0.0, -1.0)
+                request.Distance = 10.0
+                request.Collision = CollisionGroup("None")
+                hits = scene:QueryScene(request)
+                ExpectTrue(hits.HitArray:Size() == 0)
+            )";
+
+        EXPECT_TRUE(GetScriptContext()->Execute(luaCode));
+    }
+
+    TEST_F(PhysXScriptTest, BoxCast_NotIntersectingBox_ReturnsNoHits)
+    {
+        s_testEntities.insert(
+            {
+                "Box",
+                TestUtils::AddStaticUnitTestObject<BoxColliderComponent>(GetDefaultSceneHandle(), AZ::Vector3::CreateZero(), "Box")
+            });
+
+        const char luaCode[] =
+            R"(
+                physicsSystem = GetPhysicsSystem()
+                sceneHandle = physicsSystem:GetSceneHandle(DefaultPhysicsSceneName)
+                scene = physicsSystem:GetScene(sceneHandle)
+
+                boxDimensions = Vector3(1.0, 1.0, 1.0)
+                startPose = Transform.CreateTranslation(Vector3(0.0, 0.0, 5.0))
+                direction = Vector3(-1.0, 0.0, 0.0)
+                distance = 10.0
+                queryType = 0
+                collisionGroup = CollisionGroup("All")
+                request = CreateBoxCastRequest(boxDimensions, startPose, direction, distance, queryType, collisionGroup)
+
+                hits = scene:QueryScene(request)
+                ExpectTrue(hits.HitArray:Size() == 0)
+            )";
+
+        EXPECT_TRUE(GetScriptContext()->Execute(luaCode));
+    }
+
+    TEST_F(PhysXScriptTest, BoxCast_IntersectingBox_ReturnsHitOnBox)
+    {
+        s_testEntities.insert(
+            {
+                "Box",
+                TestUtils::AddStaticUnitTestObject<BoxColliderComponent>(GetDefaultSceneHandle(), AZ::Vector3::CreateZero(), "Box")
+            });
+
+        const char luaCode[] =
+            R"(
+                boxId = GetTestEntityId("Box")
+                physicsSystem = GetPhysicsSystem()
+                sceneHandle = physicsSystem:GetSceneHandle(DefaultPhysicsSceneName)
+                scene = physicsSystem:GetScene(sceneHandle)
+
+                boxDimensions = Vector3(1.0, 1.0, 1.0)
+                startPose = Transform.CreateTranslation(Vector3(0.0, 0.0, 5.0))
+                direction = Vector3(0.0, 0.0, -1.0)
+                distance = 10.0
+                queryType = 0
+                collisionGroup = CollisionGroup("All")
+                request = CreateBoxCastRequest(boxDimensions, startPose, direction, distance, queryType, collisionGroup)
+
+                hits = scene:QueryScene(request)
+                ExpectTrue(hits.HitArray:Size() == 1)
+                hit = hits.HitArray[1] -- lua uses 1-indexing
+                ExpectTrue(hit.EntityId == boxId)
+            )";
+
+        EXPECT_TRUE(GetScriptContext()->Execute(luaCode));
+    }
+
+    TEST_F(PhysXScriptTest, BoxCast_NonInteractingCollisionFilters_ReturnsNoHits)
+    {
+        s_testEntities.insert(
+            {
+                "Box",
+                TestUtils::AddStaticUnitTestObject<BoxColliderComponent>(GetDefaultSceneHandle(), AZ::Vector3::CreateZero(), "Box")
+            });
+
+        const char luaCode[] =
+            R"(
+                physicsSystem = GetPhysicsSystem()
+                sceneHandle = physicsSystem:GetSceneHandle(DefaultPhysicsSceneName)
+                scene = physicsSystem:GetScene(sceneHandle)
+
+                boxDimensions = Vector3(1.0, 1.0, 1.0)
+                startPose = Transform.CreateTranslation(Vector3(0.0, 0.0, 5.0))
+                direction = Vector3(0.0, 0.0, -1.0)
+                distance = 10.0
+                queryType = 0
+                collisionGroup = CollisionGroup("None")
+                request = CreateBoxCastRequest(boxDimensions, startPose, direction, distance, queryType, collisionGroup)
+
+                hits = scene:QueryScene(request)
+                ExpectTrue(hits.HitArray:Size() == 0)
+            )";
+
+        EXPECT_TRUE(GetScriptContext()->Execute(luaCode));
+    }
+
+    TEST_F(PhysXScriptTest, SphereCast_IntersectingBox_ReturnsHitOnBox)
+    {
+        s_testEntities.insert(
+            {
+                "Box",
+                TestUtils::AddStaticUnitTestObject<BoxColliderComponent>(GetDefaultSceneHandle(), AZ::Vector3::CreateZero(), "Box")
+            });
+
+        const char luaCode[] =
+            R"(
+                boxId = GetTestEntityId("Box")
+                physicsSystem = GetPhysicsSystem()
+                sceneHandle = physicsSystem:GetSceneHandle(DefaultPhysicsSceneName)
+                scene = physicsSystem:GetScene(sceneHandle)
+
+                radius = 2.0
+                startPose = Transform.CreateTranslation(Vector3(0.0, 0.0, 5.0))
+                direction = Vector3(0.0, 0.0, -1.0)
+                distance = 10.0
+                queryType = 0
+                collisionGroup = CollisionGroup("All")
+                request = CreateSphereCastRequest(radius, startPose, direction, distance, queryType, collisionGroup)
+
+                hits = scene:QueryScene(request)
+                ExpectTrue(hits.HitArray:Size() == 1)
+                hit = hits.HitArray[1] -- lua uses 1-indexing
+                ExpectTrue(hit.EntityId == boxId)
+            )";
+
+        EXPECT_TRUE(GetScriptContext()->Execute(luaCode));
+    }
+
+    TEST_F(PhysXScriptTest, CapsuleCast_IntersectingBox_ReturnsHitOnBox)
+    {
+        s_testEntities.insert(
+            {
+                "Box",
+                TestUtils::AddStaticUnitTestObject<BoxColliderComponent>(GetDefaultSceneHandle(), AZ::Vector3::CreateZero(), "Box")
+            });
+
+        const char luaCode[] =
+            R"(
+                boxId = GetTestEntityId("Box")
+                physicsSystem = GetPhysicsSystem()
+                sceneHandle = physicsSystem:GetSceneHandle(DefaultPhysicsSceneName)
+                scene = physicsSystem:GetScene(sceneHandle)
+
+                radius = 0.5
+                height = 2.0
+                startPose = Transform.CreateTranslation(Vector3(0.0, 0.0, 5.0))
+                direction = Vector3(0.0, 0.0, -1.0)
+                distance = 10.0
+                queryType = 0
+                collisionGroup = CollisionGroup("All")
+                request = CreateCapsuleCastRequest(radius, height, startPose, direction, distance, queryType, collisionGroup)
+
+                hits = scene:QueryScene(request)
+                ExpectTrue(hits.HitArray:Size() == 1)
+                hit = hits.HitArray[1] -- lua uses 1-indexing
+                ExpectTrue(hit.EntityId == boxId)
+            )";
+
+        EXPECT_TRUE(GetScriptContext()->Execute(luaCode));
+    }
+
+    TEST_F(PhysXScriptTest, BoxOverlap_NotIntersectingBox_ReturnsNoHits)
+    {
+        s_testEntities.insert(
+            {
+                "Box",
+                TestUtils::AddStaticUnitTestObject<BoxColliderComponent>(GetDefaultSceneHandle(), AZ::Vector3::CreateZero(), "Box")
+            });
+
+        const char luaCode[] =
+            R"(
+                physicsSystem = GetPhysicsSystem()
+                sceneHandle = physicsSystem:GetSceneHandle(DefaultPhysicsSceneName)
+                scene = physicsSystem:GetScene(sceneHandle)
+
+                boxDimensions = Vector3(1.0, 1.0, 1.0)
+                pose = Transform.CreateTranslation(Vector3(0.0, 0.0, 5.0))
+                request = CreateBoxOverlapRequest(boxDimensions, pose)
+
+                hits = scene:QueryScene(request)
+                ExpectTrue(hits.HitArray:Size() == 0)
+            )";
+
+        EXPECT_TRUE(GetScriptContext()->Execute(luaCode));
+    }
+
+    TEST_F(PhysXScriptTest, BoxOverlap_IntersectingBox_ReturnsHitOnBox)
+    {
+        s_testEntities.insert(
+            {
+                "Box",
+                TestUtils::AddStaticUnitTestObject<BoxColliderComponent>(GetDefaultSceneHandle(), AZ::Vector3::CreateZero(), "Box")
+            });
+
+        const char luaCode[] =
+            R"(
+                boxId = GetTestEntityId("Box")
+                physicsSystem = GetPhysicsSystem()
+                sceneHandle = physicsSystem:GetSceneHandle(DefaultPhysicsSceneName)
+                scene = physicsSystem:GetScene(sceneHandle)
+
+                boxDimensions = Vector3(1.0, 1.0, 1.0)
+                pose = Transform.CreateTranslation(Vector3(0.0, 0.0, 0.0))
+                request = CreateBoxOverlapRequest(boxDimensions, pose)
+
+                hits = scene:QueryScene(request)
+                ExpectTrue(hits.HitArray:Size() == 1)
+                hit = hits.HitArray[1] -- lua uses 1-indexing
+                ExpectTrue(hit.EntityId == boxId)
+            )";
+
+        EXPECT_TRUE(GetScriptContext()->Execute(luaCode));
+    }
+
+    TEST_F(PhysXScriptTest, SphereOverlap_IntersectingBox_ReturnsHitOnBox)
+    {
+        s_testEntities.insert(
+            {
+                "Box",
+                TestUtils::AddStaticUnitTestObject<BoxColliderComponent>(GetDefaultSceneHandle(), AZ::Vector3::CreateZero(), "Box")
+            });
+
+        const char luaCode[] =
+            R"(
+                boxId = GetTestEntityId("Box")
+                physicsSystem = GetPhysicsSystem()
+                sceneHandle = physicsSystem:GetSceneHandle(DefaultPhysicsSceneName)
+                scene = physicsSystem:GetScene(sceneHandle)
+
+                radius = 0.5
+                pose = Transform.CreateTranslation(Vector3(0.0, 0.0, 0.0))
+                request = CreateSphereOverlapRequest(radius, pose)
+
+                hits = scene:QueryScene(request)
+                ExpectTrue(hits.HitArray:Size() == 1)
+                hit = hits.HitArray[1] -- lua uses 1-indexing
+                ExpectTrue(hit.EntityId == boxId)
+            )";
+
+        EXPECT_TRUE(GetScriptContext()->Execute(luaCode));
+    }
+
+    TEST_F(PhysXScriptTest, CapsuleOverlap_IntersectingBox_ReturnsHitOnBox)
+    {
+        s_testEntities.insert(
+            {
+                "Box",
+                TestUtils::AddStaticUnitTestObject<BoxColliderComponent>(GetDefaultSceneHandle(), AZ::Vector3::CreateZero(), "Box")
+            });
+
+        const char luaCode[] =
+            R"(
+                boxId = GetTestEntityId("Box")
+                physicsSystem = GetPhysicsSystem()
+                sceneHandle = physicsSystem:GetSceneHandle(DefaultPhysicsSceneName)
+                scene = physicsSystem:GetScene(sceneHandle)
+
+                height = 2.0
+                radius = 0.5
+                pose = Transform.CreateTranslation(Vector3(0.0, 0.0, 0.0))
+                request = CreateCapsuleOverlapRequest(height, radius, pose)
+
+                hits = scene:QueryScene(request)
+                ExpectTrue(hits.HitArray:Size() == 1)
+                hit = hits.HitArray[1] -- lua uses 1-indexing
+                ExpectTrue(hit.EntityId == boxId)
             )";
 
         EXPECT_TRUE(GetScriptContext()->Execute(luaCode));

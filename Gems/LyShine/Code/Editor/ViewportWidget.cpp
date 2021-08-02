@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "UiCanvasEditor_precompiled.h"
-
 #include "EditorCommon.h"
 
 #include "EditorDefs.h"
@@ -428,9 +427,7 @@ void ViewportWidget::contextMenuEvent(QContextMenuEvent* e)
             const QPoint pos = e->pos();
             HierarchyMenu contextMenu(m_editorWindow->GetHierarchy(),
                 HierarchyMenu::Show::kCutCopyPaste |
-                HierarchyMenu::Show::kSavePrefab |
                 HierarchyMenu::Show::kNew_EmptyElement |
-                HierarchyMenu::Show::kNew_ElementFromPrefabs |
                 HierarchyMenu::Show::kDeleteElement |
                 HierarchyMenu::Show::kNewSlice |
                 HierarchyMenu::Show::kNew_InstantiateSlice |

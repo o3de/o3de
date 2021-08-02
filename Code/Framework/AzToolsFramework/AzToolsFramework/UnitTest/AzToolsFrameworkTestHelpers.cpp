@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -99,6 +100,18 @@ namespace UnitTest
         if (action)
         {
             action->setData(id);
+            action->setShortcutContext(Qt::ApplicationShortcut);
+            m_defaultWidget.addAction(action);
+        }
+    }
+
+    void TestEditorActions::AddActionViaBusCrc(AZ::Crc32 id, QAction* action) 
+    {
+        AZ_Assert(action, "Attempting to add a null action");
+
+        if (action)
+        {
+            action->setData(aznumeric_cast<AZ::u32>(id));
             action->setShortcutContext(Qt::ApplicationShortcut);
             m_defaultWidget.addAction(action);
         }

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -27,11 +28,17 @@ namespace AZ
     template <typename... Params>
     EventHandler<Params...>::EventHandler(const EventHandler& rhs)
         : m_callback(rhs.m_callback)
+        , m_event(rhs.m_event)
     {
-        // Copy the callback function, then perform a Connect with the new event
-        if (rhs.m_event)
+        // Copy the callback and event, then perform a Connect to the event
+        if (m_callback && m_event)
         {
-            rhs.m_event->Connect(*this);
+            m_event->Connect(*this);
+        }
+        else
+        {
+            // It was not possible to connect to the event, set it to nullptr
+            m_event = nullptr;
         }
     }
 
@@ -65,9 +72,16 @@ namespace AZ
         {
             Disconnect();
             m_callback = rhs.m_callback;
-            if (rhs.m_event)
+            m_event = rhs.m_event;
+            // Copy the callback and event, then perform a Connect to the event
+            if (m_callback && m_event)
             {
-                rhs.m_event->Connect(*this);
+                m_event->Connect(*this);
+            }
+            else
+            {
+                // It was not possible to connect to the event, set it to nullptr
+                m_event = nullptr;
             }
         }
 

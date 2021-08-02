@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -32,6 +33,7 @@ namespace AZ
                     ->Attribute(AZ::Script::Attributes::Category, "render")
                     ->Attribute(AZ::Script::Attributes::Module, "render")
                     ->Event("GetOriginalMaterialAssignments", &MaterialComponentRequestBus::Events::GetOriginalMaterialAssignments)
+                    ->Event("FindMaterialAssignmentId", &MaterialComponentRequestBus::Events::FindMaterialAssignmentId)
                     ->Event("SetMaterialOverrides", &MaterialComponentRequestBus::Events::SetMaterialOverrides)
                     ->Event("GetMaterialOverrides", &MaterialComponentRequestBus::Events::GetMaterialOverrides)
                     ->Event("ClearAllMaterialOverrides", &MaterialComponentRequestBus::Events::ClearAllMaterialOverrides)
@@ -248,8 +250,18 @@ namespace AZ
         MaterialAssignmentMap MaterialComponentController::GetOriginalMaterialAssignments() const
         {
             MaterialAssignmentMap materialAssignmentMap;
-            MaterialReceiverRequestBus::EventResult(materialAssignmentMap, m_entityId, &MaterialReceiverRequestBus::Events::GetMaterialAssignments);
+            MaterialReceiverRequestBus::EventResult(
+                materialAssignmentMap, m_entityId, &MaterialReceiverRequestBus::Events::GetMaterialAssignments);
             return materialAssignmentMap;
+        }
+
+        MaterialAssignmentId MaterialComponentController::FindMaterialAssignmentId(
+            const MaterialAssignmentLodIndex lod, const AZStd::string& label) const
+        {
+            MaterialAssignmentId materialAssignmentId;
+            MaterialReceiverRequestBus::EventResult(
+                materialAssignmentId, m_entityId, &MaterialReceiverRequestBus::Events::FindMaterialAssignmentId, lod, label);
+            return materialAssignmentId;
         }
 
         void MaterialComponentController::SetMaterialOverrides(const MaterialAssignmentMap& materials)

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -66,7 +67,7 @@ namespace ScriptCanvas
                     AZ::SerializeContext::DataElementNode baseNodeElement = operatorBaseClass->GetSubElement(nodeElementIndex);
 
                     classElement.RemoveElementByName(AZ::Crc32("BaseClass1"));
-                    classElement.AddElement(baseNodeElement);                    
+                    classElement.AddElement(baseNodeElement);
                 }
 
                 return true;
@@ -84,42 +85,6 @@ namespace ScriptCanvas
                     }
                 }
                 ////
-            }
-
-            void OperatorSize::OnInputSignal(const SlotId& slotId)
-            {
-                const SlotId inSlotId = OperatorSizeProperty::GetInSlotId(this);
-                if (slotId == inSlotId)
-                {
-
-                    SlotId sourceSlotId = OperatorSizeProperty::GetSourceSlotId(this);
-                    SlotId sizeSlotId = OperatorSizeProperty::GetSizeSlotId(this);
-
-                    const Datum* containerDatum = FindDatum(sourceSlotId);
-
-                    if (Datum::IsValidDatum(containerDatum))
-                    {
-                        // Get the size of the container
-                        auto sizeOutcome = BehaviorContextMethodHelper::CallMethodOnDatum(*containerDatum, "Size");
-                        if (!sizeOutcome)
-                        {
-                            SCRIPTCANVAS_REPORT_ERROR((*this), "Failed to get size of container: %s", sizeOutcome.GetError().c_str());
-                            return;
-                        }
-
-                        // Index
-                        Datum sizeResult = sizeOutcome.TakeValue();
-
-                        PushOutput(sizeResult, *GetSlot(sizeSlotId));                        
-                    }
-                    else
-                    {
-                        Datum zero(0);
-                        PushOutput(zero, *GetSlot(sizeSlotId));
-                    }
-
-                    SignalOutput(OperatorSizeProperty::GetOutSlotId(this));
-                }
             }
         }
     }

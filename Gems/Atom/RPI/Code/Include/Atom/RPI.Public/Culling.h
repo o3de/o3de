@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -90,6 +91,10 @@ namespace AZ
                 LodOverride m_lodOverride = NoLodOverride;
             };
             LodData m_lodData;
+
+            //! Flag indicating if the object is visible in any view, meaning it passed the culling tests in the previous frame.
+            //! This flag must be manually cleared by the Cullable object every frame.
+            bool m_isVisible = false;
 
             //! Flag indicating if the object is hidden, i.e., was specifically marked as
             //! something that shouldn't be rendered, regardless of its actual position relative to the camera

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -235,8 +236,6 @@ namespace ScriptCanvas
 
             void SetNamespacePath(const NamespacePath& namespacePath);
 
-            void TakeNamespacePath(NamespacePath&& namespacePath);
-
             AZStd::string ToExecutionString() const;
 
         private:
@@ -266,16 +265,6 @@ namespace ScriptCanvas
             const In* FindIn(const AZStd::string& inSlotId) const;
             const Out* FindLatentOut(const AZStd::string& latent) const;
             LexicalScope GetLexicalScope(bool isSourcePure) const;
-
-#if defined(FUNCTION_LEGACY_SUPPORT_ENABLED)
-        public:
-            bool IsAllInputOutputShared() const;
-
-            // all input/output are used in every in/out/latent slot?
-            bool m_isAllInputOutputShared = false;
-
-            void MarkAllInputOutputShared();
-#endif
         };
 
         AZStd::string ToString(const In& in, size_t tabs = 0);

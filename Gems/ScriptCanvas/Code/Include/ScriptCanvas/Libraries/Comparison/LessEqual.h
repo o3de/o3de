@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -38,22 +39,6 @@ namespace ScriptCanvas
                                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                                 ;
                         }
-                    }
-                }
-
-            protected:
-                Datum Evaluate(const Datum& lhs, const Datum& rhs) override
-                {
-                    ComparisonOutcome result(lhs <= rhs);
-                    
-                    if (result.IsSuccess())
-                    {
-                        return Datum(result.GetValue());
-                    }
-                    else
-                    {
-                        SCRIPTCANVAS_REPORT_ERROR((*this), result.GetError().c_str());
-                        return Datum(false);
                     }
                 }
             };

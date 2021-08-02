@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -25,9 +26,8 @@ set(FILES
     Include/ScriptCanvas/Asset/RuntimeAssetHandler.h
     Include/ScriptCanvas/Asset/ScriptCanvasAssetBase.h
     Include/ScriptCanvas/Asset/ScriptCanvasAssetData.h
-    Include/ScriptCanvas/Asset/Functions/ScriptCanvasFunctionAsset.h
-    Include/ScriptCanvas/Asset/Functions/RuntimeFunctionAssetHandler.cpp
-    Include/ScriptCanvas/Asset/Functions/RuntimeFunctionAssetHandler.h
+    Include/ScriptCanvas/Asset/SubgraphInterfaceAssetHandler.cpp
+    Include/ScriptCanvas/Asset/SubgraphInterfaceAssetHandler.h
     Include/ScriptCanvas/Core/ScriptCanvasBus.h
     Include/ScriptCanvas/Core/ExecutionNotificationsBus.cpp
     Include/ScriptCanvas/Core/ExecutionNotificationsBus.h
@@ -35,7 +35,6 @@ set(FILES
     Include/ScriptCanvas/Core/NodeBus.h
     Include/ScriptCanvas/Core/EBusNodeBus.h
     Include/ScriptCanvas/Core/NodelingBus.h
-    Include/ScriptCanvas/Core/SignalBus.h
     Include/ScriptCanvas/Core/ContractBus.h
     Include/ScriptCanvas/Core/Attributes.h
     Include/ScriptCanvas/Core/Connection.cpp
@@ -66,7 +65,6 @@ set(FILES
     Include/ScriptCanvas/Core/MethodConfiguration.cpp
     Include/ScriptCanvas/Core/ModifiableDatumView.cpp
     Include/ScriptCanvas/Core/ModifiableDatumView.h
-    Include/ScriptCanvas/Core/NativeDatumNode.h
     Include/ScriptCanvas/Core/Node.cpp
     Include/ScriptCanvas/Core/Node.h
     Include/ScriptCanvas/Core/Nodeable.cpp
@@ -76,8 +74,6 @@ set(FILES
     Include/ScriptCanvas/Core/NodeableNodeOverloaded.cpp
     Include/ScriptCanvas/Core/NodeableNodeOverloaded.h
     Include/ScriptCanvas/Core/NodeFunctionGeneric.h
-    Include/ScriptCanvas/Core/PureData.cpp
-    Include/ScriptCanvas/Core/PureData.h
     Include/ScriptCanvas/Core/Slot.cpp
     Include/ScriptCanvas/Core/Slot.h
     Include/ScriptCanvas/Core/SlotConfigurationDefaults.h
@@ -106,7 +102,6 @@ set(FILES
     Include/ScriptCanvas/Translation/Translation.cpp
     Include/ScriptCanvas/Translation/TranslationContext.h
     Include/ScriptCanvas/Translation/TranslationContext.cpp
-    Include/ScriptCanvas/Translation/TranslationContextBus.h
     Include/ScriptCanvas/Translation/TranslationResult.h
     Include/ScriptCanvas/Translation/TranslationResult.cpp
     Include/ScriptCanvas/Translation/TranslationUtilities.h
@@ -131,8 +126,6 @@ set(FILES
     Include/ScriptCanvas/Core/Contracts/DisplayGroupConnectedSlotLimitContract.h
     Include/ScriptCanvas/Core/Contracts/DynamicTypeContract.cpp
     Include/ScriptCanvas/Core/Contracts/DynamicTypeContract.h
-    Include/ScriptCanvas/Core/Contracts/ExclusivePureDataContract.cpp
-    Include/ScriptCanvas/Core/Contracts/ExclusivePureDataContract.h
     Include/ScriptCanvas/Core/Contracts/IsReferenceTypeContract.cpp
     Include/ScriptCanvas/Core/Contracts/IsReferenceTypeContract.h
     Include/ScriptCanvas/Core/Contracts/MathOperatorContract.cpp
@@ -174,7 +167,6 @@ set(FILES
     Include/ScriptCanvas/Execution/NativeHostDeclarations.cpp
     Include/ScriptCanvas/Execution/NativeHostDefinitions.h
     Include/ScriptCanvas/Execution/NativeHostDefinitions.cpp
-    Include/ScriptCanvas/Execution/RuntimeBus.h
     Include/ScriptCanvas/Execution/RuntimeComponent.h
     Include/ScriptCanvas/Execution/RuntimeComponent.cpp
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedAPI.h
@@ -204,11 +196,6 @@ set(FILES
     Include/ScriptCanvas/Grammar/DebugMap.cpp
     Include/ScriptCanvas/Grammar/ExecutionTraversalListeners.h
     Include/ScriptCanvas/Grammar/ExecutionTraversalListeners.cpp
-    Include/ScriptCanvas/Grammar/FunctionsLegacySupport.h
-    Include/ScriptCanvas/Grammar/FunctionsLegacySupport.cpp
-    Include/ScriptCanvas/Grammar/GrammarContext.h
-    Include/ScriptCanvas/Grammar/GrammarContext.cpp
-    Include/ScriptCanvas/Grammar/GrammarContextBus.h
     Include/ScriptCanvas/Grammar/ParsingMetaData.h
     Include/ScriptCanvas/Grammar/ParsingMetaData.cpp
     Include/ScriptCanvas/Grammar/ParsingUtilities.h
@@ -228,7 +215,6 @@ set(FILES
     Include/ScriptCanvas/Execution/NativeHostDeclarations.h
     Include/ScriptCanvas/Execution/NativeHostDefinitions.cpp
     Include/ScriptCanvas/Execution/NativeHostDefinitions.h
-    Include/ScriptCanvas/Execution/RuntimeBus.h
     Include/ScriptCanvas/Execution/RuntimeComponent.cpp
     Include/ScriptCanvas/Execution/RuntimeComponent.h
     Include/ScriptCanvas/Internal/Nodeables/BaseTimer.cpp
@@ -250,8 +236,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/Core/AzEventHandler.cpp
     Include/ScriptCanvas/Libraries/Core/AzEventHandler.h
     Include/ScriptCanvas/Libraries/Core/AzEventHandler.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Core/BehaviorContextObjectNode.cpp
-    Include/ScriptCanvas/Libraries/Core/BehaviorContextObjectNode.h
     Include/ScriptCanvas/Libraries/Core/BinaryOperator.cpp
     Include/ScriptCanvas/Libraries/Core/BinaryOperator.h
     Include/ScriptCanvas/Libraries/Core/CoreNodes.cpp
@@ -265,10 +249,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/Core/ExtractProperty.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Core/EventHandlerTranslationUtility.h
     Include/ScriptCanvas/Libraries/Core/EventHandlerTranslationUtility.cpp
-    Include/ScriptCanvas/Libraries/Core/Error.cpp
-    Include/ScriptCanvas/Libraries/Core/Error.h
-    Include/ScriptCanvas/Libraries/Core/ErrorHandler.cpp
-    Include/ScriptCanvas/Libraries/Core/ErrorHandler.h
     Include/ScriptCanvas/Libraries/Core/ForEach.cpp
     Include/ScriptCanvas/Libraries/Core/ForEach.h
     Include/ScriptCanvas/Libraries/Core/ForEach.ScriptCanvasGrammar.xml
@@ -311,28 +291,19 @@ set(FILES
     Include/ScriptCanvas/Libraries/Core/SetVariable.cpp
     Include/ScriptCanvas/Libraries/Core/SetVariable.h
     Include/ScriptCanvas/Libraries/Core/SetVariable.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Core/Start.cpp
     Include/ScriptCanvas/Libraries/Core/Start.h
     Include/ScriptCanvas/Libraries/Core/Start.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Core/String.h
     Include/ScriptCanvas/Libraries/Core/UnaryOperator.cpp
     Include/ScriptCanvas/Libraries/Core/UnaryOperator.h
     Include/ScriptCanvas/Libraries/Entity/Entity.cpp
     Include/ScriptCanvas/Libraries/Entity/Entity.h
-    Include/ScriptCanvas/Libraries/Entity/EntityIDNode.h
-    Include/ScriptCanvas/Libraries/Entity/EntityIDNodes.h
     Include/ScriptCanvas/Libraries/Entity/EntityNodes.h
-    Include/ScriptCanvas/Libraries/Entity/EntityRef.h
-    Include/ScriptCanvas/Libraries/Entity/Rotate.cpp
-    Include/ScriptCanvas/Libraries/Entity/Rotate.h
-    Include/ScriptCanvas/Libraries/Entity/Rotate.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Entity/RotateMethod.cpp
     Include/ScriptCanvas/Libraries/Entity/RotateMethod.h
     Include/ScriptCanvas/Libraries/Logic/And.h
     Include/ScriptCanvas/Libraries/Logic/Any.cpp
     Include/ScriptCanvas/Libraries/Logic/Any.h
     Include/ScriptCanvas/Libraries/Logic/Any.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Logic/Boolean.h
     Include/ScriptCanvas/Libraries/Logic/Break.h
     Include/ScriptCanvas/Libraries/Logic/Break.cpp
     Include/ScriptCanvas/Libraries/Logic/Break.ScriptCanvasGrammar.xml
@@ -342,7 +313,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/Logic/Gate.cpp
     Include/ScriptCanvas/Libraries/Logic/Gate.h
     Include/ScriptCanvas/Libraries/Logic/Gate.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Logic/Indexer.cpp
     Include/ScriptCanvas/Libraries/Logic/Indexer.h
     Include/ScriptCanvas/Libraries/Logic/Indexer.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Logic/IsNull.cpp
@@ -350,7 +320,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/Logic/IsNull.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Logic/Logic.cpp
     Include/ScriptCanvas/Libraries/Logic/Logic.h
-    Include/ScriptCanvas/Libraries/Logic/Multiplexer.cpp
     Include/ScriptCanvas/Libraries/Logic/Multiplexer.h
     Include/ScriptCanvas/Libraries/Logic/Multiplexer.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Logic/Not.h
@@ -373,11 +342,8 @@ set(FILES
     Include/ScriptCanvas/Libraries/Logic/While.cpp
     Include/ScriptCanvas/Libraries/Logic/While.h
     Include/ScriptCanvas/Libraries/Logic/While.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Math/AABBNode.h
     Include/ScriptCanvas/Libraries/Math/AABBNodes.h
-    Include/ScriptCanvas/Libraries/Math/ColorNode.h
     Include/ScriptCanvas/Libraries/Math/ColorNodes.h
-    Include/ScriptCanvas/Libraries/Math/CRCNode.h
     Include/ScriptCanvas/Libraries/Math/CRCNodes.h
     Include/ScriptCanvas/Libraries/Math/Divide.h
     Include/ScriptCanvas/Libraries/Math/Math.cpp
@@ -389,26 +355,15 @@ set(FILES
     Include/ScriptCanvas/Libraries/Math/MathNodeUtilities.h
     Include/ScriptCanvas/Libraries/Math/MathGenerics.h
     Include/ScriptCanvas/Libraries/Math/MathRandom.h
-    Include/ScriptCanvas/Libraries/Math/Matrix3x3Node.h
     Include/ScriptCanvas/Libraries/Math/Matrix3x3Nodes.h
-    Include/ScriptCanvas/Libraries/Math/Matrix4x4Node.h
     Include/ScriptCanvas/Libraries/Math/Matrix4x4Nodes.h
     Include/ScriptCanvas/Libraries/Math/Multiply.h
-    Include/ScriptCanvas/Libraries/Math/Number.h
-    Include/ScriptCanvas/Libraries/Math/OBBNode.h
     Include/ScriptCanvas/Libraries/Math/OBBNodes.h
-    Include/ScriptCanvas/Libraries/Math/PlaneNode.h
     Include/ScriptCanvas/Libraries/Math/PlaneNodes.h
-    Include/ScriptCanvas/Libraries/Math/Random.cpp
-    Include/ScriptCanvas/Libraries/Math/Random.h
-    Include/ScriptCanvas/Libraries/Math/Random.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Math/Rotation.h
     Include/ScriptCanvas/Libraries/Math/RotationNodes.h
     Include/ScriptCanvas/Libraries/Math/Subtract.h
     Include/ScriptCanvas/Libraries/Math/Sum.h
-    Include/ScriptCanvas/Libraries/Math/Transform.h
     Include/ScriptCanvas/Libraries/Math/TransformNodes.h
-    Include/ScriptCanvas/Libraries/Math/Vector.h
     Include/ScriptCanvas/Libraries/Math/Vector2Nodes.h
     Include/ScriptCanvas/Libraries/Math/Vector3Nodes.h
     Include/ScriptCanvas/Libraries/Math/Vector4Nodes.h
@@ -461,7 +416,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/String/Format.cpp
     Include/ScriptCanvas/Libraries/String/Format.h
     Include/ScriptCanvas/Libraries/String/Format.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/String/Print.cpp
     Include/ScriptCanvas/Libraries/String/Print.h
     Include/ScriptCanvas/Libraries/String/Print.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/String/Replace.cpp
@@ -478,10 +432,8 @@ set(FILES
     Include/ScriptCanvas/Libraries/UnitTesting/AddFailure.cpp
     Include/ScriptCanvas/Libraries/UnitTesting/AddFailure.h
     Include/ScriptCanvas/Libraries/UnitTesting/AddFailure.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/UnitTesting/AddSuccess.cpp
     Include/ScriptCanvas/Libraries/UnitTesting/AddSuccess.h
     Include/ScriptCanvas/Libraries/UnitTesting/AddSuccess.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/UnitTesting/Checkpoint.cpp
     Include/ScriptCanvas/Libraries/UnitTesting/Checkpoint.h
     Include/ScriptCanvas/Libraries/UnitTesting/Checkpoint.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/UnitTesting/ExpectEqual.cpp
@@ -508,7 +460,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/UnitTesting/ExpectTrue.cpp
     Include/ScriptCanvas/Libraries/UnitTesting/ExpectTrue.h
     Include/ScriptCanvas/Libraries/UnitTesting/ExpectTrue.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/UnitTesting/MarkComplete.cpp
     Include/ScriptCanvas/Libraries/UnitTesting/MarkComplete.h
     Include/ScriptCanvas/Libraries/UnitTesting/MarkComplete.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/UnitTesting/UnitTestBus.h
@@ -588,6 +539,8 @@ set(FILES
     Include/ScriptCanvas/Profiler/Aggregator.cpp
     Include/ScriptCanvas/Profiler/DrillerEvents.h
     Include/ScriptCanvas/Profiler/DrillerEvents.cpp
+    Include/ScriptCanvas/Serialization/ScriptUserDataSerializer.h
+    Include/ScriptCanvas/Serialization/ScriptUserDataSerializer.cpp
     Include/ScriptCanvas/Data/DataTrait.cpp
     Include/ScriptCanvas/Data/DataTrait.h
     Include/ScriptCanvas/Data/PropertyTraits.cpp
@@ -620,5 +573,4 @@ set(SKIP_UNITY_BUILD_INCLUSION_FILES
     Include/ScriptCanvas/Libraries/Core/FunctionCallNode.h
     Include/ScriptCanvas/Libraries/Core/FunctionCallNodeIsOutOfDate.h
     Include/ScriptCanvas/Libraries/Core/FunctionCallNodeIsOutOfDate.cpp
-
 )

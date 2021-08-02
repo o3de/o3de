@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "Atom_RHI_Metal_precompiled.h"
 
 #import <QuartzCore/CAMetalLayer.h>
 #include <RHI/Buffer.h>
@@ -43,11 +43,36 @@ namespace Platform
         }
         return physicalDeviceList;
     }
-
-    void PresentInternal(id <MTLCommandBuffer> mtlCommandBuffer, id<CAMetalDrawable> drawable, float syncInterval)
+    
+    float GetRefreshRate()
     {
-        AZ_UNUSED(syncInterval);
-        [mtlCommandBuffer presentDrawable:drawable];
+        CGDirectDisplayID display = CGMainDisplayID();
+        CGDisplayModeRef currentMode = CGDisplayCopyDisplayMode(display);
+        return CGDisplayModeGetRefreshRate(currentMode);
+    }
+
+    void PresentInternal(id <MTLCommandBuffer> mtlCommandBuffer, id<CAMetalDrawable> drawable, float syncInterval, float refreshRate)
+    {
+        bool framePresented = false;
+        
+        //seconds per frame (1/refreshrate) * num frames (sync interval)
+        float presentAfterMinimumDuration = syncInterval / refreshRate;
+        
+#if defined(__MAC_10_15_4)
+        if(@available(macOS 10.15.4, *))
+        {
+            if(presentAfterMinimumDuration > 0.0f)
+            {
+                [mtlCommandBuffer presentDrawable:drawable afterMinimumDuration:presentAfterMinimumDuration];
+                framePresented = true;
+            }
+        }
+#endif
+
+        if(!framePresented)
+        {
+            [mtlCommandBuffer presentDrawable:drawable];
+        }
     }
 
     CGRect GetScreenBounds(NativeWindowType* nativeWindow)
@@ -95,11 +120,6 @@ namespace Platform
     RHIMetalView* GetMetalView(NativeWindowType* nativeWindow)
     {
         return reinterpret_cast<RHIMetalView*>([nativeWindow.contentViewController view]);
-    }
-
-    void ApplyTileDimentions(MTLRenderPassDescriptor* mtlRenderPassDescriptor)
-    {
-        AZ_UNUSED(mtlRenderPassDescriptor);
     }
 
     void SynchronizeBufferOnCPU(id<MTLBuffer> mtlBuffer, size_t bufferOffset, size_t bufferSize)

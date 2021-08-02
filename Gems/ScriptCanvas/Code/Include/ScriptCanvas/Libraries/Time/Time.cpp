@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -57,7 +58,7 @@ namespace ScriptCanvas
             AddNodeToRegistry<Time, ScriptCanvas::Nodes::TimeDelayNodeableNode>(nodeRegistry);
             AddNodeToRegistry<Time, ScriptCanvas::Nodes::TimerNodeableNode>(nodeRegistry);
         }
-        
+
         AZStd::vector<AZ::ComponentDescriptor*> Time::GetComponentDescriptors()
         {
             return AZStd::vector<AZ::ComponentDescriptor*>({
@@ -73,7 +74,7 @@ namespace ScriptCanvas
                 ScriptCanvas::Nodes::HeartBeatNodeableNode::CreateDescriptor(),
                 ScriptCanvas::Nodes::TimeDelayNodeableNode::CreateDescriptor(),
                 ScriptCanvas::Nodes::TimerNodeableNode::CreateDescriptor(),
-            });
+                });
         }
     }
 

@@ -1,14 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "precompiled.h"
 
 #include <Asset/AssetDescription.h>
-#include <Asset/Functions/ScriptCanvasFunctionAsset.h>
 #include <AssetBuilderSDK/SerializationDependencies.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/IO/FileIO.h>
@@ -18,9 +17,8 @@
 #include <AzFramework/Script/ScriptComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
-#include <ScriptCanvas/Asset/Functions/RuntimeFunctionAssetHandler.h>
+#include <ScriptCanvas/Asset/SubgraphInterfaceAssetHandler.h>
 #include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
-#include <ScriptCanvas/Assets/Functions/ScriptCanvasFunctionAssetHandler.h>
 #include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
 #include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
@@ -70,6 +68,7 @@ namespace ScriptCanvasBuilder
                 AZ_Warning(s_scriptCanvasBuilder, false, "CreateJobs for \"%s\" failed because the source file could not be opened.", fullPath.data());
                 return;
             }
+
             AZStd::vector<AZ::u8> fileBuffer(ioStream.GetLength());
             size_t bytesRead = ioStream.Read(fileBuffer.size(), fileBuffer.data());
             if (bytesRead != ioStream.GetLength())
@@ -83,7 +82,9 @@ namespace ScriptCanvasBuilder
 
         m_processEditorAssetDependencies.clear();
 
-        auto assetFilter = [this, &response](const AZ::Data::AssetFilterInfo& filterInfo)
+        AZStd::unordered_multimap<AZStd::string, AssetBuilderSDK::SourceFileDependency> jobDependenciesByKey;
+
+        auto assetFilter = [this, &jobDependenciesByKey](const AZ::Data::AssetFilterInfo& filterInfo)
         {
             // force load these before processing
             if (filterInfo.m_assetType == azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>()
@@ -93,13 +94,23 @@ namespace ScriptCanvasBuilder
             }
 
             // these trigger re-processing
-            if (filterInfo.m_assetType == azrtti_typeid<ScriptCanvasEditor::ScriptCanvasAsset>()
-            || filterInfo.m_assetType == azrtti_typeid<ScriptEvents::ScriptEventsAsset>()
-            || filterInfo.m_assetType == azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>())
+            if (filterInfo.m_assetType == azrtti_typeid<ScriptCanvasEditor::ScriptCanvasAsset>())
+            {
+                AZ_Error("ScriptCanvas", false, "ScriptAsset Reference in a graph detected");
+            }
+
+            if (filterInfo.m_assetType == azrtti_typeid<ScriptEvents::ScriptEventsAsset>())
             {
                 AssetBuilderSDK::SourceFileDependency dependency;
                 dependency.m_sourceFileDependencyUUID = filterInfo.m_assetId.m_guid;
-                response.m_sourceFileDependencyList.push_back(dependency);
+                jobDependenciesByKey.insert({ ScriptEvents::k_builderJobKey, dependency });
+            }
+
+            if (filterInfo.m_assetType == azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>())
+            {
+                AssetBuilderSDK::SourceFileDependency dependency;
+                dependency.m_sourceFileDependencyUUID = filterInfo.m_assetId.m_guid;
+                jobDependenciesByKey.insert({ s_scriptCanvasProcessJobKey, dependency });
             }
 
             // Asset filter always returns false to prevent parsing dependencies, but makes note of the script canvas dependencies
@@ -164,9 +175,10 @@ namespace ScriptCanvasBuilder
             jobDescriptor.m_additionalFingerprintInfo = AZStd::string(GetFingerprintString()).append("|").append(AZStd::to_string(static_cast<AZ::u64>(fingerprint)));
 
             // Graph process job needs to wait until its dependency asset job finished
-            for (const auto& processingDependency : response.m_sourceFileDependencyList)
+            for (const auto& processingDependency : jobDependenciesByKey)
             {
-                jobDescriptor.m_jobDependencyList.emplace_back(s_scriptCanvasProcessJobKey, info.m_identifier.c_str(), AssetBuilderSDK::JobDependencyType::Order, processingDependency);
+                response.m_sourceFileDependencyList.push_back(processingDependency.second);
+                jobDescriptor.m_jobDependencyList.emplace_back(processingDependency.first, info.m_identifier.c_str(), AssetBuilderSDK::JobDependencyType::Order, processingDependency.second);
             }
 
             response.m_createJobOutputs.push_back(jobDescriptor);
@@ -210,7 +222,7 @@ namespace ScriptCanvasBuilder
         bool pathFound = false;
         AZStd::string relativePath;
         AzToolsFramework::AssetSystemRequestBus::BroadcastResult
-            ( pathFound
+        (pathFound
             , &AzToolsFramework::AssetSystem::AssetSystemRequest::GetRelativeProductPathFromFullSourceOrProductPath
             , request.m_fullPath.c_str(), relativePath);
 

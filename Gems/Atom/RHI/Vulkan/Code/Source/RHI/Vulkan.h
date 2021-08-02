@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -22,7 +23,11 @@ namespace AZ
     namespace RHI
     {
         class ScopeAttachment;
-        enum class BufferBindFlags : uint32_t;
+        // NOTE: see BufferDescriptor.h, AZ_ENUM... macro wraps enum within an outer inline namespace.
+        inline namespace BufferBindFlagsNamespace
+        {
+            enum class BufferBindFlags : uint32_t;
+        }
         class BufferView;
         class ImageView;
         struct BufferSubresourceRange;

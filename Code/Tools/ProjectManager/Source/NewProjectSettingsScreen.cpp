@@ -1,11 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <NewProjectSettingsScreen.h>
+#include <ProjectManagerDefs.h>
 #include <PythonBindingsInterface.h>
 #include <FormBrowseEditWidget.h>
 #include <FormLineEditWidget.h>
@@ -97,16 +99,27 @@ namespace O3DE::ProjectManager
             {
                 m_templates = templatesResult.GetValue();
 
-                // sort alphabetically by display name because they could be in any order
+                // sort alphabetically by display name (but putting Standard first) because they could be in any order
                 std::sort(m_templates.begin(), m_templates.end(), [](const ProjectTemplateInfo& arg1, const ProjectTemplateInfo& arg2)
                 {
-                    return arg1.m_displayName.toLower() < arg2.m_displayName.toLower();
+                    if (arg1.m_displayName == "Standard")
+                    {
+                        return true;
+                    }
+                    else if (arg2.m_displayName == "Standard")
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        return arg1.m_displayName.toLower() < arg2.m_displayName.toLower();
+                    }
                 });
 
                 for (int index = 0; index < m_templates.size(); ++index)
                 {
                     ProjectTemplateInfo projectTemplate = m_templates.at(index);
-                    QString projectPreviewPath = projectTemplate.m_path + "/Template/preview.png";
+                    QString projectPreviewPath = QDir(projectTemplate.m_path).filePath(ProjectPreviewImagePath);
                     QFileInfo doesPreviewExist(projectPreviewPath);
                     if (!doesPreviewExist.exists() || !doesPreviewExist.isFile())
                     {

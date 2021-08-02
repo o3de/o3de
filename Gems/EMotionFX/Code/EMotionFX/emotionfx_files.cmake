@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -363,16 +364,11 @@ set(FILES
     Source/TwoStringEventData.h
     Source/Importer/ChunkProcessors.cpp
     Source/Importer/ChunkProcessors.h
-    Source/Importer/LegacyAnimGraphNodeParser.cpp
-    Source/Importer/LegacyAnimGraphNodeParser.h
     Source/Importer/Importer.cpp
     Source/Importer/Importer.h
-    Source/Importer/MotionSetFileFormat.h
     Source/Importer/NodeMapFileFormat.h
     Source/Importer/SharedFileFormatStructs.h
     Source/Importer/ActorFileFormat.h
-    Source/Importer/AnimGraphFileFormat.cpp
-    Source/Importer/AnimGraphFileFormat.h
     Source/Importer/MotionFileFormat.h
     Source/Parameter/BoolParameter.cpp
     Source/Parameter/BoolParameter.h

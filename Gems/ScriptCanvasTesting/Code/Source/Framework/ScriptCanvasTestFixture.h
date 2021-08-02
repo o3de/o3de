@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -134,11 +135,6 @@ namespace ScriptCanvasTests
         {
             // don't hang on to dangling assets
             AZ::Data::AssetManager::Instance().DispatchEvents();
-
-            if (AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance())
-            {
-                fileIO->DestroyPath(k_tempCoreAssetDir);
-            }
 
             if (s_application)
             {

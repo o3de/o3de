@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -114,7 +115,7 @@ namespace AZ
                     Render::FrameCaptureRequestBus::BroadcastResult(
                         startedCapture,
                         &Render::FrameCaptureRequestBus::Events::CapturePassAttachmentWithCallback,
-                        m_context->GetData()->m_passHierarchy, AZStd::string("Output"), readbackCallback);
+                        m_context->GetData()->m_passHierarchy, AZStd::string("Output"), readbackCallback, RPI::PassAttachmentReadbackOption::Output);
                     // Reset the capture flag if the capture request was successful. Otherwise try capture it again next tick.
                     if (startedCapture)
                     {

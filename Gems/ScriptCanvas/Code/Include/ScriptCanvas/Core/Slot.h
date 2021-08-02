@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -166,10 +167,6 @@ namespace ScriptCanvas
         ScriptCanvas::ConnectionType GetConnectionType() const;
 
         bool IsLatent() const;
-
-        // VariableNotificationBus
-        void OnVariableValueChanged() override;
-        ////
 
         // Here to allow conversion of the previously untyped any slots into the dynamic type any.
         void SetDynamicDataType(DynamicDataType dynamicDataType);

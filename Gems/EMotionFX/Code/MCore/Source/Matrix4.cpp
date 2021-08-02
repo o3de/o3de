@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -2247,27 +2248,6 @@ namespace MCore
     }
 
 
-
-    // simple decompose a matrix into translation and rotation
-    void Matrix::Decompose(AZ::Vector3* outTranslation, AZ::Quaternion* outRotation) const
-    {
-        // make a copy of the matrix
-        Matrix mat(*this);
-
-        // normalize the basis vectors
-        mat.SetRight(SafeNormalize(mat.GetRight()));
-        mat.SetUp(SafeNormalize(mat.GetUp()));
-        mat.SetForward(SafeNormalize(mat.GetForward()));
-
-        // extract the translation from the matrix
-        *outTranslation = mat.GetTranslation();
-
-        // convert the normalized 3x3 rotation part into a AZ::Quaternion
-        *outRotation = MCore::MCoreMatrixToQuaternion(*this);
-    }
-
-
-
     // calculate a rotation matrix from two vectors
     void Matrix::SetRotationMatrixTwoVectors(const AZ::Vector3& from, const AZ::Vector3& to)
     {
@@ -2364,30 +2344,6 @@ namespace MCore
     }
 
 
-    //
-    void Matrix::DecomposeQRGramSchmidt(AZ::Vector3& translation, AZ::Quaternion& rot, AZ::Vector3& scale, AZ::Vector3& shear) const
-    {
-        Matrix rotMatrix;
-        DecomposeQRGramSchmidt(translation, rotMatrix, scale, shear);
-        rot = MCore::MCoreMatrixToQuaternion(*this);
-    }
-
-    //
-    void Matrix::DecomposeQRGramSchmidt(AZ::Vector3& translation, AZ::Quaternion& rot, AZ::Vector3& scale) const
-    {
-        Matrix rotMatrix;
-        DecomposeQRGramSchmidt(translation, rotMatrix, scale);
-        rot = MCore::MCoreMatrixToQuaternion(rotMatrix);
-    }
-
-
-    //
-    void Matrix::DecomposeQRGramSchmidt(AZ::Vector3& translation, AZ::Quaternion& rot) const
-    {
-        Matrix rotMatrix;
-        DecomposeQRGramSchmidt(translation, rotMatrix);
-        rot = MCore::MCoreMatrixToQuaternion(rotMatrix);
-    }
 
 
     //

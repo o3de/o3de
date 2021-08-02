@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -189,7 +190,7 @@ namespace ScriptCanvas
 
                         dataSlotConfiguration.SetConnectionType(ScriptCanvas::ConnectionType::Output);
                         dataSlotConfiguration.m_dynamicDataType = DynamicDataType::Value;
-                        
+
                         SlotId slotIdStep = AddSlot(dataSlotConfiguration);
                         AZ_Assert(slotIdStep.IsValid(), "Data slot is not created successfully.");
                         latentOut.outputs.push_back(slotIdStep);

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -83,9 +84,9 @@ AZ::RPI::ViewportContextPtr LegacyViewportCameraControllerInstance::GetViewportC
 }
 
 bool LegacyViewportCameraControllerInstance::HandleMouseMove(
-    const AzFramework::ScreenPoint& currentMousePos, const AzFramework::ScreenPoint& previousMousePos)
+    int dx, int dy)
 {
-    if (previousMousePos == currentMousePos)
+    if (dx == 0 && dy == 0)
     {
         return false;
     }
@@ -105,7 +106,7 @@ bool LegacyViewportCameraControllerInstance::HandleMouseMove(
 
     if (m_inMoveMode || m_inOrbitMode || m_inRotateMode || m_inZoomMode)
     {
-        m_totalMouseMoveDelta += (QPoint(currentMousePos.m_x, currentMousePos.m_y)-QPoint(previousMousePos.m_x, previousMousePos.m_y)).manhattanLength();
+        m_totalMouseMoveDelta += AZStd::abs(dx) + AZStd::abs(dy);
     }
 
     if ((m_inRotateMode && m_inMoveMode) || m_inZoomMode)
@@ -115,7 +116,7 @@ bool LegacyViewportCameraControllerInstance::HandleMouseMove(
         Vec3 ydir = m.GetColumn1().GetNormalized();
         Vec3 pos = m.GetTranslation();
 
-        const float posDelta = 0.2f * (previousMousePos.m_y - currentMousePos.m_y) * speedScale;
+        const float posDelta = 0.2f * dy * speedScale;
         pos = pos - ydir * posDelta;
         m_orbitDistance = m_orbitDistance + posDelta;
         m_orbitDistance = fabs(m_orbitDistance);
@@ -126,7 +127,7 @@ bool LegacyViewportCameraControllerInstance::HandleMouseMove(
     }
     else if (m_inRotateMode)
     {
-        Ang3 angles(-currentMousePos.m_y + previousMousePos.m_y, 0, -currentMousePos.m_x + previousMousePos.m_x);
+        Ang3 angles(dy, 0, dx);
         angles = angles * 0.002f * gSettings.cameraRotateSpeed;
         if (gSettings.invertYRotation)
         {
@@ -158,7 +159,7 @@ bool LegacyViewportCameraControllerInstance::HandleMouseMove(
         }
 
         Vec3 pos = m.GetTranslation();
-        pos += 0.1f * xdir * (currentMousePos.m_x - previousMousePos.m_x) * speedScale + 0.1f * zdir * (previousMousePos.m_y - currentMousePos.m_y) * speedScale;
+        pos += 0.1f * xdir * dx * speedScale + 0.1f * zdir * dy * speedScale;
         m.SetTranslation(pos);
 
         AZ::Transform transform = viewportContext->GetCameraTransform();
@@ -168,7 +169,7 @@ bool LegacyViewportCameraControllerInstance::HandleMouseMove(
     }
     else if (m_inOrbitMode)
     {
-        Ang3 angles(-currentMousePos.m_y + previousMousePos.m_y, 0, -currentMousePos.m_x + previousMousePos.m_x);
+        Ang3 angles(dy, 0, dx);
         angles = angles * 0.002f * gSettings.cameraRotateSpeed;
 
         if (gSettings.invertPan)
@@ -302,20 +303,19 @@ bool LegacyViewportCameraControllerInstance::HandleInputChannelEvent(const AzFra
     bool shouldCaptureCursor = m_capturingCursor;
     bool shouldConsumeEvent = false;
 
-    if (id == AzFramework::InputDeviceMouse::SystemCursorPosition)
+    if (id == AzFramework::InputDeviceMouse::Movement::X || id == AzFramework::InputDeviceMouse::Movement::Y)
     {
-        bool result = false;
-        AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Event(
-            GetViewportId(),
-            [this, &result](AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequests* mouseRequests)
-            {
-                if (auto previousMousePosition = mouseRequests->PreviousViewportCursorScreenPosition();
-                    previousMousePosition.has_value())
-                {
-                    result = HandleMouseMove(mouseRequests->ViewportCursorScreenPosition(), previousMousePosition.value());
-                }
-            });
-        return result;
+        int dx = 0;
+        int dy = 0;
+        if (id == AzFramework::InputDeviceMouse::Movement::X)
+        {
+            dx = -aznumeric_cast<int>(event.m_inputChannel.GetValue());
+        }
+        else
+        {
+            dy = -aznumeric_cast<int>(event.m_inputChannel.GetValue());
+        }
+        return HandleMouseMove(dx, dy);
     }
     else if (id == MouseButton::Left)
     {
@@ -404,7 +404,7 @@ bool LegacyViewportCameraControllerInstance::HandleInputChannelEvent(const AzFra
     }
     else if (auto key = GetKeyboardKey(event.m_inputChannel); key != Qt::Key_unknown)
     {
-        if (state == InputChannel::State::Ended)
+        if (!event.m_inputChannel.IsActive())
         {
             m_pressedKeys.erase(key);
         }

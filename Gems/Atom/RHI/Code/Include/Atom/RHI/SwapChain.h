@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -80,6 +81,15 @@ namespace AZ
 
             AZ_RTTI(SwapChain, "{888B64A5-D956-406F-9C33-CF6A54FC41B0}", Object);
 
+#if defined(PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB)
+            // On Linux platforms that uses XCB, a resize may occur in the swap chain but the command queue may still
+            // reference the original surface. This flag is a temporary fix to make sure that all the swap chains
+            // have finished their resize events before presenting the command queue.
+
+            // [GFX TODO][GHI - 2678]
+            AZStd::atomic_bool m_resized{ false };
+#endif // PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
+
         protected:
             SwapChain();
 
@@ -122,6 +132,11 @@ namespace AZ
             /// Called when the swap chain is presenting the currently swap image.
             /// Returns the index of the current image after the swap.
             virtual uint32_t PresentInternal() = 0;
+
+            virtual void SetVerticalSyncIntervalInternal(uint32_t previousVerticalSyncInterval)
+            {
+                AZ_UNUSED(previousVerticalSyncInterval);
+            }
 
             //////////////////////////////////////////////////////////////////////////
 

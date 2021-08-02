@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -380,19 +381,21 @@ function(ly_delayed_target_link_libraries)
             cmake_parse_arguments(ly_delayed_target_link_libraries "" "" "${visibilities}" ${delayed_link})
 
             foreach(visibility ${visibilities})
-                foreach(item ${ly_delayed_target_link_libraries_${visibility}})
+                foreach(alias_item ${ly_delayed_target_link_libraries_${visibility}})
 
-                    if(TARGET ${item})
-                        get_target_property(item_type ${item} TYPE)
+                    if(TARGET ${alias_item})
+                        get_target_property(item_type ${alias_item} TYPE)
+                        ly_de_alias_target(${alias_item} item)
                     else()
                         unset(item_type)
+                        set(item ${alias_item})
                     endif()
 
                     if(item_type STREQUAL MODULE_LIBRARY)
-                        target_include_directories(${target} ${visibility} $<TARGET_PROPERTY:${item},INTERFACE_INCLUDE_DIRECTORIES>)
-                        target_link_libraries(${target} ${visibility} $<TARGET_PROPERTY:${item},INTERFACE_LINK_LIBRARIES>)
-                        target_compile_definitions(${target} ${visibility} $<TARGET_PROPERTY:${item},INTERFACE_COMPILE_DEFINITIONS>)
-                        target_compile_options(${target} ${visibility} $<TARGET_PROPERTY:${item},INTERFACE_COMPILE_OPTIONS>)
+                        target_include_directories(${target} ${visibility} $<GENEX_EVAL:$<TARGET_PROPERTY:${item},INTERFACE_INCLUDE_DIRECTORIES>>)
+                        target_link_libraries(${target} ${visibility} $<GENEX_EVAL:$<TARGET_PROPERTY:${item},INTERFACE_LINK_LIBRARIES>>)
+                        target_compile_definitions(${target} ${visibility} $<GENEX_EVAL:$<TARGET_PROPERTY:${item},INTERFACE_COMPILE_DEFINITIONS>>)
+                        target_compile_options(${target} ${visibility} $<GENEX_EVAL:$<TARGET_PROPERTY:${item},INTERFACE_COMPILE_OPTIONS>>)
                     else()
                         ly_parse_third_party_dependencies(${item})
                         target_link_libraries(${target} ${visibility} ${item})
@@ -657,7 +660,12 @@ function(ly_get_vs_folder_directory absolute_target_source_dir output_source_dir
     if(is_target_prefix_of_engine_root)
         cmake_path(RELATIVE_PATH absolute_target_source_dir BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE relative_target_source_dir)
     else()
-        cmake_path(GET absolute_target_source_dir RELATIVE_PART relative_target_source_dir)
+        cmake_path(IS_PREFIX CMAKE_SOURCE_DIR ${absolute_target_source_dir} is_target_prefix_of_source_dir)
+        if(is_target_prefix_of_source_dir)
+            cmake_path(RELATIVE_PATH absolute_target_source_dir BASE_DIRECTORY ${CMAKE_SOURCE_DIR} OUTPUT_VARIABLE relative_target_source_dir)
+        else()
+            cmake_path(GET absolute_target_source_dir RELATIVE_PART relative_target_source_dir)
+        endif()
     endif()
 
     set(${output_source_dir} ${relative_target_source_dir} PARENT_SCOPE)

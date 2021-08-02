@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -28,7 +29,7 @@ namespace ScriptCanvas
                 return AZ::Success(DependencyReport{});
             }
 
-            bool Any::IsNoOp() const 
+            bool Any::IsNoOp() const
             {
                 return true;
             }
@@ -59,12 +60,6 @@ namespace ScriptCanvas
 
                     RegisterExtension(visualExtensions);
                 }
-            }
-            
-            void Any::OnInputSignal([[maybe_unused]] const SlotId& slotId)
-            {
-                const SlotId outSlotId = AnyProperty::GetOutSlotId(this);
-                SignalOutput(outSlotId);
             }
 
             SlotId Any::HandleExtension(AZ::Crc32 extensionId)

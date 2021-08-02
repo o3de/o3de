@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -67,7 +68,8 @@ namespace AZ
             void ConstructMeshList(const ModelAsset* model, const AZ::Transform& matParent);
 
             static const int s_MinimumVertexSizeInLeafNode = 3 * 10;
-
+            // Stop splitting the tree if more than 10% of the triangles are straddling the split axis
+            static constexpr float s_MaximumSplitAxisStraddlingTriangles = 1.1;
             AZStd::unique_ptr<ModelKdTreeNode> m_pRootNode;
 
             struct MeshData

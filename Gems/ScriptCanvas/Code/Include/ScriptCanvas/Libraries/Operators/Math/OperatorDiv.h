@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -33,7 +34,7 @@ namespace ScriptCanvas
 
             protected:
 
-                void InitializeSlot(const SlotId& slotId, const ScriptCanvas::Data::Type& dataType) override;                
+                void InitializeSlot(const SlotId& slotId, const ScriptCanvas::Data::Type& dataType) override;
                 bool IsValidArithmeticSlot(const SlotId& slotId) const override;
 
                 void OnResetDatumToDefaultValue(ModifiableDatumView& datumView) override;

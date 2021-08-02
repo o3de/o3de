@@ -1,12 +1,12 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
 
 set(FILES
-    AzToolsFramework_precompiled.h
     AssetEditor/AssetEditorBus.h
     AssetEditor/AssetEditorToolbar.ui
     AssetEditor/AssetEditorStatusBar.ui
@@ -147,6 +147,8 @@ set(FILES
     Entity/SliceEditorEntityOwnershipServiceBus.h
     Fingerprinting/TypeFingerprinter.h
     Fingerprinting/TypeFingerprinter.cpp
+    Logger/TraceLogger.cpp
+    Logger/TraceLogger.h
     Manipulators/AngularManipulator.cpp
     Manipulators/AngularManipulator.h
     Manipulators/BaseManipulator.cpp
@@ -289,6 +291,8 @@ set(FILES
     ToolsComponents/TransformComponent.h
     ToolsComponents/TransformComponent.cpp
     ToolsComponents/TransformComponentBus.h
+    ToolsComponents/TransformComponentSerializer.h
+    ToolsComponents/TransformComponentSerializer.cpp
     ToolsComponents/ScriptEditorComponent.cpp
     ToolsComponents/ScriptEditorComponent.h
     ToolsComponents/ToolsAssetCatalogComponent.cpp
@@ -724,6 +728,8 @@ set(FILES
     PythonTerminal/ScriptTermDialog.cpp
     PythonTerminal/ScriptTermDialog.h
     PythonTerminal/ScriptTermDialog.ui
+    Input/QtEventToAzInputManager.h
+    Input/QtEventToAzInputManager.cpp
 )
 
 # Prevent the following files from being grouped in UNITY builds

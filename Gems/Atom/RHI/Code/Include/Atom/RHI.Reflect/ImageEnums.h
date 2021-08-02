@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,43 +9,43 @@
 
 #include <Atom/RHI.Reflect/Base.h>
 
+#include <AzCore/Preprocessor/Enum.h>
+
 namespace AZ
 {
     namespace RHI
     {
          //! A set of combinable flags which inform the system how an image is to be
          //! bound to the pipeline at all stages of its lifetime.
-        enum class ImageBindFlags : uint32_t
-        {
-            None = 0,
+        AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(ImageBindFlags, uint32_t,
+            (None, 0),
 
             /// Supports read access through a ShaderResourceGroup.
-            ShaderRead = AZ_BIT(0),
+            (ShaderRead, AZ_BIT(0)),
 
             /// Supports write access through a ShaderResourceGroup.
-            ShaderWrite = AZ_BIT(1),
+            (ShaderWrite, AZ_BIT(1)),
 
             /// Supports read-write access through a ShaderResourceGroup.
-            ShaderReadWrite = ShaderRead | ShaderWrite,
+            (ShaderReadWrite, ShaderRead | ShaderWrite),
 
             /// Supports use as a color attachment on a scope.
-            Color = AZ_BIT(2),
+            (Color, AZ_BIT(2)),
 
             /// Supports use as depth attachment on a scope.
-            Depth = AZ_BIT(3),
+            (Depth, AZ_BIT(3)),
 
             /// Supports use as stencil attachment on a scope.
-            Stencil = AZ_BIT(4),
+            (Stencil, AZ_BIT(4)),
 
             /// Supports use as a depth stencil attachment on a scope.
-            DepthStencil = Depth | Stencil,
+            (DepthStencil, Depth | Stencil),
 
             /// Supports read access for GPU copy operations.
-            CopyRead = AZ_BIT(5),
+            (CopyRead, AZ_BIT(5)),
 
             /// Supports write access for GPU copy operations.
-            CopyWrite = AZ_BIT(6),
-        };
+            (CopyWrite, AZ_BIT(6)));
 
         AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::ImageBindFlags);
 

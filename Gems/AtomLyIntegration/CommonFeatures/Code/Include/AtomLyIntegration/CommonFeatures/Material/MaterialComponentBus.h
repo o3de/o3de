@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -20,6 +21,8 @@ namespace AZ
         public:
             //! Get all material assignments that can be overridden
             virtual MaterialAssignmentMap GetOriginalMaterialAssignments() const = 0;
+            //! Get material assignment id matching lod and label substring
+            virtual MaterialAssignmentId FindMaterialAssignmentId(const MaterialAssignmentLodIndex lod, const AZStd::string& label) const = 0;
             //! Set material overrides
             virtual void SetMaterialOverrides(const MaterialAssignmentMap& materials) = 0;
             //! Get material overrides
@@ -68,6 +71,9 @@ namespace AZ
             : public ComponentBus
         {
         public:
+            //! Get material assignment id matching lod and label substring
+            virtual MaterialAssignmentId FindMaterialAssignmentId(
+                const MaterialAssignmentLodIndex lod, const AZStd::string& label) const = 0;
             virtual MaterialAssignmentMap GetMaterialAssignments() const = 0;
             virtual AZStd::unordered_set<AZ::Name> GetModelUvNames() const = 0;
         };

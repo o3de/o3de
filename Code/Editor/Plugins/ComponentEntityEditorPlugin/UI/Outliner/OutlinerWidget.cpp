@@ -1,11 +1,12 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "ComponentEntityEditorPlugin_precompiled.h"
 
+#include <CryCommon/platform.h>
 #include "MainWindow.h"                     // for MainWindow
 
 #include "OutlinerListModel.hxx"
@@ -269,10 +270,12 @@ OutlinerWidget::OutlinerWidget(QWidget* pParent, Qt::WindowFlags flags)
     AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusConnect(
             AzToolsFramework::GetEntityContextId());
     AzToolsFramework::EditorEntityInfoNotificationBus::Handler::BusConnect();
+    AzToolsFramework::EditorWindowUIRequestBus::Handler::BusConnect();
 }
 
 OutlinerWidget::~OutlinerWidget()
 {
+    AzToolsFramework::EditorWindowUIRequestBus::Handler::BusDisconnect();
     AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusDisconnect();
     AzToolsFramework::EditorEntityInfoNotificationBus::Handler::BusDisconnect();
     AzToolsFramework::EditorPickModeNotificationBus::Handler::BusDisconnect();
@@ -1321,16 +1324,25 @@ static void SetEntityOutlinerState(Ui::OutlinerWidgetUI* entityOutlinerUi, const
     AzQtComponents::SetWidgetInteractEnabled(entityOutlinerUi->m_searchWidget, on);
 }
 
+void OutlinerWidget::EnableUi(bool enable)
+{
+    SetEntityOutlinerState(m_gui, enable);
+    setEnabled(enable);
+}
+
+void OutlinerWidget::SetEditorUiEnabled(bool enable)
+{
+    EnableUi(enable);
+}
+
 void OutlinerWidget::EnteredComponentMode([[maybe_unused]] const AZStd::vector<AZ::Uuid>& componentModeTypes)
 {
-    SetEntityOutlinerState(m_gui, false);
-    setEnabled(false);
+    EnableUi(false);
 }
 
 void OutlinerWidget::LeftComponentMode([[maybe_unused]] const AZStd::vector<AZ::Uuid>& componentModeTypes)
 {
-    setEnabled(true);
-    SetEntityOutlinerState(m_gui, true);
+    EnableUi(true);
 }
 
 void OutlinerWidget::OnSliceInstantiated(const AZ::Data::AssetId& /*sliceAssetId*/, AZ::SliceComponent::SliceInstanceAddress& sliceAddress, const AzFramework::SliceInstantiationTicket& /*ticket*/)

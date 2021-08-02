@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -49,7 +50,6 @@ class TestViewMenuOptions(EditorTestHelper):
             ("Viewport", "Center on Selection"),
             ("Viewport", "Go to Location"),
             ("Viewport", "Remember Location"),
-            ("Viewport", "Change Move Speed"),
             ("Viewport", "Switch Camera"),
             ("Viewport", "Show/Hide Helpers"),
             ("Refresh Style",),

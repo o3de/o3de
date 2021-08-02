@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -34,7 +35,7 @@ namespace ScriptCanvas
 
         AZStd::string EntityIdValueToString(const AZ::EntityId& entityId, const Configuration& config);
 
-        AZStd::string_view GetAmazonCopyright();
+        AZStd::string_view GetCopyright();
 
         AZStd::string_view GetAutoNativeNamespace();
 

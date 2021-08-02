@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -14,8 +15,6 @@
 #include <ScriptCanvas/Core/Nodeable.h>
 #include <ScriptCanvas/Execution/Interpreted/ExecutionInterpretedAPI.h>
 #include <ScriptCanvas/Execution/NodeableOut/NodeableOutNative.h>
-#include <ScriptCanvas/Grammar/GrammarContext.h>
-#include <ScriptCanvas/Grammar/GrammarContextBus.h>
 #include <Source/Framework/ScriptCanvasTestFixture.h>
 #include <Source/Framework/ScriptCanvasTestNodes.h>
 #include <Source/Framework/ScriptCanvasTestUtilities.h>
@@ -84,6 +83,16 @@ public:
         return &m_byValue;
     }
 };
+
+TEST_F(ScriptCanvasTestFixture, EntityIdInputForOnGraphStart)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_EntityIdInputForOnGraphStart");
+}
+
+TEST_F(ScriptCanvasTestFixture, ParseErrorOnKnownNull)
+{
+    ExpectParseError("LY_SC_UnitTest_ParseErrorOnKnownNull");
+}
 
 TEST_F(ScriptCanvasTestFixture, UseBehaviorContextClassConstant)
 {
@@ -931,181 +940,3 @@ TEST_F(ScriptCanvasTestFixture, InterpretedExecutionOutPerformance)
 {
     RunUnitTestGraph("LY_SC_UnitTest_ExecutionOutPerformance", ExecutionMode::Interpreted);
 }
-
-#if defined(FUNCTION_LEGACY_SUPPORT_ENABLED)
-
-TEST_F(ScriptCanvasTestFixture, InterpretedSubgraph_UserNodeable)
-{
-    ExpectParse("LY_SC_UnitTest_Subgraph_UserNodeableD");
-}
-
-TEST_F(ScriptCanvasTestFixture, InterpretedSubgraph_UserNodeableLatent)
-{
-    ExpectParse("LY_SC_UnitTest_Subgraph_UserNodeableLatent");
-}
-
-TEST_F(ScriptCanvasTestFixture, InterpretedUseFunctionWithOnGraphStart)
-{
-    RunUnitTestGraph("LY_SC_UnitTest_UseFunctionWithOnGraphStart");
-}
-
-TEST_F(ScriptCanvasTestFixture, InterpretedUseSubgraphWithStartAndEBus)
-{
-    RunUnitTestGraph("LY_SC_UnitTests_UseSubgraphWithStartAndEBus");
-}
-
-TEST_F(ScriptCanvasTestFixture, InterpretedDeviousStateFunctionFixGraph)
-{
-    RunUnitTestGraph("LY_SC_UnitTest_DeviousStateFunctionFixGraph");
-}
-
-TEST_F(ScriptCanvasTestFixture, InterpretedCallFunctionLocalValues)
-{
-    RunUnitTestGraph("LY_SC_UnitTest_CallFunctionLocalValues");
-}
-
-TEST_F(ScriptCanvasTestFixture, ParseFunctionLocalObjects)
-{
-    ExpectParse("LY_SC_UnitTest_FunctionLocalObjects");
-}
-
-TEST_F(ScriptCanvasTestFixture, InterpretedFunctionLocalObjectsCall)
-{
-    RunUnitTestGraph("LY_SC_UnitTest_FunctionLocalObjectsCall", ExecutionMode::Interpreted, DurationSpec::Ticks(31));
-}
-
-TEST_F(ScriptCanvasTestFixture, ParseFunctionWithOnGraphStart)
-{
-    ExpectParse("LY_SC_UnitTest_FunctionWithOnGraphStart");
-}
-
-TEST_F(ScriptCanvasTestFixture, NodeableDurationSubgraphDirectionExposedOutWithOutput)
-{
-    RunUnitTestGraph("LY_SC_UnitTest_NodeableDurationSubgraphDirectionExposedOutWithOutput", ExecutionMode::Interpreted, DurationSpec::Ticks(3));
-}
-
-TEST_F(ScriptCanvasTestFixture, ParseOrderedSequencerFunction)
-{
-    ExpectParse("LY_SC_UnitTest_OrderedSequencerFunction");
-}
-
-TEST_F(ScriptCanvasTestFixture, ParseFunction_Names_With_Spaces)
-{
-    ExpectParse("LY_SC_UnitTest_Function Names With Spaces");
-}
-
-TEST_F(ScriptCanvasTestFixture, ParseFunctionNameEvilVersion)
-{
-    ExpectParse("LY_SC_UnitTest_Function Names(With) Random+Strings Evil~Version");
-}
-
-TEST_F(ScriptCanvasTestFixture, ParseFunctionNameEvilVersionInFolder)
-{
-    ExpectParse("TestFunction/LY_SC_UnitTest_Function Names(With) Random+Strings Evil~Version-In^Forder");
-}
-
-TEST_F(ScriptCanvasTestFixture, ParseNodeableDurationFunction)
-{
-    ExpectParse("LY_SC_UnitTest_NodeableDurationFunction");
-}
-
-TEST_F(ScriptCanvasTestFixture, ParseNodeableDurationFunctionDirectExposure)
-{
-    ExpectParse("LY_SC_UnitTest_NodeableDurationFunctionDirectExposure");
-}
-
-TEST_F(ScriptCanvasTestFixture, ParseNodeableDurationFunctionDirectExposureWithOutput)
-{
-    ExpectParse("LY_SC_UnitTest_NodeableDurationFunctionDirectExposureWithOutput");
-}
-
-
-TEST_F(ScriptCanvasTestFixture, ParseFunctionBranchSingleNamedOutJustReturns)
-{
-    ExpectParse("LY_SC_UnitTest_ParseFunctionBranchSingleNamedOutJustReturns");
-}
-
-TEST_F(ScriptCanvasTestFixture, ParseExposeAnyOut)
-{
-    ExpectParse("LY_SC_UnitTest_ExposeAnyOut");
-}
-
-TEST_F(ScriptCanvasTestFixture, ParseMultipleInputNoParseError)
-{
-    ExpectParse("LY_SC_UnitTest_MultipleInputNoParseError");
-}
-
-TEST_F(ScriptCanvasTestFixture, InterpretedSubgraphMultipleInError)
-{
-    ExpectParseError("LY_SC_UnitTest_InterpretedSubgraphMultipleInError");
-}
-
-TEST_F(ScriptCanvasTestFixture, InterpretedSubgraphMultipleOutError)
-{
-    ExpectParseError("LY_SC_UnitTest_InterpretedSubgraphMultipleOutError");
-}
-
-TEST_F(ScriptCanvasTestFixture, InterpretedSubgraphOutInLoop)
-{
-    ExpectParseError("LY_SC_UnitTest_InterpretedSubgraphOutInLoop");
-}
-
-TEST_F(ScriptCanvasTestFixture, InterpretedSubgraphOutMidCycleMissingSlots)
-{
-    ExpectParseError("LY_SC_UnitTest_InterpretedSubgraphOutMidCycleMissingSlots");
-}
-
-TEST_F(ScriptCanvasTestFixture, InterpretedSubgraphComplexityError)
-{
-    ExpectParseError("LY_SC_UnitTest_SubgraphComplexityError");
-}
-
-TEST_F(ScriptCanvasTestFixture, InterpretedSubgraphReturnValueFromIn)
-{
-    ExpectParseError("LY_SC_UnitTest_SubgraphReturnValueFromIn");
-}
-
-TEST_F(ScriptCanvasTestFixture, InterpretedSubgraphReturnValueFromInOut)
-{
-    ExpectParseError("LY_SC_UnitTest_SubgraphReturnValueFromInOut");
-}
-
-TEST_F(ScriptCanvasTestFixture, InterpretedVerifyByValueCorrectness)
-{
-    RunUnitTestGraph("LY_SC_UnitTest_VerifyByValueCorrectness", ExecutionMode::Interpreted);
-}
-
-TEST_F(ScriptCanvasTestFixture, InterpretedFunctionNoInputOneOutputCall)
-{
-    RunUnitTestGraph("LY_SC_UnitTest_FunctionNoInputOneOutputCall", ExecutionMode::Interpreted);
-}
-
-TEST_F(ScriptCanvasTestFixture, InterpretedFunctionAddVector3Call)
-{
-    RunUnitTestGraph("LY_SC_UnitTest_FunctionAddVector3Call", ExecutionMode::Interpreted);
-}
-TEST_F(ScriptCanvasTestFixture, InterpretedParseFunction)
-{
-    ExpectParse("LY_SC_UnitTest_ParseFunction");
-}
-
-TEST_F(ScriptCanvasTestFixture, InterpretedParseFunctionBranch)
-{
-    ExpectParse("LY_SC_UnitTest_ParseFunctionBranch");
-}
-
-TEST_F(ScriptCanvasTestFixture, InterpretedParseFunctionBranchDefaultOut)
-{
-    ExpectParse("LY_SC_UnitTest_ParseFunctionBranchDefaultOut");
-}
-
-TEST_F(ScriptCanvasTestFixture, InterpretedParseFunctionDefaultOut)
-{
-    ExpectParse("LY_SC_UnitTest_ParseFunctionDefaultOut");
-}
-
-TEST_F(ScriptCanvasTestFixture, InterpretedParseFunctionOut)
-{
-    ExpectParse("LY_SC_UnitTest_ParseFunctionOut");
-}
-#endif

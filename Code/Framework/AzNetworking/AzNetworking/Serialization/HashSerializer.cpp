@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,9 +11,9 @@
 
 namespace AzNetworking
 {
-    // This gives us a hash sensitivity of around 1/128th of a unit, and will detect errors within a range of -16,777,216 to +16,777,216
-    static const int32_t FloatHashMinValue = (INT_MIN >> 7);
-    static const int32_t FloatHashMaxValue = (INT_MAX >> 7);
+    // This gives us a hash sensitivity of around 1/512th of a unit, and will detect errors within a range of -4,194,304 to +4,194,304
+    static const int32_t FloatHashMinValue = (INT_MIN >> 9);
+    static const int32_t FloatHashMaxValue = (INT_MAX >> 9);
 
     AZ::HashValue32 HashSerializer::GetHash() const
     {

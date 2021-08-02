@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -163,12 +164,20 @@ namespace AZ
                 m_currentImageIndex = 0;
             }
 
+#if defined(PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB)
+            m_resized.store(true);
+#endif // PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
+
             return resultCode;
         }
 
         void SwapChain::SetVerticalSyncInterval(uint32_t verticalSyncInterval)
         {
+            uint32_t previousVsyncInterval = m_descriptor.m_verticalSyncInterval;
+
             m_descriptor.m_verticalSyncInterval = verticalSyncInterval;
+
+            SetVerticalSyncIntervalInternal(previousVsyncInterval);
         }
 
         const AttachmentId& SwapChain::GetAttachmentId() const

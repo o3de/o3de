@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -74,6 +75,7 @@ namespace ScriptCanvas
         constexpr const char* NotEnoughBranchesForReturn = "Not enough branches for defined out return values.";
         constexpr const char* NotEnoughInputForArithmeticOperator = "Not enough input for arithmetic operator";
         constexpr const char* NullEntityInGraph = "Null entity pointer in graph";
+        constexpr const char* NullInputKnown = "The input is known to be null, and the node does not accept it";
         constexpr const char* ParseExecutionMultipleOutSyntaxSugarChildExecutionRemovedAndNotReplaced = "ParseExecutionMultipleOutSyntaxSugar: child execution node was removed, and not replaced.";
         constexpr const char* ParseExecutionMultipleOutSyntaxSugarMismatchOutSize = "ParseExecutionMultipleOutSyntaxSugar: mismatch in connect nodes vs source slots size";
         constexpr const char* ParseExecutionMultipleOutSyntaxSugarNonNullChildExecutionFound = "ParseExecutionMultipleOutSyntaxSugar: non null child execution node";

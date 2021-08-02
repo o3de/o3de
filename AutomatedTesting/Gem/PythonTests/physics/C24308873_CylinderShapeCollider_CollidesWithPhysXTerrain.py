@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -130,7 +131,6 @@ def C24308873_CylinderShapeCollider_CollidesWithPhysXTerrain():
 
     # 5) Exit game mode
     helper.exit_game_mode(Tests.exit_game_mode)
-
 
 
 if __name__ == "__main__":

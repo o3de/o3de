@@ -1,5 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -32,6 +33,61 @@ namespace AzFramework
         constexpr float Dir[] = { 1.0f, -1.0f };
         return Dir[aznumeric_cast<int>(invert)];
     };
+
+    // maps a discrete motion input to a click detector click event (e.g. button down or up event)
+    static ClickDetector::ClickEvent ClickFromInput(const InputEvent& event, const AzFramework::InputChannelId& inputChannelId)
+    {
+        if (const auto& input = AZStd::get_if<DiscreteInputEvent>(&event))
+        {
+            if (input->m_channelId == inputChannelId)
+            {
+                if (input->m_state == InputChannel::State::Began)
+                {
+                    return ClickDetector::ClickEvent::Down;
+                }
+                else if (input->m_state == InputChannel::State::Ended)
+                {
+                    return ClickDetector::ClickEvent::Up;
+                }
+            }
+        }
+
+        return ClickDetector::ClickEvent::Nil;
+    }
+
+    // begins a camera input after a sufficient movement has occurred and ends a
+    // camera input once the initiating button is released
+    static void HandleActivationEvents(
+        const InputEvent& event,
+        const AzFramework::InputChannelId& inputChannelId,
+        const ScreenVector& cursorDelta,
+        ClickDetector& clickDetector,
+        CameraInput& cameraInput)
+    {
+        const auto clickEvent = ClickFromInput(event, inputChannelId);
+        switch (const auto outcome = clickDetector.DetectClick(clickEvent, cursorDelta); outcome)
+        {
+        case ClickDetector::ClickOutcome::Move:
+            cameraInput.BeginActivation();
+            break;
+        case ClickDetector::ClickOutcome::Release:
+            cameraInput.EndActivation();
+            break;
+        default:
+            // noop
+            break;
+        }
+    }
+
+    // returns true if a camera input is being updated after having been initiated from a
+    // motion input (e.g. mouse move while button held)
+    static bool CameraInputUpdatingAfterMotion(const CameraInput& cameraInput)
+    {
+        // note - must also check !ending to ensure the mouse up (release) event
+        // is not consumed and can be propagated to other systems.
+        // (don't swallow mouse up events)
+        return !cameraInput.Idle() && !cameraInput.Ending();
+    }
 
     // Based on paper by David Eberly - https://www.geometrictools.com/Documentation/EulerAngles.pdf
     AZ::Vector3 EulerAngles(const AZ::Matrix3x3& orientation)
@@ -91,7 +147,9 @@ namespace AzFramework
             m_scrollDelta = scroll->m_delta;
         }
 
-        return m_cameras.HandleEvents(event, m_motionDelta, m_scrollDelta);
+        m_handlingEvents = m_cameras.HandleEvents(event, m_motionDelta, m_scrollDelta);
+
+        return m_handlingEvents;
     }
 
     Camera CameraSystem::StepCamera(const Camera& targetCamera, const float deltaTime)
@@ -231,42 +289,8 @@ namespace AzFramework
 
     bool RotateCameraInput::HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, [[maybe_unused]] const float scrollDelta)
     {
-        const ClickDetector::ClickEvent clickEvent = [&event, this]
-        {
-            if (const auto& input = AZStd::get_if<DiscreteInputEvent>(&event))
-            {
-                if (input->m_channelId == m_rotateChannelId)
-                {
-                    if (input->m_state == InputChannel::State::Began)
-                    {
-                        return ClickDetector::ClickEvent::Down;
-                    }
-                    else if (input->m_state == InputChannel::State::Ended)
-                    {
-                        return ClickDetector::ClickEvent::Up;
-                    }
-                }
-            }
-            return ClickDetector::ClickEvent::Nil;
-        }();
-
-        switch (const auto outcome = m_clickDetector.DetectClick(clickEvent, cursorDelta); outcome)
-        {
-        case ClickDetector::ClickOutcome::Move:
-            BeginActivation();
-            break;
-        case ClickDetector::ClickOutcome::Release:
-            EndActivation();
-            break;
-        default:
-            // noop
-            break;
-        }
-
-        // note - must also check !ending to ensure the mouse up (release) event
-        // is not consumed and can be propagated to other systems.
-        // (don't swallow mouse up events)
-        return !Idle() && !Ending();
+        HandleActivationEvents(event, m_rotateChannelId, cursorDelta, m_clickDetector, *this);
+        return CameraInputUpdatingAfterMotion(*this);
     }
 
     Camera RotateCameraInput::StepCamera(
@@ -316,22 +340,8 @@ namespace AzFramework
     bool PanCameraInput::HandleEvents(
         const InputEvent& event, [[maybe_unused]] const ScreenVector& cursorDelta, [[maybe_unused]] const float scrollDelta)
     {
-        if (const auto& input = AZStd::get_if<DiscreteInputEvent>(&event))
-        {
-            if (input->m_channelId == m_panChannelId)
-            {
-                if (input->m_state == InputChannel::State::Began)
-                {
-                    BeginActivation();
-                }
-                else if (input->m_state == InputChannel::State::Ended)
-                {
-                    EndActivation();
-                }
-            }
-        }
-
-        return !Idle();
+        HandleActivationEvents(event, m_panChannelId, cursorDelta, m_clickDetector, *this);
+        return CameraInputUpdatingAfterMotion(*this);
     }
 
     Camera PanCameraInput::StepCamera(
@@ -638,22 +648,8 @@ namespace AzFramework
     bool OrbitDollyCursorMoveCameraInput::HandleEvents(
         const InputEvent& event, [[maybe_unused]] const ScreenVector& cursorDelta, [[maybe_unused]] const float scrollDelta)
     {
-        if (const auto& input = AZStd::get_if<DiscreteInputEvent>(&event))
-        {
-            if (input->m_channelId == m_dollyChannelId)
-            {
-                if (input->m_state == InputChannel::State::Began)
-                {
-                    BeginActivation();
-                }
-                else if (input->m_state == InputChannel::State::Ended)
-                {
-                    EndActivation();
-                }
-            }
-        }
-
-        return !Idle();
+        HandleActivationEvents(event, m_dollyChannelId, cursorDelta, m_clickDetector, *this);
+        return CameraInputUpdatingAfterMotion(*this);
     }
 
     Camera OrbitDollyCursorMoveCameraInput::StepCamera(
@@ -754,19 +750,24 @@ namespace AzFramework
                 return button == inputChannelId;
             });
 
-        if (inputChannelId == InputDeviceMouse::Movement::X)
+        // accept active mouse channel updates, inactive movement channels will just have a 0 delta
+        if (inputChannel.IsActive())
         {
-            return HorizontalMotionEvent{ aznumeric_cast<int>(inputChannel.GetValue()) };
+            if (inputChannelId == InputDeviceMouse::Movement::X)
+            {
+                return HorizontalMotionEvent{ aznumeric_cast<int>(inputChannel.GetValue()) };
+            }
+            else if (inputChannelId == InputDeviceMouse::Movement::Y)
+            {
+                return VerticalMotionEvent{ aznumeric_cast<int>(inputChannel.GetValue()) };
+            }
+            else if (inputChannelId == InputDeviceMouse::Movement::Z)
+            {
+                return ScrollEvent{ inputChannel.GetValue() };
+            }
         }
-        else if (inputChannelId == InputDeviceMouse::Movement::Y)
-        {
-            return VerticalMotionEvent{ aznumeric_cast<int>(inputChannel.GetValue()) };
-        }
-        else if (inputChannelId == InputDeviceMouse::Movement::Z)
-        {
-            return ScrollEvent{ inputChannel.GetValue() };
-        }
-        else if (wasMouseButton || InputDeviceKeyboard::IsKeyboardDevice(inputDeviceId))
+
+        if (wasMouseButton || InputDeviceKeyboard::IsKeyboardDevice(inputDeviceId))
         {
             return DiscreteInputEvent{ inputChannelId, inputChannel.GetState() };
         }

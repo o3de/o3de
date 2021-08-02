@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -56,8 +57,9 @@ namespace AZ
     //! @param top The y coordinate of top view-plane
     //! @param near Distance to the near view-plane. Must be no less than zero.
     //! @param far Distance to the far view-plane. Must be greater than zero.
+    //! @param reverseDepth Set to true to reverse depth which means near distance maps to 1 and far distance maps to 0.
     //! @return Pointer of the output matrix
-    Matrix4x4* MakeOrthographicMatrixRH(Matrix4x4& out, float left, float right, float bottom, float top, float nearDist, float farDist);
+    Matrix4x4* MakeOrthographicMatrixRH(Matrix4x4& out, float left, float right, float bottom, float top, float nearDist, float farDist, bool reverseDepth = false);
 
     //! Transforms a position by a matrix. This function can be used with any generic cases which include projection matrices.
     Vector3 MatrixTransformPosition(const Matrix4x4& matrix, const Vector3& inPosition);

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -50,40 +51,6 @@ namespace ScriptCanvas
                 }
                 ////
             }
-
-            void ExpectGreaterThanEqual::OnInputSignal([[maybe_unused]] const SlotId& slotId)
-            {
-                auto lhs = FindDatum(GetSlotId("Candidate"));
-                if (!lhs)
-                {
-                    return;
-                }
-
-                auto rhs = FindDatum(GetSlotId("Reference"));
-                if (!rhs)
-                {
-                    return;
-                }
-
-                if (lhs->GetType() != rhs->GetType())
-                {
-                    ScriptCanvas::UnitTesting::Bus::Event
-                        ( GetOwningScriptCanvasId()
-                        , &ScriptCanvas::UnitTesting::BusTraits::AddFailure
-                        , "Type mismatch in comparison operator");
-
-                    SignalOutput(GetSlotId("Out"));
-                    return;
-                }
-                
-
-                switch (lhs->GetType().GetType())
-                {
-                    SCRIPT_CANVAS_UNIT_TEST_LEGACY_NODE_COMPARE_IMPLEMENTATIONS(ExpectGreaterThanEqual);
-                }
-
-                SignalOutput(GetSlotId("Out"));
-            }
-        } 
-    } 
-} 
+        }
+    }
+}

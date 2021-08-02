@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,7 +11,6 @@
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Core/GraphScopedTypes.h>
 #include <ScriptCanvas/Core/ModifiableDatumView.h>
-#include <ScriptCanvas/Execution/RuntimeBus.h>
 #include <ScriptCanvas/Variable/VariableBus.h>
 
 namespace ScriptCanvas
@@ -102,44 +102,44 @@ namespace ScriptCanvas
                 classElement.RemoveElementByName(AZ_CRC_CE("Scope"));
                 classElement.AddElementWithData<VariableFlags::InitialValueSource>(context, "InitialValueSource", VariableFlags::InitialValueSource::Component);
             }
+
+            classElement.RemoveElementByName(AZ_CRC("ExposeAsInput", 0x0f7879f0));
+            classElement.RemoveElementByName(AZ_CRC("Exposure", 0x398f29cd));
         }
         else
-        if (classElement.GetVersion() < 3)
-        {
-            bool exposeAsInputField = false;
-            classElement.GetChildData<bool>(AZ_CRC("ExposeAsInput", 0x0f7879f0), exposeAsInputField);
-
-            if (exposeAsInputField)
+            if (classElement.GetVersion() < 3)
             {
+                bool exposeAsInputField = false;
+                classElement.GetChildData<bool>(AZ_CRC("ExposeAsInput", 0x0f7879f0), exposeAsInputField);
+
+                if (exposeAsInputField)
+                {
+                    classElement.RemoveElementByName(AZ_CRC("Exposure", 0x398f29cd));
+                    classElement.AddElementWithData<VariableFlags::Scope>(context, "Scope", VariableFlags::Scope::Graph);
+                }
+                else
+                {
+                    AZ::u8 exposureType = VariableFlags::Deprecated::Exposure::Exp_Local;
+                    classElement.GetChildData<AZ::u8>(AZ_CRC("Exposure", 0x398f29cd), exposureType);
+
+                    VariableFlags::Scope scope = VariableFlags::Scope::Graph;
+
+                    if (((exposureType & VariableFlags::Deprecated::Exposure::Exp_InOut) == VariableFlags::Deprecated::Exposure::Exp_InOut)
+                    || exposureType & VariableFlags::Deprecated::Exposure::Exp_Input)
+                    {
+                        scope = VariableFlags::Scope::Graph;
+                    }
+                    else if (exposureType & VariableFlags::Deprecated::Exposure::Exp_Output)
+                    {
+                        scope = VariableFlags::Scope::Function;
+                    }
+
+                    classElement.AddElementWithData<VariableFlags::Scope>(context, "Scope", scope);
+                }
+
                 classElement.RemoveElementByName(AZ_CRC("Exposure", 0x398f29cd));
-                classElement.AddElementWithData<VariableFlags::Scope>(context, "Scope", VariableFlags::Scope::Graph);
+                classElement.RemoveElementByName(AZ_CRC("ExposeAsInput", 0x0f7879f0));
             }
-            else
-            {
-                AZ::u8 exposureType = VariableFlags::Deprecated::Exposure::Exp_Local;
-                classElement.GetChildData<AZ::u8>(AZ_CRC("Exposure", 0x398f29cd), exposureType);
-
-                VariableFlags::Scope scope = VariableFlags::Scope::Graph;
-
-                if ((exposureType & VariableFlags::Deprecated::Exposure::Exp_InOut) == VariableFlags::Deprecated::Exposure::Exp_InOut)
-                {
-                    scope = VariableFlags::Scope::Graph;
-                }
-                else if (exposureType & VariableFlags::Deprecated::Exposure::Exp_Input)
-                {
-                    scope = VariableFlags::Scope::Graph;
-                }
-                else if (exposureType & VariableFlags::Deprecated::Exposure::Exp_Output)
-                {
-                    scope = VariableFlags::Scope::Function;
-                }
-
-                classElement.AddElementWithData<VariableFlags::Scope>(context, "Scope", scope);
-            }
-
-            classElement.RemoveElementByName(AZ_CRC("Exposure", 0x398f29cd));
-            classElement.RemoveElementByName(AZ_CRC("ExposeAsInput", 0x0f7879f0));
-        }
 
         return true;
     }
@@ -186,29 +186,15 @@ namespace ScriptCanvas
 
             if (auto editContext = serializeContext->GetEditContext())
             {
-                auto propertyChoices = [] {
-                    AZStd::vector< AZStd::pair<VariableFlags::InitialValueSource, AZStd::string>> choices;
-                    choices.emplace_back(AZStd::make_pair(VariableFlags::InitialValueSource::Graph, s_InitialValueSourceNames[0]));
-                    choices.emplace_back(AZStd::make_pair(VariableFlags::InitialValueSource::Component, s_InitialValueSourceNames[1]));
-                    return choices;
-                };
-
-                auto scopeChoices = [] {
-                    AZStd::vector< AZStd::pair<VariableFlags::Scope, AZStd::string>> choices;
-                    choices.emplace_back(AZStd::make_pair(VariableFlags::Scope::Graph, s_ScopeNames[0]));
-                    choices.emplace_back(AZStd::make_pair(VariableFlags::Scope::Function, s_ScopeNames[1]));
-                    return choices;
-                };
-
                 editContext->Class<GraphVariable>("Variable", "Represents a Variable field within a Script Canvas Graph")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &GraphVariable::GetVisibility)
-                    ->Attribute(AZ::Edit::Attributes::ChildNameLabelOverride, &GraphVariable::GetDisplayName)
-                    ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &GraphVariable::GetDisplayName)
+                    ->Attribute(AZ::Edit::Attributes::ChildNameLabelOverride, &GraphVariable::GetVariableName)
+                    ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &GraphVariable::GetVariableName)
                     ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &GraphVariable::GetDescriptionOverride)
 
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &GraphVariable::m_InitialValueSource, "Initial Value Source", "Variables can get their values from within the graph or through component properties.")
-                    ->Attribute(AZ::Edit::Attributes::GenericValueList, propertyChoices)
+                    ->Attribute(AZ::Edit::Attributes::GenericValueList, &GraphVariable::GetPropertyChoices)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GraphVariable::OnInitialValueSourceChanged)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &GraphVariable::GetInputControlVisibility)
@@ -219,7 +205,7 @@ namespace ScriptCanvas
 
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &GraphVariable::m_scope, "Scope", "Controls the scope of this variable. i.e. If this is exposed as input to this script, or output from this script, or if the variable is just locally scoped.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &GraphVariable::GetScopeControlVisibility)
-                    ->Attribute(AZ::Edit::Attributes::GenericValueList, scopeChoices)
+                    ->Attribute(AZ::Edit::Attributes::GenericValueList, &GraphVariable::GetScopeChoices)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GraphVariable::OnScopeTypedChanged)
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &GraphVariable::m_networkProperties, "Network Properties", "Enables whether or not this value should be network synchronized")
@@ -362,22 +348,11 @@ namespace ScriptCanvas
     void GraphVariable::SetVariableName(AZStd::string_view variableName)
     {
         m_variableName = variableName;
-        SetDisplayName(variableName);
     }
 
     AZStd::string_view GraphVariable::GetVariableName() const
     {
         return m_variableName;
-    }
-
-    void GraphVariable::SetDisplayName(const AZStd::string& displayName)
-    {
-        m_datum.SetLabel(displayName);
-    }
-
-    AZStd::string_view GraphVariable::GetDisplayName() const
-    {
-        return m_datum.GetLabel();
     }
 
     void GraphVariable::SetScriptInputControlVisibility(const AZ::Crc32& inputControlVisibility)
@@ -410,37 +385,6 @@ namespace ScriptCanvas
         }
 
         return AZ::Edit::PropertyVisibility::Show;
-    }
-
-    AZ::Crc32 GraphVariable::GetScriptInputControlVisibility() const
-    {
-        AZ::Data::AssetType assetType = AZ::Data::AssetType::CreateNull();
-
-        ScriptCanvas::RuntimeRequestBus::EventResult(assetType, m_scriptCanvasId, &ScriptCanvas::RuntimeRequests::GetAssetType);
-
-        if (assetType == azrtti_typeid<ScriptCanvas::RuntimeAsset>())
-        {
-            return m_inputControlVisibility;
-        }
-        else
-        {
-            return AZ::Edit::PropertyVisibility::Hide;
-        }
-    }
-
-    AZ::Crc32 GraphVariable::GetFunctionInputControlVisibility() const
-    {
-        AZ::Data::AssetType assetType = AZ::Data::AssetType::CreateNull();
-        ScriptCanvas::RuntimeRequestBus::EventResult(assetType, m_scriptCanvasId, &ScriptCanvas::RuntimeRequests::GetAssetType);
-
-        if (assetType == azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>())
-        {
-            return AZ::Edit::PropertyVisibility::Show;
-        }
-        else
-        {
-            return AZ::Edit::PropertyVisibility::Hide;
-        }
     }
 
     AZ::Crc32 GraphVariable::GetVisibility() const
@@ -552,7 +496,7 @@ namespace ScriptCanvas
     bool GraphVariable::IsInFunction() const
     {
         AZ::Data::AssetType assetType = AZ::Data::AssetType::CreateNull();
-        ScriptCanvas::RuntimeRequestBus::EventResult(assetType, m_scriptCanvasId, &ScriptCanvas::RuntimeRequests::GetAssetType);
+        ScriptCanvas::GraphRequestBus::EventResult(assetType, m_scriptCanvasId, &ScriptCanvas::GraphRequests::GetAssetType);
 
         return assetType == azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>();
     }

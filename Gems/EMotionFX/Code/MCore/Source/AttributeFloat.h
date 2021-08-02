@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -56,8 +57,6 @@ namespace MCore
     private:
         float   mValue;     /**< The float value. */
 
-        uint32 GetDataSize() const override                         { return sizeof(float); }
-
         AttributeFloat()
             : Attribute(TYPE_ID)
             , mValue(0.0f)  {}
@@ -65,21 +64,5 @@ namespace MCore
             : Attribute(TYPE_ID)
             , mValue(value) {}
         ~AttributeFloat() {}
-
-        // read from a stream
-        bool ReadData(MCore::Stream* stream, MCore::Endian::EEndianType streamEndianType, uint8 version) override
-        {
-            MCORE_UNUSED(version);
-
-            float streamValue;
-            if (stream->Read(&streamValue, sizeof(float)) == 0)
-            {
-                return false;
-            }
-
-            Endian::ConvertFloat(&streamValue, streamEndianType);
-            mValue = streamValue;
-            return true;
-        }
     };
 }   // namespace MCore

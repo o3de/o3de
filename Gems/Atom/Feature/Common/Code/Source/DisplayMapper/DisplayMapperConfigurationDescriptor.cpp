@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -122,6 +123,18 @@ namespace AZ
                     ->Field("LdrColorGradingLut", &DisplayMapperConfigurationDescriptor::m_ldrColorGradingLut)
                     ->Field("AcesParameterOverrides", &DisplayMapperConfigurationDescriptor::m_acesParameterOverrides)
                 ;
+            }
+
+            if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+            {
+                behaviorContext->Class<DisplayMapperOperationType>()
+                    ->Enum<(uint32_t)DisplayMapperOperationType::Aces>("DisplayMapperOperationType_Aces")
+                    ->Enum<(uint32_t)DisplayMapperOperationType::AcesLut>("DisplayMapperOperationType_AcesLut")
+                    ->Enum<(uint32_t)DisplayMapperOperationType::Passthrough>("DisplayMapperOperationType_Passthrough")
+                    ->Enum<(uint32_t)DisplayMapperOperationType::GammaSRGB>("DisplayMapperOperationType_GammaSRGB")
+                    ->Enum<(uint32_t)DisplayMapperOperationType::Reinhard>("DisplayMapperOperationType_Reinhard")
+                    ->Enum<(uint32_t)DisplayMapperOperationType::Invalid>("DisplayMapperOperationType_Invalid")
+                    ;
             }
         }
 

@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -158,16 +159,6 @@ function(ly_delayed_generate_settings_registry)
                 message(FATAL_ERROR "Dependency ${gem_target} from ${target} does not exist")
             endif()
 
-            get_property(has_manually_added_dependencies TARGET ${gem_target} PROPERTY MANUALLY_ADDED_DEPENDENCIES SET)
-            get_target_property(target_type ${gem_target} TYPE)
-            if (target_type STREQUAL "INTERFACE_LIBRARY" AND has_manually_added_dependencies)
-                # don't use interface libraries here, we only want ones which produce actual binaries unless the target
-                # is empty. We have still already recursed into their dependencies - they'll show up later.
-                # When the target has no dependencies however we want to add the gem root path to the generated setreg
-                continue()
-            endif()
-
-
             ly_get_gem_module_root(gem_module_root ${gem_target})
             file(RELATIVE_PATH gem_module_root_relative_to_engine_root ${LY_ROOT_FOLDER} ${gem_module_root})
 
@@ -185,7 +176,8 @@ function(ly_delayed_generate_settings_registry)
         list(JOIN target_gem_dependencies_names ",\n" target_gem_dependencies_names)
         string(CONFIGURE ${gems_json_template} gem_json @ONLY)
         get_target_property(is_imported ${target} IMPORTED)
-        if(is_imported)
+        get_target_property(target_type ${target} TYPE)
+        if(is_imported OR target_type STREQUAL UTILITY)
             unset(target_dir)
             foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
                 string(TOUPPER ${conf} UCONF)

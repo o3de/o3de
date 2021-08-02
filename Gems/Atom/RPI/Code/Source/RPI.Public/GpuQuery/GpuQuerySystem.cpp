@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -116,7 +117,7 @@ namespace AZ
         {
             AZ_Assert(IsQueryTypeValid(queryType), "Provided QueryType is invalid");
 
-            return static_cast<uint32_t>(m_queryTypeSupport) & static_cast<uint32_t>(queryType);
+            return static_cast<uint32_t>(m_queryTypeSupport) & AZ_BIT(static_cast<uint32_t>(queryType));
         }
 
         RPI::QueryPool* GpuQuerySystem::GetQueryPoolByType(RHI::QueryType queryType)

@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -104,6 +105,7 @@ class TestGeneralGraphFunctionality(object):
 
     @pytest.mark.test_case_id("C17488412")
     @pytest.mark.SUITE_periodic
+    @pytest.mark.xfail      # https://github.com/o3de/o3de/issues/2201
     def test_LandscapeCanvas_GraphClosed_OnEntityDelete(self, request, editor, level, launcher_platform):
         cfg_args = [level]
 

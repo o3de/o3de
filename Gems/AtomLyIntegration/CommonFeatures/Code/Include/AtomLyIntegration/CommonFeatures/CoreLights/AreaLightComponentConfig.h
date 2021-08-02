@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -55,6 +56,7 @@ namespace AZ
 
             // Shadows (only used for supported shapes)
             bool m_enableShadow = false;
+            float m_bias = 0.1f;
             ShadowmapSize m_shadowmapMaxSize = ShadowmapSize::Size256;
             ShadowFilterMethod m_shadowFilterMethod = ShadowFilterMethod::None;
             PcfMethod m_pcfMethod = PcfMethod::Bicubic;

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -394,7 +395,7 @@ namespace EMotionFX
         }
 
         // If new parameter matches the last deleted parameter, we add it back to the parameter mask.
-        if (!m_deletedParameterNames.empty() && newParameterName == m_deletedParameterNames.back())
+        if (!m_deletedParameterNames.empty() && newParameterName == m_deletedParameterNames.top())
         {
             m_parameterNames.push_back(newParameterName);
             SortAndRemoveDuplicates(GetAnimGraph(), m_parameterNames); // make sure the mask is sorted correctly.

@@ -1,7 +1,8 @@
 
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -242,7 +243,7 @@ namespace Editor
     }
 
     EditorQtApplication::EditorQtApplication(int& argc, char** argv)
-        : QApplication(argc, argv)
+        : AzQtApplication(argc, argv)
         , m_inWinEventFilter(false)
         , m_stylesheet(new AzQtComponents::O3DEStylesheet(this))
         , m_idleTimer(new QTimer(this))
@@ -252,8 +253,6 @@ namespace Editor
         setWindowIcon(QIcon(":/Application/res/o3de_editor.ico"));
 
         // set the default key store for our preferences:
-        setOrganizationName("O3DE");
-        setOrganizationDomain("o3de.org");
         setApplicationName("O3DE Editor");
 
         connect(m_idleTimer, &QTimer::timeout, this, &EditorQtApplication::maybeProcessIdle);
@@ -416,33 +415,37 @@ namespace Editor
         }
 
         // Ensure that the Windows WM_INPUT messages get passed through to the AzFramework input system.
-        // These events are now consumed both in and out of game mode.
-        if (msg->message == WM_INPUT)
+        // These events are only broadcast in game mode. In Editor mode, RenderViewportWidget creates synthetic
+        // keyboard and mouse events via Qt.
+        if (GetIEditor()->IsInGameMode())
         {
-            UINT rawInputSize;
-            const UINT rawInputHeaderSize = sizeof(RAWINPUTHEADER);
-            GetRawInputData((HRAWINPUT)msg->lParam, RID_INPUT, NULL, &rawInputSize, rawInputHeaderSize);
-
-            AZStd::array<BYTE, sizeof(RAWINPUT)> rawInputBytesArray;
-            LPBYTE rawInputBytes = rawInputBytesArray.data();
-
-            const UINT bytesCopied = GetRawInputData((HRAWINPUT)msg->lParam, RID_INPUT, rawInputBytes, &rawInputSize, rawInputHeaderSize);
-            CRY_ASSERT(bytesCopied == rawInputSize);
-
-            RAWINPUT* rawInput = (RAWINPUT*)rawInputBytes;
-            CRY_ASSERT(rawInput);
-
-            AzFramework::RawInputNotificationBusWindows::Broadcast(&AzFramework::RawInputNotificationsWindows::OnRawInputEvent, *rawInput);
-
-            return false;
-        }
-        else if (msg->message == WM_DEVICECHANGE)
-        {
-            if (msg->wParam == 0x0007) // DBT_DEVNODES_CHANGED
+            if (msg->message == WM_INPUT)
             {
-                AzFramework::RawInputNotificationBusWindows::Broadcast(&AzFramework::RawInputNotificationsWindows::OnRawInputDeviceChangeEvent);
+                UINT rawInputSize;
+                const UINT rawInputHeaderSize = sizeof(RAWINPUTHEADER);
+                GetRawInputData((HRAWINPUT)msg->lParam, RID_INPUT, NULL, &rawInputSize, rawInputHeaderSize);
+
+                AZStd::array<BYTE, sizeof(RAWINPUT)> rawInputBytesArray;
+                LPBYTE rawInputBytes = rawInputBytesArray.data();
+
+                const UINT bytesCopied = GetRawInputData((HRAWINPUT)msg->lParam, RID_INPUT, rawInputBytes, &rawInputSize, rawInputHeaderSize);
+                CRY_ASSERT(bytesCopied == rawInputSize);
+
+                RAWINPUT* rawInput = (RAWINPUT*)rawInputBytes;
+                CRY_ASSERT(rawInput);
+
+                AzFramework::RawInputNotificationBusWindows::Broadcast(&AzFramework::RawInputNotificationsWindows::OnRawInputEvent, *rawInput);
+
+                return false;
             }
-            return true;
+            else if (msg->message == WM_DEVICECHANGE)
+            {
+                if (msg->wParam == 0x0007) // DBT_DEVNODES_CHANGED
+                {
+                    AzFramework::RawInputNotificationBusWindows::Broadcast(&AzFramework::RawInputNotificationsWindows::OnRawInputDeviceChangeEvent);
+                }
+                return true;
+            }
         }
 
         return false;

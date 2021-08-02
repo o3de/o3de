@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -29,6 +30,9 @@
 
 // AzFramework
 #include <AzFramework/API/ApplicationAPI.h>
+
+// AzToolsFramework
+#include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
 
 // AzQtComponents
 #include <AzQtComponents/Components/SearchLineEdit.h>
@@ -469,51 +473,54 @@ void LevelEditorMenuHandler::PopulateEditMenu(ActionManager::MenuWrapper& editMe
     // editMenu.AddSeparator();
 
     // Duplicate
-    editMenu.AddAction(ID_EDIT_CLONE);
+    editMenu.AddAction(AzToolsFramework::DuplicateSelect);
 
     // Delete
-    editMenu.AddAction(ID_EDIT_DELETE);
+    editMenu.AddAction(AzToolsFramework::DeleteSelect);
 
     editMenu.AddSeparator();
 
     // Select All
-    editMenu.AddAction(ID_EDIT_SELECTALL);
+    editMenu.AddAction(AzToolsFramework::SelectAll);
 
     // Invert Selection
-    editMenu.AddAction(ID_EDIT_INVERTSELECTION);
+    editMenu.AddAction(AzToolsFramework::InvertSelect);
 
     editMenu.AddSeparator();
 
     // New Viewport Interaction Model actions/shortcuts
-    editMenu.AddAction(ID_EDIT_PIVOT);
-    editMenu.AddAction(ID_EDIT_RESET);
-    editMenu.AddAction(ID_EDIT_RESET_MANIPULATOR);
-    editMenu.AddAction(ID_EDIT_RESET_LOCAL);
-    editMenu.AddAction(ID_EDIT_RESET_WORLD);
+    editMenu.AddAction(AzToolsFramework::EditPivot);
+    editMenu.AddAction(AzToolsFramework::EditReset);
+    editMenu.AddAction(AzToolsFramework::EditResetManipulator);
+    editMenu.AddAction(AzToolsFramework::EditResetLocal);
+    editMenu.AddAction(AzToolsFramework::EditResetWorld);
 
     // Hide Selection
-    editMenu.AddAction(ID_EDIT_HIDE);
+    editMenu.AddAction(AzToolsFramework::HideSelection);
 
-    // Unhide All
-    editMenu.AddAction(ID_EDIT_UNHIDEALL);
+    // Show All
+    editMenu.AddAction(AzToolsFramework::ShowAll);
+
+    // Lock Selection
+    editMenu.AddAction(AzToolsFramework::LockSelection);
+
+    // UnLock All
+    editMenu.AddAction(AzToolsFramework::UnlockAll);
 
     /*
      * The following block of code is part of the feature "Isolation Mode" and is temporarily
      * disabled for 1.10 release.
      * Jira: LY-49532
-
     // Isolate Selected
     QAction* isolateSelectedAction = editMenu->addAction(tr("Isolate Selected"));
     connect(isolateSelectedAction, &QAction::triggered, this, []() {
         AzToolsFramework::ToolsApplicationRequestBus::Broadcast(&AzToolsFramework::ToolsApplicationRequestBus::Events::EnterEditorIsolationMode);
     });
-
     // Exit Isolation
     QAction* exitIsolationAction = editMenu->addAction(tr("Exit Isolation"));
     connect(exitIsolationAction, &QAction::triggered, this, []() {
         AzToolsFramework::ToolsApplicationRequestBus::Broadcast(&AzToolsFramework::ToolsApplicationRequestBus::Events::ExitEditorIsolationMode);
     });
-
     connect(editMenu, &QMenu::aboutToShow, this, [isolateSelectedAction, exitIsolationAction]() {
         bool isInIsolationMode = false;
         AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(isInIsolationMode, &AzToolsFramework::ToolsApplicationRequestBus::Events::IsEditorInIsolationMode);
@@ -528,7 +535,6 @@ void LevelEditorMenuHandler::PopulateEditMenu(ActionManager::MenuWrapper& editMe
             exitIsolationAction->setDisabled(true);
         }
     });
-
     */
 
     editMenu.AddSeparator();
@@ -553,48 +559,8 @@ void LevelEditorMenuHandler::PopulateEditMenu(ActionManager::MenuWrapper& editMe
     // Global Preferences...
     editorSettingsMenu.AddAction(ID_TOOLS_PREFERENCES);
 
-    // Graphics Settings...
-    editorSettingsMenu.AddAction(ID_GRAPHICS_SETTINGS);
-
     // Editor Settings Manager
     AddOpenViewPaneAction(editorSettingsMenu, LyViewPane::EditorSettingsManager);
-
-    // Graphics Performance
-    auto graphicPerformanceSubMenu = editorSettingsMenu.AddMenu(QObject::tr("Graphics Performance"));
-
-    auto pcMenu = graphicPerformanceSubMenu.AddMenu(tr("PC"));
-    pcMenu.AddAction(ID_GAME_PC_ENABLEVERYHIGHSPEC);
-    pcMenu.AddAction(ID_GAME_PC_ENABLEHIGHSPEC);
-    pcMenu.AddAction(ID_GAME_PC_ENABLEMEDIUMSPEC);
-    pcMenu.AddAction(ID_GAME_PC_ENABLELOWSPEC);
-
-    auto osxmetalMenu = graphicPerformanceSubMenu.AddMenu(tr("OSX Metal"));
-    osxmetalMenu.AddAction(ID_GAME_OSXMETAL_ENABLEVERYHIGHSPEC);
-    osxmetalMenu.AddAction(ID_GAME_OSXMETAL_ENABLEHIGHSPEC);
-    osxmetalMenu.AddAction(ID_GAME_OSXMETAL_ENABLEMEDIUMSPEC);
-    osxmetalMenu.AddAction(ID_GAME_OSXMETAL_ENABLELOWSPEC);
-
-    auto androidMenu = graphicPerformanceSubMenu.AddMenu(tr("Android"));
-    androidMenu.AddAction(ID_GAME_ANDROID_ENABLEVERYHIGHSPEC);
-    androidMenu.AddAction(ID_GAME_ANDROID_ENABLEHIGHSPEC);
-    androidMenu.AddAction(ID_GAME_ANDROID_ENABLEMEDIUMSPEC);
-    androidMenu.AddAction(ID_GAME_ANDROID_ENABLELOWSPEC);
-
-    auto iosMenu = graphicPerformanceSubMenu.AddMenu(tr("iOS"));
-    iosMenu.AddAction(ID_GAME_IOS_ENABLEVERYHIGHSPEC);
-    iosMenu.AddAction(ID_GAME_IOS_ENABLEHIGHSPEC);
-    iosMenu.AddAction(ID_GAME_IOS_ENABLEMEDIUMSPEC);
-    iosMenu.AddAction(ID_GAME_IOS_ENABLELOWSPEC);
-
-#if defined(AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS)
-#define AZ_RESTRICTED_PLATFORM_EXPANSION(CodeName, CODENAME, codename, PrivateName, PRIVATENAME, privatename, PublicName, PUBLICNAME, publicname, PublicAuxName1, PublicAuxName2, PublicAuxName3)\
-    auto publicname##Menu = graphicPerformanceSubMenu.AddMenu(tr(PublicAuxName2));\
-    publicname##Menu.AddAction(ID_GAME_##CODENAME##_ENABLEHIGHSPEC);\
-    publicname##Menu.AddAction(ID_GAME_##CODENAME##_ENABLEMEDIUMSPEC);\
-    publicname##Menu.AddAction(ID_GAME_##CODENAME##_ENABLELOWSPEC);
-    AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS
-#undef AZ_RESTRICTED_PLATFORM_EXPANSION
-#endif
 
     // Keyboard Customization
     auto keyboardCustomizationMenu = editorSettingsMenu.AddMenu(tr("Keyboard Customization"));

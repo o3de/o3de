@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -128,6 +129,7 @@ namespace AzFramework
         void SetFullScreenState(bool fullScreenState) override;
         bool CanToggleFullScreenState() const override;
         void ToggleFullScreenState() override;
+        float GetDpiScaleFactor() const override;
 
         //! Get the full screen state of the default window.
         //! \return True if the default window is currently in full screen, false otherwise.
@@ -169,6 +171,7 @@ namespace AzFramework
             virtual bool GetFullScreenState() const;
             virtual void SetFullScreenState(bool fullScreenState);
             virtual bool CanToggleFullScreenState() const;
+            virtual float GetDpiScaleFactor() const;
 
         protected:
             uint32_t m_width = 0;

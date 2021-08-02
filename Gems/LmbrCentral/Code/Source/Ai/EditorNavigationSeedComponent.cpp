@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "EditorNavigationSeedComponent.h"
 #include "EditorNavigationUtil.h"
 
@@ -34,7 +34,7 @@ namespace LmbrCentral
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                         ->Attribute(AZ::Edit::Attributes::Category, "AI")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/NavigationSeed.svg")
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/NavigationSeed.png")
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/NavigationSeed.svg")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/nav-seed/")
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorNavigationSeedComponent::m_agentType, "Agent Type", "Describes the type of the Entity for navigation purposes.")

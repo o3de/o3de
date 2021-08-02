@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -29,8 +30,7 @@ namespace ScriptCanvas
 
         friend class Node;
         friend class GraphVariable;
-        friend class PureData;
-
+        
     public:
         AZ_CLASS_ALLOCATOR(ModifiableDatumView, AZ::SystemAllocator, 0);
 

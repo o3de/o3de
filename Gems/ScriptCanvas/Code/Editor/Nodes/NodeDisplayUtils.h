@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -30,10 +31,6 @@ namespace ScriptCanvas::Nodes::Core
     class SetVariableNode;
     class SendScriptEvent;
 }
-namespace ScriptCanvas::Nodes::Entity
-{
-    class EntityRef;
-}
 namespace ScriptEvents
 {
     class Method;
@@ -45,7 +42,6 @@ namespace ScriptCanvasEditor::Nodes
     AZ::EntityId DisplayScriptCanvasNode(AZ::EntityId graphCanvasGraphId, const ScriptCanvas::Node* node);
 
     // Core Node
-    AZ::EntityId DisplayEntityNode(AZ::EntityId graphCanvasGraphId, const ScriptCanvas::Nodes::Entity::EntityRef* entityNode);
     AZ::EntityId DisplayEbusEventNode(AZ::EntityId graphCanvasGraphId, const AZStd::string& busName, const AZStd::string& eventName, const ScriptCanvas::EBusEventId& eventId);
     AZ::EntityId DisplayEbusWrapperNode(AZ::EntityId graphCanvasGraphId, const ScriptCanvas::Nodes::Core::EBusEventHandler* busNode);
     AZ::EntityId DisplayGetVariableNode(AZ::EntityId graphCanvasGraphId, const ScriptCanvas::Nodes::Core::GetVariableNode* variableNode);

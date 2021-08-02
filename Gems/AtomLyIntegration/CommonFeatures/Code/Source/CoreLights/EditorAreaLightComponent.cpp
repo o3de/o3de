@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -44,8 +45,8 @@ namespace AZ
                         "Light", "A light which emits from a point or goemetric shape.")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                             ->Attribute(Edit::Attributes::Category, "Atom")
-                            ->Attribute(Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
-                            ->Attribute(Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.png")
+                            ->Attribute(Edit::Attributes::Icon, "Icons/Components/AreaLight.svg")
+                            ->Attribute(Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/AreaLight.svg")
                             ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                             ->Attribute(Edit::Attributes::AutoExpand, true)
                             ->Attribute(Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/atom/area-light/")
@@ -130,6 +131,15 @@ namespace AZ
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::ShadowsDisabled)
+                        ->DataElement(Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_bias, "Bias", "How deep in shadow a surface must be before being affected by it.")
+                            ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                            ->Attribute(Edit::Attributes::Min, 0.0f)
+                            ->Attribute(Edit::Attributes::Max, 100.0f)
+                            ->Attribute(Edit::Attributes::SoftMin, 0.0f)
+                            ->Attribute(Edit::Attributes::SoftMax, 1.0f)
+                            ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                            ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
+                            ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::ShadowsDisabled)
                         ->DataElement(Edit::UIHandlers::ComboBox, &AreaLightComponentConfig::m_shadowFilterMethod, "Shadow filter method",
                             "Filtering method of edge-softening of shadows.\n"
                             "  None: no filtering\n"
@@ -154,19 +164,19 @@ namespace AZ
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::IsPcfBoundarySearchDisabled)
                         ->DataElement(Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_predictionSampleCount, "Prediction sample count",
-                            "Sample Count for prediction of whether the pixel is on the boundary. Specific to PCF and ESM+PCF.")
+                            "Sample count for prediction of whether the pixel is on the boundary. Specific to PCF and ESM+PCF.")
                             ->Attribute(Edit::Attributes::Min, 4)
                             ->Attribute(Edit::Attributes::Max, 16)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::IsPcfBoundarySearchDisabled)
                         ->DataElement(Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_filteringSampleCount, "Filtering sample count",
-                            "It is used only when the pixel is predicted to be on the boundary. Specific to PCF and ESM+PCF.")
+                            "This is only used when the pixel is predicted to be on the boundary. Specific to PCF and ESM+PCF.")
                             ->Attribute(Edit::Attributes::Min, 4)
                             ->Attribute(Edit::Attributes::Max, 64)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::IsShadowPcfDisabled)
                         ->DataElement(
-                            Edit::UIHandlers::ComboBox, &AreaLightComponentConfig::m_pcfMethod, "Pcf method",
+                            Edit::UIHandlers::ComboBox, &AreaLightComponentConfig::m_pcfMethod, "PCF method",
                             "Type of PCF to use.\n"
                             "  Bicubic: a smooth, fixed-size kernel \n"
                             "  Boundary search: do several taps to first determine if we are on a shadow boundary\n")
@@ -176,8 +186,8 @@ namespace AZ
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::IsShadowPcfDisabled)
                         ->DataElement(
-                            Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_esmExponent, "Esm Exponent",
-                            "Exponent used by Esm shadows. "
+                            Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_esmExponent, "ESM exponent",
+                            "Exponent used by ESM shadows. "
                             "Larger values increase the sharpness of the border between lit and unlit areas.")
                             ->Attribute(Edit::Attributes::Min, 50.0f)
                             ->Attribute(Edit::Attributes::Max, 5000.0f)
@@ -263,7 +273,23 @@ namespace AZ
 
             // Update the cached light type.
             m_lightType = m_controller.m_configuration.m_lightType;
+            
+            // Check to see if the current photometric type is supported by the light type. If not, convert to lumens before deactivating.
+            auto supportedPhotometricUnits = m_controller.m_configuration.GetValidPhotometricUnits();
+            auto foundIt = AZStd::find_if(
+                supportedPhotometricUnits.begin(),
+                supportedPhotometricUnits.end(),
+                [&](const Edit::EnumConstant<PhotometricUnit>& entry) -> bool
+                {
+                    return AZStd::RemoveEnum<PhotometricUnit>::type(m_controller.m_configuration.m_intensityMode) == entry.m_value;
+                }
+            );
 
+            if (foundIt == supportedPhotometricUnits.end())
+            {
+                m_controller.ConvertToIntensityMode(PhotometricUnit::Lumen);
+            }
+            
             // componets may be removed or added here, so deactivate now and reactivate the entity when everything is done shifting around.
             GetEntity()->Deactivate();
 
@@ -320,7 +346,7 @@ namespace AZ
                 // Some light types don't require a shape, this is ok. 
                 break;
             }
-                
+            
             GetEntity()->Activate();
 
             // Set more reasonable default values for certain shapes.
@@ -333,7 +359,7 @@ namespace AZ
                 LmbrCentral::DiskShapeComponentRequestBus::Event(GetEntityId(), &LmbrCentral::DiskShapeComponentRequests::SetRadius, 0.05f);
                 break;
             }
-            
+
             return true;
         }
 

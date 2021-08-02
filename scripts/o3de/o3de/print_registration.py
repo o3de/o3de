@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -39,61 +40,67 @@ def get_project_path(project_path: pathlib.Path, project_name: str) -> pathlib.P
 
 
 def print_this_engine(verbose: int) -> int:
-    engine_data = manifest.get_this_engine()
-    print(json.dumps(engine_data, indent=4))
-    result = True
+    this_engine_path = manifest.get_this_engine_path()
+    print(f'This Engine:\n{json.dumps(str(this_engine_path), indent=4)}')
     if verbose > 0:
-        result = print_manifest_json_data(engine_data, 'engine.json', 'This Engine',
+        return print_manifest_json_data([this_engine_path], 'This Engine',
                                           manifest.get_engine_json_data, 'engine_path')
-    return 0 if result else 1
+    return 0
 
 
 def print_engines(verbose: int) -> None:
     engines_data = manifest.get_engines()
-    print(json.dumps(engines_data, indent=4))
+    print(f'Engine Paths:\n{json.dumps(engines_data, indent=4)}')
 
     if verbose > 0:
-        return print_manifest_json_data(engines_data, 'engine.json', 'Engines',
+        return print_manifest_json_data(engines_data, 'Engine Jsons',
                                           manifest.get_engine_json_data, 'engine_path')
     return 0
 
 
 def print_projects(verbose: int) -> int:
     projects_data = manifest.get_projects()
-    print(json.dumps(projects_data, indent=4))
+    print(f'Project Paths:\n{json.dumps(projects_data, indent=4)}')
 
     if verbose > 0:
-        return print_manifest_json_data(projects_data, 'project.json', 'Projects',
+        return print_manifest_json_data(projects_data, 'Project Jsons',
                                           manifest.get_project_json_data, 'project_path')
     return 0
 
 
 def print_gems(verbose: int) -> int:
     gems_data = manifest.get_gems()
-    print(json.dumps(gems_data, indent=4))
+    print(f'Gem Paths:\n{json.dumps(gems_data, indent=4)}')
 
     if verbose > 0:
-        return print_manifest_json_data(gems_data, 'gem.json', 'Gems',
+        return print_manifest_json_data(gems_data, 'Gem Jsons',
                                           manifest.get_gem_json_data, 'gem_path')
     return 0
 
 
+def print_external_subdirectories(verbose: int) -> int:
+    external_subdirs_data = manifest.get_external_subdirectories()
+    print(f'External Subdirectories:\n{json.dumps(external_subdirs_data, indent=4)}')
+    return 0
+
+
+
 def print_templates(verbose: int) -> int:
     templates_data = manifest.get_templates()
-    print(json.dumps(templates_data, indent=4))
+    print(f'Template Paths:\n{json.dumps(templates_data, indent=4)}')
 
     if verbose > 0:
-        return print_manifest_json_data(templates_data, 'template.json', 'Templates',
+        return print_manifest_json_data(templates_data, 'Template Jsons',
                                           manifest.get_template_json_data, 'template_path')
     return 0
 
 
 def print_restricted(verbose: int) -> int:
     restricted_data = manifest.get_restricted()
-    print(json.dumps(restricted_data, indent=4))
+    print(f'Restricted Paths:\n{json.dumps(restricted_data, indent=4)}')
 
     if verbose > 0:
-        return print_manifest_json_data(restricted_data, 'restricted.json', 'Restricted',
+        return print_manifest_json_data(restricted_data, 'Restricted Jsons',
                                           manifest.get_restricted_json_data, 'restricted_path')
     return 0
 
@@ -101,47 +108,47 @@ def print_restricted(verbose: int) -> int:
 # Engine output methods
 def print_engine_projects(verbose: int) -> int:
     engine_projects_data = manifest.get_engine_projects()
-    print(json.dumps(engine_projects_data, indent=4))
+    print(f'Project Paths:\n{json.dumps(engine_projects_data, indent=4)}')
 
     if verbose > 0:
-        return print_manifest_json_data(engine_projects_data, 'project.json', 'Projects',
+        return print_manifest_json_data(engine_projects_data, 'Project Jsons',
                                           manifest.get_project_json_data, 'project_path')
     return 0
 
 
 def print_engine_gems(verbose: int) -> int:
     engine_gems_data = manifest.get_engine_gems()
-    print(json.dumps(engine_gems_data, indent=4))
+    print(f'Gem Paths:\n{json.dumps(engine_gems_data, indent=4)}')
 
     if verbose > 0:
-        return print_manifest_json_data(engine_gems_data, 'gem.json', 'Gems',
+        return print_manifest_json_data(engine_gems_data, 'Gem Jsons',
                                           manifest.get_gem_json_data, 'gem_path')
     return 0
 
 
 def print_engine_templates(verbose: int) -> int:
     engine_templates_data = manifest.get_engine_templates()
-    print(json.dumps(engine_templates_data, indent=4))
+    print(f'Template Paths:\n{json.dumps(engine_templates_data, indent=4)}')
 
     if verbose > 0:
-        return print_manifest_json_data(engine_templates_data, 'template.json', 'Templates',
+        return print_manifest_json_data(engine_templates_data, 'Template Jsons',
                                           manifest.get_template_json_data, 'template_path')
     return 0
 
 
 def print_engine_restricted(verbose: int) -> int:
     engine_restricted_data = manifest.get_engine_restricted()
-    print(json.dumps(engine_restricted_data, indent=4))
+    print(f'Restricted Paths:\n{json.dumps(engine_restricted_data, indent=4)}')
 
     if verbose > 0:
-        return print_manifest_json_data(engine_restricted_data, 'restricted.json', 'Restricted',
+        return print_manifest_json_data(engine_restricted_data, 'Restricted Jsons',
                                           manifest.get_restricted_json_data, 'restricted_path')
     return 0
 
 
-def print_engine_external_subdirectories() -> int:
+def print_engine_external_subdirectories(verbose: int) -> int:
     external_subdirs_data = manifest.get_engine_external_subdirectories()
-    print(json.dumps(external_subdirs_data, indent=4))
+    print(f'External Subdirectories:\n{json.dumps(external_subdirs_data, indent=4)}')
     return 0
 
 
@@ -152,21 +159,21 @@ def print_project_gems(verbose: int, project_path: pathlib.Path, project_name: s
         return 1
 
     project_gems_data = manifest.get_project_gems(project_path)
-    print(json.dumps(project_gems_data, indent=4))
+    print(f'Gem Paths:\n{json.dumps(project_gems_data, indent=4)}')
 
     if verbose > 0:
-        return print_manifest_json_data(project_gems_data, 'gem.json', 'Gems',
+        return print_manifest_json_data(project_gems_data, 'Gems Jsons',
                                           manifest.get_gem_json_data, 'gem_path')
     return 0
 
 
-def print_project_external_subdirectories(project_path: pathlib.Path, project_name: str) -> int:
+def print_project_external_subdirectories(verbose: int, project_path: pathlib.Path, project_name: str) -> int:
     project_path = get_project_path(project_path, project_name)
     if not project_path:
         return 1
 
     external_subdirs_data = manifest.get_project_external_subdirectories(project_path)
-    print(json.dumps(external_subdirs_data, indent=4))
+    print(f'External Subdirectories:\n{json.dumps(external_subdirs_data, indent=4)}')
     return 0
 
 
@@ -176,9 +183,9 @@ def print_project_templates(verbose: int, project_path: pathlib.Path, project_na
         return 1
 
     project_templates_data = manifest.get_project_templates(project_path)
-    print(json.dumps(project_templates_data, indent=4))
+    print(f'Template Paths:\n{json.dumps(project_templates_data, indent=4)}')
     if verbose > 0:
-        return print_manifest_json_data(project_templates_data, 'template.json', 'Templates',
+        return print_manifest_json_data(project_templates_data, 'Template Jsons',
                                           manifest.get_template_json_data, 'template_path')
     return 0
 
@@ -189,73 +196,118 @@ def print_project_restricted(verbose: int, project_path: pathlib.Path, project_n
         return 1
 
     project_restricted_data = manifest.get_project_restricted(project_path)
-    print(json.dumps(project_restricted_data, indent=4))
+    print(f'Restricted Paths:\n{json.dumps(project_restricted_data, indent=4)}')
     if verbose > 0:
-        return print_manifest_json_data(project_restricted_data, 'restricted.json', 'Restricted',
+        return print_manifest_json_data(project_restricted_data, 'Restricted Jsons',
                                           manifest.get_restricted_json_data, 'restricted_path')
     return 0
 
 
 def print_all_projects(verbose: int) -> int:
     all_projects_data = manifest.get_all_projects()
-    print(json.dumps(all_projects_data, indent=4))
+    print(f'Project Paths:\n{json.dumps(all_projects_data, indent=4)}')
 
     if verbose > 0:
-        return print_manifest_json_data(all_projects_data, 'project.json', 'Projects',
+        return print_manifest_json_data(all_projects_data, 'Project Jsons',
                                  manifest.get_project_json_data, 'project_path')
     return 0
 
 
-def print_all_gems(verbose: int) -> int:
-    all_gems_data = manifest.get_all_gems()
-    print(json.dumps(all_gems_data, indent=4))
+def print_all_gems(verbose: int, project_path: pathlib.Path = None, project_name: str = None) -> int:
+    all_gems = manifest.get_gems()
+    all_gems.extend(manifest.get_engine_gems())
+
+    # If a project path or project name is supplied query the gems from that project, otherwise query the gems from
+    # all projects
+    project_path = get_project_path(project_path, project_name) if project_path or project_name else None
+    projects = [project_path] if project_path else manifest.get_all_projects()
+    for project in projects:
+        all_gems.extend(manifest.get_project_gems(project))
+
+    # Filter out duplicates
+    all_gems = list(dict.fromkeys(all_gems))
+    print(f'Gem Paths:\n{json.dumps(all_gems, indent=4)}')
 
     if verbose > 0:
-        return print_manifest_json_data(all_gems_data, 'gem.json', 'Gems',
+        return print_manifest_json_data(all_gems, 'Gem Jsons',
                                           manifest.get_gem_json_data, 'gem_path')
     return 0
 
 
-def print_all_external_subdirectories() -> int:
-    all_external_subdirectories_data = manifest.get_all_external_subdirectories()
-    print(json.dumps(all_external_subdirectories_data, indent=4))
+def print_all_external_subdirectories(verbose: int, project_path: pathlib.Path = None, project_name: str = None) -> int:
+    all_external_subdirectories = manifest.get_external_subdirectories()
+    all_external_subdirectories.extend(manifest.get_engine_external_subdirectories())
+
+    # If a project path or project name is supplied query the external subdirectories from that project,
+    # otherwise query the external subdirectories from all projects
+    project_path = get_project_path(project_path, project_name) if project_path or project_name else None
+    projects = [project_path] if project_path else manifest.get_all_projects()
+    for project in projects:
+        all_external_subdirectories.extend(manifest.get_project_external_subdirectories(project))
+
+    # Filter out duplicates
+    all_external_subdirectories = list(dict.fromkeys(all_external_subdirectories))
+    print(f'External Subdirectories:\n{json.dumps(all_external_subdirectories, indent=4)}')
     return 0
 
-def print_all_templates(verbose: int) -> int:
-    all_templates_data = manifest.get_all_templates()
-    print(json.dumps(all_templates_data, indent=4))
+
+def print_all_templates(verbose: int, project_path: pathlib.Path = None, project_name: str = None) -> int:
+    all_templates = manifest.get_templates()
+    all_templates.extend(manifest.get_engine_templates())
+
+    # If a project path or project name is supplied query the templates from that project,
+    # otherwise query the templates from all projects
+    project_path = get_project_path(project_path, project_name) if project_path or project_name else None
+    projects = [project_path] if project_path else manifest.get_all_projects()
+    for project in projects:
+        all_templates.extend(manifest.get_project_templates(project))
+
+    # Filter out duplicates
+    all_templates = list(dict.fromkeys(all_templates))
+    print(f'Template Paths:\n{json.dumps(all_templates, indent=4)}')
 
     if verbose > 0:
-        return print_manifest_json_data(all_templates_data, 'template.json', 'Templates',
+        return print_manifest_json_data(all_templates, 'Template Jsons',
                                  manifest.get_template_json_data, 'template_path')
     return 0
 
 
-def print_all_restricted(verbose: int) -> int:
-    all_restricted_data = manifest.get_all_restricted()
-    print(json.dumps(all_restricted_data, indent=4))
+def print_all_restricted(verbose: int, project_path: pathlib.Path = None, project_name: str = None) -> int:
+    all_restricted = manifest.get_restricted()
+    all_restricted.extend(manifest.get_engine_restricted())
+
+    # If a project path or project name is supplied query the restricted from that project,
+    # otherwise query the restricted from all projects
+    project_path = get_project_path(project_path, project_name) if project_path or project_name else None
+    projects = [project_path] if project_path else manifest.get_all_projects()
+    for project in projects:
+        all_restricted.extend(manifest.get_project_restricted(project))
+
+    # Filter out duplicates
+    all_restricted = list(dict.fromkeys(all_restricted))
+    print(f'Restricted Paths:\n{json.dumps(all_restricted, indent=4)}')
 
     if verbose > 0:
-        return print_manifest_json_data(all_restricted_data, 'restricted.json', 'Restricted',
+        return print_manifest_json_data(all_restricted, 'Restricted Jsons',
                                  manifest.get_restricted_json_data, 'restricted_path')
     return 0
 
 
-def print_manifest_json_data(uri_json_data: dict, json_filename: str,
+def print_manifest_json_data(uri_json_data: list,
                              print_prefix: str, get_json_func: callable, get_json_data_kw: str) -> int:
     print('\n')
     print(f"{print_prefix}================================================")
     for manifest_uri in uri_json_data:
         # if it's not local it should be in the cache
-        parsed_uri = urllib.parse.urlparse(manifest_uri)
+        parsed_uri = urllib.parse.urlparse(pathlib.Path(manifest_uri).as_posix())
         if parsed_uri.scheme in ['http', 'https', 'ftp', 'ftps']:
             repo_sha256 = hashlib.sha256(manifest_uri.encode())
             cache_folder = manifest.get_o3de_cache_folder()
             manifest_json_path = cache_folder / str(repo_sha256.hexdigest() + '.json')
         else:
-            manifest_json_path = pathlib.Path(manifest_uri).resolve() / json_filename
+            manifest_json_path = pathlib.Path(manifest_uri).resolve()
 
-        json_data = get_json_func(**{get_json_data_kwargs: manifest_json_path})
+        json_data = get_json_func(**{get_json_data_kw: manifest_json_path})
         if json_data:
             print(manifest_json_path)
             print(json.dumps(json_data, indent=4) + '\n')
@@ -283,29 +335,30 @@ def print_repos_data(repos_data: dict) -> int:
     return 0
 
 
-def register_show_repos(verbose: int) -> None:
+def print_repos(verbose: int) -> int:
     repos_data = manifest.get_repos()
     print(json.dumps(repos_data, indent=4))
 
     if verbose > 0:
-        return print_repos_data(repos_data) == 0
+        return print_repos_data(repos_data)
     return 0
 
 
-def register_show(verbose: int) -> None:
+def register_show(verbose: int, project_path: pathlib.Path = None, project_name: str = None) -> int:
     json_data = manifest.load_o3de_manifest()
     print(f"{manifest.get_o3de_manifest()}:")
     print(json.dumps(json_data, indent=4))
 
-    result = True
+    result = 0
     if verbose > 0:
-        result = print_manifest_json_data(manifest.get_engines()) == 0 and result
-        result = print_manifest_json_data(manifest.get_all_projects()) == 0 and result
-        result = print_manifest_json_data(manifest.get_gems()) == 0 and result
-        result = print_manifest_json_data(manifest.get_all_templates()) == 0 and result
-        result = print_manifest_json_data(manifest.get_all_restricted()) == 0 and result
-        result = print_repos_data(manifest.get_repos()) == 0 and result
-    return 0 if result else 1
+        result = print_engines(verbose) or result
+        result = print_all_projects(verbose) or result
+        result = print_all_gems(verbose, project_path, project_name) or result
+        result = print_all_templates(verbose, project_path, project_name) or result
+        result = print_all_restricted(verbose, project_path, project_name) or result
+        result = print_repos(verbose) or result
+
+    return result
 
 
 def _run_register_show(args: argparse) -> int:
@@ -320,6 +373,8 @@ def _run_register_show(args: argparse) -> int:
         return print_projects(args.verbose)
     elif args.gems:
         return print_gems(args.verbose)
+    elif args.external_subdirectories:
+        return print_external_subdirectories(args.verbose)
     elif args.templates:
         return print_templates(args.verbose)
     elif args.repos:
@@ -332,7 +387,7 @@ def _run_register_show(args: argparse) -> int:
     elif args.engine_gems:
         return print_engine_gems(args.verbose)
     elif args.engine_external_subdirectories:
-        return print_engine_external_subdirectories()
+        return print_engine_external_subdirectories(args.verbose)
     elif args.engine_templates:
         return print_engine_templates(args.verbose)
     elif args.engine_restricted:
@@ -341,7 +396,7 @@ def _run_register_show(args: argparse) -> int:
     elif args.project_gems:
         return print_project_gems(args.verbose, args.project_path, args.project_name)
     elif args.project_external_subdirectories:
-        return print_project_external_subdirectories(args.project_path, args.project_name)
+        return print_project_external_subdirectories(args.verbose, args.project_path, args.project_name)
     elif args.project_templates:
         return print_project_templates(args.verbose, args.project_path, args.project_name)
     elif args.project_restricted:
@@ -350,16 +405,16 @@ def _run_register_show(args: argparse) -> int:
     elif args.all_projects:
         return print_all_projects(args.verbose)
     elif args.all_gems:
-        return print_all_gems(args.verbose)
+        return print_all_gems(args.verbose, args.project_path, args.project_name)
     elif args.all_external_subdirectories:
-        return print_all_external_subdirectories()
+        return print_all_external_subdirectories(args.verbose, args.project_path, args.project_name)
     elif args.all_templates:
-        return print_all_templates(args.verbose)
+        return print_all_templates(args.verbose, args.project_path, args.project_name)
     elif args.all_restricted:
-        return print_all_restricted(args.verbose)
+        return print_all_restricted(args.verbose, args.project_path, args.project_name)
 
     else:
-        return register_show(args.verbose)
+        return register_show(args.verbose, args.project_path, args.project_name)
 
 
 def add_parser_args(parser):
@@ -392,6 +447,9 @@ def add_parser_args(parser):
     group.add_argument('-rs', '--restricted', action='store_true', required=False,
                        default=False,
                        help='Output the restricted directories registered in the global ~/.o3de/o3de_manifest.json.')
+    group.add_argument('-es', '--external-subdirectories', action='store_true', required=False,
+                       default=False,
+                       help='Output the external subdirectories registered in the global ~/.o3de/o3de_manifest.json.')
 
     group.add_argument('-ep', '--engine-projects', action='store_true', required=False,
                        default=False,
@@ -427,16 +485,28 @@ def add_parser_args(parser):
                        help='Output all projects registered in the ~/.o3de/o3de_manifest.json and the current engine.json. Ignores repos.')
     group.add_argument('-ag', '--all-gems', action='store_true', required=False,
                        default=False,
-                       help='Output all gems registered in the ~/.o3de/o3de_manifest.json and the current engine.json. Ignores repos')
+                       help='Output all gems registered in the ~/.o3de/o3de_manifest.json and the current engine.json.'
+                            ' If --project-path or --project-name option is supplied, outputs gems registered in'
+                            ' that project\'s project.json otherwise outputs registered gems from all registered projects.'
+                            ' Ignores repos')
     group.add_argument('-at', '--all-templates', action='store_true', required=False,
                        default=False,
-                       help='Output all templates registered in the ~/.o3de/o3de_manifest.json and the current engine.json. Ignores repos.')
+                       help='Output all templates registered in the ~/.o3de/o3de_manifest.json and the current engine.json.'
+                            ' If --project-path or --project-name option is supplied, outputs templates registered in'
+                            ' that project\'s project.json otherwise outputs registered templates from all registered'
+                            ' projects. Ignores repos')
     group.add_argument('-ares', '--all-restricted', action='store_true', required=False,
                        default=False,
-                       help='Output all restricted directory registered in the ~/.o3de/o3de_manifest.json and the current engine.json.')
+                       help='Output all restricted directory registered in the ~/.o3de/o3de_manifest.json and the current engine.json.'
+                            ' If --project-path or --project-name option is supplied, outputs restricted'
+                            ' directories registered in that project\'s project.json otherwise outputs restricted'
+                            ' directories registered from all registered projects. Ignores repos')
     group.add_argument('-aes', '--all-external-subdirectories', action='store_true',
                        default=False,
-                       help='Output all external subdirectories registered in the ~/.o3de/o3de_manifest.json and the current engine.json.')
+                       help='Output all external subdirectories registered in the ~/.o3de/o3de_manifest.json and the current engine.json.'
+                            ' If --project-path or --project-name options is supplied, outputs external'
+                            ' subdirectories registered in that project\'s project.json otherwise outputs external'
+                            ' subdirectories registered from all registered projects. Ignores repos')
 
     parser.add_argument('-v', '--verbose', action='count', required=False,
                         default=0,

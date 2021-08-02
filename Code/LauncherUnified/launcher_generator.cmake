@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -40,9 +41,9 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
         add_custom_target(${project_name}.Assets
             COMMENT "Processing ${project_name} assets..."
             COMMAND "${CMAKE_COMMAND}" 
-                -DLY_LOCK_FILE=$<TARGET_FILE_DIR:AZ::AssetProcessorBatch>/project_assets.lock
+                -DLY_LOCK_FILE=$<GENEX_EVAL:$<TARGET_FILE_DIR:AZ::AssetProcessorBatch>>/project_assets.lock
                 -P ${LY_ROOT_FOLDER}/cmake/CommandExecution.cmake
-                    EXEC_COMMAND $<TARGET_FILE:AZ::AssetProcessorBatch> 
+                    EXEC_COMMAND $<GENEX_EVAL:$<TARGET_FILE:AZ::AssetProcessorBatch>>
                         --zeroAnalysisMode 
                         --project-path=${project_real_path} 
                         --platforms=${LY_ASSET_DEPLOY_ASSET_TYPE}
@@ -122,6 +123,8 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
             FOLDER ${project_name}
     )
 
+    # After ensuring that we correctly support DPI scaling, this should be switched to "PerMonitor"
+    set_property(TARGET ${project_name}.GameLauncher APPEND PROPERTY VS_DPI_AWARE "OFF")
     if(LY_DEFAULT_PROJECT_PATH)
         set_property(TARGET ${project_name}.GameLauncher APPEND PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "--project-path=\"${LY_DEFAULT_PROJECT_PATH}\"")
     endif()

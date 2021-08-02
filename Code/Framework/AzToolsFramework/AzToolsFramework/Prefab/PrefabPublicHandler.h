@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -63,8 +64,11 @@ namespace AzToolsFramework
 
         private:
             PrefabOperationResult DeleteFromInstance(const EntityIdList& entityIds, bool deleteDescendants);
-            bool RetrieveAndSortPrefabEntitiesAndInstances(const EntityList& inputEntities, Instance& commonRootEntityOwningInstance,
-                EntityList& outEntities, AZStd::vector<Instance*>& outInstances) const;
+            PrefabOperationResult RetrieveAndSortPrefabEntitiesAndInstances(
+                const EntityList& inputEntities,
+                Instance& commonRootEntityOwningInstance,
+                EntityList& outEntities,
+                AZStd::vector<Instance*>& outInstances) const;
             EntityIdList GenerateEntityIdListWithoutLevelInstance(const EntityIdList& entityIds) const;
 
             InstanceOptionalReference GetOwnerInstanceByEntityId(AZ::EntityId entityId) const;

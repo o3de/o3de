@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -110,37 +111,6 @@ namespace ScriptCanvas
 
                     RegisterExtension(visualExtensions);
                 }
-            }
-
-            void ExpressionNodeBase::OnInputSignal(const SlotId& slotId)
-            {
-                if (slotId == ExpressionNodeBaseProperty::GetInSlotId(this))
-                {
-                    for (const SlotId& dirtySlotId : m_dirtyInputs)
-                    {
-                        auto variableIter = m_slotToVariableMap.find(dirtySlotId);
-
-                        if (variableIter != m_slotToVariableMap.end())
-                        {
-                            PushVariable(variableIter->second, (*FindDatum(dirtySlotId)));
-                        }
-                    }
-
-                    m_dirtyInputs.clear();
-
-                    if (m_parseError.IsValidExpression() && m_expressionTree.GetTreeSize() != 0)
-                    {
-                        ExpressionEvaluation::ExpressionResult expressionResult;
-                        ExpressionEvaluation::ExpressionEvaluationRequestBus::BroadcastResult(expressionResult, &ExpressionEvaluation::ExpressionEvaluationRequests::Evaluate, m_expressionTree);
-
-                        OnResult(expressionResult);
-                    }
-                }
-            }
-
-            void ExpressionNodeBase::OnInputChanged([[maybe_unused]] const Datum& input, const SlotId& slotId)
-            {
-                m_dirtyInputs.insert(slotId);
             }
 
             bool ExpressionNodeBase::CanDeleteSlot([[maybe_unused]] const SlotId& slotId) const
@@ -472,11 +442,6 @@ namespace ScriptCanvas
                 AZ::SystemTickBus::QueueFunction([this]() {
                     m_stringInterface.SignalDataChanged();
                 });
-            }
-
-            void ExpressionNodeBase::OnResult([[maybe_unused]] const ExpressionEvaluation::ExpressionResult& result)
-            {
-                AZ_Assert(false, "Implementing node must override OnResult.");
             }
 
             ExpressionEvaluation::ParseOutcome ExpressionNodeBase::ParseExpression([[maybe_unused]] const AZStd::string& formatString)

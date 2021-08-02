@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -44,7 +45,7 @@ namespace O3DE::ProjectManager
         void HandleAddProjectButton();
         void HandleOpenProject(const QString& projectPath);
         void HandleEditProject(const QString& projectPath);
-        void HandleCopyProject(const QString& projectPath);
+        void HandleCopyProject(const ProjectInfo& projectInfo);
         void HandleRemoveProject(const QString& projectPath);
         void HandleDeleteProject(const QString& projectPath);
 
@@ -62,6 +63,7 @@ namespace O3DE::ProjectManager
         ProjectButton* CreateProjectButton(ProjectInfo& project, QLayout* flowLayout, bool processing = false);
         void ResetProjectsContent();
         bool ShouldDisplayFirstTimeContent();
+        bool RemoveInvalidProjects();
 
         bool StartProjectBuild(const ProjectInfo& projectInfo);
         QList<ProjectInfo>::iterator RequiresBuildProjectIterator(const QString& projectPath);

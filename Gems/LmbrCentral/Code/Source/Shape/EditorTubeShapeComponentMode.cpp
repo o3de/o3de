@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "EditorTubeShapeComponentMode.h"
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -22,7 +22,7 @@ namespace LmbrCentral
 {
     AZ_CLASS_ALLOCATOR_IMPL(EditorTubeShapeComponentMode, AZ::SystemAllocator, 0)
 
-    static const AZ::Crc32 s_resetVariableRadii = AZ_CRC("com.amazon.action.tubeshape.reset_radii", 0x0f2ef8e2);
+    static const AZ::Crc32 s_resetVariableRadii = AZ_CRC("com.o3de.action.tubeshape.reset_radii", 0x0f2ef8e2);
     static const char* const s_resetRadiiTitle = "Reset Radii";
     static const char* const s_resetRadiiDesc = "Reset all variable radius values to the default";
 
@@ -268,28 +268,6 @@ namespace LmbrCentral
         ContainerChanged();
     }
 
-    AZStd::vector<EditorTubeShapeComponentMode::TubeManipulatorState> EditorTubeShapeComponentMode::GenerateTubeManipulatorStates(
-        const AZ::Spline& spline)
-    {
-        const AZ::u64 startVertex = spline.GetAddressByFraction(0.0f).m_segmentIndex;
-        const AZ::u64 endVertex = startVertex + spline.GetSegmentCount() + (spline.IsClosed() ? 0 : 1);
-
-        AZStd::vector<TubeManipulatorState> splineAddresses;
-        for (AZ::u64 vertIndex = startVertex; vertIndex < endVertex; ++vertIndex)
-        {
-            if (vertIndex + 1 == endVertex)
-            {
-                splineAddresses.push_back({ AZ::SplineAddress(vertIndex - 1, 1.0f), vertIndex });
-            }
-            else
-            {
-                splineAddresses.push_back({ AZ::SplineAddress(vertIndex), vertIndex });
-            }
-        }
-
-        return splineAddresses;
-    }
-
     void EditorTubeShapeComponentMode::RefreshManipulatorsLocal(const AZ::EntityId entityId)
     {
         AZ::SplinePtr spline;
@@ -317,5 +295,38 @@ namespace LmbrCentral
             m_radiusManipulators[manipulatorIndex]->SetAxis(normal);
             m_radiusManipulators[manipulatorIndex]->SetBoundsDirty();
         }
+    }
+
+    AZStd::vector<EditorTubeShapeComponentMode::TubeManipulatorState> GenerateTubeManipulatorStates(const AZ::Spline& spline)
+    {
+        if (spline.GetVertexCount() == 0)
+        {
+            return {};
+        }
+
+        const auto segmentCount = spline.GetSegmentCount();
+        if (segmentCount == 0)
+        {
+            return { { AZ::SplineAddress(0), 0 } };
+        }
+
+        const AZ::u64 startVertex = spline.GetAddressByFraction(0.0f).m_segmentIndex;
+        const AZ::u64 endVertex = startVertex + segmentCount + (spline.IsClosed() ? 0 : 1);
+
+        AZStd::vector<EditorTubeShapeComponentMode::TubeManipulatorState> splineAddresses;
+        for (AZ::u64 vertIndex = startVertex; vertIndex < endVertex; ++vertIndex)
+        {
+            if (vertIndex + 1 == endVertex)
+            {
+                AZ_Assert(vertIndex > 0, "vertexIndex is 0 and not safe to subtract from")
+                    splineAddresses.push_back({ AZ::SplineAddress(vertIndex - 1, 1.0f), vertIndex });
+            }
+            else
+            {
+                splineAddresses.push_back({ AZ::SplineAddress(vertIndex), vertIndex });
+            }
+        }
+
+        return splineAddresses;
     }
 } // namespace LmbrCentral

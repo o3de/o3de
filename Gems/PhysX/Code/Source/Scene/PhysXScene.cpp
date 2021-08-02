@@ -1,16 +1,16 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <PhysX_precompiled.h>
-
 #include <Scene/PhysXScene.h>
 
 #include <AzCore/Debug/ProfilerBus.h>
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Physics/Character.h>
 #include <AzFramework/Physics/Collision/CollisionEvents.h>
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
@@ -27,6 +27,8 @@
 #include <PhysXCharacters/API/CharacterUtils.h>
 #include <System/PhysXSystem.h>
 #include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
+#include <PhysX/Debug/PhysXDebugConfiguration.h>
+#include <PhysX/MathConversion.h>
 #include <Joint/PhysXJoint.h>
 
 namespace PhysX
@@ -348,6 +350,8 @@ namespace PhysX
             {
                 const physx::PxTransform pose = PxMathConvert(shapecastRequest->m_start);
                 const physx::PxVec3 dir = PxMathConvert(shapecastRequest->m_direction.GetNormalized());
+                AZ_Warning("PhysXScene", (static_cast<AZ::u16>(shapecastRequest->m_hitFlags & AzPhysics::SceneQuery::HitFlags::MTD) != 0),
+                    "Not having MTD set for shape scene queries may result in incorrect reporting of colliders that are in contact or intersect the initial pose of the sweep.");
                 const physx::PxHitFlags hitFlags = SceneQueryHelpers::GetPxHitFlags(shapecastRequest->m_hitFlags);
 
                 bool status = false;
@@ -488,6 +492,10 @@ namespace PhysX
     PhysXScene::~PhysXScene()
     {
         m_physicsSystemConfigChanged.Disconnect();
+
+        s_overlapBuffer.swap({});
+        s_rayCastBuffer.swap({});
+        s_sweepBuffer.swap({});
 
         for (auto& simulatedBody : m_simulatedBodies)
         {
