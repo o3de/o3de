@@ -32,6 +32,7 @@
 #include <Rendering/HairRenderObject.h>
 #include <Rendering/SharedBuffer.h>
 #include <Rendering/HairCommon.h>
+#include <Rendering/HairGlobalSettings.h>
 
 namespace AZ
 {
@@ -120,6 +121,8 @@ namespace AZ
                 }
 
                 bool CreatePerPassResources();
+
+                HairGlobalSettings m_hairGlobalSettings;
 
             private:
                 AZ_DISABLE_COPY_MOVE(HairFeatureProcessor);

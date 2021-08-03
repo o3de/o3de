@@ -15,6 +15,7 @@
 #include <AzCore/Component/Component.h>
 #include <Assets/HairAsset.h>
 #include <TressFX/TressFXSettings.h>
+#include <Rendering/HairGlobalSettings.h>
 
 // #include <Atom/Feature/ParamMacros/ParamMacrosHowTo.inl>    // for education purposes
 //#include <Components/HairSettingsInterface.h>
@@ -52,6 +53,8 @@ namespace AZ
                 // TressFX settings
                 AMD::TressFXSimulationSettings m_simulationSettings;
                 AMD::TressFXRenderingSettings m_renderingSettings;
+
+                HairGlobalSettings m_hairGlobalSettings;
 
             private:
                 bool m_enabled = false;

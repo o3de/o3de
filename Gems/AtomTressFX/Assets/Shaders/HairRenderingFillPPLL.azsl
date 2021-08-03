@@ -31,7 +31,7 @@
 //!  across all dispatches and draw calls and used for all the dynamic buffers
 //!  that can change between passes due to the application of skinning, simulation 
 //!  and physics affect and is then read by the rendering shaders.  
-ShaderResourceGroup PassSrg : SRG_PerPass 
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback 
 {   //! This shared buffer needs to match the SharedBuffer structure  
     //! shared between all draw calls / dispatches for the hair skinning
     StructuredBuffer<int>           m_skinnedHairSharedBuffer;

@@ -35,6 +35,7 @@
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 
 // Hair specific
+#include <Rendering/HairGlobalSettings.h>
 #include <Rendering/HairFeatureProcessor.h>
 #include <Rendering/HairBuffersSemantics.h>
 #include <Rendering/HairRenderObject.h>
@@ -75,6 +76,8 @@ namespace AZ
 
             void HairFeatureProcessor::Reflect(ReflectContext* context)
             {
+                HairGlobalSettings::Reflect(context);
+
                 if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
                 {
                     serializeContext

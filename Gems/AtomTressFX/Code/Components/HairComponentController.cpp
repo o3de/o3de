@@ -211,6 +211,7 @@ namespace AZ
                     const float updateShadows = false;
                     m_renderObject->UpdateRenderingParameters(
                         &m_configuration.m_renderingSettings, RESERVED_PIXELS_FOR_OIT, distanceFromCamera, updateShadows);
+                    m_renderObject->SetLightingModel(m_configuration.m_hairGlobalSettings.m_hairLightingModel);
                     m_configChanged = false;
 
                     // Only load the image asset when the dirty flag has been set on the settings.

@@ -44,6 +44,9 @@ set(FILES
     Code/Rendering/HairRenderObject.h
     Code/Rendering/SharedBuffer.cpp
     Code/Rendering/SharedBuffer.h
+    Code/Rendering/HairLightingModels.h
+    Code/Rendering/HairGlobalSettings.h
+    Code/Rendering/HairGlobalSettings.cpp
 #)
 #
 #set(atom_hair_components

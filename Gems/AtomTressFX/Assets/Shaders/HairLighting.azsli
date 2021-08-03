@@ -402,7 +402,7 @@ float3 TressFXShading(float2 pixelCoord, float depth, float3 vTangentCoverage, f
     //---------------------------------------------------
 
     float3 accumulatedLight = float3(0, 0, 1);
-    if (lightingModel == HairLightingModel::Kajiya)
+    if (o_hairLightingModel == HairLightingModel::Kajiya)
     {
         accumulatedLight = SimplifiedHairLighting(vTangent, vPositionWS, vViewDirWS, params, vNDC);    
 //        accumulatedLight = AccumulateHairLight(vTangent, vPositionWS, vViewDirWS, params, vNDC);
