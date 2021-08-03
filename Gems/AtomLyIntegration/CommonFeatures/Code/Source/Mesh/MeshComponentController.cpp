@@ -251,6 +251,19 @@ namespace AZ
                 m_meshFeatureProcessor->SetTransform(m_meshHandle, m_transformInterface->GetWorldTM(), m_cachedNonUniformScale);
             }
         }
+        
+        RPI::ModelMaterialSlotMap MeshComponentController::GetModelMaterialSlots() const
+        {
+            Data::Asset<const RPI::ModelAsset> modelAsset = GetModelAsset();
+            if (modelAsset.IsReady())
+            {
+                return modelAsset->GetMaterialSlots();
+            }
+            else
+            {
+                return {};
+            }
+        }
 
         MaterialAssignmentId MeshComponentController::FindMaterialAssignmentId(
             const MaterialAssignmentLodIndex lod, const AZStd::string& label) const
