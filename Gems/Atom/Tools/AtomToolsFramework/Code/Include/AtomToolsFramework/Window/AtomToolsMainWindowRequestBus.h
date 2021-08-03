@@ -48,7 +48,7 @@ namespace AtomToolsFramework
         //! Get a list of registered docked widget names
         virtual AZStd::vector<AZStd::string> GetDockWidgetNames() const = 0;
 
-        //! Resizes the Material Editor window to achieve a requested size for the viewport render target.
+        //! Resizes the main window to achieve a requested size for the viewport render target.
         //! (This indicates the size of the render target, not the desktop-scaled QT widget size).
         virtual void ResizeViewportRenderTarget(uint32_t width, uint32_t height) {};
 

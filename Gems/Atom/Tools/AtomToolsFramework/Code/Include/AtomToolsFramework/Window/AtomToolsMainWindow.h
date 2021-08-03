@@ -23,7 +23,7 @@ namespace AtomToolsFramework
 {
     class AtomToolsMainWindow
         : public AzQtComponents::DockMainWindow
-        , protected AtomToolsFramework::AtomToolsMainWindowRequestBus::Handler
+        , protected AtomToolsMainWindowRequestBus::Handler
     {
     public:
         AtomToolsMainWindow(QWidget* parent = 0);
