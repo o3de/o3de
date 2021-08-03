@@ -8,8 +8,6 @@
 
 include_guard()
 
-set(LY_EXTERNAL_SUBDIRS "" CACHE STRING "List of subdirectories to recurse into when running cmake against the engine's CMakeLists.txt")
-
 #! read_json_external_subdirs
 #  Read the "external_subdirectories" array from a *.json file
 #  External subdirectories are any folders with CMakeLists.txt in them

@@ -323,10 +323,12 @@ namespace {{ Component.attrib['Namespace'] }}
 /// Place in your .cpp
 #include <{{ Component.attrib['OverrideInclude'] }}>
 
+#include <AzCore/Serialization/SerializeContext.h>
+
 namespace {{ Component.attrib['Namespace'] }}
 {
 {% if ComponentDerived %}
-    void {{ ComponentName }}::{{ ComponentName }}::Reflect(AZ::ReflectContext* context)
+    void {{ ComponentName }}::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)

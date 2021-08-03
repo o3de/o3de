@@ -156,6 +156,33 @@ namespace PhysX
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_kinematic,
                         "Kinematic", "Rigid body is kinematic")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetKinematicVisibility)
+
+                    // Linear axis locking properties
+                    ->ClassElement(AZ::Edit::ClassElements::Group, "Linear Axis Locking")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_lockLinearX, "Lock X",
+                        "Lock motion along X direction")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_lockLinearY, "Lock Y",
+                        "Lock motion along Y direction")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_lockLinearZ, "Lock Z",
+                        "Lock motion along Z direction")
+
+                    // Angular axis locking properties
+                    ->ClassElement(AZ::Edit::ClassElements::Group, "Angular Axis Locking")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_lockAngularX, "Lock X",
+                        "Lock rotation around X direction")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_lockAngularY, "Lock Y",
+                        "Lock rotation around Y direction")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_lockAngularZ, "Lock Z",
+                        "Lock rotation around Z direction")
+
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Continuous Collision Detection")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetCCDVisibility)

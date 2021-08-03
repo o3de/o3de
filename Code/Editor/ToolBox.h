@@ -129,7 +129,6 @@ public:
     void Save() const;
     // Load macros configuration from registry.
     void Load(ActionManager* actionManager = nullptr);
-    void LoadShelves(QString scriptPath, QString shelvesPath, ActionManager* actionManager);
 
     //! Get the number of managed macros.
     int GetMacroCount(bool bToolbox) const;

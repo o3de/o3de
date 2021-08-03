@@ -122,5 +122,17 @@ namespace AZ
             }
             return commandLineValue;
         }
+
+        bool QueryCommandLineOption(const AZStd::string& commandLineOption)
+        {
+            const AzFramework::CommandLine* commandLine = nullptr;
+            AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetApplicationCommandLine);
+
+            if (commandLine)
+            {
+                return commandLine->HasSwitch(commandLineOption);
+            }
+            return false;
+        }
     }
 }

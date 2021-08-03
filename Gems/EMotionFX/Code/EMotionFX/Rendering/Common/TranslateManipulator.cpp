@@ -7,7 +7,7 @@
  */
 
 #include "TranslateManipulator.h"
-
+#include <MCore/Source/PlaneEq.h>
 
 namespace MCommon
 {

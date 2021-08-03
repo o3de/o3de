@@ -136,11 +136,6 @@ namespace ScriptCanvasTests
             // don't hang on to dangling assets
             AZ::Data::AssetManager::Instance().DispatchEvents();
 
-            if (AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance())
-            {
-                fileIO->DestroyPath(k_tempCoreAssetDir);
-            }
-
             if (s_application)
             {
                 s_application->Stop();

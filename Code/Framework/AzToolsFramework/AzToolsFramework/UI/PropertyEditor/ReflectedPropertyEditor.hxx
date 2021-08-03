@@ -51,6 +51,8 @@ namespace AzToolsFramework
 
         typedef AZStd::unordered_map<InstanceDataNode*, PropertyRowWidget*> WidgetList;
 
+        ReflectedPropertyEditor::WidgetList m_specialGroupWidgets;
+
         ReflectedPropertyEditor(QWidget* pParent);
         virtual ~ReflectedPropertyEditor();
 
@@ -62,6 +64,7 @@ namespace AzToolsFramework
         bool AddInstance(void* instance, const AZ::Uuid& classId, void* aggregateInstance = nullptr, void* compareInstance = nullptr);
         void SetCompareInstance(void* instance, const AZ::Uuid& classId);
         void ClearInstances();
+        void ReadValuesIntoGui(QWidget* widget, InstanceDataNode* node);
         template<class T>
         bool AddInstance(T* instance, void* aggregateInstance = nullptr, void* compareInstance = nullptr)
         {

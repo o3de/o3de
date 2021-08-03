@@ -82,26 +82,5 @@ namespace MCore
             : Attribute(TYPE_ID)
             , mValue(value) {}
         ~AttributeQuaternion() { }
-
-        uint32 GetDataSize() const override                         { return sizeof(AZ::Quaternion); }
-
-        // read from a stream
-        bool ReadData(MCore::Stream* stream, MCore::Endian::EEndianType streamEndianType, uint8 version) override
-        {
-            MCORE_UNUSED(version);
-
-            // read the value
-            AZ::Quaternion streamValue;
-            if (stream->Read(&streamValue, sizeof(AZ::Quaternion)) == 0)
-            {
-                return false;
-            }
-
-            // convert endian
-            Endian::ConvertQuaternion(&streamValue, streamEndianType);
-            mValue = streamValue;
-            return true;
-        }
-
     };
 }   // namespace MCore

@@ -79,27 +79,5 @@ namespace MCore
             : Attribute(TYPE_ID)
             , mValue(value)     { }
         ~AttributeColor() {}
-
-        uint32 GetDataSize() const override                         { return sizeof(RGBAColor); }
-
-        // read from a stream
-        bool ReadData(MCore::Stream* stream, MCore::Endian::EEndianType streamEndianType, uint8 version) override
-        {
-            MCORE_UNUSED(version);
-
-            // read the value
-            RGBAColor streamValue;
-            if (stream->Read(&streamValue, sizeof(RGBAColor)) == 0)
-            {
-                return false;
-            }
-
-            // convert endian
-            Endian::ConvertRGBAColor(&streamValue, streamEndianType);
-            mValue = streamValue;
-
-            return true;
-        }
-
     };
 }   // namespace MCore

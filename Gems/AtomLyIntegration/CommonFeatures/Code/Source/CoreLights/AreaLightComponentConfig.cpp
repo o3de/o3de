@@ -18,7 +18,7 @@ namespace AZ
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<AreaLightComponentConfig, ComponentConfig>()
-                    ->Version(6) // ATOM-15654
+                    ->Version(7) // ATOM-16034
                     ->Field("LightType", &AreaLightComponentConfig::m_lightType)
                     ->Field("Color", &AreaLightComponentConfig::m_color)
                     ->Field("IntensityMode", &AreaLightComponentConfig::m_intensityMode)
@@ -33,6 +33,7 @@ namespace AZ
                     ->Field("OuterShutterAngleDegrees", &AreaLightComponentConfig::m_outerShutterAngleDegrees)
                     // Shadows
                     ->Field("Enable Shadow", &AreaLightComponentConfig::m_enableShadow)
+                    ->Field("Shadow Bias", &AreaLightComponentConfig::m_bias)
                     ->Field("Shadowmap Max Size", &AreaLightComponentConfig::m_shadowmapMaxSize)
                     ->Field("Shadow Filter Method", &AreaLightComponentConfig::m_shadowFilterMethod)
                     ->Field("Softening Boundary Width", &AreaLightComponentConfig::m_boundaryWidthInDegrees)

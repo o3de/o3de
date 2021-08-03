@@ -10,10 +10,10 @@
 
 #include <Atom/Feature/Shadows/ProjectedShadowFeatureProcessorInterface.h>
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
+#include <Atom/Feature/Utils/IndexedDataVector.h>
 #include <Atom/Feature/Utils/MultiSparseVector.h>
 #include <CoreLights/EsmShadowmapsPass.h>
 #include <CoreLights/ProjectedShadowmapsPass.h>
-#include <CoreLights/IndexedDataVector.h>
 
 namespace AZ::Render
 {
@@ -47,6 +47,7 @@ namespace AZ::Render
         void SetAspectRatio(ShadowId id, float aspectRatio) override;
         void SetFieldOfViewY(ShadowId id, float fieldOfViewYRadians) override;
         void SetShadowmapMaxResolution(ShadowId id, ShadowmapSize size) override;
+        void SetShadowBias(ShadowId id, float bias) override;
         void SetPcfMethod(ShadowId id, PcfMethod method);
         void SetEsmExponent(ShadowId id, float exponent);
         void SetShadowFilterMethod(ShadowId id, ShadowFilterMethod method) override;
@@ -79,6 +80,7 @@ namespace AZ::Render
         {
             ProjectedShadowDescriptor m_desc;
             RPI::ViewPtr m_shadowmapView;
+            float m_bias = 0.1f;
             ShadowId m_shadowId;
         };
 

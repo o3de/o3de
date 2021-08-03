@@ -7,6 +7,7 @@
  */
 
 #pragma once
+
 #include <MCore/Source/Config.h>
 
 namespace EMotionFX
@@ -20,15 +21,12 @@ namespace EMotionFX
             SHARED_CHUNK_TIMESTAMP          = 51
         };
 
-
-        // a chunk
         struct FileChunk
         {
             uint32 mChunkID;        // the chunk ID
             uint32 mSizeInBytes;    // the size in bytes of this chunk (excluding this chunk struct)
             uint32 mVersion;        // the version of the chunk
         };
-
 
         // color [0..1] range
         struct FileColor
@@ -39,23 +37,18 @@ namespace EMotionFX
             float mA; // alpha
         };
 
-
-        // a 2D vector
         struct FileVector2
         {
             float mX;
             float mY;
         };
 
-
-        // a 3D vector
         struct FileVector3
         {
             float mX; // x+ = to the right
             float mY; // y+ = forward
             float mZ; // z+ = up
         };
-
 
         // a compressed 3D vector
         struct File16BitVector3
@@ -65,7 +58,6 @@ namespace EMotionFX
             uint16 mZ;  // z+ = up
         };
 
-
         // a compressed 3D vector
         struct File8BitVector3
         {
@@ -74,8 +66,6 @@ namespace EMotionFX
             uint8 mZ;   // z+ = up
         };
 
-
-        // a quaternion
         struct FileQuaternion
         {
             float mX;
@@ -83,7 +73,6 @@ namespace EMotionFX
             float mZ;
             float mW;
         };
-
 
         // the 16 bit component quaternion
         struct File16BitQuaternion
@@ -93,7 +82,6 @@ namespace EMotionFX
             int16   mZ;
             int16   mW;
         };
-
 
         // a time stamp chunk
         struct FileTime
@@ -105,17 +93,5 @@ namespace EMotionFX
             int8    mMinutes;
             int8    mSeconds;
         };
-
-
-        // attribute
-        struct FileAttribute
-        {
-            uint32  mDataType;
-            uint32  mNumBytes;
-            uint32  mFlags;
-
-            // followed by:
-            //      uint8   mData[mNumBytes];
-        };
     } // namespace FileFormat
-}   // namespace EMotionFX
+} // namespace EMotionFX

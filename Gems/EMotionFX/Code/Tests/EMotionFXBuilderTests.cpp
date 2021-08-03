@@ -97,16 +97,6 @@ namespace EMotionFX
         ASSERT_EQ(productDependencies.size(), 0);
     }
 
-    TEST_F(EMotionFXBuilderTests, TestLegacyAnimGraphAsset_NoDependency_OutputNoProductDependencies)
-    {
-        const AZStd::string fileName = "@devroot@/Gems/EMotionFX/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/LegacyAnimGraphExample.animgraph";
-        AZStd::vector<AssetBuilderSDK::ProductDependency> productDependencies;
-        EMotionFXBuilder::AnimGraphBuilderWorker builderWorker;
-
-        ASSERT_TRUE(builderWorker.ParseProductDependencies(ResolvePath(fileName.c_str()), fileName, productDependencies));
-        ASSERT_EQ(productDependencies.size(), 0);
-    }
-
     TEST_F(EMotionFXBuilderTests, TestMotionSetAsset_HasReferenceNode_OutputProductDependencies)
     {
         const AZStd::string fileName = "@devroot@/Gems/EMotionFX/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/MotionSetExample.motionset";
@@ -149,15 +139,5 @@ namespace EMotionFX
         ASSERT_FALSE(builderWorker.ParseProductDependencies(fileName, fileName, productDependencies));
         AZ_TEST_STOP_ASSERTTEST(2);
         ASSERT_EQ(productDependencies.size(), 0);
-    }
-
-    TEST_F(EMotionFXBuilderTests, TestLegacyMotionSetAsset_ReferenceMotionAssets_OutputProductDependencies)
-    {
-        const AZStd::string fileName = "@devroot@/Gems/EMotionFX/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/LegacyMotionSetExample.motionset";
-        ProductPathDependencySet productDependencies;
-        EMotionFXBuilder::MotionSetBuilderWorker builderWorker;
-
-        ASSERT_TRUE(builderWorker.ParseProductDependencies(ResolvePath(fileName.c_str()), fileName, productDependencies));
-        ASSERT_EQ(productDependencies.size(), 25);
     }
 } // namespace EMotionFX

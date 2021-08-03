@@ -348,22 +348,11 @@ namespace ScriptCanvas
     void GraphVariable::SetVariableName(AZStd::string_view variableName)
     {
         m_variableName = variableName;
-        SetDisplayName(variableName);
     }
 
     AZStd::string_view GraphVariable::GetVariableName() const
     {
         return m_variableName;
-    }
-
-    void GraphVariable::SetDisplayName(const AZStd::string& displayName)
-    {
-        m_datum.SetLabel(displayName);
-    }
-
-    AZStd::string_view GraphVariable::GetDisplayName() const
-    {
-        return m_datum.GetLabel();
     }
 
     void GraphVariable::SetScriptInputControlVisibility(const AZ::Crc32& inputControlVisibility)
