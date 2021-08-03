@@ -198,7 +198,7 @@ namespace MCommon
 
 
     // render the current bounding box of the given actor instance
-    void RenderUtil::RenderAABB(const MCore::AABB& box, const MCore::RGBAColor& color, bool directlyRender)
+    void RenderUtil::RenderAabb(const AZ::Aabb& box, const MCore::RGBAColor& color, bool directlyRender)
     {
         AZ::Vector3 min = box.GetMin();
         AZ::Vector3 max = box.GetMax();
@@ -238,12 +238,12 @@ namespace MCommon
 
 
     // render selection gizmo around the given AABB
-    void RenderUtil::RenderSelection(const MCore::AABB& box, const MCore::RGBAColor& color, bool directlyRender)
+    void RenderUtil::RenderSelection(const AZ::Aabb& box, const MCore::RGBAColor& color, bool directlyRender)
     {
-        //const Vector3 center  = box.CalcMiddle();
-        const AZ::Vector3       min     = box.GetMin();// + (box.GetMin()-center).Normalized()*0.005f;
-        const AZ::Vector3       max     = box.GetMax();// + (box.GetMax()-center).Normalized()*0.005f;
-        const float             scale   = box.CalcRadius() * 0.1f;
+        const AZ::Vector3       min     = box.GetMin();
+        const AZ::Vector3       max     = box.GetMax();
+        const float             radius  = AZ::Vector3(box.GetMax() - box.GetMin()).GetLength() * 0.5f;
+        const float             scale   = radius * 0.1f;
         const AZ::Vector3       up      = AZ::Vector3(0.0f, 1.0f, 0.0f) * scale;
         const AZ::Vector3       right   = AZ::Vector3(1.0f, 0.0f, 0.0f) * scale;
         const AZ::Vector3       front   = AZ::Vector3(0.0f, 0.0f, 1.0f) * scale;
@@ -304,46 +304,29 @@ namespace MCommon
     {
         mNodeBasedAABB              = true;
         mMeshBasedAABB              = true;
-        mCollisionMeshBasedAABB     = true;
         mStaticBasedAABB            = true;
         mStaticBasedColor           = MCore::RGBAColor(0.0f, 0.7f, 0.7f);
         mNodeBasedColor             = MCore::RGBAColor(1.0f, 0.0f, 0.0f);
-        mCollisionMeshBasedColor    = MCore::RGBAColor(0.0f, 0.7f, 0.0f);
         mMeshBasedColor             = MCore::RGBAColor(0.0f, 0.0f, 0.7f);
     }
 
 
     // render the given types of AABBs of a actor instance
-    void RenderUtil::RenderAABBs(EMotionFX::ActorInstance* actorInstance, const AABBRenderSettings& renderSettings, bool directlyRender)
+    void RenderUtil::RenderAabbs(EMotionFX::ActorInstance* actorInstance, const AABBRenderSettings& renderSettings, bool directlyRender)
     {
-        // get the current LOD level
         const uint32 lodLevel = actorInstance->GetLODLevel();
-
-        // handle the collision mesh based AABB
-        if (renderSettings.mCollisionMeshBasedAABB)
-        {
-            // calculate the collision mesh based AABB
-            MCore::AABB box;
-            actorInstance->CalcCollisionMeshBasedAABB(lodLevel, &box);
-
-            // render the aabb
-            if (box.CheckIfIsValid())
-            {
-                RenderAABB(box, renderSettings.mCollisionMeshBasedColor);
-            }
-        }
 
         // handle the node based AABB
         if (renderSettings.mNodeBasedAABB)
         {
             // calculate the node based AABB
-            MCore::AABB box;
-            actorInstance->CalcNodeBasedAABB(&box);
+            AZ::Aabb box;
+            actorInstance->CalcNodeBasedAabb(&box);
 
             // render the aabb
-            if (box.CheckIfIsValid())
+            if (box.IsValid())
             {
-                RenderAABB(box, renderSettings.mNodeBasedColor);
+                RenderAabb(box, renderSettings.mNodeBasedColor);
             }
         }
 
@@ -351,26 +334,26 @@ namespace MCommon
         if (renderSettings.mMeshBasedAABB)
         {
             // calculate the mesh based AABB
-            MCore::AABB box;
-            actorInstance->CalcMeshBasedAABB(lodLevel, &box);
+            AZ::Aabb box;
+            actorInstance->CalcMeshBasedAabb(lodLevel, &box);
 
             // render the aabb
-            if (box.CheckIfIsValid())
+            if (box.IsValid())
             {
-                RenderAABB(box, renderSettings.mMeshBasedColor);
+                RenderAabb(box, renderSettings.mMeshBasedColor);
             }
         }
 
         if (renderSettings.mStaticBasedAABB)
         {
             // calculate the static based AABB
-            MCore::AABB box;
-            actorInstance->CalcStaticBasedAABB(&box);
+            AZ::Aabb box;
+            actorInstance->CalcStaticBasedAabb(&box);
 
             // render the aabb
-            if (box.CheckIfIsValid())
+            if (box.IsValid())
             {
-                RenderAABB(box, renderSettings.mStaticBasedColor);
+                RenderAabb(box, renderSettings.mStaticBasedColor);
             }
         }
 
@@ -1639,7 +1622,7 @@ namespace MCommon
 
             // calculate the intersection points with the ground plane and create an AABB around those
             // if there is no intersection point then use the ray target as point, which is the projection onto the far plane basically
-            MCore::AABB aabb;
+            AZ::Aabb aabb = AZ::Aabb::CreateNull();
             AZ::Vector3 intersectionPoint;
             const AZ::Plane groundPlane = AZ::Plane::CreateFromNormalAndPoint(AZ::Vector3(0.0f, 0.0f, 1.0f), AZ::Vector3::CreateZero());
             for (AZ::u32 i = 0; i < 4; ++i)
@@ -1649,7 +1632,7 @@ namespace MCommon
                     corners[i] = intersectionPoint;
                 }
 
-                aabb.Encapsulate(corners[i]);
+                aabb.AddPoint(corners[i]);
             }
 
             // set the grid start and end values
@@ -1665,9 +1648,9 @@ namespace MCommon
 
 
     // get aabb which includes all actor instances
-    MCore::AABB RenderUtil::CalcSceneAABB()
+    AZ::Aabb RenderUtil::CalcSceneAabb()
     {
-        MCore::AABB finalAABB;
+        AZ::Aabb finalAABB = AZ::Aabb::CreateNull();
 
         // get the number of actor instances and iterate through them
         const uint32 numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
@@ -1685,17 +1668,17 @@ namespace MCommon
             actorInstance->UpdateMeshDeformers(0.0f);
 
             // get the mesh based bounding box
-            MCore::AABB boundingBox;
-            actorInstance->CalcMeshBasedAABB(actorInstance->GetLODLevel(), &boundingBox);
+            AZ::Aabb boundingBox;
+            actorInstance->CalcMeshBasedAabb(actorInstance->GetLODLevel(), &boundingBox);
 
             // in case there aren't any meshes, use the node based bounding box
-            if (boundingBox.CheckIfIsValid() == false)
+            if (!boundingBox.IsValid())
             {
-                actorInstance->CalcNodeBasedAABB(&boundingBox);
+                actorInstance->CalcNodeBasedAabb(&boundingBox);
             }
 
             // make sure the actor instance is covered in our world bounding box
-            finalAABB.Encapsulate(boundingBox);
+            finalAABB.AddAabb(boundingBox);
         }
 
         return finalAABB;
