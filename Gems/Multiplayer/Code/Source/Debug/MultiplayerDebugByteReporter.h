@@ -18,7 +18,7 @@ namespace Multiplayer
     class MultiplayerDebugByteReporter
     {
     public:
-        MultiplayerDebugByteReporter() { MultiplayerDebugByteReporter::Reset(); }
+        MultiplayerDebugByteReporter();
         virtual ~MultiplayerDebugByteReporter() = default;
 
         void ReportBytes(size_t byteSize);
@@ -48,7 +48,8 @@ namespace Multiplayer
         AZStd::chrono::monotonic_clock::time_point m_lastUpdateTime;
     };
 
-    class MultiplayerDebugComponentReporter : public MultiplayerDebugByteReporter
+    class MultiplayerDebugComponentReporter final
+        : public MultiplayerDebugByteReporter
     {
     public:
         MultiplayerDebugComponentReporter() = default;
@@ -66,7 +67,8 @@ namespace Multiplayer
         MultiplayerDebugByteReporter m_componentDirtyBytes;
     };
 
-    class MultiplayerDebugEntityReporter : public MultiplayerDebugByteReporter
+    class MultiplayerDebugEntityReporter final
+        : public MultiplayerDebugByteReporter
     {
     public:
         MultiplayerDebugEntityReporter() = default;

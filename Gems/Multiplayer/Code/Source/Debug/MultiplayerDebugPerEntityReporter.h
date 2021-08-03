@@ -18,34 +18,34 @@
 namespace Multiplayer
 {
     /**
-     * \brief GridMate network live analysis tool via ImGui.
+     * \brief Multiplayer traffic live analysis tool via ImGui.
      */
     class MultiplayerDebugPerEntityReporter
     {
     public:
         MultiplayerDebugPerEntityReporter();
-        ~MultiplayerDebugPerEntityReporter();
 
-        // main update loop
+        //! main update loop
         void OnImGuiUpdate();
 
         //! Event handlers
         // @{
         void RecordEntitySerializeStart(AzNetworking::SerializerMode mode, AZ::EntityId entityId, const char* entityName);
-        void RecordComponentSerializeEnd(AzNetworking::SerializerMode mode, Multiplayer::NetComponentId netComponentId);
+        void RecordComponentSerializeEnd(AzNetworking::SerializerMode mode, NetComponentId netComponentId);
         void RecordEntitySerializeStop(AzNetworking::SerializerMode mode, AZ::EntityId entityId, const char* entityName);
-        void RecordPropertySent(Multiplayer::NetComponentId netComponentId, Multiplayer::PropertyIndex propertyId, uint32_t totalBytes);
-        void RecordPropertyReceived(Multiplayer::NetComponentId netComponentId, Multiplayer::PropertyIndex propertyId, uint32_t totalBytes);
-        void RecordRpcSent(AZ::EntityId entityId, const char* entityName, Multiplayer::NetComponentId netComponentId, Multiplayer::RpcIndex rpcId, uint32_t totalBytes);
-        void RecordRpcReceived(AZ::EntityId entityId, const char* entityName, Multiplayer::NetComponentId netComponentId, Multiplayer::RpcIndex rpcId, uint32_t totalBytes);
+        void RecordPropertySent(NetComponentId netComponentId, PropertyIndex propertyId, uint32_t totalBytes);
+        void RecordPropertyReceived(NetComponentId netComponentId, PropertyIndex propertyId, uint32_t totalBytes);
+        void RecordRpcSent(AZ::EntityId entityId, const char* entityName, NetComponentId netComponentId, RpcIndex rpcId, uint32_t totalBytes);
+        void RecordRpcReceived(AZ::EntityId entityId, const char* entityName, NetComponentId netComponentId, RpcIndex rpcId, uint32_t totalBytes);
         // }@
 
+        //! Draws bandwidth text over entities 
         void UpdateDebugOverlay();
 
     private:
 
         AZ::ScheduledEvent m_updateDebugOverlay;
-        Multiplayer::MultiplayerStats::EventHandlers m_eventHandlers;
+        MultiplayerStats::EventHandlers m_eventHandlers;
 
         AZStd::map<AZ::EntityId, MultiplayerDebugEntityReporter> m_sendingEntityReports{};
         MultiplayerDebugEntityReporter m_currentSendingEntityReport;

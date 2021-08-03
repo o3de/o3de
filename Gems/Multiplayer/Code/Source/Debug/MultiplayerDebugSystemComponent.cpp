@@ -13,9 +13,9 @@
 #include <AzNetworking/Framework/INetworkInterface.h>
 #include <Multiplayer/IMultiplayer.h>
 
-void OnDebugNetworkEntity_ShowBandwidth_Changed(const bool& showBandwidth);
+void OnDebugEntities_ShowBandwidth_Changed(const bool& showBandwidth);
 
-AZ_CVAR(bool, net_DebugNetworkEntity_ShowBandwidth, false, &OnDebugNetworkEntity_ShowBandwidth_Changed, AZ::ConsoleFunctorFlags::Null,
+AZ_CVAR(bool, net_DebugEntities_ShowBandwidth, false, &OnDebugEntities_ShowBandwidth_Changed, AZ::ConsoleFunctorFlags::Null,
     "If true, prints bandwidth values over entities that use a considerable amount of network traffic");
 
 namespace Multiplayer
@@ -458,13 +458,10 @@ namespace Multiplayer
         {
             if (ImGui::Begin("Multiplayer Per Entity Stats", &m_displayPerEntityStats, ImGuiWindowFlags_AlwaysAutoResize))
             {
-                if (ImGui::Checkbox("Show Bandwidth over Entities", &m_displayPerEntityBandwidth))
+                // This overrides @net_DebugNetworkEntity_ShowBandwidth value
+                if (m_reporter == nullptr)
                 {
-                    // This overrides @net_DebugNetworkEntity_ShowBandwidth value
-                    if (m_reporter == nullptr)
-                    {
-                        ShowEntityBandwidthDebugOverlay();
-                    }
+                    ShowEntityBandwidthDebugOverlay();
                 }
 
                 if (m_reporter)
@@ -477,7 +474,7 @@ namespace Multiplayer
 #endif
 }
 
-void OnDebugNetworkEntity_ShowBandwidth_Changed(const bool& showBandwidth)
+void OnDebugEntities_ShowBandwidth_Changed(const bool& showBandwidth)
 {
     if (showBandwidth)
     {

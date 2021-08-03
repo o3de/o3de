@@ -14,6 +14,11 @@
 
 namespace Multiplayer
 {
+    MultiplayerDebugByteReporter::MultiplayerDebugByteReporter()
+    {
+        MultiplayerDebugByteReporter::Reset();
+    }
+
     void MultiplayerDebugByteReporter::ReportBytes(size_t byteSize)
     {
         m_count++;
@@ -80,9 +85,9 @@ namespace Multiplayer
             m_lastUpdateTime = now;
         }
 
-        constexpr float k_bitsPerByte = 8.0f;
-        constexpr int k_bitsPerKilobit = 1024;
-        return k_bitsPerByte * m_totalBytesLastSecond / k_bitsPerKilobit;
+        constexpr float bitsPerByte = 8.0f;
+        constexpr int bitsPerKilobit = 1024;
+        return bitsPerByte * m_totalBytesLastSecond / bitsPerKilobit;
     }
 
     void MultiplayerDebugByteReporter::Combine(const MultiplayerDebugByteReporter& other)
@@ -139,9 +144,9 @@ namespace Multiplayer
     {
         MultiplayerDebugByteReporter::Combine(other);
 
-        for (const auto& fieldIter : other.m_fieldReports)
+        for (const auto& fieldIterator : other.m_fieldReports)
         {
-            m_fieldReports[fieldIter.first].Combine(fieldIter.second);
+            m_fieldReports[fieldIterator.first].Combine(fieldIterator.second);
         }
 
         m_componentDirtyBytes.Combine(other.m_componentDirtyBytes);
@@ -176,9 +181,9 @@ namespace Multiplayer
     {
         MultiplayerDebugByteReporter::Combine(other);
 
-        for (const auto& componentIter : other.m_componentReports)
+        for (const auto& componentIterator : other.m_componentReports)
         {
-            m_componentReports[componentIter.first].Combine(componentIter.second);
+            m_componentReports[componentIterator.first].Combine(componentIterator.second);
         }
 
         SetEntityName(other.GetEntityName());

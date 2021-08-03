@@ -17,16 +17,16 @@
 #include <imgui/imgui.h>
 #endif
 
-AZ_CVAR(float, net_DebugNetworkEntity_ShowAboveKbps, 1.f, nullptr, AZ::ConsoleFunctorFlags::Null,
+AZ_CVAR(float, net_DebugEntities_ShowAboveKbps, 1.f, nullptr, AZ::ConsoleFunctorFlags::Null,
     "Prints bandwidth on network entities with higher kpbs than this value");
 
-AZ_CVAR(float, net_DebugNetworkEntity_WarnAboveKbps, 10.f, nullptr, AZ::ConsoleFunctorFlags::Null,
+AZ_CVAR(float, net_DebugEntities_WarnAboveKbps, 10.f, nullptr, AZ::ConsoleFunctorFlags::Null,
     "Prints bandwidth on network entities with higher kpbs than this value");
 
-AZ_CVAR(AZ::Color, net_DebugNetworkEntity_WarningColor, AZ::Colors::Red, nullptr, AZ::ConsoleFunctorFlags::Null,
+AZ_CVAR(AZ::Color, net_DebugEntities_WarningColor, AZ::Colors::Red, nullptr, AZ::ConsoleFunctorFlags::Null,
     "If true, prints debug text over entities that use a considerable amount of network traffic");
 
-AZ_CVAR(AZ::Color, net_DebugNetworkEntity_BelowWarningColor, AZ::Colors::Grey, nullptr, AZ::ConsoleFunctorFlags::Null,
+AZ_CVAR(AZ::Color, net_DebugEntities_BelowWarningColor, AZ::Colors::Grey, nullptr, AZ::ConsoleFunctorFlags::Null,
     "If true, prints debug text over entities that use a considerable amount of network traffic");
 
 namespace Multiplayer
@@ -133,7 +133,8 @@ namespace Multiplayer
             {
                 RecordEntitySerializeStart(mode, entityId, entityName);
             });
-        m_eventHandlers.m_componentSerializeEnd = decltype(m_eventHandlers.m_componentSerializeEnd)([this](AzNetworking::SerializerMode mode, Multiplayer::NetComponentId netComponentId)
+        m_eventHandlers.m_componentSerializeEnd = decltype(m_eventHandlers.m_componentSerializeEnd)([this](AzNetworking::SerializerMode mode,
+            NetComponentId netComponentId)
             {
                 RecordComponentSerializeEnd(mode, netComponentId);
             });
@@ -141,29 +142,30 @@ namespace Multiplayer
             {
                 RecordEntitySerializeStop(mode, entityId, entityName);
             });
-        m_eventHandlers.m_propertySent = decltype(m_eventHandlers.m_propertySent)([this](Multiplayer::NetComponentId netComponentId, Multiplayer::PropertyIndex propertyId, uint32_t totalBytes)
+        m_eventHandlers.m_propertySent = decltype(m_eventHandlers.m_propertySent)([this](NetComponentId netComponentId,
+                                                                                         PropertyIndex propertyId, uint32_t totalBytes)
             {
                 RecordPropertySent(netComponentId, propertyId, totalBytes);
             });
-        m_eventHandlers.m_propertyReceived = decltype(m_eventHandlers.m_propertyReceived)([this](Multiplayer::NetComponentId netComponentId, Multiplayer::PropertyIndex propertyId, uint32_t totalBytes)
+        m_eventHandlers.m_propertyReceived = decltype(m_eventHandlers.m_propertyReceived)([this](NetComponentId netComponentId,
+            PropertyIndex propertyId, uint32_t totalBytes)
             {
                 RecordPropertyReceived(netComponentId, propertyId, totalBytes);
             });
-        m_eventHandlers.m_rpcSent = decltype(m_eventHandlers.m_rpcSent)([this](AZ::EntityId entityId, const char* entityName, Multiplayer::NetComponentId netComponentId, Multiplayer::RpcIndex rpcId, uint32_t totalBytes)
+        m_eventHandlers.m_rpcSent = decltype(m_eventHandlers.m_rpcSent)([this](AZ::EntityId entityId, const char* entityName,
+                                                                               NetComponentId netComponentId,
+                                                                               RpcIndex rpcId, uint32_t totalBytes)
             {
                 RecordRpcSent(entityId, entityName, netComponentId, rpcId, totalBytes);
             });
-        m_eventHandlers.m_rpcReceived = decltype(m_eventHandlers.m_rpcReceived)([this](AZ::EntityId entityId, const char* entityName, Multiplayer::NetComponentId netComponentId, Multiplayer::RpcIndex rpcId, uint32_t totalBytes)
+        m_eventHandlers.m_rpcReceived = decltype(m_eventHandlers.m_rpcReceived)([this](AZ::EntityId entityId, const char* entityName,
+                                                                                       NetComponentId netComponentId,
+                                                                                       RpcIndex rpcId, uint32_t totalBytes)
             {
                 RecordRpcSent(entityId, entityName, netComponentId, rpcId, totalBytes);
             });
 
         GetMultiplayer()->GetStats().ConnectHandlers(m_eventHandlers);
-    }
-
-    MultiplayerDebugPerEntityReporter::~MultiplayerDebugPerEntityReporter()
-    {
-        m_updateDebugOverlay.RemoveFromQueue();
     }
 
     // --------------------------------------------------------------------------------------------
@@ -228,7 +230,8 @@ namespace Multiplayer
         }
     }
 
-    void MultiplayerDebugPerEntityReporter::RecordComponentSerializeEnd(AzNetworking::SerializerMode mode, [[maybe_unused]] Multiplayer::NetComponentId netComponentId)
+    void MultiplayerDebugPerEntityReporter::RecordComponentSerializeEnd(AzNetworking::SerializerMode mode, [[maybe_unused]] NetComponentId
+                                                                        netComponentId)
     {
         switch (mode)
         {
@@ -256,11 +259,11 @@ namespace Multiplayer
     }
 
     void MultiplayerDebugPerEntityReporter::RecordPropertySent(
-        Multiplayer::NetComponentId netComponentId,
-        Multiplayer::PropertyIndex propertyId,
+        NetComponentId netComponentId,
+        PropertyIndex propertyId,
         uint32_t totalBytes)
     {
-        if (const Multiplayer::MultiplayerComponentRegistry* componentRegistry = Multiplayer::GetMultiplayerComponentRegistry())
+        if (const MultiplayerComponentRegistry* componentRegistry = GetMultiplayerComponentRegistry())
         {
             m_currentSendingEntityReport.ReportField(static_cast<AZ::u32>(netComponentId),
                 componentRegistry->GetComponentName(netComponentId),
@@ -269,11 +272,11 @@ namespace Multiplayer
     }
 
     void MultiplayerDebugPerEntityReporter::RecordPropertyReceived(
-        Multiplayer::NetComponentId netComponentId,
-        Multiplayer::PropertyIndex propertyId,
+        NetComponentId netComponentId,
+        PropertyIndex propertyId,
         uint32_t totalBytes)
     {
-        if (const Multiplayer::MultiplayerComponentRegistry* componentRegistry = Multiplayer::GetMultiplayerComponentRegistry())
+        if (const MultiplayerComponentRegistry* componentRegistry = GetMultiplayerComponentRegistry())
         {
             m_currentReceivingEntityReport.ReportField(static_cast<AZ::u32>(netComponentId),
                 componentRegistry->GetComponentName(netComponentId),
@@ -281,9 +284,10 @@ namespace Multiplayer
         }
     }
 
-    void MultiplayerDebugPerEntityReporter::RecordRpcSent(AZ::EntityId entityId, const char* entityName, Multiplayer::NetComponentId netComponentId, Multiplayer::RpcIndex rpcId, uint32_t totalBytes)
+    void MultiplayerDebugPerEntityReporter::RecordRpcSent(AZ::EntityId entityId, const char* entityName, NetComponentId netComponentId,
+                                                          RpcIndex rpcId, uint32_t totalBytes)
     {
-        if (const Multiplayer::MultiplayerComponentRegistry* componentRegistry = Multiplayer::GetMultiplayerComponentRegistry())
+        if (const MultiplayerComponentRegistry* componentRegistry = GetMultiplayerComponentRegistry())
         {
             // MultiplayerDebugByteReporter requires a
             RecordEntitySerializeStart(AzNetworking::SerializerMode::ReadFromObject, entityId, entityName);
@@ -303,7 +307,7 @@ namespace Multiplayer
         RpcIndex rpcId,
         uint32_t totalBytes)
     {
-        if (const Multiplayer::MultiplayerComponentRegistry* componentRegistry = Multiplayer::GetMultiplayerComponentRegistry())
+        if (const MultiplayerComponentRegistry* componentRegistry = GetMultiplayerComponentRegistry())
         {
             RecordEntitySerializeStart(AzNetworking::SerializerMode::WriteToObject, entityId, entityName);
 
@@ -320,19 +324,18 @@ namespace Multiplayer
     {
         m_networkEntitiesTraffic.clear();
 
+        // Merging up and down traffic to provide a unified debug text per entity
         for (AZStd::pair<AZ::EntityId, MultiplayerDebugEntityReporter>& entityPair : m_receivingEntityReports)
         {
             m_networkEntitiesTraffic[entityPair.first].m_name = entityPair.second.GetEntityName();
             m_networkEntitiesTraffic[entityPair.first].m_down = entityPair.second.GetKbitsPerSecond();
         }
-
         for (AZStd::pair<AZ::EntityId, MultiplayerDebugEntityReporter>& entityPair : m_sendingEntityReports)
         {
             m_networkEntitiesTraffic[entityPair.first].m_name = entityPair.second.GetEntityName();
             m_networkEntitiesTraffic[entityPair.first].m_up = entityPair.second.GetKbitsPerSecond();
         }
 
-        //get debug display interface for the viewport
         if (m_debugDisplay == nullptr)
         {
             AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
@@ -342,28 +345,28 @@ namespace Multiplayer
 
         const AZ::u32 stateBefore = m_debugDisplay->GetState();
 
-        for (AZStd::pair<AZ::EntityId, NetworkEntityTraffic>& networkEntity : m_networkEntitiesTraffic)
+        for (const AZStd::pair<AZ::EntityId, NetworkEntityTraffic>& networkEntity : m_networkEntitiesTraffic)
         {
-            if (networkEntity.second.m_down < net_DebugNetworkEntity_ShowAboveKbps && networkEntity.second.m_up < net_DebugNetworkEntity_ShowAboveKbps)
+            if (networkEntity.second.m_down < net_DebugEntities_ShowAboveKbps && networkEntity.second.m_up < net_DebugEntities_ShowAboveKbps)
             {
                 continue;
             }
 
-            if (networkEntity.second.m_down > net_DebugNetworkEntity_WarnAboveKbps || networkEntity.second.m_up > net_DebugNetworkEntity_WarnAboveKbps)
+            if (networkEntity.second.m_down > net_DebugEntities_WarnAboveKbps || networkEntity.second.m_up > net_DebugEntities_WarnAboveKbps)
             {
-                m_debugDisplay->SetColor(net_DebugNetworkEntity_WarningColor);
+                m_debugDisplay->SetColor(net_DebugEntities_WarningColor);
             }
             else
             {
-                m_debugDisplay->SetColor(net_DebugNetworkEntity_BelowWarningColor);
+                m_debugDisplay->SetColor(net_DebugEntities_BelowWarningColor);
             }
 
-            if (networkEntity.second.m_down > net_DebugNetworkEntity_ShowAboveKbps && networkEntity.second.m_up > net_DebugNetworkEntity_ShowAboveKbps)
+            if (networkEntity.second.m_down > net_DebugEntities_ShowAboveKbps && networkEntity.second.m_up > net_DebugEntities_ShowAboveKbps)
             {
                 azsprintf(m_statusBuffer, "[%s] %.0f down / %0.f up (kbps)", networkEntity.second.m_name,
                     networkEntity.second.m_down, networkEntity.second.m_up);
             }
-            else if (networkEntity.second.m_down > net_DebugNetworkEntity_ShowAboveKbps)
+            else if (networkEntity.second.m_down > net_DebugEntities_ShowAboveKbps)
             {
                 azsprintf(m_statusBuffer, "[%s] %.0f down (kbps)", networkEntity.second.m_name, networkEntity.second.m_down);
             }
@@ -373,9 +376,12 @@ namespace Multiplayer
             }
 
             AZ::Vector3 entityPosition = AZ::Vector3::CreateZero();
-            constexpr bool centerText = true;
             AZ::TransformBus::EventResult(entityPosition, networkEntity.first, &AZ::TransformBus::Events::GetWorldTranslation);
-            m_debugDisplay->DrawTextLabel(entityPosition, 1.0f, m_statusBuffer, centerText, 0, 0);
+            if (entityPosition.IsZero() == false)
+            {
+                constexpr bool centerText = true;
+                m_debugDisplay->DrawTextLabel(entityPosition, 1.0f, m_statusBuffer, centerText, 0, 0);
+            }
         }
 
         m_debugDisplay->SetState(stateBefore);

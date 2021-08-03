@@ -43,7 +43,7 @@ namespace Multiplayer
         void Deactivate() override;
         //! @}
 
-        //! IMultiplayerDebugSystem overrides
+        //! IMultiplayerDebug overrides
         //! @{
         void ShowEntityBandwidthDebugOverlay() override;
         void HideEntityBandwidthDebugOverlay() override;
@@ -62,8 +62,6 @@ namespace Multiplayer
         bool m_displayMultiplayerStats = false;
 
         bool m_displayPerEntityStats = false;
-        bool m_displayPerEntityBandwidth = false;
-
         AZStd::unique_ptr<MultiplayerDebugPerEntityReporter> m_reporter;
     };
 }
