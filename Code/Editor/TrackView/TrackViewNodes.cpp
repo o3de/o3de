@@ -2516,7 +2516,7 @@ int CTrackViewNodesCtrl::GetMatNameAndSubMtlIndexFromName(QString& matName, cons
     if (const char* pCh = strstr(nodeName, ".["))
     {
         char matPath[MAX_PATH];
-        azstrcpy(matPath, nodeName, (size_t)(pCh - nodeName));
+        azstrncpy(matPath, nodeName, (size_t)(pCh - nodeName));
         matName = matPath;
         pCh += 2;
         if ((*pCh) != 0)

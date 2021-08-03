@@ -1634,7 +1634,7 @@ void MainWindow::OnUpdateConnectionStatus()
 
         status = tr("Pending Jobs : %1  Failed Jobs : %2").arg(m_connectionListener->GetJobsCount()).arg(failureCount);
 
-        statusBar->SetItem(QtUtil::ToQString("connection"), status, tooltip, icon);
+        statusBar->SetItem("connection", status, tooltip, icon);
 
         if (m_showAPDisconnectDialog && m_connectionListener->GetState() != EConnectionState::Connected)
         {

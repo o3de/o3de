@@ -132,7 +132,9 @@ void LocalStringPropertyEditor::onEditClicked()
         if (pMgr->GetLocalizedInfoByIndex(i, sInfo))
         {
             item.desc = tr("English Text:\r\n");
-            item.desc += QString::fromWCharArray(Unicode::Convert<wstring>(sInfo.sUtf8TranslatedText).c_str());
+            AZStd::wstring utf8TranslatedTextW;
+            AZStd::to_wstring(utf8TranslatedTextW, sInfo.sUtf8TranslatedText);
+            item.desc += QString::fromWCharArray(utf8TranslatedTextW.c_str());
             item.name = sInfo.sKey;
             items.push_back(item);
         }

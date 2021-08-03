@@ -378,11 +378,11 @@ void CGameExporter::ExportFileList(const QString& path, const QString& levelName
 {
     // process the folder of the specified map name, producing a filelist.xml file
     //  that can later be used for map downloads
-    string newpath;
+    AZStd::string newpath;
 
     QString filename = levelName;
-    string mapname = (filename + ".dds").toUtf8().data();
-    string metaname = (filename + ".xml").toUtf8().data();
+    AZStd::string mapname = (filename + ".dds").toUtf8().data();
+    AZStd::string metaname = (filename + ".xml").toUtf8().data();
 
     XmlNodeRef rootNode = gEnv->pSystem->CreateXmlNode("download");
     rootNode->setAttr("name", filename.toUtf8().data());
@@ -434,9 +434,9 @@ void CGameExporter::ExportFileList(const QString& path, const QString& levelName
                     newFileNode->setAttr("size", handle.m_fileDesc.nSize);
 
                     unsigned char md5[16];
-                    string filenameToHash = GetIEditor()->GetGameEngine()->GetLevelPath().toUtf8().data();
+                    AZStd::string filenameToHash = GetIEditor()->GetGameEngine()->GetLevelPath().toUtf8().data();
                     filenameToHash += "/";
-                    filenameToHash += string{ handle.m_filename.data(), handle.m_filename.size() };
+                    filenameToHash += AZStd::string{ handle.m_filename.data(), handle.m_filename.size() };
                     if (gEnv->pCryPak->ComputeMD5(filenameToHash.data(), md5))
                     {
                         char md5string[33];

@@ -76,8 +76,8 @@ namespace Config
     protected:
         EType m_type;
         uint8 m_flags;
-        string m_name;
-        string m_description;
+        AZStd::string m_name;
+        AZStd::string m_description;
         void* m_ptr;
         ICVar* m_pCVar;
     };

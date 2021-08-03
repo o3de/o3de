@@ -427,7 +427,7 @@ const AZStd::string& CXmlHistoryManager::GetVersionDesc(int number) const
         return it->second.HistoryDescription;
     }
 
-    static string undef("UNDEFINED");
+    static AZStd::string undef("UNDEFINED");
     return undef;
 }
 
@@ -493,7 +493,7 @@ void CXmlHistoryManager::SetActiveGroupInt(const SXmlHistoryGroup* pGroup, const
     UnloadInt();
 
     TEventHandlerList eventHandler;
-    string undoDesc;
+    AZStd::string undoDesc;
 
     if (pGroup)
     {
@@ -534,7 +534,7 @@ void CXmlHistoryManager::SetActiveGroupInt(const SXmlHistoryGroup* pGroup, const
                 }
             }
         }
-        undoDesc.Format("Changed View to \"%s\"", displayName ? displayName : "UNDEFINED");
+        undoDesc = AZStd::string::format("Changed View to \"%s\"", displayName ? displayName : "UNDEFINED");
     }
     else
     {

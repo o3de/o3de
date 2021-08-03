@@ -60,11 +60,11 @@ bool CMailer::SendMail(const char* subject,
     // Handle Recipients
     MapiRecipDesc* recipients = new MapiRecipDesc[numRecipients];
 
-    std::vector<string> addresses;
+    std::vector<AZStd::string> addresses;
     addresses.resize(numRecipients);
     for (i = 0; i < numRecipients; i++)
     {
-        addresses[i] = string("SMTP:") + _recipients[i];
+        addresses[i] = AZStd::string("SMTP:") + _recipients[i];
     }
 
     for (i = 0; i < numRecipients; i++)

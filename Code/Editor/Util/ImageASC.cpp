@@ -24,8 +24,7 @@ bool CImageASC::Save(const QString& fileName, const CFloatImage& image)
     uint32 height = image.GetHeight();
     float* pixels = image.GetData();
 
-    string fileHeader;
-    fileHeader.Format(
+    AZStd::string fileHeader = AZStd::string::format(
         // Number of columns and rows in the data
         "ncols %d\n"
         "nrows %d\n"

@@ -54,7 +54,7 @@ class ISplineSet
 {
 public:
     virtual ISplineInterpolator* GetSplineFromID(const AZStd::string& id) = 0;
-    virtual string GetIDFromSpline(ISplineInterpolator* pSpline) = 0;
+    virtual AZStd::string GetIDFromSpline(ISplineInterpolator* pSpline) = 0;
     virtual int GetSplineCount() const = 0;
     virtual int GetKeyCountAtTime(float time, float threshold) const = 0;
 };

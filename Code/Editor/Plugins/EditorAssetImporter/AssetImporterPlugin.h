@@ -88,7 +88,7 @@ private:
     IEditor* const m_editor;
 
     // Tool name
-    string m_toolName;
+    AZStd::string m_toolName;
 
     // Context provider for the Asset Browser
     AZ::AssetBrowserContextProvider m_assetBrowserContextProvider;

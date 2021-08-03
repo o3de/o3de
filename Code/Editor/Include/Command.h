@@ -18,7 +18,7 @@
 
 #include "Util/EditorUtils.h"
 
-inline string ToString(const QString& s)
+inline AZStd::string ToString(const QString& s)
 {
     return s.toUtf8().data();
 }
@@ -85,7 +85,7 @@ public:
             return m_args[i];
         }
     private:
-        DynArray<string> m_args;
+        DynArray<AZStd::string> m_args;
         unsigned char m_stringFlags;    // This is needed to quote string parameters when logging a command.
     };
 
@@ -104,15 +104,15 @@ public:
 
 protected:
     friend class CEditorCommandManager;
-    string m_module;
-    string m_name;
-    string m_description;
-    string m_example;
+    AZStd::string m_module;
+    AZStd::string m_name;
+    AZStd::string m_description;
+    AZStd::string m_example;
     bool m_bAlsoAvailableInScripting;
 
     template <typename T>
-    static string ToString_(T t) { return ::ToString(t); }
-    static inline string ToString_(const char* val)
+    static AZStd::string ToString_(T t) { return ::ToString(t); }
+    static inline AZStd::string ToString_(const char* val)
     { return val; }
     template <typename T>
     static bool FromString_(T& t, const char* s) { return ::FromString(t, s); }
@@ -146,10 +146,10 @@ public:
     // UI metadata for this command, if any
     struct SUIInfo
     {
-        string caption;
-        string tooltip;
-        string description;
-        string iconFilename;
+        AZStd::string caption;
+        AZStd::string tooltip;
+        AZStd::string description;
+        AZStd::string iconFilename;
         int iconIndex;
         int commandId; // Windows command id
 

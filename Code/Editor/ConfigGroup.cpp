@@ -127,9 +127,9 @@ namespace Config
 
                     case IConfigVar::eType_STRING:
                     {
-                        string currentValue = 0;
+                        AZStd::string currentValue = 0;
                         var->Get(&currentValue);
-                        node->setAttr(szName, currentValue);
+                        node->setAttr(szName, currentValue.c_str());
                         break;
                     }
                     }
@@ -186,7 +186,7 @@ namespace Config
 
                 case IConfigVar::eType_STRING:
                 {
-                    string currentValue = 0;
+                    AZStd::string currentValue = 0;
                     var->GetDefault(&currentValue);
                     QString readValue(currentValue.c_str());
                     if (node->getAttr(szName, readValue))

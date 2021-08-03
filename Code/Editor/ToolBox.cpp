@@ -350,7 +350,7 @@ void CToolBoxManager::LoadShelves(QString scriptPath, QString shelvesPath, Actio
             continue;
         }
 
-        QString shelfName(PathUtil::GetFileName(files[idx].filename.toUtf8().data()));
+        QString shelfName(PathUtil::GetFileName(files[idx].filename.toUtf8().data()).c_str());
 
         AmazonToolbar toolbar(shelfName, shelfName);
         Load(shelvesPath + QString("/") + files[idx].filename, &toolbar, false, actionManager);
@@ -408,7 +408,7 @@ void CToolBoxManager::Load(QString xmlpath, AmazonToolbar* pToolbar, bool bToolb
     AZ::IO::FixedMaxPathString engineRoot = AZ::Utils::GetEnginePath();
     QDir engineDir = !engineRoot.empty() ? QDir(QString(engineRoot.c_str())) : QDir::current();
 
-    string enginePath = PathUtil::AddSlash(engineDir.absolutePath().toUtf8().data());
+    AZStd::string enginePath = PathUtil::AddSlash(engineDir.absolutePath().toUtf8().data());
 
     for (int i = 0; i < toolBoxNode->getChildCount(); ++i)
     {
@@ -434,11 +434,11 @@ void CToolBoxManager::Load(QString xmlpath, AmazonToolbar* pToolbar, bool bToolb
             continue;
         }
 
-        string shelfPath = PathUtil::GetParentDirectory(xmlpath.toUtf8().data());
-        string fullIconPath = enginePath + PathUtil::AddSlash(shelfPath.c_str());
+        AZStd::string shelfPath = PathUtil::GetParentDirectory(xmlpath.toUtf8().data());
+        AZStd::string fullIconPath = enginePath + PathUtil::AddSlash(shelfPath.c_str());
         fullIconPath.append(iconPath.toUtf8().data());
 
-        pMacro->SetIconPath(fullIconPath);
+        pMacro->SetIconPath(fullIconPath.c_str());
 
         QString toolTip(macroNode->getAttr("tooltip"));
         pMacro->action()->setToolTip(toolTip);

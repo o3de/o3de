@@ -526,7 +526,7 @@ void CBaseLibraryManager::Serialize(XmlNodeRef& node, bool bLoading)
 QString CBaseLibraryManager::MakeUniqueItemName(const QString& srcName, const QString& libName)
 {
     // unlikely we'll ever encounter more than 16
-    std::vector<string> possibleDuplicates;
+    std::vector<AZStd::string> possibleDuplicates;
     possibleDuplicates.reserve(16);
 
     // search for strings in the database that might have a similar name (ignore case)
@@ -550,7 +550,7 @@ QString CBaseLibraryManager::MakeUniqueItemName(const QString& srcName, const QS
         const QString& name = pItem->GetName();
         if (name.startsWith(srcName, Qt::CaseInsensitive))
         {
-            possibleDuplicates.push_back(string(name.toUtf8().data()));
+            possibleDuplicates.push_back(AZStd::string(name.toUtf8().data()));
         }
     }
     pEnum->Release();

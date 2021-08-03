@@ -264,7 +264,7 @@ void CFileUtil::EditTextureFile(const char* textureFile, [[maybe_unused]] bool b
     }
 
     bool failedToLaunch = true;
-    QByteArray textureEditorPath = gSettings.textureEditor.toUtf8();
+    const QString& textureEditorPath = gSettings.textureEditor;
 
     // Give the user a warning if they don't have a texture editor configured
     if (textureEditorPath.isEmpty())
@@ -278,8 +278,7 @@ void CFileUtil::EditTextureFile(const char* textureFile, [[maybe_unused]] bool b
     // Use the Win32 API calls to open the right editor; the OS knows how to do this even better than
     // Qt does.
     QString fullTexturePathFixedForWindows = QString(fullTexturePath.data()).replace('/', '\\');
-    QByteArray fullTexturePathFixedForWindowsUtf8 = fullTexturePathFixedForWindows.toUtf8();
-    HINSTANCE hInst = ShellExecute(NULL, "open", textureEditorPath.data(), fullTexturePathFixedForWindowsUtf8.data(), NULL, SW_SHOWNORMAL);
+    HINSTANCE hInst = ShellExecuteW(NULL, L"open", textureEditorPath.toStdWString().c_str(), fullTexturePathFixedForWindows.toStdWString().c_str(), NULL, SW_SHOWNORMAL);
     failedToLaunch = ((DWORD_PTR)hInst <= 32);
 #elif defined(AZ_PLATFORM_MAC)
     failedToLaunch = QProcess::execute(QString("/usr/bin/open"), {"-a", gSettings.textureEditor, QString(fullTexturePath.data()) }) != 0;
@@ -298,7 +297,7 @@ void CFileUtil::EditTextureFile(const char* textureFile, [[maybe_unused]] bool b
 //////////////////////////////////////////////////////////////////////////
 bool CFileUtil::EditMayaFile(const char* filepath, const bool bExtractFromPak, const bool bUseGameFolder)
 {
-    QString dosFilepath = QtUtil::ToQString(PathUtil::ToDosPath(filepath));
+    QString dosFilepath = PathUtil::ToDosPath(filepath).c_str();
     if (bExtractFromPak)
     {
         ExtractFile(dosFilepath);
@@ -313,7 +312,7 @@ bool CFileUtil::EditMayaFile(const char* filepath, const bool bExtractFromPak, c
             dosFilepath = sGameFolder + '\\' + filepath;
         }
 
-        dosFilepath = PathUtil::ToDosPath(dosFilepath.toUtf8().data());
+        dosFilepath = PathUtil::ToDosPath(dosFilepath.toUtf8().data()).c_str();
     }
 
     const char* engineRoot;
@@ -1304,7 +1303,7 @@ IFileUtil::ECopyTreeResult CFileUtil::CopyTree(const QString& strSourceDirectory
     // all with the same names and all with the same files names inside. If you would make a depth-first search
     // you could end up with the files from the deepest folder in ALL your folders.
 
-    std::vector<string> ignoredPatterns;
+    std::vector<AZStd::string> ignoredPatterns;
     StringHelpers::Split(ignoreFilesAndFolders, "|", false, ignoredPatterns);
 
     QDirIterator::IteratorFlags flags = QDirIterator::NoIteratorFlags;
@@ -2218,7 +2217,9 @@ uint32 CFileUtil::GetAttributes(const char* filename, bool bUseSourceControl /*=
         return SCC_FILE_ATTRIBUTE_READONLY | SCC_FILE_ATTRIBUTE_INPAK;
     }
 
-    DWORD dwAttrib = ::GetFileAttributes(file.GetAdjustedFilename());
+    AZStd::wstring fileW;
+    AZStd::to_wstring(fileW, file.GetAdjustedFilename());
+    DWORD dwAttrib = ::GetFileAttributesW(fileW.c_str());
     if (dwAttrib == INVALID_FILE_ATTRIBUTES)
     {
         return SCC_FILE_ATTRIBUTE_INVALID;

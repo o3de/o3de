@@ -53,9 +53,9 @@ public:
     QString Execute(const AZStd::string& cmdLine);
     QString Execute(const AZStd::string& module, const AZStd::string& name, const CCommand::CArgs& args);
     void Execute(int commandId);
-    void GetCommandList(std::vector<string>& cmds) const;
+    void GetCommandList(std::vector<AZStd::string>& cmds) const;
     //! Used in the console dialog
-    string AutoComplete(const AZStd::string& substr) const;
+    AZStd::string AutoComplete(const AZStd::string& substr) const;
     bool IsRegistered(const char* module, const char* name) const;
     bool IsRegistered(const char* cmdLine) const;
     bool IsRegistered(int commandId) const;
@@ -74,7 +74,7 @@ protected:
     };
 
     //! A full command name to an actual command mapping
-    typedef std::map<string, SCommandTableEntry> CommandTable;
+    typedef std::map<AZStd::string, SCommandTableEntry> CommandTable;
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     CommandTable m_commands;
 
@@ -86,7 +86,7 @@ protected:
     bool m_bWarnDuplicate;
 
     static int GenNewCommandId();
-    static string GetFullCommandName(const AZStd::string& module, const AZStd::string& name);
+    static AZStd::string GetFullCommandName(const AZStd::string& module, const AZStd::string& name);
     static void GetArgsFromString(const AZStd::string& argsTxt, CCommand::CArgs& argList);
     void LogCommand(const AZStd::string& fullCmdName, const CCommand::CArgs& args) const;
     QString ExecuteAndLogReturn(CCommand* pCommand, const CCommand::CArgs& args);

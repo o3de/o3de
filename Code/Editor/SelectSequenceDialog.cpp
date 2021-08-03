@@ -37,7 +37,7 @@ CSelectSequenceDialog::GetItems(std::vector<SItem>& outItems)
     {
         IAnimSequence* pSeq = pMovieSys->GetSequence(i);
         SItem item;
-        string fullname = pSeq->GetName();
+        AZStd::string fullname = pSeq->GetName();
         item.name = fullname.c_str();
         outItems.push_back(item);
     }

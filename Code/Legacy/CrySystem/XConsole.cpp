@@ -2907,14 +2907,13 @@ void CXConsole::Paste()
         Utf8::Unchecked::octet_iterator end(data.end());
         for (Utf8::Unchecked::octet_iterator it(data.begin()); it != end; ++it)
         {
-            const uint32 cp = *it;
+            const wchar_t cp = *it;
             if (cp != '\r')
             {
                 // Convert UCS code-point into UTF-8 string
                 AZStd::fixed_string<5> utf8_buf = {0};
-                size_t size = 5;
-                it.to_utf8_sequence(cp, utf8_buf.data(), size);
-                AddInputUTF8(utf8_buf);
+                AZStd::to_string(utf8_buf.data(), 5, &cp, 1);
+                AddInputUTF8(utf8_buf.c_str());
             }
         }
     }

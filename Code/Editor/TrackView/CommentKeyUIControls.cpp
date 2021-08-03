@@ -52,7 +52,7 @@ public:
         CFileUtil::ScanDirectory((Path::GetEditingGameDataFolder() + "/Fonts/").c_str(), "*.xml", fa, true);
         for (size_t i = 0; i < fa.size(); ++i)
         {
-            string name = fa[i].filename.toUtf8().data();
+            AZStd::string name = fa[i].filename.toUtf8().data();
             PathUtil::RemoveExtension(name);
             mv_font->AddEnumItem(name.c_str(), name.c_str());
         }

@@ -86,8 +86,7 @@ bool CImageUtil::SavePGM(const QString& fileName, const CImageEx& image)
     uint32* pixels = image.GetData();
 
     // Create the file header.
-    string fileHeader;
-    fileHeader.Format(
+    AZStd::string fileHeader = AZStd::string::format(
         // P2 = PGM header for ASCII output.  (P5 is PGM header for binary output)
         "P2\n"
         // width and height of the image

@@ -1010,13 +1010,13 @@ bool CTrackViewAnimNode::SetName(const char* pName)
         }
     }
 
-    string oldName = GetName();
+    AZStd::string oldName = GetName();
     m_animNode->SetName(pName);
 
     CTrackViewSequence* sequence = GetSequence();
     AZ_Assert(sequence, "Nodes should never have a null sequence.");
 
-    sequence->OnNodeRenamed(this, oldName);
+    sequence->OnNodeRenamed(this, oldName.c_str());
 
     return true;
 }

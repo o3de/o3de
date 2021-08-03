@@ -161,7 +161,7 @@ private:
 
         const SXmlHistoryGroup* CurrGroup;
         TGroupIndexMap CurrUserIndex;
-        string HistoryDescription;
+        AZStd::string HistoryDescription;
         bool IsNullUndo;
         bool HistoryInvalidated;
         TXmlHistotyGroupPtrList ActiveGroups;

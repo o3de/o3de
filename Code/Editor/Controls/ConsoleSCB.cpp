@@ -180,7 +180,7 @@ bool ConsoleLineEdit::event(QEvent* ev)
 
         if (newStr.isEmpty())
         {
-            newStr = GetIEditor()->GetCommandManager()->AutoComplete(cstring.toUtf8().data());
+            newStr = GetIEditor()->GetCommandManager()->AutoComplete(cstring.toUtf8().data()).c_str();
         }
     }
 
@@ -211,7 +211,7 @@ void ConsoleLineEdit::keyPressEvent(QKeyEvent* ev)
         {
             if (commandManager->IsRegistered(str.toUtf8().data()))
             {
-                commandManager->Execute(QtUtil::ToString(str));
+                commandManager->Execute(str.toUtf8().data());
             }
             else
             {
