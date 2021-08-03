@@ -331,6 +331,7 @@ namespace UnitTest
         set.insert({ (void*)0x000001ceddd9cba0, (void*)0x000001ceddd9ca20 }); // hash(148335135764189)
         AZ_TEST_START_TRACE_SUPPRESSION;
         // This will trigger the assertion of duplicated elements found
+        // A bucket size of 23 since is where the collision between different hashes happens
         set.rehash(23);
         AZ_TEST_STOP_TRACE_SUPPRESSION(1); // 1 assertion
     }
