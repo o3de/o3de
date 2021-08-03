@@ -221,6 +221,8 @@ set(FILES
     Jobs/Internal/JobManagerWorkStealing.cpp
     Jobs/Internal/JobManagerWorkStealing.h
     Jobs/Internal/JobNotify.h
+    Jobs/Internal/JobTypeEraser.cpp
+    Jobs/Internal/JobTypeEraser.h
     Jobs/Job.cpp
     Jobs/Job.h
     Jobs/JobCancelGroup.h
@@ -228,8 +230,14 @@ set(FILES
     Jobs/JobCompletionSpin.h
     Jobs/JobContext.cpp
     Jobs/JobContext.h
+    Jobs/JobDescriptor.h
     Jobs/JobEmpty.h
+    Jobs/JobExecutor.cpp
+    Jobs/JobExecutor.h
     Jobs/JobFunction.h
+    Jobs/JobGraph.cpp
+    Jobs/JobGraph.h
+    Jobs/JobGraph.inl
     Jobs/JobManager.cpp
     Jobs/JobManager.h
     Jobs/JobManagerBus.h
