@@ -10,9 +10,6 @@
 
 #include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
 
-// Indicates whether to use pre-multiplied alpha
-option bool o_preMultiplyAlpha;
-
 // If true pixels with an alpha value of less than 0.5 are clipped
 option bool o_alphaTest;
 
@@ -86,9 +83,9 @@ struct PSOutput
     float4 m_color : SV_Target0;
 };
 
-float4 SampleTriangleTexture(int texIndex, float2 uv)
+float4 SampleTriangleTexture(uint texIndex, float2 uv)
 {
-    if ((InstanceSrg::m_isClamp & (1 << texIndex)) != 0)
+    if ((InstanceSrg::m_isClamp & (1U << texIndex)) != 0)
     {
         return InstanceSrg::m_texture[texIndex].Sample(InstanceSrg::m_clampSampler, uv);
     }
@@ -118,14 +115,6 @@ PSOutput MainPS(VSOutput IN)
     if (o_srgbWrite)
     {
         resColor.xyz = LinearToSRGB(resColor.xyz);
-    }
-
-    // Check for flag to premultiply alpha
-    if (o_preMultiplyAlpha)
-    {
-        // premultiply the color by the alpha. This would not be required if we had full access to the separate alpha blend mode
-        float preMult = resColor.w;
-        resColor.xyz *= preMult;
     }
 
     // If the o_modulate option is not None it means that the verts have two texture indicies. The second texture is used to

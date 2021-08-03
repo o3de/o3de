@@ -7,6 +7,6 @@
 #
 
 set(FILES
-    # Tests/Editor/EditorBlastSliceAssetHandlerTest.cpp
+    Tests/Editor/EditorBlastChunksAssetHandlerTest.cpp    
     Tests/Editor/EditorTestMain.cpp
 )

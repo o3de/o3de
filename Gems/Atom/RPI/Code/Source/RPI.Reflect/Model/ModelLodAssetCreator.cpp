@@ -60,13 +60,15 @@ namespace AZ
                 m_currentMesh.m_aabb = AZStd::move(aabb);
             }
         }
-
-        void ModelLodAssetCreator::SetMeshMaterialAsset(const Data::Asset<MaterialAsset>& materialAsset)
+        
+        void ModelLodAssetCreator::SetMeshMaterialSlot(ModelMaterialSlot::StableId id)
         {
-            if (ValidateIsMeshReady())
+            if (!ValidateIsMeshReady())
             {
-                m_currentMesh.m_materialAsset = materialAsset;
+                return;
             }
+
+            m_currentMesh.m_materialSlotId = id;
         }
 
         void ModelLodAssetCreator::SetMeshIndexBuffer(const BufferAssetView& bufferAssetView)
@@ -288,7 +290,8 @@ namespace AZ
                 creator.SetMeshName(sourceMesh.GetName());
                 AZ::Aabb aabb = sourceMesh.GetAabb();
                 creator.SetMeshAabb(AZStd::move(aabb));
-                creator.SetMeshMaterialAsset(sourceMesh.GetMaterialAsset());
+
+                creator.SetMeshMaterialSlot(sourceMesh.GetMaterialSlotId());
 
                 // Mesh index buffer view
                 const BufferAssetView& sourceIndexBufferView = sourceMesh.GetIndexBufferAssetView();
