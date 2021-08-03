@@ -175,12 +175,11 @@ namespace AZStd
                     for (++curEnd; curEnd != last && table->m_keyEqual(valueKey, Traits::key_from_value(*curEnd)); ++curEnd, ++numValues)
                     {
                     }
-                    ;
 
                     size_type newBucketIndex = table->bucket_from_hash(table->m_hasher(valueKey));
 
                     // newBucket.first holds the total number of elements in the bucket
-                    // newBucket.second contains the pointer to the first element of the bucket
+                    // newBucket.second contains the pointer to the first element in the bucket
                     vector_value_type& newBucket = newBuckets[newBucketIndex];
                     size_type numElements = newBucket.first;
                     insertIter = newBucket.second;
@@ -193,12 +192,12 @@ namespace AZStd
                     }
                     else
                     {
-                        // Since they are elements already in the bucket, update `insertIter` to where the elements will need to be inserted.
+                        // Since there are elements already in the bucket, update `insertIter` to where the elements will need to be inserted.
                         if (!table->find_insert_position(valueKey, table->m_keyEqual, insertIter, numElements, integral_constant<bool, Traits::has_multi_elements>()))
                         {
                             // An element was found but we don't allow for duplicate elements in this table.
-                            // This happens when there was an insertion of two elements that are equal but have different hash,
-                            // which is undefined behavior for a hash table
+                            // This happens when there was an insertion of two elements that are equal but have different hashes,
+                            // which is undefined behavior for a hash table: ISO C++ N4713, section 23.14.15 - 5.3
                             AZ_Assert(false, "Found a duplicate element when rehashing. "
                                 "Review the hashing function for type '%s' and make sure two equal elements always have the same hash", typeid(Traits::value_type).name());
                         }
@@ -264,15 +263,15 @@ namespace AZStd
                 m_vector.set_allocator(typename vector_type::allocator_type(&m_allocator));
             }
 
-            allocator_type  m_allocator;    ///< The single instance of the allocator shared between list and vector containers.
-            list_type       m_list;         ///< List with elements.
-            vector_type     m_vector;       ///< Buckets with list iterators.
+            allocator_type  m_allocator;    //!< The single instance of the allocator shared between list and vector containers.
+            list_type       m_list;         //!< List with elements.
+            vector_type     m_vector;       //!< Buckets with list iterators.
 
         private:
-            vector_value_type* m_buckets;       ///< Current buckets array. (can point to the m_vector or m_startBucket).
-            size_type           m_numBuckets;   ///< Current number of buckets.
-            float               m_max_load_factor; ///< Maximum load(elements/buckets) before rehashing
-            vector_value_type   m_startBucket;  ///< Start bucket used for before we start dynamically allocate memory from m_vector.
+            vector_value_type* m_buckets;       //!< Current buckets array. (can point to the m_vector or m_startBucket).
+            size_type           m_numBuckets;   //!< Current number of buckets.
+            float               m_max_load_factor; //!< Maximum load (elements/buckets) before rehashing.
+            vector_value_type   m_startBucket;  //!< Start bucket used for before we start dynamically allocate memory from m_vector.
         };
 
         /**
@@ -334,8 +333,8 @@ namespace AZStd
             template<class HashTable>
             AZ_FORCE_INLINE void    rehash(HashTable*, size_type) {}
 
-            vector_type     m_vector;       ///< Buckets with list iterators.
-            list_type       m_list;         ///< List with elements.
+            vector_type     m_vector;       //!< Buckets with list iterators.
+            list_type       m_list;         //!< List with elements.
         };
     }
 
@@ -985,7 +984,7 @@ namespace AZStd
             rhs.clear();
         }
 
-        // find_insert_position sets `insertIter` to where the element should be inserted
+        // find_insert_position sets insertIter to where the element should be inserted
         // and returns true if the element should be inserted, otherwise false
         template<class ComparableToKey, class KeyEq>
         bool find_insert_position(const ComparableToKey& keyCmp, const KeyEq& keyEq, iterator& insertIter, size_type numElements, const true_type& /* is multi elements */)
@@ -999,7 +998,7 @@ namespace AZStd
                 }
             }
 
-            // we always return true since multi elements (like multiset) allow to have repeated elements
+            // always return true since multi elements (like multiset) allow repeated elements
             return true;
         }
 

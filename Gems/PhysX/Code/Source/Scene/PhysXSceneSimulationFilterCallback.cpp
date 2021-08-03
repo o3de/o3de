@@ -56,8 +56,7 @@ namespace PhysX
     {
         size_t hash{ 0 };
         // Order elements so {1,2} and {2,1} would generate the same hash
-        const physx::PxActor* smallerVal = AZStd::min(collisionPair.m_actorA, collisionPair.m_actorB);
-        const physx::PxActor* biggerVal = AZStd::max(collisionPair.m_actorA, collisionPair.m_actorB);
+        auto [smallerVal, biggerVal] = AZStd::minmax(collisionPair.m_actorA, collisionPair.m_actorB);
         AZStd::hash_combine(hash, smallerVal, biggerVal);
         return hash;
     }

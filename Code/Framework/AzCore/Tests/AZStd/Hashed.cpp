@@ -308,6 +308,9 @@ namespace UnitTest
             }
         };
 
+        // This hashing function produces different hashes for two equal values,
+        // which violates the requirement for hashing functions.
+        // The test makes sure that this does not reproduce an issue that caused the insert() function to loop infinitely.
         struct TwoPtrsHasher
         {
             size_t operator()(const TwoPtrs& p) const
@@ -319,36 +322,15 @@ namespace UnitTest
         };
         using PairSet = AZStd::unordered_set<TwoPtrs, TwoPtrsHasher>;
         PairSet set;
-        set.insert({ (void*)0x000001ceddd942a0, (void*)0x000001ceddd94720 });
-        set.insert({ (void*)0x000001ceddd94420, (void*)0x000001ceddd94a20 });
-        set.insert({ (void*)0x000001ceddd94720, (void*)0x000001ceddd94420 });
-        set.insert({ (void*)0x000001ceddd948a0, (void*)0x000001ceddd945a0 });
-        set.insert({ (void*)0x000001ceddd94a20, (void*)0x000001ceddd9c420 });
-        set.insert({ (void*)0x000001ceddd94ba0, (void*)0x000001ceddd94d20 });
-        set.insert({ (void*)0x000001ceddd94d20, (void*)0x000001ceddd948a0 });
-        set.insert({ (void*)0x000001ceddd9c2a0, (void*)0x000001ceddd942a0 });
-        set.insert({ (void*)0x000001ceddd9c420, (void*)0x000001ceddd94ba0 });
-        set.insert({ (void*)0x000001ceddd9c5a0, (void*)0x000001ceddd9c720 });
-        set.insert({ (void*)0x000001ceddd9c720, (void*)0x000001ceddd9c8a0 });
-        set.insert({ (void*)0x000001ceddd9c8a0, (void*)0x000001ceddd94a20 });
-        set.insert({ (void*)0x000001ceddd9ca20, (void*)0x000001ceddd9cba0 });
-        set.insert({ (void*)0x000001ceddd9cba0, (void*)0x000001ceddd9cd20 });
-        set.insert({ (void*)0x000001ceddd9cd20, (void*)0x000001ceddd9cea0 });
-        set.insert({ (void*)0x000001ceddd9cea0, (void*)0x000001ceddd94a20 });
-        set.insert({ (void*)0x000001ceddd9d020, (void*)0x000001ceddd9e2c0 });
-        set.insert({ (void*)0x000001ceddd9e2c0, (void*)0x000001ceddd9e440 });
-        set.insert({ (void*)0x000001ceddd9e440, (void*)0x000001ceddd948a0 });
-        set.insert({ (void*)0x000001ceddd9e5c0, (void*)0x000001ceddd9e740 });
-        set.insert({ (void*)0x000001ceddd9e740, (void*)0x000001ceddd9e8c0 });
-        set.insert({ (void*)0x000001ceddd9e8c0, (void*)0x000001ceddd948a0 });
-        set.insert({ (void*)0x000001ceddd9e5c0, (void*)0x000001ceddd9d020 });
-        set.insert({ (void*)0x000001ceddd9e440, (void*)0x000001ceddd9cd20 });
-        set.insert({ (void*)0x000001ceddd9d020, (void*)0x000001ceddd9e440 });
-        set.insert({ (void*)0x000001ceddd9cea0, (void*)0x000001ceddd9e2c0 });
-        set.insert({ (void*)0x000001ceddd9cd20, (void*)0x000001ceddd9c720 });
-        set.insert({ (void*)0x000001ceddd9cba0, (void*)0x000001ceddd9ca20 });
+        set.insert({ (void*)1, (void*)2 });
+        set.insert({ (void*)3, (void*)4 });
+        set.insert({ (void*)5, (void*)6 });
+        set.insert({ (void*)7, (void*)8 });
+        // Elements with different hashes, but equal
+        set.insert({ (void*)0x000001ceddd9ca20, (void*)0x000001ceddd9cba0 }); // hash(148335135725641)
+        set.insert({ (void*)0x000001ceddd9cba0, (void*)0x000001ceddd9ca20 }); // hash(148335135764189)
         AZ_TEST_START_TRACE_SUPPRESSION;
-        // This will trigger the rehashing and the assertion of duplicated elements found
+        // This will trigger the assertion of duplicated elements found
         set.rehash(23);
         AZ_TEST_STOP_TRACE_SUPPRESSION(1); // 1 assertion
     }
