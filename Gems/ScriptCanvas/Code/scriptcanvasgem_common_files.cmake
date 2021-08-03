@@ -297,7 +297,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/Core/UnaryOperator.h
     Include/ScriptCanvas/Libraries/Entity/Entity.cpp
     Include/ScriptCanvas/Libraries/Entity/Entity.h
-    Include/ScriptCanvas/Libraries/Entity/EntityIDNodes.h
     Include/ScriptCanvas/Libraries/Entity/EntityNodes.h
     Include/ScriptCanvas/Libraries/Entity/RotateMethod.cpp
     Include/ScriptCanvas/Libraries/Entity/RotateMethod.h

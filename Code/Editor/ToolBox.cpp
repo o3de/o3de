@@ -321,42 +321,13 @@ bool CToolBoxManager::SetMacroTitle(int index, const QString& title, bool bToolb
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CToolBoxManager::Load(ActionManager* actionManager)
+void CToolBoxManager::Load([[maybe_unused]] ActionManager* actionManager)
 {
     Clear();
 
     QString path;
     GetSaveFilePath(path);
     Load(path, nullptr, true, nullptr);
-
-    if (actionManager)
-    {
-        auto engineSourceAssetPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / "Assets";
-        LoadShelves((engineSourceAssetPath / "Editor" / "Scripts").c_str(),
-            (engineSourceAssetPath / "Editor" / "Scripts" / "Shelves").c_str(), actionManager);
-    }
-}
-
-void CToolBoxManager::LoadShelves(QString scriptPath, QString shelvesPath, ActionManager* actionManager)
-{
-    IFileUtil::FileArray files;
-    CFileUtil::ScanDirectory(shelvesPath, "*.xml", files);
-
-    const int shelfCount = files.size();
-    for (int idx = 0; idx < shelfCount; ++idx)
-    {
-        if (Path::GetExt(files[idx].filename) != "xml")
-        {
-            continue;
-        }
-
-        QString shelfName(PathUtil::GetFileName(files[idx].filename.toUtf8().data()).c_str());
-
-        AmazonToolbar toolbar(shelfName, shelfName);
-        Load(shelvesPath + QString("/") + files[idx].filename, &toolbar, false, actionManager);
-
-        m_toolbars.push_back(toolbar);
-    }
 }
 
 void CToolBoxManager::Load(QString xmlpath, AmazonToolbar* pToolbar, bool bToolbox, ActionManager* actionManager)

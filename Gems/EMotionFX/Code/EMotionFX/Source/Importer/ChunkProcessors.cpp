@@ -24,6 +24,7 @@
 #include <MCore/Source/AzCoreConversions.h>
 #include <MCore/Source/Distance.h>
 #include <MCore/Source/File.h>
+#include <MCore/Source/LogManager.h>
 #include <MCore/Source/ReflectionSerializer.h>
 #include <MCore/Source/StringConversions.h>
 #include <MCore/Source/MCoreSystem.h>

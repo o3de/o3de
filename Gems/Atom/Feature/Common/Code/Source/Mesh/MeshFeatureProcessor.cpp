@@ -485,20 +485,12 @@ namespace AZ
                 AZ_Error("MeshDataInstance::MeshLoader", false, "Invalid model asset Id.");
                 return;
             }
-
-            // Check if the model is in the instance database and skip the loading process in this case.
-            // The model asset id is used as instance id to indicate that it is a static and shared.
-            Data::Instance<RPI::Model> model = Data::InstanceDatabase<RPI::Model>::Instance().Find(Data::InstanceId::CreateFromAssetId(m_modelAsset.GetId()));
-            if (model)
+            
+            if (!m_modelAsset.IsReady())
             {
-                // In case the mesh asset requires instancing (e.g. when containing a cloth buffer), the model will always be cloned and there will not be a
-                // model instance with the asset id as instance id as searched above.
-                m_parent->Init(model);
-                m_modelChangedEvent.Signal(AZStd::move(model));
-                return;
+                m_modelAsset.QueueLoad();
             }
 
-            m_modelAsset.QueueLoad();
             Data::AssetBus::Handler::BusConnect(modelAsset.GetId());
         }
 
@@ -589,18 +581,6 @@ namespace AZ
         {
             AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
 
-            auto modelAsset = model->GetModelAsset();
-            for (const auto& modelLodAsset : modelAsset->GetLodAssets())
-            {
-                for (const auto& mesh : modelLodAsset->GetMeshes())
-                {
-                    if (mesh.GetMaterialAsset().GetStatus() != Data::AssetData::AssetStatus::Ready)
-                    {
-
-                    }
-                }
-            }
-
             m_model = model;
             const size_t modelLodCount = m_model->GetLodCount();
             m_drawPacketListsByLod.resize(modelLodCount);
@@ -644,10 +624,12 @@ namespace AZ
 
             for (size_t meshIndex = 0; meshIndex < meshCount; ++meshIndex)
             {
-                Data::Instance<RPI::Material> material = modelLod.GetMeshes()[meshIndex].m_material;
+                const RPI::ModelLod::Mesh& mesh = modelLod.GetMeshes()[meshIndex];
+
+                Data::Instance<RPI::Material> material = mesh.m_material;
 
                 // Determine if there is a material override specified for this sub mesh
-                const MaterialAssignmentId materialAssignmentId(modelLodIndex, material ? material->GetAssetId() : AZ::Data::AssetId());
+                const MaterialAssignmentId materialAssignmentId(modelLodIndex, mesh.m_materialSlotStableId);
                 const MaterialAssignment& materialAssignment = GetMaterialAssignmentFromMapWithFallback(m_materialAssignments, materialAssignmentId);
                 if (materialAssignment.m_materialInstance.get())
                 {
@@ -790,7 +772,7 @@ namespace AZ
                 // retrieve the material
                 Data::Instance<RPI::Material> material = mesh.m_material;
 
-                const MaterialAssignmentId materialAssignmentId(rayTracingLod, material ? material->GetAssetId() : AZ::Data::AssetId());
+                const MaterialAssignmentId materialAssignmentId(rayTracingLod, mesh.m_materialSlotStableId);
                 const MaterialAssignment& materialAssignment = GetMaterialAssignmentFromMapWithFallback(m_materialAssignments, materialAssignmentId);
                 if (materialAssignment.m_materialInstance.get())
                 {
