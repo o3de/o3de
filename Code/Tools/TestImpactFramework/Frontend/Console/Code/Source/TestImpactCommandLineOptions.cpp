@@ -21,6 +21,7 @@ namespace TestImpact
         {
             // Options
             ConfigKey,
+            DataFileKey,
             ChangeListKey,
             SequenceReportKey,
             SequenceKey,
@@ -57,6 +58,7 @@ namespace TestImpact
         {
             // Options
             "config",
+            "datafile",
             "changelist",
             "report",
             "sequence",
@@ -92,6 +94,11 @@ namespace TestImpact
         RepoPath ParseConfigurationFile(const AZ::CommandLine& cmd)
         {
             return ParsePathOption(OptionKeys[ConfigKey], cmd).value_or(LY_TEST_IMPACT_DEFAULT_CONFIG_FILE);
+        }
+
+        AZStd::optional<RepoPath> ParseDataFile(const AZ::CommandLine& cmd)
+        {
+            return ParsePathOption(OptionKeys[DataFileKey], cmd);
         }
 
         AZStd::optional<RepoPath> ParseChangeListFile(const AZ::CommandLine& cmd)
@@ -272,6 +279,7 @@ namespace TestImpact
         cmd.Parse(argc, argv);
 
         m_configurationFile = ParseConfigurationFile(cmd);
+        m_dataFile = ParseDataFile(cmd);
         m_changeListFile = ParseChangeListFile(cmd);
         m_sequenceReportFile = ParseSequenceReportFile(cmd);
         m_testSequenceType = ParseTestSequenceType(cmd);
@@ -288,6 +296,11 @@ namespace TestImpact
         m_safeMode = ParseSafeMode(cmd);
         m_suiteFilter = ParseSuiteFilter(cmd);
     }
+
+    bool CommandLineOptions::HasDataFile() const
+    {
+        return m_dataFile.has_value();
+    }
  
     bool CommandLineOptions::HasChangeListFile() const
     {
@@ -302,6 +315,11 @@ namespace TestImpact
     bool CommandLineOptions::HasSafeMode() const
     {
         return m_safeMode;
+    }
+
+    const AZStd::optional<RepoPath>& CommandLineOptions::GetDataFile() const
+    {
+        return m_dataFile;
     }
 
     const AZStd::optional<RepoPath>& CommandLineOptions::GetChangeListFile() const

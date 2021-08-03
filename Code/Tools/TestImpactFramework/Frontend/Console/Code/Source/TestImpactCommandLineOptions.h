@@ -36,6 +36,9 @@ namespace TestImpact
         CommandLineOptions(int argc, char** argv);
         static AZStd::string GetCommandLineUsageString();
 
+        //! Returns true if a test impact data file path has been supplied, otherwise false.
+        bool HasDataFile() const;
+
         //! Returns true if a change list file path has been supplied, otherwise false.
         bool HasChangeListFile() const;
 
@@ -47,6 +50,9 @@ namespace TestImpact
 
         //! Returns the path to the runtime configuration file.
         const RepoPath& GetConfigurationFile() const;
+
+        //! Returns the path to the data file (if any).
+        const AZStd::optional<RepoPath>& GetDataFile() const;
 
         //! Returns the path to the change list file (if any).
         const AZStd::optional<RepoPath>& GetChangeListFile() const;
@@ -92,6 +98,7 @@ namespace TestImpact
 
     private:
         RepoPath m_configurationFile;
+        AZStd::optional<RepoPath> m_dataFile;
         AZStd::optional<RepoPath> m_changeListFile;
         AZStd::optional<RepoPath> m_sequenceReportFile;
         TestSequenceType m_testSequenceType;

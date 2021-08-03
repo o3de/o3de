@@ -243,6 +243,7 @@ namespace TestImpact
 
     Runtime::Runtime(
         RuntimeConfig&& config,
+        AZStd::optional<RepoPath> dataFile,
         SuiteType suiteFilter,
         Policy::ExecutionFailure executionFailurePolicy,
         Policy::FailedTestCoverage failedTestCoveragePolicy,
@@ -286,8 +287,16 @@ namespace TestImpact
 
         try
         {
+            if (dataFile.has_value())
+            {
+                m_sparTIAFile = dataFile.value().String();
+            }
+            else
+            {
+                m_sparTIAFile = m_config.m_workspace.m_active.m_sparTIAFiles[static_cast<size_t>(m_suiteFilter)].String();
+            }
+           
             // Populate the dynamic dependency map with the existing source coverage data (if any)
-            m_sparTIAFile = m_config.m_workspace.m_active.m_sparTIAFiles[static_cast<size_t>(m_suiteFilter)].String();
             const auto tiaDataRaw = ReadFileContents<Exception>(m_sparTIAFile);
             const auto tiaData = DeserializeSourceCoveringTestsList(tiaDataRaw);
             if (tiaData.GetNumSources())

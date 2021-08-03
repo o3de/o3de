@@ -87,6 +87,7 @@ namespace TestImpact
     public:
         //! Constructs a runtime with the specified configuration and policies.
         //! @param config The configuration used for this runtime instance.
+        //! @param dataFile The optional data file to be used instead of that specified in the config file.
         //! @param suiteFilter The test suite for which the coverage data and test selection will draw from.
         //! @param executionFailurePolicy Determines how to handle test targets that fail to execute.
         //! @param executionFailureDraftingPolicy Determines how test targets that previously failed to execute are drafted into subsequent test sequences.
@@ -95,6 +96,7 @@ namespace TestImpact
         //! @param testShardingPolicy  Determines how to handle test targets that have opted in to test sharding.
         Runtime(
             RuntimeConfig&& config,
+            AZStd::optional<RepoPath> dataFile,
             SuiteType suiteFilter,
             Policy::ExecutionFailure executionFailurePolicy,
             Policy::FailedTestCoverage failedTestCoveragePolicy,

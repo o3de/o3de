@@ -57,6 +57,8 @@ namespace UnitTest
         EXPECT_EQ(m_options->GetTestPrioritizationPolicy(), TestImpact::Policy::TestPrioritization::None);
         EXPECT_EQ(m_options->GetTestSequenceType(), TestImpact::TestSequenceType::None);
         EXPECT_EQ(m_options->GetTestShardingPolicy(), TestImpact::Policy::TestSharding::Never);
+        EXPECT_FALSE(m_options->HasDataFile());
+        EXPECT_FALSE(m_options->GetDataFile().has_value());
         EXPECT_FALSE(m_options->HasChangeListFile());
         EXPECT_FALSE(m_options->GetChangeListFile().has_value());
         EXPECT_FALSE(m_options->HasSafeMode());
@@ -97,6 +99,64 @@ namespace UnitTest
     TEST_F(CommandLineOptionsTestFixture, ConfigurationFileHasMultiplePaths_ExpectCommandLineOptionsException)
     {
         m_args.push_back("-config");
+        m_args.push_back("value1,value2");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    //
+
+    TEST_F(CommandLineOptionsTestFixture, DataFileHasEmptyPath_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-datafile");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, DataFileHasSpecifiedPath_ExpectPath)
+    {
+        m_args.push_back("-datafile");
+        m_args.push_back("Foo\\Bar");
+        InitOptions();
+        EXPECT_TRUE(m_options->HasDataFile());
+        EXPECT_STREQ(m_options->GetDataFile()->c_str(), "Foo\\Bar");
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, DataFileHasMultiplePaths_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-datafile");
         m_args.push_back("value1,value2");
 
         try
