@@ -88,12 +88,8 @@ namespace AZ
             DelayedQueryCaptureHelper m_cpuProfilingStatisticsCapture;
             DelayedQueryCaptureHelper m_benchmarkMetadataCapture;
 
-            // Stores the last continuous capture data so that the IO thread can access it by reference. 
-            // Ensure that this is not cleared until m_cpuDataSerializationInProgress is false. 
-            AZStd::deque<RHI::CpuProfiler::TimeRegionMap> m_lastContinuousCapture;
+            // Flag passed by reference to the CPU profiling data serialization job, blocks new continuous capture requests when set.
             AZStd::atomic_bool m_cpuDataSerializationInProgress = false;
-
-            AZStd::thread m_cpuStatisticsIoThread;
         };
     }
 }

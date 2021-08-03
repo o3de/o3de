@@ -19,9 +19,9 @@
 #include <AtomCore/Serialization/Json/JsonUtils.h>
 
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/Json/JsonSerializationSettings.h>
-#include <AzCore/std/parallel/thread.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ
@@ -430,12 +430,6 @@ namespace AZ
             TickBus::Handler::BusDisconnect();
 
             ProfilingCaptureRequestBus::Handler::BusDisconnect();
-
-            if (m_cpuStatisticsIoThread.joinable())
-            {
-                // Block until the IO thread has completed
-                m_cpuStatisticsIoThread.join();
-            }
         }
 
         bool ProfilingCaptureSystemComponent::CapturePassTimestamp(const AZStd::string& outputFilePath)
@@ -622,24 +616,24 @@ namespace AZ
                 return false;
             }
 
-            const bool captureEnded = AZ::RHI::CpuProfiler::Get()->EndContinuousCapture(m_lastContinuousCapture);
+            AZStd::deque<RHI::CpuProfiler::TimeRegionMap> captureResult;
+            const bool captureEnded = AZ::RHI::CpuProfiler::Get()->EndContinuousCapture(captureResult);
             if (!captureEnded)
             {
                 AZ_TracePrintf("ProfilingCaptureSystemComponent", "Could not end the continuous capture, is one in progress?\n");
                 return false;
             }
 
-            // cpuProfilingData could be 1GB+ once saved, so use an IO thread to write it to disk.
+            // cpuProfilingData could be 1GB+ once saved, so use an async job to write it to disk.
             m_cpuDataSerializationInProgress.store(true);
-            auto thread = AZStd::thread(
-                [&data = m_lastContinuousCapture, filePath = AZStd::string(outputFilePath), &flag = m_cpuDataSerializationInProgress]()
-                {
-                    SerializeCpuProfilingData(data, filePath, true);
-                    flag.store(false);
-                });
-
-            thread.detach(); 
-            m_cpuStatisticsIoThread = AZStd::move(thread);
+            auto diskIoFunction =
+                [data = AZStd::move(captureResult), filePath = AZStd::string(outputFilePath), &flag = m_cpuDataSerializationInProgress]()
+            {
+                SerializeCpuProfilingData(data, filePath, true);
+                flag.store(false);
+            };
+            AZ::Job* diskIoJob = AZ::CreateJobFunction(diskIoFunction, true, nullptr);
+            diskIoJob->Start();
 
             return true;
         }
