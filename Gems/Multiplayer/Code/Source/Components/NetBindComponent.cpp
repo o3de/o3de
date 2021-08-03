@@ -267,6 +267,11 @@ namespace Multiplayer
         return m_isProcessingInput;
     }
 
+    bool NetBindComponent::IsReprocessingInput() const
+    {
+        return m_isReprocessingInput;
+    }
+
     void NetBindComponent::CreateInput(NetworkInput& networkInput, float deltaTime)
     {
         // Only autonomous or authority runs this logic
@@ -279,12 +284,21 @@ namespace Multiplayer
 
     void NetBindComponent::ProcessInput(NetworkInput& networkInput, float deltaTime)
     {
+        m_isProcessingInput = true;
         // Only autonomous and authority runs this logic
         AZ_Assert((NetworkRoleHasController(m_netEntityRole)), "Incorrect network role for input processing");
         for (MultiplayerComponent* multiplayerComponent : m_multiplayerInputComponentVector)
         {
             multiplayerComponent->GetController()->ProcessInput(networkInput, deltaTime);
         }
+        m_isProcessingInput = false;
+    }
+
+    void NetBindComponent::ReprocessInput(NetworkInput& networkInput, float deltaTime)
+    {
+        m_isReprocessingInput = true;
+        ProcessInput(networkInput, deltaTime);
+        m_isReprocessingInput = false;
     }
 
     bool NetBindComponent::HandleRpcMessage(AzNetworking::IConnection* invokingConnection, NetEntityRole remoteRole, NetworkEntityRpcMessage& message)
@@ -649,6 +663,7 @@ namespace Multiplayer
             MultiplayerComponent* multiplayerComponent = azrtti_cast<MultiplayerComponent*>(component);
             if (multiplayerComponent != nullptr)
             {
+                multiplayerComponent->SetOwningConnectionId(m_owningConnectionId);
                 m_multiplayerInputComponentVector.push_back(multiplayerComponent);
             }
         }

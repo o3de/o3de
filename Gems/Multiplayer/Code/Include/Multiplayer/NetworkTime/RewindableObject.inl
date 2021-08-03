@@ -67,12 +67,18 @@ namespace Multiplayer
     }
 
     template <typename BASE_TYPE, AZStd::size_t REWIND_SIZE>
+    inline const BASE_TYPE& RewindableObject<BASE_TYPE, REWIND_SIZE>::GetPrevious() const
+    {
+        return GetValueForTime(GetCurrentTimeForProperty() - HostFrameId(1));
+    }
+
+    template <typename BASE_TYPE, AZStd::size_t REWIND_SIZE>
     inline BASE_TYPE& RewindableObject<BASE_TYPE, REWIND_SIZE>::Modify()
     {
         const HostFrameId frameTime = GetCurrentTimeForProperty();
         if (frameTime < m_headTime)
         {
-            AZ_Assert(false, "Trying to mutate a rewindable in the past");
+            AZ_Assert(false, "Trying to mutate a rewindable value in the past");
         }
         else if (m_headTime < frameTime)
         {

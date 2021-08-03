@@ -87,9 +87,19 @@ namespace Multiplayer
         AzNetworking::ConnectionId GetOwningConnectionId() const;
         void SetAllowAutonomy(bool value);
         MultiplayerComponentInputVector AllocateComponentInputs();
+
+        //! Return true if we're currently processing inputs.
+        //! @return true if we're within ProcessInput scope and writing to predictive state
         bool IsProcessingInput() const;
+
+        //! Return true if we're currently replaying inputs after a correction.
+        //! If this value returns true, effects, audio, and other cosmetic triggers should be suppressed
+        //! @return true if we're within correction scope and replaying inputs
+        bool IsReprocessingInput() const;
+
         void CreateInput(NetworkInput& networkInput, float deltaTime);
         void ProcessInput(NetworkInput& networkInput, float deltaTime);
+        void ReprocessInput(NetworkInput& networkInput, float deltaTime);
 
         bool HandleRpcMessage(AzNetworking::IConnection* invokingConnection, NetEntityRole remoteRole, NetworkEntityRpcMessage& message);
         bool HandlePropertyChangeMessage(AzNetworking::ISerializer& serializer, bool notifyChanges = true);
@@ -177,10 +187,11 @@ namespace Multiplayer
 
         AzNetworking::ConnectionId m_owningConnectionId = AzNetworking::InvalidConnectionId;
 
-        bool                  m_isProcessingInput    = false;
-        bool                  m_isMigrationDataValid = false;
-        bool                  m_needsToBeStopped     = false;
-        bool                  m_allowAutonomy        = false; // Set to true for the hosts controlled entity
+        bool m_isProcessingInput    = false; // Set to true when we are processing input
+        bool m_isReprocessingInput  = false; // Set to true when we are reprocessing input (during a correction)
+        bool m_isMigrationDataValid = false;
+        bool m_needsToBeStopped     = false;
+        bool m_allowAutonomy        = false; // Set to true for the hosts controlled entity
 
         friend class NetworkEntityManager;
         friend class EntityReplicationManager;

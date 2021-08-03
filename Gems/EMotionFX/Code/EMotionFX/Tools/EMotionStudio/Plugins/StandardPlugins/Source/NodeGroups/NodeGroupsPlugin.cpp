@@ -11,6 +11,7 @@
 #include "../../../../EMStudioSDK/Source/EMStudioCore.h"
 #include <MCore/Source/LogManager.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
+#include <EMotionFX/CommandSystem/Source/NodeGroupCommands.h>
 #include "../../../../EMStudioSDK/Source/EMStudioManager.h"
 
 // include qt headers
@@ -99,7 +100,7 @@ namespace EMStudio
         GetCommandManager()->RegisterCommandCallback("Select", mSelectCallback);
         GetCommandManager()->RegisterCommandCallback("Unselect", mUnselectCallback);
         GetCommandManager()->RegisterCommandCallback("ClearSelection", mClearSelectionCallback);
-        GetCommandManager()->RegisterCommandCallback("AdjustNodeGroup", mAdjustNodeGroupCallback);
+        GetCommandManager()->RegisterCommandCallback(CommandSystem::CommandAdjustNodeGroup::s_commandName.data(), mAdjustNodeGroupCallback);
         GetCommandManager()->RegisterCommandCallback("AddNodeGroup", mAddNodeGroupCallback);
         GetCommandManager()->RegisterCommandCallback("RemoveNodeGroup", mRemoveNodeGroupCallback);
 

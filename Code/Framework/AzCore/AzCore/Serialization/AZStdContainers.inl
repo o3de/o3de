@@ -42,8 +42,6 @@ namespace AZStd
     class unordered_multiset;
     template<AZStd::size_t NumBits>
     class bitset;
-    template<class T, class Container/* = AZStd::deque<T>*/ >
-    class stack;
 
     template<class T>
     class intrusive_ptr;

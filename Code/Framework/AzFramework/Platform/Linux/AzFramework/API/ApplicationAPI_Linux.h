@@ -35,7 +35,7 @@ namespace AzFramework
     class LinuxXcbConnectionManager
     {
     public:
-        AZ_RTTI(LinuxXcbConnectionManager, "{649951316-3626-4C9D-9DCA-2E7ABF84C0A9}");
+        AZ_RTTI(LinuxXcbConnectionManager, "{1F756E14-8D74-42FD-843C-4863307710DB}");
 
         virtual ~LinuxXcbConnectionManager() = default;
 

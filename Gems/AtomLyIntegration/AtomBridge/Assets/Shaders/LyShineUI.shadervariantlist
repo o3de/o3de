@@ -4,7 +4,6 @@
         {
             "StableId": 1,
             "Options": {
-                "o_preMultiplyAlpha": "false",
                 "o_alphaTest": "false",
                 "o_srgbWrite": "true",
                 "o_modulate": "Modulate::None"
@@ -13,10 +12,25 @@
         {
             "StableId": 2,
             "Options": {
-                "o_preMultiplyAlpha": "false",
-                "o_alphaTest": "true",
-                "o_srgbWrite": "true",
+                "o_alphaTest": "false",
+                "o_srgbWrite": "false",
                 "o_modulate": "Modulate::None"
+            }
+        },
+        {
+            "StableId": 3,
+            "Options": {
+                "o_alphaTest": "true",
+                "o_srgbWrite": "false",
+                "o_modulate": "Modulate::None"
+            }
+        },
+        {
+            "StableId": 4,
+            "Options": {
+                "o_alphaTest": "false",
+                "o_srgbWrite": "false",
+                "o_modulate": "Modulate::Alpha"
             }
         }
     ]

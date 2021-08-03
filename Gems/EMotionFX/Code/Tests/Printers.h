@@ -11,7 +11,6 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Quaternion.h>
-#include <MCore/Source/Quaternion.h>
 #include <EMotionFX/Source/Transform.h>
 
 namespace AZ
@@ -24,11 +23,6 @@ namespace AZStd
 {
     void PrintTo(const string& string, ::std::ostream* os);
 } // namespace AZStd
-
-namespace MCore
-{
-    void PrintTo(const Quaternion& quaternion, ::std::ostream* os);
-} // namespace MCore
 
 namespace EMotionFX
 {
