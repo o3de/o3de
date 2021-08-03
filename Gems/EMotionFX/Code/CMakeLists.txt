@@ -219,8 +219,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             ${CMAKE_CURRENT_SOURCE_DIR}/Tests/TestAssets/EMotionFXBuilderTestAssets/AnimGraphExampleNoDependency.animgraph
             ${CMAKE_CURRENT_SOURCE_DIR}/Tests/TestAssets/EMotionFXBuilderTestAssets/EmptyAnimGraphExample.animgraph
             ${CMAKE_CURRENT_SOURCE_DIR}/Tests/TestAssets/EMotionFXBuilderTestAssets/EmptyMotionSetExample.motionset
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/TestAssets/EMotionFXBuilderTestAssets/LegacyAnimGraphExample.animgraph
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/TestAssets/EMotionFXBuilderTestAssets/LegacyMotionSetExample.motionset
             ${CMAKE_CURRENT_SOURCE_DIR}/Tests/TestAssets/EMotionFXBuilderTestAssets/MotionSetExample.motionset
             ${CMAKE_CURRENT_SOURCE_DIR}/Tests/TestAssets/EMotionFXBuilderTestAssets/MotionSetExampleNoDependency.motionset
         OUTPUT_SUBDIRECTORY

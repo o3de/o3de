@@ -126,6 +126,7 @@ namespace AZ
 
         ResultCode FrameGraph::End()
         {
+            AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameGraph: End");
             ResultCode resultCode = ValidateEnd();
             if (resultCode != ResultCode::Success)
             {

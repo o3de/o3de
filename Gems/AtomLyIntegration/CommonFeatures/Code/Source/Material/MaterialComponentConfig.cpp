@@ -44,7 +44,7 @@ namespace AZ
                 for (const auto& oldPair : oldMaterials)
                 {
                     const DeprecatedMaterialAssignmentId& oldId = oldPair.first;
-                    const MaterialAssignmentId newId(oldId.first, oldId.second);
+                    const MaterialAssignmentId newId(oldId.first, oldId.second.m_subId);
                     newMaterials[newId] = oldPair.second;
 
                 }

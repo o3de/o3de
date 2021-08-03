@@ -103,9 +103,15 @@ namespace Camera
                 ->Event("SetNearClipDistance", &CameraRequestBus::Events::SetNearClipDistance)
                 ->Event("SetFarClipDistance", &CameraRequestBus::Events::SetFarClipDistance)
                 ->Event("MakeActiveView", &CameraRequestBus::Events::MakeActiveView)
+                ->Event("IsOrthographic", &CameraRequestBus::Events::IsOrthographic)
+                ->Event("SetOrthographic", &CameraRequestBus::Events::SetOrthographic)
+                ->Event("GetOrthographicHalfWidth", &CameraRequestBus::Events::GetOrthographicHalfWidth)
+                ->Event("SetOrthographicHalfWidth", &CameraRequestBus::Events::SetOrthographicHalfWidth)
                 ->VirtualProperty("FieldOfView","GetFovDegrees","SetFovDegrees")
                 ->VirtualProperty("NearClipDistance", "GetNearClipDistance", "SetNearClipDistance")
                 ->VirtualProperty("FarClipDistance", "GetFarClipDistance", "SetFarClipDistance")
+                ->VirtualProperty("Orthographic", "IsOrthographic", "SetOrthographic")
+                ->VirtualProperty("OrthographicHalfWidth", "GetOrthographicHalfWidth", "SetOrthographicHalfWidth")
                 ;
 
             behaviorContext->Class<CameraComponent>()->RequestBus("CameraRequestBus");

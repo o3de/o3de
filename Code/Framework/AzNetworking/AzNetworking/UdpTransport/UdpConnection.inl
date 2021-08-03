@@ -10,16 +10,6 @@
 
 namespace AzNetworking
 {
-    inline void UdpConnection::SetConnectionQuality(const ConnectionQuality& connectionQuality)
-    {
-        m_connectionQuality = connectionQuality;
-    }
-
-    inline const ConnectionQuality& UdpConnection::GetConnectionQuality() const
-    {
-        return m_connectionQuality;
-    }
-
     inline DtlsEndpoint& UdpConnection::GetDtlsEndpoint()
     {
         return m_dtlsEndpoint;

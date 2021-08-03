@@ -40,6 +40,13 @@ ly_add_pytest(
 )
 
 ly_add_pytest(
+    NAME o3de_engine_properties
+    PATH ${CMAKE_CURRENT_LIST_DIR}/unit_test_engine_properties.py
+    TEST_SUITE smoke
+    EXCLUDE_TEST_RUN_TARGET_FROM_IDE
+)
+
+ly_add_pytest(
     NAME o3de_project_properties
     PATH ${CMAKE_CURRENT_LIST_DIR}/unit_test_project_properties.py
     TEST_SUITE smoke
@@ -47,8 +54,22 @@ ly_add_pytest(
 )
 
 ly_add_pytest(
+    NAME o3de_gem_properties
+    PATH ${CMAKE_CURRENT_LIST_DIR}/unit_test_gem_properties.py
+    TEST_SUITE smoke
+    EXCLUDE_TEST_RUN_TARGET_FROM_IDE
+)
+
+ly_add_pytest(
     NAME o3de_template
     PATH ${CMAKE_CURRENT_LIST_DIR}/unit_test_engine_template.py
+    TEST_SUITE smoke
+    EXCLUDE_TEST_RUN_TARGET_FROM_IDE
+)
+
+ly_add_pytest(
+    NAME o3de_register_show
+    PATH ${CMAKE_CURRENT_LIST_DIR}/unit_test_print_registration.py
     TEST_SUITE smoke
     EXCLUDE_TEST_RUN_TARGET_FROM_IDE
 )

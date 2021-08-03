@@ -58,7 +58,9 @@ namespace Camera
         /// EditorCameraNotificationBus::Handler interface
         void OnViewportViewEntityChanged(const AZ::EntityId& newViewId) override;
 
+        /// EditorCameraViewRequestBus::Handler interface
         void ToggleCameraAsActiveView() override { OnPossessCameraButtonClicked(); }
+        bool GetCameraState(AzFramework::CameraState& cameraState) override;
 
     protected:
         void EditorDisplay(AzFramework::DebugDisplayRequests& displayInterface, const AZ::Transform& world);

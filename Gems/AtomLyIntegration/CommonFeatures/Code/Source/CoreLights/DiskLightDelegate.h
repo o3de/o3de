@@ -41,6 +41,7 @@ namespace AZ
             void SetShutterAngles(float innerAngleDegrees, float outerAngleDegrees) override;
 
             void SetEnableShadow(bool enabled) override;
+            void SetShadowBias(float bias) override;
             void SetShadowmapMaxSize(ShadowmapSize size) override;
             void SetShadowFilterMethod(ShadowFilterMethod method) override;
             void SetSofteningBoundaryWidthAngle(float widthInDegrees) override;

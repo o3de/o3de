@@ -221,6 +221,7 @@ set(FILES
     Jobs/Internal/JobManagerWorkStealing.cpp
     Jobs/Internal/JobManagerWorkStealing.h
     Jobs/Internal/JobNotify.h
+    Jobs/Job.cpp
     Jobs/Job.h
     Jobs/JobCancelGroup.h
     Jobs/JobCompletion.h

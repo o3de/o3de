@@ -102,7 +102,7 @@ namespace Camera
     using EditorCameraNotificationBus = AZ::EBus<EditorCameraNotifications>;
 
     /**
-     * This bus is for requesting any camera-view-related changes
+     * This bus is for requesting any camera-view-related changes or information
      */
     class EditorCameraViewRequests : public AZ::ComponentBus
     {
@@ -115,6 +115,11 @@ namespace Camera
          * Sets this camera as the active view in the scene, otherwise restores the default editor camera if it was already active
          */
         virtual void ToggleCameraAsActiveView() = 0;
+
+        /**
+        * Gets the camera state associated with this view.
+        */
+        virtual bool GetCameraState(AzFramework::CameraState& cameraState) = 0;
     };
 
     using EditorCameraViewRequestBus = AZ::EBus<EditorCameraViewRequests>;
