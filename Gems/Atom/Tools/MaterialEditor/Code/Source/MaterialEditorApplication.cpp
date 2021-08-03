@@ -121,7 +121,7 @@ namespace MaterialEditor
         }
 
         // Process command line options for opening one or more documents on startup
-        size_t openDocumentCount = m_commandLine.GetNumMiscValues();
+        size_t openDocumentCount = commandLine.GetNumMiscValues();
         for (size_t openDocumentIndex = 0; openDocumentIndex < openDocumentCount; ++openDocumentIndex)
         {
             const AZStd::string openDocumentPath = commandLine.GetMiscValue(openDocumentIndex);
