@@ -686,6 +686,27 @@ namespace UnitTest
         wstr1 = wstring::format(L"%hs", str.c_str());
         AZ_TEST_ASSERT(wstr1 == L"BLABLA 5");
 
+        // wstring to char buffer
+        char strBuffer[9];
+        to_string(strBuffer, 9, wstr1.c_str());
+        AZ_TEST_ASSERT(0 == azstricmp(strBuffer, "BLABLA 5"));
+
+        // wchar_t buffer to char buffer
+        wchar_t wstrBuffer[9] = L"BLABLA 5";
+        memset(strBuffer, 0, AZ_ARRAY_SIZE(strBuffer));
+        to_string(strBuffer, 9, wstrBuffer);
+        AZ_TEST_ASSERT(0 == azstricmp(strBuffer, "BLABLA 5"));
+
+        // string to wchar_t buffer
+        memset(wstrBuffer, 0, AZ_ARRAY_SIZE(wstrBuffer));
+        to_wstring(wstrBuffer, 9, str1.c_str());
+        AZ_TEST_ASSERT(0 == azwcsicmp(wstrBuffer, L"BlaBla 5"));
+
+        // char buffer to wchar_t buffer
+        memset(wstrBuffer, 0, AZ_ARRAY_SIZE(wstrBuffer));
+        to_wstring(wstrBuffer, 9, strBuffer);
+        AZ_TEST_ASSERT(0 == azwcsicmp(wstrBuffer, L"BLABLA 5"));
+
         // wchar UTF16/UTF32 to/from Utf8
         wstr1 = L"this is a \u20AC \u00A3 test"; // that's a euro and a pound sterling
         AZStd::to_string(str, wstr1);
