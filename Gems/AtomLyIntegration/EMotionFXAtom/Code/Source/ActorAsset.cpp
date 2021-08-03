@@ -96,12 +96,11 @@ namespace AZ
                         skinnedSubMesh.m_vertexCount = aznumeric_cast<uint32_t>(subMeshVertexCount);
                         lodVertexCount += aznumeric_cast<uint32_t>(subMeshVertexCount);
 
-                        // The default material id used by a sub-mesh is the guid of the source scene file plus the subId which is a unique material ID from the scene API
-                        AZ::u32 subId = modelMesh.GetMaterialAsset().GetId().m_subId;
-                        AZ::Data::AssetId materialId{ actorAssetId.m_guid, subId };
+                        skinnedSubMesh.m_materialSlot = actor->GetMeshAsset()->FindMaterialSlot(modelMesh.GetMaterialSlotId());
 
                         // Queue the material asset - the ModelLod seems to handle delayed material loads
-                        skinnedSubMesh.m_material = Data::AssetManager::Instance().GetAsset(materialId, azrtti_typeid<RPI::MaterialAsset>(), skinnedSubMesh.m_material.GetAutoLoadBehavior());
+                        skinnedSubMesh.m_materialSlot.m_defaultMaterialAsset.QueueLoad();
+
                         subMeshes.push_back(skinnedSubMesh);
                     }
                     else

@@ -122,6 +122,11 @@ namespace Multiplayer
         //! @return the current server time in milliseconds
         virtual AZ::TimeMs GetCurrentHostTimeMs() const = 0;
 
+        //! Returns the current blend factor for client side interpolation
+        //! This value is only relevant on the client and is used to smooth between host frames
+        //! @return the current blend factor
+        virtual float GetCurrentBlendFactor() const = 0;
+
         //! Returns the network time instance bound to this multiplayer instance.
         //! @return pointer to the network time instance bound to this multiplayer instance
         virtual INetworkTime* GetNetworkTime() = 0;
@@ -182,23 +187,27 @@ namespace Multiplayer
     class ScopedAlterTime final
     {
     public:
-        inline ScopedAlterTime(HostFrameId frameId, AZ::TimeMs timeMs, AzNetworking::ConnectionId connectionId)
+        inline ScopedAlterTime(HostFrameId frameId, AZ::TimeMs timeMs, float blendFactor, AzNetworking::ConnectionId connectionId)
         {
             INetworkTime* time = GetNetworkTime();
             m_previousHostFrameId = time->GetHostFrameId();
             m_previousHostTimeMs = time->GetHostTimeMs();
             m_previousRewindConnectionId = time->GetRewindingConnectionId();
             time->AlterTime(frameId, timeMs, connectionId);
+            m_previousBlendFactor = time->GetHostBlendFactor();
+            time->AlterBlendFactor(blendFactor);
         }
         inline ~ScopedAlterTime()
         {
             INetworkTime* time = GetNetworkTime();
             time->AlterTime(m_previousHostFrameId, m_previousHostTimeMs, m_previousRewindConnectionId);
+            time->AlterBlendFactor(m_previousBlendFactor);
         }
     private:
         HostFrameId m_previousHostFrameId = InvalidHostFrameId;
         AZ::TimeMs m_previousHostTimeMs = AZ::TimeMs{ 0 };
         AzNetworking::ConnectionId m_previousRewindConnectionId = AzNetworking::InvalidConnectionId;
+        float m_previousBlendFactor = DefaultBlendFactor;
     };
 
     inline const char* GetEnumString(MultiplayerAgentType value)

@@ -41,6 +41,7 @@
 
 #include <MCore/Source/IDGenerator.h>
 #include <MCore/Source/Compare.h>
+#include <MCore/Source/LogManager.h>
 #include <MCore/Source/OBB.h>
 
 #include <Atom/RPI.Reflect/Model/MorphTargetDelta.h>

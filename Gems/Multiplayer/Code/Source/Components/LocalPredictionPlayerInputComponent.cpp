@@ -155,9 +155,12 @@ namespace Multiplayer
             // Discard move input events, client may be speed hacking
             if (m_clientBankedTime < sv_MaxBankTimeWindowSec)
             {
+                // Client blends from previous frame to target so here we subtract blend factor to get to that state
+                const float blendFactor = AZStd::min(AZStd::max(0.f, input.GetHostBlendFactor()), 1.f);
+                const AZ::TimeMs blendMs = AZ::TimeMs(static_cast<float>(static_cast<AZ::TimeMs>(cl_InputRateMs)) * (1.f - blendFactor));
                 m_clientBankedTime = AZStd::min(m_clientBankedTime + clientInputRateSec, (double)sv_MaxBankTimeWindowSec); // clamp to boundary
                 {
-                    ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs(), invokingConnection->GetConnectionId());
+                    ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs() - blendMs, input.GetHostBlendFactor(), invokingConnection->GetConnectionId());
                     GetNetBindComponent()->ProcessInput(input, static_cast<float>(clientInputRateSec));
                 }
 
@@ -311,7 +314,7 @@ namespace Multiplayer
             ++ModifyLastInputId();
             input.SetClientInputId(GetLastInputId());
 
-            ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs(), invokingConnection->GetConnectionId());
+            ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs(), input.GetHostBlendFactor(), invokingConnection->GetConnectionId());
             GetNetBindComponent()->ProcessInput(input, clientInputRateSec);
 
             AZLOG
@@ -391,7 +394,7 @@ namespace Multiplayer
         {
             // Reprocess the input for this frame
             NetworkInput& input = m_inputHistory[replayIndex];
-            ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs(), invokingConnection->GetConnectionId());
+            ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs(), input.GetHostBlendFactor(), invokingConnection->GetConnectionId());
             GetNetBindComponent()->ProcessInput(input, clientInputRateSec);
 
             AZLOG
@@ -499,6 +502,7 @@ namespace Multiplayer
             input.SetClientInputId(m_clientInputId);
             input.SetHostFrameId(networkTime->GetHostFrameId());
             input.SetHostTimeMs(multiplayer->GetCurrentHostTimeMs());
+            input.SetHostBlendFactor(multiplayer->GetCurrentBlendFactor());
 
             // Allow components to form the input for this frame
             GetNetBindComponent()->CreateInput(input, inputRate);
@@ -573,7 +577,7 @@ namespace Multiplayer
 
             NetworkInput& input = m_lastInputReceived[0];
             {
-                ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs(), AzNetworking::InvalidConnectionId);
+                ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs(), DefaultBlendFactor, AzNetworking::InvalidConnectionId);
                 GetNetBindComponent()->ProcessInput(input, inputRate);
             }
 
