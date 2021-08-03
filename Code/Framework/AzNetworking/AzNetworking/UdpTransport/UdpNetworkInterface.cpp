@@ -397,6 +397,16 @@ namespace AzNetworking
         return connection->Disconnect(reason, TerminationEndpoint::Local);
     }
 
+    void UdpNetworkInterface::SetDoesTimeout(bool doesTimeout)
+    {
+        m_doesTimeout = doesTimeout;
+    }
+
+    bool UdpNetworkInterface::DoesTimeout()
+    {
+        return m_doesTimeout;
+    }
+
     bool UdpNetworkInterface::IsEncrypted() const
     {
         return m_socket->IsEncrypted();
@@ -729,7 +739,7 @@ namespace AzNetworking
         {
             udpConnection->SendUnreliablePacket(CorePackets::HeartbeatPacket());
         }
-        else if (net_UdpTimeoutConnections)
+        else if (net_UdpTimeoutConnections && m_networkInterface.DoesTimeout())
         {
             udpConnection->Disconnect(DisconnectReason::Timeout, TerminationEndpoint::Local);
             return TimeoutResult::Delete;

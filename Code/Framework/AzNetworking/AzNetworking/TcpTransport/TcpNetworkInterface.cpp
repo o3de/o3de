@@ -174,6 +174,16 @@ namespace AzNetworking
         return connection->Disconnect(reason, TerminationEndpoint::Local);
     }
 
+    void TcpNetworkInterface::SetDoesTimeout(bool doesTimeout)
+    {
+        m_doesTimeout = doesTimeout;
+    }
+
+    bool TcpNetworkInterface::DoesTimeout()
+    {
+        return m_doesTimeout;
+    }
+
     void TcpNetworkInterface::QueueNewConnection(const PendingConnection& pendingConnection)
     {
         m_pendingConnections.PushBackItem(pendingConnection);
@@ -306,7 +316,7 @@ namespace AzNetworking
         {
             tcpConnection->SendReliablePacket(CorePackets::HeartbeatPacket());
         }
-        else if (net_TcpTimeoutConnections)
+        else if (net_TcpTimeoutConnections && m_networkInterface.DoesTimeout())
         {
             tcpConnection->Disconnect(DisconnectReason::Timeout, TerminationEndpoint::Local);
             return TimeoutResult::Delete;
