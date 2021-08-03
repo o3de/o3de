@@ -104,8 +104,8 @@ namespace AzNetworking
         virtual bool Disconnect(ConnectionId connectionId, DisconnectReason reason) = 0;
 
         //! Sets whether this connection interface can disconnect by virtue of a timeout
-        //! @param doesTimeout If this connection interface will automatically disconnect due to a timeout
-        virtual void SetTimeoutEnabled(bool doesTimeout) = 0;
+        //! @param timeoutEnabled If this connection interface will automatically disconnect due to a timeout
+        virtual void SetTimeoutEnabled(bool timeoutEnabled) = 0;
 
         //! Whether this connection interface will disconnect by virtue of a time out (does not account for cvars affecting all connections)
         //! @return boolean true if this connection will not disconnect on timeout (does not account for cvars affecting all connections)
