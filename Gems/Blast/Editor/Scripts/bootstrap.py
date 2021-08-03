@@ -4,6 +4,13 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
-
-# LYN-652 to re-enable once the Blast gem tests are stable
-# import asset_builder_blast
+try:
+    import azlmbr.asset
+    import azlmbr.asset.entity
+    import azlmbr.asset.builder
+    import blast_asset_builder
+except:
+    # this script only runs in an asset processing environment
+    # like the AssetProcessor or an AssetBuilder
+    # plus the Blast gem needs to be enabled for the project
+    pass

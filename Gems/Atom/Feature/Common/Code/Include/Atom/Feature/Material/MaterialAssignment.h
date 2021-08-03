@@ -66,6 +66,6 @@ namespace AZ
 
         //! Find an assignment id corresponding to the lod and label substring filters
         MaterialAssignmentId FindMaterialAssignmentIdInModel(
-            const Data::Instance<AZ::RPI::Model> model, const MaterialAssignmentLodIndex lodFilter, const AZStd::string& labelFilter);
+            const Data::Instance<AZ::RPI::Model>& model, const MaterialAssignmentLodIndex lodFilter, const AZStd::string& labelFilter);
     } // namespace Render
 } // namespace AZ
