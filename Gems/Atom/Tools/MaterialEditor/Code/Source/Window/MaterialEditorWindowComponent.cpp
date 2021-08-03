@@ -18,6 +18,8 @@
 #include <Window/MaterialEditorWindow.h>
 #include <Window/MaterialEditorWindowComponent.h>
 #include <Window/ViewportSettingsInspector/ViewportSettingsInspector.h>
+#include <AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h>
+
 
 namespace MaterialEditor
 {
@@ -33,25 +35,27 @@ namespace MaterialEditor
 
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->EBus<MaterialEditorWindowFactoryRequestBus>("MaterialEditorWindowFactoryRequestBus")
+            using FactoryRequestBus = MaterialEditorWindowFactoryRequestBus;
+            behaviorContext->EBus<FactoryRequestBus>("MaterialEditorWindowFactoryRequestBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Category, "Editor")
                 ->Attribute(AZ::Script::Attributes::Module, "materialeditor")
-                ->Event("CreateMaterialEditorWindow", &MaterialEditorWindowFactoryRequestBus::Events::CreateMaterialEditorWindow)
-                ->Event("DestroyMaterialEditorWindow", &MaterialEditorWindowFactoryRequestBus::Events::DestroyMaterialEditorWindow)
+                ->Event("CreateMaterialEditorWindow", &FactoryRequestBus::Events::CreateMaterialEditorWindow)
+                ->Event("DestroyMaterialEditorWindow", &FactoryRequestBus::Events::DestroyMaterialEditorWindow)
                 ;
 
-            behaviorContext->EBus<MaterialEditorWindowRequestBus>("MaterialEditorWindowRequestBus")
+            using RequestBus = AtomToolsFramework::AtomToolsMainWindowRequestBus;
+            behaviorContext->EBus<RequestBus>("MaterialEditorWindowRequestBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Category, "Editor")
                 ->Attribute(AZ::Script::Attributes::Module, "materialeditor")
-                ->Event("ActivateWindow", &MaterialEditorWindowRequestBus::Events::ActivateWindow)
-                ->Event("SetDockWidgetVisible", &MaterialEditorWindowRequestBus::Events::SetDockWidgetVisible)
-                ->Event("IsDockWidgetVisible", &MaterialEditorWindowRequestBus::Events::IsDockWidgetVisible)
-                ->Event("GetDockWidgetNames", &MaterialEditorWindowRequestBus::Events::GetDockWidgetNames)
-                ->Event("ResizeViewportRenderTarget", &MaterialEditorWindowRequestBus::Events::ResizeViewportRenderTarget)
-                ->Event("LockViewportRenderTargetSize", &MaterialEditorWindowRequestBus::Events::LockViewportRenderTargetSize)
-                ->Event("UnlockViewportRenderTargetSize", &MaterialEditorWindowRequestBus::Events::UnlockViewportRenderTargetSize)
+                ->Event("ActivateWindow", &RequestBus::Events::ActivateWindow)
+                ->Event("SetDockWidgetVisible", &RequestBus::Events::SetDockWidgetVisible)
+                ->Event("IsDockWidgetVisible", &RequestBus::Events::IsDockWidgetVisible)
+                ->Event("GetDockWidgetNames", &RequestBus::Events::GetDockWidgetNames)
+                ->Event("ResizeViewportRenderTarget", &RequestBus::Events::ResizeViewportRenderTarget)
+                ->Event("LockViewportRenderTargetSize", &RequestBus::Events::LockViewportRenderTargetSize)
+                ->Event("UnlockViewportRenderTargetSize", &RequestBus::Events::UnlockViewportRenderTargetSize)
                 ;
         }
     }

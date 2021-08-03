@@ -15,10 +15,10 @@
 
 #include <Atom/Document/MaterialDocumentRequestBus.h>
 #include <Atom/Document/MaterialDocumentSystemRequestBus.h>
-#include <Atom/Window/MaterialEditorWindowNotificationBus.h>
 #include <Atom/Window/MaterialEditorWindowSettings.h>
 
 #include <AtomToolsFramework/Util/Util.h>
+#include <AtomToolsFramework/Window/AtomToolsMainWindowNotificationBus.h>
 
 #include <AzFramework/Application/Application.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -185,7 +185,8 @@ namespace MaterialEditor
         QByteArray windowState = m_advancedDockManager->saveState();
         windowSettings->m_mainWindowState.assign(windowState.begin(), windowState.end());
 
-        MaterialEditorWindowNotificationBus::Broadcast(&MaterialEditorWindowNotifications::OnMaterialEditorWindowClosing);
+        AtomToolsFramework::AtomToolsMainWindowNotificationBus::Broadcast(
+            &AtomToolsFramework::AtomToolsMainWindowNotifications::OnAtomToolsMainWindowWindowClosing);
     }
 
     void MaterialEditorWindow::OnDocumentOpened(const AZ::Uuid& documentId)
@@ -284,7 +285,7 @@ namespace MaterialEditor
 
     void MaterialEditorWindow::SetupMenu()
     {
-        AtomToolsFramework::AtomToolsMainWindow::SetupMenu();
+        Base::SetupMenu();
 
         m_actionNew = m_menuFile->addAction("&New...", [this]() {
             CreateMaterialDialog createDialog(this);
@@ -482,7 +483,7 @@ namespace MaterialEditor
 
     void MaterialEditorWindow::SetupTabs()
     {
-        AtomToolsFramework::AtomToolsMainWindow::SetupTabs();
+        Base::SetupTabs();
 
         // This signal will be triggered whenever a tab is added, removed, selected, clicked, dragged
         // When the last tab is removed tabIndex will be -1 and the document ID will be null

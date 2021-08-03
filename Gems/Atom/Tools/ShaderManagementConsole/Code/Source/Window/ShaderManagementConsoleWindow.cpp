@@ -5,6 +5,12 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+ 
+#include <Atom/Document/ShaderManagementConsoleDocumentRequestBus.h>
+#include <Atom/Document/ShaderManagementConsoleDocumentSystemRequestBus.h>
+
+#include <AtomToolsFramework/Util/Util.h>
+#include <AtomToolsFramework/Window/AtomToolsMainWindowNotificationBus.h>
 
 #include <AzCore/Name/Name.h>
 
@@ -15,11 +21,6 @@
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
-#include <AtomToolsFramework/Util/Util.h>
-
-#include <Atom/Document/ShaderManagementConsoleDocumentRequestBus.h>
-#include <Atom/Document/ShaderManagementConsoleDocumentSystemRequestBus.h>
-#include <Atom/Window/ShaderManagementConsoleWindowNotificationBus.h>
 
 #include <Source/Window/ShaderManagementConsoleWindow.h>
 
@@ -80,7 +81,8 @@ namespace ShaderManagementConsole
             return;
         }
 
-        ShaderManagementConsoleWindowNotificationBus::Broadcast(&ShaderManagementConsoleWindowNotifications::OnShaderManagementConsoleWindowClosing);
+        AtomToolsFramework::AtomToolsMainWindowNotificationBus::Broadcast(
+            &AtomToolsFramework::AtomToolsMainWindowNotifications::OnAtomToolsMainWindowWindowClosing);
     }
 
     void ShaderManagementConsoleWindow::OnDocumentOpened(const AZ::Uuid& documentId)
@@ -159,7 +161,7 @@ namespace ShaderManagementConsole
 
     void ShaderManagementConsoleWindow::SetupMenu()
     {
-        AtomToolsFramework::AtomToolsMainWindow::SetupMenu();
+        Base::SetupMenu();
 
         m_actionOpen = m_menuFile->addAction("&Open...", [this]() {
             const AZStd::vector<AZ::Data::AssetType> assetTypes = {
@@ -277,7 +279,7 @@ namespace ShaderManagementConsole
 
     void ShaderManagementConsoleWindow::SetupTabs()
     {
-        AtomToolsFramework::AtomToolsMainWindow::SetupTabs();
+        Base::SetupTabs();
 
         // This signal will be triggered whenever a tab is added, removed, selected, clicked, dragged
         // When the last tab is removed tabIndex will be -1 and the document ID will be null

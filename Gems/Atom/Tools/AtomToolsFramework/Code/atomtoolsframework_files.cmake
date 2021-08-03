@@ -27,6 +27,7 @@ set(FILES
     Include/AtomToolsFramework/Window/AtomToolsMainWindow.h
     Include/AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h
     Include/AtomToolsFramework/Window/AtomToolsMainWindowFactoryRequestBus.h
+    Include/AtomToolsFramework/Window/AtomToolsMainWindowNotificationBus.h
     Source/Application/AtomToolsApplication.cpp
     Source/Communication/LocalServer.cpp
     Source/Communication/LocalSocket.cpp

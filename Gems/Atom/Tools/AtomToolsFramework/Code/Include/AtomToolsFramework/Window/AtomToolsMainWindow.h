@@ -7,8 +7,8 @@
  */
 
 #pragma once
-#include <AzCore/Memory/SystemAllocator.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h>
+#include <AzCore/Memory/SystemAllocator.h>
 
 #include <AzQtComponents/Components/DockMainWindow.h>
 #include <AzQtComponents/Components/FancyDocking.h>
@@ -44,7 +44,7 @@ namespace AtomToolsFramework
         virtual void RemoveTabForDocumentId(const AZ::Uuid& documentId);
         virtual void UpdateTabForDocumentId(const AZ::Uuid& documentId);
         virtual AZ::Uuid GetDocumentIdFromTab(const int tabIndex) const;
-        
+
         virtual void OpenTabContextMenu();
         virtual void SelectPreviousTab();
         virtual void SelectNextTab();
@@ -58,6 +58,5 @@ namespace AtomToolsFramework
         AZStd::unordered_map<AZStd::string, AzQtComponents::StyledDockWidget*> m_dockWidgets;
 
         QMenu* m_menuFile = {};
-        //StatusBarWidget* m_statusBar = {};
     };
-}
+} // namespace AtomToolsFramework

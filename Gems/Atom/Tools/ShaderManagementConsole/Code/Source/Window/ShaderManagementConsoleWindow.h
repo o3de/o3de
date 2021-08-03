@@ -9,11 +9,11 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <AzCore/Memory/SystemAllocator.h>
 #include <Atom/Document/ShaderManagementConsoleDocumentNotificationBus.h>
+#include <AzCore/Memory/SystemAllocator.h>
 
-#include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Edit/Shader/ShaderVariantListSourceData.h>
+#include <Atom/RPI.Public/Shader/Shader.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindow.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
@@ -26,8 +26,8 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnin
 #include <Window/ToolBar/ShaderManagementConsoleToolBar.h>
 
 #include <QMenuBar>
-#include <QToolBar>
 #include <QStandardItemModel>
+#include <QToolBar>
 AZ_POP_DISABLE_WARNING
 #endif
 
@@ -63,7 +63,7 @@ namespace ShaderManagementConsole
         void OnDocumentUndoStateChanged(const AZ::Uuid& documentId) override;
         void OnDocumentSaved(const AZ::Uuid& documentId) override;
 
-        void SetupMenu() override; 
+        void SetupMenu() override;
 
         void SetupTabs() override;
         void AddTabForDocumentId(const AZ::Uuid& documentId) override;

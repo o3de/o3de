@@ -9,9 +9,9 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <AzCore/Memory/SystemAllocator.h>
 #include <Atom/Document/MaterialDocumentNotificationBus.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindow.h>
+#include <AzCore/Memory/SystemAllocator.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <AzQtComponents/Components/DockMainWindow.h>
@@ -19,14 +19,13 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnin
 #include <AzQtComponents/Components/StyledDockWidget.h>
 #include <AzQtComponents/Components/Widgets/TabWidget.h>
 
-#include <Atom/Window/MaterialEditorWindowRequestBus.h>
 #include <Viewport/MaterialViewportWidget.h>
-#include <Window/ToolBar/MaterialEditorToolBar.h>
 #include <Window/StatusBar/StatusBarWidget.h>
+#include <Window/ToolBar/MaterialEditorToolBar.h>
 
 #include <QMenuBar>
-#include <QToolBar>
 #include <QStatusBar>
+#include <QToolBar>
 AZ_POP_DISABLE_WARNING
 #endif
 

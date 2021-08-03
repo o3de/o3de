@@ -9,8 +9,6 @@
 set(FILES
     Include/Atom/Window/MaterialEditorWindowModule.h
     Include/Atom/Window/MaterialEditorWindowSettings.h
-    Include/Atom/Window/MaterialEditorWindowNotificationBus.h
-    Include/Atom/Window/MaterialEditorWindowRequestBus.h
     Include/Atom/Window/MaterialEditorWindowFactoryRequestBus.h
     Source/Window/MaterialEditorBrowserInteractions.h
     Source/Window/MaterialEditorBrowserInteractions.cpp
