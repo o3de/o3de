@@ -199,7 +199,7 @@ namespace AZStd
                             // This happens when there was an insertion of two elements that are equal but have different hashes,
                             // which is undefined behavior for a hash table: ISO C++ N4713, section 23.14.15 - 5.3
                             AZ_Assert(false, "Found a duplicate element when rehashing. "
-                                "Review the hashing function for type '%s' and make sure two equal elements always have the same hash", typeid(Traits::value_type).name());
+                                "Review the hashing function for type '%s' and make sure two equal elements always have the same hash", typeid(typename Traits::value_type).name());
                         }
 
                         newList.splice(insertIter, m_list, cur, curEnd);
