@@ -15,11 +15,12 @@ import pytest
 import ly_test_tools.environment.file_system as file_system
 from ly_test_tools.image.screenshot_compare_qssim import qssim as compare_screenshots
 from ly_test_tools.benchmark.data_aggregator import BenchmarkDataAggregator
+
 import editor_python_test_tools.hydra_test_utils as hydra
+from atom_renderer.atom_utils.atom_component_helper import LIGHT_TYPES
 
 logger = logging.getLogger(__name__)
 DEFAULT_SUBFOLDER_PATH = 'user/PythonTests/Automated/Screenshots'
-EDITOR_TIMEOUT = 600
 TEST_DIRECTORY = os.path.join(os.path.dirname(__file__), "atom_hydra_scripts")
 
 
@@ -67,6 +68,7 @@ class TestAllComponentsIndepthTests(object):
             "Trace::Assert",
             "Trace::Error",
             "Traceback (most recent call last):",
+            "Screenshot failed"
         ]
 
         hydra.launch_and_validate_results(
@@ -74,7 +76,7 @@ class TestAllComponentsIndepthTests(object):
             TEST_DIRECTORY,
             editor,
             "hydra_GPUTest_BasicLevelSetup.py",
-            timeout=EDITOR_TIMEOUT,
+            timeout=300,
             expected_lines=level_creation_expected_lines,
             unexpected_lines=unexpected_lines,
             halt_on_unexpected=True,
@@ -84,6 +86,83 @@ class TestAllComponentsIndepthTests(object):
 
         for test_screenshot, golden_screenshot in zip(test_screenshots, golden_images):
             compare_screenshots(test_screenshot, golden_screenshot)
+
+    def test_LightComponent_ScreenshotMatchesGoldenImage(
+            self, request, editor, workspace, project, launcher_platform, level):
+        """
+        Please review the hydra script run by this test for more specific test info.
+        Tests that the Light component screenshots in a rendered level appear the same as the golden images.
+        """
+        screenshot_names = [
+            "AreaLight_1.ppm",
+            "AreaLight_2.ppm",
+            "AreaLight_3.ppm",
+            "AreaLight_4.ppm",
+            "AreaLight_5.ppm",
+            "SpotLight_1.ppm",
+            "SpotLight_2.ppm",
+            "SpotLight_3.ppm",
+            "SpotLight_4.ppm",
+            "SpotLight_5.ppm",
+            "SpotLight_6.ppm",
+            "SpotLight_7.ppm",
+        ]
+        screenshot_images = []
+        for screenshot in screenshot_names:
+            screenshot_path = os.path.join(workspace.paths.project(), DEFAULT_SUBFOLDER_PATH, screenshot)
+            screenshot_images.append(screenshot_path)
+        self.remove_artifacts(screenshot_images)
+
+        golden_images = []
+        for golden_image in screenshot_names:
+            golden_image_path = os.path.join(golden_images_directory(), golden_image)
+            golden_images.append(golden_image_path)
+
+        sphere_light_type = LIGHT_TYPES[1]
+        spot_disk_light_type = LIGHT_TYPES[2]
+        capsule_light_type = LIGHT_TYPES[3]
+        expected_lines = [
+            # Level save/load
+            "Level is saved successfully: True",
+            "New entity created: True",
+            "New entity deleted: True",
+            # Area Light Component
+            "area_light Entity successfully created",
+            "area_light_test: Component added to the entity: True",
+            "area_light_test: Entered game mode: True",
+            "area_light_test: Exit game mode: True",
+            f"area_light_test: Property value is {capsule_light_type} which matches {capsule_light_type}",
+            f"area_light_test: Property value is {spot_disk_light_type} which matches {spot_disk_light_type}",
+            f"area_light_test: Property value is {sphere_light_type} which matches {sphere_light_type}",
+            # Spot Light Component
+            "spot_light Entity successfully created",
+            "spot_light_test: Component added to the entity: True",
+            "spot_light_test: Entered game mode: True",
+            "spot_light_test: Exit game mode: True",
+            f"spot_light_test: Property value is {spot_disk_light_type} which matches {spot_disk_light_type}",
+            "Component tests completed",
+        ]
+        unexpected_lines = [
+            "Trace::Assert",
+            "Trace::Error",
+            "Traceback (most recent call last):",
+            "Screenshot failed",
+        ]
+        hydra.launch_and_validate_results(
+            request,
+            TEST_DIRECTORY,
+            editor,
+            "hydra_GPUTest_LightComponent.py",
+            timeout=240,
+            expected_lines=expected_lines,
+            unexpected_lines=unexpected_lines,
+            halt_on_unexpected=True,
+            cfg_args=[level],
+        )
+
+        for test_screenshot, golden_screenshot in zip(screenshot_images, golden_images):
+            compare_screenshots(test_screenshot, golden_screenshot)
+
 
 @pytest.mark.parametrize('rhi', ['dx12', 'vulkan'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
