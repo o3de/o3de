@@ -287,73 +287,70 @@ namespace UnitTest
         }
     }
 
-    TEST_F(HashedContainers, HashTable_Insertion_Duplicate_WithEqualNotEqualHashes)
+    TEST_F(HashedContainers, HashTable_InsertionDuplicateOnRehash)
     {
-        struct TwoInts
+        struct TwoPtrs
         {
-            uint64_t m_a;
-            uint64_t m_b;
+            void* m_ptr1;
+            void* m_ptr2;
 
-            bool operator==(const TwoInts& other) const
+            bool operator==(const TwoPtrs& other) const
             {
-                if (m_a == other.m_a)
+                if (m_ptr1 == other.m_ptr1)
                 {
-                    return m_b == other.m_b;
+                    return m_ptr2 == other.m_ptr2;
                 }
-                else if (m_a == other.m_b)
+                else if (m_ptr1 == other.m_ptr2)
                 {
-                    return m_b == other.m_a;
+                    return m_ptr2 == other.m_ptr1;
                 }
                 return false;
             }
         };
 
-        // This hashing function produces different hashes for two equal values,
-        // which violates the requirement for hashing functions.
-        // The test would only make sure that this does not reproduce a bug that happened in the past in this case,
-        // where it would make the insert() to loop infinitely.
         struct TwoPtrsHasher
         {
-            size_t operator()(const TwoInts& p) const
+            size_t operator()(const TwoPtrs& p) const
             {
                 size_t hash{ 0 };
-                AZStd::hash_combine(hash, p.m_a, p.m_b);
+                AZStd::hash_combine(hash, p.m_ptr1, p.m_ptr2);
                 return hash;
             }
         };
-        using PairSet = AZStd::unordered_set<TwoInts, TwoPtrsHasher>;
+        using PairSet = AZStd::unordered_set<TwoPtrs, TwoPtrsHasher>;
         PairSet set;
-        
-        set.insert({ 0x000001ceddd942a0, 0x000001ceddd94720 });
-        set.insert({ 0x000001ceddd94420, 0x000001ceddd94a20 });
-        set.insert({ 0x000001ceddd94720, 0x000001ceddd94420 });
-        set.insert({ 0x000001ceddd948a0, 0x000001ceddd945a0 });
-        set.insert({ 0x000001ceddd94a20, 0x000001ceddd9c420 });
-        set.insert({ 0x000001ceddd94ba0, 0x000001ceddd94d20 });
-        set.insert({ 0x000001ceddd94d20, 0x000001ceddd948a0 });
-        set.insert({ 0x000001ceddd9c2a0, 0x000001ceddd942a0 });
-        set.insert({ 0x000001ceddd9c420, 0x000001ceddd94ba0 });
-        set.insert({ 0x000001ceddd9c5a0, 0x000001ceddd9c720 });
-        set.insert({ 0x000001ceddd9c720, 0x000001ceddd9c8a0 });
-        set.insert({ 0x000001ceddd9c8a0, 0x000001ceddd94a20 });
-        set.insert({ 0x000001ceddd9ca20, 0x000001ceddd9cba0 });
-        set.insert({ 0x000001ceddd9cba0, 0x000001ceddd9cd20 });
-        set.insert({ 0x000001ceddd9cd20, 0x000001ceddd9cea0 });
-        set.insert({ 0x000001ceddd9cea0, 0x000001ceddd94a20 });
-        set.insert({ 0x000001ceddd9d020, 0x000001ceddd9e2c0 });
-        set.insert({ 0x000001ceddd9e2c0, 0x000001ceddd9e440 });
-        set.insert({ 0x000001ceddd9e440, 0x000001ceddd948a0 });
-        set.insert({ 0x000001ceddd9e5c0, 0x000001ceddd9e740 });
-        set.insert({ 0x000001ceddd9e740, 0x000001ceddd9e8c0 });
-        set.insert({ 0x000001ceddd9e8c0, 0x000001ceddd948a0 });
-        set.insert({ 0x000001ceddd9e5c0, 0x000001ceddd9d020 });
-        set.insert({ 0x000001ceddd9e440, 0x000001ceddd9cd20 });
-        set.insert({ 0x000001ceddd9d020, 0x000001ceddd9e440 });
-        set.insert({ 0x000001ceddd9cea0, 0x000001ceddd9e2c0 });
-        set.insert({ 0x000001ceddd9cd20, 0x000001ceddd9c720 });
-        set.insert({ 0x000001ceddd9cba0, 0x000001ceddd9ca20 });
-        // This line will toggle a rehash
-        set.insert({ 0x000001ceddd9ca20, 0x000001ceddd9cea0 });
+        set.insert({ (void*)0x000001ceddd942a0, (void*)0x000001ceddd94720 });
+        set.insert({ (void*)0x000001ceddd94420, (void*)0x000001ceddd94a20 });
+        set.insert({ (void*)0x000001ceddd94720, (void*)0x000001ceddd94420 });
+        set.insert({ (void*)0x000001ceddd948a0, (void*)0x000001ceddd945a0 });
+        set.insert({ (void*)0x000001ceddd94a20, (void*)0x000001ceddd9c420 });
+        set.insert({ (void*)0x000001ceddd94ba0, (void*)0x000001ceddd94d20 });
+        set.insert({ (void*)0x000001ceddd94d20, (void*)0x000001ceddd948a0 });
+        set.insert({ (void*)0x000001ceddd9c2a0, (void*)0x000001ceddd942a0 });
+        set.insert({ (void*)0x000001ceddd9c420, (void*)0x000001ceddd94ba0 });
+        set.insert({ (void*)0x000001ceddd9c5a0, (void*)0x000001ceddd9c720 });
+        set.insert({ (void*)0x000001ceddd9c720, (void*)0x000001ceddd9c8a0 });
+        set.insert({ (void*)0x000001ceddd9c8a0, (void*)0x000001ceddd94a20 });
+        set.insert({ (void*)0x000001ceddd9ca20, (void*)0x000001ceddd9cba0 });
+        set.insert({ (void*)0x000001ceddd9cba0, (void*)0x000001ceddd9cd20 });
+        set.insert({ (void*)0x000001ceddd9cd20, (void*)0x000001ceddd9cea0 });
+        set.insert({ (void*)0x000001ceddd9cea0, (void*)0x000001ceddd94a20 });
+        set.insert({ (void*)0x000001ceddd9d020, (void*)0x000001ceddd9e2c0 });
+        set.insert({ (void*)0x000001ceddd9e2c0, (void*)0x000001ceddd9e440 });
+        set.insert({ (void*)0x000001ceddd9e440, (void*)0x000001ceddd948a0 });
+        set.insert({ (void*)0x000001ceddd9e5c0, (void*)0x000001ceddd9e740 });
+        set.insert({ (void*)0x000001ceddd9e740, (void*)0x000001ceddd9e8c0 });
+        set.insert({ (void*)0x000001ceddd9e8c0, (void*)0x000001ceddd948a0 });
+        set.insert({ (void*)0x000001ceddd9e5c0, (void*)0x000001ceddd9d020 });
+        set.insert({ (void*)0x000001ceddd9e440, (void*)0x000001ceddd9cd20 });
+        set.insert({ (void*)0x000001ceddd9d020, (void*)0x000001ceddd9e440 });
+        set.insert({ (void*)0x000001ceddd9cea0, (void*)0x000001ceddd9e2c0 });
+        set.insert({ (void*)0x000001ceddd9cd20, (void*)0x000001ceddd9c720 });
+        set.insert({ (void*)0x000001ceddd9cba0, (void*)0x000001ceddd9ca20 });
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        // This will trigger the rehashing and the assertion of duplicated elements found
+        set.rehash(23);
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1); // 1 assertion
     }
 
     TEST_F(HashedContainers, HashTable_Fixed)

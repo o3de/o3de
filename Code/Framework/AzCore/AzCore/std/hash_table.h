@@ -201,8 +201,6 @@ namespace AZStd
                             // which is undefined behavior for a hash table
                             AZ_Assert(false, "Found a duplicate element when rehashing. "
                                 "Review the hashing function for type '%s' and make sure two equal elements always have the same hash", typeid(Traits::value_type).name());
-                            m_list.erase(cur, curEnd);
-                            continue;
                         }
 
                         newList.splice(insertIter, m_list, cur, curEnd);
