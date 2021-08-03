@@ -30,8 +30,6 @@
 
 #include <AzFramework/Components/TransformComponent.h>
 
-#pragma optimize("", off)
-
 namespace Multiplayer
 {
     EntityReplicator::EntityReplicator
