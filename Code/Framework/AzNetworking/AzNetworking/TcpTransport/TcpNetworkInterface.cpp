@@ -174,14 +174,14 @@ namespace AzNetworking
         return connection->Disconnect(reason, TerminationEndpoint::Local);
     }
 
-    void TcpNetworkInterface::SetTimeoutEnabled(bool doesTimeout)
+    void TcpNetworkInterface::SetTimeoutEnabled(bool timeoutEnabled)
     {
-        m_doesTimeout = doesTimeout;
+        m_timeoutEnabled = timeoutEnabled;
     }
 
     bool TcpNetworkInterface::IsTimeoutEnabled()
     {
-        return m_doesTimeout;
+        return m_timeoutEnabled;
     }
 
     void TcpNetworkInterface::QueueNewConnection(const PendingConnection& pendingConnection)

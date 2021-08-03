@@ -397,14 +397,14 @@ namespace AzNetworking
         return connection->Disconnect(reason, TerminationEndpoint::Local);
     }
 
-    void UdpNetworkInterface::SetTimeoutEnabled(bool doesTimeout)
+    void UdpNetworkInterface::SetTimeoutEnabled(bool timeoutEnabled)
     {
-        m_doesTimeout = doesTimeout;
+        m_timeoutEnabled = timeoutEnabled;
     }
 
     bool UdpNetworkInterface::IsTimeoutEnabled()
     {
-        return m_doesTimeout;
+        return m_timeoutEnabled;
     }
 
     bool UdpNetworkInterface::IsEncrypted() const
