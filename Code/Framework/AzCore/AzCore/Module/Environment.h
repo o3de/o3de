@@ -249,16 +249,6 @@ namespace AZ
                 new(&m_value) T(AZStd::forward<Args>(args)...);
             }
 
-            void DestructImpl(const AZStd::true_type& /* AZStd::is_trivially_destructible<T> */)
-            {
-                // do nothing
-            }
-
-            void DestructImpl(const AZStd::false_type& /* AZStd::is_trivially_destructible<T> */)
-            {
-                reinterpret_cast<T*>(&m_value)->~T();
-            }
-
             // Assumes the lock is already held
             void UnregisterAndDestruct()
             {
@@ -357,7 +347,10 @@ namespace AZ
                 AZ_Assert(m_isConstructed, "Variable is not constructed. Please check your logic and guard if needed!");
                 m_isConstructed = false;
                 m_moduleOwner = nullptr;
-                DestructImpl(typename AZStd::is_trivially_destructible<T>::type());
+                if constexpr(AZStd::is_trivially_destructible_v<T>)
+                {
+                    reinterpret_cast<T*>(&m_value)->~T();
+                }
             }
 
             void Destruct()
