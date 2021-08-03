@@ -21,6 +21,51 @@ sys.path.append(os.path.join(azlmbr.paths.devassets, "Gem", "PythonTests"))
 import editor_python_test_tools.hydra_editor_utils as hydra
 from atom_renderer.atom_utils.atom_component_helper import LIGHT_TYPES
 
+LIGHT_TYPE_PROPERTY = 'Controller|Configuration|Light type'
+SPHERE_AND_SPOT_DISK_LIGHT_PROPERTIES = [
+    ("Controller|Configuration|Shadows|Enable shadow", True),
+    ("Controller|Configuration|Shadows|Shadowmap size", 0),  # 256
+    ("Controller|Configuration|Shadows|Shadowmap size", 1),  # 512
+    ("Controller|Configuration|Shadows|Shadowmap size", 2),  # 1024
+    ("Controller|Configuration|Shadows|Shadowmap size", 3),  # 2048
+    ("Controller|Configuration|Shadows|Shadow filter method", 1),  # PCF
+    ("Controller|Configuration|Shadows|Filtering sample count", 4.0),
+    ("Controller|Configuration|Shadows|Filtering sample count", 64.0),
+    ("Controller|Configuration|Shadows|PCF method", 0),  # Bicubic
+    ("Controller|Configuration|Shadows|PCF method", 1),  # Boundary search
+    ("Controller|Configuration|Shadows|Shadow filter method", 2),  # ECM
+    ("Controller|Configuration|Shadows|ESM exponent", 50),
+    ("Controller|Configuration|Shadows|ESM exponent", 5000),
+    ("Controller|Configuration|Shadows|Shadow filter method", 3),  # ESM+PCF
+]
+QUAD_LIGHT_PROPERTIES = [
+    ("Controller|Configuration|Both directions", True),
+    ("Controller|Configuration|Fast approximation", True),
+]
+SIMPLE_POINT_LIGHT_PROPERTIES = [
+    ("Controller|Configuration|Attenuation radius|Mode", 0),
+    ("Controller|Configuration|Attenuation radius|Radius", 100.0),
+]
+SIMPLE_SPOT_LIGHT_PROPERTIES = [
+    ("Controller|Configuration|Shutters|Inner angle", 45.0),
+    ("Controller|Configuration|Shutters|Outer angle", 90.0),
+]
+
+
+def verify_required_component_property_value(entity_name, component, property_path, expected_property_value):
+    """
+    Compares the property value of component against the expected_property_value.
+    :param entity_name: name of the entity to use (for test verification purposes).
+    :param component: component to check on a given entity for its current property value.
+    :param property_path: the path to the property inside the component.
+    :param expected_property_value: The value expected from the value inside property_path.
+    :return: None, but prints to general.log() which the test uses to verify against.
+    """
+    property_value = editor.EditorComponentAPIBus(
+        bus.Broadcast, "GetComponentProperty", component, property_path).GetValue()
+    general.log(f"{entity_name}_test: Property value is {property_value} "
+                f"which matches {expected_property_value}")
+
 
 def run():
     """
@@ -62,23 +107,118 @@ def run():
     if entity_component_id_pair.IsSuccess():
         light_component_id_pair = entity_component_id_pair.GetValue()
 
-    # Test each Light component option can be selected.
-    light_type_property = 'Controller|Configuration|Light type'
-    for light_type in LIGHT_TYPES:
-        current_light_type = light_type
-        azlmbr.editor.EditorComponentAPIBus(
-            azlmbr.bus.Broadcast,
-            'SetComponentProperty',
-            light_component_id_pair,
-            light_type_property,
-            current_light_type
-        )
+    # Test each Light component option can be selected and it's properties updated.
+    # Point (sphere) light type checks.
+    sphere_light_type = LIGHT_TYPES[1]
+    light_type_property_test(
+        light_type=sphere_light_type,
+        light_properties=SPHERE_AND_SPOT_DISK_LIGHT_PROPERTIES,
+        light_component_id_pair=light_component_id_pair,
+        light_entity_name=light_entity_name,
+        light_entity=light_entity
+    )
 
-        property_value = editor.EditorComponentAPIBus(
-            bus.Broadcast, "GetComponentProperty", light_entity.components[0], light_type_property).GetValue()
-        general.log(f"{light_entity_name}_test: Property value is {property_value} which matches {current_light_type}")
+    # Spot (disk) light type checks.
+    spot_disk_light_type = LIGHT_TYPES[2]
+    light_type_property_test(
+        light_type=spot_disk_light_type,
+        light_properties=SPHERE_AND_SPOT_DISK_LIGHT_PROPERTIES,
+        light_component_id_pair=light_component_id_pair,
+        light_entity_name=light_entity_name,
+        light_entity=light_entity
+    )
+
+    # Capsule light type checks.
+    capsule_light_type = LIGHT_TYPES[3]
+    azlmbr.editor.EditorComponentAPIBus(
+        azlmbr.bus.Broadcast,
+        'SetComponentProperty',
+        light_component_id_pair,
+        LIGHT_TYPE_PROPERTY,
+        capsule_light_type
+    )
+    verify_required_component_property_value(
+        entity_name=light_entity_name,
+        component=light_entity.components[0],
+        property_path=LIGHT_TYPE_PROPERTY,
+        expected_property_value=capsule_light_type
+    )
+
+    # Quad light type checks.
+    quad_light_type = LIGHT_TYPES[4]
+    light_type_property_test(
+        light_type=quad_light_type,
+        light_properties=QUAD_LIGHT_PROPERTIES,
+        light_component_id_pair=light_component_id_pair,
+        light_entity_name=light_entity_name,
+        light_entity=light_entity
+    )
+
+    # Polygon light type checks.
+    polygon_light_type = LIGHT_TYPES[5]
+    azlmbr.editor.EditorComponentAPIBus(
+        azlmbr.bus.Broadcast,
+        'SetComponentProperty',
+        light_component_id_pair,
+        LIGHT_TYPE_PROPERTY,
+        polygon_light_type
+    )
+    verify_required_component_property_value(
+        entity_name=light_entity_name,
+        component=light_entity.components[0],
+        property_path=LIGHT_TYPE_PROPERTY,
+        expected_property_value=polygon_light_type
+    )
+
+    # Point (simple punctual) light type checks.
+    simple_point_light = LIGHT_TYPES[6]
+    light_type_property_test(
+        light_type=simple_point_light,
+        light_properties=SIMPLE_POINT_LIGHT_PROPERTIES,
+        light_component_id_pair=light_component_id_pair,
+        light_entity_name=light_entity_name,
+        light_entity=light_entity
+    )
+
+    # Spot (simple punctual) light type checks.
+    simple_spot_light = LIGHT_TYPES[7]
+    light_type_property_test(
+        light_type=simple_spot_light,
+        light_properties=SIMPLE_SPOT_LIGHT_PROPERTIES,
+        light_component_id_pair=light_component_id_pair,
+        light_entity_name=light_entity_name,
+        light_entity=light_entity
+    )
 
     general.log("Light component test (non-GPU) completed.")
+
+
+def light_type_property_test(light_type, light_properties, light_component_id_pair, light_entity_name, light_entity):
+    """
+    Updates the current light type and modifies its properties, then verifies they are accurate to what was set.
+    :param light_type: The type of light to update, must match a value in LIGHT_TYPES
+    :param light_properties: List of tuples detailing properties to modify with update values.
+    :param light_component_id_pair: Entity + component ID pair for updating the light component on a given entity.
+    :param light_entity_name: the name of the Entity holding the light component.
+    :param light_entity: the Entity object containing the light component.
+    :return: None
+    """
+    azlmbr.editor.EditorComponentAPIBus(
+        azlmbr.bus.Broadcast,
+        'SetComponentProperty',
+        light_component_id_pair,
+        LIGHT_TYPE_PROPERTY,
+        light_type
+    )
+    verify_required_component_property_value(
+        entity_name=light_entity_name,
+        component=light_entity.components[0],
+        property_path=LIGHT_TYPE_PROPERTY,
+        expected_property_value=light_type
+    )
+
+    for light_property in light_properties:
+        light_entity.get_set_test(0, light_property[0], light_property[1])
 
 
 if __name__ == "__main__":
