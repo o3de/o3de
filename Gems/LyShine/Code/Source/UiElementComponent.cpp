@@ -1211,8 +1211,8 @@ bool UiElementComponent::FixupPostLoad(AZ::Entity* entity, UiCanvasComponent* ca
 #ifdef AZ_DEBUG_BUILD
     // check that the m_childEntityIdOrder is ordered such that the m_sortIndex fields are in order and contiguous
     {
-        int numChildren = m_childEntityIdOrder.size();
-        for (AZ::u64 index = 0; index < numChildren; ++index)
+        size_t numChildren = m_childEntityIdOrder.size();
+        for (size_t index = 0; index < numChildren; ++index)
         {
             if (m_childEntityIdOrder[index].m_sortIndex != index)
             {
