@@ -24,7 +24,9 @@
 #include <sys/ioctl.h>
 #include <sys/resource.h> // for iopolicy
 #include <time.h>
+#include <unistd.h>
 
+extern char **environ;
 
 namespace AzFramework
 {
@@ -45,7 +47,7 @@ namespace AzFramework
             // result == 0 means child PID is still running, nothing to check
             if (result == -1)
             {
-                AZ_TracePrintf("ProcessWatcher", "IsChildProcessDone could not determine child process status (waitpid errno %d). assuming process either failed to launch or terminated unexpectedly\n", errno);
+                AZ_TracePrintf("ProcessWatcher", "IsChildProcessDone could not determine child process status (waitpid errno %d(%s)). assuming process either failed to launch or terminated unexpectedly\n", errno, strerror(errno));
                 exitCode = 0;
             }
             else if (result == childProcessId)
@@ -290,6 +292,10 @@ namespace AzFramework
                 azstrcat(environmentVariables[i], envVarString.size(), envVarString.c_str());
             }
             environmentVariables[numEnvironmentVars] = NULL;
+        }
+        else
+        {
+            environmentVariables = ::environ;
         }
 
         pid_t child_pid = fork();

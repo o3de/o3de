@@ -6,6 +6,31 @@
 #
 #
 
+#template for generating the project build_path setreg
+set(installed_binaries_path_template [[
+{
+    "Amazon": {
+        "AzCore": {
+            "Runtime": {
+                "FilePaths": {
+                    "InstalledBinariesFolder": "bin/Mac/$<CONFIG>"
+                }
+            }
+        }
+    }
+}]]
+)
+
+unset(target_conf_dir)
+foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
+    string(TOUPPER ${conf} UCONF)
+    string(APPEND target_conf_dir $<$<CONFIG:${conf}>:${CMAKE_RUNTIME_OUTPUT_DIRECTORY_${UCONF}}>)
+endforeach()
+
+set(installed_binaries_setreg_path ${target_conf_dir}/Registry/installed_binaries_path.setreg)
+
+file(GENERATE OUTPUT ${installed_binaries_setreg_path} CONTENT ${installed_binaries_path_template})
+
 #! ly_install_target_override: Mac specific target installation
 function(ly_install_target_override)
 
@@ -47,6 +72,11 @@ function(ly_install_target_override)
     if (${is_bundle})
         set_property(TARGET ${ly_platform_install_target_TARGET} PROPERTY RESOURCE ${cached_resources_dir})
     endif()
+endfunction()
+
+
+function(ly_install_add_install_path_setreg NAME)
+    set_property(TARGET ${NAME} APPEND PROPERTY INTERFACE_LY_TARGET_FILES "${installed_binaries_setreg_path}\nRegistry")
 endfunction()
 
 include(cmake/Platform/Common/Install_common.cmake)
