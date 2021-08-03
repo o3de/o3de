@@ -44,7 +44,7 @@ namespace AtomToolsFramework
                                                  //!< translate interpolation.
     };
 
-    //! A customizable camera controller than can be configured to a run varying set of CameraInput instances.
+    //! A customizable camera controller that can be configured to run a varying set of CameraInput instances.
     //! The controller can also be animated from its current transform to a new translation and orientation.
     class ModularViewportCameraControllerInstance final
         : public AzFramework::MultiViewportControllerInstanceInterface<ModularViewportCameraController>
