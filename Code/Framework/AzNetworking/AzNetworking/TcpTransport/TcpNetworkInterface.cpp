@@ -179,7 +179,7 @@ namespace AzNetworking
         m_timeoutEnabled = timeoutEnabled;
     }
 
-    bool TcpNetworkInterface::IsTimeoutEnabled()
+    bool TcpNetworkInterface::IsTimeoutEnabled() const
     {
         return m_timeoutEnabled;
     }

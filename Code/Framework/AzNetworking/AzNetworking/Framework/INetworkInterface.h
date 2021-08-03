@@ -109,7 +109,7 @@ namespace AzNetworking
 
         //! Whether this connection interface will disconnect by virtue of a time out (does not account for cvars affecting all connections)
         //! @return boolean true if this connection will not disconnect on timeout (does not account for cvars affecting all connections)
-        virtual bool IsTimeoutEnabled() = 0;
+        virtual bool IsTimeoutEnabled() const = 0;
 
         //! Const access to the metrics tracked by this network interface.
         //! @return const reference to the metrics tracked by this network interface

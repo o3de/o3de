@@ -105,7 +105,7 @@ namespace AzNetworking
         bool StopListening() override;
         bool Disconnect(ConnectionId connectionId, DisconnectReason reason) override;
         void SetTimeoutEnabled(bool timeoutEnabled) override;
-        bool IsTimeoutEnabled() override;
+        bool IsTimeoutEnabled() const override;
         //! @}
 
         //! Returns true if this is an encrypted socket, false if not.

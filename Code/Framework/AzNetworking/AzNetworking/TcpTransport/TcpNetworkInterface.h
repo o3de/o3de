@@ -100,7 +100,7 @@ namespace AzNetworking
         bool StopListening() override;
         bool Disconnect(ConnectionId connectionId, DisconnectReason reason) override;
         void SetTimeoutEnabled(bool timeoutEnabled) override;
-        bool IsTimeoutEnabled() override;
+        bool IsTimeoutEnabled() const override;
         //! @}
 
         //! Queues a new incoming connection for this network interface.

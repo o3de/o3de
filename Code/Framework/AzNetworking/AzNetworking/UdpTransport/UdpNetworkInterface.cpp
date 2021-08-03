@@ -402,7 +402,7 @@ namespace AzNetworking
         m_timeoutEnabled = timeoutEnabled;
     }
 
-    bool UdpNetworkInterface::IsTimeoutEnabled()
+    bool UdpNetworkInterface::IsTimeoutEnabled() const
     {
         return m_timeoutEnabled;
     }
