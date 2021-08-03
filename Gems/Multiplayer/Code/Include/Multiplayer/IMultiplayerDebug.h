@@ -19,10 +19,10 @@ namespace Multiplayer
 
         virtual ~IMultiplayerDebug() = default;
 
-        //!
+        //! Enables printing of debug text over entities that have significant amount of traffic.
         virtual void ShowEntityBandwidthDebugOverlay() = 0;
 
-        //!
+        //! Disables printing of debug text over entities that have significant amount of traffic.
         virtual void HideEntityBandwidthDebugOverlay() = 0;
     };
 }

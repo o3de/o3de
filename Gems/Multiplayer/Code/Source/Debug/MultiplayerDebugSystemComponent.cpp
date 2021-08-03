@@ -63,10 +63,6 @@ namespace Multiplayer
         m_reporter.reset();
     }
 
-    void MultiplayerDebugSystemComponent::OnImGuiInitialize()
-    {
-    }
-
 #ifdef IMGUI_ENABLED
     void MultiplayerDebugSystemComponent::OnImGuiMainMenuUpdate()
     {

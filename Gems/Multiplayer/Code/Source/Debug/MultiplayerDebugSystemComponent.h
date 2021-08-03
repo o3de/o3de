@@ -52,7 +52,6 @@ namespace Multiplayer
 #ifdef IMGUI_ENABLED
         //! ImGui::ImGuiUpdateListenerBus overrides
         //! @{
-        void OnImGuiInitialize() override;
         void OnImGuiMainMenuUpdate() override;
         void OnImGuiUpdate() override;
         //! @}
