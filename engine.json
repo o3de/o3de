@@ -77,6 +77,7 @@
         "Gems/StartingPointInput",
         "Gems/StartingPointMovement",
         "Gems/SurfaceData",
+		"Gems/Terrain",
         "Gems/TestAssetBuilder",
         "Gems/TextureAtlas",
         "Gems/TickBusOrderViewer",

@@ -41,6 +41,7 @@ set(ENABLED_GEMS
     Vegetation
     GraphModel
     LandscapeCanvas
+    Terrain
     NvCloth
     Blast
     Maestro
