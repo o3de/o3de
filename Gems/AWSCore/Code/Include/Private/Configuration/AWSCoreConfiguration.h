@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/std/string/string.h>
 
 #include <AWSCoreInternalBus.h>
@@ -35,8 +34,10 @@ namespace AWSCore
             "Failed to get profile name, return default value instead.";
         static constexpr const char ResourceMappingFileNameNotFoundErrorMessage[] =
             "Failed to get resource mapping config file name, return empty value instead.";
-        static constexpr const char SettingsRegistryLoadFailureErrorMessage[] =
+        static constexpr const char SettingsRegistryFileLoadFailureErrorMessage[] =
             "Failed to load AWSCore settings registry file.";
+        static constexpr const char GlobalSettingsRegistryLoadFailureErrorMessage[] =
+            "Failed to load AWSCore configurations from global settings registry.";
 
 
         AWSCoreConfiguration();
@@ -53,9 +54,6 @@ namespace AWSCore
         void ReloadConfiguration() override;
 
     private:
-        // Initialize settings registry reference by loading for project .setreg file
-        void InitSettingsRegistry();
-
         // Initialize source project folder path
         void InitSourceProjectFolderPath();
 
@@ -66,7 +64,6 @@ namespace AWSCore
         void ResetSettingsRegistryData();
 
         AZStd::string m_sourceProjectFolder;
-        AZ::SettingsRegistryImpl m_settingsRegistry;
         AZStd::string m_profileName;
         AZStd::string m_resourceMappingConfigFileName;
     };

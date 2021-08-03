@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -91,12 +91,30 @@ namespace AzFramework
         virtual void DestroyGameEntity(const AZ::EntityId& /*id*/) = 0;
 
         /**
+         * Destroys an entity only in slice mode (when prefabs are disabled). This request is only added as a stop-gap solution
+         * to prevent the editor from crashing when prefabs are enabled and must only be called through the BehaviorContext binding
+         * for 'DestroyGameEntity'. No code should be written to directly call this method. This will be removed soon.
+         * 
+         * @param id The ID of the entity to destroy.
+         */
+        virtual void DestroyGameEntityOnlyInSliceMode(const AZ::EntityId& /*id*/) = 0;
+
+        /**
          * Destroys an entity and all of its descendants. 
          * The entity and its descendants are immediately deactivated and will be 
          * destroyed on the next tick.
          * @param id The ID of the entity to destroy.
          */
         virtual void DestroyGameEntityAndDescendants(const AZ::EntityId& /*id*/) = 0;
+
+        /**
+         * Destroys an entity and its descendants only in slice mode (when prefabs are disabled). This request is only added as a stop-gap
+         * solution to prevent the editor from crashing when prefabs are enabled and must only be called through the BehaviorContext
+         * binding for 'DestroyGameEntityAndDescendants'.No code should be written to directly call this method. This will be removed soon.
+         *
+         * @param id The ID of the entity to destroy.
+         */
+        virtual void DestroyGameEntityAndDescendantsOnlyInSliceMode(const AZ::EntityId& /*id*/) = 0;
 
         /**
          * Activates the game entity.

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -17,7 +17,7 @@ namespace O3DE::ProjectManager
         bool RegisterProject(const QString& path);
         bool UnregisterProject(const QString& path);
         bool CopyProjectDialog(const QString& origPath, QWidget* parent = nullptr);
-        bool CopyProject(const QString& origPath, const QString& newPath);
+        bool CopyProject(const QString& origPath, const QString& newPath, QWidget* parent);
         bool DeleteProjectFiles(const QString& path, bool force = false);
         bool MoveProject(QString origPath, QString newPath, QWidget* parent = nullptr, bool ignoreRegister = false);
 

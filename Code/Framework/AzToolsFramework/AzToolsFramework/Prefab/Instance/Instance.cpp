@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -280,9 +280,11 @@ namespace AzToolsFramework
                 }
             }
 
+            // Destroy the entities *before* clearing the lookup maps so that any lookups triggered during an entity's destructor
+            // are still valid.
+            m_entities.clear();
             m_instanceToTemplateEntityIdMap.clear();
             m_templateToInstanceEntityIdMap.clear();
-            m_entities.clear();
         }
 
         bool Instance::RegisterEntity(const AZ::EntityId& entityId, const EntityAlias& entityAlias)

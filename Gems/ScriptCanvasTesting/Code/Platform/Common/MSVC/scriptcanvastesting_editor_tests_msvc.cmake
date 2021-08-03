@@ -1,5 +1,5 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 # 
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
@@ -8,7 +8,6 @@
 ly_add_source_properties(
     SOURCES
         Source/Framework/ScriptCanvasTestUtilities.cpp
-        Tests/ScriptCanvas_Async.cpp
         Tests/ScriptCanvas_BehaviorContext.cpp
         Tests/ScriptCanvas_ContainerSupport.cpp
         Tests/ScriptCanvas_Core.cpp

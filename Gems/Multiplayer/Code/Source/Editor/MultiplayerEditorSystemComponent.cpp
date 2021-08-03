@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -113,6 +113,12 @@ namespace Multiplayer
             {
                 console->PerformCommand("disconnect");
             }
+
+            AZ::Interface<INetworkEntityManager>::Get()->ClearAllEntities();
+
+            // Rebuild the library to clear temporary in-memory spawnable assets
+            AZ::Interface<INetworkSpawnableLibrary>::Get()->BuildSpawnablesList();
+
             break;
         }
     }
@@ -235,7 +241,5 @@ namespace Multiplayer
 
     void MultiplayerEditorSystemComponent::OnGameEntitiesReset()
     {
-        // Rebuild the library to clear temporary in-memory spawnable assets
-        AZ::Interface<INetworkSpawnableLibrary>::Get()->BuildSpawnablesList();
     }
 }

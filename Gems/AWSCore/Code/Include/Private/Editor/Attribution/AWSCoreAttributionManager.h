@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -9,9 +9,14 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/vector.h>
 
-#include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <Editor/Attribution/AWSAttributionServiceApi.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+
+
+namespace AZ
+{
+    class SettingsRegistryInterface;
+}
 
 namespace AWSCore
 {
@@ -49,7 +54,7 @@ namespace AWSCore
         // AzToolsFramework::EditorEvents interface implementation
         void NotifyMainWindowInitialized(QMainWindow* mainWindow) override;
 
-        AZStd::unique_ptr<AZ::SettingsRegistryImpl> m_settingsRegistry;
+        AZ::SettingsRegistryInterface* m_settingsRegistry;
     };
 
 } // namespace AWSCore

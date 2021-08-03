@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -20,6 +20,7 @@ namespace O3DE::ProjectManager
 
     public:
         explicit FormBrowseEditWidget(const QString& labelText, const QString& valueText = "", QWidget* parent = nullptr);
+        explicit FormBrowseEditWidget(const QString& labelText = "", QWidget* parent = nullptr);
         ~FormBrowseEditWidget() = default;
 
     protected slots:

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -15,7 +15,7 @@
 //--------------------------------------------------------------------------------------
 //  (C) 2001-2005 ATI Research, Inc.  All rights reserved.
 //--------------------------------------------------------------------------------------
-// modifications by Crytek GmbH
+// Modified from original
 
 //disable warning about doubles being converted down to float
 #pragma warning (disable : 4244 )

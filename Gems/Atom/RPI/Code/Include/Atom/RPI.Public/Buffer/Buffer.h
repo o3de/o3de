@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -55,10 +55,6 @@ namespace AZ
 
             //! Update buffer's content with sourceData at an offset of bufferByteOffset
             bool UpdateData(const void* sourceData, uint64_t sourceDataSizeInBytes, uint64_t bufferByteOffset = 0);
-
-            //! Clear buffer's content with clearValue (can be used for debug / reset purposes)
-            //!   at an offset of bufferByteOffset
-            bool ResetBufferData(uint8_t clearValue, uint64_t clearSizeInBytes, uint64_t bufferByteOffset);
 
             //! Reallocate a new block of memory for this buffer. The previous allocated
             //! memory will be discarded once the GPU is done using it. This only works

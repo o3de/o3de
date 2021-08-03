@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -9,6 +9,7 @@
 
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzFramework/IO/LocalFileIO.h>
 
 #include <Framework/JsonObjectHandler.h>
@@ -117,10 +118,16 @@ public:
         m_otherFileIO = AZ::IO::FileIOBase::GetInstance();
         AZ::IO::FileIOBase::SetInstance(nullptr);
         AZ::IO::FileIOBase::SetInstance(m_localFileIO);
+
+        m_settingsRegistry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
+        AZ::SettingsRegistry::Register(m_settingsRegistry.get());
     }
 
     void TearDown() override
     {
+        AZ::SettingsRegistry::Unregister(m_settingsRegistry.get());
+        m_settingsRegistry.reset();
+
         AZ::IO::FileIOBase::SetInstance(nullptr);
         
         if (m_otherFileIO)
@@ -160,4 +167,7 @@ public:
 
 private:
     AZ::IO::FileIOBase* m_otherFileIO = nullptr;
+
+protected:
+    AZStd::unique_ptr<AZ::SettingsRegistryImpl> m_settingsRegistry;
 };

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -70,7 +70,15 @@ namespace AzToolsFramework
                 "Failed to find an owning instance for the entity with id %llu.", static_cast<AZ::u64>(entityId));
             Instance& instance = instanceReference->get();
             m_templateId = instance.GetTemplateId();
-            m_entityAlias = (instance.GetEntityAlias(entityId)).value();
+            auto aliasReference = instance.GetEntityAlias(entityId);
+            if (!aliasReference.has_value())
+            {
+                AZ_Error(
+                    "Prefab", aliasReference.has_value(), "Failed to find the entity alias for entity %s.", entityId.ToString().c_str());
+                return;
+            }
+
+            m_entityAlias = aliasReference.value();
 
             //generate undo/redo patches
             m_instanceToTemplateInterface->GeneratePatch(m_redoPatch, initialState, endState);
@@ -253,8 +261,13 @@ namespace AzToolsFramework
             instanceDom.CopyFrom(instanceDomRef->get(), instanceDom.GetAllocator());
 
             //apply the patch to the template within the target
-            AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::ApplyPatch(instanceDom,
-                instanceDom.GetAllocator(), patch, AZ::JsonMergeApproach::JsonPatch);
+            AZ::JsonSerializationResult::ResultCode result = PrefabDomUtils::ApplyPatches(instanceDom, instanceDom.GetAllocator(), patch);
+
+            AZ_Error(
+                "Prefab",
+                result.GetOutcome() == AZ::JsonSerializationResult::Outcomes::PartialSkip ||
+                    result.GetOutcome() == AZ::JsonSerializationResult::Outcomes::Success,
+                "Some of the patches are not successfully applied.");
 
             //remove the link id placed into the instance
             auto linkIdIter = instanceDom.FindMember(PrefabDomUtils::LinkIdName);

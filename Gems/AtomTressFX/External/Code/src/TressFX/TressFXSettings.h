@@ -111,6 +111,9 @@ namespace AMD
         float   m_HairKSpec2 = 0.136f;
         float   m_HairSpecExp2 = 11.80f;
 
+        float   m_HairRoughness = 0.65f;
+        float   m_HairCuticleTilt = 0.08;   // Tilt angle in radians roughly 5-6 degrees tilt
+
         // For deep approximated shadow lookup
         float   m_HairShadowAlpha = 0.35f;
         float   m_HairFiberSpacing = 0.4f;

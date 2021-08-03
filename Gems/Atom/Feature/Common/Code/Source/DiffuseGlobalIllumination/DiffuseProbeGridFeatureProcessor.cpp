@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -175,6 +175,27 @@ namespace AZ
             }
         }
 
+        void DiffuseProbeGridFeatureProcessor::OnBeginPrepareRender()
+        {
+            for (auto& diffuseProbeGrid : m_realTimeDiffuseProbeGrids)
+            {
+                diffuseProbeGrid->ResetCullingVisibility();
+            }
+        }
+
+        void DiffuseProbeGridFeatureProcessor::OnEndPrepareRender()
+        {
+            // re-build the list of visible real-time diffuse probe grids
+            m_visibleRealTimeDiffuseProbeGrids.clear();
+            for (auto& diffuseProbeGrid : m_realTimeDiffuseProbeGrids)
+            {
+                if (diffuseProbeGrid->GetIsVisible())
+                {
+                    m_visibleRealTimeDiffuseProbeGrids.push_back(diffuseProbeGrid);
+                }
+            }
+        }
+
         DiffuseProbeGridHandle DiffuseProbeGridFeatureProcessor::AddProbeGrid(const AZ::Transform& transform, const AZ::Vector3& extents, const AZ::Vector3& probeSpacing)
         {
             AZStd::shared_ptr<DiffuseProbeGrid> diffuseProbeGrid = AZStd::make_shared<DiffuseProbeGrid>();
@@ -213,6 +234,17 @@ namespace AZ
             if (itEntry != m_realTimeDiffuseProbeGrids.end())
             {
                 m_realTimeDiffuseProbeGrids.erase(itEntry);
+            }
+
+            // remove from side list of visible real-time grids
+            itEntry = AZStd::find_if(m_visibleRealTimeDiffuseProbeGrids.begin(), m_visibleRealTimeDiffuseProbeGrids.end(), [&](AZStd::shared_ptr<DiffuseProbeGrid> const& entry)
+            {
+                return (entry == probeGrid);
+            });
+
+            if (itEntry != m_visibleRealTimeDiffuseProbeGrids.end())
+            {
+                m_visibleRealTimeDiffuseProbeGrids.erase(itEntry);
             }
 
             probeGrid = nullptr;

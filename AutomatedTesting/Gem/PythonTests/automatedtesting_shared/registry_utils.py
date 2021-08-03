@@ -1,5 +1,5 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -9,12 +9,12 @@ import winreg
 
 logger = logging.getLogger(__name__)
 
-LUMBERYARD_SETTINGS_PATH = r'Software\Amazon\Lumberyard\Settings'
+LUMBERYARD_SETTINGS_PATH = r'Software\O3DE\O3DE\Settings'
 
 def set_ly_registry_value(reg_path, value_name, new_value, value_type=winreg.REG_DWORD):
     """
     Sets the specified value for the specified value_name in the LY registry key.
-    :param reg_path: A string that identifies the registry path to the desired key (e.g. Software\Amazon\Lumberyard\Settings)
+    :param reg_path: A string that identifies the registry path to the desired key (e.g. Software\O3DE\O3DE\Settings)
     :param value_name: A string that identifies the value name (e.g. UndoLevels, ViewportInteractionModel)
     :param new_value: Value to set on the specified value_name
     :param value_type: The type of value set. Defaults to a 32-bit number.
@@ -40,7 +40,7 @@ def set_ly_registry_value(reg_path, value_name, new_value, value_type=winreg.REG
 def get_ly_registry_value(reg_path, value_name):
     """
     Gets the current value for an existing value_name in the LY registry key.
-    :param reg_path: A string that identifies the registry path to the desired key (e.g. Software\Amazon\Lumberyard\Settings)
+    :param reg_path: A string that identifies the registry path to the desired key (e.g. Software\O3DE\O3DE\Settings)
     :param value_name: A string that identifies the value name (e.g. UndoLevels, ViewportInteractionModel)
     :return: Value set for the specified value_name
     """
@@ -62,7 +62,7 @@ def get_ly_registry_value(reg_path, value_name):
 def delete_ly_registry_value(reg_path, value_name):
     """
     Deletes the specific registry value_name found in the reg_path key.
-    :param reg_path: A string that identifies the registry path to the desired key (e.g. Software\Amazon\Lumberyard\Settings)
+    :param reg_path: A string that identifies the registry path to the desired key (e.g. Software\O3DE\O3DE\Settings)
     :param value_name: A string that identifies the value name (e.g. UndoLevels, ViewportInteractionModel)
     :return: None
     """

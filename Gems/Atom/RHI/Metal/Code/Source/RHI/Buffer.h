@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -32,6 +32,9 @@ namespace AZ
             const MemoryView& GetMemoryView() const;
             MemoryView& GetMemoryView();
             
+            void SetMapRequestOffset(const uint32_t mapRequestOffset);
+            const uint32_t GetMapRequestOffset() const;
+            
         private:
             Buffer() = default;
             friend class BufferPool;
@@ -57,6 +60,9 @@ namespace AZ
             
             // The number of resolve operations pending for this buffer.
             AZStd::atomic<uint32_t> m_pendingResolves = 0;
+            
+            // Offset related to the Map request. We need to cache it for cpu/gpu synchronization.
+            uint32_t m_mapRequestOffset = 0;
 
         };
     }

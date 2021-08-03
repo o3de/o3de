@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -333,22 +333,16 @@ namespace AZ
                 m_passSrg->Compile();
                 m_passSrgChanged = false;
             }
-
-            // Read preview output
-            if (m_readback)
-            {
-                m_readback->FrameBegin(params);
-                m_readback = nullptr;
-            }
         }
 
         bool ImageAttachmentPreviewPass::ReadbackOutput(AZStd::shared_ptr<AttachmentReadback> readback)
         {
             if (m_outputColorAttachment)
             {
-                m_readback = readback;
+                m_readbackOption = PassAttachmentReadbackOption::Output;
+                m_attachmentReadback = readback;
                 AZStd::string readbackName = AZStd::string::format("%s_%s", m_outputColorAttachment->GetAttachmentId().GetCStr(), GetName().GetCStr());
-                return m_readback->ReadPassAttachment(m_outputColorAttachment.get(), AZ::Name(readbackName));
+                return m_attachmentReadback->ReadPassAttachment(m_outputColorAttachment.get(), AZ::Name(readbackName));
             }
             return false;
         }

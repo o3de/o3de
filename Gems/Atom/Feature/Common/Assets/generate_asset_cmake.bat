@@ -1,5 +1,5 @@
 @ECHO off
-REM Copyright (c) Contributors to the Open 3D Engine Project
+REM Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 REM 
 REM SPDX-License-Identifier: Apache-2.0 OR MIT
 
@@ -16,7 +16,7 @@ set OUTPUT_FILE=atom_feature_common_asset_files.cmake
 
 :: Write copyright header to top of file
 echo # > %OUTPUT_FILE%
-echo # Copyright (c) Contributors to the Open 3D Engine Project >> %OUTPUT_FILE%
+echo # Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution. >> %OUTPUT_FILE%
 echo # >> %OUTPUT_FILE%
 echo # SPDX-License-Identifier: Apache-2.0 OR MIT >> %OUTPUT_FILE%
 echo # >> %OUTPUT_FILE%

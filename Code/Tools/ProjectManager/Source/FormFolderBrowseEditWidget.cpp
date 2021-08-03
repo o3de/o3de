@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -15,8 +15,9 @@
 namespace O3DE::ProjectManager
 {
     FormFolderBrowseEditWidget::FormFolderBrowseEditWidget(const QString& labelText, const QString& valueText, QWidget* parent)
-        : FormBrowseEditWidget(labelText, valueText, parent)
+        : FormBrowseEditWidget(labelText, parent)
     {
+        setText(valueText);
     }
 
     void FormFolderBrowseEditWidget::HandleBrowseButton()
@@ -30,8 +31,14 @@ namespace O3DE::ProjectManager
         QString directory = QDir::toNativeSeparators(QFileDialog::getExistingDirectory(this, tr("Browse"), defaultPath));
         if (!directory.isEmpty())
         {
-            m_lineEdit->setText(directory);
+            setText(directory);
         }
 
+    }
+
+    void FormFolderBrowseEditWidget::setText(const QString& text)
+    {
+        QString path = QDir::toNativeSeparators(text);
+        FormBrowseEditWidget::setText(path);
     }
 } // namespace O3DE::ProjectManager

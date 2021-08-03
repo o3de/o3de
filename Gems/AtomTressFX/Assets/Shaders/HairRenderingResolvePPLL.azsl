@@ -205,13 +205,15 @@ float4 GatherLinkedList(float2 vfScreenAddress, float2 screenUV, inout float out
         float alpha = vData.w;
 
         uint shadeParamIndex;	// So we know what settings to shade with
-        float3 vColor = UnpackUintIntoFloat3Byte(color, shadeParamIndex);
+        float3 fragmentColor = UnpackUintIntoFloat3Byte(color, shadeParamIndex);
         
-        // Shade the bottom hair layers (cheap shading, just uses scalp base color)
-        // Just blend in the color for cheap underhairs
-        fcolor.xyz = fcolor.xyz * (1.f - alpha) + (vColor * alpha) * alpha;
-//        fcolor.w *= (1.f - alpha);                // Blend one and inverse alpha
-        fcolor.w = saturate(fcolor.w + alpha);    // Blend alpha and inverse alpha
+        // Cheap shading layers - the bottom hair layers use background and scalp base color
+        // No HW alpha blending - the first layer blends the image buffer and 
+        // the rest of the hairs are blended on top. HOwever, this might be used 
+        // as the blocking factor for the TT lobe in the Marschner lighting model 
+        // to gradually block light passing through the hair strands from the back.
+        fcolor.xyz = fcolor.xyz * (1.f - alpha) + fragmentColor * alpha;
+        fcolor.w += alpha * (1.0f - fcolor.w);
 
         pointer = NODE_NEXT(pointer);
     }
@@ -249,16 +251,19 @@ float4 GatherLinkedList(float2 vfScreenAddress, float2 screenUV, inout float out
         float fDepth = asfloat(nodeDepth);
         float4 vData = UnpackUintIntoFloat4(data);
         float3 vTangent = vData.xyz;
-        float alpha = vData.w;
+        float alpha = vData.w;  // Alpha will be used to determine light pass
         uint shadeParamIndex;	// So we know what settings to shade with
 
         float3 vColor = UnpackUintIntoFloat3Byte(color, shadeParamIndex);
-        float3 fragmentColor = TressFXShading(vfScreenAddress, fDepth, vTangent, vColor, shadeParamIndex);
+        float3 fragmentColor = TressFXShading(vfScreenAddress, fDepth, vTangent, vColor, fcolor.w, shadeParamIndex);
 
         // Blend in the fragment color
-        fcolor.xyz = fcolor.xyz * (1.f - alpha) + (fragmentColor * alpha) * alpha;
-//        fcolor.w *= (1.f - alpha);
-        fcolor.w = saturate(fcolor.w + alpha);    // Blend alpha and inverse alpha
+        fcolor.xyz = fcolor.xyz * (1.f - alpha) + fragmentColor * alpha;
+        // No HW alpha blending - the first layer blends the image buffer and 
+        // the rest of the hairs are blended on top. HOwever, this might be used 
+        // as the blocking factor for the TT lobe in the Marschner lighting model 
+        // to gradually block light passing through the hair strands from the back.
+        fcolor.w += alpha * (1.0f - fcolor.w);
 
         //====== Bring back only the closest fragment color - debug purpose ======
 //        fcolor.xyz = fragmentColor;
@@ -267,7 +272,7 @@ float4 GatherLinkedList(float2 vfScreenAddress, float2 screenUV, inout float out
 
     outDepth = minDepth;    // the last ine standing is the closest
 
-//    return vTmpColor;
+//    return float4(fcolor.w, fcolor.w, fcolor.w, 1.0);
     return fcolor;
 }
 
@@ -367,11 +372,11 @@ float4 CalculateFrontFregmentShading(
         float fDepth = asfloat(nodeDepth);
         float4 vData = UnpackUintIntoFloat4(data);
         float3 vTangent = vData.xyz;
-        float alpha = vData.w;
+        float alpha = vData.w;  // Alpha will be used as thickness of hair
         uint shadeParamIndex;	// So we know what settings to shade with
         float3 vColor = UnpackUintIntoFloat3Byte(color, shadeParamIndex);
 
-        float3 fragmentColor = TressFXShading(vfScreenAddress, fDepth, vTangent, vColor, shadeParamIndex);
+        float3 fragmentColor = TressFXShading(vfScreenAddress, fDepth, vTangent, vColor, finalColor.w, shadeParamIndex);
 
         // Blend in the fragment color
         finalColor.xyz = finalColor.xyz * (1.f - alpha) + (fragmentColor * alpha) * alpha;
@@ -410,7 +415,7 @@ float4 CombineFragments(float2 vfScreenAddress, inout float closestDepth )
     return finalColor;
 }
 
-float4 GetClosestFragment(float2 vfScreenAddress, inout float3 tangent, inout float closestDepth)
+float4 GetClosestFragment(float2 vfScreenAddress, float2 screenUV, inout float3 tangent, inout float closestDepth)
 {
     uint2 vScreenAddress = uint2(vfScreenAddress);
     uint pointer = FragmentListHead[vScreenAddress];
@@ -438,7 +443,7 @@ float4 GetClosestFragment(float2 vfScreenAddress, inout float3 tangent, inout fl
     float maxDepth = asfloat(NODE_DEPTH(pointer));
     //---------------------------------------------------------------
     */
-    float4 fcolor = float4(0, 0, 0, 1);
+    float4 fcolor = float4(PassSrg::m_frameBuffer.Sample(PassSrg::LinearSampler, screenUV).xyz, 0);    // Blend one and inverse alpha
 
     float maxDepth = 0;
     uint curColor, curData;
@@ -457,15 +462,14 @@ float4 GetClosestFragment(float2 vfScreenAddress, inout float3 tangent, inout fl
     float curDepth = closestDepth = maxDepth;
     float4 vData = UnpackUintIntoFloat4(curData);
     float3 vTangent = vData.xyz;
-    float alpha = vData.w;
+    float alpha = 1.0;
     uint shadeParamIndex;	// the material index
     float3 vColor = UnpackUintIntoFloat3Byte(curColor, shadeParamIndex);
-    float3 fragmentColor = TressFXShading(vfScreenAddress, curDepth, vTangent, vColor, shadeParamIndex);
+    float3 fragmentColor = TressFXShading(vfScreenAddress, curDepth, vTangent, vColor, fcolor.w, shadeParamIndex);
 
     // Blend in the fragment color
-    alpha = 1.0;   // Simplified, otherwise it doesn't match the full pass and is too transparent.
-    fcolor.xyz = fragmentColor * alpha;     // simplified since there is no base layer
-    fcolor.w *= (1.f - alpha);
+    fcolor.xyz = fcolor.xyz * (1.f - alpha) + (fragmentColor * alpha);
+    fcolor.w = saturate(fcolor.w + alpha);    // Blend alpha and inverse alpha
    
     tangent = vTangent;
 
@@ -485,10 +489,11 @@ PSColorDepthOutput PPLLResolvePS(VSOutput input)
 {
     PSColorDepthOutput pixOut;
 
-//    float3 tangent;
-//    pixOut.m_color = GetClosestFragment(input.m_position.xy, tangent, pixOut.m_depth);
+    float3 tangent;
+//    pixOut.m_color = GetClosestFragment(input.m_position.xy, input.m_texCoord, tangent, pixOut.m_depth);
 //    pixOut.m_color = CombineFragments(input.m_position.xy, pixOut.m_depth);
 //    pixOut.m_color = GatherLinkedList(input.m_position.xy, pixOut.m_depth);
+
     pixOut.m_color = GatherLinkedList(input.m_position.xy, input.m_texCoord, pixOut.m_depth);
 
     return pixOut;

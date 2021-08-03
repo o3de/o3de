@@ -1,7 +1,7 @@
 #pragma once
 
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -80,11 +80,11 @@ namespace AZ
                 virtual unsigned int GetVertexIndex(int faceIndex, int vertexIndexInFace) const = 0;
                 static const int s_invalidMaterialId = 0;
 
-                // Set the unit size of the mesh, from the point of FBX SDK
+                // Set the unit size of the mesh, from the point of the source SDK
                 void SetUnitSizeInMeters(float size) { m_unitSizeInMeters = size; }
                 float GetUnitSizeInMeters() const { return m_unitSizeInMeters; }
 
-                // Set the original unit size of the mesh, from the point of FBX SDK
+                // Set the original unit size of the mesh, from the point of the source SDK
                 void SetOriginalUnitSizeInMeters(float size) { m_originalUnitSizeInMeters = size; }
                 float GetOriginalUnitSizeInMeters() const { return m_originalUnitSizeInMeters; }
 

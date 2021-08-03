@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -10,8 +10,6 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Component/TickBus.h>
-
-#include <ScriptCanvas/Execution/RuntimeBus.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <ScriptEvents/ScriptEventsAsset.h>
 
@@ -23,7 +21,7 @@ namespace ScriptCanvas
         {
             namespace Internal
             {
-                 void ScriptEventEntry::Reflect(AZ::ReflectContext* context)
+                void ScriptEventEntry::Reflect(AZ::ReflectContext* context)
                 {
                     if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
                     {
@@ -156,7 +154,7 @@ namespace ScriptCanvas
                     }
 
                     m_definition = definition;
-                 }
+                }
 
                 void ScriptEventBase::OnDeactivate()
                 {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -39,7 +39,7 @@ namespace NvCloth
         //! It specifies the valid Scene Groups that are allowed to have
         //! cloth rules (aka cloth modifiers), these are Mesh and Actor groups.
         //! It also validates the cloth rules data for the manifest (asset containing
-        //! all the Scene information from the FBX Editor Settings).
+        //! all the Scene information from the Scene Settings).
         class ClothRuleBehavior
             : public AZ::SceneAPI::SceneCore::BehaviorComponent
             , public AZ::SceneAPI::Events::ManifestMetaInfoBus::Handler

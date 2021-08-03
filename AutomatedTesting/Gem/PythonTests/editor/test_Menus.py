@@ -1,5 +1,5 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -55,12 +55,7 @@ class TestMenus(object):
             "Rotate Action triggered",
             "Scale Action triggered",
             "Global Preferences Action triggered",
-            "Graphics Settings Action triggered",
             "Editor Settings Manager Action triggered",
-            "Very High Action triggered",
-            "High Action triggered",
-            "Medium Action triggered",
-            "Low Action triggered",
             "Customize Keyboard Action triggered",
             "Export Keyboard Settings Action triggered",
             "Import Keyboard Settings Action triggered",
@@ -89,7 +84,6 @@ class TestMenus(object):
             "Center on Selection Action triggered",
             "Go to Location Action triggered",
             "Remember Location Action triggered",
-            "Change Move Speed Action triggered",
             "Switch Camera Action triggered",
             "Show/Hide Helpers Action triggered",
             "Refresh Style Action triggered",

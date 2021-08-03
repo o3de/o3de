@@ -1,5 +1,5 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 # 
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
@@ -11,7 +11,7 @@ import re
 
 copyrightre = re.compile(r'All or portions of this file Copyright \(c\) Amazon\.com')
 copyright_text = """
-Copyright (c) Contributors to the Open 3D Engine Project
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 

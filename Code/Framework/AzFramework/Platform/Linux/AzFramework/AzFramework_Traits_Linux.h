@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -12,5 +12,5 @@
 #define AZ_TRAIT_AZFRAMEWORK_USE_ERRNO_T_TYPEDEF 1
 #define AZ_TRAIT_AZFRAMEWORK_USE_POSIX_LOCALTIME_R 0
 #define AZ_TRAIT_AZFRAMEWORK_PYTHON_SHELL "python.sh"
-#define AZ_TRAIT_AZFRAMEWORK_USE_PROJECT_MANAGER 0
+#define AZ_TRAIT_AZFRAMEWORK_USE_PROJECT_MANAGER 1
 #define AZ_TRAIT_AZFRAMEWORK_PROCESSLAUNCH_DEFAULT 0

@@ -94,13 +94,10 @@ namespace AZ
                 m_entityId = entityId;
 
                 m_featureProcessor = RPI::Scene::GetFeatureProcessorForEntity<Hair::HairFeatureProcessor>(m_entityId);
-                if (m_featureProcessor)
-                {
-                    // Call this function to trigger the load of the existing asset
+                if (m_featureProcessor && !m_renderObject)
+                {   // Call this function if object doesn't exist to trigger the load of the existing asset
                     OnHairAssetChanged();
                 }
-
-                // [To Do] Adi: affect / show the hair object via the feature processor
 
                 EMotionFX::Integration::ActorComponentNotificationBus::Handler::BusConnect(m_entityId);
                 HairRequestsBus::Handler::BusConnect(m_entityId);
@@ -205,6 +202,7 @@ namespace AZ
                     const float updateShadows = false;
                     m_renderObject->UpdateRenderingParameters(
                         &m_configuration.m_renderingSettings, RESERVED_PIXELS_FOR_OIT, distanceFromCamera, updateShadows);
+                    m_renderObject->SetLightingModel(m_configuration.m_hairGlobalSettings.m_hairLightingModel);
                     m_configChanged = false;
 
                     // Only load the image asset when the dirty flag has been set on the settings.
@@ -214,9 +212,6 @@ namespace AZ
                         m_configuration.m_renderingSettings.m_imgDirty = false;
                     }
                 }
-
-                // Optional - move this to be done by the feature processor
- //               m_renderObject->SetFrameDeltaTime(deltaTime);
 
                 // Update the enable flag for hair render object
                 // The enable flag depends on the visibility of render actor instance and the flag of hair configuration.
@@ -351,7 +346,6 @@ namespace AZ
                 m_featureProcessor->AddHairRenderObject(m_renderObject);
                 return true;
             }
-            // [To Do] Adi: add auto generated getter/setter functions...
 
         } // namespace Hair
     } // namespace Render

@@ -1,6 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,6 +10,7 @@
 #include <AzCore/Script/ScriptAsset.h>
 
 #include <ScriptCanvas/Asset/AssetDescription.h>
+#include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Core/SubgraphInterface.h>
 #include <ScriptCanvas/Core/GraphData.h>
 #include <ScriptCanvas/Grammar/DebugMap.h>
@@ -21,6 +22,7 @@
 namespace ScriptCanvas
 {
     class RuntimeAsset;
+    struct RuntimeVariable;
 
     class RuntimeAssetDescription : public AssetDescription
     {
@@ -41,7 +43,7 @@ namespace ScriptCanvas
                 "Script Canvas Runtime",
                 "Script Canvas Runtime",
                 "Icons/ScriptCanvas/Viewport/ScriptCanvas.png",
-                AZ::Color(1.0f,0.0f,0.0f,1.0f),
+                AZ::Color(1.0f, 0.0f, 0.0f, 1.0f),
                 false
             )
         {}
@@ -82,6 +84,24 @@ namespace ScriptCanvas
         bool static RequiresDependencyConstructionParametersRecurse(const RuntimeData& data);
     };
 
+    struct RuntimeDataOverrides
+    {
+        AZ_TYPE_INFO(RuntimeDataOverrides, "{CE3C0AE6-4EBA-43B2-B2D5-7AC24A194E63}");
+        AZ_CLASS_ALLOCATOR(RuntimeDataOverrides, AZ::SystemAllocator, 0);
+
+        static bool IsPreloadBehaviorEnforced(const RuntimeDataOverrides& overrides);
+
+        static void Reflect(AZ::ReflectContext* reflectContext);
+
+        AZ::Data::Asset<RuntimeAsset> m_runtimeAsset;
+        AZStd::vector<RuntimeVariable> m_variables;
+        AZStd::vector<bool> m_variableIndices;
+        AZStd::vector<AZ::EntityId> m_entityIds;
+        AZStd::vector<RuntimeDataOverrides> m_dependencies;
+
+        void EnforcePreloadBehavior();
+    };
+
     class RuntimeAssetBase
         : public AZ::Data::AssetData
     {
@@ -94,7 +114,6 @@ namespace ScriptCanvas
         {
 
         }
-
     };
     template <typename DataType>
     class RuntimeAssetTyped
@@ -165,7 +184,7 @@ namespace ScriptCanvas
                 "Script Canvas Function Interface",
                 "Script Canvas Function Interface",
                 "Icons/ScriptCanvas/Viewport/ScriptCanvas_Function.png",
-                AZ::Color(1.0f,0.0f,0.0f,1.0f),
+                AZ::Color(1.0f, 0.0f, 0.0f, 1.0f),
                 false
             )
         {}
@@ -207,6 +226,6 @@ namespace ScriptCanvas
         static const char* GetFileExtension() { return "scriptcanvas_fn_compiled"; }
         static const char* GetFileFilter() { return "*.scriptcanvas_fn_compiled"; }
 
-        friend class SubgraphInterfaceAssetHandler;        
+        friend class SubgraphInterfaceAssetHandler;
     };
 }

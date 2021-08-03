@@ -4,10 +4,6 @@
     "timestamp": "${timestamp}"
   },
   "jenkins": {
-    "pipeline_of_truth" : [
-      "nightly-incremental",
-      "nightly-clean"
-    ],
     "use_test_impact_analysis": ${use_tiaf}
   },
   "repo": {

@@ -1,6 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -18,9 +18,6 @@
 
 namespace AzFramework
 {
-    //! Updates camera key bindings that can be overridden with AZ console vars (invoke from console to update).
-    void ReloadCameraKeyBindings();
-
     //! Returns Euler angles (pitch, roll, yaw) for the incoming orientation.
     //! @note Order of rotation is Z, Y, X.
     AZ::Vector3 EulerAngles(const AZ::Matrix3x3& orientation);
@@ -104,6 +101,8 @@ namespace AzFramework
     class CameraInput
     {
     public:
+        using ActivateChangeFn = AZStd::function<void()>;
+
         //! The state of activation the camera input is currently in.
         //! State changes of Activation: Idle -> Beginning -> Active -> Ending -> Idle
         enum class Activation
@@ -148,11 +147,28 @@ namespace AzFramework
 
         void ContinueActivation()
         {
+            // continue activation is called after the first step of the camera input,
+            // activation began is called once, the first time before the state is set to active
+            if (m_activation == Activation::Beginning)
+            {
+                if (m_activationBeganFn)
+                {
+                    m_activationBeganFn();
+                }
+            }
+
             m_activation = Activation::Active;
         }
 
         void ClearActivation()
         {
+            // clear activation happens after an end has been requested, activation ended
+            // is then called before the camera input is returned to idle
+            if (m_activationEndedFn)
+            {
+                m_activationEndedFn();
+            }
+
             m_activation = Activation::Idle;
         }
 
@@ -177,6 +193,16 @@ namespace AzFramework
             return false;
         }
 
+        void SetActivationBeganFn(ActivateChangeFn activationBeganFn)
+        {
+            m_activationBeganFn = AZStd::move(activationBeganFn);
+        }
+
+        void SetActivationEndedFn(ActivateChangeFn activationEndedFn)
+        {
+            m_activationEndedFn = AZStd::move(activationEndedFn);
+        }
+
     protected:
         //! Handle any state reset that may be required for the camera input (optional).
         virtual void ResetImpl()
@@ -185,6 +211,8 @@ namespace AzFramework
 
     private:
         Activation m_activation = Activation::Idle; //!< Default all camera inputs to the idle state.
+        AZStd::function<void()> m_activationBeganFn; //!< Called when the camera input successfully makes it to the active state.
+        AZStd::function<void()> m_activationEndedFn; //!< Called when the camera input ends and returns to the idle state.
     };
 
     //! Properties to use to configure behavior across all types of camera.
@@ -245,7 +273,7 @@ namespace AzFramework
     class RotateCameraInput : public CameraInput
     {
     public:
-        explicit RotateCameraInput(InputChannelId rotateChannelId);
+        explicit RotateCameraInput(const InputChannelId& rotateChannelId);
 
         // CameraInput overrides ...
         bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
@@ -257,7 +285,8 @@ namespace AzFramework
 
     private:
         InputChannelId m_rotateChannelId; //!< Input channel to begin the rotate camera input.
-        ClickDetector m_clickDetector; //!< Used to determine when a sufficient motion delta has occurred to begin the input.
+        ClickDetector m_clickDetector; //!< Used to determine when a sufficient motion delta has occurred after an initial discrete input
+                                       //!< event has started (press and move event).
     };
 
     //! Axes to use while panning the camera.
@@ -296,7 +325,7 @@ namespace AzFramework
     class PanCameraInput : public CameraInput
     {
     public:
-        PanCameraInput(InputChannelId panChannelId, PanAxesFn panAxesFn);
+        PanCameraInput(const InputChannelId& panChannelId, PanAxesFn panAxesFn);
 
         // CameraInput overrides ...
         bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
@@ -309,6 +338,8 @@ namespace AzFramework
     private:
         PanAxesFn m_panAxesFn; //!< Builder for the particular pan axes (provided in the constructor).
         InputChannelId m_panChannelId; //!< Input channel to begin the pan camera input.
+        ClickDetector m_clickDetector; //!< Used to determine when a sufficient motion delta has occurred after an initial discrete input
+                                       //!< event has started (press and move event).
     };
 
     //! Axes to use while translating the camera.
@@ -342,11 +373,24 @@ namespace AzFramework
         return AZ::Matrix3x3::CreateFromColumns(basisX, basisY, basisZ);
     }
 
+    //! Groups all camera translation inputs.
+    struct TranslateCameraInputChannels
+    {
+        InputChannelId m_forwardChannelId;
+        InputChannelId m_backwardChannelId;
+        InputChannelId m_leftChannelId;
+        InputChannelId m_rightChannelId;
+        InputChannelId m_downChannelId;
+        InputChannelId m_upChannelId;
+        InputChannelId m_boostChannelId;
+    };
+
     //! A camera input to handle discrete events that can translate the camera (translate in three axes).
     class TranslateCameraInput : public CameraInput
     {
     public:
-        explicit TranslateCameraInput(TranslationAxesFn translationAxesFn);
+        explicit TranslateCameraInput(
+            TranslationAxesFn translationAxesFn, const TranslateCameraInputChannels& translateCameraInputChannels);
 
         // CameraInput overrides ...
         bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
@@ -413,10 +457,12 @@ namespace AzFramework
         }
 
         //! Converts from a generic input channel id to a concrete translation type (based on the user's key mappings).
-        static TranslationType TranslationFromKey(InputChannelId channelId);
+        TranslationType TranslationFromKey(
+            const InputChannelId& channelId, const TranslateCameraInputChannels& translateCameraInputChannels);
 
         TranslationType m_translation = TranslationType::Nil; //!< Types of translation the camera input is under.
         TranslationAxesFn m_translationAxesFn; //!< Builder for translation axes.
+        TranslateCameraInputChannels m_translateCameraInputChannels; //!< Input channel ids that map to internal translation types.
         bool m_boost = false; //!< Is the translation speed currently being multiplied/scaled upwards.
     };
 
@@ -437,7 +483,7 @@ namespace AzFramework
     class OrbitDollyCursorMoveCameraInput : public CameraInput
     {
     public:
-        explicit OrbitDollyCursorMoveCameraInput(InputChannelId dollyChannelId);
+        explicit OrbitDollyCursorMoveCameraInput(const InputChannelId& dollyChannelId);
 
         // CameraInput overrides ...
         bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
@@ -446,7 +492,9 @@ namespace AzFramework
         AZStd::function<float()> m_cursorSpeedFn;
 
     private:
-        InputChannelId m_dollyChannelId;
+        InputChannelId m_dollyChannelId; //!< Input channel to begin the dolly cursor camera input.
+        ClickDetector m_clickDetector; //!< Used to determine when a sufficient motion delta has occurred after an initial discrete input
+                                       //!< event has started (press and move event).
     };
 
     //! A camera input to handle discrete scroll events that can scroll (translate) the camera along its forward axis.
@@ -469,6 +517,8 @@ namespace AzFramework
     public:
         using LookAtFn = AZStd::function<AZStd::optional<AZ::Vector3>(const AZ::Vector3& position, const AZ::Vector3& direction)>;
 
+        explicit OrbitCameraInput(const InputChannelId& orbitChannelId);
+
         // CameraInput overrides ...
         bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
@@ -480,6 +530,7 @@ namespace AzFramework
         void SetLookAtFn(const LookAtFn& lookAtFn);
 
     private:
+        InputChannelId m_orbitChannelId; //!< Input channel to begin the orbit camera input.
         LookAtFn m_lookAtFn; //!< The look-at behavior to use for this orbit camera (how is the look-at point calculated/retrieved).
     };
 

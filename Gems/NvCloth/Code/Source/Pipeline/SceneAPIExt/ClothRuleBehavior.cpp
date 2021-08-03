@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -61,7 +61,7 @@ namespace NvCloth
             [[maybe_unused]] const AZ::SceneAPI::Containers::Scene& scene,
             AZ::SceneAPI::DataTypes::IManifestObject& target)
         {
-            // When a cloth rule is created in the FBX Editor Settings...
+            // When a cloth rule is created in the Scene Settings...
             if (target.RTTI_IsTypeOf(ClothRule::TYPEINFO_Uuid()))
             {
                 ClothRule* clothRule = azrtti_cast<ClothRule*>(&target);

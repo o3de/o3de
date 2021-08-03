@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -29,7 +29,7 @@ namespace ScriptCanvas
 
                 AZStd::unordered_set< Data::Type > GetSupportedNativeDataTypes() const override;
                 void Operator(Data::eType type, const ArithmeticOperands& operands, Datum& result) override;
-   
+
             protected:
 
                 void InitializeSlot(const SlotId& slotId, const ScriptCanvas::Data::Type& dataType) override;

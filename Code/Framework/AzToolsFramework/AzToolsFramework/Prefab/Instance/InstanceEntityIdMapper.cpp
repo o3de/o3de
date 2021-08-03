@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -157,7 +157,7 @@ namespace AzToolsFramework
                     "Prefab - EntityIdMapper: Entity with Id %s has no registered owning instance",
                     entityId.ToString().c_str());
 
-                return AZStd::string::format("Entity_%s", entityId.ToString().c_str());
+                return {};
             }
 
             Instance* owningInstance = &(owningInstanceReference->get());

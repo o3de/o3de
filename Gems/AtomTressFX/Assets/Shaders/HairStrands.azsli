@@ -71,7 +71,7 @@ float3 GetStrandColor(int index, float fractionOfStrand)
     float3 rootColor;
     float3 tipColor;
 
-    float2 texCd = g_HairStrandTexCd[index / NumVerticesPerStrand].xy;
+    float2 texCd = g_HairStrandTexCd[(float) index / NumVerticesPerStrand].xy;
     rootColor = BaseAlbedoTexture.SampleLevel(LinearWrapSampler, texCd, 0).rgb;
     tipColor  = MatTipColor.rgb;
 
@@ -80,7 +80,7 @@ float3 GetStrandColor(int index, float fractionOfStrand)
 
     // Update the color based on position along the strand (vertex level) and lerp between tip and root if within the tipPercentage requested
     float rootRange = 1.f - TipPercentage;
-    return (fractionOfStrand > rootRange) ? lerp(rootColor, tipColor, fractionOfStrand) : rootColor;
+    return (fractionOfStrand > rootRange) ? lerp(rootColor, tipColor, (fractionOfStrand - rootRange) / TipPercentage) : rootColor;
 }
 
 TressFXVertex GetExpandedTressFXVert(uint vertexId, float3 eye, float2 winSize, float4x4 viewProj)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -30,9 +30,16 @@ namespace AWSClientAuth
         m_settings.reset();
     }
 
-    bool GoogleAuthenticationProvider::Initialize(AZStd::weak_ptr<AZ::SettingsRegistryInterface> settingsRegistry)
+    bool GoogleAuthenticationProvider::Initialize()
     {
-        if (!settingsRegistry.lock()->GetObject(m_settings.get(), azrtti_typeid(m_settings.get()), GoogleSettingsPath))
+        AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get();
+        if (!settingsRegistry)
+        {
+            AZ_Warning("AWSCognitoAuthenticationProvider", false, "Failed to load the setting registry");
+            return false;
+        }
+
+        if (!settingsRegistry->GetObject(m_settings.get(), azrtti_typeid(m_settings.get()), GoogleSettingsPath))
         {
             AZ_Warning("AWSCognitoAuthenticationProvider", false, "Failed to get Google settings object for path %s", GoogleSettingsPath);
             return false;

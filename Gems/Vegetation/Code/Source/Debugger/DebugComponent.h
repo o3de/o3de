@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -54,7 +54,7 @@ namespace Vegetation
 
     class DebugComponent
         : public AZ::Component
-        , private AzFramework::DebugDisplayEventBus::Handler
+        , private AzFramework::EntityDebugDisplayEventBus::Handler
         , private DebugRequestBus::Handler
         , private DebugNotificationBus::Handler
         , private SystemConfigurationRequestBus::Handler
@@ -79,7 +79,8 @@ namespace Vegetation
 
         //////////////////////////////////////////////////////////////////////////
         // EntityDebugDisplayEventBus
-        void DrawGlobalDebugInfo() override;
+        void DisplayEntityViewport(
+            const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay) override;
 
         //////////////////////////////////////////////////////////////////////////
         // DebugNotifications
@@ -112,10 +113,9 @@ namespace Vegetation
     protected:
         void PrepareNextReport();
         void CopyReportToSortedList();
-        void AddConsoleVariables();
-        void RemoveConsoleVariables();
-        void DrawDebugStats();
-        void DrawInstanceDebug();
+        void DrawSectorTimingData(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay);
+        void DrawDebugStats(AzFramework::DebugDisplayRequests& debugDisplay);
+        void DrawInstanceDebug(AzFramework::DebugDisplayRequests& debugDisplay);
 
     private:
         AZStd::atomic_bool m_exportCurrentReport{ false };

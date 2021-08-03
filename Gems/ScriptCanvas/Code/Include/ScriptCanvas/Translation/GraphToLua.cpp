@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -24,8 +24,6 @@
 #include <ScriptCanvas/Grammar/PrimitivesExecution.h>
 
 #include "GraphToLuaUtility.h"
-#include "TranslationContext.h"
-#include "TranslationContextBus.h"
 
 namespace GraphToLuaCpp
 {
@@ -92,9 +90,7 @@ namespace ScriptCanvas
         {
             SystemRequestBus::BroadcastResult(m_systemConfiguration, &SystemRequests::GetSystemComponentConfiguration);
             MarkTranslationStart();
-            RequestBus::BroadcastResult(m_context, &RequestTraits::GetTranslationContext);
-            AZ_Assert(m_context, "Nothing is possible without the context");
-
+            
             m_tableName = GraphToLuaCpp::FileNameToTableName(m_model.GetSource().m_name);
             m_tableName += m_configuration.m_suffix;
 
@@ -138,12 +134,12 @@ namespace ScriptCanvas
 
         const AZStd::string& GraphToLua::FindAbbreviation(AZStd::string_view dependency) const
         {
-            return m_context->FindAbbreviation(dependency);
+            return m_context.FindAbbreviation(dependency);
         }
 
         const AZStd::string& GraphToLua::FindLibrary(AZStd::string_view dependency) const
         {
-            return m_context->FindLibrary(dependency);
+            return m_context.FindLibrary(dependency);
         }
 
         AZStd::string_view GraphToLua::GetOperatorString(Grammar::ExecutionTreeConstPtr execution)
@@ -806,7 +802,7 @@ namespace ScriptCanvas
 
             m_dotLua.Write("(");
 
-            if (execution->IsStart() && execution->IsPure())
+            if (execution == m_model.GetStart() && execution->IsPure())
             {
                 m_dotLua.Write(Grammar::k_executionStateVariableName);
 
@@ -1589,8 +1585,10 @@ namespace ScriptCanvas
                 break;
             }
 
-            // #functions2 pure on graph start nodes with dependencies can only be added to the graph as variables
-//             if (execution->IsStart() && execution->IsPure())
+            // #functions2 pure on graph start nodes with dependencies can only be added to the graph as variables, which is a work-flow we may never want to support
+            // as it effectively duplicates the Component-Entity-System. Technically, if this functionality is desired, one could just add another script component
+            // with the additional graph...
+//             if (execution->IsStartCall() && execution->IsPure())
 //             {
 //                 WriteFunctionCallInputOfChildStart(execution);
 //             }
@@ -1944,7 +1942,7 @@ namespace ScriptCanvas
                 {
                     const auto requirement = ParseConstructionRequirement(variable);
 
-                    if (requirement == Grammar::VariableConstructionRequirement::None || (requirement != Grammar::VariableConstructionRequirement::Static && !execution->IsStart()))
+                    if (requirement == Grammar::VariableConstructionRequirement::None || (requirement != Grammar::VariableConstructionRequirement::Static && !execution->IsStartCall()))
                     {
                         m_dotLua.WriteLineIndented("local %s = %s", variable->m_name.data(), ToValueString(variable->m_datum, m_configuration).data());
                     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -11,27 +11,14 @@ namespace AZ
 {
     namespace SDKMaterial
     {
-        MaterialWrapper::MaterialWrapper(fbxsdk::FbxSurfaceMaterial* fbxMaterial)
-            :m_fbxMaterial(fbxMaterial)
-            , m_assImpMaterial(nullptr)
-        {
-        }
-
         MaterialWrapper::MaterialWrapper(aiMaterial* assImpMaterial)
-            :m_fbxMaterial(nullptr)
-            , m_assImpMaterial(assImpMaterial)
+            : m_assImpMaterial(assImpMaterial)
         {
         }
 
         MaterialWrapper::~MaterialWrapper()
         {
-            m_fbxMaterial = nullptr;
             m_assImpMaterial = nullptr;
-        }
-
-        fbxsdk::FbxSurfaceMaterial* MaterialWrapper::GetFbxMaterial()
-        {
-            return m_fbxMaterial;
         }
 
         aiMaterial* MaterialWrapper::GetAssImpMaterial()

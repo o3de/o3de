@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -23,9 +23,9 @@ namespace AZ
         {
             enum class TangentSpace
             {
-                FromFbx     = 0,
-                MikkT       = 1,
-                EMotionFX   = 2
+                FromSourceScene = 0,
+                MikkT           = 1,
+                EMotionFX       = 2
             };
 
             enum class BitangentMethod

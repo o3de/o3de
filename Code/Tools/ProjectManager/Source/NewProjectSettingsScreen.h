@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -19,9 +19,12 @@ QT_FORWARD_DECLARE_CLASS(QFrame)
 namespace O3DE::ProjectManager
 {
     QT_FORWARD_DECLARE_CLASS(TagContainerWidget)
+
     class NewProjectSettingsScreen
         : public ProjectSettingsScreen
     {
+        Q_OBJECT
+
     public:
         explicit NewProjectSettingsScreen(QWidget* parent = nullptr);
         ~NewProjectSettingsScreen() = default;
@@ -30,6 +33,11 @@ namespace O3DE::ProjectManager
         QString GetProjectTemplatePath();
 
         void NotifyCurrentScreen() override;
+
+        void SelectProjectTemplate(int index, bool blockSignals = false);
+
+    signals:
+        void OnTemplateSelectionChanged(int oldIndex, int newIndex);
 
     private:
         QString GetDefaultProjectPath();
@@ -41,6 +49,7 @@ namespace O3DE::ProjectManager
         QLabel* m_templateSummary;
         TagContainerWidget* m_templateIncludedGems;
         QVector<ProjectTemplateInfo> m_templates;
+        int m_selectedTemplateIndex = -1;
 
         inline constexpr static int s_spacerSize = 20;
         inline constexpr static int s_templateDetailsContentMargin = 20;

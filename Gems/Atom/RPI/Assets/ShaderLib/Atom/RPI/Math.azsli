@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -30,6 +30,25 @@ void swap(inout float a, inout float b)
     b = c;
 }
 
+float Pow2(float x)
+{
+    return x * x;
+}
+float Pow3(float x)
+{
+    return x * x * x;
+}
+float Pow4(float x)
+{
+    x *= x;
+    return x * x;
+}
+float Pow5(float x)
+{
+    return x * Pow4(x);
+}
+
+
 // ---------- Intersection -----------
 
 // a simple ray sphere intersection function, didn't take limited precision 
@@ -37,7 +56,7 @@ void swap(inout float a, inout float b)
 // input vectors and calculation are in world space
 // return length t to the closest hit point if hit, otherwise return -1
 float RaySphereClosestHitWS(in float3 sphereOrigin, in float sphereRadius, 
-                          in float3 rayOrigin, in float3 rayDir)
+    in float3 rayOrigin, in float3 rayDir)
 {
     // vector point from sphere to ray origin
     float3 F = rayOrigin - sphereOrigin;
@@ -46,12 +65,12 @@ float RaySphereClosestHitWS(in float3 sphereOrigin, in float sphereRadius,
     float DdotD = dot(rayDir, rayDir);
 
     float det = FdotD * FdotD - (DdotD * FdotF - (DdotD * sphereRadius * sphereRadius));
-    
+
     if(det < 0.0f)
     {
         return -1;
     }
-    
+
     float sqrtDet = sqrt(det);
     if(sqrtDet > -FdotD)
     {
@@ -198,6 +217,7 @@ float PerspectiveDepthToLinear(float clipDepth, float3 coefficients)
 }
 
 // ---------- Random number generators -----------
+
 // George Marsaglia's Xorshift RNGs
 // https://www.jstatsoft.org/article/view/v008i14/xorshift.pdf
 uint Xorshift(in uint value) 
@@ -232,4 +252,31 @@ float LerpInverse(float a, float b, float value)
     {
         return (value - a) / (b - a);
     }
+}
+
+//-------- Gaussinan distribution functions ---------
+// https://en.wikipedia.org/wiki/Gaussian_function
+// Parameter:
+// amplitude - the height of the curve's peak
+// median - the position of the Mean / Median - the center of the "bell"
+// standardDeviation - controls the width of the "bell"
+float Gaussian(float x, float amplitude, float median, float standardDeviation)
+{
+    float exponent = -0.5 * Pow2((x - median) / standardDeviation);
+    return amplitude * exp(exponent);
+}
+
+// For parameter description see Gaussian(...) function above
+float GaussianIntegral(float a, float c)
+{
+    return (a * c * sqrt(TWO_PI));
+}
+
+float GaussianNormalized(float x, float expectedValue, float standardDeviation)
+{
+    float b = expectedValue;
+    float c = standardDeviation;
+    float a = 1.0f / (c * sqrt(TWO_PI));
+
+    return Gaussian(x, a, b, c);
 }

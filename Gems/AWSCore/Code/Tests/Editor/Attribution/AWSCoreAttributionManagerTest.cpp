@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -14,7 +14,6 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/base.h>
 #include <AzCore/Settings/SettingsRegistry.h>
-#include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
@@ -161,7 +160,6 @@ namespace AWSAttributionUnitTest
     protected:
         AZStd::shared_ptr<AZ::SerializeContext> m_serializeContext;
         AZStd::unique_ptr<AZ::JsonRegistrationContext> m_registrationContext;
-        AZStd::shared_ptr<AZ::SettingsRegistryImpl> m_settingsRegistry;
         AZStd::unique_ptr<AZ::JobContext> m_jobContext;
         AZStd::unique_ptr<AZ::JobCancelGroup> m_jobCancelGroup;
         AZStd::unique_ptr<AZ::JobManager> m_jobManager;
@@ -186,12 +184,8 @@ namespace AWSAttributionUnitTest
 
             AZ::JsonSystemComponent::Reflect(m_registrationContext.get());
 
-            m_settingsRegistry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
-
             m_settingsRegistry->SetContext(m_serializeContext.get());
             m_settingsRegistry->SetContext(m_registrationContext.get());
-
-            AZ::SettingsRegistry::Register(m_settingsRegistry.get());
 
             AZ::JobManagerDesc jobManagerDesc;
             AZ::JobManagerThreadDesc threadDesc;
@@ -210,9 +204,6 @@ namespace AWSAttributionUnitTest
             m_jobCancelGroup.reset();
             m_jobManager.reset();
 
-            AZ::SettingsRegistry::Unregister(m_settingsRegistry.get());
-
-            m_settingsRegistry.reset();
             m_serializeContext.reset();
             m_registrationContext.reset();
 
@@ -253,7 +244,6 @@ namespace AWSAttributionUnitTest
         manager.MetricCheck();
 
         // THEN
-        m_settingsRegistry->MergeSettingsFile(m_resolvedSettingsPath.data(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "");
         AZ::u64 timeStamp = 0;
         m_settingsRegistry->Get(timeStamp, "/Amazon/AWS/Preferences/AWSAttributionLastTimeStamp");
         ASSERT_TRUE(timeStamp == 0);
@@ -287,7 +277,6 @@ namespace AWSAttributionUnitTest
         manager.MetricCheck();
 
         // THEN
-        m_settingsRegistry->MergeSettingsFile(m_resolvedSettingsPath.data(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "");
         AZ::u64 timeStamp = 0;
         m_settingsRegistry->Get(timeStamp, "/Amazon/AWS/Preferences/AWSAttributionLastTimeStamp");
         ASSERT_TRUE(timeStamp > 0);
@@ -324,7 +313,6 @@ namespace AWSAttributionUnitTest
         manager.MetricCheck();
 
         // THEN
-        m_settingsRegistry->MergeSettingsFile(m_resolvedSettingsPath.data(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "");
         AZ::u64 timeStamp = 0;
         m_settingsRegistry->Get(timeStamp, "/Amazon/AWS/Preferences/AWSAttributionLastTimeStamp");
         ASSERT_TRUE(timeStamp > 0);
@@ -355,15 +343,14 @@ namespace AWSAttributionUnitTest
         AZ::u64 delayInSeconds = AZStd::chrono::duration_cast<AZStd::chrono::seconds>(AZStd::chrono::system_clock::now().time_since_epoch()).count();
         ASSERT_TRUE(m_settingsRegistry->Set("/Amazon/AWS/Preferences/AWSAttributionLastTimeStamp", delayInSeconds));
 
-        EXPECT_CALL(manager, SubmitMetric(testing::_)).Times(1);
-        EXPECT_CALL(m_moduleManagerRequestBusMock, EnumerateModules(testing::_)).Times(1);
+        EXPECT_CALL(manager, SubmitMetric(testing::_)).Times(0);
+        EXPECT_CALL(m_moduleManagerRequestBusMock, EnumerateModules(testing::_)).Times(0);
         EXPECT_CALL(m_credentialRequestBusMock, GetCredentialsProvider()).Times(1);
 
         // WHEN
         manager.MetricCheck();
 
         // THEN
-        m_settingsRegistry->MergeSettingsFile(m_resolvedSettingsPath.data(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "");
         AZ::u64 timeStamp = 0;
         m_settingsRegistry->Get(timeStamp, "/Amazon/AWS/Preferences/AWSAttributionLastTimeStamp");
         ASSERT_TRUE(timeStamp == delayInSeconds);
@@ -396,7 +383,6 @@ namespace AWSAttributionUnitTest
         manager.MetricCheck();
 
         // THEN
-        m_settingsRegistry->MergeSettingsFile(m_resolvedSettingsPath.data(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "");
         AZ::u64 timeStamp = 0;
         m_settingsRegistry->Get(timeStamp, "/Amazon/AWS/Preferences/AWSAttributionLastTimeStamp");
         ASSERT_TRUE(timeStamp == 0);
@@ -432,8 +418,8 @@ namespace AWSAttributionUnitTest
         manager.SetApiEndpointAndRegion(config);
 
         // THEN
-        ASSERT_TRUE(config->region  == Aws::Region::US_WEST_2);
-        ASSERT_TRUE(config->endpointOverride->find("execute-api.us-west-2.amazonaws.com") != Aws::String::npos);
+        ASSERT_TRUE(config->region  == Aws::Region::US_EAST_1);
+        ASSERT_TRUE(config->endpointOverride->find("o3deattribution.us-east-1.amazonaws.com") != Aws::String::npos);
 
         delete config;
     }

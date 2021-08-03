@@ -68,7 +68,10 @@ namespace AZ
                 HairPPLLResolvePass(const RPI::PassDescriptor& descriptor);
 
             private:
+                void UpdateGlobalShaderOptions();
+
                 HairFeatureProcessor* m_featureProcessor = nullptr;
+                AZ::RPI::ShaderVariantKey m_shaderOptions;
             };
 
 

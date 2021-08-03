@@ -435,8 +435,6 @@ QProgressBar {
     border: none;
     background-color: transparent;
     padding: 0px;
-    min-height: 14px;
-    font-size: 2px;
 }
 
 QProgressBar::chunk {
@@ -461,6 +459,28 @@ QProgressBar::chunk {
 
 #GemCatalogCartOverlaySectionLabel {
     font-weight: 600;
+}
+
+#GemCatalogHeaderLabel {
+    font-size: 12px;
+    color: #FFFFFF;
+}
+
+#GemCatalogHeaderShowCountLabel {
+    font-size: 12px;
+    font: italic;
+    color: #FFFFFF;
+}
+
+#GemCatalogListView {
+    background-color: #333333;
+}
+
+/************** Filter tag widget **************/
+
+#FilterTagWidgetTextLabel {
+    color: #94D2FF;
+    font-size: 10px;
 }
 
 /************** Gem Catalog (Inspector) **************/

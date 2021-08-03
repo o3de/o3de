@@ -1,6 +1,6 @@
 #!/usr/bin/env groovy
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -13,8 +13,17 @@ EMPTY_JSON = readJSON text: '{}'
 
 ENGINE_REPOSITORY_NAME = 'o3de'
 
-BUILD_SNAPSHOTS = ['development', 'stabilization/2106', '']
-DEFAULT_BUILD_SNAPSHOT = BUILD_SNAPSHOTS.get(0)
+// Branches with build snapshots
+BUILD_SNAPSHOTS = ['development', 'stabilization/2106']
+
+// Build snapshots with empty snapshot (for use with 'SNAPSHOT' pipeline paramater)
+BUILD_SNAPSHOTS_WITH_EMPTY = BUILD_SNAPSHOTS + ''
+
+// The default build snapshot to be selected in the 'SNAPSHOT' pipeline paramater
+DEFAULT_BUILD_SNAPSHOT = BUILD_SNAPSHOTS_WITH_EMPTY.get(0)
+
+// Branches with build snapshots as comma separated value string
+env.BUILD_SNAPSHOTS = BUILD_SNAPSHOTS.join(",")
 
 def pipelineProperties = []
 
@@ -207,8 +216,6 @@ def CheckoutRepo(boolean disableSubmodules = false) {
     if (!fileExists(ENGINE_REPOSITORY_NAME)) {
         palMkdir(ENGINE_REPOSITORY_NAME)
     }
-    
-    palSh('git lfs uninstall', 'Git LFS Uninstall') // Prevent git from pulling lfs objects during checkout
 
     if(fileExists('.git')) {
         // If the repository after checkout is locked, likely we took a snapshot while git was running,
@@ -242,13 +249,6 @@ def CheckoutRepo(boolean disableSubmodules = false) {
        ]
     }
 
-    // Run lfs in a separate step. Jenkins is unable to load the credentials for the custom LFS endpoint
-    withCredentials([usernamePassword(credentialsId: "${env.GITHUB_USER}", passwordVariable: 'accesstoken', usernameVariable: 'username')]) {
-        palSh("git config -f .lfsconfig lfs.url https://${username}:${accesstoken}@${env.LFS_URL}", 'Set credentials', false)
-    }
-    palSh('git lfs install', 'Git LFS Install')
-    palSh('git lfs pull', 'Git LFS Pull')
-
     // CHANGE_ID is used by some scripts to identify uniquely the current change (usually metric jobs)
     palSh('git rev-parse HEAD > commitid', 'Getting commit id')
     env.CHANGE_ID = readFile file: 'commitid'
@@ -272,8 +272,8 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
         unstash name: 'incremental_build_script'
 
         def pythonCmd = ''
-        if(env.IS_UNIX) pythonCmd = 'sudo -E python -u '
-        else pythonCmd = 'python -u '
+        if(env.IS_UNIX) pythonCmd = 'sudo -E python3 -u '
+        else pythonCmd = 'python3 -u '
 
         if(env.RECREATE_VOLUME?.toBoolean()) {
             palSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action delete --repository_name ${repositoryName} --project ${projectName} --pipeline ${pipeline} --branch ${branchName} --platform ${platform} --build_type ${buildType}", 'Deleting volume', winSlashReplacement=false)
@@ -385,8 +385,8 @@ def PostBuildCommonSteps(String workspace, boolean mount = true) {
 
     if (mount) {
         def pythonCmd = ''
-        if(env.IS_UNIX) pythonCmd = 'sudo -E python -u '
-        else pythonCmd = 'python -u '
+        if(env.IS_UNIX) pythonCmd = 'sudo -E python3 -u '
+        else pythonCmd = 'python3 -u '
 
         try {
             timeout(5) {
@@ -476,7 +476,7 @@ try {
                         }
                     } else {
                         // Non-PR builds
-                        pipelineParameters.add(choice(defaultValue: DEFAULT_BUILD_SNAPSHOT, name: 'SNAPSHOT', choices: BUILD_SNAPSHOTS, description: 'Selects the build snapshot to use. A more diverted snapshot will cause longer build times, but will not cause build failures.'))
+                        pipelineParameters.add(choice(defaultValue: DEFAULT_BUILD_SNAPSHOT, name: 'SNAPSHOT', choices: BUILD_SNAPSHOTS_WITH_EMPTY, description: 'Selects the build snapshot to use. A more diverted snapshot will cause longer build times, but will not cause build failures.'))
                         snapshot = env.SNAPSHOT
                         echo "Snapshot \"${snapshot}\" selected."
                     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -96,7 +96,7 @@ namespace EMotionFX
                             const AZ::u32 frameCount = aznumeric_caster(animation->GetKeyFrameCount());
                             if (motionRangeRule->GetStartFrame() == 0 && motionRangeRule->GetEndFrame() == frameCount - 1)
                             {
-                                // if the startframe/endframe matches the fbx animation length, remove it.
+                                // if the startframe/endframe matches the scene file's animation length, remove it.
                                 rules.RemoveRule(motionRangeRule);
                                 updated = true;
                             }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -22,7 +22,7 @@ namespace AWSClientAuth
         virtual ~AWSCognitoAuthenticationProvider() = default;
 
        // AuthenticationProviderInterface overrides
-       bool Initialize(AZStd::weak_ptr<AZ::SettingsRegistryInterface> settingsRegistry) override;
+       bool Initialize() override;
        void PasswordGrantSingleFactorSignInAsync(const AZStd::string& username, const AZStd::string& password) override;
        void PasswordGrantMultiFactorSignInAsync(const AZStd::string& username, const AZStd::string& password) override;
        void PasswordGrantMultiFactorConfirmSignInAsync(const AZStd::string& username, const AZStd::string& confirmationCode) override;

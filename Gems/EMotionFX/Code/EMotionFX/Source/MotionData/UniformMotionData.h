@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -49,7 +49,7 @@ namespace EMotionFX
         size_t CalcStreamSaveSizeInBytes(const SaveSettings& saveSettings) const override;
         AZ::u32 GetStreamSaveVersion() const override;
         bool GetSupportsOptimizeSettings() const override { return false; }
-        const char* GetFbxSettingsName() const override;
+        const char* GetSceneSettingsName() const override;
 
         // Overloaded.
         Transform SampleJointTransform(const SampleSettings& settings, AZ::u32 jointSkeletonIndex) const override;

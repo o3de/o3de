@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -16,6 +16,7 @@
 #include <ScriptCanvas/Core/ScriptCanvasBus.h>
 
 #include "GraphToX.h"
+#include "TranslationContext.h"
 #include "TranslationResult.h"
 #include "TranslationUtilities.h"
 
@@ -60,7 +61,7 @@ namespace ScriptCanvas
             RuntimeInputs m_runtimeInputs;
             BuildConfiguration m_executionConfig = BuildConfiguration::Release;
             FunctionBlockConfig m_functionBlockConfig = FunctionBlockConfig::Ignored;
-            const Context* m_context = nullptr;
+            Context m_context;
             AZStd::string m_tableName;
             Writer m_dotLua;
             SystemComponentConfiguration m_systemConfiguration;

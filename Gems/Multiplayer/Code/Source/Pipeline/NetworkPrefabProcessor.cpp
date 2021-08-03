@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -72,21 +72,24 @@ namespace Multiplayer
     }
 
     static void GatherNetEntities(
-        AzToolsFramework::Prefab::Instance* instance, 
-        AZStd::vector<AZStd::pair<AZ::Entity*, AzToolsFramework::Prefab::Instance*>>& output)
+        AzToolsFramework::Prefab::Instance* instance,
+        AZStd::unordered_map<AZ::Entity*, AzToolsFramework::Prefab::Instance*>& entityToInstanceMap,
+        AZStd::vector<AZ::Entity*>& netEntities)
     {
-        instance->GetEntities([instance, &output](AZStd::unique_ptr<AZ::Entity>& prefabEntity) 
+        instance->GetEntities([instance, &entityToInstanceMap, &netEntities](AZStd::unique_ptr<AZ::Entity>& prefabEntity)
         { 
             if (prefabEntity->FindComponent<NetBindComponent>())
             {
-                output.push_back(AZStd::make_pair(prefabEntity.get(), instance));
+                AZ::Entity* entity = prefabEntity.get();
+                entityToInstanceMap[entity] = instance;
+                netEntities.push_back(entity);
             }
             return true;
         });
 
-        instance->GetNestedInstances([&output](AZStd::unique_ptr<AzToolsFramework::Prefab::Instance>& nestedInstance) 
+        instance->GetNestedInstances([&entityToInstanceMap, &netEntities](AZStd::unique_ptr<AzToolsFramework::Prefab::Instance>& nestedInstance)
         { 
-            GatherNetEntities(nestedInstance.get(), output);
+            GatherNetEntities(nestedInstance.get(), entityToInstanceMap, netEntities);
         });
     }
 
@@ -112,33 +115,32 @@ namespace Multiplayer
 
         auto&& [object, networkSpawnable] =
             ProcessedObjectStore::Create<AzFramework::Spawnable>(uniqueName, context.GetSourceUuid(), AZStd::move(serializer));
+        auto& netSpawnableEntities = networkSpawnable->GetEntities();
 
         // Grab all net entities with their corresponding Instances to handle nested prefabs correctly
-        AZStd::vector<AZStd::pair<AZ::Entity*, AzToolsFramework::Prefab::Instance*>> netEntities;
-        GatherNetEntities(sourceInstance.get(), netEntities);
+        AZStd::unordered_map<AZ::Entity*, AzToolsFramework::Prefab::Instance*> netEntityToInstanceMap;
+        AZStd::vector<AZ::Entity*> prefabNetEntities;
+        GatherNetEntities(sourceInstance.get(), netEntityToInstanceMap, prefabNetEntities);
 
-        if (netEntities.empty())
+        if (prefabNetEntities.empty())
         {
             // No networked entities in the prefab, no need to do anything in this processor.
             return;
         }
 
-        // Instance container for net entities
-        AZStd::unique_ptr<Instance> networkInstance(aznew Instance());
-        networkInstance->SetTemplateSourcePath(AZ::IO::PathView(uniqueName));
+        // Sort the entities prior to processing. The entities will end up in the net spawnable in this order.
+        SpawnableUtils::SortEntitiesByTransformHierarchy(prefabNetEntities);
 
         // Create an asset for our future network spawnable: this allows us to put references to the asset in the components
         AZ::Data::Asset<AzFramework::Spawnable> networkSpawnableAsset;
         networkSpawnableAsset.Create(networkSpawnable->GetId());
         networkSpawnableAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
 
-        // Each spawnable has a root meta-data entity at position 0, so starting net indices from 1
-        size_t netEntitiesIndexCounter = 1;
+        size_t netEntitiesIndexCounter = 0;
 
-        for (auto& entityInstancePair : netEntities)
+        for (auto* prefabEntity : prefabNetEntities)
         {
-            AZ::Entity* prefabEntity = entityInstancePair.first;
-            Instance* instance = entityInstancePair.second;
+            Instance* instance = netEntityToInstanceMap[prefabEntity];
             
             AZ::EntityId entityId = prefabEntity->GetId();
             AZ::Entity* netEntity = instance->DetachEntity(entityId).release();
@@ -147,7 +149,11 @@ namespace Multiplayer
 
             // Net entity will need a new ID to avoid IDs collision
             netEntity->SetId(AZ::Entity::MakeId());
-            networkInstance->AddEntity(*netEntity);
+            netEntity->InvalidateDependencies();
+            netEntity->EvaluateDependencies();
+
+            // Insert the entity into the target net spawnable
+            netSpawnableEntities.emplace_back(netEntity);
 
             // Use the old ID for the breadcrumb entity to keep parent-child relationship in the original spawnable
             AZ::Entity* breadcrumbEntity = aznew AZ::Entity(entityId, netEntity->GetName());
@@ -185,37 +191,12 @@ namespace Multiplayer
         }
 
         // save the final result in the target Prefab DOM.
-        PrefabDom networkPrefab;
-        if (!PrefabDomUtils::StoreInstanceInPrefabDom(*networkInstance, networkPrefab))
-        {
-            AZ_Error("NetworkPrefabProcessor", false, "Saving exported Prefab Instance within a Prefab Dom failed.");
-            return;
-        }
-
         if (!PrefabDomUtils::StoreInstanceInPrefabDom(*sourceInstance, prefab))
         {
             AZ_Error("NetworkPrefabProcessor", false, "Saving exported Prefab Instance within a Prefab Dom failed.");
             return;
         }
 
-        bool result = SpawnableUtils::CreateSpawnable(*networkSpawnable, networkPrefab);
-        if (result)
-        {
-            AzFramework::Spawnable::EntityList& entities = networkSpawnable->GetEntities();
-            for (auto it = entities.begin(); it != entities.end(); ++it)
-            {
-                (*it)->InvalidateDependencies();
-                (*it)->EvaluateDependencies();
-            }
-
-            SpawnableUtils::SortEntitiesByTransformHierarchy(*networkSpawnable);
-
-            context.GetProcessedObjects().push_back(AZStd::move(object));
-        }
-        else
-        {
-            AZ_Error("Prefabs", false, "Failed to convert prefab '%.*s' to a spawnable.", AZ_STRING_ARG(prefabName));
-            context.ErrorEncountered();
-        }
+        context.GetProcessedObjects().push_back(AZStd::move(object));
     }
 }

@@ -1,7 +1,7 @@
 #pragma once
 
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -30,7 +30,7 @@ namespace EMotionFX
 
                 enum class SampleRateMethod : AZ::u8
                 {
-                    FromFbx = 0,
+                    FromSourceScene = 0,
                     Custom = 1
                 };
 
@@ -71,7 +71,7 @@ namespace EMotionFX
                 AZ::Crc32 GetVisibilityAllowedSizePercentage() const;
                 
                 float m_customSampleRate = 60.0f;
-                SampleRateMethod m_sampleRateMethod = SampleRateMethod::FromFbx;
+                SampleRateMethod m_sampleRateMethod = SampleRateMethod::FromSourceScene;
                 AZ::TypeId m_motionDataType = AZ::TypeId::CreateNull();
                 bool m_keepDuration = true;
 

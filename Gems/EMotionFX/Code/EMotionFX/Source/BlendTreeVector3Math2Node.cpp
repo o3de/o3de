@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -254,8 +254,6 @@ namespace EMotionFX
                 ->EnumAttribute(MATHFUNCTION_DIVIDE,       "Divide")
                 ->EnumAttribute(MATHFUNCTION_ANGLEDEGREES, "AngleDegrees")
             ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeVector3Math2Node::m_defaultValue, "Default Value", "The default value for x or y when one of them has no incomming connection.")
-                ->Attribute(AZ::Edit::Attributes::Min, AZ::Vector3(-std::numeric_limits<float>::max()))
-                ->Attribute(AZ::Edit::Attributes::Max, AZ::Vector3(std::numeric_limits<float>::max()))
             ;
     }
 } // namespace EMotionFX

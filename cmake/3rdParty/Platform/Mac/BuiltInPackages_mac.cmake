@@ -1,5 +1,5 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project
+# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 # 
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
@@ -10,7 +10,7 @@ ly_associate_package(PACKAGE_NAME zlib-1.2.8-rev2-multiplatform                 
 ly_associate_package(PACKAGE_NAME ilmbase-2.3.0-rev4-multiplatform                  TARGETS ilmbase                     PACKAGE_HASH 97547fdf1fbc4d81b8ccf382261f8c25514ed3b3c4f8fd493f0a4fa873bba348)
 ly_associate_package(PACKAGE_NAME hdf5-1.0.11-rev2-multiplatform                    TARGETS hdf5                        PACKAGE_HASH 11d5e04df8a93f8c52a5684a4cacbf0d9003056360983ce34f8d7b601082c6bd)
 ly_associate_package(PACKAGE_NAME alembic-1.7.11-rev3-multiplatform                 TARGETS alembic                     PACKAGE_HASH ba7a7d4943dd752f5a662374f6c48b93493df1d8e2c5f6a8d101f3b50700dd25)
-ly_associate_package(PACKAGE_NAME assimp-5.0.1-rev9-multiplatform                   TARGETS assimplib                   PACKAGE_HASH 448530277b51b145ca43b96becd0266e29ae210fc9e2b45f5afe85f301a040e7)
+ly_associate_package(PACKAGE_NAME assimp-5.0.1-rev11-multiplatform                  TARGETS assimplib                   PACKAGE_HASH 1a9113788b893ef4a2ee63ac01eb71b981a92894a5a51175703fa225f5804dec)
 ly_associate_package(PACKAGE_NAME squish-ccr-20150601-rev3-multiplatform            TARGETS squish-ccr                  PACKAGE_HASH c878c6c0c705e78403c397d03f5aa7bc87e5978298710e14d09c9daf951a83b3)
 ly_associate_package(PACKAGE_NAME ASTCEncoder-2017_11_14-rev2-multiplatform         TARGETS ASTCEncoder                 PACKAGE_HASH c240ffc12083ee39a5ce9dc241de44d116e513e1e3e4cc1d05305e7aa3bdc326)
 ly_associate_package(PACKAGE_NAME md5-2.0-multiplatform                             TARGETS md5                         PACKAGE_HASH 29e52ad22c78051551f78a40c2709594f0378762ae03b417adca3f4b700affdf)
@@ -42,5 +42,5 @@ ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-mac                         
 ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-mac                         TARGETS googletest                  PACKAGE_HASH cbf020d5ef976c5db8b6e894c6c63151ade85ed98e7c502729dd20172acae5a8)
 ly_associate_package(PACKAGE_NAME googlebenchmark-1.5.0-rev2-mac                    TARGETS GoogleBenchmark             PACKAGE_HASH ad25de0146769c91e179953d845de2bec8ed4a691f973f47e3eb37639381f665)
 ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1b-rev1-mac                           TARGETS OpenSSL                     PACKAGE_HASH 28adc1c0616ac0482b2a9d7b4a3a3635a1020e87b163f8aba687c501cf35f96c)
-ly_associate_package(PACKAGE_NAME qt-5.15.2-rev4-mac                                TARGETS Qt                          PACKAGE_HASH 08790d03a0e6ad808ad64cf25c3d75abd69a343f3d224fc39927e5c6e8738b98)
+ly_associate_package(PACKAGE_NAME qt-5.15.2-rev5-mac                                TARGETS Qt                          PACKAGE_HASH 9d25918351898b308ded3e9e571fff6f26311b2071aeafd00dd5b249fdf53f7e)
 ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-mac                      TARGETS libsamplerate               PACKAGE_HASH b912af40c0ac197af9c43d85004395ba92a6a859a24b7eacd920fed5854a97fe)

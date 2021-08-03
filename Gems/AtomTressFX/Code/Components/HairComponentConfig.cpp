@@ -34,6 +34,7 @@ namespace AZ
                         ->Field("HairAsset", &HairComponentConfig::m_hairAsset)
                         ->Field("SimulationSettings", &HairComponentConfig::m_simulationSettings)
                         ->Field("RenderingSettings", &HairComponentConfig::m_renderingSettings)
+                        ->Field("HairGlobalSettings", &HairComponentConfig::m_hairGlobalSettings)
                         ;
                 }
             }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -146,7 +146,7 @@ namespace AZ {
     AZStd::mutex                g_dbgLoadingMutex;
     HANDLE                      g_currentProcess = 0;   /// We deal with only one process for now.
     CRITICAL_SECTION            g_csDbgHelpDll;         /// All dbg help functions are single threaded, so we need to control the access.
-    AZStd::fixed_vector<SymbolStorage::ModuleInfo, 256> g_moduleInfo;
+    AZStd::fixed_vector<SymbolStorage::ModuleInfo, 2048> g_moduleInfo;
     
     // reserve 4k of scratch space so that we can get some callstack information without any allocations and as little stack frame usage as possible.
     const size_t                g_scratchSpaceSize = 2048;

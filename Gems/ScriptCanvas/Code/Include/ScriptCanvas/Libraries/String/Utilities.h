@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -24,10 +24,6 @@ namespace ScriptCanvas
             {
             public:
                 SCRIPTCANVAS_NODE(StartsWith);
-            protected:
-
-                void OnInputSignal(const SlotId& slotId) override;
-
             };
 
             //! Deprecated: see class String's reflection of method "Ends With"
@@ -36,10 +32,6 @@ namespace ScriptCanvas
             {
             public:
                 SCRIPTCANVAS_NODE(EndsWith);
-            protected:
-
-                void OnInputSignal(const SlotId& slotId) override;
-
             };
 
             //! Deprecated: see class String's reflection of method "Ends With"
@@ -55,9 +47,6 @@ namespace ScriptCanvas
             protected:
 
                 static const char* k_defaultDelimiter;
-
-                void OnInputSignal(const SlotId& slotId) override;
-
             };
 
             //! Deprecated: see class String's reflection of method "Join"
@@ -73,9 +62,6 @@ namespace ScriptCanvas
             protected:
 
                 static const char* k_defaultSeparator;
-
-                void OnInputSignal(const SlotId& slotId) override;
-
             };
 
         }

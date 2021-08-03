@@ -35,6 +35,7 @@
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 
 // Hair specific
+#include <Rendering/HairGlobalSettings.h>
 #include <Rendering/HairFeatureProcessor.h>
 #include <Rendering/HairBuffersSemantics.h>
 #include <Rendering/HairRenderObject.h>
@@ -75,6 +76,8 @@ namespace AZ
 
             void HairFeatureProcessor::Reflect(ReflectContext* context)
             {
+                HairGlobalSettings::Reflect(context);
+
                 if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
                 {
                     serializeContext
@@ -143,9 +146,6 @@ namespace AZ
                 m_hairPPLLResolvePass->SetEnabled(enable);
             }
 
-            // [To Do] Adi - Critical: done at the wrong time this can lead to a crash if the GPU is
-            // still crunching while the object is removed.  Make sure this removes the object's
-            // render items and dispatches!
             bool HairFeatureProcessor::RemoveHairRenderObject(Data::Instance<HairRenderObject> renderObject)
             {
                 for ( auto objIter = m_hairRenderObjects.begin() ; objIter != m_hairRenderObjects.end() ; ++objIter )
@@ -163,18 +163,10 @@ namespace AZ
                 return false;
             }
 
-            // Adi: The feature processor might be the one triggering this (or not), but
-            // in any case this should be done via the passes and not the feature processor
-            // Limited method to update the hair skinning matrices.
-            // MOVE MOST OF THIS METHOD TO THE PASS
-            // It avoid any physics and simulation response and should be used for initial integration testing
             void HairFeatureProcessor::UpdateHairSkinning()
             {
                 // Copying CPU side m_SimCB content to the GPU buffer (matrices, wind parameters..) 
 
-                // Adi: more initialization might be required here if we prep for more than
-                // only the skinning pass
-                // Adi: this requires to update the matrices data within the buffer as well!!
                 for (auto objIter = m_hairRenderObjects.begin(); objIter != m_hairRenderObjects.end(); ++objIter)
                 {
                     if (!objIter->get()->IsEnabled())
@@ -185,29 +177,26 @@ namespace AZ
                 }
             }
 
-
             //! Assumption: the hair is being updated per object before this method is called and
             //!  therefore the parameters that were calculated per object can be directly copied
             //!  without need to recalculate as in the original code.
             //! Make sure there are no more than (currently) 16 hair objects or update dynamic handling.
-            //! This DOES NOT do the srg binding since it can be shared - make sure to do it in the
-            //!   pass itself when compiling resources.
+            //! This DOES NOT do the srg binding since it can be shared but by pass itself when compiling resources.
             //! Originally called 'UpdateShadeParameters' in TressFX
             void HairFeatureProcessor::FillHairMaterialsArray(std::vector<const AMD::TressFXRenderParams*>& renderSettings)
             {
-                // [To Do] Adi: this needs to be initialized when creating the render passes
-                //                bool bindSuccess = m_hairObjectsMaterialsCB.CreateAndSetBindIndex(m_hairRenderSrg,
-                //                    m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::RenderCB)]);
-
                 // Update Render Parameters
                 for (int i = 0; i < renderSettings.size(); ++i)
                 {
-                    m_hairObjectsMaterialsCB->HairShadeParams[i].FiberRadius = renderSettings[i]->FiberRadius;
-                    m_hairObjectsMaterialsCB->HairShadeParams[i].ShadowAlpha = renderSettings[i]->ShadowAlpha;
-                    m_hairObjectsMaterialsCB->HairShadeParams[i].FiberSpacing = renderSettings[i]->FiberSpacing;
-                    m_hairObjectsMaterialsCB->HairShadeParams[i].HairEx2 = renderSettings[i]->HairEx2;
-                    m_hairObjectsMaterialsCB->HairShadeParams[i].HairKs2 = renderSettings[i]->HairKs2;
-                    m_hairObjectsMaterialsCB->HairShadeParams[i].MatKValue = renderSettings[i]->MatKValue;
+                    AMD::ShadeParams& hairMaterial = m_hairObjectsMaterialsCB->HairShadeParams[i];
+                    hairMaterial.FiberRadius = renderSettings[i]->FiberRadius;
+                    hairMaterial.ShadowAlpha = renderSettings[i]->ShadowAlpha;
+                    hairMaterial.FiberSpacing = renderSettings[i]->FiberSpacing;
+                    hairMaterial.HairEx2 = renderSettings[i]->HairEx2;
+                    hairMaterial.HairKs2 = renderSettings[i]->HairKs2;
+                    hairMaterial.MatKValue = renderSettings[i]->MatKValue;
+                    hairMaterial.Roughness = renderSettings[i]->Roughness;
+                    hairMaterial.CuticleTilt = renderSettings[i]->CuticleTilt;
                 }
             }
 

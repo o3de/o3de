@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -116,7 +116,7 @@ namespace AZ
                 {
                     const char* uuidString = nullptr;
                     unsigned int uuidStringLength = 0;
-                    if (dc.ReadArg(0, uuidString) && dc.ReadValue(1, uuidStringLength))
+                    if (dc.ReadArg(0, uuidString) && dc.ReadArg(1, uuidStringLength))
                     {
                         dc.PushResult(Uuid(uuidString, uuidStringLength));
                     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -135,7 +135,8 @@ namespace AWSMetrics
 
             m_metricsManager = AZStd::make_unique<MetricsManager>();
             AZStd::string configFilePath = CreateClientConfigFile(true, (double) TestMetricsEventSizeInBytes / MbToBytes * 2, DefaultFlushPeriodInSeconds, 0);
-            m_metricsManager->Init(configFilePath);
+            m_settingsRegistry->MergeSettingsFile(configFilePath, AZ::SettingsRegistryInterface::Format::JsonMergePatch, {});
+            m_metricsManager->Init();
 
             RemoveFile(m_metricsManager->GetMetricsFilePath());
             
@@ -161,7 +162,8 @@ namespace AWSMetrics
             RevertMockIOToLocalFileIO();
 
             AZStd::string configFilePath = CreateClientConfigFile(offlineRecordingEnabled, maxQueueSizeInMb, queueFlushPeriodInSeconds, MaxNumRetries);
-            m_metricsManager->Init(configFilePath);
+            m_settingsRegistry->MergeSettingsFile(configFilePath, AZ::SettingsRegistryInterface::Format::JsonMergePatch, {});
+            m_metricsManager->Init();
 
             ReplaceLocalFileIOWithMockIO();
         }
@@ -555,10 +557,11 @@ namespace AWSMetrics
         AZStd::unique_ptr<ClientConfiguration> m_clientConfiguration;
     };
 
-    TEST_F(ClientConfigurationTest, ResetClientConfiguration_ValidConfigurationFile_Success)
+    TEST_F(ClientConfigurationTest, ResetClientConfiguration_ValidClientConfiguration_Success)
     {
         AZStd::string configFilePath = CreateClientConfigFile(true, DEFAULT_MAX_QUEUE_SIZE_IN_MB, DefaultFlushPeriodInSeconds, DEFAULT_MAX_NUM_RETRIES);
-        ASSERT_TRUE(m_clientConfiguration->ResetClientConfiguration(configFilePath));
+        m_settingsRegistry->MergeSettingsFile(configFilePath, AZ::SettingsRegistryInterface::Format::JsonMergePatch, {});
+        ASSERT_TRUE(m_clientConfiguration->InitClientConfiguration());
 
         ASSERT_TRUE(m_clientConfiguration->OfflineRecordingEnabled());
         ASSERT_EQ(m_clientConfiguration->GetMaxQueueSizeInBytes(), DEFAULT_MAX_QUEUE_SIZE_IN_MB * 1000000);
@@ -572,13 +575,5 @@ namespace AWSMetrics
 
         ASSERT_EQ(strcmp(m_clientConfiguration->GetMetricsFileDir(), resolvedPath), 0);
         ASSERT_EQ(m_clientConfiguration->GetMetricsFileFullPath(), expectedMetricsFilePath);
-    }
-
-    TEST_F(ClientConfigurationTest, ResetClientConfiguration_InvalidConfigurationFile_Fail)
-    {
-        AZStd::string configFilePath = "invalidConfig";
-        AZ_TEST_START_TRACE_SUPPRESSION;
-        ASSERT_FALSE(m_clientConfiguration->ResetClientConfiguration(configFilePath));
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
     }
 }

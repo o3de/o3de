@@ -135,7 +135,7 @@ namespace AMD
         float       pad3;
     };
 
-    // If you change this, you MUST also change TressFXParameters in TressFXRendering.hlsl
+    // If you change this, you MUST also change TressFXParameters in HairRenderingSrgs.azsli
     struct TressFXRenderParams // TressFXParameters
     {
         // General information
@@ -145,7 +145,7 @@ namespace AMD
         float       ShadowAlpha = 0.35f;
         float       FiberSpacing = 0.4f;
 
-        // For lighting/shading
+        // Original TressFX Kajiya lighting model parameters
         float       HairKs2 = 0.072f;
         float       HairEx2 = 11.80f;
         float3      fPadding0;
@@ -153,10 +153,15 @@ namespace AMD
         float4      MatKValue = { 0.f, 0.07f, 0.0017f, 14.40f };   // KAmbient, KDiffuse, KSpec1, Exp1
 
         int         MaxShadowFibers = 50;
-        sint3       iPadding0;
+
+        // Marschner lighting model parameters 
+        float       Roughness;
+        float       CuticleTilt;  // tile angle in radians
+
+        float       fPadding1;
     };
 
-    // If you change this, you MUST also change TressFXStrandParameters in TressFXRendering.hlsl
+    // If you change this, you MUST also change TressFXStrandParameters in HairRenderingSrgs.azsli
     struct TressFXStrandParams // TressFXStrandParameters
     {
         // For lighting/shading
@@ -196,13 +201,17 @@ namespace AMD
         // For deep approximated shadow lookup
         float       ShadowAlpha = 0.35f;
         float       FiberSpacing = 0.4f;
-        // For lighting/shading
+
+        // Original TressFX Kajiya lighting model parameters
         float       HairEx2 = 11.80f;
         float4      MatKValue = { 0.f, 0.07f, 0.0017f, 14.40f };   // KAmbient, KDiffuse, KSpec1, Exp1
         float       HairKs2 = 0.072f;
-        float		fPadding0;
-        float		fPadding1;
-        float		fPadding2;
+
+        // Marschner lighting model parameters 
+        float       Roughness;
+        float       CuticleTilt;  // tile angle in radians
+
+        float       fPadding0;
     };
 
     //! Hair objects material array - passed as a constant structure used by

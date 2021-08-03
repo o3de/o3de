@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -138,11 +138,6 @@ public: // member functions
     UndoStack* GetActiveStack();
 
     AssetTreeEntry* GetSliceLibraryTree();
-
-    //! WARNING: This is a VERY slow function.
-    void UpdatePrefabFiles();
-    IFileUtil::FileArray& GetPrefabFiles();
-    void AddPrefabFile(const QString& prefabFilename);
 
     //! Returns the current mode of the editor (Edit or Preview)
     UiEditorMode GetEditorMode() { return m_editorMode; }
@@ -325,8 +320,6 @@ private: // member functions
     QAction* CreateCloseAllOtherCanvasesAction(AZ::EntityId canvasEntityId, bool forContextMenu = false);
     QAction* CreateCloseAllCanvasesAction(bool forContextMenu = false);
 
-    void SortPrefabsList();
-
     void SaveModeSettings(UiEditorMode mode, bool syncSettings);
     void RestoreModeSettings(UiEditorMode mode);
 
@@ -390,8 +383,6 @@ private: // data
 
     //! This tree caches the folder view of all the slice assets under the slice library path
     AssetTreeEntry* m_sliceLibraryTree = nullptr;
-
-    IFileUtil::FileArray m_prefabFiles;
 
     //! Values for setting up undoable canvas/entity changes
     SerializeHelpers::SerializedEntryList m_preChangeState;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -520,16 +520,19 @@ namespace PhysX
 
         CharacterControllerRequestBus::Handler::BusConnect(GetEntityId());
 
-        m_preSimulateHandler = AzPhysics::SystemEvents::OnPresimulateEvent::Handler(
-            [this](float deltaTime)
-            {
-                OnPreSimulate(deltaTime);
-            }
-        );
-
-        if (auto* physXSystem = GetPhysXSystem())
+        if (m_characterConfig->m_applyMoveOnPhysicsTick)
         {
-            physXSystem->RegisterPreSimulateEvent(m_preSimulateHandler);
+            m_preSimulateHandler = AzPhysics::SystemEvents::OnPresimulateEvent::Handler(
+                [this](float deltaTime)
+                {
+                    OnPreSimulate(deltaTime);
+                }
+            );
+
+            if (auto* physXSystem = GetPhysXSystem())
+            {
+                physXSystem->RegisterPreSimulateEvent(m_preSimulateHandler);
+            }
         }
     }
 

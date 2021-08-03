@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -756,10 +756,9 @@ namespace ScriptCanvas
                         {
                             auto runtimeComponent = (*graphIter);
 
-                            if (graphIdentifier.m_assetId.m_guid == runtimeComponent->GetAsset().GetId().m_guid)
+                            if (graphIdentifier.m_assetId.m_guid == runtimeComponent->GetRuntimeDataOverrides().m_runtimeAsset.GetId().m_guid)
                             {
                                 // TODO: Gate on ComponentId
-                                // \todo chcurran restore this functionality
                                 // runtimeComponent->SetIsGraphObserved(observedState);
                                 runtimeComponents.erase(graphIter);
                                 break;

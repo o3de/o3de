@@ -1,5 +1,5 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -14,12 +14,12 @@ logger = logging.getLogger(__name__)
 
 
 layout = {
-    'path': r'Software\Amazon\O3DE\Editor\fancyWindowLayouts',
+    'path': r'Software\O3DE\O3DE\Editor\fancyWindowLayouts',
     'value': 'last'
 }
 restore_camera = {
     'new': 16384,
-    'path': r'Software\Amazon\Lumberyard\Editor\AutoHide',
+    'path': r'Software\O3DE\O3DE\Editor\AutoHide',
     'value': 'ViewportCameraRestoreOnExitGameMode'
 }
 

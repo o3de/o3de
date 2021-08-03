@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -22,9 +22,8 @@ namespace AWSClientAuth
         virtual ~AuthenticationProviderInterface() = default;
       
         //! Extract required settings for the provider from setting registry.
-        //! @param settingsRegistry Passed in initialized settings registry object.
         //! @return bool True: if provider can parse required settings and validate. False: fails to parse required settings.
-        virtual bool Initialize(AZStd::weak_ptr<AZ::SettingsRegistryInterface> settingsRegistry) = 0;
+        virtual bool Initialize() = 0;
 
         //! Call sign in endpoint for provider password grant flow.
         //! @param username Username to use to for sign in.

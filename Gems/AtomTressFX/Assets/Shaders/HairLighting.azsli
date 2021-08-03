@@ -33,12 +33,18 @@ struct HairShadeParams
     float m_hairShadowAlpha;
     float m_fiberRadius;
     float m_fiberSpacing;
+
+    // Original TressFX Kajiya lighting model parameters
     float m_Ka;
     float m_Kd;
     float m_Ks1;
     float m_Ex1;
     float m_Ks2;
     float m_Ex2;
+
+    // MArschner lighting model parameters
+    float m_cuticleTilt;
+    float m_roughness;
 };
 
 // Returns a float3 which is the scale for diffuse, spec term, and colored spec term.
@@ -293,7 +299,7 @@ float3 SimplifiedHairLighting(float3 vTangent, float3 vPositionWS, float3 vViewD
 float3 CalculateLighting( 
     float4 screenCoords,    // XY - screen coords 0..max pix res, Z - depth 0..1
     float3 vPositionWS, float3 vViewDirWS, float3 vTangent, 
-    float3 baseColor)
+    float thickness, in HairShadeParams material )
 {    
     //-------- Surface init --------
     Surface surface;
@@ -303,13 +309,15 @@ float3 CalculateLighting(
     surface.position = vPositionWS;
     surface.tangent = vTangent;         // Redundant - will be calculated per light
     surface.normal = float3(0, 0, 0);   // Will fail lights that did not initialize properly. 
-    surface.roughnessLinear = 0.51f;
+    surface.roughnessLinear = material.m_roughness;
+    surface.cuticleTilt = material.m_cuticleTilt;
+    surface.thickness = thickness;
     surface.CalculateRoughnessA();
-    surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor);
+    surface.SetAlbedoAndSpecularF0(material.m_color, specularF0Factor);
 
     // The trasmission / back lighting does not seem to work!
     surface.transmission.InitializeToZero();    // Assuming thin layer
-    surface.transmission.tint = baseColor;
+    surface.transmission.tint = material.m_color;
     surface.transmission.thickness = 0.001;     // 1 mm settings
     surface.transmission.transmissionParams = float4(1.0, 1.0, 1.0, 32.0);  // for thin surface XYZ are partials * W that is the exponent mult
 
@@ -356,33 +364,12 @@ float3 CalculateLighting(
 //    return float3(0, float(bin), 0);
 //    return float3(0, float(bin) / NVLC_MAX_BINS, 0);
 
-    // Shadow coordinates generation for the directional light
-    const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
-    if (shadowIndex < SceneSrg::m_directionalLightCount)
-    {
-        DirectionalLightShadow::GetShadowCoords(shadowIndex, vPositionWS, lightingData.shadowCoords);
-    }
+    ApplyLighting(surface, lightingData);
 
-    //-------------------------
-    // Light loops application.
-    // If culling is used, the order of the calls must match the light types list order 
-    ApplyDecals(lightingData.tileIterator, surface);
-
-    ApplyDirectionalLights(surface, lightingData);
-
-    ApplyAllSimplePointLights(surface, lightingData);
-    ApplyAllSimpleSpotLights(surface, lightingData);
-    ApplyAllPointLights(surface, lightingData);
-
-    ApplyAllDiskLights(surface, lightingData);
-
-    ApplyIBL(surface, lightingData); 
-    //--------------------------
-
-    return lightingData.diffuseLighting + lightingData.specularLighting;
+    return lightingData.diffuseLighting + lightingData.specularLighting;// + lightingData.translucentBackLighting;
 }
 
-float3 TressFXShading(float2 pixelCoord, float depth, float3 vTangentCoverage, float3 baseColor, int shaderParamIndex)
+float3 TressFXShading(float2 pixelCoord, float depth, float3 vTangentCoverage, float3 baseColor, float thickness, int shaderParamIndex)
 {
     float3 vNDC;    // normalized device / screen coordinates: [-1..1, -1..1, 0..1]
     float3 vPositionWS = ScreenPosToWorldPos(PassSrg::m_linearDepth, pixelCoord, depth, vNDC);
@@ -409,9 +396,20 @@ float3 TressFXShading(float2 pixelCoord, float depth, float3 vTangentCoverage, f
     params.m_Ex1 = HairParams[shaderParamIndex].m_matKValue.w;
     params.m_Ks2 = HairParams[shaderParamIndex].m_hairKs2;
     params.m_Ex2 = HairParams[shaderParamIndex].m_hairEx2;
+
+    params.m_cuticleTilt = HairParams[shaderParamIndex].m_cuticleTilt;
+    params.m_roughness = HairParams[shaderParamIndex].m_roughness;
     //---------------------------------------------------
 
-    return CalculateLighting(screenCoords, vPositionWS, vViewDirWS, vTangent, baseColor);
-    return SimplifiedHairLighting(vTangent, vPositionWS, vViewDirWS, params, vNDC);    
-    return AccumulateHairLight(vTangent, vPositionWS, vViewDirWS, params, vNDC);
+    float3 accumulatedLight = float3(0, 0, 1);
+    if (o_hairLightingModel == HairLightingModel::Kajiya)
+    {
+        accumulatedLight = SimplifiedHairLighting(vTangent, vPositionWS, vViewDirWS, params, vNDC);    
+//        accumulatedLight = AccumulateHairLight(vTangent, vPositionWS, vViewDirWS, params, vNDC);
+    }
+    else
+    {
+        accumulatedLight = CalculateLighting(screenCoords, vPositionWS, vViewDirWS, vTangent, thickness, params);
+    }
+    return accumulatedLight;
 }

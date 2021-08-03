@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -47,6 +47,12 @@
 #include <QToolButton>
 
 #include <AzToolsFramework/UI/Outliner/ui_EntityOutlinerWidget.h>
+
+// This has to live outside of any namespaces due to issues on Linux with calls to Q_INIT_RESOURCE if they are inside a namespace
+void initEntityOutlinerWidgetResources()
+{
+    Q_INIT_RESOURCE(resources);
+}
 
 namespace
 {
@@ -143,6 +149,8 @@ namespace AzToolsFramework
         , m_sortContentQueued(false)
         , m_dropOperationInProgress(false)
     {
+        initEntityOutlinerWidgetResources();
+
         m_gui = new Ui::EntityOutlinerWidgetUI();
         m_gui->setupUi(this);
 
@@ -283,10 +291,12 @@ namespace AzToolsFramework
             GetEntityContextId());
         EditorEntityInfoNotificationBus::Handler::BusConnect();
         Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
+        EditorWindowUIRequestBus::Handler::BusConnect();
     }
 
     EntityOutlinerWidget::~EntityOutlinerWidget()
     {
+        EditorWindowUIRequestBus::Handler::BusDisconnect();
         Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
         ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusDisconnect();
         EditorEntityInfoNotificationBus::Handler::BusDisconnect();
@@ -1098,16 +1108,25 @@ namespace AzToolsFramework
         AzQtComponents::SetWidgetInteractEnabled(entityOutlinerUi->m_searchWidget, on);
     }
 
+    void EntityOutlinerWidget::EnableUi(bool enable)
+    {
+        SetEntityOutlinerState(m_gui, enable);
+        setEnabled(enable);
+    }
+
+    void EntityOutlinerWidget::SetEditorUiEnabled(bool enable)
+    {
+        EnableUi(enable);
+    }
+
     void EntityOutlinerWidget::EnteredComponentMode([[maybe_unused]] const AZStd::vector<AZ::Uuid>& componentModeTypes)
     {
-        SetEntityOutlinerState(m_gui, false);
-        setEnabled(false);
+        EnableUi(false);
     }
 
     void EntityOutlinerWidget::LeftComponentMode([[maybe_unused]] const AZStd::vector<AZ::Uuid>& componentModeTypes)
     {
-        setEnabled(true);
-        SetEntityOutlinerState(m_gui, true);
+        EnableUi(true);
     }
 
     void EntityOutlinerWidget::OnPrefabInstancePropagationBegin()
