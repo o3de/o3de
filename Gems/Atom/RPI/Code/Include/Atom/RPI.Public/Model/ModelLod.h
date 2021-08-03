@@ -18,6 +18,7 @@
 #include <Atom/RHI.Reflect/Limits.h>
 
 #include <Atom/RPI.Reflect/Model/ModelLodAsset.h>
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
 #include <AtomCore/std/containers/array_view.h>
 #include <AtomCore/std/containers/vector_set.h>
@@ -72,6 +73,8 @@ namespace AZ
                 RHI::IndexBufferView m_indexBufferView;
 
                 StreamInfoList m_streamInfo;
+
+                ModelMaterialSlot::StableId m_materialSlotStableId = ModelMaterialSlot::InvalidStableId;
                 
                 //! The default material assigned to the mesh by the asset.
                 Data::Instance<Material> m_material;
@@ -82,7 +85,7 @@ namespace AZ
             AZ_INSTANCE_DATA(ModelLod, "{3C796FC9-2067-4E0F-A660-269F8254D1D5}");
             AZ_CLASS_ALLOCATOR(ModelLod, AZ::SystemAllocator, 0);
 
-            static Data::Instance<ModelLod> FindOrCreate(const Data::Asset<ModelLodAsset>& lodAsset);
+            static Data::Instance<ModelLod> FindOrCreate(const Data::Asset<ModelLodAsset>& lodAsset, const Data::Asset<ModelAsset>& modelAsset);
 
             ~ModelLod() = default;
 
@@ -122,8 +125,8 @@ namespace AZ
         private:
             ModelLod() = default;
 
-            static Data::Instance<ModelLod> CreateInternal(ModelLodAsset& lodAsset);
-            RHI::ResultCode Init(ModelLodAsset& lodAsset);
+            static Data::Instance<ModelLod> CreateInternal(const Data::Asset<ModelLodAsset>& lodAsset, const AZStd::any* modelAssetAny);
+            RHI::ResultCode Init(const Data::Asset<ModelLodAsset>& lodAsset, const Data::Asset<ModelAsset>& modelAsset);
 
             bool SetMeshInstanceData(
                 const ModelLodAsset::Mesh::StreamBufferInfo& streamBufferInfo,

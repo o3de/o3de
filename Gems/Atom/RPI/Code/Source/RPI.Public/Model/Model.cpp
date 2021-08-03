@@ -40,7 +40,7 @@ namespace AZ
             return m_lods;
         }
 
-        Data::Instance<Model> Model::CreateInternal(ModelAsset& modelAsset)
+        Data::Instance<Model> Model::CreateInternal(const Data::Asset<ModelAsset>& modelAsset)
         {
             AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
             Data::Instance<Model> model = aznew Model();
@@ -54,15 +54,15 @@ namespace AZ
             return nullptr;
         }
 
-        RHI::ResultCode Model::Init(ModelAsset& modelAsset)
+        RHI::ResultCode Model::Init(const Data::Asset<ModelAsset>& modelAsset)
         {
             AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
 
-            m_lods.resize(modelAsset.GetLodAssets().size());
+            m_lods.resize(modelAsset->GetLodAssets().size());
 
             for (size_t lodIndex = 0; lodIndex < m_lods.size(); ++lodIndex)
             {
-                const Data::Asset<ModelLodAsset>& lodAsset = modelAsset.GetLodAssets()[lodIndex];
+                const Data::Asset<ModelLodAsset>& lodAsset = modelAsset->GetLodAssets()[lodIndex];
 
                 if (!lodAsset)
                 {
@@ -70,7 +70,7 @@ namespace AZ
                     return RHI::ResultCode::Fail;
                 }
 
-                Data::Instance<ModelLod> lodInstance = ModelLod::FindOrCreate(lodAsset);
+                Data::Instance<ModelLod> lodInstance = ModelLod::FindOrCreate(lodAsset, modelAsset);
                 if (lodInstance == nullptr)
                 {
                     return RHI::ResultCode::Fail;
@@ -98,7 +98,7 @@ namespace AZ
                 m_lods[lodIndex] = AZStd::move(lodInstance);
             }
 
-            m_modelAsset = { &modelAsset, AZ::Data::AssetLoadBehavior::PreLoad };
+            m_modelAsset = modelAsset;
             m_isUploadPending = true;
             return RHI::ResultCode::Success;
         }

@@ -42,6 +42,7 @@ namespace AZ
         using SkinData = AZ::SceneAPI::DataTypes::ISkinWeightData;
 
         class Stream;
+        class ModelAssetCreator;
         class ModelLodAssetCreator;
         class BufferAssetCreator;
         struct PackedCompressedMorphTargetDelta;
@@ -294,6 +295,7 @@ namespace AZ
                 const ProductMeshView& meshView,
                 const BufferAssetView& lodIndexBuffer,
                 const AZStd::vector<ModelLodAsset::Mesh::StreamBufferInfo>& lodStreamBuffers,
+                ModelAssetCreator& modelAssetCreator,
                 ModelLodAssetCreator& lodAssetCreator,
                 const MaterialAssetsByUid& materialAssetsByUid);
 
