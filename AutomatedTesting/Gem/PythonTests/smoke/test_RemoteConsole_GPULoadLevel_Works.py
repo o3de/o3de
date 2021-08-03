@@ -13,8 +13,6 @@ Test should run in both gpu and non gpu
 import pytest
 import psutil
 
-# Bail on the test if ly_test_tools doesn't exist.
-pytest.importorskip("ly_test_tools")
 import ly_test_tools.environment.waiter as waiter
 import editor_python_test_tools.hydra_test_utils as editor_test_utils
 from ly_remote_console.remote_console_commands import RemoteConsole as RemoteConsole
