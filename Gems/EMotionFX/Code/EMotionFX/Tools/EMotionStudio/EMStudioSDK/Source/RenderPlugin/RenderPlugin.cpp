@@ -1160,10 +1160,6 @@ namespace EMStudio
             renderUtil->RenderAabbs(actorInstance, settings);
         }
 
-        if (widget->GetRenderFlag(RenderViewWidget::RENDER_OBB))
-        {
-            renderUtil->RenderOBBs(actorInstance, &visibleJointIndices, &selectedJointIndices, renderOptions->GetOBBsColor(), renderOptions->GetSelectedObjectColor());
-        }
         if (widget->GetRenderFlag(RenderViewWidget::RENDER_LINESKELETON))
         {
             const MCommon::Camera* camera = widget->GetRenderWidget()->GetCamera();

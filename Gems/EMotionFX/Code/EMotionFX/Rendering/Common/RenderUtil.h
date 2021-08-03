@@ -168,18 +168,6 @@ namespace MCommon
         void RenderAabbs(EMotionFX::ActorInstance* actorInstance, const AABBRenderSettings& renderSettings = AABBRenderSettings(), bool directlyRender = false);
 
         /**
-         * Render OBB for all enabled nodes inside the actor instance.
-         * @param actorInstance A pointer to the actor instance which will be rendered.
-         * @param[in] visibleJointIndices List of visible joint indices. nullptr in case all joints should be rendered.
-         * @param[in] selectedJointIndices List of selected joint indices. nullptr in case selection should not be considered.
-         * @param[in] color The color of the OBBs.
-         * @param[in] selectedColor The color of the selected OBBs.
-         * @param[in] directlyRender Will call the RenderLines() function internally in case it is set to true. If false
-         *                           you have to make sure to call RenderLines() manually at the end of your custom render frame function.
-         */
-        void RenderOBBs(EMotionFX::ActorInstance* actorInstance, const AZStd::unordered_set<AZ::u32>* visibleJointIndices = nullptr, const AZStd::unordered_set<AZ::u32>* selectedJointIndices = nullptr, const MCore::RGBAColor& color = MCore::RGBAColor(1.0f, 1.0f, 0.0f, 1.0f), const MCore::RGBAColor& selectedColor = MCore::RGBAColor(1.0f, 0.647f, 0.0f), bool directlyRender = false);
-
-        /**
          * Render a simple line based skeleton for all enabled nodes of the actor instance.
          * @param[in] actorInstance A pointer to the actor instance which will be rendered.
          * @param[in] visibleJointIndices List of visible joint indices. nullptr in case all joints should be rendered.

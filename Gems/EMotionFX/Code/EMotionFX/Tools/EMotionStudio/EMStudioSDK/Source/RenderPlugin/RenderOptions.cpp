@@ -55,7 +55,6 @@ namespace EMStudio
     const char* RenderOptions::s_nodeAABBColorOptionName = "nodeAABBColor";
     const char* RenderOptions::s_staticAABBColorOptionName = "staticAABBColor";
     const char* RenderOptions::s_meshAABBColorOptionName = "meshAABBColor";
-    const char* RenderOptions::s_OBBsColorOptionName = "OBBsColor";
     const char* RenderOptions::s_lineSkeletonColorOptionName = "lineSkeletonColor_v2";
     const char* RenderOptions::s_skeletonColorOptionName = "skeletonColor";
     const char* RenderOptions::s_selectionColorOptionName = "selectionColor";
@@ -107,7 +106,6 @@ namespace EMStudio
         , m_nodeAABBColor(1.0f, 0.0f, 0.0f, 1.0f)
         , m_staticAABBColor(0.0f, 0.7f, 0.7f, 1.0f)
         , m_meshAABBColor(0.0f, 0.0f, 0.7f, 1.0f)
-        , m_OBBsColor(1.0f, 1.0f, 0.0f, 1.0f)
         , m_lineSkeletonColor(0.33333f, 1.0f, 0.0f, 1.0f)
         , m_skeletonColor(0.19f, 0.58f, 0.19f, 1.0f)
         , m_selectionColor(1.0f, 1.0f, 1.0f, 1.0f)
@@ -167,7 +165,6 @@ namespace EMStudio
         SetNodeAABBColor(other.GetNodeAABBColor());
         SetStaticAABBColor(other.GetStaticAABBColor());
         SetMeshAABBColor(other.GetMeshAABBColor());
-        SetOBBsColor(other.GetOBBsColor());
         SetLineSkeletonColor(other.GetLineSkeletonColor());
         SetSkeletonColor(other.GetSkeletonColor());
         SetSelectionColor(other.GetSelectionColor());
@@ -204,7 +201,6 @@ namespace EMStudio
         settings->setValue(s_staticAABBColorOptionName, ColorToString(m_staticAABBColor));
         settings->setValue(s_meshAABBColorOptionName, ColorToString(m_meshAABBColor));
         settings->setValue(s_collisionMeshColorOptionName, ColorToString(m_collisionMeshColor));
-        settings->setValue(s_OBBsColorOptionName, ColorToString(m_OBBsColor));
         settings->setValue(s_lineSkeletonColorOptionName, ColorToString(m_lineSkeletonColor));
         settings->setValue(s_skeletonColorOptionName, ColorToString(m_skeletonColor));
         settings->setValue(s_selectionColorOptionName, ColorToString(m_selectionColor));
@@ -272,7 +268,6 @@ namespace EMStudio
         options.m_staticAABBColor = StringToColor(settings->value(s_staticAABBColorOptionName, ColorToString(options.m_staticAABBColor)).toString());
         options.m_meshAABBColor = StringToColor(settings->value(s_meshAABBColorOptionName, ColorToString(options.m_meshAABBColor)).toString());
         options.m_collisionMeshColor = StringToColor(settings->value(s_collisionMeshColorOptionName, ColorToString(options.m_collisionMeshColor)).toString());
-        options.m_OBBsColor = StringToColor(settings->value(s_OBBsColorOptionName, ColorToString(options.m_OBBsColor)).toString());
         options.m_lineSkeletonColor = StringToColor(settings->value(s_lineSkeletonColorOptionName, ColorToString(options.m_lineSkeletonColor)).toString());
         options.m_skeletonColor = StringToColor(settings->value(s_skeletonColorOptionName, ColorToString(options.m_skeletonColor)).toString());
         options.m_selectionColor = StringToColor(settings->value(s_selectionColorOptionName, ColorToString(options.m_selectionColor)).toString());
@@ -388,7 +383,6 @@ namespace EMStudio
             ->Field(s_nodeAABBColorOptionName, &RenderOptions::m_nodeAABBColor)
             ->Field(s_staticAABBColorOptionName, &RenderOptions::m_staticAABBColor)
             ->Field(s_meshAABBColorOptionName, &RenderOptions::m_meshAABBColor)
-            ->Field(s_OBBsColorOptionName, &RenderOptions::m_OBBsColor)
             ->Field(s_lineSkeletonColorOptionName, &RenderOptions::m_lineSkeletonColor)
             ->Field(s_skeletonColorOptionName, &RenderOptions::m_skeletonColor)
             ->Field(s_selectionColorOptionName, &RenderOptions::m_selectionColor)
@@ -546,9 +540,6 @@ namespace EMStudio
             ->DataElement(AZ::Edit::UIHandlers::Default, &RenderOptions::m_meshAABBColor, "Mesh based AABB color",
                 "Color for the runtime-updated AABB calculated based on the deformed meshes.")
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &RenderOptions::OnMeshAABBColorChangedCallback)
-            ->DataElement(AZ::Edit::UIHandlers::Default, &RenderOptions::m_OBBsColor, "Joint OBB color",
-                "Color used for the pre-calculated joint oriented bounding boxes.")
-            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &RenderOptions::OnOBBsColorChangedCallback)
             ->DataElement(AZ::Edit::UIHandlers::Default, &RenderOptions::m_lineSkeletonColor, "Line based skeleton color",
                 "Line-based skeleton color.")
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &RenderOptions::OnLineSkeletonColorChangedCallback)
@@ -894,15 +885,6 @@ namespace EMStudio
         }
     }
 
-    void RenderOptions::SetOBBsColor(const AZ::Color& OBBsColor)
-    {
-        if (!OBBsColor.IsClose(m_OBBsColor))
-        {
-            m_OBBsColor = OBBsColor;
-            OnOBBsColorChangedCallback();
-        }
-    }
-
     void RenderOptions::SetLineSkeletonColor(const AZ::Color& lineSkeletonColor)
     {
         if (!lineSkeletonColor.IsClose(m_lineSkeletonColor))
@@ -1238,11 +1220,6 @@ namespace EMStudio
     void RenderOptions::OnMeshAABBColorChangedCallback() const
     {
         PluginOptionsNotificationsBus::Event(s_meshAABBColorOptionName, &PluginOptionsNotificationsBus::Events::OnOptionChanged, s_meshAABBColorOptionName);
-    }
-
-    void RenderOptions::OnOBBsColorChangedCallback() const
-    {
-        PluginOptionsNotificationsBus::Event(s_OBBsColorOptionName, &PluginOptionsNotificationsBus::Events::OnOptionChanged, s_OBBsColorOptionName);
     }
 
     void RenderOptions::OnLineSkeletonColorChangedCallback() const
