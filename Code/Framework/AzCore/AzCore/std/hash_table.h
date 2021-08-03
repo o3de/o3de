@@ -196,7 +196,11 @@ namespace AZStd
                         // Since they are elements already in the bucket, update `insertIter` to where the elements will need to be inserted.
                         if (!table->find_insert_position(valueKey, table->m_keyEqual, insertIter, numElements, integral_constant<bool, Traits::has_multi_elements>()))
                         {
-                            // The elements shouldn't be inserted, remove them from the list and keep processing
+                            // An element was found but we don't allow for duplicate elements in this table.
+                            // This happens when there was an insertion of two elements that are equal but have different hash,
+                            // which is undefined behavior for a hash table
+                            AZ_Assert(false, "Found a duplicate element when rehashing. "
+                                "Review the hashing function for type '%s' and make sure two equal elements always have the same hash", typeid(Traits::value_type).name());
                             m_list.erase(cur, curEnd);
                             continue;
                         }

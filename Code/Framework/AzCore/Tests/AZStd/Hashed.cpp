@@ -287,75 +287,73 @@ namespace UnitTest
         }
     }
 
-    TEST_F(HashedContainers, HashTable_InsertionDuplicateOnRehash)
+    TEST_F(HashedContainers, HashTable_Insertion_Duplicate_WithEqualNotEqualHashes)
     {
-        struct TwoPtrs
+        struct TwoInts
         {
-            void* m_ptr1;
-            void* m_ptr2;
+            uint64_t m_a;
+            uint64_t m_b;
 
-            bool operator==(const TwoPtrs& other) const
+            bool operator==(const TwoInts& other) const
             {
-                if (m_ptr1 == other.m_ptr1)
+                if (m_a == other.m_a)
                 {
-                    return m_ptr2 == other.m_ptr2;
+                    return m_b == other.m_b;
                 }
-                else if (m_ptr1 == other.m_ptr2)
+                else if (m_a == other.m_b)
                 {
-                    return m_ptr2 == other.m_ptr1;
+                    return m_b == other.m_a;
                 }
                 return false;
             }
         };
 
+        // This hashing function produces different hashes for two equal values,
+        // which violates the requirement for hashing functions.
+        // The test would only make sure that this does not reproduce a bug that happened in the past in this case,
+        // where it would make the insert() to loop infinitely.
         struct TwoPtrsHasher
         {
-            size_t operator()(const TwoPtrs& p) const
+            size_t operator()(const TwoInts& p) const
             {
                 size_t hash{ 0 };
-                AZStd::hash_combine(hash, p.m_ptr1, p.m_ptr2);
+                AZStd::hash_combine(hash, p.m_a, p.m_b);
                 return hash;
             }
         };
-        using PairSet = AZStd::unordered_set<TwoPtrs, TwoPtrsHasher>;
+        using PairSet = AZStd::unordered_set<TwoInts, TwoPtrsHasher>;
         PairSet set;
-        TwoPtrs data[] =
-        {
-            { (void*)0x000001ceddd942a0, (void*)0x000001ceddd94720 },
-            { (void*)0x000001ceddd94420, (void*)0x000001ceddd94a20 },
-            { (void*)0x000001ceddd94720, (void*)0x000001ceddd94420 },
-            { (void*)0x000001ceddd948a0, (void*)0x000001ceddd945a0 },
-            { (void*)0x000001ceddd94a20, (void*)0x000001ceddd9c420 },
-            { (void*)0x000001ceddd94ba0, (void*)0x000001ceddd94d20 },
-            { (void*)0x000001ceddd94d20, (void*)0x000001ceddd948a0 },
-            { (void*)0x000001ceddd9c2a0, (void*)0x000001ceddd942a0 },
-            { (void*)0x000001ceddd9c420, (void*)0x000001ceddd94ba0 },
-            { (void*)0x000001ceddd9c5a0, (void*)0x000001ceddd9c720 },
-            { (void*)0x000001ceddd9c720, (void*)0x000001ceddd9c8a0 },
-            { (void*)0x000001ceddd9c8a0, (void*)0x000001ceddd94a20 },
-            { (void*)0x000001ceddd9ca20, (void*)0x000001ceddd9cba0 },
-            { (void*)0x000001ceddd9cba0, (void*)0x000001ceddd9cd20 },
-            { (void*)0x000001ceddd9cd20, (void*)0x000001ceddd9cea0 },
-            { (void*)0x000001ceddd9cea0, (void*)0x000001ceddd94a20 },
-            { (void*)0x000001ceddd9d020, (void*)0x000001ceddd9e2c0 },
-            { (void*)0x000001ceddd9e2c0, (void*)0x000001ceddd9e440 },
-            { (void*)0x000001ceddd9e440, (void*)0x000001ceddd948a0 },
-            { (void*)0x000001ceddd9e5c0, (void*)0x000001ceddd9e740 },
-            { (void*)0x000001ceddd9e740, (void*)0x000001ceddd9e8c0 },
-            { (void*)0x000001ceddd9e8c0, (void*)0x000001ceddd948a0 },
-            { (void*)0x000001ceddd9e5c0, (void*)0x000001ceddd9d020 },
-            { (void*)0x000001ceddd9e440, (void*)0x000001ceddd9cd20 },
-            { (void*)0x000001ceddd9d020, (void*)0x000001ceddd9e440 },
-            { (void*)0x000001ceddd9cea0, (void*)0x000001ceddd9e2c0 },
-            { (void*)0x000001ceddd9cd20, (void*)0x000001ceddd9c720 },
-            { (void*)0x000001ceddd9cba0, (void*)0x000001ceddd9ca20 },
-            { (void*)0x000001ceddd9ca20, (void*)0x000001ceddd9cea0 }
-        };
-
-        for (auto& e : data)
-        {
-            set.insert(e);
-        }
+        
+        set.insert({ 0x000001ceddd942a0, 0x000001ceddd94720 });
+        set.insert({ 0x000001ceddd94420, 0x000001ceddd94a20 });
+        set.insert({ 0x000001ceddd94720, 0x000001ceddd94420 });
+        set.insert({ 0x000001ceddd948a0, 0x000001ceddd945a0 });
+        set.insert({ 0x000001ceddd94a20, 0x000001ceddd9c420 });
+        set.insert({ 0x000001ceddd94ba0, 0x000001ceddd94d20 });
+        set.insert({ 0x000001ceddd94d20, 0x000001ceddd948a0 });
+        set.insert({ 0x000001ceddd9c2a0, 0x000001ceddd942a0 });
+        set.insert({ 0x000001ceddd9c420, 0x000001ceddd94ba0 });
+        set.insert({ 0x000001ceddd9c5a0, 0x000001ceddd9c720 });
+        set.insert({ 0x000001ceddd9c720, 0x000001ceddd9c8a0 });
+        set.insert({ 0x000001ceddd9c8a0, 0x000001ceddd94a20 });
+        set.insert({ 0x000001ceddd9ca20, 0x000001ceddd9cba0 });
+        set.insert({ 0x000001ceddd9cba0, 0x000001ceddd9cd20 });
+        set.insert({ 0x000001ceddd9cd20, 0x000001ceddd9cea0 });
+        set.insert({ 0x000001ceddd9cea0, 0x000001ceddd94a20 });
+        set.insert({ 0x000001ceddd9d020, 0x000001ceddd9e2c0 });
+        set.insert({ 0x000001ceddd9e2c0, 0x000001ceddd9e440 });
+        set.insert({ 0x000001ceddd9e440, 0x000001ceddd948a0 });
+        set.insert({ 0x000001ceddd9e5c0, 0x000001ceddd9e740 });
+        set.insert({ 0x000001ceddd9e740, 0x000001ceddd9e8c0 });
+        set.insert({ 0x000001ceddd9e8c0, 0x000001ceddd948a0 });
+        set.insert({ 0x000001ceddd9e5c0, 0x000001ceddd9d020 });
+        set.insert({ 0x000001ceddd9e440, 0x000001ceddd9cd20 });
+        set.insert({ 0x000001ceddd9d020, 0x000001ceddd9e440 });
+        set.insert({ 0x000001ceddd9cea0, 0x000001ceddd9e2c0 });
+        set.insert({ 0x000001ceddd9cd20, 0x000001ceddd9c720 });
+        set.insert({ 0x000001ceddd9cba0, 0x000001ceddd9ca20 });
+        // This line will toggle a rehash
+        set.insert({ 0x000001ceddd9ca20, 0x000001ceddd9cea0 });
     }
 
     TEST_F(HashedContainers, HashTable_Fixed)
