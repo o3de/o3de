@@ -214,6 +214,22 @@ namespace ScriptCanvas
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_DEPRECATED(Subtract, k_categoryName, "{A5FA6465-9C39-4A44-BD7C-E8ECF9503E46}", "This node is deprecated, use Subtract (-), it provides contextual type and slots", "A", "B");
 
+        AZ_INLINE void DirectionToDefaults(Node& node)
+        {
+            SetDefaultValuesByIndex<0>::_(node, Data::Vector4Type());
+            SetDefaultValuesByIndex<1>::_(node, Data::Vector4Type());
+            SetDefaultValuesByIndex<2>::_(node, Data::NumberType(1.));
+        }
+
+        AZ_INLINE Vector4Type DirectionTo(const Vector4Type from, const Vector4Type to, NumberType optionalScale = 1.f)
+        {
+            Vector4Type r = to - from;
+            r.Normalize();
+            r.SetLength(optionalScale);
+            return r;
+        }
+        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_WITH_DEFAULTS(DirectionTo, DirectionToDefaults, k_categoryName, "{463762DE-E541-4AFE-80C2-FED1C5273319}", "Given two points in space, return a direction vector", "From", "To", "Scale");
+
         using Registrar = RegistrarGeneric <
             AbsoluteNode,
             AddNode,
@@ -260,7 +276,8 @@ namespace ScriptCanvas
 #endif
 
             ReciprocalNode,
-            SubtractNode
+            SubtractNode,
+            DirectionToNode
         > ;
 
     }

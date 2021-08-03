@@ -329,6 +329,23 @@ namespace ScriptCanvas
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(ZAxisCross, k_categoryName, "{29206E84-392C-412E-9DD5-781B2759260D}", "returns the vector cross product of Z-Axis X Source", "Source");
 
+        AZ_INLINE void DirectionToDefaults(Node& node)
+        {
+            SetDefaultValuesByIndex<0>::_(node, Data::Vector3Type());
+            SetDefaultValuesByIndex<1>::_(node, Data::Vector3Type());
+            SetDefaultValuesByIndex<2>::_(node, Data::NumberType(1.));
+        }
+
+        AZ_INLINE Vector3Type DirectionTo(const Vector3Type from, const Vector3Type to, NumberType optionalScale = 1.f)
+        {
+            Vector3Type r = to - from;
+            r.Normalize();
+            r.SetLength(optionalScale);
+            return r;
+        }
+        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_WITH_DEFAULTS(DirectionTo, DirectionToDefaults, k_categoryName, "{28FBD529-4C9A-4E34-B8A0-A13B5DB3C331}", "Given two points in space, return a direction vector", "From", "To", "Scale");
+
+
         using Registrar = RegistrarGeneric <
             AbsoluteNode
             , AddNode
@@ -403,6 +420,7 @@ namespace ScriptCanvas
 
             , SlerpNode
             , SubtractNode
+            , DirectionToNode
 
 #if ENABLE_EXTENDED_MATH_SUPPORT
             , XAxisCrossNode
