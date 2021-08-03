@@ -38,8 +38,8 @@ namespace AtomToolsFramework
         void SetupCameraProperies(AzFramework::CameraProps& cameraProps);
 
     private:
-        CameraListBuilder
-            m_cameraListBuilder; //!< Builder to generate a list of CameraInputs to run in the ModularViewportCameraControllerInstance.
+        //! Builder to generate a list of CameraInputs to run in the ModularViewportCameraControllerInstance.
+        CameraListBuilder m_cameraListBuilder;
         CameraPropsBuilder m_cameraPropsBuilder; //!< Builder to define custom camera properties to use for things such as rotate and
                                                  //!< translate interpolation.
     };
@@ -77,10 +77,10 @@ namespace AtomToolsFramework
         //! Encapsulates an animation (interpolation) between two transforms.
         struct CameraAnimation
         {
-            AZ::Transform m_transformStart =
-                AZ::Transform::CreateIdentity(); //!< The transform of the camera at the start of the animation.
+            //! The transform of the camera at the start of the animation.
+            AZ::Transform m_transformStart = AZ::Transform::CreateIdentity();
             AZ::Transform m_transformEnd = AZ::Transform::CreateIdentity(); //!< The transform of the camera at the end of the animation.
-            float m_animationT = 0.0f; //!< The interpolation amount between the start and end transforms (in the range 0.0-1.0).
+            float m_time = 0.0f; //!< The interpolation amount between the start and end transforms (in the range 0.0 - 1.0).
         };
 
         AzFramework::Camera m_camera; //!< The current camera state (pitch/yaw/position/look-distance).
@@ -92,9 +92,9 @@ namespace AtomToolsFramework
         CameraMode m_cameraMode = CameraMode::Control; //!< The current mode the camera is operating in.
         AZStd::optional<AZ::Vector3> m_lookAtAfterInterpolation; //!< The look at point after an interpolation has finished.
                                                                  //!< Will be cleared when the view changes (camera looks away).
-        bool m_updatingTransformInternally =
-            false; //!< Flag to prevent circular updates of the camera transform (while the viewport transform is being updated internally).
-        AZ::RPI::ViewportContext::MatrixChangedEvent::Handler
-            m_cameraViewMatrixChangeHandler; //!< Listen for camera view changes outside of the camera controller.
+        //! Flag to prevent circular updates of the camera transform (while the viewport transform is being updated internally).
+        bool m_updatingTransformInternally = false;
+        //! Listen for camera view changes outside of the camera controller.
+        AZ::RPI::ViewportContext::MatrixChangedEvent::Handler m_cameraViewMatrixChangeHandler;
     };
 } // namespace AtomToolsFramework

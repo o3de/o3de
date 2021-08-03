@@ -181,12 +181,12 @@ namespace AtomToolsFramework
                     return t * t * t * (t * (t * 6.0f - 15.0f) + 10.0f);
                 };
 
-                const auto& [transformStart, transformEnd, animationT] = m_cameraAnimation;
+                const auto& [transformStart, transformEnd, animationTime] = m_cameraAnimation;
 
-                const float transitionT = smootherStepFn(animationT);
+                const float transitionTime = smootherStepFn(animationTime);
                 const AZ::Transform current = AZ::Transform::CreateFromQuaternionAndTranslation(
-                    transformStart.GetRotation().Slerp(transformEnd.GetRotation(), transitionT),
-                    transformStart.GetTranslation().Lerp(transformEnd.GetTranslation(), transitionT));
+                    transformStart.GetRotation().Slerp(transformEnd.GetRotation(), transitionTime),
+                    transformStart.GetTranslation().Lerp(transformEnd.GetTranslation(), transitionTime));
 
                 const AZ::Vector3 eulerAngles = AzFramework::EulerAngles(AZ::Matrix3x3::CreateFromTransform(current));
                 m_camera.m_pitch = eulerAngles.GetX();
@@ -194,12 +194,12 @@ namespace AtomToolsFramework
                 m_camera.m_lookAt = current.GetTranslation();
                 m_targetCamera = m_camera;
 
-                if (animationT >= 1.0f)
+                if (animationTime >= 1.0f)
                 {
                     m_cameraMode = CameraMode::Control;
                 }
 
-                m_cameraAnimation.m_animationT = AZ::GetClamp(animationT + event.m_deltaTime.count(), 0.0f, 1.0f);
+                m_cameraAnimation.m_time = AZ::GetClamp(animationTime + event.m_deltaTime.count(), 0.0f, 1.0f);
 
                 viewportContext->SetCameraTransform(current);
             }
