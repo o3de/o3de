@@ -10,6 +10,7 @@
 
 #include <Source/AutoGen/LocalPredictionPlayerInputComponent.AutoComponent.h>
 #include <Multiplayer/Components/NetBindComponent.h>
+#include <AzNetworking/Serialization/StringifySerializer.h>
 
 namespace Multiplayer
 {
@@ -41,8 +42,7 @@ namespace Multiplayer
         (
             AzNetworking::IConnection* invokingConnection,
             const Multiplayer::NetworkInputArray& inputArray,
-            const AZ::HashValue32& stateHash,
-            const AzNetworking::PacketEncodingBuffer& clientState
+            const AZ::HashValue32& stateHash
         ) override;
 
         void HandleSendMigrateClientInput
@@ -57,11 +57,6 @@ namespace Multiplayer
             const Multiplayer::ClientInputId& inputId,
             const AzNetworking::PacketEncodingBuffer& correction
         ) override;
-
-        //! Return true if we're currently replaying inputs after a correction.
-        //! If this value returns true, effects, audio, and other cosmetic triggers should be suppressed
-        //! @return true if we're within correction scope and replaying inputs
-        bool IsReplayingInput() const;
 
         //! Return true if we're currently migrating from one host to another.
         //! @return boolean true if we're currently migrating from one host to another
@@ -78,6 +73,9 @@ namespace Multiplayer
         void OnMigrateEnd();
         void UpdateAutonomous(AZ::TimeMs deltaTimeMs);
         void UpdateBankedTime(AZ::TimeMs deltaTimeMs);
+
+        using StateHistoryItem = AZStd::unique_ptr<AzNetworking::StringifySerializer>;
+        AZStd::map<ClientInputId, StateHistoryItem> m_predictiveStateHistory;
 
         // Implicitly sorted player input history, back() is the input that corresponds to the latest client input Id
         NetworkInputHistory m_inputHistory;
@@ -104,7 +102,6 @@ namespace Multiplayer
         ClientInputId m_lastMigratedInputId = ClientInputId{ 0 }; // Used to resend inputs that were queued during a migration event
         HostFrameId   m_serverMigrateFrameId = InvalidHostFrameId;
 
-        bool m_replayingInput = false; // True if we're replaying inputs under a correction event (use this to suppress effects or audio)
         bool m_allowMigrateClientInput = false; // True if this component was migrated, we will allow the client to send us migrated inputs (one time only)
     };
 }

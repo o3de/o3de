@@ -21,9 +21,11 @@ namespace Multiplayer
     AZ_CVAR(AZ::TimeMs, cl_MaxRewindHistoryMs, AZ::TimeMs{ 2000 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Maximum number of milliseconds to keep for server correction rewind and replay");
 #ifndef AZ_RELEASE_BUILD
     AZ_CVAR(float, cl_DebugHackTimeMultiplier, 1.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "Scalar value used to simulate clock hacking cheats for validating bank time system and anticheat");
-    AZ_CVAR(bool, cl_EnableDesyncDebugging, false, nullptr, AZ::ConsoleFunctorFlags::Null, "If enabled, debug logs will contain verbose information on detected state desyncs");
+    AZ_CVAR(bool, cl_EnableDesyncDebugging, true, nullptr, AZ::ConsoleFunctorFlags::Null, "If enabled, debug logs will contain verbose information on detected state desyncs");
+    AZ_CVAR(uint32_t, cl_PredictiveStateHistorySize, 120, nullptr, AZ::ConsoleFunctorFlags::Null, "Controls how many inputs of predictive state should be retained for debugging desyncs");
 #endif
 
+    AZ_CVAR(bool, sv_ForceCorrections, false, nullptr, AZ::ConsoleFunctorFlags::Null, "If enabled, the server will force a correction for every input received for debugging");
     AZ_CVAR(bool, sv_EnableCorrections, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Enables server corrections on autonomous proxy desyncs");
     AZ_CVAR(double, sv_MaxBankTimeWindowSec, 0.2, nullptr, AZ::ConsoleFunctorFlags::Null, "Maximum bank time we allow before we start rejecting autonomous proxy move inputs due to anticheat kicking in");
     AZ_CVAR(double, sv_BankTimeDecay, 0.025, nullptr, AZ::ConsoleFunctorFlags::Null, "Amount to decay bank time by, in case of more permanent shifts in client latency");
@@ -43,6 +45,40 @@ namespace Multiplayer
         AzNetworking::StringifySerializer serializer(',', false);
         netBindComponent->SerializeEntityCorrection(serializer);
         return serializer.GetString();
+    }
+
+    void PrintCorrectionDifferences(const AzNetworking::StringifySerializer& client, const AzNetworking::StringifySerializer& server)
+    {
+        const auto& clientMap = client.GetValueMap();
+        const auto& serverMap = server.GetValueMap();
+
+        AzNetworking::StringifySerializer::ValueMap differences = clientMap;
+        for (auto iter = server.GetValueMap().begin(); iter != server.GetValueMap().end(); ++iter)
+        {
+            auto serverValueIter = clientMap.find(iter->first);
+            if (iter->second == differences[iter->first])
+            {
+                differences.erase(iter->first);
+            }
+        }
+
+        if (differences.empty())
+        {
+            AZLOG_ERROR("The hash mismatched, but no differences were found.")
+        }
+
+        for (auto iter = differences.begin(); iter != differences.end(); ++iter)
+        {
+            auto clientValueIter = clientMap.find(iter->first);
+            auto serverValueIter = serverMap.find(iter->first);
+            if (clientValueIter == clientMap.end() || serverValueIter == serverMap.end())
+            {
+                AZLOG_ERROR("    %s (Not found in server and/or client value map!)", iter->first.c_str());
+                continue;
+            }
+
+            AZLOG_ERROR("    %s Server=%s Client=%s", iter->first.c_str(), serverValueIter->second.c_str(), clientValueIter->second.c_str());
+        }
     }
 
     void LocalPredictionPlayerInputComponent::LocalPredictionPlayerInputComponent::Reflect(AZ::ReflectContext* context)
@@ -106,8 +142,7 @@ namespace Multiplayer
     (
         AzNetworking::IConnection* invokingConnection, 
         const Multiplayer::NetworkInputArray& inputArray,
-        const AZ::HashValue32& stateHash,
-        [[maybe_unused]] const AzNetworking::PacketEncodingBuffer& clientState
+        const AZ::HashValue32& stateHash
     )
     {
         if (invokingConnection == nullptr)
@@ -176,7 +211,7 @@ namespace Multiplayer
             }
         }
 
-        if (sv_EnableCorrections && (currentTimeMs - m_lastCorrectionSentTimeMs > sv_MinCorrectionTimeMs))
+        if (sv_ForceCorrections || (sv_EnableCorrections && (currentTimeMs - m_lastCorrectionSentTimeMs > sv_MinCorrectionTimeMs)))
         {
             m_lastCorrectionSentTimeMs = currentTimeMs;
 
@@ -210,69 +245,6 @@ namespace Multiplayer
 
                 // Send correction
                 SendClientInputCorrection(GetLastInputId(), correction);
-
-#ifndef AZ_RELEASE_BUILD
-                AZStd::string clientStateString;
-                AZStd::string serverStateString;
-                if (cl_EnableDesyncDebugging)
-                {
-                    // In debug, show which states caused the correction
-                    // Write in client state
-                    AzNetworking::NetworkOutputSerializer clientStateSerializer(clientState.GetBuffer(), clientState.GetSize());
-                    GetNetBindComponent()->SerializeEntityCorrection(clientStateSerializer);
-
-                    // Read out state values
-                    AzNetworking::StringifySerializer clientValues;
-                    GetNetBindComponent()->SerializeEntityCorrection(clientValues);
-
-                    // Restore server state
-                    AzNetworking::NetworkOutputSerializer serverStateSerializer(correction.GetBuffer(), correction.GetSize());
-                    GetNetBindComponent()->SerializeEntityCorrection(serverStateSerializer);
-
-                    // Read out state values
-                    AzNetworking::StringifySerializer serverValues;
-                    GetNetBindComponent()->SerializeEntityCorrection(serverValues);
-
-                    AZStd::map<AZStd::string, AZStd::pair<AZStd::string, AZStd::string>> mapComparison;
-
-                    // put the server value in the first part of the pair
-                    for (const auto& pair : serverValues.GetValueMap())
-                    {
-                        mapComparison[pair.first].first = pair.second;
-                    }
-
-                    // put the client value in the second part of the pair
-                    for (const auto& pair : clientValues.GetValueMap())
-                    {
-                        mapComparison[pair.first].second = pair.second;
-                    }
-
-                    bool firstIt = true;
-                    for (const auto& mapPair : mapComparison)
-                    {
-                        if (mapPair.second.first != mapPair.second.second)
-                        {
-                            if (!firstIt)
-                            {
-                                clientStateString += ",";
-                                serverStateString += ",";
-                            }
-                            firstIt = false;
-
-                            AZStd::string clientValue = mapPair.second.second.empty() ? "<no value>" : mapPair.second.second;
-                            AZStd::string serverValue = mapPair.second.first.empty() ? "<no value>" : mapPair.second.first;
-                            clientStateString += mapPair.first + "=" + clientValue;
-                            serverStateString += mapPair.first + "=" + serverValue;
-                        }
-                    }
-                }
-                else
-                {
-                    clientStateString = "available in debug only";
-                    serverStateString = "available in debug only";
-                }
-                AZLOG_ERROR("** Autonomous proxy desync detected! ** clientState=[%s], serverState=[%s]", clientStateString.c_str(), serverStateString.c_str());
-#endif
             }
         }
     }
@@ -331,7 +303,7 @@ namespace Multiplayer
 
     void LocalPredictionPlayerInputComponentController::HandleSendClientInputCorrection
     (
-        AzNetworking::IConnection* invokingConnection,
+        [[maybe_unused]] AzNetworking::IConnection* invokingConnection,
         const Multiplayer::ClientInputId& inputId,
         const AzNetworking::PacketEncodingBuffer& correction
     )
@@ -356,6 +328,25 @@ namespace Multiplayer
         GetNetBindComponent()->SerializeEntityCorrection(serializer);
         m_correctionEvent.Signal();
 
+#ifndef AZ_RELEASE_BUILD
+        if (cl_EnableDesyncDebugging)
+        {
+            AZLOG_INFO("** Autonomous Desync - Corrected clientInputId=%d ", aznumeric_cast<int32_t>(inputId));
+            auto iter = m_predictiveStateHistory.find(inputId);
+            if (iter != m_predictiveStateHistory.end())
+            {
+                // Read out state values
+                AzNetworking::StringifySerializer serverValues;
+                GetNetBindComponent()->SerializeEntityCorrection(serverValues);
+                PrintCorrectionDifferences(*iter->second, serverValues);
+            }
+            else
+            {
+                AZLOG_INFO("Received correction that is too old to diff, increase cl_PredictiveStateHistorySize");
+            }
+        }
+#endif
+
         AZLOG
         (
             NET_Prediction,
@@ -370,29 +361,13 @@ namespace Multiplayer
         // If this correction is for a move outside our input history window, just start replaying from the oldest move we have available
         const uint32_t startReplayIndex = (inputHistorySize > historicalDelta) ? (inputHistorySize - historicalDelta) : 0;
 
-        // Flag that we are replaying inputs
-        struct ScopedReplayingInput
-        {
-            ScopedReplayingInput(LocalPredictionPlayerInputComponentController* instance)
-                : m_instance(instance)
-            {
-                m_instance->m_replayingInput = true;
-            }
-            ~ScopedReplayingInput()
-            {
-                m_instance->m_replayingInput = false;
-            }
-            LocalPredictionPlayerInputComponentController* m_instance;
-        };
-        ScopedReplayingInput markReplayingInput(this);
-
         const float clientInputRateSec = static_cast<float>(static_cast<AZ::TimeMs>(cl_InputRateMs)) / 1000.0;
         for (uint32_t replayIndex = startReplayIndex; replayIndex < inputHistorySize; ++replayIndex)
         {
             // Reprocess the input for this frame
             NetworkInput& input = m_inputHistory[replayIndex];
             ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs(), invokingConnection->GetConnectionId());
-            GetNetBindComponent()->ProcessInput(input, clientInputRateSec);
+            GetNetBindComponent()->ReprocessInput(input, clientInputRateSec);
 
             AZLOG
             (
@@ -403,11 +378,6 @@ namespace Multiplayer
                 GetCorrectionDataString(GetNetBindComponent()).c_str()
             );
         }
-    }
-
-    bool LocalPredictionPlayerInputComponentController::IsReplayingInput() const
-    {
-        return m_replayingInput;
     }
 
     bool LocalPredictionPlayerInputComponentController::IsMigrating() const
@@ -519,17 +489,6 @@ namespace Multiplayer
             AzNetworking::HashSerializer hashSerializer;
             GetNetBindComponent()->SerializeEntityCorrection(hashSerializer);
 
-            // In debug, send the entire client output state to the server to make it easier to debug desync issues
-            AzNetworking::PacketEncodingBuffer processInputResult;
-#ifndef AZ_RELEASE_BUILD
-            if (cl_EnableDesyncDebugging)
-            {
-                AzNetworking::NetworkInputSerializer processInputResultSerializer(processInputResult.GetBuffer(), processInputResult.GetCapacity());
-                GetNetBindComponent()->SerializeEntityCorrection(processInputResultSerializer);
-                processInputResult.Resize(processInputResultSerializer.GetSize());
-            }
-#endif
-
             // Save this input and discard move history outside our client rewind window
             m_inputHistory.PushBack(input);
             while (m_inputHistory.Size() > maxClientInputs)
@@ -548,10 +507,23 @@ namespace Multiplayer
                 inputArray[i] = m_inputHistory[historyIndex];
             }
 
+#ifndef AZ_RELEASE_BUILD
+            if (cl_EnableDesyncDebugging)
+            {
+                StateHistoryItem inputHistory = AZStd::make_unique<AzNetworking::StringifySerializer>();
+                while (m_predictiveStateHistory.size() > cl_PredictiveStateHistorySize)
+                {
+                    m_predictiveStateHistory.erase(m_predictiveStateHistory.begin());
+                }
+                GetNetBindComponent()->SerializeEntityCorrection(*inputHistory);
+                m_predictiveStateHistory.emplace(m_clientInputId, AZStd::move(inputHistory));
+            }
+#endif
+
             // Send the input to server (only when we are not migrating)
             if (!IsMigrating())
             {
-                SendClientInput(inputArray, hashSerializer.GetHash(), processInputResult);
+                SendClientInput(inputArray, hashSerializer.GetHash());
             }
         }
     }

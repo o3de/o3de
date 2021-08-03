@@ -22,7 +22,6 @@
     <RemoteProcedure Name="SendClientInput" InvokeFrom="Autonomous" HandleOn="Authority" IsPublic="true" IsReliable="false" GenerateEventBindings="false" Description="Client to server move / input RPC">
         <Param Type="Multiplayer::NetworkInputArray" Name="inputArray"  />
         <Param Type="AZ::HashValue32" Name="stateHash" />
-        <Param Type="AzNetworking::PacketEncodingBuffer" Name="clientState" Description="This is for debugging desyncs only; release games should not populate this parameter" />
     </RemoteProcedure>
 
     <RemoteProcedure Name="SendClientInputCorrection" InvokeFrom="Authority" HandleOn="Autonomous" IsPublic="true" IsReliable="false" GenerateEventBindings="false" Description="Autonomous proxy correction RPC">

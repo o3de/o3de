@@ -20,17 +20,15 @@ namespace AzNetworking
     {
     public:
 
-        using StringMap = AZStd::map<AZStd::string, AZStd::string>;
+        using ValueMap = AZStd::map<AZStd::string, AZStd::string>;
 
         StringifySerializer(char delimeter = ' ', bool outputFieldNames = true, const AZStd::string& seperator = "=");
 
-        // GetString
-        // After serializing objects, get the serialized values as a single string
+        //! After serializing objects, get the serialized values as a single string.
         const AZStd::string& GetString() const;
 
-        // GetValueMap
-        // After serializing objects, get the serialized values as key value pairs
-        const StringMap& GetValueMap() const;
+        //! After serializing objects, get the serialized values as a map of key/value pairs.
+        const ValueMap& GetValueMap() const;
 
         // ISerializer interfaces
         SerializerMode GetSerializerMode() const override;
@@ -67,7 +65,7 @@ namespace AzNetworking
         char m_delimeter;
         bool m_outputFieldNames = true;
 
-        StringMap m_map;
+        ValueMap m_valueMap;
         AZStd::string m_string;
         AZStd::string m_prefix;
         AZStd::string m_separator;

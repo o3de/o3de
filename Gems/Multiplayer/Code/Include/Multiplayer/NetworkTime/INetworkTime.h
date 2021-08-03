@@ -54,6 +54,11 @@ namespace Multiplayer
         //! @return the HostFrameId taking into account the provided rewinding connectionId
         virtual HostFrameId GetHostFrameIdForRewindingConnection(AzNetworking::ConnectionId rewindConnectionId) const = 0;
 
+        //! Forcibly sets the current network time to the provided frameId and game time in milliseconds.
+        //! @param frameId the new HostFrameId to use
+        //! @param timeMs the new HostTimeMs to use
+        virtual void ForceSetTime(HostFrameId frameId, AZ::TimeMs timeMs) = 0;
+
         //! Alters the current HostFrameId and binds that alteration to the provided ConnectionId.
         //! @param frameId the new HostFrameId to use
         //! @param timeMs the new HostTimeMs to use
