@@ -683,7 +683,7 @@ bool CUiAnimViewSequence::SetName(const char* pName)
         return false;
     }
 
-    string oldName = GetName();
+    AZStd::string oldName = GetName();
     m_pAnimSequence->SetName(pName);
 
     if (UiAnimUndo::IsRecording())
@@ -691,7 +691,7 @@ bool CUiAnimViewSequence::SetName(const char* pName)
         UiAnimUndo::Record(new CUndoAnimNodeRename(this, oldName));
     }
 
-    GetSequence()->OnNodeRenamed(this, oldName);
+    GetSequence()->OnNodeRenamed(this, oldName.c_str());
 
     return true;
 }
@@ -893,7 +893,7 @@ std::deque<CUiAnimViewTrack*> CUiAnimViewSequence::GetMatchingTracks(CUiAnimView
 {
     std::deque<CUiAnimViewTrack*> matchingTracks;
 
-    const string trackName = trackNode->getAttr("name");
+    const AZStd::string trackName = trackNode->getAttr("name");
 
     IUiAnimationSystem* animationSystem = nullptr;
     EBUS_EVENT_RESULT(animationSystem, UiEditorAnimationBus, GetAnimationSystem);
@@ -956,11 +956,11 @@ void CUiAnimViewSequence::GetMatchedPasteLocationsRec(std::vector<TMatchedTrackL
     for (unsigned int nodeIndex = 0; nodeIndex < numChildNodes; ++nodeIndex)
     {
         XmlNodeRef xmlChildNode = clipboardNode->getChild(nodeIndex);
-        const string tagName = xmlChildNode->getTag();
+        const AZStd::string tagName = xmlChildNode->getTag();
 
         if (tagName == "Node")
         {
-            const string nodeName = xmlChildNode->getAttr("name");
+            const AZStd::string nodeName = xmlChildNode->getAttr("name");
 
             int nodeType = eUiAnimNodeType_Invalid;
             xmlChildNode->getAttr("type", nodeType);
@@ -982,7 +982,7 @@ void CUiAnimViewSequence::GetMatchedPasteLocationsRec(std::vector<TMatchedTrackL
         }
         else if (tagName == "Track")
         {
-            const string trackName = xmlChildNode->getAttr("name");
+            const AZStd::string trackName = xmlChildNode->getAttr("name");
 
             IUiAnimationSystem* animationSystem = nullptr;
             EBUS_EVENT_RESULT(animationSystem, UiEditorAnimationBus, GetAnimationSystem);

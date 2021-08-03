@@ -70,7 +70,7 @@ namespace
         if (stringLength > 0 && stringLength >= utf8Index)
         {
             // Iterate over the string until the given index is found.
-            Unicode::CIterator<const char*, false> pChar(utf8String.c_str());
+            Utf8::Unchecked::octet_iterator pChar(utf8String.data());
             while (uint32_t ch = *pChar)
             {
                 if (utf8Index == utfIndexIter)
@@ -1185,7 +1185,8 @@ void UiTextInputComponent::UpdateDisplayedTextFunction()
                 // NOTE: this assumes the uint32_t can be interpreted as a wchar_t, it seems to
                 // work for cases tested but may not in general.
                 wchar_t wcharString[2] = { static_cast<wchar_t>(this->GetReplacementCharacter()), 0 };
-                AZStd::string replacementCharString(CryStringUtils::WStrToUTF8(wcharString));
+                AZStd::string replacementCharString;
+                AZStd::to_string(replacementCharString, wcharString, 1);
 
                 int numReplacementChars = LyShine::GetUtf8StringLength(originalText);
 

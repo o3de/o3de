@@ -921,7 +921,7 @@ void SpriteBorderEditor::AddButtonsSection(QGridLayout* gridLayout, int& rowNum)
                 // The texture is guaranteed to exist so use that to get the full path.
                 QString fullTexturePath = Path::GamePathToFullPath(m_sprite->GetTexturePathname().c_str());
                 const char* const spriteExtension = "sprite";
-                string fullSpritePath = PathUtil::ReplaceExtension(fullTexturePath.toUtf8().data(), spriteExtension);
+                AZStd::string fullSpritePath = PathUtil::ReplaceExtension(fullTexturePath.toUtf8().data(), spriteExtension);
 
                 FileHelpers::SourceControlAddOrEdit(fullSpritePath.c_str(), QApplication::activeWindow());
 

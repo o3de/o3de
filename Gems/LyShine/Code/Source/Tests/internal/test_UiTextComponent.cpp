@@ -3508,7 +3508,7 @@ void UiTextComponent::UnitTestLocalization(CLyShine* lyshine, IConsoleCmdArgs* /
 {
     ILocalizationManager* pLocMan = GetISystem()->GetLocalizationManager();
 
-    string localizationXml("libs/localization/localization.xml");
+    AZStd::string localizationXml("libs/localization/localization.xml");
 
     bool initLocSuccess = false;
 

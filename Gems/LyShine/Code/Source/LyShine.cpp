@@ -287,7 +287,7 @@ AZ::EntityId CLyShine::CreateCanvas()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-AZ::EntityId CLyShine::LoadCanvas(const string& assetIdPathname)
+AZ::EntityId CLyShine::LoadCanvas(const AZStd::string& assetIdPathname)
 {
     return m_uiCanvasManager->LoadCanvas(assetIdPathname.c_str());
 }
@@ -299,7 +299,7 @@ AZ::EntityId CLyShine::CreateCanvasInEditor(UiEntityContext* entityContext)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-AZ::EntityId CLyShine::LoadCanvasInEditor(const string& assetIdPathname, const string& sourceAssetPathname, UiEntityContext* entityContext)
+AZ::EntityId CLyShine::LoadCanvasInEditor(const AZStd::string& assetIdPathname, const AZStd::string& sourceAssetPathname, UiEntityContext* entityContext)
 {
     return m_uiCanvasManager->LoadCanvasInEditor(assetIdPathname, sourceAssetPathname, entityContext);
 }
@@ -317,7 +317,7 @@ AZ::EntityId CLyShine::FindCanvasById(LyShine::CanvasId id)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-AZ::EntityId CLyShine::FindLoadedCanvasByPathName(const string& assetIdPathname)
+AZ::EntityId CLyShine::FindLoadedCanvasByPathName(const AZStd::string& assetIdPathname)
 {
     return m_uiCanvasManager->FindLoadedCanvasByPathName(assetIdPathname.c_str());
 }
@@ -335,13 +335,13 @@ void CLyShine::ReleaseCanvasDeferred(AZ::EntityId canvas)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-ISprite* CLyShine::LoadSprite(const string& pathname)
+ISprite* CLyShine::LoadSprite(const AZStd::string& pathname)
 {
     return CSprite::LoadSprite(pathname);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-ISprite* CLyShine::CreateSprite(const string& renderTargetName)
+ISprite* CLyShine::CreateSprite(const AZStd::string& renderTargetName)
 {
     return CSprite::CreateSprite(renderTargetName);
 }

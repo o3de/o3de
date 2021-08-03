@@ -56,18 +56,18 @@ public:
     IDraw2d* GetDraw2d() override;
 
     AZ::EntityId CreateCanvas() override;
-    AZ::EntityId LoadCanvas(const string& assetIdPathname) override;
+    AZ::EntityId LoadCanvas(const AZStd::string& assetIdPathname) override;
     AZ::EntityId CreateCanvasInEditor(UiEntityContext* entityContext) override;
-    AZ::EntityId LoadCanvasInEditor(const string& assetIdPathname, const string& sourceAssetPathname, UiEntityContext* entityContext) override;
+    AZ::EntityId LoadCanvasInEditor(const AZStd::string& assetIdPathname, const AZStd::string& sourceAssetPathname, UiEntityContext* entityContext) override;
     AZ::EntityId ReloadCanvasFromXml(const AZStd::string& xmlString, UiEntityContext* entityContext) override;
     AZ::EntityId FindCanvasById(LyShine::CanvasId id) override;
-    AZ::EntityId FindLoadedCanvasByPathName(const string& assetIdPathname) override;
+    AZ::EntityId FindLoadedCanvasByPathName(const AZStd::string& assetIdPathname) override;
 
     void ReleaseCanvas(AZ::EntityId canvas, bool forEditor) override;
     void ReleaseCanvasDeferred(AZ::EntityId canvas) override;
 
-    ISprite* LoadSprite(const string& pathname) override;
-    ISprite* CreateSprite(const string& renderTargetName) override;
+    ISprite* LoadSprite(const AZStd::string& pathname) override;
+    ISprite* CreateSprite(const AZStd::string& renderTargetName) override;
     bool DoesSpriteTextureAssetExist(const AZStd::string& pathname) override;
 
     void PostInit() override;
