@@ -30,7 +30,6 @@
 #include <MathConversion.h>
 
 #include <IConsole.h>
-#include <StringUtils.h>
 
 #include <PhysX/Debug/PhysXDebugInterface.h>
 
