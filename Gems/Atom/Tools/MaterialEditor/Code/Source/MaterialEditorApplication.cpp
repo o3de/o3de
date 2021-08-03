@@ -9,7 +9,6 @@
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>
-#include <AzFramework/Asset/AssetSystemComponent.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/Network/AssetProcessorConnection.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -28,11 +27,11 @@
 
 #include <AtomToolsFramework/Util/Util.h>
 
-#include <Atom/Document/MaterialDocumentSystemRequestBus.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 
 #include <Atom/Document/MaterialDocumentModule.h>
+#include <Atom/Document/MaterialDocumentSystemRequestBus.h>
 #include <Atom/Viewport/MaterialViewportModule.h>
 #include <Atom/Window/MaterialEditorWindowFactoryRequestBus.h>
 #include <Atom/Window/MaterialEditorWindowModule.h>
@@ -73,15 +72,14 @@ namespace MaterialEditor
     {
         QApplication::setApplicationName("O3DE Material Editor");
 
+        // The settings registry has been created at this point, so add the CMake target
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(
             *AZ::SettingsRegistry::Get(), GetBuildTargetName());
     }
 
     MaterialEditorApplication::~MaterialEditorApplication()
     {
-        AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusDisconnect();
         MaterialEditorWindowNotificationBus::Handler::BusDisconnect();
-        AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();
     }
 
     void MaterialEditorApplication::CreateStaticModules(AZStd::vector<AZ::Module*>& outModules)
@@ -122,8 +120,8 @@ namespace MaterialEditor
                 &MaterialEditor::MaterialEditorWindowRequestBus::Handler::ActivateWindow);
         }
 
-        // Process command line options for opening one or more material documents on startup
-        size_t openDocumentCount = commandLine.GetNumMiscValues();
+        // Process command line options for opening one or more documents on startup
+        size_t openDocumentCount = m_commandLine.GetNumMiscValues();
         for (size_t openDocumentIndex = 0; openDocumentIndex < openDocumentCount; ++openDocumentIndex)
         {
             const AZStd::string openDocumentPath = commandLine.GetMiscValue(openDocumentIndex);
