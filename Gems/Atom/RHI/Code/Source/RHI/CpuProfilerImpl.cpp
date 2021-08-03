@@ -81,6 +81,7 @@ namespace AZ
             Interface<CpuProfiler>::Register(this);
             m_initialized = true;
             SystemTickBus::Handler::BusConnect();
+            m_continuousCaptureData.set_capacity(10);
         }
 
         void CpuProfilerImpl::Shutdown()
@@ -157,7 +158,7 @@ namespace AZ
             return true;
         }
 
-        bool CpuProfilerImpl::EndContinuousCapture(AZStd::deque<TimeRegionMap>& flushTarget)
+        bool CpuProfilerImpl::EndContinuousCapture(AZStd::ring_buffer<TimeRegionMap>& flushTarget)
         {
             if (!m_continuousCaptureInProgress)
             {
@@ -219,11 +220,13 @@ namespace AZ
 
             if (m_continuousCaptureInProgress)
             {
-                if (m_continuousCaptureData.size() >= MaxFramesToSave)
+                if (m_continuousCaptureData.full() && m_continuousCaptureData.size() != MaxFramesToSave)
                 {
-                    m_continuousCaptureData.pop_front();
+                    const AZStd::size_t size = m_continuousCaptureData.size();
+                    m_continuousCaptureData.set_capacity(AZStd::min(MaxFramesToSave, size + size / 2));
                 }
-                m_continuousCaptureData.emplace_back(AZStd::move(m_timeRegionMap));
+
+                m_continuousCaptureData.push_back(AZStd::move(m_timeRegionMap));
                 m_timeRegionMap.clear();
             }
 

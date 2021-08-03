@@ -110,13 +110,13 @@ namespace AZ
             void EndTimeRegion() final override;
             const TimeRegionMap& GetTimeRegionMap() const final override;
             bool BeginContinuousCapture() final override;
-            bool EndContinuousCapture(AZStd::deque<TimeRegionMap>& flushTarget) final override;
+            bool EndContinuousCapture(AZStd::ring_buffer<TimeRegionMap>& flushTarget) final override;
             bool IsContinuousCaptureInProgress() const final override;
             void SetProfilerEnabled(bool enabled) final override;
             bool IsProfilerEnabled() const final override;
 
         private:
-            static constexpr u32 MaxFramesToSave = 2 * 60 * 120; // 2 minutes of 120fps
+            static constexpr AZStd::size_t MaxFramesToSave = 2 * 60 * 120; // 2 minutes of 120fps
 
             // Lazily create and register the local thread data
             void RegisterThreadStorage();
@@ -143,8 +143,8 @@ namespace AZ
             bool m_continuousCaptureInProgress = false;
 
             // Stores multiple frames of profiling data, size is controlled by MaxFramesToSave. Flushed when EndContinuousCapture is called.
-            // Deque so that we can have fast append of new data + removal of old profiling data.
-            AZStd::deque<TimeRegionMap> m_continuousCaptureData;
+            // Ring buffer so that we can have fast append of new data + removal of old profiling data with good cache locality.
+            AZStd::ring_buffer<TimeRegionMap> m_continuousCaptureData;
         };
 
     }; // namespace RPI

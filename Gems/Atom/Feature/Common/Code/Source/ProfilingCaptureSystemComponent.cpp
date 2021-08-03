@@ -144,7 +144,7 @@ namespace AZ
             static void Reflect(AZ::ReflectContext* context);
 
             CpuProfilingStatisticsSerializer() = default;
-            CpuProfilingStatisticsSerializer(const AZStd::deque<RHI::CpuProfiler::TimeRegionMap>& continuousData);
+            CpuProfilingStatisticsSerializer(const AZStd::ring_buffer<RHI::CpuProfiler::TimeRegionMap>& continuousData);
 
             AZStd::vector<CpuProfilingStatisticsSerializerEntry> m_cpuProfilingStatisticsSerializerEntries;
         };
@@ -289,7 +289,7 @@ namespace AZ
 
         // --- CpuProfilingStatisticsSerializer ---
 
-        CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializer(const AZStd::deque<RHI::CpuProfiler::TimeRegionMap>& continuousData)
+        CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializer(const AZStd::ring_buffer<RHI::CpuProfiler::TimeRegionMap>& continuousData)
         {
             // Create serializable entries
             for (const auto& timeRegionMap : continuousData)
@@ -532,7 +532,7 @@ namespace AZ
             return captureStarted;
         }
 
-        bool SerializeCpuProfilingData(const AZStd::deque<RHI::CpuProfiler::TimeRegionMap>& data, AZStd::string outputFilePath, bool wasEnabled)
+        bool SerializeCpuProfilingData(const AZStd::ring_buffer<RHI::CpuProfiler::TimeRegionMap>& data, AZStd::string outputFilePath, bool wasEnabled)
         {
             AZ_TracePrintf("ProfilingCaptureSystemComponent", "Beginning serialization of %zu frames of profiling data\n", data.size());
             JsonSerializerSettings serializationSettings;
@@ -581,7 +581,8 @@ namespace AZ
             const bool captureStarted = m_cpuProfilingStatisticsCapture.StartCapture([this, outputFilePath, wasEnabled]()
             {
                 // Blocking call for a single frame of data, avoid thread overhead
-                AZStd::deque singleFrameData = { RHI::CpuProfiler::Get()->GetTimeRegionMap() };
+                AZStd::ring_buffer<RHI::CpuProfiler::TimeRegionMap> singleFrameData;
+                singleFrameData.push_back(RHI::CpuProfiler::Get()->GetTimeRegionMap());
                 SerializeCpuProfilingData(singleFrameData, outputFilePath, wasEnabled);
             });
 
@@ -616,7 +617,7 @@ namespace AZ
                 return false;
             }
 
-            AZStd::deque<RHI::CpuProfiler::TimeRegionMap> captureResult;
+            AZStd::ring_buffer<RHI::CpuProfiler::TimeRegionMap> captureResult;
             const bool captureEnded = AZ::RHI::CpuProfiler::Get()->EndContinuousCapture(captureResult);
             if (!captureEnded)
             {

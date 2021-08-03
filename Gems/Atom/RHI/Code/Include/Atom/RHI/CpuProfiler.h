@@ -10,7 +10,7 @@
 
 #include <AzCore/Debug/EventTrace.h>
 #include <AzCore/RTTI/RTTI.h>
-#include <AzCore/std/containers/deque.h>
+#include <AzCore/std/containers/ring_buffer.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/string/string.h>
 
@@ -86,8 +86,8 @@ namespace AZ
             //! Begin a continuous capture. Blocks the profiler from being toggled off until EndContinuousCapture is called. 
             virtual bool BeginContinuousCapture() = 0;
 
-            //! Flush the CPU Profiler's saved data into the passed deque.
-            virtual bool EndContinuousCapture(AZStd::deque<TimeRegionMap>& flushTarget) = 0;
+            //! Flush the CPU Profiler's saved data into the passed ring buffer .
+            virtual bool EndContinuousCapture(AZStd::ring_buffer<TimeRegionMap>& flushTarget) = 0;
 
             virtual bool IsContinuousCaptureInProgress() const = 0;
 
