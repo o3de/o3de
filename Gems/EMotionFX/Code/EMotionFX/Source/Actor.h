@@ -24,7 +24,6 @@
 #include <MCore/Source/Vector.h>
 #include <MCore/Source/Array.h>
 #include <MCore/Source/SmallArray.h>
-#include <MCore/Source/OBB.h>
 #include <MCore/Source/Distance.h>
 
 // include required headers
@@ -565,17 +564,6 @@ namespace EMotionFX
         void SetMorphSetup(uint32 lodLevel, MorphSetup* setup);
 
         /**
-         * Update the oriented bounding volumes (OBB) of all the nodes inside this actor.
-         * This is a very heavy calculation and must NOT be performed on a per-frame basis but only as pre-process step.
-         * The OBBs of the nodes are already being calculated at export time, so you shouldn't really need to use this method.
-         * Only when the bind pose geometry has changed you can update the node OBBs by calling this method.
-         * For more information about how the bounds are calculated please see the Node::GetOBB() and Node::CalcOBBFromBindPose() methods.
-         * The calculations performed by this method are automatically spread over multiple threads to improve the performance.
-         * @param lodLevel The geometry LOD level to use while calculating the object oriented bounds per node.
-         */
-        void UpdateNodeBindPoseOBBs(uint32 lodLevel);
-
-        /**
          * Get the number of node groups inside this actor object.
          * @result The number of node groups.
          */
@@ -758,7 +746,7 @@ namespace EMotionFX
         void MakeGeomLODsCompatibleWithSkeletalLODs();
 
         void ReinitializeMeshDeformers();
-        void PostCreateInit(bool makeGeomLodsCompatibleWithSkeletalLODs = true, bool generateOBBs = true, bool convertUnitType = true);
+        void PostCreateInit(bool makeGeomLodsCompatibleWithSkeletalLODs = true, bool convertUnitType = true);
 
         void AutoDetectMirrorAxes();
         const MCore::Array<NodeMirrorInfo>& GetNodeMirrorInfos() const;
@@ -807,57 +795,6 @@ namespace EMotionFX
 
         bool CheckIfHasMorphDeformer(uint32 lodLevel, uint32 nodeIndex) const;
         bool CheckIfHasSkinningDeformer(uint32 lodLevel, uint32 nodeIndex) const;
-
-        /**
-         * Calculate the object oriented box for a given LOD level.
-         * This will try to fit the tightest bounding box around the mesh of a node.
-         * If the node has no mesh and acts as bone inside skinning deformations the resulting box will contain
-         * all the vertices that are influenced by this given node/bone.
-         * Calculating this box is already done at export time. But you can use this to recalculate it if the mesh data changed.
-         * This method is relatively slow and not meant for per-frame calculations but only for preprocessing.
-         * You can use the GetOBB() method to retrieve the calculated box at any time.
-         * Nodes that do not have a mesh and not act as bone will have invalid OBB bounds, as they have no volume. You can check whether
-         * this is the case or not by using the MCore::OBB::IsValid() method.
-         * The box is stored in local space of the node.
-         * @param lodLevel The geometry LOD level to generate the OBBs from.
-         * @param nodeIndex The node to calculate the OBB for.
-         */
-        void CalcOBBFromBindPose(uint32 lodLevel, uint32 nodeIndex);
-
-        /**
-         * Get the object oriented bounding box for this node.
-         * The box is in local space. In order to convert it into world space you have to multiply the corner points of the box
-         * with the world space matrix of this node.
-         * Nodes that do not have a mesh and do not act as bone will have invalid bounds. You can use the MCore::OBB::CheckIfIsValid() method to check if
-         * the bounds are valid bounds or not. If it is not, then it means there was nothing to calculate the box from.
-         * Object Oriented Boxes for the nodes are calculated at export time by using the Actor::UpdateNodeBindPoseOBBs() and Node::CalcOBBFromBindPose() methods.
-         * @param nodeIndex The index of the node to get the OBB for.
-         * @result The object oriented bounding box that has been calculated before already.
-         */
-        MCore::OBB& GetNodeOBB(uint32 nodeIndex)                            { return mNodeInfos[nodeIndex].mOBB; }
-
-        /**
-         * Get the object oriented bounding box for this node.
-         * The box is in local space. In order to convert it into world space you have to multiply the corner points of the box
-         * with the world space matrix of this node.
-         * Nodes that do not have a mesh and do not act as bone will have invalid bounds. You can use the MCore::OBB::CheckIfIsValid() method to check if
-         * the bounds are valid bounds or not. If it is not, then it means there was nothing to calculate the box from.
-         * Object Oriented Boxes for the nodes are calculated at export time by using the Actor::UpdateNodeBindPoseOBBs() and Node::CalcOBBFromBindPose() methods.
-         * @param nodeIndex The index of the node to get the OBB for.
-         * @result The object oriented bounding box that has been calculated before already.
-         */
-        const MCore::OBB& GetNodeOBB(uint32 nodeIndex) const                { return mNodeInfos[nodeIndex].mOBB; }
-
-        /**
-         * Set the object oriented bounding box for this node.
-         * The box is in local space. In order to convert it into world space you have to multiply the corner points of the box
-         * with the world space matrix of this node.
-         * Nodes that do not have a mesh and do not act as bone will have invalid bounds. You can use the MCore::OBB::CheckIfIsValid() method to check if
-         * the bounds are valid bounds or not. If it is not, then it means there was nothing to calculate the box from.
-         * @param nodeIndex The index of the node to set the OBB for.
-         * @param obb The object oriented bounding box that has been calculated before already.
-         */
-        void SetNodeOBB(uint32 nodeIndex, const MCore::OBB& obb)            { mNodeInfos[nodeIndex].mOBB = obb; }
 
         void RemoveNodeMeshForLOD(uint32 lodLevel, uint32 nodeIndex, bool destroyMesh = true);
 
@@ -917,14 +854,6 @@ namespace EMotionFX
 
         Node* FindJointByMeshName(const AZStd::string_view meshName) const;
 
-        // per node info (shared between lods)
-        struct EMFX_API NodeInfo
-        {
-            MCore::OBB  mOBB;
-
-            NodeInfo();
-        };
-
         // data per node, per lod
         struct EMFX_API NodeLODInfo
         {
@@ -968,7 +897,6 @@ namespace EMotionFX
 
         Skeleton*                                       mSkeleton;                  /**< The skeleton, containing the nodes and bind pose. */
         MCore::Array<Dependency>                        mDependencies;              /**< The dependencies on other actors (shared meshes and transforms). */
-        AZStd::vector<NodeInfo>                         mNodeInfos;                 /**< The per node info, shared between lods. */
         AZStd::string                                   mName;                      /**< The name of the actor. */
         AZStd::string                                   mFileName;                  /**< The filename of the actor. */
         MCore::Array<NodeMirrorInfo>                    mNodeMirrorInfos;           /**< The array of node mirror info. */
