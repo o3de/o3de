@@ -190,19 +190,11 @@ class TestAtomEditorComponentsMain(object):
         """
         cfg_args = [level]
 
-        sphere_light_type = LIGHT_TYPES[1]
-        spot_disk_light_type = LIGHT_TYPES[2]
-        capsule_light_type = LIGHT_TYPES[3]
-        quad_light_type = LIGHT_TYPES[4]
-        polygon_light_type = LIGHT_TYPES[5]
-        simple_point_light = LIGHT_TYPES[6]
-        simple_spot_light = LIGHT_TYPES[7]
-
         expected_lines = [
             "light_entity Entity successfully created",
             "Entity has a Light component",
             "light_entity_test: Component added to the entity: True",
-            f"light_entity_test: Property value is {sphere_light_type} which matches {sphere_light_type}",
+            f"light_entity_test: Property value is {LIGHT_TYPES['sphere']} which matches {LIGHT_TYPES['sphere']}",
             "Controller|Configuration|Shadows|Enable shadow set to True",
             "light_entity Controller|Configuration|Shadows|Shadowmap size: SUCCESS",
             "Controller|Configuration|Shadows|Shadow filter method set to 1",  # PCF
@@ -214,16 +206,18 @@ class TestAtomEditorComponentsMain(object):
             "Controller|Configuration|Shadows|ESM exponent set to 50.0",
             "Controller|Configuration|Shadows|ESM exponent set to 5000.0",
             "Controller|Configuration|Shadows|Shadow filter method set to 3",  # ESM+PCF
-            f"light_entity_test: Property value is {spot_disk_light_type} which matches {spot_disk_light_type}",
-            f"light_entity_test: Property value is {capsule_light_type} which matches {capsule_light_type}",
-            f"light_entity_test: Property value is {quad_light_type} which matches {quad_light_type}",
+            f"light_entity_test: Property value is {LIGHT_TYPES['spot_disk']} which matches {LIGHT_TYPES['spot_disk']}",
+            f"light_entity_test: Property value is {LIGHT_TYPES['capsule']} which matches {LIGHT_TYPES['capsule']}",
+            f"light_entity_test: Property value is {LIGHT_TYPES['quad']} which matches {LIGHT_TYPES['quad']}",
             "light_entity Controller|Configuration|Fast approximation: SUCCESS",
             "light_entity Controller|Configuration|Both directions: SUCCESS",
-            f"light_entity_test: Property value is {polygon_light_type} which matches {polygon_light_type}",
-            f"light_entity_test: Property value is {simple_point_light} which matches {simple_point_light}",
+            f"light_entity_test: Property value is {LIGHT_TYPES['polygon']} which matches {LIGHT_TYPES['polygon']}",
+            f"light_entity_test: Property value is {LIGHT_TYPES['simple_point']} "
+            f"which matches {LIGHT_TYPES['simple_point']}",
             "Controller|Configuration|Attenuation radius|Mode set to 0",
             "Controller|Configuration|Attenuation radius|Radius set to 100.0",
-            f"light_entity_test: Property value is {simple_spot_light} which matches {simple_spot_light}",
+            f"light_entity_test: Property value is {LIGHT_TYPES['simple_spot']} "
+            f"which matches {LIGHT_TYPES['simple_spot']}",
             "Controller|Configuration|Shutters|Outer angle set to 45.0",
             "Controller|Configuration|Shutters|Outer angle set to 90.0",
             "light_entity_test: Component added to the entity: True",

@@ -7,13 +7,13 @@ File to assist with common hydra component functions or constants used across va
 """
 
 # Light type options for the Light component.
-LIGHT_TYPES = [
-    0,  # UNKNOWN
-    1,  # SPHERE
-    2,  # SPOTDISK
-    3,  # CAPSULE
-    4,  # QUAD
-    5,  # POLYGON
-    6,  # SIMPLEPOINT
-    7,  # SIMPLESPOT
-]
+LIGHT_TYPES = {
+    'unknown': 0,
+    'sphere': 1,
+    'spot_disk': 2,
+    'capsule': 3,
+    'quad': 4,
+    'polygon': 5,
+    'simple_point': 6,
+    'simple_spot': 7,
+}

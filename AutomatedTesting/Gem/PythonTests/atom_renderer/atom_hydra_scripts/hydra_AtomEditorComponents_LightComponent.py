@@ -85,7 +85,7 @@ def run():
     # Create a "light_entity" entity with "Light" component.
     light_entity_name = "light_entity"
     light_component = "Light"
-    light_entity = hydra.Entity(f"{light_entity_name}")
+    light_entity = hydra.Entity(light_entity_name)
     light_entity.create_entity(math.Vector3(-1.0, -2.0, 3.0), [light_component])
     general.log(
         f"{light_entity_name}_test: Component added to the entity: "
@@ -95,7 +95,6 @@ def run():
     light_component_id_pair = None
     component_type_id_list = azlmbr.editor.EditorComponentAPIBus(
         azlmbr.bus.Broadcast, 'FindComponentTypeIdsByEntityType', [light_component], 0)
-    general.log(f"Components found = {len(component_type_id_list)}")
     if len(component_type_id_list) < 1:
         general.log(f"ERROR: A component class with name {light_component} doesn't exist")
         light_component_id_pair = None
@@ -109,9 +108,8 @@ def run():
 
     # Test each Light component option can be selected and it's properties updated.
     # Point (sphere) light type checks.
-    sphere_light_type = LIGHT_TYPES[1]
     light_type_property_test(
-        light_type=sphere_light_type,
+        light_type=LIGHT_TYPES['sphere'],
         light_properties=SPHERE_AND_SPOT_DISK_LIGHT_PROPERTIES,
         light_component_id_pair=light_component_id_pair,
         light_entity_name=light_entity_name,
@@ -119,9 +117,8 @@ def run():
     )
 
     # Spot (disk) light type checks.
-    spot_disk_light_type = LIGHT_TYPES[2]
     light_type_property_test(
-        light_type=spot_disk_light_type,
+        light_type=LIGHT_TYPES['spot_disk'],
         light_properties=SPHERE_AND_SPOT_DISK_LIGHT_PROPERTIES,
         light_component_id_pair=light_component_id_pair,
         light_entity_name=light_entity_name,
@@ -129,25 +126,23 @@ def run():
     )
 
     # Capsule light type checks.
-    capsule_light_type = LIGHT_TYPES[3]
     azlmbr.editor.EditorComponentAPIBus(
         azlmbr.bus.Broadcast,
         'SetComponentProperty',
         light_component_id_pair,
         LIGHT_TYPE_PROPERTY,
-        capsule_light_type
+        LIGHT_TYPES['capsule']
     )
     verify_required_component_property_value(
         entity_name=light_entity_name,
         component=light_entity.components[0],
         property_path=LIGHT_TYPE_PROPERTY,
-        expected_property_value=capsule_light_type
+        expected_property_value=LIGHT_TYPES['capsule']
     )
 
     # Quad light type checks.
-    quad_light_type = LIGHT_TYPES[4]
     light_type_property_test(
-        light_type=quad_light_type,
+        light_type=LIGHT_TYPES['quad'],
         light_properties=QUAD_LIGHT_PROPERTIES,
         light_component_id_pair=light_component_id_pair,
         light_entity_name=light_entity_name,
@@ -155,25 +150,23 @@ def run():
     )
 
     # Polygon light type checks.
-    polygon_light_type = LIGHT_TYPES[5]
     azlmbr.editor.EditorComponentAPIBus(
         azlmbr.bus.Broadcast,
         'SetComponentProperty',
         light_component_id_pair,
         LIGHT_TYPE_PROPERTY,
-        polygon_light_type
+        LIGHT_TYPES['polygon']
     )
     verify_required_component_property_value(
         entity_name=light_entity_name,
         component=light_entity.components[0],
         property_path=LIGHT_TYPE_PROPERTY,
-        expected_property_value=polygon_light_type
+        expected_property_value=LIGHT_TYPES['polygon']
     )
 
     # Point (simple punctual) light type checks.
-    simple_point_light = LIGHT_TYPES[6]
     light_type_property_test(
-        light_type=simple_point_light,
+        light_type=LIGHT_TYPES['simple_point'],
         light_properties=SIMPLE_POINT_LIGHT_PROPERTIES,
         light_component_id_pair=light_component_id_pair,
         light_entity_name=light_entity_name,
@@ -181,9 +174,8 @@ def run():
     )
 
     # Spot (simple punctual) light type checks.
-    simple_spot_light = LIGHT_TYPES[7]
     light_type_property_test(
-        light_type=simple_spot_light,
+        light_type=LIGHT_TYPES['simple_spot'],
         light_properties=SIMPLE_SPOT_LIGHT_PROPERTIES,
         light_component_id_pair=light_component_id_pair,
         light_entity_name=light_entity_name,
