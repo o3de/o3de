@@ -107,8 +107,10 @@ namespace Multiplayer
     void ServerToClientReplicationWindow::UpdateWindow()
     {
         // clear the candidate queue, we're going to rebuild it
-        ReplicationCandidateQueue clearQueue;
-        clearQueue.get_container().reserve(sv_MaxEntitiesToTrackReplication);
+        ReplicationCandidateQueue::container_type clearQueueContainer;
+        clearQueueContainer.reserve(sv_MaxEntitiesToTrackReplication);
+        // Move the clearQueueContainer into the ReplicationCandidateQueue to maintain the reserved memory
+        ReplicationCandidateQueue clearQueue(ReplicationCandidateQueue::value_compare{}, AZStd::move(clearQueueContainer));
         m_candidateQueue.swap(clearQueue);
         m_replicationSet.clear();
 

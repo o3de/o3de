@@ -193,6 +193,9 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         FILES_CMAKE
             lyshine_common_module_files.cmake
             lyshine_tests_files.cmake
+        COMPILE_DEFINITIONS
+            PRIVATE
+                LYSHINE_TESTS
         INCLUDE_DIRECTORIES
             PRIVATE
                 Tests

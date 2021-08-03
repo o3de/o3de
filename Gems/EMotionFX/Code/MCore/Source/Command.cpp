@@ -28,10 +28,10 @@ namespace MCore
 
 
     // constructor
-    Command::Command(const char* commandName, Command* originalCommand)
+    Command::Command(AZStd::string commandName, Command* originalCommand)
+        : mOrgCommand(originalCommand)
+        , mCommandName(AZStd::move(commandName))
     {
-        mCommandName = commandName;
-        mOrgCommand  = originalCommand;
     }
 
 

@@ -24,6 +24,7 @@
 #include <MCore/Source/AzCoreConversions.h>
 #include <MCore/Source/Distance.h>
 #include <MCore/Source/File.h>
+#include <MCore/Source/LogManager.h>
 #include <MCore/Source/ReflectionSerializer.h>
 #include <MCore/Source/StringConversions.h>
 #include <MCore/Source/MCoreSystem.h>
@@ -1468,7 +1469,7 @@ namespace EMotionFX
             }
 
             // create the new group inside the actor
-            NodeGroup* newGroup = NodeGroup::Create(groupName, fileGroup.mNumNodes, fileGroup.mDisabledOnDefault ? false : true);
+            NodeGroup* newGroup = aznew NodeGroup(groupName, fileGroup.mNumNodes, fileGroup.mDisabledOnDefault ? false : true);
 
             // read the node numbers
             uint16 nodeIndex;

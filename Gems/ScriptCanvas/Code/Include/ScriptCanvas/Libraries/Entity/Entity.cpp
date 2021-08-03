@@ -23,10 +23,10 @@ namespace ScriptCanvas
 
         // The DataElementNode is being copied purposefully in this statement to clone the data
         AZ::SerializeContext::DataElementNode baseNodeElement = rootNodeElement.GetSubElement(nodeElementIndex);
-        if (!rootNodeElement.Convert(context, azrtti_typeid<EntityIDNodes::IsValidNode>()))
+        if (!rootNodeElement.Convert(context, azrtti_typeid<EntityNodes::IsValidNode>()))
         {
             AZ_Error("Script Canvas", false, "Unable to convert old Entity::IsValid function node(%s) to new EntityId::IsValid function node(%s)",
-                rootNodeElement.GetId().ToString<AZStd::string>().data(), azrtti_typeid<EntityIDNodes::IsValidNode>().ToString<AZStd::string>().data());
+                rootNodeElement.GetId().ToString<AZStd::string>().data(), azrtti_typeid<EntityNodes::IsValidNode>().ToString<AZStd::string>().data());
             return false;
         }
 
@@ -79,14 +79,12 @@ namespace ScriptCanvas
 
         void Entity::InitNodeRegistry(NodeRegistry& nodeRegistry)
         {
-            EntityIDNodes::Registrar::AddToRegistry<Entity>(nodeRegistry);
             EntityNodes::Registrar::AddToRegistry<Entity>(nodeRegistry);
         }
 
         AZStd::vector<AZ::ComponentDescriptor*> Entity::GetComponentDescriptors()
         {
             AZStd::vector<AZ::ComponentDescriptor*> descriptors;
-            EntityIDNodes::Registrar::AddDescriptors(descriptors);
             EntityNodes::Registrar::AddDescriptors(descriptors);
             return descriptors;
         }

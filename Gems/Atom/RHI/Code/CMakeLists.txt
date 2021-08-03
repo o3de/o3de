@@ -7,8 +7,25 @@
 #
 
 ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
+ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
 
 include(${pal_dir}/AtomRHITests_traits_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+
+set(RENDERDOC_CMAKE ${CMAKE_CURRENT_SOURCE_DIR}/${pal_dir}/renderdoc_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+if(EXISTS ${RENDERDOC_CMAKE})
+    include(${RENDERDOC_CMAKE})
+endif()
+
+if(TARGET "3rdParty::renderdoc")
+    message(STATUS "Renderdoc found, adding as runtime dependency")
+    set(USE_RENDERDOC_DEFINE "USE_RENDERDOC")
+    set(RENDERDOC_BUILD_DEPENDENCY "3rdParty::renderdoc")
+    set(RENDERDOC_API_DEPENDENCY "3rdParty::renderdoc_api")
+else()
+    set(USE_RENDERDOC_DEFINE "")
+    set(RENDERDOC_BUILD_DEPENDENCY "")
+    set(RENDERDOC_API_DEPENDENCY "")
+endif()
 
 ly_add_target(
     NAME Atom_RHI.Reflect STATIC
@@ -33,9 +50,11 @@ ly_add_target(
     NAMESPACE Gem
     FILES_CMAKE
         atom_rhi_public_files.cmake
+        ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
+            ${pal_source_dir}
         PUBLIC
             Include
     BUILD_DEPENDENCIES
@@ -43,6 +62,12 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             Gem::Atom_RHI.Reflect
+            ${RENDERDOC_BUILD_DEPENDENCY}
+        PUBLIC
+            ${RENDERDOC_API_DEPENDENCY}
+    COMPILE_DEFINITIONS
+        PUBLIC
+            ${USE_RENDERDOC_DEFINE}
 )
 
 ly_add_target(

@@ -55,6 +55,11 @@ namespace Multiplayer
         return m_hostTimeMs;
     }
 
+    float NetworkTime::GetHostBlendFactor() const
+    {
+        return m_hostBlendFactor;
+    }
+
     AzNetworking::ConnectionId NetworkTime::GetRewindingConnectionId() const
     {
         return m_rewindingConnectionId;
@@ -81,6 +86,11 @@ namespace Multiplayer
         m_rewindingConnectionId = rewindConnectionId;
     }
 
+    void NetworkTime::AlterBlendFactor(float blendFactor)
+    {
+        m_hostBlendFactor = blendFactor;
+    }
+
     void NetworkTime::SyncEntitiesToRewindState(const AZ::Aabb& rewindVolume)
     {
         // Since the vis system doesn't support rewound queries, first query with an expanded volume to catch any fast moving entities
@@ -104,6 +114,7 @@ namespace Multiplayer
 
                     if (networkTransform != nullptr)
                     {
+                        // We're not presently factoring in interpolated position here
                         const AZ::Vector3 rewindCenter = networkTransform->GetTranslation(); // Get the rewound position
                         const AZ::Vector3 rewindOffset = rewindCenter - currentCenter; // Compute offset between rewound and current positions
                         const AZ::Aabb rewoundAabb = currentBounds.GetTranslated(rewindOffset); // Apply offset to the entity aabb
