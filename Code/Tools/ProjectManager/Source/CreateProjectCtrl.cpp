@@ -264,6 +264,6 @@ namespace O3DE::ProjectManager
     void CreateProjectCtrl::ReinitGemCatalogForSelectedTemplate()
     {
         const QString projectTemplatePath = m_newProjectSettingsScreen->GetProjectTemplatePath();
-        m_gemCatalogScreen->ReinitForProject(projectTemplatePath + "/Template", /*isNewProject=*/true);
+        m_gemCatalogScreen->ReinitForProject(projectTemplatePath + "/Template");
     }
 } // namespace O3DE::ProjectManager

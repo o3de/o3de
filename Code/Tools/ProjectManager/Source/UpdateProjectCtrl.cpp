@@ -93,7 +93,7 @@ namespace O3DE::ProjectManager
         Update();
 
         // Gather the available gems that will be shown in the gem catalog.
-        m_gemCatalogScreen->ReinitForProject(m_projectInfo.m_path, /*isNewProject=*/false);
+        m_gemCatalogScreen->ReinitForProject(m_projectInfo.m_path);
     }
 
     void UpdateProjectCtrl::HandleGemsButton()
