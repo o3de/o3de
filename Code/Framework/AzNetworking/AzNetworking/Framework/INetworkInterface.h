@@ -105,11 +105,11 @@ namespace AzNetworking
 
         //! Sets whether this connection interface can disconnect by virtue of a timeout
         //! @param doesTimeout If this connection interface will automatically disconnect due to a timeout
-        virtual void SetDoesTimeout(bool doesTimeout) = 0;
+        virtual void SetTimeoutEnabled(bool doesTimeout) = 0;
 
         //! Whether this connection interface will disconnect by virtue of a time out (does not account for cvars affecting all connections)
         //! @return boolean true if this connection will not disconnect on timeout (does not account for cvars affecting all connections)
-        virtual bool DoesTimeout() = 0;
+        virtual bool IsTimeoutEnabled() = 0;
 
         //! Const access to the metrics tracked by this network interface.
         //! @return const reference to the metrics tracked by this network interface

@@ -99,8 +99,8 @@ namespace AzNetworking
         bool WasPacketAcked(ConnectionId connectionId, PacketId packetId) override;
         bool StopListening() override;
         bool Disconnect(ConnectionId connectionId, DisconnectReason reason) override;
-        void SetDoesTimeout(bool doesTimeout) override;
-        bool DoesTimeout() override;
+        void SetTimeoutEnabled(bool doesTimeout) override;
+        bool IsTimeoutEnabled() override;
         //! @}
 
         //! Queues a new incoming connection for this network interface.
