@@ -84,8 +84,8 @@ def generate_mars_job(tiaf_result, driver_args):
         "src_branch",
         "dst_branch",
         "suite",
-        "coverage_update_branches",
-        "is_coverage_update_branch",
+        "source_of_truth_branch",
+        "is_source_of_truth_branch",
         "use_test_impact_analysis",
         "has_change_list",
         "has_historic_data",
@@ -251,18 +251,18 @@ def generate_mars_test_targets(sequence_report, mars_job, t0_timestamp):
 
     return mars_test_targets
 
-def transmit_report_to_mars(tiaf_result, driver_args):
+def transmit_report_to_mars(mars_index_prefix, tiaf_result, driver_args):
     filebeat = FilebeatClient("localhost", 9000, 60)
     t0_timestamp = datetime.datetime.now().timestamp()
     #
     mars_job = generate_mars_job(tiaf_result, driver_args)
-    filebeat.send_event(mars_job, "jonawals.tiaf.job")
+    filebeat.send_event(mars_job, f"{mars_index_prefix}.tiaf.job")
 
     if tiaf_result["report"] is not None:
         #
         mars_sequence = generate_mars_sequence(tiaf_result["report"], mars_job, tiaf_result["change_list"], t0_timestamp)
-        filebeat.send_event(mars_sequence, "jonawals.tiaf.sequence")
+        filebeat.send_event(mars_sequence, f"{mars_index_prefix}.tiaf.sequence")
         #
         mars_test_targets = generate_mars_test_targets(tiaf_result["report"], mars_job, t0_timestamp)
         for mars_test_target in mars_test_targets:
-            filebeat.send_event(mars_test_target, "jonawals.tiaf.test_target")
+            filebeat.send_event(mars_test_target, f"{mars_index_prefix}.tiaf.test_target")

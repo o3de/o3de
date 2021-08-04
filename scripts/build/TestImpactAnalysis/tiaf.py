@@ -13,7 +13,7 @@ import re
 import git_utils
 import uuid
 from git_utils import Repo
-from tiaf_persistent_storage import PersistentStorageNull
+from tiaf_persistent_storage import PersistentStorage
 from tiaf_persistent_storage_local import PersistentStorageLocal
 from tiaf_persistent_storage_s3 import PersistentStorageS3
 
@@ -24,7 +24,7 @@ def is_child_path(parent_path, child_path):
     return os.path.commonpath([os.path.abspath(parent_path)]) == os.path.commonpath([os.path.abspath(parent_path), os.path.abspath(child_path)])
 
 class TestImpact:
-    def __init__(self, config_file, src_branch, dst_branch, coverage_update_branches, commit):
+    def __init__(self, config_file, src_branch, dst_branch, commit):
         self.__instance_id = uuid.uuid4().hex
         self.__has_change_list = False
         # Config
@@ -32,21 +32,19 @@ class TestImpact:
         # Branches
         self.__src_branch = src_branch
         self.__dst_branch = dst_branch
-        self.__coverage_update_branches = coverage_update_branches
         print(f"Src branch: '{self.__src_branch}'.")
         print(f"Dst branch: '{self.__dst_branch}'.")
-        print(f"Coverage update branches: '{self.__coverage_update_branches}'.")
-        self.__is_updating_coverage = False
-        self.__source_of_truth_branch = None
-        if self.__src_branch in self.__coverage_update_branches and self.__dst_branch is None:
-            # Branch build on source of coverage update branch
-            self.__is_updating_coverage = True
+        # Source of truth (the branch from which the coverage data will be stored/retrieved from)
+        if self.__dst_branch is None:
+            # Branch builds are their own source of truth and will update the coverage data for the source of truth after any instrumented sequences complete
+            self.__is_source_of_truth_branch = True
             self.__source_of_truth_branch = self.__src_branch
-        elif self.__dst_branch in self.__coverage_update_branches:
-            # PR build destined for coverage update branch
+        else:
+            # PR builds use their destination as the source of truth and never update the coverage data for the source of truth
+            self.__is_source_of_truth_branch = False
             self.__source_of_truth_branch = self.__dst_branch
-        print(f"Is updating coverage: '{self.__is_updating_coverage}'.")
         print(f"Source of truth branch: '{self.__source_of_truth_branch}'.")
+        print(f"Is source of truth branch: '{self.__is_source_of_truth_branch}'.")
         # Commit
         self.__dst_commit = commit
         print(f"Commit: '{self.__dst_commit}'.")
@@ -104,21 +102,21 @@ class TestImpact:
                         self.__check_for_restricted_files(match[1])
                         self.__check_for_restricted_files(match[2])
                         # Treat renames as a deletion and an addition
-                        self.__change_list.deletedFiles.append(match[1])
-                        self.__change_list.createdFiles.append(match[2])
+                        self.__change_list["deletedFiles"].append(match[1])
+                        self.__change_list["createdFiles"].append(match[2])
                     else:
                         match = re.split("^[AMD]\\s(\\S+)", line)
                         self.__check_for_restricted_files(match[1])
                         if len(match) > 1:
                             if line[0] == 'A':
                                 # File addition
-                                self.__change_list.createdFiles.append(match[1])
+                                self.__change_list["createdFiles"].append(match[1])
                             elif line[0] == 'M':
                                 # File modification
-                                self.__change_list.updatedFiles.append(match[1])
+                                self.__change_list["updatedFiles"].append(match[1])
                             elif line[0] == 'D':
                                 # File Deletion
-                                self.__change_list.deletedFiles.append(match[1])
+                                self.__change_list["deletedFiles"].append(match[1])
             # Serialize the change list to the JSON format the test impact analysis runtime expects
             change_list_json = json.dumps(self.__change_list, indent = 4)
             change_list_path = os.path.join(self.__temp_workspace, f"changelist.{self.__instance_id}.json")
@@ -187,11 +185,14 @@ class TestImpact:
         result["src_branch"] = self.__src_branch
         result["dst_branch"] = self.__dst_branch
         result["suite"] = suite
-        result["coverage_update_branches"] = self.__coverage_update_branches
-        result["is_coverage_update_branch"] = self.__is_updating_coverage
         result["use_test_impact_analysis"] = self.__use_test_impact_analysis
+        result["source_of_truth_branch"] = self.__source_of_truth_branch
+        result["is_source_of_truth_branch"] = self.__is_source_of_truth_branch
         result["has_change_list"] = self.__has_change_list
-        result["has_historic_data"] = self.__persistent_storage.has_historic_data
+        if self.__persistent_storage is not None:
+            result["has_historic_data"] = self.__persistent_storage.has_historic_data
+        else:
+            result["has_historic_data"] = False
         result["s3_bucket"] = s3_bucket
         result["runtime_args"] = runtime_args
         result["return_code"] = return_code
@@ -202,11 +203,12 @@ class TestImpact:
     # Runs the specified test sequence
     def run(self, s3_bucket, suite, test_failure_policy, safe_mode, test_timeout, global_timeout):
         args = []
+        self.__persistent_storage = None
         self.__change_list = {}
         self.__change_list["createdFiles"] = []
         self.__change_list["updatedFiles"] = []
         self.__change_list["deletedFiles"] = []
-        if self.__use_test_impact_analysis and self.__source_of_truth_branch is not None:
+        if self.__use_test_impact_analysis:
             print("Test impact analysis is enabled.")
             # Persistent storage location
             if s3_bucket is not None:
@@ -220,7 +222,7 @@ class TestImpact:
                 print("No historic data found.")
             # Sequence type
             if self.__has_change_list:
-                if self.__is_updating_coverage:
+                if self.__is_source_of_truth_branch:
                     # Use TIA sequence (instrumented subset of tests) for coverage updating branches so we can update the coverage data with the generated coverage
                     sequence_type = "tia"
                 else:
@@ -240,7 +242,7 @@ class TestImpact:
                 args.append(f"--changelist={self.__change_list_path}")
                 print(f"Change list is set to '{self.__change_list_path}'.")
             else:
-                if self.__is_updating_coverage:
+                if self.__is_source_of_truth_branch:
                     # Use seed sequence (instrumented all tests) for coverage updating branches so we can generate the coverage bed for future sequences
                     sequence_type = "seed"
                     # We always continue after test failures when seeding to ensure we capture the coverage for all test targets
@@ -248,8 +250,10 @@ class TestImpact:
                 else:
                     # Use regular sequence (regular all tests) for non coverage updating branches as we have no coverage to use nor coverage to update
                     sequence_type = "regular"
+                    # Ignore integrity failures for non coverage updating branches as our confidence in the
+                    args.append("--ipolicy=continue")
+                    print("Integration failure policy is set to 'continue'.")
         else:
-            self.__persistent_storage = PersistentStorageNull(self.__config, suite)
             # Use regular sequence (regular all tests) when test impact analysis is disabled
             sequence_type = "regular"
         args.append(f"--sequence={sequence_type}")
@@ -279,16 +283,17 @@ class TestImpact:
         # If the sequence completed (with or without failures) we will update the historical meta-data
         if runtime_result.returncode == 0 or runtime_result.returncode == 7:
             print("Test impact analysis runtime returned successfully.")
-            if self.__use_test_impact_analysis and self.__is_updating_coverage:
+            if self.__is_source_of_truth_branch:
                 print("Writing historical meta-data...")
                 self.__persistent_storage.update_historic_data(self.__dst_commit)
             print("Exporting reports...")
             with open(report_file) as json_file:
                 report = json.load(json_file)
-            print("Complete!")
         else:
             print(f"The test impact analysis runtime returned with error: '{runtime_result.returncode}'.")
         
+        print("Generating result...")
         result = self.__generate_result(s3_bucket, suite, runtime_result.returncode, report, args)
+        print("Returning to driver...")
         return result
         

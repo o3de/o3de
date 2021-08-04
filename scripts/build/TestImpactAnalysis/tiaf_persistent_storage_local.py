@@ -8,9 +8,9 @@
 
 import os
 import json
-from tiaf_persistent_storage import PersistentStorageNull
+from tiaf_persistent_storage import PersistentStorage
 
-class PersistentStorageLocal(PersistentStorageNull):
+class PersistentStorageLocal(PersistentStorage):
     def __init__(self, config, suite):
         super().__init__(config, suite)
         self.__historic_workspace = config["workspace"]["historic"]["root"]

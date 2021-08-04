@@ -10,7 +10,7 @@ import os
 import json
 from abc import ABC, abstractmethod
 
-class PersistentStorageNull(ABC):
+class PersistentStorage(ABC):
     def __init__(self, config, suite):
         self._active_workspace = config["workspace"]["active"]["root"]
         unpacked_coverage_data_file = config["workspace"]["active"]["relative_paths"]["test_impact_data_files"][suite]
@@ -36,9 +36,6 @@ class PersistentStorageNull(ABC):
     @abstractmethod
     def _update_historic_data(self, historic_data_json):
         pass
-
-    #def return_historic_data(self):
-
 
     def update_historic_data(self, last_commit_hash):
         historical_data_json = self._pack_historic_data(last_commit_hash)
