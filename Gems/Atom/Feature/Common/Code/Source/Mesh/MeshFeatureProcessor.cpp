@@ -388,7 +388,7 @@ namespace AZ
             }
         }
 
-        float MeshFeatureProcessor::GetMinimumScreenCoverage(const MeshHandle& meshHandle) const
+        float MeshFeatureProcessor::GetMinimumScreenCoverage(const MeshHandle& meshHandle)
         {
             if (meshHandle.IsValid())
             {
