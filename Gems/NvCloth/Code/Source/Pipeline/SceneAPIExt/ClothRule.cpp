@@ -37,7 +37,15 @@ namespace NvCloth
             const AZ::SceneAPI::Containers::SceneGraph& graph,
             const size_t numVertices) const
         {
-            const auto meshNodeIndex = graph.Find(GetMeshNodeName());
+            const AZ::SceneAPI::Containers::SceneGraph::NodeIndex meshNodeIndex = [this, &graph]()
+            {
+                if (const auto index = graph.Find(GetMeshNodeName() + AZStd::string(AZ::SceneAPI::Utilities::OptimizedMeshSuffix)); index.IsValid())
+                {
+                    return index;
+                }
+                return graph.Find(GetMeshNodeName());
+            }();
+
             if (!meshNodeIndex.IsValid())
             {
                 return {};

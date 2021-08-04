@@ -520,13 +520,14 @@ namespace AZ
             {
                 AZStd::size_t sizeBeforeRemove = savedRegions.size();
 
-                auto firstRegionToKeep = AZStd::lower_bound(
-                    savedRegions.begin(), savedRegions.end(), deleteBeforeTick,
-                    [](const TimeRegion& region, AZStd::sys_time_t target)
+                // Use erase_if over plain upper_bound + erase to avoid repeated shifts. erase requires a shift of all elements to the right
+                // for each element that is erased, while erase_if squashes all removes into a single shift which significantly improves perf.
+                AZStd::erase_if(
+                    savedRegions,
+                    [deleteBeforeTick](const TimeRegion& region)
                     {
-                        return region.m_startTick < target;
+                        return region.m_startTick < deleteBeforeTick;
                     });
-                savedRegions.erase(savedRegions.begin(), firstRegionToKeep);
 
                 m_savedRegionCount -= sizeBeforeRemove - savedRegions.size();
             }

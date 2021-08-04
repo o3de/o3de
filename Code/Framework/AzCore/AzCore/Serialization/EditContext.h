@@ -236,6 +236,17 @@ namespace AZ
              */
             ClassBuilder*  ClassElement(Crc32 elementIdCrc, const char* description);
 
+
+             /**
+             * Declare element with attributes that belong to the class SerializeContext::Class, this is a logical structure, you can have one or more GroupElementToggles.
+             * T must be a boolean variable that will enable and disable each DataElement attached to this structure.
+             * \param description - Descriptive name of the field that will typically appear in a tooltip.
+             * \param memberVariable - reference to the member variable so we can bind to serialization data.
+             */
+            template<class T>
+            ClassBuilder* GroupElementToggle(const char* description, T memberVariable);
+
+
             /**
              * Declare element with an associated UI handler that does not represent a specific class member variable.
              * \param uiId - name of a UI handler used to display the element
@@ -513,6 +524,15 @@ namespace AZ
             m_editElement = &ed;
         }
         return this;
+    }
+
+    //=========================================================================
+    // ClassElement
+    //=========================================================================
+    template<class T>
+    inline EditContext::ClassBuilder* EditContext::ClassBuilder::GroupElementToggle(const char* name, T memberVariable)
+    {
+        return DataElement(AZ::Edit::ClassElements::Group, memberVariable, name, name, "");
     }
 
     //=========================================================================
