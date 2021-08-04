@@ -380,7 +380,7 @@ namespace AZ
             }
         }
 
-        void MeshFeatureProcessor::SetMinimumScreenCoverage( const MeshHandle& meshHandle, float minimumScreenCoverage)
+        void MeshFeatureProcessor::SetMinimumScreenCoverage(const MeshHandle& meshHandle, float minimumScreenCoverage)
         {
             if (meshHandle.IsValid())
             {
@@ -388,7 +388,7 @@ namespace AZ
             }
         }
 
-        float MeshFeatureProcessor::GetMinimumScreenCoverage(const MeshHandle& meshHandle)
+        float MeshFeatureProcessor::GetMinimumScreenCoverage(const MeshHandle& meshHandle) const
         {
             if (meshHandle.IsValid())
             {
@@ -1028,7 +1028,7 @@ namespace AZ
             }
         }
 
-        RHI::DrawItemSortKey MeshDataInstance::GetSortKey()
+        RHI::DrawItemSortKey MeshDataInstance::GetSortKey() const
         {
             return m_sortKey;
         }
@@ -1038,7 +1038,7 @@ namespace AZ
             m_cullable.m_lodData.m_lodOverride = lodOverride;
         }
 
-        RPI::Cullable::LodOverride MeshDataInstance::GetLodOverride()
+        RPI::Cullable::LodOverride MeshDataInstance::GetLodOverride() const 
         {
             return m_cullable.m_lodData.m_lodOverride;
         }
@@ -1048,7 +1048,7 @@ namespace AZ
             m_cullable.m_lodData.m_minimumScreenCoverage = minimumScreenCoverage;
         }
 
-        float MeshDataInstance::GetMinimumScreenCoverage()
+        float MeshDataInstance::GetMinimumScreenCoverage() const
         {
             return m_cullable.m_lodData.m_minimumScreenCoverage;
         }
@@ -1058,7 +1058,7 @@ namespace AZ
             m_cullable.m_lodData.m_qualityDecayRate = qualityDecayRate;
         }
 
-        float MeshDataInstance::GetQualityDecayRate()
+        float MeshDataInstance::GetQualityDecayRate() const
         {
             return m_cullable.m_lodData.m_qualityDecayRate;
         }

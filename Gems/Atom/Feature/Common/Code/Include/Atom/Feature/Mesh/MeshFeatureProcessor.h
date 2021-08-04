@@ -62,13 +62,13 @@ namespace AZ
             void BuildDrawPacketList(size_t modelLodIndex);
             void SetRayTracingData();
             void SetSortKey(RHI::DrawItemSortKey sortKey);
-            RHI::DrawItemSortKey GetSortKey();
+            RHI::DrawItemSortKey GetSortKey() const;
             void SetLodOverride(RPI::Cullable::LodOverride lodOverride);
-            RPI::Cullable::LodOverride GetLodOverride();
+            RPI::Cullable::LodOverride GetLodOverride() const;
             void SetMinimumScreenCoverage(float minimumScreenCoverage);
-            float GetMinimumScreenCoverage();
+            float GetMinimumScreenCoverage() const;
             void SetQualityDecayRate(float qualityDecayRate);
-            float GetQualityDecayRate();
+            float GetQualityDecayRate() const;
             void UpdateDrawPackets(bool forceUpdate = false);
             void BuildCullable();
             void UpdateCullBounds(const TransformServiceFeatureProcessor* transformService);

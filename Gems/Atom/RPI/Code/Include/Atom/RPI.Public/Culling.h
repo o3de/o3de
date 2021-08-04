@@ -89,7 +89,7 @@ namespace AZ
                 float m_lodSelectionRadius = 1.0f;
 
                 // the minimum possibe area a sphere enclosing a mesh projected onto the screen should have before it is culled.
-                float m_minimumScreenCoverage = 1.0f / 1080.0f;
+                float m_minimumScreenCoverage = 1.0f / 1080.0f;  //For default, mesh should cover at least a screen pixel at 1080p to be drawn
                 // The screen area decay between 0 and 1, i.e. closer to 1 -> lose quality immediately, closer to 0 -> never lose quality 
                 float m_qualityDecayRate = 0.5f;
 

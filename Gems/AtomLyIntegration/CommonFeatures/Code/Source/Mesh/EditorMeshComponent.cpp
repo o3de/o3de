@@ -76,11 +76,11 @@ namespace AZ
                         ->DataElement(AZ::Edit::UIHandlers::ComboBox, &MeshComponentConfig::m_lodOverride, "Lod Override", "Allows the rendered LOD to be overridden instead of being calculated automatically.")
                             ->Attribute(AZ::Edit::Attributes::EnumValues, &MeshComponentConfig::GetLodOverrideValues)
                             ->Attribute(AZ::Edit::Attributes::Visibility, &MeshComponentConfig::IsAssetSet)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &MeshComponentConfig::m_minimumScreenCoverage, "Minimum Screen Coverage", "Minimum proportion of screen area an entitiy takes up, after that the entitiy is culled.")
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &MeshComponentConfig::m_minimumScreenCoverage, "Minimum Screen Coverage", "Minimum proportion of screen area an entitiy takes up, after that the entitiy is culled.")
                             ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                             ->Attribute(AZ::Edit::Attributes::Max, 1.f)
                             ->Attribute(AZ::Edit::Attributes::Suffix, " percent")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &MeshComponentConfig::m_qualityDecayRate, "Quality Decay Rate",
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &MeshComponentConfig::m_qualityDecayRate, "Quality Decay Rate",
                             "Rate at which mesh quality decays (0 -> always stay highest quality, 1 -> quality falls off to lowest quality immediately).")
                             ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                             ->Attribute(AZ::Edit::Attributes::Max, 1.f)
