@@ -185,7 +185,7 @@ namespace MCore
          * @param commandName The unique identifier for the command.
          * @param originalCommand The original command, or nullptr when this is the original command.
          */
-        Command(const char* commandName, Command* originalCommand);
+        Command(AZStd::string commandName, Command* originalCommand);
 
         /**
          * Destructor.

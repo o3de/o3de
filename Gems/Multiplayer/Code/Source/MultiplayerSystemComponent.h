@@ -113,6 +113,7 @@ namespace Multiplayer
         void Terminate(AzNetworking::DisconnectReason reason) override;
         void SendReadyForEntityUpdates(bool readyForEntityUpdates) override;
         AZ::TimeMs GetCurrentHostTimeMs() const override;
+        float GetCurrentBlendFactor() const override;
         INetworkTime* GetNetworkTime() override;
         INetworkEntityManager* GetNetworkEntityManager() override;
         void SetFilterEntityManager(IFilterEntityManager* entityFilter) override;
@@ -155,6 +156,7 @@ namespace Multiplayer
         HostFrameId m_lastReplicatedHostFrameId = HostFrameId(0);
 
         double m_serverSendAccumulator = 0.0;
+        float m_renderBlendFactor = 0.0f;
         float m_tickFactor = 0.0f;
 
 #if !defined(AZ_RELEASE_BUILD)
