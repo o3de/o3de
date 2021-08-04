@@ -35,7 +35,7 @@ class TestImpact:
         print(f"Src branch: '{self.__src_branch}'.")
         print(f"Dst branch: '{self.__dst_branch}'.")
         # Source of truth (the branch from which the coverage data will be stored/retrieved from)
-        if self.__dst_branch is None:
+        if self.__dst_branch is None or self.__src_branch == self.__dst_branch:
             # Branch builds are their own source of truth and will update the coverage data for the source of truth after any instrumented sequences complete
             self.__is_source_of_truth_branch = True
             self.__source_of_truth_branch = self.__src_branch
