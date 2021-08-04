@@ -43,7 +43,7 @@ namespace AZ
             uint32_t Release();
 
         private:
-            friend class JobGraph;
+            friend class ::AZ::JobGraph;
             friend class JobWorker;
 
             AZStd::vector<TypeErasedJob> m_jobs;

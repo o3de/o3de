@@ -24,6 +24,7 @@ namespace AZ
         class CompiledJobGraph;
     }
     class JobExecutor;
+    class JobGraph;
 
     // A JobToken is returned each time a Job is added to the JobGraph. JobTokens are used to
     // express dependencies between jobs within the graph.
