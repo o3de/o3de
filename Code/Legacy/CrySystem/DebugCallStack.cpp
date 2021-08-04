@@ -419,8 +419,8 @@ void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
     char versionbuf[1024];
     azstrcpy(versionbuf, AZ_ARRAY_SIZE(versionbuf), "");
     PutVersion(versionbuf, AZ_ARRAY_SIZE(versionbuf));
-    azstrcat(errorString, versionbuf);
-    azstrcat(errorString, "\n");
+    azstrcat(errorString, AZ_ARRAY_SIZE(errorString), versionbuf);
+    azstrcat(errorString, AZ_ARRAY_SIZE(errorString), "\n");
 
     char excCode[MAX_WARNING_LENGTH];
     char excAddr[80];
@@ -486,7 +486,7 @@ void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
         excCode, excAddr, m_excModule, excName, desc);
 
 
-    azstrcat(errs, "\nCall Stack Trace:\n");
+    azstrcat(errs, AZ_ARRAY_SIZE(errs), "\nCall Stack Trace:\n");
 
     std::vector<AZStd::string> funcs;
     {
@@ -509,15 +509,15 @@ void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
         {
             char temp[s_iCallStackSize];
             sprintf_s(temp, "%2zd) %s", funcs.size() - i, (const char*)funcs[i].c_str());
-            azstrcat(str, temp);
-            azstrcat(str, "\r\n");
-            azstrcat(errs, temp);
-            azstrcat(errs, "\n");
+            azstrcat(str, AZ_ARRAY_SIZE(str), temp);
+            azstrcat(str, AZ_ARRAY_SIZE(str), "\r\n");
+            azstrcat(errs, AZ_ARRAY_SIZE(errs), temp);
+            azstrcat(errs, AZ_ARRAY_SIZE(errs), "\n");
         }
         azstrcpy(m_excCallstack, AZ_ARRAY_SIZE(m_excCallstack), str);
     }
 
-    azstrcat(errorString, errs);
+    azstrcat(errorString, AZ_ARRAY_SIZE(errorString), errs);
 
     if (f)
     {

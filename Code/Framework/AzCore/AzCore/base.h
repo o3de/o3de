@@ -71,7 +71,7 @@
 
 // note: for cross-platform compatibility, do not use the return value of azfopen. On Windows, it's an errno_t and 0 indicates success. On other platforms, the return value is a FILE*, and a 0 value indicates failure.
 #   define azfopen(_fp, _filename, _attrib)                 fopen_s(_fp, _filename, _attrib)
-#   define azfscanf         fscanf_s
+#   define azfscanf                                         fscanf_s
 
 #   define azsprintf(_buffer, ...)                          sprintf_s(_buffer, AZ_ARRAY_SIZE(_buffer), __VA_ARGS__)
 #   define azstrlwr                                         _strlwr_s
@@ -118,19 +118,19 @@
 #   define azfopen(_fp, _filename, _attrib)                 *(_fp) = fopen(_filename, _attrib)
 #   define azfscanf                                         fscanf
 
-#   define azsprintf       sprintf
-#   define azstrlwr(_buffer, _size)             strlwr(_buffer)
-#   define azvsprintf       vsprintf
-#   define azwcscpy(_dest, _size, _buffer)      wcscpy(_dest, _buffer)
-#   define azstrtime        _strtime
-#   define azstrdate        _strdate
-#   define azlocaltime      localtime_r
+#   define azsprintf                                        sprintf
+#   define azstrlwr(_buffer, _size)                         strlwr(_buffer)
+#   define azvsprintf                                       vsprintf
+#   define azwcscpy(_dest, _size, _buffer)                  wcscpy(_dest, _buffer)
+#   define azstrtime                                        _strtime
+#   define azstrdate                                        _strdate
+#   define azlocaltime                                      localtime_r
 #endif
 
 #if AZ_TRAIT_USE_POSIX_STRERROR_R
-#   define azstrerror_s(_dst, _num, _err)   strerror_r(_err, _dst, _num)
+#   define azstrerror_s(_dst, _num, _err)                   strerror_r(_err, _dst, _num)
 #else
-#   define azstrerror_s strerror_s
+#   define azstrerror_s                                     strerror_s
 #endif
 
 #define AZ_INVALID_POINTER  reinterpret_cast<void*>(0x0badf00dul)

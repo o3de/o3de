@@ -288,7 +288,7 @@ void InitRootDir(char szExeFileName[], uint nExeSize, char szExeRootName[], uint
                 firstIteration = false;
             }
             // Check if the engineroot exists
-            azstrcat(szPath, "\\engine.json");
+            azstrcat(szPath, AZ_ARRAY_SIZE(szPath), "\\engine.json");
             WIN32_FILE_ATTRIBUTE_DATA data;
             AZStd::wstring szPathW;
             AZStd::to_wstring(szPathW, szPath);
