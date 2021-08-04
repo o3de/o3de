@@ -32,12 +32,10 @@
 
 #include <AzCore/Console/IConsole.h>
 
-AZ_CVAR(bool, ed_useAtomNativeViewport, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Use the new Atom-native Editor viewport (experimental, not yet stable");
-
 bool CViewManager::IsMultiViewportEnabled()
 {
     // Enable multi-viewport for legacy renderer, or if we're using the new fully Atom-native viewport
-    return ed_useAtomNativeViewport;
+    return true;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -74,14 +72,7 @@ CViewManager::CViewManager()
     RegisterQtViewPane<C2DViewport_YZ>(GetIEditor(), "Left", LyViewPane::CategoryViewport, viewportOptions);
 
     viewportOptions.viewportType = ET_ViewportCamera;
-    if (ed_useAtomNativeViewport)
-    {
-        RegisterQtViewPaneWithName<EditorViewportWidget>(GetIEditor(), "Perspective", LyViewPane::CategoryViewport, viewportOptions);
-    }
-    else
-    {
-        AZ_Assert(false, "Non-Atom viewport no longer supported");
-    }
+    RegisterQtViewPaneWithName<EditorViewportWidget>(GetIEditor(), "Perspective", LyViewPane::CategoryViewport, viewportOptions);
 
     viewportOptions.viewportType = ET_ViewportMap;
     RegisterQtViewPane<QTopRendererWnd>(GetIEditor(), "Map", LyViewPane::CategoryViewport, viewportOptions);
