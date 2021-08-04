@@ -110,7 +110,6 @@ namespace AZ
             RHI::ResultCode ExpandMipChain();
 
             //! Returns the most detailed mip level currently resident in memory, where a value of 0 is the highest detailed mip.
-            //! Note: this number is not 
             uint16_t GetResidentMipLevel();
 
         private:

@@ -1004,16 +1004,17 @@ void CSequenceBatchRenderDialog::OnUpdateEnteringGameMode()
 
     GetIEditor()->GetGameEngine()->Update();
 
+    auto streamingImagePool = AZ::RPI::ImageSystemInterface::Get()->GetStreamingPool();
+
     // Pause the movie player on the first frame
     if (m_renderContext.framesSpentInCurrentPhase++ == 0)
     {
         GetIEditor()->GetMovieSystem()->Pause();
     }
     // Spend 30 frames warming up after changing to game mode.
-    else if (m_renderContext.framesSpentInCurrentPhase++ > 30 && AZ::RPI::ImageSystemInterface::Get()->GetStreamingPool())
+    else if (streamingImagePool && m_renderContext.framesSpentInCurrentPhase++ > 30)
     {
         const int warmUpTimeOutFrames = 500;
-        auto streamingImagePool = AZ::RPI::ImageSystemInterface::Get()->GetStreamingPool();
         // wait for streaming image pool finish all the streaming (all the mips are loaded)
         if (!streamingImagePool->HasActiveStreaming() || m_renderContext.framesSpentInCurrentPhase > warmUpTimeOutFrames)
         {
