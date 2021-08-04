@@ -42,6 +42,6 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, ULONG fdwReason, [[maybe_unused]] LPVOID
         //DisableThreadLibraryCalls(hInstance);
     }
 
-    return(TRUE);
+    return(true);
 }
 #endif

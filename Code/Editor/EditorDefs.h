@@ -37,7 +37,6 @@
 #pragma warning (disable : 4786) // identifier was truncated to 'number' characters in the debug information.
 #pragma warning (disable : 4244) // conversion from 'long' to 'float', possible loss of data
 #pragma warning (disable : 4018) // signed/unsigned mismatch
-#pragma warning (disable : 4800) // BOOL bool conversion
 
 // Disable warning when a function returns a value inside an __asm block
 #pragma warning (disable : 4035)
@@ -85,17 +84,17 @@
 #endif
 
 #ifndef SAFE_DELETE
-#define SAFE_DELETE(p)          { if (p) { delete (p);       (p) = NULL; } \
+#define SAFE_DELETE(p)          { if (p) { delete (p);       (p) = nullptr; } \
 }
 #endif
 
 #ifndef SAFE_DELETE_ARRAY
-#define SAFE_DELETE_ARRAY(p)    { if (p) { delete[] (p);     (p) = NULL; } \
+#define SAFE_DELETE_ARRAY(p)    { if (p) { delete[] (p);     (p) = nullptr; } \
 }
 #endif
 
 #ifndef SAFE_RELEASE
-#define SAFE_RELEASE(p)         { if (p) { (p)->Release();   (p) = NULL; } \
+#define SAFE_RELEASE(p)         { if (p) { (p)->Release();   (p) = nullptr; } \
 }
 #endif
 

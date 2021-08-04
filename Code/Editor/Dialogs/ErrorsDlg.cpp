@@ -20,7 +20,7 @@ AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 
-CErrorsDlg::CErrorsDlg(QWidget* pParent /*=NULL*/)
+CErrorsDlg::CErrorsDlg(QWidget* pParent /*=nullptr*/)
     : QDialog(pParent)
     , ui(new Ui::CErrorsDlg)
 {
@@ -44,7 +44,7 @@ CErrorsDlg::~CErrorsDlg()
 void CErrorsDlg::OnInitDialog()
 {
     auto icon = style()->standardIcon(QStyle::SP_MessageBoxCritical);
-    
+
     ui->m_errorIconCtrl->setPixmap(icon.pixmap(ui->m_errorIconCtrl->width()));
 }
 

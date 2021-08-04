@@ -9,7 +9,7 @@
 
 #include "FFMPEGPlugin.h"
 #include "CryString.h"
-typedef CryStringT<char> string;
+using string = CryStringT<char>;
 #include "Include/ICommandManager.h"
 #include "Util/PathUtil.h"
 

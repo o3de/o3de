@@ -1815,7 +1815,7 @@ void SandboxIntegrationManager::ContextMenu_PushEntitiesToSlice(AzToolsFramework
     (void)targetAncestorId;
     (void)affectEntireHierarchy;
 
-    AZ::SerializeContext* serializeContext = NULL;
+    AZ::SerializeContext* serializeContext = nullptr;
     EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
     AZ_Assert(serializeContext, "No serialize context");
 

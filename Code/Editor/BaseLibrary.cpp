@@ -24,10 +24,10 @@ class CUndoBaseLibrary
     : public IUndoObject
 {
 public:
-    CUndoBaseLibrary(CBaseLibrary* pLib, const QString& description, const QString& selectedItem = 0)
+    CUndoBaseLibrary(CBaseLibrary* pLib, const QString& description, const QString& selectedItem = nullptr)
         : m_pLib(pLib)
         , m_description(description)
-        , m_redo(0)
+        , m_redo(nullptr)
         , m_selectedItem(selectedItem)
     {
         assert(m_pLib);
@@ -36,16 +36,16 @@ public:
         m_pLib->Serialize(m_undo, false);
     }
 
-    virtual QString GetEditorObjectName()
+    QString GetEditorObjectName() override
     {
         return m_selectedItem;
     }
 
 protected:
-    virtual int GetSize() { return sizeof(CUndoBaseLibrary); }
-    virtual QString GetDescription() { return m_description; };
+    int GetSize() override { return sizeof(CUndoBaseLibrary); }
+    QString GetDescription() override { return m_description; };
 
-    virtual void Undo(bool bUndo)
+    void Undo(bool bUndo) override
     {
         if (bUndo)
         {
@@ -57,7 +57,7 @@ protected:
         GetIEditor()->Notify(eNotify_OnDataBaseUpdate);
     }
 
-    virtual void Redo()
+    void Redo() override
     {
         m_pLib->Serialize(m_redo, true);
         m_pLib->SetModified();
@@ -107,7 +107,7 @@ void CBaseLibrary::RemoveAllItems()
         // Unregister item in case it was registered.  It is ok if it wasn't.  This is still safe to call.
         m_pManager->UnregisterItem(m_items[i]);
         // Clear library item.
-        m_items[i]->m_library = NULL;
+        m_items[i]->m_library = nullptr;
     }
     m_items.clear();
     Release();
@@ -216,7 +216,7 @@ IDataBaseItem* CBaseLibrary::FindItem(const QString& name)
             return m_items[i];
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 bool CBaseLibrary::AddLibraryToSourceControl(const QString& fullPathName) const
@@ -233,8 +233,8 @@ bool CBaseLibrary::AddLibraryToSourceControl(const QString& fullPathName) const
 
 bool CBaseLibrary::SaveLibrary(const char* name, bool saveEmptyLibrary)
 {
-    assert(name != NULL);
-    if (name == NULL)
+    assert(name != nullptr);
+    if (name == nullptr)
     {
         CryFatalError("The library you are attempting to save has no name specified.");
         return false;

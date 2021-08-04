@@ -160,45 +160,45 @@ public:
         }
     }
 
-    ~EngineConnectionListener()
+    ~EngineConnectionListener() override
     {
         AzFramework::AssetSystemInfoBus::Handler::BusDisconnect();
         AzFramework::EngineConnectionEvents::Bus::Handler::BusDisconnect();
     }
 
 public:
-    virtual void Connected([[maybe_unused]] AzFramework::SocketConnection* connection)
+    void Connected([[maybe_unused]] AzFramework::SocketConnection* connection) override
     {
         m_state = EConnectionState::Connected;
     }
-    virtual void Connecting([[maybe_unused]] AzFramework::SocketConnection* connection)
+    void Connecting([[maybe_unused]] AzFramework::SocketConnection* connection) override
     {
         m_state = EConnectionState::Connecting;
     }
-    virtual void Listening([[maybe_unused]] AzFramework::SocketConnection* connection)
+    void Listening([[maybe_unused]] AzFramework::SocketConnection* connection) override
     {
         m_state = EConnectionState::Listening;
     }
-    virtual void Disconnecting([[maybe_unused]] AzFramework::SocketConnection* connection)
+    void Disconnecting([[maybe_unused]] AzFramework::SocketConnection* connection) override
     {
         m_state = EConnectionState::Disconnecting;
     }
-    virtual void Disconnected([[maybe_unused]] AzFramework::SocketConnection* connection)
+    void Disconnected([[maybe_unused]] AzFramework::SocketConnection* connection) override
     {
         m_state = EConnectionState::Disconnected;
     }
 
-    virtual void AssetCompilationSuccess(const AZStd::string& assetPath) override
+    void AssetCompilationSuccess(const AZStd::string& assetPath) override
     {
         m_lastAssetProcessorTask = assetPath;
     }
 
-    virtual void AssetCompilationFailed(const AZStd::string& assetPath) override
+    void AssetCompilationFailed(const AZStd::string& assetPath) override
     {
         m_failedJobs.insert(assetPath);
     }
 
-    virtual void CountOfAssetsInQueue(const int& count) override
+    void CountOfAssetsInQueue(const int& count) override
     {
         m_pendingJobsCount = count;
     }
@@ -298,7 +298,7 @@ MainWindow::MainWindow(QWidget* parent)
     , m_undoStateAdapter(new UndoStackStateAdapter(this))
     , m_keyboardCustomization(nullptr)
     , m_activeView(nullptr)
-    , m_settings("O3DE", "O3DE") 
+    , m_settings("O3DE", "O3DE")
     , m_toolbarManager(new ToolbarManager(m_actionManager, this))
     , m_assetImporterManager(new AssetImporterManager(this))
     , m_levelEditorMenuHandler(new LevelEditorMenuHandler(this, m_viewPaneManager, m_settings))
@@ -573,7 +573,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
     if (GetIEditor()->GetDocument())
     {
-        GetIEditor()->GetDocument()->SetModifiedFlag(FALSE);
+        GetIEditor()->GetDocument()->SetModifiedFlag(false);
         GetIEditor()->GetDocument()->SetModifiedModules(eModifiedNothing);
     }
     // Close all edit panels.
@@ -581,7 +581,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
     GetIEditor()->GetObjectManager()->EndEditParams();
 
     // force clean up of all deferred deletes, so that we don't have any issues with windows from plugins not being deleted yet
-    qApp->sendPostedEvents(0, QEvent::DeferredDelete);
+    qApp->sendPostedEvents(nullptr, QEvent::DeferredDelete);
 
     QMainWindow::closeEvent(event);
 }
@@ -1243,7 +1243,7 @@ void MainWindow::OnEditorNotifyEvent(EEditorNotifyEvent ev)
         auto cryEdit = CCryEditApp::instance();
         if (cryEdit)
         {
-            cryEdit->SetEditorWindowTitle(0, AZ::Utils::GetProjectName().c_str(), GetIEditor()->GetGameEngine()->GetLevelName());
+            cryEdit->SetEditorWindowTitle(nullptr, AZ::Utils::GetProjectName().c_str(), GetIEditor()->GetGameEngine()->GetLevelName());
         }
     }
     break;
@@ -1252,7 +1252,7 @@ void MainWindow::OnEditorNotifyEvent(EEditorNotifyEvent ev)
         auto cryEdit = CCryEditApp::instance();
         if (cryEdit)
         {
-            cryEdit->SetEditorWindowTitle(0, AZ::Utils::GetProjectName().c_str(), 0);
+            cryEdit->SetEditorWindowTitle(nullptr, AZ::Utils::GetProjectName().c_str(), nullptr);
         }
     }
     break;
@@ -1351,8 +1351,8 @@ void MainWindow::ResetAutoSaveTimers(bool bForceInit)
     {
         delete m_autoRemindTimer;
     }
-    m_autoSaveTimer = 0;
-    m_autoRemindTimer = 0;
+    m_autoSaveTimer = nullptr;
+    m_autoRemindTimer = nullptr;
 
     if (bForceInit)
     {
@@ -1389,7 +1389,7 @@ void MainWindow::ResetBackgroundUpdateTimer()
     if (m_backgroundUpdateTimer)
     {
         delete m_backgroundUpdateTimer;
-        m_backgroundUpdateTimer = 0;
+        m_backgroundUpdateTimer = nullptr;
     }
 
     ICVar* pBackgroundUpdatePeriod = gEnv->pConsole->GetCVar("ed_backgroundUpdatePeriod");
@@ -1435,7 +1435,7 @@ void MainWindow::OnRefreshAudioSystem()
 
     if (QString::compare(sLevelName, "Untitled", Qt::CaseInsensitive) == 0)
     {
-        // Rather pass NULL to indicate that no level is loaded!
+        // Rather pass nullptr to indicate that no level is loaded!
         sLevelName = QString();
     }
 
@@ -1868,7 +1868,7 @@ QWidget* MainWindow::CreateToolbarWidget(int actionId)
         break;
     case ID_TOOLBAR_WIDGET_SPACER_RIGHT:
         w = CreateSpacerRightWidget();
-        break; 
+        break;
     default:
         qWarning() << Q_FUNC_INFO << "Unknown id " << actionId;
         return nullptr;

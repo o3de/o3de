@@ -39,7 +39,7 @@ BOOL __stdcall DllMain(HINSTANCE hinstDLL, ULONG fdwReason, [[maybe_unused]] LPV
         g_hInstance = hinstDLL;
     }
 
-    return TRUE;
+    return true;
 }
 #endif
 

@@ -14,7 +14,7 @@
 #include "ComponentEntityEditorPlugin.h"
 
 #if AZ_TRAIT_OS_PLATFORM_APPLE || defined(AZ_PLATFORM_LINUX)
-typedef HANDLE HINSTANCE;
+using HINSTANCE = HANDLE;
 #define DLL_PROCESS_ATTACH 1
 #endif
 
@@ -38,5 +38,5 @@ BOOL __stdcall DllMain(HINSTANCE hinstDLL, ULONG fdwReason, [[maybe_unused]] LPV
         g_hInstance = hinstDLL;
     }
 
-    return TRUE;
+    return true;
 }

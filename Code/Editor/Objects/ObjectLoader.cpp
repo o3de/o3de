@@ -28,8 +28,8 @@ CObjectArchive::CObjectArchive(IObjectManager* objMan, XmlNodeRef xmlRoot, bool 
     m_nFlags = 0;
     node = xmlRoot;
     m_pCurrentErrorReport = GetIEditor()->GetErrorReport();
-    m_pGeometryPak = NULL;
-    m_pCurrentObject = NULL;
+    m_pGeometryPak = nullptr;
+    m_pCurrentObject = nullptr;
     m_bNeedResolveObjects = false;
     m_bProgressBarEnabled = true;
 }
@@ -145,7 +145,7 @@ void CObjectArchive::ResolveObjects()
             // Objects can be added to the list here (from Groups).
             numObj = m_loadedObjects.size();
         }
-        m_pCurrentErrorReport->SetCurrentValidatorObject(NULL);
+        m_pCurrentErrorReport->SetCurrentValidatorObject(nullptr);
         //////////////////////////////////////////////////////////////////////////
         GetIEditor()->ResumeUndo();
     }
@@ -234,11 +234,11 @@ void CObjectArchive::ResolveObjects()
 
             obj.pObject->CreateGameObject();
 
-            // unset the current validator object because the wait Step 
+            // unset the current validator object because the wait Step
             // might generate unrelated errors
             m_pCurrentErrorReport->SetCurrentValidatorObject(nullptr);
         }
-        m_pCurrentErrorReport->SetCurrentValidatorObject(NULL);
+        m_pCurrentErrorReport->SetCurrentValidatorObject(nullptr);
         //////////////////////////////////////////////////////////////////////////
     }
 
@@ -257,7 +257,7 @@ void CObjectArchive::ResolveObjects()
     }
 
     m_bNeedResolveObjects = false;
-    m_pCurrentErrorReport->SetCurrentValidatorObject(NULL);
+    m_pCurrentErrorReport->SetCurrentValidatorObject(nullptr);
     m_sequenceIdRemap.clear();
     m_pendingIds.clear();
 }
@@ -314,7 +314,7 @@ void CObjectArchive::LoadObjects(XmlNodeRef& rootObjectsNode)
     for (int i = 0; i < numObjects; i++)
     {
         XmlNodeRef objNode = rootObjectsNode->getChild(i);
-        LoadObject(objNode, NULL);
+        LoadObject(objNode, nullptr);
     }
 }
 
@@ -401,7 +401,7 @@ void CObjectArchive::AddSequenceIdMapping(uint32 oldId, uint32 newId)
 {
     assert(oldId != newId);
     assert(GetIEditor()->GetMovieSystem()->FindSequenceById(oldId) || stl::find(m_pendingIds, oldId));
-    assert(GetIEditor()->GetMovieSystem()->FindSequenceById(newId) == NULL);
+    assert(GetIEditor()->GetMovieSystem()->FindSequenceById(newId) == nullptr);
     assert(stl::find(m_pendingIds, newId) == false);
     m_sequenceIdRemap[oldId] = newId;
     m_pendingIds.push_back(newId);

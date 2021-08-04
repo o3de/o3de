@@ -116,7 +116,7 @@ public:
                 continue;
             }
 
-            if (m_undoObjects[i]->GetObjectName() == NULL)
+            if (m_undoObjects[i]->GetObjectName() == nullptr)
             {
                 continue;
             }
@@ -209,7 +209,7 @@ public:
 
     bool IsHaveUndo() const;
     bool IsHaveRedo() const;
-    
+
     void SetMaxUndoStep(int steps);
     int GetMaxUndoStep() const;
 
