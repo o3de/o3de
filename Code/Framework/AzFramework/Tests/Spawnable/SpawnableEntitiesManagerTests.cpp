@@ -376,12 +376,12 @@ namespace UnitTest
 
         AzFramework::EntitySpawnTicket ticketMoveConstructor(AZStd::move(ticket1));
         EXPECT_TRUE(ticketMoveConstructor.IsValid());
-        EXPECT_TRUE(ticketMoveConstructor.GetId() == ticket1Id);
+        EXPECT_EQ(ticketMoveConstructor.GetId(), ticket1Id);
 
         AzFramework::EntitySpawnTicket ticketMoveOperator;
         ticketMoveOperator = AZStd::move(ticket2);
         EXPECT_TRUE(ticketMoveOperator.IsValid());
-        EXPECT_TRUE(ticketMoveOperator.GetId() == ticket2Id);
+        EXPECT_EQ(ticketMoveOperator.GetId(), ticket2Id);
     }
 
     TEST_F(SpawnableEntitiesManagerTest, SpawnAllEntities_DeleteTicketBeforeCall_NoCrash)
