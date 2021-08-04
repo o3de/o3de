@@ -301,7 +301,7 @@ namespace AZ
 
                 ImGui::Text("Viewport width: %.3f ms", CpuProfilerImGuiHelper::TicksToMs(GetViewportTickWidth()));
                 ImGui::Text("Ticks [%lld , %lld]", m_viewportStartTick, m_viewportEndTick);
-                ImGui::Text("Recording %ld threads", RHI::CpuProfiler::Get()->GetTimeRegionMap().size());
+                ImGui::Text("Recording %zu threads", m_savedData.size());
                 ImGui::Text("%llu profiling events saved", m_savedRegionCount);
 
                 ImGui::NextColumn();
@@ -360,6 +360,11 @@ namespace AZ
                         {
                             return wrapper.m_startTick < target;
                         });
+
+                    if (regionItr == singleThreadData.end())
+                    {
+                        continue;
+                    }
 
                     // Draw all of the blocks for a given thread/row
                     u64 maxDepth = 0;
@@ -530,6 +535,14 @@ namespace AZ
 
                 m_savedRegionCount -= sizeBeforeRemove - savedRegions.size();
             }
+
+            // Remove any threads from the top-level map that no longer hold data
+            AZStd::erase_if(
+                m_savedData,
+                [](const auto& singleThreadDataEntry)
+                {
+                    return singleThreadDataEntry.second.empty();
+                });
         }
 
         inline void ImGuiCpuProfiler::DrawBlock(const TimeRegion& block, u64 targetRow)
