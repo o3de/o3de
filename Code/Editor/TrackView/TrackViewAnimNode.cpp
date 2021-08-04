@@ -27,6 +27,7 @@
 #include <CryCommon/Maestro/Types/AnimNodeType.h>
 #include <CryCommon/Maestro/Types/AnimValueType.h>
 #include <CryCommon/Maestro/Types/AnimParamType.h>
+#include <CryCommon/MathConversion.h>
 
 // Editor
 #include "AnimationContext.h"

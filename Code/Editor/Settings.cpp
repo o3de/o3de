@@ -26,6 +26,7 @@
 
 // AzFramework
 #include <AzFramework/API/ApplicationAPI.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 // AzToolsFramework
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>

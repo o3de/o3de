@@ -32,7 +32,11 @@
 #include <AzCore/Console/Console.h>
 
 AZ_CVAR_EXTERNED(bool, ed_visibility_logTiming);
-AZ_CVAR_EXTERNED(bool, ed_visibility_use);
+
+AZ_CVAR(
+    bool, ed_visibility_use, true, nullptr, AZ::ConsoleFunctorFlags::Null,
+    "Enable/disable using the new IVisibilitySystem for Entity visibility determination");
+
 
 /*!
  *  Class Description used for object templates.
@@ -1327,7 +1331,7 @@ void CObjectManager::FindDisplayableObjects(DisplayContext& dc, [[maybe_unused]]
 
     pDispayedViewObjects->SetSerialNumber(m_visibilitySerialNumber); // update viewport to be latest serial number
 
-    const CCamera& camera = GetIEditor()->GetSystem()->GetViewCamera();
+    //const CCamera& camera = GetIEditor()->GetSystem()->GetViewCamera();
     AABB bbox;
     bbox.min.zero();
     bbox.max.zero();
@@ -1376,11 +1380,11 @@ void CObjectManager::FindDisplayableObjects(DisplayContext& dc, [[maybe_unused]]
         {
             CBaseObject* obj = m_visibleObjects[i];
 
-            if (obj && obj->IsInCameraView(camera))
+            if (obj /* && obj->IsInCameraView(camera)*/)
             {
                 // Check if object is too far.
-                float visRatio = obj->GetCameraVisRatio(camera);
-                if (visRatio > m_maxObjectViewDistRatio || (dc.flags & DISPLAY_SELECTION_HELPERS) || obj->IsSelected())
+                // float visRatio = obj->GetCameraVisRatio(camera);
+                if (/*visRatio > m_maxObjectViewDistRatio || */ (dc.flags & DISPLAY_SELECTION_HELPERS) || obj->IsSelected())
                 {
                     pDispayedViewObjects->AddObject(obj);
                 }

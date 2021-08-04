@@ -61,15 +61,6 @@ protected:
             {
                 camObjId = pEditorEntity->GetId();
             }
-
-            CViewport* pViewport = GetIEditor()->GetViewManager()->GetSelectedViewport();
-            if (CRenderViewport* rvp = viewport_cast<CRenderViewport*>(pViewport))
-            {
-                if (!rvp->IsSequenceCamera())
-                {
-                    return;
-                }
-            }
         }
 
         // Switch camera in active rendering view.

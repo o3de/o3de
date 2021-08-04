@@ -69,9 +69,6 @@ namespace Camera
         CameraComponentController() = default;
         explicit CameraComponentController(const CameraComponentConfig& config);
 
-        void ActivateAtomView();
-        void DeactivateAtomView();
-
         // Controller interface
         static void Reflect(AZ::ReflectContext* context);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
@@ -107,12 +104,14 @@ namespace Camera
         void SetOrthographicHalfWidth(float halfWidth) override;
 
         void MakeActiveView() override;
+        bool IsActiveView() override;
 
         // AZ::TransformNotificationBus::Handler interface
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
         // AZ::RPI::ViewportContextNotificationBus::Handler interface
         void OnViewportSizeChanged(AzFramework::WindowSize size) override;
+        void OnViewportDefaultViewChanged(AZ::RPI::ViewPtr view) override;
 
         // AZ::RPI::ViewProviderBus::Handler interface
         AZ::RPI::ViewPtr GetView() const override;
@@ -120,6 +119,8 @@ namespace Camera
     private:
         AZ_DISABLE_COPY(CameraComponentController);
 
+        void ActivateAtomView();
+        void DeactivateAtomView();
         void UpdateCamera();
         void SetupAtomAuxGeom(AZ::RPI::ViewportContextPtr viewportContext);
 

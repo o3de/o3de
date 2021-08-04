@@ -189,7 +189,6 @@ QtViewport::QtViewport(QWidget* parent)
     {
         m_constructionMatrix[i].SetIdentity();
     }
-    m_viewTM.SetIdentity();
     m_screenTM.SetIdentity();
 
     m_pMouseOverObject = 0;

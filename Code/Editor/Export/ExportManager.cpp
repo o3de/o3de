@@ -662,11 +662,11 @@ bool CExportManager::ProcessObjectsForExport()
     GetIEditor()->GetAnimation()->SetRecording(false);
     GetIEditor()->GetAnimation()->SetPlaying(false);
 
-    CViewport* vp = GetIEditor()->GetViewManager()->GetSelectedViewport();
-    if (CRenderViewport* rvp = viewport_cast<CRenderViewport*>(vp))
-    {
-        rvp->SetSequenceCamera();
-    }
+    //CViewport* vp = GetIEditor()->GetViewManager()->GetSelectedViewport();
+    //if (CRenderViewport* rvp = viewport_cast<CRenderViewport*>(vp))
+    //{
+    //    rvp->SetSequenceCamera();
+    //}
 
     int startFrame = 0;
     timeValue = startFrame * fpsTimeInterval;

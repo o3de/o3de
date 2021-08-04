@@ -23,6 +23,8 @@
 #include <MathConversion.h>
 #include <QtViewPaneManager.h>
 
+#include <AzFramework/Components/CameraBus.h>
+
 
 using namespace AudioControls;
 
@@ -148,18 +150,21 @@ void CAudioControlsEditorPlugin::ExecuteTrigger(const AZStd::string_view sTrigge
         Audio::AudioSystemRequestBus::BroadcastResult(ms_nAudioTriggerID, &Audio::AudioSystemRequestBus::Events::GetAudioTriggerID, sTriggerName.data());
         if (ms_nAudioTriggerID != INVALID_AUDIO_CONTROL_ID)
         {
+            AZ::Transform activeCameraTm = AZ::Transform::CreateIdentity();
+            EBUS_EVENT_RESULT(activeCameraTm, Camera::ActiveCameraRequestBus, GetActiveCameraTransform);
+            const AZ::Matrix3x4 cameraMatrix = AZ::Matrix3x4::CreateFromTransform(activeCameraTm);
+
             Audio::SAudioRequest request;
             request.nFlags = Audio::eARF_PRIORITY_NORMAL;
 
-            const AZ::Matrix3x4 listenerTxfm = AZ::Matrix3x4::CreateIdentity();
 
-            Audio::SAudioListenerRequestData<Audio::eALRT_SET_POSITION> requestData(listenerTxfm);
+            Audio::SAudioListenerRequestData<Audio::eALRT_SET_POSITION> requestData(cameraMatrix);
             requestData.oNewPosition.NormalizeForwardVec();
             requestData.oNewPosition.NormalizeUpVec();
             request.pData = &requestData;
             Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequest, request);
 
-            ms_pIAudioProxy->SetPosition(listenerTxfm);
+            ms_pIAudioProxy->SetPosition(cameraMatrix);
             ms_pIAudioProxy->ExecuteTrigger(ms_nAudioTriggerID);
         }
     }

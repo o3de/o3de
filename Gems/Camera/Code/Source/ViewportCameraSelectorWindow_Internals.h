@@ -46,6 +46,8 @@ namespace Camera
             AZ::EntityId m_sequenceId;
         };
 
+        struct ViewportCameraSelectorWindow;
+
         // holds a list of camera items
         struct CameraListModel
             : public QAbstractListModel
@@ -54,9 +56,9 @@ namespace Camera
         {
         public:
 
-            static const char* m_sequenceCameraName;
+            //static const char* m_sequenceCameraName;
 
-            CameraListModel(QObject* myParent);
+            CameraListModel(ViewportCameraSelectorWindow* myParent);
             ~CameraListModel();
 
             // QAbstractItemModel interface
@@ -76,6 +78,7 @@ namespace Camera
             AZStd::vector<CameraListItem> m_cameraItems;
             AZ::EntityId m_sequenceCameraEntityId;
             bool m_sequenceCameraSelected;
+            ViewportCameraSelectorWindow* m_parent;
         };
 
         struct ViewportCameraSelectorWindow

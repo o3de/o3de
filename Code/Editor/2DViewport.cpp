@@ -952,7 +952,7 @@ void Q2DViewport::DrawViewerMarker(DisplayContext& dc)
     dc.SetColor(QColor(0, 0, 255)); // blue
     dc.DrawWireBox(-dim * noScale, dim * noScale);
 
-    float fov = GetIEditor()->GetSystem()->GetViewCamera().GetFov();
+    float fov = 60; // GetIEditor()->GetSystem()->GetViewCamera().GetFov();
 
     Vec3 q[4];
     float dist = 30;

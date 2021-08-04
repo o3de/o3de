@@ -44,6 +44,22 @@ namespace AZ
         return &out;
     }
 
+    void SetPerspectiveMatrixFOV(Matrix4x4& out, float fovY, float aspectRatio)
+    {
+        float sinFov, cosFov;
+        SinCos(0.5f * fovY, sinFov, cosFov);
+        float yScale = cosFov / sinFov; //cot(fovY/2)
+        float xScale = yScale / aspectRatio;
+
+        out.SetElement(0, 0, xScale);
+        out.SetElement(1, 1, yScale);
+    }
+
+    float GetPerspectiveMatrixFOV(const Matrix4x4& m)
+    {
+        return 2.0 * atan(1.0f / m.GetElement(1, 1));
+    }
+
     Matrix4x4* MakeFrustumMatrixRH(Matrix4x4& out, float left, float right, float bottom, float top, float nearDist, float farDist, bool reverseDepth)
     {
         AZ_Assert(right > left, "right should be greater than left");
