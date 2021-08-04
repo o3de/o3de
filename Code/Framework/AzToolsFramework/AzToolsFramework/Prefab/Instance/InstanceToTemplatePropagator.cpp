@@ -46,7 +46,6 @@ namespace AzToolsFramework
 
         bool InstanceToTemplatePropagator::GenerateDomForEntity(PrefabDom& generatedEntityDom, const AZ::Entity& entity)
         {
-            //grab the owning instance so we can use the entityIdMapper in settings
             InstanceOptionalReference owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(entity.GetId());
 
             if (!owningInstance)
@@ -54,19 +53,8 @@ namespace AzToolsFramework
                 AZ_Error("Prefab", false, "Entity does not belong to an instance");
                 return false;
             }
-            
-            InstanceEntityIdMapper entityIdMapper;
-            entityIdMapper.SetStoringInstance(owningInstance->get());
 
-            //create settings so that the serialized entity dom undergoes mapping from entity id to entity alias
-            AZ::JsonSerializerSettings settings;
-            settings.m_metadata.Add(static_cast<AZ::JsonEntityIdSerializer::JsonEntityIdMapper*>(&entityIdMapper));
-
-            //generate PrefabDom using Json serialization system
-            AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::Store(
-                generatedEntityDom, generatedEntityDom.GetAllocator(), entity, settings);
-
-            return result.GetOutcome() == AZ::JsonSerializationResult::Outcomes::Success;
+            return PrefabDomUtils::StoreEntityInPrefabDom(entity, owningInstance->get(), generatedEntityDom);
         }
 
         bool InstanceToTemplatePropagator::GenerateDomForInstance(PrefabDom& generatedInstanceDom, const Prefab::Instance& instance)
