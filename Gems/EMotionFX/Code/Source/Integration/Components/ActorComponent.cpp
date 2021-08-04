@@ -185,6 +185,7 @@ namespace EMotionFX
                     ->Event("DebugDrawRoot", &ActorComponentRequestBus::Events::DebugDrawRoot)
                     ->Event("GetRenderCharacter", &ActorComponentRequestBus::Events::GetRenderCharacter)
                     ->Event("SetRenderCharacter", &ActorComponentRequestBus::Events::SetRenderCharacter)
+                    ->Event("GetRenderActorVisible", &ActorComponentRequestBus::Events::GetRenderActorVisible)
                     ->VirtualProperty("RenderCharacter", "GetRenderCharacter", "SetRenderCharacter")
                 ;
 
@@ -337,6 +338,17 @@ namespace EMotionFX
                     m_renderActorInstance->SetIsVisible(m_configuration.m_renderCharacter);
                 }
             }
+        }
+
+        //////////////////////////////////////////////////////////////////////////
+        bool ActorComponent::GetRenderActorVisible() const
+        {
+            if (m_renderActorInstance)
+            {
+                return m_renderActorInstance->IsVisible();
+            }
+
+            return false;
         }
 
         //////////////////////////////////////////////////////////////////////////

@@ -52,6 +52,7 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             AZ::AzToolsFramework
+            Gem::Atom_Utils.Static
             Gem::EMotionFXStaticLib
             Gem::AtomTressFX.Static
 )

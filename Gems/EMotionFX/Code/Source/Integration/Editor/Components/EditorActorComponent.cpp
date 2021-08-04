@@ -241,6 +241,17 @@ namespace EMotionFX
         }
 
         //////////////////////////////////////////////////////////////////////////
+        bool EditorActorComponent::GetRenderActorVisible() const
+        {
+            if (m_renderActorInstance)
+            {
+                return m_renderActorInstance->IsVisible();
+            }
+
+            return false;
+        }
+
+        //////////////////////////////////////////////////////////////////////////
         size_t EditorActorComponent::GetNumJoints() const
         {
             const Actor* actor = m_actorAsset->GetActor();

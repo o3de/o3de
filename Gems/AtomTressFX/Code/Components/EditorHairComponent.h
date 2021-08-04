@@ -53,6 +53,8 @@ namespace AZ
 
                 //! EditorRenderComponentAdapter overrides...
                 AZ::u32 OnConfigurationChanged() override;
+
+                Data::AssetId m_prevHairAssetId; // Previous loaded hair asset id.
             };
         } // namespace Hair
     } // namespace Render

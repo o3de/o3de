@@ -55,9 +55,10 @@ namespace AZ
                 AMD::TressFXRenderingSettings m_renderingSettings;
 
                 HairGlobalSettings m_hairGlobalSettings;
+                Data::Asset<HairAsset> m_hairAsset;
 
             private:
-                bool m_enabled = false;
+                bool m_enabled = true;
             };
 
         } // namespace Hair

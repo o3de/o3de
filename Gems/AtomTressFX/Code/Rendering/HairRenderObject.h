@@ -298,6 +298,16 @@ namespace AZ
                     m_simCB->g_ResetPositions = (m_SimulationFrame < 2) ? 1.0f : 0.0f;
                     m_SimulationFrame++;
                 }
+
+                bool IsEnabled()
+                {
+                    return m_enabled;
+                }
+
+                void SetEnabled(bool enable)
+                {
+                    m_enabled = enable;
+                }
                 //!-----------------------------------------------------------------
 
                 // [Hair TO-DO ATOM-16057] Temporary direct hook to hair lighting model shader option.
@@ -344,6 +354,8 @@ namespace AZ
 
                 // LOD calculations factor
                 float m_LODHairDensity = 1.0f;
+
+                bool m_enabled = true;
 
                 // Adi - check required: frame counter for wind effect
                 uint32_t m_SimulationFrame = 0;
