@@ -8,7 +8,7 @@
 
 #include "RotateManipulator.h"
 #include <MCore/Source/AzCoreConversions.h>
-
+#include <MCore/Source/PlaneEq.h>
 
 namespace MCommon
 {

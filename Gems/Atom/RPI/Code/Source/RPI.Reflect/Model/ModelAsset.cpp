@@ -29,9 +29,10 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<ModelAsset, Data::AssetData>()
-                    ->Version(0)
+                    ->Version(1)
                     ->Field("Name", &ModelAsset::m_name)
                     ->Field("Aabb", &ModelAsset::m_aabb)
+                    ->Field("MaterialSlots", &ModelAsset::m_materialSlots)
                     ->Field("LodAssets", &ModelAsset::m_lodAssets)
                     ;
             }
@@ -55,6 +56,25 @@ namespace AZ
         const Aabb& ModelAsset::GetAabb() const
         {
             return m_aabb;
+        }
+        
+        const ModelMaterialSlotMap& ModelAsset::GetMaterialSlots() const
+        {
+            return m_materialSlots;
+        }
+            
+        const ModelMaterialSlot& ModelAsset::FindMaterialSlot(uint32_t stableId) const
+        {
+            auto iter = m_materialSlots.find(stableId);
+
+            if (iter == m_materialSlots.end())
+            {
+                return m_fallbackSlot;
+            }
+            else
+            {
+                return iter->second;
+            }
         }
 
         size_t ModelAsset::GetLodCount() const

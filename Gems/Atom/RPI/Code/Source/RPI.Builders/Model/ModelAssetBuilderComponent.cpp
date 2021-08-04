@@ -109,7 +109,7 @@ namespace AZ
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<ModelAssetBuilderComponent, SceneAPI::SceneCore::ExportingComponent>()
-                    ->Version(27);  // [ATOM-15658]
+                    ->Version(30);  // (updated to separate material slot ID from default material asset)
             }
         }
 
@@ -367,6 +367,9 @@ namespace AZ
 
             MorphTargetMetaAssetCreator morphTargetMetaCreator;
             morphTargetMetaCreator.Begin(MorphTargetMetaAsset::ConstructAssetId(modelAssetId, modelAssetName));
+            
+            ModelAssetCreator modelAssetCreator;
+            modelAssetCreator.Begin(modelAssetId);
 
             uint32_t lodIndex = 0;
             for (const SourceMeshContentList& sourceMeshContentList : sourceMeshContentListsByLod)
@@ -429,7 +432,7 @@ namespace AZ
 
                     for (const ProductMeshView& meshView : lodMeshViews)
                     {
-                        if (!CreateMesh(meshView, indexBuffer, streamBuffers, lodAssetCreator, context.m_materialsByUid))
+                        if (!CreateMesh(meshView, indexBuffer, streamBuffers, modelAssetCreator, lodAssetCreator, context.m_materialsByUid))
                         {
                             return AZ::SceneAPI::Events::ProcessingResult::Failure;
                         }
@@ -468,10 +471,6 @@ namespace AZ
                 lodIndex++;
             }
             sourceMeshContentListsByLod.clear();
-
-            // Build the final asset structure
-            ModelAssetCreator modelAssetCreator;
-            modelAssetCreator.Begin(modelAssetId);
 
             // Finalize all LOD assets
             for (auto& lodAsset : lodAssets)
@@ -1796,6 +1795,7 @@ namespace AZ
             const ProductMeshView& meshView,
             const BufferAssetView& lodIndexBuffer,
             const AZStd::vector<ModelLodAsset::Mesh::StreamBufferInfo>& lodStreamBuffers,
+            ModelAssetCreator& modelAssetCreator,
             ModelLodAssetCreator& lodAssetCreator,
             const MaterialAssetsByUid& materialAssetsByUid)
         {
@@ -1806,8 +1806,13 @@ namespace AZ
                 auto iter = materialAssetsByUid.find(meshView.m_materialUid);
                 if (iter != materialAssetsByUid.end())
                 {
-                    const Data::Asset<MaterialAsset>& materialAsset = iter->second.m_asset;
-                    lodAssetCreator.SetMeshMaterialAsset(materialAsset);
+                    ModelMaterialSlot materialSlot;
+                    materialSlot.m_stableId = meshView.m_materialUid;
+                    materialSlot.m_displayName = iter->second.m_name;
+                    materialSlot.m_defaultMaterialAsset = iter->second.m_asset;
+
+                    modelAssetCreator.AddMaterialSlot(materialSlot);
+                    lodAssetCreator.SetMeshMaterialSlot(materialSlot.m_stableId);
                 }
             }
 

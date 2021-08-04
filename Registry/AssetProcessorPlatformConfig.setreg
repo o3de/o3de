@@ -142,9 +142,6 @@
                 "Exclude TempFiles": {
                     "pattern": ".*\\\\/\\\\$tmp[0-9]*_.*"
                 },
-                "Exclude AlembicCompressionTemplates": {
-                    "pattern": ".*\\\\/Presets\\\\/GeomCache\\\\/.*"
-                },
                 "Exclude TmpAnimationCompression": {
                     "pattern": ".*\\\\/Editor\\\\/Tmp\\\\/AnimationCompression\\\\/.*"
                 },

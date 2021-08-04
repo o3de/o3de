@@ -165,7 +165,7 @@ namespace AzToolsFramework
                 PrefabDomUtils::ApplyPatches(templateDomReference, templateDomReference.GetAllocator(), providedPatch);
 
             //trigger propagation
-            if (result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::Success)
+            if (result.GetProcessing() != AZ::JsonSerializationResult::Processing::Completed)
             {
                 AZ_Error("Prefab", false, "Patch was not successfully applied.");
                 return false; 

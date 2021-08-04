@@ -80,6 +80,8 @@ namespace EMotionFX
         AZ_RTTI(ParameterMixinAnimGraphId, "{3F48199E-6566-471F-A7EA-ADF67CAC4DCD}")
         AZ_CLASS_ALLOCATOR_DECL
 
+        ParameterMixinAnimGraphId() = default;
+        ParameterMixinAnimGraphId(AZ::u32 id) : m_animGraphId(id) {}
         virtual ~ParameterMixinAnimGraphId() = default;
 
         static void Reflect(AZ::ReflectContext* context);

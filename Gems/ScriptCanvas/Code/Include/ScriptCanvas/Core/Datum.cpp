@@ -2083,7 +2083,6 @@ namespace ScriptCanvas
                 editContext->Class<Datum>("Datum", "Datum")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "Datum")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &Datum::GetVisibility)
-                    ->Attribute(AZ::Edit::Attributes::ChildNameLabelOverride, &Datum::GetLabel)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &Datum::m_storage, "Datum", "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &Datum::GetDatumVisibility)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)

@@ -61,18 +61,21 @@ namespace Multiplayer
     {
         m_previousTransform.SetRotation(m_targetTransform.GetRotation());
         m_targetTransform.SetRotation(rotation);
+        UpdateTargetHostFrameId();
     }
 
     void NetworkTransformComponent::OnTranslationChangedEvent(const AZ::Vector3& translation)
     {
         m_previousTransform.SetTranslation(m_targetTransform.GetTranslation());
         m_targetTransform.SetTranslation(translation);
+        UpdateTargetHostFrameId();
     }
 
     void NetworkTransformComponent::OnScaleChangedEvent(float scale)
     {
         m_previousTransform.SetUniformScale(m_targetTransform.GetUniformScale());
         m_targetTransform.SetUniformScale(scale);
+        UpdateTargetHostFrameId();
     }
 
     void NetworkTransformComponent::OnResetCountChangedEvent()
@@ -83,14 +86,31 @@ namespace Multiplayer
         m_previousTransform = m_targetTransform;
     }
 
+    void NetworkTransformComponent::UpdateTargetHostFrameId()
+    {
+        HostFrameId currentHostFrameId = Multiplayer::GetNetworkTime()->GetHostFrameId();
+        if (currentHostFrameId > m_targetHostFrameId)
+        {
+            m_targetHostFrameId = currentHostFrameId;
+        }
+    }
+
     void NetworkTransformComponent::OnPreRender([[maybe_unused]] float deltaTime, float blendFactor)
     {
         if (!HasController())
         {
             AZ::Transform blendTransform;
-            blendTransform.SetRotation(m_previousTransform.GetRotation().Slerp(m_targetTransform.GetRotation(), blendFactor));
-            blendTransform.SetTranslation(m_previousTransform.GetTranslation().Lerp(m_targetTransform.GetTranslation(), blendFactor));
-            blendTransform.SetUniformScale(AZ::Lerp(m_previousTransform.GetUniformScale(), m_targetTransform.GetUniformScale(), blendFactor));
+            if (Multiplayer::GetNetworkTime() && Multiplayer::GetNetworkTime()->GetHostFrameId() > m_targetHostFrameId)
+            {
+                m_previousTransform = m_targetTransform;
+                blendTransform = m_targetTransform;
+            }
+            else
+            {
+                blendTransform.SetRotation(m_previousTransform.GetRotation().Slerp(m_targetTransform.GetRotation(), blendFactor));
+                blendTransform.SetTranslation(m_previousTransform.GetTranslation().Lerp(m_targetTransform.GetTranslation(), blendFactor));
+                blendTransform.SetUniformScale(AZ::Lerp(m_previousTransform.GetUniformScale(), m_targetTransform.GetUniformScale(), blendFactor));
+            }
 
             if (!GetTransformComponent()->GetWorldTM().IsClose(blendTransform))
             {
