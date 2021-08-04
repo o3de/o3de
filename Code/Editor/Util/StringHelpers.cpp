@@ -15,7 +15,7 @@
 int StringHelpers::CompareIgnoreCase(const AZStd::string& str0, const AZStd::string& str1)
 {
     const size_t minLength = Util::getMin(str0.length(), str1.length());
-    const int result = azmemicmp(str0.c_str(), str1.c_str(), minLength);
+    const int result = azstrnicmp(str0.c_str(), str1.c_str(), minLength);
     if (result)
     {
         return result;

@@ -282,7 +282,7 @@ static const char* GetLastSystemErrorMessage()
                 0,
                 NULL))
         {
-            azstrcpy(szBuffer, (char*)lpMsgBuf);
+            azstrcpy(szBuffer, AZ_ARRAY_SIZE(szBuffer), (char*)lpMsgBuf);
             LocalFree(lpMsgBuf);
         }
         else

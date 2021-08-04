@@ -32,7 +32,7 @@ const char* XMLBinary::XMLBinaryReader::GetErrorDescription() const
 
 void XMLBinary::XMLBinaryReader::SetErrorDescription(const char* text)
 {
-    azstrcpy(m_errorDescription, text);
+    azstrcpy(m_errorDescription, AZ_ARRAY_SIZE(m_errorDescription), text);
 }
 
 

@@ -30,6 +30,8 @@ namespace AZStd
         template<size_t Size = sizeof(wchar_t)>
         struct WCharTPlatformConverter
         {
+            static_assert(Size == size_t{ 2 } || Size == size_t{ 4 }, "only wchar_t types of size 2 or 4 can be converted to utf8");
+
             template<class Allocator1>
             static inline void to_string(AZStd::basic_string<string::value_type, string::traits_type, Allocator1>& dest, const wchar_t* first, const wchar_t* last)
             {
@@ -40,12 +42,6 @@ namespace AZStd
                 else if constexpr (Size == 4)
                 {
                     Utf8::Unchecked::utf32to8(first, last, AZStd::back_inserter(dest), dest.max_size());
-                }
-                else
-                {
-                    // Workaround to defer static_assert evaluation until this function is invoked by using the template parameter
-                    using StringType = AZStd::basic_string<string::value_type, string::traits_type, Allocator1>;
-                    static_assert(!AZStd::is_same_v<StringType, StringType>, "only wchar_t types of size 2 or 4 can be converted to utf8");
                 }
             }
 
@@ -60,12 +56,6 @@ namespace AZStd
                 {
                     Utf8::Unchecked::utf32to8(first, last, AZStd::back_inserter(dest), dest.max_size());
                 }
-                else
-                {
-                    // Workaround to defer static_assert evaluation until this function is invoked by using the template parameter
-                    using StringType = AZStd::basic_string<string::value_type, string::traits_type, Allocator1>;
-                    static_assert(!AZStd::is_same_v<StringType, StringType>, "only wchar_t types of size 2 or 4 can be converted to utf8");
-                }
             }
 
             static inline void to_string(char* dest, size_t destSize, const wchar_t* first, const wchar_t* last)
@@ -77,10 +67,6 @@ namespace AZStd
                 else if constexpr (Size == 4)
                 {
                     Utf8::Unchecked::utf32to8(first, last, dest, destSize);
-                }
-                else
-                {
-                    static_assert(false, "only wchar_t types of size 2 or 4 can be converted to utf8");
                 }
             }
 
@@ -95,12 +81,6 @@ namespace AZStd
                 {
                     Utf8::Unchecked::utf8to32(first, last, AZStd::back_inserter(dest), dest.max_size());
                 }
-                else
-                {
-                    // Workaround to defer static_assert evaluation until this function is invoked by using the template parameter
-                    using StringType = AZStd::basic_string<string::value_type, string::traits_type, Allocator1>;
-                    static_assert(!AZStd::is_same_v<StringType, StringType>, "Cannot convert a utf8 string to a wchar_t that isn't size 2 or 4");
-                }
             }
 
             template<size_t MaxElementCount>
@@ -114,12 +94,6 @@ namespace AZStd
                 {
                     Utf8::Unchecked::utf8to32(first, last, AZStd::back_inserter(dest), dest.max_size());
                 }
-                else
-                {
-                    // Workaround to defer static_assert evaluation until this function is invoked by using the template parameter
-                    using StringType = AZStd::basic_string<string::value_type, string::traits_type, Allocator1>;
-                    static_assert(!AZStd::is_same_v<StringType, StringType>, "Cannot convert a utf8 string to a wchar_t that isn't size 2 or 4");
-                }
             }
 
             static inline void to_wstring(wchar_t* dest, size_t destSize, const char* first, const char* last)
@@ -131,10 +105,6 @@ namespace AZStd
                 else if constexpr (Size == 4)
                 {
                     Utf8::Unchecked::utf8to32(first, last, dest, destSize);
-                }
-                else
-                {
-                    static_assert(false, "Cannot convert a utf8 string to a wchar_t that isn't size 2 or 4");
                 }
             }
         };

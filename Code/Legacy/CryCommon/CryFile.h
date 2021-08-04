@@ -221,7 +221,7 @@ inline CCryFile::~CCryFile()
 inline bool CCryFile::Open(const char* filename, const char* mode, int nOpenFlagsEx)
 {
     char tempfilename[CRYFILE_MAX_PATH] = "";
-    azstrcpy(tempfilename, filename);
+    azstrcpy(tempfilename, CRYFILE_MAX_PATH, filename);
 
 #if !defined (_RELEASE)
     if (gEnv && gEnv->IsEditor() && gEnv->pConsole)
@@ -233,7 +233,7 @@ inline bool CCryFile::Open(const char* filename, const char* mode, int nOpenFlag
             if (lowercasePaths)
             {
                 const AZStd::string lowerString = PathUtil::ToLower(tempfilename);
-                azstrcpy(tempfilename, lowerString.c_str());
+                azstrcpy(tempfilename, CRYFILE_MAX_PATH, lowerString.c_str());
             }
         }
     }
@@ -242,7 +242,7 @@ inline bool CCryFile::Open(const char* filename, const char* mode, int nOpenFlag
     {
         Close();
     }
-    azstrcpy(m_filename, tempfilename);
+    azstrcpy(m_filename, CRYFILE_MAX_PATH, tempfilename);
 
     if (m_pIArchive)
     {
@@ -429,7 +429,7 @@ inline const char* CCryFile::GetAdjustedFilename() const
     // Returns standard path otherwise.
     if (gameUrl != &szAdjustedFile[0])
     {
-        azstrcpy(szAdjustedFile, gameUrl);
+        azstrcpy(szAdjustedFile, AZ::IO::IArchive::MaxPath, gameUrl);
     }
     return szAdjustedFile;
 }

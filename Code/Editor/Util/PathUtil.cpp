@@ -16,6 +16,7 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzCore/std/string/conversions.h>
+#include <AzFramework/IO/LocalFileIO.h>
 
 #include <QRegularExpression>
 
@@ -203,16 +204,7 @@ namespace Path
 
     bool IsFolder(const char* pPath)
     {
-        AZStd::wstring pPathW;
-        AZStd::to_wstring(pPathW, pPath);
-        DWORD attrs = GetFileAttributes(pPathW.c_str());
-
-        if (attrs == FILE_ATTRIBUTE_DIRECTORY)
-        {
-            return true;
-        }
-
-        return false;
+        return AZ::IO::FileIOBase::GetInstance()->IsDirectory(pPath);
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -255,7 +247,6 @@ namespace Path
     {
         static AZStd::string s_currentModName;
         // query the editor root.  The bus exists in case we want tools to be able to override this.
-
 
         if (s_currentModName.empty())
         {

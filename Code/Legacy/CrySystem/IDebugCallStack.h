@@ -41,11 +41,7 @@ public:
         filename = "[unknown]";
         line = 0;
         baseAddr = addr;
-#if defined(PLATFORM_64BIT)
-        procName = AZStd::string::format("[%016llX]", addr);
-#else
-        procName = AZStd::string::format("[%08X]", addr);
-#endif
+        procName = AZStd::string::format("[%p]", addr);
     }
 
     // returns current filename

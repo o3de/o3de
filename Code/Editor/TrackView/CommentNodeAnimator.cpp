@@ -92,7 +92,7 @@ void CCommentNodeAnimator::AnimateCommentTextTrack(CTrackViewTrack* pTrack, cons
         if (commentKey.m_duration > 0 && ac.time < keyHandle.GetTime() + commentKey.m_duration)
         {
             m_commentContext.m_strComment = commentKey.m_strComment;
-            azstrcpy(m_commentContext.m_strFont,  commentKey.m_strFont.c_str());
+            azstrcpy(m_commentContext.m_strFont, AZ_ARRAY_SIZE(m_commentContext.m_strFont), commentKey.m_strFont.c_str());
             m_commentContext.m_color = commentKey.m_color;
             m_commentContext.m_align = commentKey.m_align;
             m_commentContext.m_size = commentKey.m_size;

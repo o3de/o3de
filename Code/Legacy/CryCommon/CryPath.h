@@ -419,7 +419,7 @@ namespace PathUtil
     //! Makes a fully specified file path from path and file name.
     inline stack_string Make(const stack_string& dir, const stack_string& filename, const stack_string& ext)
     {
-        AZStd::string path = filename;
+        AZStd::string path = filename.c_str();
         AZ::StringFunc::Path::ReplaceExtension(path, ext.c_str());
         path = AddSlash(dir.c_str()) + path;
         return stack_string(path.c_str());

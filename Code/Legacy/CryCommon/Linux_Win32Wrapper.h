@@ -14,6 +14,8 @@
 #include <CryAssert.h>
 #include <dirent.h>
 #include <vector>
+#include <AzCore/std/string/string.h>
+
 /* Memory block identification */
 #define _FREE_BLOCK      0
 #define _NORMAL_BLOCK    1
@@ -344,7 +346,7 @@ private:
     char                                m_DirectoryName[260];           //!< directory name, needed when getting file attributes on the fly
     char                                m_ToMatch[260];                     //!< pattern to match with
     DIR*                                m_Dir;                                  //!< directory handle
-    std::vector<string> m_Entries;                      //!< all file entries in the current directories
+    std::vector<AZStd::string> m_Entries;                      //!< all file entries in the current directories
 public:
 
     inline __finddata64_t()

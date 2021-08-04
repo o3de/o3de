@@ -32,7 +32,7 @@ void CScreenFaderTrack::GetKeyInfo(int key, const char*& description, float& dur
     CheckValid();
     description = 0;
     duration = m_keys[key].m_fadeTime;
-    azstrcpy(desc, m_keys[key].m_fadeType == IScreenFaderKey::eFT_FadeIn ? "In" : "Out");
+    azstrcpy(desc, AZ_ARRAY_SIZE(desc), m_keys[key].m_fadeType == IScreenFaderKey::eFT_FadeIn ? "In" : "Out");
 
     description = desc;
 }

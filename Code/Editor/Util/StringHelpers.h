@@ -11,6 +11,9 @@
 #define CRYINCLUDE_CRYCOMMONTOOLS_STRINGHELPERS_H
 #pragma once
 
+#include <AzCore/std/string/string.h>
+#include <AzCore/std/containers/vector.h>
+
 namespace StringHelpers
 {
     // compares two strings to see if they are the same or different, case is ignored

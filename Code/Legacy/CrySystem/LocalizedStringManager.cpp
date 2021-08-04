@@ -2762,7 +2762,7 @@ void CLocalizedStringsManager::LocalizeTime(time_t t, bool bMakeLocalTime, bool 
     const size_t bufSize = sizeof(buf) / sizeof(buf[0]);
     wcsftime(buf, bufSize, bShowSeconds ? L"%#X" : L"%X", &theTime);
     buf[bufSize - 1] = 0;
-    Unicode::Convert(outTimeString, buf);
+    AZStd::to_string(outTimeString, buf);
 }
 
 void CLocalizedStringsManager::LocalizeDate(time_t t, bool bMakeLocalTime, bool bShort, bool bIncludeWeekday, AZStd::string& outDateString)
@@ -2790,7 +2790,7 @@ void CLocalizedStringsManager::LocalizeDate(time_t t, bool bMakeLocalTime, bool 
     const wchar_t* format = bShort ? (bIncludeWeekday ? L"%a %x" : L"%x") : L"%#x"; // long format always contains Weekday name
     wcsftime(buf, bufSize, format, &theTime);
     buf[bufSize - 1] = 0;
-    Unicode::Convert(outDateString, buf);
+    AZStd::to_string(outDateString, buf);
 }
 
 

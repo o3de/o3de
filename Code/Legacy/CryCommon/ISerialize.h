@@ -387,7 +387,7 @@ public:
 
     bool ValueChar(const char* name, char* buffer, int len)
     {
-        string temp;
+        AZStd::string temp;
         if (IsReading())
         {
             Value(name, temp);
@@ -400,7 +400,7 @@ public:
         }
         else
         {
-            temp = string(buffer, buffer + len);
+            temp = AZStd::string(buffer, buffer + len);
             Value(name, temp);
         }
         return true;

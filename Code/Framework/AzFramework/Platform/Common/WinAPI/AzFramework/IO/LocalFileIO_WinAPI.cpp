@@ -20,7 +20,9 @@ namespace AZ
             char resolvedPath[AZ_MAX_PATH_LEN];
             ResolvePath(filePath, resolvedPath, AZ_MAX_PATH_LEN);
 
-            DWORD fileAttributes = GetFileAttributesA(resolvedPath);
+            wchar_t resolvedPathW[AZ_MAX_PATH_LEN];
+            AZStd::to_wstring(resolvedPathW, AZ_MAX_PATH_LEN, resolvedPath);
+            DWORD fileAttributes = GetFileAttributesW(resolvedPathW);
             if (fileAttributes == INVALID_FILE_ATTRIBUTES)
             {
                 return false;
@@ -174,7 +176,7 @@ namespace AZ
 
         bool LocalFileIO::IsAbsolutePath(const char* path) const
         {
-            char drive[16];
+            char drive[16] = { 0 };
             _splitpath_s(path, drive, 16, nullptr, 0, nullptr, 0, nullptr, 0);
             return strlen(drive) > 0;
         }

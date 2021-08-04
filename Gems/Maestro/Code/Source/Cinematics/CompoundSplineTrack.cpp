@@ -457,31 +457,31 @@ void CCompoundSplineTrack::GetKeyInfo(int key, const char*& description, float& 
         {
             float dummy;
             m_subTracks[0]->GetKeyInfo(m, subDesc, dummy);
-            azstrcat(str, subDesc);
+            azstrcat(str, AZ_ARRAY_SIZE(str), subDesc);
             break;
         }
     }
     if (m == m_subTracks[0]->GetNumKeys())
     {
-        azstrcat(str, m_subTrackNames[0].c_str());
+        azstrcat(str, AZ_ARRAY_SIZE(str), m_subTrackNames[0].c_str());
     }
     // Tail cases
     for (int i = 1; i < GetSubTrackCount(); ++i)
     {
-        azstrcat(str, ",");
+        azstrcat(str, AZ_ARRAY_SIZE(str), ",");
         for (m = 0; m < m_subTracks[i]->GetNumKeys(); ++m)
         {
             if (m_subTracks[i]->GetKeyTime(m) == time)
             {
                 float dummy;
                 m_subTracks[i]->GetKeyInfo(m, subDesc, dummy);
-                azstrcat(str, subDesc);
+                azstrcat(str, AZ_ARRAY_SIZE(str), subDesc);
                 break;
             }
         }
         if (m == m_subTracks[i]->GetNumKeys())
         {
-            azstrcat(str, m_subTrackNames[i].c_str());
+            azstrcat(str, AZ_ARRAY_SIZE(str), m_subTrackNames[i].c_str());
         }
     }
 }

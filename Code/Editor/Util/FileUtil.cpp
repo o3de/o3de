@@ -2217,15 +2217,14 @@ uint32 CFileUtil::GetAttributes(const char* filename, bool bUseSourceControl /*=
         return SCC_FILE_ATTRIBUTE_READONLY | SCC_FILE_ATTRIBUTE_INPAK;
     }
 
-    AZStd::wstring fileW;
-    AZStd::to_wstring(fileW, file.GetAdjustedFilename());
-    DWORD dwAttrib = ::GetFileAttributesW(fileW.c_str());
-    if (dwAttrib == INVALID_FILE_ATTRIBUTES)
+    
+    const char* adjustedFile = file.GetAdjustedFilename();
+    if (!AZ::IO::SystemFile::Exists(adjustedFile))
     {
         return SCC_FILE_ATTRIBUTE_INVALID;
     }
 
-    if (dwAttrib & FILE_ATTRIBUTE_READONLY)
+    if (!AZ::IO::SystemFile::IsWritable(adjustedFile))
     {
         return SCC_FILE_ATTRIBUTE_NORMAL | SCC_FILE_ATTRIBUTE_READONLY;
     }

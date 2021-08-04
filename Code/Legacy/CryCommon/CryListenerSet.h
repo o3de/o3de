@@ -418,7 +418,7 @@ inline size_t CListenerSet<T>::MemSize() const
     size += sizeof(typename TAllocatedNameVec::value_type);
     for (typename TAllocatedNameVec::const_iterator iter(m_allocatedNames.begin()); iter != m_allocatedNames.end(); ++iter)
     {
-        size += iter->GetAllocatedMemory();
+        size += iter->capacity() * sizeof(char) + sizeof(AZStd::string);
     }
 #endif
 

@@ -99,7 +99,7 @@ bool XMLBinary::CXMLBinaryWriter::WriteNode(IDataWriter* pFile, XmlNodeRef node,
     static const uint nMaxNodeCount = (NodeIndex) ~0;
     if (m_nodes.size() > nMaxNodeCount)
     {
-        error = AZStd::string::format("XMLBinary: Too many nodes: %d (max is %i)", m_nodes.size(), nMaxNodeCount);
+        error = AZStd::string::format("XMLBinary: Too many nodes: %zu (max is %i)", m_nodes.size(), nMaxNodeCount);
         return false;
     }
 

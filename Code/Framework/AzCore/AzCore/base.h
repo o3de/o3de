@@ -51,74 +51,72 @@
 #   define azvscprintf(_format, _va_list)                   _vscprintf(_format, _va_list)
 #   define azscwprintf                                      _scwprintf
 #   define azvscwprintf                                     _vscwprintf
-#   define azstrtok(_buffer, _size, _delim, _context)  strtok_s(_buffer, _delim, _context)
-#   define azstrcat         strcat_s
-#   define azstrncat        strncat_s
-#   define strtoll          _strtoi64
-#   define strtoull         _strtoui64
-#   define azsscanf         sscanf_s
-#   define azstrcpy         strcpy_s
-#   define azstrncpy        strncpy_s
-#   define azstricmp        _stricmp
-#   define azstrnicmp       _strnicmp
-#   define azisfinite       _finite
-#   define azltoa           _ltoa_s
-#   define azitoa           _itoa_s
-#   define azui64toa        _ui64toa_s
-#   define azswscanf        swscanf_s
-#   define azwcsicmp        _wcsicmp
-#   define azwcsnicmp       _wcsnicmp
-#   define azmemicmp        _memicmp
+#   define azstrtok(_buffer, _size, _delim, _context)       strtok_s(_buffer, _delim, _context)
+#   define azstrcat(_dest, _destSize, _src)                 strcat_s(_dest, _destSize, _src)
+#   define azstrncat(_dest, _destSize, _src, _count)        strncat_s(_dest, _destSize, _src, _count)
+#   define strtoll                                          _strtoi64
+#   define strtoull                                         _strtoui64
+#   define azsscanf                                         sscanf_s
+#   define azstrcpy(_dest, _destSize, _src)                 strcpy_s(_dest, _destSize, _src)
+#   define azstrncpy(_dest, _destSize, _src, _count)        strncpy_s(_dest, _destSize, _src, _count)
+#   define azstricmp                                        _stricmp
+#   define azstrnicmp                                       _strnicmp
+#   define azisfinite                                       _finite
+#   define azltoa                                           _ltoa_s
+#   define azitoa                                           _itoa_s
+#   define azui64toa                                        _ui64toa_s
+#   define azswscanf                                        swscanf_s
+#   define azwcsicmp                                        _wcsicmp
+#   define azwcsnicmp                                       _wcsnicmp
 
 // note: for cross-platform compatibility, do not use the return value of azfopen. On Windows, it's an errno_t and 0 indicates success. On other platforms, the return value is a FILE*, and a 0 value indicates failure.
-#   define azfopen          fopen_s
+#   define azfopen(_fp, _filename, _attrib)                 fopen_s(_fp, _filename, _attrib)
 #   define azfscanf         fscanf_s
 
-#   define azsprintf(_buffer, ...)      sprintf_s(_buffer, AZ_ARRAY_SIZE(_buffer), __VA_ARGS__)
-#   define azstrlwr         _strlwr_s
-#   define azvsprintf       vsprintf_s
-#   define azwcscpy         wcscpy_s
-#   define azstrtime        _strtime_s
-#   define azstrdate        _strdate_s
-#   define azlocaltime(time, result) localtime_s(result, time)
+#   define azsprintf(_buffer, ...)                          sprintf_s(_buffer, AZ_ARRAY_SIZE(_buffer), __VA_ARGS__)
+#   define azstrlwr                                         _strlwr_s
+#   define azvsprintf                                       vsprintf_s
+#   define azwcscpy                                         wcscpy_s
+#   define azstrtime                                        _strtime_s
+#   define azstrdate                                        _strdate_s
+#   define azlocaltime(time, result)                        localtime_s(result, time)
 #else
-#   define azsnprintf       snprintf
-#   define azvsnprintf      vsnprintf
+#   define azsnprintf                                       snprintf
+#   define azvsnprintf                                      vsnprintf
 #   if AZ_TRAIT_COMPILER_DEFINE_AZSWNPRINTF_AS_SWPRINTF
-#       define azsnwprintf  swprintf
-#       define azvsnwprintf vswprintf
+#       define azsnwprintf                                  swprintf
+#       define azvsnwprintf                                 vswprintf
 #   else
-#       define azsnwprintf  snwprintf
-#       define azvsnwprintf vsnwprintf
+#       define azsnwprintf                                  snwprintf
+#       define azvsnwprintf                                 vsnwprintf
 #   endif
-#   define azscprintf(...)                  azsnprintf(nullptr, static_cast<size_t>(0), __VA_ARGS__);
-#   define azvscprintf(_format, _va_list)   azvsnprintf(nullptr, static_cast<size_t>(0), _format, _va_list);
-#   define azscwprintf(...)                 azsnwprintf(nullptr, static_cast<size_t>(0), __VA_ARGS__);
-#   define azvscwprintf(_format, _va_list)  azvsnwprintf(nullptr, static_cast<size_t>(0), _format, _va_list);
-#   define azstrtok(_buffer, _size, _delim, _context)  strtok(_buffer, _delim)
-#   define azstrcat(_dest, _destSize, _src) strcat(_dest, _src)
-#   define azstrncat(_dest, _destSize, _src, _count) strncat(_dest, _src, _count)
-#   define azsscanf         sscanf
-#   define azstrcpy(_dest, _destSize, _src) strcpy(_dest, _src)
-#   define azstrncpy(_dest, _destSize, _src, _count) strncpy(_dest, _src, _count)
-#   define azstricmp        strcasecmp
-#   define azstrnicmp       strncasecmp
+#   define azscprintf(...)                                  azsnprintf(nullptr, static_cast<size_t>(0), __VA_ARGS__);
+#   define azvscprintf(_format, _va_list)                   azvsnprintf(nullptr, static_cast<size_t>(0), _format, _va_list);
+#   define azscwprintf(...)                                 azsnwprintf(nullptr, static_cast<size_t>(0), __VA_ARGS__);
+#   define azvscwprintf(_format, _va_list)                  azvsnwprintf(nullptr, static_cast<size_t>(0), _format, _va_list);
+#   define azstrtok(_buffer, _size, _delim, _context)       strtok(_buffer, _delim)
+#   define azstrcat(_dest, _destSize, _src)                 strcat(_dest, _src)
+#   define azstrncat(_dest, _destSize, _src, _count)        strncat(_dest, _src, _count)
+#   define azsscanf                                         sscanf
+#   define azstrcpy(_dest, _destSize, _src)                 strcpy(_dest, _src)
+#   define azstrncpy(_dest, _destSize, _src, _count)        strncpy(_dest, _src, _count)
+#   define azstricmp                                        strcasecmp
+#   define azstrnicmp                                       strncasecmp
 #   if defined(NDK_REV_MAJOR) && NDK_REV_MAJOR < 16
-#       define azisfinite   __isfinitef
+#       define azisfinite                                   __isfinitef
 #   else
-#       define azisfinite   isfinite
+#       define azisfinite                                   isfinite
 #   endif
-#   define azltoa(_value, _buffer, _size, _radix) ltoa(_value, _buffer, _radix)
-#   define azitoa(_value, _buffer, _size, _radix) itoa(_value, _buffer, _radix)
-#   define azui64toa(_value, _buffer, _size, _radix) _ui64toa(_value, _buffer, _radix)
-#   define azswscanf        swscanf
-#   define azwcsicmp        wcsicmp
-#   define azwcsnicmp       wcsnicmp
-#   define azmemicmp        memicmp
+#   define azltoa(_value, _buffer, _size, _radix)           ltoa(_value, _buffer, _radix)
+#   define azitoa(_value, _buffer, _size, _radix)           itoa(_value, _buffer, _radix)
+#   define azui64toa(_value, _buffer, _size, _radix)        _ui64toa(_value, _buffer, _radix)
+#   define azswscanf                                        swscanf
+#   define azwcsicmp                                        wcscasecmp
+#   define azwcsnicmp                                       wcsnicmp
 
 // note: for cross-platform compatibility, do not use the return value of azfopen. On Windows, it's an errno_t and 0 indicates success. On other platforms, the return value is a FILE*, and a 0 value indicates failure.
-#   define azfopen(_fp, _filename, _attrib) *(_fp) = fopen(_filename, _attrib)
-#   define azfscanf         fscanf
+#   define azfopen(_fp, _filename, _attrib)                 *(_fp) = fopen(_filename, _attrib)
+#   define azfscanf                                         fscanf
 
 #   define azsprintf       sprintf
 #   define azstrlwr(_buffer, _size)             strlwr(_buffer)

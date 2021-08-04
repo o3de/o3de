@@ -1547,31 +1547,31 @@ const char* CXConsole::GetFlagsString(const uint32 dwFlags)
     // hiding this makes it a bit more difficult for cheaters
     //  if(dwFlags&VF_CHEAT)                  azstrcat( sFlags,"CHEAT, ");
 
-    azstrcpy(sFlags, "");
+    azstrcpy(sFlags, AZ_ARRAY_SIZE(sFlags), "");
 
     if (dwFlags & VF_READONLY)
     {
-        azstrcat(sFlags, "READONLY, ");
+        azstrcat(sFlags, AZ_ARRAY_SIZE(sFlags), "READONLY, ");
     }
     if (dwFlags & VF_DEPRECATED)
     {
-        azstrcat(sFlags, "DEPRECATED, ");
+        azstrcat(sFlags, AZ_ARRAY_SIZE(sFlags), "DEPRECATED, ");
     }
     if (dwFlags & VF_DUMPTODISK)
     {
-        azstrcat(sFlags, "DUMPTODISK, ");
+        azstrcat(sFlags, AZ_ARRAY_SIZE(sFlags), "DUMPTODISK, ");
     }
     if (dwFlags & VF_REQUIRE_LEVEL_RELOAD)
     {
-        azstrcat(sFlags, "REQUIRE_LEVEL_RELOAD, ");
+        azstrcat(sFlags, AZ_ARRAY_SIZE(sFlags), "REQUIRE_LEVEL_RELOAD, ");
     }
     if (dwFlags & VF_REQUIRE_APP_RESTART)
     {
-        azstrcat(sFlags, "REQUIRE_APP_RESTART, ");
+        azstrcat(sFlags, AZ_ARRAY_SIZE(sFlags), "REQUIRE_APP_RESTART, ");
     }
     if (dwFlags & VF_RESTRICTEDMODE)
     {
-        azstrcat(sFlags, "RESTRICTEDMODE, ");
+        azstrcat(sFlags, AZ_ARRAY_SIZE(sFlags), "RESTRICTEDMODE, ");
     }
 
     if (sFlags[0] != 0)
@@ -3325,7 +3325,7 @@ const char* CXConsole::AutoComplete(const char* substr)
         const char* szCmd = cmds[i];
 
         size_t cmdlen = strlen(szCmd);
-        if (cmdlen >= substrLen && azmemicmp(szCmd, substr, substrLen) == 0)
+        if (cmdlen >= substrLen && azstrnicmp(szCmd, substr, substrLen) == 0)
         {
             if (substrLen == cmdlen)
             {

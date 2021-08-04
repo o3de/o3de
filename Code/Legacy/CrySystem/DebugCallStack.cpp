@@ -435,18 +435,18 @@ void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
     {
         const char* const szMessage = m_bIsFatalError ? s_szFatalErrorCode : m_szBugMessage;
         excName = szMessage;
-        azstrcpy(excCode, szMessage);
-        azstrcpy(excAddr, "");
-        azstrcpy(desc, "");
-        azstrcpy(m_excModule, "");
-        azstrcpy(excDesc, szMessage);
+        azstrcpy(excCode, AZ_ARRAY_SIZE(excCode), szMessage);
+        azstrcpy(excAddr, AZ_ARRAY_SIZE(excAddr), "");
+        azstrcpy(desc, AZ_ARRAY_SIZE(desc), "");
+        azstrcpy(m_excModule, AZ_ARRAY_SIZE(m_excModule), "");
+        azstrcpy(excDesc, AZ_ARRAY_SIZE(excDesc), szMessage);
     }
     else
     {
         sprintf_s(excAddr, "0x%04X:0x%p", pex->ContextRecord->SegCs, pex->ExceptionRecord->ExceptionAddress);
         sprintf_s(excCode, "0x%08X", pex->ExceptionRecord->ExceptionCode);
         excName = TranslateExceptionCode(pex->ExceptionRecord->ExceptionCode);
-        azstrcpy(desc, "");
+        azstrcpy(desc, AZ_ARRAY_SIZE(desc), "");
         sprintf_s(excDesc, "%s\r\n%s", excName, desc);
 
 
@@ -476,9 +476,9 @@ void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
     WriteLineToLog("Exception Description: %s", desc);
 
 
-    azstrcpy(m_excDesc, excDesc);
-    azstrcpy(m_excAddr, excAddr);
-    azstrcpy(m_excCode, excCode);
+    azstrcpy(m_excDesc, AZ_ARRAY_SIZE(m_excDesc), excDesc);
+    azstrcpy(m_excAddr, AZ_ARRAY_SIZE(m_excAddr), excAddr);
+    azstrcpy(m_excCode, AZ_ARRAY_SIZE(m_excCode), excCode);
 
 
     char errs[32768];
@@ -504,7 +504,7 @@ void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
         dumpCallStack(funcs);
         // Fill call stack.
         char str[s_iCallStackSize];
-        azstrcpy(str, "");
+        azstrcpy(str, AZ_ARRAY_SIZE(str), "");
         for (unsigned int i = 0; i < funcs.size(); i++)
         {
             char temp[s_iCallStackSize];
@@ -514,7 +514,7 @@ void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
             azstrcat(errs, temp);
             azstrcat(errs, "\n");
         }
-        azstrcpy(m_excCallstack, str);
+        azstrcpy(m_excCallstack, AZ_ARRAY_SIZE(m_excCallstack), str);
     }
 
     azstrcat(errorString, errs);

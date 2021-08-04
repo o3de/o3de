@@ -106,7 +106,7 @@ namespace Path
         path = path_buffer;
         _makepath_s(path_buffer, AZ_ARRAY_SIZE(path_buffer), 0, 0, fname, ext);
 #else
-        _splitpath(filepath, drive, dir, fname, ext);
+        _splitpath(filepath.c_str(), drive, dir, fname, ext);
         _makepath(path_buffer, drive, dir, 0, 0);
         path = path_buffer;
         _makepath(path_buffer, 0, 0, fname, ext);
@@ -148,7 +148,7 @@ namespace Path
         _splitpath_s(filepath.c_str(), drive, AZ_ARRAY_SIZE(drive), dir, AZ_ARRAY_SIZE(dir), fname, AZ_ARRAY_SIZE(fname), ext, AZ_ARRAY_SIZE(ext));
         _makepath_s(path_buffer, AZ_ARRAY_SIZE(path_buffer), drive, dir, 0, 0);
 #else
-        _splitpath(filepath, drive, dir, fname, ext);
+        _splitpath(filepath.c_str(), drive, dir, fname, ext);
         _makepath(path_buffer, drive, dir, 0, 0);
 #endif
         path = path_buffer;

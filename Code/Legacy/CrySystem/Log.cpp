@@ -508,7 +508,7 @@ void CLog::LogV(const ELogType type, [[maybe_unused]]int flags, const char* szFo
             stack_string s = szBuffer;
             s += "\t<Scope> ";
             s += sAssetScope;
-            azstrcpy(szBuffer, s.c_str());
+            azstrcpy(szBuffer, AZ_ARRAY_SIZE(szBuffer), s.c_str());
         }
     }
 
@@ -531,7 +531,7 @@ void CLog::LogV(const ELogType type, [[maybe_unused]]int flags, const char* szFo
             }
         }
         i = m_iLastHistoryItem = m_iLastHistoryItem + 1 & sz - 1;
-        azstrcpy(m_history[i].str, m_history[i].ptr = szSpamCheck);
+        azstrcpy(m_history[i].str, AZ_ARRAY_SIZE(m_history[i].str), m_history[i].ptr = szSpamCheck);
         m_history[i].type = type;
         m_history[i].time = time;
     }
@@ -862,7 +862,7 @@ bool CLog::LogToMainThread(const char* szString, ELogType logType, bool bAdd, SL
     {
         // When logging from other thread then main, push all log strings to queue.
         SLogMsg msg;
-        azstrcpy(msg.msg, szString);
+        azstrcpy(msg.msg, AZ_ARRAY_SIZE(msg.msg), szString);
         msg.bAdd = bAdd;
         msg.destination = destination;
         msg.logType = logType;
@@ -1277,7 +1277,7 @@ void CLog::CreateBackupFile() const
 
     AZStd::string bakdest = PathUtil::Make(LOG_BACKUP_PATH, sFileWithoutExt + sBackupNameAttachment + "." + sExt);
     fileSystem->CreatePath(LOG_BACKUP_PATH);
-    azstrcpy(m_sBackupFilename, bakdest.c_str());
+    azstrcpy(m_sBackupFilename, AZ_ARRAY_SIZE(m_sBackupFilename), bakdest.c_str());
     // Remove any existing backup file with the same name first since the copy will fail otherwise.
     fileSystem->Remove(m_sBackupFilename);
     fileSystem->Copy(m_szFilename, bakdest.c_str());
