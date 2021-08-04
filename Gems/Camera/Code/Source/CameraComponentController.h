@@ -132,6 +132,7 @@ namespace Camera
         AZ::RPI::AuxGeomDrawPtr m_atomAuxGeom;
         AZ::Event<const AZ::Matrix4x4&>::Handler m_onViewMatrixChanged;
         bool m_updatingTransformFromEntity = false;
+        bool m_isActiveView = false;
 
         // Cry view integration
         IView* m_view = nullptr;

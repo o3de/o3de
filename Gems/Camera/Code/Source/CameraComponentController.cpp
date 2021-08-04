@@ -115,6 +115,13 @@ namespace Camera
             AZ_Assert(m_atomCamera, "Attempted to activate Atom camera before component activation");
 
             const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
+
+            // Connect to the bus the first time we activate the view
+            if (!AZ::RPI::ViewportContextNotificationBus::Handler::BusIsConnectedId(contextName))
+            {
+                AZ::RPI::ViewportContextNotificationBus::Handler::BusConnect(contextName);
+            }
+
             // Ensure the Atom camera is updated with our current transform state
             AZ::Transform localTransform;
             AZ::TransformBus::EventResult(localTransform, m_entityId, &AZ::TransformBus::Events::GetLocalTM);
@@ -125,7 +132,6 @@ namespace Camera
             // Push the Atom camera after we make sure we're up-to-date with our component's transform to ensure the viewport reads the correct state
             UpdateCamera();
             atomViewportRequests->PushView(contextName, m_atomCamera);
-            AZ::RPI::ViewportContextNotificationBus::Handler::BusConnect(contextName);
         }
     }
 
@@ -140,7 +146,6 @@ namespace Camera
         if (atomViewportRequests)
         {
             const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
-            AZ::RPI::ViewportContextNotificationBus::Handler::BusDisconnect(contextName);
             atomViewportRequests->PopView(contextName, m_atomCamera);
         }
     }
@@ -446,7 +451,7 @@ namespace Camera
 
     bool CameraComponentController::IsActiveView()
     {
-        return AZ::RPI::ViewportContextNotificationBus::Handler::BusIsConnected();
+        return m_isActiveView;
     }
 
     void CameraComponentController::OnTransformChanged([[maybe_unused]] const AZ::Transform& local, const AZ::Transform& world)
@@ -472,18 +477,15 @@ namespace Camera
 
     void CameraComponentController::OnViewportSizeChanged([[maybe_unused]] AzFramework::WindowSize size)
     {
-        UpdateCamera();
+        if (IsActiveView())
+        {
+            UpdateCamera();
+        }
     }
 
     void CameraComponentController::OnViewportDefaultViewChanged(AZ::RPI::ViewPtr view)
     {
-        if (m_atomCamera != view)
-        {
-            // Note that when disconnected from this bus, this signals that we are not the active view
-            // There is nothing else to do here: leave our view on the viewport context stack, don't need
-            // to update properties. The viewport context system should handle it all!
-            AZ::RPI::ViewportContextNotificationBus::Handler::BusDisconnect();
-        }
+        m_isActiveView = m_atomCamera == view;
     }
 
     AZ::RPI::ViewPtr CameraComponentController::GetView() const
