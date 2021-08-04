@@ -32,7 +32,7 @@ namespace O3DE::ProjectManager
                     vsWherePath,
                     QStringList{
                         "-version",
-                        "16.0",
+                        "16.9.2",
                         "-latest",
                         "-requires",
                         "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
@@ -50,10 +50,11 @@ namespace O3DE::ProjectManager
                 }
             }
 
-            return AZ::Failure(QObject::tr("Visual Studio 2019 not found.\n\n"
+            return AZ::Failure(QObject::tr("Visual Studio 2019 version 16.9.2 or higher not found.\n\n"
                 "Visual Studio 2019 is required to build this project."
                 " Install any edition of <a href='https://visualstudio.microsoft.com/downloads/'>Visual Studio 2019</a>"
-                " before proceeding to the next step."));
+                " or update to a newer version before proceeding to the next step."
+                " While installing configure Visual Studio with these <a href='https://o3de.org/docs/welcome-guide/setup/requirements/#visual-studio-configuration'>workloads</a>."));
         }
         
     } // namespace ProjectUtils

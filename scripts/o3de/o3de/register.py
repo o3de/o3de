@@ -261,43 +261,6 @@ def add_engine_name_to_path(json_data: dict, engine_path: pathlib.Path, force: b
     return 0
 
 
-def register_engine_path(json_data: dict,
-                         engine_path: pathlib.Path,
-                         remove: bool = False,
-                         force: bool = False) -> int:
-    if not engine_path:
-        logger.error(f'Engine path cannot be empty.')
-        return 1
-    engine_path = pathlib.Path(engine_path).resolve()
-
-    for engine_object in json_data.get('engines', []):
-        if isinstance(engine_object, dict):
-            engine_object_path = pathlib.Path(engine_object['path']).resolve()
-        else:
-            engine_object_path = pathlib.Path(engine_object).resolve()
-        if engine_object_path == engine_path:
-            json_data['engines'].remove(engine_object)
-
-    if remove:
-        return remove_engine_name_to_path(json_data, engine_path)
-
-    if not engine_path.is_dir():
-        logger.error(f'Engine path {engine_path} does not exist.')
-        return 1
-
-    engine_json = engine_path / 'engine.json'
-    if not validation.valid_o3de_engine_json(engine_json):
-        logger.error(f'Engine json {engine_json} is not valid.')
-        return 1
-
-    engine_object = {}
-    engine_object.update({'path': engine_path.as_posix()})
-
-    json_data.setdefault('engines', []).insert(0, engine_object)
-
-    return add_engine_name_to_path(json_data, engine_path, force)
-
-
 def register_o3de_object_path(json_data: dict,
                               o3de_object_path: str or pathlib.Path,
                               o3de_object_key: str,
@@ -322,14 +285,14 @@ def register_o3de_object_path(json_data: dict,
 
     manifest_data = None
     if engine_path:
-        manifest_data = manifest.get_engine_json_data(json_data, engine_path)
+        manifest_data = manifest.get_engine_json_data(None, engine_path)
         if not manifest_data:
             logger.error(f'Cannot load engine.json data at path {engine_path}')
             return 1
 
         save_path = engine_path / 'engine.json'
     elif project_path:
-        manifest_data = manifest.get_project_json_data(json_data, project_path)
+        manifest_data = manifest.get_project_json_data(None, project_path)
         if not manifest_data:
             logger.error(f'Cannot load project.json data at path {project_path}')
             return 1
@@ -343,7 +306,7 @@ def register_o3de_object_path(json_data: dict,
         try:
             paths_to_remove.append(o3de_object_path.relative_to(save_path.parent))
         except ValueError:
-            pass # It is OK relative path cannot be formed
+            pass # It is not an error if a relative path cannot be formed
     manifest_data[o3de_object_key] = list(filter(lambda p: pathlib.Path(p) not in paths_to_remove,
                                                            manifest_data.setdefault(o3de_object_key, [])))
 
@@ -358,7 +321,7 @@ def register_o3de_object_path(json_data: dict,
 
     manifest_json_path = o3de_object_path / o3de_json_filename
     if validation_func and not validation_func(manifest_json_path):
-        logger.error(f'o3de json {manifest_json_path} is not valid.')
+        logger.error(f'Manifest at path {manifest_json_path} is not valid.')
         return 1
 
     # if there is a save path make it relative the directory containing o3de object json file
@@ -366,12 +329,33 @@ def register_o3de_object_path(json_data: dict,
         try:
             o3de_object_path = o3de_object_path.relative_to(save_path.parent)
         except ValueError:
-            pass # It is OK  relative path cannot be formed
+            pass # It is OK relative path cannot be formed
     manifest_data[o3de_object_key].insert(0, o3de_object_path.as_posix())
     if save_path:
         manifest.save_o3de_manifest(manifest_data, save_path)
 
     return 0
+
+
+def register_engine_path(json_data: dict,
+                         engine_path: pathlib.Path,
+                         remove: bool = False,
+                         force: bool = False) -> int:
+    # If the o3de_manifest.json 'engines' key is list containing dictionary entries, transform it to a list of strings
+    engine_list = json_data.get('engines', [])
+
+    def transform_engine_dict_to_string(engine): return engine.get('path', '') if isinstance(engine, dict) else engine
+    json_data['engines'] = list(map(transform_engine_dict_to_string, engine_list))
+
+    result = register_o3de_object_path(json_data, engine_path, 'engines', 'engine.json',
+                                       validation.valid_o3de_engine_json, remove)
+    if result != 0:
+        return result
+
+    if remove:
+        return remove_engine_name_to_path(json_data, engine_path)
+
+    return add_engine_name_to_path(json_data, engine_path, force)
 
 
 def register_external_subdirectory(json_data: dict,
@@ -677,37 +661,30 @@ def remove_invalid_o3de_projects(manifest_path: pathlib.Path = None) -> int:
     return result
 
 def remove_invalid_o3de_objects() -> None:
-    json_data = manifest.load_o3de_manifest()
-
-    for engine_object in json_data.get('engines', []):
-        engine_path = engine_object.get('path', '')
+    for engine_path in manifest.get_engines():
         if not validation.valid_o3de_engine_json(pathlib.Path(engine_path).resolve() / 'engine.json'):
             logger.warn(f"Engine path {engine_path} is invalid.")
             register(engine_path=engine_path, remove=True)
 
     remove_invalid_o3de_projects()
 
-    for gem in json_data.get('gems', []):
-        if not validation.valid_o3de_gem_json(pathlib.Path(gem).resolve() / 'gem.json'):
-            logger.warn(f"Gem path {gem} is invalid.")
-            register(gem_path=gem, remove=True)
-
-    for external in json_data.get('external_subdirectories', []):
+    for external in manifest.get_external_subdirectories():
         external = pathlib.Path(external).resolve()
         if not external.is_dir():
             logger.warn(f"External subdirectory {external} is invalid.")
             register(engine_path=engine_path, external_subdir_path=external, remove=True)
 
-    for template in json_data.get('templates', []):
+    for template in manifest.get_templates():
         if not validation.valid_o3de_template_json(pathlib.Path(template).resolve() / 'template.json'):
             logger.warn(f"Template path {template} is invalid.")
             register(template_path=template, remove=True)
 
-    for restricted in json_data.get('restricted', []):
+    for restricted in manifest.get_restricted():
         if not validation.valid_o3de_restricted_json(pathlib.Path(restricted).resolve() / 'restricted.json'):
             logger.warn(f"Restricted path {restricted} is invalid.")
             register(restricted_path=restricted, remove=True)
 
+    json_data = manifest.load_o3de_manifest()
     default_engines_folder = pathlib.Path(json_data.get('default_engines_folder', manifest.get_o3de_engines_folder())).resolve()
     if not default_engines_folder.is_dir():
         new_default_engines_folder = manifest.get_o3de_folder() / 'Engines'

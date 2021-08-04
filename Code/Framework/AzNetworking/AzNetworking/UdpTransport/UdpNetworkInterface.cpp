@@ -224,8 +224,7 @@ namespace AzNetworking
                 continue;
             }
 
-            connection->GetMetrics().m_recvDatarate.LogPacket(packet.m_receivedBytes + UdpPacketHeaderSize, currentTimeMs);
-            connection->GetMetrics().m_packetsRecv++;
+            connection->GetMetrics().LogPacketRecv(packet.m_receivedBytes + UdpPacketHeaderSize, currentTimeMs);
 
             // Decode the packet flag bitset first since it's always uncompressed
             UdpPacketHeader header;
@@ -396,6 +395,16 @@ namespace AzNetworking
             return false;
         }
         return connection->Disconnect(reason, TerminationEndpoint::Local);
+    }
+
+    void UdpNetworkInterface::SetTimeoutEnabled(bool timeoutEnabled)
+    {
+        m_timeoutEnabled = timeoutEnabled;
+    }
+
+    bool UdpNetworkInterface::IsTimeoutEnabled() const
+    {
+        return m_timeoutEnabled;
     }
 
     bool UdpNetworkInterface::IsEncrypted() const
@@ -730,7 +739,7 @@ namespace AzNetworking
         {
             udpConnection->SendUnreliablePacket(CorePackets::HeartbeatPacket());
         }
-        else if (net_UdpTimeoutConnections)
+        else if (net_UdpTimeoutConnections && m_networkInterface.IsTimeoutEnabled())
         {
             udpConnection->Disconnect(DisconnectReason::Timeout, TerminationEndpoint::Local);
             return TimeoutResult::Delete;

@@ -134,9 +134,6 @@ namespace ScriptCanvas
         void SetVariableName(AZStd::string_view displayName);
         AZStd::string_view GetVariableName() const;
 
-        void SetDisplayName(const AZStd::string& displayName);
-        AZStd::string_view GetDisplayName() const;
-        
         void SetScriptInputControlVisibility(const AZ::Crc32& inputControlVisibility);
 
         AZ::Crc32 GetInputControlVisibility() const;

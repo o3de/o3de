@@ -64,8 +64,11 @@ namespace AzToolsFramework
 
         private:
             PrefabOperationResult DeleteFromInstance(const EntityIdList& entityIds, bool deleteDescendants);
-            bool RetrieveAndSortPrefabEntitiesAndInstances(const EntityList& inputEntities, Instance& commonRootEntityOwningInstance,
-                EntityList& outEntities, AZStd::vector<Instance*>& outInstances) const;
+            PrefabOperationResult RetrieveAndSortPrefabEntitiesAndInstances(
+                const EntityList& inputEntities,
+                Instance& commonRootEntityOwningInstance,
+                EntityList& outEntities,
+                AZStd::vector<Instance*>& outInstances) const;
             EntityIdList GenerateEntityIdListWithoutLevelInstance(const EntityIdList& entityIds) const;
 
             InstanceOptionalReference GetOwnerInstanceByEntityId(AZ::EntityId entityId) const;

@@ -74,11 +74,6 @@ namespace EMStudio
         mLineEdit->setText(nodeGroup.c_str());
         mLineEdit->selectAll();
 
-        // create add the error message
-        /*mErrorMsg = new QLabel("<font color='red'>Error: Duplicate name found</font>");
-        mErrorMsg->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-        mErrorMsg->setVisible(false);*/
-
         // create the button layout
         QHBoxLayout* buttonLayout   = new QHBoxLayout();
         mOKButton                   = new QPushButton("OK");
@@ -139,10 +134,16 @@ namespace EMStudio
     void NodeGroupRenameWindow::Accepted()
     {
         // Execute the command
-        AZStd::string commandString, outResult;
+        AZStd::string outResult;
         const AZStd::string convertedNewName = FromQtString(mLineEdit->text());
-        commandString = AZStd::string::format("AnimGraphAdjustNodeGroup -animGraphID %i -name \"%s\" -newName \"%s\"", mAnimGraph->GetID(), mNodeGroup.c_str(), convertedNewName.c_str());
-        if (GetCommandManager()->ExecuteCommand(commandString.c_str(), outResult) == false)
+        auto* command = aznew CommandSystem::CommandAnimGraphAdjustNodeGroup(
+            GetCommandManager()->FindCommand(CommandSystem::CommandAnimGraphAdjustNodeGroup::s_commandName),
+            mAnimGraph->GetID(),
+            /*name = */ mNodeGroup,
+            /*visible = */ AZStd::nullopt,
+            /*newName = */ convertedNewName
+        );
+        if (!GetCommandManager()->ExecuteCommand(command, outResult))
         {
             MCore::LogError(outResult.c_str());
         }
@@ -167,7 +168,7 @@ namespace EMStudio
         mAdjustCallback     = new CommandAnimGraphAdjustNodeGroupCallback(false);
         GetCommandManager()->RegisterCommandCallback("AnimGraphAddNodeGroup", mCreateCallback);
         GetCommandManager()->RegisterCommandCallback("AnimGraphRemoveNodeGroup", mRemoveCallback);
-        GetCommandManager()->RegisterCommandCallback("AnimGraphAdjustNodeGroup", mAdjustCallback);
+        GetCommandManager()->RegisterCommandCallback(CommandSystem::CommandAnimGraphAdjustNodeGroup::s_commandName.data(), mAdjustCallback);
 
         // add the add button
         mAddAction = new QAction(MysticQt::GetMysticQt()->FindIcon("Images/Icons/Plus.svg"), tr("Add new node group"), this);
@@ -486,13 +487,16 @@ namespace EMStudio
 
         bool isVisible = state == Qt::Checked;
 
-        // construct the command
-        AZStd::string commandString;
-        commandString = AZStd::string::format("AnimGraphAdjustNodeGroup -animGraphID %i -name \"%s\" -isVisible %s", animGraph->GetID(), nodeGroup->GetName(), AZStd::to_string(isVisible).c_str());
+        auto* command = aznew CommandSystem::CommandAnimGraphAdjustNodeGroup(
+            GetCommandManager()->FindCommand(CommandSystem::CommandAnimGraphAdjustNodeGroup::s_commandName),
+            /*animGraphId = */ animGraph->GetID(),
+            /*name = */ nodeGroup->GetNameString(),
+            /*visible = */ isVisible
+        );
 
         // execute the command
         AZStd::string resultString;
-        if (GetCommandManager()->ExecuteCommand(commandString.c_str(), resultString) == false)
+        if (GetCommandManager()->ExecuteCommand(command, resultString) == false)
         {
             if (resultString.size() > 0)
             {
@@ -519,16 +523,21 @@ namespace EMStudio
         // get a pointer to the node group
         EMotionFX::AnimGraphNodeGroup* nodeGroup = animGraph->GetNodeGroup(groupIndex);
 
-        // get the color
-        AZ::Vector4 finalColor = color.GetAsVector4();
-
         // construct the command
-        AZStd::string commandString;
-        commandString = AZStd::string::format("AnimGraphAdjustNodeGroup -animGraphID %i -name \"%s\" -color \"%s\"", animGraph->GetID(), nodeGroup->GetName(), AZStd::to_string(finalColor).c_str());
+        auto* command = aznew CommandSystem::CommandAnimGraphAdjustNodeGroup(
+            GetCommandManager()->FindCommand(CommandSystem::CommandAnimGraphAdjustNodeGroup::s_commandName),
+            /*animGraphId = */ animGraph->GetID(),
+            /*name = */ nodeGroup->GetName(),
+            /*visible = */ AZStd::nullopt,
+            /*newName = */ AZStd::nullopt,
+            /*nodeNames = */ AZStd::nullopt,
+            /*nodeAction = */ AZStd::nullopt,
+            /*color = */ color.ToU32()
+        );
 
         // execute the command
         AZStd::string resultString;
-        if (GetCommandManager()->ExecuteCommand(commandString.c_str(), resultString) == false)
+        if (GetCommandManager()->ExecuteCommand(command, resultString) == false)
         {
             if (resultString.size() > 0)
             {

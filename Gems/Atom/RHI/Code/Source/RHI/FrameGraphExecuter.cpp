@@ -72,6 +72,7 @@ namespace AZ
         void FrameGraphExecuter::Begin(const FrameGraph& frameGraph)
         {
             AZ_TRACE_METHOD();
+            AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameGraphExecuter: Begin");
             BeginInternal(frameGraph);
         }
 

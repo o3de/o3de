@@ -78,27 +78,5 @@ namespace MCore
             : Attribute(TYPE_ID)
             , mValue(value)     { }
         ~AttributeVector2() { }
-
-        uint32 GetDataSize() const override                         { return sizeofVector2; }
-
-        // read from a stream
-        bool ReadData(MCore::Stream* stream, MCore::Endian::EEndianType streamEndianType, uint8 version) override
-        {
-            MCORE_UNUSED(version);
-
-            // read the value
-            AZ::Vector2 streamValue;
-            if (stream->Read(&streamValue, sizeofVector2) == 0)
-            {
-                return false;
-            }
-
-            // convert endian
-            Endian::ConvertVector2(&streamValue, streamEndianType);
-            mValue = streamValue;
-
-            return true;
-        }
-
     };
 }   // namespace MCore

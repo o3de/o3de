@@ -463,13 +463,19 @@ void EditorViewportWidget::Update()
 
     if (m_updateCameraPositionNextTick)
     {
-        auto cameraState = m_renderViewport->GetCameraState();
+        auto cameraState = GetCameraState();
         AZ::Matrix3x4 matrix;
         matrix.SetBasisAndTranslation(cameraState.m_side, cameraState.m_forward, cameraState.m_up, cameraState.m_position);
         auto m = AZMatrix3x4ToLYMatrix3x4(matrix);
 
         SetViewTM(m);
         m_Camera.SetZRange(cameraState.m_nearClip, cameraState.m_farClip);
+    }
+
+    // Ensure the FOV matches our internally stored setting if we're using the Editor camera
+    if (!m_viewEntityId.IsValid() && !GetIEditor()->IsInGameMode())
+    {
+        SetFOV(GetFOV());
     }
 
     // Reset the camera update flag now that we're finished updating our viewport context
@@ -1138,6 +1144,17 @@ void EditorViewportWidget::OnMenuSelectCurrentCamera()
 
 AzFramework::CameraState EditorViewportWidget::GetCameraState()
 {
+    if (m_viewEntityId.IsValid())
+    {
+        bool cameraStateAcquired = false;
+        AzFramework::CameraState cameraState;
+        Camera::EditorCameraViewRequestBus::BroadcastResult(cameraStateAcquired,
+            &Camera::EditorCameraViewRequestBus::Events::GetCameraState, cameraState);
+        if (cameraStateAcquired)
+        {
+            return cameraState;
+        }
+    }
     return m_renderViewport->GetCameraState();
 }
 
@@ -2613,8 +2630,6 @@ void EditorViewportWidget::DestroyRenderContext()
 //////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::SetDefaultCamera()
 {
-    // Ensure the FOV matches our internally stored setting
-    SetFOV(GetFOV());
     if (IsDefaultCamera())
     {
         return;

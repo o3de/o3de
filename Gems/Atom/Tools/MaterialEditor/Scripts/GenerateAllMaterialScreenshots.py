@@ -114,11 +114,11 @@ def SetCameraPitch(pitch):
     azlmbr.render.ArcBallControllerRequestBus(azlmbr.bus.Broadcast, 'SetPitch', pitch)
 
 def IdleFrames(numFrames):
-    azlmbr.materialeditor.general.idle_wait_frames(numFrames)
+    azlmbr.atomtools.general.idle_wait_frames(numFrames)
 
 def CaptureScreenshot(screenshotOutputPath):
     print("Capturing screenshot to " + screenshotOutputPath + " ...")
-    return ScreenshotHelper(azlmbr.materialeditor.general.idle_wait_frames).capture_screenshot_blocking(screenshotOutputPath)
+    return ScreenshotHelper(azlmbr.atomtools.general.idle_wait_frames).capture_screenshot_blocking(screenshotOutputPath)
 
 def ResizeViewport(width, height):
     # This locks the size of the render target to the desired resolution

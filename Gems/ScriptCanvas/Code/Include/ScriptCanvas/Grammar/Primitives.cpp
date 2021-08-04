@@ -235,7 +235,7 @@ namespace ScriptCanvas
         const VariableData Source::k_emptyVardata{};
 
         Source::Source
-        (const Graph& graph
+            ( const Graph& graph
             , const AZ::Data::AssetId& id
             , const GraphData& graphData
             , const VariableData& variableData
@@ -277,7 +277,7 @@ namespace ScriptCanvas
                 AzFramework::StringFunc::Path::StripExtension(namespacePath);
 
                 return AZ::Success(Source
-                (*request.graph
+                    (*request.graph
                     , request.scriptAssetId
                     , *graphData
                     , *sourceVariableData

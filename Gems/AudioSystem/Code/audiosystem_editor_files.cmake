@@ -54,6 +54,7 @@ set(FILES
     Source/Editor/AudioControlsEditorWindow.h
     Source/Editor/AudioControlsLoader.h
     Source/Editor/AudioControlsWriter.h
+    Source/Editor/AudioResourceSelectors.h
     Source/Editor/AudioSystemPanel.h
     Source/Editor/ImplementationManager.h
     Source/Editor/InspectorPanel.h
