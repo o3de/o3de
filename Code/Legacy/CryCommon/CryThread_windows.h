@@ -181,41 +181,6 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-#if !defined(_CRYTHREAD_HAVE_RWLOCK)
-class CryRWLock
-{
-    void* /*SRWLOCK*/ m_Lock;
-
-    CryRWLock(const CryRWLock&);
-    CryRWLock& operator= (const CryRWLock&);
-
-public:
-    CryRWLock();
-    ~CryRWLock();
-
-    void RLock();
-    void RUnlock();
-
-    void WLock();
-    void WUnlock();
-
-    void Lock();
-    void Unlock();
-
-#if defined(_CRYTHREAD_WANT_TRY_RWLOCK)
-    // Enabling TryXXX requires Windows 7 or newer
-    bool TryRLock();
-    bool TryWLock();
-    bool TryLock();
-#endif
-};
-
-// Indicate that this implementation header provides an implementation for
-// CryRWLock.
-#define _CRYTHREAD_HAVE_RWLOCK 1
-#endif
-
-//////////////////////////////////////////////////////////////////////////
 class CrySimpleThreadSelf
 {
 public:

@@ -524,57 +524,6 @@ inline void CryFastSemaphore::Release()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
-#if !defined _CRYTHREAD_HAVE_RWLOCK
-class CryRWLock
-{
-    pthread_rwlock_t m_Lock;
-
-    CryRWLock(const CryRWLock&);
-    CryRWLock& operator= (const CryRWLock&);
-
-public:
-    CryRWLock() { pthread_rwlock_init(&m_Lock, NULL); }
-    ~CryRWLock() { pthread_rwlock_destroy(&m_Lock); }
-    void RLock() { pthread_rwlock_rdlock(&m_Lock); }
-    bool TryRLock()
-    {
-#if defined(AZ_RESTRICTED_PLATFORM)
-    #define AZ_RESTRICTED_SECTION CRYTHREAD_PTHREADS_H_SECTION_TRY_RLOCK
-    #include AZ_RESTRICTED_FILE(CryThread_pthreads_h)
-#endif
-#if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
-        #undef AZ_RESTRICTED_SECTION_IMPLEMENTED
-#else
-        return pthread_rwlock_tryrdlock(&m_Lock) != EBUSY;
-#endif
-    }
-    void RUnlock() { Unlock(); }
-    void WLock() { pthread_rwlock_wrlock(&m_Lock); }
-    bool TryWLock()
-    {
-#if defined(AZ_RESTRICTED_PLATFORM)
-    #define AZ_RESTRICTED_SECTION CRYTHREAD_PTHREADS_H_SECTION_TRY_RLOCK
-    #include AZ_RESTRICTED_FILE(CryThread_pthreads_h)
-#endif
-#if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
-        #undef AZ_RESTRICTED_SECTION_IMPLEMENTED
-#else
-        return pthread_rwlock_trywrlock(&m_Lock) != EBUSY;
-#endif
-    }
-    void WUnlock() { Unlock(); }
-    void Lock() { WLock(); }
-    bool TryLock() { return TryWLock(); }
-    void Unlock() { pthread_rwlock_unlock(&m_Lock); }
-};
-
-// Indicate that this implementation header provides an implementation for
-// CryRWLock.
-#define _CRYTHREAD_HAVE_RWLOCK 1
-#endif // !defined _CRYTHREAD_HAVE_RWLOCK
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // Provide TLS implementation using pthreads for those platforms without __thread
 ////////////////////////////////////////////////////////////////////////////////
