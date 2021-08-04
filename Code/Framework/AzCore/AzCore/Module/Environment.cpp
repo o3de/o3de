@@ -75,15 +75,15 @@ namespace AZ
         bool operator==(const OSStdAllocator& a, const OSStdAllocator& b) { (void)a; (void)b; return true; }
         bool operator!=(const OSStdAllocator& a, const OSStdAllocator& b) { (void)a; (void)b; return false; }
 
-        void EnvironmentVariableHolderBase::UnregisterAndDestroy(void (*destruct)(EnvironmentVariableHolderBase *, DestroyTarget), bool module_release)
+        void EnvironmentVariableHolderBase::UnregisterAndDestroy(DestructFunc destruct, bool moduleRelease)
         {
             bool release_by_module = false;
             const bool release_by_use_count = (--m_useCount == 0);
-            if (module_release && !m_canTransferOwnership && m_moduleOwner == AZ::Environment::GetModuleId())
+            if (moduleRelease && !m_canTransferOwnership && m_moduleOwner == AZ::Environment::GetModuleId())
             {
                 release_by_module = true;
             }
-            if (!module_release && !release_by_use_count)
+            if (!moduleRelease && !release_by_use_count)
             {
                 m_mutex.unlock();
                 return;

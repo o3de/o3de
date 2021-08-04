@@ -232,9 +232,10 @@ namespace AZ
                 return m_guid;
             }
         protected:
+            using DestructFunc = void (*)(EnvironmentVariableHolderBase *, DestroyTarget);
             // Assumes the lock is already held
             // The lock is no longer held after return from this function.
-            void UnregisterAndDestroy(void (*destruct)(EnvironmentVariableHolderBase *, DestroyTarget), bool module_release);
+            void UnregisterAndDestroy(DestructFunc destruct, bool moduleRelease);
 
             AZ::Internal::EnvironmentInterface* m_environmentOwner; ///< Used to know which environment we should use to free the variable if we can't transfer ownership
             void* m_moduleOwner; ///< Used when the variable can't transfered across module and we need to destruct the variable when the module is going away
@@ -264,7 +265,7 @@ namespace AZ
             static void DestructDispatchNoLock(EnvironmentVariableHolderBase *base, DestroyTarget selfDestruct)
             {
                 auto *self = reinterpret_cast<EnvironmentVariableHolder *>(base);
-                if(selfDestruct==DestroyTarget::Self)
+                if (selfDestruct == DestroyTarget::Self)
                 {
                     self->~EnvironmentVariableHolder();
                     return;
@@ -298,8 +299,8 @@ namespace AZ
             void Release()
             {
                 m_mutex.lock();
-                const bool module_release = (--s_moduleUseCount == 0);
-                UnregisterAndDestroy(DestructDispatchNoLock,module_release);
+                const bool moduleRelease = (--s_moduleUseCount == 0);
+                UnregisterAndDestroy(DestructDispatchNoLock, moduleRelease);
             }
 
             void Construct()
@@ -328,7 +329,7 @@ namespace AZ
             void Destruct()
             {
                 AZStd::lock_guard<AZStd::spin_mutex> lock(m_mutex);
-                DestructDispatchNoLock(this,DestroyTarget::Member);
+                DestructDispatchNoLock(this, DestroyTarget::Member);
             }
 
             // variable storage
