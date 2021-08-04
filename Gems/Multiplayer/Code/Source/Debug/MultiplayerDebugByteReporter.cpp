@@ -43,7 +43,6 @@ namespace Multiplayer
     {
         if (m_count == 0)
         {
-            AZ_Warning("MultiplayerDebugByteReporter", m_totalBytes == 0, "Attempted to average bytes with a zero count.");
             return 0.0f;
         }
 
@@ -158,7 +157,7 @@ namespace Multiplayer
         if (m_currentComponentReport == nullptr)
         {
             std::stringstream component;
-            component << "[" << std::setw(2) << std::setfill('0') << static_cast<int>(index) << "]" << " " << componentName;
+            component << "[" << std::setw(2) << std::setfill('0') << aznumeric_cast<int>(index) << "]" << " " << componentName;
             m_currentComponentReport = &m_componentReports[component.str().c_str()];
         }
 
