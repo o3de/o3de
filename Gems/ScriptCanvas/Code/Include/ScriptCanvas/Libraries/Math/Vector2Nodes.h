@@ -250,14 +250,14 @@ namespace ScriptCanvas
             SetDefaultValuesByIndex<2>::_(node, Data::NumberType(1.));
         }
 
-        AZ_INLINE Vector2Type DirectionTo(const Vector2Type from, const Vector2Type to, NumberType optionalScale = 1.f)
+        AZ_INLINE std::tuple<Vector2Type, NumberType> DirectionTo(const Vector2Type from, const Vector2Type to, NumberType optionalScale = 1.f)
         {
             Vector2Type r = to - from;
-            r.Normalize();
+            float length = r.NormalizeWithLength();
             r.SetLength(optionalScale);
-            return r;
+            return std::make_tuple(r, length);
         }
-        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_WITH_DEFAULTS(DirectionTo, DirectionToDefaults, k_categoryName, "{49A2D7F6-6CD3-420E-8A79-D46B00DB6CED}", "Returns a direction vector between two points, by default the direction will be normalized, but it may be optionally scaled using the Scale parameter if different from 1.0", "From", "To", "Scale");
+        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_WITH_DEFAULTS(DirectionTo, DirectionToDefaults, k_categoryName, "{49A2D7F6-6CD3-420E-8A79-D46B00DB6CED}", "Returns a direction vector between two points and the distance between them, by default the direction will be normalized, but it may be optionally scaled using the Scale parameter if different from 1.0", "From", "To", "Scale");
 
         using Registrar = RegistrarGeneric <
             AbsoluteNode
