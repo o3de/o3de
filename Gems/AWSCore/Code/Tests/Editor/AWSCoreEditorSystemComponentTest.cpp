@@ -43,7 +43,7 @@ class AWSCoreEditorSystemComponentTest
         m_coreEditorSystemsComponent.reset(m_entity->CreateComponent<AWSCoreEditorSystemComponent>());
         AZ_TEST_START_TRACE_SUPPRESSION;
         m_entity->Init();
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1); // expect the above have thrown an AZ_Error
+        AZ_TEST_STOP_TRACE_SUPPRESSION(3); // expect the above have thrown an AZ_Error
         m_entity->Activate();
     }
 

@@ -10,6 +10,7 @@
 #include <AzCore/std/string/string.h>
 
 #include <QAction>
+#include <QObject>
 
 namespace AWSCore
 {
@@ -17,13 +18,17 @@ namespace AWSCore
         : public QAction
     {
     public:
+        static constexpr const char AWSCoreResourceMappingToolActionName[] = "AWSCoreResourceMappingToolAction";
         static constexpr const char ResourceMappingToolDirectoryPath[] = "Gems/AWSCore/Code/Tools/ResourceMappingTool";
+        static constexpr const char ResourceMappingToolLogDirectoryPath[] = "user/log/";
         static constexpr const char EngineWindowsPythonEntryScriptPath[] = "python/python.cmd";
 
-        AWSCoreResourceMappingToolAction(const QString& text);
+        AWSCoreResourceMappingToolAction(const QString& text, QObject* parent = nullptr);
+
+        void InitAWSCoreResourceMappingToolAction();
 
         AZStd::string GetToolLaunchCommand() const;
-        AZStd::string GetToolLogPath() const;
+        AZStd::string GetToolLogFilePath() const;
         AZStd::string GetToolReadMePath() const;
 
     private:
@@ -32,7 +37,8 @@ namespace AWSCore
         AZStd::string m_toolScriptPath;
         AZStd::string m_toolQtBinDirectoryPath;
 
-        AZStd::string m_toolLogPath;
+        AZStd::string m_toolLogDirectoryPath;
+        AZStd::string m_toolConfigDirectoryPath;
         AZStd::string m_toolReadMePath;
     };
 } // namespace AWSCore

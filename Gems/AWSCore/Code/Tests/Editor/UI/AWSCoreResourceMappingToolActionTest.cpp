@@ -7,6 +7,7 @@
  */
 
 #include <AzTest/AzTest.h>
+#include <AzFramework/StringFunc/StringFunc.h>
 
 #include <Editor/UI/AWSCoreResourceMappingToolAction.h>
 #include <Editor/UI/AWSCoreEditorUIFixture.h>
@@ -24,7 +25,6 @@ class AWSCoreResourceMappingToolActionTest
     {
         AWSCoreEditorUIFixture::SetUp();
         AWSCoreFixture::SetUp();
-        m_localFileIO->SetAlias("@engroot@", "dummy engine root");
     }
 
     void TearDown() override
@@ -34,20 +34,14 @@ class AWSCoreResourceMappingToolActionTest
     }
 };
 
-TEST_F(AWSCoreResourceMappingToolActionTest, AWSCoreResourceMappingToolAction_NoEngineRootFolder_ExpectOneError)
-{
-    m_localFileIO->ClearAlias("@engroot@");
-    AZ_TEST_START_TRACE_SUPPRESSION;
-    AWSCoreResourceMappingToolAction testAction("dummy title");
-    AZ_TEST_STOP_TRACE_SUPPRESSION(1); // expect the above have thrown an AZ_Error
-}
-
-TEST_F(AWSCoreResourceMappingToolActionTest, AWSCoreResourceMappingToolAction_UnableToFindExpectedFileOrFolder_ExpectFiveErrorsAndEmptyResult)
+TEST_F(AWSCoreResourceMappingToolActionTest, AWSCoreResourceMappingToolAction_NoEngineRootPath_ExpectErrorsAndResult)
 {
     AZ_TEST_START_TRACE_SUPPRESSION;
     AWSCoreResourceMappingToolAction testAction("dummy title");
-    AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
     EXPECT_TRUE(testAction.GetToolLaunchCommand() == "");
-    EXPECT_TRUE(testAction.GetToolLogPath() == "");
+    AZ_TEST_STOP_TRACE_SUPPRESSION(4);
+    AZStd::string expectedLogPath = AZStd::string::format("/%s/resource_mapping_tool.log", AWSCoreResourceMappingToolAction::ResourceMappingToolLogDirectoryPath);
+    AzFramework::StringFunc::Path::Normalize(expectedLogPath);
+    EXPECT_TRUE(testAction.GetToolLogFilePath() == expectedLogPath);
     EXPECT_TRUE(testAction.GetToolReadMePath() == "");
 }
