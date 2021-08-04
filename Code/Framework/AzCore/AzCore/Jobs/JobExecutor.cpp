@@ -9,13 +9,14 @@
 #include <AzCore/Jobs/JobExecutor.h>
 #include <AzCore/Jobs/JobGraph.h>
 
-#include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/queue.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
-#include <AzCore/std/parallel/semaphore.h>
+#include <AzCore/std/parallel/exponential_backoff.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/scoped_lock.h>
+#include <AzCore/std/parallel/semaphore.h>
 #include <AzCore/std/parallel/thread.h>
+#include <AzCore/std/string/string.h>
 
 #include <random>
 
@@ -124,6 +125,7 @@ namespace AZ
             uint8_t priority = job->GetPriorityNumber();
             QueueStatus& status = m_status[priority];
 
+            AZStd::exponential_backoff backoff;
             while (true)
             {
                 uint16_t reserve = status.reserve.load();
@@ -153,8 +155,7 @@ namespace AZ
                 }
                 else
                 {
-                    // TODO need exponential backup here
-                    AZStd::this_thread::sleep_for(AZStd::chrono::microseconds{ 100 });
+                    backoff.wait();
                 }
             }
         }

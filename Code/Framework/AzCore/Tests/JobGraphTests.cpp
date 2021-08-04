@@ -565,7 +565,6 @@ namespace Benchmark
             graph->SubmitOnExecutor(*executor, &ev);
             ev.Wait();
         }
-        executor->Drain();
     }
 
     BENCHMARK_F(JobGraphBenchmarkFixture, FourToOneJoin)(benchmark::State& state)
@@ -596,7 +595,6 @@ namespace Benchmark
             graph->SubmitOnExecutor(*executor, &ev);
             ev.Wait();
         }
-        executor->Drain();
     }
 } // namespace Benchmark
 #endif
