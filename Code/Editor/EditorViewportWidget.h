@@ -232,7 +232,7 @@ private:
 
     double WidgetToViewportFactor() const;
 
-    bool ShouldPreviewFullscreen();
+    bool ShouldPreviewFullscreen() const;
     void StartFullscreenPreview();
     void StopFullscreenPreview();
 

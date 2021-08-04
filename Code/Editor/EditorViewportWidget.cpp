@@ -2898,16 +2898,25 @@ bool EditorViewportWidget::ShouldPreviewFullscreen()
         return false;
     }
 
-    // Doesn't work with split layout (TODO: figure out why and make it work)
-    if (layout->GetLayout() != EViewLayout::ET_Layout0) { return false; }
+    // Doesn't work with split layout
+    if (layout->GetLayout() != EViewLayout::ET_Layout0)
+    {
+        return false;
+    }
 
     // Not supported in VR
-    if (gSettings.bEnableGameModeVR) { return false; }
+    if (gSettings.bEnableGameModeVR)
+    {
+        return false;
+    }
 
     // If level not loaded, don't preview in fullscreen (preview shouldn't work at all without a level, but it does)
     if (auto ge = GetIEditor()->GetGameEngine())
     {
-        if (!ge->IsLevelLoaded()) { return false; }
+        if (!ge->IsLevelLoaded())
+        {
+            return false;
+        }
     }
 
     // Check 'ed_previewGameInFullscreen_once'
@@ -2924,12 +2933,12 @@ bool EditorViewportWidget::ShouldPreviewFullscreen()
 
 void EditorViewportWidget::StartFullscreenPreview()
 {
-    AZ_Assert(!m_inFullscreenPreview, AZ_FUNCTION_SIGNATURE " - called when already in full screen preview");
+    AZ_Assert(!m_inFullscreenPreview, "EditorViewportWidget::StartFullscreenPreview called when already in full screen preview");
     m_inFullscreenPreview = true;
 
     // Pick the screen on which the main window lies to use as the screen for the full screen preview
-    QScreen* screen = MainWindow::instance()->screen();
-    QRect  screenGeometry = screen->geometry();
+    const QScreen* screen = MainWindow::instance()->screen();
+    const QRect screenGeometry = screen->geometry();
 
     // Unparent this and show it, which turns it into a free floating window
     // Also set style to frameless and disable resizing by user
