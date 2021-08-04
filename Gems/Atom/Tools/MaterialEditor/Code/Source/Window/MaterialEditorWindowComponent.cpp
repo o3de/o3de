@@ -6,7 +6,6 @@
  *
  */
 
-#include <Atom/Window/MaterialEditorWindowFactoryRequestBus.h>
 #include <Atom/Window/MaterialEditorWindowSettings.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -23,6 +22,9 @@
 
 namespace MaterialEditor
 {
+    using FactoryRequestBus = AtomToolsFramework::AtomToolsMainWindowFactoryRequestBus;
+    using RequestBus = AtomToolsFramework::AtomToolsMainWindowRequestBus;
+
     void MaterialEditorWindowComponent::Reflect(AZ::ReflectContext* context)
     {
         MaterialEditorWindowSettings::Reflect(context);
@@ -35,16 +37,14 @@ namespace MaterialEditor
 
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            using FactoryRequestBus = MaterialEditorWindowFactoryRequestBus;
             behaviorContext->EBus<FactoryRequestBus>("MaterialEditorWindowFactoryRequestBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Category, "Editor")
                 ->Attribute(AZ::Script::Attributes::Module, "materialeditor")
-                ->Event("CreateMaterialEditorWindow", &FactoryRequestBus::Events::CreateMaterialEditorWindow)
-                ->Event("DestroyMaterialEditorWindow", &FactoryRequestBus::Events::DestroyMaterialEditorWindow)
+                ->Event("CreateMaterialEditorWindow", &FactoryRequestBus::Events::CreateMainWindow)
+                ->Event("DestroyMaterialEditorWindow", &FactoryRequestBus::Events::DestroyMainWindow)
                 ;
 
-            using RequestBus = AtomToolsFramework::AtomToolsMainWindowRequestBus;
             behaviorContext->EBus<RequestBus>("MaterialEditorWindowRequestBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Category, "Editor")
@@ -84,26 +84,26 @@ namespace MaterialEditor
     void MaterialEditorWindowComponent::Activate()
     {
         AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
-        MaterialEditorWindowFactoryRequestBus::Handler::BusConnect();
+        FactoryRequestBus::Handler::BusConnect();
         AzToolsFramework::SourceControlConnectionRequestBus::Broadcast(&AzToolsFramework::SourceControlConnectionRequests::EnableSourceControl, true);
     }
 
     void MaterialEditorWindowComponent::Deactivate()
     {
-        MaterialEditorWindowFactoryRequestBus::Handler::BusDisconnect();
+        FactoryRequestBus::Handler::BusDisconnect();
         AzToolsFramework::EditorWindowRequestBus::Handler::BusDisconnect();
 
         m_window.reset();
     }
 
-    void MaterialEditorWindowComponent::CreateMaterialEditorWindow()
+    void MaterialEditorWindowComponent::CreateMainWindow()
     {
         m_materialEditorBrowserInteractions.reset(aznew MaterialEditorBrowserInteractions);
 
         m_window.reset(aznew MaterialEditorWindow);
     }
 
-    void MaterialEditorWindowComponent::DestroyMaterialEditorWindow()
+    void MaterialEditorWindowComponent::DestroyMainWindow()
     {
         m_window.reset();
     }
