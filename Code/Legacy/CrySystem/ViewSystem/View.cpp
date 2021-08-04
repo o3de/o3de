@@ -55,9 +55,8 @@ void CView::Release()
 }
 
 //------------------------------------------------------------------------
-void CView::Update(float frameTime, bool isActive)
+void CView::Update([[maybe_unused]] float frameTime, [[maybe_unused]] bool isActive)
 {
-    (void)(frameTime, isActive);
     AZ_ErrorOnce("CryLegacy", false, "CryLegacy view system no longer available (CView::Update)");
 }
 
