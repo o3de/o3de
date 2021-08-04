@@ -40,6 +40,8 @@ namespace AZ
 
                 static void Reflect(ReflectContext* context);
 
+                void OnHairGlobalSettingsChanged();
+
                 // HairComponentConfigInterface overrides...
                 void SetEnabled(bool value)
                 {

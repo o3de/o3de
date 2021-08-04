@@ -51,7 +51,7 @@ option bool o_enableMarschner_TT = true;
  
 option bool o_enableDiffuseLobe = true;
 option bool o_enableSpecularLobe = true;
-option bool o_enableTransmitanceLobe = true;
+option bool o_enableTransmittanceLobe = true;
 //==============================================================================
 float3 GetSpecularLighting(Surface surface, LightingData lightingData, const float3 lightIntensity, const float3 dirToLight)
 {

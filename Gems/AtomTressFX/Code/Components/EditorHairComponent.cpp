@@ -63,6 +63,7 @@ namespace AZ
                                 AZ::Edit::UIHandlers::Default, &HairComponentConfig::m_renderingSettings, "TressFX Render Settings",
                                 "TressFX rendering settings to be applied on this entity.")
                             ->DataElement(AZ::Edit::UIHandlers::Default, &HairComponentConfig::m_hairGlobalSettings)
+                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &HairComponentConfig::OnHairGlobalSettingsChanged)
                             ;
                     }
                 }

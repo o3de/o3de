@@ -20,19 +20,39 @@ namespace AZ
                 if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
                 {
                     serializeContext->Class<HairGlobalSettings>()
-                        ->Version(1)
+                        ->Version(2)
+                        ->Field("EnableShadows", &HairGlobalSettings::m_enableShadows)
+                        ->Field("EnableDirectionalLights", &HairGlobalSettings::m_enableDirectionalLights)
+                        ->Field("EnablePunctualLights", &HairGlobalSettings::m_enablePunctualLights)
+                        ->Field("EnableAreaLights", &HairGlobalSettings::m_enableAreaLights)
+                        ->Field("EnableIBL", &HairGlobalSettings::m_enableIBL)
                         ->Field("HairLightingModel", &HairGlobalSettings::m_hairLightingModel)
+                        ->Field("EnableMarschner_R", &HairGlobalSettings::m_enableMarschner_R)
+                        ->Field("EnableMarschner_TRT", &HairGlobalSettings::m_enableMarschner_TRT)
+                        ->Field("EnableMarschner_TT", &HairGlobalSettings::m_enableMarschner_TT)
+                        ->Field("EnableDiffuseLobe", &HairGlobalSettings::m_enableDiffuseLobe)
+                        ->Field("EnableSpecularLobe", &HairGlobalSettings::m_enableSpecularLobe)
+                        ->Field("EnableTransmittanceLobe", &HairGlobalSettings::m_enableTransmittanceLobe)
                         ;
 
                     if (auto editContext = serializeContext->GetEditContext())
                     {
                         editContext->Class<HairGlobalSettings>("Hair Global Settings", "Shared settings across all hair components")
-                            ->DataElement(
-                                AZ::Edit::UIHandlers::ComboBox, &HairGlobalSettings::m_hairLightingModel, "Hair Lighting Model",
-                                "Determines which lighting equation to use")
-                            ->EnumAttribute(Hair::HairLightingModel::GGX, "GGX")
-                            ->EnumAttribute(Hair::HairLightingModel::Marschner, "Marschner")
-                            ->EnumAttribute(Hair::HairLightingModel::Kajiya, "Kajiya")
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableShadows, "Enable Shadows", "Enable shadows for hair.")
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableDirectionalLights, "Enable Directional Lights", "Enable directional lights for hair.")
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enablePunctualLights, "Enable Punctual Lights", "Enable punctual lights for hair.")
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableAreaLights, "Enable Area Lights", "Enable area lights for hair.")
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableIBL, "Enable IBL", "Enable imaged-based lighting for hair.")
+                            ->DataElement(AZ::Edit::UIHandlers::ComboBox, &HairGlobalSettings::m_hairLightingModel, "Hair Lighting Model", "Determines which lighting equation to use")
+                                ->EnumAttribute(Hair::HairLightingModel::GGX, "GGX")
+                                ->EnumAttribute(Hair::HairLightingModel::Marschner, "Marschner")
+                                ->EnumAttribute(Hair::HairLightingModel::Kajiya, "Kajiya")
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableMarschner_R, "Enable Marschner R", "Enable Marschner R.")
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableMarschner_TRT, "Enable Marschner TRT", "Enable Marschner TRT.")
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableMarschner_TT, "Enable Marschner TT", "Enable Marschner TT.")
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableDiffuseLobe, "Enable Diffuse Lobe", "Enable Diffuse Lobe.")
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableSpecularLobe, "Enable Specular Lobe", "Enable Specular Lobe.")
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableTransmittanceLobe, "Enable Transmittance Lobe", "Enable Transmittance Lobe.")
                             ;
                     }
                 }

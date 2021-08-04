@@ -47,6 +47,7 @@ set(FILES
     Code/Rendering/HairLightingModels.h
     Code/Rendering/HairGlobalSettings.h
     Code/Rendering/HairGlobalSettings.cpp
+    Code/Rendering/HairGlobalSettingsBus.h
 #)
 #
 #set(atom_hair_components

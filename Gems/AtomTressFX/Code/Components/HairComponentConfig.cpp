@@ -14,6 +14,7 @@
 #include <AzCore/Serialization/EditContext.h>
 
 #include <Components/HairComponentConfig.h>
+#include <Rendering/HairGlobalSettingsBus.h>
 
 namespace AZ
 {
@@ -38,6 +39,12 @@ namespace AZ
                         ;
                 }
             }
+
+            void HairComponentConfig::OnHairGlobalSettingsChanged()
+            {
+                HairGlobalSettingsRequestBus::Broadcast(&HairGlobalSettingsRequests::SetHairGlobalSettings, m_hairGlobalSettings);
+            }
+
         } // namespace Hair
     } // namespace Render
 } // namespace AZ

@@ -32,7 +32,7 @@
 #include <Rendering/HairRenderObject.h>
 #include <Rendering/SharedBuffer.h>
 #include <Rendering/HairCommon.h>
-#include <Rendering/HairGlobalSettings.h>
+#include <Rendering/HairGlobalSettingsBus.h>
 
 namespace AZ
 {
@@ -57,6 +57,7 @@ namespace AZ
 
             class HairFeatureProcessor final
                 : public RPI::FeatureProcessor
+                , public HairGlobalSettingsRequestBus::Handler
                 , private AZ::TickBus::Handler
             {
                 Name TestSkinningPass;
@@ -122,7 +123,8 @@ namespace AZ
 
                 bool CreatePerPassResources();
 
-                HairGlobalSettings m_hairGlobalSettings;
+                const HairGlobalSettings& GetHairGlobalSettings() const override;
+                void SetHairGlobalSettings(const HairGlobalSettings& hairGlobalSettings) override;
 
             private:
                 AZ_DISABLE_COPY_MOVE(HairFeatureProcessor);
@@ -177,6 +179,8 @@ namespace AZ
                 bool m_initialized = false;
                 bool m_isEnabled = true;
                 static uint32_t s_instanceCount;
+
+                HairGlobalSettings m_hairGlobalSettings;
             };
         } // namespace Hair
     } // namespace Render

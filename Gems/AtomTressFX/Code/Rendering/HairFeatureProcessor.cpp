@@ -92,12 +92,14 @@ namespace AZ
 
                 EnableSceneNotification();
                 TickBus::Handler::BusConnect();
+                HairGlobalSettingsRequestBus::Handler::BusConnect();
             }
 
             void HairFeatureProcessor::Deactivate()
             {
                 DisableSceneNotification();
                 TickBus::Handler::BusDisconnect();
+                HairGlobalSettingsRequestBus::Handler::BusDisconnect();
 
                 m_sharedDynamicBuffer.reset();
             }
@@ -414,6 +416,17 @@ namespace AZ
                 }
                 m_sharedResourcesCreated = true;
                 return true;
+            }
+
+            const AZ::Render::Hair::HairGlobalSettings& HairFeatureProcessor::GetHairGlobalSettings() const
+            {
+                return m_hairGlobalSettings;
+            }
+
+            void HairFeatureProcessor::SetHairGlobalSettings(const HairGlobalSettings& hairGlobalSettings)
+            {
+                m_hairGlobalSettings = hairGlobalSettings;
+                HairGlobalSettingsNotificationBus::Broadcast(&HairGlobalSettingsNotifications::OnHairGlobalSettingsChanged, m_hairGlobalSettings);
             }
 
             // Adi: is this required? if data driven via the MainPipeline.pass the answer is probably no?!

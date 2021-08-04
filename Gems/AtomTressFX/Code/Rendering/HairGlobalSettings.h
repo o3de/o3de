@@ -22,7 +22,18 @@ namespace AZ
 
                 static void Reflect(ReflectContext* context);
 
+                bool m_enableShadows = true;
+                bool m_enableDirectionalLights = true;
+                bool m_enablePunctualLights = true;
+                bool m_enableAreaLights = true;
+                bool m_enableIBL = true;
                 HairLightingModel m_hairLightingModel = HairLightingModel::Marschner;
+                bool m_enableMarschner_R = true;
+                bool m_enableMarschner_TRT = true;
+                bool m_enableMarschner_TT = true;
+                bool m_enableDiffuseLobe = true;
+                bool m_enableSpecularLobe = true;
+                bool m_enableTransmittanceLobe = true;
             };
         } // namespace Hair
     } // namespace Render

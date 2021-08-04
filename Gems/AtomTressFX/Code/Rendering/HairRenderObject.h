@@ -28,7 +28,6 @@
 #include <Rendering/HairDispatchItem.h>
 #include <Rendering/HairBuffersSemantics.h>
 #include <Rendering/HairRenderObjectInterface.h>
-#include <Rendering/HairLightingModels.h>
 
 #define TRESSFX_MIN_VERTS_PER_STRAND_FOR_GPU_ITERATION 64
 
@@ -309,9 +308,6 @@ namespace AZ
                     m_enabled = enable;
                 }
                 //!-----------------------------------------------------------------
-
-                // [Hair TO-DO ATOM-16057] Temporary direct hook to hair lighting model shader option.
-                void SetLightingModel(HairLightingModel hairLightingModel);
 
             private:
                 bool BindRenderSrgResources();

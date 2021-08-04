@@ -20,6 +20,7 @@
 
 // Hair specific
 #include <Components/HairBus.h>
+#include <Rendering/HairGlobalSettingsBus.h>
 #include <Components/HairComponentConfig.h>
 #include <Rendering/HairRenderObject.h>
 
@@ -43,6 +44,7 @@ namespace AZ
 
             class HairComponentController final
                 : public HairRequestsBus::Handler
+                , public HairGlobalSettingsNotificationBus::Handler
                 , private AZ::Data::AssetBus::MultiHandler
                 , private AZ::TickBus::Handler
                 , private EMotionFX::Integration::ActorComponentNotificationBus::Handler
@@ -72,6 +74,9 @@ namespace AZ
 
                 void OnHairConfigChanged();
                 void OnHairAssetChanged();
+
+                // AZ::Render::Hair::HairGlobalSettingsNotificationBus Overrides
+                void OnHairGlobalSettingsChanged(const HairGlobalSettings& hairGlobalSettings) override;
 
                 // AZ::Data::AssetBus::Handler
                 void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;

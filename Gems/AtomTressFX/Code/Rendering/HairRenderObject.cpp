@@ -740,11 +740,6 @@ namespace AZ
                 // fourth component unused. (used to store frame number, but no longer used).
             }
 
-            void HairRenderObject::SetLightingModel(HairLightingModel hairLightingModel)
-            {
-                 m_featureProcessor->m_hairGlobalSettings.m_hairLightingModel = hairLightingModel;
-            }
-
             void HairRenderObject::InitBoneMatricesPlaceHolder(const AMD::float4x4* pBoneMatricesInWS, int numBoneMatrices)
             {
                 pBoneMatricesInWS;
