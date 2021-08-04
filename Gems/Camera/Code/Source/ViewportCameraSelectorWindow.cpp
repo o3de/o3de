@@ -39,7 +39,6 @@ namespace Camera
     {
         CameraListItem::CameraListItem(const AZ::EntityId& cameraId)
             : m_cameraId(cameraId)
-            , m_sequenceId(AZ::EntityId())
         {
             if (cameraId.IsValid())
             {
@@ -52,31 +51,12 @@ namespace Camera
             }
         }
 
-        // Used for a virtual camera that is really whatever camera is being
-        // used for a Track View Sequence.
-        CameraListItem::CameraListItem(const char* cameraName, const AZ::EntityId& sequenceId)
-            : m_cameraName(cameraName)
-            , m_sequenceId(sequenceId)
-        {
-            Maestro::SequenceComponentNotificationBus::Handler::BusConnect(sequenceId);
-        }
-
         CameraListItem::~CameraListItem()
         {
-            Maestro::SequenceComponentNotificationBus::Handler::BusDisconnect();
-
             if (m_cameraId.IsValid())
             {
                 AZ::EntityBus::Handler::BusDisconnect(m_cameraId);
             }
-        }
-
-        //////////////////////////////////////////////////////////////////////////
-        /// Maestro::SequenceComponentNotificationBus::Handler
-        void CameraListItem::OnCameraChanged(const AZ::EntityId& oldCameraEntityId, const AZ::EntityId& newCameraEntityId)
-        {
-            AZ_UNUSED(oldCameraEntityId);
-            m_cameraId = newCameraEntityId;
         }
 
         bool CameraListItem::operator<(const CameraListItem& rhs)
@@ -84,12 +64,11 @@ namespace Camera
             return m_cameraId < rhs.m_cameraId;
         }
 
-        CameraListModel::CameraListModel(ViewportCameraSelectorWindow* myParent)
-            : QAbstractListModel(myParent), m_parent(myParent)
+        CameraListModel::CameraListModel(QWidget* myParent)
+            : QAbstractListModel(myParent)
         {
             m_cameraItems.push_back(AZ::EntityId());
             CameraNotificationBus::Handler::BusConnect();
-            Maestro::EditorSequenceNotificationBus::Handler::BusConnect();
         }
 
         CameraListModel::~CameraListModel()
@@ -97,7 +76,6 @@ namespace Camera
             // set the view entity id back to Invalid, thus enabling the editor camera
             EditorCameraRequests::Bus::Broadcast(&EditorCameraRequests::SetViewFromEntityPerspective, AZ::EntityId());
 
-            Maestro::EditorSequenceNotificationBus::Handler::BusDisconnect();
             CameraNotificationBus::Handler::BusDisconnect();
         }
 
@@ -154,12 +132,6 @@ namespace Camera
             }
         }
 
-        //////////////////////////////////////////////////////////////////////////
-        /// Maestro::EditorSequenceNotificationBus::Handler
-        void CameraListModel::OnSequenceSelected(const AZ::EntityId& )
-        {
-        }
-
         QModelIndex CameraListModel::GetIndexForEntityId(const AZ::EntityId entityId)
         {
             int row = 0;
@@ -203,17 +175,10 @@ namespace Camera
             // bus connections
             EditorCameraNotificationBus::Handler::BusConnect();
             AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
-            Maestro::EditorSequenceNotificationBus::Handler::BusConnect();
         }
 
         ViewportCameraSelectorWindow::~ViewportCameraSelectorWindow()
         {
-            if (Maestro::SequenceComponentNotificationBus::Handler::BusIsConnected())
-            {
-                Maestro::SequenceComponentNotificationBus::Handler::BusDisconnect();
-            }
-
-            Maestro::EditorSequenceNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
             EditorCameraNotificationBus::Handler::BusDisconnect();
         }
@@ -255,29 +220,6 @@ namespace Camera
         void ViewportCameraSelectorWindow::OnStopPlayInEditor()
         {
             setDisabled(false);
-        }
-
-        //////////////////////////////////////////////////////////////////////////
-        /// Maestro::EditorSequenceNotificationBus::Handler
-        void ViewportCameraSelectorWindow::OnSequenceSelected(const AZ::EntityId& sequenceEntityId)
-        {
-            // Connect to the Sequence Component Bus when a sequence is selected for OnCameraChanged.
-            if (Maestro::SequenceComponentNotificationBus::Handler::BusIsConnected())
-            {
-                Maestro::SequenceComponentNotificationBus::Handler::BusDisconnect();
-            }
-            if (sequenceEntityId.IsValid())
-            {
-                Maestro::SequenceComponentNotificationBus::Handler::BusConnect(sequenceEntityId);
-            }
-        }
-
-        //////////////////////////////////////////////////////////////////////////
-        /// Maestro::SequenceComponentNotificationBus::Handler
-        void ViewportCameraSelectorWindow::OnCameraChanged(const AZ::EntityId& oldCameraEntityId, const AZ::EntityId& newCameraEntityId)
-        {
-            AZ_UNUSED(oldCameraEntityId);
-            AZ_UNUSED(newCameraEntityId);
         }
 
         // swallow mouse move events so we can disable sloppy selection
