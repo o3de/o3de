@@ -285,14 +285,14 @@ def register_o3de_object_path(json_data: dict,
 
     manifest_data = None
     if engine_path:
-        manifest_data = manifest.get_engine_json_data(json_data, engine_path)
+        manifest_data = manifest.get_engine_json_data(None, engine_path)
         if not manifest_data:
             logger.error(f'Cannot load engine.json data at path {engine_path}')
             return 1
 
         save_path = engine_path / 'engine.json'
     elif project_path:
-        manifest_data = manifest.get_project_json_data(json_data, project_path)
+        manifest_data = manifest.get_project_json_data(None, project_path)
         if not manifest_data:
             logger.error(f'Cannot load project.json data at path {project_path}')
             return 1
@@ -329,7 +329,7 @@ def register_o3de_object_path(json_data: dict,
         try:
             o3de_object_path = o3de_object_path.relative_to(save_path.parent)
         except ValueError:
-            pass # It is OK  relative path cannot be formed
+            pass # It is OK relative path cannot be formed
     manifest_data[o3de_object_key].insert(0, o3de_object_path.as_posix())
     if save_path:
         manifest.save_o3de_manifest(manifest_data, save_path)
