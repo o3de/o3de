@@ -6,8 +6,6 @@
  *
  */
 
-#include <AtomToolsFramework/Util/Util.h>
-
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 
@@ -17,8 +15,9 @@
 #include <Atom/Viewport/MaterialViewportModule.h>
 
 #include <Atom/Window/MaterialEditorWindowModule.h>
-#include <Atom/Window/MaterialEditorWindowFactoryRequestBus.h>
-#include <Atom/Window/MaterialEditorWindowRequestBus.h>
+
+#include <AtomToolsFramework/Util/Util.h>
+#include <AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h>
 
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Utils/Utils.h>
@@ -84,7 +83,6 @@ namespace MaterialEditor
     MaterialEditorApplication::~MaterialEditorApplication()
     {
         AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusDisconnect();
-        MaterialEditorWindowNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();
     }
 
@@ -94,22 +92,6 @@ namespace MaterialEditor
         outModules.push_back(aznew MaterialDocumentModule);
         outModules.push_back(aznew MaterialViewportModule);
         outModules.push_back(aznew MaterialEditorWindowModule);
-    }
-
-    void MaterialEditorApplication::OnMaterialEditorWindowClosing()
-    {
-        ExitMainLoop();
-    }
-
-    void MaterialEditorApplication::Destroy()
-    {
-        // before modules are unloaded, destroy UI to free up any assets it cached
-        MaterialEditor::MaterialEditorWindowFactoryRequestBus::Broadcast(
-            &MaterialEditor::MaterialEditorWindowFactoryRequestBus::Handler::DestroyMaterialEditorWindow);
-
-        MaterialEditorWindowNotificationBus::Handler::BusDisconnect();
-
-        Base::Destroy();
     }
 
     AZStd::vector<AZStd::string> MaterialEditorApplication::GetCriticalAssetFilters() const
@@ -122,8 +104,8 @@ namespace MaterialEditor
         const AZStd::string activateWindowSwitchName = "activatewindow";
         if (commandLine.HasSwitch(activateWindowSwitchName))
         {
-            MaterialEditor::MaterialEditorWindowRequestBus::Broadcast(
-                &MaterialEditor::MaterialEditorWindowRequestBus::Handler::ActivateWindow);
+            AtomToolsFramework::AtomToolsMainWindowRequestBus::Broadcast(
+                &AtomToolsFramework::AtomToolsMainWindowRequestBus::Handler::ActivateWindow);
         }
 
         // Process command line options for opening one or more material documents on startup
@@ -137,23 +119,5 @@ namespace MaterialEditor
         }
 
         Base::ProcessCommandLine(commandLine);
-    }
-
-    void MaterialEditorApplication::StartInternal()
-    {
-        Base::StartInternal();
-
-        MaterialEditorWindowNotificationBus::Handler::BusConnect();
-
-        MaterialEditor::MaterialEditorWindowFactoryRequestBus::Broadcast(
-            &MaterialEditor::MaterialEditorWindowFactoryRequestBus::Handler::CreateMaterialEditorWindow);
-    }
-
-    void MaterialEditorApplication::Stop()
-    {
-        MaterialEditor::MaterialEditorWindowFactoryRequestBus::Broadcast(
-            &MaterialEditor::MaterialEditorWindowFactoryRequestBus::Handler::DestroyMaterialEditorWindow);
-
-        Base::Stop();
     }
 } // namespace MaterialEditor

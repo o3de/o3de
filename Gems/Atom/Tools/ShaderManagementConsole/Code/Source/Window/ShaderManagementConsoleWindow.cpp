@@ -82,7 +82,7 @@ namespace ShaderManagementConsole
         }
 
         AtomToolsFramework::AtomToolsMainWindowNotificationBus::Broadcast(
-            &AtomToolsFramework::AtomToolsMainWindowNotifications::OnAtomToolsMainWindowWindowClosing);
+            &AtomToolsFramework::AtomToolsMainWindowNotifications::OnMainWindowClosing);
     }
 
     void ShaderManagementConsoleWindow::OnDocumentOpened(const AZ::Uuid& documentId)

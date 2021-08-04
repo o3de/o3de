@@ -44,12 +44,12 @@ namespace ShaderManagementConsole
 
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->EBus<ShaderManagementConsoleWindowRequestBus>("ShaderManagementConsoleWindowRequestBus")
+            behaviorContext->EBus<ShaderManagementConsoleWindowFactoryRequestBus>("ShaderManagementConsoleWindowRequestBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                 ->Attribute(AZ::Script::Attributes::Category, "Editor")
                 ->Attribute(AZ::Script::Attributes::Module, "shadermanagementconsole")
-                ->Event("CreateShaderManagementConsoleWindow", &ShaderManagementConsoleWindowRequestBus::Events::CreateShaderManagementConsoleWindow)
-                ->Event("DestroyShaderManagementConsoleWindow", &ShaderManagementConsoleWindowRequestBus::Events::DestroyShaderManagementConsoleWindow)
+                ->Event("CreateShaderManagementConsoleWindow", &ShaderManagementConsoleWindowFactoryRequestBus::Events::CreateShaderManagementConsoleWindow)
+                ->Event("DestroyShaderManagementConsoleWindow", &ShaderManagementConsoleWindowFactoryRequestBus::Events::DestroyShaderManagementConsoleWindow)
                 ;
 
             behaviorContext->EBus<ShaderManagementConsoleRequestBus>("ShaderManagementConsoleRequestBus")
@@ -87,7 +87,7 @@ namespace ShaderManagementConsole
     void ShaderManagementConsoleWindowComponent::Activate()
     {
         AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
-        ShaderManagementConsoleWindowRequestBus::Handler::BusConnect();
+        ShaderManagementConsoleWindowFactoryRequestBus::Handler::BusConnect();
         ShaderManagementConsoleRequestBus::Handler::BusConnect();
         AzToolsFramework::SourceControlConnectionRequestBus::Broadcast(&AzToolsFramework::SourceControlConnectionRequests::EnableSourceControl, true);
     }
@@ -95,7 +95,7 @@ namespace ShaderManagementConsole
     void ShaderManagementConsoleWindowComponent::Deactivate()
     {
         ShaderManagementConsoleRequestBus::Handler::BusDisconnect();
-        ShaderManagementConsoleWindowRequestBus::Handler::BusDisconnect();
+        ShaderManagementConsoleWindowFactoryRequestBus::Handler::BusDisconnect();
         AzToolsFramework::EditorWindowRequestBus::Handler::BusDisconnect();
 
         m_window.reset();

@@ -10,6 +10,7 @@
 
 #include <AtomToolsFramework/Util/Util.h>
 #include <AtomToolsFramework/Application/AtomToolsApplication.h>
+#include <AtomToolsFramework/Window/AtomToolsMainWindowFactoryRequestBus.h>
 
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Utils/Utils.h>
@@ -64,6 +65,11 @@ namespace AtomToolsFramework
             this->PumpSystemEventLoopUntilEmpty();
             this->Tick();
         });
+    }
+
+    AtomToolsApplication ::~AtomToolsApplication()
+    {
+        AtomToolsMainWindowNotificationBus::Handler::BusDisconnect();
     }
 
     void AtomToolsApplication::CreateReflectionManager()
@@ -147,12 +153,21 @@ namespace AtomToolsFramework
         m_timer.start();
     }
 
+    void AtomToolsApplication::OnMainWindowClosing()
+    {
+        ExitMainLoop();
+    }
+
     void AtomToolsApplication::Destroy()
     {
+        // before modules are unloaded, destroy UI to free up any assets it cached
+        AtomToolsMainWindowFactoryRequestBus::Broadcast(&AtomToolsMainWindowFactoryRequestBus::Handler::DestroyMainWindow);
+
         AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusDisconnect();
-
+        AtomToolsMainWindowNotificationBus::Handler::BusDisconnect();
         AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::StartDisconnectingAssetProcessor);
+
         Base::Destroy();
     }
 
@@ -391,6 +406,10 @@ namespace AtomToolsFramework
 
         LoadSettings();
 
+        AtomToolsMainWindowNotificationBus::Handler::BusConnect();
+
+        AtomToolsMainWindowFactoryRequestBus::Broadcast(&AtomToolsMainWindowFactoryRequestBus::Handler::CreateMainWindow);
+
         auto editorPythonEventsInterface = AZ::Interface<AzToolsFramework::EditorPythonEventsInterface>::Get();
         if (editorPythonEventsInterface)
         {
@@ -438,6 +457,8 @@ namespace AtomToolsFramework
 
     void AtomToolsApplication::Stop()
     {
+        AtomToolsMainWindowFactoryRequestBus::Broadcast(&AtomToolsMainWindowFactoryRequestBus::Handler::DestroyMainWindow);
+
         UnloadSettings();
         Base::Stop();
     }

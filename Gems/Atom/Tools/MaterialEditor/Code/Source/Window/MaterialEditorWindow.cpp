@@ -186,7 +186,7 @@ namespace MaterialEditor
         windowSettings->m_mainWindowState.assign(windowState.begin(), windowState.end());
 
         AtomToolsFramework::AtomToolsMainWindowNotificationBus::Broadcast(
-            &AtomToolsFramework::AtomToolsMainWindowNotifications::OnAtomToolsMainWindowWindowClosing);
+            &AtomToolsFramework::AtomToolsMainWindowNotifications::OnMainWindowClosing);
     }
 
     void MaterialEditorWindow::OnDocumentOpened(const AZ::Uuid& documentId)

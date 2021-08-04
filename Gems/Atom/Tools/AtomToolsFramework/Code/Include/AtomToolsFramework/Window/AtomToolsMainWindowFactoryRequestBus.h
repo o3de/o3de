@@ -19,11 +19,11 @@ namespace AtomToolsFramework
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
 
-        /// Creates and shows the AtomToolsMainWindow
-        virtual void CreateAtomToolsMainWindow() = 0;
+        /// Creates and shows main window
+        virtual void CreateMainWindow() = 0;
 
-        //! Destroys material editor window and releases all cached assets
-        virtual void DestroyAtomToolsMainWindow() = 0;
+        //! Destroys main window and releases all cached assets
+        virtual void DestroyMainWindow() = 0;
     };
     using AtomToolsMainWindowFactoryRequestBus = AZ::EBus<AtomToolsMainWindowFactoryRequests>;
 

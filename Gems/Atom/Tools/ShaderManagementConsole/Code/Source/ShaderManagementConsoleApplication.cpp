@@ -35,7 +35,6 @@
 #include <Atom/Document/ShaderManagementConsoleDocumentSystemRequestBus.h>
 
 #include <Atom/Window/ShaderManagementConsoleWindowModule.h>
-#include <Atom/Window/ShaderManagementConsoleWindowRequestBus.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>
@@ -77,28 +76,17 @@ namespace ShaderManagementConsole
             *AZ::SettingsRegistry::Get(), GetBuildTargetName());
     }
 
+    ShaderManagementConsoleApplication::~ShaderManagementConsoleApplication()
+    {
+        AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusDisconnect();
+        AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();
+    }
+
     void ShaderManagementConsoleApplication::CreateStaticModules(AZStd::vector<AZ::Module*>& outModules)
     {
         Base::CreateStaticModules(outModules);
         outModules.push_back(aznew ShaderManagementConsoleDocumentModule);
         outModules.push_back(aznew ShaderManagementConsoleWindowModule);
-    }
-
-    void ShaderManagementConsoleApplication::OnShaderManagementConsoleWindowClosing()
-    {
-        ExitMainLoop();
-        ShaderManagementConsoleWindowNotificationBus::Handler::BusDisconnect();
-        AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();
-    }
-
-    void ShaderManagementConsoleApplication::Destroy()
-    {
-        // before modules are unloaded, destroy UI to free up any assets it cached
-        ShaderManagementConsole::ShaderManagementConsoleWindowRequestBus::Broadcast(&ShaderManagementConsole::ShaderManagementConsoleWindowRequestBus::Handler::DestroyShaderManagementConsoleWindow);
-
-        ShaderManagementConsoleWindowNotificationBus::Handler::BusDisconnect();
-
-        Base::Destroy();
     }
 
     AZStd::vector<AZStd::string> ShaderManagementConsoleApplication::GetCriticalAssetFilters() const
@@ -128,14 +116,5 @@ namespace ShaderManagementConsole
             const AZStd::string openDocumentPath = m_commandLine.GetMiscValue(openDocumentIndex);
             ShaderManagementConsoleDocumentSystemRequestBus::Broadcast(&ShaderManagementConsoleDocumentSystemRequestBus::Events::OpenDocument, openDocumentPath);
         }
-    }
-
-    void ShaderManagementConsoleApplication::StartInternal()
-    {
-        Base::StartInternal();
-
-        ShaderManagementConsoleWindowNotificationBus::Handler::BusConnect();
-
-        ShaderManagementConsole::ShaderManagementConsoleWindowRequestBus::Broadcast(&ShaderManagementConsole::ShaderManagementConsoleWindowRequestBus::Handler::CreateShaderManagementConsoleWindow);
     }
 } // namespace ShaderManagementConsole

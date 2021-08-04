@@ -8,6 +8,7 @@
 
 #pragma once
 #include <AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h>
+
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <AzQtComponents/Components/DockMainWindow.h>
