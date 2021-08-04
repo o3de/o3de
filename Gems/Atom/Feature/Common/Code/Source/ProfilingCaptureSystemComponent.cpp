@@ -642,6 +642,7 @@ namespace AZ
             
             // If the thread object already exists (ex. we have already serialized data), join. This will not block since
             // m_cpuDataSerializationInProgress is false, meaning the IO thread has already completed execution.
+            // TODO Use a reusable thread implementation over repeated creation + destruction of threads [ATOM-16214]
             if (m_cpuDataSerializationThread.joinable())
             {
                 m_cpuDataSerializationThread.join();
