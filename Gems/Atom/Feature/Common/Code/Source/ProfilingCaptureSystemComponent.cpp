@@ -19,10 +19,10 @@
 #include <AtomCore/Serialization/Json/JsonUtils.h>
 
 #include <AzCore/IO/SystemFile.h>
-#include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/Json/JsonSerializationSettings.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/parallel/thread.h>
 
 namespace AZ
 {
@@ -430,6 +430,12 @@ namespace AZ
             TickBus::Handler::BusDisconnect();
 
             ProfilingCaptureRequestBus::Handler::BusDisconnect();
+
+            // Block deactivation until the IO thread has finished serializing the CPU data
+            if (m_cpuDataSerializationThread.joinable())
+            {
+                m_cpuDataSerializationThread.join();
+            }
         }
 
         bool ProfilingCaptureSystemComponent::CapturePassTimestamp(const AZStd::string& outputFilePath)
@@ -625,16 +631,24 @@ namespace AZ
                 return false;
             }
 
-            // cpuProfilingData could be 1GB+ once saved, so use an async job to write it to disk.
+            // cpuProfilingData could be 1GB+ once saved, so use an IO thread to write it to disk.
             m_cpuDataSerializationInProgress.store(true);
-            auto diskIoFunction =
+            auto threadIoFunction =
                 [data = AZStd::move(captureResult), filePath = AZStd::string(outputFilePath), &flag = m_cpuDataSerializationInProgress]()
             {
                 SerializeCpuProfilingData(data, filePath, true);
                 flag.store(false);
             };
-            AZ::Job* diskIoJob = AZ::CreateJobFunction(diskIoFunction, true, nullptr);
-            diskIoJob->Start();
+            
+            // If the thread object already exists (ex. we have already serialized data), join. This will not block since
+            // m_cpuDataSerializationInProgress is false, meaning the IO thread has already completed execution.
+            if (m_cpuDataSerializationThread.joinable())
+            {
+                m_cpuDataSerializationThread.join();
+            }
+
+            auto thread = AZStd::thread(threadIoFunction);
+            m_cpuDataSerializationThread = AZStd::move(thread);
 
             return true;
         }

@@ -90,6 +90,8 @@ namespace AZ
 
             // Flag passed by reference to the CPU profiling data serialization job, blocks new continuous capture requests when set.
             AZStd::atomic_bool m_cpuDataSerializationInProgress = false;
+            
+            AZStd::thread m_cpuDataSerializationThread;
         };
     }
 }
