@@ -1,6 +1,6 @@
-# Open 3D Engine
+# O3DE (Open 3D Engine)
 
-Open 3D Engine (O3DE) is an open-source, real-time, multi-platform 3D engine that enables developers and content creators to build AAA games, cinema-quality 3D worlds, and high-fidelity simulations without any fees or commercial obligations.
+O3DE (Open 3D Engine)is an open-source, real-time, multi-platform 3D engine that enables developers and content creators to build AAA games, cinema-quality 3D worlds, and high-fidelity simulations without any fees or commercial obligations.
 
 ## Contribute
 For information about contributing to Open 3D Engine, visit https://o3de.org/docs/contributing/
