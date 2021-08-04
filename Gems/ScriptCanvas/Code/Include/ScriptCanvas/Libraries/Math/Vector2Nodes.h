@@ -257,7 +257,7 @@ namespace ScriptCanvas
             r.SetLength(optionalScale);
             return r;
         }
-        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_WITH_DEFAULTS(DirectionTo, DirectionToDefaults, k_categoryName, "{49A2D7F6-6CD3-420E-8A79-D46B00DB6CED}", "Given two points in space, return a direction vector", "From", "To", "Scale");
+        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_WITH_DEFAULTS(DirectionTo, DirectionToDefaults, k_categoryName, "{49A2D7F6-6CD3-420E-8A79-D46B00DB6CED}", "Returns a direction vector between two points, by default the direction will be normalized, but it may be optionally scaled using the Scale parameter if different from 1.0", "From", "To", "Scale");
 
         using Registrar = RegistrarGeneric <
             AbsoluteNode
