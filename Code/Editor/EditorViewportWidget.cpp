@@ -1524,33 +1524,6 @@ bool EditorViewportWidget::AddCameraMenuItems(QMenu* menu)
         customCameraMenu->addAction(cameraAction);
     }
 
-    // should this functionality be supported? You can already look through a camera entity
-    // in multiple different ways, and this additional method of doing so seems unneccessary and confusing
-    // (since it would select some arbitrary camera entity if there are multiple selected)
-    
-    //action = customCameraMenu->addAction(tr("Look through entity"));
-    //bool areAnyEntitiesSelected = false;
-    //AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(areAnyEntitiesSelected, &AzToolsFramework::ToolsApplicationRequests::AreAnyEntitiesSelected);
-    //action->setCheckable(areAnyEntitiesSelected || m_viewSourceType == ViewSourceType::AZ_Entity);
-    //action->setEnabled(areAnyEntitiesSelected || m_viewSourceType == ViewSourceType::AZ_Entity);
-    //action->setChecked(m_viewSourceType == ViewSourceType::AZ_Entity);
-    //connect(action, &QAction::triggered, this, [this](bool isChecked)
-    //    {
-    //        if (isChecked)
-    //        {
-    //            AzToolsFramework::EntityIdList selectedEntityList;
-    //            AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(selectedEntityList, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
-    //            if (selectedEntityList.size())
-    //            {
-    //                SetEntityAsCamera(*selectedEntityList.begin());
-    //            }
-    //        }
-    //        else
-    //        {
-    //            SetDefaultCamera();
-    //        }
-    //    });
-
     return true;
 }
 
@@ -2212,14 +2185,10 @@ bool EditorViewportWidget::HitTest(const QPoint& point, HitContext& hitInfo)
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool EditorViewportWidget::IsBoundsVisible(const AABB& box) const
+bool EditorViewportWidget::IsBoundsVisible(const AABB&) const
 {
     AZ_Assert(false, "Not supported");
-    (void)box;
     return false;
-
-    // If at least part of bbox is visible then its visible.
-    //return m_Camera.IsAABBVisible_F(AABB(box.min, box.max));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2333,7 +2302,7 @@ float EditorViewportWidget::GetFOV() const
 {
     if (m_viewEntityId.IsValid())
     {
-        float fov = 0.f; // AZ::RadToDeg(m_camFOV);
+        float fov = 0.f;
         Camera::CameraRequestBus::EventResult(fov, m_viewEntityId, &Camera::CameraComponentRequests::GetFovRadians);
         return fov;
     }
@@ -2504,17 +2473,6 @@ void EditorViewportWidget::CycleCamera()
         SetFirstComponentCamera();
         break;
     }
-    //case EditorViewportWidget::ViewSourceType::SequenceCamera:
-    //{
-    //    AZ_Error("EditorViewportWidget", false, "Legacy cameras no longer exist, unable to set sequence camera.");
-    //    break;
-    //}
-    //case EditorViewportWidget::ViewSourceType::LegacyCamera:
-    //{
-    //    AZ_Warning("EditorViewportWidget", false, "Legacy cameras no longer exist, using first found component camera instead.");
-    //    SetFirstComponentCamera();
-    //    break;
-    //}
     case EditorViewportWidget::ViewSourceType::CameraComponent:
     {
         AZ::EBusAggregateResults<AZ::EntityId> results;
@@ -2533,12 +2491,6 @@ void EditorViewportWidget::CycleCamera()
         SetDefaultCamera();
         break;
     }
-    //case EditorViewportWidget::ViewSourceType::AZ_Entity:
-    //{
-    //    // we may decide to have this iterate over just selected entities
-    //    SetDefaultCamera();
-    //    break;
-    //}
     default:
     {
         SetDefaultCamera();
@@ -2889,7 +2841,7 @@ float EditorViewportSettings::AngleStep() const
 
 AZ_CVAR_EXTERNED(bool, ed_previewGameInFullscreen_once);
 
-bool EditorViewportWidget::ShouldPreviewFullscreen()
+bool EditorViewportWidget::ShouldPreviewFullscreen() const
 {
     CLayoutWnd* layout = GetIEditor()->GetViewManager()->GetLayout();
     if (!layout)

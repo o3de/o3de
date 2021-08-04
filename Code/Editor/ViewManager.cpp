@@ -81,7 +81,6 @@ CViewManager::CViewManager()
     else
     {
         AZ_Assert(false, "Non-Atom viewport no longer supported");
-        //RegisterQtViewPaneWithName<CRenderViewport>(GetIEditor(), "Perspective", LyViewPane::CategoryViewport, viewportOptions);
     }
 
     viewportOptions.viewportType = ET_ViewportMap;
@@ -252,11 +251,6 @@ void CViewManager::SelectViewport(CViewport* pViewport)
 //////////////////////////////////////////////////////////////////////////
 CViewport* CViewManager::GetGameViewport() const
 {
-    //if (CRenderViewport::GetPrimaryViewport())
-    //{
-    //    return CRenderViewport::GetPrimaryViewport();
-    //}
-
     return GetViewport(ET_ViewportCamera);;
 }
 

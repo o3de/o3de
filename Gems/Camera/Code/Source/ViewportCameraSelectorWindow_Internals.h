@@ -55,9 +55,6 @@ namespace Camera
             , public Maestro::EditorSequenceNotificationBus::Handler
         {
         public:
-
-            //static const char* m_sequenceCameraName;
-
             CameraListModel(ViewportCameraSelectorWindow* myParent);
             ~CameraListModel();
 

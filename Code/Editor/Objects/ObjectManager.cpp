@@ -1331,7 +1331,6 @@ void CObjectManager::FindDisplayableObjects(DisplayContext& dc, [[maybe_unused]]
 
     pDispayedViewObjects->SetSerialNumber(m_visibilitySerialNumber); // update viewport to be latest serial number
 
-    //const CCamera& camera = GetIEditor()->GetSystem()->GetViewCamera();
     AABB bbox;
     bbox.min.zero();
     bbox.max.zero();
@@ -1380,11 +1379,9 @@ void CObjectManager::FindDisplayableObjects(DisplayContext& dc, [[maybe_unused]]
         {
             CBaseObject* obj = m_visibleObjects[i];
 
-            if (obj /* && obj->IsInCameraView(camera)*/)
+            if (obj)
             {
-                // Check if object is too far.
-                // float visRatio = obj->GetCameraVisRatio(camera);
-                if (/*visRatio > m_maxObjectViewDistRatio || */ (dc.flags & DISPLAY_SELECTION_HELPERS) || obj->IsSelected())
+                if ((dc.flags & DISPLAY_SELECTION_HELPERS) || obj->IsSelected())
                 {
                     pDispayedViewObjects->AddObject(obj);
                 }
