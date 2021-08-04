@@ -59,7 +59,7 @@ namespace AZ::Internal
             else
             {
                 static_assert(
-                    false,
+                    AZStd::is_move_constructible_v<Lambda> || AZStd::is_copy_constructible_v<Lambda>,
                     "Job lambdas must be either move or copy constructible. Please verify that all captured data is move or copy "
                     "constructible.");
             }
@@ -187,7 +187,7 @@ namespace AZ::Internal
             else
             {
                 static_assert(
-                    false,
+                    AZStd::is_move_constructible_v<Lambda> || AZStd::is_copy_constructible_v<Lambda>,
                     "Job lambdas must be either move or copy constructible. Please verify that all captured data is move or copy "
                     "constructible.");
             }
