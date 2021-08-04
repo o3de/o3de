@@ -233,8 +233,8 @@ namespace AZ
             }
         protected:
             using DestructFunc = void (*)(EnvironmentVariableHolderBase *, DestroyTarget);
-            // Assumes the lock is already held
-            // The lock is no longer held after return from this function.
+            // Assumes the m_mutex is already locked.
+            // On return m_mutex is in an unlocked state.
             void UnregisterAndDestroy(DestructFunc destruct, bool moduleRelease);
 
             AZ::Internal::EnvironmentInterface* m_environmentOwner; ///< Used to know which environment we should use to free the variable if we can't transfer ownership
