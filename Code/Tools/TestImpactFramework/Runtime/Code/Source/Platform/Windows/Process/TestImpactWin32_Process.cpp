@@ -60,7 +60,7 @@ namespace TestImpact
         AZStd::to_wstring(argsW, args.c_str());
         if (!CreateProcessW(
             NULL,
-            argsW.c_str(),
+            argsW.data(),
             NULL,
             NULL,
             IsPiping(),
