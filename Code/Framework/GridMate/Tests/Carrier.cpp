@@ -193,7 +193,7 @@ namespace UnitTest
             CarrierCallbacksHandler clientCB, serverCB;
             TestCarrierDesc serverCarrierDesc, clientCarrierDesc;
 
-            string str("Hello this is a carrier test!");
+            AZStd::string str("Hello this is a carrier test!");
 
             const char* targetAddress = "127.0.0.1";
 
@@ -377,7 +377,7 @@ namespace UnitTest
             CarrierCallbacksHandler clientCB, serverCB;
             TestCarrierDesc serverCarrierDesc, clientCarrierDesc;
 
-            string str("Hello this is a carrier test!");
+            AZStd::string str("Hello this is a carrier test!");
             clientCarrierDesc.m_driver = SocketProvider::CreateDriverForJoin();
             serverCarrierDesc.m_driver = SocketProvider::CreateDriverForHost();
 
@@ -469,7 +469,7 @@ namespace UnitTest
             CarrierCallbacksHandler clientCB, serverCB;
             TestCarrierDesc serverCarrierDesc, clientCarrierDesc;
 
-            string str("Hello this is a carrier stress test!");
+            AZStd::string str("Hello this is a carrier stress test!");
 
             clientCarrierDesc.m_enableDisconnectDetection = false;
             serverCarrierDesc.m_enableDisconnectDetection = false;
@@ -1401,7 +1401,7 @@ namespace UnitTest
             CarrierCallbacksHandler clientCB, serverCB;
             CarrierDesc serverCarrierDesc, clientCarrierDesc;
 
-            string str("Hello this is a carrier test!");
+            AZStd::string str("Hello this is a carrier test!");
 
             const char* targetAddress = "127.0.0.1";
 

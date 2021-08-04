@@ -34,15 +34,15 @@ static bool CollectPerformanceCounters(const AZ::Debug::ProfilerRegister& reg, c
     return true;
 }
 
-static string FormatString(const AZStd::string& pre, const AZStd::string& name, const AZStd::string& post, AZ::u64 time, AZ::u64 calls)
+static AZStd::string FormatString(const AZStd::string& pre, const AZStd::string& name, const AZStd::string& post, AZ::u64 time, AZ::u64 calls)
 {
-    string units = "us";
+    AZStd::string units = "us";
     if (AZ::u64 divtime = time / 1000)
     {
         time = divtime;
         units = "ms";
     }
-    return string::format("%s%s %s %10llu%s (%llu calls)\n", pre.c_str(), name.c_str(), post.c_str(), time, units.c_str(), calls);
+    return AZStd::string::format("%s%s %s %10llu%s (%llu calls)\n", pre.c_str(), name.c_str(), post.c_str(), time, units.c_str(), calls);
 }
 
 struct TotalSortContainer
@@ -56,28 +56,28 @@ struct TotalSortContainer
     {
         if (m_self && level >= 0)
         {
-            string levelIndent;
+            AZStd::string levelIndent;
             for (AZ::s32 i = 0; i < level; i++)
             {
                 levelIndent += (i == level - 1) ? "+---" : "|   ";
             }
-            string name = m_self->m_name ? m_self->m_name : m_self->m_function;
-            string outputTotal = FormatString(levelIndent, name, " Total:", m_self->m_timeData.m_time, m_self->m_timeData.m_calls);
+            AZStd::string name = m_self->m_name ? m_self->m_name : m_self->m_function;
+            AZStd::string outputTotal = FormatString(levelIndent, name, " Total:", m_self->m_timeData.m_time, m_self->m_timeData.m_calls);
             AZ_Printf(systemId, outputTotal.c_str());
 
             if (m_self->m_timeData.m_childrenTime || m_self->m_timeData.m_childrenCalls)
             {
-                string childIndent = levelIndent;
+                AZStd::string childIndent = levelIndent;
                 for (auto i = name.begin(); i != name.end(); ++i)
                 {
                     childIndent += " ";
                 }
                 childIndent[level * 4] = '|';
 
-                string outputChild = FormatString(childIndent, "", "Child:", m_self->m_timeData.m_childrenTime, m_self->m_timeData.m_childrenCalls);
+                AZStd::string outputChild = FormatString(childIndent, "", "Child:", m_self->m_timeData.m_childrenTime, m_self->m_timeData.m_childrenCalls);
                 AZ_Printf(systemId, outputChild.c_str());
 
-                string outputSelf = FormatString(childIndent, "", "Self :", m_self->m_timeData.m_time - m_self->m_timeData.m_childrenTime, m_self->m_timeData.m_calls);
+                AZStd::string outputSelf = FormatString(childIndent, "", "Self :", m_self->m_timeData.m_time - m_self->m_timeData.m_childrenTime, m_self->m_timeData.m_calls);
                 AZ_Printf(systemId, outputSelf.c_str());
             }
         }
@@ -237,7 +237,7 @@ void TestProfiler::PrintProfilingSelf(const char* systemId)
     AZ_Printf(systemId, "Profiling timers by exclusive execution time:\n");
     for (auto profiler : selfSorted)
     {
-        string str = FormatString("", profiler->m_name ? profiler->m_name : profiler->m_function, "Self Time:",
+        AZStd::string str = FormatString("", profiler->m_name ? profiler->m_name : profiler->m_function, "Self Time:",
                 profiler->m_timeData.m_time - profiler->m_timeData.m_childrenTime, profiler->m_timeData.m_calls);
         AZ_Printf(systemId, str.c_str());
     }

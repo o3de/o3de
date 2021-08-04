@@ -88,9 +88,9 @@ namespace GridMate
         bool operator==(const SocketDriverAddress& rhs) const;
         bool operator!=(const SocketDriverAddress& rhs) const;
 
-        virtual string ToString() const;
-        virtual string ToAddress() const;
-        virtual string GetIP() const;
+        virtual AZStd::string ToString() const;
+        virtual AZStd::string ToAddress() const;
+        virtual AZStd::string GetIP() const;
         virtual unsigned int  GetPort() const;
         virtual const void* GetTargetAddress(unsigned int& addressSize) const;
 
@@ -163,15 +163,15 @@ namespace GridMate
 
         /// @{ Address conversion functionality. They MUST implemented thread safe. Generally this is not a problem since they just part local data.
         ///  Create address from ip and port. If ip == NULL we will assign a broadcast address.
-        virtual string  IPPortToAddress(const char* ip, unsigned int port) const                        { return IPPortToAddressString(ip, port); }
+        virtual AZStd::string  IPPortToAddress(const char* ip, unsigned int port) const                               { return IPPortToAddressString(ip, port); }
         virtual bool    AddressToIPPort(const AZStd::string& address, AZStd::string& ip, unsigned int& port) const    { return AddressStringToIPPort(address, ip, port); }
         /// Create address for the socket driver from IP and port
-        static string   IPPortToAddressString(const char* ip, unsigned int port);
+        static AZStd::string   IPPortToAddressString(const char* ip, unsigned int port);
         /// Decompose an address to IP and port
         static bool     AddressStringToIPPort(const AZStd::string& address, AZStd::string& ip, unsigned int& port);
         /// Return the family type of the address (AF_INET,AF_INET6 AF_UNSPEC)
         static BSDSocketFamilyType  AddressFamilyType(const AZStd::string& ip);
-        static BSDSocketFamilyType  AddressFamilyType(const char* ip)           { return AddressFamilyType(string(ip)); }
+        static BSDSocketFamilyType  AddressFamilyType(const char* ip)           { return AddressFamilyType(AZStd::string(ip)); }
         /// @}
 
         virtual AZStd::intrusive_ptr<DriverAddress> CreateDriverAddress(const AZStd::string& address) = 0;

@@ -52,17 +52,17 @@ namespace GridMate
 
         MemberIDCompact GetID() const { return m_id; }
 
-        virtual string ToString() const
+        virtual AZStd::string ToString() const
         {
-            return string::format("%x", m_id);
+            return AZStd::string::format("%x", m_id);
         }
-        virtual string ToAddress() const        { return m_address; }
+        virtual AZStd::string ToAddress() const        { return m_address; }
         virtual MemberIDCompact Compact() const { return m_id; }
         virtual bool IsValid() const            { return m_id != 0; }
 
     private:
         MemberIDCompact m_id;
-        string m_address;
+        AZStd::string m_address;
     };
 
     class LANMemberIDMarshaler
@@ -141,7 +141,7 @@ namespace GridMate
 
         bool    MatchMake(const LANSearchParams& sp);
 
-        string  MakeSessionId();
+        AZStd::string  MakeSessionId();
 
         Driver* m_driver;   ///< Driver for network searches
 
@@ -199,7 +199,7 @@ namespace GridMate
         : public CtorContextBase
     {
         CtorDataSet<MemberIDCompact> m_memberId;
-        CtorDataSet<string> m_memberAddress; ///< As the server/host sees it!
+        CtorDataSet<AZStd::string> m_memberAddress; ///< As the server/host sees it!
         CtorDataSet<RemotePeerMode> m_peerMode;
         CtorDataSet<bool> m_isHost;
     };
@@ -232,7 +232,7 @@ namespace GridMate
                 AZ_Assert(session, "We need to have a valid session!");
                 LANMember* member;
                 MemberIDCompact memberId = ctorContext.m_memberId.Get();
-                string memberAddress = ctorContext.m_memberAddress.Get();
+                AZStd::string memberAddress = ctorContext.m_memberAddress.Get();
                 RemotePeerMode remotePeerMode = ctorContext.m_peerMode.Get();
                 bool isMemberHost = ctorContext.m_isHost.Get();
 
@@ -349,7 +349,7 @@ namespace GridMate
 {
     namespace Platform
     {
-        void AssignExtendedName(GridMate::string& extendedName);
+        void AssignExtendedName(AZStd::string& extendedName);
     }
 }
 
@@ -364,7 +364,7 @@ LANMember::LANMember(const LANMemberID& id, LANSession* session)
     : GridMember(id.Compact())
     , m_memberId(id)
 {
-    string extendedName;
+    AZStd::string extendedName;
     Platform::AssignExtendedName(extendedName);
 
     m_session = session;
@@ -741,8 +741,8 @@ LANSession::CreateLocalMember(bool isHost, bool isInvited, RemotePeerMode peerMo
 {
     AZ_Assert(m_myMember == nullptr, "We already have added a local member!");
 
-    string ip = Utils::GetMachineAddress(m_carrierDesc.m_familyType);
-    string address = SocketDriverCommon::IPPortToAddressString(ip.c_str(), m_carrierDesc.m_port);
+    AZStd::string ip = Utils::GetMachineAddress(m_carrierDesc.m_familyType);
+    AZStd::string address = SocketDriverCommon::IPPortToAddressString(ip.c_str(), m_carrierDesc.m_port);
     /////////////////////////////////////////////////////////////////////////////
     // TODO: Use the UUID as an ID, we will need to add marshalers and so on
     AZ::Uuid uuid = AZ::Uuid::CreateRandom();
@@ -881,7 +881,7 @@ LANSession::OnStateHostMigrateSession(AZ::HSM& sm, const AZ::HSM::Event& e)
                 if (m_driver->Initialize(Driver::BSD_AF_INET, nullptr, hostPort, true) != Driver::EC_OK)
                 {
                     // check the output for more info
-                    string errorMsg = string::format("Failed to initialize socket at port %d!", hostPort);
+                    AZStd::string errorMsg = AZStd::string::format("Failed to initialize socket at port %d!", hostPort);
                     EBUS_DBG_EVENT(Debug::SessionDrillerBus, OnSessionError, this, errorMsg);
                     EBUS_EVENT_ID(m_gridMate, SessionEventBus, OnSessionError, this, errorMsg);
                     // We can't be a real host if we failed to provide matching services.
@@ -899,7 +899,7 @@ LANSession::OnStateHostMigrateSession(AZ::HSM& sm, const AZ::HSM::Event& e)
 // MakeSessionId
 // [3/7/2013]
 //=========================================================================
-string
+AZStd::string
 LANSession::MakeSessionId()
 {
     char temp[64];
@@ -990,7 +990,7 @@ LANSearch::Update()
             wb.Write(m_searchParams.m_params[i].m_type);
         }
 
-        string serverAddress = m_searchParams.m_serverAddress;
+        AZStd::string serverAddress = m_searchParams.m_serverAddress;
         if (serverAddress.empty())
         {
             serverAddress = Utils::GetBroadcastAddress(m_searchParams.m_familyType);

@@ -10,7 +10,6 @@
 
 #include <GridMate/Types.h>
 #include <GridMate/Serialize/Buffer.h>
-#include <GridMate/String/string.h>
 
 namespace GridMate
 {

@@ -39,8 +39,8 @@ namespace GridMate
     struct MemberID
     {
         virtual ~MemberID() {}
-        virtual string ToString() const = 0;
-        virtual string ToAddress() const = 0;
+        virtual AZStd::string ToString() const = 0;
+        virtual AZStd::string ToAddress() const = 0;
         virtual MemberIDCompact Compact() const = 0;
         virtual bool IsValid() const = 0;
 
@@ -50,7 +50,7 @@ namespace GridMate
         AZ_FORCE_INLINE bool operator!=(const MemberIDCompact& rhs) const { return Compact() != rhs; }
     };
 
-    typedef string SessionID;
+    typedef AZStd::string SessionID;
 
     struct SearchInfo;
 
@@ -87,8 +87,8 @@ namespace GridMate
         void SetValue(float* values, size_t numElements);
         void SetValue(double* values, size_t numElements);
 
-        string m_id;
-        string m_value;
+        AZStd::string m_id;
+        AZStd::string m_value;
         AZ::u8 m_type;
 
         AZ_FORCE_INLINE bool operator==(const GridSessionParam& rhs) const { return m_type == rhs.m_type && m_id == rhs.m_id && m_value == rhs.m_value; }
@@ -303,7 +303,7 @@ namespace GridMate
         virtual const PlayerId* GetPlayerId() const = 0;
 
         NatType GetNatType() const;
-        string GetName() const;
+        AZStd::string GetName() const;
 
         GridSession* GetSession() const { return m_session; }
 
@@ -353,7 +353,7 @@ namespace GridMate
         //@{ Platform information
         AZ::PlatformID GetPlatformId() const;
         AZ::u32 GetProcessId() const;
-        string GetMachineName() const;
+        AZStd::string GetMachineName() const;
         //@}
 
     protected:
@@ -568,7 +568,7 @@ namespace GridMate
         Internal::GridSessionHandshake* m_handshake;
         typedef unordered_set<ConnectionID> ConnectionIDSet;
         ConnectionIDSet m_connections;
-        string m_hostAddress;
+        AZStd::string m_hostAddress;
         bool m_isShutdown;
 
         GridMember* m_myMember; ///< Created with the session and bound when the server replica arrives.
@@ -923,14 +923,14 @@ namespace GridMate
 
             DataSet<AZ::u8> m_numConnections;
             DataSet<NatType> m_natType;
-            DataSet<string> m_name;
+            DataSet<AZStd::string> m_name;
             DataSet<MemberIDCompact> m_memberId;
             DataSet<MemberIDCompact> m_newHostVote; ///< Used when in host migration, to cast machine's vote.
             MuteDataSetType m_muteList; ///< List of all players we have muted.
 
             // Platform and application informational data
             DataSet<AZ::PlatformID, ConversionMarshaler<AZ::u8, AZ::PlatformID> > m_platformId;
-            DataSet<string> m_machineName;
+            DataSet<AZStd::string> m_machineName;
             DataSet<AZ::u32> m_processId;
             DataSet<bool> m_isInvited;
         };

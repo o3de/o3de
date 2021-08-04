@@ -18,7 +18,6 @@
 //#define AZ_LOG_UNBOUND_SEND_RECEIVE
 
 #include <GridMate/Containers/unordered_set.h>
-#include <GridMate/String/string.h>
 #include <GridMate/Carrier/DriverEvents.h>
 
 #include <AzCore/std/chrono/types.h>
@@ -575,7 +574,7 @@ namespace GridMate
         return !(*this == rhs);
     }
 
-    string SocketDriverAddress::ToString() const
+    AZStd::string SocketDriverAddress::ToString() const
     {
         char ip[64];
         unsigned short port;
@@ -590,15 +589,15 @@ namespace GridMate
             port = ntohs(m_sockAddr.sin_port);
         }
 
-        return string::format("%s|%d", ip, port);
+        return AZStd::string::format("%s|%d", ip, port);
     }
 
-    string SocketDriverAddress::ToAddress() const
+    AZStd::string SocketDriverAddress::ToAddress() const
     {
         return ToString();
     }
 
-    string SocketDriverAddress::GetIP() const
+    AZStd::string SocketDriverAddress::GetIP() const
     {
         char ip[64];
         if (m_sockAddr.sin_family == AF_INET6)
@@ -609,7 +608,7 @@ namespace GridMate
         {
             inet_ntop(AF_INET, const_cast<void*>(reinterpret_cast<const void*>(&m_sockAddr.sin_addr)), ip, AZ_ARRAY_SIZE(ip));
         }
-        return string(ip);
+        return AZStd::string(ip);
     }
 
     unsigned int SocketDriverAddress::GetPort() const
@@ -1144,11 +1143,11 @@ namespace GridMate
     // CreateSocketDriver
     // [3/4/2013]
     //=========================================================================
-    string
+    AZStd::string
     SocketDriverCommon::IPPortToAddressString(const char* ip, unsigned int port)
     {
         AZ_Assert(ip != nullptr, "Invalid address!");
-        return string::format("%s|%d", ip, port);
+        return AZStd::string::format("%s|%d", ip, port);
     }
 
     //=========================================================================
@@ -1159,14 +1158,14 @@ namespace GridMate
     SocketDriverCommon::AddressStringToIPPort(const AZStd::string& address, AZStd::string& ip, unsigned int& port)
     {
         AZStd::size_t pos = address.find('|');
-        AZ_Assert(pos != string::npos, "Invalid driver address!");
-        if (pos == string::npos)
+        AZ_Assert(pos != AZStd::string::npos, "Invalid driver address!");
+        if (pos == AZStd::string::npos)
         {
             return false;
         }
 
-        ip = string(address.begin(), address.begin() + pos);
-        port = AZStd::stoi(string(address.begin() + pos + 1, address.end()));
+        ip = AZStd::string(address.begin(), address.begin() + pos);
+        port = AZStd::stoi(AZStd::string(address.begin() + pos + 1, address.end()));
 
         return true;
     }
@@ -1180,12 +1179,12 @@ namespace GridMate
     {
         // TODO: We can/should use inet_ntop() to detect the family type
         AZStd::size_t pos = ip.find(".");
-        if (pos != string::npos)
+        if (pos != AZStd::string::npos)
         {
             return BSD_AF_INET;
         }
         pos = ip.find("::");
-        if (pos != string::npos)
+        if (pos != AZStd::string::npos)
         {
             return BSD_AF_INET6;
         }

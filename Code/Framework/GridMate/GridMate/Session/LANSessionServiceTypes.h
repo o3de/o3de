@@ -20,7 +20,7 @@ namespace GridMate
             : m_port (0) // by default session can't be found (searched for)
         {}
 
-        string m_address; /// empty to accept any address otherwise you can provide a specific bind address.
+        AZStd::string m_address; /// empty to accept any address otherwise you can provide a specific bind address.
         /**
          * Use 0 if you don't want you session to be searchable (default)
          * Port on which we will register the LAN session (it will be used for session communication and should be different than the game/carrier one).

@@ -422,7 +422,7 @@ namespace GridMate
 
         CarrierThread*              m_threadOwner;                                  ///< Pointer to the carrier thread that operates with this connection.
         AZStd::atomic<struct ThreadConnection*> m_threadConn;                       ///< Pointer to a thread connection. You can use it in the main thread only for a reference.
-        string                      m_fullAddress;                                  ///< Connection full address.
+        AZStd::string               m_fullAddress;                                  ///< Connection full address.
 
         Carrier::ConnectionStates   m_state;
 
@@ -604,7 +604,7 @@ namespace GridMate
         Connection*             m_connection;
         ThreadConnection*       m_threadConnection;
 
-        string                  m_newConnectionAddress;
+        AZStd::string           m_newConnectionAddress;
         CarrierErrorCode        m_errorCode;
         AZ::u32                 m_newRateBytesPerSec;           ///< new send rate
         AZStd::vector<AZStd::unique_ptr<CarrierACKCallback> > m_ackCallbacks;
@@ -1007,7 +1007,7 @@ namespace GridMate
 
         unsigned int    GetMessageMTU() override                    { return m_maxMsgDataSizeBytes; }
 
-        string          ConnectionToAddress(ConnectionID id) override;
+        AZStd::string   ConnectionToAddress(ConnectionID id) override;
 
         void            SendWithCallback(const char* data, unsigned int dataSize, AZStd::unique_ptr<CarrierACKCallback> ackCallback, ConnectionID target = AllConnections, DataReliability reliability = SEND_RELIABLE, DataPriority priority = PRIORITY_NORMAL, unsigned char channel = 0) override;
         void            Send(const char* data, unsigned int dataSize, ConnectionID target = AllConnections, DataReliability reliability = SEND_RELIABLE, DataPriority priority = PRIORITY_NORMAL, unsigned char channel = 0) override
@@ -3902,10 +3902,10 @@ CarrierImpl::DeleteConnection(Connection* conn, CarrierDisconnectReason reason)
 // Carrier
 // [9/14/2010]
 //=========================================================================
-string
+AZStd::string
 CarrierImpl::ConnectionToAddress(ConnectionID id)
 {
-    string str;
+    AZStd::string str;
     AZ_Assert(id != InvalidConnectionID, "Invalid connection id!");
     if (id != InvalidConnectionID)
     {
@@ -4911,7 +4911,7 @@ DefaultCarrier::Create(const CarrierDesc& desc, IGridMate* gridMate)
 // ReasonToString
 // [4/11/2011]
 //=========================================================================
-string
+AZStd::string
 CarrierEventsBase::ReasonToString(CarrierDisconnectReason reason)
 {
     const char* reasonStr = 0;
@@ -4951,5 +4951,5 @@ CarrierEventsBase::ReasonToString(CarrierDisconnectReason reason)
         reasonStr = "Unknown reason";
     }
 
-    return string(reasonStr);
+    return AZStd::string(reasonStr);
 }
